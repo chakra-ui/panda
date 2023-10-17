@@ -3,7 +3,7 @@ import type { CollectorContext, HashCollector } from './hash-collector'
 import type { StylesCollector } from './styles-collector'
 
 export interface BaseRule {
-  className: string
+  className: string[]
   toCss: () => string
 }
 
@@ -20,10 +20,7 @@ export interface RecipeRule extends BaseRule {
 }
 
 export class RuleProcessor {
-  constructor(
-    private context: CollectorContext,
-    private params: { sheet: StyleSheet; hash: HashCollector; styles: StylesCollector },
-  ) {}
+  constructor(private context: CollectorContext, private params: { hash: HashCollector; styles: StylesCollector }) {}
 
   css(styleObject: SystemStyleObject): AtomicRule {
     const hash = this.params.hash.fork()
@@ -34,7 +31,7 @@ export class RuleProcessor {
 
     return {
       styleObject,
-      className: Array.from(styles.classNames).join(' '),
+      className: Array.from(styles.classNames.keys()),
       toCss: () => {
         const sheet = this.context.createSheet()
         sheet.processStylesCollector(styles)
@@ -57,7 +54,7 @@ export class RuleProcessor {
 
     return {
       config: recipeConfig,
-      className: Array.from(styles.classNames).join(' '),
+      className: Array.from(styles.classNames.keys()),
       toCss: () => {
         const sheet = this.context.createSheet()
         // console.log(styles)
@@ -65,6 +62,10 @@ export class RuleProcessor {
         return sheet.toCss({ optimize: true })
       },
     }
+  }
+
+  sva(recipeConfig: SlotRecipeDefinition<string, any>): AtomicRecipeRule {
+    return this.cva(recipeConfig)
   }
 
   recipe(name: string, variants: Record<string, any>): RecipeRule | undefined {
@@ -84,7 +85,7 @@ export class RuleProcessor {
 
     return {
       variants,
-      className: Array.from(styles.classNames).join(' '),
+      className: Array.from(styles.classNames.keys()),
       toCss: () => {
         const sheet = this.context.createSheet()
         sheet.processStylesCollector(styles)

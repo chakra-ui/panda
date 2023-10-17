@@ -4,7 +4,7 @@ import { svaParser } from './fixture'
 describe('ast parser / sva', () => {
   test('should parse', () => {
     const code = `
-    import {sva} from ".panda/css"
+    import {sva} from "styled-system/css"
 
     const button = sva({
         slots: ['label', 'icon'],

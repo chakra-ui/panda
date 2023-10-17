@@ -13,24 +13,27 @@ describe('css template literal', () => {
         width: '500px',
         height: '500px',
         background: 'red',
-        ' @media (min-width: 700px)': { background: 'blue' },
+        '@media (min-width: 700px)': { background: 'blue' },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .w_500px {
-              width: 500px
+        .width_500px {
+          width: 500px
+      }
+
+        .height_500px {
+          height: 500px
+      }
+
+        .background_red {
+          background: red
+      }
+
+        @media (min-width: 700px) {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_700px\\\\)\\\\]\\\\:background_blue {
+            background: blue
           }
-          .h_500px {
-              height: 500px
-          }
-          .bg_red {
-              background: red
-          }
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_700px\\\\)\\\\]\\\\:bg_blue {
-              @media (min-width: 700px) {
-                  background: blue
-              }
-          }
+      }
       }"
     `)
   })

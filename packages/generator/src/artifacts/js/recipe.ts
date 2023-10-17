@@ -145,9 +145,9 @@ export function generateRecipes(ctx: Context) {
           )}, ${stringify(compoundVariants ?? [])})
 
         const ${baseName}VariantMap = ${stringify(variantKeyMap)}
-        
+
         const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
-        
+
         export const ${baseName} = /* @__PURE__ */ Object.assign(${baseName}Fn, {
           __recipe__: true,
           __name__: '${baseName}',

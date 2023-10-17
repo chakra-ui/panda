@@ -614,6 +614,9 @@ importers:
       '@pandacss/generator':
         specifier: workspace:^
         version: link:../generator
+      '@pandacss/node':
+        specifier: workspace:^
+        version: link:../node
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../preset-base
@@ -675,9 +678,6 @@ importers:
       '@types/pluralize':
         specifier: 0.0.30
         version: 0.0.30
-      hookable:
-        specifier: 5.5.3
-        version: 5.5.3
 
   packages/is-valid-prop:
     devDependencies:

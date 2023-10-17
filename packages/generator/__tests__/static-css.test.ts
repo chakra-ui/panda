@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 import { createGenerator } from '../src'
 import { type StaticCssOptions } from '@pandacss/types'
 
 describe('static-css', () => {
-  // limit the number of colors to speed up tests and make snapshots more readable
-  const conf = { ...generatorConfig }
+  // limit the number of tokens to speed up tests and make snapshots more readable
+  const { hooks, ...defaults } = fixtureDefaults
+  const conf = { hooks, ...JSON.parse(JSON.stringify(defaults)) } as typeof fixtureDefaults
 
   // @ts-expect-error
   conf.config.theme!.tokens.colors = {
@@ -15,18 +16,20 @@ describe('static-css', () => {
   }
 
   // @ts-expect-error
-  conf.config.theme!.tokens.spacing = {
+  conf.config.theme!.tokens.sizes = {
     20: { value: '20px' },
     40: { value: '40px' },
     60: { value: '60px' },
   }
+  // @ts-expect-error
+  conf.config.theme!.tokens.spacing = conf.config.theme!.tokens.sizes
 
   conf.config.theme!.semanticTokens = {}
 
-  const staticCss = createGenerator(conf).staticCss
+  const ctx = createGenerator(conf)
   const getStaticCss = (options: StaticCssOptions) => {
-    const result = staticCss(options)
-    return { results: result.results, css: result.toCss() }
+    const engine = ctx.staticCss.process(options, true)
+    return { results: engine.results, css: engine.toCss({ optimize: true }) }
   }
 
   test('works', () => {
@@ -420,59 +423,9 @@ describe('static-css', () => {
       }),
     ).toMatchInlineSnapshot(`
       {
-        "css": "@layer utilities {
-        .m_20 {
-          margin: var(--spacing-20)
-      }
-
-        .m_40 {
-          margin: var(--spacing-40)
-      }
-
-        .m_60 {
-          margin: var(--spacing-60)
-      }
-
-        .m_auto {
-          margin: auto
-      }
-
-        .m_-20 {
-          margin: calc(var(--spacing-20) * -1)
-      }
-
-        .m_-40 {
-          margin: calc(var(--spacing-40) * -1)
-      }
-
-        .m_-60 {
-          margin: calc(var(--spacing-60) * -1)
-      }
-      }",
+        "css": "",
         "results": {
-          "css": [
-            {
-              "margin": "20",
-            },
-            {
-              "margin": "40",
-            },
-            {
-              "margin": "60",
-            },
-            {
-              "margin": "auto",
-            },
-            {
-              "margin": "-20",
-            },
-            {
-              "margin": "-40",
-            },
-            {
-              "margin": "-60",
-            },
-          ],
+          "css": [],
           "recipes": [],
         },
       }
@@ -705,18 +658,35 @@ describe('static-css', () => {
       {
         "css": "@layer recipes.slots {
         .checkbox__control--size_lg {
-          width: var(--sizes-12);
-          height: var(--sizes-12)
+          width: 12;
+          height: 12
       }
 
         .checkbox__label--size_lg {
           font-size: var(--font-sizes-lg)
       }
 
+        @layer _base {
+          .checkbox__root {
+            display: flex;
+            align-items: center;
+            gap: 2
+      }
+
+          .checkbox__control {
+            border-width: 1px;
+            border-radius: var(--radii-sm)
+      }
+
+          .checkbox__label {
+            margin-inline-start: 2
+      }
+      }
+
         @media screen and (min-width: 64em) {
           .lg\\\\:checkbox__control--size_lg {
-            width: var(--sizes-12);
-            height: var(--sizes-12)
+            width: 12;
+            height: 12
           }
 
           .lg\\\\:checkbox__label--size_lg {

@@ -4,7 +4,7 @@ import { cvaParser } from './fixture'
 describe('ast parser / cva', () => {
   test('should parse', () => {
     const code = `
-    import {cva} from ".panda/css"
+    import {cva} from "styled-system/css"
 
     const baseStyle = cva({
         base: {

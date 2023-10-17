@@ -1,9 +1,10 @@
+import { fixtureDefaults } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
+import { createGenerator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
-import { generator } from './fixture'
 
 test('should generate pattern', () => {
-  expect(generatePattern(generator)).toMatchInlineSnapshot(`
+  expect(generatePattern(createGenerator(fixtureDefaults))).toMatchInlineSnapshot(`
     [
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';

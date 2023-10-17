@@ -1,12 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import { generateTokenCss } from '../src/artifacts/css/token-css'
-import { generator } from './fixture'
 import { createGenerator } from '../src'
-import { createHooks } from 'hookable'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 describe('generator', () => {
   test('[css] should generate css', () => {
-    const css = generateTokenCss(generator)
+    const css = generateTokenCss(createGenerator(fixtureDefaults))
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
@@ -541,7 +540,7 @@ describe('generator', () => {
             outdir: '',
           },
           path: '',
-          hooks: createHooks(),
+          hooks: fixtureDefaults.hooks,
         }),
       )
 
@@ -588,7 +587,7 @@ describe('generator', () => {
             outdir: '',
           },
           path: '',
-          hooks: createHooks(),
+          hooks: fixtureDefaults.hooks,
         }),
       )
 
@@ -652,7 +651,7 @@ describe('generator', () => {
           outdir: '',
         },
         path: '',
-        hooks: createHooks(),
+        hooks: fixtureDefaults.hooks,
       }),
     )
 

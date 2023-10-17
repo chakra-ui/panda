@@ -19,7 +19,6 @@ import type {
   StyleResultObject,
 } from '@pandacss/types'
 import type { GeneratorBaseEngine } from './base'
-import { isSlotRecipe } from '@pandacss/core'
 
 export interface CollectorContext
   extends Pick<
@@ -41,6 +40,7 @@ export class HashCollector {
   static conditionSeparator = '<___>'
 
   atomic = new Set<string>()
+  compound_variants = new Set<string>()
   //
   recipes = new Map<string, Set<string>>()
   recipes_base = new Map<string, Set<string>>()
@@ -145,7 +145,7 @@ export class HashCollector {
         )
         set.add(hashed)
         // console.log({ prop, value, cond, finalCondition, options, isInCondition, prevProp, isFinalCondition, path })
-        // console.log({ hashed })
+        console.log({ hashed })
 
         prevProp = prop
         prevDepth = depth
@@ -181,32 +181,37 @@ export class HashCollector {
       this.hashStyleObject(base_set, config.base, { recipe: recipeName })
     }
 
-    // TODO same as config.base
-    // this.processCompoundVariants(config)
+    if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
+      config.compoundVariants.forEach((compoundVariant) => {
+        this.processAtomic(compoundVariant.css)
+      })
+    }
   }
 
   processSlotRecipe(recipeName: string, variants: SlotRecipeVariantRecord<string>) {
     const config = this.context.recipes.getConfig(recipeName) as SlotRecipeConfig | undefined
     if (!config) return
 
+    const styles = Object.assign({}, config.defaultVariants, variants)
     config.slots.forEach((slot) => {
       const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
-      // TODO ?
       // const styleObject = variants[slot]
 
       const set = getOrCreateSet(this.recipes_slots, recipeKey)
-      const styles = Object.assign({}, config.defaultVariants, variants)
       this.hashStyleObject(set, styles, { recipe: recipeName, slot })
 
-      if (config.base && !this.recipes_base.has(recipeKey)) {
-        // console.log('base', { recipeKey, slot, recipeName })
+      const slotBase = config.base?.[slot]
+      if (slotBase && !this.recipes_slots_base.has(recipeKey)) {
         const base_set = getOrCreateSet(this.recipes_slots_base, recipeKey)
-        this.hashStyleObject(base_set, config.base, { recipe: recipeName, slot })
+        this.hashStyleObject(base_set, slotBase, { recipe: recipeName, slot })
       }
     })
 
-    // TODO same as config.base
-    // this.processCompoundVariants(config)
+    if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
+      config.compoundVariants.forEach((compoundVariant) => {
+        Object.values(compoundVariant.css).forEach((styles) => this.processAtomic(styles ?? {}))
+      })
+    }
   }
 
   processPattern(
@@ -223,7 +228,6 @@ export class HashCollector {
     this.processStyleProps(styleProps)
   }
 
-  // TODO test that simple config
   processAtomicRecipe(recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) {
     const { base = {}, variants = {}, compoundVariants = [] } = recipe
     this.processAtomic(base)
@@ -238,25 +242,11 @@ export class HashCollector {
     })
   }
 
-  // TODO test that simple config
   processAtomicSlotRecipe(recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) {
     const slots = getSlotRecipes(recipe)
     for (const slotRecipe of Object.values(slots)) {
       this.processAtomicRecipe(slotRecipe)
     }
-  }
-
-  processCompoundVariants(config: RecipeConfig | SlotRecipeConfig) {
-    config.compoundVariants?.forEach((compoundVariant) => {
-      if (isSlotRecipe(config)) {
-        for (const css of Object.values(compoundVariant.css)) {
-          this.processAtomic(css)
-        }
-      } else {
-        // TODO check if we ever go that way, same in stylesheet.ts
-        this.processAtomic(compoundVariant.css)
-      }
-    })
   }
 
   merge(result: HashCollector) {

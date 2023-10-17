@@ -4,83 +4,7 @@ import { jsxParser } from './fixture'
 describe('jsx', () => {
   test('should extract', () => {
     const code = `
-       import { panda } from ".panda/jsx"
-
-       function Button() {
-         return (
-            <div marginTop="55555px">
-               <panda.button marginTop="40px" marginBottom="42px">Click me</panda.button>
-               <panda.div bg="red.200">Click me</panda.div>
-            </div>
-        )
-       }
-     `
-
-    expect(jsxParser(code)).toMatchInlineSnapshot(`
-      Set {
-        {
-          "box": {
-            "column": 16,
-            "line": 7,
-            "node": "JsxOpeningElement",
-            "type": "map",
-            "value": Map {
-              "marginTop" => {
-                "column": 40,
-                "line": 7,
-                "node": "StringLiteral",
-                "type": "literal",
-                "value": "40px",
-              },
-              "marginBottom" => {
-                "column": 60,
-                "line": 7,
-                "node": "StringLiteral",
-                "type": "literal",
-                "value": "42px",
-              },
-            },
-          },
-          "data": [
-            {
-              "marginBottom": "42px",
-              "marginTop": "40px",
-            },
-          ],
-          "name": "panda.button",
-          "type": "jsx-factory",
-        },
-        {
-          "box": {
-            "column": 16,
-            "line": 8,
-            "node": "JsxOpeningElement",
-            "type": "map",
-            "value": Map {
-              "bg" => {
-                "column": 30,
-                "line": 8,
-                "node": "StringLiteral",
-                "type": "literal",
-                "value": "red.200",
-              },
-            },
-          },
-          "data": [
-            {
-              "bg": "red.200",
-            },
-          ],
-          "name": "panda.div",
-          "type": "jsx-factory",
-        },
-      }
-    `)
-  })
-
-  test('[import alias] should extract', () => {
-    const code = `
-       import { panda as styled } from ".panda/jsx"
+       import { styled } from "styled-system/jsx"
 
        function Button() {
          return (
@@ -154,15 +78,14 @@ describe('jsx', () => {
     `)
   })
 
-  test('should extract responsive', () => {
+  test('[import alias] should extract', () => {
     const code = `
-       import { panda } from ".panda/jsx"
+       import { styled as panda } from "styled-system/jsx"
 
        function Button() {
-        const disabled = true
          return (
             <div marginTop="55555px">
-               <panda.button marginTop={{sm: "40px", md: {rtl: "40px"}}} marginBottom="42px">Click me</panda.button>
+               <panda.button marginTop="40px" marginBottom="42px">Click me</panda.button>
                <panda.div bg="red.200">Click me</panda.div>
             </div>
         )
@@ -174,43 +97,20 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
-            "line": 8,
+            "line": 7,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "marginTop" => {
-                "column": 41,
-                "line": 8,
-                "node": "ObjectLiteralExpression",
-                "type": "map",
-                "value": Map {
-                  "sm" => {
-                    "column": 46,
-                    "line": 8,
-                    "node": "StringLiteral",
-                    "type": "literal",
-                    "value": "40px",
-                  },
-                  "md" => {
-                    "column": 58,
-                    "line": 8,
-                    "node": "ObjectLiteralExpression",
-                    "type": "map",
-                    "value": Map {
-                      "rtl" => {
-                        "column": 64,
-                        "line": 8,
-                        "node": "StringLiteral",
-                        "type": "literal",
-                        "value": "40px",
-                      },
-                    },
-                  },
-                },
+                "column": 40,
+                "line": 7,
+                "node": "StringLiteral",
+                "type": "literal",
+                "value": "40px",
               },
               "marginBottom" => {
-                "column": 87,
-                "line": 8,
+                "column": 60,
+                "line": 7,
                 "node": "StringLiteral",
                 "type": "literal",
                 "value": "42px",
@@ -220,12 +120,7 @@ describe('jsx', () => {
           "data": [
             {
               "marginBottom": "42px",
-              "marginTop": {
-                "md": {
-                  "rtl": "40px",
-                },
-                "sm": "40px",
-              },
+              "marginTop": "40px",
             },
           ],
           "name": "panda.button",
@@ -234,13 +129,13 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
-            "line": 9,
+            "line": 8,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "bg" => {
                 "column": 30,
-                "line": 9,
+                "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
                 "value": "red.200",
@@ -259,15 +154,120 @@ describe('jsx', () => {
     `)
   })
 
-  test('should extract conditions', () => {
+  test('should extract responsive', () => {
     const code = `
-       import { panda } from ".panda/jsx"
+       import { styled } from "styled-system/jsx"
 
        function Button() {
         const disabled = true
          return (
             <div marginTop="55555px">
-               <panda.button marginLeft={disabled ? "40px" : "50px"} marginBottom="42px">Click me</panda.button>
+               <styled.button marginTop={{sm: "40px", md: {rtl: "40px"}}} marginBottom="42px">Click me</styled.button>
+               <styled.div bg="red.200">Click me</styled.div>
+            </div>
+        )
+       }
+     `
+
+    expect(jsxParser(code)).toMatchInlineSnapshot(`
+      Set {
+        {
+          "box": {
+            "column": 16,
+            "line": 8,
+            "node": "JsxOpeningElement",
+            "type": "map",
+            "value": Map {
+              "marginTop" => {
+                "column": 42,
+                "line": 8,
+                "node": "ObjectLiteralExpression",
+                "type": "map",
+                "value": Map {
+                  "sm" => {
+                    "column": 47,
+                    "line": 8,
+                    "node": "StringLiteral",
+                    "type": "literal",
+                    "value": "40px",
+                  },
+                  "md" => {
+                    "column": 59,
+                    "line": 8,
+                    "node": "ObjectLiteralExpression",
+                    "type": "map",
+                    "value": Map {
+                      "rtl" => {
+                        "column": 65,
+                        "line": 8,
+                        "node": "StringLiteral",
+                        "type": "literal",
+                        "value": "40px",
+                      },
+                    },
+                  },
+                },
+              },
+              "marginBottom" => {
+                "column": 88,
+                "line": 8,
+                "node": "StringLiteral",
+                "type": "literal",
+                "value": "42px",
+              },
+            },
+          },
+          "data": [
+            {
+              "marginBottom": "42px",
+              "marginTop": {
+                "md": {
+                  "rtl": "40px",
+                },
+                "sm": "40px",
+              },
+            },
+          ],
+          "name": "styled.button",
+          "type": "jsx-factory",
+        },
+        {
+          "box": {
+            "column": 16,
+            "line": 9,
+            "node": "JsxOpeningElement",
+            "type": "map",
+            "value": Map {
+              "bg" => {
+                "column": 31,
+                "line": 9,
+                "node": "StringLiteral",
+                "type": "literal",
+                "value": "red.200",
+              },
+            },
+          },
+          "data": [
+            {
+              "bg": "red.200",
+            },
+          ],
+          "name": "styled.div",
+          "type": "jsx-factory",
+        },
+      }
+    `)
+  })
+
+  test('should extract conditions', () => {
+    const code = `
+       import { styled } from "styled-system/jsx"
+
+       function Button() {
+        const disabled = true
+         return (
+            <div marginTop="55555px">
+               <styled.button marginLeft={disabled ? "40px" : "50px"} marginBottom="42px">Click me</styled.button>
             </div>
         )
        }
@@ -283,14 +283,14 @@ describe('jsx', () => {
             "type": "map",
             "value": Map {
               "marginLeft" => {
-                "column": 53,
+                "column": 54,
                 "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
                 "value": "40px",
               },
               "marginBottom" => {
-                "column": 83,
+                "column": 84,
                 "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -304,7 +304,7 @@ describe('jsx', () => {
               "marginLeft": "40px",
             },
           ],
-          "name": "panda.button",
+          "name": "styled.button",
           "type": "jsx-factory",
         },
       }
@@ -313,13 +313,13 @@ describe('jsx', () => {
 
   test('should extract object prop', () => {
     const code = `
-       import { panda } from ".panda/jsx"
+       import { styled } from "styled-system/jsx"
 
        function Button() {
         const disabled = true
          return (
             <div marginTop="55555px">
-               <panda.div css={{ bg: "red.200" }}>Click me</panda.div>
+               <styled.div css={{ bg: "red.200" }}>Click me</styled.div>
             </div>
         )
        }
@@ -335,13 +335,13 @@ describe('jsx', () => {
             "type": "map",
             "value": Map {
               "css" => {
-                "column": 32,
+                "column": 33,
                 "line": 8,
                 "node": "ObjectLiteralExpression",
                 "type": "map",
                 "value": Map {
                   "bg" => {
-                    "column": 38,
+                    "column": 39,
                     "line": 8,
                     "node": "StringLiteral",
                     "type": "literal",
@@ -358,7 +358,7 @@ describe('jsx', () => {
               },
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "jsx-factory",
         },
       }
@@ -367,13 +367,13 @@ describe('jsx', () => {
 
   test('should omit new line characters', () => {
     const code = `
-       import { panda } from ".panda/jsx"
+       import { styled } from "styled-system/jsx"
 
        function Button() {
         const disabled = true
          return (
             <div marginTop="55555px">
-            <panda.div
+            <styled.div
               backgroundImage="linear-gradient(
                 135deg,
                 hsla(0, 0%, 100%, 0.75) 10%,
@@ -413,7 +413,7 @@ describe('jsx', () => {
               "backgroundImage": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "jsx-factory",
         },
       }

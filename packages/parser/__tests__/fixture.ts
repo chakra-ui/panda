@@ -1,45 +1,18 @@
-import { mergeConfigs } from '@pandacss/config'
-import { generatorConfig } from '@pandacss/fixture'
-import { createGenerator } from '@pandacss/generator'
-import type { Config, PandaHooks, TSConfig } from '@pandacss/types'
-import { createHooks } from 'hookable'
-import { createProject } from '../src'
+import { createContext } from '@pandacss/fixture'
+import type { Config, TSConfig } from '@pandacss/types'
 import { getImportDeclarations } from '../src/import'
 
 const staticFilePath = 'app/src/test.tsx'
-
-// TODO rm & use generatorConfig, add optimize: true, rm jsxFactory: 'panda' & outdir .panda
-const defaults = generatorConfig
 
 function getProject(code: string, userConfig?: Config) {
   return getFixtureProject(code, userConfig).project
 }
 
-export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: TSConfig) {
-  const resolvedConfig = userConfig ? mergeConfigs([defaults.config, userConfig]) : defaults.config
-  const config = {
-    ...resolvedConfig,
-    outdir: userConfig?.outdir ?? defaults.config.outdir,
-    cwd: userConfig?.cwd ?? defaults.config.cwd,
-  } as typeof resolvedConfig
-  const hooks = createHooks<PandaHooks>()
-  const generator = createGenerator({ ...defaults, config, hooks, tsconfig })
+function getFixtureProject(code: string, userConfig?: Config, tsconfig?: TSConfig) {
+  const ctx = createContext(Object.assign({}, userConfig, { tsconfig }))
+  ctx.project.addSourceFile(staticFilePath, code)
 
-  const project = createProject({
-    ...tsconfig,
-    useInMemoryFileSystem: true,
-    getFiles: () => [staticFilePath],
-    readFile: () => code,
-    parserOptions: {
-      ...generator.parserOptions,
-      join(...paths) {
-        return paths.join('/')
-      },
-    },
-    hooks,
-  })
-
-  return { parse: (filePath = staticFilePath) => project.parseSourceFile(filePath), generator, project }
+  return Object.assign(ctx, { parse: (filePath = staticFilePath) => ctx.project.parseSourceFile(filePath)! })
 }
 
 export function importParser(code: string, option: { name: string; module: string }) {
@@ -157,12 +130,11 @@ export function jsxRecipeParser(code: string) {
   return data.recipe
 }
 
-export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
-  const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
-  const result = parse()!
-  // console.log(result)
+export const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
+  const ctx = getFixtureProject(code, userConfig, tsconfig)
+  const result = ctx.parse()
   return {
     json: result?.toArray().flatMap(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
+    css: ctx.getParserCss(result)!,
   }
 }

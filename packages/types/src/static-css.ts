@@ -30,4 +30,5 @@ export interface StaticCssOptions {
   recipes?: {
     [recipe: string]: RecipeRule[]
   }
+  // TODO patterns
 }

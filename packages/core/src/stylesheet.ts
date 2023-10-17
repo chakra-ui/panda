@@ -17,7 +17,7 @@ export interface ProcessOptions {
 
 export interface ToCssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
 
-type LayerName = Exclude<keyof StylesheetContext['layers'], 'insert'>
+export type LayerName = Exclude<keyof StylesheetContext['layers'], 'insert'>
 
 export class Stylesheet {
   constructor(private context: StylesheetContext, private options?: StylesheetOptions) {}
@@ -56,15 +56,14 @@ export class Stylesheet {
     this.context.layers.base.append(css)
   }
 
-  processCssObject = (styleObject: SystemStyleObject | undefined, layer: LayerName) => {
-    if (!styleObject) return
-    this.process({ styles: styleObject, layer })
+  processCssObject = (styles: SystemStyleObject | undefined, layer: LayerName) => {
+    if (!styles) return
+    this.process({ styles, layer })
   }
 
   processStylesCollector = (collector: StylesCollectorType) => {
-    console.log('processStylesCollector')
     collector.atomic.forEach((css) => {
-      this.processCssObject(css.result, 'utilities')
+      this.processCssObject(css.result, (css.layer as LayerName) ?? 'utilities')
     })
 
     collector.recipes.forEach((recipeSet) => {

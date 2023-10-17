@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { parseAndExtract } from './fixture'
+import { run } from './fixture'
 
 describe('ast parser / css prop', () => {
   test('should parse', () => {
     const code = `
-    import { css } from ".panda/css"
+    import { css } from "styled-system/css"
 
     const Test = ({ css: cssProp }) => {
       return <div className={css(cssProp)} />
@@ -13,13 +13,13 @@ describe('ast parser / css prop', () => {
     const test = <Test css={{ bg: "red.200" }} />
      `
 
-    const result = parseAndExtract(code)
+    const result = run(code)
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .bg_red\\\\.200 {
           background: var(--colors-red-200)
-          }
+      }
       }"
     `)
   })

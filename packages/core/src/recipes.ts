@@ -33,6 +33,7 @@ const sharedState = {
 }
 
 export class Recipes {
+  slotSeparator = '__'
   keys: string[] = []
 
   constructor(private context: RecipeContext) {
@@ -106,7 +107,7 @@ export class Recipes {
   }
 
   getSlotKey = (name: string, slot: string) => {
-    return `${name}__${slot}`
+    return `${name}${this.slotSeparator}${slot}`
   }
 
   isEmpty = () => {

@@ -97,7 +97,7 @@ export class StylesCollector {
       obj = makeObjAt(basePath, transformed.styles)
     }
 
-    return { result: obj, entry, hash, conditions, className } as AtomicStyleResult
+    return { result: obj, entry, hash, conditions, className, layer: transformed.layer } as AtomicStyleResult
   }
 
   getGroupedStyleResultFromHashSet(hashSet: Set<string>) {
@@ -130,13 +130,14 @@ export class StylesCollector {
     return { result: obj, hashSet } as GroupedResult
   }
 
-  getRecipeBaseStyleResultFromHash(hashSet: Set<string>, recipeName: string) {
+  getRecipeBaseStyleResultFromHash(hashSet: Set<string>, recipeName: string, slot?: string) {
     const recipe = this.context.recipes.getConfig(recipeName)
     if (!recipe) return
 
     const style = this.getGroupedStyleResultFromHashSet(hashSet)
-    const base = { ['.' + recipe.className]: style.result }
-    return Object.assign(style, { result: base, recipe: recipeName, className: recipe.className }) as RecipeBaseResult
+    const className = 'slots' in recipe && slot ? this.context.recipes.getSlotKey(recipeName, slot) : recipe.className
+    const base = { ['.' + className]: style.result }
+    return Object.assign(style, { result: base, recipe: recipeName, className }) as RecipeBaseResult
   }
 
   /**
@@ -160,42 +161,41 @@ export class StylesCollector {
     hashCollector.recipes.forEach((set, recipeName) => {
       set.forEach((item) => {
         const styleResult = this.getAtomicStyleResultFromHash(item)
-        const set = getOrCreateSet(this.recipes, recipeName)
-        set.add(styleResult)
+        const stylesSet = getOrCreateSet(this.recipes, recipeName)
+        stylesSet.add(styleResult)
 
         this.classNames.set(styleResult.className, styleResult)
       })
     })
     hashCollector.recipes_base.forEach((set, recipeName) => {
       const recipeBase = this.getRecipeBaseStyleResultFromHash(set, recipeName)
-      if (recipeBase) {
-        const recipeName = recipeBase.recipe
-        const set = getOrCreateSet(this.recipes_base, recipeName)
-        set.add(recipeBase)
+      if (!recipeBase) return
 
-        this.classNames.set(recipeBase.className, recipeBase)
-      }
+      const stylesSet = getOrCreateSet(this.recipes_base, recipeName)
+      stylesSet.add(recipeBase)
+
+      this.classNames.set(recipeBase.className, recipeBase)
     })
 
     //
-    hashCollector.recipes_slots.forEach((set, recipeName) => {
+    hashCollector.recipes_slots.forEach((set, slotKey) => {
       set.forEach((item) => {
         const styleResult = this.getAtomicStyleResultFromHash(item)
-        const set = getOrCreateSet(this.recipes_slots, recipeName)
-        set.add(styleResult)
+        const stylesSet = getOrCreateSet(this.recipes_slots, slotKey)
+        stylesSet.add(styleResult)
 
         this.classNames.set(styleResult.className, styleResult)
       })
     })
-    hashCollector.recipes_slots_base.forEach((set, recipeName) => {
-      const recipeBase = this.getRecipeBaseStyleResultFromHash(set, recipeName)
-      if (recipeBase) {
-        const recipeName = recipeBase.recipe
-        const set = getOrCreateSet(this.recipes_slots_base, recipeName)
-        set.add(recipeBase)
+    hashCollector.recipes_slots_base.forEach((set, slotKey) => {
+      const [recipeName, slot] = slotKey.split(this.context.recipes.slotSeparator)
+      const recipeBase = this.getRecipeBaseStyleResultFromHash(set, recipeName, slot)
+      if (!recipeBase) return
 
-        this.classNames.set(recipeBase.className, recipeBase)
-      }
+      const stylesSet = getOrCreateSet(this.recipes_slots_base, slotKey)
+      stylesSet.add(recipeBase)
+
+      this.classNames.set(recipeBase.className, recipeBase)
     })
 
     // console.timeEnd('unpack')
@@ -227,12 +227,12 @@ const setValueIn = (obj: StyleResultObject, path: string[], value: Record<string
   let current = obj as Record<string, any>
   for (let i = 0; i < path.length; i++) {
     const key = path[i]
-    if (i === path.length - 1) {
-      if (!current) {
-        current = {}
-      }
+    if (!current[key]) {
+      current[key] = {}
+    }
 
-      current[key] = Object.assign(current[key] ?? {}, value)
+    if (i === path.length - 1) {
+      Object.assign(current[key], value)
     } else {
       current = current[key]
     }

@@ -1,69 +1,44 @@
-import { createGenerator } from '@pandacss/generator'
-import type { Config, UserConfig } from '@pandacss/types'
-import { generatorConfig } from './generator'
 import { mergeConfigs } from '@pandacss/config'
+import { createGenerator } from '@pandacss/generator'
+import { createContext as actualCreateContext } from '@pandacss/node'
+import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
+import { createHooks } from 'hookable'
+import { fixturePreset } from './config'
 
-const defaults = generatorConfig
-export const createContext = (userConfig?: Config) => {
-  const resolvedConfig = (userConfig ? mergeConfigs([defaults.config, userConfig]) : defaults.config) as UserConfig
-  const generator = createGenerator({ ...defaults, config: resolvedConfig })
-  // const config = conf.config
+export const fixtureDefaults = {
+  dependencies: [],
+  config: {
+    ...fixturePreset,
+    optimize: true,
+    cwd: '',
+    outdir: 'styled-system',
+    include: [],
+    //
+    cssVarRoot: ':where(html)',
+  },
+  path: '',
+  hooks: createHooks(),
+} as ConfigResultWithHooks
 
-  // config.cwd ||= runtime.cwd()
+export const createGeneratorContext = (userConfig?: Config) => {
+  const resolvedConfig = (
+    userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
+  ) as UserConfig
 
-  // const { include, exclude, cwd } = config
-  // const getFiles = () => runtime.fs.glob({ include, exclude, cwd })
-
-  const ctx = {
-    ...resolvedConfig,
-    ...generator,
-    runtime: {},
-    hooks: resolvedConfig.hooks,
-    // getFiles,
-    // project: createProject({
-    //   ...conf.tsconfig,
-    //   getFiles,
-    //   readFile: () => {},
-    //   hooks: conf.hooks,
-    //   // @ts-expect-error
-    //   parserOptions: { join: runtime.path.join, ...generator.parserOptions },
-    // }),
-  }
-
-  return ctx
-
-  // return Object.assign(ctx, { output: getOutputEngine(ctx) }) as PandaContext
+  return createGenerator({ ...fixtureDefaults, config: resolvedConfig })
 }
 
-// export const createContext = (userConfig?: Config) => {
-//   const resolvedConfig = userConfig ? mergeConfigs([defaults.config, userConfig]) : defaults.config
+export const createContext = (userConfig?: Config) => {
+  const resolvedConfig = (
+    userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
+  ) as UserConfig
 
-//   const generator = createGenerator(generatorConfig)
-//   const config = conf.config
-//   const runtime = nodeRuntime
-
-//   const ctx = {
-//     ...conf,
-//     ...generator,
-//     runtime: nodeRuntime,
-//     hooks: conf.hooks,
-//     getFiles,
-//     project: createProject({
-//     //   ...conf.tsconfig,
-//     //   getFiles,
-//     //   readFile: runtime.fs.readFileSync,
-//     //   hooks: conf.hooks,
-//     //   // @ts-expect-error
-//     //   parserOptions: { join: runtime.path.join, ...generator.parserOptions },
-//     // }),
-//   }
-
-//   return {
-//     hash,
-//     root: postcss.root(),
-//     conditions: conditions,
-//     utility: utility,
-//     helpers: { map: () => '' },
-//     layersNames: defaultLayers,
-//   }
-// }
+  return actualCreateContext({
+    ...fixtureDefaults,
+    config: resolvedConfig,
+    tsconfig: {
+      // @ts-expect-error
+      useInMemoryFileSystem: true,
+    },
+  })
+}

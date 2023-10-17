@@ -1,9 +1,10 @@
 import { expect, test } from 'vitest'
 import { generateTokenJs } from '../src/artifacts/js/token'
-import { generator } from './fixture'
+import { createGenerator } from '../src'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 test('[dts] should generate package', () => {
-  expect(generateTokenJs(generator).js).toMatchInlineSnapshot(
+  expect(generateTokenJs(createGenerator(fixtureDefaults)).js).toMatchInlineSnapshot(
     `
     "const tokens = {
       \\"borders.none\\": {

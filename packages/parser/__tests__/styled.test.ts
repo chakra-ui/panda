@@ -4,9 +4,9 @@ import { styledParser } from './fixture'
 describe('ast parser / styled', () => {
   test('should parse', () => {
     const code = `
-    import {panda} from ".panda/jsx"
+    import { styled } from "styled-system/jsx"
 
-    const baseStyle = panda("div", {
+    const baseStyle = styled("div", {
         base: {
             color: 'red',
             fontSize: '12px',
@@ -101,7 +101,7 @@ describe('ast parser / styled', () => {
                 },
               },
             ],
-            "name": "panda",
+            "name": "styled",
             "type": "cva",
           },
         },

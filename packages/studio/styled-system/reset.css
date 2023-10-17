@@ -163,13 +163,12 @@
     font-family: var(--global-font-mono, var(--font-fallback));
   }
 
-
   input[type="text"],
   input[type="email"],
   input[type="search"],
   input[type="password"] {
     -webkit-appearance: none;
-    -moz-appearance: none; 
+    -moz-appearance: none;
   }
 
   input[type='search'] {

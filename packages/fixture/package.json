@@ -10,6 +10,7 @@
     "@pandacss/config": "workspace:^",
     "@pandacss/core": "workspace:^",
     "@pandacss/generator": "workspace:^",
+    "@pandacss/node": "workspace:^",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/token-dictionary": "workspace:^",

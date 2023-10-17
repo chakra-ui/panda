@@ -11,6 +11,7 @@ export type SerializeContext = {
   utility: Utility
 }
 
+// TODO can we skip this ?
 export function serializeStyle(styleObj: Dict, context: SerializeContext) {
   const { utility, conditions } = context
   const rule = conditions.rule()

@@ -118,7 +118,6 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
         utilities,
         compositions,
         insert: () => {
-          console.log('insertLayers')
           if (reset.nodes.length) root.append(reset)
           if (base.nodes.length) root.append(base)
           if (tokens.nodes.length) root.append(tokens)
@@ -129,7 +128,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
           if (recipes_slots_base.nodes.length) recipes_slots.prepend(recipes_slots_base)
           if (recipes_slots.nodes.length) root.append(recipes_slots)
 
-          if (compositions.nodes.length) utilities.append(compositions)
+          if (compositions.nodes.length) utilities.prepend(compositions)
           if (utilities.nodes.length) root.append(utilities)
           return root
         },
@@ -149,8 +148,8 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     return new Stylesheet(createSheetContext(), { content: options?.content })
   }
 
-  // TODO colorPalette ?
-  const properties = Array.from(new Set(['css', 'textStyle', 'layerStyle', ...utility.keys(), ...conditions.keys()]))
+  // TODO textStyle/layerStyle/colorPalette ?
+  const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
   const propertyMap = new Map(properties.map((prop) => [prop, true]))
 
   const isValidProperty = memo((key: string) => {

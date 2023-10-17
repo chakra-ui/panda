@@ -26,6 +26,7 @@ export interface AtomicStyleResult {
   hash: string
   className: string
   conditions?: ExpandedCondition[]
+  layer?: string
 }
 
 export interface GroupedResult extends Pick<AtomicStyleResult, 'result' | 'className'> {

@@ -18,6 +18,7 @@
     "strict": true,
     "verbatimModuleSyntax": true,
     //
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "baseUrl": "./",
     "paths": {
       "@pandacss/fixture": ["./packages/fixture/src/index.ts"]

@@ -1,11 +1,11 @@
+import { fixtureDefaults } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { generatePropTypes } from '../src/artifacts/types/prop-types'
-import { generator, generatorConfig } from './fixture'
 import { createGenerator } from '../src'
+import { generatePropTypes } from '../src/artifacts/types/prop-types'
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
+    expect(generatePropTypes(createGenerator(fixtureDefaults))).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -210,6 +210,7 @@ describe('generate property types', () => {
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 
@@ -317,7 +318,7 @@ describe('generate property types', () => {
   })
 
   test('with stricTokens true', () => {
-    const conf = Object.assign({}, generatorConfig)
+    const conf = Object.assign({}, createGenerator(fixtureDefaults))
     conf.config.strictTokens = true
     expect(generatePropTypes(createGenerator(conf as any))).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
@@ -523,6 +524,7 @@ describe('generate property types', () => {
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 

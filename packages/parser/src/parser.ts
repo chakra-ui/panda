@@ -21,7 +21,7 @@ const isNodePattern = (node: ParserNodeOptions): node is ParserPatternNode => no
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
 
-export type ParserOptions = {
+export interface ParserOptions {
   hash?: Config['hash']
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
   jsx: {
@@ -41,7 +41,6 @@ export type ParserOptions = {
   utility: Generator['utility']
   hashCollector: Generator['hashCollector']
   stylesCollector: Generator['stylesCollector']
-  // syntax: NonNullable<Config['syntax']>
   syntax: Config['syntax']
   tsOptions?: ConfigTsOptions
   join: Runtime['path']['join']

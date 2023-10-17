@@ -4,8 +4,8 @@ import { jsxRecipeParser } from './fixture'
 describe('recipe jsx', () => {
   test('should extract', () => {
     const code = `
-    import { Button } from ".panda/jsx"
-    import { button } from ".panda/recipes"
+    import { Button } from "styled-system/jsx"
+    import { button } from "styled-system/recipes"
 
       function AnotherButtonWithRegex({ children, variant, size, css: cssProp }: ButtonProps) {
         return <button className={cx(button({ variant, size }), css(cssProp))}>{children}</button>

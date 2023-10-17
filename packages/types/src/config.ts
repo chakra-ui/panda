@@ -42,7 +42,7 @@ interface Patterns {
   [pattern: string]: PatternConfig
 }
 
-interface PresetCore {
+export interface PresetCore {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
