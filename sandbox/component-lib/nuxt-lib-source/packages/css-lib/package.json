@@ -1,0 +1,12 @@
+{
+  "name": "@sandbox-nuxt-lib-source/css-lib",
+  "private": true,
+  "scripts": {
+    "css": "PANDA_DEBUG=ast:* panda",
+    "css:gen": "PANDA_DEBUG=* panda codegen",
+    "css:dev": "PANDA_DEBUG=file:* panda --watch"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*"
+  }
+}
