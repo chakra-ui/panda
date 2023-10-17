@@ -5,7 +5,7 @@ import {
   bundleMinimalFilesCss,
   debugFiles,
   emitArtifacts,
-  writeAndBundleCssChunks,
+  bundleStyleChunksWithImports,
   generate,
   loadConfigAndCreateContext,
   setupConfig,
@@ -205,7 +205,7 @@ export async function main() {
           }
 
           //
-          const { msg } = await writeAndBundleCssChunks(ctx)
+          const { msg } = await bundleStyleChunksWithImports(ctx)
           logger.info('css:emit', msg)
         }
       }
@@ -214,6 +214,7 @@ export async function main() {
       await cssgen(ctx)
       // console.timeEnd('cssgen')
 
+      // TODO generate.ts
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
         const configWatcher = ctx.runtime.fs.watch({ include: ctx.dependencies, cwd, poll })

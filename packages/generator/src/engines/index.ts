@@ -14,10 +14,12 @@ export const getEngine = (conf: ConfigResultWithHooks) => {
   const hashCollector = new HashCollector(base)
   const stylesCollector = new StylesCollector(base)
   const staticCss = new StaticCss(base, { hash: hashCollector, styles: stylesCollector })
+  const collectStyles = () => stylesCollector.collect(hashCollector)
 
   const engine = {
     hashCollector,
     stylesCollector,
+    collectStyles,
     jsx: getJsxEngine(config),
     paths: getPathEngine(config),
     staticCss,

@@ -28,7 +28,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       measure()
       if (!result) return
 
-      const css = ctx.getParserCss(result)
+      const css = ctx.getParserCss(file)
       if (!css) return
 
       if (options.dry) {

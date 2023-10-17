@@ -1,5 +1,5 @@
 import { getOrCreateSet } from '@pandacss/shared'
-import type { ParserResultType, ResultItem, StylesCollectorType } from '@pandacss/types'
+import type { ParserResultType, ResultItem } from '@pandacss/types'
 import type { ParserOptions } from './parser'
 
 export class ParserResult implements ParserResultType {
@@ -15,10 +15,8 @@ export class ParserResult implements ParserResultType {
 
   filePath: string | undefined
 
-  hashCollector: ParserOptions['hashCollector']
-  constructor(private context: ParserOptions) {
-    this.hashCollector = this.context.hashCollector
-  }
+  // TODO remove conditions, always use hashCollector
+  constructor(private context: ParserOptions) {}
 
   append(result: ResultItem) {
     this.all.push(result)
@@ -27,46 +25,42 @@ export class ParserResult implements ParserResultType {
 
   set(name: 'cva' | 'css' | 'sva', result: ResultItem) {
     this[name].add(this.append(Object.assign({ type: 'object' }, result)))
-    const hashCollector = this.hashCollector
-    if (!hashCollector) return
 
+    const hashCollector = this.context.hashCollector
     if (name == 'css') {
       result.data.forEach((obj) => hashCollector.processStyleProps(obj))
       return
     }
 
     if (name === 'cva') {
-      result.data.forEach(hashCollector.processAtomicRecipe.bind(hashCollector))
+      result.data.forEach((data) => hashCollector.processAtomicRecipe(data))
       return
     }
 
     if (name === 'sva') {
-      result.data.forEach(hashCollector.processAtomicSlotRecipe.bind(hashCollector))
+      result.data.forEach((data) => hashCollector.processAtomicSlotRecipe(data))
       return
     }
   }
 
   setCva(result: ResultItem) {
     this.cva.add(this.append(Object.assign({ type: 'cva' }, result)))
-    const hashCollector = this.hashCollector
-    if (!hashCollector) return
 
-    result.data.forEach(hashCollector.processAtomicRecipe.bind(hashCollector))
+    const hashCollector = this.context.hashCollector
+    result.data.forEach((data) => hashCollector.processAtomicRecipe(data))
   }
 
   setSva(result: ResultItem) {
     this.sva.add(this.append(Object.assign({ type: 'sva' }, result)))
-    const hashCollector = this.hashCollector
-    if (!hashCollector) return
 
-    result.data.forEach(hashCollector.processAtomicSlotRecipe.bind(hashCollector))
+    const hashCollector = this.context.hashCollector
+    result.data.forEach((data) => hashCollector.processAtomicSlotRecipe(data))
   }
 
   setJsx(result: ResultItem) {
     this.jsx.add(this.append(Object.assign({ type: 'jsx' }, result)))
-    const hashCollector = this.hashCollector
-    if (!hashCollector) return
 
+    const hashCollector = this.context.hashCollector
     result.data.forEach((obj) => hashCollector.processStyleProps(obj))
   }
 
@@ -74,9 +68,7 @@ export class ParserResult implements ParserResultType {
     const set = getOrCreateSet(this.pattern, name)
     set.add(this.append(Object.assign({ type: 'pattern', name }, result)))
 
-    const hashCollector = this.hashCollector
-    if (!hashCollector) return
-
+    const hashCollector = this.context.hashCollector
     result.data.forEach((obj) =>
       hashCollector.processPattern(name, (result.type as 'pattern' | undefined) ?? 'pattern', result.name, obj),
     )
@@ -86,9 +78,7 @@ export class ParserResult implements ParserResultType {
     const set = getOrCreateSet(this.recipe, recipeName)
     set.add(this.append(Object.assign({ type: 'recipe' }, result)))
 
-    const hashCollector = this.hashCollector
-    if (!hashCollector) return
-
+    const hashCollector = this.context.hashCollector
     const recipes = this.context.recipes
     const recipeConfig = recipes.getConfig(recipeName)
     if (!recipeConfig) return
@@ -150,6 +140,7 @@ export class ParserResult implements ParserResultType {
     }
   }
 
+  // TODO hashCollector
   fromJSON(json: string) {
     const data = JSON.parse(json)
 
@@ -164,22 +155,11 @@ export class ParserResult implements ParserResultType {
     return this
   }
 
-  mergeStyles(result: ParserResult) {
-    result.hashCollector.atomic.forEach((item) => this.hashCollector.atomic.add(item))
-
-    result.hashCollector.recipes.forEach((items, name) => {
-      this.hashCollector.recipes.get(name) ?? this.hashCollector.recipes.set(name, new Set())
-      items.forEach((item) => this.hashCollector.recipes.get(name)?.add(item))
-    })
+  done() {
+    if (!this.context.hashCollector) return this
+    // this.context.hashCollector.merge(this.context.hashCollector)
 
     return this
-  }
-
-  collectStyles() {
-    if (!this.hashCollector) return
-    if (this.isEmpty()) return
-
-    return this.context.stylesCollector.collect(this.hashCollector) as StylesCollectorType
   }
 }
 

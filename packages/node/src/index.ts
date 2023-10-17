@@ -7,9 +7,9 @@ export { execCommand } from './exec-command'
 export {
   bundleCss,
   bundleMinimalFilesCss,
+  bundleStyleChunksWithImports,
   emitArtfifactsAndCssChunks,
   emitArtifacts,
-  writeAndBundleCssChunks,
   extractFile,
   generateCssArtifactOfType,
   type CssArtifactType,

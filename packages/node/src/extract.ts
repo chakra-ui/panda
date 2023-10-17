@@ -2,7 +2,6 @@ import { logger } from '@pandacss/logger'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 import { writeFile } from 'fs/promises'
-import { createParserResult } from '@pandacss/parser'
 import { match } from 'ts-pattern'
 import { optimizeCss } from '@pandacss/core'
 
@@ -11,26 +10,8 @@ import { optimizeCss } from '@pandacss/core'
  * And import the root CSS artifacts files (global, static, reset, tokens, keyframes) in there
  */
 export async function bundleStyleChunksWithImports(ctx: PandaContext) {
-  const files = ctx.chunks.getFiles()
-  await ctx.output.write({
-    dir: ctx.paths.root,
-    files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
-  })
-  return { files, msg: ctx.messages.buildComplete(files.length) }
-}
-
-/**
- * Writes in outdir/chunks/{file}.css
- */
-export async function writeFileChunk(ctx: PandaContext, file: string) {
-  const { path } = ctx.runtime
-  logger.debug('chunk:write', `File: ${path.relative(ctx.config.cwd, file)}`)
-
-  const css = extractFile(ctx, file)
-  if (!css) return
-
-  const artifact = ctx.chunks.getArtifact(file, css)
-  return ctx.output.write(artifact)
+  const outfile = ctx.runtime.path.join(...ctx.paths.root, 'styles.css')
+  return bundleCss(ctx, outfile, false)
 }
 
 /**
@@ -54,13 +35,6 @@ export function extractFile(ctx: PandaContext, relativeFile: string) {
   }
 }
 
-/**
- * Writes all the css chunks in outdir/chunks/{file}.css
- */
-function writeChunks(ctx: PandaContext) {
-  return Promise.allSettled(ctx.getFiles().map((file) => writeFileChunk(ctx, file)))
-}
-
 const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
 const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
 
@@ -81,19 +55,11 @@ export async function emitArtifacts(ctx: PandaContext) {
 }
 
 export async function emitArtfifactsAndCssChunks(ctx: PandaContext) {
+  console.log('emitArtfifactsAndCssChunks')
   await emitArtifacts(ctx)
   if (ctx.config.emitTokensOnly) {
-    return { msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
+    return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
   }
-  return writeAndBundleCssChunks(ctx)
-}
-
-/**
- * Writes all the css chunks in outdir/chunks/{file}.css
- * and bundles them in outdir/styles.css
- */
-export async function writeAndBundleCssChunks(ctx: PandaContext) {
-  await writeChunks(ctx)
   return bundleStyleChunksWithImports(ctx)
 }
 
@@ -104,15 +70,9 @@ export async function writeAndBundleCssChunks(ctx: PandaContext) {
  */
 export async function bundleCss(ctx: PandaContext, outfile: string, resolve = true) {
   const minify = ctx.config.minify
-  const collector = createParserResult(ctx.parserOptions)
-  const files = ctx.getFiles().map((file) => {
-    const result = extractFile(ctx, file)
-    if (result) {
-      collector.mergeStyles(result)
-    }
-  })
+  const files = ctx.getFiles().map((file) => extractFile(ctx, file))
 
-  const parserCss = ctx.getParserCss(collector)
+  const parserCss = ctx.getParserCss(outfile)
   const css = optimizeCss(ctx.getCss({ files: [parserCss ?? ''], resolve }), { minify })
 
   await writeFile(outfile, css)
@@ -127,8 +87,6 @@ export async function bundleMinimalFilesCss(ctx: PandaContext, outfile: string) 
   const files = ctx.getFiles()
   const filesWithCss = []
 
-  const collector = createParserResult(ctx)
-
   files.forEach((file) => {
     const measure = logger.time.debug(`Parsed ${file}`)
     const result = ctx.project.parseSourceFile(file)
@@ -136,11 +94,10 @@ export async function bundleMinimalFilesCss(ctx: PandaContext, outfile: string) 
     measure()
     if (!result) return
 
-    collector.merge(result)
     filesWithCss.push(file)
   })
 
-  const css = ctx.getParserCss(collector)
+  const css = ctx.getParserCss(outfile)
   if (!css) return { files, msg: ctx.messages.buildComplete(files.length) }
 
   const minify = ctx.config.minify

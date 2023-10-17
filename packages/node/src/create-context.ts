@@ -1,5 +1,5 @@
 import { createGenerator, type Generator } from '@pandacss/generator'
-import { createProject, type Project } from '@pandacss/parser'
+import { createProject, type PandaProject } from '@pandacss/parser'
 import type { ConfigResultWithHooks, PandaHookable } from '@pandacss/types'
 import type { Runtime } from '@pandacss/types'
 import { nodeRuntime } from './node-runtime'
@@ -42,7 +42,7 @@ export const createContext = (conf: ConfigResultWithHooks) => {
 export type PandaContext = Generator & {
   runtime: Runtime
   hooks: PandaHookable
-  project: Project
+  project: PandaProject
   getFiles: () => string[]
   output: ReturnType<typeof getOutputEngine>
 }

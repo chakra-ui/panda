@@ -2,9 +2,8 @@ import { logger } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import type { PandaContext } from './create-context'
-import { bundleStyleChunksWithImports, emitArtfifactsAndCssChunks, writeFileChunk } from './extract'
+import { emitArtfifactsAndCssChunks } from './extract'
 import { loadContext } from './load-context'
-import { createParserResult } from '@pandacss/parser'
 
 async function build(ctx: PandaContext) {
   const { msg } = await emitArtfifactsAndCssChunks(ctx)
@@ -16,10 +15,6 @@ export async function generate(config: Config, configPath?: string) {
 
   const ctx = ctxRef.current
   await build(ctx)
-  // const collector = createParserResult(ctx.parserOptions)
-  // ctx.project.parserResults.forEach((result) => {
-  //   collector.mergeStyles(result)
-  // })
 
   const {
     runtime: { fs, path },
@@ -37,23 +32,17 @@ export async function generate(config: Config, configPath?: string) {
     })
 
     const contentWatcher = fs.watch(ctx.config)
-    const collector = createParserResult(ctx.parserOptions)
-    ctx.project.parserResults.forEach((result) => {
-      collector.mergeStyles(result)
-    })
 
     const bundleStyles = async (ctx: PandaContext, changedFilePath: string) => {
       const outfile = ctx.runtime.path.join(...ctx.paths.root, 'styles.css')
       const parserResult = ctx.project.parseSourceFile(changedFilePath)
 
       if (parserResult) {
-        collector.mergeStyles(parserResult)
+        const styles = ctx.getParserCss(changedFilePath) ?? ''
+        const css = ctx.getCss({ files: [styles], resolve: false })
+        await ctx.runtime.fs.writeFile(outfile, css)
+        return { msg: ctx.messages.buildComplete(ctx.project.parserResults.size) }
       }
-      const styles = ctx.getParserCss(collector) ?? ''
-
-      const css = ctx.getCss({ files: [styles], resolve: false })
-      await ctx.runtime.fs.writeFile(outfile, css)
-      return { msg: ctx.messages.buildComplete(ctx.project.parserResults.size) }
     }
 
     contentWatcher.on('all', async (event, file) => {

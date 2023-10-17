@@ -1,5 +1,4 @@
 import type { BoxNodeArray, BoxNodeLiteral, BoxNodeMap, Unboxed } from '@pandacss/extractor'
-import type { StylesCollectorType } from './style-rules'
 
 export interface ResultItem {
   name?: string
@@ -19,7 +18,6 @@ export interface ParserResultType {
   filePath: string | undefined
   isEmpty: () => boolean
   toArray: () => Array<ResultItem>
-  collectStyles: () => StylesCollectorType | undefined
   toJSON: () => {
     sva: Array<ResultItem>
     css: Array<ResultItem>

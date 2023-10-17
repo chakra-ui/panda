@@ -1,5 +1,4 @@
 import { colors, logger } from '@pandacss/logger'
-import { createParserResult } from '@pandacss/parser'
 import { writeFile } from 'fs/promises'
 import * as path from 'path'
 import type { PandaContext } from './create-context'
@@ -7,8 +6,6 @@ import { version } from '../package.json'
 
 export async function shipFiles(ctx: PandaContext, outfile: string) {
   const files = ctx.getFiles()
-
-  const collector = createParserResult(ctx.parserOptions)
   const filesWithCss = [] as string[]
 
   // TODO check diff ship website before PR + after
@@ -16,7 +13,6 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
     const result = ctx.project.parseSourceFile(file)
     if (!result || result.isEmpty()) return
 
-    collector.mergeStyles(result)
     filesWithCss.push(path.relative(ctx.config.cwd, file))
   })
 
@@ -25,14 +21,14 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   const minify = ctx.config.minify
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
-  const unpacked = collector.collectStyles()
+  const unpacked = ctx.collectStyles()
   if (!unpacked) return
 
   const json = unpacked
   // TODO
   const styles = {
-    // css: json.atomic.map((item) => item.data[0]),
-    // recipe_base: json.atomic.map((item) => item.data[0]),
+    css: Array.from(json.atomic).map(({ hash, result }) => ({ hash, result })),
+    // recipe_base: Array.from(json.recipes_base).map(({}) => ({ hash, result})),
     // recipe: Object.fromEntries(
     //   Object.entries(json.recipes).map(([name, list]) => [name, list.map((item) => item.data[0])]),
     // ),

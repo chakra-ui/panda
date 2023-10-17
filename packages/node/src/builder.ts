@@ -179,7 +179,7 @@ export class Builder {
     if (!parserResult) return
 
     this.fileModifiedMap.set(file, mtime)
-    this.writeFileCss(file, ctx.getParserCss(parserResult))
+    this.writeFileCss(file, ctx.getParserCss(file))
 
     return parserResult
   }
