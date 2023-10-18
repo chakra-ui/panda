@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.16.0
+
+### Patch Changes
+
+- 0f3bede5: Add closed condition `&:is([closed], [data-closed], [data-state="closed"])`
+  - @pandacss/types@0.16.0
+
 ## 0.15.5
 
 ### Patch Changes
