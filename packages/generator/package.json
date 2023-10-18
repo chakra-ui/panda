@@ -25,8 +25,7 @@
   "scripts": {
     "prebuild": "tsx scripts/prebuild.ts",
     "build": "pnpm prebuild && tsup src/index.ts --format=esm,cjs --dts",
-    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
-    "dev": "tsx scripts/prebuild.ts && pnpm build-fast --watch"
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts"
   },
   "files": [
     "dist"

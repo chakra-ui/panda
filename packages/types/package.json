@@ -16,9 +16,7 @@
   },
   "scripts": {
     "prepare": "ncp node_modules/csstype/index.d.ts src/csstype.d.ts",
-    "build": "tsx scripts/build.ts",
-    "build-fast": "tsx scripts/build.ts",
-    "dev": "chokidar -c 'pnpm build' src --initial"
+    "dev": "tsx scripts/postbuild.ts"
   },
   "sideEffects": false,
   "publishConfig": {
@@ -29,7 +27,6 @@
   ],
   "devDependencies": {
     "@pandacss/extractor": "workspace:*",
-    "chokidar-cli": "^3.0.0",
     "csstype": "3.1.2",
     "hookable": "5.5.3",
     "ncp": "^2.0.0",

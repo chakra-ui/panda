@@ -1,0 +1,20 @@
+{
+  "name": "@pandacss/symlink",
+  "license": "MIT",
+  "main": "src/index.js",
+  "repository": {
+    "url": "https://github.com/chakra-ui/panda",
+    "directory": "packages/symlink"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ],
+  "devDependencies": {
+    "pirates": "^4.0.6",
+    "resolve.exports": "^2.0.2",
+    "sucrase": "^3.34.0"
+  }
+}

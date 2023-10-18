@@ -25,7 +25,7 @@
   "scripts": {
     "build": "tsup --dts",
     "build-fast": "tsup --no-dts",
-    "dev": "pnpm build-fast --watch"
+    "dev": "tsup --no-dts --watch --onSuccess=\"tsx scripts/postbuild.ts\""
   },
   "files": [
     "dist"
