@@ -5,6 +5,11 @@ import { isCssProperty } from './is-valid-prop.mjs';
 
 const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
 
+const composeShouldForwardProps = (tag, _shouldForwardProp) =>
+  tag.__shouldForwardProps__ && _shouldForwardProp
+    ? (propName) => tag.__shouldForwardProps__(propName) && _shouldForwardProp(propName)
+    : _shouldForwardProp
+
 function styledFn(Dynamic, configOrCva = {}, options = {}) {
   const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
@@ -17,23 +22,26 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
   )
 
   const PandaComponent = /* @__PURE__ */ forwardRef(function PandaComponent(props, ref) {
-    const { as: Element = Dynamic, children, ...restProps } = props
+    const { as: Element = Dynamic.__base__ || Dynamic, children, ...restProps } = props
+    
+    const __cvaFn__ = Dynamic.__cva__?.merge(cvaFn.config) ?? cvaFn
+    const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
     const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
 
     const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
-      return splitProps(combinedProps, shouldForwardProp, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+      return splitProps(combinedProps, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty, normalizeHTMLProps.keys)
     }, [combinedProps])
 
     function recipeClass() {
       const { css: cssStyles, ...propStyles } = styleProps
-      const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+      const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps)
       return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.className)
     }
 
     function cvaClass() {
       const { css: cssStyles, ...propStyles } = styleProps
-      const cvaStyles = cvaFn.raw(variantProps)
+      const cvaStyles = __cvaFn__.raw(variantProps)
       return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.className)
     }
 
@@ -50,7 +58,12 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
   })
 
   const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+  
   PandaComponent.displayName = `panda.${name}`
+  PandaComponent.__cva__ = cvaFn
+  PandaComponent.__base__ = Dynamic
+  PandaComponent.__shouldForwardProps__ = shouldForwardProp
+  
   return PandaComponent
 }
 

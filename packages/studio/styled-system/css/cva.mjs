@@ -1,8 +1,16 @@
-import { compact, splitProps } from '../helpers.mjs';
+import { compact, mergeProps, splitProps } from '../helpers.mjs';
 import { css, mergeCss } from './css.mjs';
 
+const defaults = (conf) => ({
+  base: {},
+  variants: {},
+  defaultVariants: {},
+  compoundVariants: [],
+  ...conf,
+})
+
 export function cva(config) {
-  const { base = {}, variants = {}, defaultVariants = {}, compoundVariants = [] } = config
+  const { base, variants, defaultVariants, compoundVariants } = defaults(config)
 
   function resolve(props = {}) {
     const computedVariants = { ...defaultVariants, ...compact(props) }
@@ -14,6 +22,18 @@ export function cva(config) {
     }
     const compoundVariantCss = getCompoundVariantCss(compoundVariants, computedVariants)
     return mergeCss(variantCss, compoundVariantCss)
+  }
+
+  function merge(cvaConfig) {
+    const override = defaults(cvaConfig)
+    return cva({
+      base: mergeCss(base, override.base),
+      variants: Object.fromEntries(
+        Object.entries(variants).map(([key, value]) => [key, mergeCss(value, override.variants?.[key])]),
+      ),
+      defaultVariants: mergeProps(defaultVariants, override.defaultVariants),
+      compoundVariants: compoundVariants.concat(override.compoundVariants),
+    })
   }
 
   function cvaFn(props) {
@@ -34,6 +54,7 @@ export function cva(config) {
     variantKeys,
     raw: resolve,
     config,
+    merge,
     splitVariantProps,
   })
 }

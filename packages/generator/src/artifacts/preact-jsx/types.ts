@@ -14,7 +14,7 @@ import type { ComponentProps, JSX } from 'preact'
 ${ctx.file.importType('Assign, JsxStyleProps, JsxHTMLProps', './system-types')}
 ${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 
-type ElementType = keyof JSX.IntrinsicElements
+type ElementType = JSX.ElementType
 
 type Dict = Record<string, unknown>
 
