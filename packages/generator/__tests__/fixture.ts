@@ -5,7 +5,7 @@ import type { Context } from '../src/engines'
 
 export const createRuleProcessor = (userConfig?: Config) => {
   const ctx = createGeneratorContext(userConfig) as any as Context
-  return new RuleProcessor(ctx, { hash: ctx.hashCollector, styles: ctx.stylesCollector })
+  return new RuleProcessor(ctx, { hash: ctx.hashFactory, styles: ctx.styleCollector })
 }
 
 export function processRecipe(

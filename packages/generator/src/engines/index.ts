@@ -2,8 +2,8 @@ import type { ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/typ
 import { getBaseEngine } from './base'
 import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
-import { HashCollector } from './hash-collector'
-import { StylesCollector } from './styles-collector'
+import { HashFactory } from './hash-factory'
+import { StyleCollector } from './styles-collector'
 import { StaticCss } from './static-css'
 
 export const getEngine = (conf: ConfigResultWithHooks) => {
@@ -11,14 +11,14 @@ export const getEngine = (conf: ConfigResultWithHooks) => {
   const { forceConsistentTypeExtension, outExtension } = config
 
   const base = getBaseEngine(conf)
-  const hashCollector = new HashCollector(base)
-  const stylesCollector = new StylesCollector(base)
-  const staticCss = new StaticCss(base, { hash: hashCollector, styles: stylesCollector })
-  const collectStyles = () => stylesCollector.collect(hashCollector)
+  const hashFactory = new HashFactory(base)
+  const styleCollector = new StyleCollector(base)
+  const staticCss = new StaticCss(base, { hash: hashFactory, styles: styleCollector })
+  const collectStyles = () => styleCollector.collect(hashFactory)
 
   const engine = {
-    hashCollector,
-    stylesCollector,
+    hashFactory,
+    styleCollector,
     collectStyles,
     jsx: getJsxEngine(config),
     paths: getPathEngine(config),

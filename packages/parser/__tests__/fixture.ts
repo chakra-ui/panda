@@ -135,6 +135,6 @@ export const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const result = ctx.parse()
   return {
     json: result?.toArray().flatMap(({ box, ...item }) => item),
-    css: ctx.getParserCss(result)!,
+    css: ctx.getParserCss()!,
   }
 }

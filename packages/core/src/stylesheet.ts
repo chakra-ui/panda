@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { Dict, StylesCollectorType, SystemStyleObject, UserConfig } from '@pandacss/types'
+import type { Dict, StyleCollectorType, SystemStyleObject, UserConfig } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
@@ -39,12 +39,8 @@ export class Stylesheet {
       layer.append(toCss(styles).toString())
     } catch (error) {
       if (error instanceof CssSyntaxError) {
-        logger.error('sheet', error.message)
-        logger.error('sheet', error.showSourceCode())
-        error.plugin && logger.error('sheet', `By plugin: ${error.plugin}:`)
+        logger.error('sheet', error)
       }
-
-      logger.error('sheet', error)
     }
     return
   }
@@ -61,7 +57,7 @@ export class Stylesheet {
     this.process({ styles, layer })
   }
 
-  processStylesCollector = (collector: StylesCollectorType) => {
+  processStyleCollector = (collector: StyleCollectorType) => {
     collector.atomic.forEach((css) => {
       this.processCssObject(css.result, (css.layer as LayerName) ?? 'utilities')
     })
@@ -113,14 +109,7 @@ export class Stylesheet {
       return optimize ? optimizeCss(css, { minify }) : css
     } catch (error) {
       if (error instanceof CssSyntaxError) {
-        logger.error('sheet', error.message)
-        console.log(error.showSourceCode())
-        error.plugin && logger.error('sheet', `By plugin: ${error.plugin}:`)
-
-        if (error.source) {
-          logger.error('sheet', `Line ${error.line}:${error.column}, in:`)
-          logger.error('sheet', error.source)
-        }
+        logger.error('sheet', error)
       }
 
       throw error

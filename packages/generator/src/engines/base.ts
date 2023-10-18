@@ -56,6 +56,10 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     breakpoints: config.theme?.breakpoints,
   })
 
+  const compositions = compact({ textStyle: theme.textStyles, layerStyle: theme.layerStyles })
+  const compositionContext = { conditions, utility }
+  assignCompositions(compositions, compositionContext)
+
   const recipes = new Recipes({
     recipes: Object.assign({}, theme.recipes, theme.slotRecipes),
     utility,
@@ -66,17 +70,6 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
 
   const patterns = getPatternEngine(config)
 
-  const { textStyles, layerStyles } = theme
-
-  const compositions = compact({
-    textStyle: textStyles,
-    layerStyle: layerStyles,
-  })
-
-  const compositionContext = { conditions, utility }
-  assignCompositions(compositions, compositionContext)
-
-  // TODO scope all that in a `layers: { ...}`
   const layersNames = config.layers as CascadeLayers
   const layerList = Object.values(layersNames)
 
@@ -118,6 +111,8 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
         utilities,
         compositions,
         insert: () => {
+          console.log('insert')
+          console.trace()
           if (reset.nodes.length) root.append(reset)
           if (base.nodes.length) root.append(base)
           if (tokens.nodes.length) root.append(tokens)
@@ -148,7 +143,6 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     return new Stylesheet(createSheetContext(), { content: options?.content })
   }
 
-  // TODO textStyle/layerStyle/colorPalette ?
   const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
   const propertyMap = new Map(properties.map((prop) => [prop, true]))
 

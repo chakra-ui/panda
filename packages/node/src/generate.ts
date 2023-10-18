@@ -41,7 +41,7 @@ export async function generate(config: Config, configPath?: string) {
         const styles = ctx.getParserCss(changedFilePath) ?? ''
         const css = ctx.getCss({ files: [styles], resolve: false })
         await ctx.runtime.fs.writeFile(outfile, css)
-        return { msg: ctx.messages.buildComplete(ctx.project.parserResults.size) }
+        return { msg: ctx.messages.buildComplete(1) }
       }
     }
 
@@ -55,10 +55,7 @@ export async function generate(config: Config, configPath?: string) {
           ctx.project.removeSourceFile(path.abs(cwd, file))
         })
         .with('change', async () => {
-          // console.log({ change: file, parserResults: ctx.project.parserResults.size })
-
           ctx.project.reloadSourceFile(file)
-          ctx.project.parserResults.delete(filePath)
           return bundleStyles(ctxRef.current, filePath)
         })
         .with('add', async () => {

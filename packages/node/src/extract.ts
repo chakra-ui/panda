@@ -55,7 +55,6 @@ export async function emitArtifacts(ctx: PandaContext) {
 }
 
 export async function emitArtfifactsAndCssChunks(ctx: PandaContext) {
-  console.log('emitArtfifactsAndCssChunks')
   await emitArtifacts(ctx)
   if (ctx.config.emitTokensOnly) {
     return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }

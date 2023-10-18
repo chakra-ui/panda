@@ -1,6 +1,6 @@
 import { getOrCreateSet } from '@pandacss/shared'
 import type { ParserResultType, ResultItem } from '@pandacss/types'
-import type { ParserOptions } from './parser'
+import type { ParserContext } from './parser'
 
 export class ParserResult implements ParserResultType {
   /** Ordered list of all ResultItem */
@@ -15,8 +15,7 @@ export class ParserResult implements ParserResultType {
 
   filePath: string | undefined
 
-  // TODO remove conditions, always use hashCollector
-  constructor(private context: ParserOptions) {}
+  constructor(private context: ParserContext) {}
 
   append(result: ResultItem) {
     this.all.push(result)
@@ -26,19 +25,19 @@ export class ParserResult implements ParserResultType {
   set(name: 'cva' | 'css' | 'sva', result: ResultItem) {
     this[name].add(this.append(Object.assign({ type: 'object' }, result)))
 
-    const hashCollector = this.context.hashCollector
+    const hashFactory = this.context.hashFactory
     if (name == 'css') {
-      result.data.forEach((obj) => hashCollector.processStyleProps(obj))
+      result.data.forEach((obj) => hashFactory.processStyleProps(obj))
       return
     }
 
     if (name === 'cva') {
-      result.data.forEach((data) => hashCollector.processAtomicRecipe(data))
+      result.data.forEach((data) => hashFactory.processAtomicRecipe(data))
       return
     }
 
     if (name === 'sva') {
-      result.data.forEach((data) => hashCollector.processAtomicSlotRecipe(data))
+      result.data.forEach((data) => hashFactory.processAtomicSlotRecipe(data))
       return
     }
   }
@@ -46,31 +45,31 @@ export class ParserResult implements ParserResultType {
   setCva(result: ResultItem) {
     this.cva.add(this.append(Object.assign({ type: 'cva' }, result)))
 
-    const hashCollector = this.context.hashCollector
-    result.data.forEach((data) => hashCollector.processAtomicRecipe(data))
+    const hashFactory = this.context.hashFactory
+    result.data.forEach((data) => hashFactory.processAtomicRecipe(data))
   }
 
   setSva(result: ResultItem) {
     this.sva.add(this.append(Object.assign({ type: 'sva' }, result)))
 
-    const hashCollector = this.context.hashCollector
-    result.data.forEach((data) => hashCollector.processAtomicSlotRecipe(data))
+    const hashFactory = this.context.hashFactory
+    result.data.forEach((data) => hashFactory.processAtomicSlotRecipe(data))
   }
 
   setJsx(result: ResultItem) {
     this.jsx.add(this.append(Object.assign({ type: 'jsx' }, result)))
 
-    const hashCollector = this.context.hashCollector
-    result.data.forEach((obj) => hashCollector.processStyleProps(obj))
+    const hashFactory = this.context.hashFactory
+    result.data.forEach((obj) => hashFactory.processStyleProps(obj))
   }
 
   setPattern(name: string, result: ResultItem) {
     const set = getOrCreateSet(this.pattern, name)
     set.add(this.append(Object.assign({ type: 'pattern', name }, result)))
 
-    const hashCollector = this.context.hashCollector
+    const hashFactory = this.context.hashFactory
     result.data.forEach((obj) =>
-      hashCollector.processPattern(name, (result.type as 'pattern' | undefined) ?? 'pattern', result.name, obj),
+      hashFactory.processPattern(name, (result.type as 'pattern' | undefined) ?? 'pattern', result.name, obj),
     )
   }
 
@@ -78,7 +77,7 @@ export class ParserResult implements ParserResultType {
     const set = getOrCreateSet(this.recipe, recipeName)
     set.add(this.append(Object.assign({ type: 'recipe' }, result)))
 
-    const hashCollector = this.context.hashCollector
+    const hashFactory = this.context.hashFactory
     const recipes = this.context.recipes
     const recipeConfig = recipes.getConfig(recipeName)
     if (!recipeConfig) return
@@ -88,12 +87,12 @@ export class ParserResult implements ParserResultType {
     if (result.type) {
       recipe.data.forEach((data) => {
         const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
-        hashCollector.processStyleProps(styleProps)
-        hashCollector.processRecipe(recipeName, recipeProps)
+        hashFactory.processStyleProps(styleProps)
+        hashFactory.processRecipe(recipeName, recipeProps)
       })
     } else {
       recipe.data.forEach((data) => {
-        hashCollector.processRecipe(recipeName, data)
+        hashFactory.processRecipe(recipeName, data)
       })
     }
   }
@@ -140,7 +139,7 @@ export class ParserResult implements ParserResultType {
     }
   }
 
-  // TODO hashCollector
+  // TODO hashFactory
   fromJSON(json: string) {
     const data = JSON.parse(json)
 
@@ -154,13 +153,6 @@ export class ParserResult implements ParserResultType {
 
     return this
   }
-
-  done() {
-    if (!this.context.hashCollector) return this
-    // this.context.hashCollector.merge(this.context.hashCollector)
-
-    return this
-  }
 }
 
-export const createParserResult = (ctx: ParserOptions) => new ParserResult(ctx)
+export const createParserResult = (ctx: ParserContext) => new ParserResult(ctx)

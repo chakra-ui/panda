@@ -210,11 +210,8 @@ export async function main() {
         }
       }
 
-      // console.time('cssgen')
       await cssgen(ctx)
-      // console.timeEnd('cssgen')
 
-      // TODO generate.ts
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
         const configWatcher = ctx.runtime.fs.watch({ include: ctx.dependencies, cwd, poll })
@@ -418,10 +415,6 @@ export async function main() {
     await cli.runMatchedCommand()
   } catch (error) {
     logger.error('cli', error)
-
-    if (logger.isDebug) {
-      console.error(error)
-    }
 
     process.exit(1)
   }

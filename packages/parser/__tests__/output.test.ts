@@ -352,6 +352,81 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('simple utility', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    export default function Page() {
+      return (
+        <div className={css({ truncate: true, _hover: { sm: { truncate: true }} })} />
+      )
+    }
+     `
+    const result = run(code, {
+      theme: {
+        extend: {
+          recipes: {
+            sizeRecipe: {
+              className: 'sizeRecipe',
+              base: {
+                p: 0,
+                m: 2,
+                _hover: {
+                  base: { fontWeight: 'bold', _dark: { border: 0 } },
+                  color: 'red',
+                  xl: {
+                    color: 'blue',
+                  },
+                },
+              },
+              variants: {
+                size: {
+                  medium: { fontSize: 'md', lineHeight: '1.5rem' },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "_hover": {
+                "sm": {
+                  "truncate": true,
+                },
+              },
+              "truncate": true,
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .truncate_true {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap
+      }
+
+        @media screen and (min-width: 40em) {
+          .hover\\\\:sm\\\\:truncate_true:is(:hover, [data-hover]) {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+          }
+      }
+      }"
+    `)
+  })
+
   test('multiple recipes on 1 component', () => {
     const code = `
     import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe, bgRecipe } from "styled-system/recipes"
@@ -2825,7 +2900,6 @@ describe('extract to css output pipeline', () => {
 
         <styled.div m={{
           base: 1,
-          // TODO sm: { _hover: 2, truncate: true },
           sm: { _hover: 2 },
           _dark: {
             _disabled: { _open: { base: 11, xl: { _loading: 13, base: 12, } }, base: 10 },

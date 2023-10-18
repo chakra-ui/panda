@@ -21,17 +21,17 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   const minify = ctx.config.minify
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
-  const unpacked = ctx.collectStyles()
-  if (!unpacked) return
-
-  const json = unpacked
-  // TODO
+  const collector = ctx.collectStyles()
   const styles = {
-    css: Array.from(json.atomic).map(({ hash, result }) => ({ hash, result })),
-    // recipe_base: Array.from(json.recipes_base).map(({}) => ({ hash, result})),
-    // recipe: Object.fromEntries(
-    //   Object.entries(json.recipes).map(([name, list]) => [name, list.map((item) => item.data[0])]),
-    // ),
+    css: Array.from(collector.atomic).map(({ hash }) => hash),
+    recipes: Array.from(collector.recipes.entries()).map(([name, set]) => [
+      name,
+      Array.from(set).map(({ hash }) => hash),
+    ]),
+    recipes_slots: Array.from(collector.recipes_slots.entries()).map(([name, set]) => [
+      name,
+      Array.from(set).map(({ hash }) => hash),
+    ]),
   }
   const output = JSON.stringify(
     {

@@ -5,7 +5,6 @@ import {
   normalizeStyleObject,
   toResponsiveObject,
   traverse,
-  withoutImportant,
 } from '@pandacss/shared'
 import type {
   Dict,
@@ -35,7 +34,7 @@ export interface CollectorContext
 
 const identity = (v: any) => v
 
-export class HashCollector {
+export class HashFactory {
   static separator = ']___['
   static conditionSeparator = '<___>'
 
@@ -58,7 +57,7 @@ export class HashCollector {
   }
 
   fork() {
-    return new HashCollector(this.context)
+    return new HashFactory(this.context)
   }
 
   hashStyleObject(
@@ -67,7 +66,7 @@ export class HashCollector {
     baseEntry?: Partial<Omit<StyleEntry, 'prop' | 'value' | 'cond'>>,
   ) {
     const isCondition = this.context.conditions.isCondition
-    const traverseOptions = { separator: HashCollector.conditionSeparator }
+    const traverseOptions = { separator: HashFactory.conditionSeparator }
 
     // _dark: { color: 'white' }
     //          ^^^^^^^^^^^^^^
@@ -88,7 +87,7 @@ export class HashCollector {
     // TODO stately diagram on how this works
     traverse(
       normalized,
-      (key, rawValue, path, depth) => {
+      ({ key, value: rawValue, path, depth }) => {
         if (rawValue === undefined) return
 
         const value = Array.isArray(rawValue)
@@ -105,7 +104,7 @@ export class HashCollector {
             return
           }
 
-          cond = isInCondition && cond ? path.replace(HashCollector.conditionSeparator + prevProp, '') : key
+          cond = isInCondition && cond ? path.replace(HashFactory.conditionSeparator + prevProp, '') : key
           prop = prevProp
           isFinalCondition = true
         }
@@ -120,13 +119,13 @@ export class HashCollector {
           isInCondition = false
           cond = ''
         } else if (depth !== prevDepth && !isInCondition && !isFinalCondition) {
-          cond = path.split(HashCollector.conditionSeparator).at(-2) ?? ''
+          cond = path.split(HashFactory.conditionSeparator).at(-2) ?? ''
           isInCondition = cond !== ''
         }
 
         let finalCondition = cond
         if (cond) {
-          const parts = cond.split(HashCollector.conditionSeparator)
+          const parts = cond.split(HashFactory.conditionSeparator)
           const first = parts[0]
           // filterBaseConditions
           let relevantParts = parts.filter((p) => p !== 'base')
@@ -136,16 +135,13 @@ export class HashCollector {
           }
 
           if (parts.length !== relevantParts.length) {
-            finalCondition = relevantParts.join(HashCollector.conditionSeparator)
+            finalCondition = relevantParts.join(HashFactory.conditionSeparator)
           }
         }
-        // TODO rm important from value
-        const hashed = hashStyleEntry(
-          Object.assign(baseEntry ?? {}, { prop, value: withoutImportant(value), cond: finalCondition }),
-        )
+        const hashed = hashStyleEntry(Object.assign(baseEntry ?? {}, { prop, value, cond: finalCondition }))
         set.add(hashed)
-        // console.log({ prop, value, cond, finalCondition, options, isInCondition, prevProp, isFinalCondition, path })
-        console.log({ hashed })
+        // console.log({ prop, value, cond, finalCondition, baseEntry, isInCondition, prevProp, isFinalCondition, path })
+        // console.log({ hashed })
 
         prevProp = prop
         prevDepth = depth
@@ -182,6 +178,7 @@ export class HashCollector {
     }
 
     if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
+      this.compound_variants.add(recipeName)
       config.compoundVariants.forEach((compoundVariant) => {
         this.processAtomic(compoundVariant.css)
       })
@@ -208,6 +205,7 @@ export class HashCollector {
     })
 
     if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
+      this.compound_variants.add(recipeName)
       config.compoundVariants.forEach((compoundVariant) => {
         Object.values(compoundVariant.css).forEach((styles) => this.processAtomic(styles ?? {}))
       })
@@ -248,17 +246,6 @@ export class HashCollector {
       this.processAtomicRecipe(slotRecipe)
     }
   }
-
-  merge(result: HashCollector) {
-    result.atomic.forEach((item) => this.atomic.add(item))
-
-    result.recipes.forEach((items, name) => {
-      const set = getOrCreateSet(this.recipes, name)
-      items.forEach(set.add)
-    })
-
-    return this
-  }
 }
 
 const filterProps = (isValidProperty: (key: string) => boolean, props: Dict) => {
@@ -272,7 +259,7 @@ const filterProps = (isValidProperty: (key: string) => boolean, props: Dict) => 
 }
 
 const hashStyleEntry = (entry: StyleEntry) => {
-  const parts = [`${entry.prop}${HashCollector.separator}value:${entry.value}`]
+  const parts = [`${entry.prop}${HashFactory.separator}value:${entry.value}`]
 
   if (entry.cond) {
     parts.push(`cond:${entry.cond}`)
@@ -290,5 +277,5 @@ const hashStyleEntry = (entry: StyleEntry) => {
     parts.push(`slot:${entry.slot}`)
   }
 
-  return parts.join(HashCollector.separator)
+  return parts.join(HashFactory.separator)
 }

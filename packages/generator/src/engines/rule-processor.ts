@@ -1,6 +1,6 @@
 import type { RecipeDefinition, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
-import type { CollectorContext, HashCollector } from './hash-collector'
-import type { StylesCollector } from './styles-collector'
+import type { CollectorContext, HashFactory } from './hash-factory'
+import type { StyleCollector } from './styles-collector'
 
 export interface BaseRule {
   className: string[]
@@ -20,7 +20,7 @@ export interface RecipeRule extends BaseRule {
 }
 
 export class RuleProcessor {
-  constructor(private context: CollectorContext, private params: { hash: HashCollector; styles: StylesCollector }) {}
+  constructor(private context: CollectorContext, private params: { hash: HashFactory; styles: StyleCollector }) {}
 
   css(styleObject: SystemStyleObject): AtomicRule {
     const hash = this.params.hash.fork()
@@ -34,7 +34,7 @@ export class RuleProcessor {
       className: Array.from(styles.classNames.keys()),
       toCss: () => {
         const sheet = this.context.createSheet()
-        sheet.processStylesCollector(styles)
+        sheet.processStyleCollector(styles)
         return sheet.toCss({ optimize: true })
       },
     }
@@ -58,7 +58,7 @@ export class RuleProcessor {
       toCss: () => {
         const sheet = this.context.createSheet()
         // console.log(styles)
-        sheet.processStylesCollector(styles)
+        sheet.processStyleCollector(styles)
         return sheet.toCss({ optimize: true })
       },
     }
@@ -88,7 +88,7 @@ export class RuleProcessor {
       className: Array.from(styles.classNames.keys()),
       toCss: () => {
         const sheet = this.context.createSheet()
-        sheet.processStylesCollector(styles)
+        sheet.processStyleCollector(styles)
         return sheet.toCss({ optimize: true })
       },
     }

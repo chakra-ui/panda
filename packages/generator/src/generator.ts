@@ -40,7 +40,7 @@ const getImportMap = (outdir: string, configImportMap?: OutdirImportMap) => ({
 
 export const createGenerator = (conf: ConfigResultWithHooks) => {
   const ctx = getEngine(defaults(conf))
-  const { config, jsx, isValidProperty, patterns, recipes, conditions } = ctx
+  const { config, jsx, isValidProperty, patterns, recipes } = ctx
 
   const compilerOptions = (conf.tsconfig as TSConfig)?.compilerOptions ?? {}
   const baseUrl = compilerOptions.baseUrl ?? ''
@@ -71,18 +71,12 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
         styleProps: jsx.styleProps,
         nodes: [...patterns.details, ...recipes.details],
       },
-      patternKeys: patterns.keys,
-      recipeKeys: recipes.keys,
       syntax: config.syntax,
-      getRecipesByJsxName: recipes.filter, // TODO rm
-      getPatternsByJsxName: patterns.filter,
       isValidProperty,
-      conditions,
       recipes,
       patterns,
-      utility: ctx.utility,
-      hashCollector: ctx.hashCollector,
-      stylesCollector: ctx.stylesCollector,
+      hashFactory: ctx.hashFactory,
+      styleCollector: ctx.styleCollector,
       compilerOptions: compilerOptions as any,
       tsOptions: conf.tsOptions,
       join: (...paths: string[]) => paths.join('/'),

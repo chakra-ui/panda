@@ -1,7 +1,7 @@
 import type { StaticCssOptions } from '@pandacss/types'
 import type { GeneratorBaseEngine } from './base'
-import { HashCollector } from './hash-collector'
-import { StylesCollector } from './styles-collector'
+import { HashFactory } from './hash-factory'
+import { StyleCollector } from './styles-collector'
 
 interface StaticCssResults {
   css: Record<string, any>[]
@@ -17,7 +17,7 @@ interface StaticCssEngine {
 }
 
 export class StaticCss {
-  constructor(private context: GeneratorBaseEngine, private params: { hash: HashCollector; styles: StylesCollector }) {}
+  constructor(private context: GeneratorBaseEngine, private params: { hash: HashFactory; styles: StyleCollector }) {}
 
   /**
    * This transforms a static css config into the same format that's used by the hash collector,
@@ -139,7 +139,7 @@ export class StaticCss {
       })
     })
 
-    sheet.processStylesCollector(styles.collect(hash))
+    sheet.processStyleCollector(styles.collect(hash))
 
     const createRegex = () => createClassNameRegex(Array.from(styles.classNames.keys()))
     const parse = (text: string) => {
@@ -152,12 +152,6 @@ export class StaticCss {
 
       return matches.map((match) => match.replace('.', ''))
     }
-
-    // const generate = (matches: string[]) => {
-    //   // TODO re-use logic above
-
-    //   return toCss({ optimize: false, minify: false })
-    // }
 
     return { results, regex: createRegex, parse, toCss: sheet.toCss } as StaticCssEngine
   }

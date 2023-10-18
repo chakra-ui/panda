@@ -13,16 +13,32 @@ describe('atomic / with basic style object', () => {
         styles: {
           color: 'red !important',
           fontSize: '30px!',
+          _hover: {
+            bgColor: 'red !important',
+            sm: {
+              border: 'none !important',
+            },
+          },
         },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red {
-          color: red
+        .text_red\\\\! {
+          color: red !important
       }
 
-        .fs_30px {
-          font-size: 30px
+        .fs_30px\\\\! {
+          font-size: 30px !important
+      }
+
+        .hover\\\\:bg_red\\\\!:is(:hover, [data-hover]) {
+          background-color: red !important
+      }
+
+        @media screen and (min-width: 40em) {
+          .hover\\\\:sm\\\\:border_none\\\\!:is(:hover, [data-hover]) {
+            border: var(--borders-none) !important
+          }
       }
       }"
     `)

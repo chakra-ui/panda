@@ -23,6 +23,7 @@ describe('rule processor', () => {
       color: 'red !important',
       border: '1px solid token(red.100)',
       bg: 'blue.300',
+      textStyle: 'headline.h1',
       w: [1, 2, undefined, null, 3],
       fontSize: {
         base: 'xs',
@@ -62,6 +63,7 @@ describe('rule processor', () => {
         "text_red",
         "border_1px_solid_token\\\\(red\\\\.100\\\\)",
         "bg_blue\\\\.300",
+        "textStyle_headline\\\\.h1",
         "w_1",
         "fs_xs",
         "dark\\\\:fs_2xl",
@@ -85,8 +87,8 @@ describe('rule processor', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red {
-          color: red
+        .text_red\\\\! {
+          color: red !important
       }
 
         .border_1px_solid_token\\\\(red\\\\.100\\\\) {
@@ -135,6 +137,13 @@ describe('rule processor', () => {
 
         .hover\\\\:fs_md:is(:hover, [data-hover]) {
           font-size: var(--font-sizes-md)
+      }
+
+        @layer compositions {
+          .textStyle_headline\\\\.h1 {
+            font-size: 2rem;
+            font-weight: var(--font-weights-bold)
+      }
       }
 
         @media screen and (min-width: 40em) {
@@ -239,6 +248,7 @@ describe('rule processor', () => {
       variants: {
         size: {
           sm: {
+            textStyle: 'headline.h1',
             height: '2.5rem',
             minWidth: '2.5rem',
             padding: '0 0.5rem',
@@ -288,6 +298,7 @@ describe('rule processor', () => {
         "d_inline-flex",
         "items_center",
         "justify_center",
+        "textStyle_headline\\\\.h1",
         "h_2\\\\.5rem",
         "min-w_2\\\\.5rem",
         "p_0_0\\\\.5rem",
@@ -398,6 +409,13 @@ describe('rule processor', () => {
         .hover\\\\:text_white:is(:hover, [data-hover]) {
           color: var(--colors-white)
       }
+
+        @layer compositions {
+          .textStyle_headline\\\\.h1 {
+            font-size: 2rem;
+            font-weight: var(--font-weights-bold)
+      }
+      }
       }"
     `)
   })
@@ -421,6 +439,8 @@ describe('rule processor', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
         .checkbox__control--size_sm {
+          font-size: 2rem;
+          font-weight: var(--font-weights-bold);
           width: var(--sizes-8);
           height: var(--sizes-8)
       }

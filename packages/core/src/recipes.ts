@@ -196,7 +196,6 @@ export class Recipes {
   }
 
   private serialize = (styleObject: Dict) => {
-    // TODO ?
     if (!this.context) return styleObject
     return serializeStyle(styleObject, this.context)
   }

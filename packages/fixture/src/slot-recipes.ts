@@ -12,7 +12,7 @@ export const slotRecipes: Record<string, SlotRecipeConfig> = {
     variants: {
       size: {
         sm: {
-          control: { width: '8', height: '8' },
+          control: { textStyle: 'headline.h1', width: '8', height: '8' },
           label: { fontSize: 'sm' },
         },
         md: {

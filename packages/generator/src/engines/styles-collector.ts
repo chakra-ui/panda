@@ -1,17 +1,34 @@
 import { sortStyleRules } from '@pandacss/core'
-import { esc, getOrCreateSet, isImportant, toHash, withoutImportant } from '@pandacss/shared'
+import { esc, getOrCreateSet, isImportant, toHash, traverse, withoutImportant } from '@pandacss/shared'
 import type {
   AtomicStyleResult,
+  Dict,
   GroupedResult,
   GroupedStyleResultDetails,
   RecipeBaseResult,
   StyleEntry,
   StyleResultObject,
 } from '@pandacss/types'
-import { HashCollector, type CollectorContext } from './hash-collector'
+import { HashFactory, type CollectorContext } from './hash-factory'
 
-// TODO rename StyleCollector
-export class StylesCollector {
+const markImportant = (styles: Dict) => {
+  const obj = {} as Dict
+  let prevObj = obj
+
+  traverse(styles, (args) => {
+    obj[args.key] = args.value
+    if (typeof args.value === 'object') {
+      prevObj = args.value
+      return
+    }
+
+    prevObj[args.key] = args.value + '!important'
+  })
+
+  return obj
+}
+
+export class StyleCollector {
   constructor(private context: CollectorContext) {}
 
   classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
@@ -28,7 +45,7 @@ export class StylesCollector {
   recipes_slots_base = new Map<string, Set<RecipeBaseResult>>()
 
   fork() {
-    return new StylesCollector(this.context)
+    return new StyleCollector(this.context)
   }
 
   formatSelector = (conditions: string[], className: string) => {
@@ -59,30 +76,23 @@ export class StylesCollector {
 
     const transform = recipeName ? this.context.recipes.getTransform(recipeName) : this.context.utility.transform
     const transformed = transform(entry.prop, withoutImportant(entry.value))
+
     const important = isImportant(entry.value)
+    const styles = important ? markImportant(transformed.styles) : transformed.styles
 
-    // console.log({ entry, transformed })
-
-    // TODO handle important + multiple properties with transformed.styles
-    // const cssRoot = toCss(transformed.styles, { important })
-    // console.log({
-    //   styles: transformed.styles,
-    //   // truncate: toCss(this.context.utility.transform('truncate', 'true').styles).toString(),
-    // })
-    let obj = {} as StyleResultObject
-    const parts = entry.cond ? entry.cond.split(HashCollector.conditionSeparator) : []
+    const parts = entry.cond ? entry.cond.split(HashFactory.conditionSeparator) : []
     const className = this.formatSelector(parts, transformed.className)
-    // TODO make l'avant dernier selector cond.at(-2) avec un !important
     const classSelector = important ? `.${className}\\!` : `.${className}`
     const basePath = [classSelector]
 
+    let obj = {} as StyleResultObject
     let conditions
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
       const path = basePath.concat(conditions.map((c) => c.rawValue ?? c.raw))
-      obj = makeObjAt(path, transformed.styles)
+      obj = makeObjAt(path, styles)
     } else {
-      obj = makeObjAt(basePath, transformed.styles)
+      obj = makeObjAt(basePath, styles)
     }
 
     const styleResult: AtomicStyleResult = {
@@ -111,15 +121,18 @@ export class StylesCollector {
       const transform = this.context.utility.transform
       const transformed = transform(entry.prop, withoutImportant(entry.value))
 
-      const parts = entry.cond ? entry.cond.split(HashCollector.conditionSeparator) : []
+      const important = isImportant(entry.value)
+      const styles = important ? markImportant(transformed.styles) : transformed.styles
+
+      const parts = entry.cond ? entry.cond.split(HashFactory.conditionSeparator) : []
 
       let conditions
       if (entry.cond) {
         conditions = this.context.conditions.sort(parts)
         const path = basePath.concat(conditions.map((c) => c.rawValue ?? c.raw))
-        obj = setValueIn(obj, path, transformed.styles)
+        obj = setValueIn(obj, path, styles)
       } else {
-        obj = setValueIn(obj, basePath, transformed.styles)
+        obj = setValueIn(obj, basePath, styles)
       }
 
       details.push({ hash, entry, conditions })
@@ -145,11 +158,10 @@ export class StylesCollector {
    * Collect and re-create all styles and recipes objects from the hash collector
    * So that we can just iterate over them and transform resulting CSS objects into CSS strings
    */
-  collect(hashCollector: HashCollector) {
-    // console.time('collect')
+  collect(hashFactory: HashFactory) {
     const atomic = [] as AtomicStyleResult[]
 
-    hashCollector.atomic.forEach((item) => {
+    hashFactory.atomic.forEach((item) => {
       const styleResult = this.getAtomic(item)
       atomic.push(styleResult)
     })
@@ -160,7 +172,7 @@ export class StylesCollector {
     })
 
     // no need to sort, each recipe is scoped using recipe.className (?)
-    hashCollector.recipes.forEach((set, recipeName) => {
+    hashFactory.recipes.forEach((set, recipeName) => {
       set.forEach((item) => {
         const styleResult = this.getAtomic(item)
         const stylesSet = getOrCreateSet(this.recipes, recipeName)
@@ -169,7 +181,7 @@ export class StylesCollector {
         this.classNames.set(styleResult.className, styleResult)
       })
     })
-    hashCollector.recipes_base.forEach((set, recipeName) => {
+    hashFactory.recipes_base.forEach((set, recipeName) => {
       const styleResult = this.getRecipeBase(set, recipeName)
       if (!styleResult) return
 
@@ -180,7 +192,7 @@ export class StylesCollector {
     })
 
     //
-    hashCollector.recipes_slots.forEach((set, slotKey) => {
+    hashFactory.recipes_slots.forEach((set, slotKey) => {
       set.forEach((item) => {
         const styleResult = this.getAtomic(item)
         const stylesSet = getOrCreateSet(this.recipes_slots, slotKey)
@@ -189,7 +201,7 @@ export class StylesCollector {
         this.classNames.set(styleResult.className, styleResult)
       })
     })
-    hashCollector.recipes_slots_base.forEach((set, slotKey) => {
+    hashFactory.recipes_slots_base.forEach((set, slotKey) => {
       const [recipeName, slot] = slotKey.split(this.context.recipes.slotSeparator)
       const recipeBase = this.getRecipeBase(set, recipeName, slot)
       if (!recipeBase) return
@@ -200,15 +212,13 @@ export class StylesCollector {
       this.classNames.set(recipeBase.className, recipeBase)
     })
 
-    // console.log(Array.from(this.classNames.keys()))
-    // console.timeEnd('collect')
     return this
   }
 }
 
 const entryKeys = ['cond', 'recipe', 'layer', 'slot'] as const
 const getEntryFromHash = (hash: string) => {
-  const parts = hash.split(HashCollector.separator)
+  const parts = hash.split(HashFactory.separator)
   const prop = parts[0]
   const value = parts[1].replace('value:', '')
   const entry = { prop, value } as StyleEntry

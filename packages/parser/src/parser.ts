@@ -7,7 +7,6 @@ import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
 import type { Config, ConfigTsOptions, ResultItem, Runtime } from '@pandacss/types'
-import type { Conditions } from '@pandacss/core'
 import { resolveTsPathPattern } from '@pandacss/config/ts-path'
 import type { Generator } from '@pandacss/generator'
 
@@ -21,7 +20,7 @@ const isNodePattern = (node: ParserNodeOptions): node is ParserPatternNode => no
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
 
-export interface ParserOptions {
+export interface ParserContext {
   hash?: Config['hash']
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
   jsx: {
@@ -30,17 +29,11 @@ export interface ParserOptions {
     styleProps: Exclude<Config['jsxStyleProps'], undefined>
     nodes: ParserNodeOptions[]
   }
-  patternKeys: string[]
-  recipeKeys: string[]
   isValidProperty: (prop: string) => boolean
-  conditions: Conditions
-  getRecipesByJsxName: (jsxName: string) => ParserRecipeNode[]
-  getPatternsByJsxName: (jsxName: string) => ParserPatternNode[]
   patterns: Generator['patterns']
   recipes: Generator['recipes']
-  utility: Generator['utility']
-  hashCollector: Generator['hashCollector']
-  stylesCollector: Generator['stylesCollector']
+  hashFactory: Generator['hashFactory']
+  styleCollector: Generator['styleCollector']
   syntax: Config['syntax']
   tsOptions?: ConfigTsOptions
   join: Runtime['path']['join']
@@ -76,9 +69,13 @@ const defaultEnv: EvalOptions['environment'] = { preset: 'ECMA' }
 const identityFn = (styles: any) => styles
 const evaluateOptions: EvalOptions = { environment: defaultEnv }
 
-export function createParser(options: ParserOptions) {
-  const { jsx, getRecipesByJsxName, getPatternsByJsxName, isValidProperty, tsOptions, join } = options
-  const importMap = Object.fromEntries(Object.entries(options.importMap).map(([key, value]) => [key, join(...value)]))
+export function createParser(context: ParserContext) {
+  const { jsx, isValidProperty, tsOptions, join } = context
+  const getRecipesByJsxName = context.recipes.filter
+  const getPatternsByJsxName = context.patterns.filter
+  const [recipeKeys, patternKeys] = [context.recipes.keys, context.patterns.keys]
+
+  const importMap = Object.fromEntries(Object.entries(context.importMap).map(([key, value]) => [key, join(...value)]))
 
   // Create regex for each import map
   const importRegex = [
@@ -126,7 +123,7 @@ export function createParser(options: ParserOptions) {
       },
     })
 
-    const parserResult = createParserResult(options)
+    const parserResult = createParserResult(context)
 
     logger.debug(
       'ast:import',
@@ -136,8 +133,8 @@ export function createParser(options: ParserOptions) {
     const [css] = importRegex
     const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'styled'
 
-    const isValidPattern = imports.createMatch(importMap.pattern, options.patternKeys)
-    const isValidRecipe = imports.createMatch(importMap.recipe, options.recipeKeys)
+    const isValidPattern = imports.createMatch(importMap.pattern, patternKeys)
+    const isValidRecipe = imports.createMatch(importMap.recipe, recipeKeys)
     const isValidStyleFn = (name: string) => name === jsx?.factory
     const isFactory = (name: string) => Boolean(jsx && name.startsWith(jsxFactoryAlias))
     const isRawFn = (fullName: string) => {
@@ -204,8 +201,8 @@ export function createParser(options: ParserOptions) {
     const cssAlias = imports.getAlias('css')
     const svaAlias = imports.getAlias('sva')
 
-    if (options.jsx) {
-      options.jsx.nodes.forEach((node) => {
+    if (context.jsx) {
+      context.jsx.nodes.forEach((node) => {
         const alias = imports.getAlias(node.jsxName)
         node.props?.forEach((prop) => propertiesMap.set(prop, true))
 
@@ -492,8 +489,7 @@ export function createParser(options: ParserOptions) {
       }
     })
 
-    // console.log(JSON.stringify(collector.unpack(), null, 2))
-    // console.log(collector.toJSON())
+    // console.log(parserResult.toJSON().css)
     return parserResult
   }
 }
