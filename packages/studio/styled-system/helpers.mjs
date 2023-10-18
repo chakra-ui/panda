@@ -49,8 +49,9 @@ function toHash(value) {
 
 // src/merge-props.ts
 function mergeProps(...sources) {
+  const __sources = sources.filter(Boolean);
   const result = {};
-  for (const source of sources) {
+  for (const source of __sources) {
     for (const [key, value] of Object.entries(source)) {
       if (isObject(value)) {
         result[key] = mergeProps(result[key] || {}, value);
