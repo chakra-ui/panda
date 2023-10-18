@@ -17,6 +17,15 @@ export function generateReactJsxFactory(ctx: Context) {
       tag.__shouldForwardProps__ && _shouldForwardProp
         ? (propName) => tag.__shouldForwardProps__(propName) && _shouldForwardProp(propName)
         : _shouldForwardProp
+
+    const composeCvaFn = (cvaA, cvaB) => {
+      if (cvaA && !cvaB) return cvaA
+      if (!cvaA && cvaB) return cvaB
+      if ((cvaA.__cva__ && cvaB.__cva__) || (cvaA.__recipe__ && cvaB.__recipe__)) return cvaA.merge(cvaB.config)
+      const error = new TypeError('Cannot merge cva with recipe. Please use either cva or recipe.')
+      TypeError.captureStackTrace?.(error)
+      throw error
+    }
     
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -32,7 +41,7 @@ export function generateReactJsxFactory(ctx: Context) {
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
         const { as: Element = Dynamic.__base__ || Dynamic, children, ...restProps } = props
         
-        const __cvaFn__ = Dynamic.__cva__?.merge(cvaFn.config) ?? cvaFn
+        const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
         const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
         const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
