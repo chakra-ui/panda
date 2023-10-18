@@ -8,23 +8,34 @@ export function generateReactJsxStringLiteralFactory(ctx: Context) {
     js: outdent`
     import { createElement, forwardRef } from 'react'
     ${ctx.file.import('css, cx', '../css/index')}
+    ${ctx.file.import('mergeProps', '../helpers')}
 
     function createStyledFn(Dynamic) {
       return function styledFn(template) {
-        const baseClassName = css(template)
-        const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
-            const { as: Element = Dynamic, ...elementProps } = props
-            const classes = () => cx(baseClassName, elementProps.className)
+        const styles = css.raw(template)
 
-            return createElement(Element, {
-                ref,
-                ...elementProps,
-                className: classes(),
-            })
+        const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
+          const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
+
+          const __styles__ = mergeProps(Dynamic.__styles__ ?? {}, styles ?? {})
+
+          function classes() {
+            return cx(css(__styles__), elementProps.className)
+          }
+
+          return createElement(Element, {
+              ref,
+              ...elementProps,
+              className: classes(),
+          })
         })
 
         const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+        
         ${componentName}.displayName = \`${factoryName}.\${name}\`
+        ${componentName}.__styles__ = styles
+        ${componentName}.__base__ = Dynamic
+        
         return ${componentName}
       }
     }

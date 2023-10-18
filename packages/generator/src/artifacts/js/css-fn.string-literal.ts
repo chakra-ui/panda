@@ -41,9 +41,8 @@ export function generateStringLiteralCssFn(ctx: Context) {
 
     const cssFn = createCss(context)
 
-    export const css = (str) => {
-      return cssFn(astish(str[0]))
-    }
+    export const css = (str) => typeof str === "string" ? cssFn(astish(str[0])) : cssFn(str)
+    css.raw = (str) => astish(str[0])
     `,
   }
 }
