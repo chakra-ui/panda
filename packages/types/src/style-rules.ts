@@ -38,7 +38,9 @@ export interface RecipeBaseResult extends GroupedResult {
   recipe: string
 }
 
-export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {}
+export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {
+  result: StyleResultObject
+}
 
 export interface StyleCollectorType {
   classNames: Map<string, AtomicStyleResult | RecipeBaseResult>

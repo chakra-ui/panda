@@ -23,12 +23,14 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   await Promise.allSettled(
     files.map(async (file) => {
       const measure = logger.time.debug(`Parsed ${file}`)
-      const result = ctx.project.parseSourceFile(file)
+      const hashFactory = ctx.hashFactory.fork()
+      const result = ctx.project.parseSourceFile(file, hashFactory)
 
       measure()
-      if (!result) return
+      if (!result || hashFactory.isEmpty()) return
 
-      const css = ctx.getParserCss(file)
+      const styles = ctx.styleCollector.fork().collect(hashFactory)
+      const css = ctx.getParserCss(styles, file)
       if (!css) return
 
       if (options.dry) {

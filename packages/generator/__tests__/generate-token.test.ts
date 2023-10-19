@@ -477,8 +477,8 @@ describe('generator', () => {
             --colors-complex: var(--colors-red-700)
                   }
               }
-        }
-        "
+          }
+          "
     `)
   })
 
@@ -557,8 +557,8 @@ describe('generator', () => {
             --colors-deep-test-pool-palette-100: #f2f2f2;
             --colors-deep-test-pool-palette-200: #ebebeb
         }
-          }
-          "
+            }
+            "
       `)
     })
 
@@ -600,8 +600,8 @@ describe('generator', () => {
           .dark {
             --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
         }
-          }
-          "
+            }
+            "
       `)
     })
   })
@@ -665,8 +665,8 @@ describe('generator', () => {
           --colors-danger: var(--colors-red);
           --borders-danger: var(--borders-red)
       }
-        }
-        "
+          }
+          "
     `)
   })
 })

@@ -6,7 +6,14 @@ import { type StaticCssOptions } from '@pandacss/types'
 describe('static-css', () => {
   // limit the number of tokens to speed up tests and make snapshots more readable
   const { hooks, ...defaults } = fixtureDefaults
-  const conf = { hooks, ...JSON.parse(JSON.stringify(defaults)) } as typeof fixtureDefaults
+  const conf = {
+    hooks,
+    ...defaults,
+    config: {
+      ...defaults.config,
+      theme: JSON.parse(JSON.stringify(defaults.config.theme)),
+    },
+  } as typeof fixtureDefaults
 
   // @ts-expect-error
   conf.config.theme!.tokens.colors = {
@@ -28,8 +35,8 @@ describe('static-css', () => {
 
   const ctx = createGenerator(conf)
   const getStaticCss = (options: StaticCssOptions) => {
-    const engine = ctx.staticCss.process(options, true)
-    return { results: engine.results, css: engine.toCss({ optimize: true }) }
+    const engine = ctx.staticCss.fork().process(options)
+    return { results: engine.results, css: engine.sheet.toCss({ optimize: true }) }
   }
 
   test('works', () => {
@@ -94,7 +101,11 @@ describe('static-css', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
       }
       }
 
@@ -104,7 +115,6 @@ describe('static-css', () => {
             min-width: 2.5rem;
             padding: 0 0.5rem
           }
-
           .sm\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
@@ -118,7 +128,6 @@ describe('static-css', () => {
             min-width: 2.5rem;
             padding: 0 0.5rem
           }
-
           .md\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
@@ -184,19 +193,15 @@ describe('static-css', () => {
           .sm\\\\:m_20px {
             margin: 20px
           }
-
           .sm\\\\:m_40px {
             margin: 40px
           }
-
           .sm\\\\:p_20px {
             padding: 20px
           }
-
           .sm\\\\:p_40px {
             padding: 40px
           }
-
           .sm\\\\:p_60px {
             padding: 60px
           }
@@ -206,19 +211,15 @@ describe('static-css', () => {
           .md\\\\:m_20px {
             margin: 20px
           }
-
           .md\\\\:m_40px {
             margin: 40px
           }
-
           .md\\\\:p_20px {
             padding: 20px
           }
-
           .md\\\\:p_40px {
             padding: 40px
           }
-
           .md\\\\:p_60px {
             padding: 60px
           }
@@ -290,6 +291,7 @@ describe('static-css', () => {
               },
             },
           ],
+          "patterns": [],
           "recipes": [
             {
               "buttonStyle": {
@@ -383,12 +385,17 @@ describe('static-css', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
       }
       }
       }",
         "results": {
           "css": [],
+          "patterns": [],
           "recipes": [
             {
               "buttonStyle": {
@@ -423,9 +430,60 @@ describe('static-css', () => {
       }),
     ).toMatchInlineSnapshot(`
       {
-        "css": "",
+        "css": "@layer utilities {
+        .m_20 {
+          margin: var(--spacing-20)
+      }
+
+        .m_40 {
+          margin: var(--spacing-40)
+      }
+
+        .m_60 {
+          margin: var(--spacing-60)
+      }
+
+        .m_auto {
+          margin: auto
+      }
+
+        .m_-20 {
+          margin: calc(var(--spacing-20) * -1)
+      }
+
+        .m_-40 {
+          margin: calc(var(--spacing-40) * -1)
+      }
+
+        .m_-60 {
+          margin: calc(var(--spacing-60) * -1)
+      }
+      }",
         "results": {
-          "css": [],
+          "css": [
+            {
+              "margin": "20",
+            },
+            {
+              "margin": "40",
+            },
+            {
+              "margin": "60",
+            },
+            {
+              "margin": "auto",
+            },
+            {
+              "margin": "-20",
+            },
+            {
+              "margin": "-40",
+            },
+            {
+              "margin": "-60",
+            },
+          ],
+          "patterns": [],
           "recipes": [],
         },
       }
@@ -485,6 +543,7 @@ describe('static-css', () => {
               "padding": "-60",
             },
           ],
+          "patterns": [],
           "recipes": [],
         },
       }
@@ -578,6 +637,7 @@ describe('static-css', () => {
               },
             },
           ],
+          "patterns": [],
           "recipes": [],
         },
       }
@@ -618,7 +678,11 @@ describe('static-css', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
       }
       }
 
@@ -632,6 +696,7 @@ describe('static-css', () => {
       }",
         "results": {
           "css": [],
+          "patterns": [],
           "recipes": [
             {
               "buttonStyle": {
@@ -657,6 +722,7 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes.slots {
+
         .checkbox__control--size_lg {
           width: 12;
           height: 12
@@ -688,7 +754,6 @@ describe('static-css', () => {
             width: 12;
             height: 12
           }
-
           .lg\\\\:checkbox__label--size_lg {
             font-size: var(--font-sizes-lg)
           }
@@ -696,6 +761,7 @@ describe('static-css', () => {
       }",
         "results": {
           "css": [],
+          "patterns": [],
           "recipes": [
             {
               "checkbox": {
@@ -706,6 +772,574 @@ describe('static-css', () => {
               },
             },
           ],
+        },
+      }
+    `)
+  })
+
+  test('simple pattern', () => {
+    expect(
+      getStaticCss({
+        patterns: {
+          // type: 'number'
+          aspectRatio: [
+            { properties: { ratio: ['4/3', '16/9', '1/1'] } },
+            { properties: { ratio: ['1/4'] }, conditions: ['md'] },
+          ],
+          // type: 'token'
+          spacer: [{ properties: { size: ['sm', 'md', 'lg'] } }],
+          // type: 'property'
+          circle: [{ properties: { size: ['sm', 'md', 'lg'] } }],
+          bleed: [{ properties: { inline: ['*'] } }],
+          // type: 'enum' + type: 'token'
+          divider: [{ properties: { orientation: ['*'], thickness: ['*'] } }],
+          float: ['*'],
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "css": "@layer utilities {
+        .pos_relative {
+          position: relative
+      }
+
+        .self_stretch {
+          align-self: stretch
+      }
+
+        .justify-self_stretch {
+          justify-self: stretch
+      }
+
+        .flex_0_0_sm {
+          flex: 0 0 sm
+      }
+
+        .flex_0_0_md {
+          flex: 0 0 md
+      }
+
+        .flex_0_0_lg {
+          flex: 0 0 lg
+      }
+
+        .d_flex {
+          display: flex
+      }
+
+        .items_center {
+          align-items: center
+      }
+
+        .justify_center {
+          justify-content: center
+      }
+
+        .flex_0_0_auto {
+          flex: 0 0 auto
+      }
+
+        .w_sm {
+          width: sm
+      }
+
+        .h_sm {
+          height: sm
+      }
+
+        .rounded_9999px {
+          border-radius: 9999px
+      }
+
+        .w_md {
+          width: md
+      }
+
+        .h_md {
+          height: md
+      }
+
+        .w_lg {
+          width: lg
+      }
+
+        .h_lg {
+          height: lg
+      }
+
+        .\\\\--thickness_1px {
+          --thickness: 1px
+      }
+
+        .w_100\\\\% {
+          width: 100%
+      }
+
+        .border-block-end-width_var\\\\(--thickness\\\\) {
+          border-block-end-width: var(--thickness)
+      }
+
+        .h_100\\\\% {
+          height: 100%
+      }
+
+        .border-e_var\\\\(--thickness\\\\) {
+          border-inline-end-width: var(--thickness)
+      }
+
+        .\\\\--thickness_20 {
+          --thickness: 20
+      }
+
+        .\\\\--thickness_40 {
+          --thickness: 40
+      }
+
+        .\\\\--thickness_60 {
+          --thickness: 60
+      }
+
+        .\\\\--thickness_breakpoint-sm {
+          --thickness: breakpoint-sm
+      }
+
+        .\\\\--thickness_breakpoint-md {
+          --thickness: breakpoint-md
+      }
+
+        .\\\\--thickness_breakpoint-lg {
+          --thickness: breakpoint-lg
+      }
+
+        .\\\\--thickness_breakpoint-xl {
+          --thickness: breakpoint-xl
+      }
+
+        .\\\\--thickness_breakpoint-2xl {
+          --thickness: breakpoint-2xl
+      }
+
+        .d_inline-flex {
+          display: inline-flex
+      }
+
+        .pos_absolute {
+          position: absolute
+      }
+
+        .inset-t_0 {
+          inset-block-start: 0
+      }
+
+        .inset-b_auto {
+          inset-block-end: auto
+      }
+
+        .start_auto {
+          inset-inline-start: auto
+      }
+
+        .end_20 {
+          inset-inline-end: var(--spacing-20)
+      }
+
+        .translate_50\\\\%_-50\\\\% {
+          translate: 50% -50%
+      }
+
+        .end_40 {
+          inset-inline-end: var(--spacing-40)
+      }
+
+        .end_60 {
+          inset-inline-end: var(--spacing-60)
+      }
+
+        .end_-20 {
+          inset-inline-end: calc(var(--spacing-20) * -1)
+      }
+
+        .end_-40 {
+          inset-inline-end: calc(var(--spacing-40) * -1)
+      }
+
+        .end_-60 {
+          inset-inline-end: calc(var(--spacing-60) * -1)
+      }
+
+        .inset-t_20 {
+          inset-block-start: var(--spacing-20)
+      }
+
+        .end_0 {
+          inset-inline-end: 0
+      }
+
+        .inset-t_40 {
+          inset-block-start: var(--spacing-40)
+      }
+
+        .inset-t_60 {
+          inset-block-start: var(--spacing-60)
+      }
+
+        .inset-t_-20 {
+          inset-block-start: calc(var(--spacing-20) * -1)
+      }
+
+        .inset-t_-40 {
+          inset-block-start: calc(var(--spacing-40) * -1)
+      }
+
+        .inset-t_-60 {
+          inset-block-start: calc(var(--spacing-60) * -1)
+      }
+
+        .inset-t_auto {
+          inset-block-start: auto
+      }
+
+        .inset-b_0 {
+          inset-block-end: 0
+      }
+
+        .translate_50\\\\%_50\\\\% {
+          translate: 50% 50%
+      }
+
+        .start_0 {
+          inset-inline-start: 0
+      }
+
+        .end_auto {
+          inset-inline-end: auto
+      }
+
+        .translate_-50\\\\%_50\\\\% {
+          translate: -50% 50%
+      }
+
+        .translate_-50\\\\%_-50\\\\% {
+          translate: -50% -50%
+      }
+
+        .start_50\\\\% {
+          inset-inline-start: 50%
+      }
+
+        .end_50\\\\% {
+          inset-inline-end: 50%
+      }
+
+        .inset-t_50\\\\% {
+          inset-block-start: 50%
+      }
+
+        .inset-b_50\\\\% {
+          inset-block-end: 50%
+      }
+
+        .before\\\\:content_\\\\\\"\\\\\\"::before {
+          content: \\"\\"
+      }
+
+        .before\\\\:d_block::before {
+          display: block
+      }
+
+        .before\\\\:h_0::before {
+          height: 0
+      }
+
+        .before\\\\:pb_NaN\\\\%::before {
+          padding-bottom: NaN%
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
+          display: flex
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
+          justify-content: center
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
+          align-items: center
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
+          overflow: hidden
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
+          position: absolute
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
+          inset: 0
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
+          width: 100%
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
+          height: 100%
+      }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
+          object-fit: cover
+      }
+
+        @media screen and (min-width: 48em) {
+          .before\\\\:md\\\\:pb_NaN\\\\%::before {
+            padding-bottom: NaN%
+          }
+      }
+      }",
+        "results": {
+          "css": [],
+          "patterns": [
+            {
+              "aspectRatio": {
+                "ratio": "4/3",
+              },
+            },
+            {
+              "aspectRatio": {
+                "ratio": "16/9",
+              },
+            },
+            {
+              "aspectRatio": {
+                "ratio": "1/1",
+              },
+            },
+            {
+              "aspectRatio": {
+                "ratio": {
+                  "base": "1/4",
+                  "md": "1/4",
+                },
+              },
+            },
+            {
+              "spacer": {
+                "size": "sm",
+              },
+            },
+            {
+              "spacer": {
+                "size": "md",
+              },
+            },
+            {
+              "spacer": {
+                "size": "lg",
+              },
+            },
+            {
+              "circle": {
+                "size": "sm",
+              },
+            },
+            {
+              "circle": {
+                "size": "md",
+              },
+            },
+            {
+              "circle": {
+                "size": "lg",
+              },
+            },
+            {
+              "divider": {
+                "orientation": "horizontal",
+              },
+            },
+            {
+              "divider": {
+                "orientation": "vertical",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "20",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "40",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "60",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "breakpoint-sm",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "breakpoint-md",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "breakpoint-lg",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "breakpoint-xl",
+              },
+            },
+            {
+              "divider": {
+                "thickness": "breakpoint-2xl",
+              },
+            },
+            {
+              "float": {
+                "offsetX": "20",
+              },
+            },
+            {
+              "float": {
+                "offsetX": "40",
+              },
+            },
+            {
+              "float": {
+                "offsetX": "60",
+              },
+            },
+            {
+              "float": {
+                "offsetX": "-20",
+              },
+            },
+            {
+              "float": {
+                "offsetX": "-40",
+              },
+            },
+            {
+              "float": {
+                "offsetX": "-60",
+              },
+            },
+            {
+              "float": {
+                "offsetY": "20",
+              },
+            },
+            {
+              "float": {
+                "offsetY": "40",
+              },
+            },
+            {
+              "float": {
+                "offsetY": "60",
+              },
+            },
+            {
+              "float": {
+                "offsetY": "-20",
+              },
+            },
+            {
+              "float": {
+                "offsetY": "-40",
+              },
+            },
+            {
+              "float": {
+                "offsetY": "-60",
+              },
+            },
+            {
+              "float": {
+                "offset": "20",
+              },
+            },
+            {
+              "float": {
+                "offset": "40",
+              },
+            },
+            {
+              "float": {
+                "offset": "60",
+              },
+            },
+            {
+              "float": {
+                "offset": "-20",
+              },
+            },
+            {
+              "float": {
+                "offset": "-40",
+              },
+            },
+            {
+              "float": {
+                "offset": "-60",
+              },
+            },
+            {
+              "float": {
+                "placement": "bottom-end",
+              },
+            },
+            {
+              "float": {
+                "placement": "bottom-start",
+              },
+            },
+            {
+              "float": {
+                "placement": "top-end",
+              },
+            },
+            {
+              "float": {
+                "placement": "top-start",
+              },
+            },
+            {
+              "float": {
+                "placement": "bottom-center",
+              },
+            },
+            {
+              "float": {
+                "placement": "top-center",
+              },
+            },
+            {
+              "float": {
+                "placement": "middle-center",
+              },
+            },
+            {
+              "float": {
+                "placement": "middle-end",
+              },
+            },
+            {
+              "float": {
+                "placement": "middle-start",
+              },
+            },
+          ],
+          "recipes": [],
         },
       }
     `)

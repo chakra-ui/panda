@@ -1,9 +1,10 @@
 import type { Context } from '../../engines'
+import type { Stylesheet } from '@pandacss/core'
 
-export const generateGlobalCss = (ctx: Context) => {
+export const generateGlobalCss = (ctx: Context, stylesheet?: Stylesheet) => {
   const { globalCss = {}, optimize = true, minify } = ctx.config
 
-  const sheet = ctx.createSheet()
+  const sheet = stylesheet ?? ctx.createSheet()
 
   sheet.processGlobalCss({
     ':root': {
@@ -43,9 +44,9 @@ export const generateGlobalCss = (ctx: Context) => {
 
   sheet.processGlobalCss(globalCss)
 
-  const output = sheet.toCss({ optimize, minify })
-
-  void ctx.hooks.callHook('generator:css', 'global.css', output)
-
-  return output
+  if (!stylesheet) {
+    const output = sheet.toCss({ optimize, minify })
+    void ctx.hooks.callHook('generator:css', 'global.css', output)
+    return output
+  }
 }

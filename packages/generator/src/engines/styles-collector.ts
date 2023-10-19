@@ -48,6 +48,26 @@ export class StyleCollector {
     return new StyleCollector(this.context)
   }
 
+  isEmpty() {
+    return (
+      !this.atomic.size &&
+      !this.recipes.size &&
+      !this.recipes_base.size &&
+      !this.recipes_slots.size &&
+      !this.recipes_slots_base.size
+    )
+  }
+
+  get results() {
+    return {
+      atomic: this.atomic,
+      recipes: this.recipes,
+      recipes_base: this.recipes_base,
+      recipes_slots: this.recipes_slots,
+      recipes_slots_base: this.recipes_slots_base,
+    }
+  }
+
   formatSelector = (conditions: string[], className: string) => {
     const { conditions: cond, hash, utility } = this.context
     const conds = cond.finalize(conditions)
@@ -66,6 +86,7 @@ export class StyleCollector {
     const cached = this.atomic_cache.get(hash)
     if (cached) return cached
 
+    // console.log(2, { hash })
     const entry = getEntryFromHash(hash)
 
     const recipeName = entry.recipe
@@ -122,23 +143,40 @@ export class StyleCollector {
       const transformed = transform(entry.prop, withoutImportant(entry.value))
 
       const important = isImportant(entry.value)
-      const styles = important ? markImportant(transformed.styles) : transformed.styles
+      const result = important ? markImportant(transformed.styles) : transformed.styles
 
       const parts = entry.cond ? entry.cond.split(HashFactory.conditionSeparator) : []
 
       let conditions
       if (entry.cond) {
         conditions = this.context.conditions.sort(parts)
-        const path = basePath.concat(conditions.map((c) => c.rawValue ?? c.raw))
-        obj = setValueIn(obj, path, styles)
-      } else {
-        obj = setValueIn(obj, basePath, styles)
       }
 
-      details.push({ hash, entry, conditions })
+      details.push({ hash, entry, conditions, result })
     })
 
-    const result: GroupedResult = { result: obj, hashSet, details, className }
+    // sorting here prevents postcss-nested from creating multiple rules with the same selector
+    // if we have a rule without a condition, then one with a condition, then one without a condition
+    // if not sorted, the object would look like
+    // 1. `{ lineHeight: '1.2', _hover: { boxShadow: 'outline' }, outline: 'none', }`
+    // instead of
+    // 2. `{ lineHeight: '1.2', outline: 'none', _hover: { boxShadow: 'outline' } }`
+    //
+    // which would result in a CSS like
+    // 1. `.class { line-height: 1.2; } .class:hover { box-shadow: outline; } .class { outline: none }`
+    // instead of:
+    // 2. `.class { line-height: 1.2; outline: none; } .class:hover { box-shadow: outline; }`
+    const sorted = sortStyleRules(details)
+    sorted.forEach((value) => {
+      if (value.conditions) {
+        const path = basePath.concat(value.conditions.map((c) => c.rawValue ?? c.raw))
+        obj = setValueIn(obj, path, value.result)
+      } else {
+        obj = setValueIn(obj, basePath, value.result)
+      }
+    })
+
+    const result: GroupedResult = { result: obj, hashSet, details: sortStyleRules(details), className }
     this.group_cache.set(className, result)
     return result
   }
@@ -148,10 +186,11 @@ export class StyleCollector {
     if (!recipe) return
 
     const className = 'slots' in recipe && slot ? this.context.recipes.getSlotKey(recipeName, slot) : recipe.className
+    const classSelector = this.formatSelector([], className)
     const style = this.getGroup(hashSet, className)
 
-    const base = { ['.' + className]: style.result }
-    return Object.assign(style, { result: base, recipe: recipeName, className }) as RecipeBaseResult
+    const base = { ['.' + classSelector]: style.result }
+    return Object.assign({}, style, { result: base, recipe: recipeName, className }) as RecipeBaseResult
   }
 
   /**

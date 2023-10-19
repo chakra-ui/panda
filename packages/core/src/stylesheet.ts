@@ -6,10 +6,6 @@ import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
-export type StylesheetOptions = {
-  content?: string
-}
-
 export interface ProcessOptions {
   styles: Dict
   layer: LayerName
@@ -20,10 +16,12 @@ export interface ToCssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
 export type LayerName = Exclude<keyof StylesheetContext['layers'], 'insert'>
 
 export class Stylesheet {
-  constructor(private context: StylesheetContext, private options?: StylesheetOptions) {}
+  content: string = ''
 
-  getLayer(layer: string) {
-    return this.context.layers[layer as LayerName] as postcss.AtRule | undefined
+  constructor(private context: StylesheetContext) {}
+
+  getLayer(layer: LayerName) {
+    return this.context.layers[layer] as postcss.AtRule | undefined
   }
 
   process(options: ProcessOptions) {
@@ -87,6 +85,11 @@ export class Stylesheet {
     })
   }
 
+  setContent = (content: string) => {
+    this.content = content
+    return this
+  }
+
   toCss = ({ optimize = false, minify }: ToCssOptions = {}) => {
     try {
       const { utility } = this.context
@@ -98,12 +101,8 @@ export class Stylesheet {
 
       let css = this.context.root.toString()
 
-      if (optimize) {
-        css = optimizeCss(css, { minify })
-      }
-
-      if (this.options?.content) {
-        css = `${this.options.content}\n\n${css}`
+      if (this.content) {
+        css = `${this.content}\n\n${css}`
       }
 
       return optimize ? optimizeCss(css, { minify }) : css
@@ -114,13 +113,5 @@ export class Stylesheet {
 
       throw error
     }
-  }
-
-  append = (...css: string[]) => {
-    this.context.root.append(...css)
-  }
-
-  prepend = (...css: string[]) => {
-    this.context.root.prepend(...css)
   }
 }

@@ -1,12 +1,12 @@
-import { optimizeCss } from '@pandacss/core'
+import { Stylesheet, optimizeCss } from '@pandacss/core'
 import type { Context } from '../../engines'
 
 const css = String.raw
 
-export function generateResetCss(ctx: Context, scope = '') {
+export function generateResetCss(ctx: Context, scope = '', sheet?: Stylesheet) {
   const selector = scope ? `${scope} ` : ''
   // prettier-ignore
-  const output = css`@layer ${ctx.layers.name.reset} {
+  const output = css`
   ${selector}* {
     margin: 0;
     padding: 0;
@@ -210,8 +210,12 @@ export function generateResetCss(ctx: Context, scope = '') {
 
   ${selector}:-moz-focusring {
     outline: auto;
+  }`
+
+  if (sheet) {
+    sheet.getLayer('reset')?.append(output)
+    return
   }
-}`
 
   const code = optimizeCss(output, { minify: ctx.config.minify })
   void ctx.hooks.callHook('generator:css', 'reset.css', code)

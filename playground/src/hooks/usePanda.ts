@@ -114,17 +114,17 @@ export function usePanda(source: string, config: string) {
       useInMemoryFileSystem: true,
       parserOptions: {
         ...generator.parserOptions,
-        join(...paths) {
+        join(...paths: any[]) {
           return paths.join('/')
         },
-      },
+      } as any,
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
       hooks: generator.hooks,
     })
 
     const parserResult = project.parseSourceFile('code.tsx')
-    const parsedCss = parserResult ? generator.getParserCss(parserResult) ?? '' : ''
+    const parsedCss = parserResult ? generator.getParserCss(generator.styleCollector) ?? '' : ''
     const artifacts = generator.getArtifacts() ?? []
 
     const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])

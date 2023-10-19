@@ -71,21 +71,21 @@ export async function bundleCss(ctx: PandaContext, outfile: string, resolve = tr
   const minify = ctx.config.minify
   const files = ctx.getFiles().map((file) => extractFile(ctx, file))
 
-  const parserCss = ctx.getParserCss(outfile)
-  const css = optimizeCss(ctx.getCss({ files: [parserCss ?? ''], resolve }), { minify })
+  const css = optimizeCss(ctx.getCss({ resolve }), { minify })
 
   await writeFile(outfile, css)
   return { files, msg: ctx.messages.buildComplete(files.length) }
 }
 
 /**
- * Bundles all the files CSS into outdir/chunks/{file}.css
+ * Bundles all the files CSS into outdir/{file}.css
  * Without writing any chunks or needing any imports
  */
 export async function bundleMinimalFilesCss(ctx: PandaContext, outfile: string) {
   const files = ctx.getFiles()
   const filesWithCss = []
 
+  const collect = ctx.project.fork()
   files.forEach((file) => {
     const measure = logger.time.debug(`Parsed ${file}`)
     const result = ctx.project.parseSourceFile(file)
@@ -96,7 +96,7 @@ export async function bundleMinimalFilesCss(ctx: PandaContext, outfile: string) 
     filesWithCss.push(file)
   })
 
-  const css = ctx.getParserCss(outfile)
+  const css = ctx.getParserCss(collect(), outfile)
   if (!css) return { files, msg: ctx.messages.buildComplete(files.length) }
 
   const minify = ctx.config.minify

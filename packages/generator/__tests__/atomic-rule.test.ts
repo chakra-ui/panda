@@ -544,11 +544,9 @@ describe('atomic / with direct nesting', () => {
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:bg_green {
             background-color: green
           }
-
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:fs_\\\\$small {
             font-size: $small
           }
-
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:bg_yellow:hover {
             background-color: yellow
           }

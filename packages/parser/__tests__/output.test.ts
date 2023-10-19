@@ -172,7 +172,6 @@ describe('extract to css output pipeline', () => {
           .md\\\\:p_4 {
             padding: var(--spacing-4)
           }
-
           .md\\\\:text_red\\\\.100 {
             color: var(--colors-red-100)
           }
@@ -598,6 +597,7 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+
         .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
           font-size: var(--font-sizes-sm)
       }
@@ -981,7 +981,6 @@ describe('extract to css output pipeline', () => {
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:padding_1rem_0 {
             padding: 1rem 0
           }
-
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):disabled {
             filter: brightness(1)
           }
@@ -2533,7 +2532,11 @@ describe('extract to css output pipeline', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
       }
       }
       }
@@ -2698,7 +2701,6 @@ describe('extract to css output pipeline', () => {
           .sm\\\\:py_2 {
             padding-block: var(--spacing-2)
           }
-
           .sm\\\\:py_3 {
             padding-block: var(--spacing-3)
           }

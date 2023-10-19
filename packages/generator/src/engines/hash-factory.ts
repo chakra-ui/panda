@@ -1,4 +1,5 @@
 import {
+  filterBaseConditions,
   getOrCreateSet,
   getSlotRecipes,
   isObjectOrArray,
@@ -58,6 +59,27 @@ export class HashFactory {
 
   fork() {
     return new HashFactory(this.context)
+  }
+
+  isEmpty() {
+    return (
+      !this.atomic.size &&
+      !this.recipes.size &&
+      !this.recipes_slots.size &&
+      !this.compound_variants.size &&
+      !this.recipes_base.size &&
+      !this.recipes_slots_base.size
+    )
+  }
+
+  get hashes() {
+    return {
+      atomic: this.atomic,
+      recipes: this.recipes,
+      recipes_base: this.recipes_base,
+      recipes_slots: this.recipes_slots,
+      recipes_slots_base: this.recipes_slots_base,
+    }
   }
 
   hashStyleObject(
@@ -127,8 +149,7 @@ export class HashFactory {
         if (cond) {
           const parts = cond.split(HashFactory.conditionSeparator)
           const first = parts[0]
-          // filterBaseConditions
-          let relevantParts = parts.filter((p) => p !== 'base')
+          let relevantParts = filterBaseConditions(parts)
 
           if (first && !isCondition(first)) {
             relevantParts = relevantParts.slice(1)
@@ -192,7 +213,6 @@ export class HashFactory {
     const styles = Object.assign({}, config.defaultVariants, variants)
     config.slots.forEach((slot) => {
       const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
-      // const styleObject = variants[slot]
 
       const set = getOrCreateSet(this.recipes_slots, recipeKey)
       this.hashStyleObject(set, styles, { recipe: recipeName, slot })
@@ -213,12 +233,12 @@ export class HashFactory {
   }
 
   processPattern(
-    patternName: string,
-    type: 'pattern' | 'jsx-pattern',
-    jsxName: string | undefined,
+    name: string,
     patternProps: StyleResultObject,
+    type?: 'pattern' | 'jsx-pattern',
+    jsxName?: string | undefined,
   ) {
-    let fnName = patternName
+    let fnName = name
     if (type === 'jsx-pattern' && jsxName) {
       fnName = this.context.patterns.getFnName(jsxName)
     }

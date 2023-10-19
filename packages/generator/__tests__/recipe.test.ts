@@ -91,6 +91,11 @@ describe('recipe ruleset', () => {
           "baseName": "buttonStyle",
           "config": {
             "base": {
+              "&": {
+                "&:is(:hover, [data-hover])": {
+                  "backgroundColor": "var(--colors-red-200)",
+                },
+              },
               "alignItems": "center",
               "display": "inline-flex",
               "justifyContent": "center",
@@ -207,7 +212,11 @@ describe('recipe ruleset', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
       }
       }
       }"
@@ -240,7 +249,11 @@ describe('recipe ruleset', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
       }
       }
 

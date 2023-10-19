@@ -38,8 +38,7 @@ export async function generate(config: Config, configPath?: string) {
       const parserResult = ctx.project.parseSourceFile(changedFilePath)
 
       if (parserResult) {
-        const styles = ctx.getParserCss(changedFilePath) ?? ''
-        const css = ctx.getCss({ files: [styles], resolve: false })
+        const css = ctx.getCss({ resolve: false })
         await ctx.runtime.fs.writeFile(outfile, css)
         return { msg: ctx.messages.buildComplete(1) }
       }

@@ -12,7 +12,7 @@ function getFixtureProject(code: string, userConfig?: Config, tsconfig?: TSConfi
   const ctx = createContext(Object.assign({}, userConfig, { tsconfig }))
   ctx.project.addSourceFile(staticFilePath, code)
 
-  return Object.assign(ctx, { parse: (filePath = staticFilePath) => ctx.project.parseSourceFile(filePath)! })
+  return ctx
 }
 
 export function importParser(code: string, option: { name: string; module: string }) {
@@ -132,9 +132,13 @@ export function jsxRecipeParser(code: string) {
 
 export const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const ctx = getFixtureProject(code, userConfig, tsconfig)
-  const result = ctx.parse()
+
+  const hashFactory = ctx.hashFactory.fork()
+  const result = ctx.project.parseSourceFile(staticFilePath, hashFactory)!
+  const styles = ctx.styleCollector.fork().collect(hashFactory)
+
   return {
     json: result?.toArray().flatMap(({ box, ...item }) => item),
-    css: ctx.getParserCss()!,
+    css: ctx.getParserCss(styles),
   }
 }

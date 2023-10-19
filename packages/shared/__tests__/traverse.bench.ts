@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest'
-import { traverse } from '../src'
+import { traverse, walkObject } from '../src'
 
 type CallbackFn = (key: string, value: any, path: string, depth: number) => void
 
@@ -112,6 +112,14 @@ describe('traverse', () => {
     'traverse from src',
     () => {
       traverse(obj, callback)
+    },
+    { iterations: 100 },
+  )
+
+  bench(
+    'walkObj from src',
+    () => {
+      walkObject(obj, callback)
     },
     { iterations: 100 },
   )

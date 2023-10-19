@@ -5,7 +5,10 @@ describe('slot recipe ruleset', () => {
   test('should work', () => {
     expect(processRecipe('checkbox', { size: 'sm' })).toMatchInlineSnapshot(`
       "@layer recipes.slots {
+
         .checkbox__control--size_sm {
+          font-size: 2rem;
+          font-weight: var(--font-weights-bold);
           width: var(--sizes-8);
           height: var(--sizes-8)
       }

@@ -1,8 +1,8 @@
-import { optimizeCss, toCss } from '@pandacss/core'
+import { Stylesheet, optimizeCss, toCss } from '@pandacss/core'
 import postcss from 'postcss'
 import type { Context } from '../../engines'
 
-export function generateKeyframeCss(ctx: Context) {
+export function generateKeyframeCss(ctx: Context, sheet?: Stylesheet) {
   const { keyframes = {} } = ctx.config.theme ?? {}
   const root = postcss.root()
 
@@ -14,6 +14,11 @@ export function generateKeyframeCss(ctx: Context) {
         nodes: toCss(definition).root.nodes,
       }),
     )
+  }
+
+  if (sheet) {
+    sheet.getLayer('tokens')?.append(root)
+    return
   }
 
   const rule = postcss.atRule({

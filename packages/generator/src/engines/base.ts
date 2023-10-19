@@ -1,12 +1,4 @@
-import {
-  Conditions,
-  Recipes,
-  Stylesheet,
-  Utility,
-  assignCompositions,
-  type StylesheetContext,
-  type StylesheetOptions,
-} from '@pandacss/core'
+import { Conditions, Recipes, Stylesheet, Utility, assignCompositions, type StylesheetContext } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
@@ -111,8 +103,6 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
         utilities,
         compositions,
         insert: () => {
-          console.log('insert')
-          console.trace()
           if (reset.nodes.length) root.append(reset)
           if (base.nodes.length) root.append(base)
           if (tokens.nodes.length) root.append(tokens)
@@ -139,9 +129,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     layersNames,
   }
   const createSheetContext = () => Object.assign(createSheetRoot(), staticSheetContext)
-  const createSheet = (options?: Pick<StylesheetOptions, 'content'>) => {
-    return new Stylesheet(createSheetContext(), { content: options?.content })
-  }
+  const createSheet = () => new Stylesheet(createSheetContext())
 
   const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
   const propertyMap = new Map(properties.map((prop) => [prop, true]))

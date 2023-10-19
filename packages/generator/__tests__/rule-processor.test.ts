@@ -150,15 +150,12 @@ describe('rule processor', () => {
           .sm\\\\:w_2 {
             width: var(--sizes-2)
           }
-
           .sm\\\\:fs_sm {
             font-size: var(--font-sizes-sm)
           }
-
           .sm\\\\:text_yellow {
             color: yellow
           }
-
           .sm\\\\:bg_red {
             background-color: red
           }
@@ -222,7 +219,11 @@ describe('rule processor', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
       }
       }
 
@@ -438,6 +439,7 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
+
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
@@ -471,7 +473,6 @@ describe('rule processor', () => {
             width: var(--sizes-10);
             height: var(--sizes-10)
           }
-
           .md\\\\:checkbox__label--size_md {
             font-size: var(--font-sizes-md)
           }
@@ -590,6 +591,71 @@ describe('rule processor', () => {
         .fs_lg {
           font-size: var(--font-sizes-lg)
       }
+      }"
+    `)
+  })
+
+  test('simple recipe with alterning no-condition/condition props', () => {
+    const processor = createRuleProcessor({
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              className: 'btn',
+              base: {
+                lineHeight: '1.2',
+                _focusVisible: {
+                  boxShadow: 'outline',
+                },
+                _disabled: {
+                  opacity: 0.4,
+                },
+                _hover: {
+                  _disabled: { bg: 'initial' },
+                },
+                display: 'inline-flex',
+                outline: 'none',
+                _focus: {
+                  zIndex: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const result = processor.recipe('button', {})!
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "btn",
+      ]
+    `)
+    expect(result.toCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .btn {
+            line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
+      }
+
+          .btn:is(:disabled, [disabled], [data-disabled]) {
+            opacity: 0.4;
+      }
+
+          .btn:is(:focus-visible, [data-focus-visible]) {
+            box-shadow: outline;
+      }
+
+          .btn:is(:focus, [data-focus]) {
+            z-index: 1;
+      }
+
+          .btn:is(:hover, [data-hover]):is(:disabled, [disabled], [data-disabled]) {
+            background: initial;
+      }
+          }
       }"
     `)
   })

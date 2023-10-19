@@ -1,4 +1,5 @@
-import type { StaticCssOptions } from '@pandacss/types'
+import type { Stylesheet } from '@pandacss/core'
+import type { CssRule, StaticCssOptions } from '@pandacss/types'
 import type { GeneratorBaseEngine } from './base'
 import { HashFactory } from './hash-factory'
 import { StyleCollector } from './styles-collector'
@@ -6,21 +7,33 @@ import { StyleCollector } from './styles-collector'
 interface StaticCssResults {
   css: Record<string, any>[]
   recipes: Record<string, any>[]
-  // TODO patterns
+  patterns: Record<string, any>[]
 }
 
 interface StaticCssEngine {
   results: StaticCssResults
   regex: () => RegExp
   parse: (text: string) => string[]
-  toCss: (options?: { optimize?: boolean; minify?: boolean }) => string
+  sheet: Stylesheet
 }
 
 export class StaticCss {
-  constructor(private context: GeneratorBaseEngine, private params: { hash: HashFactory; styles: StyleCollector }) {}
+  hash: HashFactory
+  styles: StyleCollector
+
+  constructor(private context: GeneratorBaseEngine, params: { hash: HashFactory; styles: StyleCollector }) {
+    this.hash = params.hash
+    this.styles = params.styles
+  }
+
+  fork() {
+    this.hash = this.hash.fork()
+    this.styles = this.styles.fork()
+    return this
+  }
 
   /**
-   * This transforms a static css config into the same format that's used by the hash collector,
+   * This transforms a static css config into the same format as in the ParserResult,
    * so that it can be processed by the same logic as styles found in app code.
    *
    * e.g.
@@ -28,7 +41,7 @@ export class StaticCss {
    * @example { css: [{ color: ['red'], conditions: ['md'] }] } => { css: [{ color: { base: 'red', md: 'red' } }] }
    *
    */
-  getStyleRules(options: StaticCssOptions) {
+  getStyleObjects(options: StaticCssOptions) {
     const { config, utility } = this.context
     const breakpoints = Object.keys(config.theme?.breakpoints ?? {})
     const getPropertyKeys = (prop: string) => {
@@ -46,14 +59,40 @@ export class StaticCss {
       return recipeConfig?.variantKeyMap
     }
 
-    const { css = [], recipes = {} } = options
-    const results: StaticCssResults = { css: [], recipes: [] }
+    const getPatternPropValues = (patternName: string, property: string) => {
+      const patternConfig = this.context.patterns.getConfig(patternName)
+      if (!patternConfig) return []
+
+      const propType = patternConfig.properties?.[property]
+      if (!propType) return
+
+      if (propType.type === 'enum') {
+        return propType.value
+      }
+
+      if (propType.type === 'boolean') {
+        return ['true', 'false']
+      }
+
+      if (propType.type === 'property') {
+        return getPropertyKeys(property)
+      }
+
+      if (propType.type === 'token') {
+        const values = this.context.tokens.getValue(propType.value)
+        return Object.keys(values ?? {})
+      }
+    }
+
+    const { css = [], recipes = {}, patterns = {} } = options
+    const results: StaticCssResults = { css: [], recipes: [], patterns: [] }
 
     css.forEach((rule) => {
       const conditions = rule.conditions || []
 
       Object.entries(rule.properties).forEach(([property, values]) => {
-        const computedValues = values.flatMap((value) => (value === '*' ? getPropertyKeys(property) : value))
+        const propKeys = getPropertyKeys(property)
+        const computedValues = values.flatMap((value) => (value === '*' ? propKeys : value))
 
         computedValues.forEach((value) => {
           const conditionalValues = conditions.reduce(
@@ -83,13 +122,7 @@ export class StaticCss {
         Object.entries(variants).forEach(([variant, values]) => {
           if (!Array.isArray(values)) return
 
-          const computedValues = values.flatMap((value) => {
-            if (value === '*') {
-              return recipeKeys[variant]
-            }
-
-            return value
-          })
+          const computedValues = values.flatMap((value) => (value === '*' ? recipeKeys[variant] : value))
 
           computedValues.forEach((value) => {
             const conditionalValues = conditions.reduce(
@@ -109,18 +142,52 @@ export class StaticCss {
       })
     })
 
+    Object.entries(patterns).forEach(([pattern, rules]) => {
+      rules.forEach((rule) => {
+        const details = this.context.patterns.details.find((d) => d.baseName === pattern)
+        if (!details) return
+
+        let props = {} as CssRule['properties']
+        const useAllKeys = rule === '*'
+        if (useAllKeys) {
+          props = Object.fromEntries((details.props ?? {}).map((key) => [key, ['*']]))
+        }
+
+        const { conditions = [], properties = props } = useAllKeys ? {} : rule
+
+        Object.entries(properties).forEach(([property, values]) => {
+          const patternKeys = getPatternPropValues(pattern, property)
+          const computedValues = values.flatMap((value) => (value === '*' ? patternKeys : value))
+
+          computedValues.forEach((value) => {
+            const conditionalValues = conditions.reduce(
+              (acc, condition) => ({
+                base: value,
+                ...acc,
+                [formatCondition(breakpoints, condition)]: value,
+              }),
+              {},
+            )
+
+            results.patterns.push({
+              [pattern]: { [property]: conditions.length ? conditionalValues : value },
+            })
+          })
+        })
+      })
+    })
+
     return results
   }
 
-  process(staticCss: StaticCssOptions, fork?: boolean) {
+  process(staticCss: StaticCssOptions, stylesheet?: Stylesheet) {
     const { createSheet, recipes } = this.context
-    const sheet = createSheet()
+    const sheet = stylesheet ?? createSheet()
 
-    const results = this.getStyleRules(staticCss)
+    const results = this.getStyleObjects(staticCss)
     // console.log(JSON.stringify(results.recipes, null, 2))
 
-    const hash = fork ? this.params.hash.fork() : this.params.hash
-    const styles = fork ? this.params.styles.fork() : this.params.styles
+    const { hash, styles } = this
 
     results.css.forEach((css) => {
       hash.hashStyleObject(hash.atomic, css)
@@ -139,6 +206,12 @@ export class StaticCss {
       })
     })
 
+    results.patterns.forEach((result) => {
+      Object.entries(result).forEach(([name, value]) => {
+        hash.processPattern(name, value)
+      })
+    })
+
     sheet.processStyleCollector(styles.collect(hash))
 
     const createRegex = () => createClassNameRegex(Array.from(styles.classNames.keys()))
@@ -153,7 +226,7 @@ export class StaticCss {
       return matches.map((match) => match.replace('.', ''))
     }
 
-    return { results, regex: createRegex, parse, toCss: sheet.toCss } as StaticCssEngine
+    return { results, regex: createRegex, parse, sheet } as StaticCssEngine
   }
 }
 

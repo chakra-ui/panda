@@ -1,5 +1,5 @@
 import { getConfigDependencies } from '@pandacss/config'
-import { optimizeCss, mergeCss } from '@pandacss/core'
+import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
@@ -39,12 +39,6 @@ export class Builder {
   context: PandaContext | undefined
 
   configDependencies: Set<string> = new Set()
-
-  writeFileCss = (file: string, css: string) => {
-    const oldCss = this.fileCssMap?.get(file) ?? ''
-    const newCss = mergeCss(oldCss, css)
-    this.fileCssMap?.set(file, newCss)
-  }
 
   checkConfigDeps = (configPath: string, deps: Set<string>): ConfigDepsResult => {
     let modified = false
@@ -169,7 +163,7 @@ export class Builder {
     return contentFilesCache.get(ctx)!.fileCssMap
   }
 
-  extractFile = async (ctx: PandaContext, file: string) => {
+  extractFile = (ctx: PandaContext, file: string) => {
     const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
 
     const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
@@ -179,27 +173,23 @@ export class Builder {
     if (!parserResult) return
 
     this.fileModifiedMap.set(file, mtime)
-    this.writeFileCss(file, ctx.getParserCss(file))
 
     return parserResult
   }
 
-  extract = async () => {
+  extract = () => {
     const ctx = this.getContextOrThrow()
 
     const done = logger.time.info('Extracted in')
 
-    await Promise.allSettled(ctx.getFiles().map((file) => this.extractFile(ctx, file)))
+    ctx.getFiles().map((file) => this.extractFile(ctx, file))
 
     done()
   }
 
   toString = () => {
     const ctx = this.getContextOrThrow()
-    return ctx.getCss({
-      files: Array.from(this.fileCssMap.values()),
-      resolve: true,
-    })
+    return ctx.getCss({ resolve: true })
   }
 
   isValidRoot = (root: Root) => {

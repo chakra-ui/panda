@@ -5,7 +5,7 @@ import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
-import { createParserResult } from './parser-result'
+import { ParserResult } from './parser-result'
 import type { Config, ConfigTsOptions, ResultItem, Runtime } from '@pandacss/types'
 import { resolveTsPathPattern } from '@pandacss/config/ts-path'
 import type { Generator } from '@pandacss/generator'
@@ -88,7 +88,7 @@ export function createParser(context: ParserContext) {
     importRegex.push(createImportMatcher(importMap.jsx, [jsx.factory, ...jsx.nodes.map((node) => node.jsxName)]))
   }
 
-  return function parse(sourceFile: SourceFile | undefined) {
+  return function parse(sourceFile: SourceFile | undefined, hashFactory?: Generator['hashFactory']) {
     if (!sourceFile) return
 
     const filePath = sourceFile.getFilePath()
@@ -123,7 +123,7 @@ export function createParser(context: ParserContext) {
       },
     })
 
-    const parserResult = createParserResult(context)
+    const parserResult = new ParserResult(context, hashFactory)
 
     logger.debug(
       'ast:import',

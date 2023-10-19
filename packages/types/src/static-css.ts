@@ -1,4 +1,12 @@
-interface CssRule {
+interface WithConditions {
+  /**
+   * The css conditions to generate for the rule.
+   * @example ['hover', 'focus']
+   */
+  conditions?: string[]
+}
+
+export interface CssRule extends WithConditions {
   /**
    * The css properties to generate utilities for.
    * @example ['margin', 'padding']
@@ -6,18 +14,14 @@ interface CssRule {
   properties: {
     [property: string]: string[]
   }
-  /**
-   * The css conditions to generate utilities for.
-   * @example ['hover', 'focus']
-   */
-  conditions?: string[]
 }
 
-type RecipeRule =
-  | '*'
-  | ({
-      conditions?: string[]
-    } & { [variant: string]: boolean | string[] })
+interface RecipeRuleVariants {
+  [variant: string]: boolean | string[]
+}
+
+export type RecipeRule = '*' | (RecipeRuleVariants & WithConditions)
+export type PatternRule = '*' | CssRule
 
 export interface StaticCssOptions {
   /**
@@ -30,5 +34,10 @@ export interface StaticCssOptions {
   recipes?: {
     [recipe: string]: RecipeRule[]
   }
-  // TODO patterns
+  /**
+   * The css patterns to generate.
+   */
+  patterns?: {
+    [pattern: string]: PatternRule[]
+  }
 }
