@@ -925,9 +925,6 @@ importers:
         specifier: 4.4.11
         version: 4.4.11(@types/node@20.4.5)
     devDependencies:
-      '@pandacss/dev':
-        specifier: workspace:*
-        version: link:../cli
       '@types/react':
         specifier: 18.2.22
         version: 18.2.22
