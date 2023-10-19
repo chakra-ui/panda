@@ -97,6 +97,18 @@ function Example() {
 | [token-dictionary](packages/token-dictionary) | Contains code used to process tokens and semantic tokens    |
 | [shared](packages/shared)                     | Contains shared TS functions                                |
 
+## Contributing
+
+Feel like contributing? That's awesome! We have a
+[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md) to help guide you.
+
+### Want to help improve the docs?
+
+Our docsite lives in the [monorepo](./website/pages/docs/).
+
+If you're interested in contributing to the documentation, check out the
+[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md).
+
 ## Support
 
 Having trouble? Get help in the official [Panda Discord](https://discord.gg/VQrkpsgSx7).
