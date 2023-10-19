@@ -1,9 +1,20 @@
 import { outdent } from 'outdent'
+import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export function generatedJsxHelpers(ctx: Context) {
   return {
-    js: outdent`
+    js: match(ctx.isTemplateLiteralSyntax)
+      .with(
+        true,
+        () => outdent`
+      export const getDisplayName = (Component) => {
+        if (typeof Component === 'string') return Component
+        return Component?.displayName || Component?.name || 'Component'
+      }`,
+      )
+      .otherwise(
+        () => outdent`
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
     export const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
@@ -24,8 +35,9 @@ export function generatedJsxHelpers(ctx: Context) {
 
     export const getDisplayName = (Component) => {
       if (typeof Component === 'string') return Component
-      return Component.displayName || Component.name || 'Component'
+      return Component?.displayName || Component?.name || 'Component'
     }
   `,
+      ),
   }
 }

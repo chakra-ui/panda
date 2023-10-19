@@ -8,7 +8,9 @@ export function generatePreactJsxStringLiteralFactory(ctx: Context) {
     js: outdent`
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
+    ${ctx.file.import('getDisplayName', './factory-helper')}
     ${ctx.file.import('css, cx', '../css/index')}
+    ${ctx.file.import('mergeProps', '../helpers')}
 
     function createStyledFn(Dynamic) {
       return function styledFn(template) {
@@ -17,9 +19,8 @@ export function generatePreactJsxStringLiteralFactory(ctx: Context) {
         const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
           const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
          
-          const __styles__ = mergeProps(Dynamic.__styles__, styles)
-
           function classes() {
+            const __styles__ = mergeProps(Dynamic.__styles__, styles)
             return cx(css(__styles__), elementProps.className)
           }
 
@@ -30,7 +31,7 @@ export function generatePreactJsxStringLiteralFactory(ctx: Context) {
           })
         })
 
-        const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+        const name = getDisplayName(Dynamic)
         
         ${componentName}.displayName = \`${factoryName}.\${name}\`
         ${componentName}.__styles__ = styles

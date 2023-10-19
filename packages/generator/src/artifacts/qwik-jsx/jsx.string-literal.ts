@@ -7,23 +7,34 @@ export function generateQwikJsxStringLiteralFactory(ctx: Context) {
   return {
     js: outdent`
     import { h } from '@builder.io/qwik'
+    ${ctx.file.import('getDisplayName', './factory-helper')}
     ${ctx.file.import('css, cx', '../css/index')}
+    ${ctx.file.import('mergeProps', '../helpers')}
 
     function createStyledFn(Dynamic) {
       return function styledFn(template) {
-          const baseClassName = css(template)
-          const ${componentName} = function ${componentName}(props) {
-              const { as: Element = Dynamic, ...elementProps } = props
-              const classes = () => cx(baseClassName, elementProps.className)
+          const styles = css.raw(template)
+          
+          const ${componentName} = (props) => {
+            const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
+            
+            function classes() {
+              const __styles__ = mergeProps(Dynamic.__styles__, styles)
+              return cx(css(__styles__), elementProps.className)
+            }
 
-              return h(Element, {
-                  ...elementProps,
-                  className: classes(),
-              })
+            return h(Element, {
+              ...elementProps,
+              className: classes(),
+            })
           }
 
-          const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+          const name = getDisplayName(Dynamic)
+        
           ${componentName}.displayName = \`${factoryName}.\${name}\`
+          ${componentName}.__styles__ = styles
+          ${componentName}.__base__ = Dynamic
+  
           return ${componentName}
         }
     }

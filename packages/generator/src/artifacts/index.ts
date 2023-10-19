@@ -215,7 +215,7 @@ function setupJsx(ctx: Context): Artifact {
       { file: ctx.file.ext('is-valid-prop'), code: isValidProp?.js },
       { file: ctx.file.extDts('is-valid-prop'), code: isValidProp?.dts },
 
-      !ctx.isTemplateLiteralSyntax ? { file: ctx.file.ext('factory-helper'), code: helpers.js } : undefined,
+      { file: ctx.file.ext('factory-helper'), code: helpers.js },
 
       { file: ctx.file.ext('factory'), code: factory?.js },
       { file: ctx.file.extDts('factory'), code: types.jsxFactory },

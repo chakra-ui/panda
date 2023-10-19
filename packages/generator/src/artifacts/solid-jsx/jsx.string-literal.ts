@@ -7,15 +7,17 @@ export function generateSolidJsxStringLiteralFactory(ctx: Context) {
     js: outdent`
 import { mergeProps, splitProps } from 'solid-js'
 import { Dynamic, createComponent } from 'solid-js/web'
+${ctx.file.import('getDisplayName', './factory-helper')}
 ${ctx.file.import('css, cx', '../css/index')}
 
 function createStyled(element) {
   return function styledFn(template) {
-    const baseClassName = css(template)
-    return function ${componentName}(props) {
-      const mergedProps = mergeProps({ as: element }, props)
-      const [localProps, elementProps] = splitProps(mergedProps, ['as', 'class'])
+    const styles = css.raw(template)
 
+    const ${componentName} = (props) => {
+      const mergedProps = mergeProps({ as: element.__base__ || element }, props)
+      const [localProps, elementProps] = splitProps(mergedProps, ['as', 'class'])
+      
       return createComponent(
         Dynamic,
         mergeProps(
@@ -24,13 +26,22 @@ function createStyled(element) {
               return localProps.as
             },
             get class() {
-              return cx(baseClassName, localProps.class)
+              const __styles__ = mergeProps(Dynamic.__styles__ || {}, styles || {})
+              return cx(css(__styles__), localProps.class)
             },
           },
           elementProps,
         ),
       )
     }
+
+    const name = getDisplayName(Dynamic)
+
+    ${componentName}.displayName = \`${factoryName}.\${name}\`
+    ${componentName}.__styles__ = styles
+    ${componentName}.__base__ = element
+
+    return ${componentName}
   }
 }
 

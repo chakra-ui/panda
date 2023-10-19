@@ -21,5 +21,5 @@ interface ArtifactContent {
 
 export type Artifact = Nullable<{
   dir?: string[]
-  files: Nullable<ArtifactContent>[]
+  files: ArtifactContent[]
 }>
