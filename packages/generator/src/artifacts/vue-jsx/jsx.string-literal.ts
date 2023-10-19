@@ -9,7 +9,6 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
     import { defineComponent, h, computed } from 'vue'
     ${ctx.file.import('getDisplayName', './factory-helper')}
     ${ctx.file.import('css, cx', '../css/index')}
-    ${ctx.file.import('mergeProps', '../helpers')}
 
   function createStyled(Dynamic) {
     const name = getDisplayName(Dynamic)
@@ -23,8 +22,7 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
           const classes = computed(() => {
-            const __styles__ = mergeProps(Dynamic.__styles__ || {}, styles || {})
-            return cx(css(__styles__), elementProps.className)
+            return cx(css(Dynamic.__styles__, styles), elementProps.className)
           })
           
           return () => {

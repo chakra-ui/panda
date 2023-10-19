@@ -26,8 +26,7 @@ function createStyled(element) {
               return localProps.as
             },
             get class() {
-              const __styles__ = mergeProps(Dynamic.__styles__ || {}, styles || {})
-              return cx(css(__styles__), localProps.class)
+              return cx(css(Dynamic.__styles__, styles), localProps.class)
             },
           },
           elementProps,

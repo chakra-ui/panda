@@ -9,7 +9,6 @@ export function generateReactJsxStringLiteralFactory(ctx: Context) {
     import { createElement, forwardRef } from 'react'
     ${ctx.file.import('getDisplayName', './factory-helper')}
     ${ctx.file.import('css, cx', '../css/index')}
-    ${ctx.file.import('mergeProps', '../helpers')}
 
     function createStyledFn(Dynamic) {
       return function styledFn(template) {
@@ -19,8 +18,7 @@ export function generateReactJsxStringLiteralFactory(ctx: Context) {
           const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
           
           function classes() {
-            const __styles__ = mergeProps(Dynamic.__styles__, styles)
-            return cx(css(__styles__), elementProps.className)
+            return cx(css(Dynamic.__styles__, styles), elementProps.className)
           }
 
           return createElement(Element, {
