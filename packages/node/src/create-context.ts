@@ -5,6 +5,7 @@ import type { Runtime } from '@pandacss/types'
 import { getChunkEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
 import { getOutputEngine } from './output-engine'
+import { logger } from '@pandacss/logger'
 
 export const createContext = (conf: ConfigResultWithHooks) => {
   const generator = createGenerator(conf)
@@ -12,6 +13,10 @@ export const createContext = (conf: ConfigResultWithHooks) => {
   const runtime = nodeRuntime
 
   config.cwd ||= runtime.cwd()
+
+  if (config.logLevel) {
+    logger.level = config.logLevel
+  }
 
   const { include, exclude, cwd } = config
   const getFiles = () => runtime.fs.glob({ include, exclude, cwd })
