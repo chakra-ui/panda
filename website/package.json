@@ -34,7 +34,7 @@
     "@pandacss/dev": "workspace:*",
     "@types/react": "^18.2.22",
     "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.27",
+    "postcss": "^8.4.31",
     "prettier": "^2.8.8"
   }
 }

@@ -75,7 +75,7 @@ export class AtomicRule {
       // convert css-in-js to css rule
       const cssRoot = toCss(transformed.styles, { important })
 
-      rule.nodes = cssRoot.root.nodes
+      rule.nodes = cssRoot.root.nodes as postcss.ChildNode[]
 
       // no empty rulesets
       if (rule.isEmpty) return
