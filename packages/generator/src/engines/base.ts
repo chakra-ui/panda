@@ -10,7 +10,14 @@ import {
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { CascadeLayers, ConfigResultWithHooks, RequiredBy, TSConfig as _TSConfig } from '@pandacss/types'
+import type {
+  CascadeLayers,
+  ConfigResultWithHooks,
+  HashOptions,
+  PrefixOptions,
+  RequiredBy,
+  TSConfig as _TSConfig,
+} from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 
@@ -137,14 +144,8 @@ export const getBaseEngine = (conf: ConfigResultWithHooks): PandaBaseEngine => {
 export interface PandaBaseEngine extends ConfigResultWithHooks {
   isTemplateLiteralSyntax: boolean
   studio: RequiredBy<NonNullable<ConfigResultWithHooks['config']['studio']>, 'outdir'>
-  hash: {
-    tokens: boolean | undefined
-    className: boolean | undefined
-  }
-  prefix: {
-    tokens: string | undefined
-    className: string | undefined
-  }
+  hash: HashOptions
+  prefix: PrefixOptions
   tokens: TokenDictionary
   utility: Utility
   properties: string[]

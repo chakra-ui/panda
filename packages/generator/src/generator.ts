@@ -9,6 +9,8 @@ import { generateResetCss } from './artifacts/css/reset-css'
 import { generateTokenCss } from './artifacts/css/token-css'
 import { generateKeyframeCss } from './artifacts/css/keyframe-css'
 import { generateGlobalCss } from './artifacts/css/global-css'
+import type { PatternDetail } from './engines/pattern'
+import type { RecipeNode } from '@pandacss/core'
 
 const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   ...conf,
@@ -88,6 +90,14 @@ export const createGenerator = (conf: ConfigResultWithHooks): Generator => {
   }
 }
 
+interface JsxOptions {
+  framework: Context['jsx']['framework']
+  factory: Context['jsx']['factoryName']
+  styleProps: Context['jsx']['styleProps']
+  isStyleProp: Context['isValidProperty']
+  nodes: Array<PatternDetail | RecipeNode>
+}
+
 export interface Generator extends Context {
   getArtifacts: () => Artifact[]
   getStaticCss: (ctx: Context) => string
@@ -100,13 +110,7 @@ export interface Generator extends Context {
   messages: ReturnType<typeof getMessages>
   parserOptions: {
     importMap: InternalImportMap
-    jsx: {
-      framework: Context['jsx']['framework']
-      factory: Context['jsx']['factoryName']
-      styleProps: Context['jsx']['styleProps']
-      isStyleProp: Context['isValidProperty']
-      nodes: Array<Context['patterns']['details'][number] | Context['recipes']['details'][number]>
-    }
+    jsx: JsxOptions
     patternKeys: Context['patterns']['keys']
     recipeKeys: Context['recipes']['keys']
     getRecipesByJsxName: Context['recipes']['filter']
