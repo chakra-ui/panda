@@ -4,6 +4,7 @@ import merge from 'lodash.merge'
 import type { Conditions } from './conditions'
 import { cssToJs, toCss } from './to-css'
 import type { Utility } from './utility'
+import type postcss from 'postcss'
 
 export type SerializeContext = {
   conditions: Conditions
@@ -37,7 +38,7 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
        */
       const segments = conditions.segment(conds)
 
-      rule.nodes = cssResult.root.nodes
+      rule.nodes = cssResult.root.nodes as postcss.ChildNode[]
       rule.selector = segments.selector.length > 0 ? segments.selector[0] : '&'
 
       rule.update()
