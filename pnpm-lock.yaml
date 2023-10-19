@@ -15529,7 +15529,7 @@ packages:
       '@babel/core': 7.22.20
       '@babel/runtime': 7.22.15
       '@babel/types': 7.23.0
-      gatsby: 5.11.0(babel-eslint@10.1.0)(esbuild@0.18.9)(react-dom@18.2.0)(react@18.2.0)(typescript@5.2.2)
+      gatsby: 5.11.0(babel-eslint@10.1.0)(esbuild@0.18.20)(react-dom@18.2.0)(react@18.2.0)(typescript@5.2.2)
       gatsby-core-utils: 4.11.0
     dev: false
 
@@ -15543,7 +15543,7 @@ packages:
       '@babel/core': 7.22.5
       '@babel/runtime': 7.22.15
       '@babel/types': 7.23.0
-      gatsby: 5.11.0(babel-eslint@10.1.0)(esbuild@0.18.9)(react-dom@18.2.0)(react@18.2.0)(typescript@5.2.2)
+      gatsby: 5.11.0(babel-eslint@10.1.0)(esbuild@0.18.20)(react-dom@18.2.0)(react@18.2.0)(typescript@5.2.2)
       gatsby-core-utils: 4.11.0
     dev: false
 
