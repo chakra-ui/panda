@@ -26,7 +26,7 @@ function createStyled(element) {
               return localProps.as
             },
             get class() {
-              return cx(css(Dynamic.__styles__, styles), localProps.class)
+              return cx(css(element.__styles__, styles), localProps.class)
             },
           },
           elementProps,
@@ -34,7 +34,7 @@ function createStyled(element) {
       )
     }
 
-    const name = getDisplayName(Dynamic)
+    const name = getDisplayName(element)
 
     ${componentName}.displayName = \`${factoryName}.\${name}\`
     ${componentName}.__styles__ = styles
