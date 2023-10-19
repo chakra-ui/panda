@@ -1,12 +1,8 @@
 import type { CompositionStyleObject } from './system-types'
+import type { Token } from './tokens'
 
 interface Recursive<T> {
   [key: string]: Recursive<T> | T
-}
-
-export interface Token<Value = any> {
-  value: Value
-  description?: string
 }
 
 /* -----------------------------------------------------------------------------

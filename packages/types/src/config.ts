@@ -211,7 +211,7 @@ interface CssgenOptions {
    * The namespace prefix for the generated css classes and css variables.
    * @default ''
    */
-  prefix?: string | { cssVar: string; className: string }
+  prefix?: string | { cssVar?: string; className?: string }
   /**
    * The value separator used in the generated class names.
    * @default '_'
