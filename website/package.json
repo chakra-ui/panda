@@ -28,7 +28,7 @@
     "react-dom": "^18.2.0",
     "react-fast-marquee": "^1.6.0",
     "scroll-into-view-if-needed": "^3.0.10",
-    "zod": "^3.21.4"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
