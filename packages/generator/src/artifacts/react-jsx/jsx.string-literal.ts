@@ -17,7 +17,7 @@ export function generateReactJsxStringLiteralFactory(ctx: Context) {
         const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
           const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
 
-          const __styles__ = mergeProps(Dynamic.__styles__ ?? {}, styles ?? {})
+          const __styles__ = mergeProps(Dynamic.__styles__, styles)
 
           function classes() {
             return cx(css(__styles__), elementProps.className)

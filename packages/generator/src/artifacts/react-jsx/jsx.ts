@@ -8,25 +8,13 @@ export function generateReactJsxFactory(ctx: Context) {
     js: outdent`
     import { createElement, forwardRef, useMemo } from 'react'
     ${ctx.file.import('css, cx, cva', '../css/index')}
+    ${ctx.file.import(
+      'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
+      './factory-helper',
+    )}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
-    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
-
-    const composeShouldForwardProps = (tag, _shouldForwardProp) =>
-      tag.__shouldForwardProps__ && _shouldForwardProp
-        ? (propName) => tag.__shouldForwardProps__(propName) && _shouldForwardProp(propName)
-        : _shouldForwardProp
-
-    const composeCvaFn = (cvaA, cvaB) => {
-      if (cvaA && !cvaB) return cvaA
-      if (!cvaA && cvaB) return cvaB
-      if ((cvaA.__cva__ && cvaB.__cva__) || (cvaA.__recipe__ && cvaB.__recipe__)) return cvaA.merge(cvaB.config)
-      const error = new TypeError('Cannot merge cva with recipe. Please use either cva or recipe.')
-      TypeError.captureStackTrace?.(error)
-      throw error
-    }
-    
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
@@ -74,7 +62,7 @@ export function generateReactJsxFactory(ctx: Context) {
         })
       })
 
-      const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+      const name = getDisplayName(Dynamic)
       
       ${componentName}.displayName = \`${factoryName}.\${name}\`
       ${componentName}.__cva__ = cvaFn
