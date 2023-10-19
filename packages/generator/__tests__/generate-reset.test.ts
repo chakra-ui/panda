@@ -8,99 +8,73 @@ describe('generate reset', () => {
     expect(generateResetCss(createGenerator(fixtureDefaults), '.pd-reset')).toMatchInlineSnapshot(`
       "@layer reset {
         .pd-reset * {
+          font: inherit;
           margin: 0;
           padding: 0;
-          font: inherit;
         }
 
-        .pd-reset *,
-        .pd-reset *::before,
-        .pd-reset *::after {
+        .pd-reset *, .pd-reset :before, .pd-reset :after {
           box-sizing: border-box;
-          border-width: 0;
           border-style: solid;
+          border-width: 0;
           border-color: var(--global-color-border, currentColor);
         }
 
         .pd-reset {
-          line-height: 1.5;
-          --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-            'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-            'Noto Color Emoji';
+          --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", Roboto, \\"Helvetica Neue\\", Arial, \\"Noto Sans\\", sans-serif, \\"Apple Color Emoji\\", \\"Segoe UI Emoji\\", \\"Segoe UI Symbol\\", \\"Noto Color Emoji\\";
           -webkit-text-size-adjust: 100%;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           -moz-tab-size: 4;
           tab-size: 4;
+          line-height: 1.5;
           font-family: var(--global-font-body, var(--font-fallback));
         }
 
         .pd-reset hr {
-          height: 0;
           color: inherit;
           border-top-width: 1px;
+          height: 0;
         }
 
         body {
-          height: 100%;
           line-height: inherit;
+          height: 100%;
         }
 
         .pd-reset img {
           border-style: none;
         }
 
-        .pd-reset img,
-        .pd-reset svg,
-        .pd-reset video,
-        .pd-reset canvas,
-        .pd-reset audio,
-        .pd-reset iframe,
-        .pd-reset embed,
-        .pd-reset object {
-          display: block;
+        .pd-reset img, .pd-reset svg, .pd-reset video, .pd-reset canvas, .pd-reset audio, .pd-reset iframe, .pd-reset embed, .pd-reset object {
           vertical-align: middle;
+          display: block;
         }
 
-        .pd-reset img,
-        .pd-reset video {
+        .pd-reset img, .pd-reset video {
           max-width: 100%;
           height: auto;
         }
 
-        .pd-reset p,
-        .pd-reset h1,
-        .pd-reset h2,
-        .pd-reset h3,
-        .pd-reset h4,
-        .pd-reset h5,
-        .pd-reset h6 {
+        .pd-reset p, .pd-reset h1, .pd-reset h2, .pd-reset h3, .pd-reset h4, .pd-reset h5, .pd-reset h6 {
           overflow-wrap: break-word;
         }
 
-        .pd-reset ol,
-        .pd-reset ul {
+        .pd-reset ol, .pd-reset ul {
           list-style: none;
         }
 
-        .pd-reset code,
-        .pd-reset kbd,
-        .pd-reset pre,
-        .pd-reset samp {
+        .pd-reset code, .pd-reset kbd, .pd-reset pre, .pd-reset samp {
           font-size: 1em;
         }
 
-        .pd-reset button,
-        .pd-reset [type='button'],
-        .pd-reset [type='reset'],
-        .pd-reset [type='submit'] {
+        .pd-reset button, .pd-reset [type=\\"button\\"], .pd-reset [type=\\"reset\\"], .pd-reset [type=\\"submit\\"] {
           -webkit-appearance: button;
-          background-color: transparent;
+          background-color: #0000;
           background-image: none;
         }
 
-        .pd-reset button,
-        .pd-reset select {
+        .pd-reset button, .pd-reset select {
           text-transform: none;
         }
 
@@ -110,8 +84,7 @@ describe('generate reset', () => {
           border-collapse: collapse;
         }
 
-        .pd-reset input::placeholder,
-        .pd-reset textarea::placeholder {
+        .pd-reset input::placeholder, .pd-reset textarea::placeholder {
           opacity: 1;
           color: var(--global-color-placeholder, #9ca3af);
         }
@@ -128,20 +101,19 @@ describe('generate reset', () => {
           font-size: 80%;
         }
 
-        .pd-reset sub,
-        .pd-reset sup {
+        .pd-reset sub, .pd-reset sup {
+          vertical-align: baseline;
           font-size: 75%;
           line-height: 0;
           position: relative;
-          vertical-align: baseline;
         }
 
         .pd-reset sub {
-          bottom: -0.25em;
+          bottom: -.25em;
         }
 
         .pd-reset sup {
-          top: -0.5em;
+          top: -.5em;
         }
 
         .pd-reset dialog {
@@ -157,34 +129,30 @@ describe('generate reset', () => {
           text-decoration: underline dotted;
         }
 
-        .pd-reset b,
-        .pd-reset strong {
+        .pd-reset b, .pd-reset strong {
           font-weight: bolder;
         }
 
-        .pd-reset code,
-        .pd-reset kbd,
-        .pd-reset samp,
-        .pd-reset pre {
+        .pd-reset code, .pd-reset kbd, .pd-reset samp, .pd-reset pre {
+          --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \\"Liberation Mono\\", \\"Courier New\\";
           font-size: 1em;
-          --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
           font-family: var(--global-font-mono, var(--font-fallback));
         }
 
-        .pd-reset input[type=\\"text\\"],
-        .pd-reset input[type=\\"email\\"],
-        .pd-reset input[type=\\"search\\"],
-        .pd-reset input[type=\\"password\\"] {
+        .pd-reset input[type=\\"text\\"], .pd-reset input[type=\\"email\\"], .pd-reset input[type=\\"search\\"], .pd-reset input[type=\\"password\\"] {
           -webkit-appearance: none;
           -moz-appearance: none;
         }
 
-        .pd-reset input[type='search'] {
+        .pd-reset input[type=\\"search\\"] {
           -webkit-appearance: textfield;
           outline-offset: -2px;
         }
 
-        .pd-reset ::-webkit-search-decoration,
+        .pd-reset ::-webkit-search-decoration {
+          -webkit-appearance: none;
+        }
+
         .pd-reset ::-webkit-search-cancel-button {
           -webkit-appearance: none;
         }
@@ -194,12 +162,15 @@ describe('generate reset', () => {
           font: inherit;
         }
 
-        .pd-reset input[type=\\"number\\"]::-webkit-inner-spin-button,
+        .pd-reset input[type=\\"number\\"]::-webkit-inner-spin-button {
+          height: auto;
+        }
+
         .pd-reset input[type=\\"number\\"]::-webkit-outer-spin-button {
           height: auto;
         }
 
-        .pd-reset input[type='number']{
+        .pd-reset input[type=\\"number\\"] {
           -moz-appearance: textfield;
         }
 
@@ -210,7 +181,8 @@ describe('generate reset', () => {
         .pd-reset :-moz-focusring {
           outline: auto;
         }
-      }"
+      }
+      "
     `)
   })
 })

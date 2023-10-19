@@ -49,10 +49,11 @@ describe('compositions', () => {
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
-      }
+            font-weight: var(--font-weights-bold);
           }
-      }"
+        }
+      }
+      "
     `)
 
     expect(css({ styles: { textStyle: 'headline.h2' } })).toMatchInlineSnapshot(`
@@ -60,16 +61,20 @@ describe('compositions', () => {
         @layer compositions {
           .textStyle_headline\\\\.h2 {
             font-size: 1.5rem;
-            font-weight: var(--font-weights-bold);
-      }
+          }
 
-          @media screen and (min-width: 64em) {
+          @media screen and (width >= 64em) {
             .textStyle_headline\\\\.h2 {
               font-size: 2rem;
+            }
           }
+
+          .textStyle_headline\\\\.h2 {
+            font-weight: var(--font-weights-bold);
+          }
+        }
       }
-          }
-      }"
+      "
     `)
   })
 })

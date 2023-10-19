@@ -1,16 +1,10 @@
-import postcss, { Root } from 'postcss'
-import dedupe from 'postcss-discard-duplicates'
-import discardEmpty from 'postcss-discard-empty'
-import mergeRules from 'postcss-merge-rules'
-import minifySelectors from 'postcss-minify-selectors'
-import nested from 'postcss-nested'
-import normalizeWhiteSpace from 'postcss-normalize-whitespace'
-import expandTokenFn from './plugins/expand-token-fn'
-import mergeCascadeLayers from './plugins/merge-layers'
-import prettify from './plugins/prettify'
-import sortCss from './plugins/sort-css'
-import sortMediaQueries from './plugins/sort-mq'
+import { logger } from '@pandacss/logger'
 import type { Token } from '@pandacss/types'
+import { Features, transform } from 'lightningcss'
+import postcss, { Root } from 'postcss'
+import nested from 'postcss-nested'
+import expandTokenFn from './plugins/expand-token-fn'
+import prettify from './plugins/prettify'
 
 type OptimizeOptions = {
   minify?: boolean
@@ -18,26 +12,29 @@ type OptimizeOptions = {
 
 export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
   const { minify = false } = options
-  const plugins = [
-    nested(),
-    mergeCascadeLayers(),
-    sortMediaQueries(),
-    dedupe(),
-    mergeRules(),
-    sortCss(),
-    discardEmpty(),
-  ]
 
-  if (minify) {
-    plugins.push(normalizeWhiteSpace(), minifySelectors())
-  } else {
-    plugins.push(prettify())
+  const codeStr = typeof code === 'string' ? code : code.toString()
+  const result = transform({
+    code: Buffer.from(codeStr),
+    minify,
+    sourceMap: false,
+    filename: 'styles.css',
+    include: Features.Nesting,
+    errorRecovery: true,
+  })
+
+  if (result.warnings.length) {
+    const split = codeStr.split('\n')
+    logger.warn(
+      'css',
+      result.warnings.map((w) => ({ ...w, line: split[w.loc.line - 1] })),
+    )
   }
 
-  const { css } = postcss(plugins).process(code)
-  return css
+  return result.code.toString()
 }
 
+// TODO plugin lightning
 export function expandCssFunctions(
   code: string | Root,
   options: { token?: (key: string) => string; raw?: (path: string) => Token | undefined } = {},
@@ -47,11 +44,13 @@ export function expandCssFunctions(
   return css
 }
 
+// TODO lightning / rm ?
 export function expandNestedCss(code: string) {
   const { css } = postcss([nested(), prettify()]).process(code)
   return css
 }
 
+// TODO lightning
 export function prettifyCss(code: string) {
   const { css } = postcss([prettify()]).process(code)
   return css

@@ -9,35 +9,36 @@ describe('Generates keyframes', () => {
       "@layer tokens {
         @keyframes spin {
           to {
-            transform: rotate(360deg)
-              }
+            transform: rotate(360deg);
           }
+        }
 
         @keyframes ping {
           75%, 100% {
+            opacity: 0;
             transform: scale(2);
-            opacity: 0
-              }
           }
+        }
 
         @keyframes pulse {
           50% {
-            opacity: .5
-              }
+            opacity: .5;
           }
+        }
 
         @keyframes bounce {
           0%, 100% {
+            animation-timing-function: cubic-bezier(.8, 0, 1, 1);
             transform: translateY(-25%);
-            animation-timing-function: cubic-bezier(0.8,0,1,1)
-              }
+          }
 
           50% {
+            animation-timing-function: cubic-bezier(0, 0, .2, 1);
             transform: none;
-            animation-timing-function: cubic-bezier(0,0,0.2,1)
-              }
           }
-      }"
+        }
+      }
+      "
     `)
   })
 })

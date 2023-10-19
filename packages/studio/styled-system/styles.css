@@ -1,12 +1,12 @@
 @layer reset, base, tokens, recipes, utilities;
+@import "./reset.css";
+@import "./global.css";
+@import "./static.css";
+@import "./tokens/index.css";
+@import "./tokens/keyframes.css";
 
-@import './reset.css';
-
-@import './global.css';
-
-@import './static.css';
-
-@import './tokens/index.css';
-
-@import './tokens/keyframes.css';
-
+@layer utilities {
+  .text_red\.400 {
+    color: var(--colors-red-400);
+  }
+}

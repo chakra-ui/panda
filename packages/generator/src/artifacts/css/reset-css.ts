@@ -217,7 +217,7 @@ export function generateResetCss(ctx: Context, scope = '', sheet?: Stylesheet) {
     return
   }
 
-  const code = optimizeCss(output, { minify: ctx.config.minify })
+  const code = optimizeCss(`@layer reset {${output}}`, { minify: ctx.config.minify })
   void ctx.hooks.callHook('generator:css', 'reset.css', code)
 
   return code

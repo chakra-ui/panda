@@ -14,20 +14,22 @@ describe('atomic-rule / prefix', () => {
     expect(backend({ color: 'red' })).toMatchInlineSnapshot(`
       "@layer utilities {
         .tw-eIKWVi {
-          color: red
+          color: red;
+        }
       }
-      }"
+      "
     `)
     expect(frontend({ color: 'red' })).toMatchInlineSnapshot('"tw-eIKWVi"')
 
     expect(backend({ color: { sm: 'red' } })).toMatchInlineSnapshot(`
       "@layer utilities {
-        @media screen and (min-width: 40em) {
+        @media screen and (width >= 40em) {
           .tw-geqOyW {
-            color: red
+            color: red;
           }
+        }
       }
-      }"
+      "
     `)
     expect(frontend({ color: { sm: 'red' } })).toMatchInlineSnapshot('"tw-geqOyW"')
   })

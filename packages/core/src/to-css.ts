@@ -6,6 +6,7 @@ import { safeParse } from './safe-parse'
 
 export function toCss(styles: Dict, { important }: { important?: boolean } = {}) {
   const result = postcss([
+    // TODO rm ou swap à lightning ?
     postcssNested({
       bubble: ['breakpoint'],
     }),
@@ -13,27 +14,16 @@ export function toCss(styles: Dict, { important }: { important?: boolean } = {})
     parser: postCssJs.parser,
   })
 
+  // TODO rm
   if (important) {
     result.root.walkDecls((decl) => {
       decl.important = true
     })
   }
 
-  return result
+  return result as postcss.LazyResult
 }
 
 export function cssToJs(css: string) {
   return postCssJs.objectify(safeParse(css))
-}
-
-export function addImportant(css: Record<string, any>): Record<string, any> {
-  const result = postcss().process(css, {
-    parser: postCssJs.parser,
-  })
-
-  result.root.walkDecls((decl) => {
-    decl.important = true
-  })
-
-  return cssToJs(result.css)
 }

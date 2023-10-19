@@ -1,8 +1,7 @@
 import { sortStyleRules } from '@pandacss/core'
-import { esc, getOrCreateSet, isImportant, toHash, traverse, withoutImportant } from '@pandacss/shared'
+import { esc, getOrCreateSet, isImportant, markImportant, toHash, withoutImportant } from '@pandacss/shared'
 import type {
   AtomicStyleResult,
-  Dict,
   GroupedResult,
   GroupedStyleResultDetails,
   RecipeBaseResult,
@@ -10,23 +9,6 @@ import type {
   StyleResultObject,
 } from '@pandacss/types'
 import { HashFactory, type CollectorContext } from './hash-factory'
-
-const markImportant = (styles: Dict) => {
-  const obj = {} as Dict
-  let prevObj = obj
-
-  traverse(styles, (args) => {
-    obj[args.key] = args.value
-    if (typeof args.value === 'object') {
-      prevObj = args.value
-      return
-    }
-
-    prevObj[args.key] = args.value + '!important'
-  })
-
-  return obj
-}
 
 export class StyleCollector {
   constructor(private context: CollectorContext) {}
@@ -97,6 +79,9 @@ export class StyleCollector {
 
     const transform = recipeName ? this.context.recipes.getTransform(recipeName) : this.context.utility.transform
     const transformed = transform(entry.prop, withoutImportant(entry.value))
+    if (!transformed.className) {
+      return
+    }
 
     const important = isImportant(entry.value)
     const styles = important ? markImportant(transformed.styles) : transformed.styles
@@ -104,6 +89,7 @@ export class StyleCollector {
     const parts = entry.cond ? entry.cond.split(HashFactory.conditionSeparator) : []
     const className = this.formatSelector(parts, transformed.className)
     const classSelector = important ? `.${className}\\!` : `.${className}`
+
     const basePath = [classSelector]
 
     let obj = {} as StyleResultObject
@@ -141,6 +127,9 @@ export class StyleCollector {
 
       const transform = this.context.utility.transform
       const transformed = transform(entry.prop, withoutImportant(entry.value))
+      if (!transformed.className) {
+        return
+      }
 
       const important = isImportant(entry.value)
       const result = important ? markImportant(transformed.styles) : transformed.styles
@@ -202,6 +191,8 @@ export class StyleCollector {
 
     hashFactory.atomic.forEach((item) => {
       const styleResult = this.getAtomic(item)
+      if (!styleResult) return
+
       atomic.push(styleResult)
     })
 
@@ -214,6 +205,8 @@ export class StyleCollector {
     hashFactory.recipes.forEach((set, recipeName) => {
       set.forEach((item) => {
         const styleResult = this.getAtomic(item)
+        if (!styleResult) return
+
         const stylesSet = getOrCreateSet(this.recipes, recipeName)
         stylesSet.add(styleResult)
 
@@ -234,6 +227,8 @@ export class StyleCollector {
     hashFactory.recipes_slots.forEach((set, slotKey) => {
       set.forEach((item) => {
         const styleResult = this.getAtomic(item)
+        if (!styleResult) return
+
         const stylesSet = getOrCreateSet(this.recipes_slots, slotKey)
         stylesSet.add(styleResult)
 

@@ -87,98 +87,102 @@ describe('rule processor', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\\\! {
-          color: red !important
-      }
-
-        .border_1px_solid_token\\\\(red\\\\.100\\\\) {
-          border: 1px solid red\\\\.100
-      }
-
-        .bg_blue\\\\.300 {
-          background: var(--colors-blue-300)
-      }
-
-        .w_1 {
-          width: var(--sizes-1)
-      }
-
-        .fs_xs {
-          font-size: var(--font-sizes-xs)
-      }
-
-        [data-theme=dark] .dark\\\\:fs_2xl, .dark .dark\\\\:fs_2xl, .dark\\\\:fs_2xl.dark, .dark\\\\:fs_2xl[data-theme=dark] {
-          font-size: var(--font-sizes-2xl)
-      }
-
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green[data-attr='test'] {
-          color: green
-      }
-
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: purple
-      }
-
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: cyan
-      }
-
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          opened: orange
-      }
-
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          xl: pink
-      }
-
-        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
-          font-size: var(--font-sizes-xl)
-      }
-
-        .hover\\\\:fs_md:is(:hover, [data-hover]) {
-          font-size: var(--font-sizes-md)
-      }
-
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
-      }
-      }
+            font-weight: var(--font-weights-bold);
+          }
+        }
 
-        @media screen and (min-width: 40em) {
+        .text_red\\\\! {
+          color: red !important;
+        }
+
+        .border_1px_solid_token\\\\(red\\\\.100\\\\) {
+          border: 1px solid red\\\\.100;
+        }
+
+        .bg_blue\\\\.300 {
+          background: var(--colors-blue-300);
+        }
+
+        .w_1 {
+          width: var(--sizes-1);
+        }
+
+        .fs_xs {
+          font-size: var(--font-sizes-xs);
+        }
+
+        [data-theme=\\"dark\\"] .dark\\\\:fs_2xl, .dark .dark\\\\:fs_2xl, .dark\\\\:fs_2xl.dark, .dark\\\\:fs_2xl[data-theme=\\"dark\\"] {
+          font-size: var(--font-sizes-2xl);
+        }
+
+        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green[data-attr=\\"test\\"] {
+          color: green;
+        }
+
+        .hover\\\\:fs_md:is(:hover, [data-hover]) {
+          font-size: var(--font-sizes-md);
+        }
+
+        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr=\\"test\\"]:is([aria-expanded=\\"true\\"], [data-expanded], [data-state=\\"expanded\\"]) {
+          color: purple;
+        }
+
+        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+          font-size: var(--font-sizes-xl);
+        }
+
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr=\\"test\\"]:is([aria-expanded=\\"true\\"], [data-expanded], [data-state=\\"expanded\\"]) {
+          color: #0ff;
+        }
+
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange[data-attr=\\"test\\"]:is([aria-expanded=\\"true\\"], [data-expanded], [data-state=\\"expanded\\"]) {
+          _opened: orange;
+        }
+
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink[data-attr=\\"test\\"]:is([aria-expanded=\\"true\\"], [data-expanded], [data-state=\\"expanded\\"]) {
+          _xl: pink;
+        }
+
+        @media screen and (width >= 40em) {
           .sm\\\\:w_2 {
-            width: var(--sizes-2)
+            width: var(--sizes-2);
           }
+
           .sm\\\\:fs_sm {
-            font-size: var(--font-sizes-sm)
+            font-size: var(--font-sizes-sm);
           }
+
           .sm\\\\:text_yellow {
-            color: yellow
+            color: #ff0;
           }
+
           .sm\\\\:bg_red {
-            background-color: red
+            background-color: red;
           }
-      }
+        }
 
-        @media screen and (min-width: 40em) {
-          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
-            background-color: green
-          }
-      }
-
-        @media screen and (min-width: 48em) {
-          .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
-            font-size: var(--font-sizes-lg)
-          }
-      }
-
-        @media screen and (min-width: 80em) {
+        @media screen and (width >= 80em) {
           .xl\\\\:w_3 {
-            width: var(--sizes-3)
+            width: var(--sizes-3);
           }
+        }
+
+        @media screen and (width >= 40em) {
+          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
+            background-color: green;
+          }
+        }
+
+        @media screen and (width >= 48em) {
+          .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
+            font-size: var(--font-sizes-lg);
+          }
+        }
       }
-      }"
+      "
     `)
   })
 
@@ -195,46 +199,47 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        .buttonStyle--size_sm {
-          height: 2.5rem;
-          min-width: 2.5rem;
-          padding: 0 0.5rem
-      }
-
-        .buttonStyle--variant_solid {
-          background-color: blue;
-          color: var(--colors-white);
-      }
-
-        .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
-          color: var(--colors-black);
-      }
-
-        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue;
-      }
-
         @layer _base {
           .buttonStyle {
-            display: inline-flex;
-            align-items: center;
             justify-content: center;
-      }
+            align-items: center;
+            display: inline-flex;
+          }
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
-      }
-      }
-
-        @media screen and (min-width: 48em) {
-          .md\\\\:buttonStyle--size_md {
-            height: 3rem;
-            min-width: 3rem;
-            padding: 0 0.75rem
           }
+        }
+
+        .buttonStyle--size_sm {
+          min-width: 2.5rem;
+          height: 2.5rem;
+          padding: 0 .5rem;
+        }
+
+        @media screen and (width >= 48em) {
+          .md\\\\:buttonStyle--size_md {
+            min-width: 3rem;
+            height: 3rem;
+            padding: 0 .75rem;
+          }
+        }
+
+        .buttonStyle--variant_solid {
+          color: var(--colors-white);
+          background-color: #00f;
+        }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: #00008b;
+        }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          color: var(--colors-black);
+          background-color: gray;
+        }
       }
-      }"
+      "
     `)
   })
 
@@ -323,101 +328,102 @@ describe('rule processor', () => {
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .d_inline-flex {
-          display: inline-flex
-      }
-
-        .items_center {
-          align-items: center
-      }
-
-        .justify_center {
-          justify-content: center
-      }
-
-        .h_2\\\\.5rem {
-          height: 2.5rem
-      }
-
-        .min-w_2\\\\.5rem {
-          min-width: 2.5rem
-      }
-
-        .p_0_0\\\\.5rem {
-          padding: 0 0.5rem
-      }
-
-        .h_3rem {
-          height: 3rem
-      }
-
-        .min-w_3rem {
-          min-width: 3rem
-      }
-
-        .p_0_0\\\\.75rem {
-          padding: 0 0.75rem
-      }
-
-        .bg_blue {
-          background-color: blue
-      }
-
-        .text_white {
-          color: var(--colors-white)
-      }
-
-        .bg_transparent {
-          background-color: var(--colors-transparent)
-      }
-
-        .border_1px_solid_blue {
-          border: 1px solid blue
-      }
-
-        .text_blue {
-          color: blue
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
-          background-color: gray
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
-          color: var(--colors-black)
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
-          background-color: var(--colors-transparent)
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray[data-disabled] {
-          border: 1px solid gray
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray[data-disabled] {
-          color: gray
-      }
-
-        .hover\\\\:bg_darkblue:is(:hover, [data-hover]) {
-          background-color: darkblue
-      }
-
-        .hover\\\\:bg_blue:is(:hover, [data-hover]) {
-          background-color: blue
-      }
-
-        .hover\\\\:text_white:is(:hover, [data-hover]) {
-          color: var(--colors-white)
-      }
-
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+            font-weight: var(--font-weights-bold);
+          }
+        }
+
+        .d_inline-flex {
+          display: inline-flex;
+        }
+
+        .items_center {
+          align-items: center;
+        }
+
+        .justify_center {
+          justify-content: center;
+        }
+
+        .h_2\\\\.5rem {
+          height: 2.5rem;
+        }
+
+        .min-w_2\\\\.5rem {
+          min-width: 2.5rem;
+        }
+
+        .p_0_0\\\\.5rem {
+          padding: 0 .5rem;
+        }
+
+        .h_3rem {
+          height: 3rem;
+        }
+
+        .min-w_3rem {
+          min-width: 3rem;
+        }
+
+        .p_0_0\\\\.75rem {
+          padding: 0 .75rem;
+        }
+
+        .bg_blue {
+          background-color: #00f;
+        }
+
+        .text_white {
+          color: var(--colors-white);
+        }
+
+        .bg_transparent {
+          background-color: var(--colors-transparent);
+        }
+
+        .border_1px_solid_blue {
+          border: 1px solid #00f;
+        }
+
+        .text_blue {
+          color: #00f;
+        }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
+          background-color: gray;
+        }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
+          color: var(--colors-black);
+        }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
+          background-color: var(--colors-transparent);
+        }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray[data-disabled] {
+          border: 1px solid gray;
+        }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray[data-disabled] {
+          color: gray;
+        }
+
+        .hover\\\\:bg_darkblue:is(:hover, [data-hover]) {
+          background-color: #00008b;
+        }
+
+        .hover\\\\:bg_blue:is(:hover, [data-hover]) {
+          background-color: #00f;
+        }
+
+        .hover\\\\:text_white:is(:hover, [data-hover]) {
+          color: var(--colors-white);
+        }
       }
-      }
-      }"
+      "
     `)
   })
 
@@ -439,45 +445,48 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
+        @layer _base {
+          .checkbox__root {
+            align-items: center;
+            gap: var(--spacing-2);
+            display: flex;
+          }
+
+          .checkbox__control {
+            border-radius: var(--radii-sm);
+            border-width: 1px;
+          }
+
+          .checkbox__label {
+            margin-inline-start: var(--spacing-2);
+          }
+        }
 
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
           width: var(--sizes-8);
-          height: var(--sizes-8)
-      }
+          height: var(--sizes-8);
+        }
 
-        .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm)
-      }
-
-        @layer _base {
-          .checkbox__root {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-2)
-      }
-
-          .checkbox__control {
-            border-width: 1px;
-            border-radius: var(--radii-sm)
-      }
-
-          .checkbox__label {
-            margin-inline-start: var(--spacing-2)
-      }
-      }
-
-        @media screen and (min-width: 48em) {
+        @media screen and (width >= 48em) {
           .md\\\\:checkbox__control--size_md {
             width: var(--sizes-10);
-            height: var(--sizes-10)
+            height: var(--sizes-10);
           }
+        }
+
+        .checkbox__label--size_sm {
+          font-size: var(--font-sizes-sm);
+        }
+
+        @media screen and (width >= 48em) {
           .md\\\\:checkbox__label--size_md {
-            font-size: var(--font-sizes-md)
+            font-size: var(--font-sizes-md);
           }
+        }
       }
-      }"
+      "
     `)
   })
 
@@ -533,65 +542,66 @@ describe('rule processor', () => {
     expect(checkbox.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
-          display: flex
-      }
+          display: flex;
+        }
 
         .items_center {
-          align-items: center
-      }
+          align-items: center;
+        }
 
         .gap_2 {
-          gap: var(--spacing-2)
-      }
+          gap: var(--spacing-2);
+        }
 
         .border-width_1px {
-          border-width: 1px
-      }
+          border-width: 1px;
+        }
 
         .rounded_sm {
-          border-radius: var(--radii-sm)
-      }
+          border-radius: var(--radii-sm);
+        }
 
         .w_8 {
-          width: var(--sizes-8)
-      }
+          width: var(--sizes-8);
+        }
 
         .h_8 {
-          height: var(--sizes-8)
-      }
+          height: var(--sizes-8);
+        }
 
         .w_10 {
-          width: var(--sizes-10)
-      }
+          width: var(--sizes-10);
+        }
 
         .h_10 {
-          height: var(--sizes-10)
-      }
+          height: var(--sizes-10);
+        }
 
         .w_12 {
-          width: var(--sizes-12)
-      }
+          width: var(--sizes-12);
+        }
 
         .h_12 {
-          height: var(--sizes-12)
-      }
+          height: var(--sizes-12);
+        }
 
         .ms_2 {
-          margin-inline-start: var(--spacing-2)
-      }
+          margin-inline-start: var(--spacing-2);
+        }
 
         .fs_sm {
-          font-size: var(--font-sizes-sm)
-      }
+          font-size: var(--font-sizes-sm);
+        }
 
         .fs_md {
-          font-size: var(--font-sizes-md)
-      }
+          font-size: var(--font-sizes-md);
+        }
 
         .fs_lg {
-          font-size: var(--font-sizes-lg)
+          font-size: var(--font-sizes-lg);
+        }
       }
-      }"
+      "
     `)
   })
 
@@ -635,28 +645,29 @@ describe('rule processor', () => {
       "@layer recipes {
         @layer _base {
           .btn {
+            outline: var(--borders-none);
             line-height: 1.2;
             display: inline-flex;
-            outline: var(--borders-none);
-      }
+          }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
-            opacity: 0.4;
-      }
+            opacity: .4;
+          }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
             box-shadow: outline;
-      }
+          }
 
           .btn:is(:focus, [data-focus]) {
             z-index: 1;
-      }
+          }
 
           .btn:is(:hover, [data-hover]):is(:disabled, [disabled], [data-disabled]) {
             background: initial;
-      }
           }
-      }"
+        }
+      }
+      "
     `)
   })
 })

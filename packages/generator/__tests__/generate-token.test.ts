@@ -11,23 +11,23 @@ describe('generator', () => {
       "@layer tokens {
         :where(html) {
           --borders-none: none;
-          --easings-default: cubic-bezier(0.4, 0, 0.2, 1);
+          --easings-default: cubic-bezier(.4, 0, .2, 1);
           --easings-linear: linear;
-          --easings-in: cubic-bezier(0.4, 0, 1, 1);
-          --easings-out: cubic-bezier(0, 0, 0.2, 1);
-          --easings-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+          --easings-in: cubic-bezier(.4, 0, 1, 1);
+          --easings-out: cubic-bezier(0, 0, .2, 1);
+          --easings-in-out: cubic-bezier(.4, 0, .2, 1);
           --durations-fastest: 50ms;
-          --durations-faster: 100ms;
-          --durations-fast: 150ms;
-          --durations-normal: 200ms;
-          --durations-slow: 300ms;
-          --durations-slower: 400ms;
-          --durations-slowest: 500ms;
-          --radii-xs: 0.125rem;
-          --radii-sm: 0.25rem;
-          --radii-md: 0.375rem;
-          --radii-lg: 0.5rem;
-          --radii-xl: 0.75rem;
+          --durations-faster: .1s;
+          --durations-fast: .15s;
+          --durations-normal: .2s;
+          --durations-slow: .3s;
+          --durations-slower: .4s;
+          --durations-slowest: .5s;
+          --radii-xs: .125rem;
+          --radii-sm: .25rem;
+          --radii-md: .375rem;
+          --radii-lg: .5rem;
+          --radii-xl: .75rem;
           --radii-2xl: 1rem;
           --radii-3xl: 1.5rem;
           --radii-full: 9999px;
@@ -49,15 +49,15 @@ describe('generator', () => {
           --fonts-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", Roboto, \\"Helvetica Neue\\", Arial, \\"Noto Sans\\", sans-serif, \\"Apple Color Emoji\\", \\"Segoe UI Emoji\\", \\"Segoe UI Symbol\\", \\"Noto Color Emoji\\";
           --fonts-serif: ui-serif, Georgia, Cambria, \\"Times New Roman\\", Times, serif;
           --fonts-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \\"Liberation Mono\\", \\"Courier New\\", monospace;
-          --letter-spacings-tighter: -0.05em;
-          --letter-spacings-tight: -0.025em;
+          --letter-spacings-tighter: -.05em;
+          --letter-spacings-tight: -.025em;
           --letter-spacings-normal: 0em;
-          --letter-spacings-wide: 0.025em;
-          --letter-spacings-wider: 0.05em;
-          --letter-spacings-widest: 0.1em;
-          --font-sizes-2xs: 0.5rem;
-          --font-sizes-xs: 0.75rem;
-          --font-sizes-sm: 0.875rem;
+          --letter-spacings-wide: .025em;
+          --letter-spacings-wider: .05em;
+          --letter-spacings-widest: .1em;
+          --font-sizes-2xs: .5rem;
+          --font-sizes-xs: .75rem;
+          --font-sizes-sm: .875rem;
           --font-sizes-md: 1rem;
           --font-sizes-lg: 1.125rem;
           --font-sizes-xl: 1.25rem;
@@ -69,17 +69,17 @@ describe('generator', () => {
           --font-sizes-7xl: 4.5rem;
           --font-sizes-8xl: 6rem;
           --font-sizes-9xl: 8rem;
-          --shadows-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-          --shadows-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-          --shadows-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-          --shadows-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-          --shadows-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-          --shadows-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-          --shadows-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+          --shadows-xs: 0 1px 2px 0 #0000000d;
+          --shadows-sm: 0 1px 3px 0 #0000001a, 0 1px 2px -1px #0000001a;
+          --shadows-md: 0 4px 6px -1px #0000001a, 0 2px 4px -2px #0000001a;
+          --shadows-lg: 0 10px 15px -3px #0000001a, 0 4px 6px -4px #0000001a;
+          --shadows-xl: 0 20px 25px -5px #0000001a, 0 8px 10px -6px #0000001a;
+          --shadows-2xl: 0 25px 50px -12px #00000040;
+          --shadows-inner: inset 0 2px 4px 0 #0000000d;
           --colors-current: currentColor;
           --colors-black: #000;
           --colors-white: #fff;
-          --colors-transparent: rgb(0 0 0 / 0);
+          --colors-transparent: #0000;
           --colors-rose-50: #fff1f2;
           --colors-rose-100: #ffe4e6;
           --colors-rose-200: #fecdd3;
@@ -322,9 +322,9 @@ describe('generator', () => {
           --colors-slate-800: #1e293b;
           --colors-slate-900: #0f172a;
           --colors-slate-950: #020617;
-          --colors-deep-test-yam: %555;
+          --colors-deep-test-yam: % 555;
           --colors-deep-test-pool-poller: #fff;
-          --colors-deep-test-pool-tall: $dfdf;
+          --colors-deep-test-pool-tall: $ dfdf;
           --blurs-sm: 4px;
           --blurs-base: 8px;
           --blurs-md: 12px;
@@ -333,9 +333,9 @@ describe('generator', () => {
           --blurs-2xl: 40px;
           --blurs-3xl: 64px;
           --spacing-0: 0rem;
-          --spacing-1: 0.25rem;
-          --spacing-2: 0.5rem;
-          --spacing-3: 0.75rem;
+          --spacing-1: .25rem;
+          --spacing-2: .5rem;
+          --spacing-3: .75rem;
           --spacing-4: 1rem;
           --spacing-5: 1.25rem;
           --spacing-6: 1.5rem;
@@ -362,14 +362,14 @@ describe('generator', () => {
           --spacing-72: 18rem;
           --spacing-80: 20rem;
           --spacing-96: 24rem;
-          --spacing-0\\\\.5: 0.125rem;
-          --spacing-1\\\\.5: 0.375rem;
-          --spacing-2\\\\.5: 0.625rem;
-          --spacing-3\\\\.5: 0.875rem;
+          --spacing-0\\\\.5: .125rem;
+          --spacing-1\\\\.5: .375rem;
+          --spacing-2\\\\.5: .625rem;
+          --spacing-3\\\\.5: .875rem;
           --sizes-0: 0rem;
-          --sizes-1: 0.25rem;
-          --sizes-2: 0.5rem;
-          --sizes-3: 0.75rem;
+          --sizes-1: .25rem;
+          --sizes-2: .5rem;
+          --sizes-3: .75rem;
           --sizes-4: 1rem;
           --sizes-5: 1.25rem;
           --sizes-6: 1.5rem;
@@ -396,10 +396,10 @@ describe('generator', () => {
           --sizes-72: 18rem;
           --sizes-80: 20rem;
           --sizes-96: 24rem;
-          --sizes-0\\\\.5: 0.125rem;
-          --sizes-1\\\\.5: 0.375rem;
-          --sizes-2\\\\.5: 0.625rem;
-          --sizes-3\\\\.5: 0.875rem;
+          --sizes-0\\\\.5: .125rem;
+          --sizes-1\\\\.5: .375rem;
+          --sizes-2\\\\.5: .625rem;
+          --sizes-3\\\\.5: .875rem;
           --sizes-xs: 20rem;
           --sizes-sm: 24rem;
           --sizes-md: 28rem;
@@ -423,8 +423,8 @@ describe('generator', () => {
           --sizes-breakpoint-xl: 1280px;
           --sizes-breakpoint-2xl: 1536px;
           --animations-spin: spin 1s linear infinite;
-          --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-          --animations-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          --animations-ping: ping 1s cubic-bezier(0, 0, .2, 1) infinite;
+          --animations-pulse: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
           --animations-bounce: bounce 1s infinite;
           --breakpoints-sm: 640px;
           --breakpoints-md: 768px;
@@ -437,48 +437,48 @@ describe('generator', () => {
           --colors-button-thick: #fff;
           --colors-button-card-body: #fff;
           --colors-button-card-heading: #fff;
-          --spacing-gutter: var(--spacing-4)
-      }
+          --spacing-gutter: var(--spacing-4);
+        }
 
-        :where([data-theme=dark], .dark) {
+        :where([data-theme=\\"dark\\"], .dark) {
           --colors-primary: var(--colors-red-400);
           --colors-secondary: var(--colors-red-700);
           --colors-button-thick: #000;
           --colors-button-card-body: #000;
-          --colors-button-card-heading: #000
-      }
-
-        [data-color=material] {
-          --colors-surface: #m-b
-      }
-
-        [data-color=material]:where([data-theme=dark], .dark) {
-          --colors-surface: #m-d
-              }
-
-        [data-color=pastel] {
-          --colors-surface: #p-b
-      }
-
-        @media screen and (min-width: 48em) {
-          [data-color=pastel]:where([data-theme=dark], .dark) {
-            --colors-surface: #p-d
-                      }
-                  }
-
-        @media screen and (min-width: 64em) {
-          :where(html) {
-            --spacing-gutter: var(--spacing-5)
-              }
-          }
+          --colors-button-card-heading: #000;
+        }
 
         @media (forced-colors: active) {
-          :where([data-theme=dark], .dark) {
-            --colors-complex: var(--colors-red-700)
-                  }
-              }
+          :where([data-theme=\\"dark\\"], .dark) {
+            --colors-complex: var(--colors-red-700);
           }
-          "
+        }
+
+        [data-color=\\"material\\"] {
+          --colors-surface: #m-b;
+        }
+
+        [data-color=\\"material\\"]:where([data-theme=\\"dark\\"], .dark) {
+          --colors-surface: #m-d;
+        }
+
+        [data-color=\\"pastel\\"] {
+          --colors-surface: #p-b;
+        }
+
+        @media screen and (width >= 48em) {
+          [data-color=\\"pastel\\"]:where([data-theme=\\"dark\\"], .dark) {
+            --colors-surface: #p-d;
+          }
+        }
+
+        @media screen and (width >= 64em) {
+          :where(html) {
+            --spacing-gutter: var(--spacing-5);
+          }
+        }
+      }
+      "
     `)
   })
 
@@ -550,15 +550,15 @@ describe('generator', () => {
             --colors-single: #ef4444;
             --colors-test-50: #f9f9f9;
             --colors-test-100: #f2f2f2;
-            --colors-deep-test-yam: %555;
+            --colors-deep-test-yam: % 555;
             --colors-deep-test-pool-poller: #fff;
-            --colors-deep-test-pool-tall: $dfdf;
+            --colors-deep-test-pool-tall: $ dfdf;
             --colors-deep-test-pool-palette-50: #f9f9f9;
             --colors-deep-test-pool-palette-100: #f2f2f2;
-            --colors-deep-test-pool-palette-200: #ebebeb
+            --colors-deep-test-pool-palette-200: #ebebeb;
+          }
         }
-            }
-            "
+        "
       `)
     })
 
@@ -594,14 +594,14 @@ describe('generator', () => {
       expect(css).toMatchInlineSnapshot(`
         "@layer tokens {
           :where(:root, :host) {
-            --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)
-        }
+            --shadows-e1: 0px 1px 2px #0000004d, 0px 1px 3px 1px #00000026;
+          }
 
           .dark {
-            --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
+            --shadows-e1: 0px 1px 3px 1px #00000026, 0px 1px 2px #0000004d;
+          }
         }
-            }
-            "
+        "
       `)
     })
   })
@@ -663,10 +663,10 @@ describe('generator', () => {
           --borders-red: 1px solid var(--colors-red);
           --borders-semantic-red: var(--borders-danger);
           --colors-danger: var(--colors-red);
-          --borders-danger: var(--borders-red)
+          --borders-danger: var(--borders-red);
+        }
       }
-          }
-          "
+      "
     `)
   })
 })

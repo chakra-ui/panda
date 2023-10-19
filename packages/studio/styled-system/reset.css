@@ -1,98 +1,72 @@
 @layer reset {
   * {
+    font: inherit;
     margin: 0;
     padding: 0;
-    font: inherit;
   }
 
-  *,
-  *::before,
-  *::after {
+  *, :before, :after {
     box-sizing: border-box;
-    border-width: 0;
     border-style: solid;
+    border-width: 0;
     border-color: var(--global-color-border, currentColor);
   }
 
   html {
-    line-height: 1.5;
-    --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-      'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-      'Noto Color Emoji';
+    --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -moz-tab-size: 4;
     tab-size: 4;
+    line-height: 1.5;
     font-family: var(--global-font-body, var(--font-fallback));
   }
 
   hr {
-    height: 0;
     color: inherit;
     border-top-width: 1px;
+    height: 0;
   }
 
   body {
-    height: 100%;
     line-height: inherit;
+    height: 100%;
   }
 
   img {
     border-style: none;
   }
 
-  img,
-  svg,
-  video,
-  canvas,
-  audio,
-  iframe,
-  embed,
-  object {
-    display: block;
+  img, svg, video, canvas, audio, iframe, embed, object {
     vertical-align: middle;
+    display: block;
   }
 
-  img,
-  video {
+  img, video {
     max-width: 100%;
     height: auto;
   }
 
-  p,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  p, h1, h2, h3, h4, h5, h6 {
     overflow-wrap: break-word;
   }
 
-  ol,
-  ul {
+  ol, ul {
     list-style: none;
   }
 
-  code,
-  kbd,
-  pre,
-  samp {
+  code, kbd, pre, samp {
     font-size: 1em;
   }
 
-  button,
-  [type='button'],
-  [type='reset'],
-  [type='submit'] {
+  button, [type="button"], [type="reset"], [type="submit"] {
     -webkit-appearance: button;
-    background-color: transparent;
+    background-color: #0000;
     background-image: none;
   }
 
-  button,
-  select {
+  button, select {
     text-transform: none;
   }
 
@@ -102,8 +76,7 @@
     border-collapse: collapse;
   }
 
-  input::placeholder,
-  textarea::placeholder {
+  input::placeholder, textarea::placeholder {
     opacity: 1;
     color: var(--global-color-placeholder, #9ca3af);
   }
@@ -120,20 +93,19 @@
     font-size: 80%;
   }
 
-  sub,
-  sup {
+  sub, sup {
+    vertical-align: baseline;
     font-size: 75%;
     line-height: 0;
     position: relative;
-    vertical-align: baseline;
   }
 
   sub {
-    bottom: -0.25em;
+    bottom: -.25em;
   }
 
   sup {
-    top: -0.5em;
+    top: -.5em;
   }
 
   dialog {
@@ -149,34 +121,30 @@
     text-decoration: underline dotted;
   }
 
-  b,
-  strong {
+  b, strong {
     font-weight: bolder;
   }
 
-  code,
-  kbd,
-  samp,
-  pre {
+  code, kbd, samp, pre {
+    --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New";
     font-size: 1em;
-    --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
     font-family: var(--global-font-mono, var(--font-fallback));
   }
 
-  input[type="text"],
-  input[type="email"],
-  input[type="search"],
-  input[type="password"] {
+  input[type="text"], input[type="email"], input[type="search"], input[type="password"] {
     -webkit-appearance: none;
     -moz-appearance: none;
   }
 
-  input[type='search'] {
+  input[type="search"] {
     -webkit-appearance: textfield;
     outline-offset: -2px;
   }
 
-  ::-webkit-search-decoration,
+  ::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+
   ::-webkit-search-cancel-button {
     -webkit-appearance: none;
   }
@@ -186,12 +154,15 @@
     font: inherit;
   }
 
-  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    height: auto;
+  }
+
   input[type="number"]::-webkit-outer-spin-button {
     height: auto;
   }
 
-  input[type='number']{
+  input[type="number"] {
     -moz-appearance: textfield;
   }
 

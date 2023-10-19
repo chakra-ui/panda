@@ -2,6 +2,8 @@ import postcss from 'postcss'
 import { expect, test } from 'vitest'
 import sortMediaQueries from '../src/plugins/sort-mq'
 
+// TODO refacto via sortStyleRules
+
 function run(code: string) {
   return postcss([sortMediaQueries()]).process(code, { from: undefined })
 }
