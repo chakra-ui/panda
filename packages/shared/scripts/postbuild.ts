@@ -8,6 +8,7 @@ const fileMap = [
 ]
 
 async function main() {
+  console.log("Postbuild: Copying shared to generator's artifacts")
   fileMap.forEach(([input, outfile]) => {
     const inputPath = join(__dirname, '..', 'dist', input)
     const content = readFileSync(inputPath, 'utf8')

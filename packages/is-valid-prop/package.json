@@ -24,9 +24,9 @@
   },
   "scripts": {
     "mdn": "tsx scripts/prepare.ts",
-    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build": "tsup src/index.ts --format=esm,cjs --dts && tsx scripts/postbuild.ts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
-    "dev": "tsup src/index.ts --watch  --format=esm,cjs --no-dts --onSuccess=\"tsx scripts/postbuild.ts\""
+    "dev": "tsup src/index.ts --watch --format=esm,cjs --no-dts --onSuccess=\"tsx scripts/postbuild.ts\""
   },
   "files": [
     "dist"

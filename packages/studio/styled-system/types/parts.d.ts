@@ -3,6 +3,4 @@ export interface Part {
   selector: string
 }
 
-export interface Parts {
-  [key: string]: Part
-}
+export type Parts = Record<string, Part>

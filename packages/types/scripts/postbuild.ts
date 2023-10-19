@@ -1,4 +1,3 @@
-import { watch } from 'chokidar'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
@@ -12,12 +11,13 @@ const fileMap = [
   'composition.ts',
 ]
 
-async function main() {
+export async function main() {
+  console.log("Postbuild: Copying types to generator's artifacts")
   fileMap.forEach((input) => {
     const inputPath = join(__dirname, '..', 'src', input)
     let content = readFileSync(inputPath, 'utf8').replace("'./tokens'", "'../tokens'")
 
-    if (input.includes('system-types.d.ts')) {
+    if (input.includes('system-types.ts')) {
       content = content.replace('(SystemProperties | GenericProperties)', 'SystemProperties')
     }
 
@@ -34,9 +34,6 @@ async function main() {
   })
 }
 
-main().then(() => {
-  watch(join(__dirname, '..', 'src')).on('change', () => {
-    console.log('Rebuild types')
-    main()
-  })
-})
+if (process.env.PANDA_BUILD) {
+  main()
+}

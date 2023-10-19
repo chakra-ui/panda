@@ -20,5 +20,5 @@ export interface PandaJsxEngine {
   typeName: string
   componentName: string
   framework: UserConfig['jsxFramework']
-  styleProps: UserConfig['jsxStyleProps']
+  styleProps: Exclude<UserConfig['jsxStyleProps'], undefined>
 }

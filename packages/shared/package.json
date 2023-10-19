@@ -23,7 +23,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup --dts",
+    "build": "tsup --dts && tsx scripts/postbuild.ts",
     "build-fast": "tsup --no-dts",
     "dev": "tsup --no-dts --watch --onSuccess=\"tsx scripts/postbuild.ts\""
   },

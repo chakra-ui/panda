@@ -44,7 +44,6 @@
   },
   "scripts": {
     "build": "tsup src --format=esm,cjs --dts --no-splitting --shims",
-    "postbuild": "pnpm app:gen",
     "build-fast": "tsup src --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch src"
   },

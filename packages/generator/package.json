@@ -23,8 +23,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "prebuild": "tsx scripts/prebuild.ts",
-    "build": "pnpm prebuild && tsup src/index.ts --format=esm,cjs --dts",
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts"
   },
   "files": [

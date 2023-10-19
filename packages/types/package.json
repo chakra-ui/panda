@@ -16,7 +16,8 @@
   },
   "scripts": {
     "prepare": "ncp node_modules/csstype/index.d.ts src/csstype.d.ts",
-    "dev": "tsx scripts/postbuild.ts"
+    "dev": "tsx scripts/watch.ts",
+    "build": "PANDA_BUILD=1 tsx scripts/postbuild.ts"
   },
   "sideEffects": false,
   "publishConfig": {
