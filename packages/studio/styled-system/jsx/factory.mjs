@@ -30,7 +30,7 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
     function recipeClass() {
       const { css: cssStyles, ...propStyles } = styleProps
       const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps)
-      return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.className)
+      return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.className)
     }
 
     function cvaClass() {

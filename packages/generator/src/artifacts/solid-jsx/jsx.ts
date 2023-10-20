@@ -8,11 +8,13 @@ export function generateSolidJsxFactory(ctx: Context) {
     import { Dynamic } from 'solid-js/web'
     import { createMemo, mergeProps, splitProps } from 'solid-js'
     import { createComponent } from 'solid-js/web'
+    ${ctx.file.import(
+      'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
+      './factory-helper',
+    )}
+    ${ctx.file.import('isCssProperty, allCssProperties', './is-valid-prop')}
     ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
-    ${ctx.file.import('isCssProperty, allCssProperties', './is-valid-prop')}
-    
-    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
     
     function styledFn(element, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -25,28 +27,32 @@ export function generateSolidJsxFactory(ctx: Context) {
         options.defaultProps,
       )
 
-      return function ${componentName}(props) {
-        const mergedProps = mergeProps({ as: element }, defaultProps, props)
+      const ${componentName} = (props) => {
+        const mergedProps = mergeProps({ as: element.__base__ || element }, defaultProps, props)
+        
+        const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+        const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
+        
         const forwardedKeys = createMemo(() => Object.keys(props).filter(shouldForwardProp))
 
         const [localProps, forwardedProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
           forwardedKeys(),
-          cvaFn.variantKeys,
+          __cvaFn__.variantKeys,
           allCssProperties,
           normalizeHTMLProps.keys
         )
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), localProps.class, localProps.className)
+          const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps);
+          return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), localProps.class, localProps.className)
         }
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const cvaStyles = cvaFn.raw(variantProps)
+          const cvaStyles = __cvaFn__.raw(variantProps)
           return cx(css(cvaStyles, propStyles, cssStyles), localProps.class, localProps.className)
         }
 
@@ -73,6 +79,15 @@ export function generateSolidJsxFactory(ctx: Context) {
           )
         )
       }
+
+      const name = getDisplayName(element)
+
+      ${componentName}.displayName = \`${factoryName}.\${name}\`
+      ${componentName}.__cva__ = cvaFn
+      ${componentName}.__base__ = element
+      ${componentName}.__shouldForwardProps__ = shouldForwardProp
+      
+      return ${componentName}
     }
 
     function createJsxFactory() {
