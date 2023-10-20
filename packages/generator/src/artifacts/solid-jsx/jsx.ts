@@ -15,13 +15,13 @@ export function generateSolidJsxFactory(ctx: Context) {
     ${ctx.file.import('isCssProperty, allCssProperties', './is-valid-prop')}
     ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
-    
+
     function styledFn(element, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
       const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
       const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
-      
+
       const defaultProps = Object.assign(
         options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
         options.defaultProps,
@@ -29,19 +29,19 @@ export function generateSolidJsxFactory(ctx: Context) {
 
       const ${componentName} = (props) => {
         const mergedProps = mergeProps({ as: element.__base__ || element }, defaultProps, props)
-        
+
         const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
         const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
-        
+
         const forwardedKeys = createMemo(() => Object.keys(props).filter(shouldForwardProp))
 
-        const [localProps, forwardedProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
+        const [localProps, htmlProps, forwardedProps, variantProps, styleProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
+          normalizeHTMLProps.keys,
           forwardedKeys(),
           __cvaFn__.variantKeys,
           allCssProperties,
-          normalizeHTMLProps.keys
         )
 
         function recipeClass() {
@@ -86,7 +86,7 @@ export function generateSolidJsxFactory(ctx: Context) {
       ${componentName}.__cva__ = cvaFn
       ${componentName}.__base__ = element
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
-      
+
       return ${componentName}
     }
 

@@ -163,6 +163,24 @@ describe('styled factory - cva', () => {
       </button>
     `)
   })
+
+  test('html props', () => {
+    const { container } = render(
+      <styled.div htmlWidth={123} height="123">
+        Click me
+      </styled.div>,
+    )
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="h_123"
+        htmlwidth="123"
+        width="123"
+      >
+        Click me
+      </div>
+    `)
+  })
 })
 
 describe('styled factory - button recipe', () => {

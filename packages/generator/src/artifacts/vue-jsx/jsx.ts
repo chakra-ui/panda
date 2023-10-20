@@ -17,15 +17,15 @@ export function generateVueJsxFactory(ctx: Context) {
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
-      
+
       const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
       const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
-      
+
       const defaultProps = Object.assign(
         options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
         options.defaultProps,
       )
-        
+
       const name = getDisplayName(Dynamic)
 
       const ${componentName} = defineComponent({
@@ -35,22 +35,22 @@ export function generateVueJsxFactory(ctx: Context) {
         setup(props, { slots, attrs }) {
           const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
           const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
-          
+
           const combinedProps = computed(() => Object.assign({}, defaultProps, attrs))
-          
+
           const splittedProps = computed(() => {
-            return splitProps(combinedProps.value, shouldForwardProp, __cvaFn__.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+            return splitProps(combinedProps.value, normalizeHTMLProps.keys, shouldForwardProp, __cvaFn__.variantKeys, isCssProperty)
           })
 
           const recipeClass = computed(() => {
-            const [_forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
+            const [_htmlProps, _forwardedProps, variantProps, styleProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps);
             return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.value.className)
           })
 
           const cvaClass = computed(() => {
-            const [_forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
+            const [_htmlProps, _forwardedProps, variantProps, styleProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const cvaStyles = __cvaFn__.raw(variantProps)
             return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.value.className)
@@ -59,7 +59,7 @@ export function generateVueJsxFactory(ctx: Context) {
           const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 
           return () => {
-            const [forwardedProps, _variantProps, _styleProps, htmlProps, elementProps] = splittedProps.value
+            const [htmlProps, forwardedProps, _variantProps, _styleProps, elementProps] = splittedProps.value
             return h(
               props.as,
               {
@@ -78,7 +78,7 @@ export function generateVueJsxFactory(ctx: Context) {
       ${componentName}.__cva__ = cvaFn
       ${componentName}.__base__ = Dynamic
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
-      
+
       return ${componentName}
     }
 

@@ -129,6 +129,16 @@ describe('styled factory - cva', () => {
       '"<button class=\\"text_red.200 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_xl px_123px py_md z_1 mx_2 custom-btn\\">Click me</button>"',
     )
   })
+
+  test('html props', () => {
+    const { container } = render(
+      <styled.div htmlWidth={123} height="123">
+        Click me
+      </styled.div>,
+    )
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot('"<div width=\\"123\\" class=\\"h_123\\">Click me</div>"')
+  })
 })
 
 describe('styled factory - button recipe', () => {
