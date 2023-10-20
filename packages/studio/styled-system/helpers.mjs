@@ -251,6 +251,9 @@ function splitProps(props, ...keys) {
   const fn = (key) => split(Array.isArray(key) ? key : dKeys.filter(key));
   return keys.map(fn).concat(split(dKeys));
 }
+
+// src/uniq.ts
+var uniq = (...items) => items.filter(Boolean).reduce((acc, item) => Array.from(/* @__PURE__ */ new Set([...acc, ...item])), []);
 export {
   compact,
   createCss,
@@ -266,6 +269,7 @@ export {
   mergeProps,
   splitProps,
   toHash,
+  uniq,
   walkObject,
   withoutSpace
 };

@@ -24,7 +24,7 @@ export function generateRecipes(ctx: Context) {
    ${ctx.file.import('css', '../css/css')}
    ${ctx.file.import('assertCompoundVariant, getCompoundVariantCss', '../css/cva')}
    ${ctx.file.import('cx', '../css/cx')}
-   ${ctx.file.import('compact, createCss, splitProps, withoutSpace', '../helpers')}
+   ${ctx.file.import('compact, createCss, splitProps, uniq, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
     const getRecipeStyles = (variants) => {
@@ -71,8 +71,6 @@ export function generateRecipes(ctx: Context) {
         },
       })
    }
-
-   const uniq = (arr) => Array.from(new Set(arr))
 
    export const mergeRecipes = (recipeA, recipeB) => {
     if (recipeA && !recipeB) return recipeA

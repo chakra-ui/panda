@@ -1,4 +1,4 @@
-import { compact, mergeProps, splitProps } from '../helpers.mjs';
+import { compact, mergeProps, splitProps, uniq } from '../helpers.mjs';
 import { css, mergeCss } from './css.mjs';
 
 const defaults = (conf) => ({
@@ -26,13 +26,14 @@ export function cva(config) {
 
   function merge(cvaConfig) {
     const override = defaults(cvaConfig)
+    const variantKeys = uniq(override.variantKeys, Object.keys(variants))
     return cva({
       base: mergeCss(base, override.base),
       variants: Object.fromEntries(
-        Object.entries(variants).map(([key, value]) => [key, mergeCss(value, override.variants?.[key])]),
+        variantKeys.map((key) => [key, mergeCss(variants[key], override.variants[key])]),
       ),
       defaultVariants: mergeProps(defaultVariants, override.defaultVariants),
-      compoundVariants: compoundVariants.concat(override.compoundVariants),
+      compoundVariants: [...compoundVariants, ...override.compoundVariants],
     })
   }
 

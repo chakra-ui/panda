@@ -4,7 +4,7 @@ import type { Context } from '../../engines'
 export function generateCvaFn(ctx: Context) {
   return {
     js: outdent`
-    ${ctx.file.import('compact, mergeProps, splitProps', '../helpers')}
+    ${ctx.file.import('compact, mergeProps, splitProps, uniq', '../helpers')}
     ${ctx.file.import('css, mergeCss', './css')}
 
     const defaults = (conf) => ({
@@ -32,13 +32,14 @@ export function generateCvaFn(ctx: Context) {
 
       function merge(cvaConfig) {
         const override = defaults(cvaConfig)
+        const variantKeys = uniq(override.variantKeys, Object.keys(variants))
         return cva({
           base: mergeCss(base, override.base),
           variants: Object.fromEntries(
-            Object.entries(variants).map(([key, value]) => [key, mergeCss(value, override.variants?.[key])]),
+            variantKeys.map((key) => [key, mergeCss(variants[key], override.variants[key])]),
           ),
           defaultVariants: mergeProps(defaultVariants, override.defaultVariants),
-          compoundVariants: compoundVariants.concat(override.compoundVariants),
+          compoundVariants: [...compoundVariants, ...override.compoundVariants],
         })
       }
 
