@@ -51,7 +51,7 @@ export type ${upperName} = JsxFactory & JsxElements
 
 export type ${typeName}<T extends ElementType> = Assign<ComponentProps<T>, JsxStyleProps>
 
-export type ${variantName}<T extends ${componentName}}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
+export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
   `,
   }
 }
