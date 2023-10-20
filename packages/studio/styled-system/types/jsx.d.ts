@@ -38,3 +38,5 @@ type JsxElements = { [K in keyof JSX.IntrinsicElements]: PandaComponent<K, {}> }
 export type Panda = JsxFactory & JsxElements
 
 export type HTMLPandaProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
+
+export type PandaVariantProps<T extends PandaComponent<any, any>> = T extends PandaComponent<any, infer Props> ? Props : never

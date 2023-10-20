@@ -2,7 +2,7 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateReactJsxTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName } = ctx.jsx
+  const { factoryName, componentName, upperName, typeName, variantName } = ctx.jsx
 
   return {
     jsxFactory: outdent`
@@ -49,6 +49,8 @@ type JsxElements = { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}>
 export type ${upperName} = JsxFactory & JsxElements
 
 export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
+
+export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
   `,
   }
 }
