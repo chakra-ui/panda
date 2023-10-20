@@ -21,11 +21,11 @@ test('cleanupSelectors - single', () => {
     "
       @layer tokens {
 
-          ::CCCC .class2 {
+          .class1,  .class2, :host .class3, :BBBB, ::CCCC .class2 {
               font-size: 1rem;
           }
 
-          ::CCCC {
+          :host .class2, :BBBB, ::CCCC {
               font-size: 2rem;
           }
         }
@@ -40,11 +40,11 @@ test('cleanupSelectors - multiple', () => {
     "
       @layer tokens {
 
-          ::CCCC .class2 {
+          .class1, :AAAA .class2, :host .class3, :AAAA, :BBBB, ::CCCC .class2 {
               font-size: 1rem;
           }
 
-          ::CCCC {
+          :host .class2, :AAAA, :BBBB, ::CCCC {
               font-size: 2rem;
           }
         }

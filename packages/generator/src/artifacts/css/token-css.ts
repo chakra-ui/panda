@@ -86,11 +86,32 @@ export function cleanupSelectors(css: string, varSelector: string) {
   const root = postcss.parse(css)
 
   root.walkRules((rule) => {
+    // [':root', ' :host,', '  ::backdrop ']
+    const selectors = [] as string[]
     rule.selectors.forEach((selector) => {
-      const res = selector.split(varSelector).filter(Boolean)
-      if (res.length === 0) return
-      rule.selector = res.join(varSelector)
+      selectors.push(selector.trim())
     })
+
+    // ':root, :host, ::backdrop'
+    const ruleSelector = selectors.join(', ')
+    if (ruleSelector === varSelector) {
+      return
+    }
+
+    // ':root,:host,::backdrop'
+    const trimmedSelector = selectors.join(',')
+    if (trimmedSelector === varSelector) {
+      return
+    }
+
+    const selectorsWithoutVarRoot = selectors
+      .map((selector) => {
+        const res = selector.split(varSelector).filter(Boolean)
+        return res.join('')
+      })
+      .filter(Boolean)
+    if (selectorsWithoutVarRoot.length === 0) return
+    rule.selector = selectorsWithoutVarRoot.join(', ')
   })
 
   return root.toString()
