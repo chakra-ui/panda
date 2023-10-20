@@ -14,7 +14,7 @@ export type AnyFunction<T = any> = (...args: T[]) => any
 
 type Nullable<T> = T | null | undefined
 
-interface ArtifactContent {
+export interface ArtifactContent {
   file: string
   code: string | undefined
 }
