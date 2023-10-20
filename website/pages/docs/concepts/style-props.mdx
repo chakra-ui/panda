@@ -334,6 +334,28 @@ const Button = (props: ButtonProps) => {
 }
 ```
 
+### Variant Props
+
+Use the `VariantStyledProps` type to extract the variants from a styled component.
+
+```tsx {2}
+import { styled } from '../styled-system/jsx'
+import { VariantStyledProps } from '../styled-system/jsx'
+
+const Button = styled('button', {
+  base: { color: 'black' },
+  variants: {
+    state: {
+      error: { color: 'red' },
+      success: { color: 'green' },
+    },
+  },
+});
+
+type ButtonVariantProps = VariantStyledProps<typeof Button>;
+//   ^ { state?: 'error' | 'success' | undefined }
+```
+
 ### Patterns
 
 Every pattern provided by Panda has a corresponding type that you can use to get type safety in your components.

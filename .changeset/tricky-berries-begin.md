@@ -5,7 +5,7 @@
 Added a new type to extract variants out of styled components
 
 ```tsx
-import { VariantStyledProps } from '../styled-system/types/jsx'
+import { VariantStyledProps } from '../styled-system/jsx'
 
 const Button = styled('button', {
   base: { color: 'black' },
