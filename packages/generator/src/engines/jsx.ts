@@ -7,7 +7,7 @@ export const getJsxEngine = (config: UserConfig) => {
     factoryName: jsxFactory!,
     upperName: capitalize(jsxFactory!),
     typeName: `HTML${capitalize(jsxFactory!)}Props`,
-    variantName: `Variant${capitalize(jsxFactory!)}Props`,
+    variantName: `${capitalize(jsxFactory!)}VariantProps`,
     componentName: `${capitalize(jsxFactory!)}Component`,
     framework: jsxFramework,
     styleProps: jsxStyleProps ?? 'all',

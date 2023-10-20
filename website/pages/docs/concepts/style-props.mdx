@@ -336,11 +336,11 @@ const Button = (props: ButtonProps) => {
 
 ### Variant Props
 
-Use the `VariantStyledProps` type to extract the variants from a styled component.
+Use the `StyledVariantProps` type to extract the variants from a styled component.
 
 ```tsx {2}
 import { styled } from '../styled-system/jsx'
-import type { VariantStyledProps } from '../styled-system/jsx'
+import type { StyledVariantProps } from '../styled-system/jsx'
 
 const Button = styled('button', {
   base: { color: 'black' },
@@ -352,7 +352,7 @@ const Button = styled('button', {
   },
 });
 
-type ButtonVariantProps = VariantStyledProps<typeof Button>;
+type ButtonVariantProps = StyledVariantProps<typeof Button>;
 //   ^ { state?: 'error' | 'success' | undefined }
 ```
 
