@@ -33,8 +33,8 @@ export function generateVueJsxFactory(ctx: Context) {
         inheritAttrs: false,
         props: { as: { type: [String, Object], default: Dynamic.__base__ || Dynamic } },
         setup(props, { slots, attrs }) {
-          const __cvaFn__ = composeCvaFn(props.as.__cva__, cvaFn)
-          const __shouldForwardProps__ = composeShouldForwardProps(props.as, shouldForwardProp)
+          const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+          const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
           
           const combinedProps = computed(() => Object.assign({}, defaultProps, attrs))
           
