@@ -1,12 +1,23 @@
-import { css } from '../../styled-system/css'
-import { Button, Thingy } from './Button'
+import { styled } from '../../styled-system/jsx'
+
+const One = styled.div`
+  display: flex;
+  width: 300px;
+  border: 1px solid black;
+  justify-content: center;
+  --test: 4px;
+`
+
+const Two = styled(One)`
+  justify-content: flex-start;
+  margin-top: var(--test);
+`
 
 export default function Home() {
   return (
-    <>
-      <div className={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
-      <Button css={{ display: 'block', _hover: { color: 'red' } }}>Client component button</Button>
-      <Thingy css={{ display: 'block', _hover: { color: 'yellow' } }}>Client component button with recipe</Thingy>
-    </>
+    <div>
+      <One>one</One>
+      <Two>two</Two>
+    </div>
   )
 }
