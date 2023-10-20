@@ -52,7 +52,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   })
 
   const conditions = new Conditions({
-    conditions: isTemplateLiteralSyntax ? {} : config.conditions,
+    conditions: config.conditions,
     breakpoints: config.theme?.breakpoints,
   })
 
