@@ -16,11 +16,14 @@ export const getOutputEngine = ({
     fs.ensureDirSync(path.join(...dir))
 
     return Promise.allSettled(
-      files.map(async ({ file, code }) => {
+      files.map(async (artifact) => {
+        if (!artifact) return
+
+        const { file, code } = artifact
         const absPath = path.join(...dir, file)
-        if (code) {
-          return fs.writeFile(absPath, code)
-        }
+
+        if (!code) return
+        return fs.writeFile(absPath, code)
       }),
     )
   },

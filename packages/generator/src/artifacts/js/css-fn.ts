@@ -2,11 +2,7 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateCssFn(ctx: Context) {
-  const {
-    utility,
-    config: { hash, prefix },
-    conditions,
-  } = ctx
+  const { utility, hash, prefix, conditions } = ctx
 
   const { separator, getPropShorthands } = utility
 
@@ -88,14 +84,14 @@ export function generateCssFn(ctx: Context) {
     }
 
     const context = {
-      ${hash ? 'hash: true,' : ''}
+      ${hash.className ? 'hash: true,' : ''}
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
         breakpoints: { keys: ${JSON.stringify(conditions.breakpoints.keys)} }
       },
       utility: {
-        ${prefix ? 'prefix: ' + JSON.stringify(prefix) + ',' : ''}
+        ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
         transform: ${
           utility.hasShorthand
             ? `(prop, value) => {

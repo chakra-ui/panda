@@ -15,6 +15,7 @@ import { generateCvaFn } from './js/cva'
 import { generateCx } from './js/cx'
 import { generateHelpers } from './js/helpers'
 import { generateIsValidProp } from './js/is-valid-prop'
+import { generatedJsxHelpers } from './js/jsx-helper'
 import { generatePattern } from './js/pattern'
 import { generateRecipes } from './js/recipe'
 import { generateSvaFn } from './js/sva'
@@ -74,7 +75,6 @@ function setupTypes(ctx: Context): Artifact {
       { file: ctx.file.extDts('selectors'), code: gen.selectors },
       { file: ctx.file.extDts('composition'), code: gen.composition },
       { file: ctx.file.extDts('global'), code: entry.global },
-      { file: ctx.file.extDts('helpers'), code: entry.helpers },
       { file: ctx.file.extDts('recipe'), code: gen.recipe },
       { file: ctx.file.extDts('pattern'), code: gen.pattern },
       { file: ctx.file.extDts('parts'), code: gen.parts },
@@ -187,6 +187,7 @@ function setupJsx(ctx: Context): Artifact {
   const types = generateJsxTypes(ctx)!
   const factory = generateJsxFactory(ctx)
   const patterns = generateJsxPatterns(ctx)
+  const helpers = generatedJsxHelpers(ctx)
 
   const index = {
     js: outdent`
@@ -213,6 +214,8 @@ function setupJsx(ctx: Context): Artifact {
 
       { file: ctx.file.ext('is-valid-prop'), code: isValidProp?.js },
       { file: ctx.file.extDts('is-valid-prop'), code: isValidProp?.dts },
+
+      { file: ctx.file.ext('factory-helper'), code: helpers.js },
 
       { file: ctx.file.ext('factory'), code: factory?.js },
       { file: ctx.file.extDts('factory'), code: types.jsxFactory },
@@ -300,6 +303,7 @@ export const generateArtifacts = (ctx: Context) => (): Artifact[] => {
     .map((artifact) => {
       const files = artifact?.files ?? []
       files.forEach((file) => {
+        if (!file) return
         if (ctx.file.isTypeFile(file.file)) {
           file.code = `/* eslint-disable */\n${file.code}`
         }

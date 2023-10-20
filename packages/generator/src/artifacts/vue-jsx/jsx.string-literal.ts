@@ -2,24 +2,29 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateVueJsxStringLiteralFactory(ctx: Context) {
-  const { factoryName } = ctx.jsx
+  const { componentName, factoryName } = ctx.jsx
 
   return {
     js: outdent`
     import { defineComponent, h, computed } from 'vue'
+    ${ctx.file.import('getDisplayName', './factory-helper')}
     ${ctx.file.import('css, cx', '../css/index')}
 
   function createStyled(Dynamic) {
-    const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+    const name = getDisplayName(Dynamic)
 
     function styledFn(template) {
-      const baseClassName = css(template)
-      return defineComponent({
+      const styles = css.raw(template)
+      
+      const ${componentName} = defineComponent({
         name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
-          const classes = computed(() => cx(baseClassName, elementProps.className))
+          const classes = computed(() => {
+            return cx(css(Dynamic.__styles__, styles), elementProps.className)
+          })
+          
           return () => {
             return h(
               props.as,
@@ -32,6 +37,11 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
           }
         },
       })
+
+      ${componentName}.__styles__ = styles
+      ${componentName}.__base__ = element
+
+      return ${componentName}
     }
   }
 

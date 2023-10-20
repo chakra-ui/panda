@@ -4,11 +4,19 @@ import type { Context } from '../../engines'
 export function generateCvaFn(ctx: Context) {
   return {
     js: outdent`
-    ${ctx.file.import('compact, splitProps', '../helpers')}
+    ${ctx.file.import('compact, mergeProps, splitProps, uniq', '../helpers')}
     ${ctx.file.import('css, mergeCss', './css')}
 
+    const defaults = (conf) => ({
+      base: {},
+      variants: {},
+      defaultVariants: {},
+      compoundVariants: [],
+      ...conf,
+    })
+
     export function cva(config) {
-      const { base = {}, variants = {}, defaultVariants = {}, compoundVariants = [] } = config
+      const { base, variants, defaultVariants, compoundVariants } = defaults(config)
 
       function resolve(props = {}) {
         const computedVariants = { ...defaultVariants, ...compact(props) }
@@ -20,6 +28,19 @@ export function generateCvaFn(ctx: Context) {
         }
         const compoundVariantCss = getCompoundVariantCss(compoundVariants, computedVariants)
         return mergeCss(variantCss, compoundVariantCss)
+      }
+
+      function merge(cvaConfig) {
+        const override = defaults(cvaConfig)
+        const variantKeys = uniq(override.variantKeys, Object.keys(variants))
+        return cva({
+          base: mergeCss(base, override.base),
+          variants: Object.fromEntries(
+            variantKeys.map((key) => [key, mergeCss(variants[key], override.variants[key])]),
+          ),
+          defaultVariants: mergeProps(defaultVariants, override.defaultVariants),
+          compoundVariants: [...compoundVariants, ...override.compoundVariants],
+        })
       }
 
       function cvaFn(props) {
@@ -40,6 +61,7 @@ export function generateCvaFn(ctx: Context) {
         variantKeys,
         raw: resolve,
         config,
+        merge,
         splitVariantProps,
       })
     }
