@@ -13,8 +13,9 @@ export declare const ${factoryName}: ${upperName}
     jsxType: outdent`
 import type { Component, FunctionalComponent, NativeElements } from 'vue'
 
-type IntrinsicElement = keyof NativeElements
-type ElementType = IntrinsicElement | Component
+export type IntrinsicElement = keyof NativeElements
+
+export type ElementType = IntrinsicElement | Component
 
 export type ComponentProps<T extends ElementType> = T extends IntrinsicElement
   ? NativeElements[T]
@@ -22,14 +23,16 @@ export type ComponentProps<T extends ElementType> = T extends IntrinsicElement
   ? Props
   : never
 
-type ${componentName}<T extends ElementType> = FunctionalComponent<ComponentProps<T>>
+export type ${componentName}<T extends ElementType> = FunctionalComponent<ComponentProps<T>>
 >
 
-interface JsxFactory {
+export interface JsxFactory {
   <T extends ElementType>(component: T): ${componentName}<T>
 }
 
-type JsxElements = { [K in IntrinsicElement]: ${componentName}<K> }
+export type JsxElements = {
+  [K in IntrinsicElement]: ${componentName}<K>
+}
 
 export type ${upperName} = JsxFactory & JsxElements
 

@@ -11,10 +11,13 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
-import type { Assign, JsxStyleProps, PatchedHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
+${ctx.file.importType(
+  'Assign, DistributiveOmit, DistributiveUnion, JsxStyleProps, PatchedHTMLProps, Pretty',
+  './system-types',
+)}
 
-type ElementType = keyof QwikIntrinsicElements | Component<any>
+export type ElementType = keyof QwikIntrinsicElements | Component<any>
 
 export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
   ? QwikIntrinsicElements[T]
@@ -22,13 +25,17 @@ export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsi
   ? P
   : never
 
-type Dict = Record<string, unknown>
+interface Dict {
+  [k: string]: unknown
+}
 
 export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T>, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
 
-interface RecipeFn { __type: any }
+interface RecipeFn {
+  __type: any
+}
 
-interface JsxFactoryOptions<TProps extends Dict> {
+export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
   defaultProps?: TProps
   shouldForwardProp?(prop: string, variantKeys: string[]): boolean
@@ -36,16 +43,22 @@ interface JsxFactoryOptions<TProps extends Dict> {
 
 export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
 
-interface JsxFactory {
+export type JsxElement<T extends ElementType, P> = T extends ${componentName}<infer A, infer B>
+  ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
+  : ${componentName}<T, P>
+
+export interface JsxFactory {
   <T extends ElementType>(component: T): ${componentName}<T, {}>
-  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): ${componentName}<
+  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<
     T,
     RecipeSelection<P>
   >
-  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): ${componentName}<T, P['__type']>
+  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): JsxElement<T, P['__type']>
 }
 
-type JsxElements = { [K in keyof QwikIntrinsicElements]: ${componentName}<K, {}> }
+export type JsxElements = {
+  [K in keyof QwikIntrinsicElements]: ${componentName}<K, {}>
+}
 
 export type ${upperName} = JsxFactory & JsxElements
 

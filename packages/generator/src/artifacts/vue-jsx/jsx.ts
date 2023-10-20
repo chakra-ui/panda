@@ -26,7 +26,7 @@ export function generateVueJsxFactory(ctx: Context) {
         options.defaultProps,
       )
         
-      const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+      const name = getDisplayName(Dynamic)
 
       const ${componentName} = defineComponent({
         name: \`${factoryName}.\${name}\`,

@@ -1,9 +1,11 @@
 /* eslint-disable */
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
-import type { Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty } from './system-types';
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';
+import type { Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty } from './system-types';
 
-type Dict = Record<string, unknown>
+interface Dict {
+  [k: string]: unknown
+}
 
 export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
@@ -30,7 +32,7 @@ export type JsxElement<T extends ElementType, P> = T extends PandaComponent<infe
   ? PandaComponent<A, Pretty<DistributiveUnion<P, B>>>
   : PandaComponent<T, P>
 
-interface JsxFactory {
+export interface JsxFactory {
   <T extends ElementType>(component: T): PandaComponent<T, {}>
   <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<
     T,
@@ -39,7 +41,9 @@ interface JsxFactory {
   <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): JsxElement<T, P['__type']>
 }
 
-export type JsxElements = { [K in keyof JSX.IntrinsicElements]: PandaComponent<K, {}> }
+export type JsxElements = {
+  [K in keyof JSX.IntrinsicElements]: PandaComponent<K, {}>
+}
 
 export type Panda = JsxFactory & JsxElements
 

@@ -12,20 +12,24 @@ export declare const ${factoryName}: ${upperName}
     jsxType: outdent`
 import type { ComponentProps, JSX } from 'preact'
 
-type ElementType = keyof JSX.IntrinsicElements
+export type ElementType = JSX.ElementType
 
-type Dict = Record<string, unknown>
+interface Dict {
+  [k: string]: unknown
+}
 
 export type ${componentName}<T extends ElementType> = {
   (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
   displayName?: string
 }
 
-interface JsxFactory {
+export interface JsxFactory {
   <T extends ElementType>(component: T): ${componentName}<T>
 }
 
-type JsxElements = { [K in keyof JSX.IntrinsicElements]: ${componentName}<K> }
+export type JsxElements = {
+  [K in keyof JSX.IntrinsicElements]: ${componentName}<K>
+}
 
 export type ${upperName} = JsxFactory & JsxElements
 

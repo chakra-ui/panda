@@ -11,15 +11,17 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ComponentProps, JSX } from 'preact'
+${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 ${ctx.file.importType(
   'Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty',
   './system-types',
 )}
-${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 
-type ElementType = JSX.ElementType
+export type ElementType = JSX.ElementType
 
-type Dict = Record<string, unknown>
+interface Dict {
+  [k: string]: unknown
+}
 
 export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T>, P> & JsxStyleProps): JSX.Element
@@ -30,7 +32,7 @@ interface RecipeFn {
   __type: any
 }
 
-interface JsxFactoryOptions<TProps extends Dict> {
+export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
   defaultProps?: TProps
   shouldForwardProp?(prop: string, variantKeys: string[]): boolean
@@ -42,7 +44,7 @@ export type JsxElement<T extends ElementType, P> = T extends ${componentName}<in
   ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
   : ${componentName}<T, P>
 
-interface JsxFactory {
+export interface JsxFactory {
   <T extends ElementType>(component: T): ${componentName}<T, {}>
   <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<
     T,
@@ -51,7 +53,9 @@ interface JsxFactory {
   <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): JsxElement<T, P['__type']>
 }
 
-type JsxElements = { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
+export type JsxElements = {
+  [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}>
+}
 
 export type ${upperName} = JsxFactory & JsxElements
 
