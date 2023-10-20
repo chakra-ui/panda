@@ -77,9 +77,9 @@ export function generateRecipes(ctx: Context) {
     if (!recipeA && recipeB) return recipeB
 
     const recipeFn = (...args) => cx(recipeA(...args), recipeB(...args))
-    const variantKeys = uniq([...recipeA.variantKeys, ...recipeB.variantKeys])
+    const variantKeys = uniq(recipeA.variantKeys, recipeB.variantKeys)
     const variantMap = variantKeys.reduce((acc, key) => {
-      acc[key] = uniq([...recipeA.variantMap[key], ...recipeB.variantMap[key]])
+      acc[key] = uniq(recipeA.variantMap[key], recipeB.variantMap[key])
       return acc
     }, {})
   
