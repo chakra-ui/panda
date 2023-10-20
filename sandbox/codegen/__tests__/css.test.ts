@@ -111,7 +111,6 @@ describe('css', () => {
   test('merging styles with object condition prop', () => {
     const className = css({ fontSize: 'md' }, { fontSize: { base: 'lg', sm: 'xs' } })
 
-    // TODO: this is not correct
-    expect(className).toMatchInlineSnapshot('"0:fs_m 1:fs_d fs_lg sm:fs_xs"')
+    expect(className).toMatchInlineSnapshot('"fs_lg sm:fs_xs"')
   })
 })
