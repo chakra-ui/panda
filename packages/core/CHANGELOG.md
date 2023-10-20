@@ -1,5 +1,29 @@
 # @pandacss/core
 
+## 0.17.0
+
+### Patch Changes
+
+- e73ea803: Automatically add each recipe slots to the `jsx` property, with a dot notation
+
+  ```ts
+  const button = defineSlotRecipe({
+    className: 'button',
+    slots: ['root', 'icon', 'label'],
+    // ...
+  })
+  ```
+
+  will have a default `jsx` property of: `[Button, Button.Root, Button.Icon, Button.Label]`
+
+- Updated dependencies [12281ff8]
+- Updated dependencies [fc4688e6]
+  - @pandacss/shared@0.17.0
+  - @pandacss/types@0.17.0
+  - @pandacss/token-dictionary@0.17.0
+  - @pandacss/error@0.17.0
+  - @pandacss/logger@0.17.0
+
 ## 0.16.0
 
 ### Patch Changes

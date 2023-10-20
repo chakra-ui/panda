@@ -1,5 +1,68 @@
 # @pandacss/node
 
+## 0.17.0
+
+### Minor Changes
+
+- 12281ff8: Improve support for styled element composition. This ensures that you can compose two styled elements
+  together and the styles will be merged correctly.
+
+  ```jsx
+  const Box = styled('div', {
+    base: {
+      background: 'red.light',
+      color: 'white',
+    },
+  })
+
+  const ExtendedBox = styled(Box, {
+    base: { background: 'red.dark' },
+  })
+
+  // <ExtendedBox> will have a background of `red.dark` and a color of `white`
+  ```
+
+  **Limitation:** This feature does not allow compose mixed styled composition. A mixed styled composition happens when
+  an element is created from a cva/inline cva, and another created from a config recipe.
+
+  - CVA or Inline CVA + CVA or Inline CVA = ✅
+  - Config Recipe + Config Recipe = ✅
+  - CVA or Inline CVA + Config Recipe = ❌
+
+  ```jsx
+  import { button } from '../styled-system/recipes'
+
+  const Button = styled('div', button)
+
+  // ❌ This will throw an error
+  const ExtendedButton = styled(Button, {
+    base: { background: 'red.dark' },
+  })
+  ```
+
+### Patch Changes
+
+- dd6811b3: Apply `config.logLevel` from the Panda config to the logger in every context.
+
+  Fixes https://github.com/chakra-ui/panda/issues/1451
+
+- Updated dependencies [93996aaf]
+- Updated dependencies [12281ff8]
+- Updated dependencies [fc4688e6]
+- Updated dependencies [e73ea803]
+- Updated dependencies [fbf062c6]
+  - @pandacss/generator@0.17.0
+  - @pandacss/shared@0.17.0
+  - @pandacss/types@0.17.0
+  - @pandacss/core@0.17.0
+  - @pandacss/parser@0.17.0
+  - @pandacss/token-dictionary@0.17.0
+  - @pandacss/config@0.17.0
+  - @pandacss/error@0.17.0
+  - @pandacss/extractor@0.17.0
+  - @pandacss/is-valid-prop@0.17.0
+  - @pandacss/logger@0.17.0
+
 ## 0.16.0
 
 ### Minor Changes
