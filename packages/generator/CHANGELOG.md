@@ -1,5 +1,82 @@
 # @pandacss/generator
 
+## 0.17.0
+
+### Minor Changes
+
+- 12281ff8: Improve support for styled element composition. This ensures that you can compose two styled elements
+  together and the styles will be merged correctly.
+
+  ```jsx
+  const Box = styled('div', {
+    base: {
+      background: 'red.light',
+      color: 'white',
+    },
+  })
+
+  const ExtendedBox = styled(Box, {
+    base: { background: 'red.dark' },
+  })
+
+  // <ExtendedBox> will have a background of `red.dark` and a color of `white`
+  ```
+
+  **Limitation:** This feature does not allow compose mixed styled composition. A mixed styled composition happens when
+  an element is created from a cva/inline cva, and another created from a config recipe.
+
+  - CVA or Inline CVA + CVA or Inline CVA = ✅
+  - Config Recipe + Config Recipe = ✅
+  - CVA or Inline CVA + Config Recipe = ❌
+
+  ```jsx
+  import { button } from '../styled-system/recipes'
+
+  const Button = styled('div', button)
+
+  // ❌ This will throw an error
+  const ExtendedButton = styled(Button, {
+    base: { background: 'red.dark' },
+  })
+  ```
+
+- fbf062c6: Added a new type to extract variants out of styled components
+
+  ```tsx
+  import { StyledVariantProps } from '../styled-system/jsx'
+
+  const Button = styled('button', {
+    base: { color: 'black' },
+    variants: {
+      state: {
+        error: { color: 'red' },
+        success: { color: 'green' },
+      },
+    },
+  })
+
+  type ButtonVariantProps = StyledVariantProps<typeof Button>
+  //   ^ { state?: 'error' | 'success' | undefined }
+  ```
+
+### Patch Changes
+
+- 93996aaf: Fix an issue with the `@layer tokens` CSS declarations when using `cssVarRoot` with multiple selectors, like
+  `root, :host, ::backdrop`
+- fc4688e6: Export all types from @pandacss/types, which will also export all types exposed in the outdir/types
+
+  Also make the `config.prefix` object Partial so that each key is optional.
+
+- Updated dependencies [12281ff8]
+- Updated dependencies [fc4688e6]
+- Updated dependencies [e73ea803]
+  - @pandacss/shared@0.17.0
+  - @pandacss/types@0.17.0
+  - @pandacss/core@0.17.0
+  - @pandacss/token-dictionary@0.17.0
+  - @pandacss/is-valid-prop@0.17.0
+  - @pandacss/logger@0.17.0
+
 ## 0.16.0
 
 ### Minor Changes

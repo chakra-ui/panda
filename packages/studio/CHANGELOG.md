@@ -1,5 +1,23 @@
 # @pandacss/studio
 
+## 0.17.0
+
+### Patch Changes
+
+- fc4688e6: Export all types from @pandacss/types, which will also export all types exposed in the outdir/types
+
+  Also make the `config.prefix` object Partial so that each key is optional.
+
+- Updated dependencies [12281ff8]
+- Updated dependencies [fc4688e6]
+- Updated dependencies [dd6811b3]
+  - @pandacss/shared@0.17.0
+  - @pandacss/node@0.17.0
+  - @pandacss/types@0.17.0
+  - @pandacss/token-dictionary@0.17.0
+  - @pandacss/config@0.17.0
+  - @pandacss/logger@0.17.0
+
 ## 0.16.0
 
 ### Patch Changes

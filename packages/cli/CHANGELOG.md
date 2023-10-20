@@ -1,5 +1,23 @@
 # @pandacss/dev
 
+## 0.17.0
+
+### Patch Changes
+
+- Updated dependencies [12281ff8]
+- Updated dependencies [fc4688e6]
+- Updated dependencies [dd6811b3]
+  - @pandacss/shared@0.17.0
+  - @pandacss/node@0.17.0
+  - @pandacss/studio@0.17.0
+  - @pandacss/types@0.17.0
+  - @pandacss/token-dictionary@0.17.0
+  - @pandacss/postcss@0.17.0
+  - @pandacss/config@0.17.0
+  - @pandacss/preset-panda@0.17.0
+  - @pandacss/error@0.17.0
+  - @pandacss/logger@0.17.0
+
 ## 0.16.0
 
 ### Minor Changes
