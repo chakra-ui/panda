@@ -82,7 +82,7 @@ function getDeepestNode(node: AtRule | Rule): Rule | AtRule | undefined {
   return node
 }
 
-function cleanupSelectors(css: string, varSelector: string) {
+export function cleanupSelectors(css: string, varSelector: string) {
   const root = postcss.parse(css)
 
   root.walkRules((rule) => {
