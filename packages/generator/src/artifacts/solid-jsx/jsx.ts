@@ -33,7 +33,9 @@ export function generateSolidJsxFactory(ctx: Context) {
         const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
         const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
-        const forwardedKeys = createMemo(() => Object.keys(props).filter(shouldForwardProp))
+        const forwardedKeys = createMemo(() =>
+          Object.keys(props).filter((prop) => !normalizeHTMLProps.keys.includes(prop) && shouldForwardProp(prop)),
+        )
 
         const [localProps, htmlProps, forwardedProps, variantProps, styleProps, elementProps] = splitProps(
           mergedProps,

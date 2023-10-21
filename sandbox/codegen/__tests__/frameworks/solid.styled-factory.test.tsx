@@ -174,7 +174,6 @@ describe('styled factory - cva', () => {
     expect(container.firstChild).toMatchInlineSnapshot(`
       <div
         class="h_123"
-        htmlwidth="123"
         width="123"
       >
         Click me

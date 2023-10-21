@@ -152,7 +152,7 @@ describe('styled factory - cva', async () => {
       </styled.div>,
     )
     const container = screen.querySelector('div')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<div htmlwidth=\\"123\\" class=\\"h_123\\">Click me</div>"')
+    expect(container.outerHTML).toMatchInlineSnapshot('"<div width=\\"123\\" class=\\"h_123\\">Click me</div>"')
   })
 })
 
