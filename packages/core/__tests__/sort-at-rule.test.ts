@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { sortAtRules } from '../src/plugins/sort-at-rules'
 
-// TODO refacto via sortStyleRules
 describe('sort-at-rules', () => {
   test(`should sort mobile first`, () => {
     const receivedOrder = [

@@ -560,24 +560,9 @@ importers:
       postcss:
         specifier: ^8.4.31
         version: 8.4.31
-      postcss-discard-duplicates:
-        specifier: ^6.0.0
-        version: 6.0.0(postcss@8.4.31)
-      postcss-discard-empty:
-        specifier: ^6.0.0
-        version: 6.0.0(postcss@8.4.31)
-      postcss-merge-rules:
-        specifier: ^6.0.1
-        version: 6.0.1(postcss@8.4.31)
-      postcss-minify-selectors:
-        specifier: ^6.0.0
-        version: 6.0.0(postcss@8.4.31)
       postcss-nested:
         specifier: 6.0.1
         version: 6.0.1(postcss@8.4.31)
-      postcss-normalize-whitespace:
-        specifier: ^6.0.0
-        version: 6.0.0(postcss@8.4.31)
       postcss-selector-parser:
         specifier: ^6.0.13
         version: 6.0.13
@@ -637,7 +622,7 @@ importers:
         version: 5.5.3
       postcss:
         specifier: ^8.4.27
-        version: 8.4.27
+        version: 8.4.31
 
   packages/generator:
     dependencies:
@@ -17388,6 +17373,7 @@ packages:
       postcss: ^8.2.15
     dependencies:
       postcss: 8.4.31
+    dev: true
 
   /cssnano@5.1.15(postcss@8.4.31):
     resolution: {integrity: sha512-j+BKgDcLDQA+eDifLx0EO4XSA56b7uut3BQFH+wbSaSTuGLuiyTa/wbRYthUXX8LC9mLg+WWKe8h+qJuwTAbHw==}
@@ -27007,6 +26993,7 @@ packages:
       postcss: ^8.2.15
     dependencies:
       postcss: 8.4.31
+    dev: true
 
   /postcss-discard-empty@5.1.1(postcss@8.4.31):
     resolution: {integrity: sha512-zPz4WljiSuLWsI0ir4Mcnr4qQQ5e1Ukc3i7UfE2XcrwKK2LIPIqE5jxMRxO6GbI3cv//ztXDsXwEWT3BHOGh3A==}
@@ -27024,6 +27011,7 @@ packages:
       postcss: ^8.2.15
     dependencies:
       postcss: 8.4.31
+    dev: true
 
   /postcss-discard-overridden@5.1.0(postcss@8.4.31):
     resolution: {integrity: sha512-21nOL7RqWR1kasIVdKs8HNqQJhFxLsyRfAnUDm4Fe4t4mCWL9OJiHvlHPjcd8zc5Myu89b/7wZDnOSjFgeWRtw==}
