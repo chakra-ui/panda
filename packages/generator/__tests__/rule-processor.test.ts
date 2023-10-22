@@ -17,6 +17,27 @@ const cva = (styles: Dict) => {
   return { className: result.className, css: result.toCss() }
 }
 
+const buttonRecipe = {
+  className: 'btn',
+  base: {
+    lineHeight: '1.2',
+    _focusVisible: {
+      boxShadow: 'outline',
+    },
+    _disabled: {
+      opacity: 0.4,
+    },
+    _hover: {
+      _disabled: { bg: 'initial' },
+    },
+    display: 'inline-flex',
+    outline: 'none',
+    _focus: {
+      zIndex: 1,
+    },
+  },
+}
+
 describe('rule processor', () => {
   test('css', () => {
     const result = css({
@@ -610,26 +631,7 @@ describe('rule processor', () => {
       theme: {
         extend: {
           recipes: {
-            button: {
-              className: 'btn',
-              base: {
-                lineHeight: '1.2',
-                _focusVisible: {
-                  boxShadow: 'outline',
-                },
-                _disabled: {
-                  opacity: 0.4,
-                },
-                _hover: {
-                  _disabled: { bg: 'initial' },
-                },
-                display: 'inline-flex',
-                outline: 'none',
-                _focus: {
-                  zIndex: 1,
-                },
-              },
-            },
+            button: buttonRecipe,
           },
         },
       },
@@ -665,6 +667,112 @@ describe('rule processor', () => {
           .btn:is(:hover, [data-hover]):is(:disabled, [disabled], [data-disabled]) {
             background: initial;
           }
+        }
+      }
+      "
+    `)
+  })
+
+  test('mixed together', () => {
+    const processor = createRuleProcessor({
+      theme: {
+        extend: {
+          recipes: {
+            button: buttonRecipe,
+          },
+        },
+      },
+    })
+    processor.prepare()
+    processor.css({
+      color: 'blue.300',
+      _hover: {
+        color: 'red.400',
+      },
+    })
+
+    processor.recipe('button', {
+      size: {
+        base: 'sm',
+        md: 'md',
+      },
+      variant: 'solid',
+    })
+
+    processor.cva({
+      base: {
+        fontSize: '12px',
+      },
+      variants: {
+        size: {
+          sm: {
+            fontSize: '14px',
+          },
+          md: {
+            fontSize: '16px',
+          },
+        },
+      },
+      compoundVariants: [
+        {
+          size: 'sm',
+          css: {
+            border: '2px solid token(colors.green.100)',
+          } as any,
+        },
+      ],
+    })
+
+    expect(processor.toCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .btn {
+            outline: var(--borders-none);
+            line-height: 1.2;
+            display: inline-flex;
+          }
+
+          .btn:is(:disabled, [disabled], [data-disabled]) {
+            opacity: .4;
+          }
+
+          .btn:is(:focus-visible, [data-focus-visible]) {
+            box-shadow: outline;
+          }
+
+          .btn:is(:focus, [data-focus]) {
+            z-index: 1;
+          }
+
+          .btn:is(:hover, [data-hover]):is(:disabled, [disabled], [data-disabled]) {
+            background: initial;
+          }
+        }
+      }
+
+      @layer utilities {
+        .text_blue\\\\.300 {
+          color: var(--colors-blue-300);
+        }
+
+        .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
+          color: var(--colors-red-400);
+        }
+
+        .fs_12px {
+          font-size: 12px;
+        }
+
+        .fs_14px {
+          font-size: 14px;
+        }
+
+        .fs_16px {
+          font-size: 16px;
+        }
+
+        .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
+          border: 2px solid var(--colors-green-100);
         }
       }
       "
