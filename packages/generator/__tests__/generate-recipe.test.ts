@@ -11,7 +11,7 @@ describe('generate recipes', () => {
           "js": "import { css } from '../css/css.mjs';
       import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
-      import { compact, createCss, withoutSpace } from '../helpers.mjs';
+      import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
 
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
        const getRecipeStyles = (variants) => {
@@ -57,13 +57,36 @@ describe('generate recipes', () => {
              return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
            },
          })
-      }",
+      }
+
+      export const mergeRecipes = (recipeA, recipeB) => {
+       if (recipeA && !recipeB) return recipeA
+       if (!recipeA && recipeB) return recipeB
+
+       const recipeFn = (...args) => cx(recipeA(...args), recipeB(...args))
+       const variantKeys = uniq(recipeA.variantKeys, recipeB.variantKeys)
+       const variantMap = variantKeys.reduce((acc, key) => {
+         acc[key] = uniq(recipeA.variantMap[key], recipeB.variantMap[key])
+         return acc
+       }, {})
+
+       return Object.assign(recipeFn, {
+         __recipe__: true,
+         __name__: \`\${recipeA.__name__} \${recipeB.__name__}\`,
+         raw: (props) => props,
+         variantKeys,
+         variantMap,
+         splitVariantProps(props) {
+           return splitProps(props, variantKeys)
+         },
+       })
+       }
+      ",
           "name": "create-recipe",
         },
         {
           "dts": "import type { ConditionalValue } from '../types/index';
-      import type { Pretty } from '../types/helpers';
-      import type { DistributiveOmit } from '../types/system-types';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface TextStyleVariant {
         size: \\"h1\\" | \\"h2\\"
@@ -89,7 +112,7 @@ describe('generate recipes', () => {
 
       export declare const textStyle: TextStyleRecipe",
           "js": "import { splitProps } from '../helpers.mjs';
-      import { createRecipe } from './create-recipe.mjs';
+      import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const textStyleFn = /* @__PURE__ */ createRecipe('textStyle', {}, [])
 
@@ -108,6 +131,9 @@ describe('generate recipes', () => {
         raw: (props) => props,
         variantKeys: textStyleVariantKeys,
         variantMap: textStyleVariantMap,
+        merge(recipe) {
+          return mergeRecipes(this, recipe)
+        },
         splitVariantProps(props) {
           return splitProps(props, textStyleVariantKeys)
         },
@@ -116,8 +142,7 @@ describe('generate recipes', () => {
         },
         {
           "dts": "import type { ConditionalValue } from '../types/index';
-      import type { Pretty } from '../types/helpers';
-      import type { DistributiveOmit } from '../types/system-types';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface TooltipStyleVariant {
         
@@ -143,7 +168,7 @@ describe('generate recipes', () => {
 
       export declare const tooltipStyle: TooltipStyleRecipe",
           "js": "import { splitProps } from '../helpers.mjs';
-      import { createRecipe } from './create-recipe.mjs';
+      import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const tooltipStyleFn = /* @__PURE__ */ createRecipe('tooltipStyle', {}, [])
 
@@ -157,6 +182,9 @@ describe('generate recipes', () => {
         raw: (props) => props,
         variantKeys: tooltipStyleVariantKeys,
         variantMap: tooltipStyleVariantMap,
+        merge(recipe) {
+          return mergeRecipes(this, recipe)
+        },
         splitVariantProps(props) {
           return splitProps(props, tooltipStyleVariantKeys)
         },
@@ -165,8 +193,7 @@ describe('generate recipes', () => {
         },
         {
           "dts": "import type { ConditionalValue } from '../types/index';
-      import type { Pretty } from '../types/helpers';
-      import type { DistributiveOmit } from '../types/system-types';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface ButtonStyleVariant {
         size: \\"sm\\" | \\"md\\"
@@ -193,7 +220,7 @@ describe('generate recipes', () => {
 
       export declare const buttonStyle: ButtonStyleRecipe",
           "js": "import { splitProps } from '../helpers.mjs';
-      import { createRecipe } from './create-recipe.mjs';
+      import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const buttonStyleFn = /* @__PURE__ */ createRecipe('buttonStyle', {
         \\"size\\": \\"md\\",
@@ -219,6 +246,9 @@ describe('generate recipes', () => {
         raw: (props) => props,
         variantKeys: buttonStyleVariantKeys,
         variantMap: buttonStyleVariantMap,
+        merge(recipe) {
+          return mergeRecipes(this, recipe)
+        },
         splitVariantProps(props) {
           return splitProps(props, buttonStyleVariantKeys)
         },

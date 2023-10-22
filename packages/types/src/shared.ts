@@ -14,10 +14,12 @@ export type AnyFunction<T = any> = (...args: T[]) => any
 
 type Nullable<T> = T | null | undefined
 
+export interface ArtifactContent {
+  file: string
+  code: string | undefined
+}
+
 export type Artifact = Nullable<{
   dir?: string[]
-  files: Array<{
-    file: string
-    code: string | undefined
-  }>
+  files: ArtifactContent[]
 }>

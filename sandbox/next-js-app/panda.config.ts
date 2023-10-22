@@ -15,4 +15,6 @@ export default defineConfig({
   theme: {
     extend: {},
   },
+  syntax: 'template-literal',
+  jsxFramework: 'react',
 })

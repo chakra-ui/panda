@@ -78,7 +78,12 @@ export class Recipes {
 
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
     const variantKeys = Object.keys(recipe.variants ?? {})
-    const jsx = recipe.jsx ?? [capitalize(name)]
+    const capitalized = capitalize(name)
+    const jsx = recipe.jsx ?? [capitalized]
+    if ('slots' in recipe) {
+      jsx.push(...recipe.slots.map((slot) => capitalized + '.' + capitalize(slot)))
+    }
+
     const match = createRegex(jsx)
 
     sharedState.nodes.set(name, {

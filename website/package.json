@@ -28,13 +28,13 @@
     "react-dom": "^18.2.0",
     "react-fast-marquee": "^1.6.0",
     "scroll-into-view-if-needed": "^3.0.10",
-    "zod": "^3.21.4"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@types/react": "^18.2.22",
     "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.27",
+    "postcss": "^8.4.31",
     "prettier": "^2.8.8"
   }
 }

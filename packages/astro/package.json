@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/astro",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "type": "module",
   "description": "Astro integration for Panda CSS",
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
   "dependencies": {
     "@pandacss/postcss": "workspace:*",
     "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.27",
+    "postcss": "^8.4.31",
     "postcss-load-config": "^4.0.1"
   },
   "devDependencies": {

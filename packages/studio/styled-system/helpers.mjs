@@ -49,17 +49,19 @@ function toHash(value) {
 
 // src/merge-props.ts
 function mergeProps(...sources) {
-  const result = {};
-  for (const source of sources) {
-    for (const [key, value] of Object.entries(source)) {
-      if (isObject(value)) {
-        result[key] = mergeProps(result[key] || {}, value);
+  const objects = sources.filter(Boolean);
+  return objects.reduce((prev, obj) => {
+    Object.keys(obj).forEach((key) => {
+      const prevValue = prev[key];
+      const value = obj[key];
+      if (isObject(prevValue) && isObject(value)) {
+        prev[key] = mergeProps(prevValue, value);
       } else {
-        result[key] = value;
+        prev[key] = value;
       }
-    }
-  }
-  return result;
+    });
+    return prev;
+  }, {});
 }
 
 // src/walk-object.ts
@@ -250,6 +252,9 @@ function splitProps(props, ...keys) {
   const fn = (key) => split(Array.isArray(key) ? key : dKeys.filter(key));
   return keys.map(fn).concat(split(dKeys));
 }
+
+// src/uniq.ts
+var uniq = (...items) => items.filter(Boolean).reduce((acc, item) => Array.from(/* @__PURE__ */ new Set([...acc, ...item])), []);
 export {
   compact,
   createCss,
@@ -265,6 +270,7 @@ export {
   mergeProps,
   splitProps,
   toHash,
+  uniq,
   walkObject,
   withoutSpace
 };

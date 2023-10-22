@@ -1,6 +1,6 @@
-import { defineConfig } from '@pandacss/dev'
+import type { Config } from '@pandacss/types'
 
-export default defineConfig({
+export default {
   gitignore: false,
   preflight: true,
   include: ['./src/**/*.{tsx,jsx,astro}'],
@@ -107,4 +107,4 @@ export default defineConfig({
       minHeight: '100vh',
     },
   },
-})
+} satisfies Config

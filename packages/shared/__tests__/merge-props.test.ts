@@ -23,4 +23,17 @@ describe('merge props', () => {
       }
     `)
   })
+
+  test('text styles', () => {
+    expect(mergeProps({ lineHeight: 1.2, textStyle: '3xl' }, { textStyle: { lg: '6xl', xl: '7xl' } }))
+      .toMatchInlineSnapshot(`
+        {
+          "lineHeight": 1.2,
+          "textStyle": {
+            "lg": "6xl",
+            "xl": "7xl",
+          },
+        }
+      `)
+  })
 })

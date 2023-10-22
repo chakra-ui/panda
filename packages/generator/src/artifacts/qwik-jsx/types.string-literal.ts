@@ -12,7 +12,7 @@ export declare const ${factoryName}: ${upperName}
     jsxType: outdent`
 import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
 
-type ElementType = keyof QwikIntrinsicElements | Component<any>
+export type ElementType = keyof QwikIntrinsicElements | Component<any>
 
 export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
   ? QwikIntrinsicElements[T]
@@ -20,17 +20,21 @@ export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsi
   ? P
   : never
 
-type Dict = Record<string, unknown>
+interface Dict {
+  [k: string]: unknown
+}
 
 export type ${componentName}<T extends ElementType> = {
   (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
 }
 
-interface JsxFactory {
+export interface JsxFactory {
   <T extends ElementType>(component: T): ${componentName}<T>
 }
 
-type JsxElements = { [K in keyof QwikIntrinsicElements]: ${componentName}<K> }
+export type JsxElements = {
+  [K in keyof QwikIntrinsicElements]: ${componentName}<K>
+}
 
 export type ${upperName} = JsxFactory & JsxElements
 

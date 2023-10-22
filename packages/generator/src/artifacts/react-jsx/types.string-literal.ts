@@ -13,7 +13,9 @@ export declare const ${factoryName}: ${upperName}
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
 ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
-type Dict = Record<string, unknown>
+interface Dict {
+  [k: string]: unknown
+}
 
 export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
@@ -24,11 +26,13 @@ export type ${componentName}<T extends ElementType> = {
   displayName?: string
 }
 
-interface JsxFactory {
+export interface JsxFactory {
   <T extends ElementType>(component: T): ${componentName}<T>
 }
 
-type JsxElements = { [K in keyof JSX.IntrinsicElements]: ${componentName}<K> }
+export type JsxElements = {
+  [K in keyof JSX.IntrinsicElements]: ${componentName}<K>
+}
 
 export type ${upperName} = JsxFactory & JsxElements
 

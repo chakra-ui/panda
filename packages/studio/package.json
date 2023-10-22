@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/studio",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "The automated token documentation for Panda CSS",
   "main": "dist/studio.js",
   "module": "dist/studio.mjs",
@@ -10,12 +10,13 @@
     "access": "public"
   },
   "scripts": {
-    "codegen": "panda",
+    "panda": "node ../cli/bin.js",
+    "codegen": "node ../cli/bin.js codegen",
     "build": "tsup scripts --format=esm,cjs --dts --no-splitting --shims",
-    "postbuild": "panda",
+    "postbuild": "pnpm panda",
     "build-fast": "tsup scripts --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch scripts",
-    "dev:panda": "panda --clean --watch",
+    "dev:panda": "node ../cli/bin.js --clean --watch",
     "dev:astro": "astro dev",
     "start": "concurrently \"pnpm dev:panda\" \"pnpm dev:astro\""
   },
@@ -51,7 +52,6 @@
     "vite": "4.4.11"
   },
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "@vitejs/plugin-react": "4.0.4",

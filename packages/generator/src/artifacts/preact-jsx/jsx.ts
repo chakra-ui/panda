@@ -9,11 +9,13 @@ export function generatePreactJsxFactory(ctx: Context) {
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
     import { useMemo } from 'preact/hooks'
+    ${ctx.file.import(
+      'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
+      './factory-helper',
+    )}
+    ${ctx.file.import('isCssProperty', './is-valid-prop')}
     ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
-
-    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -27,23 +29,26 @@ export function generatePreactJsxFactory(ctx: Context) {
       )
 
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
-        const { as: Element = Dynamic, children, ...restProps } = props
+        const { as: Element = Dynamic.__base__ || Dynamic, children, ...restProps } = props
+
+        const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+        const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
         const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
 
         const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
-          return splitProps(combinedProps, shouldForwardProp, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+          return splitProps(combinedProps, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty, normalizeHTMLProps.keys)
         }, [combinedProps])
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, combinedProps.className)
+          const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps)
+          return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, combinedProps.className)
         }
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const cvaStyles = cvaFn.raw(variantProps)
+          const cvaStyles = __cvaFn__.raw(variantProps)
           return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, combinedProps.className)
         }
 
@@ -59,8 +64,13 @@ export function generatePreactJsxFactory(ctx: Context) {
         })
       })
 
-      const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+      const name = getDisplayName(Dynamic)
+      
       ${componentName}.displayName = \`${factoryName}.\${name}\`
+      ${componentName}.__cva__ = cvaFn
+      ${componentName}.__base__ = Dynamic
+      ${componentName}.__shouldForwardProps__ = shouldForwardProp
+      
       return ${componentName}
     }
 

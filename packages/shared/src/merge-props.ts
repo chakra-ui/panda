@@ -1,15 +1,17 @@
 import { isObject } from './assert'
 
 export function mergeProps<T extends Record<string, unknown>>(...sources: T[]): T {
-  const result = {} as Record<string, any>
-  for (const source of sources) {
-    for (const [key, value] of Object.entries(source)) {
-      if (isObject(value)) {
-        result[key] = mergeProps(result[key] || {}, value)
+  const objects = sources.filter(Boolean)
+  return objects.reduce((prev: any, obj) => {
+    Object.keys(obj).forEach((key) => {
+      const prevValue = prev[key]
+      const value = obj[key]
+      if (isObject(prevValue) && isObject(value)) {
+        prev[key] = mergeProps(prevValue, value)
       } else {
-        result[key] = value
+        prev[key] = value
       }
-    }
-  }
-  return result as T
+    })
+    return prev
+  }, {} as T)
 }

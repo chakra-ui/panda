@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/postcss",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "PostCSS integration for Panda CSS",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -20,6 +20,6 @@
   ],
   "dependencies": {
     "@pandacss/node": "workspace:*",
-    "postcss": "^8.4.27"
+    "postcss": "^8.4.31"
   }
 }

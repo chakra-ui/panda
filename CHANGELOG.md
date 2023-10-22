@@ -6,6 +6,86 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.17.0] - 2023-10-20
+
+### Fixed
+
+- Fix an issue with the `@layer tokens` CSS declarations when using `cssVarRoot` with multiple selectors, like
+  `root, :host, ::backdrop`
+
+### Added
+
+- Improve support for styled element composition. This ensures that you can compose two styled elements together and the
+  styles will be merged correctly.
+
+```jsx
+const Box = styled('div', {
+  base: {
+    background: 'red.light',
+    color: 'white',
+  },
+})
+
+const ExtendedBox = styled(Box, {
+  base: { background: 'red.dark' },
+})
+
+// <ExtendedBox> will have a background of `red.dark` and a color of `white`
+```
+
+**Limitation:** This feature does not allow compose mixed styled composition. A mixed styled composition happens when an
+element is created from a cva/inline cva, and another created from a config recipe.
+
+- CVA or Inline CVA + CVA or Inline CVA = ✅
+- Config Recipe + Config Recipe = ✅
+- CVA or Inline CVA + Config Recipe = ❌
+
+```jsx
+import { button } from '../styled-system/recipes'
+
+const Button = styled('div', button)
+
+// ❌ This will throw an error
+const ExtendedButton = styled(Button, {
+  base: { background: 'red.dark' },
+})
+```
+
+- Export all types from @pandacss/types, which will also export all types exposed in the outdir/types. Also make the
+  `config.prefix` object Partial so that each key is optional.
+- Apply `config.logLevel` from the Panda config to the logger in every context. Fixes
+  https://github.com/chakra-ui/panda/issues/1451
+- Automatically add each recipe slots to the `jsx` property, with a dot notation
+
+```ts
+const button = defineSlotRecipe({
+  className: 'button',
+  slots: ['root', 'icon', 'label'],
+  // ...
+})
+```
+
+will have a default `jsx` property of: `[Button, Button.Root, Button.Icon, Button.Label]`
+
+- Added a new type to extract variants out of styled components
+
+```tsx
+import { StyledVariantProps } from '../styled-system/jsx'
+
+const Button = styled('button', {
+  base: { color: 'black' },
+  variants: {
+    state: {
+      error: { color: 'red' },
+      success: { color: 'green' },
+    },
+  },
+})
+
+type ButtonVariantProps = StyledVariantProps<typeof Button>
+//   ^ { state?: 'error' | 'success' | undefined }
+```
+
 ## [0.16.0] - 2023-10-15
 
 ### Fixed

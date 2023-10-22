@@ -24,7 +24,7 @@ export function generateRecipes(ctx: Context) {
    ${ctx.file.import('css', '../css/css')}
    ${ctx.file.import('assertCompoundVariant, getCompoundVariantCss', '../css/cva')}
    ${ctx.file.import('cx', '../css/cx')}
-   ${ctx.file.import('compact, createCss, withoutSpace', '../helpers')}
+   ${ctx.file.import('compact, createCss, splitProps, uniq, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
     const getRecipeStyles = (variants) => {
@@ -71,6 +71,30 @@ export function generateRecipes(ctx: Context) {
         },
       })
    }
+
+   export const mergeRecipes = (recipeA, recipeB) => {
+    if (recipeA && !recipeB) return recipeA
+    if (!recipeA && recipeB) return recipeB
+
+    const recipeFn = (...args) => cx(recipeA(...args), recipeB(...args))
+    const variantKeys = uniq(recipeA.variantKeys, recipeB.variantKeys)
+    const variantMap = variantKeys.reduce((acc, key) => {
+      acc[key] = uniq(recipeA.variantMap[key], recipeB.variantMap[key])
+      return acc
+    }, {})
+  
+    return Object.assign(recipeFn, {
+      __recipe__: true,
+      __name__: \`$\{recipeA.__name__} \${recipeB.__name__}\`,
+      raw: (props) => props,
+      variantKeys,
+      variantMap,
+      splitVariantProps(props) {
+        return splitProps(props, variantKeys)
+      },
+    })
+    }
+  }
   `,
   }
 
@@ -114,7 +138,7 @@ export function generateRecipes(ctx: Context) {
         .otherwise(
           (config) => outdent`
         ${ctx.file.import('splitProps', '../helpers')}
-        ${ctx.file.import('createRecipe', './create-recipe')}
+        ${ctx.file.import('createRecipe, mergeRecipes', './create-recipe')}
 
         const ${baseName}Fn = /* @__PURE__ */ createRecipe('${config.className}', ${stringify(
             defaultVariants ?? {},
@@ -130,6 +154,9 @@ export function generateRecipes(ctx: Context) {
           raw: (props) => props,
           variantKeys: ${baseName}VariantKeys,
           variantMap: ${baseName}VariantMap,
+          merge(recipe) {
+            return mergeRecipes(this, recipe)
+          },
           splitVariantProps(props) {
             return splitProps(props, ${baseName}VariantKeys)
           },
@@ -144,8 +171,7 @@ export function generateRecipes(ctx: Context) {
 
         dts: outdent`
         ${ctx.file.importType('ConditionalValue', '../types/index')}
-        ${ctx.file.importType('Pretty', '../types/helpers')}
-        ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+        ${ctx.file.importType('DistributiveOmit, Pretty', '../types/system-types')}
 
         interface ${upperName}Variant {
           ${Object.keys(variantKeyMap)

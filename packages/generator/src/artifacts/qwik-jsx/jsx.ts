@@ -7,12 +7,14 @@ export function generateQwikJsxFactory(ctx: Context) {
   return {
     js: outdent`
     import { h } from '@builder.io/qwik'
+    ${ctx.file.import(
+      'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
+      './factory-helper',
+    )}
+    ${ctx.file.import('isCssProperty', './is-valid-prop')}
     ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
-    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
-          
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
@@ -25,22 +27,25 @@ export function generateQwikJsxFactory(ctx: Context) {
       )
 
       const ${componentName} = function ${componentName}(props) {
-        const { as: Element = Dynamic, children, className, ...restProps } = props
+        const { as: Element = Dynamic.__base__ || Dynamic, children, className, ...restProps } = props
+
+        const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+        const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
         const combinedProps = Object.assign({}, defaultProps, restProps)
         
         const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] =
-          splitProps(combinedProps, shouldForwardProp, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
-
-        const { css: cssStyles, ...propStyles } = styleProps
+          splitProps(combinedProps, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty, normalizeHTMLProps.keys)
 
         function recipeClass() {
-          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, className)
+          const { css: cssStyles, ...propStyles } = styleProps
+          const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps);
+          return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, className)
         }
-
+        
         function cvaClass() {
-          const cvaStyles = cvaFn.raw(variantProps)
+          const { css: cssStyles, ...propStyles } = styleProps
+          const cvaStyles = __cvaFn__.raw(variantProps)
           return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, className)
         }
 
@@ -55,8 +60,13 @@ export function generateQwikJsxFactory(ctx: Context) {
         })
       }
 
-      const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+      const name = getDisplayName(Dynamic)
+      
       ${componentName}.displayName = \`${factoryName}.\${name}\`
+      ${componentName}.__cva__ = cvaFn
+      ${componentName}.__base__ = Dynamic
+      ${componentName}.__shouldForwardProps__ = shouldForwardProp
+      
       return ${componentName}
     }
 
