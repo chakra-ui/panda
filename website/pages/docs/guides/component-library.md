@@ -27,7 +27,7 @@ export const acmePreset = definePreset({
   theme: {
     extend: {
       tokens: {
-        colors: { primary: 'blue.500' }
+        colors: { primary: { value: 'blue.500' } }
       }
     }
   }
