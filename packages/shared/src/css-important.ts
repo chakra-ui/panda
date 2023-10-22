@@ -16,19 +16,28 @@ export function withoutSpace(str: string) {
 
 type Dict = Record<string, unknown>
 
-export const markImportant = (styles: Dict) => {
-  const obj = {} as Dict
-  let prevObj = obj
+export function markImportant(obj: Dict) {
+  if (typeof obj !== 'object' || obj === null) {
+    return obj
+  }
 
-  traverse(styles, (args) => {
-    obj[args.key] = args.value
-    if (typeof args.value === 'object') {
-      prevObj = args.value
-      return
+  const result = Array.isArray(obj) ? [] : {}
+  const stack = [{ obj, result }] as { obj: Dict; result: Dict }[]
+
+  while (stack.length > 0) {
+    const { obj, result } = stack.pop()!
+    for (const [key, value] of Object.entries(obj)) {
+      if (typeof value === 'string' || typeof value === 'number') {
+        result[key] = `${value} !important`
+      } else if (typeof value === 'object' && value !== null) {
+        const next = Array.isArray(value) ? [] : {}
+        result[key] = next
+        stack.push({ obj: value as Dict, result: next })
+      } else {
+        result[key] = value
+      }
     }
+  }
 
-    prevObj[args.key] = args.value + '!important'
-  })
-
-  return obj
+  return result
 }

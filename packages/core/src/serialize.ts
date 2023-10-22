@@ -26,8 +26,6 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
     const hasConditions = conds.length > 0
 
     let { styles } = utility.transform(prop, withoutImportant(value))
-    // todo use markImportant on styles
-    // TODO bench
     const cssResult = toCss(important ? markImportant(styles) : styles)
 
     if (hasConditions) {
