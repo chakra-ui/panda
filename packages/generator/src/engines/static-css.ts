@@ -2,7 +2,7 @@ import type { Stylesheet } from '@pandacss/core'
 import type { CssRule, StaticCssOptions } from '@pandacss/types'
 import type { GeneratorBaseEngine } from './base'
 import { HashFactory } from './hash-factory'
-import { StyleCollector } from './styles-collector'
+import { StyleCollector } from './style-collector'
 
 interface StaticCssResults {
   css: Record<string, any>[]

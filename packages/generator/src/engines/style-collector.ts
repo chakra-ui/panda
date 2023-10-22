@@ -10,6 +10,7 @@ import type {
 } from '@pandacss/types'
 import { HashFactory, type CollectorContext } from './hash-factory'
 
+// TODO rename file
 export class StyleCollector {
   constructor(private context: CollectorContext) {}
 
@@ -68,7 +69,6 @@ export class StyleCollector {
     const cached = this.atomic_cache.get(hash)
     if (cached) return cached
 
-    // console.log(2, { hash })
     const entry = getEntryFromHash(hash)
 
     const recipeName = entry.recipe
@@ -165,7 +165,7 @@ export class StyleCollector {
       }
     })
 
-    const result: GroupedResult = { result: obj, hashSet, details: sortStyleRules(details), className }
+    const result: GroupedResult = { result: obj, hashSet, details, className }
     this.group_cache.set(className, result)
     return result
   }

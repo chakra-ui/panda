@@ -126,7 +126,6 @@ describe('traverse', () => {
 
 export function toCss(styles: Dict, { important }: { important?: boolean } = {}) {
   const result = postcss([
-    // TODO FIXME rm ou swap à lightning ?
     postcssNested({
       bubble: ['breakpoint'],
     }),
@@ -134,7 +133,6 @@ export function toCss(styles: Dict, { important }: { important?: boolean } = {})
     parser: postCssJs.parser,
   })
 
-  // TODO FIXME rm
   if (important) {
     result.root.walkDecls((decl) => {
       decl.important = true

@@ -1,6 +1,6 @@
 import type { RecipeDefinition, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
 import type { CollectorContext, HashFactory } from './hash-factory'
-import type { StyleCollector } from './styles-collector'
+import type { StyleCollector } from './style-collector'
 
 export interface BaseRule {
   className: string[]
@@ -57,7 +57,6 @@ export class RuleProcessor {
       className: Array.from(styles.classNames.keys()),
       toCss: () => {
         const sheet = this.context.createSheet()
-        // console.log(styles)
         sheet.processStyleCollector(styles)
         return sheet.toCss({ optimize: true })
       },

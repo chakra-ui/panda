@@ -3,7 +3,7 @@ import { getBaseEngine } from './base'
 import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
 import { HashFactory } from './hash-factory'
-import { StyleCollector } from './styles-collector'
+import { StyleCollector } from './style-collector'
 import { StaticCss } from './static-css'
 
 export const getEngine = (conf: ConfigResultWithHooks) => {
