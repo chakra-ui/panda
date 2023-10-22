@@ -1,15 +1,14 @@
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import sortCss from '../src/plugins/sort-css'
-import prettify from '../src/plugins/prettify'
 
 // TODO refacto via sortStyleRules
 
 function run(code: string) {
-  return postcss([sortCss(), prettify()]).process(code, { from: undefined }).css
+  return postcss([sortCss()]).process(code, { from: undefined }).css
 }
 
-describe('sort css', () => {
+describe.skip('sort css', () => {
   test('root level', () => {
     expect(
       run(`

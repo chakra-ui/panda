@@ -4,7 +4,6 @@ import { Features, transform } from 'lightningcss'
 import postcss, { Root } from 'postcss'
 import nested from 'postcss-nested'
 import expandTokenFn from './plugins/expand-token-fn'
-import prettify from './plugins/prettify'
 
 type OptimizeOptions = {
   minify?: boolean
@@ -34,7 +33,6 @@ export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) 
   return result.code.toString()
 }
 
-// TODO plugin lightning
 export function expandCssFunctions(
   code: string | Root,
   options: { token?: (key: string) => string; raw?: (path: string) => Token | undefined } = {},
@@ -44,14 +42,7 @@ export function expandCssFunctions(
   return css
 }
 
-// TODO lightning / rm ?
 export function expandNestedCss(code: string) {
-  const { css } = postcss([nested(), prettify()]).process(code)
-  return css
-}
-
-// TODO lightning
-export function prettifyCss(code: string) {
-  const { css } = postcss([prettify()]).process(code)
+  const { css } = postcss([nested()]).process(code)
   return css
 }

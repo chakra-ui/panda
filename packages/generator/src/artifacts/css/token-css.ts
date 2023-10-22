@@ -1,11 +1,4 @@
-import {
-  type Stylesheet,
-  expandNestedCss,
-  extractParentSelectors,
-  optimizeCss,
-  prettifyCss,
-  toCss,
-} from '@pandacss/core'
+import { type Stylesheet, expandNestedCss, extractParentSelectors, optimizeCss, toCss } from '@pandacss/core'
 import postcss, { AtRule, Rule } from 'postcss'
 import type { Context } from '../../engines'
 
@@ -55,7 +48,7 @@ export function generateTokenCss(ctx: Context, sheet?: Stylesheet) {
 
   const output = optimizeCss(
     `@layer ${ctx.layers.name.tokens} {
-      ${prettifyCss(css)}
+      ${css}
     }
     `,
     { minify: ctx.config.minify },
