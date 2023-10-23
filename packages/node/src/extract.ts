@@ -1,11 +1,12 @@
+import { optimizeCss } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
+import { createParserResult } from '@pandacss/parser'
+import { writeFile } from 'fs/promises'
 import { Obj, pipe, tap, tryCatch } from 'lil-fp'
+import pLimit from 'p-limit'
+import { match } from 'ts-pattern'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
-import { writeFile } from 'fs/promises'
-import { createParserResult } from '@pandacss/parser'
-import { match } from 'ts-pattern'
-import { optimizeCss } from '@pandacss/core'
 
 /**
  * Bundles all the included files CSS into outdir/styles.css
@@ -70,10 +71,14 @@ function writeChunks(ctx: PandaContext) {
 const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
 const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
 
+const limit = pLimit(20)
+
 export async function emitArtifacts(ctx: PandaContext) {
   if (ctx.config.clean) ctx.output.empty()
 
-  await Promise.allSettled(ctx.getArtifacts().map(ctx.output.write))
+  // limit concurrency since we might output a lot of files
+  const promises = ctx.getArtifacts().map((artifact) => limit(() => ctx.output.write(artifact)))
+  await Promise.allSettled(promises)
 
   void ctx.hooks.callHook('generator:done')
 
