@@ -56,7 +56,7 @@
     "@types/fs-extra": "11.0.2",
     "@types/glob-parent": "^5.1.1",
     "@types/is-glob": "^4.0.2",
-    "@types/lodash.merge": "4.6.7",
+    "@types/lodash.merge": "4.6.8",
     "@types/pluralize": "0.0.30",
     "boxen": "^7.1.1"
   }
