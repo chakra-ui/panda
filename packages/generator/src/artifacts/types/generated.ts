@@ -30,19 +30,11 @@ export function getGeneratedTypes(ctx: Context) {
         .with('all', () => system.content)
         .with('minimal', () =>
           system.content
-            .replace(
-              "export type OmittedHTMLProps = 'color' | 'translate' | 'transition' | 'width' | 'height' | 'content'",
-              "export type OmittedHTMLProps = ''",
-            )
+            .replace('WithHTMLProps<T>,', 'T,')
             .replace(jsxStyleProps, 'export type JsxStyleProps = WithCss'),
         )
         .with('none', () =>
-          system.content
-            .replace(
-              "export type OmittedHTMLProps = 'color' | 'translate' | 'transition' | 'width' | 'height' | 'content'",
-              "export type OmittedHTMLProps = ''",
-            )
-            .replace(jsxStyleProps, 'export type JsxStyleProps = {}'),
+          system.content.replace('WithHTMLProps<T>,', 'T,').replace(jsxStyleProps, 'export type JsxStyleProps = {}'),
         )
         .exhaustive(),
     ),
