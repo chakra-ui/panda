@@ -764,18 +764,16 @@ describe('static-css', () => {
           height: 12px;
         }
 
-        @media screen and (width >= 64em) {
-          .lg\\\\:checkbox__control--size_lg {
-            width: 12px;
-            height: 12px;
-          }
-        }
-
         .checkbox__label--size_lg {
           font-size: var(--font-sizes-lg);
         }
 
         @media screen and (width >= 64em) {
+          .lg\\\\:checkbox__control--size_lg {
+            width: 12px;
+            height: 12px;
+          }
+
           .lg\\\\:checkbox__label--size_lg {
             font-size: var(--font-sizes-lg);
           }

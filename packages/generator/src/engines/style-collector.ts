@@ -10,7 +10,6 @@ import type {
 } from '@pandacss/types'
 import { HashFactory, type CollectorContext } from './hash-factory'
 
-// TODO rename file
 export class StyleCollector {
   constructor(private context: CollectorContext) {}
 
@@ -23,22 +22,13 @@ export class StyleCollector {
   //
   recipes = new Map<string, Set<AtomicStyleResult>>()
   recipes_base = new Map<string, Set<RecipeBaseResult>>()
-  //
-  recipes_slots = new Map<string, Set<AtomicStyleResult>>()
-  recipes_slots_base = new Map<string, Set<RecipeBaseResult>>()
 
   fork() {
     return new StyleCollector(this.context)
   }
 
   isEmpty() {
-    return (
-      !this.atomic.size &&
-      !this.recipes.size &&
-      !this.recipes_base.size &&
-      !this.recipes_slots.size &&
-      !this.recipes_slots_base.size
-    )
+    return !this.atomic.size && !this.recipes.size && !this.recipes_base.size
   }
 
   get results() {
@@ -46,8 +36,6 @@ export class StyleCollector {
       atomic: this.atomic,
       recipes: this.recipes,
       recipes_base: this.recipes_base,
-      recipes_slots: this.recipes_slots,
-      recipes_slots_base: this.recipes_slots_base,
     }
   }
 
@@ -179,7 +167,7 @@ export class StyleCollector {
     const style = this.getGroup(hashSet, className)
 
     const base = { ['.' + classSelector]: style.result }
-    return Object.assign({}, style, { result: base, recipe: recipeName, className }) as RecipeBaseResult
+    return Object.assign({}, style, { result: base, recipe: recipeName, className, slot }) as RecipeBaseResult
   }
 
   /**
@@ -201,49 +189,42 @@ export class StyleCollector {
       this.classNames.set(styleResult.className, styleResult)
     })
 
-    // no need to sort, each recipe is scoped using recipe.className (?)
+    // no need to sort, each recipe is scoped using recipe.className
     hashFactory.recipes.forEach((set, recipeName) => {
+      const recipeConfig = this.context.recipes.getConfig(recipeName)
+      if (!recipeConfig) return
+
       set.forEach((item) => {
-        const styleResult = this.getAtomic(item)
-        if (!styleResult) return
+        const process = (hash: string) => {
+          const styleResult = this.getAtomic(hash)
+          if (!styleResult) return
 
-        const stylesSet = getOrCreateSet(this.recipes, recipeName)
-        stylesSet.add(styleResult)
+          const stylesSet = getOrCreateSet(this.recipes, recipeName)
+          stylesSet.add(styleResult)
 
-        this.classNames.set(styleResult.className, styleResult)
+          this.classNames.set(styleResult.className, styleResult)
+        }
+
+        if ('slots' in recipeConfig) {
+          recipeConfig.slots.forEach((slot) => process(item + HashFactory.separator + 'slot:' + slot))
+        } else {
+          process(item)
+        }
       })
     })
-    hashFactory.recipes_base.forEach((set, recipeName) => {
-      const styleResult = this.getRecipeBase(set, recipeName)
+
+    hashFactory.recipes_base.forEach((set, recipeKey) => {
+      const [recipeName, slot] = recipeKey.split(this.context.recipes.slotSeparator)
+      const recipeConfig = this.context.recipes.getConfig(recipeName)
+      if (!recipeConfig) return
+
+      const styleResult = this.getRecipeBase(set, recipeName, slot)
       if (!styleResult) return
 
-      const stylesSet = getOrCreateSet(this.recipes_base, recipeName)
+      const stylesSet = getOrCreateSet(this.recipes_base, recipeKey)
       stylesSet.add(styleResult)
 
       this.classNames.set(styleResult.className, styleResult)
-    })
-
-    //
-    hashFactory.recipes_slots.forEach((set, slotKey) => {
-      set.forEach((item) => {
-        const styleResult = this.getAtomic(item)
-        if (!styleResult) return
-
-        const stylesSet = getOrCreateSet(this.recipes_slots, slotKey)
-        stylesSet.add(styleResult)
-
-        this.classNames.set(styleResult.className, styleResult)
-      })
-    })
-    hashFactory.recipes_slots_base.forEach((set, slotKey) => {
-      const [recipeName, slot] = slotKey.split(this.context.recipes.slotSeparator)
-      const recipeBase = this.getRecipeBase(set, recipeName, slot)
-      if (!recipeBase) return
-
-      const stylesSet = getOrCreateSet(this.recipes_slots_base, slotKey)
-      stylesSet.add(recipeBase)
-
-      this.classNames.set(recipeBase.className, recipeBase)
     })
 
     return this

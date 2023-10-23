@@ -141,22 +141,4 @@ export class ParserResult implements ParserResultType {
       pattern: Object.fromEntries(Array.from(this.pattern.entries()).map(([key, value]) => [key, Array.from(value)])),
     }
   }
-
-  fromJSON(json: string) {
-    const data = JSON.parse(json)
-
-    this.set('css', data.css)
-    this.set('cva', data.cva)
-    this.set('sva', data.sva)
-    this.setJsx(data.jsx)
-
-    Object.entries(data.recipe).forEach(([name, items]) => {
-      this.setRecipe(name, items as any)
-    })
-    Object.entries(data.pattern).forEach(([name, items]) => {
-      this.setPattern(name, items as any)
-    })
-
-    return this
-  }
 }

@@ -1,4 +1,4 @@
-import type { RecipeDefinition, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
+import type { RecipeDefinition, SlotRecipeDefinition, StyleCollectorType, SystemStyleObject } from '@pandacss/types'
 import type { CollectorContext, HashFactory } from './hash-factory'
 import type { StyleCollector } from './style-collector'
 import type { Stylesheet, ToCssOptions } from '@pandacss/core'
@@ -49,12 +49,16 @@ export class RuleProcessor {
       hash: this.hashFactory!,
       styles: this.styleCollector!,
       sheet: this.sheet!,
+      toCss: (options?: ToCssOptions) => {
+        this.sheet!.processStyleCollector(this.styleCollector as StyleCollectorType)
+        return this.sheet!.toCss({ optimize: true, ...options })
+      },
     }
   }
 
   toCss(options?: ToCssOptions) {
     const { styles, sheet } = this.prepare()
-    sheet.processStyleCollector(styles)
+    sheet.processStyleCollector(styles as StyleCollectorType)
     return sheet.toCss({ optimize: true, ...options })
   }
 
@@ -68,7 +72,7 @@ export class RuleProcessor {
       styleObject,
       className: Array.from(styles.classNames.keys()),
       toCss: (options?: ToCssOptions) => {
-        sheet.processStyleCollector(styles)
+        sheet.processStyleCollector(styles as StyleCollectorType)
         return sheet.toCss({ optimize: true, ...options })
       },
     }
@@ -89,7 +93,7 @@ export class RuleProcessor {
       config: recipeConfig,
       className: Array.from(styles.classNames.keys()),
       toCss: (options?: ToCssOptions) => {
-        sheet.processStyleCollector(styles)
+        sheet.processStyleCollector(styles as StyleCollectorType)
         return sheet.toCss({ optimize: true, ...options })
       },
     }
@@ -105,19 +109,14 @@ export class RuleProcessor {
 
     const { hash, styles, sheet } = this.prepare()
 
-    if ('slots' in recipeConfig) {
-      hash.processSlotRecipe(name, variants)
-    } else {
-      hash.processRecipe(name, variants)
-    }
-
+    hash.processRecipe(name, variants)
     styles.collect(hash)
 
     return {
       variants,
       className: Array.from(styles.classNames.keys()),
       toCss: (options?: ToCssOptions) => {
-        sheet.processStyleCollector(styles)
+        sheet.processStyleCollector(styles as StyleCollectorType)
         return sheet.toCss({ optimize: true, ...options })
       },
     }

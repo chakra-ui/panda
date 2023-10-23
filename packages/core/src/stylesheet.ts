@@ -62,25 +62,13 @@ export class Stylesheet {
 
     collector.recipes.forEach((recipeSet) => {
       recipeSet.forEach((recipe) => {
-        this.processCssObject(recipe.result, 'recipes')
+        this.processCssObject(recipe.result, recipe.entry.slot ? 'recipes_slots' : 'recipes')
       })
     })
 
     collector.recipes_base.forEach((recipeSet) => {
       recipeSet.forEach((recipe) => {
-        this.processCssObject(recipe.result, 'recipes_base')
-      })
-    })
-
-    collector.recipes_slots.forEach((recipeSet) => {
-      recipeSet.forEach((recipe) => {
-        this.processCssObject(recipe.result, 'recipes_slots')
-      })
-    })
-
-    collector.recipes_slots_base.forEach((recipeSet) => {
-      recipeSet.forEach((recipe) => {
-        this.processCssObject(recipe.result, 'recipes_slots_base')
+        this.processCssObject(recipe.result, recipe.slot ? 'recipes_slots_base' : 'recipes_base')
       })
     })
   }

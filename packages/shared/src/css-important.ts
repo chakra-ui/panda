@@ -1,5 +1,3 @@
-import { traverse } from './traverse'
-
 const importantRegex = /!(important)?$/
 
 export function isImportant(value: string) {

@@ -18,12 +18,14 @@ export interface ParserResultType {
   filePath: string | undefined
   isEmpty: () => boolean
   toArray: () => Array<ResultItem>
-  toJSON: () => {
-    sva: Array<ResultItem>
-    css: Array<ResultItem>
-    cva: Array<ResultItem>
-    recipe: Record<string, ResultItem[]>
-    pattern: Record<string, ResultItem[]>
-    jsx: Array<ResultItem>
+}
+
+export interface ShipJson {
+  schemaVersion: string
+  styles: {
+    atomic: string[]
+    recipes: {
+      [name: string]: string[]
+    }
   }
 }

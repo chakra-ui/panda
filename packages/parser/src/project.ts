@@ -58,7 +58,8 @@ export const createProject = ({
   const parseSourceFile = (filePath: string, hashFactory?: ParserContext['hashFactory']) => {
     if (filePath.endsWith('.json')) {
       const content = readFile(filePath)
-      const result = new ParserResult(parserOptions, hashFactory).setFilePath(filePath).fromJSON(content)
+      parserOptions.hashFactory.fromJSON(content)
+      const result = new ParserResult(parserOptions).setFilePath(filePath)
       return result
     }
 

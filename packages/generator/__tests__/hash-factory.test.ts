@@ -11,12 +11,19 @@ const css = (styles: Dict) => {
 
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
-  if ('slots' in styles) {
-    ctx.hashFactory.processSlotRecipe(name, styles)
-    return { base: ctx.hashFactory.recipes_slots_base.get(name)!, variants: ctx.hashFactory.recipes_slots.get(name)! }
-  }
+  const recipeConfig = ctx.recipes.getConfig(name)
+  if (!recipeConfig) throw new Error(`Recipe ${name} not found`)
 
   ctx.hashFactory.processRecipe(name, styles)
+  if ('slots' in recipeConfig) {
+    const base = {} as Dict
+    recipeConfig.slots.map((slot) => {
+      const recipeKey = ctx.recipes.getSlotKey(name, slot)
+      base[slot] = ctx.hashFactory.recipes_base.get(recipeKey)!
+    })
+    return { base, variants: ctx.hashFactory.recipes.get(name)! }
+  }
+
   return { base: ctx.hashFactory.recipes_base.get(name)!, variants: ctx.hashFactory.recipes.get(name)! }
 }
 
@@ -213,19 +220,19 @@ describe('hash factory', () => {
         "size]___[value:md]___[cond:md]___[recipe:checkbox",
       }
     `)
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.base).toMatchInlineSnapshot(`
       {
-        "base": Set {
-          "display]___[value:flex]___[recipe:checkbox",
-          "alignItems]___[value:center]___[recipe:checkbox",
-          "gap]___[value:2]___[recipe:checkbox",
-          "borderWidth]___[value:1px]___[recipe:checkbox",
-          "borderRadius]___[value:sm]___[recipe:checkbox",
-          "marginInlineStart]___[value:2]___[recipe:checkbox",
+        "control": Set {
+          "borderWidth]___[value:1px]___[recipe:checkbox]___[slot:control",
+          "borderRadius]___[value:sm]___[recipe:checkbox]___[slot:control",
         },
-        "variants": Set {
-          "size]___[value:sm]___[recipe:checkbox",
-          "size]___[value:md]___[cond:md]___[recipe:checkbox",
+        "label": Set {
+          "marginInlineStart]___[value:2]___[recipe:checkbox]___[slot:label",
+        },
+        "root": Set {
+          "display]___[value:flex]___[recipe:checkbox]___[slot:root",
+          "alignItems]___[value:center]___[recipe:checkbox]___[slot:root",
+          "gap]___[value:2]___[recipe:checkbox]___[slot:root",
         },
       }
     `)
@@ -317,6 +324,98 @@ describe('hash factory', () => {
       [
         "btn",
       ]
+    `)
+  })
+
+  test('fromJSON', () => {
+    const ctx = createGeneratorContext()
+    const hf = ctx.hashFactory
+    hf.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+    expect(hf.atomic).toMatchInlineSnapshot(`
+      Set {
+        "color]___[value:red",
+        "color]___[value:blue",
+      }
+    `)
+
+    hf.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+    expect(hf.recipes).toMatchInlineSnapshot(`
+      Map {
+        "buttonStyle" => Set {
+          "variant]___[value:solid",
+        },
+      }
+    `)
+
+    expect(hf.recipes_base).toMatchInlineSnapshot(`
+      Map {
+        "buttonStyle" => Set {
+          "display]___[value:inline-flex]___[recipe:buttonStyle",
+          "alignItems]___[value:center]___[recipe:buttonStyle",
+          "justifyContent]___[value:center]___[recipe:buttonStyle",
+          "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+        },
+      }
+    `)
+
+    expect(
+      hf.fork().fromJSON(
+        JSON.stringify({
+          styles: {
+            atomic: [
+              'display]___[value:none',
+              'height]___[value:100%',
+              'transition]___[value:all .3s ease-in-out',
+              'opacity]___[value:0 !important',
+              'opacity]___[value:1',
+              'height]___[value:10px',
+              'backgroundGradient]___[value:to-b',
+              'gradientFrom]___[value:rgb(200 200 200 / .4)',
+            ],
+            recipes: {
+              checkbox: [
+                'size]___[value:md]___[recipe:checkbox]___[slot:container',
+                'size]___[value:md]___[recipe:checkbox]___[slot:control',
+                'size]___[value:md]___[recipe:checkbox]___[slot:label',
+              ],
+            },
+          },
+        }),
+      ).hashes,
+    ).toMatchInlineSnapshot(`
+      {
+        "atomic": Set {
+          "display]___[value:none",
+          "height]___[value:100%",
+          "transition]___[value:all .3s ease-in-out",
+          "opacity]___[value:0 !important",
+          "opacity]___[value:1",
+          "height]___[value:10px",
+          "backgroundGradient]___[value:to-b",
+          "gradientFrom]___[value:rgb(200 200 200 / .4)",
+        },
+        "recipes": Map {
+          "checkbox" => Set {
+            "size]___[value:md]___[recipe:checkbox]___[slot:container",
+            "size]___[value:md]___[recipe:checkbox]___[slot:control",
+            "size]___[value:md]___[recipe:checkbox]___[slot:label",
+          },
+        },
+        "recipes_base": Map {
+          "checkbox__root" => Set {
+            "display]___[value:flex]___[recipe:checkbox",
+            "alignItems]___[value:center]___[recipe:checkbox",
+            "gap]___[value:2]___[recipe:checkbox",
+          },
+          "checkbox__control" => Set {
+            "borderWidth]___[value:1px]___[recipe:checkbox",
+            "borderRadius]___[value:sm]___[recipe:checkbox",
+          },
+          "checkbox__label" => Set {
+            "marginInlineStart]___[value:2]___[recipe:checkbox",
+          },
+        },
+      }
     `)
   })
 })

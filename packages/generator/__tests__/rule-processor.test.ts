@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { createRuleProcessor } from './fixture'
 import type { Dict } from '@pandacss/types'
+import { createGeneratorContext } from '@pandacss/fixture'
+import { RuleProcessor } from '../src/engines/rule-processor'
 
 const css = (styles: Dict) => {
   const result = createRuleProcessor().css(styles)
@@ -454,10 +456,10 @@ describe('rule processor', () => {
     expect(result.className).toMatchInlineSnapshot(`
       [
         "checkbox__root--size_sm",
-        "md\\\\:checkbox__root--size_md",
         "checkbox__control--size_sm",
-        "md\\\\:checkbox__control--size_md",
         "checkbox__label--size_sm",
+        "md\\\\:checkbox__root--size_md",
+        "md\\\\:checkbox__control--size_md",
         "md\\\\:checkbox__label--size_md",
         "checkbox__root",
         "checkbox__control",
@@ -490,18 +492,16 @@ describe('rule processor', () => {
           height: var(--sizes-8);
         }
 
-        @media screen and (width >= 48em) {
-          .md\\\\:checkbox__control--size_md {
-            width: var(--sizes-10);
-            height: var(--sizes-10);
-          }
-        }
-
         .checkbox__label--size_sm {
           font-size: var(--font-sizes-sm);
         }
 
         @media screen and (width >= 48em) {
+          .md\\\\:checkbox__control--size_md {
+            width: var(--sizes-10);
+            height: var(--sizes-10);
+          }
+
           .md\\\\:checkbox__label--size_md {
             font-size: var(--font-sizes-md);
           }
@@ -773,6 +773,182 @@ describe('rule processor', () => {
 
         .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
           border: 2px solid var(--colors-green-100);
+        }
+      }
+      "
+    `)
+  })
+
+  test('fromJSON', () => {
+    const ctx = createGeneratorContext()
+    const hf = ctx.hashFactory
+    const collector = ctx.styleCollector
+    const processor = new RuleProcessor(ctx as any, { hash: hf as any, styles: collector as any })
+
+    const step1 = processor.prepare()
+    step1.hash.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+    step1.styles.collect(step1.hash)
+    expect(processor.toCss()).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_red {
+          color: red;
+        }
+
+        .text_blue {
+          color: #00f;
+        }
+      }
+      "
+    `)
+
+    const step2 = processor.prepare()
+    step2.hash.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+    step2.styles.collect(step2.hash)
+    expect(processor.toCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            justify-content: center;
+            align-items: center;
+            display: inline-flex;
+          }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+          }
+        }
+
+        .variant_solid {
+          variant: solid;
+        }
+      }
+
+      @layer utilities {
+        .text_red {
+          color: red;
+        }
+
+        .text_blue {
+          color: #00f;
+        }
+      }
+      "
+    `)
+
+    const step3 = processor.prepare()
+    step3.hash.fromJSON(
+      JSON.stringify({
+        styles: {
+          atomic: [
+            'display]___[value:none',
+            'height]___[value:100%',
+            'transition]___[value:all .3s ease-in-out',
+            'opacity]___[value:0 !important',
+            'opacity]___[value:1',
+            'height]___[value:10px',
+            'backgroundGradient]___[value:to-b',
+            'gradientFrom]___[value:rgb(200 200 200 / .4)',
+          ],
+          recipes: {
+            checkbox: [
+              'size]___[value:md]___[recipe:checkbox]___[slot:container',
+              'size]___[value:md]___[recipe:checkbox]___[slot:control',
+              'size]___[value:md]___[recipe:checkbox]___[slot:label',
+            ],
+          },
+        },
+      }),
+    )
+    step3.styles.collect(step3.hash)
+    expect(step3.toCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            justify-content: center;
+            align-items: center;
+            display: inline-flex;
+          }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+          }
+        }
+
+        .variant_solid {
+          variant: solid;
+          variant: solid;
+        }
+      }
+
+      @layer recipes.slots {
+        @layer _base {
+          .checkbox__root {
+            align-items: center;
+            gap: var(--spacing-2);
+            display: flex;
+          }
+
+          .checkbox__control {
+            border-radius: var(--radii-sm);
+            border-width: 1px;
+          }
+
+          .checkbox__label {
+            margin-inline-start: var(--spacing-2);
+          }
+        }
+
+        .checkbox__control--size_md {
+          width: var(--sizes-10);
+          height: var(--sizes-10);
+        }
+
+        .checkbox__label--size_md {
+          font-size: var(--font-sizes-md);
+        }
+      }
+
+      @layer utilities {
+        .text_red {
+          color: red;
+        }
+
+        .text_blue {
+          color: #00f;
+        }
+
+        .d_none {
+          display: none;
+        }
+
+        .h_100\\\\% {
+          height: 100%;
+        }
+
+        .transition_all_\\\\.3s_ease-in-out {
+          transition: all .3s ease-in-out;
+        }
+
+        .opacity_0\\\\! {
+          opacity: 0 !important;
+        }
+
+        .opacity_1 {
+          opacity: 1;
+        }
+
+        .h_10px {
+          height: 10px;
+        }
+
+        .bg-gradient_to-b {
+          --gradient-stops: var(--gradient-from), var(--gradient-to);
+          --gradient: var(--gradient-via-stops, var(--gradient-stops));
+          background-image: linear-gradient(to bottom, var(--gradient));
+        }
+
+        .from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\) {
+          --gradient-from: #c8c8c866;
         }
       }
       "

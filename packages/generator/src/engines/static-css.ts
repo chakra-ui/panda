@@ -1,5 +1,5 @@
 import type { Stylesheet } from '@pandacss/core'
-import type { CssRule, StaticCssOptions } from '@pandacss/types'
+import type { CssRule, StaticCssOptions, StyleCollectorType } from '@pandacss/types'
 import type { GeneratorBaseEngine } from './base'
 import { HashFactory } from './hash-factory'
 import { StyleCollector } from './style-collector'
@@ -198,11 +198,7 @@ export class StaticCss {
         const recipeConfig = recipes.getConfig(name)
         if (!recipeConfig) return
 
-        if ('slots' in recipeConfig) {
-          hash.processSlotRecipe(name, value)
-        } else {
-          hash.processRecipe(name, value)
-        }
+        hash.processRecipe(name, value)
       })
     })
 
@@ -212,7 +208,7 @@ export class StaticCss {
       })
     })
 
-    sheet.processStyleCollector(styles.collect(hash))
+    sheet.processStyleCollector(styles.collect(hash) as StyleCollectorType)
 
     const createRegex = () => createClassNameRegex(Array.from(styles.classNames.keys()))
     const parse = (text: string) => {

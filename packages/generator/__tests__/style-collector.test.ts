@@ -12,17 +12,21 @@ const css = (styles: Dict) => {
 
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
-  if ('slots' in styles) {
-    ctx.hashFactory.processSlotRecipe(name, styles)
-    ctx.styleCollector.collect(ctx.hashFactory)
-    return {
-      base: ctx.styleCollector.recipes_slots_base.get(name)!,
-      variants: ctx.styleCollector.recipes_slots.get(name)!,
-    }
-  }
+  const recipeConfig = ctx.recipes.getConfig(name)
+  if (!recipeConfig) throw new Error(`Recipe ${name} not found`)
 
   ctx.hashFactory.processRecipe(name, styles)
   ctx.styleCollector.collect(ctx.hashFactory)
+
+  if ('slots' in recipeConfig) {
+    const base = {} as Dict
+    recipeConfig.slots.map((slot) => {
+      const recipeKey = ctx.recipes.getSlotKey(name, slot)
+      base[slot] = ctx.styleCollector.recipes_base.get(recipeKey)!
+    })
+    return { base, variants: ctx.styleCollector.recipes.get(name)! }
+  }
+
   return { base: ctx.styleCollector.recipes_base.get(name)!, variants: ctx.styleCollector.recipes.get(name)! }
 }
 
@@ -630,160 +634,162 @@ describe('hash factory', () => {
   test('recipe', () => {
     const result = recipe('buttonStyle', { size: { base: 'sm', md: 'md' } })
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "base": Set {
-          {
-            "className": "buttonStyle",
-            "details": [
-              {
-                "conditions": undefined,
-                "entry": {
-                  "prop": "display",
-                  "recipe": "buttonStyle",
-                  "value": "inline-flex",
-                },
-                "hash": "display]___[value:inline-flex]___[recipe:buttonStyle",
-                "result": {
-                  "display": "inline-flex",
-                },
+    expect(result.base).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "buttonStyle",
+          "details": [
+            {
+              "conditions": undefined,
+              "entry": {
+                "prop": "display",
+                "recipe": "buttonStyle",
+                "value": "inline-flex",
               },
-              {
-                "conditions": undefined,
-                "entry": {
-                  "prop": "alignItems",
-                  "recipe": "buttonStyle",
-                  "value": "center",
-                },
-                "hash": "alignItems]___[value:center]___[recipe:buttonStyle",
-                "result": {
-                  "alignItems": "center",
-                },
-              },
-              {
-                "conditions": undefined,
-                "entry": {
-                  "prop": "justifyContent",
-                  "recipe": "buttonStyle",
-                  "value": "center",
-                },
-                "hash": "justifyContent]___[value:center]___[recipe:buttonStyle",
-                "result": {
-                  "justifyContent": "center",
-                },
-              },
-              {
-                "conditions": [
-                  {
-                    "raw": "&:is(:hover, [data-hover])",
-                    "type": "self-nesting",
-                    "value": "&:is(:hover, [data-hover])",
-                  },
-                ],
-                "entry": {
-                  "cond": "_hover",
-                  "prop": "backgroundColor",
-                  "recipe": "buttonStyle",
-                  "value": "red.200",
-                },
-                "hash": "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
-                "result": {
-                  "backgroundColor": "var(--colors-red-200)",
-                },
-              },
-            ],
-            "hashSet": Set {
-              "display]___[value:inline-flex]___[recipe:buttonStyle",
-              "alignItems]___[value:center]___[recipe:buttonStyle",
-              "justifyContent]___[value:center]___[recipe:buttonStyle",
-              "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
-            },
-            "recipe": "buttonStyle",
-            "result": {
-              ".buttonStyle": {
-                "&:is(:hover, [data-hover])": {
-                  "backgroundColor": "var(--colors-red-200)",
-                },
-                "alignItems": "center",
+              "hash": "display]___[value:inline-flex]___[recipe:buttonStyle",
+              "result": {
                 "display": "inline-flex",
+              },
+            },
+            {
+              "conditions": undefined,
+              "entry": {
+                "prop": "alignItems",
+                "recipe": "buttonStyle",
+                "value": "center",
+              },
+              "hash": "alignItems]___[value:center]___[recipe:buttonStyle",
+              "result": {
+                "alignItems": "center",
+              },
+            },
+            {
+              "conditions": undefined,
+              "entry": {
+                "prop": "justifyContent",
+                "recipe": "buttonStyle",
+                "value": "center",
+              },
+              "hash": "justifyContent]___[value:center]___[recipe:buttonStyle",
+              "result": {
                 "justifyContent": "center",
+              },
+            },
+            {
+              "conditions": [
+                {
+                  "raw": "&:is(:hover, [data-hover])",
+                  "type": "self-nesting",
+                  "value": "&:is(:hover, [data-hover])",
+                },
+              ],
+              "entry": {
+                "cond": "_hover",
+                "prop": "backgroundColor",
+                "recipe": "buttonStyle",
+                "value": "red.200",
+              },
+              "hash": "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+              "result": {
+                "backgroundColor": "var(--colors-red-200)",
+              },
+            },
+          ],
+          "hashSet": Set {
+            "display]___[value:inline-flex]___[recipe:buttonStyle",
+            "alignItems]___[value:center]___[recipe:buttonStyle",
+            "justifyContent]___[value:center]___[recipe:buttonStyle",
+            "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+          },
+          "recipe": "buttonStyle",
+          "result": {
+            ".buttonStyle": {
+              "&:is(:hover, [data-hover])": {
+                "backgroundColor": "var(--colors-red-200)",
+              },
+              "alignItems": "center",
+              "display": "inline-flex",
+              "justifyContent": "center",
+            },
+          },
+          "slot": undefined,
+        },
+      }
+    `)
+
+    expect(result.variants).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "buttonStyle--size_sm",
+          "conditions": undefined,
+          "entry": {
+            "prop": "size",
+            "recipe": "buttonStyle",
+            "value": "sm",
+          },
+          "hash": "size]___[value:sm]___[recipe:buttonStyle",
+          "layer": undefined,
+          "result": {
+            ".buttonStyle--size_sm": {
+              "height": "2.5rem",
+              "minWidth": "2.5rem",
+              "padding": "0 0.5rem",
+            },
+          },
+        },
+        {
+          "className": "md\\\\:buttonStyle--size_md",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 48em)",
+              "raw": "md",
+              "rawValue": "@media screen and (min-width: 48em)",
+              "type": "at-rule",
+              "value": "md",
+            },
+          ],
+          "entry": {
+            "cond": "md",
+            "prop": "size",
+            "recipe": "buttonStyle",
+            "value": "md",
+          },
+          "hash": "size]___[value:md]___[cond:md]___[recipe:buttonStyle",
+          "layer": undefined,
+          "result": {
+            ".md\\\\:buttonStyle--size_md": {
+              "@media screen and (min-width: 48em)": {
+                "height": "3rem",
+                "minWidth": "3rem",
+                "padding": "0 0.75rem",
               },
             },
           },
         },
-        "variants": Set {
-          {
-            "className": "buttonStyle--size_sm",
-            "conditions": undefined,
-            "entry": {
-              "prop": "size",
-              "recipe": "buttonStyle",
-              "value": "sm",
-            },
-            "hash": "size]___[value:sm]___[recipe:buttonStyle",
-            "layer": undefined,
-            "result": {
-              ".buttonStyle--size_sm": {
-                "height": "2.5rem",
-                "minWidth": "2.5rem",
-                "padding": "0 0.5rem",
-              },
-            },
+        {
+          "className": "buttonStyle--variant_solid",
+          "conditions": undefined,
+          "entry": {
+            "prop": "variant",
+            "recipe": "buttonStyle",
+            "value": "solid",
           },
-          {
-            "className": "md\\\\:buttonStyle--size_md",
-            "conditions": [
-              {
-                "name": "breakpoint",
-                "params": "screen and (min-width: 48em)",
-                "raw": "md",
-                "rawValue": "@media screen and (min-width: 48em)",
-                "type": "at-rule",
-                "value": "md",
-              },
-            ],
-            "entry": {
-              "cond": "md",
-              "prop": "size",
-              "recipe": "buttonStyle",
-              "value": "md",
-            },
-            "hash": "size]___[value:md]___[cond:md]___[recipe:buttonStyle",
-            "layer": undefined,
-            "result": {
-              ".md\\\\:buttonStyle--size_md": {
-                "@media screen and (min-width: 48em)": {
-                  "height": "3rem",
-                  "minWidth": "3rem",
-                  "padding": "0 0.75rem",
+          "hash": "variant]___[value:solid]___[recipe:buttonStyle",
+          "layer": undefined,
+          "result": {
+            ".buttonStyle--variant_solid": {
+              "&": {
+                "&:is(:hover, [data-hover])": {
+                  "backgroundColor": "darkblue",
+                },
+                "&[data-disabled]": {
+                  "backgroundColor": "gray",
+                  "color": "var(--colors-black)",
                 },
               },
-            },
-          },
-          {
-            "className": "buttonStyle--variant_solid",
-            "conditions": undefined,
-            "entry": {
-              "prop": "variant",
-              "recipe": "buttonStyle",
-              "value": "solid",
-            },
-            "hash": "variant]___[value:solid]___[recipe:buttonStyle",
-            "layer": undefined,
-            "result": {
-              ".buttonStyle--variant_solid": {
-                "&": {
-                  "&:is(:hover, [data-hover])": {
-                    "backgroundColor": "darkblue",
-                  },
-                  "&[data-disabled]": {
-                    "backgroundColor": "gray",
-                    "color": "var(--colors-black)",
-                  },
-                },
-                "backgroundColor": "blue",
-                "color": "var(--colors-white)",
-              },
+              "backgroundColor": "blue",
+              "color": "var(--colors-white)",
             },
           },
         },
@@ -1274,57 +1280,21 @@ describe('hash factory', () => {
   test('slot recipe', () => {
     const result = recipe('checkbox', { size: { base: 'sm', md: 'md' } })
 
-    expect(result.variants).toMatchInlineSnapshot('undefined')
-    expect(result).toMatchInlineSnapshot(`
+    expect(result.base).toMatchInlineSnapshot(`
       {
-        "base": Set {
+        "control": Set {
           {
-            "className": "checkbox",
+            "className": "checkbox__control",
             "details": [
-              {
-                "conditions": undefined,
-                "entry": {
-                  "prop": "display",
-                  "recipe": "checkbox",
-                  "value": "flex",
-                },
-                "hash": "display]___[value:flex]___[recipe:checkbox",
-                "result": {
-                  "display": "flex",
-                },
-              },
-              {
-                "conditions": undefined,
-                "entry": {
-                  "prop": "alignItems",
-                  "recipe": "checkbox",
-                  "value": "center",
-                },
-                "hash": "alignItems]___[value:center]___[recipe:checkbox",
-                "result": {
-                  "alignItems": "center",
-                },
-              },
-              {
-                "conditions": undefined,
-                "entry": {
-                  "prop": "gap",
-                  "recipe": "checkbox",
-                  "value": "2",
-                },
-                "hash": "gap]___[value:2]___[recipe:checkbox",
-                "result": {
-                  "gap": "var(--spacing-2)",
-                },
-              },
               {
                 "conditions": undefined,
                 "entry": {
                   "prop": "borderWidth",
                   "recipe": "checkbox",
+                  "slot": "control",
                   "value": "1px",
                 },
-                "hash": "borderWidth]___[value:1px]___[recipe:checkbox",
+                "hash": "borderWidth]___[value:1px]___[recipe:checkbox]___[slot:control",
                 "result": {
                   "borderWidth": "1px",
                 },
@@ -1334,48 +1304,261 @@ describe('hash factory', () => {
                 "entry": {
                   "prop": "borderRadius",
                   "recipe": "checkbox",
+                  "slot": "control",
                   "value": "sm",
                 },
-                "hash": "borderRadius]___[value:sm]___[recipe:checkbox",
+                "hash": "borderRadius]___[value:sm]___[recipe:checkbox]___[slot:control",
                 "result": {
                   "borderRadius": "var(--radii-sm)",
                 },
               },
+            ],
+            "hashSet": Set {
+              "borderWidth]___[value:1px]___[recipe:checkbox]___[slot:control",
+              "borderRadius]___[value:sm]___[recipe:checkbox]___[slot:control",
+            },
+            "recipe": "checkbox",
+            "result": {
+              ".checkbox__control": {
+                "borderRadius": "var(--radii-sm)",
+                "borderWidth": "1px",
+              },
+            },
+            "slot": "control",
+          },
+        },
+        "label": Set {
+          {
+            "className": "checkbox__label",
+            "details": [
               {
                 "conditions": undefined,
                 "entry": {
                   "prop": "marginInlineStart",
                   "recipe": "checkbox",
+                  "slot": "label",
                   "value": "2",
                 },
-                "hash": "marginInlineStart]___[value:2]___[recipe:checkbox",
+                "hash": "marginInlineStart]___[value:2]___[recipe:checkbox]___[slot:label",
                 "result": {
                   "marginInlineStart": "var(--spacing-2)",
                 },
               },
             ],
             "hashSet": Set {
-              "display]___[value:flex]___[recipe:checkbox",
-              "alignItems]___[value:center]___[recipe:checkbox",
-              "gap]___[value:2]___[recipe:checkbox",
-              "borderWidth]___[value:1px]___[recipe:checkbox",
-              "borderRadius]___[value:sm]___[recipe:checkbox",
-              "marginInlineStart]___[value:2]___[recipe:checkbox",
+              "marginInlineStart]___[value:2]___[recipe:checkbox]___[slot:label",
             },
             "recipe": "checkbox",
             "result": {
-              ".checkbox": {
+              ".checkbox__label": {
+                "marginInlineStart": "var(--spacing-2)",
+              },
+            },
+            "slot": "label",
+          },
+        },
+        "root": Set {
+          {
+            "className": "checkbox__root",
+            "details": [
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "display",
+                  "recipe": "checkbox",
+                  "slot": "root",
+                  "value": "flex",
+                },
+                "hash": "display]___[value:flex]___[recipe:checkbox]___[slot:root",
+                "result": {
+                  "display": "flex",
+                },
+              },
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "alignItems",
+                  "recipe": "checkbox",
+                  "slot": "root",
+                  "value": "center",
+                },
+                "hash": "alignItems]___[value:center]___[recipe:checkbox]___[slot:root",
+                "result": {
+                  "alignItems": "center",
+                },
+              },
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "gap",
+                  "recipe": "checkbox",
+                  "slot": "root",
+                  "value": "2",
+                },
+                "hash": "gap]___[value:2]___[recipe:checkbox]___[slot:root",
+                "result": {
+                  "gap": "var(--spacing-2)",
+                },
+              },
+            ],
+            "hashSet": Set {
+              "display]___[value:flex]___[recipe:checkbox]___[slot:root",
+              "alignItems]___[value:center]___[recipe:checkbox]___[slot:root",
+              "gap]___[value:2]___[recipe:checkbox]___[slot:root",
+            },
+            "recipe": "checkbox",
+            "result": {
+              ".checkbox__root": {
                 "alignItems": "center",
-                "borderRadius": "var(--radii-sm)",
-                "borderWidth": "1px",
                 "display": "flex",
                 "gap": "var(--spacing-2)",
-                "marginInlineStart": "var(--spacing-2)",
+              },
+            },
+            "slot": "root",
+          },
+        },
+      }
+    `)
+    expect(result.variants).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "checkbox__root--size_sm",
+          "conditions": undefined,
+          "entry": {
+            "prop": "size",
+            "recipe": "checkbox",
+            "slot": "root",
+            "value": "sm",
+          },
+          "hash": "size]___[value:sm]___[recipe:checkbox]___[slot:root",
+          "layer": undefined,
+          "result": {
+            ".checkbox__root--size_sm": {},
+          },
+        },
+        {
+          "className": "checkbox__control--size_sm",
+          "conditions": undefined,
+          "entry": {
+            "prop": "size",
+            "recipe": "checkbox",
+            "slot": "control",
+            "value": "sm",
+          },
+          "hash": "size]___[value:sm]___[recipe:checkbox]___[slot:control",
+          "layer": undefined,
+          "result": {
+            ".checkbox__control--size_sm": {
+              "fontSize": "2rem",
+              "fontWeight": "var(--font-weights-bold)",
+              "height": "var(--sizes-8)",
+              "width": "var(--sizes-8)",
+            },
+          },
+        },
+        {
+          "className": "checkbox__label--size_sm",
+          "conditions": undefined,
+          "entry": {
+            "prop": "size",
+            "recipe": "checkbox",
+            "slot": "label",
+            "value": "sm",
+          },
+          "hash": "size]___[value:sm]___[recipe:checkbox]___[slot:label",
+          "layer": undefined,
+          "result": {
+            ".checkbox__label--size_sm": {
+              "fontSize": "var(--font-sizes-sm)",
+            },
+          },
+        },
+        {
+          "className": "md\\\\:checkbox__root--size_md",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 48em)",
+              "raw": "md",
+              "rawValue": "@media screen and (min-width: 48em)",
+              "type": "at-rule",
+              "value": "md",
+            },
+          ],
+          "entry": {
+            "cond": "md",
+            "prop": "size",
+            "recipe": "checkbox",
+            "slot": "root",
+            "value": "md",
+          },
+          "hash": "size]___[value:md]___[cond:md]___[recipe:checkbox]___[slot:root",
+          "layer": undefined,
+          "result": {
+            ".md\\\\:checkbox__root--size_md": {
+              "@media screen and (min-width: 48em)": {},
+            },
+          },
+        },
+        {
+          "className": "md\\\\:checkbox__control--size_md",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 48em)",
+              "raw": "md",
+              "rawValue": "@media screen and (min-width: 48em)",
+              "type": "at-rule",
+              "value": "md",
+            },
+          ],
+          "entry": {
+            "cond": "md",
+            "prop": "size",
+            "recipe": "checkbox",
+            "slot": "control",
+            "value": "md",
+          },
+          "hash": "size]___[value:md]___[cond:md]___[recipe:checkbox]___[slot:control",
+          "layer": undefined,
+          "result": {
+            ".md\\\\:checkbox__control--size_md": {
+              "@media screen and (min-width: 48em)": {
+                "height": "var(--sizes-10)",
+                "width": "var(--sizes-10)",
               },
             },
           },
         },
-        "variants": undefined,
+        {
+          "className": "md\\\\:checkbox__label--size_md",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 48em)",
+              "raw": "md",
+              "rawValue": "@media screen and (min-width: 48em)",
+              "type": "at-rule",
+              "value": "md",
+            },
+          ],
+          "entry": {
+            "cond": "md",
+            "prop": "size",
+            "recipe": "checkbox",
+            "slot": "label",
+            "value": "md",
+          },
+          "hash": "size]___[value:md]___[cond:md]___[recipe:checkbox]___[slot:label",
+          "layer": undefined,
+          "result": {
+            ".md\\\\:checkbox__label--size_md": {
+              "@media screen and (min-width: 48em)": {
+                "fontSize": "var(--font-sizes-md)",
+              },
+            },
+          },
+        },
       }
     `)
   })
@@ -1676,6 +1859,671 @@ describe('hash factory', () => {
       [
         "btn",
       ]
+    `)
+  })
+
+  test('fromJSON', () => {
+    const ctx = createGeneratorContext()
+    const hf = ctx.hashFactory
+    const collector = ctx.styleCollector
+
+    hf.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+    expect(collector.collect(hf).atomic).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "text_red",
+          "conditions": undefined,
+          "entry": {
+            "prop": "color",
+            "value": "red",
+          },
+          "hash": "color]___[value:red",
+          "layer": undefined,
+          "result": {
+            ".text_red": {
+              "color": "red",
+            },
+          },
+        },
+        {
+          "className": "text_blue",
+          "conditions": undefined,
+          "entry": {
+            "prop": "color",
+            "value": "blue",
+          },
+          "hash": "color]___[value:blue",
+          "layer": undefined,
+          "result": {
+            ".text_blue": {
+              "color": "blue",
+            },
+          },
+        },
+      }
+    `)
+
+    hf.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+    expect(collector.collect(hf).recipes).toMatchInlineSnapshot(`
+      Map {
+        "buttonStyle" => Set {
+          {
+            "className": "variant_solid",
+            "conditions": undefined,
+            "entry": {
+              "prop": "variant",
+              "value": "solid",
+            },
+            "hash": "variant]___[value:solid",
+            "layer": undefined,
+            "result": {
+              ".variant_solid": {
+                "variant": "solid",
+              },
+            },
+          },
+        },
+      }
+    `)
+
+    expect(collector.collect(hf).recipes_base).toMatchInlineSnapshot(`
+      Map {
+        "buttonStyle" => Set {
+          {
+            "className": "buttonStyle",
+            "details": [
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "display",
+                  "recipe": "buttonStyle",
+                  "value": "inline-flex",
+                },
+                "hash": "display]___[value:inline-flex]___[recipe:buttonStyle",
+                "result": {
+                  "display": "inline-flex",
+                },
+              },
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "alignItems",
+                  "recipe": "buttonStyle",
+                  "value": "center",
+                },
+                "hash": "alignItems]___[value:center]___[recipe:buttonStyle",
+                "result": {
+                  "alignItems": "center",
+                },
+              },
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "justifyContent",
+                  "recipe": "buttonStyle",
+                  "value": "center",
+                },
+                "hash": "justifyContent]___[value:center]___[recipe:buttonStyle",
+                "result": {
+                  "justifyContent": "center",
+                },
+              },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "backgroundColor",
+                  "recipe": "buttonStyle",
+                  "value": "red.200",
+                },
+                "hash": "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "backgroundColor": "var(--colors-red-200)",
+                },
+              },
+            ],
+            "hashSet": Set {
+              "display]___[value:inline-flex]___[recipe:buttonStyle",
+              "alignItems]___[value:center]___[recipe:buttonStyle",
+              "justifyContent]___[value:center]___[recipe:buttonStyle",
+              "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+            },
+            "recipe": "buttonStyle",
+            "result": {
+              ".buttonStyle": {
+                "&:is(:hover, [data-hover])": {
+                  "backgroundColor": "var(--colors-red-200)",
+                },
+                "alignItems": "center",
+                "display": "inline-flex",
+                "justifyContent": "center",
+              },
+            },
+            "slot": undefined,
+          },
+          {
+            "className": "buttonStyle",
+            "details": [
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "display",
+                  "recipe": "buttonStyle",
+                  "value": "inline-flex",
+                },
+                "hash": "display]___[value:inline-flex]___[recipe:buttonStyle",
+                "result": {
+                  "display": "inline-flex",
+                },
+              },
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "alignItems",
+                  "recipe": "buttonStyle",
+                  "value": "center",
+                },
+                "hash": "alignItems]___[value:center]___[recipe:buttonStyle",
+                "result": {
+                  "alignItems": "center",
+                },
+              },
+              {
+                "conditions": undefined,
+                "entry": {
+                  "prop": "justifyContent",
+                  "recipe": "buttonStyle",
+                  "value": "center",
+                },
+                "hash": "justifyContent]___[value:center]___[recipe:buttonStyle",
+                "result": {
+                  "justifyContent": "center",
+                },
+              },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "backgroundColor",
+                  "recipe": "buttonStyle",
+                  "value": "red.200",
+                },
+                "hash": "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "backgroundColor": "var(--colors-red-200)",
+                },
+              },
+            ],
+            "hashSet": Set {
+              "display]___[value:inline-flex]___[recipe:buttonStyle",
+              "alignItems]___[value:center]___[recipe:buttonStyle",
+              "justifyContent]___[value:center]___[recipe:buttonStyle",
+              "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+            },
+            "recipe": "buttonStyle",
+            "result": {
+              ".buttonStyle": {
+                "&:is(:hover, [data-hover])": {
+                  "backgroundColor": "var(--colors-red-200)",
+                },
+                "alignItems": "center",
+                "display": "inline-flex",
+                "justifyContent": "center",
+              },
+            },
+            "slot": undefined,
+          },
+        },
+      }
+    `)
+
+    const forked = hf.fork().fromJSON(
+      JSON.stringify({
+        styles: {
+          atomic: [
+            'display]___[value:none',
+            'height]___[value:100%',
+            'transition]___[value:all .3s ease-in-out',
+            'opacity]___[value:0 !important',
+            'opacity]___[value:1',
+            'height]___[value:10px',
+            'backgroundGradient]___[value:to-b',
+            'gradientFrom]___[value:rgb(200 200 200 / .4)',
+          ],
+          recipes: {
+            checkbox: [
+              'size]___[value:md]___[recipe:checkbox]___[slot:container',
+              'size]___[value:md]___[recipe:checkbox]___[slot:control',
+              'size]___[value:md]___[recipe:checkbox]___[slot:label',
+            ],
+          },
+        },
+      }),
+    )
+    expect(collector.fork().collect(forked).results).toMatchInlineSnapshot(`
+      {
+        "atomic": Set {
+          {
+            "className": "d_none",
+            "conditions": undefined,
+            "entry": {
+              "prop": "display",
+              "value": "none",
+            },
+            "hash": "display]___[value:none",
+            "layer": undefined,
+            "result": {
+              ".d_none": {
+                "display": "none",
+              },
+            },
+          },
+          {
+            "className": "h_100\\\\%",
+            "conditions": undefined,
+            "entry": {
+              "prop": "height",
+              "value": "100%",
+            },
+            "hash": "height]___[value:100%",
+            "layer": undefined,
+            "result": {
+              ".h_100\\\\%": {
+                "height": "100%",
+              },
+            },
+          },
+          {
+            "className": "transition_all_\\\\.3s_ease-in-out",
+            "conditions": undefined,
+            "entry": {
+              "prop": "transition",
+              "value": "all .3s ease-in-out",
+            },
+            "hash": "transition]___[value:all .3s ease-in-out",
+            "layer": undefined,
+            "result": {
+              ".transition_all_\\\\.3s_ease-in-out": {
+                "transition": "all .3s ease-in-out",
+              },
+            },
+          },
+          {
+            "className": "opacity_0",
+            "conditions": undefined,
+            "entry": {
+              "prop": "opacity",
+              "value": "0 !important",
+            },
+            "hash": "opacity]___[value:0 !important",
+            "layer": undefined,
+            "result": {
+              ".opacity_0\\\\!": {
+                "opacity": "0 !important",
+              },
+            },
+          },
+          {
+            "className": "opacity_1",
+            "conditions": undefined,
+            "entry": {
+              "prop": "opacity",
+              "value": "1",
+            },
+            "hash": "opacity]___[value:1",
+            "layer": undefined,
+            "result": {
+              ".opacity_1": {
+                "opacity": "1",
+              },
+            },
+          },
+          {
+            "className": "h_10px",
+            "conditions": undefined,
+            "entry": {
+              "prop": "height",
+              "value": "10px",
+            },
+            "hash": "height]___[value:10px",
+            "layer": undefined,
+            "result": {
+              ".h_10px": {
+                "height": "10px",
+              },
+            },
+          },
+          {
+            "className": "bg-gradient_to-b",
+            "conditions": undefined,
+            "entry": {
+              "prop": "backgroundGradient",
+              "value": "to-b",
+            },
+            "hash": "backgroundGradient]___[value:to-b",
+            "layer": undefined,
+            "result": {
+              ".bg-gradient_to-b": {
+                "--gradient": "var(--gradient-via-stops, var(--gradient-stops))",
+                "--gradient-stops": "var(--gradient-from), var(--gradient-to)",
+                "backgroundImage": "linear-gradient(to bottom, var(--gradient))",
+              },
+            },
+          },
+          {
+            "className": "from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\)",
+            "conditions": undefined,
+            "entry": {
+              "prop": "gradientFrom",
+              "value": "rgb(200 200 200 / .4)",
+            },
+            "hash": "gradientFrom]___[value:rgb(200 200 200 / .4)",
+            "layer": undefined,
+            "result": {
+              ".from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\)": {
+                "--gradient-from": "rgb(200 200 200 / .4)",
+              },
+            },
+          },
+        },
+        "recipes": Map {
+          "checkbox" => Set {
+            {
+              "className": "checkbox__root--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "root",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:container]___[slot:root",
+              "layer": undefined,
+              "result": {
+                ".checkbox__root--size_md": {},
+              },
+            },
+            {
+              "className": "checkbox__control--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "control",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:container]___[slot:control",
+              "layer": undefined,
+              "result": {
+                ".checkbox__control--size_md": {
+                  "height": "var(--sizes-10)",
+                  "width": "var(--sizes-10)",
+                },
+              },
+            },
+            {
+              "className": "checkbox__label--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "label",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:container]___[slot:label",
+              "layer": undefined,
+              "result": {
+                ".checkbox__label--size_md": {
+                  "fontSize": "var(--font-sizes-md)",
+                },
+              },
+            },
+            {
+              "className": "checkbox__root--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "root",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:control]___[slot:root",
+              "layer": undefined,
+              "result": {
+                ".checkbox__root--size_md": {},
+              },
+            },
+            {
+              "className": "checkbox__control--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "control",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:control]___[slot:control",
+              "layer": undefined,
+              "result": {
+                ".checkbox__control--size_md": {
+                  "height": "var(--sizes-10)",
+                  "width": "var(--sizes-10)",
+                },
+              },
+            },
+            {
+              "className": "checkbox__label--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "label",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:control]___[slot:label",
+              "layer": undefined,
+              "result": {
+                ".checkbox__label--size_md": {
+                  "fontSize": "var(--font-sizes-md)",
+                },
+              },
+            },
+            {
+              "className": "checkbox__root--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "root",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:label]___[slot:root",
+              "layer": undefined,
+              "result": {
+                ".checkbox__root--size_md": {},
+              },
+            },
+            {
+              "className": "checkbox__control--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "control",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:label]___[slot:control",
+              "layer": undefined,
+              "result": {
+                ".checkbox__control--size_md": {
+                  "height": "var(--sizes-10)",
+                  "width": "var(--sizes-10)",
+                },
+              },
+            },
+            {
+              "className": "checkbox__label--size_md",
+              "conditions": undefined,
+              "entry": {
+                "prop": "size",
+                "recipe": "checkbox",
+                "slot": "label",
+                "value": "md",
+              },
+              "hash": "size]___[value:md]___[recipe:checkbox]___[slot:label]___[slot:label",
+              "layer": undefined,
+              "result": {
+                ".checkbox__label--size_md": {
+                  "fontSize": "var(--font-sizes-md)",
+                },
+              },
+            },
+          },
+        },
+        "recipes_base": Map {
+          "checkbox__root" => Set {
+            {
+              "className": "checkbox__root",
+              "details": [
+                {
+                  "conditions": undefined,
+                  "entry": {
+                    "prop": "display",
+                    "recipe": "checkbox",
+                    "value": "flex",
+                  },
+                  "hash": "display]___[value:flex]___[recipe:checkbox",
+                  "result": {
+                    "display": "flex",
+                  },
+                },
+                {
+                  "conditions": undefined,
+                  "entry": {
+                    "prop": "alignItems",
+                    "recipe": "checkbox",
+                    "value": "center",
+                  },
+                  "hash": "alignItems]___[value:center]___[recipe:checkbox",
+                  "result": {
+                    "alignItems": "center",
+                  },
+                },
+                {
+                  "conditions": undefined,
+                  "entry": {
+                    "prop": "gap",
+                    "recipe": "checkbox",
+                    "value": "2",
+                  },
+                  "hash": "gap]___[value:2]___[recipe:checkbox",
+                  "result": {
+                    "gap": "var(--spacing-2)",
+                  },
+                },
+              ],
+              "hashSet": Set {
+                "display]___[value:flex]___[recipe:checkbox",
+                "alignItems]___[value:center]___[recipe:checkbox",
+                "gap]___[value:2]___[recipe:checkbox",
+              },
+              "recipe": "checkbox",
+              "result": {
+                ".checkbox__root": {
+                  "alignItems": "center",
+                  "display": "flex",
+                  "gap": "var(--spacing-2)",
+                },
+              },
+              "slot": "root",
+            },
+          },
+          "checkbox__control" => Set {
+            {
+              "className": "checkbox__control",
+              "details": [
+                {
+                  "conditions": undefined,
+                  "entry": {
+                    "prop": "borderWidth",
+                    "recipe": "checkbox",
+                    "value": "1px",
+                  },
+                  "hash": "borderWidth]___[value:1px]___[recipe:checkbox",
+                  "result": {
+                    "borderWidth": "1px",
+                  },
+                },
+                {
+                  "conditions": undefined,
+                  "entry": {
+                    "prop": "borderRadius",
+                    "recipe": "checkbox",
+                    "value": "sm",
+                  },
+                  "hash": "borderRadius]___[value:sm]___[recipe:checkbox",
+                  "result": {
+                    "borderRadius": "var(--radii-sm)",
+                  },
+                },
+              ],
+              "hashSet": Set {
+                "borderWidth]___[value:1px]___[recipe:checkbox",
+                "borderRadius]___[value:sm]___[recipe:checkbox",
+              },
+              "recipe": "checkbox",
+              "result": {
+                ".checkbox__control": {
+                  "borderRadius": "var(--radii-sm)",
+                  "borderWidth": "1px",
+                },
+              },
+              "slot": "control",
+            },
+          },
+          "checkbox__label" => Set {
+            {
+              "className": "checkbox__label",
+              "details": [
+                {
+                  "conditions": undefined,
+                  "entry": {
+                    "prop": "marginInlineStart",
+                    "recipe": "checkbox",
+                    "value": "2",
+                  },
+                  "hash": "marginInlineStart]___[value:2]___[recipe:checkbox",
+                  "result": {
+                    "marginInlineStart": "var(--spacing-2)",
+                  },
+                },
+              ],
+              "hashSet": Set {
+                "marginInlineStart]___[value:2]___[recipe:checkbox",
+              },
+              "recipe": "checkbox",
+              "result": {
+                ".checkbox__label": {
+                  "marginInlineStart": "var(--spacing-2)",
+                },
+              },
+              "slot": "label",
+            },
+          },
+        },
+      }
     `)
   })
 })

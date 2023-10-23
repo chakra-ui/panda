@@ -12,11 +12,12 @@ import type {
   RecipeConfig,
   RecipeVariantRecord,
   ResultItem,
+  ShipJson,
   SlotRecipeConfig,
-  SlotRecipeVariantRecord,
   StyleEntry,
   StyleProps,
   StyleResultObject,
+  SystemStyleObject,
 } from '@pandacss/types'
 import type { GeneratorBaseEngine } from './base'
 
@@ -44,9 +45,6 @@ export class HashFactory {
   //
   recipes = new Map<string, Set<string>>()
   recipes_base = new Map<string, Set<string>>()
-  //
-  recipes_slots = new Map<string, Set<string>>()
-  recipes_slots_base = new Map<string, Set<string>>()
 
   private filterStyleProps: (props: Dict) => Dict
 
@@ -61,14 +59,7 @@ export class HashFactory {
   }
 
   isEmpty() {
-    return (
-      !this.atomic.size &&
-      !this.recipes.size &&
-      !this.recipes_slots.size &&
-      !this.compound_variants.size &&
-      !this.recipes_base.size &&
-      !this.recipes_slots_base.size
-    )
+    return !this.atomic.size && !this.recipes.size && !this.compound_variants.size && !this.recipes_base.size
   }
 
   get hashes() {
@@ -76,8 +67,6 @@ export class HashFactory {
       atomic: this.atomic,
       recipes: this.recipes,
       recipes_base: this.recipes_base,
-      recipes_slots: this.recipes_slots,
-      recipes_slots_base: this.recipes_slots_base,
     }
   }
   /**
@@ -193,45 +182,28 @@ export class HashFactory {
     const config = this.context.recipes.getConfig(recipeName)
     if (!config) return
 
-    const set = getOrCreateSet(this.recipes, recipeName)
-    const styles = Object.assign({}, config.defaultVariants, variants)
-    this.hashStyleObject(set, styles, { recipe: recipeName })
-
-    if (config.base && !this.recipes_base.has(recipeName)) {
+    if ('slots' in config) {
+      config.slots.forEach((slot) => {
+        const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
+        const slotBase = config.base?.[slot]
+        if (slotBase && !this.recipes_base.has(recipeKey)) {
+          const base_set = getOrCreateSet(this.recipes_base, recipeKey)
+          this.hashStyleObject(base_set, slotBase, { recipe: recipeName, slot })
+        }
+      })
+    } else if (config.base && !this.recipes_base.has(recipeName)) {
       const base_set = getOrCreateSet(this.recipes_base, recipeName)
       this.hashStyleObject(base_set, config.base, { recipe: recipeName })
     }
+
+    const set = getOrCreateSet(this.recipes, recipeName)
+    const styles = Object.assign({}, config.defaultVariants, variants)
+    this.hashStyleObject(set, styles, { recipe: recipeName })
 
     if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
       this.compound_variants.add(recipeName)
       config.compoundVariants.forEach((compoundVariant) => {
         this.processAtomic(compoundVariant.css)
-      })
-    }
-  }
-
-  processSlotRecipe(recipeName: string, variants: SlotRecipeVariantRecord<string>) {
-    const config = this.context.recipes.getConfig(recipeName) as SlotRecipeConfig | undefined
-    if (!config) return
-
-    const styles = Object.assign({}, config.defaultVariants, variants)
-    config.slots.forEach((slot) => {
-      const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
-
-      const set = getOrCreateSet(this.recipes_slots, recipeKey)
-      this.hashStyleObject(set, styles, { recipe: recipeName, slot })
-
-      const slotBase = config.base?.[slot]
-      if (slotBase && !this.recipes_slots_base.has(recipeKey)) {
-        const base_set = getOrCreateSet(this.recipes_slots_base, recipeKey)
-        this.hashStyleObject(base_set, slotBase, { recipe: recipeName, slot })
-      }
-    })
-
-    if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
-      this.compound_variants.add(recipeName)
-      config.compoundVariants.forEach((compoundVariant) => {
-        Object.values(compoundVariant.css).forEach((styles) => this.processAtomic(styles ?? {}))
       })
     }
   }
@@ -269,6 +241,37 @@ export class HashFactory {
     for (const slotRecipe of Object.values(slots)) {
       this.processAtomicRecipe(slotRecipe)
     }
+  }
+
+  fromJSON(json: string) {
+    const data = JSON.parse(json) as ShipJson
+    const { styles } = data
+
+    ;(styles.atomic ?? []).forEach((hash) => this.atomic.add(hash))
+
+    Object.entries(styles.recipes ?? {}).forEach(([recipeName, hashes]) => {
+      const config = this.context.recipes.getConfig(recipeName)
+      if (!config) return
+
+      if ('slots' in config) {
+        config.slots.forEach((slot) => {
+          const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
+          if (!this.recipes_base.has(recipeKey)) {
+            const slotBase = config.base?.[slot]
+            const base_set = getOrCreateSet(this.recipes_base, recipeKey)
+            this.hashStyleObject(base_set, slotBase as SystemStyleObject, { recipe: recipeName })
+          }
+        })
+      } else if (!this.recipes_base.has(recipeName)) {
+        const base_set = getOrCreateSet(this.recipes_base, recipeName)
+        this.hashStyleObject(base_set, config.base as SystemStyleObject, { recipe: recipeName })
+      }
+
+      const set = getOrCreateSet(this.recipes, recipeName)
+      hashes.forEach((hash) => set.add(hash))
+    })
+
+    return this
   }
 }
 
