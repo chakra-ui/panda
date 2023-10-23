@@ -5,6 +5,7 @@ import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
 import { statSync } from 'fs-extra'
 import { resolve } from 'path'
+import pLimit from 'p-limit'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
@@ -29,6 +30,8 @@ type ConfigDepsResult = {
 
 const configCache = new Map<string, ConfigData>()
 const contentFilesCache = new WeakMap<PandaContext, ContentData>()
+
+const limit = pLimit(20)
 
 let setupCount = 0
 
@@ -189,7 +192,9 @@ export class Builder {
 
     const done = logger.time.info('Extracted in')
 
-    await Promise.allSettled(ctx.getFiles().map((file) => this.extractFile(ctx, file)))
+    // limit concurrency since we might parse a lot of files
+    const promises = ctx.getFiles().map((file) => limit(() => this.extractFile(ctx, file)))
+    await Promise.allSettled(promises)
 
     done()
   }
