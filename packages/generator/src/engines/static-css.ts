@@ -89,6 +89,9 @@ export class StaticCss {
 
     css.forEach((rule) => {
       const conditions = rule.conditions || []
+      if (rule.responsive) {
+        conditions.push(...breakpoints)
+      }
 
       Object.entries(rule.properties).forEach(([property, values]) => {
         const propKeys = getPropertyKeys(property)
@@ -117,7 +120,11 @@ export class StaticCss {
         if (!recipeKeys) return
 
         const useAllKeys = rule === '*'
-        const { conditions = [], ...variants } = useAllKeys ? recipeKeys : rule
+        const { conditions = [], responsive, ...variants } = useAllKeys ? recipeKeys : rule
+
+        if (responsive) {
+          conditions.push(...breakpoints)
+        }
 
         Object.entries(variants).forEach(([variant, values]) => {
           if (!Array.isArray(values)) return
@@ -153,7 +160,10 @@ export class StaticCss {
           props = Object.fromEntries((details.props ?? {}).map((key) => [key, ['*']]))
         }
 
-        const { conditions = [], properties = props } = useAllKeys ? {} : rule
+        const { conditions = [], responsive = false, properties = props } = useAllKeys ? {} : rule
+        if (responsive) {
+          conditions.push(...breakpoints)
+        }
 
         Object.entries(properties).forEach(([property, values]) => {
           const patternKeys = getPatternPropValues(pattern, property)

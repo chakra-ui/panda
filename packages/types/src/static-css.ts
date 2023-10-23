@@ -4,6 +4,7 @@ interface WithConditions {
    * @example ['hover', 'focus']
    */
   conditions?: string[]
+  responsive?: boolean
 }
 
 export interface CssRule extends WithConditions {
