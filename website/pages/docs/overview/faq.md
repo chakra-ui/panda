@@ -8,13 +8,23 @@ layout: none
 
 Here's a list of frequently asked questions (FAQ) and how to resolve common issues in Panda.
 
+### Why do I get a "Cannot find X module from 'styled-system'" error?
+
+This error seems to be caused by process timing issues between file writes. This has been fixed recently but if you experience this persistently, consider the following workarounds:
+
+- Check the code to git: Remove the `styled-system` folder from the `.gitignore` file to enable git tracking. Technically, the files emitted will remain the same if the Panda config does not change.
+
+- Use the `emitPackage: true` option and write the files to the `node_modules` directory.
+
+---
+
 ### Why are my styles not applied?
 
 Check that the [`@layer` rules](/docs/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported and that the `panda` command has been run (or is running with `--watch`).
 
 ---
 
-### How can I debug?
+### How can I debug the styles?
 
 You can use the `panda debug` to debug design token extraction & css generated from files.
 
@@ -28,7 +38,7 @@ If you're not getting import autocomplete in your IDE, you may need to include t
 
 ---
 
-### How do I get a type with each recipe properties ?
+### How do I get a type with each recipe properties?
 
 You can get a [`config recipe`](/docs/concepts/recipes#config-recipe) properties types by using `XXXVariantProps`. Let's say you have a `config recipe` named `button`, you can import its type like this:
 
