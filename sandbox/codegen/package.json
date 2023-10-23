@@ -10,6 +10,7 @@
     "test:solid": "MODE=solid vitest run",
     "test:vue": "MODE=vue vitest run",
     "test": "pnpm test:react && pnpm test:preact && pnpm test:qwik && pnpm test:solid && pnpm test:vue",
+    "test:update": "MODE=preact vitest run -u && MODE=qwik vitest run -u && MODE=react vitest run -u && MODE=solid vitest run -u && MODE=vue vitest run -u",
     "gen:react": "pnpm panda codegen --clean",
     "gen:preact": "pnpm panda codegen --clean --config panda.preact.config.ts",
     "gen:qwik": "pnpm panda codegen --clean --config panda.qwik.config.ts",
