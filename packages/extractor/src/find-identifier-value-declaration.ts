@@ -25,6 +25,7 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
     (Node.isVariableDeclaration(parent) ||
       Node.isParameterDeclaration(parent) ||
       Node.isFunctionDeclaration(parent) ||
+      Node.isEnumDeclaration(parent) ||
       Node.isBindingElement(parent)) &&
     parent.getNameNode() == node
   ) {
