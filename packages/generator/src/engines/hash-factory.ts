@@ -1,5 +1,4 @@
 import {
-  filterBaseConditions,
   getOrCreateSet,
   getSlotRecipes,
   isObjectOrArray,
@@ -83,25 +82,18 @@ export class HashFactory {
     const isCondition = this.context.conditions.isCondition
     const traverseOptions = { separator: HashFactory.conditionSeparator }
 
-    // _dark: { color: 'white' }
-    //          ^^^^^^^^^^^^^^
-    let isInCondition = false
-
     // Is the final (leading to a raw value, not an object) property a condition ?
     // mx: { base: { p: 4, _hover: 5 } }
     //                            ^^^
-    let isFinalCondition = false
-    let cond = ''
     let prop = ''
     let prevProp = ''
-    let prevDepth = 0
 
     // { mx: 4 } => { marginX: 4 }
     const normalized = normalizeStyleObject(obj, this.context)
 
     traverse(
       normalized,
-      ({ key, value: rawValue, path, depth }) => {
+      ({ key, value: rawValue, path }) => {
         if (rawValue === undefined) {
           return
         }
@@ -111,7 +103,6 @@ export class HashFactory {
           ? toResponsiveObject(rawValue, this.context.conditions.breakpoints.keys)
           : rawValue
 
-        isFinalCondition = false
         prop = key
 
         // { _hover: { ... } }
@@ -120,45 +111,24 @@ export class HashFactory {
           // { _hover: { ... } }
           //           ^^^^^^^
           if (isObjectOrArray(value)) {
-            isInCondition = true
-            cond = path
-            prevDepth = depth
             return
           }
 
           // { _hover: { base: 4 } }
           //             ^^^^^^^
-          cond = isInCondition && cond ? path.replace(HashFactory.conditionSeparator + prevProp, '') : key
           prop = prevProp
-          isFinalCondition = true
         } else if (isObjectOrArray(value)) {
           // { mx: { base: 4 } }
           //       ^^^^^^^^^^^
           prevProp = prop
-          prevDepth = depth
           return
         }
-
-        // when we were in a condition and now back to a root prop
-        // we need to reset the condition state
-        if (!isFinalCondition && isInCondition && path === prop) {
-          isInCondition = false
-          cond = ''
-        }
-        // when the depth changes and that we were not in a condition
-        // we need to check if we are back to a condition now
-        else if (depth !== prevDepth && !isInCondition && !isFinalCondition) {
-          cond = getPreviousCondition(path)
-          isInCondition = cond !== ''
-        }
-
-        const resolvedCondition = getResolvedCondition(cond, isCondition)
+        const resolvedCondition = getResolvedCondition(path, isCondition)
 
         const hashed = hashStyleEntry(Object.assign(baseEntry ?? {}, { prop, value, cond: resolvedCondition }))
         set.add(hashed)
 
         prevProp = prop
-        prevDepth = depth
       },
       traverseOptions,
     )
@@ -307,8 +277,6 @@ const hashStyleEntry = (entry: StyleEntry) => {
   return parts.join(HashFactory.separator)
 }
 
-const getPreviousCondition = (path: string): string => path.split(HashFactory.conditionSeparator).at(-2) ?? ''
-
 /**
  * Returns the final condition string after filtering out irrelevant parts. ('base' and props)
  * @example
@@ -326,12 +294,7 @@ const getResolvedCondition = (cond: string, isCondition: (key: string) => boolea
   }
 
   const parts = cond.split(HashFactory.conditionSeparator)
-  const first = parts[0]
-  let relevantParts = filterBaseConditions(parts)
-
-  if (first && !isCondition(first)) {
-    relevantParts = relevantParts.slice(1)
-  }
+  const relevantParts = parts.filter((part) => part !== 'base' && isCondition(part))
 
   if (parts.length !== relevantParts.length) {
     return relevantParts.join(HashFactory.conditionSeparator)

@@ -331,10 +331,10 @@ describe('extract to css output pipeline', () => {
 
           .sizeRecipe:is(:hover, [data-hover]) {
             font-weight: var(--font-weights-bold);
+            color: red;
           }
 
           [data-theme=\\"dark\\"] .sizeRecipe:is(:hover, [data-hover]), .dark .sizeRecipe:is(:hover, [data-hover]), .sizeRecipe:is(:hover, [data-hover]).dark, .sizeRecipe:is(:hover, [data-hover])[data-theme=\\"dark\\"] {
-            color: red;
             border: 0;
           }
 

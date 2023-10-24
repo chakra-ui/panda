@@ -377,13 +377,13 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
+        .hover\\\\:text_pink\\\\.400:is(:hover, [data-hover]) {
+          color: var(--colors-pink-400);
+        }
+
         @media screen and (width >= 40em) {
           [data-theme=\\"dark\\"] .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300:is(:hover, [data-hover]), .dark .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300:is(:hover, [data-hover]), .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300:is(:hover, [data-hover]).dark, .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300:is(:hover, [data-hover])[data-theme=\\"dark\\"] {
             background: var(--colors-red-300);
-          }
-
-          [data-theme=\\"dark\\"] .hover\\\\:sm\\\\:dark\\\\:text_pink\\\\.400:is(:hover, [data-hover]), .dark .hover\\\\:sm\\\\:dark\\\\:text_pink\\\\.400:is(:hover, [data-hover]), .hover\\\\:sm\\\\:dark\\\\:text_pink\\\\.400:is(:hover, [data-hover]).dark, .hover\\\\:sm\\\\:dark\\\\:text_pink\\\\.400:is(:hover, [data-hover])[data-theme=\\"dark\\"] {
-            color: var(--colors-pink-400);
           }
         }
       }

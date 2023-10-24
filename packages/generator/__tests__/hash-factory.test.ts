@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { createRuleProcessor } from './fixture'
-import type { Dict } from '@pandacss/types'
+import type { Dict, SystemStyleObject } from '@pandacss/types'
 import { createGeneratorContext } from '@pandacss/fixture'
+import { createAnatomy } from './create-anatomy'
 
 const css = (styles: Dict) => {
   const ctx = createGeneratorContext()
@@ -324,6 +325,171 @@ describe('hash factory', () => {
       [
         "btn",
       ]
+    `)
+    expect(processor.hashFactory?.hashes).toMatchInlineSnapshot(`
+      {
+        "atomic": Set {},
+        "recipes": Map {
+          "button" => Set {},
+        },
+        "recipes_base": Map {
+          "button" => Set {
+            "lineHeight]___[value:1.2]___[recipe:button",
+            "boxShadow]___[value:outline]___[cond:_focusVisible]___[recipe:button",
+            "opacity]___[value:0.4]___[cond:_disabled]___[recipe:button",
+            "background]___[value:initial]___[cond:_hover<___>_disabled]___[recipe:button",
+            "display]___[value:inline-flex]___[recipe:button",
+            "outline]___[value:none]___[recipe:button",
+            "zIndex]___[value:1]___[cond:_focus]___[recipe:button",
+          },
+        },
+      }
+    `)
+
+    expect(result.toCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .btn {
+            outline: var(--borders-none);
+            line-height: 1.2;
+            display: inline-flex;
+          }
+
+          .btn:is(:disabled, [disabled], [data-disabled]) {
+            opacity: .4;
+          }
+
+          .btn:is(:focus-visible, [data-focus-visible]) {
+            box-shadow: outline;
+          }
+
+          .btn:is(:focus, [data-focus]) {
+            z-index: 1;
+          }
+
+          .btn:is(:hover, [data-hover]):is(:disabled, [disabled], [data-disabled]) {
+            background: initial;
+          }
+        }
+      }
+      "
+    `)
+  })
+
+  test('simple recipe with alterning no-condition/condition props', () => {
+    interface Part {
+      selector: string
+    }
+
+    type Parts = Record<string, Part>
+
+    function defineParts<T extends Parts>(parts: T) {
+      return function (
+        config: Partial<Record<keyof T, SystemStyleObject>>,
+      ): Partial<Record<keyof T, SystemStyleObject>> {
+        return Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value])) as any
+      }
+    }
+
+    const anatomy = createAnatomy('navbar', [
+      'root',
+      'blur',
+      'nav',
+      'logoLink',
+      'menuLink',
+      'menuLinkIcon',
+      'navLink',
+      'navLinkText',
+      'projectLink',
+      'chatLink',
+      'mobileMenu',
+    ])
+
+    const parts = defineParts(anatomy.build())
+
+    const processor = createRuleProcessor({
+      conditions: {
+        extend: {
+          supportsBackdrop: '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))',
+        },
+      },
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              className: 'navbar',
+              base: parts({
+                blur: {
+                  _dark: {
+                    bg: 'dark',
+                    shadow: '0 -1px 0 rgba(255,255,255,.1) inset',
+                  },
+                  shadow: '0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)',
+                  _supportsBackdrop: {
+                    backdropFilter: 'blur(8px)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.85) !important',
+                    _dark: {
+                      backgroundColor: 'hsla(0,0%,7%,.8) !important',
+                    },
+                  },
+                },
+              }),
+            },
+          },
+        },
+      },
+    })
+
+    const result = processor.recipe('button', {})!
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "navbar",
+      ]
+    `)
+    expect(processor.hashFactory?.hashes).toMatchInlineSnapshot(`
+      {
+        "atomic": Set {},
+        "recipes": Map {
+          "button" => Set {},
+        },
+        "recipes_base": Map {
+          "button" => Set {
+            "background]___[value:dark]___[cond:&[data-part=\\"blur\\"]<___>_dark]___[recipe:button",
+            "boxShadow]___[value:0 -1px 0 rgba(255,255,255,.1) inset]___[cond:&[data-part=\\"blur\\"]<___>_dark]___[recipe:button",
+            "boxShadow]___[value:0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)]___[cond:&[data-part=\\"blur\\"]]___[recipe:button",
+            "backdropFilter]___[value:blur(8px)]___[cond:&[data-part=\\"blur\\"]<___>_supportsBackdrop]___[recipe:button",
+            "backgroundColor]___[value:rgba(255, 255, 255, 0.85) !important]___[cond:&[data-part=\\"blur\\"]<___>_supportsBackdrop]___[recipe:button",
+            "backgroundColor]___[value:hsla(0,0%,7%,.8) !important]___[cond:&[data-part=\\"blur\\"]<___>_supportsBackdrop<___>_dark]___[recipe:button",
+          },
+        },
+      }
+    `)
+
+    expect(result.toCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .navbar[data-part=\\"blur\\"] {
+            box-shadow: 0 2px 4px #00000005, 0 1px #0000000f;
+          }
+
+          [data-theme=\\"dark\\"] .navbar[data-part=\\"blur\\"], .dark .navbar[data-part=\\"blur\\"], .navbar[data-part=\\"blur\\"].dark, .navbar[data-part=\\"blur\\"][data-theme=\\"dark\\"] {
+            background: dark;
+            box-shadow: inset 0 -1px #ffffff1a;
+          }
+
+          @supports ((-webkit-backdrop-filter: blur(1px))) or (backdrop-filter: blur(1px)) {
+            [data-theme=\\"dark\\"] .navbar[data-part=\\"blur\\"], .dark .navbar[data-part=\\"blur\\"], .navbar[data-part=\\"blur\\"].dark, .navbar[data-part=\\"blur\\"][data-theme=\\"dark\\"] {
+              background-color: #121212cc !important;
+            }
+
+            .navbar[data-part=\\"blur\\"] {
+              -webkit-backdrop-filter: blur(8px);
+              background-color: #ffffffd9 !important;
+            }
+          }
+        }
+      }
+      "
     `)
   })
 

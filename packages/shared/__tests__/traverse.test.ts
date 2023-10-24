@@ -433,4 +433,207 @@ describe('traverse', () => {
       ]
     `)
   })
+
+  it('should have the correct path', () => {
+    const callback = vi.fn()
+
+    traverse(
+      {
+        blur: {
+          _dark: {
+            bg: 'dark',
+            shadow: '0 -1px 0 rgba(255,255,255,.1) inset',
+          },
+          shadow: '0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)',
+          _supportsBackdrop: {
+            backdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(255, 255, 255, 0.85) !important',
+            _dark: {
+              backgroundColor: 'hsla(0,0%,7%,.8) !important',
+            },
+          },
+        },
+      },
+      callback,
+    )
+
+    expect(callback.mock.calls.map((v) => v[0])).toMatchInlineSnapshot(`
+      [
+        {
+          "depth": 0,
+          "key": "blur",
+          "parent": {
+            "blur": {
+              "_dark": {
+                "bg": "dark",
+                "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+              },
+              "_supportsBackdrop": {
+                "_dark": {
+                  "backgroundColor": "hsla(0,0%,7%,.8) !important",
+                },
+                "backdropFilter": "blur(8px)",
+                "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+              },
+              "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
+            },
+          },
+          "path": "blur",
+          "value": {
+            "_dark": {
+              "bg": "dark",
+              "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+            },
+            "_supportsBackdrop": {
+              "_dark": {
+                "backgroundColor": "hsla(0,0%,7%,.8) !important",
+              },
+              "backdropFilter": "blur(8px)",
+              "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+            },
+            "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
+          },
+        },
+        {
+          "depth": 1,
+          "key": "_dark",
+          "parent": {
+            "_dark": {
+              "bg": "dark",
+              "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+            },
+            "_supportsBackdrop": {
+              "_dark": {
+                "backgroundColor": "hsla(0,0%,7%,.8) !important",
+              },
+              "backdropFilter": "blur(8px)",
+              "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+            },
+            "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
+          },
+          "path": "blur._dark",
+          "value": {
+            "bg": "dark",
+            "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+          },
+        },
+        {
+          "depth": 2,
+          "key": "bg",
+          "parent": {
+            "bg": "dark",
+            "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+          },
+          "path": "blur._dark.bg",
+          "value": "dark",
+        },
+        {
+          "depth": 2,
+          "key": "shadow",
+          "parent": {
+            "bg": "dark",
+            "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+          },
+          "path": "blur._dark.shadow",
+          "value": "0 -1px 0 rgba(255,255,255,.1) inset",
+        },
+        {
+          "depth": 1,
+          "key": "shadow",
+          "parent": {
+            "_dark": {
+              "bg": "dark",
+              "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+            },
+            "_supportsBackdrop": {
+              "_dark": {
+                "backgroundColor": "hsla(0,0%,7%,.8) !important",
+              },
+              "backdropFilter": "blur(8px)",
+              "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+            },
+            "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
+          },
+          "path": "blur.shadow",
+          "value": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
+        },
+        {
+          "depth": 1,
+          "key": "_supportsBackdrop",
+          "parent": {
+            "_dark": {
+              "bg": "dark",
+              "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
+            },
+            "_supportsBackdrop": {
+              "_dark": {
+                "backgroundColor": "hsla(0,0%,7%,.8) !important",
+              },
+              "backdropFilter": "blur(8px)",
+              "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+            },
+            "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
+          },
+          "path": "blur._supportsBackdrop",
+          "value": {
+            "_dark": {
+              "backgroundColor": "hsla(0,0%,7%,.8) !important",
+            },
+            "backdropFilter": "blur(8px)",
+            "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+          },
+        },
+        {
+          "depth": 2,
+          "key": "backdropFilter",
+          "parent": {
+            "_dark": {
+              "backgroundColor": "hsla(0,0%,7%,.8) !important",
+            },
+            "backdropFilter": "blur(8px)",
+            "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+          },
+          "path": "blur._supportsBackdrop.backdropFilter",
+          "value": "blur(8px)",
+        },
+        {
+          "depth": 2,
+          "key": "backgroundColor",
+          "parent": {
+            "_dark": {
+              "backgroundColor": "hsla(0,0%,7%,.8) !important",
+            },
+            "backdropFilter": "blur(8px)",
+            "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+          },
+          "path": "blur._supportsBackdrop.backgroundColor",
+          "value": "rgba(255, 255, 255, 0.85) !important",
+        },
+        {
+          "depth": 2,
+          "key": "_dark",
+          "parent": {
+            "_dark": {
+              "backgroundColor": "hsla(0,0%,7%,.8) !important",
+            },
+            "backdropFilter": "blur(8px)",
+            "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
+          },
+          "path": "blur._supportsBackdrop._dark",
+          "value": {
+            "backgroundColor": "hsla(0,0%,7%,.8) !important",
+          },
+        },
+        {
+          "depth": 3,
+          "key": "backgroundColor",
+          "parent": {
+            "backgroundColor": "hsla(0,0%,7%,.8) !important",
+          },
+          "path": "blur._supportsBackdrop._dark.backgroundColor",
+          "value": "hsla(0,0%,7%,.8) !important",
+        },
+      ]
+    `)
+  })
 })

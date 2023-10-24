@@ -91,6 +91,10 @@ describe('sortStyleRules - sort-mq', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @layer base {
+          .\\\\[\\\\@layer_base\\\\]\\\\:py_2 {
+            padding-block: var(--spacing-2);
+          }
+
           @media (width >= 900px) {
             .\\\\[\\\\@layer_base\\\\]\\\\:\\\\[\\\\@media_\\\\(min-width\\\\:_900px\\\\)\\\\]\\\\:py_2 {
               padding-block: var(--spacing-2);
