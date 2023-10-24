@@ -278,11 +278,13 @@ export async function main() {
     .command('studio', 'Realtime documentation for your design tokens')
     .option('--build', 'Build')
     .option('--preview', 'Preview')
+    .option('--port <port>', 'Port')
+    .option('--host', 'Host')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--outdir', 'Output directory for static files')
     .action(async (flags: StudioCommandFlags) => {
-      const { build, preview, outdir, config } = flags
+      const { build, preview, port, host, outdir, config } = flags
 
       const cwd = resolve(flags.cwd ?? '')
 
@@ -294,6 +296,8 @@ export async function main() {
       const buildOpts = {
         configPath: findConfigFile({ cwd, file: config })!,
         outDir: resolve(outdir || ctx.studio.outdir),
+        port,
+        host,
       }
 
       if (preview) {
@@ -304,7 +308,9 @@ export async function main() {
         await serveStudio(buildOpts)
 
         const note = `use ${colors.reset(colors.bold('--build'))} to build`
+        const port = `use ${colors.reset(colors.bold('--port'))} for a different port`
         logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
+        logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Port')}: ${port}`))
       }
     })
 
