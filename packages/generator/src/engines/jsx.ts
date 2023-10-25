@@ -18,6 +18,7 @@ export interface PandaJsxEngine {
   factoryName: string
   upperName: string
   typeName: string
+  variantName: string
   componentName: string
   framework: UserConfig['jsxFramework']
   styleProps: Exclude<UserConfig['jsxStyleProps'], undefined>
