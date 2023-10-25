@@ -64,7 +64,7 @@ function setupTypes(ctx: Context): Artifact {
   const gen = getGeneratedTypes(ctx)
   const conditions = generateConditions(ctx)
   const jsx = generateJsxTypes(ctx)
-  const entry = generateTypesEntry(ctx)
+  const entry = generateTypesEntry(ctx, jsx != null)
 
   return {
     dir: ctx.paths.types,
