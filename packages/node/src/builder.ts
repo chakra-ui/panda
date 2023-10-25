@@ -33,13 +33,13 @@ const contentFilesCache = new WeakMap<PandaContext, ContentData>()
 
 const limit = pLimit(20)
 
-let setupCount = 0
-
 export class Builder {
   /**
    * The current panda context
    */
   context: PandaContext | undefined
+
+  hasEmitted = false
 
   configDependencies: Set<string> = new Set()
 
@@ -75,10 +75,6 @@ export class Builder {
       delete require.cache[file]
     }
 
-    if (setupCount > 0) {
-      logger.debug('builder', '⚙️ Config changed, reloading')
-    }
-
     return { isModified: true, modifiedMap: newModified }
   }
 
@@ -91,6 +87,8 @@ export class Builder {
 
     return configPath
   }
+
+  hasConfigChanged = false
 
   setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
@@ -106,13 +104,17 @@ export class Builder {
     this.configDependencies = configDeps
 
     const deps = this.checkConfigDeps(configPath, configDeps)
+    this.hasConfigChanged = deps.isModified
 
     if (deps.isModified) {
       await this.setupContext({
         configPath,
         depsModifiedMap: deps.modifiedMap,
       })
-      const ctx = this.context!
+
+      const ctx = this.getContextOrThrow()
+
+      logger.debug('builder', '⚙️ Config changed, reloading')
       await ctx.hooks.callHook('config:change', ctx.config)
     }
 
@@ -129,19 +131,21 @@ export class Builder {
         depsModifiedMap: deps.modifiedMap,
       })
     }
+  }
 
-    setupCount++
+  emit() {
+    // ensure emit is only called when the config is changed
+    if (this.hasEmitted && this.hasConfigChanged) {
+      emitArtifacts(this.getContextOrThrow())
+    }
+
+    this.hasEmitted = true
   }
 
   setupContext = async (options: { configPath: string; depsModifiedMap: Map<string, number> }) => {
     const { configPath, depsModifiedMap } = options
 
     this.context = await loadConfigAndCreateContext({ configPath })
-
-    // don't emit artifacts on first setup
-    if (setupCount > 0) {
-      emitArtifacts(this.context) // no need to await this
-    }
 
     configCache.set(configPath, {
       context: this.context,
