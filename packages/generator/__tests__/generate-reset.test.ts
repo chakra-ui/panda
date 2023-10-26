@@ -100,6 +100,14 @@ describe('generate reset', () => {
             background-color: transparent;
             background-image: none;
           }
+          
+          .pd-reset button,
+          .pd-reset input,
+          .pd-reset optgroup,
+          .pd-reset select,
+          .pd-reset textarea {
+            color: inherit;
+          }
 
           .pd-reset button,
           .pd-reset select {
