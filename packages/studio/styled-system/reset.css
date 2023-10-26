@@ -90,6 +90,14 @@
     background-color: transparent;
     background-image: none;
   }
+  
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    color: inherit;
+  }
 
   button,
   select {
