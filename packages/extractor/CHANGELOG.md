@@ -1,5 +1,22 @@
 # @pandacss/extractor
 
+## 0.17.1
+
+### Patch Changes
+
+- a76b279e: Extract identifier values coming from an `EnumDeclaration` member
+
+  Example:
+
+  ```ts
+  enum Color {
+    Red = 'red.400',
+    Blue = 'blue.400',
+  }
+
+  const className = css({ color: Color.Red, backgroundColor: Color['Blue'] })
+  ```
+
 ## 0.17.0
 
 ## 0.16.0

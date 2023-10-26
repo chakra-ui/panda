@@ -1,5 +1,15 @@
 # @pandacss/postcss
 
+## 0.17.1
+
+### Patch Changes
+
+- 56299cb2: Fix persistent error that causes CI builds to fail due to PostCSS plugin emitting artifacts in the middle of
+  a build process.
+- Updated dependencies [56299cb2]
+- Updated dependencies [ddcaf7b2]
+  - @pandacss/node@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes
