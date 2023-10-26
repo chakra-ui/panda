@@ -4,7 +4,6 @@
 '@pandacss/is-valid-prop': patch
 '@pandacss/preset-panda': patch
 '@pandacss/preset-base': patch
-'@pandacss/ts-plugin': patch
 '@pandacss/extractor': patch
 '@pandacss/generator': patch
 '@pandacss/fixture': patch
