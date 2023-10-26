@@ -1,13 +1,13 @@
 import { mergeCss } from '@pandacss/core'
 import type { Generator } from '@pandacss/generator'
 import type { Artifact, PandaHookable } from '@pandacss/types'
-import type { Runtime } from '@pandacss/types/src/runtime'
+import type { Runtime } from '@pandacss/types'
 
 export const getChunkEngine = ({
   paths,
   config,
   runtime: { path, fs },
-}: Generator & { runtime: Runtime; hooks: PandaHookable }) => ({
+}: Generator & { runtime: Runtime; hooks: PandaHookable }): PandaChunksEngine => ({
   dir: path.join(...paths.chunk),
   readFile(file: string) {
     const fileName = path.join(...paths.chunk, this.format(file))
@@ -38,3 +38,14 @@ export const getChunkEngine = ({
     return [`${this.dir}/**/*.css`]
   },
 })
+
+export interface PandaChunksEngine {
+  dir: string
+  readFile(file: string): string
+  getFiles(): string[]
+  format(file: string): string
+  getArtifact(file: string, css: string): Artifact
+  rm(file: string): void
+  empty(): void
+  glob: string[]
+}

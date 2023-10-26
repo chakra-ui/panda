@@ -15,7 +15,9 @@ export interface PatternHelpers {
   map: (value: any, fn: (value: string) => string | undefined) => any
 }
 
-export type PatternProperties = Record<string, PatternProperty>
+export interface PatternProperties {
+  [key: string]: PatternProperty
+}
 
 type Props<T> = Record<LiteralUnion<keyof T>, any>
 

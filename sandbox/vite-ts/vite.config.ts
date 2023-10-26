@@ -9,4 +9,7 @@ export default defineConfig({
   build: {
     sourcemap: ANALYZE,
   },
+  resolve: {
+    conditions: ['source'],
+  },
 })

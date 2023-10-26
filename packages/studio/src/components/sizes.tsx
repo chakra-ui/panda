@@ -3,7 +3,9 @@ import { Grid, panda } from '../../styled-system/jsx'
 import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
 
-export type SizesProps = { sizes: Map<string, any> }
+export interface SizesProps {
+  sizes: Map<string, any>
+}
 
 const contentRegex = /^(min|max|fit)-content$/
 const unitRegex = /(ch|%)$/

@@ -3,7 +3,7 @@ import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
 
-export type TransformResult = {
+export interface TransformResult {
   layer?: string
   className: string
   styles: Dict
@@ -11,7 +11,7 @@ export type TransformResult = {
 
 type AtomicRuleTransform = (prop: string, value: any) => TransformResult
 
-export type StylesheetContext = {
+export interface StylesheetContext {
   root: Root
   utility: Utility
   conditions: Conditions
@@ -21,7 +21,7 @@ export type StylesheetContext = {
   layers: CascadeLayers
 }
 
-export type RecipeNode = {
+export interface RecipeNode {
   /**
    * The name of the recipe
    */

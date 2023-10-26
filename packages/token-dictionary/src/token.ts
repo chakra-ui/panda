@@ -15,7 +15,7 @@ export type TokenEntry<T = any> = {
 
 type TokenStatus = 'deprecated' | 'experimental' | 'new'
 
-type ExtensionData = {
+interface ExtensionData {
   status?: TokenStatus
   category?: string
   references?: TokenReferences
@@ -23,15 +23,19 @@ type ExtensionData = {
   conditions?: TokenConditions
 }
 
-type TokenConditions = Record<string, string>
+interface TokenConditions {
+  [key: string]: string
+}
 
-type TokenReferences = Record<string, Token>
+interface TokenReferences {
+  [key: string]: Token
+}
 
 type TokenExtensions = ExtensionData & {
   [key: string]: any
 }
 
-type ExtendedToken = {
+interface ExtendedToken {
   name: string
   value: any
   type?: string

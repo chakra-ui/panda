@@ -11,7 +11,7 @@ import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
-export type StylesheetOptions = {
+export interface StylesheetOptions {
   content?: string
   recipes?: Dict<RecipeConfig>
   slotRecipes?: Dict<SlotRecipeConfig>

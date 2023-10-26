@@ -1,9 +1,9 @@
 import { capitalize, dashCase, mapObject, memo, createRegex, uncapitalize } from '@pandacss/shared'
-import type { Dict, UserConfig } from '@pandacss/types'
+import type { Dict, PatternConfig, UserConfig } from '@pandacss/types'
 
 const helpers = { map: mapObject }
 
-export const getPatternEngine = (config: UserConfig) => {
+export const getPatternEngine = (config: UserConfig): PandaPatternEngine => {
   const patterns = config.patterns ?? {}
   const getNames = (name: string) => {
     const upperName = capitalize(name)
@@ -46,4 +46,32 @@ export const getPatternEngine = (config: UserConfig) => {
     }),
     isEmpty: () => Object.keys(patterns).length === 0,
   }
+}
+
+export interface PandaPatternEngine {
+  keys: string[]
+  getConfig: (name: string) => PatternConfig
+  transform: (name: string, data: Dict) => Dict
+  getNames: (name: string) => PatternNames
+  details: PatternDetail[]
+  find: (jsxName: string) => string
+  filter: (jsxName: string) => PatternDetail[]
+  isEmpty: () => boolean
+}
+
+interface PatternNames {
+  upperName: string
+  baseName: string
+  dashName: string
+  styleFnName: string
+  jsxName: string
+}
+
+export interface PatternDetail extends PatternNames {
+  props: string[]
+  blocklistType: string
+  config: PatternConfig
+  type: 'pattern'
+  match: RegExp
+  jsx: NonNullable<PatternConfig['jsx']>
 }

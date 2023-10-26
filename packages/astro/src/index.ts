@@ -39,7 +39,7 @@ async function getViteConfig(viteConfig: AstroConfig['vite']) {
   }
 }
 
-type PandaOptions = {
+interface PandaOptions {
   /**
    * Inject panda's base styles into the Astro app.
    * @default true

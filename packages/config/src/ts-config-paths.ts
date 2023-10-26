@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 
-export type PathMapping = {
+export interface PathMapping {
   pattern: RegExp
   paths: string[]
 }

@@ -8,4 +8,7 @@ export default defineConfig({
       allow: ['styled-system'],
     },
   },
+  resolve: {
+    conditions: ['source'],
+  },
 })

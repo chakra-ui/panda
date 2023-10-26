@@ -8,7 +8,7 @@ import type { PandaContext } from './create-context'
 
 const gzipSizeSync = (code: string | Buffer) => zlib.gzipSync(code, { level: zlib.constants.Z_BEST_COMPRESSION }).length
 
-type Options = {
+interface Options {
   onResult?: (file: string, result: ParserResultType) => void
 }
 

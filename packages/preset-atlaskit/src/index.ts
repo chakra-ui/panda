@@ -1,4 +1,4 @@
-import type { Config } from '@pandacss/types'
+import type { Preset } from '@pandacss/types'
 import { breakpoints } from './breakpoints'
 import { colors } from './colors/core'
 import { semanticColors } from './colors/semantic'
@@ -7,9 +7,9 @@ import { semanticShadows } from './shadows'
 import { spacing } from './spacing'
 import { fontSizes, fontWeights, fonts, letterSpacings, lineHeights } from './typography'
 
-const defineConfig = <T extends Config>(config: T) => config
+const definePreset = <T extends Preset>(config: T) => config
 
-export const preset = defineConfig({
+export const preset = definePreset({
   theme: {
     breakpoints: breakpoints,
     tokens: {

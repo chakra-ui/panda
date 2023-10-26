@@ -1,7 +1,15 @@
 // Credits: https://github.com/bbc/color-contrast-checker
 
-type Pair = { colorA: string; colorB: string; fontSize: number }
-type Rgb = { r: number; g: number; b: number }
+interface Pair {
+  colorA: string
+  colorB: string
+  fontSize: number
+}
+interface Rgb {
+  r: number
+  g: number
+  b: number
+}
 
 class RgbClass {
   r = 0
