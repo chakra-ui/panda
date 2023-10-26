@@ -1,5 +1,21 @@
 # @pandacss/studio
 
+## 0.17.1
+
+### Patch Changes
+
+- 87772c7c: Add `--host` and `--port` flags to studio.
+- 7b981422: Fix issue in reset styles where button does not inherit color style
+- Updated dependencies [56299cb2]
+- Updated dependencies [ddcaf7b2]
+- Updated dependencies [5ce359f6]
+  - @pandacss/node@0.17.1
+  - @pandacss/shared@0.17.1
+  - @pandacss/types@0.17.1
+  - @pandacss/token-dictionary@0.17.1
+  - @pandacss/config@0.17.1
+  - @pandacss/logger@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes
