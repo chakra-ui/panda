@@ -8,7 +8,6 @@ const fileMap = [
 ]
 
 async function main() {
-  console.log("Postbuild: Copying shared to generator's artifacts")
   fileMap.forEach(([input, outfile]) => {
     const inputPath = join(__dirname, '..', 'dist', input)
     const content = readFileSync(inputPath, 'utf8')
@@ -18,6 +17,7 @@ async function main() {
     const outPath = join(generatorPath, 'src', 'artifacts', 'generated', outfile + '.json')
     writeFileSync(outPath, JSON.stringify({ content }, null, 2), 'utf8')
   })
+  console.log('[postbuild] Copied shared to packages/generator/src/artifacts ✅')
 }
 
 main()

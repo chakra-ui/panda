@@ -12,7 +12,6 @@ const fileMap = [
 ]
 
 export async function main() {
-  console.log("Postbuild: Copying types to generator's artifacts")
   fileMap.forEach((input) => {
     const inputPath = join(__dirname, '..', 'src', input)
     let content = readFileSync(inputPath, 'utf8').replace("'./tokens'", "'../tokens'")
@@ -32,6 +31,8 @@ export async function main() {
     )
     writeFileSync(outPath, JSON.stringify({ content }, null, 2), 'utf8')
   })
+
+  console.log('[postbuild] Copied types to packages/generator/src/artifacts ✅')
 }
 
 if (process.env.PANDA_BUILD) {
