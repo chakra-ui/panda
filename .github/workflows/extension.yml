@@ -3,11 +3,11 @@ name: Publish Extension
 on:
   workflow_dispatch:
 
-  push:
-    paths:
-      - 'extension/**'
-    branches:
-      - main
+#   push:
+#     paths:
+#       - 'extension/**'
+#     branches:
+#       - main
 
 jobs:
   create_timestamp:

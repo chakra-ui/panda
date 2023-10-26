@@ -11,7 +11,7 @@
     "dev:extensions": "pnpm -r --parallel  --filter=./extension/** dev",
     "dev": "pnpm --parallel --filter=./packages/shared --filter=./packages/is-valid-prop --filter=./packages/postcss dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
-    "build": "pnpm -r --filter=./packages/** --filter=./extension/** build",
+    "build": "pnpm -r --filter=./packages/**",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rimraf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",
