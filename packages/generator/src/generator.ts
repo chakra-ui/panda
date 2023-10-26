@@ -1,16 +1,15 @@
-import type { Artifact, ConfigResultWithHooks, OutdirImportMap, ParserResultType, TSConfig } from '@pandacss/types'
+import type { Artifact, ConfigResultWithHooks, ParserResultType } from '@pandacss/types'
 import { generateArtifacts } from './artifacts'
 import { generateFlattenedCss, type FlattenedCssOptions } from './artifacts/css/flat-css'
+import { generateGlobalCss } from './artifacts/css/global-css'
+import { generateKeyframeCss } from './artifacts/css/keyframe-css'
 import { generateParserCss } from './artifacts/css/parser-css'
+import { generateResetCss } from './artifacts/css/reset-css'
+import { generateStaticCss } from './artifacts/css/static-css'
+import { generateTokenCss } from './artifacts/css/token-css'
 import { getEngine, type Context } from './engines'
 import { getMessages } from './messages'
-import { generateStaticCss } from './artifacts/css/static-css'
-import { generateResetCss } from './artifacts/css/reset-css'
-import { generateTokenCss } from './artifacts/css/token-css'
-import { generateKeyframeCss } from './artifacts/css/keyframe-css'
-import { generateGlobalCss } from './artifacts/css/global-css'
-import type { PatternDetail } from './engines/pattern'
-import type { RecipeNode } from '@pandacss/core'
+import { getParserOptions, type ParserOptions } from './parser-options'
 
 const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   ...conf,
@@ -33,29 +32,9 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   },
 })
 
-const getImportMap = (outdir: string, configImportMap?: OutdirImportMap): InternalImportMap => ({
-  css: configImportMap?.css ? [configImportMap.css] : [outdir, 'css'],
-  recipe: configImportMap?.recipes ? [configImportMap.recipes] : [outdir, 'recipes'],
-  pattern: configImportMap?.patterns ? [configImportMap.patterns] : [outdir, 'patterns'],
-  jsx: configImportMap?.jsx ? [configImportMap.jsx] : [outdir, 'jsx'],
-})
-
-interface InternalImportMap {
-  css: string[]
-  recipe: string[]
-  pattern: string[]
-  jsx: string[]
-}
-
 export const createGenerator = (conf: ConfigResultWithHooks): Generator => {
   const ctx = getEngine(defaults(conf))
-  const { config, jsx, isValidProperty, patterns, recipes } = ctx
-
-  const compilerOptions = (conf.tsconfig as TSConfig)?.compilerOptions ?? {}
-  const baseUrl = compilerOptions.baseUrl ?? ''
-
-  const cwd = conf.config.cwd
-  const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
+  const parserOptions = getParserOptions(ctx)
 
   return {
     ...ctx,
@@ -71,31 +50,8 @@ export const createGenerator = (conf: ConfigResultWithHooks): Generator => {
     getParserCss: generateParserCss(ctx),
     //
     messages: getMessages(ctx),
-    parserOptions: {
-      importMap: getImportMap(config.outdir.replace(relativeBaseUrl, ''), config.importMap),
-      jsx: {
-        framework: jsx.framework,
-        factory: jsx.factoryName,
-        styleProps: jsx.styleProps,
-        isStyleProp: isValidProperty,
-        nodes: [...patterns.details, ...recipes.details],
-      },
-      patternKeys: patterns.keys,
-      recipeKeys: recipes.keys,
-      getRecipesByJsxName: recipes.filter,
-      getPatternsByJsxName: patterns.filter,
-      compilerOptions: compilerOptions as any,
-      tsOptions: conf.tsOptions,
-    },
+    parserOptions,
   }
-}
-
-interface JsxOptions {
-  framework: Context['jsx']['framework']
-  factory: Context['jsx']['factoryName']
-  styleProps: Context['jsx']['styleProps']
-  isStyleProp: Context['isValidProperty']
-  nodes: Array<PatternDetail | RecipeNode>
 }
 
 export interface Generator extends Context {
@@ -108,14 +64,5 @@ export interface Generator extends Context {
   getCss: (options: FlattenedCssOptions) => string
   getParserCss: (result: ParserResultType) => string | undefined
   messages: ReturnType<typeof getMessages>
-  parserOptions: {
-    importMap: InternalImportMap
-    jsx: JsxOptions
-    patternKeys: Context['patterns']['keys']
-    recipeKeys: Context['recipes']['keys']
-    getRecipesByJsxName: Context['recipes']['filter']
-    getPatternsByJsxName: Context['patterns']['filter']
-    compilerOptions: TSConfig['compilerOptions']
-    tsOptions: ConfigResultWithHooks['tsOptions']
-  }
+  parserOptions: ParserOptions
 }
