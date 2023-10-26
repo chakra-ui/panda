@@ -33,7 +33,7 @@
     "monaco-editor": "0.40.0",
     "monaco-jsx-highlighter": "^2.0.4",
     "nanoid": "4.0.2",
-    "next": "13.4.16",
+    "next": "13.5.0",
     "next-themes": "^0.2.1",
     "os-browserify": "0.3.0",
     "outdent": " ^0.8.0",
