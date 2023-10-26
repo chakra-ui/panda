@@ -6,6 +6,53 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.17.1] - 2023-10-26
+
+### Fixed
+
+- Fix persistent error that causes CI builds to fail due to PostCSS plugin emitting artifacts in the middle of a build
+  process.
+- Fix issue where conditions don't work in semantic tokens when using template literal syntax.
+- Fix issue in reset styles where button does not inherit color style
+- Fix issue where FileSystem writes cause intermittent errors in different build contexts (Vercel, Docker). This was
+  solved by limiting the concurrency using the `p-limit` library
+- Fix issue where using scale css property adds an additional 'px'
+- Fix issue where styled objects are sometimes incorrectly merged, leading to extraneous classnames in the DOM
+
+### Added
+
+- Add `--host` and `--port` flags to studio.
+
+### Changed
+
+- Change `OmittedHTMLProps` to be empty when using `config.jsxStyleProps` as `minimal` or `none`
+- Remove export types from jsx when no jsxFramework configuration
+- Extract identifier values coming from an `EnumDeclaration` member
+
+Example:
+
+```ts
+enum Color {
+  Red = 'red.400',
+  Blue = 'blue.400',
+}
+
+const className = css({ color: Color.Red, backgroundColor: Color['Blue'] })
+```
+
+- Use predefined interfaces instead of relying on automatic TS type inference or type aliases. This should result in
+  snappier
+
+This should fix issues with the generation of typescript declaration (`.d.ts`) files when using `@pandacss/xxx` packages
+directly, such as:
+
+```
+src/config.ts(21,14): error TS2742: The inferred type of 'tokens' cannot be named without a reference to '../node_modules/@pandacss/types/src/shared'. This is likely not portable. A type annotation is necessa…
+```
+
+> These changes are only relevant if you are directly using **other** Panda `@pandacss/xxx` packages than the
+> `@pandacss/dev`.
+
 ## [0.17.0] - 2023-10-20
 
 ### Fixed
