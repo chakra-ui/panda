@@ -2,9 +2,7 @@
   "name": "@pandacss/types",
   "version": "0.17.2",
   "description": "The types for css panda",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "exports": {
     ".": {
