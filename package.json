@@ -6,7 +6,6 @@
   "scripts": {
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
-    "build:shared": "pnpm --parallel --filter=./packages/{shared,is-valid-prop,postcss,symlink,cli} build-fast",
     "prepare": "husky install && pnpm build-fast",
     "dev": "pnpm --parallel --filter=./packages/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
