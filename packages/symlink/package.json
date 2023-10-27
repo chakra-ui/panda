@@ -1,7 +1,7 @@
 {
   "name": "@pandacss/symlink",
   "license": "MIT",
-  "version": "0.17.2",
+  "version": "0.17.3",
   "main": "dist/index.js",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",

@@ -1,5 +1,15 @@
 # @pandacss/postcss
 
+## 0.17.3
+
+### Patch Changes
+
+- 128e0b19: Fix an issue with the Postcss builder config change detection, which triggered unnecessary a rebuild of the
+  artifacts.
+- Updated dependencies [60f2c8a3]
+  - @pandacss/node@0.17.3
+  - @pandacss/symlink@0.17.3
+
 ## 0.17.2
 
 ### Patch Changes

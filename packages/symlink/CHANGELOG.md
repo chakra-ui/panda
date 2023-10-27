@@ -1,5 +1,7 @@
 # @pandacss/symlink
 
+## 0.17.3
+
 ## 0.17.2
 
 ### Patch Changes
