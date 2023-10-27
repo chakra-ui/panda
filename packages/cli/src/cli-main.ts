@@ -296,7 +296,7 @@ export async function main() {
         host,
       }
 
-      const studio = await import('@pandacss/studio')
+      const studio = require('@pandacss/studio')
 
       if (preview) {
         await studio.previewStudio(buildOpts)

@@ -9,6 +9,16 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/studio.d.ts",
+      "require": "./dist/studio.js",
+      "import": {
+        "types": "./dist/studio.d.mts",
+        "default": "./dist/studio.mjs"
+      }
+    }
+  },
   "scripts": {
     "panda": "node ../cli/bin.js",
     "codegen": "node ../cli/bin.js codegen",
