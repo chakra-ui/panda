@@ -866,9 +866,6 @@ importers:
       '@pandacss/node':
         specifier: workspace:*
         version: link:../node
-      '@pandacss/symlink':
-        specifier: workspace:*
-        version: link:../symlink
       postcss:
         specifier: ^8.4.31
         version: 8.4.31
