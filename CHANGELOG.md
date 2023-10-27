@@ -6,6 +6,22 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.17.2] - 2023-10-27
+
+### Fixed
+
+Fix an issue with the CLI, using the dev mode instead of the prod mode even when installed from npm.
+
+This resolves the following errors:
+
+```
+ Error: Cannot find module 'resolve.exports'
+```
+
+```
+Error: Cannot find module './src/cli-main'
+```
+
 ## [0.17.1] - 2023-10-26
 
 ### Fixed
