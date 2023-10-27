@@ -6,10 +6,10 @@
   "scripts": {
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
-    "build:shared": "pnpm --filter {./packages/shared}... build-fast",
+    "build:shared": "pnpm --parallel --filter=./packages/{shared,is-valid-prop,postcss,symlink} build-fast",
     "prepare": "husky install && pnpm build-fast",
     "dev:extensions": "pnpm -r --parallel  --filter=./extension/** dev",
-    "dev": "pnpm --parallel --filter=./packages/shared --filter=./packages/is-valid-prop --filter=./packages/postcss dev",
+    "dev": "pnpm --parallel --filter=./packages/{shared,is-valid-prop,postcss,symlink} dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --filter=./packages/** build",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
@@ -44,10 +44,14 @@
     "@types/node": "20.4.5",
     "@typescript-eslint/eslint-plugin": "6.2.1",
     "@typescript-eslint/parser": "6.2.1",
+    "chokidar": "^3.5.3",
     "concurrently": "^8.2.0",
+    "happy-dom": "^12.1.6",
     "husky": "8.0.3",
+    "mdx-local-link-checker": "^2.1.1",
     "lint-staged": "13.2.3",
     "prettier": "^2.8.8",
+    "rimraf": "^5.0.1",
     "ts-morph": "19.0.0",
     "tsup": "7.1.0",
     "tsx": "3.12.10",
@@ -63,10 +67,9 @@
     ]
   },
   "packageManager": "pnpm@8.6.4",
-  "devDependencies": {
-    "chokidar": "^3.5.3",
-    "happy-dom": "^12.1.6",
-    "mdx-local-link-checker": "^2.1.1",
-    "rimraf": "^5.0.1"
+  "pnpm": {
+    "overrides": {
+      "@swc/helpers@~0.4": "0.4.36"
+    }
   }
 }
