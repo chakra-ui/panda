@@ -1,5 +1,26 @@
 # @pandacss/dev
 
+## 0.17.3
+
+### Patch Changes
+
+- ba10b419: Mark `defineTokens` and `defineSemanticTokens` with pure annotation to treeshake from bundle when using
+  within component library.
+- Updated dependencies [529a262e]
+- Updated dependencies [60f2c8a3]
+- Updated dependencies [128e0b19]
+  - @pandacss/types@0.17.3
+  - @pandacss/node@0.17.3
+  - @pandacss/postcss@0.17.3
+  - @pandacss/config@0.17.3
+  - @pandacss/preset-panda@0.17.3
+  - @pandacss/studio@0.17.3
+  - @pandacss/token-dictionary@0.17.3
+  - @pandacss/error@0.17.3
+  - @pandacss/logger@0.17.3
+  - @pandacss/shared@0.17.3
+  - @pandacss/symlink@0.17.3
+
 ## 0.17.2
 
 ### Patch Changes
