@@ -1,7 +1,7 @@
 import { messages } from '@pandacss/generator'
 import { logger, quote } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
-import { writeFile } from 'fs-extra'
+import fsExtra from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
 import { join } from 'path'
@@ -54,7 +54,7 @@ export default defineConfig({
 })
     `
 
-    await writeFile(join(cwd, file), content)
+    await fsExtra.writeFile(join(cwd, file), content)
     logger.log(messages.thankYou())
   }
 }
@@ -70,5 +70,5 @@ module.exports = {
 }
   `
 
-  await writeFile(join(cwd, 'postcss.config.cjs'), content)
+  await fsExtra.writeFile(join(cwd, 'postcss.config.cjs'), content)
 }
