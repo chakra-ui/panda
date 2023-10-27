@@ -62,13 +62,13 @@ export class Builder {
       const time = stats.mtimeMs
       newModified.set(file, time)
 
-      if (!prevModified || !prevModified.has(file) || time > prevModified.get(file)!) {
+      if (prevModified && (!prevModified.has(file) || time > prevModified.get(file)!)) {
         modified = true
       }
     }
 
     if (!modified) {
-      return { isModified: false, modifiedMap: prevModified! }
+      return { isModified: false, modifiedMap: prevModified || new Map() }
     }
 
     for (const file of deps) {
