@@ -2,17 +2,18 @@
   "name": "@pandacss/postcss",
   "version": "0.17.2",
   "description": "PostCSS integration for Panda CSS",
-  "main": "entry.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "require": "./entry.js",
+      "require": "./dist/index.js",
       "import": {
         "types": "./dist/index.d.mts",
-        "default": "./entry.js"
+        "default": "./dist/index.mjs"
       }
     },
     "./package.json": "./package.json"
@@ -27,12 +28,10 @@
     "access": "public"
   },
   "files": [
-    "dist",
-    "entry.js"
+    "dist"
   ],
   "dependencies": {
     "@pandacss/node": "workspace:*",
-    "@pandacss/symlink": "workspace:*",
     "postcss": "^8.4.31"
   }
 }

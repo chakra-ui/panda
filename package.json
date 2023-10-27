@@ -6,10 +6,9 @@
   "scripts": {
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
-    "build:shared": "pnpm --parallel --filter=./packages/{shared,is-valid-prop,postcss,symlink} build-fast",
+    "build:shared": "pnpm --parallel --filter=./packages/{shared,is-valid-prop,postcss,symlink,cli} build-fast",
     "prepare": "husky install && pnpm build-fast",
-    "dev:extensions": "pnpm -r --parallel  --filter=./extension/** dev",
-    "dev": "pnpm --parallel --filter=./packages/{shared,is-valid-prop,postcss,symlink} dev",
+    "dev": "pnpm --parallel --filter=./packages/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --filter=./packages/** build",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
@@ -30,10 +29,7 @@
     "deploy-studio": "PANDA_CLI=compiled pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
     "website": "pnpm --filter=./website",
-    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs",
-    "extension:build": "pnpm --filter=./extension/vscode build",
-    "extension:release": "pnpm --filter=./extension/vscode release",
-    "extension:prerelease": "pnpm --filter=./extension/vscode prerelease"
+    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",

@@ -10,15 +10,11 @@ export const EXAMPLES = [
     
     export const App = () => {
       return (
-        <div
-          className={center({
-            h: 'full',
-          })}
-        >
+        <div className={center({ h: 'full' })}>
           <div
             className={css({
               display: 'flex',
-              flexDir: 'column',
+              flexDirection: 'column',
               fontWeight: 'semibold',
               color: 'yellow.300',
               textAlign: 'center',
@@ -105,11 +101,12 @@ export const EXAMPLES = [
     });
     
     export const App = () => {
+      const styles = card()
       return (
         <div className={center({ h: 'full' })}>
-          <div className={card().root}>
-            <div className={card().title}>Team Members</div>
-            <div className={card().content}>Content</div>
+          <div className={styles.root}>
+            <div className={styles.title}>Team Members</div>
+            <div className={styles.content}>Content</div>
           </div>
         </div>
       );
@@ -175,11 +172,12 @@ export const EXAMPLES = [
     import { center } from 'styled-system/patterns';
     
     export const App = () => {
+      const styles = card()
       return (
         <div className={center({ h: 'full' })}>
-          <div className={card().root}>
-            <div className={card().title}>Team Members</div>
-            <div className={card().content}>Content</div>
+          <div className={styles.root}>
+            <div className={styles.title}>Team Members</div>
+            <div className={styles.content}>Content</div>
           </div>
         </div>
       );
@@ -270,11 +268,11 @@ export const EXAMPLES = [
 
     export const App = () => {
       return (
-        <Center h="full">
+        <Center height="full">
           <styled.button
             rounded="md"
             fontWeight="semibold"
-            h="10"
+            height="10"
             px="4"
             bg={{ base: 'yellow.500', _dark: 'yellow.300' }}
             color={{ base: 'white', _dark: 'gray.800' }}

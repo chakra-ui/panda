@@ -1,12 +1,10 @@
+import { FormatCode } from '@/src/components/icons'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
-
-import MonacoEditor from '@monaco-editor/react'
 import { Segment, SegmentControl, SegmentGroup, SegmentGroupIndicator, SegmentLabel } from '@ark-ui/react'
-
-import { PandaEditorProps, useEditor, EDITOR_OPTIONS } from '../hooks/useEditor'
-import { FormatCode } from '@/src/components/icons'
+import MonacoEditor from '@monaco-editor/react'
+import { PandaEditorProps, defaultEditorOptions, useEditor } from '../hooks/useEditor'
 
 const tabs = [
   {
@@ -76,7 +74,7 @@ export const Editor = (props: PandaEditorProps) => {
             value={props.value[activeTab]}
             language="typescript"
             path={activeTab === 'code' ? 'code.tsx' : 'config.ts'}
-            options={EDITOR_OPTIONS}
+            options={defaultEditorOptions}
             beforeMount={onBeforeMount}
             onMount={onCodeEditorMount}
             onChange={onCodeEditorChange}

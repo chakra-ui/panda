@@ -1,1 +1,5 @@
 @layer reset, base, tokens, recipes, utilities;
+
+html {
+  font-size: 0.8rem;
+}
