@@ -2,4 +2,4 @@
 '@pandacss/node': patch
 ---
 
-Fix `fsExtra` imports
+Fix issue in studio command where `fs-extra` imports could not be resolved.
