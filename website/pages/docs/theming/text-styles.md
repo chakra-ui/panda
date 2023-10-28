@@ -30,7 +30,7 @@ export const textStyles = defineTextStyles({
     value: {
       fontFamily: 'Inter',
       fontWeight: '500',
-      fontSize: '16',
+      fontSize: '16px',
       lineHeight: '24',
       letterSpacing: '0',
       textDecoration: 'None',
