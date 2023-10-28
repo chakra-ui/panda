@@ -18,6 +18,7 @@ import { Table, Td, Th, Tr } from './mdx/table'
 import { Text } from './mdx/text'
 import { TokenDocs } from './mdx/token-docs'
 import { FrameworkCards } from './nextra/framework-card'
+import { ExampleCards } from '@/nextra/examples-card'
 
 type Props = {
   isRawLayout?: boolean
@@ -54,6 +55,7 @@ export const getComponents = (props: Props): Components => {
     RouteSwitchTrigger: RouteSwitchTrigger,
     RouteSwitchContent: RouteSwitchContent,
     FrameworkCards: FrameworkCards,
+    ExampleCards: ExampleCards,
     TokenDocs: TokenDocs,
     ...components
   } as Components
