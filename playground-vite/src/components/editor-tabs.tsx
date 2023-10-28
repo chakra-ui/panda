@@ -1,7 +1,8 @@
-import { Button, HStack } from '@chakra-ui/react'
 import { useSandpack } from '@codesandbox/sandpack-react'
 import { FILES_TO_EXCLUDE } from '../constants/sandpack'
 import { FormatCodeButton } from './format-code-button'
+import { HStack } from '../../styled-system/jsx'
+import { Button } from './button'
 
 export const EditorTabs = () => {
   const { sandpack } = useSandpack()
@@ -16,7 +17,7 @@ export const EditorTabs = () => {
   return (
     <HStack
       px='2'
-      spacing='0'
+      gap='0'
       bg='var(--sp-colors-surface1)'
       borderBottom='1px solid var(--sp-colors-surface2)'
       role='tablist'

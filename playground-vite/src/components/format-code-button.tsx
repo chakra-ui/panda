@@ -1,8 +1,8 @@
-import { Button } from '@chakra-ui/react'
 import { useActiveCode } from '@codesandbox/sandpack-react'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import { ImMagicWand } from 'react-icons/im'
+import { Button } from './button'
 
 export const FormatCodeButton = () => {
   const { code, updateCode } = useActiveCode()
@@ -17,7 +17,9 @@ export const FormatCodeButton = () => {
       })
 
       updateCode(formattedCode)
-    } catch {}
+    } catch {
+      //
+    }
   }
 
   return (

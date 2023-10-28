@@ -1,4 +1,3 @@
-import { Box, Button, DarkMode, Flex, HStack } from '@chakra-ui/react'
 import { UnstyledOpenInCodeSandboxButton } from '@codesandbox/sandpack-react'
 import { useEffect, useState } from 'react'
 import { SiCodesandbox } from 'react-icons/si'
@@ -10,6 +9,8 @@ import { SandpackProvider } from './components/sandpack-provider'
 import { ShareButton } from './components/share-button'
 import { defaultCode } from './constants/sandpack'
 import { decode } from './utils/encoder'
+import { Flex, Box, HStack } from '../styled-system/jsx'
+import { Button } from './components/button'
 
 const App = () => {
   const [code, setCode] = useState('')
@@ -28,22 +29,23 @@ const App = () => {
 
   return (
     <SandpackProvider code={code}>
-      <Flex direction='column' padding='3' bg='gray.800' height='$100vh'>
+      <Flex direction='column' padding='3' bg='gray.800' height='100dvh'>
         <Flex justify='space-between' align='center' mb='2' py='1'>
           <Box color='white' fontSize='3xl'>
             <Logo />
           </Box>
           <HStack color='white'>
             <ShareButton />
-            <DarkMode>
+            <div className='dark'>
               <Button
+                // @ts-expect-error as prop
                 as={UnstyledOpenInCodeSandboxButton}
                 size='sm'
                 leftIcon={<SiCodesandbox />}
               >
                 Open in CodeSandbox
               </Button>
-            </DarkMode>
+            </div>
           </HStack>
         </Flex>
         <SandpackEditor />

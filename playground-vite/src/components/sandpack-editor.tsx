@@ -1,37 +1,38 @@
-import { Box } from '@chakra-ui/react'
 import {
   SandpackCodeEditor,
   SandpackLayout,
   SandpackPreview,
 } from '@codesandbox/sandpack-react'
+import { styled } from '../../styled-system/jsx'
 import { CopyButton } from './copy-button'
 import { EditorTabs } from './editor-tabs'
+
+const Layout = styled(SandpackLayout)
+const Preview = styled(SandpackPreview)
 
 export const SandpackEditor = () => {
   return (
     <>
-      <Box
-        as={SandpackLayout}
-        sx={{
+      <Layout
+        css={{
           position: 'relative',
           '--sp-layout-height': 'auto',
           '--sp-colors-disabled': 'colors.gray.700',
           '--sp-syntax-fontStyle-keyword': 'normal',
           '--sp-syntax-fontStyle-property': 'normal',
-          '.cm-lineNumbers': { fontSize: 'sm!' },
+          '& .cm-lineNumbers': { fontSize: 'sm!' },
         }}
         flexDirection={{ base: 'column', md: 'row' }}
         height='full'
       >
-        <Box
-          as='span'
+        <styled.span
           flex='1'
           height='100%'
           maxWidth={{ base: '100%', md: '60%' }}
           position='relative'
           className='group'
-          sx={{
-            '.cm-scroller': {
+          css={{
+            '& .cm-scroller': {
               '&::-webkit-scrollbar': {
                 height: '8px',
                 width: '8px',
@@ -53,14 +54,13 @@ export const SandpackEditor = () => {
             style={{ height: '100%' }}
           />
           <CopyButton />
-        </Box>
-        <Box
-          as={SandpackPreview}
+        </styled.span>
+        <Preview
           minHeight='350px'
           showOpenInCodeSandbox={false}
           showRefreshButton={false}
         />
-      </Box>
+      </Layout>
     </>
   )
 }

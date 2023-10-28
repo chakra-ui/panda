@@ -1,7 +1,7 @@
-import { Button } from '@chakra-ui/react'
 import { BiLinkAlt } from 'react-icons/bi'
 
 import { useShare } from '../hooks/use-share'
+import { Button } from './button'
 
 export const ShareButton = () => {
   const { copy } = useShare()
@@ -9,7 +9,8 @@ export const ShareButton = () => {
     <Button
       onClick={copy}
       size='sm'
-      colorScheme='teal'
+      colorPalette='teal'
+      css={{ colorPalette: 'teal' }}
       leftIcon={<BiLinkAlt />}
     >
       Share
