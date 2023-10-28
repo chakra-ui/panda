@@ -1,7 +1,8 @@
 packages:
-  - 'packages/**'
-  - 'sandbox/*'
-  - 'sandbox/component-lib/**'
-  - 'playground'
-  - 'website'
-  - 'extension/**'
+  - "packages/**"
+  - "sandbox/*"
+  - "sandbox/component-lib/**"
+  - "playground"
+  - "playground-vite"
+  - "website"
+  - "extension/**"
