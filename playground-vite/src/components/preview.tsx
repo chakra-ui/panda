@@ -1,14 +1,12 @@
-import React from 'react'
-import { LiveProvider, useLiveContext } from 'react-live-runner'
-import { useIsClient } from 'usehooks-ts'
-import { createPortal } from 'react-dom'
-import { usePreview } from '@/hooks/use-preview'
+import { responsiveBorder } from '@/components/responsive-border'
+import { UsePanda } from '@/hooks/use-panda'
+import { useResponsiveView } from '@/hooks/use-responsive-view'
+import { SandpackPreview } from '@codesandbox/sandpack-react'
+import { useRef } from 'react'
 import { css } from 'styled-system/css'
 import { flex } from 'styled-system/patterns'
-import { useResponsiveView } from '@/hooks/use-responsive-view'
-import { responsiveBorder } from '@/components/responsive-border'
-import { ErrorIcon } from '@/components/icons'
-import { UsePanda } from '@/hooks/use-panda'
+import { useIsClient } from 'usehooks-ts'
+import { usePreview } from './use-preview'
 
 export type PreviewProps = {
   source: string
@@ -17,18 +15,8 @@ export type PreviewProps = {
 }
 
 export const Preview = (props: PreviewProps) => {
-  const { source, isResponsive, panda } = props
-  const { previewCss = '', previewJs } = panda
+  const { isResponsive } = props
   const isClient = useIsClient()
-
-  const {
-    handleLoad,
-    contentRef,
-    setContentRef,
-    iframeLoaded,
-    isReady,
-    srcDoc,
-  } = usePreview()
 
   const {
     setContainerRef,
@@ -58,32 +46,6 @@ export const Preview = (props: PreviewProps) => {
     topLeft: startTopLeft,
     topRight: startTopRight,
   } as const
-
-  function renderContent() {
-    if (!isReady) {
-      return null
-    }
-
-    const defaultExportName =
-      extractDefaultExportedFunctionName(source) ?? 'App'
-    const transformed = `${previewJs.replaceAll(/export /g, '')}\n${source
-      .replaceAll(/(?<!!)import.*/g, '')
-      .concat(`\nrender(<${defaultExportName} />)`)}`
-
-    const contents = (
-      <LiveProvider code={transformed} scope={React}>
-        <LiveError />
-        <LivePreview />
-      </LiveProvider>
-    )
-
-    const doc = contentRef?.contentDocument
-
-    return [
-      doc?.head && createPortal(<style>{previewCss}</style>, doc.head),
-      doc?.body && createPortal(contents, doc.body),
-    ]
-  }
 
   return (
     <div
@@ -189,67 +151,40 @@ export const Preview = (props: PreviewProps) => {
               : {}
           }
         >
-          <iframe
-            srcDoc={srcDoc}
-            ref={setContentRef}
-            allow='none'
-            width='100%'
-            onLoad={handleLoad}
-            className={css({
-              w: 'full',
-              h: 'full',
-            })}
-          >
-            {iframeLoaded && renderContent()}
-          </iframe>
+          <CodePreview />
         </div>
       </div>
     </div>
   )
 }
 
-function LiveError() {
-  const { error } = useLiveContext()
+const CodePreview = () => {
+  const listenerRef = useRef<Function | null>(null)
+  const preview = usePreview()
 
-  function renderError() {
-    return (
-      <div className='playgroundError'>
-        <span>
-          <ErrorIcon />
-        </span>
-        <pre>{error}</pre>
-      </div>
-    )
-  }
+  return (
+    <SandpackPreview
+      ref={(node) => {
+        if (!node) return
 
-  return error ? renderError() : <></>
+        const iframe = node.getClient()?.iframe
+        if (!iframe) return
+
+        preview.setContentRef(iframe)
+        listenerRef.current?.()
+        iframe.addEventListener('load', preview.handleLoad)
+        listenerRef.current = () => {
+          iframe.removeEventListener('load', preview.handleLoad)
+        }
+      }}
+      className={css({ minHeight: '100%' })}
+      showOpenInCodeSandbox
+      showRefreshButton
+      showSandpackErrorOverlay
+    />
+  )
 }
 
-function LivePreview() {
-  const { element } = useLiveContext()
-
-  return element
-}
-
-const defaultFunctionRegex = /export\s+default\s+function\s+(\w+)/
-function extractDefaultExportedFunctionName(code: string) {
-  const match = code.match(defaultFunctionRegex)
-  if (match && match[1]) {
-    return match[1]
-  } else {
-    return extractDefaultArrowFunctionName(code)
-  }
-}
-
-const defaultArrowFnIdentifierRegex = /export\s+default\s+(\w+)/
-function extractDefaultArrowFunctionName(code: string) {
-  const match = code.match(defaultArrowFnIdentifierRegex)
-  if (match && match[1]) {
-    return match[1]
-  } else {
-    return null
-  }
-}
 function camelToKebabCase(inputString: string) {
   return inputString.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
 }

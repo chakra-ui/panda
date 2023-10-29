@@ -22,7 +22,7 @@ export function usePreview() {
   const { resolvedTheme } = useTheme()
 
   useEffect(() => {
-    if (!contentRef?.contentDocument || !resolvedTheme) return
+    if (!contentRef?.contentWindow || !resolvedTheme) return
 
     const sender = () => {
       contentRef?.contentWindow?.postMessage({ colorMode: resolvedTheme }, '*')

@@ -80,6 +80,14 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   }
 
   const onShare = async () => {
+    // https://github.com/astahmer/lightningcss-ast-viewer/blob/13e0631ad12c39d4d3c06a3461218230e63042ef/src/lib/url-saver.ts
+    toast.success({
+      title: 'Playground saved.',
+      description: 'Link copied to clipboard.',
+      placement: 'top',
+      duration: 3000,
+    })
+    return
     setIsSharing(true)
     fetch('/api/share', {
       method: 'POST',

@@ -115,7 +115,7 @@ export function useEditor(props: PandaEditorProps) {
       const libs = artifacts.flatMap((artifact) => {
         if (!artifact) return []
         return artifact.files.map((file) => ({
-          filePath: `file:///node_modules/${
+          filePath: `file:///${
             artifact.dir ? artifact.dir.join('/') + '/' : ''
           }${file.file}`,
           content: file.code ?? '',
@@ -146,9 +146,9 @@ export function useEditor(props: PandaEditorProps) {
     const data = await fetchPandaTypes()
 
     const distFiles = data.files.find((f) => f.path === '/dist')?.files ?? []
-    const distFIleNames = distFiles.map((f) => f.path.replace('/dist/', ''))
+    const distFileNames = distFiles.map((f) => f.path.replace('/dist/', ''))
 
-    return distFIleNames.map((dts) => ({
+    return distFileNames.map((dts) => ({
       url: `https://unpkg.com/@pandacss/types@latest/dist/${dts}`,
       filePath: `file:///node_modules/@pandacss/types/${dts}`,
     }))

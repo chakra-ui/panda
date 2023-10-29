@@ -7,7 +7,6 @@ import { Sun, Moon } from './icons'
 export const ColorModeSwitch = () => {
   const [mounted, setMounted] = useState(false)
   const theme = useTheme()
-  console.log(theme)
 
   useEffect(() => {
     setMounted(true)
@@ -22,7 +21,6 @@ export const ColorModeSwitch = () => {
   const isDark = resolvedTheme === 'dark'
 
   const toggleTheme = () => {
-    console.log(resolvedTheme)
     return setTheme(isDark ? 'light' : 'dark')
   }
 

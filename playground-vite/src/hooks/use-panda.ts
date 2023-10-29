@@ -93,6 +93,7 @@ export function usePanda(source: string, config: string) {
     const config = getResolvedConfig({
       cwd: '',
       include: [],
+      emitPackage: true,
       outdir: 'styled-system',
       preflight: true,
       optimize: true,

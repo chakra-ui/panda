@@ -1,4 +1,4 @@
-import { getConfig } from './utils'
+import { getConfig } from './get-config'
 import outdent from 'outdent'
 
 export const EXAMPLES = [
@@ -7,7 +7,7 @@ export const EXAMPLES = [
     label: 'Writing styles (css)',
     code: outdent`import { css } from 'styled-system/css';
     import { center } from 'styled-system/patterns';
-    
+
     export const App = () => {
       return (
         <div
@@ -31,7 +31,7 @@ export const EXAMPLES = [
         </div>
       );
     };
-    
+
         `,
     config: getConfig(`theme: { extend: {} },`),
   },
@@ -40,7 +40,7 @@ export const EXAMPLES = [
     label: 'Atomic Recipes (cva)',
     code: outdent`import { cva } from 'styled-system/css';
     import { center } from 'styled-system/patterns';
-    
+
     const button = cva({
       base: {
         borderRadius: 'md',
@@ -62,7 +62,7 @@ export const EXAMPLES = [
         },
       },
     });
-    
+
     export const App = () => {
       return (
         <div className={center({ colorPalette: 'yellow', h: 'full', gap: '4' })}>
@@ -71,8 +71,8 @@ export const EXAMPLES = [
         </div>
       );
     };
-    
-    
+
+
     `,
     config: getConfig(`theme: { extend: {} },`),
   },
@@ -81,7 +81,7 @@ export const EXAMPLES = [
     label: 'Slot Recipes (sva)',
     code: outdent`import { sva } from 'styled-system/css';
     import { center } from 'styled-system/patterns';
-    
+
     const card = sva({
       slots: ['root', 'title', 'content'],
       base: {
@@ -103,7 +103,7 @@ export const EXAMPLES = [
         },
       },
     });
-    
+
     export const App = () => {
       return (
         <div className={center({ h: 'full' })}>
@@ -114,7 +114,7 @@ export const EXAMPLES = [
         </div>
       );
     };
-    
+
     `,
     config: getConfig(`theme: { extend: {} },`),
   },
@@ -123,7 +123,7 @@ export const EXAMPLES = [
     label: 'Config Recipes',
     code: outdent`import { button } from 'styled-system/recipes';
     import { center } from 'styled-system/patterns';
-    
+
     export const App = () => {
       return (
         <div className={center({ colorPalette: 'yellow', h: 'full', gap: '4' })}>
@@ -132,7 +132,7 @@ export const EXAMPLES = [
         </div>
       );
     };
-    
+
     `,
     config: getConfig(
       `theme: {
@@ -165,7 +165,7 @@ export const EXAMPLES = [
           },
         },
       })`,
-      `import { defineConfig, defineRecipe } from '@pandacss/dev'`,
+      `import { defineConfig, defineRecipe } from '@pandacss/dev'`
     ),
   },
   {
@@ -173,7 +173,7 @@ export const EXAMPLES = [
     label: 'Config Slot Recipes',
     code: outdent`import { card } from 'styled-system/recipes';
     import { center } from 'styled-system/patterns';
-    
+
     export const App = () => {
       return (
         <div className={center({ h: 'full' })}>
@@ -184,7 +184,7 @@ export const EXAMPLES = [
         </div>
       );
     };
-    
+
     `,
     config: getConfig(
       `theme: {
@@ -217,7 +217,7 @@ export const EXAMPLES = [
           },
         },
       });`,
-      `import { defineConfig, defineSlotRecipe } from '@pandacss/dev'`,
+      `import { defineConfig, defineSlotRecipe } from '@pandacss/dev'`
     ),
   },
   {
@@ -225,7 +225,7 @@ export const EXAMPLES = [
     label: 'Patterns',
     code: outdent`import { cx } from 'styled-system/css';
     import { flex, square, circle, center } from 'styled-system/patterns';
-    
+
     export const App = () => {
       return (
         <div
@@ -242,7 +242,7 @@ export const EXAMPLES = [
             <div className={square({ size: '11', bg: 'red.300' })}>2</div>
             <div className={square({ size: '11', bg: 'green.300' })}>3</div>
           </div>
-    
+
           <div
             className={flex({
               direction: 'row',
@@ -257,7 +257,7 @@ export const EXAMPLES = [
         </div>
       );
     };
-    
+
     `,
 
     config: getConfig(`theme: { extend: {} },`),

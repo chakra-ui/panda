@@ -66,7 +66,6 @@ export default definePreset({
       height: '100%',
     },
     body: {
-      fontFamily: 'var(--font-inter), sans-serif',
       display: 'flex',
       flexDirection: 'column',
       minHeight: 'full',
