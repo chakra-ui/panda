@@ -6,6 +6,7 @@ import {
 import { styled } from '../../styled-system/jsx'
 import { CopyButton } from './copy-button'
 import { EditorTabs } from './editor-tabs'
+import { MonacoEditor } from './monaco-editor'
 
 const Layout = styled(SandpackLayout)
 const Preview = styled(SandpackPreview)
@@ -46,13 +47,14 @@ export const SandpackEditor = () => {
             },
           }}
         >
-          <EditorTabs />
-          <SandpackCodeEditor
+          {/* <EditorTabs /> */}
+          {/* <SandpackCodeEditor
             showRunButton={false}
             showLineNumbers
             showTabs={false}
             style={{ height: '100%' }}
-          />
+          /> */}
+          <MonacoEditor />
           <CopyButton />
         </styled.span>
         <Preview
