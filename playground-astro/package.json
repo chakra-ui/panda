@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "css:codegen": "pnpm panda codegen --silent",
     "prepare": "pnpm db:generate && pnpm css:codegen",
     "dev": "astro dev",
     "start": "astro dev",
