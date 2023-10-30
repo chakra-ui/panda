@@ -3,8 +3,10 @@ import Layout from '../layouts/Layout.astro'
 import { PlaygroundWithDefault } from '@/components/playground-with-default'
 import '@fontsource/inter'
 import '../global.css'
+import Loader from '@/components/loader.astro'
 ---
 
 <Layout>
+  <Loader targetId='playground' />
   <PlaygroundWithDefault client:only='react' />
 </Layout>

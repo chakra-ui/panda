@@ -40,6 +40,7 @@ export const Playground = (props: UsePlaygroundReturn) => {
   return (
     <WithSandpackProvider code={state.code} config={state.config} panda={panda}>
       <div
+        id='playground'
         className={flex({
           direction: 'column',
           height: '100dvh',

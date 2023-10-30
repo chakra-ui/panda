@@ -1,0 +1,73 @@
+---
+import { randomUUID } from 'crypto'
+import Spinner from './spinner.astro'
+import { center, stack } from 'styled-system/patterns'
+
+export interface Props {
+  targetId: string
+}
+
+const { targetId } = Astro.props
+
+const loaderId = 'sus' + randomUUID()
+---
+
+<div
+  id={loaderId}
+  class={center({
+    transitionProperty: 'opacity',
+    transitionDuration: '0.4s',
+    transitionTimingFunction: 'linear',
+    textAlign: 'center',
+    position: 'fixed',
+    inset: 0,
+    _osDark: {
+      bg: '#282828',
+      color: 'white',
+    },
+  })}
+>
+  <Spinner class={stack()}>🐼 Loading Panda playground...</Spinner>
+</div>
+
+<script define:vars={{ loaderId, targetId }}>
+const loader = document.getElementById(loaderId)
+
+let hasMounted = false
+onElementMounted(targetId, () => {
+  if (hasMounted) return
+
+  hasMounted = true
+  loader.style.opacity = 0
+
+  setTimeout(() => {
+    loader.remove()
+  }, 400)
+})
+
+function onElementMounted(id, callback) {
+  // Check if the element already exists
+  const existingElement = document.getElementById(id)
+  if (existingElement) {
+    callback(existingElement)
+    return
+  }
+
+  // If the element doesn't exist yet, listen for changes to the DOM
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.addedNodes.length > 0) {
+        const element = document.getElementById(id)
+        if (element) {
+          callback()
+          observer.disconnect() // Stop observing once the element is found
+          return
+        }
+      }
+    }
+  })
+
+  // Start observing
+  observer.observe(document.body, { childList: true, subtree: true })
+}
+</script>

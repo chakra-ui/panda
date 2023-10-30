@@ -1,4 +1,5 @@
 ---
+import Loader from '@/components/loader.astro'
 import Layout from '../layouts/Layout.astro'
 import { PlaygroundWithId } from '@/components/playground-with-id'
 
@@ -6,5 +7,6 @@ const { id } = Astro.params as { id: string }
 ---
 
 <Layout>
+  <Loader targetId='playground' />
   <PlaygroundWithId client:only='react' id={id} />
 </Layout>

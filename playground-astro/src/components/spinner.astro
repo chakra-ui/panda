@@ -1,0 +1,18 @@
+<p class={`spinner ${Astro.props.class ?? ''}`}>
+  <slot />
+  <span class='spinner-text'></span>
+</p>
+
+<script>
+  // non-inline scripts are de-duplicated in astro wheeeee
+  let spinState = 0
+  const states = '|/-\\'
+  setInterval(() => {
+    if (++spinState >= states.length) spinState = 0
+
+    for (const spinner of document.getElementsByClassName(
+      'spinner-text'
+    ) as HTMLCollectionOf<HTMLParagraphElement>)
+      spinner.innerText = states[spinState]
+  }, 75)
+</script>
