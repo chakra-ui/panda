@@ -92,8 +92,8 @@ export const usePlayground = (props?: UsePlayGroundProps) => {
   const onShare = async () => {
     setIsSharing(true)
 
-    const onLargeString = () => {
-      return fetch('/api/share', {
+    const storeSessionState = () => {
+      return fetch('/api/share.json', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(state),
@@ -105,7 +105,7 @@ export const usePlayground = (props?: UsePlayGroundProps) => {
     }
 
     urlSaver
-      .setAll(state, onLargeString)
+      .setAll(state, storeSessionState)
       ?.then(() => {
         copyCurrentURI()
         toast.success({
