@@ -1,13 +1,11 @@
 import { ThemeProvider } from 'next-themes'
 import { AppToastProvider } from './ui/toast-provider'
-import { Playground } from './playground'
+import type { PropsWithChildren } from 'react'
 
-export const Providers = () => {
+export const Providers = (props: PropsWithChildren) => {
   return (
     <ThemeProvider attribute='class' enableSystem={false} defaultTheme='dark'>
-      <AppToastProvider>
-        <Playground />
-      </AppToastProvider>
+      <AppToastProvider>{props.children}</AppToastProvider>
     </ThemeProvider>
   )
 }

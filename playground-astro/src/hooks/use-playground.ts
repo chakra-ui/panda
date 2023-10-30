@@ -12,6 +12,8 @@ export type UsePlayGroundProps = {
   initialState?: State | null
 }
 
+export interface UsePlaygroundReturn extends ReturnType<typeof usePlayground> {}
+
 export const usePlayground = (props: UsePlayGroundProps) => {
   const { initialState } = props
   const [layout, setLayout] =

@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { PlaygroundWithId } from '@/components/playground-with-id'
+
+const { id } = Astro.params as { id: string }
+---
+
+<Layout>
+  <PlaygroundWithId client:only='react' id={id} />
+</Layout>

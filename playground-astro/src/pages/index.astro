@@ -1,10 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import { Providers } from '../components/providers'
+import { PlaygroundWithDefault } from '@/components/playground-with-default'
 import '@fontsource/inter'
 import '../global.css'
 ---
 
 <Layout>
-  <Providers client:only='react' />
-</Layout>
+  <PlaygroundDefault client:only='react' />
+</Layout>@/components/playground-with-default

@@ -1,13 +1,13 @@
 import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
-import { flex, hstack } from 'styled-system/patterns'
 import { css, cx } from 'styled-system/css'
+import { flex, hstack } from 'styled-system/patterns'
 import { button, splitter } from 'styled-system/recipes'
 import { usePanda } from '../hooks/use-panda'
-import { type UsePlayGroundProps, usePlayground } from '../hooks/use-playground'
+import { type UsePlaygroundReturn } from '../hooks/use-playground'
 import { ArtifactsPanel } from './debug/artifacts-panel'
-import { ColorModeSwitch } from './toolbar/color-mode-switch'
 import { Editor } from './editor/editor'
 import { Examples } from './examples/examples-select'
+import { ColorModeSwitch } from './toolbar/color-mode-switch'
 import { LayoutControl } from './toolbar/layout-control'
 import { Toolbar } from './toolbar/toolbar'
 
@@ -17,7 +17,7 @@ import { SiCodesandbox } from 'react-icons/si'
 import { PreviewWindow } from './preview/preview-window'
 import { WithSandpackProvider } from './with-sandpack-provider'
 
-export const Playground = (props: UsePlayGroundProps) => {
+export const Playground = (props: UsePlaygroundReturn) => {
   const {
     layout,
     layoutValue,
@@ -32,7 +32,8 @@ export const Playground = (props: UsePlayGroundProps) => {
     isSharing,
     isResponsive,
     setExample,
-  } = usePlayground(props)
+  } = props
+
   const panda = usePanda(state.code, state.config)
   const { artifacts } = panda
 

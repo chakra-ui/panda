@@ -1,7 +1,7 @@
 import { prettify } from '@/utils/prettify'
 
 export const getConfig = (
-  config?: string,
+  config: string = 'theme: { extend: {} },',
   otherCode?: string,
   imports = 'import { defineConfig } from "@pandacss/dev";'
 ) => {
