@@ -329,8 +329,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       '@types/read':
-        specifier: ^0.0.29
-        version: 0.0.29
+        specifier: ^0.0.31
+        version: 0.0.31
       '@types/tar-stream':
         specifier: ^2.2.2
         version: 2.2.2
@@ -12316,8 +12316,8 @@ packages:
       '@types/scheduler': 0.16.3
       csstype: 3.1.2
 
-  /@types/read@0.0.29:
-    resolution: {integrity: sha512-TisW3O3OhpP8/ZwaiqV7kewh9gnoH7PfqHd4hkCM9ogiqWEagu43WXpHWqgPbltXhembYJDpYB3cVwUIOweHXg==}
+  /@types/read@0.0.31:
+    resolution: {integrity: sha512-UgKP5iZRgLfKZ+tqW9viRp5HOOAeAjceTNsl2qOZbbDRkbjde9Hq41rrTKkLxkPWeQExGhnynsOXp0jhb7sG6g==}
     dev: true
 
   /@types/resolve@1.20.2:
