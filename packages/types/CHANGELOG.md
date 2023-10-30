@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.17.4
+
+### Patch Changes
+
+- fa77080a: Fix issue where types package was not built correctly.
+
 ## 0.17.3
 
 ### Patch Changes
