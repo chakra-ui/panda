@@ -6,6 +6,13 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.17.4] - 2023-10-30
+
+### Fixed
+
+- Display semantic colors correctly in studio.
+- Fix issue where types package was not built correctly.
+
 ## [0.17.3] - 2023-10-28
 
 ### Fixed
