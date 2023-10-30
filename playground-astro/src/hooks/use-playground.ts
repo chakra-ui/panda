@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { type Layout } from '../components/toolbar/layout-control'
 import { type SplitterProps, useToast } from '@ark-ui/react'
 import { EXAMPLES, type Example } from '@/components/examples/data'
+import { UrlSaver } from '@/utils/url-saver'
 
 export type State = {
   code: string
@@ -14,8 +15,24 @@ export type UsePlayGroundProps = {
 
 export interface UsePlaygroundReturn extends ReturnType<typeof usePlayground> {}
 
-export const usePlayground = (props: UsePlayGroundProps) => {
-  const { initialState } = props
+const urlSaver = new UrlSaver<State>()
+const noop = () => {}
+
+const cssExample = EXAMPLES.find((example) => example.id === 'css')!
+const getInitialState = (props: UsePlayGroundProps['initialState']): State => {
+  console.log()
+  if (props) return props
+  if (urlSaver.get('code') || urlSaver.get('config')) {
+    return {
+      code: urlSaver.get('code') ?? '',
+      config: urlSaver.get('config') ?? '',
+    }
+  }
+
+  return cssExample
+}
+
+export const usePlayground = (props?: UsePlayGroundProps) => {
   const [layout, setLayout] =
     useState<Extract<Layout, 'horizontal' | 'vertical'>>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
@@ -62,16 +79,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     }
   }
 
-  const cssExample = EXAMPLES.find((example) => example.id === 'css')
-
-  const [state, setState] = useState(
-    initialState
-      ? initialState
-      : {
-          code: cssExample?.code ?? '',
-          config: cssExample?.config ?? '',
-        }
-  )
+  const [state, setState] = useState(getInitialState(props?.initialState))
 
   function copyCurrentURI() {
     const currentURI = window.location.href
@@ -82,25 +90,23 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   }
 
   const onShare = async () => {
-    // https://github.com/astahmer/lightningcss-ast-viewer/blob/13e0631ad12c39d4d3c06a3461218230e63042ef/src/lib/url-saver.ts
-    toast.success({
-      title: 'Playground saved.',
-      description: 'Link copied to clipboard.',
-      placement: 'top',
-      duration: 3000,
-    })
-    return
     setIsSharing(true)
-    fetch('/api/share', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(state),
-    })
-      .then((response) => response.json())
-      .then(({ data }) => {
-        history.pushState({ id: data.id }, '', data.id)
+
+    const onLargeString = () => {
+      return fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state),
+      })
+        .then((response) => response.json())
+        .then(({ data }) => {
+          history.pushState({ id: data.id }, '', data.id)
+        })
+    }
+
+    urlSaver
+      .setAll(state, onLargeString)
+      ?.then(() => {
         copyCurrentURI()
         toast.success({
           title: 'Playground saved.',
@@ -130,6 +136,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
       code: example.code,
       config: example.config,
     })
+    urlSaver.setAll(example, noop)
   }
 
   return {
@@ -142,6 +149,12 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     switchLayout,
     state,
     setState: (newState: State) => {
+      if (newState.code !== state.code) {
+        urlSaver.set('code', newState.code, noop)
+      } else if (newState.config !== state.config) {
+        urlSaver.set('config', newState.config, noop)
+      }
+
       setIsPristine(false)
       setState(newState)
     },

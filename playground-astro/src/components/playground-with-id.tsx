@@ -8,7 +8,7 @@ interface PlaygroundWithIdProps {
 }
 
 const PlaygroundWithIdInner = (props: PlaygroundWithIdProps) => {
-  const ctx = usePlayground({ initialState: null })
+  const ctx = usePlayground()
 
   useEffect(() => {
     const fetchState = async () => {

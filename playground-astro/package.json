@@ -8,7 +8,8 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "vite": "vite"
+    "vite": "vite",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ark-ui/react": "^0.15.0",

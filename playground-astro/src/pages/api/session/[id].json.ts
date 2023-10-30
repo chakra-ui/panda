@@ -1,7 +1,8 @@
 import { EXAMPLES } from '@/components/examples/data'
-import { prisma } from '../../../prisma'
+import { prisma } from '@/prisma'
+import type { APIRoute } from 'astro'
 
-export async function GET({ params }: { params: { id: string } }) {
+export const GET: APIRoute = async ({ params }) => {
   const id = params.id
 
   if (import.meta.env.DEV) {
