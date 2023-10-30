@@ -1,0 +1,14 @@
+---
+import Seo, { Props as SeoProps } from '@/components/seo.astro'
+export interface Props extends SeoProps {}
+---
+
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <Seo {...Astro.props} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

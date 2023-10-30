@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { Providers } from '../components/providers'
+import '@fontsource/inter'
+import '../global.css'
+---
+
+<Layout>
+  <Providers client:only='react' />
+</Layout>

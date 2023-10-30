@@ -1,0 +1,96 @@
+---
+import { SEO, type Props as SEOProps } from 'astro-seo'
+
+const seoConfig = {
+  title: {
+    template: '%s - Panda Playground',
+    default:
+      'Panda Playground - Explore and experiment with Panda CSS, the build time and type-safe CSS-in-JS styling engine',
+  },
+  description:
+    'Explore and experiment with Panda CSS, the build time and type-safe CSS-in-JS styling engine with our interactive playground. Discover the power of Panda CSS in this user-friendly visual environment for hassle-free prototyping and rapid development.',
+  themeColor: '#F6E458',
+  openGraph: {
+    images: '/og-image.png',
+    url: 'https://play.panda-css.com',
+  },
+  manifest: '/site.webmanifest',
+  icons: [
+    { rel: 'icon', url: '/favicon.ico' },
+    { rel: 'apple-touch-icon', url: '/apple-touch-icon.png' },
+    { rel: 'mask-icon', url: '/favicon.ico' },
+    { rel: 'image/x-icon', url: '/favicon.ico' },
+  ],
+  twitter: {
+    site: '@panda__css',
+    creator: '@thesegunadebayo',
+  },
+}
+
+export interface Props extends Partial<SEOProps> {
+  image?: string
+  canonical?: string
+}
+
+const {
+  title,
+  description,
+  noindex,
+  openGraph: og,
+  canonical,
+  image,
+} = Astro.props
+
+const DEFAULT_TITLE_PAGE = seoConfig.title.default
+const DEFAULT_DESCRIPTION_PAGE = seoConfig.description
+const DEFAULT_URL_SITE = seoConfig.openGraph.url
+
+const openGraph = {
+  title: title || og?.basic?.title || DEFAULT_TITLE_PAGE,
+  type: og?.basic?.type || 'website',
+  image: String(image || og?.image?.url || '/og-image.png'),
+  alt: og?.image?.alt || 'Panda playground',
+  url: DEFAULT_URL_SITE,
+  description: og?.optional?.description || DEFAULT_DESCRIPTION_PAGE,
+}
+---
+
+<head>
+  <SEO
+    charset='UTF-8'
+    title={title || DEFAULT_TITLE_PAGE}
+    description={description || DEFAULT_DESCRIPTION_PAGE}
+    noindex={noindex || false}
+    canonical={canonical}
+    openGraph={{
+      basic: {
+        title: openGraph.title,
+        type: openGraph.type,
+        image: openGraph.image,
+      },
+      image: { alt: openGraph.alt },
+      optional: { description, locale: 'en_US', siteName: DEFAULT_TITLE_PAGE },
+    }}
+    twitter={seoConfig.twitter}
+    extend={{
+      link: [
+        { rel: 'icon', href: '/favicon.png' },
+        { rel: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'mask-icon', href: '/favicon.ico' },
+      ],
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'generator', content: Astro.generator },
+        {
+          name: 'twitter:image',
+          content: openGraph.image,
+        },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: openGraph.title },
+        { name: 'twitter:description', content: openGraph.description },
+        { name: 'twitter:site', content: seoConfig.twitter.creator },
+      ],
+    }}
+  />
+</head>

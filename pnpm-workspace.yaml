@@ -4,5 +4,6 @@ packages:
   - "sandbox/component-lib/**"
   - "playground"
   - "playground-vite"
+  - "playground-astro"
   - "website"
   - "extension/**"
