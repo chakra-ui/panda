@@ -50,6 +50,7 @@
     "util": "0.12.5"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.3.0",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@pandacss/astro": "workspace:^",
     "@pandacss/dev": "workspace:^",
