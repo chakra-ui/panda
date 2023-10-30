@@ -667,8 +667,8 @@ importers:
         specifier: workspace:*
         version: link:../fixture
       '@types/pluralize':
-        specifier: 0.0.30
-        version: 0.0.30
+        specifier: 0.0.32
+        version: 0.0.32
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -804,8 +804,8 @@ importers:
         specifier: 4.6.8
         version: 4.6.8
       '@types/pluralize':
-        specifier: 0.0.30
-        version: 0.0.30
+        specifier: 0.0.32
+        version: 0.0.32
       boxen:
         specifier: ^7.1.1
         version: 7.1.1
@@ -12257,8 +12257,8 @@ packages:
   /@types/parse5@6.0.3:
     resolution: {integrity: sha512-SuT16Q1K51EAVPz1K29DJ/sXjhSQ0zjvsypYJ6tlwVsRV9jwW5Adq2ch8Dq8kDBCkYnELS7N7VNCSB5nC56t/g==}
 
-  /@types/pluralize@0.0.30:
-    resolution: {integrity: sha512-kVww6xZrW/db5BR9OqiT71J9huRdQ+z/r+LbDuT7/EK50mCmj5FoaIARnVv0rvjUS/YpDox0cDU9lpQT011VBA==}
+  /@types/pluralize@0.0.32:
+    resolution: {integrity: sha512-exDkoRIkWJlbRDRmtYDbI3ZUE28HwBwHe5VKn4mvpvMW7qIRDHO6URItErBsBSX7J8/PrDLSOHCcbUMFXwA6CA==}
     dev: true
 
   /@types/prettier@2.7.3:
