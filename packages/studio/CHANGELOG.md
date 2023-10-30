@@ -1,5 +1,18 @@
 # @pandacss/studio
 
+## 0.17.4
+
+### Patch Changes
+
+- a031d077: Display semantic colors correctly in studio.
+- Updated dependencies [fa77080a]
+  - @pandacss/types@0.17.4
+  - @pandacss/config@0.17.4
+  - @pandacss/node@0.17.4
+  - @pandacss/token-dictionary@0.17.4
+  - @pandacss/logger@0.17.4
+  - @pandacss/shared@0.17.4
+
 ## 0.17.3
 
 ### Patch Changes

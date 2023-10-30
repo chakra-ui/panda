@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/config",
-  "version": "0.17.3",
+  "version": "0.17.4",
   "description": "Find and load panda config",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
