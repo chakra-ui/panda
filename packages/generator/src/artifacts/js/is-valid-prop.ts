@@ -32,12 +32,16 @@ export function generateIsValidProp(ctx: Context) {
     content = ctx.file.import('memo', '../helpers') + '\n' + content
   }
 
+  content = ctx.file.import('splitProps', '../helpers') + '\n' + content
+  content += `export const splitCssProps = /* @__PURE__ */ (props) =>  splitProps(props, isCssProperty)`
+
   return {
     js: content,
     dts: outdent`
     declare const isCssProperty: (value: string) => boolean;
+    declare const splitCssProps: <TProps extends Record<string, unknown>>(props: TProps) => [Pick<TProps, CssProperty>, Omit<TProps, CssProperty>]
 
-    export { isCssProperty };
+    export { isCssProperty, splitCssProps };
     `,
   }
 }
