@@ -4,14 +4,12 @@ import { Range } from 'vscode-languageserver'
 
 import { type SystemStyleObject } from '@pandacss/types'
 
-import { AtomicRule, optimizeCss } from '@pandacss/core'
 import { type PandaContext } from '@pandacss/node'
 import { toPx } from '@pandacss/shared'
 import * as base64 from 'base-64'
 
 import parserCSS from 'prettier/parser-postcss'
 import prettier from 'prettier/standalone'
-import { match } from 'ts-pattern'
 import * as utf8 from 'utf8'
 
 import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
@@ -38,7 +36,6 @@ export type DisplayOptions = {
 }
 
 export const getMarkdownCss = (ctx: PandaContext, styles: SystemStyleObject, settings: PandaVSCodeSettings) => {
-  const mode = settings['hovers.display.mode']
   const forceHash = settings['hovers.display.force-hash']
 
   const hash = ctx.config.hash
@@ -46,15 +43,12 @@ export const getMarkdownCss = (ctx: PandaContext, styles: SystemStyleObject, set
     ctx.config.hash = true
   }
 
-  const context = ctx.createSheetContext()
-  const rule = new AtomicRule(context)
-  rule.process({ styles })
+  const context = ctx.createSheet()
+  ctx.hashFactory.processAtomic(styles)
+  context.processStyleCollector(ctx.styleCollector.collect(ctx.hashFactory))
 
-  const css = match(mode ?? 'optimized')
-    .with('nested', () => rule.toCss())
-    .with('optimized', () => optimizeCss(rule.toCss()))
-    .with('minified', () => optimizeCss(rule.toCss(), { minify: true }))
-    .run()
+  // const mode = settings['hovers.display.mode']
+  const css = context.toCss({ optimize: true })
 
   const raw = getPrettiedCSS(css)
   const withCss = '```css' + '\n' + raw + '\n' + '```'
