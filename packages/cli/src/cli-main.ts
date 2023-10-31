@@ -180,6 +180,8 @@ export async function main() {
       const cssgen = async (ctx: PandaContext) => {
         if (outfile) {
           const outPath = resolve(cwd, outfile)
+          const dirname = ctx.runtime.path.dirname(outPath)
+          ctx.runtime.fs.ensureDirSync(dirname)
 
           if (cssArtifact) {
             const { msg } = await generateCssArtifactOfType(ctx, cssArtifact, outfile)
