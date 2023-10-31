@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/studio",
-  "version": "0.17.0",
+  "version": "0.17.4",
   "description": "The automated token documentation for Panda CSS",
   "main": "dist/studio.js",
   "module": "dist/studio.mjs",
@@ -8,6 +8,16 @@
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/studio.d.ts",
+      "require": "./dist/studio.js",
+      "import": {
+        "types": "./dist/studio.d.mts",
+        "default": "./dist/studio.mjs"
+      }
+    }
   },
   "scripts": {
     "panda": "node ../cli/bin.js",

@@ -1,5 +1,47 @@
 # @pandacss/config
 
+## 0.17.4
+
+### Patch Changes
+
+- Updated dependencies [fa77080a]
+  - @pandacss/types@0.17.4
+  - @pandacss/preset-base@0.17.4
+  - @pandacss/preset-panda@0.17.4
+  - @pandacss/error@0.17.4
+  - @pandacss/logger@0.17.4
+
+## 0.17.3
+
+### Patch Changes
+
+- Updated dependencies [529a262e]
+  - @pandacss/types@0.17.3
+  - @pandacss/preset-base@0.17.3
+  - @pandacss/preset-panda@0.17.3
+  - @pandacss/error@0.17.3
+  - @pandacss/logger@0.17.3
+
+## 0.17.2
+
+### Patch Changes
+
+- @pandacss/error@0.17.2
+- @pandacss/logger@0.17.2
+- @pandacss/preset-base@0.17.2
+- @pandacss/preset-panda@0.17.2
+- @pandacss/types@0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- @pandacss/types@0.17.1
+- @pandacss/error@0.17.1
+- @pandacss/logger@0.17.1
+- @pandacss/preset-base@0.17.1
+- @pandacss/preset-panda@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes

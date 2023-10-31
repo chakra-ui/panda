@@ -1,6 +1,6 @@
 import { logger } from '@pandacss/logger'
+import type { StyleCollectorType } from '@pandacss/types'
 import type { Context } from '../../engines'
-import type { StyleCollectorType } from 'packages/types/dist'
 
 export const generateParserCss = (ctx: Context) => (collector: StyleCollectorType, filePath?: string) => {
   if (!collector) return ''

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/dev",
-  "version": "0.17.0",
+  "version": "0.17.4",
   "description": "The user facing package for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -12,25 +12,38 @@
   },
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
     },
     "./presets": {
+      "source": "./src/presets.ts",
       "types": "./dist/presets.d.ts",
       "require": "./dist/presets.js",
-      "import": "./dist/presets.mjs"
+      "import": {
+        "types": "./dist/presets.d.mts",
+        "default": "./dist/presets.mjs"
+      }
     },
     "./postcss": "./postcss.js",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/cli"
+  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "build": "tsup src --format=esm,cjs --dts --no-splitting --shims",
-    "postbuild": "pnpm app:gen",
     "build-fast": "tsup src --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch src"
   },
@@ -52,6 +65,7 @@
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/studio": "workspace:*",
+    "@pandacss/symlink": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "cac": "6.7.14",

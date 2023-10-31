@@ -3,7 +3,7 @@ import type { AtRule, Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
 
-export type TransformResult = {
+export interface TransformResult {
   layer?: string
   className: string
   styles: Dict
@@ -36,7 +36,7 @@ export interface StylesheetContext {
   transform?: AtomicRuleTransform
 }
 
-export type RecipeNode = {
+export interface RecipeNode {
   /**
    * The name of the recipe
    */

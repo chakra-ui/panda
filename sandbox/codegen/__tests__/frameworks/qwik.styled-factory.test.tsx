@@ -126,7 +126,9 @@ describe('styled factory - cva', async () => {
       </Button>,
     )
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<button class=\\"text_red.100 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_md px_sm py_xs custom-btn\\">Click me</button>"')
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<button class=\\"text_red.100 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_md px_sm py_xs custom-btn\\">Click me</button>"',
+    )
   })
 
   test('all together', async () => {
@@ -137,7 +139,20 @@ describe('styled factory - cva', async () => {
       </Button>,
     )
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<button class=\\"text_red.200 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_xl px_123px py_md z_1 mx_2 custom-btn\\">Click me</button>"')
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<button class=\\"text_red.200 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_xl px_123px py_md z_1 mx_2 custom-btn\\">Click me</button>"',
+    )
+  })
+
+  test('html props', async () => {
+    const { render, screen } = await createDOM()
+    await render(
+      <styled.div htmlWidth={123} height="123">
+        Click me
+      </styled.div>,
+    )
+    const container = screen.querySelector('div')!
+    expect(container.outerHTML).toMatchInlineSnapshot('"<div width=\\"123\\" class=\\"h_123\\">Click me</div>"')
   })
 })
 
@@ -168,7 +183,9 @@ describe('styled factory - button recipe', async () => {
       </Button>,
     )
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<button class=\\"button button--size_sm custom-btn\\">Click me</button>"')
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<button class=\\"button button--size_sm custom-btn\\">Click me</button>"',
+    )
   })
 
   test('style prop', async () => {
@@ -191,7 +208,9 @@ describe('styled factory - button recipe', async () => {
     )
 
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<button class=\\"button button--size_sm mx_2 custom-btn\\">Click me</button>"')
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<button class=\\"button button--size_sm mx_2 custom-btn\\">Click me</button>"',
+    )
   })
 
   test('css prop', async () => {
@@ -202,7 +221,9 @@ describe('styled factory - button recipe', async () => {
       </Button>,
     )
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<button class=\\"button text_red.100 fs_md custom-btn\\">Click me</button>"')
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<button class=\\"button text_red.100 fs_md custom-btn\\">Click me</button>"',
+    )
   })
 
   test('css prop with variant', async () => {
@@ -214,7 +235,9 @@ describe('styled factory - button recipe', async () => {
     )
 
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<button class=\\"button button--size_sm text_red.100 fs_md custom-btn\\">Click me</button>"')
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<button class=\\"button button--size_sm text_red.100 fs_md custom-btn\\">Click me</button>"',
+    )
   })
 
   test('all together', async () => {
@@ -226,6 +249,8 @@ describe('styled factory - button recipe', async () => {
     )
 
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot('"<button class=\\"button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn\\">Click me</button>"')
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<button class=\\"button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn\\">Click me</button>"',
+    )
   })
 })

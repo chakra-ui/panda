@@ -6,12 +6,12 @@ import { assertTokenFormat, getReferences, isToken } from './utils'
 
 type EnforcePhase = 'pre' | 'post'
 
-type Options = {
+interface Options {
   prefix?: string
   hash?: boolean
 }
 
-export type TokenTransformer = {
+export interface TokenTransformer {
   name: string
   enforce?: EnforcePhase
   type?: 'value' | 'name' | 'extensions'
@@ -19,7 +19,7 @@ export type TokenTransformer = {
   transform: (token: Token, options: Options) => any
 }
 
-export type TokenDictionaryOptions = {
+export interface TokenDictionaryOptions {
   tokens?: Tokens
   semanticTokens?: SemanticTokens
   breakpoints?: Record<string, string>
@@ -27,7 +27,7 @@ export type TokenDictionaryOptions = {
   hash?: boolean
 }
 
-export type TokenMiddleware = {
+export interface TokenMiddleware {
   enforce?: EnforcePhase
   transform: (dict: TokenDictionary, options: Options) => void
 }

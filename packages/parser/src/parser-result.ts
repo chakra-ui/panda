@@ -1,6 +1,6 @@
+import type { ParserOptions } from '@pandacss/generator'
 import { getOrCreateSet } from '@pandacss/shared'
 import type { ParserResultType, ResultItem } from '@pandacss/types'
-import type { ParserContext } from './parser'
 
 export class ParserResult implements ParserResultType {
   /** Ordered list of all ResultItem */
@@ -14,9 +14,9 @@ export class ParserResult implements ParserResultType {
   pattern = new Map<string, Set<ResultItem>>()
 
   filePath: string | undefined
-  hashFactory: ParserContext['hashFactory']
+  hashFactory: ParserOptions['hashFactory']
 
-  constructor(private context: ParserContext, hashFactory?: ParserContext['hashFactory']) {
+  constructor(private context: ParserOptions, hashFactory?: ParserOptions['hashFactory']) {
     this.hashFactory = hashFactory ?? context.hashFactory
   }
 

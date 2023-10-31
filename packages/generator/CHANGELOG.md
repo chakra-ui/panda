@@ -1,5 +1,61 @@
 # @pandacss/generator
 
+## 0.17.4
+
+### Patch Changes
+
+- Updated dependencies [fa77080a]
+  - @pandacss/types@0.17.4
+  - @pandacss/core@0.17.4
+  - @pandacss/token-dictionary@0.17.4
+  - @pandacss/is-valid-prop@0.17.4
+  - @pandacss/logger@0.17.4
+  - @pandacss/shared@0.17.4
+
+## 0.17.3
+
+### Patch Changes
+
+- Updated dependencies [529a262e]
+  - @pandacss/types@0.17.3
+  - @pandacss/core@0.17.3
+  - @pandacss/token-dictionary@0.17.3
+  - @pandacss/is-valid-prop@0.17.3
+  - @pandacss/logger@0.17.3
+  - @pandacss/shared@0.17.3
+
+## 0.17.2
+
+### Patch Changes
+
+- @pandacss/core@0.17.2
+- @pandacss/is-valid-prop@0.17.2
+- @pandacss/logger@0.17.2
+- @pandacss/shared@0.17.2
+- @pandacss/token-dictionary@0.17.2
+- @pandacss/types@0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- 296d62b1: Change `OmittedHTMLProps` to be empty when using `config.jsxStyleProps` as `minimal` or `none`
+
+  Fixes https://github.com/chakra-ui/panda/issues/1549
+
+- 42520626: Fix issue where conditions don't work in semantic tokens when using template literal syntax.
+- 7b981422: Fix issue in reset styles where button does not inherit color style
+- 9382e687: remove export types from jsx when no jsxFramework configuration
+- 5ce359f6: Fix issue where styled objects are sometimes incorrectly merged, leading to extraneous classnames in the DOM
+- Updated dependencies [aea28c9f]
+- Updated dependencies [5ce359f6]
+  - @pandacss/core@0.17.1
+  - @pandacss/shared@0.17.1
+  - @pandacss/types@0.17.1
+  - @pandacss/token-dictionary@0.17.1
+  - @pandacss/is-valid-prop@0.17.1
+  - @pandacss/logger@0.17.1
+
 ## 0.17.0
 
 ### Minor Changes

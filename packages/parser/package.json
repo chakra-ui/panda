@@ -1,10 +1,21 @@
 {
   "name": "@pandacss/parser",
-  "version": "0.17.0",
+  "version": "0.17.4",
   "description": "The static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": "./dist/index.js"
+    }
+  },
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "sideEffects": false,
   "publishConfig": {

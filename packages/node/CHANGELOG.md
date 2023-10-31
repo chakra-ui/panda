@@ -1,5 +1,83 @@
 # @pandacss/node
 
+## 0.17.4
+
+### Patch Changes
+
+- Updated dependencies [fa77080a]
+  - @pandacss/types@0.17.4
+  - @pandacss/config@0.17.4
+  - @pandacss/core@0.17.4
+  - @pandacss/generator@0.17.4
+  - @pandacss/parser@0.17.4
+  - @pandacss/token-dictionary@0.17.4
+  - @pandacss/error@0.17.4
+  - @pandacss/extractor@0.17.4
+  - @pandacss/is-valid-prop@0.17.4
+  - @pandacss/logger@0.17.4
+  - @pandacss/shared@0.17.4
+
+## 0.17.3
+
+### Patch Changes
+
+- 60f2c8a3: Fix issue in studio command where `fs-extra` imports could not be resolved.
+- Updated dependencies [529a262e]
+  - @pandacss/types@0.17.3
+  - @pandacss/config@0.17.3
+  - @pandacss/core@0.17.3
+  - @pandacss/generator@0.17.3
+  - @pandacss/parser@0.17.3
+  - @pandacss/token-dictionary@0.17.3
+  - @pandacss/error@0.17.3
+  - @pandacss/extractor@0.17.3
+  - @pandacss/is-valid-prop@0.17.3
+  - @pandacss/logger@0.17.3
+  - @pandacss/shared@0.17.3
+
+## 0.17.2
+
+### Patch Changes
+
+- @pandacss/config@0.17.2
+- @pandacss/core@0.17.2
+- @pandacss/error@0.17.2
+- @pandacss/extractor@0.17.2
+- @pandacss/generator@0.17.2
+- @pandacss/is-valid-prop@0.17.2
+- @pandacss/logger@0.17.2
+- @pandacss/parser@0.17.2
+- @pandacss/shared@0.17.2
+- @pandacss/token-dictionary@0.17.2
+- @pandacss/types@0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- 56299cb2: Fix persistent error that causes CI builds to fail due to PostCSS plugin emitting artifacts in the middle of
+  a build process.
+- ddcaf7b2: Fix issue where FileSystem writes cause intermittent errors in different build contexts (Vercel, Docker).
+  This was solved by limiting the concurrency using the `p-limit` library
+- Updated dependencies [296d62b1]
+- Updated dependencies [42520626]
+- Updated dependencies [7b981422]
+- Updated dependencies [9382e687]
+- Updated dependencies [aea28c9f]
+- Updated dependencies [a76b279e]
+- Updated dependencies [5ce359f6]
+  - @pandacss/generator@0.17.1
+  - @pandacss/core@0.17.1
+  - @pandacss/extractor@0.17.1
+  - @pandacss/shared@0.17.1
+  - @pandacss/parser@0.17.1
+  - @pandacss/types@0.17.1
+  - @pandacss/token-dictionary@0.17.1
+  - @pandacss/config@0.17.1
+  - @pandacss/error@0.17.1
+  - @pandacss/is-valid-prop@0.17.1
+  - @pandacss/logger@0.17.1
+
 ## 0.17.0
 
 ### Minor Changes

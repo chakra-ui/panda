@@ -22,7 +22,7 @@ export function generatePreactJsxFactory(ctx: Context) {
 
       const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
       const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
-      
+
       const defaultProps = Object.assign(
         options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
         options.defaultProps,
@@ -36,8 +36,8 @@ export function generatePreactJsxFactory(ctx: Context) {
 
         const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
 
-        const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
-          return splitProps(combinedProps, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+        const [htmlProps, forwardedProps, variantProps, styleProps, elementProps] = useMemo(() => {
+          return splitProps(combinedProps, normalizeHTMLProps.keys, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty)
         }, [combinedProps])
 
         function recipeClass() {
@@ -65,12 +65,12 @@ export function generatePreactJsxFactory(ctx: Context) {
       })
 
       const name = getDisplayName(Dynamic)
-      
+
       ${componentName}.displayName = \`${factoryName}.\${name}\`
       ${componentName}.__cva__ = cvaFn
       ${componentName}.__base__ = Dynamic
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
-      
+
       return ${componentName}
     }
 

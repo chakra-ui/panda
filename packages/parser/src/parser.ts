@@ -1,14 +1,14 @@
-import { BoxNodeMap, extract, unbox, type BoxNode, type Unboxed, box } from '@pandacss/extractor'
+import { resolveTsPathPattern } from '@pandacss/config/ts-path'
+import { BoxNodeMap, box, extract, unbox, type BoxNode, type Unboxed } from '@pandacss/extractor'
+import type { Generator, ParserOptions } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { astish, memo } from '@pandacss/shared'
+import type { ResultItem } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { ParserResult } from './parser-result'
-import type { Config, ConfigTsOptions, ResultItem, Runtime } from '@pandacss/types'
-import { resolveTsPathPattern } from '@pandacss/config/ts-path'
-import type { Generator } from '@pandacss/generator'
 
 type ParserPatternNode = Generator['patterns']['details'][number]
 type ParserRecipeNode = Generator['recipes']['details'][number]
@@ -19,25 +19,6 @@ const isNodePattern = (node: ParserNodeOptions): node is ParserPatternNode => no
 
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
-
-export interface ParserContext {
-  hash?: Config['hash']
-  importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
-  jsx: {
-    framework: string | undefined
-    factory: string
-    styleProps: Exclude<Config['jsxStyleProps'], undefined>
-    nodes: ParserNodeOptions[]
-  }
-  isValidProperty: (prop: string) => boolean
-  patterns: Generator['patterns']
-  recipes: Generator['recipes']
-  hashFactory: Generator['hashFactory']
-  styleCollector: Generator['styleCollector']
-  syntax: Config['syntax']
-  tsOptions?: ConfigTsOptions
-  join: Runtime['path']['join']
-}
 
 // create strict regex from array of strings
 function createImportMatcher(mod: string, values?: string[]) {
@@ -69,7 +50,7 @@ const defaultEnv: EvalOptions['environment'] = { preset: 'ECMA' }
 const identityFn = (styles: any) => styles
 const evaluateOptions: EvalOptions = { environment: defaultEnv }
 
-export function createParser(context: ParserContext) {
+export function createParser(context: ParserOptions) {
   const { jsx, isValidProperty, tsOptions, join } = context
   const getRecipesByJsxName = context.recipes.filter
   const getPatternsByJsxName = context.patterns.filter

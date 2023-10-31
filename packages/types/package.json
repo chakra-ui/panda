@@ -1,14 +1,21 @@
 {
   "name": "@pandacss/types",
-  "version": "0.17.0",
+  "version": "0.17.4",
   "description": "The types for css panda",
   "main": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "prepare": "ncp node_modules/csstype/index.d.ts src/csstype.d.ts",
-    "build": "tsx scripts/build.ts",
-    "build-fast": "tsx scripts/build.ts",
-    "dev": "chokidar -c 'pnpm build' src --initial"
+    "dev": "tsx scripts/watch.ts",
+    "build": "PANDA_BUILD=1 tsx scripts/postbuild.ts && tsx scripts/build.ts"
   },
   "sideEffects": false,
   "publishConfig": {
@@ -19,7 +26,6 @@
   ],
   "devDependencies": {
     "@pandacss/extractor": "workspace:*",
-    "chokidar-cli": "^3.0.0",
     "csstype": "3.1.2",
     "hookable": "5.5.3",
     "ncp": "^2.0.0",

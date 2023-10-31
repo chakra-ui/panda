@@ -5,4 +5,9 @@ import pandacss from '@pandacss/astro'
 // https://astro.build/config
 export default defineConfig({
   integrations: [solidJs(), pandacss()],
+  vite: {
+    resolve: {
+      conditions: ['source'],
+    },
+  },
 })

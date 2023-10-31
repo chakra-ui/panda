@@ -1,14 +1,15 @@
-import type { ConfigResultWithHooks, OutdirImportMap, TSConfig } from '@pandacss/types'
+import type { Artifact, ConfigResultWithHooks, StyleCollectorType } from '@pandacss/types'
 import { generateArtifacts } from './artifacts'
-import { generateFlattenedCss } from './artifacts/css/flat-css'
-import { generateParserCss } from './artifacts/css/parser-css'
-import { getEngine } from './engines'
-import { getMessages } from './messages'
-import { generateStaticCss } from './artifacts/css/static-css'
-import { generateResetCss } from './artifacts/css/reset-css'
-import { generateTokenCss } from './artifacts/css/token-css'
-import { generateKeyframeCss } from './artifacts/css/keyframe-css'
+import { generateFlattenedCss, type FlattenedCssOptions } from './artifacts/css/flat-css'
 import { generateGlobalCss } from './artifacts/css/global-css'
+import { generateKeyframeCss } from './artifacts/css/keyframe-css'
+import { generateParserCss } from './artifacts/css/parser-css'
+import { generateResetCss } from './artifacts/css/reset-css'
+import { generateStaticCss } from './artifacts/css/static-css'
+import { generateTokenCss } from './artifacts/css/token-css'
+import { getEngine, type Context } from './engines'
+import { getMessages } from './messages'
+import { getParserOptions, type ParserOptions } from './parser-options'
 
 const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   ...conf,
@@ -31,22 +32,9 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   },
 })
 
-const getImportMap = (outdir: string, configImportMap?: OutdirImportMap) => ({
-  css: configImportMap?.css ? [configImportMap.css] : [outdir, 'css'],
-  recipe: configImportMap?.recipes ? [configImportMap.recipes] : [outdir, 'recipes'],
-  pattern: configImportMap?.patterns ? [configImportMap.patterns] : [outdir, 'patterns'],
-  jsx: configImportMap?.jsx ? [configImportMap.jsx] : [outdir, 'jsx'],
-})
-
-export const createGenerator = (conf: ConfigResultWithHooks) => {
+export const createGenerator = (conf: ConfigResultWithHooks): Generator => {
   const ctx = getEngine(defaults(conf))
-  const { config, jsx, isValidProperty, patterns, recipes } = ctx
-
-  const compilerOptions = (conf.tsconfig as TSConfig)?.compilerOptions ?? {}
-  const baseUrl = compilerOptions.baseUrl ?? ''
-
-  const cwd = conf.config.cwd
-  const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
+  const parserOptions = getParserOptions(ctx)
 
   return {
     ...ctx,
@@ -62,26 +50,19 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
     getParserCss: generateParserCss(ctx),
     //
     messages: getMessages(ctx),
-    parserOptions: {
-      hash: config.hash,
-      importMap: getImportMap(config.outdir.replace(relativeBaseUrl, ''), config.importMap),
-      jsx: {
-        framework: jsx.framework,
-        factory: jsx.factoryName,
-        styleProps: jsx.styleProps,
-        nodes: [...patterns.details, ...recipes.details],
-      },
-      syntax: config.syntax,
-      isValidProperty,
-      recipes,
-      patterns,
-      hashFactory: ctx.hashFactory,
-      styleCollector: ctx.styleCollector,
-      compilerOptions: compilerOptions as any,
-      tsOptions: conf.tsOptions,
-      join: (...paths: string[]) => paths.join('/'),
-    },
+    parserOptions,
   }
 }
 
-export type Generator = ReturnType<typeof createGenerator>
+export interface Generator extends Context {
+  getArtifacts: () => Artifact[]
+  getStaticCss: (ctx: Context) => string | undefined
+  getResetCss: (ctx: Context) => string | undefined
+  getTokenCss: (ctx: Context) => string | undefined
+  getKeyframeCss: (ctx: Context) => string | undefined
+  getGlobalCss: (ctx: Context) => string | undefined
+  getCss: (options?: FlattenedCssOptions) => string
+  getParserCss: (collector: StyleCollectorType, filePath?: string | undefined) => string
+  messages: ReturnType<typeof getMessages>
+  parserOptions: ParserOptions
+}

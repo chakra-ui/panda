@@ -7,7 +7,7 @@ import { parseCondition } from './parse-condition'
 
 const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
 
-type Options = {
+interface Options {
   conditions?: Dict<string>
   breakpoints?: Record<string, string>
 }

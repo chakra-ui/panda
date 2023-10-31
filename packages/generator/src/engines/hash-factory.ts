@@ -18,11 +18,11 @@ import type {
   StyleResultObject,
   SystemStyleObject,
 } from '@pandacss/types'
-import type { GeneratorBaseEngine } from './base'
+import type { PandaBaseEngine } from './base'
 
 export interface CollectorContext
   extends Pick<
-    GeneratorBaseEngine,
+    PandaBaseEngine,
     | 'hash'
     | 'isTemplateLiteralSyntax'
     | 'isValidProperty'

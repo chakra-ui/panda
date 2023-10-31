@@ -10,8 +10,6 @@
     "noEmit": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
     "noImplicitReturns": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -22,7 +20,10 @@
     "baseUrl": "./",
     "paths": {
       "@pandacss/fixture": ["./packages/fixture/src/index.ts"]
-    }
+    },
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "customConditions": ["source"]
   },
   "include": ["packages"],
   "types": ["vitest/globals"],

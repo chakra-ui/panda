@@ -87,7 +87,7 @@ export const cliInit = async () => {
   } as InitFlags
 }
 
-export type InitFlags = {
+export interface InitFlags {
   postcss: boolean
   outExtension: string
   jsxFramework: string

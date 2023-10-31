@@ -556,6 +556,18 @@ function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[
     const value = maybeBindingElementValue(def, _stack, propName, ctx)
     if (value) return value
   }
+
+  if (Node.isEnumDeclaration(def)) {
+    const member = def.getMember(propName)
+    if (!member) return
+
+    const initializer = member.getInitializer()
+    if (!initializer) return
+
+    const innerStack = [..._stack, initializer]
+    const maybeValue = maybeBoxNode(initializer, innerStack, ctx)
+    if (maybeValue) return maybeValue
+  }
 }
 
 const maybePropIdentifierValue = (

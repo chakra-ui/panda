@@ -1,6 +1,6 @@
 import type { Stylesheet } from '@pandacss/core'
 import type { CssRule, StaticCssOptions, StyleCollectorType } from '@pandacss/types'
-import type { GeneratorBaseEngine } from './base'
+import type { PandaBaseEngine } from './base'
 import { HashFactory } from './hash-factory'
 import { StyleCollector } from './style-collector'
 
@@ -21,7 +21,7 @@ export class StaticCss {
   hash: HashFactory
   styles: StyleCollector
 
-  constructor(private context: GeneratorBaseEngine, params: { hash: HashFactory; styles: StyleCollector }) {
+  constructor(private context: PandaBaseEngine, params: { hash: HashFactory; styles: StyleCollector }) {
     this.hash = params.hash
     this.styles = params.styles
   }

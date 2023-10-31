@@ -7,7 +7,7 @@ import { mergeProps } from './merge-props'
 import { normalizeShorthand, normalizeStyleObject } from './normalize-style-object'
 import { walkObject } from './walk-object'
 
-export type CreateCssContext = {
+export interface CreateCssContext {
   hash?: boolean
   /**
    * Partial properties from the Utility class
@@ -77,7 +77,9 @@ export function createCss(context: CreateCssContext) {
   }
 }
 
-type StyleObject = Record<string, any>
+interface StyleObject {
+  [key: string]: any
+}
 
 function compactStyles(...styles: StyleObject[]) {
   return styles.filter((style) => isObject(style) && Object.keys(compact(style)).length > 0)

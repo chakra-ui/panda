@@ -2,7 +2,7 @@ import type { Token } from '@pandacss/types'
 import { useState } from 'react'
 import context from './panda.context'
 
-type Color = {
+interface Color {
   isConditional?: boolean
   isReference?: boolean
   name: string

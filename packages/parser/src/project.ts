@@ -1,10 +1,11 @@
-import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind, SourceFile } from 'ts-morph'
-import { createParser, type ParserContext } from './parser'
+import type { StyleCollectorType } from '@pandacss/types'
+import type { ParserOptions } from '@pandacss/generator'
+import { ScriptKind, SourceFile, Project as TsProject, type ProjectOptions as TsProjectOptions } from 'ts-morph'
+import { createParser } from './parser'
 import { ParserResult } from './parser-result'
-import { vueToTsx } from './vue-to-tsx'
-import { svelteToTsx } from './svelte-to-tsx'
 import type { ProjectOptions } from './project-types'
-import type { StyleCollectorType } from 'packages/types/dist'
+import { svelteToTsx } from './svelte-to-tsx'
+import { vueToTsx } from './vue-to-tsx'
 
 const createTsProject = (options: Partial<TsProjectOptions>) =>
   new TsProject({
@@ -55,7 +56,7 @@ export const createProject = ({
       scriptKind: ScriptKind.TSX,
     })
 
-  const parseSourceFile = (filePath: string, hashFactory?: ParserContext['hashFactory']) => {
+  const parseSourceFile = (filePath: string, hashFactory?: ParserOptions['hashFactory']) => {
     if (filePath.endsWith('.json')) {
       const content = readFile(filePath)
       parserOptions.hashFactory.fromJSON(content)
@@ -116,7 +117,7 @@ export interface PandaProject {
   removeSourceFile: (filePath: string) => void
   createSourceFile: (filePath: string) => SourceFile
   addSourceFile: (filePath: string, content: string) => SourceFile
-  parseSourceFile: (filePath: string, hashFactory?: ParserContext['hashFactory']) => ParserResult | undefined
+  parseSourceFile: (filePath: string, hashFactory?: ParserOptions['hashFactory']) => ParserResult | undefined
   reloadSourceFile: (filePath: string) => void
   reloadSourceFiles: () => void
   files: string[]

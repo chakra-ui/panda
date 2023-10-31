@@ -1,5 +1,17 @@
 # @pandacss/shared
 
+## 0.17.4
+
+## 0.17.3
+
+## 0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- 5ce359f6: Fix issue where styled objects are sometimes incorrectly merged, leading to extraneous classnames in the DOM
+
 ## 0.17.0
 
 ### Minor Changes

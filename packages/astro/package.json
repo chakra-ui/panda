@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/astro",
-  "version": "0.17.0",
+  "version": "0.17.4",
   "type": "module",
   "description": "Astro integration for Panda CSS",
   "main": "dist/index.js",
@@ -16,7 +16,16 @@
     "access": "public"
   },
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.js"
+      },
+      "default": "./dist/index.js"
+    },
     "./base.css": "./base.css",
     "./package.json": "./package.json"
   },

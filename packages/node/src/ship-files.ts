@@ -22,7 +22,6 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
   const collector = ctx.collectStyles()
-  // console.log(collector.results)
   const styles = {
     atomic: Array.from(collector.atomic).map(({ hash }) => hash),
     recipes: Object.fromEntries(

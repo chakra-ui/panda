@@ -31,7 +31,7 @@ function resolveWithExtension(file: string, extensions: string[]) {
   return null
 }
 
-export type GetDepsOptions = {
+export interface GetDepsOptions {
   filename: string
   ext: string
   cwd: string

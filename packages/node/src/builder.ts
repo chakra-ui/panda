@@ -3,7 +3,7 @@ import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
-import { statSync } from 'fs-extra'
+import fsExtra from 'fs-extra'
 import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
@@ -11,18 +11,18 @@ import { type PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
 
-type ContentData = {
+interface ContentData {
   fileCssMap: Map<string, string>
   fileModifiedMap: Map<string, number>
 }
 
-type ConfigData = {
+interface ConfigData {
   context: PandaContext
   deps: Set<string>
   depsModifiedMap: Map<string, number>
 }
 
-type ConfigDepsResult = {
+interface ConfigDepsResult {
   modifiedMap: Map<string, number>
   isModified: boolean
 }
@@ -30,13 +30,13 @@ type ConfigDepsResult = {
 const configCache = new Map<string, ConfigData>()
 const contentFilesCache = new WeakMap<PandaContext, ContentData>()
 
-let setupCount = 0
-
 export class Builder {
   /**
    * The current panda context
    */
   context: PandaContext | undefined
+
+  hasEmitted = false
 
   configDependencies: Set<string> = new Set()
 
@@ -47,27 +47,23 @@ export class Builder {
     const prevModified = configCache.get(configPath)?.depsModifiedMap
 
     for (const file of deps) {
-      const stats = statSync(file, { throwIfNoEntry: false })
+      const stats = fsExtra.statSync(file, { throwIfNoEntry: false })
       if (!stats) continue
 
       const time = stats.mtimeMs
       newModified.set(file, time)
 
-      if (!prevModified || !prevModified.has(file) || time > prevModified.get(file)!) {
+      if (prevModified && (!prevModified.has(file) || time > prevModified.get(file)!)) {
         modified = true
       }
     }
 
     if (!modified) {
-      return { isModified: false, modifiedMap: prevModified! }
+      return { isModified: false, modifiedMap: prevModified || new Map() }
     }
 
     for (const file of deps) {
       delete require.cache[file]
-    }
-
-    if (setupCount > 0) {
-      logger.debug('builder', '⚙️ Config changed, reloading')
     }
 
     return { isModified: true, modifiedMap: newModified }
@@ -83,6 +79,8 @@ export class Builder {
     return configPath
   }
 
+  hasConfigChanged = false
+
   setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
@@ -97,13 +95,17 @@ export class Builder {
     this.configDependencies = configDeps
 
     const deps = this.checkConfigDeps(configPath, configDeps)
+    this.hasConfigChanged = deps.isModified
 
     if (deps.isModified) {
       await this.setupContext({
         configPath,
         depsModifiedMap: deps.modifiedMap,
       })
-      const ctx = this.context!
+
+      const ctx = this.getContextOrThrow()
+
+      logger.debug('builder', '⚙️ Config changed, reloading')
       await ctx.hooks.callHook('config:change', ctx.config)
     }
 
@@ -120,19 +122,21 @@ export class Builder {
         depsModifiedMap: deps.modifiedMap,
       })
     }
+  }
 
-    setupCount++
+  emit() {
+    // ensure emit is only called when the config is changed
+    if (this.hasEmitted && this.hasConfigChanged) {
+      emitArtifacts(this.getContextOrThrow())
+    }
+
+    this.hasEmitted = true
   }
 
   setupContext = async (options: { configPath: string; depsModifiedMap: Map<string, number> }) => {
     const { configPath, depsModifiedMap } = options
 
     this.context = await loadConfigAndCreateContext({ configPath })
-
-    // don't emit artifacts on first setup
-    if (setupCount > 0) {
-      emitArtifacts(this.context) // no need to await this
-    }
 
     configCache.set(configPath, {
       context: this.context,
@@ -163,8 +167,8 @@ export class Builder {
     return contentFilesCache.get(ctx)!.fileCssMap
   }
 
-  extractFile = (ctx: PandaContext, file: string) => {
-    const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
+  extractFile = async (ctx: PandaContext, file: string) => {
+    const mtime = existsSync(file) ? fsExtra.statSync(file).mtimeMs : -Infinity
 
     const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
     if (isUnchanged) return

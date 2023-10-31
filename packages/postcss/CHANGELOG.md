@@ -1,5 +1,52 @@
 # @pandacss/postcss
 
+## 0.17.4
+
+### Patch Changes
+
+- @pandacss/node@0.17.4
+- @pandacss/symlink@0.17.4
+
+## 0.17.3
+
+### Patch Changes
+
+- 128e0b19: Fix an issue with the Postcss builder config change detection, which triggered unnecessary a rebuild of the
+  artifacts.
+- Updated dependencies [60f2c8a3]
+  - @pandacss/node@0.17.3
+  - @pandacss/symlink@0.17.3
+
+## 0.17.2
+
+### Patch Changes
+
+- 443ac85a: Fix an issue with the CLI, using the dev mode instead of the prod mode even when installed from npm.
+
+  This resolves the following errors:
+
+  ```
+   Error: Cannot find module 'resolve.exports'
+  ```
+
+  ```
+  Error: Cannot find module './src/cli-main'
+  ```
+
+- Updated dependencies [443ac85a]
+  - @pandacss/symlink@0.17.2
+  - @pandacss/node@0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- 56299cb2: Fix persistent error that causes CI builds to fail due to PostCSS plugin emitting artifacts in the middle of
+  a build process.
+- Updated dependencies [56299cb2]
+- Updated dependencies [ddcaf7b2]
+  - @pandacss/node@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes

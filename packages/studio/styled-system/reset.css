@@ -66,6 +66,10 @@
     background-image: none;
   }
 
+  button, input, optgroup, select, textarea {
+    color: inherit;
+  }
+
   button, select {
     text-transform: none;
   }

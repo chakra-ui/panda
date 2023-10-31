@@ -20,7 +20,7 @@ export function generateQwikJsxFactory(ctx: Context) {
 
       const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
       const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
-      
+
       const defaultProps = Object.assign(
         options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
         options.defaultProps,
@@ -33,16 +33,18 @@ export function generateQwikJsxFactory(ctx: Context) {
         const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
         const combinedProps = Object.assign({}, defaultProps, restProps)
-        
-        const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] =
-          splitProps(combinedProps, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+
+        const [htmlProps, forwardedProps, variantProps, styleProps, elementProps] =
+          splitProps(combinedProps, normalizeHTMLProps.keys, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty)
+
+        const { css: cssStyles, ...propStyles } = styleProps
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps);
           return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, className)
         }
-        
+
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = __cvaFn__.raw(variantProps)
@@ -61,12 +63,12 @@ export function generateQwikJsxFactory(ctx: Context) {
       }
 
       const name = getDisplayName(Dynamic)
-      
+
       ${componentName}.displayName = \`${factoryName}.\${name}\`
       ${componentName}.__cva__ = cvaFn
       ${componentName}.__base__ = Dynamic
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
-      
+
       return ${componentName}
     }
 

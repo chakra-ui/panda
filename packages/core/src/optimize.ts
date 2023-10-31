@@ -5,7 +5,7 @@ import postcss, { Root } from 'postcss'
 import nested from 'postcss-nested'
 import expandTokenFn from './plugins/expand-token-fn'
 
-type OptimizeOptions = {
+interface OptimizeOptions {
   minify?: boolean
 }
 

@@ -1,5 +1,21 @@
 # @pandacss/types
 
+## 0.17.4
+
+### Patch Changes
+
+- fa77080a: Fix issue where types package was not built correctly.
+
+## 0.17.3
+
+### Patch Changes
+
+- 529a262e: Fix regression in types due to incorrect `package.json` structure
+
+## 0.17.2
+
+## 0.17.1
+
 ## 0.17.0
 
 ### Patch Changes

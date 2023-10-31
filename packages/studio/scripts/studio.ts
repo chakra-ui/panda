@@ -3,9 +3,11 @@ import { execa } from 'execa'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
 
-export type BuildOpts = {
+export interface BuildOpts {
   outDir: string
   configPath: string
+  port?: string
+  host?: boolean
 }
 
 const require = createRequire(import.meta.url)
@@ -23,8 +25,8 @@ export async function buildStudio({ outDir, configPath }: BuildOpts) {
   logger.log(stdout)
 }
 
-export async function serveStudio({ configPath }: BuildOpts) {
-  const result = execa(astroBin, ['dev', '--root', appPath], {
+export async function serveStudio({ configPath, port, host }: BuildOpts) {
+  const result = execa(astroBin, ['dev', '--root', appPath, '--port', port ?? '', host ? '--host' : ''], {
     stdio: 'inherit',
     cwd: appPath,
     env: {

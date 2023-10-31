@@ -1,8 +1,20 @@
 import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
-export const generateTypesEntry = (ctx: Context) => ({
-  global: outdent`
+export const generateTypesEntry = (ctx: Context, isJsxRequired: boolean) => {
+  const indexExports = [
+    // We need to export types used in the global.d.ts here to avoid TS errors such as `The inferred type of 'xxx' cannot be named without a reference to 'yyy'`
+    `import '${ctx.file.extDts('./global')}'`,
+    ctx.file.exportTypeStar('./conditions'),
+    ctx.file.exportTypeStar('./pattern'),
+    ctx.file.exportTypeStar('./recipe'),
+    ctx.file.exportTypeStar('./system-types'),
+    isJsxRequired && ctx.file.exportTypeStar('./jsx'),
+    ctx.file.exportTypeStar('./style-props'),
+  ].filter(Boolean)
+
+  return {
+    global: outdent`
     // @ts-nocheck
     import type * as Panda from '@pandacss/dev'
     ${ctx.file.importType('RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig', './recipe')}
@@ -22,18 +34,11 @@ export const generateTypesEntry = (ctx: Context) => ({
       export function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => Partial<Record<keyof T, SystemStyleObject>>
     }
     `,
-  // We need to export types used in the global.d.ts here to avoid TS errors such as `The inferred type of 'xxx' cannot be named without a reference to 'yyy'`
-  index: outdent`
-    import '${ctx.file.extDts('./global')}'
-    ${ctx.file.exportTypeStar('./conditions')}
-    ${ctx.file.exportTypeStar('./pattern')}
-    ${ctx.file.exportTypeStar('./recipe')}
-    ${ctx.file.exportTypeStar('./system-types')}
-    ${ctx.file.exportTypeStar('./jsx')}
-    ${ctx.file.exportTypeStar('./style-props')}
-
+    index: outdent`
+    ${indexExports.join('\n')}
     `,
-  helpers: outdent`
-  export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-  `,
-})
+    helpers: outdent`
+    export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+    `,
+  }
+}

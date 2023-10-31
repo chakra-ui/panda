@@ -28,8 +28,14 @@ export function getGeneratedTypes(ctx: Context) {
     system: rewriteImports(
       match(ctx.jsx.styleProps)
         .with('all', () => system.content)
-        .with('minimal', () => system.content.replace(jsxStyleProps, 'export type JsxStyleProps = WithCss'))
-        .with('none', () => system.content.replace(jsxStyleProps, 'export type JsxStyleProps = {}'))
+        .with('minimal', () =>
+          system.content
+            .replace('WithHTMLProps<T>,', 'T,')
+            .replace(jsxStyleProps, 'export type JsxStyleProps = WithCss'),
+        )
+        .with('none', () =>
+          system.content.replace('WithHTMLProps<T>,', 'T,').replace(jsxStyleProps, 'export type JsxStyleProps = {}'),
+        )
         .exhaustive(),
     ),
   }

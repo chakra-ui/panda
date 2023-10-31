@@ -2,16 +2,7 @@ import { logger } from '@pandacss/logger'
 import type { Runtime } from '@pandacss/types'
 import chokidar from 'chokidar'
 import glob from 'fast-glob'
-import {
-  emptyDirSync,
-  ensureDirSync,
-  existsSync,
-  readdirSync,
-  readFileSync,
-  removeSync,
-  writeFile,
-  writeFileSync,
-} from 'fs-extra'
+import fsExtra from 'fs-extra'
 import { dirname, extname, isAbsolute, join, relative, sep } from 'pathe'
 
 export const nodeRuntime: Runtime = {
@@ -33,9 +24,9 @@ export const nodeRuntime: Runtime = {
     },
   },
   fs: {
-    existsSync,
+    existsSync: fsExtra.existsSync,
     readFileSync(filePath: string) {
-      return readFileSync(filePath, 'utf8')
+      return fsExtra.readFileSync(filePath, 'utf8')
     },
     glob(opts) {
       if (!opts.include) return []
@@ -47,13 +38,13 @@ export const nodeRuntime: Runtime = {
 
       return glob.sync(opts.include, { cwd: opts.cwd, ignore, absolute: true })
     },
-    writeFile,
-    writeFileSync,
-    readDirSync: readdirSync,
-    rmDirSync: emptyDirSync,
-    rmFileSync: removeSync,
+    writeFile: fsExtra.writeFile,
+    writeFileSync: fsExtra.writeFileSync,
+    readDirSync: fsExtra.readdirSync,
+    rmDirSync: fsExtra.emptyDirSync,
+    rmFileSync: fsExtra.removeSync,
     ensureDirSync(path: string) {
-      return ensureDirSync(path)
+      return fsExtra.ensureDirSync(path)
     },
     watch(options) {
       const { include, exclude, cwd, poll } = options

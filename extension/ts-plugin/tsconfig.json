@@ -3,6 +3,10 @@
   "include": ["src", "index.ts"],
   "compilerOptions": {
     "module": "CommonJS",
+    "moduleResolution": "node",
+    // https://github.com/microsoft/TypeScript/pull/18058
+    "customConditions": null,
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "verbatimModuleSyntax": false
   }
 }

@@ -37,13 +37,13 @@ type BorderStyle =
   | 'ridge'
   | 'solid'
 
-interface Border {
+export interface Border {
   color: string
   width: string | number
   style: BorderStyle
 }
 
-interface Shadow {
+export interface Shadow {
   offsetX: number
   offsetY: number
   blur: number
@@ -52,7 +52,7 @@ interface Shadow {
   inset?: boolean
 }
 
-interface Gradient {
+export interface Gradient {
   type: 'linear' | 'radial'
   placement: string | number
   stops:
@@ -63,7 +63,7 @@ interface Gradient {
     | Array<string>
 }
 
-interface Asset {
+export interface Asset {
   type: 'url' | 'svg'
   value: string
 }

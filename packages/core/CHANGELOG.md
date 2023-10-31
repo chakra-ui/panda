@@ -1,5 +1,49 @@
 # @pandacss/core
 
+## 0.17.4
+
+### Patch Changes
+
+- Updated dependencies [fa77080a]
+  - @pandacss/types@0.17.4
+  - @pandacss/token-dictionary@0.17.4
+  - @pandacss/error@0.17.4
+  - @pandacss/logger@0.17.4
+  - @pandacss/shared@0.17.4
+
+## 0.17.3
+
+### Patch Changes
+
+- Updated dependencies [529a262e]
+  - @pandacss/types@0.17.3
+  - @pandacss/token-dictionary@0.17.3
+  - @pandacss/error@0.17.3
+  - @pandacss/logger@0.17.3
+  - @pandacss/shared@0.17.3
+
+## 0.17.2
+
+### Patch Changes
+
+- @pandacss/error@0.17.2
+- @pandacss/logger@0.17.2
+- @pandacss/shared@0.17.2
+- @pandacss/token-dictionary@0.17.2
+- @pandacss/types@0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- aea28c9f: Fix issue where using scale css property adds an additional 'px'
+- Updated dependencies [5ce359f6]
+  - @pandacss/shared@0.17.1
+  - @pandacss/types@0.17.1
+  - @pandacss/token-dictionary@0.17.1
+  - @pandacss/error@0.17.1
+  - @pandacss/logger@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes

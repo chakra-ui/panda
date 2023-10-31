@@ -1,0 +1,33 @@
+{
+  "name": "@pandacss/symlink",
+  "license": "MIT",
+  "version": "0.17.4",
+  "main": "dist/index.js",
+  "repository": {
+    "url": "https://github.com/chakra-ui/panda",
+    "directory": "packages/symlink"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "source": "./src/index.js",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.js --format=esm,cjs",
+    "build-fast": "tsup src/index.js --format=esm,cjs",
+    "dev": "pnpm build-fast --watch"
+  },
+  "devDependencies": {
+    "pirates": "^4.0.6",
+    "resolve.exports": "^2.0.2",
+    "sucrase": "^3.34.0"
+  }
+}

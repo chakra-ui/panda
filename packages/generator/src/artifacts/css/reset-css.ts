@@ -100,6 +100,14 @@ export function generateResetCss(ctx: Context, scope = '', sheet?: Stylesheet) {
   }
 
   ${selector}button,
+  ${selector}input,
+  ${selector}optgroup,
+  ${selector}select,
+  ${selector}textarea {
+    color: inherit;
+  }
+
+  ${selector}button,
   ${selector}select {
     text-transform: none;
   }

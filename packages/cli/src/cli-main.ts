@@ -19,12 +19,10 @@ import {
 } from '@pandacss/node'
 import { findConfigFile } from '@pandacss/config'
 import { compact } from '@pandacss/shared'
-import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
-import updateNotifier from 'update-notifier'
-import { name, version } from '../package.json'
+import { version } from '../package.json'
 import { cliInit } from './cli-init'
 import type {
   AnalyzeCommandFlags,
@@ -38,8 +36,6 @@ import type {
 } from './types'
 
 export async function main() {
-  updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
-
   const cli = cac('panda')
 
   const cwd = process.cwd()
@@ -56,7 +52,7 @@ export async function main() {
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
-    .action(async (_flags: InitCommandFlags = {}) => {
+    .action(async (_flags: Partial<InitCommandFlags> = {}) => {
       let options = {}
 
       if (_flags.interactive) {
@@ -278,11 +274,13 @@ export async function main() {
     .command('studio', 'Realtime documentation for your design tokens')
     .option('--build', 'Build')
     .option('--preview', 'Preview')
+    .option('--port <port>', 'Port')
+    .option('--host', 'Host')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--outdir', 'Output directory for static files')
     .action(async (flags: StudioCommandFlags) => {
-      const { build, preview, outdir, config } = flags
+      const { build, preview, port, host, outdir, config } = flags
 
       const cwd = resolve(flags.cwd ?? '')
 
@@ -294,17 +292,23 @@ export async function main() {
       const buildOpts = {
         configPath: findConfigFile({ cwd, file: config })!,
         outDir: resolve(outdir || ctx.studio.outdir),
+        port,
+        host,
       }
 
+      const studio = require('@pandacss/studio')
+
       if (preview) {
-        await previewStudio(buildOpts)
+        await studio.previewStudio(buildOpts)
       } else if (build) {
-        await buildStudio(buildOpts)
+        await studio.buildStudio(buildOpts)
       } else {
-        await serveStudio(buildOpts)
+        await studio.serveStudio(buildOpts)
 
         const note = `use ${colors.reset(colors.bold('--build'))} to build`
+        const port = `use ${colors.reset(colors.bold('--port'))} for a different port`
         logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
+        logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Port')}: ${port}`))
       }
     })
 

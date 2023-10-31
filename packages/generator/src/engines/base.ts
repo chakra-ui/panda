@@ -2,15 +2,22 @@ import { Conditions, Recipes, Stylesheet, Utility, assignCompositions, type Styl
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { CascadeLayers, ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/types'
+import type {
+  CascadeLayers,
+  ConfigResultWithHooks,
+  HashOptions,
+  PrefixOptions,
+  RequiredBy,
+  TSConfig as _TSConfig,
+} from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 
-import { getPatternEngine } from './pattern'
+import { getPatternEngine, type PandaPatternEngine } from './pattern'
 
 const helpers = { map: mapObject }
 
-export const getBaseEngine = (conf: ConfigResultWithHooks) => {
+export const getBaseEngine = (conf: ConfigResultWithHooks): PandaBaseEngine => {
   const { config } = conf
   const theme = config.theme ?? {}
 
@@ -162,4 +169,25 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   }
 }
 
-export interface GeneratorBaseEngine extends ReturnType<typeof getBaseEngine> {}
+export interface PandaBaseEngine extends ConfigResultWithHooks {
+  isTemplateLiteralSyntax: boolean
+  studio: RequiredBy<NonNullable<ConfigResultWithHooks['config']['studio']>, 'outdir'>
+  hash: HashOptions
+  prefix: PrefixOptions
+  tokens: TokenDictionary
+  utility: Utility
+  properties: string[]
+  isValidProperty: (key: string) => boolean
+  recipes: Recipes
+  patterns: PandaPatternEngine
+  conditions: Conditions
+  createSheetContext: () => StylesheetContext
+  createSheet: () => Stylesheet
+  // cascade layer
+  layers: {
+    name: CascadeLayers
+    list: string[]
+    rule: string
+    isValidLayerRule: (layerRule: string) => boolean
+  }
+}

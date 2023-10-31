@@ -10,7 +10,6 @@ export interface ProcessOptions {
   styles: Dict
   layer: LayerName
 }
-
 export interface ToCssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
 
 export type LayerName = Exclude<keyof StylesheetContext['layers'], 'insert'>

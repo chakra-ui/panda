@@ -5794,3 +5794,77 @@ it('extracts arrays without removing nullish values', () => {
     }
   `)
 })
+
+it('handles TS enum', () => {
+  const code = `import { sva } from 'styled-system/css';
+
+  enum Size {
+    S = 's',
+    L = 'l',
+  };
+
+  enum Color {
+    Red = 'red.400',
+    Blue = 'blue.400',
+  }
+
+  const className = css({ color: Color.Red, backgroundColor: Color["Blue"] })
+
+  const useStyles = sva({
+    slots: ['root'],
+    base: {
+      root: {}
+    },
+    variants: {
+      size: {
+        [Size.S]: {
+          root: {
+            bgColor: 'red'
+          }
+        }
+      }
+    }
+  });`
+
+  expect(extractFromCode(code, { functionNameList: ['css', 'sva'] })).toMatchInlineSnapshot(`
+    {
+      "css": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "backgroundColor": "blue.400",
+              "color": "red.400",
+            },
+          ],
+          "spreadConditions": [],
+        },
+      ],
+      "sva": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "base": {
+                "root": {},
+              },
+              "slots": [
+                "root",
+              ],
+              "variants": {
+                "size": {
+                  "s": {
+                    "root": {
+                      "bgColor": "red",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})

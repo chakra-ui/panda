@@ -3,7 +3,9 @@ import { mergeAndConcat } from 'merge-anything'
 import { assign, mergeWith } from './utils'
 
 type Extendable<T> = T & { extend?: T }
-type Dict = Record<string, any>
+interface Dict {
+  [key: string]: any
+}
 type ExtendableRecord = Extendable<Dict>
 type ExtendableConfig = Extendable<Config>
 

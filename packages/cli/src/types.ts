@@ -26,6 +26,8 @@ export interface StudioCommandFlags extends Pick<Config, 'cwd'> {
   preview?: boolean
   config?: string
   outdir?: string
+  port?: string
+  host?: boolean
 }
 
 export interface AnalyzeCommandFlags {
@@ -51,13 +53,13 @@ export interface ShipCommandFlags {
   config?: string
 }
 
-export type CodegenCommandFlags = Pick<Config, 'cwd' | 'poll' | 'watch'> & {
+export interface CodegenCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'> {
   clean?: boolean
   silent?: boolean
   config?: string
 }
 
-export type MainCommandFlags = Pick<Config, 'cwd' | 'poll' | 'watch'> & {
+export interface MainCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'> {
   outdir?: string
   minify?: boolean
   config?: string

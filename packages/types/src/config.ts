@@ -343,3 +343,13 @@ export interface LoadConfigResult {
   tsconfigFile?: string
   dependencies: string[]
 }
+
+export interface HashOptions {
+  tokens: boolean | undefined
+  className: boolean | undefined
+}
+
+export interface PrefixOptions {
+  tokens: string | undefined
+  className: string | undefined
+}

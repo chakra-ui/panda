@@ -19,7 +19,8 @@ export function findConfig() {
 export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
   const hooks = createHooks<PandaHooks>()
 
-  const { cwd = process.cwd(), config, configPath } = options
+  const { config, configPath } = options
+  const cwd = options.cwd ?? options?.config?.cwd ?? process.cwd()
   const conf = await loadConfigFile({ cwd, file: configPath })
 
   if (config) {

@@ -1,5 +1,94 @@
 # @pandacss/dev
 
+## 0.17.4
+
+### Patch Changes
+
+- Updated dependencies [a031d077]
+- Updated dependencies [fa77080a]
+  - @pandacss/studio@0.17.4
+  - @pandacss/types@0.17.4
+  - @pandacss/config@0.17.4
+  - @pandacss/node@0.17.4
+  - @pandacss/preset-panda@0.17.4
+  - @pandacss/token-dictionary@0.17.4
+  - @pandacss/postcss@0.17.4
+  - @pandacss/error@0.17.4
+  - @pandacss/logger@0.17.4
+  - @pandacss/shared@0.17.4
+  - @pandacss/symlink@0.17.4
+
+## 0.17.3
+
+### Patch Changes
+
+- ba10b419: Mark `defineTokens` and `defineSemanticTokens` with pure annotation to treeshake from bundle when using
+  within component library.
+- Updated dependencies [529a262e]
+- Updated dependencies [60f2c8a3]
+- Updated dependencies [128e0b19]
+  - @pandacss/types@0.17.3
+  - @pandacss/node@0.17.3
+  - @pandacss/postcss@0.17.3
+  - @pandacss/config@0.17.3
+  - @pandacss/preset-panda@0.17.3
+  - @pandacss/studio@0.17.3
+  - @pandacss/token-dictionary@0.17.3
+  - @pandacss/error@0.17.3
+  - @pandacss/logger@0.17.3
+  - @pandacss/shared@0.17.3
+  - @pandacss/symlink@0.17.3
+
+## 0.17.2
+
+### Patch Changes
+
+- 443ac85a: Fix an issue with the CLI, using the dev mode instead of the prod mode even when installed from npm.
+
+  This resolves the following errors:
+
+  ```
+   Error: Cannot find module 'resolve.exports'
+  ```
+
+  ```
+  Error: Cannot find module './src/cli-main'
+  ```
+
+- Updated dependencies [443ac85a]
+  - @pandacss/postcss@0.17.2
+  - @pandacss/symlink@0.17.2
+  - @pandacss/config@0.17.2
+  - @pandacss/error@0.17.2
+  - @pandacss/logger@0.17.2
+  - @pandacss/node@0.17.2
+  - @pandacss/preset-panda@0.17.2
+  - @pandacss/shared@0.17.2
+  - @pandacss/studio@0.17.2
+  - @pandacss/token-dictionary@0.17.2
+  - @pandacss/types@0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- 87772c7c: Add `--host` and `--port` flags to studio.
+- Updated dependencies [56299cb2]
+- Updated dependencies [87772c7c]
+- Updated dependencies [7b981422]
+- Updated dependencies [ddcaf7b2]
+- Updated dependencies [5ce359f6]
+  - @pandacss/postcss@0.17.1
+  - @pandacss/node@0.17.1
+  - @pandacss/studio@0.17.1
+  - @pandacss/shared@0.17.1
+  - @pandacss/types@0.17.1
+  - @pandacss/token-dictionary@0.17.1
+  - @pandacss/config@0.17.1
+  - @pandacss/error@0.17.1
+  - @pandacss/logger@0.17.1
+  - @pandacss/preset-panda@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes

@@ -1,5 +1,58 @@
 # @pandacss/studio
 
+## 0.17.4
+
+### Patch Changes
+
+- a031d077: Display semantic colors correctly in studio.
+- Updated dependencies [fa77080a]
+  - @pandacss/types@0.17.4
+  - @pandacss/config@0.17.4
+  - @pandacss/node@0.17.4
+  - @pandacss/token-dictionary@0.17.4
+  - @pandacss/logger@0.17.4
+  - @pandacss/shared@0.17.4
+
+## 0.17.3
+
+### Patch Changes
+
+- Updated dependencies [529a262e]
+- Updated dependencies [60f2c8a3]
+  - @pandacss/types@0.17.3
+  - @pandacss/node@0.17.3
+  - @pandacss/config@0.17.3
+  - @pandacss/token-dictionary@0.17.3
+  - @pandacss/logger@0.17.3
+  - @pandacss/shared@0.17.3
+
+## 0.17.2
+
+### Patch Changes
+
+- @pandacss/config@0.17.2
+- @pandacss/logger@0.17.2
+- @pandacss/node@0.17.2
+- @pandacss/shared@0.17.2
+- @pandacss/token-dictionary@0.17.2
+- @pandacss/types@0.17.2
+
+## 0.17.1
+
+### Patch Changes
+
+- 87772c7c: Add `--host` and `--port` flags to studio.
+- 7b981422: Fix issue in reset styles where button does not inherit color style
+- Updated dependencies [56299cb2]
+- Updated dependencies [ddcaf7b2]
+- Updated dependencies [5ce359f6]
+  - @pandacss/node@0.17.1
+  - @pandacss/shared@0.17.1
+  - @pandacss/types@0.17.1
+  - @pandacss/token-dictionary@0.17.1
+  - @pandacss/config@0.17.1
+  - @pandacss/logger@0.17.1
+
 ## 0.17.0
 
 ### Patch Changes
