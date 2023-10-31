@@ -26,6 +26,7 @@
   ],
   "devDependencies": {
     "@pandacss/extractor": "workspace:*",
+    "chokidar": "^3.5.3",
     "csstype": "3.1.2",
     "hookable": "5.5.3",
     "ncp": "^2.0.0",

@@ -958,6 +958,9 @@ importers:
       '@pandacss/extractor':
         specifier: workspace:*
         version: link:../extractor
+      chokidar:
+        specifier: ^3.5.3
+        version: 3.5.3
       csstype:
         specifier: 3.1.2
         version: 3.1.2
