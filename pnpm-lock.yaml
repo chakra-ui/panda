@@ -400,9 +400,6 @@ importers:
       '@pandacss/studio':
         specifier: workspace:*
         version: link:../studio
-      '@pandacss/symlink':
-        specifier: workspace:*
-        version: link:../symlink
       '@pandacss/token-dictionary':
         specifier: workspace:*
         version: link:../token-dictionary
@@ -948,18 +945,6 @@ importers:
       execa:
         specifier: 7.2.0
         version: 7.2.0
-
-  packages/symlink:
-    devDependencies:
-      pirates:
-        specifier: ^4.0.6
-        version: 4.0.6
-      resolve.exports:
-        specifier: ^2.0.2
-        version: 2.0.2
-      sucrase:
-        specifier: ^3.34.0
-        version: 3.34.0
 
   packages/token-dictionary:
     dependencies:

@@ -23,9 +23,9 @@
     "typecheck": "tsc --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-studio": "PANDA_CLI=compiled pnpm --filter=./packages/studio codegen",
-    "build-studio": "PANDA_CLI=compiled pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
-    "deploy-studio": "PANDA_CLI=compiled pnpm prepare-studio && pnpm build-studio",
+    "prepare-studio": "pnpm --filter=./packages/studio codegen",
+    "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
+    "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
     "website": "pnpm --filter=./website",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
