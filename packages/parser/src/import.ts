@@ -1,7 +1,7 @@
 import { memo } from '@pandacss/shared'
 import type { ImportDeclaration, SourceFile } from 'ts-morph'
 
-interface ImportResult {
+export interface ImportResult {
   /** @example 'hstack' */
   name: string
   /** @example 'pandaHStack' */
