@@ -1,11 +1,11 @@
 ---
-'@pandacss/generator': patch
+'@pandacss/generator': minor
 ---
 
 Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
 
 ```tsx
-import { styled } from '../styled-system/jsx'
+import { splitCssProps, styled } from '../styled-system/jsx'
 import type { HTMLStyledProps } from '../styled-system/types'
 
 function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
@@ -21,7 +21,7 @@ function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
 
 function App() {
   return (
-    <SplitComponent w="2" onClick={() => console.log('123')}>
+    <SplitComponent margin="2">
       Click me
     </SplitComponent>
   )
