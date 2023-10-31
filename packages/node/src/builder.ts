@@ -3,7 +3,7 @@ import { optimizeCss, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
-import { statSync } from 'fs-extra'
+import fsExtra from 'fs-extra'
 import { resolve } from 'path'
 import pLimit from 'p-limit'
 import type { Message, Root } from 'postcss'
@@ -56,19 +56,19 @@ export class Builder {
     const prevModified = configCache.get(configPath)?.depsModifiedMap
 
     for (const file of deps) {
-      const stats = statSync(file, { throwIfNoEntry: false })
+      const stats = fsExtra.statSync(file, { throwIfNoEntry: false })
       if (!stats) continue
 
       const time = stats.mtimeMs
       newModified.set(file, time)
 
-      if (!prevModified || !prevModified.has(file) || time > prevModified.get(file)!) {
+      if (prevModified && (!prevModified.has(file) || time > prevModified.get(file)!)) {
         modified = true
       }
     }
 
     if (!modified) {
-      return { isModified: false, modifiedMap: prevModified! }
+      return { isModified: false, modifiedMap: prevModified || new Map() }
     }
 
     for (const file of deps) {
@@ -177,7 +177,7 @@ export class Builder {
   }
 
   extractFile = async (ctx: PandaContext, file: string) => {
-    const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
+    const mtime = existsSync(file) ? fsExtra.statSync(file).mtimeMs : -Infinity
 
     const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
     if (isUnchanged) return

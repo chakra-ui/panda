@@ -6,6 +6,26 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.17.4] - 2023-10-30
+
+### Fixed
+
+- Display semantic colors correctly in studio.
+- Fix issue where types package was not built correctly.
+
+## [0.17.3] - 2023-10-28
+
+### Fixed
+
+- Fix regression in types due to incorrect `package.json` structure
+- Fix issue in studio command where `fs-extra` imports could not be resolved.
+- Fix an issue with the Postcss builder config change detection, which triggered unnecessary a rebuild of the artifacts.
+
+### CHanged
+
+- Mark `defineTokens` and `defineSemanticTokens` with pure annotation to treeshake from bundle when using within
+  component library.
+
 ## [0.17.2] - 2023-10-27
 
 ### Fixed

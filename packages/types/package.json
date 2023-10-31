@@ -1,10 +1,8 @@
 {
   "name": "@pandacss/types",
-  "version": "0.17.2",
+  "version": "0.17.4",
   "description": "The types for css panda",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "exports": {
     ".": {
@@ -17,7 +15,7 @@
   "scripts": {
     "prepare": "ncp node_modules/csstype/index.d.ts src/csstype.d.ts",
     "dev": "tsx scripts/watch.ts",
-    "build": "PANDA_BUILD=1 tsx scripts/postbuild.ts"
+    "build": "PANDA_BUILD=1 tsx scripts/postbuild.ts && tsx scripts/build.ts"
   },
   "sideEffects": false,
   "publishConfig": {

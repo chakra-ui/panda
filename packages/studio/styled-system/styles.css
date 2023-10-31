@@ -99,10 +99,6 @@
     gap: var(--spacing-0\.5)
     }
 
-  .mt_2 {
-    margin-top: var(--spacing-2)
-    }
-
   .grid-cols_repeat\(auto-fit\,_minmax\(13rem\,_1fr\)\) {
     grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr))
     }
@@ -366,6 +362,10 @@
 
   .border_neutral\.700 {
     border-color: var(--colors-neutral-700)
+    }
+
+  .mt_2 {
+    margin-top: var(--spacing-2)
     }
 
   .fs_sm {

@@ -3,9 +3,11 @@ import { Stack, panda } from '../../styled-system/jsx'
 import context from '../lib/panda.context'
 import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
+import type { Token } from '@pandacss/token-dictionary'
 
-const getFirstToken = <T extends Map<string, any>>(token: T) => Array.from(token.values())[0].extensions.prop
-const tokens = Object.fromEntries(context.tokens.categoryMap)
+const getFirstToken = <T extends Map<string, any>>(token?: T) =>
+  token ? Array.from(token.values())[0].extensions.prop : {}
+const tokens = Object.fromEntries<Map<string, Token> | undefined>(context.tokens.categoryMap)
 
 const defaultConfig = {
   fontSize: getFirstToken(tokens.fontSizes),
@@ -19,7 +21,7 @@ export function TypographyPlayground() {
   const configValues = Object.entries(config).reduce(
     (acc, [token, label]) => ({
       ...acc,
-      [token]: tokens[`${token}s`].get(label)?.value,
+      [token]: tokens[`${token}s`]?.get(label)?.value,
     }),
     {},
   )
@@ -37,7 +39,9 @@ export function TypographyPlayground() {
   }
 
   const renderTokenSwitch = (token: keyof typeof defaultConfig) => {
-    const values = Array.from(tokens[`${token}s`].values())
+    const _token = tokens[`${token}s`]
+    if (!_token) return
+    const values = Array.from(_token.values())
     return (
       <panda.select background="card" value={config[token]} onChange={(e) => onChangeConfig(e, token)}>
         {values.map((token) => (

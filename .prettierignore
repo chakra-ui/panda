@@ -11,3 +11,4 @@ packages/config/__tests__/samples/ts-import-map/ts-import-map-outdir/**
 packages/config/__tests__/samples/ts-import-map-one-source/outdir/**
 website/pages/**/*.mdx
 .draft/**/*.mdx
+styled-system

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/node",
-  "version": "0.17.2",
+  "version": "0.17.4",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
