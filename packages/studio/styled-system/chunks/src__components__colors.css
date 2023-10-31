@@ -1,4 +1,5 @@
 @layer utilities {
+
   .font_semibold {
     font-weight: var(--font-weights-semibold)
     }
