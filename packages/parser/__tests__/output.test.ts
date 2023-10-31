@@ -2482,6 +2482,103 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('array syntax within config recipes', () => {
+    const code = `
+    import { css } from ".panda/css"
+    import { card } from ".panda/recipes"
+
+    export default function Page() {
+      return (
+        <>
+          <div className={cx(card(), css({ fontSize: [2, 5] }))}>Click me!</div>
+        </>
+      )
+    }
+
+     `
+    const result = run(code, {
+      theme: {
+        extend: {
+          recipes: {
+            card: {
+              className: 'card',
+              base: {
+                color: ['blue', 'red'],
+              },
+              variants: {
+                size: {
+                  sm: {
+                    borderRadius: ['sm'],
+                    padding: ['2'],
+                    margin: '4',
+                  },
+                },
+              },
+              defaultVariants: { size: 'sm' },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "fontSize": [
+                2,
+                5,
+              ],
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "card",
+          "type": "recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .fs_2 {
+          font-size: 2px
+          }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:fs_5 {
+            font-size: 5px
+          }
+              }
+      }
+
+      @layer recipes {
+        .card--size_sm {
+          border-radius: var(--radii-sm);
+          padding: var(--spacing-2);
+          margin: var(--spacing-4)
+          }
+
+        @layer _base {
+          .card {
+            color: blue;
+              }
+
+          @media screen and (min-width: 40em) {
+            .card {
+              color: red
+                      }
+                  }
+          }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {
