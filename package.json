@@ -6,10 +6,8 @@
   "scripts": {
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
-    "build:shared": "pnpm --filter {./packages/shared}... build-fast",
     "prepare": "husky install && pnpm build-fast",
-    "dev": "pnpm --parallel --filter=./packages/shared --filter=./packages/is-valid-prop --filter=./packages/postcss dev",
-    "dev:ext": "pnpm -r --parallel --filter=./extension/** dev",
+    "dev": "pnpm --parallel --filter=./packages/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --filter=./packages/** build",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
@@ -25,15 +23,12 @@
     "typecheck": "tsc --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-studio": "PANDA_CLI=compiled pnpm --filter=./packages/studio codegen",
-    "build-studio": "PANDA_CLI=compiled pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
-    "deploy-studio": "PANDA_CLI=compiled pnpm prepare-studio && pnpm build-studio",
+    "prepare-studio": "pnpm --filter=./packages/studio codegen",
+    "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
+    "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
     "website": "pnpm --filter=./website",
-    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs",
-    "extension:build": "pnpm --filter=./extension/vscode build",
-    "extension:release": "pnpm --filter=./extension/vscode release",
-    "extension:prerelease": "pnpm --filter=./extension/vscode prerelease"
+    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -67,5 +62,10 @@
     "happy-dom": "^12.1.6",
     "mdx-local-link-checker": "^2.1.1",
     "rimraf": "^5.0.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@swc/helpers@~0.4": "0.4.36"
+    }
   }
 }

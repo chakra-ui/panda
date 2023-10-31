@@ -13,15 +13,15 @@ import { State } from './usePlayground'
 import { pandaTheme } from '../lib/gruvbox-theme'
 import { useTheme } from 'next-themes'
 
-export type PandaEditorProps = {
+export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
   artifacts: Artifact[]
 }
 
-export const EDITOR_OPTIONS: EditorProps['options'] = {
+export const defaultEditorOptions: EditorProps['options'] = {
   minimap: { enabled: false },
-  fontSize: 14,
+  fontSize: 13,
   quickSuggestions: {
     strings: true,
     other: true,

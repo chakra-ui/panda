@@ -1,18 +1,16 @@
+import { defaultEditorOptions } from '@/src/hooks/useEditor'
 import { css } from '@/styled-system/css'
 import { Stack } from '@/styled-system/jsx'
 import { Segment, SegmentControl, SegmentGroup, SegmentGroupIndicator, SegmentLabel } from '@ark-ui/react'
-import MonacoEditor from '@monaco-editor/react'
-import { useState, useRef, useEffect } from 'react'
-import { CssFileArtifact } from '../hooks/usePanda'
-import { OnMount, BeforeMount } from '@monaco-editor/react'
+import MonacoEditor, { BeforeMount, OnMount } from '@monaco-editor/react'
 import { useTheme } from 'next-themes'
-import { pandaTheme } from '../lib/gruvbox-theme'
-
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import parserHtml from 'prettier/parser-html'
 import parserPostCSS from 'prettier/parser-postcss'
-import { EDITOR_OPTIONS } from '@/src/hooks/useEditor'
+import { useEffect, useRef, useState } from 'react'
+import { CssFileArtifact } from '../hooks/usePanda'
+import { pandaTheme } from '../lib/gruvbox-theme'
 
 export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileArtifact[]; visible: boolean }) => {
   const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')
@@ -116,7 +114,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
         value={formatCode(content)}
         language="css"
         path={activeTab}
-        options={EDITOR_OPTIONS}
+        options={{ ...defaultEditorOptions, readOnly: true }}
         beforeMount={onBeforeMount}
         onMount={onCodeEditorMount}
       />

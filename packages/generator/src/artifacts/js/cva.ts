@@ -30,9 +30,9 @@ export function generateCvaFn(ctx: Context) {
         return mergeCss(variantCss, compoundVariantCss)
       }
 
-      function merge(cvaConfig) {
-        const override = defaults(cvaConfig)
-        const variantKeys = uniq(override.variantKeys, Object.keys(variants))
+      function merge(__cva) {
+        const override = defaults(__cva.config)
+        const variantKeys = uniq(__cva.variantKeys, Object.keys(variants))
         return cva({
           base: mergeCss(base, override.base),
           variants: Object.fromEntries(
