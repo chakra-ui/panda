@@ -27,7 +27,7 @@ export function generatedJsxHelpers(ctx: Context) {
     export const composeCvaFn = (cvaA, cvaB) => {
       if (cvaA && !cvaB) return cvaA
       if (!cvaA && cvaB) return cvaB
-      if ((cvaA.__cva__ && cvaB.__cva__) || (cvaA.__recipe__ && cvaB.__recipe__)) return cvaA.merge(cvaB.config)
+      if ((cvaA.__cva__ && cvaB.__cva__) || (cvaA.__recipe__ && cvaB.__recipe__)) return cvaA.merge(cvaB)
       const error = new TypeError('Cannot merge cva with recipe. Please use either cva or recipe.')
       TypeError.captureStackTrace?.(error)
       throw error
