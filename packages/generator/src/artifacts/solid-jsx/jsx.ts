@@ -12,7 +12,7 @@ export function generateSolidJsxFactory(ctx: Context) {
       'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
       './factory-helper',
     )}
-    ${ctx.file.import('isCssProperty, allCssProperties', './is-valid-prop')}
+    ${ctx.file.import('isCssProperty', './is-valid-prop')}
     ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
 
@@ -37,13 +37,19 @@ export function generateSolidJsxFactory(ctx: Context) {
           Object.keys(props).filter((prop) => !normalizeHTMLProps.keys.includes(prop) && shouldForwardProp(prop)),
         )
 
-        const [localProps, htmlProps, forwardedProps, variantProps, styleProps, elementProps] = splitProps(
+        const [localProps, htmlProps, forwardedProps, restProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
           normalizeHTMLProps.keys,
-          forwardedKeys(),
+          forwardedKeys()
+        )
+
+        const cssPropertyKeys = createMemo(() => Object.keys(restProps).filter((prop) => isCssProperty(prop)))
+
+        const [variantProps, styleProps, elementProps] = splitProps(
+          restProps,
           __cvaFn__.variantKeys,
-          allCssProperties,
+          cssPropertyKeys(),
         )
 
         function recipeClass() {
