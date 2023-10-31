@@ -1,5 +1,16 @@
 # @pandacss/core
 
+## 0.17.5
+
+### Patch Changes
+
+- a6dfc944: Fix issue where using array syntax in config recipe generates invalid css
+  - @pandacss/error@0.17.5
+  - @pandacss/logger@0.17.5
+  - @pandacss/shared@0.17.5
+  - @pandacss/token-dictionary@0.17.5
+  - @pandacss/types@0.17.5
+
 ## 0.17.4
 
 ### Patch Changes
