@@ -8,7 +8,6 @@ const seoConfig = defineMetadata({
     default: 'Panda Playground',
   },
   description: 'Explore Panda CSS with an interactive playground. Create and share your own Panda CSS snippets.',
-  themeColor: '#F6E458',
   openGraph: {
     images: '/og-image.png',
     url: 'https://play.panda-css.com',
