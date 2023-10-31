@@ -27,6 +27,8 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
   const output = JSON.stringify(extractResult.toJSON(), null, minify ? 0 : 2)
+  const dirname = ctx.runtime.path.dirname(outfile)
+  ctx.runtime.fs.ensureDirSync(dirname)
   await writeFile(outfile, output)
   logger.info('cli', 'Done!')
 }
