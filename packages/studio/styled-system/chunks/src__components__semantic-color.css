@@ -1,4 +1,5 @@
 @layer utilities {
+
   .h_12 {
     height: var(--sizes-12)
     }
@@ -37,6 +38,10 @@
 
   .font_medium {
     font-weight: var(--font-weights-medium)
+    }
+
+  .mt_2 {
+    margin-top: var(--spacing-2)
     }
 
   .opacity_0\.7 {

@@ -8,7 +8,7 @@ const { theme } = config
 const context = {
   tokens: new TokenDictionary(theme ?? {}),
   getCategory(category: keyof TokenDataTypes) {
-    return this.tokens.categoryMap.get(category)!
+    return this.tokens.categoryMap.get(category) ?? new Map()
   },
   textStyles: flatten(theme?.textStyles ?? {}),
   layerStyles: flatten(theme?.layerStyles ?? {}),

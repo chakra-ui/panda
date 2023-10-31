@@ -3,7 +3,9 @@ import { ColorWrapper } from './color-wrapper'
 import context from '../lib/panda.context'
 
 const getSemanticColorValue = (variable: string): string => {
-  const name = variable.match(/var\(\s*--(.*?)\s*\)/)![1].replaceAll('-', '.')
+  const _name = variable.match(/var\(\s*--(.*?)\s*\)/)
+  if (!_name) return variable
+  const name = _name[1].replaceAll('-', '.')
   const token = context.tokens.getByName(name)
   if (token) return token.originalValue
   const defaultToken = context.tokens.getByName(`${name}.default`)
@@ -36,9 +38,11 @@ export function SemanticColorDisplay(props: { value: string; condition: string; 
           {cleanCondition(condition)}
         </panda.span>
       </ColorWrapper>
-      {token && <panda.div fontWeight="medium">{token}</panda.div>}
+      <panda.div fontWeight="medium" mt="2">
+        {token} &nbsp;
+      </panda.div>
       <panda.div opacity="0.7" fontSize="sm" textTransform="uppercase">
-        {value} - {tokenValue}
+        {value} {value !== tokenValue && `- ${tokenValue}`}
       </panda.div>
     </Flex>
   )
