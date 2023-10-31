@@ -6,10 +6,8 @@
   "scripts": {
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
-    "build:shared": "pnpm --filter {./packages/shared}... build-fast",
     "prepare": "husky install && pnpm build-fast",
-    "dev:extensions": "pnpm -r --parallel  --filter=./extension/** dev",
-    "dev": "pnpm --parallel --filter=./packages/shared --filter=./packages/is-valid-prop --filter=./packages/postcss dev",
+    "dev": "pnpm --parallel --filter=./packages/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --filter=./packages/** build",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
@@ -25,15 +23,12 @@
     "typecheck": "tsc --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-studio": "PANDA_CLI=compiled pnpm --filter=./packages/studio codegen",
-    "build-studio": "PANDA_CLI=compiled pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
-    "deploy-studio": "PANDA_CLI=compiled pnpm prepare-studio && pnpm build-studio",
+    "prepare-studio": "pnpm --filter=./packages/studio codegen",
+    "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
+    "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
     "website": "pnpm --filter=./website",
-    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs",
-    "extension:build": "pnpm --filter=./extension/vscode build",
-    "extension:release": "pnpm --filter=./extension/vscode release",
-    "extension:prerelease": "pnpm --filter=./extension/vscode prerelease"
+    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -44,10 +39,14 @@
     "@types/node": "20.4.5",
     "@typescript-eslint/eslint-plugin": "6.2.1",
     "@typescript-eslint/parser": "6.2.1",
+    "chokidar": "^3.5.3",
     "concurrently": "^8.2.0",
+    "happy-dom": "^12.1.6",
     "husky": "8.0.3",
+    "mdx-local-link-checker": "^2.1.1",
     "lint-staged": "13.2.3",
     "prettier": "^2.8.8",
+    "rimraf": "^5.0.1",
     "ts-morph": "19.0.0",
     "tsup": "7.1.0",
     "tsx": "3.12.10",
@@ -63,10 +62,9 @@
     ]
   },
   "packageManager": "pnpm@8.6.4",
-  "devDependencies": {
-    "chokidar": "^3.5.3",
-    "happy-dom": "^12.1.6",
-    "mdx-local-link-checker": "^2.1.1",
-    "rimraf": "^5.0.1"
+  "pnpm": {
+    "overrides": {
+      "@swc/helpers@~0.4": "0.4.36"
+    }
   }
 }
