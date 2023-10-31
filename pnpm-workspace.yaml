@@ -4,4 +4,3 @@ packages:
   - 'sandbox/component-lib/**'
   - 'playground'
   - 'website'
-  - 'extension/**'
