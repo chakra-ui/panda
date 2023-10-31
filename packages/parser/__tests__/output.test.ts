@@ -2476,7 +2476,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('array syntax within config recipes', () => {
+  test('array syntax within config recipes', () => {
     const code = `
     import { css } from ".panda/css"
     import { card } from ".panda/recipes"
@@ -2553,21 +2553,20 @@ describe('extract to css output pipeline', () => {
 
       @layer recipes {
         .card--size_sm {
-          margin: var(--spacing-4);
+          border-radius: var(--radii-sm);
+          padding: var(--spacing-2);
+          margin: var(--spacing-4)
           }
 
-        .card--size_sm borderRadius {
-          0: sm
-              }
-
-        .card--size_sm padding {
-          0: 2
-              }
-
         @layer _base {
-          .card color {
-            0: blue;
-            1: red
+          .card {
+            color: blue;
+              }
+
+          @media screen and (min-width: 40em) {
+            .card {
+              color: red
+                      }
                   }
           }
       }"
