@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "css:codegen": "pnpm panda codegen --silent",
-    "prepare": "pnpm db:generate && pnpm css:codegen",
+    "types:codegen": "tsx scripts/bundle-types.mts",
+    "prepare": "pnpm db:generate && pnpm css:codegen && pnpm types:codegen",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -14,7 +15,8 @@
     "db:push": "prisma db push --skip-generate",
     "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "viz": "ANALYZE=true next build"
   },
   "dependencies": {
     "@ark-ui/react": "0.15.0",
@@ -27,7 +29,7 @@
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@prisma/client": "5.1.0",
-    "@textea/json-viewer": "3.1.1",
+    "@textea/json-viewer": "3.2.2",
     "hookable": "5.5.3",
     "merge-anything": "5.1.7",
     "monaco-editor": "0.40.0",
@@ -51,13 +53,17 @@
     "zod": "3.22.3"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^14.0.1",
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/node": "20.4.5",
     "@types/prettier": "2.7.3",
-    "@types/react": "18.2.22",
+    "@types/react": "18.0.27",
     "@types/react-dom": "18.2.7",
+    "dts-bundle-generator": "^8.1.2",
     "eslint": "8.46.0",
-    "eslint-config-next": "13.4.12"
+    "eslint-config-next": "13.4.12",
+    "raw-loader": "^4.0.2",
+    "tsx": "3.12.10"
   }
 }
