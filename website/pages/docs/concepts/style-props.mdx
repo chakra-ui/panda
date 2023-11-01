@@ -301,7 +301,7 @@ const App = () => (
 You can use the `styled` function to create your own styled components, using the `splitCssProps` function to split the style props from the rest of the props.
 
 ```jsx
-import { styled } from '../styled-system/jsx'
+import { splitCssProps, styled } from '../styled-system/jsx'
 import type { HTMLStyledProps } from '../styled-system/types'
 
 function SomeComponent({ children, ...props }: HTMLStyledProps<'div'>) {
@@ -316,7 +316,7 @@ function SomeComponent({ children, ...props }: HTMLStyledProps<'div'>) {
 // Usage
 function App() {
   return (
-    <SplitComponent w="2" onClick={() => console.log('123')}>
+    <SplitComponent w="2">
       Click me
     </SplitComponent>
   )
