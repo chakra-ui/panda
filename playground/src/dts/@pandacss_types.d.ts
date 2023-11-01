@@ -5,41 +5,41 @@ import { TSConfig } from 'pkg-types';
 import * as ts_morph from 'ts-morph';
 import { Node } from 'ts-morph';
 
-export type WithNode = {
+export interface WithNode {
 	node: Node;
 	stack: Node[];
-};
-export type ObjectType = WithNode & {
+}
+export interface ObjectType extends WithNode {
 	type: "object";
 	value: EvaluatedObjectResult;
 	isEmpty?: boolean;
-};
+}
 export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
-export type LiteralType = WithNode & {
+export interface LiteralType extends WithNode {
 	type: "literal";
 	value: PrimitiveType;
 	kind: LiteralKind;
-};
-export type MapType = WithNode & {
+}
+export interface MapType extends WithNode {
 	type: "map";
 	value: MapTypeValue;
-};
-export type ArrayType = WithNode & {
+}
+export interface ArrayType extends WithNode {
 	type: "array";
 	value: BoxNode[];
-};
-export type UnresolvableType = WithNode & {
+}
+export interface UnresolvableType extends WithNode {
 	type: "unresolvable";
-};
-export type ConditionalType = WithNode & {
+}
+export interface ConditionalType extends WithNode {
 	type: "conditional";
 	whenTrue: BoxNode;
 	whenFalse: BoxNode;
-};
+}
 /** -> Jsx boolean attribute <Box flex /> */
-export type EmptyInitializerType = WithNode & {
+export interface EmptyInitializerType extends WithNode {
 	type: "empty-initializer";
-};
+}
 export type BoxNodeDefinition = ObjectType | LiteralType | MapType | ArrayType | UnresolvableType | ConditionalType | EmptyInitializerType;
 export type BoxNode = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray | BoxNodeUnresolvable | BoxNodeConditional | BoxNodeEmptyInitializer;
 export type MapTypeValue = Map<string, BoxNode>;
@@ -96,15 +96,19 @@ declare class BoxNodeConditional extends BoxNodeType$1<ConditionalType> {
 declare class BoxNodeEmptyInitializer extends BoxNodeType$1<EmptyInitializerType> {
 }
 export type PrimitiveType = string | number | boolean | null | undefined;
-export type LiteralObject = Record<string, any>;
+export interface LiteralObject {
+	[key: string]: any;
+}
 export type SingleLiteralValue = PrimitiveType | LiteralObject;
 export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
-export type EvaluatedObjectResult = Record<string, LiteralValue>;
-export type Unboxed = {
+export interface EvaluatedObjectResult {
+	[key: string]: LiteralValue;
+}
+export interface Unboxed {
 	raw: LiteralObject;
 	conditions: LiteralObject[];
 	spreadConditions: LiteralObject[];
-};
+}
 export type Fallback<T> = {
 	[P in keyof T]: T[P] | NonNullable<T[P]>[];
 };
@@ -9659,10 +9663,9 @@ export interface ResultItem {
 	name?: string;
 	data: Array<Unboxed["raw"]>;
 	type?: "object" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
-	box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
+	box: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
 }
 export interface ParserResultType {
-	all: Array<ResultItem>;
 	jsx: Set<ResultItem>;
 	css: Set<ResultItem>;
 	cva: Set<ResultItem>;
@@ -9670,17 +9673,24 @@ export interface ParserResultType {
 	recipe: Map<string, Set<ResultItem>>;
 	pattern: Map<string, Set<ResultItem>>;
 	filePath: string | undefined;
+	set: (name: "cva" | "css", result: ResultItem) => void;
+	setSva: (result: ResultItem) => void;
+	setCva: (result: ResultItem) => void;
+	setJsx: (result: ResultItem) => void;
+	setRecipe: (name: string, result: ResultItem) => void;
+	setPattern: (name: string, result: ResultItem) => void;
 	isEmpty: () => boolean;
+	setFilePath: (filePath: string) => ParserResultType;
 	toArray: () => Array<ResultItem>;
-}
-export interface ShipJson {
-	schemaVersion: string;
-	styles: {
-		atomic: string[];
-		recipes: {
-			[name: string]: string[];
-		};
+	toJSON: () => {
+		sva: Array<ResultItem>;
+		css: Array<ResultItem>;
+		cva: Array<ResultItem>;
+		recipe: Record<string, ResultItem[]>;
+		pattern: Record<string, ResultItem[]>;
+		jsx: Array<ResultItem>;
 	};
+	merge: (result: ParserResultType) => ParserResultType;
 }
 export type MaybeAsyncReturn = Promise<void> | void;
 export interface PandaHooks {
@@ -9903,7 +9913,9 @@ export type PatternProperty = {
 export interface PatternHelpers {
 	map: (value: any, fn: (value: string) => string | undefined) => any;
 }
-export type PatternProperties = Record<string, PatternProperty>;
+export interface PatternProperties {
+	[key: string]: PatternProperty;
+}
 export type Props<T> = Record<LiteralUnion<keyof T>, any>;
 export interface PatternConfig<T extends PatternProperties = PatternProperties> {
 	/**
@@ -9945,15 +9957,7 @@ export interface PatternConfig<T extends PatternProperties = PatternProperties> 
 	 */
 	blocklist?: LiteralUnion<CssProperty>[];
 }
-export interface WithConditions {
-	/**
-	 * The css conditions to generate for the rule.
-	 * @example ['hover', 'focus']
-	 */
-	conditions?: string[];
-	responsive?: boolean;
-}
-export interface CssRule extends WithConditions {
+export interface CssRule {
 	/**
 	 * The css properties to generate utilities for.
 	 * @example ['margin', 'padding']
@@ -9961,12 +9965,22 @@ export interface CssRule extends WithConditions {
 	properties: {
 		[property: string]: string[];
 	};
+	/**
+	 * The css conditions to generate utilities for.
+	 * @example ['hover', 'focus']
+	 */
+	conditions?: string[];
+	/**
+	 * Whether to generate responsive utilities.
+	 */
+	responsive?: boolean;
 }
-export interface RecipeRuleVariants {
+export type RecipeRule = "*" | ({
+	conditions?: string[];
+	responsive?: boolean;
+} & {
 	[variant: string]: boolean | string[];
-}
-export type RecipeRule = "*" | (RecipeRuleVariants & WithConditions);
-export type PatternRule = "*" | CssRule;
+});
 export interface StaticCssOptions {
 	/**
 	 * The css utility classes to generate.
@@ -9977,12 +9991,6 @@ export interface StaticCssOptions {
 	 */
 	recipes?: {
 		[recipe: string]: RecipeRule[];
-	};
-	/**
-	 * The css patterns to generate.
-	 */
-	patterns?: {
-		[pattern: string]: PatternRule[];
 	};
 }
 export interface Recursive<T> {
@@ -10532,6 +10540,14 @@ export interface LoadConfigResult {
 	tsconfigFile?: string;
 	dependencies: string[];
 }
+export interface HashOptions {
+	tokens: boolean | undefined;
+	className: boolean | undefined;
+}
+export interface PrefixOptions {
+	tokens: string | undefined;
+	className: string | undefined;
+}
 export type ReportItemType = "object" | "cva" | "pattern" | "recipe" | "jsx" | "jsx-factory";
 export interface ReportItem {
 	id: number;
@@ -10712,7 +10728,9 @@ export interface AnalysisReportJSON {
 export interface Part {
 	selector: string;
 }
-export type Parts = Record<string, Part>;
+export interface Parts {
+	[key: string]: Part;
+}
 export interface Watcher {
 	on(event: "add" | "addDir" | "change", listener: (path: string) => void): this;
 	on(event: "all", listener: (evt: "add" | "addDir" | "change" | "unlink" | "unlinkDir", path: string) => void): this;
@@ -10751,50 +10769,6 @@ export interface Runtime {
 	path: Path;
 	cwd(): string;
 	env(name: string): string | undefined;
-}
-export interface StyleResultObject {
-	[key: string]: any;
-}
-export interface StyleProps extends StyleResultObject {
-	css?: StyleResultObject;
-}
-export interface StyleEntry {
-	prop: string;
-	value: string;
-	cond: string;
-	recipe?: string;
-	slot?: string;
-	layer?: string;
-}
-export interface ExpandedCondition extends RawCondition {
-	params?: string;
-}
-export interface AtomicStyleResult {
-	result: StyleResultObject;
-	entry: StyleEntry;
-	hash: string;
-	className: string;
-	conditions?: ExpandedCondition[];
-	layer?: string;
-}
-export interface GroupedResult extends Pick<AtomicStyleResult, "result" | "className"> {
-	hashSet: Set<string>;
-	details: GroupedStyleResultDetails[];
-}
-export interface RecipeBaseResult extends GroupedResult {
-	recipe: string;
-	slot?: string;
-}
-export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, "hash" | "entry" | "conditions"> {
-	result: StyleResultObject;
-}
-export interface StyleCollectorType {
-	classNames: Map<string, AtomicStyleResult | RecipeBaseResult>;
-	//
-	atomic: Set<AtomicStyleResult>;
-	//
-	recipes: Map<string, Set<AtomicStyleResult>>;
-	recipes_base: Map<string, Set<RecipeBaseResult>>;
 }
 
 export {};
