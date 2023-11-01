@@ -693,7 +693,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              " & > strong": {
+              "& > strong": {
                 "color": "hotpink",
               },
               "color": "lightgreen",
@@ -705,14 +705,14 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              " &:hover": {
-                " &:disabled": {
+              "&:hover": {
+                "&:disabled": {
                   "filter": "brightness(1)",
                 },
                 "filter": "brightness(0.85)",
               },
               "@media (min-width: 768px)": {
-                " &:disabled": {
+                "&:disabled": {
                   "filter": "brightness(1)",
                 },
                 "padding": "1rem 0",
