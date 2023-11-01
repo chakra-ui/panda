@@ -25,7 +25,7 @@ const runCommand = (command: string, envVars = {}) => {
     proc.on('close', (code) => {
       if (code !== 0) {
         console.error(`Command failed with exit code ${code}`)
-        reject(new Error(`Command failed with exit code ${code}`))
+        reject()
         return
       }
       resolve(0)
@@ -49,7 +49,13 @@ cli
       env: { MODE: fw },
     }))
 
-    await Promise.all(commands.map(({ cmd, env }) => runCommand(cmd, env)))
+    const results = await Promise.allSettled(commands.map(({ cmd, env }) => runCommand(cmd, env)))
+    const failed = results.filter((result) => result.status === 'rejected')
+
+    if (failed.length > 0) {
+      console.error('Some commands failed:')
+      process.exit(1)
+    }
   })
 
 cli.command('codegen [scenario]', 'Generate code').action(async (scenario) => {
