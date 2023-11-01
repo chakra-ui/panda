@@ -7,8 +7,6 @@ export function generatePropTypes(ctx: Context) {
     utility,
   } = ctx
 
-  const strictText = `${strictTokens ? '' : ' | CssValue<T>'}`
-
   const result: string[] = [
     outdent`
     ${ctx.file.importType('ConditionalValue', './conditions')}
@@ -29,7 +27,9 @@ export function generatePropTypes(ctx: Context) {
   result.push(`
   type CssValue<T> = T extends keyof CssProperties ? CssProperties[T] : never
 
-  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${strictText} : CssValue<T>
+  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${
+    strictTokens ? '' : ' | CssValue<T>'
+  } : CssValue<T>
 
   export interface PropertyTypes extends PropertyValueTypes {
   `)
@@ -43,10 +43,13 @@ export function generatePropTypes(ctx: Context) {
   return outdent`
   ${result.join('\n')}
 
+  ${strictTokens ? `type FilterString<T> = T extends \`\${infer _}\` ? T : never;` : ''}
   export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-    ? ConditionalValue<PropertyTypes[T]${strictText}${!ctx.config.strictTokens ? ' | (string & {})' : ''}>
+    ? ConditionalValue<${
+      strictTokens ? 'FilterString<PropertyTypes[T]>' : 'PropertyTypes[T] | CssValue<T> | (string & {})'
+    }>
     : T extends keyof CssProperties
-    ? ConditionalValue<CssProperties[T]${!ctx.config.strictTokens ? ' | (string & {})' : ''}>
+    ? ConditionalValue<${strictTokens ? 'FilterString<CssProperties[T]>' : 'CssProperties[T] | (string & {})'}>
     : ConditionalValue<string | number>
   `
 }
