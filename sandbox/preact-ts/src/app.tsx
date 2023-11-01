@@ -1,5 +1,7 @@
-import { sva } from '../styled-system/css'
+import { css, sva } from '../styled-system/css'
 import { card } from '../styled-system/recipes'
+import { splitCssProps, styled } from '../styled-system/jsx'
+import { HTMLStyledProps } from '../styled-system/types'
 
 const button = sva({
   slots: ['label', 'icon'],
@@ -49,6 +51,16 @@ const button = sva({
   ],
 })
 
+function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+  const [cssProps, restProps] = splitCssProps(props)
+  console.log({ cssProps, restProps })
+  return (
+    <styled.div className={css({ display: 'flex', height: '20', width: '20' }, cssProps)} {...restProps}>
+      {children}
+    </styled.div>
+  )
+}
+
 export function App() {
   const btnClass = button({ size: 'lg', rounded: true })
   const cardClass = card()
@@ -63,6 +75,9 @@ export function App() {
       <button>
         <span class={btnClass.label}>Button Label</span>
       </button>
+      <SplitComponent w="2" onClick={() => console.log('123')}>
+        Click me
+      </SplitComponent>
     </div>
   )
 }
