@@ -49,11 +49,11 @@ export const cliInit = async () => {
         }),
       whatSyntax: () =>
         p.select({
-          message: 'What syntax would you like to use?',
+          message: 'What css syntax would you like to use?',
           initialValue: 'object',
           options: [
-            { value: 'object', label: 'Object' },
-            { value: 'tagged-template', label: 'Tagged template' },
+            { value: 'object-literal', label: 'Object' },
+            { value: 'template-literal', label: 'Template literal' },
           ],
         }),
       shouldUpdateGitignore: () =>
