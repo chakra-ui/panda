@@ -56,6 +56,15 @@ export const cliInit = async () => {
             { value: 'tagged-template', label: 'Tagged template' },
           ],
         }),
+      withStrictTokens: () =>
+        p.select({
+          message: 'Use strict tokens to enforce full type-safety?',
+          initialValue: 'no',
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        }),
       shouldUpdateGitignore: () =>
         p.select({
           message: 'Update gitignore?',
@@ -83,6 +92,7 @@ export const cliInit = async () => {
     outExtension: initFlags.useMjsExtension === 'yes' ? 'mjs' : 'js',
     jsxFramework: initFlags.jsxOptions.jsxFramework,
     syntax: initFlags.whatSyntax,
+    strictTokens: initFlags.withStrictTokens === 'yes',
     gitignore: initFlags.shouldUpdateGitignore === 'yes',
   } as InitFlags
 }
