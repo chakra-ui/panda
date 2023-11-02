@@ -5,8 +5,8 @@
   "scripts": {
     "css:codegen": "pnpm panda codegen --silent",
     "types:codegen": "tsx scripts/bundle-types.mts",
-    "prepare": "pnpm db:generate && pnpm css:codegen && pnpm types:codegen",
-    "build": "next build",
+    "prepare": "pnpm db:generate && pnpm css:codegen",
+    "build": "pnpm types:codegen && next build",
     "start": "next start",
     "lint": "next lint",
     "dev": "next dev",
