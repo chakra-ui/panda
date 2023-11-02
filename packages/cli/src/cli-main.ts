@@ -52,6 +52,7 @@ export async function main() {
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
+    .option('--strict-tokens', 'Using strictTokens: true')
     .action(async (_flags: Partial<InitCommandFlags> = {}) => {
       let options = {}
 
