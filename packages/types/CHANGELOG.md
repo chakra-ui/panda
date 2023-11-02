@@ -1,5 +1,7 @@
 # @pandacss/types
 
+## 0.17.5
+
 ## 0.17.4
 
 ### Patch Changes

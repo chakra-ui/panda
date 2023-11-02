@@ -6,6 +6,20 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.17.5] - 2023-10-31
+
+### Fixed
+
+- Fix issue where Solid.js styled factory fails with pattern styles includes a css variable (e.g. Divider)
+- Fix issue where error is thrown for semantic tokens with raw values.
+- Fix issue where using array syntax in config recipe generates invalid css
+- Fix issue where cva composition in styled components doens't work as expected.
+
+### Changed
+
+- Ensure dir exists before writing file for the `panda cssgen` / `panda ship` / `panda analyze` commands when specifying
+  an outfile.
+
 ## [0.17.4] - 2023-10-30
 
 ### Fixed

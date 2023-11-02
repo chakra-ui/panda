@@ -1,1 +1,0 @@
-import '@pandacss/language-server'

@@ -36,6 +36,10 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
     null,
     minify ? 0 : 2,
   )
+
+  const dirname = ctx.runtime.path.dirname(outfile)
+  ctx.runtime.fs.ensureDirSync(dirname)
+
   await writeFile(outfile, output)
   logger.info('cli', 'Done!')
 }

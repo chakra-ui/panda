@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { createGenerator } from '@pandacss/generator'
+import { Generator, createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
@@ -77,6 +77,7 @@ const playgroundPreset: Preset = {
 
 export function usePanda(source: string, config: string) {
   const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
+  const prevGenerator = useRef<Generator | null>(null)
 
   useEffect(() => {
     const newUserConfig = evalConfig(config)
@@ -101,12 +102,19 @@ export function usePanda(source: string, config: string) {
       jsxFramework: restConfig.jsxFramework ? 'react' : undefined,
     })
 
-    return createGenerator({
-      dependencies: [],
-      path: '',
-      hooks: createHooks(),
-      config: config as any,
-    })
+    try {
+      // in event of error (invalid token format), use previous generator
+      const generator = createGenerator({
+        dependencies: [],
+        path: '',
+        hooks: createHooks(),
+        config: config as any,
+      })
+      prevGenerator.current = generator
+      return generator
+    } catch {
+      return prevGenerator.current!
+    }
   }, [userConfig])
 
   return useMemo(() => {

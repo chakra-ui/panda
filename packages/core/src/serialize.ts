@@ -1,10 +1,17 @@
-import { filterBaseConditions, isImportant, markImportant, walkObject, withoutImportant } from '@pandacss/shared'
+import {
+  filterBaseConditions,
+  isImportant,
+  markImportant,
+  normalizeStyleObject,
+  walkObject,
+  withoutImportant,
+} from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
 import merge from 'lodash.merge'
+import type postcss from 'postcss'
 import type { Conditions } from './conditions'
 import { cssToJs, toCss } from './to-css'
 import type { Utility } from './utility'
-import type postcss from 'postcss'
 
 export interface SerializeContext {
   conditions: Conditions
@@ -17,7 +24,9 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
 
   const result: Dict = {}
 
-  walkObject(styleObj, (value, paths) => {
+  const normalizedObject = normalizeStyleObject(styleObj, context)
+
+  walkObject(normalizedObject, (value, paths) => {
     const important = isImportant(value)
 
     const [prop, ...allConditions] = conditions.shift(paths)

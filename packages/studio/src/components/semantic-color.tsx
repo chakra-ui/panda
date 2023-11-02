@@ -5,11 +5,17 @@ import context from '../lib/panda.context'
 const getSemanticColorValue = (variable: string): string => {
   const _name = variable.match(/var\(\s*--(.*?)\s*\)/)
   if (!_name) return variable
+
   const name = _name[1].replaceAll('-', '.')
   const token = context.tokens.getByName(name)
-  if (token) return token.originalValue
-  const defaultToken = context.tokens.getByName(`${name}.default`)
-  return getSemanticColorValue(defaultToken?.value)
+
+  if (!token) {
+    const defaultToken = context.tokens.getByName(`${name}.default`)
+    return getSemanticColorValue(defaultToken?.value)
+  }
+
+  if (token.value.startsWith('var(--')) return getSemanticColorValue(token.value)
+  return token.value
 }
 
 // remove initial underscore

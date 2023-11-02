@@ -59,4 +59,23 @@ describe('astish', () => {
       }
     `)
   })
+
+  test('with multiline selectors', () => {
+    const res = astish(`
+    background: pink;
+    & span,
+    & p {
+      color: blue;
+    }
+  `)
+
+    expect(res).toMatchInlineSnapshot(`
+      {
+        "& span, & p": {
+          "color": "blue",
+        },
+        "background": "pink",
+      }
+    `)
+  })
 })

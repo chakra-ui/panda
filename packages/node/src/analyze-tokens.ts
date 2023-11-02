@@ -83,14 +83,17 @@ const analyzeResultSerializer = (_key: string, value: any) => {
   return value
 }
 
-export const writeAnalyzeJSON = (fileName: string, result: ReturnType<typeof analyzeTokens>, ctx: PandaContext) => {
+export const writeAnalyzeJSON = (filePath: string, result: ReturnType<typeof analyzeTokens>, ctx: PandaContext) => {
   // prevent writing twice the same BoxNode in the output (already serialized in the `byId` map)
   result.details.byInstanceId.forEach((item) => {
     item.box = item.box.toJSON() as any
   })
 
+  const dirname = ctx.runtime.path.dirname(filePath)
+  ctx.runtime.fs.ensureDirSync(dirname)
+
   return writeFile(
-    fileName,
+    filePath,
     JSON.stringify(
       Object.assign(result, {
         cwd: ctx.config.cwd,
