@@ -1,11 +1,12 @@
 import type { Generator } from '@pandacss/generator'
+import { logger } from '@pandacss/logger'
 import type { Artifact, PandaHookable } from '@pandacss/types'
 import type { Runtime } from '@pandacss/types'
 
 export const getOutputEngine = ({
   paths,
   runtime: { path, fs },
-}: Generator & { runtime: Runtime; hooks: PandaHookable }) => ({
+}: Generator & { runtime: Runtime; hooks: PandaHookable }): PandaOutputEngine => ({
   empty() {
     fs.rmDirSync(path.join(...paths.root))
   },
@@ -17,12 +18,12 @@ export const getOutputEngine = ({
 
     return Promise.allSettled(
       files.map(async (artifact) => {
-        if (!artifact) return
+        if (!artifact?.code) return
 
         const { file, code } = artifact
         const absPath = path.join(...dir, file)
 
-        if (!code) return
+        logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
         return fs.writeFile(absPath, code)
       }),
     )

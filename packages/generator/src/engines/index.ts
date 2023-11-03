@@ -2,14 +2,14 @@ import type { ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/typ
 import { getBaseEngine, type PandaBaseEngine } from './base'
 import { getJsxEngine, type PandaJsxEngine } from './jsx'
 import { getPathEngine, type PandaPathEngine } from './path'
-import { getPatternEngine, type PandaPatternEngine } from './pattern'
+import { Patterns, type PandaPatternEngine } from './pattern'
 import { getFileEngine, type PandaFileEngine } from './file'
 
 export const getEngine = (conf: ConfigResultWithHooks): Context => {
   const { config } = conf
   return {
     ...getBaseEngine(conf),
-    patterns: getPatternEngine(config),
+    patterns: new Patterns(config),
     jsx: getJsxEngine(config),
     paths: getPathEngine(config),
     file: getFileEngine(config),

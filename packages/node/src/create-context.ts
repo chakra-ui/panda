@@ -5,6 +5,7 @@ import type { ConfigResultWithHooks, PandaHookable, Runtime } from '@pandacss/ty
 import { getChunkEngine, type PandaChunksEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
 import { getOutputEngine, type PandaOutputEngine } from './output-engine'
+import { DiffEngine } from './diff-engine'
 
 export const createContext = (conf: ConfigResultWithHooks) => {
   const generator = createGenerator(conf)
@@ -20,7 +21,7 @@ export const createContext = (conf: ConfigResultWithHooks) => {
   const { include, exclude, cwd } = config
   const getFiles = () => runtime.fs.glob({ include, exclude, cwd })
 
-  const ctx = {
+  const base_ctx = {
     ...conf,
     ...generator,
     runtime: nodeRuntime,
@@ -34,8 +35,13 @@ export const createContext = (conf: ConfigResultWithHooks) => {
       parserOptions: { join: runtime.path.join, ...generator.parserOptions },
     }),
   }
+  const ctx = Object.assign(base_ctx, {
+    chunks: getChunkEngine(base_ctx),
+    output: getOutputEngine(base_ctx),
+    diff: new DiffEngine(base_ctx),
+  }) as PandaContext
 
-  return Object.assign(ctx, { chunks: getChunkEngine(ctx), output: getOutputEngine(ctx) }) as PandaContext
+  return ctx
 }
 
 export interface PandaContext extends Generator {
@@ -45,4 +51,5 @@ export interface PandaContext extends Generator {
   getFiles: () => string[]
   chunks: PandaChunksEngine
   output: PandaOutputEngine
+  diff: DiffEngine
 }

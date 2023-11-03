@@ -116,4 +116,11 @@ export class Conditions {
   rule = () => {
     return new ConditionalRule(this)
   }
+
+  saveOne = (key: string, value: string) => {
+    const parsed = parseCondition(value)
+    if (!parsed) return
+
+    this.values[`_${key}`] = parsed
+  }
 }

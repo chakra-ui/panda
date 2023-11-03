@@ -7,6 +7,7 @@ import pLimit from 'p-limit'
 import { match } from 'ts-pattern'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
+import type { ArtifactId } from '@pandacss/types'
 
 /**
  * Bundles all the included files CSS into outdir/styles.css
@@ -15,6 +16,7 @@ import type { PandaContext } from './create-context'
 export async function bundleStyleChunksWithImports(ctx: PandaContext) {
   const files = ctx.chunks.getFiles()
   await ctx.output.write({
+    id: 'styles.css',
     dir: ctx.paths.root,
     files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
   })
@@ -73,11 +75,11 @@ const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)
 
 const limit = pLimit(20)
 
-export async function emitArtifacts(ctx: PandaContext) {
+export async function emitArtifacts(ctx: PandaContext, ids?: ArtifactId[]) {
   if (ctx.config.clean) ctx.output.empty()
 
   // limit concurrency since we might output a lot of files
-  const promises = ctx.getArtifacts().map((artifact) => limit(() => ctx.output.write(artifact)))
+  const promises = ctx.getArtifacts(ids).map((artifact) => limit(() => ctx.output.write(artifact)))
   await Promise.allSettled(promises)
 
   void ctx.hooks.callHook('generator:done')
@@ -91,8 +93,8 @@ export async function emitArtifacts(ctx: PandaContext) {
   }
 }
 
-export async function emitArtfifactsAndCssChunks(ctx: PandaContext) {
-  await emitArtifacts(ctx)
+export async function emitArtfifactsAndCssChunks(ctx: PandaContext, ids?: ArtifactId[]) {
+  await emitArtifacts(ctx, ids)
   if (ctx.config.emitTokensOnly) {
     return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
   }

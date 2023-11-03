@@ -46,6 +46,7 @@ export class Recipes {
   }
 
   private get separator() {
+    console.log('separator', this.context.utility.separator)
     return this.context.utility.separator ?? '_'
   }
 
@@ -55,26 +56,30 @@ export class Recipes {
 
   save = () => {
     for (const [name, recipe] of Object.entries(this.recipes)) {
-      if (isSlotRecipe(recipe)) {
-        // extract recipes for each slot
-        const slots = getSlotRecipes(recipe)
+      this.saveOne(name, recipe)
+    }
+  }
 
-        const slotsMap = new Map()
+  saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
+    if (isSlotRecipe(recipe)) {
+      // extract recipes for each slot
+      const slots = getSlotRecipes(recipe)
 
-        // normalize each recipe
-        Object.entries(slots).forEach(([slot, slotRecipe]) => {
-          const slotName = this.getSlotKey(name, slot)
-          this.normalize(slotName, slotRecipe)
-          slotsMap.set(slotName, slotRecipe)
-        })
+      const slotsMap = new Map()
 
-        // save the root recipe
-        this.assignRecipe(name, recipe)
-        sharedState.slots.set(name, slotsMap)
-        //
-      } else {
-        this.assignRecipe(name, this.normalize(name, recipe))
-      }
+      // normalize each recipe
+      Object.entries(slots).forEach(([slot, slotRecipe]) => {
+        const slotName = this.getSlotKey(name, slot)
+        this.normalize(slotName, slotRecipe)
+        slotsMap.set(slotName, slotRecipe)
+      })
+
+      // save the root recipe
+      this.assignRecipe(name, recipe)
+      sharedState.slots.set(name, slotsMap)
+      //
+    } else {
+      this.assignRecipe(name, this.normalize(name, recipe))
     }
   }
 

@@ -185,16 +185,16 @@ export async function main() {
 
           if (cssArtifact) {
             const { msg } = await generateCssArtifactOfType(ctx, cssArtifact, outfile)
-            logger.info('css:emit', msg)
+            logger.info('css:emit:artifact', msg)
             return
           }
 
           if (minimal) {
             const { msg } = await bundleMinimalFilesCss(ctx, outPath)
-            logger.info('css:emit', msg)
+            logger.info('css:emit:min', msg)
           } else {
             const { msg } = await bundleCss(ctx, outPath)
-            logger.info('css:emit', msg)
+            logger.info('css:emit:out', msg)
           }
           //
         } else {
@@ -204,7 +204,7 @@ export async function main() {
 
           //
           const { msg } = await writeAndBundleCssChunks(ctx)
-          logger.info('css:emit', msg)
+          logger.info('css:emit:bundle', msg)
         }
       }
 

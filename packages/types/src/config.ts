@@ -336,8 +336,11 @@ export interface ConfigTsOptions {
 }
 
 export interface LoadConfigResult {
+  /** Config path */
   path: string
   config: UserConfig
+  serialized: unknown
+  deserialize: () => Config
   tsconfig?: TSConfig
   tsOptions?: ConfigTsOptions
   tsconfigFile?: string

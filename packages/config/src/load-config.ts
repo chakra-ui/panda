@@ -47,8 +47,16 @@ export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundle
   result.config.presets = Array.from(presets)
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
+  const serialized = JSON.stringify(mergedConfig, (_key, value) => {
+    if (typeof value === 'function') {
+      return value.toString()
+    }
 
-  return { ...result, config: mergedConfig } as LoadConfigResult
+    return value
+  })
+  const deserialize = () => JSON.parse(serialized)
+
+  return { ...result, serialized, deserialize, config: mergedConfig } as LoadConfigResult
 }
 
 export async function bundleConfigFile(options: ConfigFileOptions) {

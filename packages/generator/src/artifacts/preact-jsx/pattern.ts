@@ -1,17 +1,23 @@
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
+import type { ArtifactFilters } from '../setup-artifacts'
 
-export function generatePreactJsxPattern(ctx: Context) {
+export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters) {
   const { typeName, factoryName } = ctx.jsx
 
-  return ctx.patterns.details.map((pattern) => {
-    const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
-    const { description, jsxElement = 'div' } = pattern.config
+  return (
+    ctx.patterns.details
+      // if we have filters, filter out items that are not in the filters
+      // otherwise, return all items
+      .filter((pattern) => (filters?.affecteds ? filters.affecteds?.patterns?.includes(pattern.dashName) : true))
+      .map((pattern) => {
+        const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
+        const { description, jsxElement = 'div' } = pattern.config
 
-    return {
-      name: dashName,
-      js: outdent`
+        return {
+          name: dashName,
+          js: outdent`
       import { h } from 'preact'
       import { forwardRef } from 'preact/compat'
       ${ctx.file.import(factoryName, './factory')}
@@ -36,7 +42,7 @@ export function generatePreactJsxPattern(ctx: Context) {
       })
       `,
 
-      dts: outdent`
+          dts: outdent`
       import type { FunctionComponent } from 'preact'
       ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
       ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
@@ -47,6 +53,7 @@ export function generatePreactJsxPattern(ctx: Context) {
       ${description ? `/** ${description} */` : ''}
       export declare const ${jsxName}: FunctionComponent<${upperName}Props>
       `,
-    }
-  })
+        }
+      })
+  )
 }

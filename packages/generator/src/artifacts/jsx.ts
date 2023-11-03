@@ -16,6 +16,7 @@ import { generateVueJsxStringLiteralFactory } from './vue-jsx/jsx.string-literal
 import { generateVueJsxPattern } from './vue-jsx/pattern'
 import { generateVueJsxTypes } from './vue-jsx/types'
 import { generateVueJsxStringLiteralTypes } from './vue-jsx/types.string-literal'
+import type { ArtifactFilters } from './setup-artifacts'
 
 /* -----------------------------------------------------------------------------
  * JSX Types
@@ -83,8 +84,7 @@ const patternMap = {
   qwik: generateQwikJsxPattern,
 }
 
-export function generateJsxPatterns(ctx: Context) {
-  if (ctx.isTemplateLiteralSyntax) return []
-  if (ctx.patterns.isEmpty() && !ctx.jsx.framework) return []
-  return patternMap[ctx.jsx.framework!](ctx)
+export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {
+  if (ctx.isTemplateLiteralSyntax || ctx.patterns.isEmpty() || !ctx.jsx.framework) return []
+  return patternMap[ctx.jsx.framework!](ctx, filters)
 }

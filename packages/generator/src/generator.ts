@@ -55,7 +55,7 @@ export const createGenerator = (conf: ConfigResultWithHooks): Generator => {
 }
 
 export interface Generator extends Context {
-  getArtifacts: () => Artifact[]
+  getArtifacts: (ids: string[] | undefined) => Artifact[]
   getStaticCss: (ctx: Context) => string
   getResetCss: (ctx: Context) => string
   getTokenCss: (ctx: Context) => string

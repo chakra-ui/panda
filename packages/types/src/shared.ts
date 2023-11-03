@@ -19,7 +19,32 @@ export interface ArtifactContent {
   code: string | undefined
 }
 
+export type ArtifactId =
+  // | '*'
+  | 'helpers'
+  | 'keyframes'
+  | 'design-tokens'
+  | 'types'
+  | 'css-fn'
+  | 'cva'
+  | 'sva'
+  | 'cx'
+  | 'create-recipe'
+  | 'recipes'
+  | 'patterns'
+  | 'jsx-is-valid-prop'
+  | 'jsx-helpers'
+  | 'jsx-factory'
+  | 'jsx-patterns'
+  | 'css-index'
+  | 'reset.css'
+  | 'global.css'
+  | 'static.css'
+  | 'package.json'
+  | 'styles.css'
+  | (string & {})
 export type Artifact = Nullable<{
+  id: ArtifactId
   dir?: string[]
   files: ArtifactContent[]
 }>
