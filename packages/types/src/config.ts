@@ -339,7 +339,7 @@ export interface LoadConfigResult {
   /** Config path */
   path: string
   config: UserConfig
-  serialized: unknown
+  serialized: string
   deserialize: () => Config
   tsconfig?: TSConfig
   tsOptions?: ConfigTsOptions

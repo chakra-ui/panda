@@ -10,6 +10,10 @@ const recipes = {
   ccc,
   dddFff,
 }
+
+// TODO - tokens/semanticTokens/breakpoints/conditions
+// TODO update context when we change jsxFramework, layers etc
+
 export default defineConfig({
   preflight: true,
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
@@ -19,7 +23,7 @@ export default defineConfig({
   patterns: {
     extend: {
       aspectRatio: {
-        description: '555',
+        description: '444',
       },
     },
   },
@@ -28,7 +32,7 @@ export default defineConfig({
       recipes,
       slotRecipes: {
         card: defineSlotRecipe({
-          className: 'u-card123',
+          className: 'card12341',
           slots: ['root', 'label', 'icon'],
           base: {
             root: {
@@ -83,8 +87,15 @@ export default defineConfig({
   },
   utilities: {
     extend: {
+      aspectRatio: {
+        className: 'a122344',
+        shorthand: ['dsdsdds'],
+        transform: (value) => {
+          return `ssf-${value}`
+        },
+      },
       backgroundColor: {
-        className: '123',
+        className: 'bg',
         transform: (value) => {
           return `ssf-${value}`
         },

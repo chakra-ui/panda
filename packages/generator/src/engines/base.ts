@@ -104,8 +104,6 @@ export const getBaseEngine = (conf: ConfigResultWithHooks): PandaBaseEngine => {
   const recipeContext = createSheetContext()
   const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
   const recipes = new Recipes(recipeConfigs, recipeContext)
-  // cache recipes on first run
-  recipes.save()
 
   const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
   const propertyMap = new Map(properties.map((prop) => [prop, true]))

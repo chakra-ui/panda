@@ -35,10 +35,12 @@ export class Recipes {
    */
   rules: Map<string, AtomicRule> = new Map()
 
-  keys: string[] = []
+  get keys() {
+    return Array.from(this.rules.keys())
+  }
 
   constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
-    this.assignRules()
+    this.save()
   }
 
   private getPropKey = (recipe: string, variant: string, value: any) => {
@@ -46,7 +48,8 @@ export class Recipes {
   }
 
   private get separator() {
-    console.log('separator', this.context.utility.separator)
+    // TODO
+    // console.log(0, 'separator', this.context.utility.separator)
     return this.context.utility.separator ?? '_'
   }
 
@@ -72,6 +75,7 @@ export class Recipes {
         const slotName = this.getSlotKey(name, slot)
         this.normalize(slotName, slotRecipe)
         slotsMap.set(slotName, slotRecipe)
+        this.rules.set(slotName, this.createRule(slotName, true))
       })
 
       // save the root recipe
@@ -80,7 +84,15 @@ export class Recipes {
       //
     } else {
       this.assignRecipe(name, this.normalize(name, recipe))
+      this.rules.set(name, this.createRule(name))
     }
+  }
+
+  remove(name: string) {
+    this.rules.delete(name)
+    sharedState.nodes.delete(name)
+    sharedState.classNames.delete(name)
+    sharedState.styles.delete(name)
   }
 
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
@@ -114,27 +126,6 @@ export class Recipes {
 
   getSlotKey = (name: string, slot: string) => {
     return `${name}__${slot}`
-  }
-
-  assignRules = () => {
-    if (!this.context) return
-
-    for (const [name, recipe] of Object.entries(this.recipes)) {
-      //
-      if (isSlotRecipe(recipe)) {
-        //
-        recipe.slots.forEach((slotName) => {
-          const slotKey = this.getSlotKey(name, slotName)
-          this.rules.set(slotKey, this.createRule(slotKey, true))
-        })
-        //
-      } else {
-        //
-        this.rules.set(name, this.createRule(name))
-      }
-
-      this.keys.push(name)
-    }
   }
 
   isEmpty = () => {

@@ -20,7 +20,6 @@ export interface ArtifactContent {
 }
 
 export type ArtifactId =
-  // | '*'
   | 'helpers'
   | 'keyframes'
   | 'design-tokens'
@@ -31,11 +30,14 @@ export type ArtifactId =
   | 'cx'
   | 'create-recipe'
   | 'recipes'
+  | 'recipes-index'
   | 'patterns'
+  | 'patterns-index'
   | 'jsx-is-valid-prop'
   | 'jsx-helpers'
   | 'jsx-factory'
   | 'jsx-patterns'
+  | 'jsx-patterns-index'
   | 'css-index'
   | 'reset.css'
   | 'global.css'

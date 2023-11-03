@@ -204,6 +204,25 @@ function setupCreateRecipe(ctx: Context): Artifact {
   }
 }
 
+function setupRecipesIndex(ctx: Context): Artifact {
+  if (ctx.recipes.isEmpty()) return
+
+  const fileNames = ctx.recipes.details.map((recipe) => recipe.dashName)
+  const index = {
+    js: outdent.string(fileNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')),
+    dts: outdent.string(fileNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')),
+  }
+
+  return {
+    id: 'recipes-index',
+    dir: ctx.paths.recipe,
+    files: [
+      { file: ctx.file.ext('index'), code: index.js },
+      { file: ctx.file.extDts('index'), code: index.dts },
+    ],
+  }
+}
+
 function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact {
   if (ctx.recipes.isEmpty()) return
 
@@ -229,28 +248,38 @@ function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact {
   }
 }
 
+function setupPatternsIndex(ctx: Context): Artifact {
+  if (ctx.isTemplateLiteralSyntax) return
+
+  const fileNames = ctx.patterns.details.map((pattern) => pattern.dashName)
+  const index = {
+    js: outdent.string(fileNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')),
+    dts: outdent.string(fileNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')),
+  }
+
+  return {
+    id: 'patterns-index',
+    dir: ctx.paths.pattern,
+    files: [
+      { file: ctx.file.ext('index'), code: index.js },
+      { file: ctx.file.extDts('index'), code: index.dts },
+    ],
+  }
+}
+
 function setupPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
   if (ctx.isTemplateLiteralSyntax) return
 
   const files = generatePattern(ctx, filters)
   if (!files) return
 
-  const index = {
-    js: outdent.string(files.map((file) => ctx.file.exportStar(`./${file.name}`)).join('\n')),
-    dts: outdent.string(files.map((file) => ctx.file.exportTypeStar(`./${file.name}`)).join('\n')),
-  }
-
   return {
     id: 'patterns',
     dir: ctx.paths.pattern,
-    files: [
-      ...files.flatMap((file) => [
-        { file: ctx.file.ext(file.name), code: file.js },
-        { file: ctx.file.extDts(file.name), code: file.dts },
-      ]),
-      { file: ctx.file.ext('index'), code: index.js },
-      { file: ctx.file.extDts('index'), code: index.dts },
-    ],
+    files: files.flatMap((file) => [
+      { file: ctx.file.ext(file.name), code: file.js },
+      { file: ctx.file.extDts(file.name), code: file.dts },
+    ]),
   }
 }
 
@@ -300,25 +329,7 @@ function setupJsxHelpers(ctx: Context): Artifact {
 function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
   if (!ctx.jsx.framework) return
 
-  const withIsValidProp = ctx.isTemplateLiteralSyntax
-
   const patterns = generateJsxPatterns(ctx, filters)
-  const index = {
-    js: outdent`
-  ${ctx.file.exportStar('./factory')}
-  ${withIsValidProp ? ctx.file.exportStar('./is-valid-prop') : ''}
-  ${outdent.string(patterns.map((file) => ctx.file.exportStar(`./${file.name}`)).join('\n'))}
-  `,
-    dts: outdent`
-  ${ctx.file.exportTypeStar('./factory')}
-
-  ${withIsValidProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
-
-  ${outdent.string(patterns.map((file) => ctx.file.exportTypeStar(`./${file.name}`)).join('\n'))}
-
-  ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
-    `,
-  }
 
   return {
     id: 'jsx-patterns',
@@ -328,6 +339,37 @@ function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
         { file: ctx.file.ext(file.name), code: file.js },
         { file: ctx.file.extDts(file.name), code: file.dts },
       ]),
+    ],
+  }
+}
+
+function setupJsxPatternsIndex(ctx: Context): Artifact {
+  if (!ctx.jsx.framework) return
+
+  const withIsValidProp = ctx.isTemplateLiteralSyntax
+  const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
+
+  const index = {
+    js: outdent`
+  ${ctx.file.exportStar('./factory')}
+  ${withIsValidProp ? ctx.file.exportStar('./is-valid-prop') : ''}
+  ${outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n'))}
+  `,
+    dts: outdent`
+  ${ctx.file.exportTypeStar('./factory')}
+
+  ${withIsValidProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
+
+  ${outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n'))}
+
+  ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
+    `,
+  }
+
+  return {
+    id: 'jsx-patterns-index',
+    dir: ctx.paths.jsx,
+    files: [
       { file: ctx.file.ext('index'), code: index.js },
       { file: ctx.file.extDts('index'), code: index.dts },
     ],
@@ -425,13 +467,17 @@ const filterArtifactsFiles = (artifacts: Artifact[], filters?: ArtifactFilters):
         if (!item) return
         if (!affected) return true
 
-        // only rewrite the affected files
+        // only rewrite the affected files (and index files)
         // or all of them if we don't have a list to filter them
-        if (affected.recipes && artifact?.dir?.includes('recipes')) {
+        if (affected.recipes && !item.file.includes('index') && artifact?.dir?.includes('recipes')) {
           const isAffected = affected.recipes.some((recipe) => item.file.includes(recipe))
           if (!isAffected) return
         }
-        if (affected.patterns && (artifact?.dir?.includes('patterns') || artifact?.dir?.includes('jsx'))) {
+        if (
+          affected.patterns &&
+          !item.file.includes('index') &&
+          (artifact?.dir?.includes('patterns') || artifact?.dir?.includes('jsx'))
+        ) {
           const isAffected = affected.patterns.some((pattern) => item.file.includes(pattern))
           if (!isAffected) return
         }
@@ -458,12 +504,15 @@ const entries: ArtifactEntry[] = [
   ['sva', setupSva],
   ['cx', setupCx],
   ['create-recipe', setupCreateRecipe],
+  ['recipes-index', setupRecipesIndex],
   ['recipes', setupRecipes],
+  ['patterns-index', setupPatternsIndex],
   ['patterns', setupPatterns],
   ['jsx-is-valid-prop', setupJsxIsValidProp],
   ['jsx-factory', setupJsxFactory],
   ['jsx-helpers', setupJsxHelpers],
   ['jsx-patterns', setupJsxPatterns],
+  ['jsx-patterns-index', setupJsxPatternsIndex],
   ['css-index', setupCssIndex],
   ['reset.css', setupResetCss],
   ['global.css', setupGlobalCss],

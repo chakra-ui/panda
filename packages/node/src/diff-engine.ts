@@ -27,12 +27,15 @@ const artifactConfigDeps: Record<ArtifactId, ConfigPaths[]> = {
   sva: ['syntax'],
   cx: [],
   'create-recipe': ['separator', 'prefix', 'hash'],
+  'recipes-index': ['theme.recipes', 'theme.slotRecipes'],
   recipes: ['theme.recipes', 'theme.slotRecipes'],
+  'patterns-index': ['syntax', 'patterns'],
   patterns: ['syntax', 'patterns'],
   'jsx-is-valid-prop': common,
   'jsx-factory': jsx,
   'jsx-helpers': jsx,
   'jsx-patterns': jsx.concat('patterns'),
+  'jsx-patterns-index': jsx.concat('patterns'),
   'css-index': ['syntax'],
   'reset.css': ['preflight', 'layers'],
   'global.css': ['globalCss'].concat(css),
@@ -84,6 +87,12 @@ const matchers = {
   }),
 }
 
+export interface AffectedResult {
+  hasConfigChanged: boolean
+  artifacts: Set<ArtifactId>
+  engine: Set<EngineId>
+}
+
 export class DiffEngine {
   previous: Config | undefined
 
@@ -102,8 +111,10 @@ export class DiffEngine {
    * Returns the list of affected artifacts/engines
    */
   async refresh(conf: LoadConfigResult) {
-    const affected = { artifacts: new Set<ArtifactId>(), engine: new Set<EngineId>() }
+    const affected: AffectedResult = { artifacts: new Set(), engine: new Set(), hasConfigChanged: false }
+
     if (!this.previous) {
+      affected.hasConfigChanged = true
       return affected
     }
 
@@ -111,6 +122,7 @@ export class DiffEngine {
     const parsed = conf.deserialize()
     const diffList = diff(this.previous, parsed)
     if (!diffList.length) return affected
+    affected.hasConfigChanged = true
 
     // update context
     this.previous = parsed
@@ -125,8 +137,7 @@ export class DiffEngine {
         if (!id) return
 
         // add `recipes.xxx-yyy` to specify which recipes were affected, and later avoid rewriting all recipes
-        // same for recipes / patterns / utilities
-        // use dashCase for recipes & patterns since those will be used as filenames
+        // same for recipes, use dashCase since those will be used as filenames
 
         if (id === 'recipes') {
           // ['theme', 'recipes', 'xxx'] => recipes.xxx
@@ -166,8 +177,13 @@ export class DiffEngine {
           case 'recipes': {
             // ['theme', 'recipes', 'xxx'] => recipes.xxx
             const name = String(change.path[2])
+            if (!name) return
+
             const recipe = conf.config.theme?.recipes?.[name] || conf.config.theme?.slotRecipes?.[name]
-            if (!name || !recipe) return
+            if (!recipe) {
+              this.ctx.recipes.remove(name)
+              return
+            }
 
             this.ctx.recipes.saveOne(name, recipe)
             break
@@ -175,8 +191,13 @@ export class DiffEngine {
           case 'patterns': {
             // ['patterns', 'xxx'] => patterns.xxx
             const name = String(change.path[1])
+            if (!name) return
+
             const pattern = conf.config.patterns?.[name]
-            if (!name || !pattern) return
+            if (!pattern) {
+              this.ctx.patterns.remove(name)
+              return
+            }
 
             this.ctx.patterns.saveOne(name, pattern)
             break

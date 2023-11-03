@@ -75,6 +75,14 @@ export class Patterns implements PandaPatternEngine {
       this.details.push(updated)
     }
   }
+
+  remove(name: string) {
+    delete this.patterns[name]
+    const detailIndex = this.details.findIndex((detail) => detail.baseName === name)
+    if (detailIndex > -1) {
+      this.details.splice(detailIndex, 1)
+    }
+  }
 }
 
 export interface PandaPatternEngine {
@@ -87,6 +95,7 @@ export interface PandaPatternEngine {
   filter: (jsxName: string) => PatternDetail[]
   isEmpty: () => boolean
   saveOne: (name: string, pattern: PatternConfig) => void
+  remove: (name: string) => void
 }
 
 interface PatternNames {

@@ -1,7 +1,9 @@
 import { css, sva } from '../styled-system/css'
 import { card } from '../styled-system/recipes'
-import { splitCssProps, styled } from '../styled-system/jsx'
+import { styled } from '../styled-system/jsx'
+import { splitCssProps } from '../styled-system/jsx/is-valid-prop'
 import { HTMLStyledProps } from '../styled-system/types'
+// import '../styled-system/styles.css'
 
 const button = sva({
   slots: ['label', 'icon'],
@@ -75,7 +77,7 @@ export function App() {
       <button>
         <span class={btnClass.label}>Button Label</span>
       </button>
-      <SplitComponent w="2" onClick={() => console.log('123')}>
+      <SplitComponent w="2" bgColor="red.300" onClick={() => console.log('123')}>
         Click me
       </SplitComponent>
     </div>
