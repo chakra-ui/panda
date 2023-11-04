@@ -27,12 +27,11 @@ export async function generate(config: Config, configPath?: string) {
 
   const {
     runtime: { fs, path },
-    dependencies,
     config: { cwd },
   } = ctx
 
   if (ctx.config.watch) {
-    const configWatcher = fs.watch({ include: dependencies })
+    const configWatcher = fs.watch({ include: ctx.conf.dependencies })
     configWatcher.on('change', async () => {
       const affecteds = await ctx.diff.reloadConfigAndRefreshCtx()
       if (!affecteds.artifacts.size && !affecteds.engine.size) return

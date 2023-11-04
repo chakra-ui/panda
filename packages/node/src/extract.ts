@@ -160,11 +160,11 @@ export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'ke
 export async function generateCssArtifactOfType(ctx: PandaContext, cssType: CssArtifactType, outfile: string) {
   let notFound = false
   const css = match(cssType)
-    .with('preflight', () => ctx.getResetCss(ctx))
-    .with('tokens', () => ctx.getTokenCss(ctx))
-    .with('static', () => ctx.getStaticCss(ctx))
-    .with('global', () => ctx.getGlobalCss(ctx))
-    .with('keyframes', () => ctx.getKeyframeCss(ctx))
+    .with('preflight', () => ctx.getResetCss())
+    .with('tokens', () => ctx.getTokenCss())
+    .with('static', () => ctx.getStaticCss())
+    .with('global', () => ctx.getGlobalCss())
+    .with('keyframes', () => ctx.getKeyframeCss())
     .otherwise(() => {
       notFound = true
     })

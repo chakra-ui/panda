@@ -14,7 +14,8 @@ const getImportMap = (outdir: string, configImportMap?: OutdirImportMap): Parser
 }
 
 export const getParserOptions = (ctx: Context): ParserOptions => {
-  const { config, jsx, isValidProperty, patterns, recipes, tsconfig, tsOptions } = ctx
+  const { config, jsx, isValidProperty, patterns, recipes } = ctx
+  const { tsconfig, tsOptions } = ctx.conf
 
   const compilerOptions = tsconfig?.compilerOptions ?? {}
   const baseUrl = compilerOptions.baseUrl ?? ''

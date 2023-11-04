@@ -8,7 +8,7 @@ import {
   tokens,
   utilities,
 } from '@pandacss/fixture'
-import { createGenerator } from '@pandacss/generator'
+import { Generator } from '@pandacss/generator'
 import type { Config, LoadConfigResult, PandaHooks, TSConfig } from '@pandacss/types'
 import { mergeConfigs } from '@pandacss/config'
 import { createProject } from '../src'
@@ -17,7 +17,7 @@ import { createHooks } from 'hookable'
 
 const staticFilePath = 'app/src/test.tsx'
 
-const defaults: LoadConfigResult = {
+const defaults: Omit<LoadConfigResult, 'serialized' | 'deserialize'> = {
   dependencies: [],
   config: {
     cwd: '',
@@ -48,6 +48,15 @@ function getProject(code: string, userConfig?: Config) {
   return getFixtureProject(code, userConfig).project
 }
 
+const serializeConfig = (config: Config) =>
+  JSON.stringify(config, (_key, value) => {
+    if (typeof value === 'function') {
+      return value.toString()
+    }
+
+    return value
+  })
+
 export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: TSConfig) {
   const resolvedConfig = userConfig ? mergeConfigs([defaults.config, userConfig]) : defaults.config
   const config = {
@@ -56,7 +65,11 @@ export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: 
     cwd: userConfig?.cwd ?? defaults.config.cwd,
   } as typeof resolvedConfig
   const hooks = createHooks<PandaHooks>()
-  const generator = createGenerator({ ...defaults, config, hooks, tsconfig })
+
+  const serialized = serializeConfig(config)
+  const deserialize = () => JSON.parse(serialized)
+
+  const generator = new Generator({ ...defaults, config, hooks, tsconfig, serialized, deserialize })
 
   const project = createProject({
     ...tsconfig,

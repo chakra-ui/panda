@@ -1,14 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import { generateRecipes } from '../src/artifacts/js/recipe'
+import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
 import { generator } from './fixture'
 
 describe('generate recipes', () => {
   test('should ', () => {
-    expect(generateRecipes(generator)).toMatchInlineSnapshot(`
-      [
-        {
-          "dts": "",
-          "js": "import { css } from '../css/css.mjs';
+    expect(generateCreateRecipe(generator)).toMatchInlineSnapshot(`
+      {
+        "dts": "",
+        "js": "import { css } from '../css/css.mjs';
       import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
       import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
@@ -82,8 +81,12 @@ describe('generate recipes', () => {
        })
        }
       ",
-          "name": "create-recipe",
-        },
+        "name": "create-recipe",
+      }
+    `)
+
+    expect(generateRecipes(generator)).toMatchInlineSnapshot(`
+      [
         {
           "dts": "import type { ConditionalValue } from '../types/index';
       import type { DistributiveOmit, Pretty } from '../types/system-types';

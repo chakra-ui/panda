@@ -10,7 +10,7 @@ export interface FlattenedCssOptions {
   resolve?: boolean
 }
 
-export const generateFlattenedCss = (ctx: Context) => (options: FlattenedCssOptions) => {
+export const generateFlattenedCss = (ctx: Context, options: FlattenedCssOptions) => {
   const { files, resolve } = options
   const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 

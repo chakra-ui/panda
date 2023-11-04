@@ -153,7 +153,7 @@ export class Builder {
       }
     }
 
-    for (const file of ctx.dependencies) {
+    for (const file of ctx.conf.dependencies) {
       fn({ type: 'dependency', file: resolve(file) })
     }
 

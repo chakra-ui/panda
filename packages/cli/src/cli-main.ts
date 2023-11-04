@@ -119,7 +119,7 @@ export async function main() {
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
         const watcher = ctx.runtime.fs.watch({
-          include: ctx.dependencies,
+          include: ctx.conf.dependencies,
           cwd,
           poll,
         })
@@ -212,7 +212,7 @@ export async function main() {
 
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
-        const configWatcher = ctx.runtime.fs.watch({ include: ctx.dependencies, cwd, poll })
+        const configWatcher = ctx.runtime.fs.watch({ include: ctx.conf.dependencies, cwd, poll })
 
         configWatcher.on(
           'change',

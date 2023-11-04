@@ -3,7 +3,7 @@ import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
 import { createDebugger, createHooks } from 'hookable'
 import { lookItUpSync } from 'look-it-up'
 import { parse } from 'tsconfck'
-import { createContext } from './create-context'
+import { PandaContext } from './create-context'
 
 const configs = ['.ts', '.js', '.mts', '.mjs', '.cts', '.cjs']
 
@@ -54,5 +54,5 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
     createDebugger(hooks, { tag: 'panda' })
   }
 
-  return createContext({ ...conf, hooks } as ConfigResultWithHooks)
+  return new PandaContext({ ...conf, hooks } as ConfigResultWithHooks)
 }

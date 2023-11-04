@@ -97,11 +97,11 @@ export class DiffEngine {
   previous: Config | undefined
 
   constructor(private ctx: Omit<PandaContext, 'chunks' | 'output' | 'diff'>) {
-    this.previous = ctx.deserialize()
+    this.previous = ctx.conf.deserialize()
   }
 
   async reloadConfigAndRefreshCtx() {
-    const conf = await loadConfigFile({ cwd: this.ctx.config.cwd, file: this.ctx.path })
+    const conf = await loadConfigFile({ cwd: this.ctx.config.cwd, file: this.ctx.conf.path })
     return this.refresh(conf)
   }
 
@@ -126,8 +126,8 @@ export class DiffEngine {
 
     // update context
     this.previous = parsed
-    this.ctx.config = conf.config
-    this.ctx.dependencies = conf.dependencies
+    this.ctx.conf.config = conf.config
+    this.ctx.conf.dependencies = conf.dependencies
 
     diffList.forEach((change) => {
       const changePath = change.path.join('.')

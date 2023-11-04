@@ -14,7 +14,7 @@ export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
 export type CascadeLayers = Record<CascadeLayer, string>
 
-interface StudioOptions {
+export interface StudioOptions {
   /**
    * Used to customize the design system studio
    * @default { title: 'Panda', logo: '🐼' }
