@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generatorConfig } from './fixture'
-import { Artifact } from '@pandacss/types'
+import { type Artifact } from '@pandacss/types'
 
 const formatArtifact = (artifact: Artifact) => {
   if (!artifact) return
@@ -42,8 +42,6 @@ describe('setup-artifacts', () => {
           "recipes/tooltip-style.d.ts",
           "recipes/button-style.mjs",
           "recipes/button-style.d.ts",
-          "recipes/index.mjs",
-          "recipes/index.d.ts",
         ],
       ]
     `)
@@ -52,8 +50,6 @@ describe('setup-artifacts', () => {
         [
           "recipes/button-style.mjs",
           "recipes/button-style.d.ts",
-          "recipes/index.mjs",
-          "recipes/index.d.ts",
         ],
       ]
     `)
@@ -65,8 +61,6 @@ describe('setup-artifacts', () => {
             "recipes/tooltip-style.d.ts",
             "recipes/button-style.mjs",
             "recipes/button-style.d.ts",
-            "recipes/index.mjs",
-            "recipes/index.d.ts",
           ],
         ]
       `)
@@ -199,8 +193,6 @@ describe('setup-artifacts', () => {
           "recipes/tooltip-style.d.ts",
           "recipes/button-style.mjs",
           "recipes/button-style.d.ts",
-          "recipes/index.mjs",
-          "recipes/index.d.ts",
         ],
         [
           "patterns/index.mjs",

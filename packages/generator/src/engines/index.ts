@@ -186,7 +186,7 @@ export class Context {
     this.recipes = this.createRecipes(theme, this.createSheetContext())
   }
 
-  createSheetContext = (): StylesheetContext => {
+  createSheetContext(): StylesheetContext {
     return {
       root: postcss.root(),
       conditions: this.conditions,
@@ -197,7 +197,7 @@ export class Context {
     }
   }
 
-  createSheet = (options?: Pick<StylesheetOptions, 'content'>): Stylesheet => {
+  createSheet(options?: Pick<StylesheetOptions, 'content'>): Stylesheet {
     const sheetContext = this.createSheetContext()
     return new Stylesheet(sheetContext, {
       content: options?.content,

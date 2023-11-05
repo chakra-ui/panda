@@ -131,8 +131,6 @@ export class DiffEngine {
       })
     })
 
-    console.log(1, diffList)
-    console.log(2, affected)
     return affected
   }
 }

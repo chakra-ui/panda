@@ -34,7 +34,7 @@ export async function generate(config: Config, configPath?: string) {
     const configWatcher = fs.watch({ include: ctx.conf.dependencies })
     configWatcher.on('change', async () => {
       const affecteds = await ctx.diff.reloadConfigAndRefreshCtx()
-      if (!affecteds.artifacts.size && !affecteds.engine.size) return
+      if (!affecteds.artifacts.size) return
 
       logger.info('config:change', 'Config changed, restarting...')
       await ctx.hooks.callHook('config:change', ctx.config)

@@ -1,15 +1,4 @@
 import { defineConfig, defineSlotRecipe } from '@pandacss/dev'
-import { aaa } from './recipes/aaa'
-import { bbb } from './recipes/bbb'
-import { ccc } from './recipes/ccc'
-import { dddFff } from './recipes/ddd-fff'
-
-const recipes = {
-  aaa,
-  bbb,
-  ccc,
-  dddFff,
-}
 
 export default defineConfig({
   preflight: true,
@@ -17,19 +6,11 @@ export default defineConfig({
   exclude: [],
   outdir: 'styled-system',
   jsxFramework: 'preact',
-  patterns: {
-    extend: {
-      aspectRatio: {
-        description: '444',
-      },
-    },
-  },
   theme: {
     extend: {
-      recipes,
       slotRecipes: {
         card: defineSlotRecipe({
-          className: 'card12341',
+          className: 'u-card',
           slots: ['root', 'label', 'icon'],
           base: {
             root: {
@@ -79,29 +60,6 @@ export default defineConfig({
             },
           ],
         }),
-      },
-    },
-  },
-  utilities: {
-    extend: {
-      aspectRatio: {
-        className: 'a122344',
-        shorthand: ['dsdsdds'],
-        transform: (value) => {
-          return `ssf-${value}`
-        },
-      },
-      backgroundColor: {
-        className: 'bg',
-        transform: (value) => {
-          return `ssf-${value}`
-        },
-      },
-      color: {
-        className: '123',
-        transform: (value) => {
-          return `ssf-${value}`
-        },
       },
     },
   },

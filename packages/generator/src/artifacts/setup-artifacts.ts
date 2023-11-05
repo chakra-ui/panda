@@ -229,22 +229,13 @@ function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact {
   const files = generateRecipes(ctx, filters)
   if (!files) return
 
-  const index = {
-    js: outdent.string(files.map((file) => ctx.file.exportStar(`./${file.name}`)).join('\n')),
-    dts: outdent.string(files.map((file) => ctx.file.exportTypeStar(`./${file.name}`)).join('\n')),
-  }
-
   return {
     id: 'recipes',
     dir: ctx.paths.recipe,
-    files: [
-      ...files.flatMap((file) => [
-        { file: ctx.file.ext(file.name), code: file.js },
-        { file: ctx.file.extDts(file.name), code: file.dts },
-      ]),
-      { file: ctx.file.ext('index'), code: index.js },
-      { file: ctx.file.extDts('index'), code: index.dts },
-    ],
+    files: files.flatMap((file) => [
+      { file: ctx.file.ext(file.name), code: file.js },
+      { file: ctx.file.extDts(file.name), code: file.dts },
+    ]),
   }
 }
 
