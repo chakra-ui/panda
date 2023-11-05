@@ -156,13 +156,16 @@ const grid = definePattern({
   },
   transform(props, { map }) {
     const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '10px', columns, minChildWidth, ...rest } = props
+    const getValue = (v: string) =>
+      v.includes('px') || v.includes('em') || v.includes('%') ? v : `token(sizes.${v}, ${v})`
+
     return {
       display: 'grid',
       gridTemplateColumns:
         columns != null
-          ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`)
+          ? map(columns, (v) => `repeat(${getValue(v)}, minmax(0, 1fr))`)
           : minChildWidth != null
-          ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`)
+          ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${getValue(v)}, 1fr))`)
           : undefined,
       gap,
       columnGap,

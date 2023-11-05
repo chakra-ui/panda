@@ -2580,7 +2580,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('grid pattern minChildWidth not interpreted as token value', () => {
+  test('grid pattern minChildWidth not interpreted as token value', () => {
     const code = `
     import { grid } from '.panda/patterns';
 
@@ -2629,8 +2629,8 @@ describe('extract to css output pipeline', () => {
           display: grid
           }
 
-        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(20\\\\,_1fr\\\\)\\\\) {
-          grid-template-columns: repeat(auto-fit, minmax(20, 1fr))
+        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(token\\\\(sizes\\\\.20\\\\,_20\\\\)\\\\,_1fr\\\\)\\\\) {
+          grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, \\\\320), 1fr))
           }
 
         .gap_8 {
