@@ -1,4 +1,8 @@
 const path = require('path')
+const isViz = process.env.ANALYZE === 'true'
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: isViz,
+})
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -20,9 +24,17 @@ const nextConfig = {
       }
     }
 
+    config.module.rules.push({
+      resourceQuery: /raw/,
+      loader: 'raw-loader',
+    })
+
     return config
   },
   reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: isViz,
+  },
 }
 
-module.exports = nextConfig
+module.exports = withBundleAnalyzer(nextConfig)
