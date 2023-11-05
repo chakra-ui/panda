@@ -93,14 +93,6 @@ export async function emitArtifacts(ctx: PandaContext, ids?: ArtifactId[]) {
   }
 }
 
-export async function emitArtfifactsAndCssChunks(ctx: PandaContext, ids?: ArtifactId[]) {
-  await emitArtifacts(ctx, ids)
-  if (ctx.config.emitTokensOnly) {
-    return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
-  }
-  return writeAndBundleCssChunks(ctx)
-}
-
 /**
  * Writes all the css chunks in outdir/chunks/{file}.css
  * and bundles them in outdir/styles.css

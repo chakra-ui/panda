@@ -3,7 +3,7 @@ import type { Dict, PatternConfig, UserConfig } from '@pandacss/types'
 
 const helpers = { map: mapObject }
 
-export class Patterns implements PandaPatternEngine {
+export class Patterns {
   patterns: Record<string, PatternConfig>
   details: PatternDetail[]
 
@@ -83,19 +83,6 @@ export class Patterns implements PandaPatternEngine {
       this.details.splice(detailIndex, 1)
     }
   }
-}
-
-export interface PandaPatternEngine {
-  keys: string[]
-  getConfig: (name: string) => PatternConfig
-  transform: (name: string, data: Dict) => Dict
-  getNames: (name: string) => PatternNames
-  details: PatternDetail[]
-  find: (jsxName: string) => string
-  filter: (jsxName: string) => PatternDetail[]
-  isEmpty: () => boolean
-  saveOne: (name: string, pattern: PatternConfig) => void
-  remove: (name: string) => void
 }
 
 interface PatternNames {

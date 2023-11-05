@@ -123,4 +123,8 @@ export class Conditions {
 
     this.values[`_${key}`] = parsed
   }
+
+  remove(key: string) {
+    delete this.values[`_${key}`]
+  }
 }

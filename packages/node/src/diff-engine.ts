@@ -126,7 +126,7 @@ export class DiffEngine {
 
     // update context
     this.previous = parsed
-    this.ctx.conf.config = conf.config
+    this.ctx.setConfig(conf.config)
     this.ctx.conf.dependencies = conf.dependencies
 
     diffList.forEach((change) => {
@@ -158,10 +158,15 @@ export class DiffEngine {
         const id = matcher(changePath) as EngineId | undefined
         if (!id) return
         affected.engine.add(id)
+
         switch (id) {
-          // case 'tokens':
-          //   this.ctx.tokens.reload()
-          //   break
+          case 'tokens': {
+            const theme = conf.config.theme
+            if (!theme) return
+
+            this.ctx.tokens = this.ctx.createTokenDictionary(theme)
+            break
+          }
           case 'utilities': {
             // ['utilities', 'xxx'] => utilities.xxx
             const name = String(change.path[1])

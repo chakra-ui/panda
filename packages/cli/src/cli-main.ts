@@ -108,6 +108,7 @@ export async function main() {
       }
 
       function loadContext() {
+        // TODO
         return loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
       }
 
@@ -125,6 +126,7 @@ export async function main() {
         })
 
         const onChange = debounce(async () => {
+          // TODO
           logger.info('ctx:change', 'config changed, rebuilding...')
           ctx = await loadContext()
           await emitArtifacts(ctx)
@@ -163,6 +165,7 @@ export async function main() {
       }
 
       function loadContext() {
+        // TODO
         return loadConfigAndCreateContext({
           cwd,
           config: {

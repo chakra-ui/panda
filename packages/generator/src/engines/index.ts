@@ -24,33 +24,27 @@ import type {
 import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 import { Patterns } from './pattern'
-import { getJsxEngine } from './jsx'
-import { getPathEngine } from './path'
-import { getFileEngine } from './file'
+import { JsxEngine } from './jsx'
+import { PathEngine } from './path'
+import { FileEngine } from './file'
 
-const helpers = {
-  map: mapObject,
-}
+const helpers = { map: mapObject }
 
 export class Context {
-  isTemplateLiteralSyntax!: boolean
-  studio!: RequiredBy<NonNullable<StudioOptions['studio']>, 'outdir'>
-
-  hash!: HashOptions
-  prefix!: PrefixOptions
+  studio: RequiredBy<NonNullable<StudioOptions['studio']>, 'outdir'>
 
   // Engines
-  tokens!: TokenDictionary
-  utility!: Utility
-  recipes!: Recipes
-  conditions!: Conditions
-  patterns!: Patterns
-  jsx!: ReturnType<typeof getJsxEngine>
-  paths!: ReturnType<typeof getPathEngine>
-  file!: ReturnType<typeof getFileEngine>
+  tokens: TokenDictionary
+  utility: Utility
+  recipes: Recipes
+  conditions: Conditions
+  patterns: Patterns
+  jsx: JsxEngine
+  paths: PathEngine
+  file: FileEngine
 
   // Props
-  properties!: string[]
+  properties!: Set<string>
   isValidProperty!: (key: string) => boolean
 
   // Layers
@@ -60,7 +54,24 @@ export class Context {
   layerNames!: string[]
 
   constructor(public conf: ConfigResultWithHooks) {
-    this.configureEngine(conf)
+    const { config } = conf
+    const theme = config.theme ?? {}
+
+    this.tokens = this.createTokenDictionary(theme)
+    this.utility = this.createUtility(config)
+    this.conditions = this.createConditions(config)
+    this.patterns = new Patterns(config)
+    this.jsx = new JsxEngine(config)
+    this.paths = new PathEngine(config)
+    this.file = new FileEngine(config)
+
+    this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
+    this.setupCompositions(theme)
+    this.setupLayers(config.layers as CascadeLayers)
+    this.setupProperties()
+
+    // Relies on this.conditions, this.utility, this.layers
+    this.recipes = this.createRecipes(theme, this.createSheetContext())
   }
 
   get config() {
@@ -71,45 +82,22 @@ export class Context {
     return this.conf.hooks
   }
 
-  configureEngine(conf: ConfigResultWithHooks): void {
-    const { config } = conf
-    const theme = config.theme ?? {}
-
-    this.isTemplateLiteralSyntax = config.syntax === 'template-literal'
-    this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
-    this.setupHashAndPrefix(config)
-
-    this.tokens = this.createTokenDictionary(theme)
-    this.utility = this.createUtility(config)
-    this.conditions = this.createConditions(config)
-    this.patterns = new Patterns(config)
-    this.jsx = getJsxEngine(config)
-    this.paths = getPathEngine(config)
-    this.file = getFileEngine(config)
-
-    this.assignCompositions(theme)
-    this.setupLayers(config.layers as CascadeLayers)
-    this.recipes = this.createRecipes(theme, this.createSheetContext())
-    this.setupProperties()
+  get isTemplateLiteralSyntax() {
+    return this.config.syntax === 'template-literal'
   }
 
-  getHashOptions(config: UserConfig): HashOptions {
+  get hash(): HashOptions {
     return {
-      tokens: isBool(config.hash) ? config.hash : config.hash?.cssVar,
-      className: isBool(config.hash) ? config.hash : config.hash?.className,
+      tokens: isBool(this.config.hash) ? this.config.hash : this.config.hash?.cssVar,
+      className: isBool(this.config.hash) ? this.config.hash : this.config.hash?.className,
     }
   }
 
-  getPrefixOptions(config: UserConfig): PrefixOptions {
+  get prefix(): PrefixOptions {
     return {
-      tokens: isStr(config.prefix) ? config.prefix : config.prefix?.cssVar,
-      className: isStr(config.prefix) ? config.prefix : config.prefix?.className,
+      tokens: isStr(this.config.prefix) ? this.config.prefix : this.config.prefix?.cssVar,
+      className: isStr(this.config.prefix) ? this.config.prefix : this.config.prefix?.className,
     }
-  }
-
-  setupHashAndPrefix(config: UserConfig): void {
-    this.hash = this.getHashOptions(config)
-    this.prefix = this.getPrefixOptions(config)
   }
 
   createTokenDictionary(theme: Theme): TokenDictionary {
@@ -140,14 +128,10 @@ export class Context {
     })
   }
 
-  assignCompositions(theme: Theme): void {
+  setupCompositions(theme: Theme): void {
     const { textStyles, layerStyles } = theme
-    const compositions = compact({
-      textStyle: textStyles,
-      layerStyle: layerStyles,
-    })
-    const compositionContext = { conditions: this.conditions, utility: this.utility }
-    assignCompositions(compositions, compositionContext)
+    const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
+    assignCompositions(compositions, { conditions: this.conditions, utility: this.utility })
   }
 
   setupLayers(layers: CascadeLayers): void {
@@ -160,18 +144,33 @@ export class Context {
     this.layerString = `@layer ${this.layerNames.join(', ')};`
   }
 
-  createSheetContext(): StylesheetContext {
+  setupProperties(): void {
+    this.properties = new Set(['css', ...this.utility.keys(), ...this.conditions.keys()])
+    this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
+  }
+
+  setConfig = (config: UserConfig): void => {
+    this.conf.config = config
+    this.jsx.setConfig(config)
+    this.paths.setConfig(config)
+    this.file.setConfig(config)
+    this.setupCompositions(config.theme ?? {})
+    this.setupLayers(config.layers as CascadeLayers)
+    this.setupProperties()
+  }
+
+  createSheetContext = (): StylesheetContext => {
     return {
       root: postcss.root(),
       conditions: this.conditions,
       utility: this.utility,
       hash: this.hash.className,
-      helpers,
       layers: this.layers,
+      helpers,
     }
   }
 
-  createSheet(options?: Pick<StylesheetOptions, 'content'>): Stylesheet {
+  createSheet = (options?: Pick<StylesheetOptions, 'content'>): Stylesheet => {
     const sheetContext = this.createSheetContext()
     return new Stylesheet(sheetContext, {
       content: options?.content,
@@ -183,14 +182,5 @@ export class Context {
   createRecipes(theme: Theme, context: StylesheetContext): Recipes {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
     return new Recipes(recipeConfigs, context)
-  }
-
-  setupProperties(): void {
-    this.properties = Array.from(new Set(['css', ...this.utility.keys(), ...this.conditions.keys()]))
-    const propertyMap = new Map(this.properties.map((prop) => [prop, true]))
-
-    this.isValidProperty = memo((key: string) => {
-      return propertyMap.has(key) || isCssProperty(key)
-    })
   }
 }
