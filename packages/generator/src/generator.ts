@@ -1,4 +1,4 @@
-import type { ConfigResultWithHooks, ParserResultType } from '@pandacss/types'
+import type { ArtifactId, ConfigResultWithHooks, ParserResultType } from '@pandacss/types'
 import { generateArtifacts } from './artifacts'
 import { generateFlattenedCss, type FlattenedCssOptions } from './artifacts/css/flat-css'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -21,7 +21,7 @@ export class Generator extends Context {
     this.messages = getMessages(this)
   }
 
-  getArtifacts(ids?: string[] | undefined) {
+  getArtifacts(ids?: ArtifactId[] | undefined) {
     return generateArtifacts(this, ids)
   }
 

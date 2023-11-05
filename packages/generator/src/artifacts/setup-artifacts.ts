@@ -544,7 +544,7 @@ const transformArtifact = (ctx: Context, artifact: Artifact): Artifact => {
   return { ...artifact, files } as Artifact
 }
 
-export const setupArtifacts = (ctx: Context, ids?: string[]): Artifact[] => {
+export const setupArtifacts = (ctx: Context, ids?: ArtifactId[]): Artifact[] => {
   const affecteds = getAffectedArtifacts(ids)
   const artifacts = getMatchingArtifacts(ctx, { ids, affecteds })
   const matches = filterArtifactsFiles(artifacts, { ids, affecteds })
