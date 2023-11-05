@@ -501,10 +501,10 @@ const theme = {
   tokens: {
     assets: {
       logo: {
-        value: { type: 'url', url: '/static/logo.png' }
+        value: { type: 'url', value: '/static/logo.png' }
       },
       checkmark: {
-        value: { type: 'svg', svg: '<svg>...</svg>' }
+        value: { type: 'svg', value: '<svg>...</svg>' }
       }
     }
   }

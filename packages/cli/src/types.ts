@@ -43,6 +43,7 @@ export interface DebugCommandFlags {
   outdir?: string
   cwd?: string
   config?: string
+  onlyConfig?: boolean
 }
 
 export interface ShipCommandFlags {

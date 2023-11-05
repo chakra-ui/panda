@@ -52,6 +52,7 @@ export async function main() {
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
+    .option('--strict-tokens', 'Using strictTokens: true')
     .action(async (_flags: Partial<InitCommandFlags> = {}) => {
       let options = {}
 
@@ -358,6 +359,7 @@ export async function main() {
     .option('--silent', "Don't print any logs")
     .option('--dry', 'Output debug files in stdout without writing to disk')
     .option('--outdir [dir]', "Output directory for debug files, default to './styled-system/debug'")
+    .option('--only-config', "Should only output the config file, default to 'false'")
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (maybeGlob?: string, flags: DebugCommandFlags = {}) => {
@@ -377,7 +379,7 @@ export async function main() {
 
       const outdir = outdirFlag ?? join(...ctx.paths.root, 'debug')
 
-      await debugFiles(ctx, { outdir, dry })
+      await debugFiles(ctx, { outdir, dry, onlyConfig: flags.onlyConfig })
     })
 
   cli
