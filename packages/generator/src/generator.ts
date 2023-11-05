@@ -11,33 +11,12 @@ import { Context } from './engines' // Previously Engine
 import { getMessages } from './messages'
 import { getParserOptions, type ParserOptions } from './parser-options'
 
-const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
-  ...conf,
-  config: {
-    cssVarRoot: ':where(:root, :host)',
-    jsxFactory: 'styled',
-    jsxStyleProps: 'all',
-    outExtension: 'mjs',
-    shorthands: true,
-    syntax: 'object-literal',
-    ...conf.config,
-    layers: {
-      reset: 'reset',
-      base: 'base',
-      tokens: 'tokens',
-      recipes: 'recipes',
-      utilities: 'utilities',
-      ...conf.config.layers,
-    },
-  },
-})
-
 export class Generator extends Context {
   messages: ReturnType<typeof getMessages>
   parserOptions: ParserOptions
 
   constructor(conf: ConfigResultWithHooks) {
-    super(defaults(conf)) // Initialize the base context properties
+    super(conf)
     this.parserOptions = getParserOptions(this)
     this.messages = getMessages(this)
   }

@@ -11,9 +11,6 @@ const recipes = {
   dddFff,
 }
 
-// TODO - tokens/semanticTokens/breakpoints/conditions
-// TODO update context when we change jsxFramework, layers etc
-
 export default defineConfig({
   preflight: true,
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],

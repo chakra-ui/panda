@@ -38,7 +38,6 @@ export class PandaContext extends Generator {
       parserOptions: { join: this.runtime.path.join, ...this.parserOptions },
     })
 
-    // Initialize additional engines
     this.chunks = getChunkEngine(this)
     this.output = new PandaOutputEngine(this)
     this.diff = new DiffEngine(this)

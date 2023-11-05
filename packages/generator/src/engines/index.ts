@@ -30,6 +30,24 @@ import { FileEngine } from './file'
 
 const helpers = { map: mapObject }
 
+const defaults = (config: UserConfig): UserConfig => ({
+  cssVarRoot: ':where(:root, :host)',
+  jsxFactory: 'styled',
+  jsxStyleProps: 'all',
+  outExtension: 'mjs',
+  shorthands: true,
+  syntax: 'object-literal',
+  ...config,
+  layers: {
+    reset: 'reset',
+    base: 'base',
+    tokens: 'tokens',
+    recipes: 'recipes',
+    utilities: 'utilities',
+    ...config.layers,
+  },
+})
+
 export class Context {
   studio: RequiredBy<NonNullable<StudioOptions['studio']>, 'outdir'>
 
@@ -54,8 +72,9 @@ export class Context {
   layerNames!: string[]
 
   constructor(public conf: ConfigResultWithHooks) {
-    const { config } = conf
+    const config = defaults(conf.config)
     const theme = config.theme ?? {}
+    conf.config = config
 
     this.tokens = this.createTokenDictionary(theme)
     this.utility = this.createUtility(config)
@@ -149,14 +168,22 @@ export class Context {
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
 
-  setConfig = (config: UserConfig): void => {
-    this.conf.config = config
+  setConfig = (userConfig: UserConfig): void => {
+    const config = defaults(userConfig)
+    const theme = config.theme ?? {}
+
+    this.tokens = this.createTokenDictionary(theme)
+    this.utility = this.createUtility(config)
+    this.conditions = this.createConditions(config)
+    this.patterns = new Patterns(config)
     this.jsx.setConfig(config)
     this.paths.setConfig(config)
     this.file.setConfig(config)
-    this.setupCompositions(config.theme ?? {})
+
+    this.setupCompositions(theme)
     this.setupLayers(config.layers as CascadeLayers)
     this.setupProperties()
+    this.recipes = this.createRecipes(theme, this.createSheetContext())
   }
 
   createSheetContext = (): StylesheetContext => {

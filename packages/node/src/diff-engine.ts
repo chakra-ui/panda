@@ -1,7 +1,7 @@
 import { loadConfigFile } from '@pandacss/config'
 import type { ArtifactId, Config, LoadConfigResult, UserConfig } from '@pandacss/types'
-import type { PandaContext } from './create-context'
-import diff from 'microdiff'
+import diff, { type Difference } from 'microdiff'
+import { Generator } from '@pandacss/generator'
 import { dashCase } from '@pandacss/shared'
 
 // TODO add e2e tests for this
@@ -44,31 +44,8 @@ const artifactConfigDeps: Record<ArtifactId, ConfigPaths[]> = {
   'package.json': ['emitPackage'],
 }
 
-// This is the list of all the config paths that should trigger a (partial) rebuild of an engine
-// We will inject/update just the changed part in the affected engine
-
-type EngineId = 'tokens' | 'utilities' | 'conditions' | 'recipes' | 'patterns'
-
-const engineUtilities: ConfigPaths[] = [
-  'prefix',
-  'tokens',
-  'syntax',
-  'utilities',
-  'separator',
-  'shorthands',
-  'strictTokens',
-  'theme.textStyles',
-  'theme.layerStyles',
-]
 const configDeps = {
   artifacts: artifactConfigDeps,
-  engines: {
-    tokens: ['theme.breakpoints', 'theme.tokens', 'theme.semanticTokens', 'prefix', 'hash'],
-    utilities: engineUtilities,
-    conditions: ['conditions', 'theme.breakpoints'],
-    recipes: artifactConfigDeps.recipes.concat('conditions', 'layers', ...engineUtilities),
-    patterns: artifactConfigDeps.patterns,
-  } as Record<EngineId, ConfigPaths[]>,
 }
 
 // Prepare a list of regex that resolves to an artifact id from a list of config paths
@@ -79,27 +56,24 @@ const matchers = {
 
     return createMatcher(key, paths.concat(all))
   }),
-  engines: Object.keys(configDeps.engines).map((key) => {
-    const paths = configDeps.engines[key as EngineId]
-    if (!paths.length) return () => undefined
-
-    return createMatcher(key, paths.concat(all))
-  }),
 }
 
 export interface AffectedResult {
   hasConfigChanged: boolean
   artifacts: Set<ArtifactId>
-  engine: Set<EngineId>
+  diffs: Difference[]
 }
 
 export class DiffEngine {
-  previous: Config | undefined
+  private previous: Config | undefined
 
-  constructor(private ctx: Omit<PandaContext, 'chunks' | 'output' | 'diff'>) {
+  constructor(private ctx: Generator) {
     this.previous = ctx.conf.deserialize()
   }
 
+  /**
+   * Reload config from disk and refresh the context
+   */
   async reloadConfigAndRefreshCtx() {
     const conf = await loadConfigFile({ cwd: this.ctx.config.cwd, file: this.ctx.conf.path })
     return this.refresh(conf)
@@ -110,8 +84,8 @@ export class DiffEngine {
    * then persist the changes on each affected engines
    * Returns the list of affected artifacts/engines
    */
-  async refresh(conf: LoadConfigResult) {
-    const affected: AffectedResult = { artifacts: new Set(), engine: new Set(), hasConfigChanged: false }
+  refresh(conf: LoadConfigResult) {
+    const affected: AffectedResult = { artifacts: new Set(), hasConfigChanged: false, diffs: [] }
 
     if (!this.previous) {
       affected.hasConfigChanged = true
@@ -122,7 +96,9 @@ export class DiffEngine {
     const parsed = conf.deserialize()
     const diffList = diff(this.previous, parsed)
     if (!diffList.length) return affected
+
     affected.hasConfigChanged = true
+    affected.diffs = diffList
 
     // update context
     this.previous = parsed
@@ -152,65 +128,6 @@ export class DiffEngine {
         }
 
         affected.artifacts.add(id)
-      })
-
-      matchers.engines.forEach((matcher) => {
-        const id = matcher(changePath) as EngineId | undefined
-        if (!id) return
-        affected.engine.add(id)
-
-        switch (id) {
-          case 'tokens': {
-            const theme = conf.config.theme
-            if (!theme) return
-
-            this.ctx.tokens = this.ctx.createTokenDictionary(theme)
-            break
-          }
-          case 'utilities': {
-            // ['utilities', 'xxx'] => utilities.xxx
-            const name = String(change.path[1])
-            const utility = conf.config.utilities?.[name]
-            if (!name || !utility) return
-
-            this.ctx.utility.register(name, utility)
-            break
-          }
-          // case 'conditions':
-          //   this.ctx.conditions.reload()
-          //   break
-          case 'recipes': {
-            // ['theme', 'recipes', 'xxx'] => recipes.xxx
-            const name = String(change.path[2])
-            if (!name) return
-
-            const recipe = conf.config.theme?.recipes?.[name] || conf.config.theme?.slotRecipes?.[name]
-            if (!recipe) {
-              this.ctx.recipes.remove(name)
-              return
-            }
-
-            this.ctx.recipes.saveOne(name, recipe)
-            break
-          }
-          case 'patterns': {
-            // ['patterns', 'xxx'] => patterns.xxx
-            const name = String(change.path[1])
-            if (!name) return
-
-            const pattern = conf.config.patterns?.[name]
-            if (!pattern) {
-              this.ctx.patterns.remove(name)
-              return
-            }
-
-            this.ctx.patterns.saveOne(name, pattern)
-            break
-          }
-
-          default:
-            break
-        }
       })
     })
 
