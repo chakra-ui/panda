@@ -8,9 +8,11 @@ export const display: UtilityConfig = {
   hideFrom: {
     className: 'hide',
     values: 'breakpoints',
-    transform(value, { raw }) {
+    transform(value, { raw, token }) {
+      const bp = token.raw(`breakpoints.${raw}`)
+      const media = bp ? `@breakpoint ${raw}` : `@media screen and (min-width: ${value})`
       return {
-        [`@breakpoint ${raw}`]: {
+        [media]: {
           display: 'none',
         },
       }
@@ -20,9 +22,11 @@ export const display: UtilityConfig = {
   hideBelow: {
     className: 'show',
     values: 'breakpoints',
-    transform(value, { raw }) {
+    transform(value, { raw, token }) {
+      const bp = token.raw(`breakpoints.${raw}`)
+      const media = bp ? `@breakpoint ${raw}Down` : `@media screen and (max-width: ${value})`
       return {
-        [`@breakpoint ${raw}Down`]: {
+        [media]: {
           display: 'none',
         },
       }
