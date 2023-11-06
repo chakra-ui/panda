@@ -799,8 +799,8 @@ importers:
         specifier: 0.12.5
         version: 0.12.5
       zod:
-        specifier: 3.22.3
-        version: 3.22.3
+        specifier: 3.22.4
+        version: 3.22.4
     devDependencies:
       '@next/bundle-analyzer':
         specifier: ^14.0.1
@@ -5169,7 +5169,7 @@ packages:
       svgo: 3.0.2
       vfile: 5.3.7
       vite-imagetools: 5.0.5
-      zod: 3.22.3
+      zod: 3.22.4
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -23452,7 +23452,7 @@ packages:
       title: 3.5.3
       unist-util-remove: 4.0.0
       unist-util-visit: 5.0.0
-      zod: 3.22.3
+      zod: 3.22.4
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -30943,6 +30943,9 @@ packages:
 
   /zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
+
+  /zod@3.22.4:
+    resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
   /zustand@4.4.5(@types/react@18.2.22)(react@18.2.0):
     resolution: {integrity: sha512-jgIrBBLKncQW74PA2Lclct3gwD4aPughwGE4FqlXrv3rDqQox7JCn8rwUiFK6ygJcbBAvfTf8fF+ICg7HLD2FQ==}
