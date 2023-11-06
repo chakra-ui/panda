@@ -26,6 +26,10 @@ test('format / by category', () => {
             "category": "colors",
             "condition": "base",
             "prop": "red",
+            "rawPath": [
+              "colors",
+              "red",
+            ],
             "var": "--colors-red",
             "varRef": "var(--colors-red)",
           },
@@ -44,6 +48,10 @@ test('format / by category', () => {
             "category": "colors",
             "condition": "base",
             "prop": "blue",
+            "rawPath": [
+              "colors",
+              "blue",
+            ],
             "var": "--colors-blue",
             "varRef": "var(--colors-blue)",
           },
@@ -62,6 +70,10 @@ test('format / by category', () => {
             "category": "colors",
             "condition": "base",
             "prop": "green",
+            "rawPath": [
+              "colors",
+              "green",
+            ],
             "var": "--colors-green",
             "varRef": "var(--colors-green)",
           },

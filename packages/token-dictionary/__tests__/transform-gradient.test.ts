@@ -35,6 +35,10 @@ test('transform / gradient', () => {
           "category": "colors",
           "condition": "base",
           "prop": "pink",
+          "rawPath": [
+            "colors",
+            "pink",
+          ],
         },
         "name": "colors.pink",
         "originalValue": "#ff00ff",
@@ -51,6 +55,10 @@ test('transform / gradient', () => {
           "category": "gradients",
           "condition": "base",
           "prop": "primary",
+          "rawPath": [
+            "gradients",
+            "primary",
+          ],
         },
         "name": "gradients.primary",
         "originalValue": "linear-gradient(to top, #ff0000 0px, {colors.pink} 100px)",
