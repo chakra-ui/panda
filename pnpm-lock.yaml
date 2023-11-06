@@ -730,8 +730,8 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(prisma@5.1.0)
       '@textea/json-viewer':
-        specifier: 3.2.2
-        version: 3.2.2(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.22)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 3.2.3
+        version: 3.2.3(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.22)(react-dom@18.2.0)(react@18.2.0)
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -10628,8 +10628,8 @@ packages:
       - '@vue/server-renderer'
     dev: true
 
-  /@textea/json-viewer@3.2.2(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.22)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-CnAuqAvfIB2HBqjceSIsmJ6JNKP6FDEB40lKEC+4d0P8BnWZu0U9PQshL3vY14pwMiU6uBRIgPRlCT4WH7xnMg==}
+  /@textea/json-viewer@3.2.3(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.22)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-9fG/JU/wSzib2Naxna+J1PktIKG+9TWOB5ycphKwSSUwrid/d6wAMQYGCCAKmYt0qQq+EQ1jDuFjx7qzfm+cmg==}
     peerDependencies:
       '@emotion/react': ^11
       '@emotion/styled': ^11
