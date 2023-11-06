@@ -1,5 +1,11 @@
 # @pandacss/extractor
 
+## 0.18.0
+
+### Patch Changes
+
+- 336fd0b0: Perf: use raw `if` instead of ts-pattern in the extractor (hot path)
+
 ## 0.17.5
 
 ## 0.17.4

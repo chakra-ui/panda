@@ -1,5 +1,42 @@
 # @pandacss/generator
 
+## 0.18.0
+
+### Minor Changes
+
+- b7cb2073: Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
+
+  ```tsx
+  import { splitCssProps, styled } from '../styled-system/jsx'
+  import type { HTMLStyledProps } from '../styled-system/types'
+
+  function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+    const [cssProps, restProps] = splitCssProps(props)
+    return (
+      <styled.div {...restProps} className={css({ display: 'flex', height: '20', width: '20' }, cssProps)}>
+        {children}
+      </styled.div>
+    )
+  }
+
+  // Usage
+
+  function App() {
+    return <SplitComponent margin="2">Click me</SplitComponent>
+  }
+  ```
+
+### Patch Changes
+
+- ba9e32fa: Fix issue in template literal mode where comma-separated selectors don't work when multiline
+- Updated dependencies [ba9e32fa]
+  - @pandacss/shared@0.18.0
+  - @pandacss/core@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/is-valid-prop@0.18.0
+  - @pandacss/logger@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes
