@@ -1865,6 +1865,7 @@ test('should work with default fixture', () => {
         "button.thick" => "var(--colors-button-thick)",
         "button.card.body" => "var(--colors-button-card-body)",
         "button.card.heading" => "var(--colors-button-card-heading)",
+        "colorPalette" => "var(--colors-color-palette)",
         "colorPalette.50" => "var(--colors-color-palette-50)",
         "colorPalette.100" => "var(--colors-color-palette-100)",
         "colorPalette.200" => "var(--colors-color-palette-200)",
