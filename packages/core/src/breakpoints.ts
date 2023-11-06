@@ -39,7 +39,7 @@ export class Breakpoints {
       .flatMap((name) => {
         const value = this.get(name)
 
-        const down: [string, string] = [`${name}Down`, this.build({ max: value.min })]
+        const down: [string, string] = [`${name}Down`, this.build({ max: adjust(value.min) })]
         const up: [string, string] = [name, this.build({ min: value.min })]
         const only: [string, string] = [`${name}Only`, this.only(name)]
 
@@ -84,7 +84,7 @@ export class Breakpoints {
 type Entries = [string, { name: string; min?: string | null; max?: string | null }][]
 
 function adjust(value: string | null | undefined) {
-  const computedMax = parseFloat(toPx(value!) ?? '') - 0.05
+  const computedMax = parseFloat(toPx(value!) ?? '') - 0.04
   return toEm(`${computedMax}px`) as string
 }
 
