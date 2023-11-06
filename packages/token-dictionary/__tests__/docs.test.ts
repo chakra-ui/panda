@@ -216,8 +216,8 @@ test('should generate categorize token', () => {
                 "category": "colors",
                 "condition": "base",
                 "conditions": {
-                  "_dark": "{colors.red.400}",
-                  "base": "{colors.red.500}",
+                  "_dark": "var(--colors-red-400)",
+                  "base": "var(--colors-red-500)",
                 },
                 "prop": "primary",
                 "var": "--colors-primary",
@@ -238,8 +238,8 @@ test('should generate categorize token', () => {
                 "category": "colors",
                 "condition": "_dark",
                 "conditions": {
-                  "_dark": "{colors.red.400}",
-                  "base": "{colors.red.500}",
+                  "_dark": "var(--colors-red-400)",
+                  "base": "var(--colors-red-500)",
                 },
                 "prop": "primary",
                 "var": "--colors-primary",
@@ -260,8 +260,8 @@ test('should generate categorize token', () => {
                 "category": "colors",
                 "condition": "base",
                 "conditions": {
-                  "_dark": "{colors.red.700}",
-                  "base": "{colors.red.800}",
+                  "_dark": "var(--colors-red-700)",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "secondary",
                 "var": "--colors-secondary",
@@ -282,8 +282,8 @@ test('should generate categorize token', () => {
                 "category": "colors",
                 "condition": "_dark",
                 "conditions": {
-                  "_dark": "{colors.red.700}",
-                  "base": "{colors.red.800}",
+                  "_dark": "var(--colors-red-700)",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "secondary",
                 "var": "--colors-secondary",
@@ -305,9 +305,9 @@ test('should generate categorize token', () => {
                 "condition": "base",
                 "conditions": {
                   "_dark": {
-                    "_highContrast": "{colors.red.700}",
+                    "_highContrast": "var(--colors-red-700)",
                   },
-                  "base": "{colors.red.800}",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "complex",
                 "var": "--colors-complex",
@@ -329,9 +329,9 @@ test('should generate categorize token', () => {
                 "condition": "_dark:_highContrast",
                 "conditions": {
                   "_dark": {
-                    "_highContrast": "{colors.red.700}",
+                    "_highContrast": "var(--colors-red-700)",
                   },
-                  "base": "{colors.red.800}",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "complex",
                 "var": "--colors-complex",

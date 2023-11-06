@@ -670,4 +670,87 @@ describe('generator', () => {
         "
     `)
   })
+
+  test('shadow semantic tokens', () => {
+    const css = generateTokenCss(
+      createGenerator({
+        dependencies: [],
+        config: {
+          cwd: '',
+          include: [],
+          theme: {
+            tokens: {
+              shadows: {
+                test1: {
+                  value: {
+                    offsetX: 0,
+                    offsetY: 0,
+                    blur: 0,
+                    spread: 4,
+                    color: '{colors.testPink}',
+                  },
+                },
+              },
+            },
+            semanticTokens: {
+              colors: {
+                testPink: { value: '{colors.pink.900}' },
+              },
+              shadows: {
+                testBrokenShadow: {
+                  value: {
+                    offsetX: 0,
+                    offsetY: 0,
+                    blur: 0,
+                    spread: 4,
+                    color: '{colors.testPink}',
+                  },
+                },
+                complexShadow: {
+                  value: {
+                    base: {
+                      offsetX: 0,
+                      offsetY: 0,
+                      blur: 0,
+                      spread: 4,
+                      color: '{colors.testPink}',
+                    },
+                    _dark: {
+                      offsetX: 2,
+                      offsetY: 8,
+                      blur: 30,
+                      spread: 4,
+                      color: '{colors.testPink}',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          conditions: {
+            dark: '.dark &',
+          },
+          outdir: '',
+        },
+        path: '',
+        hooks: createHooks(),
+      }),
+    )
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+          :where(:root, :host) {
+        --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
+        --colors-test-pink: var(--colors-pink-900);
+        --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
+        --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink)
+      }
+
+      .dark {
+        --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink)
+      }
+        }
+        "
+    `)
+  })
 })

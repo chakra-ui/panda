@@ -1,7 +1,8 @@
 import { cssVar, isString } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
-import { isMatching, match, P } from 'ts-pattern'
+import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
+import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-composite'
 import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
 import { getReferences } from './utils'
@@ -10,42 +11,16 @@ import { getReferences } from './utils'
  * Shadow token transform
  * -----------------------------------------------------------------------------*/
 
-const isCompositeShadow = isMatching({
-  inset: P.optional(P.boolean),
-  offsetX: P.number,
-  offsetY: P.number,
-  blur: P.number,
-  spread: P.number,
-  color: P.string,
-})
-
 export const transformShadow: TokenTransformer = {
   name: 'tokens/shadow',
   match: (token) => token.extensions.category === 'shadows',
-  transform(token, { prefix }) {
+  transform(token, opts) {
     if (isString(token.value)) {
       return token.value
     }
 
     if (Array.isArray(token.value)) {
-      // Check if the token is a conditional token and also transform the condition values if they use array syntax.
-      if (token.extensions.conditions) {
-        const conditions = token.extensions.conditions
-
-        for (const [prop, value] of Object.entries(conditions)) {
-          if (Array.isArray(value)) {
-            conditions[prop] = value.map((value) => this.transform({ value } as Token, { prefix })).join(', ')
-          }
-        }
-
-        // Return the already transformed `base` value if the original value is an array.
-        // This is added as an optimization to avoid transforming the shadow array value multiple times.
-        if (token.extensions.conditions?.base && Array.isArray(token.originalValue)) {
-          return token.extensions.conditions.base
-        }
-      }
-
-      return token.value.map((value) => this.transform({ value } as Token, { prefix })).join(', ')
+      return token.value.map((value) => this.transform({ value } as Token, opts)).join(', ')
     }
 
     if (isCompositeShadow(token.value)) {
@@ -60,18 +35,6 @@ export const transformShadow: TokenTransformer = {
 /* -----------------------------------------------------------------------------
  * Gradient token transform
  * -----------------------------------------------------------------------------*/
-
-const isCompositeGradient = isMatching({
-  type: P.string,
-  placement: P.string,
-  stops: P.union(
-    P.array(P.string),
-    P.array({
-      color: P.string,
-      position: P.number,
-    }),
-  ),
-})
 
 export const transformGradient: TokenTransformer = {
   name: 'tokens/gradient',
@@ -122,7 +85,12 @@ export const transformEasings: TokenTransformer = {
     if (isString(token.value)) {
       return token.value
     }
-    return `cubic-bezier(${token.value.join(', ')})`
+
+    if (Array.isArray(token.value)) {
+      return `cubic-bezier(${token.value.join(', ')})`
+    }
+
+    return token.value
   },
 }
 
@@ -137,8 +105,13 @@ export const transformBorders: TokenTransformer = {
     if (isString(token.value)) {
       return token.value
     }
-    const { width, style, color } = token.value
-    return `${width}px ${style} ${color}`
+
+    if (isCompositeBorder(token.value)) {
+      const { width, style, color } = token.value
+      return `${width}px ${style} ${color}`
+    }
+
+    return token.value
   },
 }
 
@@ -233,7 +206,7 @@ export const addColorPalette: TokenTransformer = {
       return acc
     }, [] as string[])
 
-    const colorPaletteRoot = tokenPathClone.at(0) as string
+    const colorPaletteRoot = tokenPathClone[0]
     const colorPalette = tokenPathClone.join('.')
 
     /**

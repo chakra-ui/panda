@@ -1,6 +1,7 @@
 import { compact, isString, mapObject, memo, walkObject } from '@pandacss/shared'
 import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
+import { isCompositeTokenValue } from './is-composite'
 import { Token } from './token'
 import { assertTokenFormat, getReferences, isToken } from './utils'
 
@@ -101,7 +102,9 @@ export class TokenDictionary {
         const category = path[0]
         const name = path.join('.')
 
-        const normalizedToken = isString(token.value) ? { value: { base: token.value } } : token
+        const normalizedToken =
+          isString(token.value) || isCompositeTokenValue(token.value) ? { value: { base: token.value } } : token
+
         const { value, ...restData } = normalizedToken
 
         const node = new Token({
@@ -148,10 +151,9 @@ export class TokenDictionary {
       if (token.extensions.hasReference) return
       if (typeof transform.match === 'function' && !transform.match(token)) return
 
-      const transformed = transform.transform(token, {
-        prefix: this.prefix,
-        hash: this.hash,
-      })
+      const exec = (v: Token) => transform.transform(v, { prefix: this.prefix, hash: this.hash })
+
+      const transformed = exec(token)
 
       match(transform)
         .with({ type: 'extensions' }, () => {
@@ -159,8 +161,19 @@ export class TokenDictionary {
         })
         .with({ type: 'value' }, () => {
           token.value = transformed
+
           if (token.isComposite) {
             token.originalValue = transformed
+          }
+
+          if (token.extensions.conditions) {
+            const conditions = token.extensions.conditions
+            const transformedConditions = walkObject(conditions, (value) => exec({ value } as Token), {
+              stop: isCompositeTokenValue,
+            })
+            token.setExtensions({
+              conditions: transformedConditions,
+            })
           }
         })
         .otherwise(() => {
