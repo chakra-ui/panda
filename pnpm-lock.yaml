@@ -318,18 +318,12 @@ importers:
 
   packages/extractor:
     dependencies:
-      lil-fp:
-        specifier: 1.4.5
-        version: 1.4.5
       ts-evaluator:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.2.2)
       ts-morph:
         specifier: 19.0.0
         version: 19.0.0
-      ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
 
   packages/fixture:
     dependencies:

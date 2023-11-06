@@ -1,6 +1,5 @@
 import type { JsxAttribute } from 'ts-morph'
 import { Node } from 'ts-morph'
-import { P, match } from 'ts-pattern'
 import { box } from './box'
 import { maybeBoxNode } from './maybe-box-node'
 import type { BoxContext } from './types'
@@ -14,33 +13,29 @@ import { trimWhitespace, unwrapExpression } from './utils'
 export const extractJsxAttribute = (jsxAttribute: JsxAttribute, ctx: BoxContext) => {
   const initializer = jsxAttribute.getInitializer()
   const stack = [jsxAttribute, initializer] as Node[]
-  return (
-    match(initializer)
-      .with(P.nullish, () => {
-        const nameNode = jsxAttribute.getNameNode()
-        return box.emptyInitializer(nameNode, stack)
-      })
 
-      // <ColorBox color="red.200" />
-      .when(Node.isStringLiteral, (initializer) => {
-        const literalText = initializer.getLiteralText()
-        return box.literal(trimWhitespace(literalText), initializer, stack)
-      })
+  if (!initializer) {
+    const nameNode = jsxAttribute.getNameNode()
+    return box.emptyInitializer(nameNode, stack)
+  }
 
-      // <ColorBox color={xxx} />
-      .when(Node.isJsxExpression, (initializer) => {
-        const expr = initializer.getExpression()
-        if (!expr) return
+  // <ColorBox color="red.200" />
+  if (Node.isStringLiteral(initializer)) {
+    const literalText = initializer.getLiteralText()
+    return box.literal(trimWhitespace(literalText), initializer, stack)
+  }
 
-        const expression = unwrapExpression(expr)
-        if (!expression) return
+  // <ColorBox color={xxx} />
+  if (Node.isJsxExpression(initializer)) {
+    const expr = initializer.getExpression()
+    if (!expr) return
 
-        stack.push(expression)
+    const expression = unwrapExpression(expr)
+    if (!expression) return
 
-        const maybeValue = maybeBoxNode(expression, stack, ctx)
-        if (maybeValue) return maybeValue
-      })
+    stack.push(expression)
 
-      .otherwise(() => undefined)
-  )
+    const maybeValue = maybeBoxNode(expression, stack, ctx)
+    if (maybeValue) return maybeValue
+  }
 }

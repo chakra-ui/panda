@@ -1,11 +1,9 @@
-import { Arr, Bool, Opt, cast, noop, pipe } from 'lil-fp'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
-import { match } from 'ts-pattern'
 import { box } from './box'
 import { BoxNodeMap, BoxNodeObject, type BoxNode, type MapTypeValue, BoxNodeConditional } from './box-factory'
 import { extractCallExpressionArguments } from './call-expression'
 import { extractJsxAttribute } from './jsx-attribute'
-import { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
+import { extractJsxSpreadAttributeValues, type MatchProp } from './jsx-spread-attribute'
 import { objectLikeToMap } from './object-like-to-map'
 import type {
   ExtractOptions,
@@ -29,7 +27,7 @@ interface Component {
 }
 type ComponentMap = Map<JsxElement, Component>
 
-const isImportOrExport = Bool.or(Node.isImportDeclaration, Node.isExportDeclaration)
+const isImportOrExport = (node: Node) => Node.isImportDeclaration(node) || Node.isExportDeclaration(node)
 
 export const extract = ({ ast, ...ctx }: ExtractOptions) => {
   const { components, functions, taggedTemplates } = ctx
@@ -93,7 +91,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         const matchProp = ({ propName, propNode }: MatchPropArgs) =>
           components.matchProp({ tagNode: componentNode!, tagName: componentName, propName, propNode })
 
-        const spreadNode = extractJsxSpreadAttributeValues(node, ctx, cast(matchProp))
+        const spreadNode = extractJsxSpreadAttributeValues(node, ctx, matchProp as MatchProp)
         if (!spreadNode) return
 
         // <ColorBox padding="4" {...{ color: "facebook.100" }} margin={2} />
@@ -118,17 +116,15 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         }
 
         const processBoxNode = (boxNode: BoxNode) => {
-          return (
-            match(boxNode)
-              // <ColorBox {...(someCondition && { color: "facebook.100" })} />
-              .when(box.isConditional, (boxNode) => {
-                component.conditionals.push(boxNode)
-              })
-              .when(Bool.or(box.isObject, box.isMap), (boxNode) => {
-                return processObjectLike(boxNode)
-              })
-              .otherwise(noop)
-          )
+          // <ColorBox {...(someCondition && { color: "facebook.100" })} />
+          if (box.isConditional(boxNode)) {
+            component.conditionals.push(boxNode)
+            return
+          }
+
+          if (box.isObject(boxNode) || box.isMap(boxNode)) {
+            return processObjectLike(boxNode)
+          }
         }
 
         processBoxNode(spreadNode)
@@ -147,14 +143,11 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
           return
         }
 
-        pipe(
-          extractJsxAttribute(node, ctx),
-          Opt.fromNullable,
-          Opt.tap((maybeBox) => {
-            component.props.set(propName, maybeBox)
-            boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
-          }),
-        )
+        const maybeBox = extractJsxAttribute(node, ctx)
+        if (!maybeBox) return
+
+        component.props.set(propName, maybeBox)
+        boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
       }
     }
 
@@ -175,33 +168,30 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
       const boxNodeArray = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg)
 
-      const nodeList = pipe(
-        boxNodeArray.value,
-        Arr.map((boxNode) =>
-          match(boxNode)
-            .when(Bool.or(box.isObject, box.isMap), (boxNode) => {
-              const mapValue = objectLikeToMap(boxNode, node)
-              const isMap = box.isMap(boxNode)
+      const nodeList = boxNodeArray.value.map((boxNode) => {
+        if (box.isObject(boxNode) || box.isMap(boxNode)) {
+          const mapValue = objectLikeToMap(boxNode, node)
+          const isMap = box.isMap(boxNode)
 
-              mapValue.forEach((propValue, propName) => {
-                // if the boxNode is an object
-                // that means it was evaluated so we need to filter its props
-                // otherwise, it was already filtered in extractCallExpressionArguments
-                if (isMap ? true : matchProp({ propName, propNode: node as any })) {
-                  boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(propValue))
-                }
-              })
+          mapValue.forEach((propValue, propName) => {
+            // if the boxNode is an object
+            // that means it was evaluated so we need to filter its props
+            // otherwise, it was already filtered in extractCallExpressionArguments
+            if (isMap ? true : matchProp({ propName, propNode: node as any })) {
+              boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(propValue))
+            }
+          })
 
-              const boxMap = box.map(mapValue, node, boxNode.getStack())
-              if (box.isMap(boxNode) && boxNode.spreadConditions?.length) {
-                boxMap.spreadConditions = boxNode.spreadConditions
-              }
+          const boxMap = box.map(mapValue, node, boxNode.getStack())
+          if (box.isMap(boxNode) && boxNode.spreadConditions?.length) {
+            boxMap.spreadConditions = boxNode.spreadConditions
+          }
 
-              return boxMap
-            })
-            .otherwise((boxNode) => boxNode),
-        ),
-      )
+          return boxMap
+        }
+
+        return boxNode
+      })
 
       const query = {
         kind: 'call-expression',
@@ -238,10 +228,10 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
     const component = componentByNode.get(componentNode)
     if (!component) return
 
-    const query = cast<ExtractedComponentInstance>({
+    const query = <ExtractedComponentInstance>{
       name: parentRef.name,
       box: box.map(component.props, componentNode, []),
-    })
+    }
 
     if (component.conditionals?.length) {
       query.box.spreadConditions = component.conditionals
