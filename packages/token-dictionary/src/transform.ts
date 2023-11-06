@@ -1,7 +1,8 @@
 import { cssVar, isString } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
-import { isMatching, match, P } from 'ts-pattern'
+import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
+import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-composite'
 import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
 import { getReferences } from './utils'
@@ -9,15 +10,6 @@ import { getReferences } from './utils'
 /* -----------------------------------------------------------------------------
  * Shadow token transform
  * -----------------------------------------------------------------------------*/
-
-const isCompositeShadow = isMatching({
-  inset: P.optional(P.boolean),
-  offsetX: P.number,
-  offsetY: P.number,
-  blur: P.number,
-  spread: P.number,
-  color: P.string,
-})
 
 export const transformShadow: TokenTransformer = {
   name: 'tokens/shadow',
@@ -43,18 +35,6 @@ export const transformShadow: TokenTransformer = {
 /* -----------------------------------------------------------------------------
  * Gradient token transform
  * -----------------------------------------------------------------------------*/
-
-const isCompositeGradient = isMatching({
-  type: P.string,
-  placement: P.string,
-  stops: P.union(
-    P.array(P.string),
-    P.array({
-      color: P.string,
-      position: P.number,
-    }),
-  ),
-})
 
 export const transformGradient: TokenTransformer = {
   name: 'tokens/gradient',
@@ -105,7 +85,12 @@ export const transformEasings: TokenTransformer = {
     if (isString(token.value)) {
       return token.value
     }
-    return `cubic-bezier(${token.value.join(', ')})`
+
+    if (Array.isArray(token.value)) {
+      return `cubic-bezier(${token.value.join(', ')})`
+    }
+
+    return token.value
   },
 }
 
@@ -120,8 +105,13 @@ export const transformBorders: TokenTransformer = {
     if (isString(token.value)) {
       return token.value
     }
-    const { width, style, color } = token.value
-    return `${width}px ${style} ${color}`
+
+    if (isCompositeBorder(token.value)) {
+      const { width, style, color } = token.value
+      return `${width}px ${style} ${color}`
+    }
+
+    return token.value
   },
 }
 
@@ -298,7 +288,3 @@ export const transforms = [
   addConditionalCssVariables,
   addColorPalette,
 ]
-
-export const isCompositeTokenValue = (value: any) => {
-  return isCompositeGradient(value) || isCompositeShadow(value) || Array.isArray(value)
-}

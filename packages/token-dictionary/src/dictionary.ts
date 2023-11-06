@@ -1,8 +1,8 @@
 import { compact, isString, mapObject, memo, walkObject } from '@pandacss/shared'
 import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
+import { isCompositeTokenValue } from './is-composite'
 import { Token } from './token'
-import { isCompositeTokenValue } from './transform'
 import { assertTokenFormat, getReferences, isToken } from './utils'
 
 type EnforcePhase = 'pre' | 'post'
@@ -168,9 +168,12 @@ export class TokenDictionary {
 
           if (token.extensions.conditions) {
             const conditions = token.extensions.conditions
-            for (const [prop, value] of Object.entries(conditions)) {
-              conditions[prop] = exec({ value } as Token)
-            }
+            const transformedConditions = walkObject(conditions, (value) => exec({ value } as Token), {
+              stop: isCompositeTokenValue,
+            })
+            token.setExtensions({
+              conditions: transformedConditions,
+            })
           }
         })
         .otherwise(() => {
