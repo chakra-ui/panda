@@ -22,30 +22,13 @@ const isCompositeShadow = isMatching({
 export const transformShadow: TokenTransformer = {
   name: 'tokens/shadow',
   match: (token) => token.extensions.category === 'shadows',
-  transform(token, { prefix }) {
+  transform(token, opts) {
     if (isString(token.value)) {
       return token.value
     }
 
     if (Array.isArray(token.value)) {
-      // Check if the token is a conditional token and also transform the condition values if they use array syntax.
-      if (token.extensions.conditions) {
-        const conditions = token.extensions.conditions
-
-        for (const [prop, value] of Object.entries(conditions)) {
-          if (Array.isArray(value)) {
-            conditions[prop] = value.map((value) => this.transform({ value } as Token, { prefix })).join(', ')
-          }
-        }
-
-        // Return the already transformed `base` value if the original value is an array.
-        // This is added as an optimization to avoid transforming the shadow array value multiple times.
-        if (token.extensions.conditions?.base && Array.isArray(token.originalValue)) {
-          return token.extensions.conditions.base
-        }
-      }
-
-      return token.value.map((value) => this.transform({ value } as Token, { prefix })).join(', ')
+      return token.value.map((value) => this.transform({ value } as Token, opts)).join(', ')
     }
 
     if (isCompositeShadow(token.value)) {
@@ -233,7 +216,7 @@ export const addColorPalette: TokenTransformer = {
       return acc
     }, [] as string[])
 
-    const colorPaletteRoot = tokenPathClone.at(0) as string
+    const colorPaletteRoot = tokenPathClone[0]
     const colorPalette = tokenPathClone.join('.')
 
     /**
@@ -315,3 +298,7 @@ export const transforms = [
   addConditionalCssVariables,
   addColorPalette,
 ]
+
+export const isCompositeTokenValue = (value: any) => {
+  return isCompositeGradient(value) || isCompositeShadow(value) || Array.isArray(value)
+}

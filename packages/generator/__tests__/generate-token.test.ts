@@ -671,7 +671,7 @@ describe('generator', () => {
     `)
   })
 
-  test.only('shadow semantic tokens', () => {
+  test('shadow semantic tokens', () => {
     const css = generateTokenCss(
       createGenerator({
         dependencies: [],
@@ -706,6 +706,24 @@ describe('generator', () => {
                     color: '{colors.testPink}',
                   },
                 },
+                complexShadow: {
+                  value: {
+                    base: {
+                      offsetX: 0,
+                      offsetY: 0,
+                      blur: 0,
+                      spread: 4,
+                      color: '{colors.testPink}',
+                    },
+                    _dark: {
+                      offsetX: 2,
+                      offsetY: 8,
+                      blur: 30,
+                      spread: 4,
+                      color: '{colors.testPink}',
+                    },
+                  },
+                },
               },
             },
           },
@@ -723,27 +741,13 @@ describe('generator', () => {
       "@layer tokens {
           :where(:root, :host) {
         --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
-        --colors-test-pink: var(--colors-pink-900)
+        --colors-test-pink: var(--colors-pink-900);
+        --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
+        --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink)
       }
 
-      {
-        --shadows-test-broken-shadow: 0
-      }
-
-      {
-        --shadows-test-broken-shadow: 0
-      }
-
-      {
-        --shadows-test-broken-shadow: 0
-      }
-
-      {
-        --shadows-test-broken-shadow: 4
-      }
-
-      {
-        --shadows-test-broken-shadow: var(--colors-test-pink)
+      .dark {
+        --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink)
       }
         }
         "
