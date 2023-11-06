@@ -138,7 +138,7 @@ export const addCssVariables: TokenTransformer = {
   transform(token, { prefix, hash }) {
     const { isNegative, originalPath } = token.extensions
     const pathValue = isNegative ? originalPath : token.path
-    const variable = cssVar(pathValue.join('-'), { prefix, hash })
+    const variable = cssVar(pathValue.filter(Boolean).join('-'), { prefix, hash })
     return {
       var: variable.var,
       varRef: variable.ref,
@@ -171,9 +171,17 @@ export const addColorPalette: TokenTransformer = {
     return token.extensions.category === 'colors' && !token.extensions.isVirtual
   },
   transform(token) {
-    const tokenPathClone = [...token.path]
+    let tokenPathClone = [...token.path]
     tokenPathClone.pop()
     tokenPathClone.shift()
+
+    const isRoot = token.extensions.rawPath.includes('DEFAULT')
+
+    if (tokenPathClone.length === 0 && isRoot) {
+      const newPath = [...token.path]
+      newPath.shift()
+      tokenPathClone = newPath
+    }
 
     if (tokenPathClone.length === 0) {
       return {}
@@ -202,7 +210,8 @@ export const addColorPalette: TokenTransformer = {
      * It's used by the `addVirtualPalette` middleware to build the virtual `colorPalette` token for each color pattern root.
      */
     const colorPaletteRoots = tokenPathClone.reduce((acc: string[], _: any, i: number, arr: string[]) => {
-      acc.push(arr.slice(0, i + 1).join('.'))
+      const next = arr.slice(0, i + 1).join('.')
+      acc.push(next)
       return acc
     }, [] as string[])
 
@@ -268,6 +277,10 @@ export const addColorPalette: TokenTransformer = {
         acc.push(arr.slice(i).join('.'))
         return acc
       }, [] as string[])
+
+    if (colorPaletteTokenKeys.length === 0 && isRoot) {
+      colorPaletteTokenKeys.push('')
+    }
 
     return {
       colorPalette,

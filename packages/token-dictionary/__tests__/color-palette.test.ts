@@ -606,3 +606,36 @@ test('should generate nested object virtual palette', () => {
     }
   `)
 })
+
+test('should work with DEFAULT keyword', () => {
+  const dictionary = new TokenDictionary({
+    tokens: {
+      colors: {
+        brand: {
+          DEFAULT: { value: 'green' },
+          hot: {
+            DEFAULT: { value: 'blue' },
+            er: { value: '#FF0000' },
+          },
+        },
+      },
+    },
+  })
+
+  dictionary
+    .registerTransform(...transforms)
+    .registerMiddleware(addVirtualPalette)
+    .build()
+
+  expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
+    Map {
+      "brand" => Map {
+        "--colors-color-palette-hot" => "var(--colors-brand-hot)",
+        "--colors-color-palette-hot-er" => "var(--colors-brand-hot-er)",
+      },
+      "brand.hot" => Map {
+        "--colors-color-palette-er" => "var(--colors-brand-hot-er)",
+      },
+    }
+  `)
+})

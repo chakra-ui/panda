@@ -114,14 +114,14 @@ export const addVirtualPalette: TokenMiddleware = {
 
     keys.forEach((key) => {
       const node = new Token({
-        name: `colors.colorPalette.${key}`,
-        value: `{colors.colorPalette.${key}}`,
+        name: ['colors.colorPalette', key].filter(Boolean).join('.'),
+        value: ['colors.colorPalette', key].filter(Boolean).join('.'),
         path: ['colors', 'colorPalette', ...key.split('.')],
       })
 
       node.setExtensions({
         category: 'colors',
-        prop: `colorPalette.${key}`,
+        prop: ['colorPalette', key].filter(Boolean).join('.'),
         isVirtual: true,
       })
 
