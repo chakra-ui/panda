@@ -1,5 +1,20 @@
 # @pandacss/studio
 
+## 0.18.0
+
+### Patch Changes
+
+- b840e469: Improve semantic colors in studio
+- Updated dependencies [ba9e32fa]
+- Updated dependencies [3010af28]
+- Updated dependencies [866c12aa]
+  - @pandacss/shared@0.18.0
+  - @pandacss/node@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/config@0.18.0
+  - @pandacss/logger@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes

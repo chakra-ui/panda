@@ -1,5 +1,27 @@
 # @pandacss/node
 
+## 0.18.0
+
+### Patch Changes
+
+- 3010af28: Add a `--only-config` flag for the `panda debug` command, to skip writing app files and just output the
+  resolved config.
+- 866c12aa: Fix CLI interactive mode `syntax` question values and prettify the generated `panda.config.ts` file
+- Updated dependencies [ba9e32fa]
+- Updated dependencies [b7cb2073]
+- Updated dependencies [336fd0b0]
+  - @pandacss/generator@0.18.0
+  - @pandacss/shared@0.18.0
+  - @pandacss/extractor@0.18.0
+  - @pandacss/parser@0.18.0
+  - @pandacss/core@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/config@0.18.0
+  - @pandacss/error@0.18.0
+  - @pandacss/is-valid-prop@0.18.0
+  - @pandacss/logger@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes

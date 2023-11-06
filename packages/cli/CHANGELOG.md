@@ -1,5 +1,26 @@
 # @pandacss/dev
 
+## 0.18.0
+
+### Patch Changes
+
+- 41563f56: Add `--strict-tokens` flag and question in the interactive CLI
+- 866c12aa: Fix CLI interactive mode `syntax` question values and prettify the generated `panda.config.ts` file
+- Updated dependencies [ba9e32fa]
+- Updated dependencies [b840e469]
+- Updated dependencies [3010af28]
+- Updated dependencies [866c12aa]
+  - @pandacss/shared@0.18.0
+  - @pandacss/studio@0.18.0
+  - @pandacss/node@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/postcss@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/config@0.18.0
+  - @pandacss/error@0.18.0
+  - @pandacss/logger@0.18.0
+  - @pandacss/preset-panda@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes
