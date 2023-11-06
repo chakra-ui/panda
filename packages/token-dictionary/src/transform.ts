@@ -175,9 +175,7 @@ export const addColorPalette: TokenTransformer = {
     tokenPathClone.pop()
     tokenPathClone.shift()
 
-    const isRoot = token.extensions.rawPath.includes('DEFAULT')
-
-    if (tokenPathClone.length === 0 && isRoot) {
+    if (tokenPathClone.length === 0) {
       const newPath = [...token.path]
       newPath.shift()
       tokenPathClone = newPath
@@ -278,7 +276,8 @@ export const addColorPalette: TokenTransformer = {
         return acc
       }, [] as string[])
 
-    if (colorPaletteTokenKeys.length === 0 && isRoot) {
+    // https://github.com/chakra-ui/panda/issues/1421
+    if (colorPaletteTokenKeys.length === 0) {
       colorPaletteTokenKeys.push('')
     }
 

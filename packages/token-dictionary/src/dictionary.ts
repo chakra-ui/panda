@@ -74,23 +74,18 @@ export class TokenDictionary {
 
     walkObject(
       computedTokens,
-      (token, rawPath) => {
-        const path = filterDefault(rawPath)
+      (token, path) => {
+        path = filterDefault(path)
         assertTokenFormat(token)
 
         const category = path[0]
         const name = path.join('.')
 
-        const node = new Token({
-          ...token,
-          name,
-          path,
-        })
+        const node = new Token({ ...token, name, path })
 
         node.setExtensions({
           category,
           prop: path.slice(1).join('.'),
-          rawPath,
         })
 
         this.allTokens.push(node)
@@ -100,8 +95,8 @@ export class TokenDictionary {
 
     walkObject(
       semanticTokens,
-      (token, rawPath) => {
-        const path = filterDefault(rawPath)
+      (token, path) => {
+        path = filterDefault(path)
         assertTokenFormat(token)
 
         const category = path[0]
@@ -123,7 +118,6 @@ export class TokenDictionary {
           category,
           conditions: value,
           prop: path.slice(1).join('.'),
-          rawPath,
         })
 
         this.allTokens.push(node)
