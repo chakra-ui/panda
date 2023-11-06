@@ -24,12 +24,15 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
-            "condition": "base",
-            "prop": "red",
-            "rawPath": [
-              "colors",
+            "colorPalette": "red",
+            "colorPaletteRoots": [
               "red",
             ],
+            "colorPaletteTokenKeys": [
+              "",
+            ],
+            "condition": "base",
+            "prop": "red",
             "var": "--colors-red",
             "varRef": "var(--colors-red)",
           },
@@ -46,12 +49,15 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
-            "condition": "base",
-            "prop": "blue",
-            "rawPath": [
-              "colors",
+            "colorPalette": "blue",
+            "colorPaletteRoots": [
               "blue",
             ],
+            "colorPaletteTokenKeys": [
+              "",
+            ],
+            "condition": "base",
+            "prop": "blue",
             "var": "--colors-blue",
             "varRef": "var(--colors-blue)",
           },
@@ -68,12 +74,15 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
-            "condition": "base",
-            "prop": "green",
-            "rawPath": [
-              "colors",
+            "colorPalette": "green",
+            "colorPaletteRoots": [
               "green",
             ],
+            "colorPaletteTokenKeys": [
+              "",
+            ],
+            "condition": "base",
+            "prop": "green",
             "var": "--colors-green",
             "varRef": "var(--colors-green)",
           },

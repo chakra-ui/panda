@@ -26,10 +26,6 @@ test('semantic tokens / deeply nested', () => {
             },
           },
           "prop": "pink",
-          "rawPath": [
-            "colors",
-            "pink",
-          ],
         },
         "name": "colors.pink",
         "originalValue": "#fff",
@@ -52,10 +48,6 @@ test('semantic tokens / deeply nested', () => {
             },
           },
           "prop": "pink",
-          "rawPath": [
-            "colors",
-            "pink",
-          ],
         },
         "name": "colors.pink",
         "originalValue": "#fff",

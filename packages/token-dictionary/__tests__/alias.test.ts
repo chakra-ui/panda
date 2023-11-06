@@ -22,10 +22,6 @@ test('resolve aliases', () => {
           "category": "colors",
           "condition": "base",
           "prop": "pink",
-          "rawPath": [
-            "colors",
-            "pink",
-          ],
         },
         "name": "colors.pink",
         "originalValue": "#ff00ff",
@@ -42,10 +38,6 @@ test('resolve aliases', () => {
           "category": "colors",
           "condition": "base",
           "prop": "border",
-          "rawPath": [
-            "colors",
-            "border",
-          ],
         },
         "name": "colors.border",
         "originalValue": "{colors.pink}",
@@ -62,10 +54,6 @@ test('resolve aliases', () => {
           "category": "colors",
           "condition": "base",
           "prop": "disabled",
-          "rawPath": [
-            "colors",
-            "disabled",
-          ],
         },
         "name": "colors.disabled",
         "originalValue": "{colors.border}",

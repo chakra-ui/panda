@@ -29,10 +29,6 @@ describe('transform / assets', () => {
             "category": "assets",
             "condition": "base",
             "prop": "checkbox",
-            "rawPath": [
-              "assets",
-              "checkbox",
-            ],
           },
           "name": "assets.checkbox",
           "originalValue": "url('data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e)'",
@@ -72,10 +68,6 @@ describe('transform / assets', () => {
             "category": "assets",
             "condition": "base",
             "prop": "checkbox",
-            "rawPath": [
-              "assets",
-              "checkbox",
-            ],
           },
           "name": "assets.checkbox",
           "originalValue": "url('data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e)'",
@@ -112,10 +104,6 @@ describe('transform / assets', () => {
             "category": "assets",
             "condition": "base",
             "prop": "mesh",
-            "rawPath": [
-              "assets",
-              "mesh",
-            ],
           },
           "name": "assets.mesh",
           "originalValue": "url('/mesh.png')",

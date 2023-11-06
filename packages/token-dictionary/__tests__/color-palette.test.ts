@@ -32,12 +32,15 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "condition": "base",
-          "prop": "primary",
-          "rawPath": [
-            "colors",
+          "colorPalette": "primary",
+          "colorPaletteRoots": [
             "primary",
           ],
+          "colorPaletteTokenKeys": [
+            "",
+          ],
+          "condition": "base",
+          "prop": "primary",
           "var": "--colors-primary",
           "varRef": "var(--colors-primary)",
         },
@@ -63,11 +66,6 @@ test('should generate virtual palette', () => {
           ],
           "condition": "base",
           "prop": "red.300",
-          "rawPath": [
-            "colors",
-            "red",
-            "300",
-          ],
           "var": "--colors-red-300",
           "varRef": "var(--colors-red-300)",
         },
@@ -94,11 +92,6 @@ test('should generate virtual palette', () => {
           ],
           "condition": "base",
           "prop": "red.500",
-          "rawPath": [
-            "colors",
-            "red",
-            "500",
-          ],
           "var": "--colors-red-500",
           "varRef": "var(--colors-red-500)",
         },
@@ -125,11 +118,6 @@ test('should generate virtual palette', () => {
           ],
           "condition": "base",
           "prop": "blue.500",
-          "rawPath": [
-            "colors",
-            "blue",
-            "500",
-          ],
           "var": "--colors-blue-500",
           "varRef": "var(--colors-blue-500)",
         },
@@ -156,11 +144,6 @@ test('should generate virtual palette', () => {
           ],
           "condition": "base",
           "prop": "blue.700",
-          "rawPath": [
-            "colors",
-            "blue",
-            "700",
-          ],
           "var": "--colors-blue-700",
           "varRef": "var(--colors-blue-700)",
         },
@@ -173,6 +156,26 @@ test('should generate virtual palette', () => {
         ],
         "type": "color",
         "value": "#blue700",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette",
+          "var": "--colors-color-palette",
+          "varRef": "var(--colors-color-palette)",
+        },
+        "name": "colors.colorPalette",
+        "originalValue": "colors.colorPalette",
+        "path": [
+          "colors",
+          "colorPalette",
+          "",
+        ],
+        "type": "color",
+        "value": "colors.colorPalette",
       },
       Token {
         "description": undefined,
@@ -239,6 +242,9 @@ test('should generate virtual palette', () => {
 
   expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
     Map {
+      "primary" => Map {
+        "--colors-color-palette" => "var(--colors-primary)",
+      },
       "red" => Map {
         "--colors-color-palette-300" => "var(--colors-red-300)",
         "--colors-color-palette-500" => "var(--colors-red-500)",
@@ -258,6 +264,7 @@ test('should generate virtual palette', () => {
         "red.500" => "var(--colors-red-500)",
         "blue.500" => "var(--colors-blue-500)",
         "blue.700" => "var(--colors-blue-700)",
+        "colorPalette" => "var(--colors-color-palette)",
         "colorPalette.300" => "var(--colors-color-palette-300)",
         "colorPalette.500" => "var(--colors-color-palette-500)",
         "colorPalette.700" => "var(--colors-color-palette-700)",
@@ -270,6 +277,7 @@ test('should generate virtual palette', () => {
 
   expect(formats.getColorPaletteValues(dictionary)).toMatchInlineSnapshot(`
     Set {
+      "primary",
       "red",
       "blue",
     }
@@ -325,11 +333,6 @@ test('should generate nested object virtual palette', () => {
             "base": "navy",
           },
           "prop": "button.dark",
-          "rawPath": [
-            "colors",
-            "button",
-            "dark",
-          ],
           "var": "--colors-button-dark",
           "varRef": "var(--colors-button-dark)",
         },
@@ -359,12 +362,6 @@ test('should generate nested object virtual palette', () => {
             "base": "skyblue",
           },
           "prop": "button.light",
-          "rawPath": [
-            "colors",
-            "button",
-            "light",
-            "DEFAULT",
-          ],
           "var": "--colors-button-light",
           "varRef": "var(--colors-button-light)",
         },
@@ -396,13 +393,6 @@ test('should generate nested object virtual palette', () => {
             "base": "cyan",
           },
           "prop": "button.light.accent",
-          "rawPath": [
-            "colors",
-            "button",
-            "light",
-            "accent",
-            "DEFAULT",
-          ],
           "var": "--colors-button-light-accent",
           "varRef": "var(--colors-button-light-accent)",
         },
@@ -437,13 +427,6 @@ test('should generate nested object virtual palette', () => {
             "base": "blue",
           },
           "prop": "button.light.accent.secondary",
-          "rawPath": [
-            "colors",
-            "button",
-            "light",
-            "accent",
-            "secondary",
-          ],
           "var": "--colors-button-light-accent-secondary",
           "varRef": "var(--colors-button-light-accent-secondary)",
         },

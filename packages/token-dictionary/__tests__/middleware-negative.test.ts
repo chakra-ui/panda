@@ -23,10 +23,6 @@ test('middleware / add negative', () => {
           "category": "spacing",
           "condition": "base",
           "prop": "sm",
-          "rawPath": [
-            "spacing",
-            "sm",
-          ],
         },
         "name": "spacing.sm",
         "originalValue": "4px",
@@ -48,10 +44,6 @@ test('middleware / add negative', () => {
             "sm",
           ],
           "prop": "-sm",
-          "rawPath": [
-            "spacing",
-            "sm",
-          ],
         },
         "name": "spacing.-sm",
         "originalValue": "4px",

@@ -27,10 +27,6 @@ test('transform / shadow', () => {
           "category": "colors",
           "condition": "base",
           "prop": "red",
-          "rawPath": [
-            "colors",
-            "red",
-          ],
         },
         "name": "colors.red",
         "originalValue": "#ff0000",
@@ -47,10 +43,6 @@ test('transform / shadow', () => {
           "category": "shadows",
           "condition": "base",
           "prop": "sm",
-          "rawPath": [
-            "shadows",
-            "sm",
-          ],
         },
         "name": "shadows.sm",
         "originalValue": "4px 10px 4px 0px {colors.red}",
@@ -67,10 +59,6 @@ test('transform / shadow', () => {
           "category": "shadows",
           "condition": "base",
           "prop": "md",
-          "rawPath": [
-            "shadows",
-            "md",
-          ],
         },
         "name": "shadows.md",
         "originalValue": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
