@@ -587,8 +587,9 @@ test('should generate pattern', () => {
 
     const gridConfig = {
     transform(props, { map }) {
+      const regex = /\\\\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/;
       const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", columns, minChildWidth, ...rest } = props;
-      const getValue = (v) => v.includes(\\"px\\") || v.includes(\\"em\\") || v.includes(\\"%\\") ? v : \`token(sizes.\${v}, \${v})\`;
+      const getValue = (v) => regex.test(v) ? v : \`token(sizes.\${v}, \${v})\`;
       return {
         display: \\"grid\\",
         gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${getValue(v)}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${getValue(v)}, 1fr))\`) : void 0,

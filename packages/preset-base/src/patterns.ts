@@ -155,9 +155,9 @@ const grid = definePattern({
     minChildWidth: { type: 'token', value: 'sizes', property: 'width' },
   },
   transform(props, { map }) {
+    const regex = /\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/
     const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '10px', columns, minChildWidth, ...rest } = props
-    const getValue = (v: string) =>
-      v.includes('px') || v.includes('em') || v.includes('%') ? v : `token(sizes.${v}, ${v})`
+    const getValue = (v: string) => (regex.test(v) ? v : `token(sizes.${v}, ${v})`)
 
     return {
       display: 'grid',
