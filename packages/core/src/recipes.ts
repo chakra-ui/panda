@@ -48,8 +48,6 @@ export class Recipes {
   }
 
   private get separator() {
-    // TODO
-    // console.log(0, 'separator', this.context.utility.separator)
     return this.context.utility.separator ?? '_'
   }
 

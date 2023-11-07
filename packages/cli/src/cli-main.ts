@@ -108,12 +108,7 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      function loadContext() {
-        // TODO
-        return loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
-      }
-
-      let ctx = await loadContext()
+      const ctx = await loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
 
       const { msg } = await emitArtifacts(ctx)
       logger.log(msg)
@@ -127,10 +122,9 @@ export async function main() {
         })
 
         const onChange = debounce(async () => {
-          // TODO
           logger.info('ctx:change', 'config changed, rebuilding...')
-          ctx = await loadContext()
-          await emitArtifacts(ctx)
+          const affecteds = await ctx.diff.reloadConfigAndRefreshCtx()
+          await emitArtifacts(ctx, Array.from(affecteds.artifacts))
           logger.info('ctx:updated', 'config rebuilt ✅')
         })
 
@@ -165,21 +159,16 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      function loadContext() {
-        // TODO
-        return loadConfigAndCreateContext({
-          cwd,
-          config: {
-            clean,
-            minify,
-            optimize: true,
-            ...(glob ? { include: [glob] } : undefined),
-          },
-          configPath,
-        })
-      }
-
-      let ctx = await loadContext()
+      const ctx = await loadConfigAndCreateContext({
+        cwd,
+        config: {
+          clean,
+          minify,
+          optimize: true,
+          ...(glob ? { include: [glob] } : undefined),
+        },
+        configPath,
+      })
 
       const cssgen = async (ctx: PandaContext) => {
         if (outfile) {
@@ -222,7 +211,7 @@ export async function main() {
           'change',
           debounce(async () => {
             logger.info('ctx:change', 'config changed, rebuilding...')
-            ctx = await loadContext()
+            await ctx.diff.reloadConfigAndRefreshCtx()
             await cssgen(ctx)
             logger.info('ctx:updated', 'config rebuilt ✅')
           }),

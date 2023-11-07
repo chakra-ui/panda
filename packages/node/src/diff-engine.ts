@@ -4,8 +4,6 @@ import diff, { type Difference } from 'microdiff'
 import { Generator } from '@pandacss/generator'
 import { dashCase } from '@pandacss/shared'
 
-// TODO add e2e tests for this
-
 // Below is the list of all the config paths that can affect an artifact generation
 // For some, such as recipes/patterns/jsx-patterns we'll specify which item was specifically affected (e.g. recipes.xxx-yyy)
 // so we can avoid generating/re-writing all the other artifacts of the same kind (e.g. recipes.aaa, recipes.bbb, etc.) that didn't change
