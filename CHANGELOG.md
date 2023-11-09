@@ -6,6 +6,57 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.18.1] - 2023-11-09
+
+### Fixed
+
+- Fix issue where virtual color does not apply DEFAULT color in palette
+- Fix issue where composite tokens (shadows, border, etc) generated incorrect css when using the object syntax in
+  semantic tokens.
+- Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
+- Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a minChildWidth wasn't
+  interpreted as a token value
+
+Before:
+
+```tsx
+<div className={grid({ minChildWidth: '80px', gap: 8 })} />
+// ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+<div className={grid({ minChildWidth: '20', gap: 8 })} />
+// ❌ grid-template-columns: repeat(auto-fit, minmax(20, 1fr))
+//                                                  ^^^
+```
+
+After:
+
+```tsx
+<div className={grid({ minChildWidth: '80px', gap: 8 })} />
+// ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+<div className={grid({ minChildWidth: '20', gap: 8 })} />
+// ✅ grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, 20), 1fr))
+//                                                  ^^^^^^^^^^^^^^^^^^^
+```
+
+```jsx
+css({ hideBelow: 'lg' })
+// => @media screen and (max-width: 63.9975em) { background: red; }
+```
+
+### Added
+
+- Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
+
+```jsx
+css({ hideFrom: '800px' })
+// => @media screen and (min-width: 800px) { background: red; }
+```
+
+### Changed
+
+- Make `_required`condition target `[data-required]` and `[aria-required=true]` attributes
+
 ## [0.18.0] - 2023-11-06
 
 ### Fixed
