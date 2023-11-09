@@ -454,7 +454,7 @@ Here's a list of all the condition shortcuts you can use in Panda:
 | \_groupExpanded        | `.group:is([aria-expanded=true], [data-expanded]) &`               |
 | \_groupInvalid         | `.group:invalid &`                                                 |
 | \_indeterminate        | `&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed])` |
-| \_required             | `&:required`                                                       |
+| \_required             | `&:is(:required, [data-required], [aria-required=true])`           |
 | \_valid                | `&:is(:valid, [data-valid])`                                       |
 | \_invalid              | `&:is(:invalid, [data-invalid])`                                   |
 | \_autofill             | `&:autofill`                                                       |
