@@ -1,5 +1,21 @@
 # @pandacss/generator
 
+## 0.18.1
+
+### Patch Changes
+
+- 43bfa510: Fix issue where composite tokens (shadows, border, etc) generated incorrect css when using the object syntax
+  in semantic tokens.
+- Updated dependencies [566fd28a]
+- Updated dependencies [43bfa510]
+- Updated dependencies [8c76cd0f]
+  - @pandacss/token-dictionary@0.18.1
+  - @pandacss/core@0.18.1
+  - @pandacss/is-valid-prop@0.18.1
+  - @pandacss/logger@0.18.1
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
 ## 0.18.0
 
 ### Minor Changes

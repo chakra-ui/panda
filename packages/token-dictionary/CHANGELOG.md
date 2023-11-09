@@ -1,5 +1,15 @@
 # @pandacss/token-dictionary
 
+## 0.18.1
+
+### Patch Changes
+
+- 566fd28a: Fix issue where virtual color does not apply DEFAULT color in palette
+- 43bfa510: Fix issue where composite tokens (shadows, border, etc) generated incorrect css when using the object syntax
+  in semantic tokens.
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
 ## 0.18.0
 
 ### Patch Changes

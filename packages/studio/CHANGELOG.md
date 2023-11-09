@@ -1,5 +1,43 @@
 # @pandacss/studio
 
+## 0.18.1
+
+### Patch Changes
+
+- aac7b379: Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a
+  minChildWidth wasn't interpreted as a token value
+
+  Before:
+
+  ```tsx
+  <div className={grid({ minChildWidth: '80px', gap: 8 })} />
+  // ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+  <div className={grid({ minChildWidth: '20', gap: 8 })} />
+  // ❌ grid-template-columns: repeat(auto-fit, minmax(20, 1fr))
+  //                                                  ^^^
+  ```
+
+  After:
+
+  ```tsx
+  <div className={grid({ minChildWidth: '80px', gap: 8 })} />
+  // ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+  <div className={grid({ minChildWidth: '20', gap: 8 })} />
+  // ✅ grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, 20), 1fr))
+  //                                                  ^^^^^^^^^^^^^^^^^^^
+  ```
+
+- Updated dependencies [566fd28a]
+- Updated dependencies [43bfa510]
+  - @pandacss/token-dictionary@0.18.1
+  - @pandacss/config@0.18.1
+  - @pandacss/node@0.18.1
+  - @pandacss/logger@0.18.1
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
 ## 0.18.0
 
 ### Patch Changes

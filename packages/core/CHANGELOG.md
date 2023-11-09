@@ -1,5 +1,31 @@
 # @pandacss/core
 
+## 0.18.1
+
+### Patch Changes
+
+- 8c76cd0f: - Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
+
+  ```jsx
+  css({ hideBelow: 'lg' })
+  // => @media screen and (max-width: 63.9975em) { background: red; }
+  ```
+
+  - Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
+
+  ```jsx
+  css({ hideFrom: '800px' })
+  // => @media screen and (min-width: 800px) { background: red; }
+  ```
+
+- Updated dependencies [566fd28a]
+- Updated dependencies [43bfa510]
+  - @pandacss/token-dictionary@0.18.1
+  - @pandacss/error@0.18.1
+  - @pandacss/logger@0.18.1
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
 ## 0.18.0
 
 ### Patch Changes
