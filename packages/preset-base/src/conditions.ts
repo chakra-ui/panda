@@ -56,7 +56,7 @@ export const conditions = {
   groupInvalid: '.group:invalid &',
 
   indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate")',
-  required: '&:required',
+  required: '&:is(:required, [data-required], [aria-required=true])',
   valid: '&:is(:valid, [data-valid])',
   invalid: '&:is(:invalid, [data-invalid])',
   autofill: '&:autofill',
