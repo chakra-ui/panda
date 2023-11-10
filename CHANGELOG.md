@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.18.2] - 2023-11-10
+
+### Fixed
+
+- Fix regression in grid pattern where `columns` doesn't not work as expected.
+
 ## [0.18.1] - 2023-11-09
 
 ### Fixed
