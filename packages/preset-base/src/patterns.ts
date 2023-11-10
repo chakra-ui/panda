@@ -158,12 +158,11 @@ const grid = definePattern({
     const regex = /\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/
     const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '10px', columns, minChildWidth, ...rest } = props
     const getValue = (v: string) => (regex.test(v) ? v : `token(sizes.${v}, ${v})`)
-
     return {
       display: 'grid',
       gridTemplateColumns:
         columns != null
-          ? map(columns, (v) => `repeat(${getValue(v)}, minmax(0, 1fr))`)
+          ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`)
           : minChildWidth != null
           ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${getValue(v)}, 1fr))`)
           : undefined,

@@ -104,7 +104,7 @@ export interface Conditions {
 	"_groupInvalid": string
 	/** `&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate")` */
 	"_indeterminate": string
-	/** `&:required` */
+	/** `&:is(:required, [data-required], [aria-required=true])` */
 	"_required": string
 	/** `&:is(:valid, [data-valid])` */
 	"_valid": string

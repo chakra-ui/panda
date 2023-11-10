@@ -592,7 +592,7 @@ test('should generate pattern', () => {
       const getValue = (v) => regex.test(v) ? v : \`token(sizes.\${v}, \${v})\`;
       return {
         display: \\"grid\\",
-        gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${getValue(v)}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${getValue(v)}, 1fr))\`) : void 0,
+        gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${v}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${getValue(v)}, 1fr))\`) : void 0,
         gap,
         columnGap,
         rowGap,
