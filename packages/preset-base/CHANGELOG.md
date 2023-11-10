@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.18.2
+
+### Patch Changes
+
+- 3e1ea626: Fix regression in grid pattern where `columns` doesn't not work as expected.
+  - @pandacss/types@0.18.2
+
 ## 0.18.1
 
 ### Patch Changes
