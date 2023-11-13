@@ -51,6 +51,6 @@
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
-    "@types/lodash.merge": "4.6.8"
+    "@types/lodash.merge": "4.6.9"
   }
 }

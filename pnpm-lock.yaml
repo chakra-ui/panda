@@ -311,8 +311,8 @@ importers:
         specifier: workspace:*
         version: link:../fixture
       '@types/lodash.merge':
-        specifier: 4.6.8
-        version: 4.6.8
+        specifier: 4.6.9
+        version: 4.6.9
 
   packages/error: {}
 
@@ -517,8 +517,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       '@types/lodash.merge':
-        specifier: 4.6.8
-        version: 4.6.8
+        specifier: 4.6.9
+        version: 4.6.9
       '@types/pluralize':
         specifier: 0.0.30
         version: 0.0.30
@@ -11048,8 +11048,8 @@ packages:
     dependencies:
       '@types/node': 20.4.5
 
-  /@types/lodash.merge@4.6.8:
-    resolution: {integrity: sha512-He1g+VBmRclP+6hT6P6zKlzpFoeOLMgPpMGChgINuxbdPumZCIJsITbqSq2cWXzJu2ltmwVN5TfQ6kj0X06rFQ==}
+  /@types/lodash.merge@4.6.9:
+    resolution: {integrity: sha512-23sHDPmzd59kUgWyKGiOMO2Qb9YtqRO/x4IhkgNUiPQ1+5MUVqi6bCZeq9nBJ17msjIMbEIO5u+XW4Kz6aGUhQ==}
     dependencies:
       '@types/lodash': 4.14.195
     dev: true
