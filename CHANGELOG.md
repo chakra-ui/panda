@@ -6,6 +6,13 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.18.3] - 2023-11-15
+
+### Fixed
+
+- Fix issue with `forceConsistentTypeExtension` where the `composition.d.mts` had an incorrect type import
+- Fix issue in studio here userland `@ark-ui/react` version could interfere with studio version
+
 ## [0.18.2] - 2023-11-10
 
 ### Fixed
