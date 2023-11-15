@@ -1,5 +1,17 @@
 # @pandacss/generator
 
+## 0.18.3
+
+### Patch Changes
+
+- 78b940b2: Fix issue with `forceConsistentTypeExtension` where the `composition.d.mts` had an incorrect type import
+  - @pandacss/core@0.18.3
+  - @pandacss/is-valid-prop@0.18.3
+  - @pandacss/logger@0.18.3
+  - @pandacss/shared@0.18.3
+  - @pandacss/token-dictionary@0.18.3
+  - @pandacss/types@0.18.3
+
 ## 0.18.2
 
 ### Patch Changes
