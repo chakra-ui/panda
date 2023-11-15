@@ -6,4 +6,4 @@ export declare const token: {
   var: (path: Token, fallback?: string) => string
 }
 
-export type * from './tokens';
+export * from './tokens';
