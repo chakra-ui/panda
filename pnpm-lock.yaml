@@ -883,11 +883,11 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0(@vue/compiler-sfc@3.3.7)(vue@3.3.4)
       '@types/react':
-        specifier: ^18.2.15
-        version: 18.2.22
+        specifier: ^18.2.37
+        version: 18.2.37
       '@types/react-dom':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.15
+        version: 18.2.15
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.0.0
         version: 6.2.1(@typescript-eslint/parser@6.2.1)(eslint@8.46.0)(typescript@5.2.2)
@@ -988,11 +988,11 @@ importers:
         specifier: ^20.4.5
         version: 20.4.5
       '@types/react':
-        specifier: ^18.2.22
-        version: 18.2.22
+        specifier: ^18.2.37
+        version: 18.2.37
       '@types/react-dom':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.15
+        version: 18.2.15
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -1182,11 +1182,11 @@ importers:
         specifier: ^1.19.3
         version: 1.19.3
       '@types/react':
-        specifier: ^18.2.22
-        version: 18.2.22
+        specifier: ^18.2.37
+        version: 18.2.37
       '@types/react-dom':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.15
+        version: 18.2.15
       '@types/source-map-support':
         specifier: ^0.5.6
         version: 0.5.6
@@ -1423,8 +1423,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/cli
       '@types/react':
-        specifier: ^18.2.22
-        version: 18.2.22
+        specifier: ^18.2.37
+        version: 18.2.37
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.31)
@@ -11209,25 +11209,11 @@ packages:
     dependencies:
       '@types/react': 18.2.37
 
-  /@types/react-dom@18.2.7:
-    resolution: {integrity: sha512-GRaAEriuT4zp9N4p1i8BDBYmEyfo+xQ3yHjJU4eiK5NDa1RmUZG+unZABUTK4/Ox/M+GaHwb6Ow8rUITrtjszA==}
-    dependencies:
-      '@types/react': 18.2.37
-    dev: true
-
   /@types/react-transition-group@4.4.8:
     resolution: {integrity: sha512-QmQ22q+Pb+HQSn04NL3HtrqHwYMf4h3QKArOy5F8U5nEVMaihBs3SR10WiOM1iwPz5jIo8x/u11al+iEGZZrvg==}
     dependencies:
       '@types/react': 18.2.37
     dev: false
-
-  /@types/react@18.2.22:
-    resolution: {integrity: sha512-60fLTOLqzarLED2O3UQImc/lsNRgG0jE/a1mPW9KjMemY0LMITWEsbS4VvZ4p6rorEHd5YKxxmMKSDK505GHpA==}
-    dependencies:
-      '@types/prop-types': 15.7.9
-      '@types/scheduler': 0.16.3
-      csstype: 3.1.2
-    dev: true
 
   /@types/react@18.2.37:
     resolution: {integrity: sha512-RGAYMi2bhRgEXT3f4B92WTohopH6bIXw05FuGlmJEnv/omEn190+QYEIYxIAuIBdKgboYYdVved2p1AxZVQnaw==}
