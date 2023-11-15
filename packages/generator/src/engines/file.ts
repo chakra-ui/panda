@@ -27,7 +27,7 @@ export const getFileEngine = (config: UserConfig): PandaFileEngine => {
       return `export * from '${this.ext(file)}';`
     },
     exportTypeStar(file: string) {
-      return `export * from '${this.__extDts(file)}';`
+      return `export type * from '${this.__extDts(file)}';`
     },
     isTypeFile(file: string) {
       return file.endsWith('.d.ts') || file.endsWith('.d.mts')

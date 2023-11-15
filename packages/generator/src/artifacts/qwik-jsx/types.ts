@@ -43,7 +43,7 @@ export interface JsxFactoryOptions<TProps extends Dict> {
 
 export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
 
-export type JsxElement<T extends ElementType, P> = T extends ${componentName}<infer A, infer B>
+export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
   ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
   : ${componentName}<T, P>
 

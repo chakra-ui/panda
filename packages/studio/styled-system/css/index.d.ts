@@ -1,5 +1,5 @@
 /* eslint-disable */
-export * from './css';
-export * from './cx';
-export * from './cva';
-export * from './sva';
+export type * from './css';
+export type * from './cx';
+export type * from './cva';
+export type * from './sva';
