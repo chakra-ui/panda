@@ -1,5 +1,17 @@
 # @pandacss/studio
 
+## 0.18.3
+
+### Patch Changes
+
+- a30f660d: Fix issue in studio here userland `@ark-ui/react` version could interfere with studio version
+  - @pandacss/node@0.18.3
+  - @pandacss/config@0.18.3
+  - @pandacss/logger@0.18.3
+  - @pandacss/shared@0.18.3
+  - @pandacss/token-dictionary@0.18.3
+  - @pandacss/types@0.18.3
+
 ## 0.18.2
 
 ### Patch Changes
