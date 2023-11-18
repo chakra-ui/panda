@@ -254,7 +254,7 @@ const { withProvider, withContext } = createStyleContext(checkbox)
 //                                  👇🏻 points to the root slot
 const Root = withProvider('label', 'root')
 //                                    👇🏻 points to the control slot
-const Control = withProvider('div', 'control')
+const Control = withContext('div', 'control')
 //                                  👇🏻 points to the label slot
 const Label = withContext('span', 'label')
 
