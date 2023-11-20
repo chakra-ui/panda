@@ -35,7 +35,7 @@
     "monaco-editor": "0.40.0",
     "monaco-jsx-highlighter": "^2.0.4",
     "nanoid": "4.0.2",
-    "next": "14.0.0",
+    "next": "14.0.3",
     "next-themes": "^0.2.1",
     "os-browserify": "0.3.0",
     "outdent": " ^0.8.0",
@@ -62,7 +62,7 @@
     "@types/react-dom": "18.2.15",
     "dts-bundle-generator": "^8.1.2",
     "eslint": "8.46.0",
-    "eslint-config-next": "13.4.12",
+    "eslint-config-next": "13.5.6",
     "raw-loader": "^4.0.2",
     "tsx": "3.12.10"
   }
