@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
-    "@types/pluralize": "0.0.30",
+    "@types/pluralize": "0.0.33",
     "hookable": "5.5.3"
   }
 }
