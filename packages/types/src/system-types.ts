@@ -59,9 +59,11 @@ export interface ExtendableGlobalStyleObject {
   extend?: GlobalStyleObject | undefined
 }
 
-export type CompositionStyleObject<Property extends string> = Nested<{
-  [K in Property]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown
-}>
+type FilterStyleObject<P extends string> = {
+  [K in P]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown
+}
+
+export type CompositionStyleObject<Property extends string> = Nested<FilterStyleObject<Property> & CssVarProperties>
 
 /* -----------------------------------------------------------------------------
  * Jsx style props
