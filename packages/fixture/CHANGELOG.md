@@ -1,5 +1,40 @@
 # @pandacss/fixture
 
+## 0.18.3
+
+### Patch Changes
+
+- @pandacss/preset-base@0.18.3
+- @pandacss/preset-panda@0.18.3
+- @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- Updated dependencies [3e1ea626]
+  - @pandacss/preset-base@0.18.2
+  - @pandacss/preset-panda@0.18.2
+  - @pandacss/types@0.18.2
+
+## 0.18.1
+
+### Patch Changes
+
+- Updated dependencies [ce34ea45]
+- Updated dependencies [aac7b379]
+  - @pandacss/preset-base@0.18.1
+  - @pandacss/preset-panda@0.18.1
+  - @pandacss/types@0.18.1
+
+## 0.18.0
+
+### Patch Changes
+
+- @pandacss/types@0.18.0
+- @pandacss/preset-base@0.18.0
+- @pandacss/preset-panda@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes

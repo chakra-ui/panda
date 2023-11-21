@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/dev",
-  "version": "0.17.5",
+  "version": "0.18.3",
   "description": "The user facing package for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -72,7 +72,7 @@
     "perfect-debounce": "^1.0.0"
   },
   "devDependencies": {
-    "@types/update-notifier": "6.0.5",
+    "@types/update-notifier": "6.0.6",
     "kleur": "4.1.5",
     "update-notifier": "6.0.2"
   }

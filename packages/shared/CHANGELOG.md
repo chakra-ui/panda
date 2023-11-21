@@ -1,5 +1,17 @@
 # @pandacss/shared
 
+## 0.18.3
+
+## 0.18.2
+
+## 0.18.1
+
+## 0.18.0
+
+### Patch Changes
+
+- ba9e32fa: Fix issue in template literal mode where comma-separated selectors don't work when multiline
+
 ## 0.17.5
 
 ## 0.17.4

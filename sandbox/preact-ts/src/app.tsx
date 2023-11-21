@@ -1,7 +1,9 @@
 import { css, sva } from '../styled-system/css'
 import { card } from '../styled-system/recipes'
-import { splitCssProps, styled } from '../styled-system/jsx'
+import { styled } from '../styled-system/jsx'
+import { splitCssProps } from '../styled-system/jsx/is-valid-prop'
 import { HTMLStyledProps } from '../styled-system/types'
+import { grid } from '../styled-system/patterns/grid'
 
 const button = sva({
   slots: ['label', 'icon'],
@@ -78,6 +80,8 @@ export function App() {
       <SplitComponent w="2" onClick={() => console.log('123')}>
         Click me
       </SplitComponent>
+      <div className={grid({ minChildWidth: '80px', gap: 8 })}>grid.minChildWidth 80px</div>
+      <div className={grid({ minChildWidth: '20', gap: 8 })}>grid.minChildWidth 20</div>
     </div>
   )
 }

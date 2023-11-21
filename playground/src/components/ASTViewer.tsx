@@ -2,9 +2,12 @@ import { css, cva } from '@/styled-system/css'
 import { Stack, panda } from '@/styled-system/jsx'
 import { hstack } from '@/styled-system/patterns'
 import type { ResultItem } from '@pandacss/types'
-import { JsonViewer } from '@textea/json-viewer'
 import { usePanda } from '../hooks/usePanda'
 import { useTheme } from 'next-themes'
+
+import dynamic from 'next/dynamic'
+
+const ResultItemRowJson = dynamic(() => import('./ASTViewer-row'))
 
 export const ASTViewer = (props: { parserResult: ReturnType<typeof usePanda>['parserResult'] }) => {
   if (!props.parserResult) return null
@@ -45,6 +48,15 @@ const resultType = cva({
   },
 })
 
+const rowClassName = css({
+  '&.json-viewer-theme-dark': {
+    bg: 'transparent !important',
+  },
+  '& data-object-start, .data-object-end': {
+    color: { _dark: 'white' },
+  },
+})
+
 const ResultItemRow = (props: { result: ResultItem }) => {
   const { result } = props
   const { resolvedTheme } = useTheme()
@@ -55,18 +67,7 @@ const ResultItemRow = (props: { result: ResultItem }) => {
         <span className={resultType({ name: result.name as 'cva' | 'css' })}>{result.name}</span>
         <panda.span ml="auto">(l{getReportRange(result)})</panda.span>
       </panda.div>
-      <JsonViewer
-        className={css({
-          '&.json-viewer-theme-dark': {
-            bg: 'transparent !important',
-          },
-          '& data-object-start, .data-object-end': {
-            color: { _dark: 'white' },
-          },
-        })}
-        theme={resolvedTheme as any}
-        value={unwrapArray(result.data)}
-      />
+      <ResultItemRowJson theme={resolvedTheme} data={result.data} className={rowClassName} />
     </Stack>
   )
 }
@@ -81,12 +82,4 @@ const getReportRange = (reportItem: ResultItem) => {
   const startInfo = src.getLineAndColumnAtPos(startPosition)
 
   return `:${startInfo.line}:${startInfo.column}`
-}
-
-function unwrapArray<T>(array: T[]): T | T[] {
-  if (array.length === 1) {
-    return array[0]!
-  }
-
-  return array
 }

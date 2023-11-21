@@ -1,12 +1,12 @@
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { box } from './box'
-import type { BoxNode } from './box-factory'
+import type { BoxNode, BoxNodeMap, BoxNodeObject } from './box-factory'
 import { extractJsxAttribute } from './jsx-attribute'
 import { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 import type { BoxContext } from './types'
-import { Bool } from 'lil-fp'
 
-const isObjectLike = Bool.or(box.isObject, box.isMap)
+const isObjectLike = (node: BoxNode | undefined): node is BoxNodeObject | BoxNodeMap =>
+  box.isObject(node) || box.isMap(node)
 
 export const extractJsxElementProps = (node: JsxOpeningElement | JsxSelfClosingElement, ctx: BoxContext) => {
   const tagName = node.getTagNameNode().getText()

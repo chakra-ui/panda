@@ -1,5 +1,81 @@
 # @pandacss/studio
 
+## 0.18.3
+
+### Patch Changes
+
+- a30f660d: Fix issue in studio here userland `@ark-ui/react` version could interfere with studio version
+  - @pandacss/node@0.18.3
+  - @pandacss/config@0.18.3
+  - @pandacss/logger@0.18.3
+  - @pandacss/shared@0.18.3
+  - @pandacss/token-dictionary@0.18.3
+  - @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- @pandacss/config@0.18.2
+- @pandacss/node@0.18.2
+- @pandacss/token-dictionary@0.18.2
+- @pandacss/logger@0.18.2
+- @pandacss/shared@0.18.2
+- @pandacss/types@0.18.2
+
+## 0.18.1
+
+### Patch Changes
+
+- aac7b379: Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a
+  minChildWidth wasn't interpreted as a token value
+
+  Before:
+
+  ```tsx
+  <div className={grid({ minChildWidth: '80px', gap: 8 })} />
+  // ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+  <div className={grid({ minChildWidth: '20', gap: 8 })} />
+  // ❌ grid-template-columns: repeat(auto-fit, minmax(20, 1fr))
+  //                                                  ^^^
+  ```
+
+  After:
+
+  ```tsx
+  <div className={grid({ minChildWidth: '80px', gap: 8 })} />
+  // ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+  <div className={grid({ minChildWidth: '20', gap: 8 })} />
+  // ✅ grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, 20), 1fr))
+  //                                                  ^^^^^^^^^^^^^^^^^^^
+  ```
+
+- Updated dependencies [566fd28a]
+- Updated dependencies [43bfa510]
+  - @pandacss/token-dictionary@0.18.1
+  - @pandacss/config@0.18.1
+  - @pandacss/node@0.18.1
+  - @pandacss/logger@0.18.1
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
+## 0.18.0
+
+### Patch Changes
+
+- b840e469: Improve semantic colors in studio
+- Updated dependencies [ba9e32fa]
+- Updated dependencies [3010af28]
+- Updated dependencies [866c12aa]
+  - @pandacss/shared@0.18.0
+  - @pandacss/node@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/config@0.18.0
+  - @pandacss/logger@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes

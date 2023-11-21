@@ -3,6 +3,13 @@ import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import { Breakpoints } from '../src/breakpoints'
 
+const parse = (value: string) => {
+  const root = postcss.parse(value)
+  const bp = new Breakpoints(breakpoints)
+  bp.expandScreenAtRule(root)
+  return root.toString()
+}
+
 describe('Breakpoints', () => {
   test('should resolve breakpoints', () => {
     const bp = new Breakpoints(breakpoints)
@@ -11,7 +18,7 @@ describe('Breakpoints', () => {
         [
           "sm",
           {
-            "max": "47.996875em",
+            "max": "47.9975em",
             "min": "40em",
             "name": "sm",
           },
@@ -19,7 +26,7 @@ describe('Breakpoints', () => {
         [
           "md",
           {
-            "max": "63.996875em",
+            "max": "63.9975em",
             "min": "48em",
             "name": "md",
           },
@@ -27,7 +34,7 @@ describe('Breakpoints', () => {
         [
           "lg",
           {
-            "max": "79.996875em",
+            "max": "79.9975em",
             "min": "64em",
             "name": "lg",
           },
@@ -35,7 +42,7 @@ describe('Breakpoints', () => {
         [
           "xl",
           {
-            "max": "95.996875em",
+            "max": "95.9975em",
             "min": "80em",
             "name": "xl",
           },
@@ -59,22 +66,22 @@ describe('Breakpoints', () => {
           "name": "2xl",
         },
         "lg": {
-          "max": "79.996875em",
+          "max": "79.9975em",
           "min": "64em",
           "name": "lg",
         },
         "md": {
-          "max": "63.996875em",
+          "max": "63.9975em",
           "min": "48em",
           "name": "md",
         },
         "sm": {
-          "max": "47.996875em",
+          "max": "47.9975em",
           "min": "40em",
           "name": "sm",
         },
         "xl": {
-          "max": "95.996875em",
+          "max": "95.9975em",
           "min": "80em",
           "name": "xl",
         },
@@ -84,36 +91,36 @@ describe('Breakpoints', () => {
     expect(bp.ranges).toMatchInlineSnapshot(`
       {
         "2xl": "screen and (min-width: 96em)",
-        "2xlDown": "screen and (max-width: 96em)",
+        "2xlDown": "screen and (max-width: 95.9975em)",
         "2xlOnly": "screen and (min-width: 96em)",
         "lg": "screen and (min-width: 64em)",
-        "lgDown": "screen and (max-width: 64em)",
-        "lgOnly": "screen and (min-width: 64em) and (max-width: 79.996875em)",
-        "lgTo2xl": "screen and (min-width: 64em) and (max-width: 95.996875em)",
-        "lgToXl": "screen and (min-width: 64em) and (max-width: 79.996875em)",
+        "lgDown": "screen and (max-width: 63.9975em)",
+        "lgOnly": "screen and (min-width: 64em) and (max-width: 79.9975em)",
+        "lgTo2xl": "screen and (min-width: 64em) and (max-width: 95.9975em)",
+        "lgToXl": "screen and (min-width: 64em) and (max-width: 79.9975em)",
         "md": "screen and (min-width: 48em)",
-        "mdDown": "screen and (max-width: 48em)",
-        "mdOnly": "screen and (min-width: 48em) and (max-width: 63.996875em)",
-        "mdTo2xl": "screen and (min-width: 48em) and (max-width: 95.996875em)",
-        "mdToLg": "screen and (min-width: 48em) and (max-width: 63.996875em)",
-        "mdToXl": "screen and (min-width: 48em) and (max-width: 79.996875em)",
+        "mdDown": "screen and (max-width: 47.9975em)",
+        "mdOnly": "screen and (min-width: 48em) and (max-width: 63.9975em)",
+        "mdTo2xl": "screen and (min-width: 48em) and (max-width: 95.9975em)",
+        "mdToLg": "screen and (min-width: 48em) and (max-width: 63.9975em)",
+        "mdToXl": "screen and (min-width: 48em) and (max-width: 79.9975em)",
         "sm": "screen and (min-width: 40em)",
-        "smDown": "screen and (max-width: 40em)",
-        "smOnly": "screen and (min-width: 40em) and (max-width: 47.996875em)",
-        "smTo2xl": "screen and (min-width: 40em) and (max-width: 95.996875em)",
-        "smToLg": "screen and (min-width: 40em) and (max-width: 63.996875em)",
-        "smToMd": "screen and (min-width: 40em) and (max-width: 47.996875em)",
-        "smToXl": "screen and (min-width: 40em) and (max-width: 79.996875em)",
+        "smDown": "screen and (max-width: 39.9975em)",
+        "smOnly": "screen and (min-width: 40em) and (max-width: 47.9975em)",
+        "smTo2xl": "screen and (min-width: 40em) and (max-width: 95.9975em)",
+        "smToLg": "screen and (min-width: 40em) and (max-width: 63.9975em)",
+        "smToMd": "screen and (min-width: 40em) and (max-width: 47.9975em)",
+        "smToXl": "screen and (min-width: 40em) and (max-width: 79.9975em)",
         "xl": "screen and (min-width: 80em)",
-        "xlDown": "screen and (max-width: 80em)",
-        "xlOnly": "screen and (min-width: 80em) and (max-width: 95.996875em)",
-        "xlTo2xl": "screen and (min-width: 80em) and (max-width: 95.996875em)",
+        "xlDown": "screen and (max-width: 79.9975em)",
+        "xlOnly": "screen and (min-width: 80em) and (max-width: 95.9975em)",
+        "xlTo2xl": "screen and (min-width: 80em) and (max-width: 95.9975em)",
       }
     `)
   })
 
   test('should expand screen', () => {
-    const root = postcss.parse(`
+    const css = parse(`
     @breakpoint md{
         .foo{
             color: red;
@@ -121,12 +128,29 @@ describe('Breakpoints', () => {
     }
     `)
 
-    const bp = new Breakpoints(breakpoints)
-    bp.expandScreenAtRule(root)
-
-    expect(root.toString()).toMatchInlineSnapshot(`
+    expect(css).toMatchInlineSnapshot(`
       "
           @media screen and (min-width: 48em){
+              .foo{
+                  color: red;
+              }
+          }
+          "
+    `)
+  })
+
+  test('breakpoint down', () => {
+    const css = parse(`
+    @breakpoint mdDown{
+        .foo{
+            color: red;
+        }
+    }
+    `)
+
+    expect(css).toMatchInlineSnapshot(`
+      "
+          @media screen and (max-width: 47.9975em){
               .foo{
                   color: red;
               }

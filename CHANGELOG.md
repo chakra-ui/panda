@@ -6,6 +6,109 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.18.3] - 2023-11-15
+
+### Fixed
+
+- Fix issue with `forceConsistentTypeExtension` where the `composition.d.mts` had an incorrect type import
+- Fix issue in studio here userland `@ark-ui/react` version could interfere with studio version
+
+## [0.18.2] - 2023-11-10
+
+### Fixed
+
+- Fix regression in grid pattern where `columns` doesn't not work as expected.
+
+## [0.18.1] - 2023-11-09
+
+### Fixed
+
+- Fix issue where virtual color does not apply DEFAULT color in palette
+- Fix issue where composite tokens (shadows, border, etc) generated incorrect css when using the object syntax in
+  semantic tokens.
+- Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
+- Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a minChildWidth wasn't
+  interpreted as a token value
+
+Before:
+
+```tsx
+<div className={grid({ minChildWidth: '80px', gap: 8 })} />
+// ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+<div className={grid({ minChildWidth: '20', gap: 8 })} />
+// ❌ grid-template-columns: repeat(auto-fit, minmax(20, 1fr))
+//                                                  ^^^
+```
+
+After:
+
+```tsx
+<div className={grid({ minChildWidth: '80px', gap: 8 })} />
+// ✅ grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+
+<div className={grid({ minChildWidth: '20', gap: 8 })} />
+// ✅ grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, 20), 1fr))
+//                                                  ^^^^^^^^^^^^^^^^^^^
+```
+
+```jsx
+css({ hideBelow: 'lg' })
+// => @media screen and (max-width: 63.9975em) { background: red; }
+```
+
+### Added
+
+- Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
+
+```jsx
+css({ hideFrom: '800px' })
+// => @media screen and (min-width: 800px) { background: red; }
+```
+
+### Changed
+
+- Make `_required`condition target `[data-required]` and `[aria-required=true]` attributes
+
+## [0.18.0] - 2023-11-06
+
+### Fixed
+
+- Fix issue in template literal mode where comma-separated selectors don't work when multiline
+- Fix CLI interactive mode `syntax` question values and prettify the generated `panda.config.ts` file
+- Improve semantic colors in studio
+
+### Added
+
+- Add a `--only-config` flag for the `panda debug` command, to skip writing app files and just output the resolved
+  config.
+- Add `--strict-tokens` flag and question in the interactive CLI
+- Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
+
+```tsx
+import { splitCssProps, styled } from '../styled-system/jsx'
+import type { HTMLStyledProps } from '../styled-system/types'
+
+function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+  const [cssProps, restProps] = splitCssProps(props)
+  return (
+    <styled.div {...restProps} className={css({ display: 'flex', height: '20', width: '20' }, cssProps)}>
+      {children}
+    </styled.div>
+  )
+}
+
+// Usage
+
+function App() {
+  return <SplitComponent margin="2">Click me</SplitComponent>
+}
+```
+
+### Changed
+
+- Perf: use raw `if` instead of ts-pattern in the extractor (hot path)
+
 ## [0.17.5] - 2023-10-31
 
 ### Fixed
