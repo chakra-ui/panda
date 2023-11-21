@@ -137,8 +137,8 @@ importers:
         version: 1.0.0
     devDependencies:
       '@types/update-notifier':
-        specifier: 6.0.6
-        version: 6.0.6
+        specifier: 6.0.8
+        version: 6.0.8
       kleur:
         specifier: 4.1.5
         version: 4.1.5
@@ -11273,8 +11273,8 @@ packages:
   /@types/unist@3.0.0:
     resolution: {integrity: sha512-MFETx3tbTjE7Uk6vvnWINA/1iJ7LuMdO4fcq8UfF0pRbj01aGLduVvQcRyswuACJdpnHgg8E3rQLhaRdNEJS0w==}
 
-  /@types/update-notifier@6.0.6:
-    resolution: {integrity: sha512-kySKKtYW9ExZC0SsflB6dBcZnMMfxit3s+rzmSIo/hFGL0YDm1RVDZA5VRukzwESoyT8gAMHHOaYZpJPsndh0Q==}
+  /@types/update-notifier@6.0.8:
+    resolution: {integrity: sha512-IlDFnfSVfYQD+cKIg63DEXn3RFmd7W1iYtKQsJodcHK9R1yr8aKbKaPKfBxzPpcHCq2DU8zUq4PIPmy19Thjfg==}
     dependencies:
       '@types/configstore': 6.0.0
       boxen: 7.1.1
