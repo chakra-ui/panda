@@ -1,7 +1,5 @@
 /* eslint-disable */
-import type {  SystemStyleObject, DistributiveOmit  } from './system-types';
-
-type Pretty<T> = { [K in keyof T]: T[K] } & {}
+import type {  SystemStyleObject, DistributiveOmit, Pretty  } from './system-types';
 
 type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
