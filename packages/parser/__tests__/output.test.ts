@@ -573,20 +573,6 @@ describe('extract to css output pipeline', () => {
           "name": "bgRecipe",
           "type": "recipe",
         },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
       ]
     `)
 
