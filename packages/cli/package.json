@@ -64,7 +64,6 @@
     "@pandacss/postcss": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/shared": "workspace:*",
-    "@pandacss/studio": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "cac": "6.7.14",

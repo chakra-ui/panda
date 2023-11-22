@@ -299,7 +299,14 @@ export async function main() {
         host,
       }
 
-      const studio = require('@pandacss/studio')
+      let studio: any
+
+      try {
+        const studioPath = require.resolve('@pandacss/studio', { paths: [cwd] })
+        studio = require(studioPath)
+      } catch {
+        throw new Error("You need to install '@pandacss/studio' to use this command")
+      }
 
       if (preview) {
         await studio.previewStudio(buildOpts)
