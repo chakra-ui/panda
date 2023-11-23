@@ -18,6 +18,7 @@ type RecursiveToken<C extends string, V> =
       [K in C]: RecursiveToken<C, V>
     }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SemanticToken<Value = string, Condition extends string = string>
   extends Token<RecursiveToken<Condition, Value>> {}
 
