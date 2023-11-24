@@ -1,5 +1,15 @@
 # @pandacss/types
 
+## 0.19.0
+
+### Patch Changes
+
+- 61831040: Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+
+  > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
+
+- 89f86923: Fix issue where css variables were not supported in layer styles and text styles types.
+
 ## 0.18.3
 
 ## 0.18.2

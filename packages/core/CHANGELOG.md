@@ -1,5 +1,19 @@
 # @pandacss/core
 
+## 0.19.0
+
+### Patch Changes
+
+- 9f5711f9: Fix issue where recipe artifacts might not match the recipes defined in the theme due to the internal cache
+  not being cleared as needed.
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
 ## 0.18.3
 
 ### Patch Changes

@@ -1,5 +1,47 @@
 # @pandacss/generator
 
+## 0.19.0
+
+### Patch Changes
+
+- 61831040: Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+
+  > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
+
+- 92a7fbe5: Fix issue in preflight where monospace fallback pointed to the wrong variable
+- 89f86923: Fix issue where css variables were not supported in layer styles and text styles types.
+- 402afbee: Improves the `config.strictTokens` type-safety by allowing CSS predefined values (like 'flex' or 'block' for
+  the property 'display') and throwing when using anything else than those, if no theme tokens was found on that
+  property.
+
+  Before:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+  ```
+
+  Now:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
+  ```
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+- Updated dependencies [9f5711f9]
+  - @pandacss/types@0.19.0
+  - @pandacss/core@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/is-valid-prop@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
 ## 0.18.3
 
 ### Patch Changes

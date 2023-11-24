@@ -1,5 +1,25 @@
 # @pandacss/dev
 
+## 0.19.0
+
+### Minor Changes
+
+- b3ca8412: Require explicit installation of `@pandacss/studio` to use the `panda studio` command.
+
+### Patch Changes
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/node@0.19.0
+  - @pandacss/config@0.19.0
+  - @pandacss/preset-panda@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/postcss@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
 ## 0.18.3
 
 ### Patch Changes
