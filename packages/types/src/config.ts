@@ -2,7 +2,7 @@ import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
 import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
-import type { RequiredBy } from './shared'
+import type { Keys, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
 import type { ExtendableGlobalStyleObject, GlobalStyleObject } from './system-types'
 import type { ExtendableTheme, Theme } from './theme'
@@ -356,3 +356,14 @@ export interface PrefixOptions {
   tokens: string | undefined
   className: string | undefined
 }
+
+type ReqConf = Required<UserConfig>
+
+export type ConfigPath = Exclude<
+  | Exclude<NonNullable<Keys<ReqConf>>, 'theme'>
+  | PathIn<ReqConf, 'theme'>
+  | PathIn<ReqConf, 'patterns'>
+  | PathIn<ReqConf, 'staticCss'>
+  | (string & {}),
+  undefined
+>

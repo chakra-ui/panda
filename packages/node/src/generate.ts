@@ -33,7 +33,7 @@ export async function generate(config: Config, configPath?: string) {
   if (ctx.config.watch) {
     const configWatcher = fs.watch({ include: ctx.conf.dependencies })
     configWatcher.on('change', async () => {
-      const affecteds = await ctx.diff.reloadConfigAndRefreshCtx()
+      const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
       if (!affecteds.artifacts.size) return
 
       logger.info('config:change', 'Config changed, restarting...')

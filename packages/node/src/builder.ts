@@ -8,9 +8,9 @@ import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
+import type { DiffConfigResult } from './diff-engine'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
-import type { AffectedResult } from './diff-engine'
 
 const fileCssMap = new Map<string, string>()
 const fileModifiedMap = new Map<string, number>()
@@ -23,7 +23,7 @@ export class Builder {
   context: PandaContext | undefined
 
   hasEmitted = false
-  affecteds: AffectedResult | undefined
+  affecteds: DiffConfigResult | undefined
   configDependencies = new Set<string>()
 
   getConfigPath = () => {
@@ -45,7 +45,7 @@ export class Builder {
     }
 
     const ctx = this.getContextOrThrow()
-    this.affecteds = await ctx.diff.reloadConfigAndRefreshCtx()
+    this.affecteds = await ctx.diff.reloadConfigAndRefreshContext()
 
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')

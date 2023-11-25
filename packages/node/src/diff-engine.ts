@@ -1,21 +1,21 @@
 import { loadConfigFile } from '@pandacss/config'
-import type { ArtifactId, Config, LoadConfigResult, UserConfig } from '@pandacss/types'
-import diff, { type Difference } from 'microdiff'
 import { Generator } from '@pandacss/generator'
 import { dashCase } from '@pandacss/shared'
+import type { ArtifactId, Config, ConfigPath, LoadConfigResult } from '@pandacss/types'
+import diff, { type Difference } from 'microdiff'
 
 // Below is the list of all the config paths that can affect an artifact generation
 // For some, such as recipes/patterns/jsx-patterns we'll specify which item was specifically affected (e.g. recipes.xxx-yyy)
 // so we can avoid generating/re-writing all the other artifacts of the same kind (e.g. recipes.aaa, recipes.bbb, etc.) that didn't change
 
-const all: ConfigPaths[] = ['outdir', 'forceConsistentTypeExtension', 'outExtension']
-const format: ConfigPaths[] = ['syntax', 'hash', 'prefix', 'separator']
-const tokens: ConfigPaths[] = ['utilities', 'conditions', 'theme.tokens', 'theme.semanticTokens', 'theme.breakpoints']
-const jsx: ConfigPaths[] = ['jsxFramework', 'jsxFactory', 'jsxStyleProps', 'syntax']
-const css: ConfigPaths[] = ['layers', 'optimize', 'minify']
+const all: ConfigPath[] = ['outdir', 'forceConsistentTypeExtension', 'outExtension']
+const format: ConfigPath[] = ['syntax', 'hash', 'prefix', 'separator']
+const tokens: ConfigPath[] = ['utilities', 'conditions', 'theme.tokens', 'theme.semanticTokens', 'theme.breakpoints']
+const jsx: ConfigPath[] = ['jsxFramework', 'jsxFactory', 'jsxStyleProps', 'syntax']
+const css: ConfigPath[] = ['layers', 'optimize', 'minify']
 const common = tokens.concat(jsx, format)
 
-const artifactConfigDeps: Record<ArtifactId, ConfigPaths[]> = {
+const artifactConfigDeps: Record<ArtifactId, ConfigPath[]> = {
   helpers: ['syntax', 'jsxFramework'],
   keyframes: ['theme.keyframes', 'layers'],
   'design-tokens': ['layers', '!utilities.*.className'].concat(tokens),
@@ -56,23 +56,23 @@ const matchers = {
   }),
 }
 
-export interface AffectedResult {
+export interface DiffConfigResult {
   hasConfigChanged: boolean
   artifacts: Set<ArtifactId>
   diffs: Difference[]
 }
 
 export class DiffEngine {
-  private previous: Config | undefined
+  private previousConfig: Config | undefined
 
   constructor(private ctx: Generator) {
-    this.previous = ctx.conf.deserialize()
+    this.previousConfig = ctx.conf.deserialize()
   }
 
   /**
    * Reload config from disk and refresh the context
    */
-  async reloadConfigAndRefreshCtx() {
+  async reloadConfigAndRefreshContext() {
     const conf = await loadConfigFile({ cwd: this.ctx.config.cwd, file: this.ctx.conf.path })
     return this.refresh(conf)
   }
@@ -83,27 +83,34 @@ export class DiffEngine {
    * Returns the list of affected artifacts/engines
    */
   refresh(conf: LoadConfigResult) {
-    const affected: AffectedResult = { artifacts: new Set(), hasConfigChanged: false, diffs: [] }
+    const affected: DiffConfigResult = {
+      artifacts: new Set(),
+      hasConfigChanged: false,
+      diffs: [],
+    }
 
-    if (!this.previous) {
+    if (!this.previousConfig) {
       affected.hasConfigChanged = true
       return affected
     }
 
     // compute diffs
-    const parsed = conf.deserialize()
-    const diffList = diff(this.previous, parsed)
-    if (!diffList.length) return affected
+    const newConfig = conf.deserialize()
+    const configDiff = diff(this.previousConfig, newConfig)
+
+    if (!configDiff.length) {
+      return affected
+    }
 
     affected.hasConfigChanged = true
-    affected.diffs = diffList
+    affected.diffs = configDiff
 
     // update context
-    this.previous = parsed
+    this.previousConfig = newConfig
     this.ctx.setConfig(conf.config)
-    this.ctx.conf.dependencies = conf.dependencies
+    Object.assign(this.ctx.conf, conf)
 
-    diffList.forEach((change) => {
+    configDiff.forEach((change) => {
       const changePath = change.path.join('.')
 
       matchers.artifacts.forEach((matcher) => {
@@ -133,37 +140,6 @@ export class DiffEngine {
   }
 }
 
-type Keys<T> = keyof NonNullable<T>
-
-/**
- * Get all the (nested) paths of an object until a certain depth
- * e.g. Paths<{a: {b: {c: 1}}}, '', 2> => 'a' | 'a.b' | 'a.b.c'
- */
-type Paths<T, Prefix extends string = '', Depth extends number = 0> = {
-  [K in keyof T]: Depth extends 0
-    ? never
-    : T[K] extends object
-    ? K extends string
-      ? `${Prefix}${K}` | Paths<T[K], `${Prefix}${K}.`, Depth extends 1 ? 0 : Subtract<Depth, 1>>
-      : never
-    : K extends string | number
-    ? `${Prefix}${K}`
-    : never
-}[keyof T]
-type Subtract<T extends number, D extends number> = T extends D ? 0 : T extends D | any ? Exclude<T, D> : never
-type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never
-
-type ReqConf = Required<UserConfig>
-
-type ConfigPaths = Exclude<
-  | Exclude<NonNullable<Keys<ReqConf>>, 'theme'>
-  | PathIn<ReqConf, 'theme'>
-  | PathIn<ReqConf, 'patterns'>
-  | PathIn<ReqConf, 'staticCss'>
-  | (string & {}),
-  undefined
->
-
 /**
  * Acts like a .gitignore matcher
  * e.g a list of string to search for nested path with glob and exclusion allowed
@@ -191,10 +167,7 @@ function createMatcher(id: string, patterns: string[]) {
   const exclude = new RegExp(excludePatterns.join('|'))
 
   return (path: string) => {
-    if (excludePatterns.length && exclude.test(path)) {
-      return undefined
-    }
-
+    if (excludePatterns.length && exclude.test(path)) return
     return include.test(path) ? id : undefined
   }
 }
