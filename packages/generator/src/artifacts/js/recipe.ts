@@ -1,9 +1,9 @@
 import { isSlotRecipe } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
+import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
-import type { ArtifactFilters } from '../setup-artifacts'
 
 const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'
@@ -104,13 +104,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
 
   if (recipes.isEmpty()) return
 
-  const recipeDiffs = filters?.affecteds?.recipes
-
-  // if we have filters, filter out items that are not in the filters
-  // otherwise, return all items
-  const details = recipeDiffs
-    ? ctx.recipes.details.filter((recipe) => recipeDiffs.includes(recipe.dashName))
-    : ctx.recipes.details
+  const details = ctx.recipes.filterDetails(filters)
 
   return details.map((recipe) => {
     const { baseName, config, upperName, variantKeyMap, dashName } = recipe

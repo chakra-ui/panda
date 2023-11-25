@@ -1,5 +1,5 @@
 import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
-import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
+import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
@@ -303,5 +303,10 @@ export class Recipes {
   toCss = () => {
     if (!this.context) return ''
     return this.context.root.toString()
+  }
+
+  filterDetails = (filters?: ArtifactFilters) => {
+    const recipeDiffs = filters?.affecteds?.recipes
+    return recipeDiffs ? this.details.filter((recipe) => recipeDiffs.includes(recipe.dashName)) : this.details
   }
 }

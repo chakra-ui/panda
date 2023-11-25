@@ -1,5 +1,5 @@
-import { capitalize, dashCase, mapObject, memo, createRegex, uncapitalize } from '@pandacss/shared'
-import type { Dict, PatternConfig, UserConfig } from '@pandacss/types'
+import { capitalize, createRegex, dashCase, mapObject, memo, uncapitalize } from '@pandacss/shared'
+import type { ArtifactFilters, Dict, PatternConfig, UserConfig } from '@pandacss/types'
 
 const helpers = { map: mapObject }
 
@@ -82,6 +82,11 @@ export class Patterns {
     if (detailIndex > -1) {
       this.details.splice(detailIndex, 1)
     }
+  }
+
+  filterDetails(filters?: ArtifactFilters) {
+    const patternDiffs = filters?.affecteds?.patterns
+    return patternDiffs ? this.details.filter((pattern) => patternDiffs.includes(pattern.dashName)) : this.details
   }
 }
 

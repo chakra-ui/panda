@@ -1,5 +1,5 @@
 import { isObject } from '@pandacss/shared'
-import type { Artifact, ArtifactId } from '@pandacss/types'
+import type { AffectedArtifacts, Artifact, ArtifactFilters, ArtifactId } from '@pandacss/types'
 import outdent from 'outdent'
 import type { Context } from '../engines'
 import { generateGlobalCss } from './css/global-css'
@@ -419,11 +419,6 @@ function setupPackageJson(ctx: Context): Artifact {
   }
 }
 
-interface AffectedArtifacts {
-  recipes: string[]
-  patterns: string[]
-}
-
 const getAffectedArtifacts = (ids?: string[]): AffectedArtifacts | undefined => {
   if (!ids) return
 
@@ -510,11 +505,6 @@ const entries: ArtifactEntry[] = [
   ['static.css', setupStaticCss],
   ['package.json', setupPackageJson],
 ]
-
-export interface ArtifactFilters {
-  ids?: ArtifactId[]
-  affecteds?: AffectedArtifacts
-}
 
 const getMatchingArtifacts = (ctx: Context, filters: ArtifactFilters | undefined): Artifact[] => {
   const ids = filters?.ids

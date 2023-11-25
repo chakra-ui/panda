@@ -1,20 +1,14 @@
 import { unionType } from '@pandacss/shared'
+import type { ArtifactFilters } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
-import type { ArtifactFilters } from '../setup-artifacts'
 
 export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
   if (ctx.patterns.isEmpty()) return
 
-  const patternDiffs = filters?.affecteds?.patterns
-
-  // if we have filters, filter out items that are not in the filters
-  // otherwise, return all items
-  const details = patternDiffs
-    ? ctx.patterns.details.filter((pattern) => patternDiffs.includes(pattern.dashName))
-    : ctx.patterns.details
+  const details = ctx.patterns.filterDetails(filters)
 
   return details.map((pattern) => {
     const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern

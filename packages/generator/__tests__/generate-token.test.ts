@@ -679,7 +679,7 @@ describe('generator', () => {
 
   test('shadow semantic tokens', () => {
     const css = generateTokenCss(
-      createGenerator({
+      new Generator(<any>{
         dependencies: [],
         config: {
           cwd: '',

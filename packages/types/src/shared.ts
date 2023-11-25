@@ -12,7 +12,7 @@ export type RequiredBy<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pi
 
 export type AnyFunction<T = any> = (...args: T[]) => any
 
-type Nullable<T> = T | null | undefined
+export type Nullable<T> = T | null | undefined
 
 export type Keys<T> = keyof NonNullable<T>
 
@@ -35,41 +35,3 @@ type Paths<T, Prefix extends string = '', Depth extends number = 0> = {
 }[keyof T]
 
 export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never
-
-export interface ArtifactContent {
-  file: string
-  code: string | undefined
-}
-
-export type ArtifactId =
-  | 'helpers'
-  | 'keyframes'
-  | 'design-tokens'
-  | 'types'
-  | 'css-fn'
-  | 'cva'
-  | 'sva'
-  | 'cx'
-  | 'create-recipe'
-  | 'recipes'
-  | 'recipes-index'
-  | 'patterns'
-  | 'patterns-index'
-  | 'jsx-is-valid-prop'
-  | 'jsx-helpers'
-  | 'jsx-factory'
-  | 'jsx-patterns'
-  | 'jsx-patterns-index'
-  | 'css-index'
-  | 'reset.css'
-  | 'global.css'
-  | 'static.css'
-  | 'package.json'
-  | 'styles.css'
-  | (string & {})
-
-export type Artifact = Nullable<{
-  id: ArtifactId
-  dir?: string[]
-  files: ArtifactContent[]
-}>

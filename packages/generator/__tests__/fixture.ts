@@ -32,12 +32,10 @@ const config: UserConfig = {
   },
   outdir: '',
 }
+
 const serializeConfig = (config: UserConfig) =>
   JSON.stringify(config, (_key, value) => {
-    if (typeof value === 'function') {
-      return value.toString()
-    }
-
+    if (typeof value === 'function') return value.toString()
     return value
   })
 
@@ -49,4 +47,5 @@ export const generatorConfig = {
   serialized: serializeConfig(config),
   deserialize: () => JSON.parse(serializeConfig(config)),
 } as ConfigResultWithHooks
+
 export const generator = new Generator(generatorConfig)

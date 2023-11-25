@@ -1,3 +1,4 @@
+import type { ArtifactFilters } from '@pandacss/types'
 import type { Context } from '../engines'
 import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
 import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
@@ -16,7 +17,6 @@ import { generateVueJsxStringLiteralFactory } from './vue-jsx/jsx.string-literal
 import { generateVueJsxPattern } from './vue-jsx/pattern'
 import { generateVueJsxTypes } from './vue-jsx/types'
 import { generateVueJsxStringLiteralTypes } from './vue-jsx/types.string-literal'
-import type { ArtifactFilters } from './setup-artifacts'
 
 /* -----------------------------------------------------------------------------
  * JSX Types
