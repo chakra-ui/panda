@@ -63,9 +63,7 @@ export class Recipes {
     const cachedRecipeNames = Array.from(sharedState.nodes.keys())
     const removedRecipes = cachedRecipeNames.filter((name) => !recipeNames.includes(name))
     removedRecipes.forEach((name) => {
-      sharedState.nodes.delete(name)
-      sharedState.classNames.delete(name)
-      sharedState.styles.delete(name)
+      this.remove(name)
     })
   }
 
