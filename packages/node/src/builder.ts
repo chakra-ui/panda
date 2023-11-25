@@ -89,9 +89,11 @@ export class Builder {
     const css = extractFile(ctx, file)
 
     fileModifiedMap.set(file, mtime)
-    fileCssMap.delete(file)
 
-    if (!css) return
+    if (!css) {
+      fileCssMap.delete(file)
+      return
+    }
 
     fileCssMap.set(file, css)
 
