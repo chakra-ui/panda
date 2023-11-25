@@ -2,14 +2,15 @@ import {
   breakpoints,
   conditions,
   keyframes,
+  patterns,
+  recipes,
   semanticTokens,
   tokens,
   utilities,
-  recipes,
-  patterns,
 } from '@pandacss/fixture'
-import { createHooks } from 'hookable'
+import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { ConfigResultWithHooks, UserConfig } from '@pandacss/types'
+import { createHooks } from 'hookable'
 import { Generator } from '../src'
 
 const config: UserConfig = {
@@ -33,19 +34,13 @@ const config: UserConfig = {
   outdir: '',
 }
 
-const serializeConfig = (config: UserConfig) =>
-  JSON.stringify(config, (_key, value) => {
-    if (typeof value === 'function') return value.toString()
-    return value
-  })
-
 export const generatorConfig = {
   dependencies: [],
   config,
   path: '',
   hooks: createHooks(),
-  serialized: serializeConfig(config),
-  deserialize: () => JSON.parse(serializeConfig(config)),
+  serialized: stringifyJson(config),
+  deserialize: () => parseJson(stringifyJson(config)),
 } as ConfigResultWithHooks
 
 export const generator = new Generator(generatorConfig)

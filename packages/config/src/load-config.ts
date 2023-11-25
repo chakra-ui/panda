@@ -1,11 +1,11 @@
 import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { LoadConfigResult } from '@pandacss/types'
 import { bundle } from './bundle'
 import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './get-resolved-config'
-import { deserializeConfig, serializeConfig } from './serialize'
 
 interface ConfigFileOptions {
   cwd: string
@@ -46,8 +46,8 @@ export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundle
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
 
-  const serialized = serializeConfig(mergedConfig)
-  const deserialize = () => deserializeConfig(serialized)
+  const serialized = stringifyJson(mergedConfig)
+  const deserialize = () => parseJson(serialized)
 
   return { ...result, serialized, deserialize, config: mergedConfig } as LoadConfigResult
 }

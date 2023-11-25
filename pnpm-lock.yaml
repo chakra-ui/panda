@@ -157,6 +157,9 @@ importers:
       '@pandacss/preset-panda':
         specifier: workspace:*
         version: link:../preset-panda
+      '@pandacss/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types

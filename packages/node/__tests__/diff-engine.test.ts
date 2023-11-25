@@ -1,19 +1,11 @@
-import { describe, test, expect } from 'vitest'
-import { config as fixtureConfig } from '@pandacss/fixture'
-import { createHooks } from 'hookable'
-import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
-import { Generator } from '@pandacss/generator'
-import { DiffEngine } from '../src/diff-engine'
 import { mergeConfigs } from '@pandacss/config'
-
-const serializeConfig = (config: UserConfig) =>
-  JSON.stringify(config, (_key, value) => {
-    if (typeof value === 'function') {
-      return value.toString()
-    }
-
-    return value
-  })
+import { config as fixtureConfig } from '@pandacss/fixture'
+import { Generator } from '@pandacss/generator'
+import { parseJson, stringifyJson } from '@pandacss/shared'
+import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
+import { createHooks } from 'hookable'
+import { describe, expect, test } from 'vitest'
+import { DiffEngine } from '../src/diff-engine'
 
 const common: Partial<ConfigResultWithHooks> = {
   dependencies: [],
@@ -23,8 +15,9 @@ const common: Partial<ConfigResultWithHooks> = {
 
 const createConfigResult = (config: UserConfig) => {
   const conf = { ...common, config }
-  const serialized = serializeConfig(conf.config)
-  const deserialize = () => JSON.parse(serialized)
+
+  const serialized = stringifyJson(conf.config)
+  const deserialize = () => parseJson(serialized)
 
   return { ...conf, serialized, deserialize } as ConfigResultWithHooks
 }
