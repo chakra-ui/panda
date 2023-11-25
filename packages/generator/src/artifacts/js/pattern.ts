@@ -8,27 +8,30 @@ import type { ArtifactFilters } from '../setup-artifacts'
 export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
   if (ctx.patterns.isEmpty()) return
 
-  return (
-    ctx.patterns.details
-      // if we have filters, filter out items that are not in the filters
-      // otherwise, return all items
-      .filter((pattern) => (filters?.affecteds ? filters.affecteds.patterns?.includes(pattern.dashName) : true))
-      .map((pattern) => {
-        const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern
-        const { properties, transform, strict, description } = config
+  const patternDiffs = filters?.affecteds?.patterns
 
-        const transformFn = stringify({ transform }) ?? ''
-        const helperImports = ['mapObject']
-        if (transformFn.includes('__spreadValues')) {
-          helperImports.push('__spreadValues')
-        }
-        if (transformFn.includes('__objRest')) {
-          helperImports.push('__objRest')
-        }
+  // if we have filters, filter out items that are not in the filters
+  // otherwise, return all items
+  const details = patternDiffs
+    ? ctx.patterns.details.filter((pattern) => patternDiffs.includes(pattern.dashName))
+    : ctx.patterns.details
 
-        return {
-          name: dashName,
-          dts: outdent`
+  return details.map((pattern) => {
+    const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern
+    const { properties, transform, strict, description } = config
+
+    const transformFn = stringify({ transform }) ?? ''
+    const helperImports = ['mapObject']
+    if (transformFn.includes('__spreadValues')) {
+      helperImports.push('__spreadValues')
+    }
+    if (transformFn.includes('__objRest')) {
+      helperImports.push('__objRest')
+    }
+
+    return {
+      name: dashName,
+      dts: outdent`
       ${ctx.file.importType('SystemStyleObject, ConditionalValue', '../types/index')}
       ${ctx.file.importType('Properties', '../types/csstype')}
       ${ctx.file.importType('PropertyValue', '../types/prop-type')}
@@ -77,7 +80,7 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
       }
 
      `,
-          js: outdent`
+      js: outdent`
     ${ctx.file.import(helperImports.join(', '), '../helpers')}
     ${ctx.file.import('css', '../css/index')}
 
@@ -88,7 +91,6 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
     export const ${baseName} = (styles) => css(${styleFnName}(styles))
     ${baseName}.raw = ${styleFnName}
     `,
-        }
-      })
-  )
+    }
+  })
 }
