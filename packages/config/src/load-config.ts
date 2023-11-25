@@ -1,20 +1,11 @@
 import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
-import type { Config, LoadConfigResult } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { bundle } from './bundle'
+import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './get-resolved-config'
-
-import { preset as presetBase } from '@pandacss/preset-base'
-import { preset as presetPanda } from '@pandacss/preset-panda'
-
-const bundledPresets = {
-  '@pandacss/preset-base': presetBase,
-  '@pandacss/preset-panda': presetPanda,
-  '@pandacss/dev/presets': presetPanda,
-}
-const bundledPresetsNames = Object.keys(bundledPresets)
-const isBundledPreset = (preset: string): preset is keyof typeof bundledPresets => bundledPresetsNames.includes(preset)
+import { deserializeConfig, serializeConfig } from './serialize'
 
 interface ConfigFileOptions {
   cwd: string
@@ -29,15 +20,6 @@ export async function loadConfigFile(options: ConfigFileOptions) {
   return resolveConfigFile(result, options.cwd)
 }
 
-const serializeConfig = (config: Config) =>
-  JSON.stringify(config, (_key, value) => {
-    if (typeof value === 'function') {
-      return value.toString()
-    }
-
-    return value
-  })
-
 /**
  * Resolve the final config (including presets)
  * @pandacss/preset-base: ALWAYS included if NOT using eject: true
@@ -45,18 +27,17 @@ const serializeConfig = (config: Config) =>
  */
 export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
   const presets = new Set<any>()
+
   if (!result.config.eject) {
     presets.add(presetBase)
   }
 
   if (result.config.presets) {
+    //
     result.config.presets.forEach((preset: any) => {
-      if (typeof preset === 'string' && isBundledPreset(preset)) {
-        presets.add(bundledPresets[preset])
-      } else {
-        presets.add(preset)
-      }
+      presets.add(getBundledPreset(preset) ?? preset)
     })
+    //
   } else if (!result.config.eject) {
     presets.add(presetPanda)
   }
@@ -64,8 +45,9 @@ export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundle
   result.config.presets = Array.from(presets)
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
+
   const serialized = serializeConfig(mergedConfig)
-  const deserialize = () => JSON.parse(serialized)
+  const deserialize = () => deserializeConfig(serialized)
 
   return { ...result, serialized, deserialize, config: mergedConfig } as LoadConfigResult
 }
