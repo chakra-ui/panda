@@ -3,6 +3,7 @@ import { Generator } from '@pandacss/generator'
 import { dashCase } from '@pandacss/shared'
 import type { ArtifactId, Config, ConfigPath, LoadConfigResult } from '@pandacss/types'
 import diff, { type Difference } from 'microdiff'
+import { createMatcher } from './matcher'
 
 // Below is the list of all the config paths that can affect an artifact generation
 // For some, such as recipes/patterns/jsx-patterns we'll specify which item was specifically affected (e.g. recipes.xxx-yyy)
@@ -137,37 +138,5 @@ export class DiffEngine {
     })
 
     return affected
-  }
-}
-
-/**
- * Acts like a .gitignore matcher
- * e.g a list of string to search for nested path with glob and exclusion allowed
- * ["outdir", "theme.recipes", '*.css', '!aaa.*.bbb']
- */
-function createMatcher(id: string, patterns: string[]) {
-  if (!patterns?.length) return () => undefined
-
-  const includePatterns = [] as string[]
-  const excludePatterns = [] as string[]
-  const deduped = new Set(patterns)
-
-  // Separate inclusion and exclusion patterns
-  deduped.forEach((pattern) => {
-    // replace '*' with '.*' for regex matching
-    const regexString = pattern.replace(/\*/g, '.*')
-    if (pattern.startsWith('!')) {
-      excludePatterns.push(regexString.slice(1))
-    } else {
-      includePatterns.push(regexString)
-    }
-  })
-
-  const include = new RegExp(includePatterns.join('|'))
-  const exclude = new RegExp(excludePatterns.join('|'))
-
-  return (path: string) => {
-    if (excludePatterns.length && exclude.test(path)) return
-    return include.test(path) ? id : undefined
   }
 }
