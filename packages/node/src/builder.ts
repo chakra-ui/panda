@@ -4,7 +4,7 @@ import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
 import fsExtra from 'fs-extra'
 import pLimit from 'p-limit'
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
@@ -87,11 +87,11 @@ export class Builder {
     if (isUnchanged) return
 
     const css = extractFile(ctx, file)
-    if (!css) {
-      fileModifiedMap.set(file, mtime)
-      fileCssMap.delete(file)
-      return
-    }
+
+    fileModifiedMap.set(file, mtime)
+    fileCssMap.delete(file)
+
+    if (!css) return
 
     fileCssMap.set(file, css)
 
