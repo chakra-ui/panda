@@ -40,6 +40,7 @@ export class Recipes {
   }
 
   constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
+    this.prune()
     this.save()
   }
 
@@ -53,6 +54,19 @@ export class Recipes {
 
   private getClassName = (className: string, variant: string, value: string) => {
     return `${className}--${variant}${this.separator}${value}`
+  }
+
+  // check this.recipes against sharedState.nodes
+  // and remove any recipes (in sharedState) that are no longer in use
+  prune = () => {
+    const recipeNames = Object.keys(this.recipes)
+    const cachedRecipeNames = Array.from(sharedState.nodes.keys())
+    const removedRecipes = cachedRecipeNames.filter((name) => !recipeNames.includes(name))
+    removedRecipes.forEach((name) => {
+      sharedState.nodes.delete(name)
+      sharedState.classNames.delete(name)
+      sharedState.styles.delete(name)
+    })
   }
 
   save = () => {

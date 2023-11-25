@@ -24,6 +24,13 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "red",
+            "colorPaletteRoots": [
+              "red",
+            ],
+            "colorPaletteTokenKeys": [
+              "",
+            ],
             "condition": "base",
             "prop": "red",
             "var": "--colors-red",
@@ -42,6 +49,13 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "blue",
+            "colorPaletteRoots": [
+              "blue",
+            ],
+            "colorPaletteTokenKeys": [
+              "",
+            ],
             "condition": "base",
             "prop": "blue",
             "var": "--colors-blue",
@@ -60,6 +74,13 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "green",
+            "colorPaletteRoots": [
+              "green",
+            ],
+            "colorPaletteTokenKeys": [
+              "",
+            ],
             "condition": "base",
             "prop": "green",
             "var": "--colors-green",

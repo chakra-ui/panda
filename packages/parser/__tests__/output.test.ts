@@ -573,20 +573,6 @@ describe('extract to css output pipeline', () => {
           "name": "bgRecipe",
           "type": "recipe",
         },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
       ]
     `)
 
@@ -2575,6 +2561,66 @@ describe('extract to css output pipeline', () => {
               color: red
                       }
                   }
+          }
+      }"
+    `)
+  })
+
+  test('grid pattern minChildWidth not interpreted as token value', () => {
+    const code = `
+    import { grid } from '.panda/patterns';
+
+    export const App = () => {
+      return (
+        <>
+          <div className={grid({ minChildWidth: '80px', gap: 8 })} />
+          <div className={grid({ minChildWidth: '20', gap: 8 })} />
+        </>
+      );
+    };
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "gap": 8,
+              "minChildWidth": "80px",
+            },
+          ],
+          "name": "grid",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "gap": 8,
+              "minChildWidth": "20",
+            },
+          ],
+          "name": "grid",
+          "type": "pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(80px\\\\,_1fr\\\\)\\\\) {
+          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+          }
+
+        .d_grid {
+          display: grid
+          }
+
+        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(token\\\\(sizes\\\\.20\\\\,_20\\\\)\\\\,_1fr\\\\)\\\\) {
+          grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, \\\\320), 1fr))
+          }
+
+        .gap_8 {
+          gap: var(--spacing-8)
           }
       }"
     `)

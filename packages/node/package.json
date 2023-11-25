@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/node",
-  "version": "0.17.5",
+  "version": "0.19.0",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -67,11 +67,11 @@
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
-    "@types/fs-extra": "11.0.3",
+    "@types/fs-extra": "11.0.4",
     "@types/glob-parent": "^5.1.1",
     "@types/is-glob": "^4.0.2",
     "@types/lodash.merge": "4.6.8",
-    "@types/pluralize": "0.0.30",
+    "@types/pluralize": "0.0.33",
     "boxen": "^7.1.1",
     "p-limit": "^4.0.0"
   }

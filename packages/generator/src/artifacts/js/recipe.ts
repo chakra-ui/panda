@@ -199,7 +199,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         export type ${upperName}VariantProps = {
           [key in keyof ${upperName}Variant]?: ${
             compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
-          }
+          } | undefined
         }
 
         export interface ${upperName}Recipe {

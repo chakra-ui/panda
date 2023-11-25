@@ -209,7 +209,7 @@ describe('generate property types', () => {
       	stroke: Tokens[\\"colors\\"];
       	srOnly: boolean;
       	debug: boolean;
-      	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
+      	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
       }
 
 
@@ -307,6 +307,7 @@ describe('generate property types', () => {
       	x: Shorthand<\\"translateX\\">;
       	y: Shorthand<\\"translateY\\">;
       }
+
 
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
         ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
@@ -522,7 +523,7 @@ describe('generate property types', () => {
       	stroke: Tokens[\\"colors\\"];
       	srOnly: boolean;
       	debug: boolean;
-      	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
+      	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
       }
 
 
@@ -621,10 +622,11 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
+      type FilterString<T> = T extends \`\${infer _}\` ? T : never;
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T]>
+        ? ConditionalValue<FilterString<PropertyTypes[T]>>
         : T extends keyof CssProperties
-        ? ConditionalValue<CssProperties[T]>
+        ? ConditionalValue<FilterString<CssProperties[T]>>
         : ConditionalValue<string | number>"
     `)
   })

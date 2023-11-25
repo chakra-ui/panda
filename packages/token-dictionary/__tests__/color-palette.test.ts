@@ -32,6 +32,13 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "primary",
+          "colorPaletteRoots": [
+            "primary",
+          ],
+          "colorPaletteTokenKeys": [
+            "",
+          ],
           "condition": "base",
           "prop": "primary",
           "var": "--colors-primary",
@@ -156,19 +163,39 @@ test('should generate virtual palette', () => {
           "category": "colors",
           "condition": "base",
           "isVirtual": true,
+          "prop": "colorPalette",
+          "var": "--colors-color-palette",
+          "varRef": "var(--colors-color-palette)",
+        },
+        "name": "colors.colorPalette",
+        "originalValue": "colors.colorPalette",
+        "path": [
+          "colors",
+          "colorPalette",
+          "",
+        ],
+        "type": "color",
+        "value": "colors.colorPalette",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "condition": "base",
+          "isVirtual": true,
           "prop": "colorPalette.300",
           "var": "--colors-color-palette-300",
           "varRef": "var(--colors-color-palette-300)",
         },
         "name": "colors.colorPalette.300",
-        "originalValue": "{colors.colorPalette.300}",
+        "originalValue": "colors.colorPalette.300",
         "path": [
           "colors",
           "colorPalette",
           "300",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-300)",
+        "value": "colors.colorPalette.300",
       },
       Token {
         "description": undefined,
@@ -181,14 +208,14 @@ test('should generate virtual palette', () => {
           "varRef": "var(--colors-color-palette-500)",
         },
         "name": "colors.colorPalette.500",
-        "originalValue": "{colors.colorPalette.500}",
+        "originalValue": "colors.colorPalette.500",
         "path": [
           "colors",
           "colorPalette",
           "500",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-500)",
+        "value": "colors.colorPalette.500",
       },
       Token {
         "description": undefined,
@@ -201,20 +228,23 @@ test('should generate virtual palette', () => {
           "varRef": "var(--colors-color-palette-700)",
         },
         "name": "colors.colorPalette.700",
-        "originalValue": "{colors.colorPalette.700}",
+        "originalValue": "colors.colorPalette.700",
         "path": [
           "colors",
           "colorPalette",
           "700",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-700)",
+        "value": "colors.colorPalette.700",
       },
     ]
   `)
 
   expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
     Map {
+      "primary" => Map {
+        "--colors-color-palette" => "var(--colors-primary)",
+      },
       "red" => Map {
         "--colors-color-palette-300" => "var(--colors-red-300)",
         "--colors-color-palette-500" => "var(--colors-red-500)",
@@ -234,6 +264,7 @@ test('should generate virtual palette', () => {
         "red.500" => "var(--colors-red-500)",
         "blue.500" => "var(--colors-blue-500)",
         "blue.700" => "var(--colors-blue-700)",
+        "colorPalette" => "var(--colors-color-palette)",
         "colorPalette.300" => "var(--colors-color-palette-300)",
         "colorPalette.500" => "var(--colors-color-palette-500)",
         "colorPalette.700" => "var(--colors-color-palette-700)",
@@ -246,6 +277,7 @@ test('should generate virtual palette', () => {
 
   expect(formats.getColorPaletteValues(dictionary)).toMatchInlineSnapshot(`
     Set {
+      "primary",
       "red",
       "blue",
     }
@@ -421,14 +453,14 @@ test('should generate nested object virtual palette', () => {
           "varRef": "var(--colors-color-palette-dark)",
         },
         "name": "colors.colorPalette.dark",
-        "originalValue": "{colors.colorPalette.dark}",
+        "originalValue": "colors.colorPalette.dark",
         "path": [
           "colors",
           "colorPalette",
           "dark",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-dark)",
+        "value": "colors.colorPalette.dark",
       },
       Token {
         "description": undefined,
@@ -441,14 +473,14 @@ test('should generate nested object virtual palette', () => {
           "varRef": "var(--colors-color-palette-light)",
         },
         "name": "colors.colorPalette.light",
-        "originalValue": "{colors.colorPalette.light}",
+        "originalValue": "colors.colorPalette.light",
         "path": [
           "colors",
           "colorPalette",
           "light",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-light)",
+        "value": "colors.colorPalette.light",
       },
       Token {
         "description": undefined,
@@ -461,7 +493,7 @@ test('should generate nested object virtual palette', () => {
           "varRef": "var(--colors-color-palette-light-accent)",
         },
         "name": "colors.colorPalette.light.accent",
-        "originalValue": "{colors.colorPalette.light.accent}",
+        "originalValue": "colors.colorPalette.light.accent",
         "path": [
           "colors",
           "colorPalette",
@@ -469,7 +501,7 @@ test('should generate nested object virtual palette', () => {
           "accent",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-light-accent)",
+        "value": "colors.colorPalette.light.accent",
       },
       Token {
         "description": undefined,
@@ -482,14 +514,14 @@ test('should generate nested object virtual palette', () => {
           "varRef": "var(--colors-color-palette-accent)",
         },
         "name": "colors.colorPalette.accent",
-        "originalValue": "{colors.colorPalette.accent}",
+        "originalValue": "colors.colorPalette.accent",
         "path": [
           "colors",
           "colorPalette",
           "accent",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-accent)",
+        "value": "colors.colorPalette.accent",
       },
       Token {
         "description": undefined,
@@ -502,7 +534,7 @@ test('should generate nested object virtual palette', () => {
           "varRef": "var(--colors-color-palette-light-accent-secondary)",
         },
         "name": "colors.colorPalette.light.accent.secondary",
-        "originalValue": "{colors.colorPalette.light.accent.secondary}",
+        "originalValue": "colors.colorPalette.light.accent.secondary",
         "path": [
           "colors",
           "colorPalette",
@@ -511,7 +543,7 @@ test('should generate nested object virtual palette', () => {
           "secondary",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-light-accent-secondary)",
+        "value": "colors.colorPalette.light.accent.secondary",
       },
       Token {
         "description": undefined,
@@ -524,7 +556,7 @@ test('should generate nested object virtual palette', () => {
           "varRef": "var(--colors-color-palette-accent-secondary)",
         },
         "name": "colors.colorPalette.accent.secondary",
-        "originalValue": "{colors.colorPalette.accent.secondary}",
+        "originalValue": "colors.colorPalette.accent.secondary",
         "path": [
           "colors",
           "colorPalette",
@@ -532,7 +564,7 @@ test('should generate nested object virtual palette', () => {
           "secondary",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-accent-secondary)",
+        "value": "colors.colorPalette.accent.secondary",
       },
       Token {
         "description": undefined,
@@ -545,14 +577,14 @@ test('should generate nested object virtual palette', () => {
           "varRef": "var(--colors-color-palette-secondary)",
         },
         "name": "colors.colorPalette.secondary",
-        "originalValue": "{colors.colorPalette.secondary}",
+        "originalValue": "colors.colorPalette.secondary",
         "path": [
           "colors",
           "colorPalette",
           "secondary",
         ],
         "type": "color",
-        "value": "var(--colors-color-palette-secondary)",
+        "value": "colors.colorPalette.secondary",
       },
     ]
   `)
@@ -603,6 +635,40 @@ test('should generate nested object virtual palette', () => {
       "button",
       "button.light",
       "button.light.accent",
+    }
+  `)
+})
+
+test('should work with DEFAULT keyword', () => {
+  const dictionary = new TokenDictionary({
+    tokens: {
+      colors: {
+        brand: {
+          DEFAULT: { value: 'green' },
+          hot: {
+            DEFAULT: { value: 'blue' },
+            er: { value: '#FF0000' },
+          },
+        },
+      },
+    },
+  })
+
+  dictionary
+    .registerTransform(...transforms)
+    .registerMiddleware(addVirtualPalette)
+    .build()
+
+  expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
+    Map {
+      "brand" => Map {
+        "--colors-color-palette" => "var(--colors-brand)",
+        "--colors-color-palette-hot" => "var(--colors-brand-hot)",
+        "--colors-color-palette-hot-er" => "var(--colors-brand-hot-er)",
+      },
+      "brand.hot" => Map {
+        "--colors-color-palette-er" => "var(--colors-brand-hot-er)",
+      },
     }
   `)
 })

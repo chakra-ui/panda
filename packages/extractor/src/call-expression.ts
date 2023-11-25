@@ -1,5 +1,4 @@
 import type { CallExpression, Node } from 'ts-morph'
-import { match } from 'ts-pattern'
 import { box } from './box'
 import { maybeBoxNode } from './maybe-box-node'
 import type { BoxContext, MatchFnArgs, MatchFnArguments, MatchFnPropArgs } from './types'
@@ -26,12 +25,12 @@ export const extractCallExpressionArguments = (
     fnArguments.map((argument, index) => {
       const argNode = unwrapExpression(argument)
       const stack = [node, argNode] as Node[]
-      return match(argNode)
-        .when(
-          (argNode) => matchArg({ fnNode: node, fnName, argNode, index }),
-          (argNode) => maybeBoxNode(argNode, stack, ctx, matchProp) ?? box.unresolvable(argNode, stack),
-        )
-        .otherwise(() => box.unresolvable(argNode, stack))
+
+      if (matchArg({ fnNode: node, fnName, argNode, index })) {
+        return maybeBoxNode(argNode, stack, ctx, matchProp) ?? box.unresolvable(argNode, stack)
+      }
+
+      return box.unresolvable(argNode, stack)
     }),
     node,
     [],

@@ -23,6 +23,12 @@ const options = {
       environment: 'happy-dom',
     },
   },
+  strict: {
+    test: {
+      include: ['**/__tests__/scenarios/strict.{test,spec}.{j,t}s?(x)'],
+    },
+  },
+  //
   preact: {
     plugins: [preact()],
     resolve: {

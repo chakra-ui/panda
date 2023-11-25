@@ -1,5 +1,76 @@
 # @pandacss/core
 
+## 0.19.0
+
+### Patch Changes
+
+- 9f5711f9: Fix issue where recipe artifacts might not match the recipes defined in the theme due to the internal cache
+  not being cleared as needed.
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
+## 0.18.3
+
+### Patch Changes
+
+- @pandacss/error@0.18.3
+- @pandacss/logger@0.18.3
+- @pandacss/shared@0.18.3
+- @pandacss/token-dictionary@0.18.3
+- @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- @pandacss/token-dictionary@0.18.2
+- @pandacss/error@0.18.2
+- @pandacss/logger@0.18.2
+- @pandacss/shared@0.18.2
+- @pandacss/types@0.18.2
+
+## 0.18.1
+
+### Patch Changes
+
+- 8c76cd0f: - Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
+
+  ```jsx
+  css({ hideBelow: 'lg' })
+  // => @media screen and (max-width: 63.9975em) { background: red; }
+  ```
+
+  - Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
+
+  ```jsx
+  css({ hideFrom: '800px' })
+  // => @media screen and (min-width: 800px) { background: red; }
+  ```
+
+- Updated dependencies [566fd28a]
+- Updated dependencies [43bfa510]
+  - @pandacss/token-dictionary@0.18.1
+  - @pandacss/error@0.18.1
+  - @pandacss/logger@0.18.1
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
+## 0.18.0
+
+### Patch Changes
+
+- Updated dependencies [ba9e32fa]
+  - @pandacss/shared@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/error@0.18.0
+  - @pandacss/logger@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes

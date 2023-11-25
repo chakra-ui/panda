@@ -100,7 +100,7 @@ describe('generate recipes', () => {
       }
 
       export type TextStyleVariantProps = {
-        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]>
+        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]> | undefined
       }
 
       export interface TextStyleRecipe {
@@ -156,7 +156,7 @@ describe('generate recipes', () => {
       }
 
       export type TooltipStyleVariantProps = {
-        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]>
+        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]> | undefined
       }
 
       export interface TooltipStyleRecipe {
@@ -208,7 +208,7 @@ describe('generate recipes', () => {
       }
 
       export type ButtonStyleVariantProps = {
-        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]>
+        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]> | undefined
       }
 
       export interface ButtonStyleRecipe {

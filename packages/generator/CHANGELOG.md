@@ -1,5 +1,123 @@
 # @pandacss/generator
 
+## 0.19.0
+
+### Patch Changes
+
+- 61831040: Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+
+  > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
+
+- 92a7fbe5: Fix issue in preflight where monospace fallback pointed to the wrong variable
+- 89f86923: Fix issue where css variables were not supported in layer styles and text styles types.
+- 402afbee: Improves the `config.strictTokens` type-safety by allowing CSS predefined values (like 'flex' or 'block' for
+  the property 'display') and throwing when using anything else than those, if no theme tokens was found on that
+  property.
+
+  Before:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+  ```
+
+  Now:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
+  ```
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+- Updated dependencies [9f5711f9]
+  - @pandacss/types@0.19.0
+  - @pandacss/core@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/is-valid-prop@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
+## 0.18.3
+
+### Patch Changes
+
+- 78b940b2: Fix issue with `forceConsistentTypeExtension` where the `composition.d.mts` had an incorrect type import
+  - @pandacss/core@0.18.3
+  - @pandacss/is-valid-prop@0.18.3
+  - @pandacss/logger@0.18.3
+  - @pandacss/shared@0.18.3
+  - @pandacss/token-dictionary@0.18.3
+  - @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- @pandacss/core@0.18.2
+- @pandacss/token-dictionary@0.18.2
+- @pandacss/is-valid-prop@0.18.2
+- @pandacss/logger@0.18.2
+- @pandacss/shared@0.18.2
+- @pandacss/types@0.18.2
+
+## 0.18.1
+
+### Patch Changes
+
+- 43bfa510: Fix issue where composite tokens (shadows, border, etc) generated incorrect css when using the object syntax
+  in semantic tokens.
+- Updated dependencies [566fd28a]
+- Updated dependencies [43bfa510]
+- Updated dependencies [8c76cd0f]
+  - @pandacss/token-dictionary@0.18.1
+  - @pandacss/core@0.18.1
+  - @pandacss/is-valid-prop@0.18.1
+  - @pandacss/logger@0.18.1
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
+## 0.18.0
+
+### Minor Changes
+
+- b7cb2073: Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
+
+  ```tsx
+  import { splitCssProps, styled } from '../styled-system/jsx'
+  import type { HTMLStyledProps } from '../styled-system/types'
+
+  function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+    const [cssProps, restProps] = splitCssProps(props)
+    return (
+      <styled.div {...restProps} className={css({ display: 'flex', height: '20', width: '20' }, cssProps)}>
+        {children}
+      </styled.div>
+    )
+  }
+
+  // Usage
+
+  function App() {
+    return <SplitComponent margin="2">Click me</SplitComponent>
+  }
+  ```
+
+### Patch Changes
+
+- ba9e32fa: Fix issue in template literal mode where comma-separated selectors don't work when multiline
+- Updated dependencies [ba9e32fa]
+  - @pandacss/shared@0.18.0
+  - @pandacss/core@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/is-valid-prop@0.18.0
+  - @pandacss/logger@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes

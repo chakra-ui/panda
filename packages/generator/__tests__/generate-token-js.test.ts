@@ -1858,6 +1858,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"var(--spacing-gutter)\\",
         \\"variable\\": \\"var(--spacing-gutter)\\"
       },
+      \\"colors.colorPalette\\": {
+        \\"value\\": \\"var(--colors-color-palette)\\",
+        \\"variable\\": \\"var(--colors-color-palette)\\"
+      },
       \\"colors.colorPalette.50\\": {
         \\"value\\": \\"var(--colors-color-palette-50)\\",
         \\"variable\\": \\"var(--colors-color-palette-50)\\"
