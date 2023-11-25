@@ -16,8 +16,6 @@
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@preact/preset-vite": "2.5.0",
-    "bundle-n-require": "^1.0.1",
-    "sucrase": "^3.34.0",
     "typescript": "5.2.2",
     "vite": "4.4.11"
   }
