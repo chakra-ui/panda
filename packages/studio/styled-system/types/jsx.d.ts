@@ -28,7 +28,7 @@ interface JsxFactoryOptions<TProps extends Dict> {
 
 export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
 
-export type JsxElement<T extends ElementType, P> = T extends PandaComponent<infer A, infer B>
+export type JsxElement<T extends ElementType, P extends Dict> = T extends PandaComponent<infer A, infer B>
   ? PandaComponent<A, Pretty<DistributiveUnion<P, B>>>
   : PandaComponent<T, P>
 
