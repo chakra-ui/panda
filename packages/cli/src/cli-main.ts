@@ -123,7 +123,7 @@ export async function main() {
 
         const onChange = debounce(async () => {
           logger.info('ctx:change', 'config changed, rebuilding...')
-          const affecteds = await ctx.diff.reloadConfigAndRefreshCtx()
+          const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
           await emitArtifacts(ctx, Array.from(affecteds.artifacts))
           logger.info('ctx:updated', 'config rebuilt ✅')
         })
@@ -211,7 +211,7 @@ export async function main() {
           'change',
           debounce(async () => {
             logger.info('ctx:change', 'config changed, rebuilding...')
-            await ctx.diff.reloadConfigAndRefreshCtx()
+            await ctx.diff.reloadConfigAndRefreshContext()
             await cssgen(ctx)
             logger.info('ctx:updated', 'config rebuilt ✅')
           }),
