@@ -82,6 +82,10 @@ describe('DiffEngine affecteds', () => {
               return values[value];
             }",
             "values": [
+              "current",
+              "black",
+              "white",
+              "transparent",
               "rose",
               "pink",
               "fuchsia",
@@ -107,6 +111,10 @@ describe('DiffEngine affecteds', () => {
               "deep",
               "deep.test",
               "deep.test.pool",
+              "primary",
+              "secondary",
+              "complex",
+              "surface",
               "button",
               "button.card",
             ],
@@ -161,6 +169,13 @@ describe('DiffEngine affecteds', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "newColor123",
+          "colorPaletteRoots": [
+            "newColor123",
+          ],
+          "colorPaletteTokenKeys": [
+            "",
+          ],
           "condition": "base",
           "prop": "newColor123",
           "var": "--colors-new-color123",
@@ -684,7 +699,7 @@ describe('DiffEngine affecteds', () => {
 
     const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
 
-    expect(generator.config.separator).toMatchInlineSnapshot('undefined')
+    expect(generator.config.separator).toMatchInlineSnapshot('"="')
     expect(generator.utility.separator).toMatchInlineSnapshot('"="')
     expect(generator.recipes['separator']).toMatchInlineSnapshot('"="')
 
