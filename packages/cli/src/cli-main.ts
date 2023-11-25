@@ -1,3 +1,4 @@
+import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
@@ -5,25 +6,24 @@ import {
   bundleMinimalFilesCss,
   debugFiles,
   emitArtifacts,
-  writeAndBundleCssChunks,
   generate,
+  generateCssArtifactOfType,
   loadConfigAndCreateContext,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
   shipFiles,
   writeAnalyzeJSON,
-  type PandaContext,
-  generateCssArtifactOfType,
+  writeAndBundleCssChunks,
   type CssArtifactType,
+  type PandaContext,
 } from '@pandacss/node'
-import { findConfigFile } from '@pandacss/config'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
 import { version } from '../package.json'
-import { cliInit } from './cli-init'
+import { interactive } from './interactive'
 import type {
   AnalyzeCommandFlags,
   CodegenCommandFlags,
@@ -53,14 +53,14 @@ export async function main() {
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
     .option('--strict-tokens', 'Using strictTokens: true')
-    .action(async (_flags: Partial<InitCommandFlags> = {}) => {
+    .action(async (initFlags: Partial<InitCommandFlags> = {}) => {
       let options = {}
 
-      if (_flags.interactive) {
-        options = await cliInit()
+      if (initFlags.interactive) {
+        options = await interactive()
       }
 
-      const flags = { ..._flags, ...options }
+      const flags = { ...initFlags, ...options }
       const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
       const cwd = resolve(flags.cwd ?? '')
@@ -115,6 +115,7 @@ export async function main() {
 
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
+
         const watcher = ctx.runtime.fs.watch({
           include: ctx.conf.dependencies,
           cwd,
@@ -150,9 +151,11 @@ export async function main() {
       const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+
       const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
         (type) => type === maybeGlob,
       ) as CssArtifactType | undefined
+
       const glob = cssArtifact ? undefined : maybeGlob
 
       if (silent) {

@@ -56,10 +56,10 @@ export class Builder {
     ctx.project.reloadSourceFiles()
   }
 
-  emit() {
+  async emit() {
     // ensure emit is only called when the config is changed
     if (this.hasEmitted && this.affecteds?.hasConfigChanged) {
-      emitArtifacts(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
+      await emitArtifacts(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
     }
 
     this.hasEmitted = true

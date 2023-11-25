@@ -26,7 +26,7 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
           return
         }
 
-        builder.emit()
+        await builder.emit()
 
         await builder.extract()
 
