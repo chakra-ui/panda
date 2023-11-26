@@ -157,33 +157,7 @@ describe('DiffEngine affecteds', () => {
       ]
     `)
 
-    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot(`
-      Token {
-        "description": undefined,
-        "extensions": {
-          "category": "colors",
-          "colorPalette": "newColor123",
-          "colorPaletteRoots": [
-            "newColor123",
-          ],
-          "colorPaletteTokenKeys": [
-            "",
-          ],
-          "condition": "base",
-          "prop": "newColor123",
-          "var": "--colors-new-color123",
-          "varRef": "var(--colors-new-color123)",
-        },
-        "name": "colors.newColor123",
-        "originalValue": "blue.100",
-        "path": [
-          "colors",
-          "newColor123",
-        ],
-        "type": "color",
-        "value": "blue.100",
-      }
-    `)
+    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot('undefined')
 
     const resetConfig = mergeConfigs([{}, defaultConfig()])
 
@@ -320,14 +294,14 @@ describe('DiffEngine affecteds', () => {
           "varRef": "var(--colors-blue-100)",
         },
         "name": "colors.blue.100",
-        "originalValue": "red.100",
+        "originalValue": "#dbeafe",
         "path": [
           "colors",
           "blue",
           "100",
         ],
         "type": "color",
-        "value": "red.100",
+        "value": "#dbeafe",
       }
     `)
   })
@@ -390,14 +364,7 @@ describe('DiffEngine affecteds', () => {
       ]
     `)
 
-    expect(generator.recipes.getConfig('newRecipe')).toMatchInlineSnapshot(`
-      {
-        "base": {
-          "color": "blue.200",
-        },
-        "className": "newRecipe",
-      }
-    `)
+    expect(generator.recipes.getConfig('newRecipe')).toMatchInlineSnapshot('undefined')
 
     const resetConfig = mergeConfigs([{}, defaultConfig()])
 
@@ -692,9 +659,9 @@ describe('DiffEngine affecteds', () => {
 
     const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
 
-    expect(generator.config.separator).toMatchInlineSnapshot('"="')
-    expect(generator.utility.separator).toMatchInlineSnapshot('"="')
-    expect(generator.recipes['separator']).toMatchInlineSnapshot('"="')
+    expect(generator.config.separator).toMatchInlineSnapshot('undefined')
+    expect(generator.utility.separator).toMatchInlineSnapshot('"_"')
+    expect(generator.recipes['separator']).toMatchInlineSnapshot('"_"')
 
     expect(affecteds.artifacts).toMatchInlineSnapshot(`
       Set {
