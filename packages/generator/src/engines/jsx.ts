@@ -4,10 +4,6 @@ import type { UserConfig } from '@pandacss/types'
 export class JsxEngine {
   constructor(private config: UserConfig) {}
 
-  setConfig(config: UserConfig) {
-    this.config = config
-  }
-
   private get jsxFactory() {
     return this.config.jsxFactory ?? ''
   }

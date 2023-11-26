@@ -3,10 +3,6 @@ import type { UserConfig } from '@pandacss/types'
 export class PathEngine {
   constructor(private config: UserConfig) {}
 
-  setConfig(config: UserConfig) {
-    this.config = config
-  }
-
   private get cwd() {
     return this.config.cwd
   }

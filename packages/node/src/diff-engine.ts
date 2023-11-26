@@ -73,9 +73,9 @@ export class DiffEngine {
   /**
    * Reload config from disk and refresh the context
    */
-  async reloadConfigAndRefreshContext() {
+  async reloadConfigAndRefreshContext(fn?: (conf: LoadConfigResult) => void) {
     const conf = await loadConfigFile({ cwd: this.ctx.config.cwd, file: this.ctx.conf.path })
-    return this.refresh(conf)
+    return this.refresh(conf, fn)
   }
 
   /**
@@ -83,7 +83,7 @@ export class DiffEngine {
    * then persist the changes on each affected engines
    * Returns the list of affected artifacts/engines
    */
-  refresh(conf: LoadConfigResult) {
+  refresh(conf: LoadConfigResult, fn?: (conf: LoadConfigResult) => void) {
     const affected: DiffConfigResult = {
       artifacts: new Set(),
       hasConfigChanged: false,
@@ -106,10 +106,8 @@ export class DiffEngine {
     affected.hasConfigChanged = true
     affected.diffs = configDiff
 
-    // update context
     this.previousConfig = newConfig
-    this.ctx.setConfig(conf.config)
-    Object.assign(this.ctx.conf, conf)
+    fn?.(conf)
 
     configDiff.forEach((change) => {
       const changePath = change.path.join('.')

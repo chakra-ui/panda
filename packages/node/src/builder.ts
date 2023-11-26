@@ -7,7 +7,7 @@ import pLimit from 'p-limit'
 import { resolve } from 'pathe'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
-import { type PandaContext } from './create-context'
+import { PandaContext } from './create-context'
 import type { DiffConfigResult } from './diff-engine'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
@@ -16,15 +16,16 @@ const fileCssMap = new Map<string, string>()
 const fileModifiedMap = new Map<string, number>()
 
 const limit = pLimit(20)
+
 export class Builder {
   /**
    * The current panda context
    */
   context: PandaContext | undefined
 
-  hasEmitted = false
-  affecteds: DiffConfigResult | undefined
-  configDependencies = new Set<string>()
+  private hasEmitted = false
+  private hasConfigChanged = false
+  private affecteds: DiffConfigResult | undefined
 
   getConfigPath = () => {
     const configPath = findConfig()
@@ -45,7 +46,11 @@ export class Builder {
     }
 
     const ctx = this.getContextOrThrow()
-    this.affecteds = await ctx.diff.reloadConfigAndRefreshContext()
+    this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+      this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
+    })
+
+    this.hasConfigChanged = this.affecteds.hasConfigChanged
 
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
@@ -68,7 +73,6 @@ export class Builder {
   setupContext = async (options: { configPath: string }) => {
     const { configPath } = options
     const ctx = await loadConfigAndCreateContext({ configPath })
-
     this.context = ctx
     return ctx
   }
@@ -84,7 +88,7 @@ export class Builder {
     const mtime = existsSync(file) ? fsExtra.statSync(file).mtimeMs : -Infinity
 
     const isUnchanged = fileModifiedMap.has(file) && mtime === fileModifiedMap.get(file)
-    if (isUnchanged) return
+    if (isUnchanged && !this.hasConfigChanged) return
 
     const css = extractFile(ctx, file)
 
@@ -156,10 +160,6 @@ export class Builder {
     }
 
     for (const file of ctx.conf.dependencies) {
-      fn({ type: 'dependency', file: resolve(file) })
-    }
-
-    for (const file of this.configDependencies) {
       fn({ type: 'dependency', file: resolve(file) })
     }
   }

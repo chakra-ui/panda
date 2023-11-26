@@ -36,7 +36,7 @@ export class Recipes {
   rules: Map<string, AtomicRule> = new Map()
 
   get keys() {
-    return Array.from(this.rules.keys())
+    return Object.keys(this.recipes)
   }
 
   constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {

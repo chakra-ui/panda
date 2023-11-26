@@ -3,10 +3,6 @@ import type { UserConfig } from '@pandacss/types'
 export class FileEngine {
   constructor(private config: UserConfig) {}
 
-  setConfig(config: UserConfig) {
-    this.config = config
-  }
-
   private get forceConsistentTypeExtension() {
     return this.config.forceConsistentTypeExtension || false
   }

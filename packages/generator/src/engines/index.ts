@@ -168,24 +168,6 @@ export class Context {
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
 
-  setConfig = (userConfig: UserConfig): void => {
-    const config = defaults(userConfig)
-    const theme = config.theme ?? {}
-
-    this.tokens = this.createTokenDictionary(theme)
-    this.utility = this.createUtility(config)
-    this.conditions = this.createConditions(config)
-    this.patterns = new Patterns(config)
-    this.jsx.setConfig(config)
-    this.paths.setConfig(config)
-    this.file.setConfig(config)
-
-    this.setupCompositions(theme)
-    this.setupLayers(config.layers as CascadeLayers)
-    this.setupProperties()
-    this.recipes = this.createRecipes(theme, this.createSheetContext())
-  }
-
   createSheetContext(): StylesheetContext {
     return {
       root: postcss.root(),

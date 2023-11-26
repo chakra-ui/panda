@@ -16,7 +16,7 @@ import {
   writeAnalyzeJSON,
   writeAndBundleCssChunks,
   type CssArtifactType,
-  type PandaContext,
+  PandaContext,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
@@ -124,6 +124,7 @@ export async function main() {
 
         const onChange = debounce(async () => {
           logger.info('ctx:change', 'config changed, rebuilding...')
+          // in the codegen, we don't need to create a new panda context
           const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
           await emitArtifacts(ctx, Array.from(affecteds.artifacts))
           logger.info('ctx:updated', 'config rebuilt ✅')
@@ -162,14 +163,16 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      const ctx = await loadConfigAndCreateContext({
+      const overrideConfig = {
+        clean,
+        minify,
+        optimize: true,
+        ...(glob ? { include: [glob] } : undefined),
+      }
+
+      let ctx = await loadConfigAndCreateContext({
         cwd,
-        config: {
-          clean,
-          minify,
-          optimize: true,
-          ...(glob ? { include: [glob] } : undefined),
-        },
+        config: overrideConfig,
         configPath,
       })
 
@@ -214,7 +217,9 @@ export async function main() {
           'change',
           debounce(async () => {
             logger.info('ctx:change', 'config changed, rebuilding...')
-            await ctx.diff.reloadConfigAndRefreshContext()
+            await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+            })
             await cssgen(ctx)
             logger.info('ctx:updated', 'config rebuilt ✅')
           }),
