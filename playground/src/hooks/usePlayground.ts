@@ -114,11 +114,11 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     const example = EXAMPLES.find((example) => example.id === _example)
     if (!example) return
     setIsPristine(true)
-    setState((prev) => ({
-      ...prev,
+    setState({
       code: example.code,
+      css: example.css,
       config: example.config,
-    }))
+    })
   }
 
   return {
