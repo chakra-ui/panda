@@ -59,16 +59,14 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     }
   }
 
-  const cssExample = EXAMPLES.find((example) => example.id === 'css')
+  const { code, config, css = initialCSS } = EXAMPLES.find((example) => example.id === 'css')!
 
   const [state, setState] = useState(
-    initialState
-      ? initialState
-      : {
-          code: cssExample?.code ?? '',
-          config: cssExample?.config ?? '',
-          css: initialCSS,
-        },
+    initialState ?? {
+      code,
+      config,
+      css,
+    },
   )
 
   function copyCurrentURI() {
