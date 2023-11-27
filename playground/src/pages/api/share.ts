@@ -6,6 +6,7 @@ import { prisma } from '../../client/prisma'
 
 const schema = z.object({
   code: z.string(),
+  css: z.string(),
   config: z.string(),
 })
 
