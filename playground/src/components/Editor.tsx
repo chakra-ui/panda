@@ -27,7 +27,7 @@ export const Editor = (props: PandaEditorProps) => {
 
   const editorPaths = {
     code: 'code.tsx',
-    css: 'styles.css',
+    css: 'custom.css',
     config: 'config.ts',
   }
 
