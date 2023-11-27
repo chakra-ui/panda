@@ -8,7 +8,7 @@ const Page = async (props: any) => {
 
   const initialState = await prisma.session.findFirst({
     where: { id },
-    select: { code: true, config: true },
+    select: { code: true, css: true, config: true },
   })
 
   return <Playground initialState={initialState} />
