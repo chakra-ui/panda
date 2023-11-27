@@ -6,6 +6,7 @@ import { EXAMPLES, Example } from '@/src/components/Examples/data'
 export type State = {
   code: string
   config: string
+  css: string
 }
 
 export type UsePlayGroundProps = {
@@ -60,14 +61,16 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   const cssExample = EXAMPLES.find((example) => example.id === 'css')
 
-  const [state, setState] = useState(
-    initialState
-      ? initialState
-      : {
-          code: cssExample?.code ?? '',
-          config: cssExample?.config ?? '',
-        },
-  )
+  const _initialState = initialState
+    ? initialState
+    : {
+        code: cssExample?.code ?? '',
+        config: cssExample?.config ?? '',
+      }
+
+  const initialCSS = `@layer reset, base, tokens, recipes, utilities;`
+
+  const [state, setState] = useState({ ..._initialState, css: initialCSS })
 
   function copyCurrentURI() {
     const currentURI = window.location.href
@@ -117,6 +120,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     setState({
       code: example.code,
       config: example.config,
+      css: initialCSS,
     })
   }
 

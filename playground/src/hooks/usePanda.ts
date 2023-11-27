@@ -75,7 +75,7 @@ const playgroundPreset: Preset = {
   },
 }
 
-export function usePanda(source: string, config: string) {
+export function usePanda(source: string, css: string, config: string) {
   const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
   const prevGenerator = useRef<Generator | null>(null)
 
@@ -144,7 +144,7 @@ export function usePanda(source: string, config: string) {
       ?.join('\n')
 
     const presetCss = cssFiles.map((f) => f.code).join('\n')
-    const previewCss = ['@layer reset, base, tokens, recipes, utilities;', presetCss, parsedCss].join('\n')
+    const previewCss = [css, presetCss, parsedCss].join('\n')
 
     const cssArtifacts = artifacts.reduce(
       (acc, artifact) => {
@@ -170,7 +170,7 @@ export function usePanda(source: string, config: string) {
     }
     console.log(panda) // <-- useful for debugging purposes, don't remove
     return panda
-  }, [source, generator])
+  }, [source, css, generator])
 }
 
 export type CssFileArtifact = {
