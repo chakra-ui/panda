@@ -1,10 +1,13 @@
 import { getConfig } from './utils'
 import outdent from 'outdent'
 
+export const initialCSS = `@layer reset, base, tokens, recipes, utilities;`
+
 export const EXAMPLES = [
   {
     id: 'css',
     label: 'Writing styles (css)',
+    css:initialCSS,
     code: outdent`import { css } from 'styled-system/css';
     import { center } from 'styled-system/patterns';
     
@@ -34,6 +37,7 @@ export const EXAMPLES = [
   {
     id: 'cva',
     label: 'Atomic Recipes (cva)',
+    css:initialCSS,
     code: outdent`import { cva } from 'styled-system/css';
     import { center } from 'styled-system/patterns';
     
@@ -75,6 +79,7 @@ export const EXAMPLES = [
   {
     id: 'sva',
     label: 'Slot Recipes (sva)',
+    css:initialCSS,
     code: outdent`import { sva } from 'styled-system/css';
     import { center } from 'styled-system/patterns';
     
@@ -118,6 +123,7 @@ export const EXAMPLES = [
   {
     id: 'config-recipes',
     label: 'Config Recipes',
+    css:initialCSS,
     code: outdent`import { button } from 'styled-system/recipes';
     import { center } from 'styled-system/patterns';
     
@@ -168,6 +174,7 @@ export const EXAMPLES = [
   {
     id: 'config-slot-recipes',
     label: 'Config Slot Recipes',
+    css:initialCSS,
     code: outdent`import { card } from 'styled-system/recipes';
     import { center } from 'styled-system/patterns';
     
@@ -221,6 +228,7 @@ export const EXAMPLES = [
   {
     id: 'patterns',
     label: 'Patterns',
+    css:initialCSS,
     code: outdent`import { cx } from 'styled-system/css';
     import { flex, square, circle, center } from 'styled-system/patterns';
     
@@ -264,6 +272,7 @@ export const EXAMPLES = [
   {
     id: 'jsx',
     label: 'JSX Style Props',
+    css:initialCSS,
     code: outdent`import { styled, Center } from 'styled-system/jsx';
 
     export const App = () => {
