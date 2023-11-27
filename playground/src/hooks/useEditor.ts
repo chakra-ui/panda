@@ -78,6 +78,9 @@ export function useEditor(props: PandaEditorProps) {
       registerKeybindings()
     })
 
+    //@ts-expect-error
+    monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
+
     monaco.languages.registerDocumentFormattingEditProvider('typescript', {
       async provideDocumentFormattingEdits(model) {
         return [
