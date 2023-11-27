@@ -165,7 +165,7 @@ export function usePanda(source: string, css: string, config: string) {
       previewJs,
       parserResult,
       cssArtifacts,
-
+      generator,
       parsedCss,
     }
     console.log(panda) // <-- useful for debugging purposes, don't remove
