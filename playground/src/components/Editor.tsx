@@ -82,7 +82,7 @@ export const Editor = (props: PandaEditorProps) => {
         <div className={cx(css({ flex: '1', pt: '2' }), editorTokenizer())}>
           <MonacoEditor
             value={props.value[activeTab]}
-            language="typescript"
+            language={activeTab === 'css' ? 'css' : 'typescript'}
             path={editorPaths[activeTab]}
             options={defaultEditorOptions}
             beforeMount={onBeforeMount}
