@@ -53,6 +53,10 @@ interface PresetCore {
    */
   globalCss: GlobalStyleObject
   /**
+   * Used to generate css utility classes for your project.
+   */
+  staticCss: StaticCssOptions
+  /**
    * The theme configuration for your project.
    */
   theme: Theme
@@ -71,6 +75,10 @@ interface ExtendablePatterns {
   extend?: Patterns | undefined
 }
 
+interface ExtendableStaticCssOptions extends StaticCssOptions {
+  extend?: StaticCssOptions | undefined
+}
+
 export interface ExtendableOptions {
   /**
    * The css selectors or media queries shortcuts.
@@ -81,6 +89,10 @@ export interface ExtendableOptions {
    * The global styles for your project.
    */
   globalCss?: ExtendableGlobalStyleObject
+  /**
+   * Used to generate css utility classes for your project.
+   */
+  staticCss?: ExtendableStaticCssOptions
   /**
    * The theme configuration for your project.
    */
@@ -232,11 +244,6 @@ interface CssgenOptions {
    * @default ':where(:host, :root)'
    */
   cssVarRoot?: string
-  /**
-   * @experimental
-   * Used to generate css utility classes for your project.
-   */
-  staticCss?: StaticCssOptions
   /**
    * The css syntax kind to use
    * @default 'object-literal'
