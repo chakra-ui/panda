@@ -1,8 +1,10 @@
 {
   "background": "Background",
-  "typography": "Typography",
   "border": "Border",
   "display": "Display",
+  "divide": "Divide",
+  "effects": "Effects",
+  "layout": "Layout",
   "sizing": "Sizing",
-  "layout": "Layout"
+  "typography": "Typography"
 }

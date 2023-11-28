@@ -81,6 +81,8 @@ const styles = css({
 })
 ```
 
+> Shorthands are documented alongside their respective properties in the [utilities](/docs/utilities/background) section.
+
 ### Type safety
 
 Panda is built with TypeScript and provides type safety for all style properties and shorthands. Most of the style properties are connected to either the native CSS properties or their respective token value defined as defined in the `theme` object.
