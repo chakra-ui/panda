@@ -10,4 +10,5 @@
 '@pandacss/dev': patch
 ---
 
-Only rewrite files affecteds by a config change, fix config change detection
+- Add support for granular config change detection
+- Improve the `codegen` experience by only rewriting files affecteds by a config change
