@@ -1,14 +1,14 @@
 import { isSlotRecipe } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
+import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 const stringify = (value: any) => JSON.stringify(value, null, 2)
-
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'
 
-export function generateRecipes(ctx: Context) {
+export function generateCreateRecipe(ctx: Context) {
   const {
     recipes,
     utility: { separator },
@@ -17,7 +17,7 @@ export function generateRecipes(ctx: Context) {
 
   if (recipes.isEmpty()) return
 
-  const createRecipeFn = {
+  return {
     name: 'create-recipe',
     dts: '',
     js: outdent`
@@ -82,7 +82,7 @@ export function generateRecipes(ctx: Context) {
       acc[key] = uniq(recipeA.variantMap[key], recipeB.variantMap[key])
       return acc
     }, {})
-  
+
     return Object.assign(recipeFn, {
       __recipe__: true,
       __name__: \`$\{recipeA.__name__} \${recipeB.__name__}\`,
@@ -97,17 +97,23 @@ export function generateRecipes(ctx: Context) {
   }
   `,
   }
+}
 
-  return [
-    createRecipeFn,
-    ...ctx.recipes.details.map((recipe) => {
-      const { baseName, config, upperName, variantKeyMap, dashName } = recipe
-      const { description, defaultVariants, compoundVariants } = config
+export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
+  const { recipes } = ctx
 
-      const jsCode = match(config)
-        .when(
-          isSlotRecipe,
-          (config) => outdent`
+  if (recipes.isEmpty()) return
+
+  const details = ctx.recipes.filterDetails(filters)
+
+  return details.map((recipe) => {
+    const { baseName, config, upperName, variantKeyMap, dashName } = recipe
+    const { description, defaultVariants, compoundVariants } = config
+
+    const jsCode = match(config)
+      .when(
+        isSlotRecipe,
+        (config) => outdent`
         ${ctx.file.import('splitProps, getSlotCompoundVariant', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
@@ -134,20 +140,20 @@ export function generateRecipes(ctx: Context) {
           },
         })
         `,
-        )
-        .otherwise(
-          (config) => outdent`
+      )
+      .otherwise(
+        (config) => outdent`
         ${ctx.file.import('splitProps', '../helpers')}
         ${ctx.file.import('createRecipe, mergeRecipes', './create-recipe')}
 
         const ${baseName}Fn = /* @__PURE__ */ createRecipe('${config.className}', ${stringify(
-            defaultVariants ?? {},
-          )}, ${stringify(compoundVariants ?? [])})
+          defaultVariants ?? {},
+        )}, ${stringify(compoundVariants ?? [])})
 
         const ${baseName}VariantMap = ${stringify(variantKeyMap)}
-        
+
         const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
-        
+
         export const ${baseName} = /* @__PURE__ */ Object.assign(${baseName}Fn, {
           __recipe__: true,
           __name__: '${baseName}',
@@ -162,14 +168,14 @@ export function generateRecipes(ctx: Context) {
           },
         })
         `,
-        )
+      )
 
-      return {
-        name: dashName,
+    return {
+      name: dashName,
 
-        js: jsCode,
+      js: jsCode,
 
-        dts: outdent`
+      dts: outdent`
         ${ctx.file.importType('ConditionalValue', '../types/index')}
         ${ctx.file.importType('DistributiveOmit, Pretty', '../types/system-types')}
 
@@ -189,15 +195,15 @@ export function generateRecipes(ctx: Context) {
 
         export type ${upperName}VariantProps = {
           [key in keyof ${upperName}Variant]?: ${
-          compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
-        } | undefined
+        compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
+      } | undefined
         }
 
         export interface ${upperName}Recipe {
           __type: ${upperName}VariantProps
           (props?: ${upperName}VariantProps): ${
-          isSlotRecipe(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'
-        }
+        isSlotRecipe(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'
+      }
           raw: (props?: ${upperName}VariantProps) => ${upperName}VariantProps
           variantMap: ${upperName}VariantMap
           variantKeys: Array<keyof ${upperName}Variant>
@@ -207,7 +213,6 @@ export function generateRecipes(ctx: Context) {
         ${description ? `/** ${description} */` : ''}
         export declare const ${baseName}: ${upperName}Recipe
         `,
-      }
-    }),
-  ]
+    }
+  })
 }

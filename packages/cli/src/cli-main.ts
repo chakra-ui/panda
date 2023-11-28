@@ -1,3 +1,4 @@
+import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
@@ -5,25 +6,24 @@ import {
   bundleMinimalFilesCss,
   debugFiles,
   emitArtifacts,
-  writeAndBundleCssChunks,
   generate,
+  generateCssArtifactOfType,
   loadConfigAndCreateContext,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
   shipFiles,
   writeAnalyzeJSON,
-  type PandaContext,
-  generateCssArtifactOfType,
+  writeAndBundleCssChunks,
   type CssArtifactType,
+  PandaContext,
 } from '@pandacss/node'
-import { findConfigFile } from '@pandacss/config'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
 import { version } from '../package.json'
-import { cliInit } from './cli-init'
+import { interactive } from './interactive'
 import type {
   AnalyzeCommandFlags,
   CodegenCommandFlags,
@@ -53,14 +53,14 @@ export async function main() {
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
     .option('--strict-tokens', 'Using strictTokens: true')
-    .action(async (_flags: Partial<InitCommandFlags> = {}) => {
+    .action(async (initFlags: Partial<InitCommandFlags> = {}) => {
       let options = {}
 
-      if (_flags.interactive) {
-        options = await cliInit()
+      if (initFlags.interactive) {
+        options = await interactive()
       }
 
-      const flags = { ..._flags, ...options }
+      const flags = { ...initFlags, ...options }
       const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
       const cwd = resolve(flags.cwd ?? '')
@@ -108,27 +108,25 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      function loadContext() {
-        return loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
-      }
-
-      let ctx = await loadContext()
+      const ctx = await loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
 
       const { msg } = await emitArtifacts(ctx)
       logger.log(msg)
 
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
+
         const watcher = ctx.runtime.fs.watch({
-          include: ctx.dependencies,
+          include: ctx.conf.dependencies,
           cwd,
           poll,
         })
 
         const onChange = debounce(async () => {
           logger.info('ctx:change', 'config changed, rebuilding...')
-          ctx = await loadContext()
-          await emitArtifacts(ctx)
+          // in the codegen, we don't need to create a new panda context
+          const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
+          await emitArtifacts(ctx, Array.from(affecteds.artifacts))
           logger.info('ctx:updated', 'config rebuilt ✅')
         })
 
@@ -154,29 +152,29 @@ export async function main() {
       const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+
       const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
         (type) => type === maybeGlob,
       ) as CssArtifactType | undefined
+
       const glob = cssArtifact ? undefined : maybeGlob
 
       if (silent) {
         logger.level = 'silent'
       }
 
-      function loadContext() {
-        return loadConfigAndCreateContext({
-          cwd,
-          config: {
-            clean,
-            minify,
-            optimize: true,
-            ...(glob ? { include: [glob] } : undefined),
-          },
-          configPath,
-        })
+      const overrideConfig = {
+        clean,
+        minify,
+        optimize: true,
+        ...(glob ? { include: [glob] } : undefined),
       }
 
-      let ctx = await loadContext()
+      let ctx = await loadConfigAndCreateContext({
+        cwd,
+        config: overrideConfig,
+        configPath,
+      })
 
       const cssgen = async (ctx: PandaContext) => {
         if (outfile) {
@@ -186,16 +184,16 @@ export async function main() {
 
           if (cssArtifact) {
             const { msg } = await generateCssArtifactOfType(ctx, cssArtifact, outfile)
-            logger.info('css:emit', msg)
+            logger.info('css:emit:artifact', msg)
             return
           }
 
           if (minimal) {
             const { msg } = await bundleMinimalFilesCss(ctx, outPath)
-            logger.info('css:emit', msg)
+            logger.info('css:emit:min', msg)
           } else {
             const { msg } = await bundleCss(ctx, outPath)
-            logger.info('css:emit', msg)
+            logger.info('css:emit:out', msg)
           }
           //
         } else {
@@ -205,7 +203,7 @@ export async function main() {
 
           //
           const { msg } = await writeAndBundleCssChunks(ctx)
-          logger.info('css:emit', msg)
+          logger.info('css:emit:bundle', msg)
         }
       }
 
@@ -213,13 +211,15 @@ export async function main() {
 
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
-        const configWatcher = ctx.runtime.fs.watch({ include: ctx.dependencies, cwd, poll })
+        const configWatcher = ctx.runtime.fs.watch({ include: ctx.conf.dependencies, cwd, poll })
 
         configWatcher.on(
           'change',
           debounce(async () => {
             logger.info('ctx:change', 'config changed, rebuilding...')
-            ctx = await loadContext()
+            await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+            })
             await cssgen(ctx)
             logger.info('ctx:updated', 'config rebuilt ✅')
           }),

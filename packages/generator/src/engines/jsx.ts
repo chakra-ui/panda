@@ -1,25 +1,38 @@
 import { capitalize } from '@pandacss/shared'
 import type { UserConfig } from '@pandacss/types'
 
-export const getJsxEngine = (config: UserConfig): PandaJsxEngine => {
-  const { jsxFactory, jsxFramework, jsxStyleProps } = config
-  return {
-    factoryName: jsxFactory!,
-    upperName: capitalize(jsxFactory!),
-    typeName: `HTML${capitalize(jsxFactory!)}Props`,
-    variantName: `${capitalize(jsxFactory!)}VariantProps`,
-    componentName: `${capitalize(jsxFactory!)}Component`,
-    framework: jsxFramework,
-    styleProps: jsxStyleProps ?? 'all',
-  }
-}
+export class JsxEngine {
+  constructor(private config: UserConfig) {}
 
-export interface PandaJsxEngine {
-  factoryName: string
-  upperName: string
-  typeName: string
-  variantName: string
-  componentName: string
-  framework: UserConfig['jsxFramework']
-  styleProps: Exclude<UserConfig['jsxStyleProps'], undefined>
+  private get jsxFactory() {
+    return this.config.jsxFactory ?? ''
+  }
+
+  get styleProps() {
+    return this.config.jsxStyleProps ?? 'all'
+  }
+
+  get framework() {
+    return this.config.jsxFramework
+  }
+
+  get factoryName() {
+    return this.jsxFactory
+  }
+
+  get upperName() {
+    return capitalize(this.jsxFactory)
+  }
+
+  get typeName() {
+    return `HTML${capitalize(this.jsxFactory)}Props`
+  }
+
+  get variantName() {
+    return `${capitalize(this.jsxFactory)}VariantProps`
+  }
+
+  get componentName() {
+    return `${capitalize(this.jsxFactory)}Component`
+  }
 }

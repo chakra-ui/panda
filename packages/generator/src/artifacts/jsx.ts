@@ -1,3 +1,4 @@
+import type { ArtifactFilters } from '@pandacss/types'
 import type { Context } from '../engines'
 import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
 import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
@@ -83,8 +84,7 @@ const patternMap = {
   qwik: generateQwikJsxPattern,
 }
 
-export function generateJsxPatterns(ctx: Context) {
-  if (ctx.isTemplateLiteralSyntax) return []
-  if (ctx.patterns.isEmpty() && !ctx.jsx.framework) return []
-  return patternMap[ctx.jsx.framework!](ctx)
+export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {
+  if (ctx.isTemplateLiteralSyntax || ctx.patterns.isEmpty() || !ctx.jsx.framework) return []
+  return patternMap[ctx.jsx.framework!](ctx, filters)
 }

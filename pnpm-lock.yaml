@@ -157,6 +157,9 @@ importers:
       '@pandacss/preset-panda':
         specifier: workspace:*
         version: link:../preset-panda
+      '@pandacss/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
@@ -470,6 +473,9 @@ importers:
       look-it-up:
         specifier: 2.1.0
         version: 2.1.0
+      microdiff:
+        specifier: ^1.3.2
+        version: 1.3.2
       outdent:
         specifier: ' ^0.8.0'
         version: 0.8.0
@@ -23202,6 +23208,10 @@ packages:
   /methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
+
+  /microdiff@1.3.2:
+    resolution: {integrity: sha512-pKy60S2febliZIbwdfEQKTtL5bLNxOyiRRmD400gueYl9XcHyNGxzHSlJWn9IMHwYXT0yohPYL08+bGozVk8cQ==}
+    dev: false
 
   /micromark-core-commonmark@1.1.0:
     resolution: {integrity: sha512-BgHO1aRbolh2hcrzL2d1La37V0Aoz73ymF8rAcKnohLy93titmv62E0gP8Hrx9PKcKrqCZ1BbLGbP3bEhoXYlw==}

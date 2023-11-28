@@ -53,6 +53,7 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "bundle-n-require": "^1.0.1",
     "escalade": "3.1.1",

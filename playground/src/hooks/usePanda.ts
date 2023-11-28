@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Generator, createGenerator } from '@pandacss/generator'
+import { Generator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
@@ -104,8 +104,10 @@ export function usePanda(source: string, config: string) {
 
     try {
       // in event of error (invalid token format), use previous generator
-      const generator = createGenerator({
+      const generator = new Generator({
         dependencies: [],
+        serialized: '',
+        deserialize: () => config!,
         path: '',
         hooks: createHooks(),
         config: config as any,

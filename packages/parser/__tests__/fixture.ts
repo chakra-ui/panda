@@ -1,3 +1,4 @@
+import { mergeConfigs } from '@pandacss/config'
 import {
   breakpoints,
   conditions,
@@ -8,16 +9,16 @@ import {
   tokens,
   utilities,
 } from '@pandacss/fixture'
-import { createGenerator } from '@pandacss/generator'
+import { Generator } from '@pandacss/generator'
+import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { Config, LoadConfigResult, PandaHooks, TSConfig } from '@pandacss/types'
-import { mergeConfigs } from '@pandacss/config'
+import { createHooks } from 'hookable'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
-import { createHooks } from 'hookable'
 
 const staticFilePath = 'app/src/test.tsx'
 
-const defaults: LoadConfigResult = {
+const defaults: Omit<LoadConfigResult, 'serialized' | 'deserialize'> = {
   dependencies: [],
   config: {
     cwd: '',
@@ -56,7 +57,11 @@ export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: 
     cwd: userConfig?.cwd ?? defaults.config.cwd,
   } as typeof resolvedConfig
   const hooks = createHooks<PandaHooks>()
-  const generator = createGenerator({ ...defaults, config, hooks, tsconfig })
+
+  const serialized = stringifyJson(config)
+  const deserialize = () => parseJson(serialized)
+
+  const generator = new Generator({ ...defaults, config, hooks, tsconfig, serialized, deserialize })
 
   const project = createProject({
     ...tsconfig,

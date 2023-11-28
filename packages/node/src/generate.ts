@@ -1,34 +1,44 @@
 import { logger } from '@pandacss/logger'
-import type { Config } from '@pandacss/types'
+import type { ArtifactId, Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import type { PandaContext } from './create-context'
-import { bundleStyleChunksWithImports, emitArtfifactsAndCssChunks, writeFileChunk } from './extract'
-import { loadContext } from './load-context'
+import { bundleStyleChunksWithImports, emitArtifacts, writeAndBundleCssChunks, writeFileChunk } from './extract'
 
-async function build(ctx: PandaContext) {
-  const { msg } = await emitArtfifactsAndCssChunks(ctx)
+import { loadConfigAndCreateContext } from './config'
+
+/**
+ * 1. Emit artifacts
+ * 2. Writes all the css chunks in outdir/chunks/{file}.css
+ * 3. Bundles them in outdir/styles.css
+ */
+async function build(ctx: PandaContext, ids?: ArtifactId[]) {
+  await emitArtifacts(ctx, ids)
+  if (ctx.config.emitTokensOnly) {
+    return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
+  }
+
+  const { msg } = await writeAndBundleCssChunks(ctx)
   logger.info('css:emit', msg)
 }
 
 export async function generate(config: Config, configPath?: string) {
-  const [ctxRef, loadCtx] = await loadContext(config, configPath)
-
-  const ctx = ctxRef.current
+  const ctx = await loadConfigAndCreateContext({ config, configPath })
   await build(ctx)
 
   const {
     runtime: { fs, path },
-    dependencies,
     config: { cwd },
   } = ctx
 
   if (ctx.config.watch) {
-    const configWatcher = fs.watch({ include: dependencies })
+    const configWatcher = fs.watch({ include: ctx.conf.dependencies })
     configWatcher.on('change', async () => {
+      const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
+      if (!affecteds.artifacts.size) return
+
       logger.info('config:change', 'Config changed, restarting...')
-      await loadCtx()
-      await ctxRef.current.hooks.callHook('config:change', ctxRef.current.config)
-      return build(ctxRef.current)
+      await ctx.hooks.callHook('config:change', ctx.config)
+      return build(ctx, Array.from(affecteds.artifacts))
     })
 
     const contentWatcher = fs.watch(ctx.config)
@@ -41,12 +51,12 @@ export async function generate(config: Config, configPath?: string) {
         })
         .with('change', async () => {
           ctx.project.reloadSourceFile(file)
-          await writeFileChunk(ctxRef.current, file)
-          return bundleStyleChunksWithImports(ctxRef.current)
+          await writeFileChunk(ctx, file)
+          return bundleStyleChunksWithImports(ctx)
         })
         .with('add', async () => {
           ctx.project.createSourceFile(file)
-          return bundleStyleChunksWithImports(ctxRef.current)
+          return bundleStyleChunksWithImports(ctx)
         })
         .otherwise(() => {
           // noop

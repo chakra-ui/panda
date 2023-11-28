@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import { generateTokenCss } from '../src/artifacts/css/token-css'
-import { generator } from './fixture'
-import { createGenerator } from '../src'
+import { generatorConfig } from './fixture'
+import { Generator } from '../src'
 import { createHooks } from 'hookable'
 
 describe('generator', () => {
   test('[css] should generate css', () => {
-    const css = generateTokenCss(generator)
+    const css = generateTokenCss(new Generator(generatorConfig))
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
@@ -487,7 +487,7 @@ describe('generator', () => {
   describe('issue 769: Invalid CSS when extending theme with semanticTokens', () => {
     test('should not extract nested tokens as `color-palette` css variables', () => {
       const css = generateTokenCss(
-        createGenerator({
+        new Generator({
           dependencies: [],
           config: {
             cwd: '',
@@ -542,6 +542,8 @@ describe('generator', () => {
           },
           path: '',
           hooks: createHooks(),
+          serialized: '',
+          deserialize: () => ({} as any),
         }),
       )
 
@@ -565,7 +567,7 @@ describe('generator', () => {
 
     test('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
       const css = generateTokenCss(
-        createGenerator({
+        new Generator({
           dependencies: [],
           config: {
             cwd: '',
@@ -589,6 +591,8 @@ describe('generator', () => {
           },
           path: '',
           hooks: createHooks(),
+          serialized: '',
+          deserialize: () => ({} as any),
         }),
       )
 
@@ -609,7 +613,7 @@ describe('generator', () => {
 
   test('should reuse css variable in semantic token alias', () => {
     const css = generateTokenCss(
-      createGenerator({
+      new Generator({
         dependencies: [],
         config: {
           cwd: '',
@@ -653,6 +657,8 @@ describe('generator', () => {
         },
         path: '',
         hooks: createHooks(),
+        serialized: '',
+        deserialize: () => ({} as any),
       }),
     )
 
@@ -673,7 +679,7 @@ describe('generator', () => {
 
   test('shadow semantic tokens', () => {
     const css = generateTokenCss(
-      createGenerator({
+      new Generator(<any>{
         dependencies: [],
         config: {
           cwd: '',

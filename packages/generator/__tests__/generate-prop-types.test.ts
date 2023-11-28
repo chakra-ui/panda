@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
 import { generator, generatorConfig } from './fixture'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 
 describe('generate property types', () => {
   test('should ', () => {
@@ -320,7 +320,7 @@ describe('generate property types', () => {
   test('with stricTokens true', () => {
     const conf = Object.assign({}, generatorConfig)
     conf.config.strictTokens = true
-    expect(generatePropTypes(createGenerator(conf as any))).toMatchInlineSnapshot(`
+    expect(generatePropTypes(new Generator(conf))).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';

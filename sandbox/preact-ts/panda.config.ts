@@ -8,6 +8,11 @@ export default defineConfig({
   jsxFramework: 'preact',
   theme: {
     extend: {
+      tokens: {
+        colors: {
+          aaa: { value: 'azaz23' },
+        },
+      },
       slotRecipes: {
         card: defineSlotRecipe({
           className: 'u-card',

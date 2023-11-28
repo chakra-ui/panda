@@ -2,10 +2,10 @@ import { getStaticCss } from '@pandacss/core'
 import type { Context } from '../../engines'
 
 export const generateStaticCss = (ctx: Context) => {
-  const { config, createSheet, utility, recipes } = ctx
+  const { config, utility, recipes } = ctx
   const { staticCss = {}, theme = {}, optimize = true } = config
 
-  const sheet = createSheet()
+  const sheet = ctx.createSheet()
   const fn = getStaticCss(staticCss)
 
   const results = fn({
