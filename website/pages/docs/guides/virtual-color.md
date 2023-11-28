@@ -101,7 +101,6 @@ export const App = () => {
 
 ## Semantic Virtual Colors
 
-You can also create semantic virtual colors. 
 Semantic virtual colors gives you an ability to create a virtual color organized by category, variant and state.
 Hierarchically organized virtual colors are useful when creating easily customizable components.
 
@@ -112,25 +111,25 @@ const theme = {
       colors: {
         button: {
           dark: {
-            value: 'navy',
+            value: 'navy'
           },
           light: {
             DEFAULT: {
-              value: 'skyblue',
+              value: 'skyblue'
             },
             accent: {
               DEFAULT: {
-                value: 'cyan',
+                value: 'cyan'
               },
               secondary: {
-                value: 'blue',
-              },
-            },
-          },
-        },
-      },
-    },
-  },
+                value: 'blue'
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -148,8 +147,8 @@ export const App = () => {
         backgroundColor: 'colorPalette.dark',
         _hover: {
           color: 'colorPalette.light.accent',
-          background: 'colorPalette.light.accent.secondary',
-        },
+          background: 'colorPalette.light.accent.secondary'
+        }
       })}
     >
       Root color palette
@@ -168,11 +167,62 @@ export const App = () => {
     <button
       className={css({
         colorPalette: 'button.light.accent',
-        color: 'colorPalette.secondary',
+        color: 'colorPalette.secondary'
       })}
     >
       Nested color palette leaf
     </button>
+  )
+}
+```
+
+## Pregenerated Virtual Colors
+
+Use the `staticCss` option in the config to pre-generate values for the `colorPalette` property.
+
+This is useful when you want to use a color palette that can be changed at runtime (e.g. in Storybook knobs).
+
+> Learn more about [static css generation](/docs/guides/static).
+
+```tsx
+export default defineConfig({
+  staticCss: {
+    css: [
+      {
+        properties: { colorPalette: ['red', 'blue'] }
+      }
+    ]
+  }
+})
+```
+
+Then in your code, you can design components that use the `colorPalette` property:
+
+```tsx
+import { css } from '../styled-system/css'
+
+function ButtonShowcase() {
+  const [colorPalette, setColorPalette] = useState('red')
+  return (
+    <div>
+      <select
+        value={colorPalette}
+        onChange={e => setColorPalette(e.currentTarget.value)}
+      >
+        <option value="red">Red</option>
+        <option value="blue">Blue</option>
+      </select>
+
+      <button
+        className={css({
+          bg: 'colorPalette.50',
+          color: 'colorPalette.500',
+          colorPalette
+        })}
+      >
+        Click me
+      </button>
+    </div>
   )
 }
 ```
