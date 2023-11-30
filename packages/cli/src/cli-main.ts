@@ -396,8 +396,10 @@ export async function main() {
     .option('-m, --minify', 'Minify generated JSON file')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('-w, --watch', 'Watch files and rebuild')
+    .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .action(async (maybeGlob?: string, flags: ShipCommandFlags = {}) => {
-      const { silent, outfile: outfileFlag, minify, config: configPath } = flags
+      const { silent, outfile: outfileFlag, minify, config: configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd!)
 
@@ -405,7 +407,7 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      const ctx = await loadConfigAndCreateContext({
+      let ctx = await loadConfigAndCreateContext({
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : undefined,
         configPath,
@@ -418,6 +420,42 @@ export async function main() {
       }
 
       await shipFiles(ctx, outfile)
+
+      if (watch) {
+        logger.info('ctx:watch', ctx.messages.configWatch())
+        const configWatcher = ctx.runtime.fs.watch({ include: ctx.conf.dependencies, cwd, poll })
+
+        configWatcher.on(
+          'change',
+          debounce(async () => {
+            logger.info('ctx:change', 'config changed, rebuilding...')
+            await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+            })
+            await shipFiles(ctx, outfile)
+            logger.info('ctx:updated', 'config rebuilt ✅')
+          }),
+        )
+
+        const contentWatcher = ctx.runtime.fs.watch(ctx.config)
+        contentWatcher.on(
+          'all',
+          debounce(async (event, file) => {
+            logger.info(`file:${event}`, file)
+            if (event === 'unlink') {
+              ctx.project.removeSourceFile(ctx.runtime.path.abs(cwd, file))
+            } else if (event === 'change') {
+              ctx.project.reloadSourceFile(file)
+              await shipFiles(ctx, outfile)
+            } else if (event === 'add') {
+              ctx.project.createSourceFile(file)
+              await shipFiles(ctx, outfile)
+            }
+          }),
+        )
+
+        logger.info('ctx:watch', ctx.messages.watch())
+      }
     })
 
   cli.help()
