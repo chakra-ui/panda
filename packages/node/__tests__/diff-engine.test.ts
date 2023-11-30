@@ -31,9 +31,12 @@ describe('DiffEngine affecteds', () => {
       ...fixtureConfig,
     })
 
-    const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
+    let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
 
     const diffEngine = new DiffEngine(generator)
+
+    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot('undefined')
+
     const nextConfig = mergeConfigs([
       {},
       defaultConfig(),
@@ -50,9 +53,10 @@ describe('DiffEngine affecteds', () => {
       },
     ])
 
-    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot('undefined')
+    const affecteds = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
     expect(affecteds.artifacts).toMatchInlineSnapshot(`
       Set {
         "design-tokens",
@@ -157,7 +161,33 @@ describe('DiffEngine affecteds', () => {
       ]
     `)
 
-    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot('undefined')
+    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot(`
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "newColor123",
+          "colorPaletteRoots": [
+            "newColor123",
+          ],
+          "colorPaletteTokenKeys": [
+            "",
+          ],
+          "condition": "base",
+          "prop": "newColor123",
+          "var": "--colors-new-color123",
+          "varRef": "var(--colors-new-color123)",
+        },
+        "name": "colors.newColor123",
+        "originalValue": "blue.100",
+        "path": [
+          "colors",
+          "newColor123",
+        ],
+        "type": "color",
+        "value": "blue.100",
+      }
+    `)
 
     const resetConfig = mergeConfigs([{}, defaultConfig()])
 
@@ -188,7 +218,33 @@ describe('DiffEngine affecteds', () => {
       ]
     `)
 
-    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot('undefined')
+    expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot(`
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "newColor123",
+          "colorPaletteRoots": [
+            "newColor123",
+          ],
+          "colorPaletteTokenKeys": [
+            "",
+          ],
+          "condition": "base",
+          "prop": "newColor123",
+          "var": "--colors-new-color123",
+          "varRef": "var(--colors-new-color123)",
+        },
+        "name": "colors.newColor123",
+        "originalValue": "blue.100",
+        "path": [
+          "colors",
+          "newColor123",
+        ],
+        "type": "color",
+        "value": "blue.100",
+      }
+    `)
   })
 
   test('update theme.tokens', () => {
@@ -646,22 +702,25 @@ describe('DiffEngine affecteds', () => {
       ...fixtureConfig,
     })
 
-    const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
+    let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
+
+    expect(generator.config.separator).toMatchInlineSnapshot('undefined')
+    expect(generator.utility.separator).toMatchInlineSnapshot('"_"')
+    expect(generator.recipes['separator']).toMatchInlineSnapshot('"_"')
+
     const nextConfig = {
       ...defaultConfig(),
       separator: '=',
     } as UserConfig
 
-    expect(generator.config.separator).toMatchInlineSnapshot('undefined')
-    expect(generator.utility.separator).toMatchInlineSnapshot('"_"')
-    expect(generator.recipes['separator']).toMatchInlineSnapshot('"_"')
+    const affecteds = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
-
-    expect(generator.config.separator).toMatchInlineSnapshot('undefined')
-    expect(generator.utility.separator).toMatchInlineSnapshot('"_"')
-    expect(generator.recipes['separator']).toMatchInlineSnapshot('"_"')
+    expect(generator.config.separator).toMatchInlineSnapshot('"="')
+    expect(generator.utility.separator).toMatchInlineSnapshot('"="')
+    expect(generator.recipes['separator']).toMatchInlineSnapshot('"="')
 
     expect(affecteds.artifacts).toMatchInlineSnapshot(`
       Set {
