@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
-import { EXAMPLES, Example } from '@/src/components/Examples/data'
+import { EXAMPLES, Example, initialCSS } from '@/src/components/Examples/data'
 
 export type State = {
   code: string
   config: string
+  css: string
 }
 
 export type UsePlayGroundProps = {
@@ -58,15 +59,14 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     }
   }
 
-  const cssExample = EXAMPLES.find((example) => example.id === 'css')
+  const { code, config, css = initialCSS } = EXAMPLES.find((example) => example.id === 'css')!
 
   const [state, setState] = useState(
-    initialState
-      ? initialState
-      : {
-          code: cssExample?.code ?? '',
-          config: cssExample?.config ?? '',
-        },
+    initialState ?? {
+      code,
+      config,
+      css,
+    },
   )
 
   function copyCurrentURI() {
@@ -116,6 +116,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     setIsPristine(true)
     setState({
       code: example.code,
+      css: example.css,
       config: example.config,
     })
   }

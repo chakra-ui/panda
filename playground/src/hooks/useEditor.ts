@@ -46,17 +46,8 @@ export function useEditor(props: PandaEditorProps) {
   const { resolvedTheme } = useTheme()
 
   const [activeTab, setActiveTab] = useState<keyof State>('code')
+  const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
   const monacoRef = useRef<Parameters<OnMount>[1]>()
-
-  const formatText = async (text: string) => {
-    const prettier = await import('prettier/standalone')
-    const typescript = await import('prettier/parser-typescript')
-    return prettier.format(text, {
-      parser: 'typescript',
-      plugins: [typescript],
-      singleQuote: true,
-    })
-  }
 
   const configureEditor: OnMount = useCallback((editor, monaco) => {
     // Instantiate the highlighter
@@ -78,16 +69,8 @@ export function useEditor(props: PandaEditorProps) {
       registerKeybindings()
     })
 
-    monaco.languages.registerDocumentFormattingEditProvider('typescript', {
-      async provideDocumentFormattingEdits(model) {
-        return [
-          {
-            range: model.getFullModelRange(),
-            text: await formatText(model.getValue()),
-          },
-        ]
-      },
-    })
+    //@ts-expect-error
+    monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
 
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.Latest,
@@ -135,8 +118,8 @@ export function useEditor(props: PandaEditorProps) {
   const onCodeEditorMount: OnMount = useCallback(
     async (editor, monaco) => {
       if (resolvedTheme === 'dark') monaco.editor.setTheme('panda-dark')
-
       monacoRef.current = monaco
+      monacoEditorRef.current = editor
 
       configureEditor(editor, monaco)
       setupLibs(monaco)
@@ -175,8 +158,8 @@ export function useEditor(props: PandaEditorProps) {
     })
   }
 
-  const onCodeEditorFormat = async () => {
-    onCodeEditorChange(await formatText(value[activeTab]))
+  const onCodeEditorFormat = () => {
+    monacoEditorRef.current?.getAction('editor.action.formatDocument')?.run()
   }
 
   useUpdateEffect(() => {

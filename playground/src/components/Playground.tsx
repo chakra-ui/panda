@@ -29,7 +29,7 @@ export const Playground = (props: UsePlayGroundProps) => {
     isResponsive,
     setExample,
   } = usePlayground(props)
-  const panda = usePanda(state.code, state.config)
+  const panda = usePanda(state.code, state.css, state.config)
   const responsiveView = useResponsiveView(panda)
 
   const { artifacts } = panda

@@ -9747,6 +9747,9 @@ export type SystemProperties = {
 };
 export type String = string & {};
 export type Number = number & {};
+export type Pretty<T> = {
+	[K in keyof T]: T[K];
+} & {};
 export type DistributiveOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never;
 export type DistributiveUnion<T, U> = {
 	[K in keyof T]: K extends keyof U ? U[K] | T[K] : T[K];
@@ -9786,9 +9789,10 @@ export interface ExtendableGlobalStyleObject {
 	[selector: string]: SystemStyleObject | undefined;
 	extend?: GlobalStyleObject | undefined;
 }
-export type CompositionStyleObject<Property extends string> = Nested<{
-	[K in Property]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown;
-}>;
+export type FilterStyleObject<P extends string> = {
+	[K in P]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown;
+};
+export type CompositionStyleObject<Property extends string> = Nested<FilterStyleObject<Property> & CssVarProperties>;
 /* -----------------------------------------------------------------------------
  * Jsx style props
  * -----------------------------------------------------------------------------*/
@@ -9993,6 +9997,10 @@ export interface StaticCssOptions {
 		[recipe: string]: RecipeRule[];
 	};
 }
+export interface Token<T> {
+	value: T;
+	description?: string;
+}
 export interface Recursive<T> {
 	[key: string]: Recursive<T> | T;
 }
@@ -10014,13 +10022,10 @@ export interface CompositionStyles {
 	textStyles: TextStyles;
 	layerStyles: LayerStyles;
 }
-export type Pretty<T> = {
-	[K in keyof T]: T[K];
-} & {};
 export type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 export type RecipeVariantRecord = Record<any, Record<any, SystemStyleObject>>;
 export type RecipeSelection<T extends RecipeVariantRecord> = keyof any extends keyof T ? {} : {
-	[K in keyof T]?: StringToBoolean<keyof T[K]>;
+	[K in keyof T]?: StringToBoolean<keyof T[K]> | undefined;
 };
 export type RecipeVariantFn<T extends RecipeVariantRecord> = (props?: RecipeSelection<T>) => string;
 export type RecipeVariantProps<T extends RecipeVariantFn<RecipeVariantRecord> | SlotRecipeVariantFn<string, SlotRecipeVariantRecord<string>>> = Pretty<Parameters<T>[0]>;
@@ -10043,7 +10048,7 @@ export interface RecipeRuntimeFn<T extends RecipeVariantRecord> extends RecipeVa
 }
 export type OneOrMore<T> = T | Array<T>;
 export type RecipeCompoundSelection<T> = {
-	[K in keyof T]?: OneOrMore<StringToBoolean<keyof T[K]>>;
+	[K in keyof T]?: OneOrMore<StringToBoolean<keyof T[K]>> | undefined;
 };
 export type RecipeCompoundVariant<T> = T & {
 	css: SystemStyleObject;
