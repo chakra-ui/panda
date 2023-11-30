@@ -2626,7 +2626,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('token fn in at-rules', () => {
+  test('token fn in at-rules', () => {
     const code = `
     import { css } from '.panda/css';
 
@@ -2667,19 +2667,19 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        @container (min-width: token(sizes.xl)) {
+        @container (min-width: 36rem) {
           .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.xl\\\\)\\\\)\\\\]\\\\:text_green\\\\.300 {
             color: var(--colors-green-300)
           }
               }
 
-        @container (min-width: token(sizes.4xl, 1280px)) {
+        @container (min-width: 56rem) {
           .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.4xl\\\\,_1280px\\\\)\\\\)\\\\]\\\\:d_flex {
             display: flex
           }
               }
 
-        @media (min-width: token(sizes.2xl)) {
+        @media (min-width: 42rem) {
           .\\\\[\\\\@media_\\\\(min-width\\\\:_token\\\\(sizes\\\\.2xl\\\\)\\\\)\\\\]\\\\:text_red\\\\.300 {
             color: var(--colors-red-300)
           }
