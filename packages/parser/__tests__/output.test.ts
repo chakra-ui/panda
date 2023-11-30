@@ -2625,6 +2625,68 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test.only('token fn in at-rules', () => {
+    const code = `
+    import { css } from '.panda/css';
+
+    css({
+      '@container (min-width: token(sizes.xl))': {
+        color: 'green.300',
+      },
+      '@media (min-width: token(sizes.2xl))': {
+        color: 'red.300',
+      },
+      "@container (min-width: token(sizes.4xl, 1280px))": {
+        display: "flex"
+      }
+    })
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "@container (min-width: token(sizes.4xl, 1280px))": {
+                "display": "flex",
+              },
+              "@container (min-width: token(sizes.xl))": {
+                "color": "green.300",
+              },
+              "@media (min-width: token(sizes.2xl))": {
+                "color": "red.300",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @container (min-width: token(sizes.xl)) {
+          .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.xl\\\\)\\\\)\\\\]\\\\:text_green\\\\.300 {
+            color: var(--colors-green-300)
+          }
+              }
+
+        @container (min-width: token(sizes.4xl, 1280px)) {
+          .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.4xl\\\\,_1280px\\\\)\\\\)\\\\]\\\\:d_flex {
+            display: flex
+          }
+              }
+
+        @media (min-width: token(sizes.2xl)) {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_token\\\\(sizes\\\\.2xl\\\\)\\\\)\\\\]\\\\:text_red\\\\.300 {
+            color: var(--colors-red-300)
+          }
+              }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {
