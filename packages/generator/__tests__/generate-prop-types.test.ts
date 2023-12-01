@@ -65,6 +65,7 @@ describe('generate property types', () => {
       	marginInline: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineEnd: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineStart: \\"auto\\" | Tokens[\\"spacing\\"];
+      	outlineWidth: Tokens[\\"borderWidths\\"];
       	outlineColor: Tokens[\\"colors\\"];
       	outline: Tokens[\\"borders\\"];
       	outlineOffset: Tokens[\\"spacing\\"];
@@ -122,6 +123,11 @@ describe('generate property types', () => {
       	borderEndEndRadius: Tokens[\\"radii\\"];
       	borderEndRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
       	border: Tokens[\\"borders\\"];
+      	borderWidth: Tokens[\\"borderWidths\\"];
+      	borderTopWidth: Tokens[\\"borderWidths\\"];
+      	borderLeftWidth: Tokens[\\"borderWidths\\"];
+      	borderRightWidth: Tokens[\\"borderWidths\\"];
+      	borderBottomWidth: Tokens[\\"borderWidths\\"];
       	borderColor: Tokens[\\"colors\\"];
       	borderInline: Tokens[\\"borders\\"];
       	borderInlineWidth: Tokens[\\"borderWidths\\"];
@@ -207,6 +213,7 @@ describe('generate property types', () => {
       	scrollSnapMarginRight: Tokens[\\"spacing\\"];
       	fill: Tokens[\\"colors\\"];
       	stroke: Tokens[\\"colors\\"];
+      	strokeWidth: Tokens[\\"borderWidths\\"];
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
@@ -380,6 +387,7 @@ describe('generate property types', () => {
       	marginInline: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineEnd: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineStart: \\"auto\\" | Tokens[\\"spacing\\"];
+      	outlineWidth: Tokens[\\"borderWidths\\"];
       	outlineColor: Tokens[\\"colors\\"];
       	outline: Tokens[\\"borders\\"];
       	outlineOffset: Tokens[\\"spacing\\"];
@@ -436,6 +444,11 @@ describe('generate property types', () => {
       	borderEndEndRadius: Tokens[\\"radii\\"];
       	borderEndRadius: Tokens[\\"radii\\"];
       	border: Tokens[\\"borders\\"];
+      	borderWidth: Tokens[\\"borderWidths\\"];
+      	borderTopWidth: Tokens[\\"borderWidths\\"];
+      	borderLeftWidth: Tokens[\\"borderWidths\\"];
+      	borderRightWidth: Tokens[\\"borderWidths\\"];
+      	borderBottomWidth: Tokens[\\"borderWidths\\"];
       	borderColor: Tokens[\\"colors\\"];
       	borderInline: Tokens[\\"borders\\"];
       	borderInlineWidth: Tokens[\\"borderWidths\\"];
@@ -521,6 +534,7 @@ describe('generate property types', () => {
       	scrollSnapMarginRight: Tokens[\\"spacing\\"];
       	fill: Tokens[\\"colors\\"];
       	stroke: Tokens[\\"colors\\"];
+      	strokeWidth: Tokens[\\"borderWidths\\"];
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
