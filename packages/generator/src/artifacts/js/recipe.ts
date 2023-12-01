@@ -10,9 +10,11 @@ const isBooleanValue = (value: string) => value === 'true' || value === 'false'
 
 export function generateCreateRecipe(ctx: Context) {
   const {
+    conditions,
     recipes,
+    prefix,
+    hash,
     utility: { separator },
-    config: { prefix, hash },
   } = ctx
 
   if (recipes.isEmpty()) return
@@ -21,6 +23,7 @@ export function generateCreateRecipe(ctx: Context) {
     name: 'create-recipe',
     dts: '',
     js: outdent`
+   ${ctx.file.import('finalizeConditions, sortConditions', '../css/conditions')}
    ${ctx.file.import('css', '../css/css')}
    ${ctx.file.import('assertCompoundVariant, getCompoundVariantCss', '../css/cva')}
    ${ctx.file.import('cx', '../css/cx')}
@@ -48,9 +51,14 @@ export function generateCreateRecipe(ctx: Context) {
       }
 
       const recipeCss = createCss({
-        ${hash ? 'hash: true,' : ''}
+        ${hash.className ? 'hash: true,' : ''}
+        conditions: {
+          shift: sortConditions,
+          finalize: finalizeConditions,
+          breakpoints: { keys: ${JSON.stringify(conditions.breakpoints.keys)} }
+        },
         utility: {
-          ${prefix ? 'prefix: ' + JSON.stringify(prefix) + ',' : ''}
+          ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
           transform,
         }
       })
