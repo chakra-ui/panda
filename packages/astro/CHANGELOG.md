@@ -1,5 +1,12 @@
 # @pandacss/astro
 
+## 0.20.0
+
+### Patch Changes
+
+- Updated dependencies [24ee49a5]
+  - @pandacss/postcss@0.20.0
+
 ## 0.19.0
 
 ### Patch Changes
