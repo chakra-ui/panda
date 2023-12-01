@@ -9,4 +9,8 @@ export const svg: UtilityConfig = {
     className: 'stroke',
     values: 'colors',
   },
+  strokeWidth: {
+    className: 'stroke-w',
+    values: 'borderWidths',
+  },
 }

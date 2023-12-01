@@ -30,3 +30,15 @@ Change the stroke color of an SVG element.
 | Prop     | CSS Property | Token Category |
 | -------- | ------------ | -------------- |
 | `stroke` | `stroke`     | colors         |
+
+## Stroke Width
+
+Change the stroke width of an SVG element.
+
+```jsx
+<div className={css({ strokeWidth: '1px' })} />
+```
+
+| Prop          | CSS Property | Token Category |
+| ------------- | ------------ | -------------- |
+| `strokeWidth` | `stroke-width`     | borderWidths   |
