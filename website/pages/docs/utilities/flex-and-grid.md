@@ -54,7 +54,7 @@ It accepts numerical values from `1` to `12` where each value maps to `repeat(<v
 
 ### Grid Template Rows
 
-The `gridTemplateRows` utility defines the columns of a grid container.
+The `gridTemplateRows` utility defines the rows of a grid container.
 It accepts numerical values from `1` to `12` where each value maps to `repeat(<value>, minmax(0, 1fr))`
 
 ```jsx
