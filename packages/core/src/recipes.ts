@@ -286,7 +286,7 @@ export class Recipes {
         if (isEmpty) return
 
         const rule = this.rules.get(slotKey)
-        rule?.process({ styles })
+        rule?.process({ styles, normalizeShorthand: false })
       })
       //
     } else {
@@ -295,7 +295,7 @@ export class Recipes {
       if (isEmpty) return
 
       const rule = this.rules.get(recipeName)
-      rule?.process({ styles })
+      rule?.process({ styles, normalizeShorthand: false })
       //
     }
   }
