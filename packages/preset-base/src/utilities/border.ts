@@ -122,6 +122,26 @@ export const border: UtilityConfig = {
     className: 'border',
     values: 'borders',
   },
+  borderWidth: {
+    className: 'border-w',
+    values: 'borderWidths',
+  },
+  borderTopWidth: {
+    className: 'border-tw',
+    values: 'borderWidths',
+  },
+  borderLeftWidth: {
+    className: 'border-lw',
+    values: 'borderWidths',
+  },
+  borderRightWidth: {
+    className: 'border-rw',
+    values: 'borderWidths',
+  },
+  borderBottomWidth: {
+    className: 'border-bw',
+    values: 'borderWidths',
+  },
   borderColor: {
     className: 'border',
     values: 'colors',
