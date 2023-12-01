@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 0.20.1
+
+### Patch Changes
+
+- Updated dependencies [428e5401]
+  - @pandacss/preset-base@0.20.1
+  - @pandacss/error@0.20.1
+  - @pandacss/logger@0.20.1
+  - @pandacss/preset-panda@0.20.1
+  - @pandacss/shared@0.20.1
+  - @pandacss/types@0.20.1
+
 ## 0.20.0
 
 ### Minor Changes

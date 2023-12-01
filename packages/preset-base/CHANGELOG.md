@@ -1,5 +1,14 @@
 # @pandacss/preset-base
 
+## 0.20.1
+
+### Patch Changes
+
+- 428e5401: - Added `strokeWidth` to svg utilities.
+  - Connected `outlineWidth` utility to `borderWidths` token.
+  - Add `borderWidth`, `borderTopWidth`, `borderLeftWidth`, `borderRightWidth`, `borderBottomWidth` to border utilities.
+  - @pandacss/types@0.20.1
+
 ## 0.20.0
 
 ### Patch Changes
