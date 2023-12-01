@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Generator, createGenerator } from '@pandacss/generator'
+import { Generator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
@@ -75,7 +75,7 @@ const playgroundPreset: Preset = {
   },
 }
 
-export function usePanda(source: string, config: string) {
+export function usePanda(source: string, css: string, config: string) {
   const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
   const prevGenerator = useRef<Generator | null>(null)
 
@@ -104,8 +104,10 @@ export function usePanda(source: string, config: string) {
 
     try {
       // in event of error (invalid token format), use previous generator
-      const generator = createGenerator({
+      const generator = new Generator({
         dependencies: [],
+        serialized: '',
+        deserialize: () => config!,
         path: '',
         hooks: createHooks(),
         config: config as any,
@@ -144,7 +146,7 @@ export function usePanda(source: string, config: string) {
       ?.join('\n')
 
     const presetCss = cssFiles.map((f) => f.code).join('\n')
-    const previewCss = ['@layer reset, base, tokens, recipes, utilities;', presetCss, parsedCss].join('\n')
+    const previewCss = [css, presetCss, parsedCss].join('\n')
 
     const cssArtifacts = artifacts.reduce(
       (acc, artifact) => {
@@ -165,12 +167,12 @@ export function usePanda(source: string, config: string) {
       previewJs,
       parserResult,
       cssArtifacts,
-
+      generator,
       parsedCss,
     }
     console.log(panda) // <-- useful for debugging purposes, don't remove
     return panda
-  }, [source, generator])
+  }, [source, css, generator])
 }
 
 export type CssFileArtifact = {

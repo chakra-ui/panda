@@ -18,11 +18,11 @@ import type {
   StyleResultObject,
   SystemStyleObject,
 } from '@pandacss/types'
-import type { PandaBaseEngine } from './base'
+import type { Context } from './index'
 
 export interface CollectorContext
   extends Pick<
-    PandaBaseEngine,
+    Context,
     | 'hash'
     | 'isTemplateLiteralSyntax'
     | 'isValidProperty'
@@ -186,7 +186,7 @@ export class HashFactory {
   ) {
     let fnName = name
     if (type === 'jsx-pattern' && jsxName) {
-      fnName = this.context.patterns.getFnName(jsxName)
+      fnName = this.context.patterns.find(jsxName)
     }
     const styleProps = this.context.patterns.transform(fnName, patternProps)
     this.processStyleProps(styleProps)

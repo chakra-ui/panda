@@ -1,7 +1,7 @@
 import { createGeneratorContext } from '@pandacss/fixture'
 import { type Config } from '@pandacss/types'
-import { RuleProcessor } from '../src/engines/rule-processor'
 import type { Context } from '../src/engines'
+import { RuleProcessor } from '../src/engines/rule-processor'
 
 export const createRuleProcessor = (userConfig?: Config) => {
   const ctx = createGeneratorContext(userConfig) as any as Context

@@ -149,6 +149,10 @@ describe('Utility', () => {
           "md",
         },
         "colorPalette" => Set {
+          "current",
+          "black",
+          "white",
+          "transparent",
           "rose",
           "pink",
           "fuchsia",
@@ -174,6 +178,10 @@ describe('Utility', () => {
           "deep",
           "deep.test",
           "deep.test.pool",
+          "primary",
+          "secondary",
+          "complex",
+          "surface",
           "button",
           "button.card",
         },
@@ -438,6 +446,7 @@ describe('Utility', () => {
         "(backgroundColor = button.thick)" => "bg_button.thick",
         "(backgroundColor = button.card.body)" => "bg_button.card.body",
         "(backgroundColor = button.card.heading)" => "bg_button.card.heading",
+        "(backgroundColor = colorPalette)" => "bg_colorPalette",
         "(backgroundColor = colorPalette.50)" => "bg_colorPalette.50",
         "(backgroundColor = colorPalette.100)" => "bg_colorPalette.100",
         "(backgroundColor = colorPalette.200)" => "bg_colorPalette.200",
@@ -535,6 +544,10 @@ describe('Utility', () => {
         "(margin = -gutter)" => "m_-gutter",
         "(marginX = sm)" => "mx_sm",
         "(marginX = md)" => "mx_md",
+        "(colorPalette = current)" => "color-palette_current",
+        "(colorPalette = black)" => "color-palette_black",
+        "(colorPalette = white)" => "color-palette_white",
+        "(colorPalette = transparent)" => "color-palette_transparent",
         "(colorPalette = rose)" => "color-palette_rose",
         "(colorPalette = pink)" => "color-palette_pink",
         "(colorPalette = fuchsia)" => "color-palette_fuchsia",
@@ -560,6 +573,10 @@ describe('Utility', () => {
         "(colorPalette = deep)" => "color-palette_deep",
         "(colorPalette = deep.test)" => "color-palette_deep.test",
         "(colorPalette = deep.test.pool)" => "color-palette_deep.test.pool",
+        "(colorPalette = primary)" => "color-palette_primary",
+        "(colorPalette = secondary)" => "color-palette_secondary",
+        "(colorPalette = complex)" => "color-palette_complex",
+        "(colorPalette = surface)" => "color-palette_surface",
         "(colorPalette = button)" => "color-palette_button",
         "(colorPalette = button.card)" => "color-palette_button.card",
       }
@@ -1335,6 +1352,9 @@ describe('Utility', () => {
         "(backgroundColor = button.card.heading)" => {
           "backgroundColor": "var(--colors-button-card-heading)",
         },
+        "(backgroundColor = colorPalette)" => {
+          "backgroundColor": "var(--colors-color-palette)",
+        },
         "(backgroundColor = colorPalette.50)" => {
           "backgroundColor": "var(--colors-color-palette-50)",
         },
@@ -1628,6 +1648,18 @@ describe('Utility', () => {
           "marginBottom": "40px",
           "marginTop": "40px",
         },
+        "(colorPalette = current)" => {
+          "--colors-color-palette": "var(--colors-current)",
+        },
+        "(colorPalette = black)" => {
+          "--colors-color-palette": "var(--colors-black)",
+        },
+        "(colorPalette = white)" => {
+          "--colors-color-palette": "var(--colors-white)",
+        },
+        "(colorPalette = transparent)" => {
+          "--colors-color-palette": "var(--colors-transparent)",
+        },
         "(colorPalette = rose)" => {
           "--colors-color-palette-100": "var(--colors-rose-100)",
           "--colors-color-palette-200": "var(--colors-rose-200)",
@@ -1927,6 +1959,18 @@ describe('Utility', () => {
         "(colorPalette = deep.test.pool)" => {
           "--colors-color-palette-poller": "var(--colors-deep-test-pool-poller)",
           "--colors-color-palette-tall": "var(--colors-deep-test-pool-tall)",
+        },
+        "(colorPalette = primary)" => {
+          "--colors-color-palette": "var(--colors-primary)",
+        },
+        "(colorPalette = secondary)" => {
+          "--colors-color-palette": "var(--colors-secondary)",
+        },
+        "(colorPalette = complex)" => {
+          "--colors-color-palette": "var(--colors-complex)",
+        },
+        "(colorPalette = surface)" => {
+          "--colors-color-palette": "var(--colors-surface)",
         },
         "(colorPalette = button)" => {
           "--colors-color-palette-card-body": "var(--colors-button-card-body)",
@@ -1994,6 +2038,18 @@ describe('Utility', () => {
         "(marginRight = md)" => {
           "marginRight": "40px",
         },
+        "(colorPalette = current)" => {
+          "--colors-color-palette": "var(--colors-current)",
+        },
+        "(colorPalette = black)" => {
+          "--colors-color-palette": "var(--colors-black)",
+        },
+        "(colorPalette = white)" => {
+          "--colors-color-palette": "var(--colors-white)",
+        },
+        "(colorPalette = transparent)" => {
+          "--colors-color-palette": "var(--colors-transparent)",
+        },
         "(colorPalette = rose)" => {
           "--colors-color-palette-100": "var(--colors-rose-100)",
           "--colors-color-palette-200": "var(--colors-rose-200)",
@@ -2294,6 +2350,18 @@ describe('Utility', () => {
           "--colors-color-palette-poller": "var(--colors-deep-test-pool-poller)",
           "--colors-color-palette-tall": "var(--colors-deep-test-pool-tall)",
         },
+        "(colorPalette = primary)" => {
+          "--colors-color-palette": "var(--colors-primary)",
+        },
+        "(colorPalette = secondary)" => {
+          "--colors-color-palette": "var(--colors-secondary)",
+        },
+        "(colorPalette = complex)" => {
+          "--colors-color-palette": "var(--colors-complex)",
+        },
+        "(colorPalette = surface)" => {
+          "--colors-color-palette": "var(--colors-surface)",
+        },
         "(colorPalette = button)" => {
           "--colors-color-palette-card-body": "var(--colors-button-card-body)",
           "--colors-color-palette-card-heading": "var(--colors-button-card-heading)",
@@ -2314,6 +2382,10 @@ describe('Utility', () => {
         "(marginRight = auto)" => "mr_auto",
         "(marginRight = sm)" => "mr_sm",
         "(marginRight = md)" => "mr_md",
+        "(colorPalette = current)" => "color-palette_current",
+        "(colorPalette = black)" => "color-palette_black",
+        "(colorPalette = white)" => "color-palette_white",
+        "(colorPalette = transparent)" => "color-palette_transparent",
         "(colorPalette = rose)" => "color-palette_rose",
         "(colorPalette = pink)" => "color-palette_pink",
         "(colorPalette = fuchsia)" => "color-palette_fuchsia",
@@ -2339,6 +2411,10 @@ describe('Utility', () => {
         "(colorPalette = deep)" => "color-palette_deep",
         "(colorPalette = deep.test)" => "color-palette_deep.test",
         "(colorPalette = deep.test.pool)" => "color-palette_deep.test.pool",
+        "(colorPalette = primary)" => "color-palette_primary",
+        "(colorPalette = secondary)" => "color-palette_secondary",
+        "(colorPalette = complex)" => "color-palette_complex",
+        "(colorPalette = surface)" => "color-palette_surface",
         "(colorPalette = button)" => "color-palette_button",
         "(colorPalette = button.card)" => "color-palette_button.card",
       }
@@ -2392,12 +2468,20 @@ describe('Utility', () => {
     expect(utility.classNames).toMatchInlineSnapshot(`
       Map {
         "(backgroundColor = someColor)" => "bg_someColor",
+        "(backgroundColor = colorPalette)" => "bg_colorPalette",
+        "(colorPalette = someColor)" => "color-palette_someColor",
       }
     `)
     expect(utility.styles).toMatchInlineSnapshot(`
       Map {
         "(backgroundColor = someColor)" => {
           "backgroundColor": "#eebbcc",
+        },
+        "(backgroundColor = colorPalette)" => {
+          "backgroundColor": "colors.colorPalette",
+        },
+        "(colorPalette = someColor)" => {
+          "--colors-color-palette": "var(--colors-some-color)",
         },
       }
     `)

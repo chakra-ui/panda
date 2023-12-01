@@ -2,7 +2,7 @@ import { colors, logger } from '@pandacss/logger'
 import type { PandaContext } from './create-context'
 import * as nodePath from 'path'
 
-export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean }) {
+export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean; onlyConfig?: boolean }) {
   const files = ctx.getFiles()
   const measureTotal = logger.time.debug(`Done parsing ${files.length} files`)
 
@@ -17,6 +17,11 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
     fs.ensureDirSync(outdir)
     logger.info('cli', `Writing ${colors.bold(`${outdir}/config.json`)}`)
     await fs.writeFile(`${outdir}/config.json`, JSON.stringify(ctx.config, null, 2))
+  }
+
+  if (options.onlyConfig) {
+    measureTotal()
+    return
   }
 
   const filesWithCss = []

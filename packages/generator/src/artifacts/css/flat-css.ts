@@ -14,7 +14,7 @@ export interface FlattenedCssOptions {
 /**
  * Generates the final CSS, including all the artifacts and styles found in app code
  */
-export const generateFlattenedCss = (ctx: Context) => (options?: FlattenedCssOptions) => {
+export const generateFlattenedCss = (ctx: Context, options?: FlattenedCssOptions) => {
   const { collect = true, resolve } = options ?? {}
   const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 

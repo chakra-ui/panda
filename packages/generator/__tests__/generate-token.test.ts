@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import { generateTokenCss } from '../src/artifacts/css/token-css'
-import { createGenerator } from '../src'
+import { Generator } from '../src/generator'
 import { fixtureDefaults } from '@pandacss/fixture'
 
 describe('generator', () => {
   test('[css] should generate css', () => {
-    const css = generateTokenCss(createGenerator(fixtureDefaults))
+    const css = generateTokenCss(new Generator(fixtureDefaults))
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
@@ -486,7 +486,7 @@ describe('generator', () => {
   describe('issue 769: Invalid CSS when extending theme with semanticTokens', () => {
     test('should not extract nested tokens as `color-palette` css variables', () => {
       const css = generateTokenCss(
-        createGenerator({
+        new Generator({
           dependencies: [],
           config: {
             cwd: '',
@@ -541,6 +541,8 @@ describe('generator', () => {
           },
           path: '',
           hooks: fixtureDefaults.hooks,
+          serialized: '',
+          deserialize: () => ({} as any),
         }),
       )
 
@@ -564,7 +566,7 @@ describe('generator', () => {
 
     test('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
       const css = generateTokenCss(
-        createGenerator({
+        new Generator({
           dependencies: [],
           config: {
             cwd: '',
@@ -588,6 +590,8 @@ describe('generator', () => {
           },
           path: '',
           hooks: fixtureDefaults.hooks,
+          serialized: '',
+          deserialize: () => ({} as any),
         }),
       )
 
@@ -608,7 +612,7 @@ describe('generator', () => {
 
   test('should reuse css variable in semantic token alias', () => {
     const css = generateTokenCss(
-      createGenerator({
+      new Generator({
         dependencies: [],
         config: {
           cwd: '',
@@ -652,6 +656,8 @@ describe('generator', () => {
         },
         path: '',
         hooks: fixtureDefaults.hooks,
+        serialized: '',
+        deserialize: () => ({} as any),
       }),
     )
 
@@ -664,6 +670,91 @@ describe('generator', () => {
           --borders-semantic-red: var(--borders-danger);
           --colors-danger: var(--colors-red);
           --borders-danger: var(--borders-red);
+        }
+      }
+      "
+    `)
+  })
+
+  test('shadow semantic tokens', () => {
+    const css = generateTokenCss(
+      new Generator(<any>{
+        dependencies: [],
+        config: {
+          cwd: '',
+          include: [],
+          theme: {
+            tokens: {
+              shadows: {
+                test1: {
+                  value: {
+                    offsetX: 0,
+                    offsetY: 0,
+                    blur: 0,
+                    spread: 4,
+                    color: '{colors.testPink}',
+                  },
+                },
+              },
+            },
+            semanticTokens: {
+              colors: {
+                testPink: { value: '{colors.pink.900}' },
+              },
+              shadows: {
+                testBrokenShadow: {
+                  value: {
+                    offsetX: 0,
+                    offsetY: 0,
+                    blur: 0,
+                    spread: 4,
+                    color: '{colors.testPink}',
+                  },
+                },
+                complexShadow: {
+                  value: {
+                    base: {
+                      offsetX: 0,
+                      offsetY: 0,
+                      blur: 0,
+                      spread: 4,
+                      color: '{colors.testPink}',
+                    },
+                    _dark: {
+                      offsetX: 2,
+                      offsetY: 8,
+                      blur: 30,
+                      spread: 4,
+                      color: '{colors.testPink}',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          conditions: {
+            dark: '.dark &',
+          },
+          outdir: '',
+        },
+        path: '',
+        hooks: fixtureDefaults.hooks,
+        serialized: '',
+        deserialize: () => ({} as any),
+      }),
+    )
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
+          --colors-test-pink: var(--colors-pink-900);
+          --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
+          --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink);
+        }
+
+        .dark {
+          --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink);
         }
       }
       "

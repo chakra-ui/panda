@@ -1,8 +1,13 @@
 {
   "background": "Background",
-  "typography": "Typography",
   "border": "Border",
   "display": "Display",
+  "divide": "Divide",
+  "effects": "Effects",
+  "flex-and-grid": "Flex and Grid",
+  "helpers": "Helpers",
+  "interactivity": "Interactivity",
+  "layout": "Layout",
   "sizing": "Sizing",
-  "layout": "Layout"
+  "typography": "Typography"
 }

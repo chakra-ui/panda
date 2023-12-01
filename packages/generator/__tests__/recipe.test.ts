@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { processRecipe } from './fixture'
 import { fixtureDefaults } from '@pandacss/fixture'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 
 describe('recipe ruleset', () => {
   test('should work with basic', () => {
@@ -86,7 +86,7 @@ describe('recipe ruleset', () => {
   })
 
   test('should process recipe with conditions', () => {
-    expect(createGenerator(fixtureDefaults).recipes.details.find((r) => r.baseName === 'buttonStyle'))
+    expect(new Generator(fixtureDefaults).recipes.details.find((r) => r.baseName === 'buttonStyle'))
       .toMatchInlineSnapshot(`
         {
           "baseName": "buttonStyle",

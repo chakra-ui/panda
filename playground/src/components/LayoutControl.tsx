@@ -1,17 +1,21 @@
 import { HorizontalSplit, PreviewLayout, ResponsiveLayout, VerticalSplit } from '@/src/components/icons'
 import { css, cx } from '@/styled-system/css'
 import { Segment, SegmentControl, SegmentGroup, SegmentLabel, SegmentGroupIndicator } from '@ark-ui/react'
-import { segmentGroup } from '@/styled-system/recipes'
+import { button, segmentGroup } from '@/styled-system/recipes'
+import { UseResponsiveView } from '@/src/hooks/useResponsiveView'
+import { BreakpointControl } from '@/src/components/Preview/BreakpointControl'
 
 export type Layout = 'horizontal' | 'vertical' | 'preview' | 'responsive'
 export type LayoutControlProps = {
   value: Layout
   onChange: (layout: Layout) => void
+  setResponsiveSize: UseResponsiveView['setResponsiveSize']
+  breakpoints: UseResponsiveView['breakpoints']
   isResponsive: boolean
 }
 
 export const LayoutControl = (props: LayoutControlProps) => {
-  const { value, onChange, isResponsive } = props
+  const { value, onChange, setResponsiveSize, breakpoints, isResponsive } = props
   const options = [
     { id: 'horizontal', label: 'Horizontal', icon: <HorizontalSplit /> },
     { id: 'vertical', label: 'Vertical', icon: <VerticalSplit /> },
@@ -46,20 +50,36 @@ export const LayoutControl = (props: LayoutControlProps) => {
           <SegmentControl />
         </Segment>
       ))}
-      <button
-        data-active={isResponsive ? '' : undefined}
-        title="Toggle Responsive view"
+      <div
+        data-selected={isResponsive ? '' : undefined}
         className={css({
-          p: '1',
-          cursor: 'pointer',
-          color: { base: 'text.default', _active: 'text.complementary' },
+          display: 'flex',
+          color: { base: 'text.default', _selected: 'text.complementary' },
         })}
-        onClick={() => onChange('responsive')}
       >
-        <span>
-          <ResponsiveLayout />
-        </span>
-      </button>
+        <button
+          title="Toggle Responsive view"
+          className={cx(
+            button(),
+            css({
+              roundedRight: '0',
+              p: '1',
+            }),
+          )}
+          onClick={() => onChange('responsive')}
+        >
+          <span>
+            <ResponsiveLayout />
+          </span>
+        </button>
+        <BreakpointControl
+          setResponsiveSize={(size) => {
+            if (!isResponsive) onChange('responsive')
+            setResponsiveSize(size)
+          }}
+          breakpoints={breakpoints}
+        />
+      </div>
     </SegmentGroup>
   )
 }

@@ -1,7 +1,7 @@
 import * as p from '@clack/prompts'
 import { version } from '../package.json'
 
-export const cliInit = async () => {
+export const interactive = async () => {
   p.intro(`panda v${version}`)
 
   const initFlags = await p.group(
@@ -49,11 +49,20 @@ export const cliInit = async () => {
         }),
       whatSyntax: () =>
         p.select({
-          message: 'What syntax would you like to use?',
+          message: 'What css syntax would you like to use?',
           initialValue: 'object',
           options: [
-            { value: 'object', label: 'Object' },
-            { value: 'tagged-template', label: 'Tagged template' },
+            { value: 'object-literal', label: 'Object' },
+            { value: 'template-literal', label: 'Template literal' },
+          ],
+        }),
+      withStrictTokens: () =>
+        p.select({
+          message: 'Use strict tokens to enforce full type-safety?',
+          initialValue: 'no',
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
           ],
         }),
       shouldUpdateGitignore: () =>
@@ -83,6 +92,7 @@ export const cliInit = async () => {
     outExtension: initFlags.useMjsExtension === 'yes' ? 'mjs' : 'js',
     jsxFramework: initFlags.jsxOptions.jsxFramework,
     syntax: initFlags.whatSyntax,
+    strictTokens: initFlags.withStrictTokens === 'yes',
     gitignore: initFlags.shouldUpdateGitignore === 'yes',
   } as InitFlags
 }

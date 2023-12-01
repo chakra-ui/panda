@@ -11,6 +11,7 @@ import { ColorModeSwitch } from '@/src/components/ColorModeSwitch'
 import { ArtifactsPanel } from '@/src/components/ArtifactsPanel'
 import { button, splitter } from '@/styled-system/recipes'
 import { Examples } from '@/src/components/Examples'
+import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const {
@@ -28,7 +29,9 @@ export const Playground = (props: UsePlayGroundProps) => {
     isResponsive,
     setExample,
   } = usePlayground(props)
-  const panda = usePanda(state.code, state.config)
+  const panda = usePanda(state.code, state.css, state.config)
+  const responsiveView = useResponsiveView(panda)
+
   const { artifacts } = panda
 
   return (
@@ -47,7 +50,13 @@ export const Playground = (props: UsePlayGroundProps) => {
         >
           {isSharing ? 'Saving...' : 'Share'}
         </button>
-        <LayoutControl value={layoutValue} onChange={switchLayout} isResponsive={isResponsive} />
+        <LayoutControl
+          value={layoutValue}
+          onChange={switchLayout}
+          setResponsiveSize={responsiveView.setResponsiveSize}
+          breakpoints={responsiveView.breakpoints}
+          isResponsive={isResponsive}
+        />
         <ColorModeSwitch />
       </Toolbar>
       <Splitter size={panels} onResize={onResizePanels} orientation={layout} className={splitter()}>
@@ -71,7 +80,7 @@ export const Playground = (props: UsePlayGroundProps) => {
           <div />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
-          <Preview source={state.code} panda={panda} isResponsive={isResponsive} />
+          <Preview source={state.code} panda={panda} responsiveView={responsiveView} isResponsive={isResponsive} />
         </SplitterPanel>
       </Splitter>
     </>

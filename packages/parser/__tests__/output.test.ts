@@ -741,20 +741,6 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
             {
               "variant": "small",
             },
@@ -3128,15 +3114,140 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test('compositions - textStyle', () => {
+  test('grid pattern minChildWidth not interpreted as token value', () => {
     const code = `
+    import { grid } from 'styled-system/patterns';
+
+    export const App = () => {
+      return (
+        <>
+          <div className={grid({ minChildWidth: '80px', gap: 8 })} />
+          <div className={grid({ minChildWidth: '20', gap: 8 })} />
+        </>
+      );
+    };
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "gap": 8,
+              "minChildWidth": "80px",
+            },
+          ],
+          "name": "grid",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "gap": 8,
+              "minChildWidth": "20",
+            },
+          ],
+          "name": "grid",
+          "type": "pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_grid {
+          display: grid;
+        }
+
+        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(80px\\\\,_1fr\\\\)\\\\) {
+          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        }
+
+        .gap_8 {
+          gap: var(--spacing-8);
+        }
+
+        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(token\\\\(sizes\\\\.20\\\\,_20\\\\)\\\\,_1fr\\\\)\\\\) {
+          grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, ̠), 1fr));
+        }
+      }
+      "
+    `)
+  })
+
+  test('token fn in at-rules', () => {
+    const code = `
+    import { css } from 'styled-system/css';
+
+    css({
+      '@container (min-width: token(sizes.xl))': {
+        color: 'green.300',
+      },
+      '@media (min-width: token(sizes.2xl))': {
+        color: 'red.300',
+      },
+      "@container (min-width: token(sizes.4xl, 1280px))": {
+        display: "flex"
+      }
+    })
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "@container (min-width: token(sizes.4xl, 1280px))": {
+                "display": "flex",
+              },
+              "@container (min-width: token(sizes.xl))": {
+                "color": "green.300",
+              },
+              "@media (min-width: token(sizes.2xl))": {
+                "color": "red.300",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (width >= 42rem) {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_token\\\\(sizes\\\\.2xl\\\\)\\\\)\\\\]\\\\:text_red\\\\.300 {
+            color: var(--colors-red-300);
+          }
+        }
+
+        @container (width >= 56rem) {
+          .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.4xl\\\\,_1280px\\\\)\\\\)\\\\]\\\\:d_flex {
+            display: flex;
+          }
+        }
+
+        @container (width >= 36rem) {
+          .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.xl\\\\)\\\\)\\\\]\\\\:text_green\\\\.300 {
+            color: var(--colors-green-300);
+          }
+        }
+      }
+      "
+    `)
+  })
+})
+
+test('compositions - textStyle', () => {
+  const code = `
         import { css } from "styled-system/jsx"
 
         <div className={css({ color: "red", textStyle: "headline.h1" })} />
        `
 
-    const result = run(code)
-    expect(result.json).toMatchInlineSnapshot(`
+  const result = run(code)
+  expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -3151,7 +3262,7 @@ describe('extract to css output pipeline', () => {
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`
+  expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @layer compositions {
           .textStyle_headline\\\\.h1 {
@@ -3167,7 +3278,7 @@ describe('extract to css output pipeline', () => {
       "
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`
+  expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @layer compositions {
           .textStyle_headline\\\\.h1 {
@@ -3182,10 +3293,10 @@ describe('extract to css output pipeline', () => {
       }
       "
     `)
-  })
+})
 
-  test('nested outdir + tsconfig.compilerOptions.baseUrl importMap behaviour', () => {
-    const code = `
+test('nested outdir + tsconfig.compilerOptions.baseUrl importMap behaviour', () => {
+  const code = `
     import { css } from "../styled-system/css";
     import { container } from "../styled-system/patterns";
 
@@ -3217,8 +3328,8 @@ describe('extract to css output pipeline', () => {
     }
 
      `
-    const result = run(code, { outdir: 'src/styled-system', cwd: 'app' }, { compilerOptions: { baseUrl: 'app/src' } })
-    expect(result.json).toMatchInlineSnapshot(`
+  const result = run(code, { outdir: 'src/styled-system', cwd: 'app' }, { compilerOptions: { baseUrl: 'app/src' } })
+  expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -3264,7 +3375,7 @@ describe('extract to css output pipeline', () => {
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`
+  expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .pos_relative {
           position: relative;
@@ -3344,10 +3455,10 @@ describe('extract to css output pipeline', () => {
       }
       "
     `)
-  })
+})
 
-  test('{fn}.raw', () => {
-    const code = `
+test('{fn}.raw', () => {
+  const code = `
     import { css } from ".panda/css";
     import { buttonStyle } from ".panda/recipes";
     import { stack } from ".panda/patterns";
@@ -3380,8 +3491,8 @@ describe('extract to css output pipeline', () => {
     stack(stackProps[props.size]))
 
      `
-    const result = run(code)
-    expect(result.json).toMatchInlineSnapshot(`
+  const result = run(code)
+  expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -3418,7 +3529,7 @@ describe('extract to css output pipeline', () => {
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`
+  expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
           .buttonStyle {
@@ -3484,5 +3595,4 @@ describe('extract to css output pipeline', () => {
       }
       "
     `)
-  })
 })

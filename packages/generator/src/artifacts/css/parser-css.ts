@@ -2,7 +2,7 @@ import { logger } from '@pandacss/logger'
 import type { StyleCollectorType } from '@pandacss/types'
 import type { Context } from '../../engines'
 
-export const generateParserCss = (ctx: Context) => (collector: StyleCollectorType, filePath?: string) => {
+export const generateParserCss = (ctx: Context, collector: StyleCollectorType, filePath?: string) => {
   if (!collector) return ''
 
   const sheet = ctx.createSheet()

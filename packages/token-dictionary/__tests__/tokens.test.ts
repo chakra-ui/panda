@@ -664,8 +664,8 @@ test('should work with default fixture', () => {
           "category": "spacing",
           "condition": "base",
           "conditions": {
-            "base": "{spacing.4}",
-            "lg": "{spacing.5}",
+            "base": "var(--spacing-4)",
+            "lg": "var(--spacing-5)",
           },
           "pixelValue": "var(--spacing-4)",
           "prop": "gutter",
@@ -687,8 +687,8 @@ test('should work with default fixture', () => {
           "category": "spacing",
           "condition": "lg",
           "conditions": {
-            "base": "{spacing.4}",
-            "lg": "{spacing.5}",
+            "base": "var(--spacing-4)",
+            "lg": "var(--spacing-5)",
           },
           "pixelValue": "var(--spacing-5)",
           "prop": "gutter",
@@ -1469,8 +1469,8 @@ test('should work with default fixture', () => {
           "category": "spacing",
           "condition": "base",
           "conditions": {
-            "base": "{spacing.4}",
-            "lg": "{spacing.5}",
+            "base": "var(--spacing-4)",
+            "lg": "var(--spacing-5)",
           },
           "isNegative": true,
           "originalPath": [
@@ -1496,8 +1496,8 @@ test('should work with default fixture', () => {
           "category": "spacing",
           "condition": "lg",
           "conditions": {
-            "base": "{spacing.4}",
-            "lg": "{spacing.5}",
+            "base": "var(--spacing-4)",
+            "lg": "var(--spacing-5)",
           },
           "isNegative": true,
           "originalPath": [
@@ -1865,6 +1865,7 @@ test('should work with default fixture', () => {
         "button.thick" => "var(--colors-button-thick)",
         "button.card.body" => "var(--colors-button-card-body)",
         "button.card.heading" => "var(--colors-button-card-heading)",
+        "colorPalette" => "var(--colors-color-palette)",
         "colorPalette.50" => "var(--colors-color-palette-50)",
         "colorPalette.100" => "var(--colors-color-palette-100)",
         "colorPalette.200" => "var(--colors-color-palette-200)",

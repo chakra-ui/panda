@@ -176,7 +176,7 @@ export function generateResetCss(ctx: Context, scope = '', sheet?: Stylesheet) {
   ${selector}pre {
     font-size: 1em;
     --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
-    font-family: var(--global-font-mono, var(--font-fallback));
+    font-family: var(--global-font-mono, var(--font-mono-fallback));
   }
 
 

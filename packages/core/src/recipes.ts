@@ -1,5 +1,5 @@
 import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
-import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
+import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
@@ -34,10 +34,14 @@ const sharedState = {
 
 export class Recipes {
   slotSeparator = '__'
-  keys: string[] = []
 
-  constructor(private context: RecipeContext) {
-    this.keys = Object.keys(this.context.recipes)
+  get keys() {
+    return Object.keys(this.recipes)
+  }
+
+  constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
+    this.prune()
+    this.save()
   }
 
   private getPropKey = (recipe: string, variant: string, value: any) => {
@@ -52,29 +56,50 @@ export class Recipes {
     return `${className}--${variant}${this.separator}${value}`
   }
 
+  // check this.recipes against sharedState.nodes
+  // and remove any recipes (in sharedState) that are no longer in use
+  prune = () => {
+    const recipeNames = Object.keys(this.recipes)
+    const cachedRecipeNames = Array.from(sharedState.nodes.keys())
+    const removedRecipes = cachedRecipeNames.filter((name) => !recipeNames.includes(name))
+    removedRecipes.forEach((name) => {
+      this.remove(name)
+    })
+  }
+
   save = () => {
-    for (const [name, recipe] of Object.entries(this.context.recipes)) {
-      if (isSlotRecipe(recipe)) {
-        // extract recipes for each slot
-        const slots = getSlotRecipes(recipe)
-
-        const slotsMap = new Map()
-
-        // normalize each recipe
-        Object.entries(slots).forEach(([slot, slotRecipe]) => {
-          const slotName = this.getSlotKey(name, slot)
-          this.normalize(slotName, slotRecipe)
-          slotsMap.set(slotName, slotRecipe)
-        })
-
-        // save the root recipe
-        this.assignRecipe(name, recipe)
-        sharedState.slots.set(name, slotsMap)
-        //
-      } else {
-        this.assignRecipe(name, this.normalize(name, recipe))
-      }
+    for (const [name, recipe] of Object.entries(this.recipes)) {
+      this.saveOne(name, recipe)
     }
+  }
+
+  saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
+    if (isSlotRecipe(recipe)) {
+      // extract recipes for each slot
+      const slots = getSlotRecipes(recipe)
+
+      const slotsMap = new Map()
+
+      // normalize each recipe
+      Object.entries(slots).forEach(([slot, slotRecipe]) => {
+        const slotName = this.getSlotKey(name, slot)
+        this.normalize(slotName, slotRecipe)
+        slotsMap.set(slotName, slotRecipe)
+      })
+
+      // save the root recipe
+      this.assignRecipe(name, recipe)
+      sharedState.slots.set(name, slotsMap)
+      //
+    } else {
+      this.assignRecipe(name, this.normalize(name, recipe))
+    }
+  }
+
+  remove(name: string) {
+    sharedState.nodes.delete(name)
+    sharedState.classNames.delete(name)
+    sharedState.styles.delete(name)
   }
 
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
@@ -128,7 +153,7 @@ export class Recipes {
   })
 
   getConfig = memo((name: string) => {
-    return this.context.recipes[name]
+    return this.recipes[name]
   })
 
   find = memo((jsxName: string) => {
@@ -217,5 +242,10 @@ export class Recipes {
         styles: sharedState.styles.get(propKey) ?? {},
       }
     }
+  }
+
+  filterDetails = (filters?: ArtifactFilters) => {
+    const recipeDiffs = filters?.affecteds?.recipes
+    return recipeDiffs ? this.details.filter((recipe) => recipeDiffs.includes(recipe.dashName)) : this.details
   }
 }

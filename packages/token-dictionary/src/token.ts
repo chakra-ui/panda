@@ -1,4 +1,5 @@
-import { isBaseCondition, isObject, toHash, walkObject } from '@pandacss/shared'
+import { isBaseCondition, toHash, walkObject } from '@pandacss/shared'
+import { isCompositeTokenValue } from './is-composite'
 import { getReferences, hasReference } from './utils'
 
 /**
@@ -105,7 +106,7 @@ export class Token {
    * Whether the token is a complex or composite token.
    */
   get isComposite() {
-    return isObject(this.originalValue) || Array.isArray(this.originalValue)
+    return isCompositeTokenValue(this.originalValue)
   }
 
   /**

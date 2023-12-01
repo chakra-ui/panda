@@ -1,23 +1,28 @@
 import { mergeConfigs } from '@pandacss/config'
-import { createGenerator } from '@pandacss/generator'
-import { createContext as actualCreateContext } from '@pandacss/node'
+import { Generator } from '@pandacss/generator'
+import { PandaContext } from '@pandacss/node'
+import { stringifyJson, parseJson } from '@pandacss/shared'
 import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
 import { createHooks } from 'hookable'
 import { fixturePreset } from './config'
 
+const config: UserConfig = {
+  ...fixturePreset,
+  optimize: true,
+  cwd: '',
+  outdir: 'styled-system',
+  include: [],
+  //
+  cssVarRoot: ':where(html)',
+}
+
 export const fixtureDefaults = {
   dependencies: [],
-  config: {
-    ...fixturePreset,
-    optimize: true,
-    cwd: '',
-    outdir: 'styled-system',
-    include: [],
-    //
-    cssVarRoot: ':where(html)',
-  },
+  config,
   path: '',
   hooks: createHooks(),
+  serialized: stringifyJson(config),
+  deserialize: () => parseJson(stringifyJson(config)),
 } as ConfigResultWithHooks
 
 export const createGeneratorContext = (userConfig?: Config) => {
@@ -25,7 +30,7 @@ export const createGeneratorContext = (userConfig?: Config) => {
     userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
   ) as UserConfig
 
-  return createGenerator({ ...fixtureDefaults, config: resolvedConfig })
+  return new Generator({ ...fixtureDefaults, config: resolvedConfig })
 }
 
 export const createContext = (userConfig?: Config) => {
@@ -33,7 +38,7 @@ export const createContext = (userConfig?: Config) => {
     userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
   ) as UserConfig
 
-  return actualCreateContext({
+  return new PandaContext({
     ...fixtureDefaults,
     config: resolvedConfig,
     tsconfig: {

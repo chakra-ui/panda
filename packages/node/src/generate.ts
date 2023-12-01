@@ -3,32 +3,27 @@ import type { Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import type { PandaContext } from './create-context'
 import { emitArtfifactsAndCssChunks } from './extract'
-import { loadContext } from './load-context'
 
-async function build(ctx: PandaContext) {
-  const { msg } = await emitArtfifactsAndCssChunks(ctx)
-  logger.info('css:emit', msg)
-}
+import { loadConfigAndCreateContext } from './config'
 
 export async function generate(config: Config, configPath?: string) {
-  const [ctxRef, loadCtx] = await loadContext(config, configPath)
-
-  const ctx = ctxRef.current
-  await build(ctx)
+  const ctx = await loadConfigAndCreateContext({ config, configPath })
+  await emitArtfifactsAndCssChunks(ctx)
 
   const {
     runtime: { fs, path },
-    dependencies,
     config: { cwd },
   } = ctx
 
   if (ctx.config.watch) {
-    const configWatcher = fs.watch({ include: dependencies })
+    const configWatcher = fs.watch({ include: ctx.conf.dependencies })
     configWatcher.on('change', async () => {
+      const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
+      if (!affecteds.artifacts.size) return
+
       logger.info('config:change', 'Config changed, restarting...')
-      await loadCtx()
-      await ctxRef.current.hooks.callHook('config:change', ctxRef.current.config)
-      return build(ctxRef.current)
+      await ctx.hooks.callHook('config:change', ctx.config)
+      return emitArtfifactsAndCssChunks(ctx, Array.from(affecteds.artifacts))
     })
 
     const contentWatcher = fs.watch(ctx.config)
@@ -55,11 +50,11 @@ export async function generate(config: Config, configPath?: string) {
         })
         .with('change', async () => {
           ctx.project.reloadSourceFile(file)
-          return bundleStyles(ctxRef.current, filePath)
+          return bundleStyles(ctx, filePath)
         })
         .with('add', async () => {
           ctx.project.createSourceFile(file)
-          return bundleStyles(ctxRef.current, filePath)
+          return bundleStyles(ctx, filePath)
         })
         .otherwise(() => {
           // noop

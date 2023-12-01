@@ -1,10 +1,10 @@
 import { fixtureDefaults } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
 
 test('should generate pattern', () => {
-  expect(generatePattern(createGenerator(fixtureDefaults))).toMatchInlineSnapshot(`
+  expect(generatePattern(new Generator(fixtureDefaults))).toMatchInlineSnapshot(`
     [
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
@@ -588,10 +588,12 @@ test('should generate pattern', () => {
 
     const gridConfig = {
     transform(props, { map }) {
+      const regex = /\\\\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/;
       const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", columns, minChildWidth, ...rest } = props;
+      const getValue = (v) => regex.test(v) ? v : \`token(sizes.\${v}, \${v})\`;
       return {
         display: \\"grid\\",
-        gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${v}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${v}, 1fr))\`) : void 0,
+        gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${v}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${getValue(v)}, 1fr))\`) : void 0,
         gap,
         columnGap,
         rowGap,

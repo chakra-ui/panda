@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { fixtureDefaults } from '@pandacss/fixture'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 import { type StaticCssOptions } from '@pandacss/types'
 
 describe('static-css', () => {
@@ -33,7 +33,7 @@ describe('static-css', () => {
 
   conf.config.theme!.semanticTokens = {}
 
-  const ctx = createGenerator(conf)
+  const ctx = new Generator(conf)
   const getStaticCss = (options: StaticCssOptions) => {
     const engine = ctx.staticCss.fork().process(options)
     return { results: engine.results, css: engine.sheet.toCss({ optimize: true }) }

@@ -1,4 +1,3 @@
-import { Bool } from 'lil-fp'
 import type {
   ArrayLiteralExpression,
   BinaryExpression,
@@ -20,7 +19,6 @@ import type {
   VariableDeclaration,
 } from 'ts-morph'
 import { Node, ts } from 'ts-morph'
-import { match } from 'ts-pattern'
 import { box } from './box'
 import { safeEvaluateNode } from './evaluate-node'
 import { findIdentifierValueDeclaration } from './find-identifier-value-declaration'
@@ -73,163 +71,161 @@ export function maybeBoxNode(
     return value
   }
 
-  return (
-    match(node)
-      .when(isCached, getCached)
+  if (isCached(node)) {
+    return getCached(node)
+  }
 
-      // <Box color="xxx" /> or <Box color={`xxx`} />
-      .when(Bool.or(Node.isStringLiteral, Node.isNoSubstitutionTemplateLiteral), (node) => {
-        const value = trimWhitespace(node.getLiteralValue())
-        return cache(box.literal(value, node, stack))
-      })
-      .when(Node.isObjectLiteralExpression, (node) => {
-        return cache(getObjectLiteralExpressionPropPairs(node, stack, ctx, matchProp))
-      })
+  // <Box color="xxx" /> or <Box color={`xxx`} />
+  if (Node.isStringLiteral(node) || Node.isNoSubstitutionTemplateLiteral(node)) {
+    const value = trimWhitespace(node.getLiteralValue())
+    return cache(box.literal(value, node, stack))
+  }
 
-      // <Box truncate={true} /> or <Box truncate={false} />
-      .when(Bool.or(Node.isTrueLiteral, Node.isFalseLiteral), (node) => {
-        const value = node.getLiteralValue()
-        return cache(box.literal(value, node, stack))
-      })
+  if (Node.isObjectLiteralExpression(node)) {
+    return cache(getObjectLiteralExpressionPropPairs(node, stack, ctx, matchProp))
+  }
 
-      // <Box color={123} />
-      .when(Node.isNumericLiteral, (node) => {
-        const value = node.getLiteralValue()
-        return cache(box.literal(value, node, stack))
-      })
+  // <Box truncate={true} /> or <Box truncate={false} />
+  if (Node.isTrueLiteral(node) || Node.isFalseLiteral(node)) {
+    const value = node.getLiteralValue()
+    return cache(box.literal(value, node, stack))
+  }
 
-      // <Box color={null} />
-      .when(Node.isNullLiteral, (node) => {
-        return cache(box.literal(null, node, stack))
-      })
+  // <Box color={123} />
+  if (Node.isNumericLiteral(node)) {
+    const value = node.getLiteralValue()
+    return cache(box.literal(value, node, stack))
+  }
 
-      // <Box mt={-12} />
-      .when(Node.isPrefixUnaryExpression, (node) => {
-        const operand = node.getOperand()
-        const operator = node.getOperatorToken()
-        const boxNode = maybeBoxNode(operand, stack, ctx)
-        if (!box.isNumberLiteral(boxNode)) return
-        return cache(operator === ts.SyntaxKind.MinusToken ? box.literal(-Number(boxNode.value), node, stack) : boxNode)
-      })
+  // <Box color={null} />
+  if (Node.isNullLiteral(node)) {
+    return cache(box.literal(null, node, stack))
+  }
 
-      // <ColorBox color={['red.300', 'green.400']} />
-      .when(Node.isArrayLiteralExpression, (node) => {
-        const boxNodes = node.getElements().map((element) => {
-          return maybeBoxNode(element, stack, ctx) ?? cache(box.unresolvable(element, stack))
-        }) as BoxNode[]
+  // <Box mt={-12} />
+  if (Node.isPrefixUnaryExpression(node)) {
+    const operand = node.getOperand()
+    const operator = node.getOperatorToken()
+    const boxNode = maybeBoxNode(operand, stack, ctx)
+    if (!box.isNumberLiteral(boxNode)) return
+    return cache(operator === ts.SyntaxKind.MinusToken ? box.literal(-Number(boxNode.value), node, stack) : boxNode)
+  }
 
-        return cache(box.array(boxNodes, node, stack))
-      })
+  // <ColorBox color={['red.300', 'green.400']} />
+  if (Node.isArrayLiteralExpression(node)) {
+    const boxNodes = node.getElements().map((element) => {
+      return maybeBoxNode(element, stack, ctx) ?? cache(box.unresolvable(element, stack))
+    }) as BoxNode[]
 
-      // <ColorBox color={staticColor} />
-      .when(Node.isIdentifier, (node) => {
-        return match(node.getText())
-          .with('undefined', () => cache(box.literal(undefined, node, stack)))
-          .otherwise(() => cache(maybeIdentifierValue(node, stack, ctx)))
-      })
+    return cache(box.array(boxNodes, node, stack))
+  }
 
-      // <ColorBox color={css`red.400`} />
-      .when(Node.isTemplateHead, (node) => {
-        return cache(box.literal(node.getLiteralText(), node, stack))
-      })
+  // <ColorBox color={staticColor} />
+  if (Node.isIdentifier(node)) {
+    const value = node.getText()
+    if (value === 'undefined') return cache(box.literal(undefined, node, stack))
+    return cache(maybeIdentifierValue(node, stack, ctx))
+  }
 
-      // <ColorBox color={`${color}.400`} />
-      .when(Node.isTemplateExpression, (node) => {
-        const value = maybeTemplateStringValue(node, stack, ctx)
-        return cache(box.literal(value, node, stack))
-      })
+  // <ColorBox color={css`red.400`} />
+  if (Node.isTemplateHead(node)) {
+    return cache(box.literal(node.getLiteralText(), node, stack))
+  }
 
-      // css`font-size: 1.5em;`
-      .when(Node.isTaggedTemplateExpression, (node) => {
-        return cache(maybeBoxNode(node.getTemplate(), stack, ctx))
-      })
+  // <ColorBox color={`${color}.400`} />
+  if (Node.isTemplateExpression(node)) {
+    const value = maybeTemplateStringValue(node, stack, ctx)
+    return cache(box.literal(value, node, stack))
+  }
 
-      // <ColorBox color={colors[staticColor]} /> or <ColorBox color={colors["brand"]} />
-      .when(Node.isElementAccessExpression, (node) => {
-        return cache(getElementAccessedExpressionValue(node, stack, ctx))
-      })
+  // css`font-size: 1.5em;`
+  if (Node.isTaggedTemplateExpression(node)) {
+    return cache(maybeBoxNode(node.getTemplate(), stack, ctx))
+  }
 
-      // <ColorBox color={colors.brand} />
-      .when(Node.isPropertyAccessExpression, (node) => {
-        return cache(getPropertyAccessedExpressionValue(node, [], stack, ctx)!)
-      })
+  // <ColorBox color={colors[staticColor]} /> or <ColorBox color={colors["brand"]} />
+  if (Node.isElementAccessExpression(node)) {
+    return cache(getElementAccessedExpressionValue(node, stack, ctx))
+  }
 
-      // <ColorBox color={useColorModeValue() ? darkValue : "whiteAlpha.100"} />
-      .when(Node.isConditionalExpression, (node) => {
-        if (ctx.flags?.skipConditions) {
-          return cache(box.unresolvable(node, stack))
-        }
+  // <ColorBox color={colors.brand} />
+  if (Node.isPropertyAccessExpression(node)) {
+    return cache(getPropertyAccessedExpressionValue(node, [], stack, ctx)!)
+  }
 
-        const condExpr = unwrapExpression(node.getCondition())
+  // <ColorBox color={useColorModeValue() ? darkValue : "whiteAlpha.100"} />
+  if (Node.isConditionalExpression(node)) {
+    if (ctx.flags?.skipConditions) {
+      return cache(box.unresolvable(node, stack))
+    }
 
-        const condBoxNode =
-          (Node.isIdentifier(condExpr)
-            ? maybeBoxNode(condExpr, [], ctx)
-            : safeEvaluateNode<LiteralValue>(condExpr as Expression, stack, ctx)) ?? box.unresolvable(condExpr, stack)
+    const condExpr = unwrapExpression(node.getCondition())
 
-        const condValue = isBoxNode(condBoxNode) ? condBoxNode : box.from(condBoxNode, node, stack)
-        if (box.isEmptyInitializer(condValue)) return
+    const condBoxNode =
+      (Node.isIdentifier(condExpr)
+        ? maybeBoxNode(condExpr, [], ctx)
+        : safeEvaluateNode<LiteralValue>(condExpr as Expression, stack, ctx)) ?? box.unresolvable(condExpr, stack)
 
-        const isFromDefaultBinding = condValue.getStack().some((node) => Node.isBindingElement(node))
-        if (box.isUnresolvable(condValue) || box.isConditional(condValue) || isFromDefaultBinding) {
-          const whenTrueExpr = unwrapExpression(node.getWhenTrue())
-          const whenFalseExpr = unwrapExpression(node.getWhenFalse())
-          return cache(maybeResolveConditionalExpression({ whenTrueExpr, whenFalseExpr, node, stack }, ctx))
-        }
+    const condValue = isBoxNode(condBoxNode) ? condBoxNode : box.from(condBoxNode, node, stack)
+    if (box.isEmptyInitializer(condValue)) return
 
-        if (condValue.value) {
-          const whenTrueExpr = unwrapExpression(node.getWhenTrue())
-          const innerStack = [...stack] as Node[]
-          const maybeValue = maybeBoxNode(whenTrueExpr, innerStack, ctx)
-          return cache(maybeValue ?? box.unresolvable(whenTrueExpr, stack))
-        }
+    const isFromDefaultBinding = condValue.getStack().some((node) => Node.isBindingElement(node))
+    if (box.isUnresolvable(condValue) || box.isConditional(condValue) || isFromDefaultBinding) {
+      const whenTrueExpr = unwrapExpression(node.getWhenTrue())
+      const whenFalseExpr = unwrapExpression(node.getWhenFalse())
+      return cache(maybeResolveConditionalExpression({ whenTrueExpr, whenFalseExpr, node, stack }, ctx))
+    }
 
-        const whenFalseExpr = unwrapExpression(node.getWhenFalse())
-        const innerStack = [...stack] as Node[]
+    if (condValue.value) {
+      const whenTrueExpr = unwrapExpression(node.getWhenTrue())
+      const innerStack = [...stack] as Node[]
+      const maybeValue = maybeBoxNode(whenTrueExpr, innerStack, ctx)
+      return cache(maybeValue ?? box.unresolvable(whenTrueExpr, stack))
+    }
 
-        const maybeValue = maybeBoxNode(whenFalseExpr, innerStack, ctx)
+    const whenFalseExpr = unwrapExpression(node.getWhenFalse())
+    const innerStack = [...stack] as Node[]
 
-        return cache(maybeValue ?? box.unresolvable(node, stack))
-      })
+    const maybeValue = maybeBoxNode(whenFalseExpr, innerStack, ctx)
 
-      // <ColorBox color={fn()} />
-      .when(Node.isCallExpression, (node) => {
-        const value = safeEvaluateNode<PrimitiveType | EvaluatedObjectResult>(node, stack, ctx)
-        if (!value) return
-        return cache(box.from(value, node, stack))
-      })
+    return cache(maybeValue ?? box.unresolvable(node, stack))
+  }
 
-      // <ColorBox color={isFocused && "red.400"} />
-      .when(Node.isBinaryExpression, (node) => {
-        const operatorKind = node.getOperatorToken().getKind()
-        return match(operatorKind)
-          .when(isPlusSyntax, () => {
-            const value =
-              tryComputingPlusTokenBinaryExpressionToString(node, stack, ctx) ??
-              safeEvaluateNode<string>(node, stack, ctx)
-            if (!value) return
-            return cache(box.from(value, node, stack))
-          })
-          .when(isLogicalSyntax, (op) => {
-            const whenTrueExpr = unwrapExpression(node.getLeft())
-            const whenFalseExpr = unwrapExpression(node.getRight())
-            const exprObject = {
-              whenTrueExpr,
-              whenFalseExpr,
-              node,
-              stack,
-              canReturnWhenTrue: canReturnWhenTrueInLogicalExpression(op),
-            } as const
-            return cache(maybeResolveConditionalExpression(exprObject, ctx))
-          })
-          .when(isOperationSyntax, () => {
-            return cache(box.literal(safeEvaluateNode(node, stack, ctx), node, stack))
-          })
-          .otherwise(() => undefined)
-      })
+  // <ColorBox color={fn()} />
+  if (Node.isCallExpression(node)) {
+    const value = safeEvaluateNode<PrimitiveType | EvaluatedObjectResult>(node, stack, ctx)
+    if (!value) return
+    return cache(box.from(value, node, stack))
+  }
 
-      .otherwise(() => undefined)
-  )
+  // <ColorBox color={isFocused && "red.400"} />
+  if (Node.isBinaryExpression(node)) {
+    const operatorKind = node.getOperatorToken().getKind()
+
+    if (isPlusSyntax(operatorKind)) {
+      const value =
+        tryComputingPlusTokenBinaryExpressionToString(node, stack, ctx) ?? safeEvaluateNode<string>(node, stack, ctx)
+      if (!value) return
+      return cache(box.from(value, node, stack))
+    }
+
+    if (isLogicalSyntax(operatorKind)) {
+      const whenTrueExpr = unwrapExpression(node.getLeft())
+      const whenFalseExpr = unwrapExpression(node.getRight())
+      const exprObject = {
+        whenTrueExpr,
+        whenFalseExpr,
+        node,
+        stack,
+        canReturnWhenTrue: canReturnWhenTrueInLogicalExpression(operatorKind),
+      } as const
+      return cache(maybeResolveConditionalExpression(exprObject, ctx))
+    }
+
+    if (isOperationSyntax(operatorKind)) {
+      return cache(box.literal(safeEvaluateNode(node, stack, ctx), node, stack))
+    }
+  }
 }
 
 const onlyStringLiteral = (boxNode: MaybeBoxNodeReturn) => {

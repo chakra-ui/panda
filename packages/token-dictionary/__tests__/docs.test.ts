@@ -214,10 +214,17 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "primary",
+                "colorPaletteRoots": [
+                  "primary",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "base",
                 "conditions": {
-                  "_dark": "{colors.red.400}",
-                  "base": "{colors.red.500}",
+                  "_dark": "var(--colors-red-400)",
+                  "base": "var(--colors-red-500)",
                 },
                 "prop": "primary",
                 "var": "--colors-primary",
@@ -236,10 +243,17 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "primary",
+                "colorPaletteRoots": [
+                  "primary",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "_dark",
                 "conditions": {
-                  "_dark": "{colors.red.400}",
-                  "base": "{colors.red.500}",
+                  "_dark": "var(--colors-red-400)",
+                  "base": "var(--colors-red-500)",
                 },
                 "prop": "primary",
                 "var": "--colors-primary",
@@ -258,10 +272,17 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "secondary",
+                "colorPaletteRoots": [
+                  "secondary",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "base",
                 "conditions": {
-                  "_dark": "{colors.red.700}",
-                  "base": "{colors.red.800}",
+                  "_dark": "var(--colors-red-700)",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "secondary",
                 "var": "--colors-secondary",
@@ -280,10 +301,17 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "secondary",
+                "colorPaletteRoots": [
+                  "secondary",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "_dark",
                 "conditions": {
-                  "_dark": "{colors.red.700}",
-                  "base": "{colors.red.800}",
+                  "_dark": "var(--colors-red-700)",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "secondary",
                 "var": "--colors-secondary",
@@ -302,12 +330,19 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "complex",
+                "colorPaletteRoots": [
+                  "complex",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "base",
                 "conditions": {
                   "_dark": {
-                    "_highContrast": "{colors.red.700}",
+                    "_highContrast": "var(--colors-red-700)",
                   },
-                  "base": "{colors.red.800}",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "complex",
                 "var": "--colors-complex",
@@ -326,12 +361,19 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "complex",
+                "colorPaletteRoots": [
+                  "complex",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "_dark:_highContrast",
                 "conditions": {
                   "_dark": {
-                    "_highContrast": "{colors.red.700}",
+                    "_highContrast": "var(--colors-red-700)",
                   },
-                  "base": "{colors.red.800}",
+                  "base": "var(--colors-red-800)",
                 },
                 "prop": "complex",
                 "var": "--colors-complex",
@@ -350,6 +392,13 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "surface",
+                "colorPaletteRoots": [
+                  "surface",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "_materialTheme",
                 "conditions": {
                   "_materialTheme": {
@@ -380,6 +429,13 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "surface",
+                "colorPaletteRoots": [
+                  "surface",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "_materialTheme:_dark",
                 "conditions": {
                   "_materialTheme": {
@@ -410,6 +466,13 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "surface",
+                "colorPaletteRoots": [
+                  "surface",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "_pastelTheme",
                 "conditions": {
                   "_materialTheme": {
@@ -440,6 +503,13 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
+                "colorPalette": "surface",
+                "colorPaletteRoots": [
+                  "surface",
+                ],
+                "colorPaletteTokenKeys": [
+                  "",
+                ],
                 "condition": "_pastelTheme:_dark:md",
                 "conditions": {
                   "_materialTheme": {

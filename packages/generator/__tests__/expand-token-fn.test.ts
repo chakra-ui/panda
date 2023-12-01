@@ -74,6 +74,11 @@ describe('expandTokenFn', () => {
             color: green;
           }
         }
+        @container (min-width: token(sizes.12345)) {
+          .\[\@container_\(min-width\:_token\(sizes\.12345\)\)\]\:text_green {
+            color: green;
+          }
+        }
       }
     `)
 
@@ -81,7 +86,12 @@ describe('expandTokenFn', () => {
       "
             @layer utilities {
               @container (min-width: 56rem) {
-                .[@container_(min-width:_token(sizes.4xl))]:text_green {
+                .[@container_(min-width:_56rem)]:text_green {
+                  color: green;
+                }
+              }
+              @container (min-width: sizes\\\\.12345) {
+                .[@container_(min-width:_sizes\\\\.12345)]:text_green {
                   color: green;
                 }
               }

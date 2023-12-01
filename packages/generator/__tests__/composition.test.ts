@@ -2,20 +2,20 @@ import type { SystemStyleObject } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { assignCompositions } from '@pandacss/core'
 import { createRuleProcessor } from './fixture'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 import { fixtureDefaults } from '@pandacss/fixture'
 
 const compositions = { textStyle: fixtureDefaults.config.theme?.textStyles }
 
 function css({ styles }: { styles: SystemStyleObject }) {
-  const ctx = createGenerator(fixtureDefaults)
+  const ctx = new Generator(fixtureDefaults)
   assignCompositions(compositions, ctx)
   return createRuleProcessor().css(styles).toCss()
 }
 
 describe('compositions', () => {
   test('should assign composition', () => {
-    const ctx = createGenerator(fixtureDefaults)
+    const ctx = new Generator(fixtureDefaults)
     assignCompositions(compositions, ctx)
     const result = ctx.utility.transform('textStyle', 'headline.h2')
     expect(result).toMatchInlineSnapshot(`

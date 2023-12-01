@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 import { generateTokenJs } from '../src/artifacts/js/token'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 import { fixtureDefaults } from '@pandacss/fixture'
 
 test('[dts] should generate package', () => {
-  expect(generateTokenJs(createGenerator(fixtureDefaults)).js).toMatchInlineSnapshot(
+  expect(generateTokenJs(new Generator(fixtureDefaults)).js).toMatchInlineSnapshot(
     `
     "const tokens = {
       \\"borders.none\\": {
@@ -1858,6 +1858,10 @@ test('[dts] should generate package', () => {
       \\"spacing.-gutter\\": {
         \\"value\\": \\"var(--spacing-gutter)\\",
         \\"variable\\": \\"var(--spacing-gutter)\\"
+      },
+      \\"colors.colorPalette\\": {
+        \\"value\\": \\"var(--colors-color-palette)\\",
+        \\"variable\\": \\"var(--colors-color-palette)\\"
       },
       \\"colors.colorPalette.50\\": {
         \\"value\\": \\"var(--colors-color-palette-50)\\",

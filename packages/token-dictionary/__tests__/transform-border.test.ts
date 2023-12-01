@@ -91,8 +91,8 @@ test('transform / border', () => {
           "category": "borders",
           "condition": "base",
           "conditions": {
-            "@hover": "{borders.md}",
-            "base": "{borders.sm}",
+            "@hover": "var(--borders-md)",
+            "base": "var(--borders-sm)",
           },
           "prop": "controlBorder",
           "var": "--borders-control-border",
@@ -113,8 +113,8 @@ test('transform / border', () => {
           "category": "borders",
           "condition": "@hover",
           "conditions": {
-            "@hover": "{borders.md}",
-            "base": "{borders.sm}",
+            "@hover": "var(--borders-md)",
+            "base": "var(--borders-sm)",
           },
           "prop": "controlBorder",
           "var": "--borders-control-border",
@@ -135,7 +135,7 @@ test('transform / border', () => {
           "category": "borders",
           "condition": "base",
           "conditions": {
-            "base": "{borders.controlBorder}",
+            "base": "var(--borders-control-border)",
           },
           "prop": "dividerBorder",
           "var": "--borders-divider-border",

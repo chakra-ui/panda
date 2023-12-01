@@ -43,6 +43,7 @@ export interface DebugCommandFlags {
   outdir?: string
   cwd?: string
   config?: string
+  onlyConfig?: boolean
 }
 
 export interface ShipCommandFlags {
@@ -51,6 +52,8 @@ export interface ShipCommandFlags {
   outfile?: string
   cwd?: string
   config?: string
+  watch?: boolean
+  poll?: boolean
 }
 
 export interface CodegenCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'> {

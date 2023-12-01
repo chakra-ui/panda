@@ -5,7 +5,19 @@ description: Panda's border utilities.
 
 # Border
 
-Panda provides the css properties for styling borders
+Panda provides the css properties for styling borders.
+
+## Compound Properties
+
+The border compound property maps to the `borders` token category.
+
+| Prop                                | CSS Property        | Token Category |
+| ----------------------------------- | ------------------- | -------------- |
+| `border`                            | `border`            | `borders`      |
+| `borderX` , `borderInline`          | `borderInline`      | `borders`      |
+| `borderY` , `borderBlock`           | `borderBlock`       | `borders`      |
+| `borderStart` , `borderInlineStart` | `borderInlineStart` | `borders`      |
+| `borderEnd` , `borderInlineEnd`     | `borderInlineEnd`   | `borders`      |
 
 ## Border Radius
 
@@ -40,14 +52,14 @@ Use the `border{Top|Bottom}{Left|Right}Radius` properties, or the shorthand equi
 | Prop                                     | CSS Property                        | Token Category |
 | ---------------------------------------- | ----------------------------------- | -------------- |
 | `rounded`,`borderRadius`                 | `border-radius`                     | `radii`        |
-| `roundedTop`,`borderTopRadius`           | `border-top-{left+right}-radius`    | `radii`        |
-| `roundedLeft`,`borderLeftRadius`         | `border-{top+bottom}-left-radius`   | `radii`        |
-| `roundedRight`,`borderRightRadius`       | `border-{top+bottom}-right-radius`  | `radii`        |
-| `roundedBottom`,`borderBottomRadius`     | `border-bottom-{left+right}-radius` | `radii`        |
 | `roundedTopLeft`,`borderTopLeftRadius`   | `border-top-left-radius`            | `radii`        |
 | `roundedTopRight`,`borderTopRight`       | `border-top-right-radius`           | `radii`        |
-| `roundedBottomLeft`,`borderBottomLeft`   | `border-bottom-left-radius`         | `radii`        |
 | `roundedBottomRight`,`borderBottomRight` | `border-bottom-right-radius`        | `radii`        |
+| `roundedBottomLeft`,`borderBottomLeft`   | `border-bottom-left-radius`         | `radii`        |
+| `roundedTop`,`borderTopRadius`           | `border-top-{left+right}-radius`    | `radii`        |
+| `roundedRight`,`borderRightRadius`       | `border-{top+bottom}-right-radius`  | `radii`        |
+| `roundedBottom`,`borderBottomRadius`     | `border-bottom-{left+right}-radius` | `radii`        |
+| `roundedLeft`,`borderLeftRadius`         | `border-{top+bottom}-left-radius`   | `radii`        |
 
 ### Logical Properties
 
@@ -60,14 +72,14 @@ Panda also provides the logical properties for border radius, which map to corre
 <div className={css({ roundedStart: 'md' })} /> // shorthand
 ```
 
-| Prop                                     | CSS Property                      | Token Category |
-| ---------------------------------------- | --------------------------------- | -------------- |
-| `roundedStart`,`borderStartRadius`       | `border-{start+end}-start-radius` | `radii`        |
-| `roundedEnd`,`borderEndRadius`           | `border-{start+end}-end-radius`   | `radii`        |
-| `roundedTopStart`,`borderTopStartRadius` | `border-top-start-radius`         | `radii`        |
-| `roundedTopEnd`,`borderTopEndRadius`     | `border-top-end-radius`           | `radii`        |
-| `roundedBottomStart`,`borderBottomStart` | `border-bottom-start-radius`      | `radii`        |
-| `roundedBottomEnd`,`borderBottomEnd`     | `border-bottom-end-radius`        | `radii`        |
+| Prop                                         | CSS Property                      | Token Category |
+| -------------------------------------------- | --------------------------------- | -------------- |
+| `roundedStartStart`,`borderStartStartRadius` | `border-start-start-radius`       | `radii`        |
+| `roundedStartEnd`,`borderStartEndRadius`     | `border-start-end-radius`         | `radii`        |
+| `roundedStart`,`borderStartRadius`           | `border-{start+end}-start-radius` | `radii`        |
+| `roundedEndStart`,`borderEndStartRadius`     | `border-end-start-radius`         | `radii`        |
+| `roundedEndEnd`,`borderEndEndRadius`         | `border-end-end-radius`           | `radii`        |
+| `roundedEnd` ,`borderEndRadius`              | `border-{start+end}-end-radius`   | `radii`        |
 
 ## Border Width
 
@@ -86,15 +98,15 @@ Use the `border{Left|Right|Top|Bottom}Width` properties, to apply border width o
 <div className={css({ borderLeftWidth: '1px' })} />
 ```
 
-| Prop                | CSS Property                |
-| ------------------- | --------------------------- |
-| `borderWidth`       | `border-width`              |
-| `borderTopWidth`    | `border-top-width`          |
-| `borderLeftWidth`   | `border-left-width`         |
-| `borderRightWidth`  | `border-right-width`        |
-| `borderBottomWidth` | `border-bottom-width`       |
-| `borderXWidth`      | `border-{left+right}-width` |
-| `borderYWidth`      | `border-{top+bottom}-width` |
+| Prop                                 | CSS Property                |
+| ------------------------------------ | --------------------------- |
+| `borderWidth`                        | `border-width`              |
+| `borderTopWidth`                     | `border-top-width`          |
+| `borderLeftWidth`                    | `border-left-width`         |
+| `borderRightWidth`                   | `border-right-width`        |
+| `borderBottomWidth`                  | `border-bottom-width`       |
+| `borderXWidth` , `borderInlineWidth` | `border-{left+right}-width` |
+| `borderYWidth` , `borderBlockWidth`  | `border-{top+bottom}-width` |
 
 ### Logical Properties
 
@@ -106,10 +118,10 @@ Panda also provides the logical properties for border width, which map to corres
 <div className={css({ borderStartWidth: '1px' })} />
 ```
 
-| Prop               | CSS Property               |
-| ------------------ | -------------------------- |
-| `borderStartWidth` | `border-{start+end}-width` |
-| `borderEndWidth`   | `border-{start+end}-width` |
+| Prop                                          | CSS Property               |
+| --------------------------------------------- | -------------------------- |
+| `borderStartWidth` , `borderInlineStartWidth` | `border-{start+end}-width` |
+| `borderEndWidth` , `borderInlineEndWidth`     | `border-{start+end}-width` |
 
 ## Border Color
 
@@ -145,12 +157,12 @@ Panda also provides the logical properties for border color, which map to corres
 > For example, `borderInlineStartColor` will map to `border-left-color` in LTR mode, and `border-right-color` in RTL mode.
 
 ```jsx
-<div className={css({ borderInlineStart: 'red.500' })} />
+<div className={css({ borderInlineStartColor: 'red.500' })} />
 ```
 
-| Prop                                | CSS Property               | Token Category |
-| ----------------------------------- | -------------------------- | -------------- |
-| `borderInlineStartColor`            | `border-{start+end}-color` | `colors`       |
-| `borderInlineEndColor`              | `border-{start+end}-color` | `colors`       |
-| `borderXColor`, `borderInlineColor` | `border-inline-color`      | `colors`       |
-| `borderYColor`, `borderBlockColor`  | `border-block-color`       | `colors`       |
+| Prop                                        | CSS Property               | Token Category |
+| ------------------------------------------- | -------------------------- | -------------- |
+| `borderStartColor` , `borderInlineStartColor` | `border-{start+end}-color` | `colors`       |
+| `borderEndColor` , `borderInlineEndColor`   | `border-{start+end}-color` | `colors`       |
+| `borderXColor`, `borderInlineColor`         | `border-inline-color`      | `colors`       |
+| `borderYColor`, `borderBlockColor`          | `border-block-color`       | `colors`       |

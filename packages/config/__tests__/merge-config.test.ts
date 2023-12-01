@@ -478,3 +478,54 @@ describe('mergeConfigs / recipes', () => {
     `)
   })
 })
+
+describe('mergeConfigs / staticCss', () => {
+  test('should merge utilities', () => {
+    const userConfig = defineConfig({
+      staticCss: {
+        extend: {
+          recipes: {
+            button: ['*'],
+            badge: [{ variants: ['*'] }],
+          },
+        },
+      },
+    })
+
+    const defaultConfig = defineConfig({
+      staticCss: {
+        recipes: {
+          badge: [{ size: ['sm'] }],
+          card: ['*'],
+        },
+      },
+    })
+
+    const result = mergeConfigs([userConfig, defaultConfig])
+
+    expect(result.staticCss).toMatchInlineSnapshot(`
+      {
+        "recipes": {
+          "badge": [
+            {
+              "size": [
+                "sm",
+              ],
+            },
+            {
+              "variants": [
+                "*",
+              ],
+            },
+          ],
+          "button": [
+            "*",
+          ],
+          "card": [
+            "*",
+          ],
+        },
+      }
+    `)
+  })
+})

@@ -1,6 +1,6 @@
 import type { Stylesheet } from '@pandacss/core'
 import type { CssRule, StaticCssOptions, StyleCollectorType } from '@pandacss/types'
-import type { PandaBaseEngine } from './base'
+import type { Context } from './index'
 import { HashFactory } from './hash-factory'
 import { StyleCollector } from './style-collector'
 
@@ -21,7 +21,7 @@ export class StaticCss {
   hash: HashFactory
   styles: StyleCollector
 
-  constructor(private context: PandaBaseEngine, params: { hash: HashFactory; styles: StyleCollector }) {
+  constructor(private context: Context, params: { hash: HashFactory; styles: StyleCollector }) {
     this.hash = params.hash
     this.styles = params.styles
   }
@@ -191,8 +191,8 @@ export class StaticCss {
   }
 
   process(staticCss: StaticCssOptions, stylesheet?: Stylesheet) {
-    const { createSheet, recipes } = this.context
-    const sheet = stylesheet ?? createSheet()
+    const { recipes } = this.context
+    const sheet = stylesheet ?? this.context.createSheet()
 
     const results = this.getStyleObjects(staticCss)
     // console.log(JSON.stringify(results.recipes, null, 2))

@@ -1,11 +1,11 @@
 import { fixtureDefaults } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 import { generateKeyframeCss } from '../src/artifacts/css/keyframe-css'
 
 describe('Generates keyframes', () => {
   test('should generate keyframes', () => {
-    expect(generateKeyframeCss(createGenerator(fixtureDefaults))).toMatchInlineSnapshot(`
+    expect(generateKeyframeCss(new Generator(fixtureDefaults))).toMatchInlineSnapshot(`
       "@layer tokens {
         @keyframes spin {
           to {

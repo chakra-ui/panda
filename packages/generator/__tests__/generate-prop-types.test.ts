@@ -1,11 +1,11 @@
 import { fixtureDefaults } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { createGenerator } from '../src'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
+import { Generator } from '../src/generator'
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(generatePropTypes(createGenerator(fixtureDefaults))).toMatchInlineSnapshot(`
+    expect(generatePropTypes(new Generator(fixtureDefaults))).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -209,7 +209,7 @@ describe('generate property types', () => {
       	stroke: Tokens[\\"colors\\"];
       	srOnly: boolean;
       	debug: boolean;
-      	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
+      	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
       	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
@@ -309,6 +309,7 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
+
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
         ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
         : T extends keyof CssProperties
@@ -318,9 +319,9 @@ describe('generate property types', () => {
   })
 
   test('with stricTokens true', () => {
-    const conf = Object.assign({}, createGenerator(fixtureDefaults))
+    const conf = new Generator(fixtureDefaults)
     conf.config.strictTokens = true
-    expect(generatePropTypes(createGenerator(conf as any))).toMatchInlineSnapshot(`
+    expect(generatePropTypes(conf)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -339,8 +340,8 @@ describe('generate property types', () => {
       	insetInlineStart: Tokens[\\"spacing\\"];
       	right: Tokens[\\"spacing\\"];
       	bottom: Tokens[\\"spacing\\"];
-      	insetX: Tokens[\\"spacing\\"];
-      	insetY: Tokens[\\"spacing\\"];
+      	insetX: Tokens[\\"spacing\\"] | CssProperties[\\"insetInline\\"];
+      	insetY: Tokens[\\"spacing\\"] | CssProperties[\\"insetBlock\\"];
       	float: \\"left\\" | \\"right\\" | \\"start\\" | \\"end\\";
       	hideFrom: Tokens[\\"breakpoints\\"];
       	hideBelow: Tokens[\\"breakpoints\\"];
@@ -386,6 +387,7 @@ describe('generate property types', () => {
       	divideX: string;
       	divideY: string;
       	divideColor: Tokens[\\"colors\\"];
+      	divideStyle: CssProperties[\\"borderStyle\\"];
       	width: \\"auto\\" | Tokens[\\"sizes\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"1/5\\" | \\"2/5\\" | \\"3/5\\" | \\"4/5\\" | \\"1/6\\" | \\"2/6\\" | \\"3/6\\" | \\"4/6\\" | \\"5/6\\" | \\"1/12\\" | \\"2/12\\" | \\"3/12\\" | \\"4/12\\" | \\"5/12\\" | \\"6/12\\" | \\"7/12\\" | \\"8/12\\" | \\"9/12\\" | \\"10/12\\" | \\"11/12\\" | \\"screen\\";
       	inlineSize: \\"auto\\" | Tokens[\\"sizes\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"1/5\\" | \\"2/5\\" | \\"3/5\\" | \\"4/5\\" | \\"1/6\\" | \\"2/6\\" | \\"3/6\\" | \\"4/6\\" | \\"5/6\\" | \\"1/12\\" | \\"2/12\\" | \\"3/12\\" | \\"4/12\\" | \\"5/12\\" | \\"6/12\\" | \\"7/12\\" | \\"8/12\\" | \\"9/12\\" | \\"10/12\\" | \\"11/12\\" | \\"screen\\";
       	minWidth: \\"auto\\" | Tokens[\\"sizes\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"1/5\\" | \\"2/5\\" | \\"3/5\\" | \\"4/5\\" | \\"1/6\\" | \\"2/6\\" | \\"3/6\\" | \\"4/6\\" | \\"5/6\\" | \\"1/12\\" | \\"2/12\\" | \\"3/12\\" | \\"4/12\\" | \\"5/12\\" | \\"6/12\\" | \\"7/12\\" | \\"8/12\\" | \\"9/12\\" | \\"10/12\\" | \\"11/12\\" | \\"screen\\";
@@ -425,16 +427,16 @@ describe('generate property types', () => {
       	borderTopRightRadius: Tokens[\\"radii\\"];
       	borderBottomRightRadius: Tokens[\\"radii\\"];
       	borderBottomLeftRadius: Tokens[\\"radii\\"];
-      	borderTopRadius: Tokens[\\"radii\\"];
-      	borderRightRadius: Tokens[\\"radii\\"];
-      	borderBottomRadius: Tokens[\\"radii\\"];
-      	borderLeftRadius: Tokens[\\"radii\\"];
+      	borderTopRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
+      	borderRightRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
+      	borderBottomRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
+      	borderLeftRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
       	borderStartStartRadius: Tokens[\\"radii\\"];
       	borderStartEndRadius: Tokens[\\"radii\\"];
-      	borderStartRadius: Tokens[\\"radii\\"];
+      	borderStartRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
       	borderEndStartRadius: Tokens[\\"radii\\"];
       	borderEndEndRadius: Tokens[\\"radii\\"];
-      	borderEndRadius: Tokens[\\"radii\\"];
+      	borderEndRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
       	border: Tokens[\\"borders\\"];
       	borderColor: Tokens[\\"colors\\"];
       	borderInline: Tokens[\\"borders\\"];
@@ -479,16 +481,16 @@ describe('generate property types', () => {
       	animation: Tokens[\\"animations\\"];
       	animationName: Tokens[\\"animationName\\"];
       	animationDelay: Tokens[\\"durations\\"];
-      	scale: \\"auto\\";
-      	translate: \\"auto\\";
+      	scale: \\"auto\\" | CssProperties[\\"scale\\"];
+      	translate: \\"auto\\" | CssProperties[\\"translate\\"];
       	translateX: Tokens[\\"spacing\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"full\\" | \\"-1/2\\" | \\"-1/3\\" | \\"-2/3\\" | \\"-1/4\\" | \\"-2/4\\" | \\"-3/4\\" | \\"-full\\";
       	translateY: Tokens[\\"spacing\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"full\\" | \\"-1/2\\" | \\"-1/3\\" | \\"-2/3\\" | \\"-1/4\\" | \\"-2/4\\" | \\"-3/4\\" | \\"-full\\";
       	accentColor: Tokens[\\"colors\\"];
       	caretColor: Tokens[\\"colors\\"];
       	scrollbar: \\"visible\\" | \\"hidden\\";
       	scrollMargin: Tokens[\\"spacing\\"];
-      	scrollMarginX: Tokens[\\"spacing\\"];
-      	scrollMarginY: Tokens[\\"spacing\\"];
+      	scrollMarginX: Tokens[\\"spacing\\"] | CssProperties[\\"scrollMarginInline\\"];
+      	scrollMarginY: Tokens[\\"spacing\\"] | CssProperties[\\"scrollMarginBlock\\"];
       	scrollMarginLeft: Tokens[\\"spacing\\"];
       	scrollMarginRight: Tokens[\\"spacing\\"];
       	scrollMarginTop: Tokens[\\"spacing\\"];
@@ -506,8 +508,8 @@ describe('generate property types', () => {
       	scrollPaddingInline: Tokens[\\"spacing\\"];
       	scrollPaddingInlineEnd: Tokens[\\"spacing\\"];
       	scrollPaddingInlineStart: Tokens[\\"spacing\\"];
-      	scrollPaddingX: Tokens[\\"spacing\\"];
-      	scrollPaddingY: Tokens[\\"spacing\\"];
+      	scrollPaddingX: Tokens[\\"spacing\\"] | CssProperties[\\"scrollPaddingInline\\"];
+      	scrollPaddingY: Tokens[\\"spacing\\"] | CssProperties[\\"scrollPaddingBlock\\"];
       	scrollPaddingLeft: Tokens[\\"spacing\\"];
       	scrollPaddingRight: Tokens[\\"spacing\\"];
       	scrollPaddingTop: Tokens[\\"spacing\\"];
@@ -523,7 +525,7 @@ describe('generate property types', () => {
       	stroke: Tokens[\\"colors\\"];
       	srOnly: boolean;
       	debug: boolean;
-      	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
+      	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
       	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
@@ -623,10 +625,11 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
+      type FilterString<T> = T extends \`\${infer _}\` ? T : never;
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T]>
+        ? ConditionalValue<FilterString<PropertyTypes[T]>>
         : T extends keyof CssProperties
-        ? ConditionalValue<CssProperties[T]>
+        ? ConditionalValue<FilterString<CssProperties[T]>>
         : ConditionalValue<string | number>"
     `)
   })

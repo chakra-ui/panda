@@ -1,5 +1,95 @@
 # @pandacss/dev
 
+## 0.19.0
+
+### Minor Changes
+
+- b3ca8412: Require explicit installation of `@pandacss/studio` to use the `panda studio` command.
+
+### Patch Changes
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/node@0.19.0
+  - @pandacss/config@0.19.0
+  - @pandacss/preset-panda@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/postcss@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
+## 0.18.3
+
+### Patch Changes
+
+- Updated dependencies [a30f660d]
+  - @pandacss/studio@0.18.3
+  - @pandacss/node@0.18.3
+  - @pandacss/postcss@0.18.3
+  - @pandacss/config@0.18.3
+  - @pandacss/error@0.18.3
+  - @pandacss/logger@0.18.3
+  - @pandacss/preset-panda@0.18.3
+  - @pandacss/shared@0.18.3
+  - @pandacss/token-dictionary@0.18.3
+  - @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- @pandacss/config@0.18.2
+- @pandacss/node@0.18.2
+- @pandacss/studio@0.18.2
+- @pandacss/token-dictionary@0.18.2
+- @pandacss/postcss@0.18.2
+- @pandacss/error@0.18.2
+- @pandacss/logger@0.18.2
+- @pandacss/preset-panda@0.18.2
+- @pandacss/shared@0.18.2
+- @pandacss/types@0.18.2
+
+## 0.18.1
+
+### Patch Changes
+
+- Updated dependencies [aac7b379]
+- Updated dependencies [566fd28a]
+- Updated dependencies [43bfa510]
+  - @pandacss/studio@0.18.1
+  - @pandacss/token-dictionary@0.18.1
+  - @pandacss/config@0.18.1
+  - @pandacss/node@0.18.1
+  - @pandacss/postcss@0.18.1
+  - @pandacss/error@0.18.1
+  - @pandacss/logger@0.18.1
+  - @pandacss/preset-panda@0.18.1
+  - @pandacss/shared@0.18.1
+  - @pandacss/types@0.18.1
+
+## 0.18.0
+
+### Patch Changes
+
+- 41563f56: Add `--strict-tokens` flag and question in the interactive CLI
+- 866c12aa: Fix CLI interactive mode `syntax` question values and prettify the generated `panda.config.ts` file
+- Updated dependencies [ba9e32fa]
+- Updated dependencies [b840e469]
+- Updated dependencies [3010af28]
+- Updated dependencies [866c12aa]
+  - @pandacss/shared@0.18.0
+  - @pandacss/studio@0.18.0
+  - @pandacss/node@0.18.0
+  - @pandacss/token-dictionary@0.18.0
+  - @pandacss/postcss@0.18.0
+  - @pandacss/types@0.18.0
+  - @pandacss/config@0.18.0
+  - @pandacss/error@0.18.0
+  - @pandacss/logger@0.18.0
+  - @pandacss/preset-panda@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes

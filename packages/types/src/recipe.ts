@@ -1,6 +1,4 @@
-import type { SystemStyleObject, DistributiveOmit } from './system-types'
-
-type Pretty<T> = { [K in keyof T]: T[K] } & {}
+import type { SystemStyleObject, DistributiveOmit, Pretty } from './system-types'
 
 type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
@@ -9,7 +7,7 @@ export type RecipeVariantRecord = Record<any, Record<any, SystemStyleObject>>
 export type RecipeSelection<T extends RecipeVariantRecord> = keyof any extends keyof T
   ? {}
   : {
-      [K in keyof T]?: StringToBoolean<keyof T[K]>
+      [K in keyof T]?: StringToBoolean<keyof T[K]> | undefined
     }
 
 export type RecipeVariantFn<T extends RecipeVariantRecord> = (props?: RecipeSelection<T>) => string
@@ -40,7 +38,7 @@ export interface RecipeRuntimeFn<T extends RecipeVariantRecord> extends RecipeVa
 type OneOrMore<T> = T | Array<T>
 
 export type RecipeCompoundSelection<T> = {
-  [K in keyof T]?: OneOrMore<StringToBoolean<keyof T[K]>>
+  [K in keyof T]?: OneOrMore<StringToBoolean<keyof T[K]>> | undefined
 }
 
 export type RecipeCompoundVariant<T> = T & {

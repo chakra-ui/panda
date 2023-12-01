@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "css:codegen": "pnpm panda codegen --silent",
+    "types:codegen": "tsx scripts/bundle-types.mts",
     "prepare": "pnpm db:generate && pnpm css:codegen",
-    "build": "next build",
+    "build": "pnpm types:codegen && next build",
     "start": "next start",
     "lint": "next lint",
     "dev": "next dev",
@@ -14,7 +15,8 @@
     "db:push": "prisma db push --skip-generate",
     "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "viz": "ANALYZE=true next build"
   },
   "dependencies": {
     "@ark-ui/react": "0.15.0",
@@ -27,13 +29,13 @@
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@prisma/client": "5.1.0",
-    "@textea/json-viewer": "3.1.1",
+    "@textea/json-viewer": "3.2.3",
     "hookable": "5.5.3",
     "merge-anything": "5.1.7",
     "monaco-editor": "0.40.0",
     "monaco-jsx-highlighter": "^2.0.4",
     "nanoid": "4.0.2",
-    "next": "14.0.0",
+    "next": "14.0.3",
     "next-themes": "^0.2.1",
     "os-browserify": "0.3.0",
     "outdent": " ^0.8.0",
@@ -48,16 +50,20 @@
     "typescript": "5.2.2",
     "usehooks-ts": "2.9.1",
     "util": "0.12.5",
-    "zod": "3.22.3"
+    "zod": "3.22.4"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^14.0.1",
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/node": "20.4.5",
     "@types/prettier": "2.7.3",
-    "@types/react": "18.2.22",
-    "@types/react-dom": "18.2.7",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "dts-bundle-generator": "^8.1.2",
     "eslint": "8.46.0",
-    "eslint-config-next": "13.4.12"
+    "eslint-config-next": "13.5.6",
+    "raw-loader": "^4.0.2",
+    "tsx": "3.12.10"
   }
 }

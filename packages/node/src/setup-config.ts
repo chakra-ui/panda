@@ -7,6 +7,7 @@ import { outdent } from 'outdent'
 import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import { findConfig } from './config'
+import prettier from 'prettier'
 
 type SetupOptions = Partial<Config> & {
   force?: boolean
@@ -54,7 +55,7 @@ export default defineConfig({
 })
     `
 
-    await fsExtra.writeFile(join(cwd, file), content)
+    await fsExtra.writeFile(join(cwd, file), prettier.format(content))
     logger.log(messages.thankYou())
   }
 }

@@ -1,15 +1,14 @@
 import { describe, expect, test } from 'vitest'
-import { generateRecipes } from '../src/artifacts/js/recipe'
+import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
 import { fixtureDefaults } from '@pandacss/fixture'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 
 describe('generate recipes', () => {
   test('should ', () => {
-    expect(generateRecipes(createGenerator(fixtureDefaults))).toMatchInlineSnapshot(`
-      [
-        {
-          "dts": "",
-          "js": "import { css } from '../css/css.mjs';
+    expect(generateCreateRecipe(new Generator(fixtureDefaults))).toMatchInlineSnapshot(`
+      {
+        "dts": "",
+        "js": "import { css } from '../css/css.mjs';
       import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
       import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
@@ -83,8 +82,12 @@ describe('generate recipes', () => {
        })
        }
       ",
-          "name": "create-recipe",
-        },
+        "name": "create-recipe",
+      }
+    `)
+
+    expect(generateRecipes(new Generator(fixtureDefaults))).toMatchInlineSnapshot(`
+      [
         {
           "dts": "import type { ConditionalValue } from '../types/index';
       import type { DistributiveOmit, Pretty } from '../types/system-types';
@@ -98,7 +101,7 @@ describe('generate recipes', () => {
       }
 
       export type TextStyleVariantProps = {
-        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]>
+        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]> | undefined
       }
 
       export interface TextStyleRecipe {
@@ -154,7 +157,7 @@ describe('generate recipes', () => {
       }
 
       export type TooltipStyleVariantProps = {
-        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]>
+        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]> | undefined
       }
 
       export interface TooltipStyleRecipe {
@@ -206,7 +209,7 @@ describe('generate recipes', () => {
       }
 
       export type ButtonStyleVariantProps = {
-        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]>
+        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]> | undefined
       }
 
       export interface ButtonStyleRecipe {
@@ -269,7 +272,7 @@ describe('generate recipes', () => {
       }
 
       export type CheckboxVariantProps = {
-        [key in keyof CheckboxVariant]?: ConditionalValue<CheckboxVariant[key]>
+        [key in keyof CheckboxVariant]?: ConditionalValue<CheckboxVariant[key]> | undefined
       }
 
       export interface CheckboxRecipe {

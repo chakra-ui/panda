@@ -1,11 +1,11 @@
 import { fixtureDefaults } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 import { generateResetCss } from '../src/artifacts/css/reset-css'
 
 describe('generate reset', () => {
   test('should work', () => {
-    expect(generateResetCss(createGenerator(fixtureDefaults), '.pd-reset')).toMatchInlineSnapshot(`
+    expect(generateResetCss(new Generator(fixtureDefaults), '.pd-reset')).toMatchInlineSnapshot(`
       "@layer reset {
         .pd-reset * {
           font: inherit;
@@ -140,7 +140,7 @@ describe('generate reset', () => {
         .pd-reset code, .pd-reset kbd, .pd-reset samp, .pd-reset pre {
           --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \\"Liberation Mono\\", \\"Courier New\\";
           font-size: 1em;
-          font-family: var(--global-font-mono, var(--font-fallback));
+          font-family: var(--global-font-mono, var(--font-mono-fallback));
         }
 
         .pd-reset input[type=\\"text\\"], .pd-reset input[type=\\"email\\"], .pd-reset input[type=\\"search\\"], .pd-reset input[type=\\"password\\"] {
