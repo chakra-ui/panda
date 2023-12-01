@@ -1,5 +1,49 @@
 # @pandacss/config
 
+## 0.20.0
+
+### Minor Changes
+
+- 904aec7b: - Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+
+  - Add support for extending `staticCss` defined in presets
+
+  ```jsx
+  const presetWithStaticCss = definePreset({
+    staticCss: {
+      recipes: {
+        // generate all button styles and variants
+        button: ['*'],
+      },
+    },
+  })
+
+  export default defineConfig({
+    presets: [presetWithStaticCss],
+    staticCss: {
+      extend: {
+        recipes: {
+          // extend and pre-generate all sizes for card
+          card: [{ size: ['small', 'medium', 'large'] }],
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Updated dependencies [24ee49a5]
+- Updated dependencies [904aec7b]
+  - @pandacss/types@0.20.0
+  - @pandacss/preset-base@0.20.0
+  - @pandacss/preset-panda@0.20.0
+  - @pandacss/error@0.20.0
+  - @pandacss/logger@0.20.0
+  - @pandacss/shared@0.20.0
+
 ## 0.19.0
 
 ### Patch Changes

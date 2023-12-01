@@ -1,5 +1,22 @@
 # @pandacss/generator
 
+## 0.20.0
+
+### Patch Changes
+
+- e4fdc64a: Fix issue where conditional recipe variant doesn't work as expected
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Updated dependencies [24ee49a5]
+- Updated dependencies [4ba982f3]
+- Updated dependencies [904aec7b]
+  - @pandacss/types@0.20.0
+  - @pandacss/core@0.20.0
+  - @pandacss/token-dictionary@0.20.0
+  - @pandacss/is-valid-prop@0.20.0
+  - @pandacss/logger@0.20.0
+  - @pandacss/shared@0.20.0
+
 ## 0.19.0
 
 ### Patch Changes

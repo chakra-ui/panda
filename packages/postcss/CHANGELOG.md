@@ -1,5 +1,14 @@
 # @pandacss/postcss
 
+## 0.20.0
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Updated dependencies [24ee49a5]
+  - @pandacss/node@0.20.0
+
 ## 0.19.0
 
 ### Patch Changes
