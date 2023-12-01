@@ -8,6 +8,13 @@
   "helpers": "Helpers",
   "interactivity": "Interactivity",
   "layout": "Layout",
+  "list": "List",
+  "outline": "Outline",
   "sizing": "Sizing",
+  "spacing": "Spacing",
+  "svg": "SVG",
+  "tables": "Tables",
+  "transforms": "Transforms",
+  "transitions": "Transitions",
   "typography": "Typography"
 }
