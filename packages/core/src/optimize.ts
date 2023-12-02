@@ -9,6 +9,8 @@ interface OptimizeOptions {
   minify?: boolean
 }
 
+const decoder = new TextDecoder()
+
 export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
   const { minify = false } = options
 
@@ -30,7 +32,7 @@ export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) 
     )
   }
 
-  return result.code.toString()
+  return decoder.decode(result.code)
 }
 
 export function expandCssFunctions(

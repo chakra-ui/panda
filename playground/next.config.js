@@ -16,12 +16,27 @@ const nextConfig = {
       util: 'util',
       module: path.join(__dirname, './module.shim.ts'),
       '@vue/compiler-sfc': '@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js',
+      lightningcss: 'lightningcss-wasm',
     }
 
     if (!isServer) {
       config.resolve.fallback = {
         perf_hooks: false,
       }
+
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        fs: path.join(__dirname, './fs.shim.ts'),
+      }
+      config.optimization.minimizer = []
+
+      // config.node ||= {}
+      // config.node.fs = 'empty'
+      // config.node.path = 'empty'
+
+      // config.resolve.fallback ||= {}
+      // config.resolve.fallback.fs = false
+      // config.resolve.fallback.path = false
     }
 
     config.module.rules.push({
