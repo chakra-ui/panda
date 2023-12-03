@@ -310,8 +310,18 @@ interface PropertyValueTypes {
 }
 
 
+
+  type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+    ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
+    : never;
+
+  type CssPropertyValue<T extends string> = T extends keyof CssProperties
+    ? ConditionalValue<CssProperties[T] | (string & {})>
+    : never;
+
   export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-  ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
-  : T extends keyof CssProperties
-  ? ConditionalValue<CssProperties[T] | (string & {})>
-  : ConditionalValue<string | number>
+    ? PropertyTypeValue<T>
+    : T extends keyof CssProperties
+      ? CssPropertyValue<T>
+      : ConditionalValue<string | number>
+  
