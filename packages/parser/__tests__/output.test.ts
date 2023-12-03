@@ -2709,7 +2709,7 @@ describe('extract to css output pipeline', () => {
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot('undefined')
+    expect(result.css).toMatchInlineSnapshot('""')
   })
 })
 
