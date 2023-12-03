@@ -2687,6 +2687,30 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('urls as value', () => {
+    const code = `
+    const App = () => {
+      return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
+    }
+     `
+    const result = run(code, { strictTokens: true })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "content": "https://www.buymeacoffee.com/grizzlycodes",
+            },
+          ],
+          "name": "CopyButton",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot('undefined')
+  })
 })
 
 describe('preset patterns', () => {
