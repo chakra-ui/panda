@@ -19,6 +19,7 @@ import pandaDevDts from '../dts/@pandacss_dev.d.ts?raw'
 import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
+import { useSearchParams } from 'next/navigation'
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
@@ -45,7 +46,10 @@ export function useEditor(props: PandaEditorProps) {
   const { onChange, value, artifacts } = props
   const { resolvedTheme } = useTheme()
 
-  const [activeTab, setActiveTab] = useState<keyof State>('code')
+  const searchParams = useSearchParams()
+  const initialTab = searchParams?.get('tab') as keyof State | null
+  const [activeTab, setActiveTab] = useState<keyof State>(initialTab ?? 'code')
+
   const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
