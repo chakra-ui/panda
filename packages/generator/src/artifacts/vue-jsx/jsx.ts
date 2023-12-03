@@ -46,14 +46,14 @@ export function generateVueJsxFactory(ctx: Context) {
             const [_htmlProps, _forwardedProps, variantProps, styleProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps);
-            return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.value.className)
+            return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.value.className, combinedProps.value.class)
           })
 
           const cvaClass = computed(() => {
             const [_htmlProps, _forwardedProps, variantProps, styleProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const cvaStyles = __cvaFn__.raw(variantProps)
-            return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.value.className)
+            return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.value.className, combinedProps.value.class)
           })
 
           const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
