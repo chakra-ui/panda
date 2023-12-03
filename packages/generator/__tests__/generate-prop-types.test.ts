@@ -316,7 +316,7 @@ describe('generate property types', () => {
       }
 
 
-      export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+        export type PropertyValue<T extends string> = T extends keyof PropertyTypes
         ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
         : T extends keyof CssProperties
         ? ConditionalValue<CssProperties[T] | (string & {})>
@@ -636,12 +636,15 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
-      type FilterString<T> = T extends \`\${infer _}\` ? T : never;
-      export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<FilterString<PropertyTypes[T]>>
-        : T extends keyof CssProperties
-        ? ConditionalValue<FilterString<CssProperties[T]>>
-        : ConditionalValue<string | number>"
+
+        type FilterString<T> = T extends \`\${infer _}\` ? T : never;
+        type WithArbitraryValue<T> = T | \`[\${string}]\`
+
+        export type PropertyValue<T extends string> = WithArbitraryValue<(T extends keyof PropertyTypes
+          ? ConditionalValue<FilterString<PropertyTypes[T]>>
+          : T extends keyof CssProperties
+          ? ConditionalValue<FilterString<CssProperties[T]>>
+          : ConditionalValue<string | number>)>"
     `)
   })
 })

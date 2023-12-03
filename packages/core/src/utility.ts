@@ -1,4 +1,12 @@
-import { compact, hypenateProperty, isFunction, isString, memo, withoutSpace } from '@pandacss/shared'
+import {
+  compact,
+  getArbitraryValue,
+  hypenateProperty,
+  isFunction,
+  isString,
+  memo,
+  withoutSpace,
+} from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@pandacss/types'
 import type { TransformResult } from './types'
@@ -386,10 +394,11 @@ export class Utility {
       return { className: '', styles: {} }
     }
     const key = this.resolveShorthand(prop)
+
     return compact({
       layer: this.configs.get(key)?.layer,
       className: this.getOrCreateClassName(key, withoutSpace(value)),
-      styles: this.getOrCreateStyle(key, value),
+      styles: this.getOrCreateStyle(key, getArbitraryValue(value)),
     })
   }
 

@@ -310,7 +310,7 @@ interface PropertyValueTypes {
 }
 
 
-export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+  export type PropertyValue<T extends string> = T extends keyof PropertyTypes
   ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
   : T extends keyof CssProperties
   ? ConditionalValue<CssProperties[T] | (string & {})>
