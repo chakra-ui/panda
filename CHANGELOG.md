@@ -6,6 +6,58 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.20.1] - 2023-12-01
+
+### Fixed
+
+- Fix issue where conditional recipe variant doesn't work as expected
+- Fix issue with the `token(xxx.yyy)` fn used in AtRule, things like:
+
+```ts
+css({
+  '@container (min-width: token(sizes.xl))': {
+    color: 'green.300',
+  },
+  '@media (min-width: token(sizes.2xl))': {
+    color: 'red.300',
+  },
+})
+```
+
+### Added
+
+- Add a --watch flag to the `panda ship` command
+- Add support for granular config change detection
+- Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Added `strokeWidth` to svg utilities.
+- Connected `outlineWidth` utility to `borderWidths` token.
+- Add `borderWidth`, `borderTopWidth`, `borderLeftWidth`, `borderRightWidth`, `borderBottomWidth` to berder utilities.
+- Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+- Add support for extending `staticCss` defined in presets
+
+```jsx
+const presetWithStaticCss = definePreset({
+  staticCss: {
+    recipes: {
+      // generate all button styles and variants
+      button: ['*'],
+    },
+  },
+})
+
+export default defineConfig({
+  presets: [presetWithStaticCss],
+  staticCss: {
+    extend: {
+      recipes: {
+        // extend and pre-generate all sizes for card
+        card: [{ size: ['small', 'medium', 'large'] }],
+      },
+    },
+  },
+})
+```
+
 ## [0.19.0] - 2023-11-24
 
 ### Fixed
