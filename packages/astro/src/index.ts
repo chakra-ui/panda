@@ -20,13 +20,19 @@ async function getPostCssConfig(root: UserConfig['root'], postcssInlineOptions: 
   return postcssConfig
 }
 
-async function getViteConfig(viteConfig: AstroConfig['vite']) {
+async function getViteConfig(viteConfig: AstroConfig['vite'], options?: PandaOptions) {
   const postcssConfig = await getPostCssConfig(viteConfig.root, viteConfig.css?.postcss)
   const postcssOptions = postcssConfig?.options || {}
 
   const postcssPlugins = postcssConfig?.plugins?.slice() ?? []
+  const pandaPostcss = interopDefault(require('@pandacss/postcss'))
 
-  postcssPlugins.push(interopDefault(require('@pandacss/postcss')))
+  postcssPlugins.push(
+    pandaPostcss({
+      configPath: options?.configPath,
+      cwd: options?.cwd,
+    }),
+  )
   postcssPlugins.push(autoprefixerPlugin())
 
   return {
@@ -45,6 +51,14 @@ interface PandaOptions {
    * @default true
    */
   applyBaseStyles?: boolean
+  /**
+   * Path to the Panda config file.
+   */
+  configPath?: string
+  /**
+   * The current working directory.
+   */
+  cwd?: string
 }
 
 export default function pandaIntegration(options?: PandaOptions): AstroIntegration {
@@ -55,7 +69,7 @@ export default function pandaIntegration(options?: PandaOptions): AstroIntegrati
     hooks: {
       'astro:config:setup': async ({ config, updateConfig, injectScript }) => {
         updateConfig({
-          vite: await getViteConfig(config.vite),
+          vite: await getViteConfig(config.vite, options),
         })
 
         if (applyBaseStyles) {

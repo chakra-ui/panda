@@ -37,12 +37,12 @@ export class Builder {
     return configPath
   }
 
-  setup = async (options: { configPath?: string; cwd?: string; from?: string } = {}) => {
+  setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
     if (!this.context) {
-      return this.setupContext({ configPath })
+      return this.setupContext({ configPath, cwd: options.cwd })
     }
 
     const ctx = this.getContextOrThrow()
@@ -70,9 +70,9 @@ export class Builder {
     this.hasEmitted = true
   }
 
-  setupContext = async (options: { configPath: string }) => {
-    const { configPath } = options
-    const ctx = await loadConfigAndCreateContext({ configPath })
+  setupContext = async (options: { configPath: string; cwd?: string }) => {
+    const { configPath, cwd } = options
+    const ctx = await loadConfigAndCreateContext({ configPath, cwd })
     this.context = ctx
     return ctx
   }
