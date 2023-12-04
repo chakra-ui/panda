@@ -1,6 +1,6 @@
 import type { ArtifactId, ConfigResultWithHooks, ParserResultType } from '@pandacss/types'
+import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
-import { generateFlattenedCss, type FlattenedCssOptions } from './artifacts/css/flat-css'
 import { generateGlobalCss } from './artifacts/css/global-css'
 import { generateKeyframeCss } from './artifacts/css/keyframe-css'
 import { generateParserCss } from './artifacts/css/parser-css'
@@ -10,6 +10,8 @@ import { generateTokenCss } from './artifacts/css/token-css'
 import { Context } from './engines' // Previously Engine
 import { getMessages } from './messages'
 import { getParserOptions, type ParserOptions } from './parser-options'
+
+export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 
 export class Generator extends Context {
   messages: ReturnType<typeof getMessages>
@@ -25,31 +27,19 @@ export class Generator extends Context {
     return generateArtifacts(this, ids)
   }
 
-  getStaticCss() {
-    return generateStaticCss(this)
+  appendCss(type: CssArtifactType) {
+    match(type)
+      .with('preflight', () => generateResetCss(this))
+      .with('tokens', () => generateTokenCss(this))
+      .with('static', () => generateStaticCss(this))
+      .with('global', () => generateGlobalCss(this))
+      .with('keyframes', () => generateKeyframeCss(this))
+      .otherwise(() => {
+        throw new Error(`Unknown css artifact type <${type}>`)
+      })
   }
 
-  getResetCss() {
-    return generateResetCss(this)
-  }
-
-  getTokenCss() {
-    return generateTokenCss(this)
-  }
-
-  getKeyframeCss() {
-    return generateKeyframeCss(this)
-  }
-
-  getGlobalCss() {
-    return generateGlobalCss(this)
-  }
-
-  getCss(options: FlattenedCssOptions) {
-    return generateFlattenedCss(this, options)
-  }
-
-  getParserCss(result: ParserResultType) {
-    return generateParserCss(this, result)
+  appendParserCss(result: ParserResultType) {
+    generateParserCss(this, result)
   }
 }

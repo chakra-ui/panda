@@ -1,15 +1,7 @@
-import { describe, test, expect } from 'vitest'
-import { getFixtureProject } from './fixture'
-import type { Config, TSConfig } from '@pandacss/types'
+import { describe, expect, test } from 'vitest'
+import { getFixtureProject, parseAndExtract } from './fixture'
 
-const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
-  const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
-  const result = parse()!
-  return {
-    json: result?.toArray().map(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
-  }
-}
+const run = parseAndExtract
 
 describe('extract to css output pipeline', () => {
   test('basic usage', () => {

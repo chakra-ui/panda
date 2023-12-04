@@ -59,6 +59,7 @@ export class Context {
   jsx: JsxEngine
   paths: PathEngine
   file: FileEngine
+  stylesheet: Stylesheet
 
   // Props
   properties!: Set<string>
@@ -85,6 +86,7 @@ export class Context {
 
     // Relies on this.conditions, this.utility, this.layers
     this.recipes = this.createRecipes(theme, this.baseSheetContext)
+    this.stylesheet = this.createSheet()
   }
 
   get config() {

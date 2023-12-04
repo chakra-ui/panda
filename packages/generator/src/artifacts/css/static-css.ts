@@ -3,9 +3,9 @@ import type { Context } from '../../engines'
 
 export const generateStaticCss = (ctx: Context) => {
   const { config, utility, recipes } = ctx
-  const { staticCss = {}, theme = {}, optimize = true } = config
+  const { staticCss = {}, theme = {} } = config
 
-  const sheet = ctx.createSheet()
+  // const sheet = ctx.createSheet()
   const fn = getStaticCss(staticCss)
 
   const results = fn({
@@ -26,20 +26,16 @@ export const generateStaticCss = (ctx: Context) => {
   })
 
   results.css.forEach((css) => {
-    sheet.processAtomic(css)
+    ctx.stylesheet.processAtomic(css)
   })
 
   results.recipes.forEach((result) => {
     Object.entries(result).forEach(([name, value]) => {
       const recipeConfig = recipes.getConfig(name)
       if (!recipeConfig) return
-      sheet.processRecipe(name, recipeConfig, value)
+      ctx.stylesheet.processRecipe(name, recipeConfig, value)
     })
   })
 
-  const output = sheet.toCss({ optimize })
-
-  void ctx.hooks.callHook('generator:css', 'static.css', output)
-
-  return output
+  void ctx.hooks.callHook('generator:css', 'static.css', '')
 }

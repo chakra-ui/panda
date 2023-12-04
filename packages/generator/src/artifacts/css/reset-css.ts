@@ -2,10 +2,11 @@ import type { Context } from '../../engines'
 
 const css = String.raw
 
-export function generateResetCss(ctx: Context, scope = '') {
+export function generateResetCss(ctx: Context) {
+  const scope = ctx.config.cssVarRoot
   const selector = scope ? `${scope} ` : ''
   // prettier-ignore
-  const output = css`@layer ${ctx.layers.reset} {
+  const output = css`
   ${selector}* {
     margin: 0;
     padding: 0;
@@ -218,9 +219,8 @@ export function generateResetCss(ctx: Context, scope = '') {
   ${selector}:-moz-focusring {
     outline: auto;
   }
-}`
+`
 
-  void ctx.hooks.callHook('generator:css', 'reset.css', output)
-
-  return output
+  ctx.layers.reset.append(output)
+  void ctx.hooks.callHook('generator:css', 'reset.css', '')
 }

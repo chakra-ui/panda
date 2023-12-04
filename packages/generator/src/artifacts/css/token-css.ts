@@ -1,4 +1,4 @@
-import { expandNestedCss, extractParentSelectors, prettifyCss, toCss } from '@pandacss/core'
+import { expandNestedCss, extractParentSelectors, toCss } from '@pandacss/core'
 import postcss, { AtRule, Rule } from 'postcss'
 import type { Context } from '../../engines'
 
@@ -44,15 +44,11 @@ export function generateTokenCss(ctx: Context) {
     }
   }
 
-  const css = results.join('\n\n')
+  let css = results.join('\n\n')
+  css = '\n\n' + cleanupSelectors(css, root)
 
-  const output = `@layer ${ctx.layers.tokens} {
-    ${prettifyCss(cleanupSelectors(css, root))}
-  }
-  `
-
-  void ctx.hooks.callHook('generator:css', 'tokens.css', output)
-  return output
+  ctx.layers.tokens.append(css)
+  void ctx.hooks.callHook('generator:css', 'tokens.css', '')
 }
 
 function getDeepestRule(root: string, selectors: string[]) {

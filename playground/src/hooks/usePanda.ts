@@ -77,14 +77,14 @@ const playgroundPreset: Preset = {
 
 export function usePanda(source: string, css: string, config: string) {
   const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
-  const prevGenerator = useRef<Generator | null>(null)
+  const previousContext = useRef<Generator | null>(null)
 
   useEffect(() => {
     const newUserConfig = evalConfig(config)
     if (newUserConfig) setUserConfig(newUserConfig)
   }, [config])
 
-  const generator = useMemo(() => {
+  const context = useMemo(() => {
     const { presets, ...restConfig } = userConfig ?? {}
 
     const config = getResolvedConfig({
@@ -104,7 +104,7 @@ export function usePanda(source: string, css: string, config: string) {
 
     try {
       // in event of error (invalid token format), use previous generator
-      const generator = new Generator({
+      const context = new Generator({
         dependencies: [],
         serialized: '',
         deserialize: () => config!,
@@ -112,10 +112,10 @@ export function usePanda(source: string, css: string, config: string) {
         hooks: createHooks(),
         config: config as any,
       })
-      prevGenerator.current = generator
-      return generator
+      previousContext.current = context
+      return context
     } catch {
-      return prevGenerator.current!
+      return previousContext.current!
     }
   }, [userConfig])
 
@@ -126,21 +126,23 @@ export function usePanda(source: string, css: string, config: string) {
         join(...paths) {
           return paths.join('/')
         },
-        ...generator.parserOptions,
+        ...context.parserOptions,
       },
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
-      hooks: generator.hooks,
+      hooks: context.hooks,
     })
 
     const parserResult = project.parseSourceFile('code.tsx')
-    const parsedCss = parserResult ? generator.getParserCss(parserResult) ?? '' : ''
-    const artifacts = generator.getArtifacts() ?? []
+    if (parserResult) {
+      context.appendParserCss(parserResult)
+    }
+
+    const parsedCss = context.stylesheet.toCss({ optimize: true })
+    const artifacts = context.getArtifacts() ?? []
 
     const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
-
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
-
     const previewJs = allJsFiles
       .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
       ?.join('\n')
@@ -167,12 +169,12 @@ export function usePanda(source: string, css: string, config: string) {
       previewJs,
       parserResult,
       cssArtifacts,
-      generator,
+      context,
       parsedCss,
     }
     console.log(panda) // <-- useful for debugging purposes, don't remove
     return panda
-  }, [source, css, generator])
+  }, [source, css, context])
 }
 
 export type CssFileArtifact = {

@@ -39,18 +39,9 @@ function getResolvedCss(ctx: Context) {
 
 export const generateFlattenedCss = (ctx: Context, options: FlattenedCssOptions) => {
   const { files, resolve } = options
-  const { minify } = ctx.config
 
   const content = resolve ? getResolvedCss(ctx) : getUnresolvedCss(ctx)
 
-  const sheet = ctx.createSheet()
-  sheet.content = content
-
-  sheet.append(...files)
-
-  const output = sheet.toCss({ optimize: true, minify })
-
-  void ctx.hooks.callHook('generator:css', 'styles.css', output)
-
-  return output
+  ctx.layers.root.append(content, ...files)
+  void ctx.hooks.callHook('generator:css', 'styles.css', '')
 }
