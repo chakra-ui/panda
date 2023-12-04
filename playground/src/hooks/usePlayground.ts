@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
 import { EXAMPLES, Example, initialCSS } from '@/src/components/Examples/data'
+import { useParams } from 'next/navigation'
 
 export type State = {
   code: string
@@ -11,6 +12,7 @@ export type State = {
 
 export type UsePlayGroundProps = {
   initialState?: State | null
+  diffState?: State | null
 }
 
 export const usePlayground = (props: UsePlayGroundProps) => {
@@ -20,6 +22,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   const [isSharing, setIsSharing] = useState(false)
   const [isResponsive, setIsResponsive] = useState(false)
   const toast = useToast()
+  const params = useParams()
 
   const [panels, setPanels] = useState([
     { id: 'left', size: 50, minSize: 15 },
@@ -61,13 +64,13 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   const { code, config, css = initialCSS } = EXAMPLES.find((example) => example.id === 'css')!
 
-  const [state, setState] = useState(
-    initialState ?? {
-      code,
-      config,
-      css,
-    },
-  )
+  const example = {
+    code,
+    config,
+    css,
+  }
+
+  const [state, setState] = useState(initialState ?? example)
 
   function copyCurrentURI() {
     const currentURI = window.location.href
@@ -77,7 +80,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     })
   }
 
-  const onShare = async () => {
+  const share = async ({ onDone }: { onDone: (id: string) => void }) => {
     setIsSharing(true)
     fetch('/api/share', {
       method: 'POST',
@@ -88,7 +91,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     })
       .then((response) => response.json())
       .then(({ data }) => {
-        history.pushState({ id: data.id }, '', data.id)
+        onDone(data.id)
         copyCurrentURI()
         toast.success({
           title: 'Playground saved.',
@@ -108,6 +111,25 @@ export const usePlayground = (props: UsePlayGroundProps) => {
         })
         setIsSharing(false)
       })
+  }
+
+  const onShare = async () => {
+    share({
+      onDone(id) {
+        history.pushState({ id }, '', id)
+      },
+    })
+  }
+
+  const onShareDiff = () => {
+    const original = params?.id
+    if (!original) return
+
+    share({
+      onDone(id) {
+        history.pushState({ id }, '', `${original}/${id}}`)
+      },
+    })
   }
 
   const setExample = (_example: Example) => {
@@ -136,6 +158,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     },
     setExample,
     onShare,
+    onShareDiff,
     isSharing,
     isResponsive,
   }

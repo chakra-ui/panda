@@ -21,6 +21,7 @@ export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
   artifacts: Artifact[]
+  diffState?: State | null
 }
 
 export const defaultEditorOptions: EditorProps['options'] = {
