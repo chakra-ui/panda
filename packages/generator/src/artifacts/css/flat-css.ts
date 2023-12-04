@@ -10,11 +10,9 @@ export interface FlattenedCssOptions {
   resolve?: boolean
 }
 
-export const generateFlattenedCss = (ctx: Context, options: FlattenedCssOptions) => {
-  const { files, resolve } = options
-  const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
-
-  const unresolved = [
+function getUnresolvedCss(ctx: Context) {
+  const { theme: { keyframes } = {}, preflight, staticCss } = ctx.config
+  return [
     ctx.layerString,
     preflight && "@import './reset.css';",
     "@import './global.css';",
@@ -24,20 +22,29 @@ export const generateFlattenedCss = (ctx: Context, options: FlattenedCssOptions)
   ]
     .filter(Boolean)
     .join('\n\n')
+}
 
-  const sheet = ctx.createSheet({
-    content: resolve
-      ? [
-          generateGlobalCss(ctx),
-          staticCss && generateStaticCss(ctx),
-          preflight && generateResetCss(ctx),
-          !ctx.tokens.isEmpty && generateTokenCss(ctx),
-          keyframes && generateKeyframeCss(ctx),
-        ]
-          .filter(Boolean)
-          .join('\n\n')
-      : unresolved,
-  })
+function getResolvedCss(ctx: Context) {
+  const { theme: { keyframes } = {}, preflight, staticCss } = ctx.config
+  return [
+    generateGlobalCss(ctx),
+    staticCss && generateStaticCss(ctx),
+    preflight && generateResetCss(ctx),
+    !ctx.tokens.isEmpty && generateTokenCss(ctx),
+    keyframes && generateKeyframeCss(ctx),
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+export const generateFlattenedCss = (ctx: Context, options: FlattenedCssOptions) => {
+  const { files, resolve } = options
+  const { minify } = ctx.config
+
+  const content = resolve ? getResolvedCss(ctx) : getUnresolvedCss(ctx)
+
+  const sheet = ctx.createSheet()
+  sheet.content = content
 
   sheet.append(...files)
 

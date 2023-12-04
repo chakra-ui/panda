@@ -1,58 +1,50 @@
 import { expect, test } from 'vitest'
-import { Recipes } from '../src'
-import { createContext } from './fixture'
+import { createRecipeFn } from './fixture'
 
-function run(value: Record<string, any> = {}) {
-  const recipe = new Recipes(
-    {
-      text: {
-        className: 'text',
-        base: {
-          marginTop: 'auto',
-          marginBottom: 0,
-          paddingTop: 0,
-          objectPos: 'center',
-        },
-        variants: {
-          variant: {
-            sm: {
-              '&:first-child': {
-                marginRight: '4',
-                '&:hover': {
-                  color: { base: 'red.200', md: 'gray.300' },
-                },
-              },
-              '&:disabled': {
-                marginRight: '40px',
-                filter: 'unset',
+const recipe = createRecipeFn({
+  recipes: {
+    text: {
+      className: 'text',
+      base: {
+        marginTop: 'auto',
+        marginBottom: 0,
+        paddingTop: 0,
+        objectPos: 'center',
+      },
+      variants: {
+        variant: {
+          sm: {
+            '&:first-child': {
+              marginRight: '4',
+              '&:hover': {
+                color: { base: 'red.200', md: 'gray.300' },
               },
             },
-            md: {
-              '&:before': {
-                '--mb': 'colors.gray.300',
-                left: '5',
-                borderBottomRightRadius: 'sm',
-              },
-              '&:after': {
-                right: 90,
-                borderBottomRightRadius: 'lg',
-                transform: 'scaleX(-1)',
-              },
+            '&:disabled': {
+              marginRight: '40px',
+              filter: 'unset',
+            },
+          },
+          md: {
+            '&:before': {
+              '--mb': 'colors.gray.300',
+              left: '5',
+              borderBottomRightRadius: 'sm',
+            },
+            '&:after': {
+              right: 90,
+              borderBottomRightRadius: 'lg',
+              transform: 'scaleX(-1)',
             },
           },
         },
       },
     },
-    createContext(),
-  )
-
-  recipe.save()
-  recipe.process('text', { styles: value })
-  return recipe.toCss()
-}
+  },
+})
 
 test('[recipe] direct nesting / recipe ruleset', () => {
-  expect(run({ variant: 'sm' })).toMatchInlineSnapshot(`
+  expect(recipe('text', { variant: 'sm' })).toMatchInlineSnapshot(`
     "@layer recipes {
         @layer _base {
             .text {
@@ -82,7 +74,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
     }"
   `)
 
-  expect(run({ variant: 'md' })).toMatchInlineSnapshot(`
+  expect(recipe('text', { variant: 'md' })).toMatchInlineSnapshot(`
     "@layer recipes {
         @layer _base {
             .text {

@@ -8,8 +8,8 @@ import {
   withoutImportant,
 } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
-import type { Root } from 'postcss'
-import postcss from 'postcss'
+import postcss, { Container } from 'postcss'
+import { match } from 'ts-pattern'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
@@ -19,14 +19,15 @@ export interface ProcessOptions {
 
 const urlRegex = /^https?:\/\//
 
-export class AtomicRule {
-  root: Root
-  layer: string
+interface WriteOptions {
+  layer: string | undefined
+  rule: Container
+}
 
-  constructor(private context: StylesheetContext) {
-    this.root = postcss.root()
-    this.layer = context.layers.utilities
-  }
+type AtomicRuleContext = Pick<StylesheetContext, 'conditions' | 'hash' | 'utility' | 'transform' | 'layers'>
+
+export class AtomicRule {
+  constructor(private context: AtomicRuleContext, private fn: (opts: WriteOptions) => void) {}
 
   hashFn = (conditions: string[], className: string) => {
     const { conditions: cond, hash, utility } = this.context
@@ -96,32 +97,39 @@ export class AtomicRule {
       // apply css conditions
       rule.applyConditions(conditions)
 
-      // append the rule to the root
-      if (transformed.layer) {
-        // if layer is specified, create a new root with the layer name
-        const atRule = postcss.atRule({
-          name: 'layer',
-          params: transformed.layer,
-          nodes: [rule.rule!],
-        })
-        this.root.append(atRule)
-        //
-      } else {
-        this.root.append(rule.rule!)
-      }
+      const styleRule = rule.rule!
+
+      this.fn({ layer: transformed.layer, rule: styleRule })
     })
-
-    if (this.root.nodes.length === 0) return
-
-    const atRule = postcss.atRule({
-      name: 'layer',
-      params: this.layer,
-      nodes: [this.root],
-    })
-    this.context.root.append(atRule)
   }
+}
 
-  toCss = () => {
-    return this.context.root.toString()
-  }
+export function createRecipeAtomicRule(ctx: AtomicRuleContext, slot?: boolean) {
+  return new AtomicRule(ctx, ({ rule, layer }) => {
+    match({ layer, slot })
+      .with({ layer: '_base', slot: true }, () => {
+        ctx.layers.slotRecipes.base.append(rule)
+      })
+      .with({ slot: true }, () => {
+        ctx.layers.slotRecipes.root.append(rule)
+      })
+      .with({ layer: '_base' }, () => {
+        ctx.layers.recipes.base.append(rule)
+      })
+      .otherwise(() => {
+        ctx.layers.recipes.root.append(rule)
+      })
+  })
+}
+
+export function createAtomicRule(ctx: AtomicRuleContext) {
+  return new AtomicRule(ctx, ({ layer, rule }) => {
+    if (layer === 'composition') {
+      ctx.layers.utilities.compositions.append(rule)
+    } else if (typeof layer === 'string') {
+      ctx.layers.utilities.custom(layer).append(rule)
+    } else {
+      ctx.layers.utilities.root.append(rule)
+    }
+  })
 }

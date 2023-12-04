@@ -1,7 +1,7 @@
 import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
 import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
-import { AtomicRule, type ProcessOptions } from './atomic-rule'
+import { AtomicRule, createRecipeAtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
 import type { RecipeNode, StylesheetContext } from './types'
@@ -29,6 +29,8 @@ const sharedState = {
   slots: new Map<string, Map<string, RecipeConfig>>(),
 }
 
+type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions' | 'layers'>
+
 export class Recipes {
   /**
    * The map of the recipes to their atomic rules
@@ -39,7 +41,7 @@ export class Recipes {
     return Object.keys(this.recipes)
   }
 
-  constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
+  constructor(private recipes: RecipeRecord = {}, private context: RecipeContext) {
     this.prune()
     this.save()
   }
@@ -252,13 +254,13 @@ export class Recipes {
       throw new Error("Can't create a rule without a context")
     }
 
-    const rule = new AtomicRule({
+    const context = {
       ...this.context,
       transform: this.getTransform(name),
-    })
+    }
 
-    const layer = this.context.layers.recipes
-    rule.layer = slot ? `${layer}.slots` : layer
+    const rule = createRecipeAtomicRule(context, slot)
+
     return rule
   }
 
@@ -298,11 +300,6 @@ export class Recipes {
       rule?.process({ styles })
       //
     }
-  }
-
-  toCss = () => {
-    if (!this.context) return ''
-    return this.context.root.toString()
   }
 
   filterDetails = (filters?: ArtifactFilters) => {

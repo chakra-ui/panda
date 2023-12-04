@@ -4,8 +4,9 @@ import {
   Stylesheet,
   Utility,
   assignCompositions,
+  createSheetRoot,
   type StylesheetContext,
-  type StylesheetOptions,
+  type StylesheetRoot,
 } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
@@ -19,14 +20,12 @@ import type {
   StudioOptions,
   Theme,
   UserConfig,
-  TSConfig as _TSConfig,
 } from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
-import postcss from 'postcss'
-import { Patterns } from './pattern'
+import { FileEngine } from './file'
 import { JsxEngine } from './jsx'
 import { PathEngine } from './path'
-import { FileEngine } from './file'
+import { Patterns } from './pattern'
 
 const helpers = { map: mapObject }
 
@@ -168,28 +167,31 @@ export class Context {
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
 
-  createSheetContext(): StylesheetContext {
+  private get staticSheetContext() {
     return {
-      root: postcss.root(),
       conditions: this.conditions,
       utility: this.utility,
-      hash: this.hash.className,
-      layers: this.layers,
+      recipes: this.recipes,
       helpers,
+      hash: this.hash.className,
     }
   }
 
-  createSheet(options?: Pick<StylesheetOptions, 'content'>): Stylesheet {
+  createSheet(): Stylesheet {
     const sheetContext = this.createSheetContext()
-    return new Stylesheet(sheetContext, {
-      content: options?.content,
-      recipes: this.config.theme?.recipes,
-      slotRecipes: this.config.theme?.slotRecipes,
-    })
+    return new Stylesheet(sheetContext)
   }
 
   createRecipes(theme: Theme, context: StylesheetContext): Recipes {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
     return new Recipes(recipeConfigs, context)
+  }
+
+  createSheetRoot(): StylesheetRoot {
+    return createSheetRoot(this.layers)
+  }
+
+  createSheetContext(): StylesheetContext {
+    return Object.assign({}, this.createSheetRoot(), this.staticSheetContext)
   }
 }

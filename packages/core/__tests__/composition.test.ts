@@ -1,15 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { assignCompositions } from '../src/compositions'
-import { compositions, createContext } from './fixture'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
+import { compositions, createContext, createCssFn } from './fixture'
 
-function css(obj: ProcessOptions) {
-  const ctx = createContext()
-  assignCompositions(compositions, ctx)
-  const ruleset = new AtomicRule(ctx)
-  ruleset.process(obj)
-  return ruleset.toCss()
-}
+const css = createCssFn()
 
 describe('compositions', () => {
   test('should assign composition', () => {
@@ -42,7 +35,7 @@ describe('compositions', () => {
   })
 
   test('should respect the layer', () => {
-    expect(css({ styles: { textStyle: 'headline.h1' } })).toMatchInlineSnapshot(`
+    expect(css({ textStyle: 'headline.h1' })).toMatchInlineSnapshot(`
       "@layer utilities {
           @layer compositions {
               .textStyle_headline\\\\.h1 {
@@ -53,7 +46,7 @@ describe('compositions', () => {
       }"
     `)
 
-    expect(css({ styles: { textStyle: 'headline.h2' } })).toMatchInlineSnapshot(`
+    expect(css({ textStyle: 'headline.h2' })).toMatchInlineSnapshot(`
       "@layer utilities {
           @layer compositions {
               .textStyle_headline\\\\.h2 {

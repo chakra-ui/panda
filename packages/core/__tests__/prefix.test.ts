@@ -1,13 +1,8 @@
 import { createCss } from '@pandacss/shared'
 import { describe, expect, test } from 'vitest'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
-import { createContext } from './fixture'
+import { createCssFn, createContext } from './fixture'
 
-function backend(obj: ProcessOptions['styles']) {
-  const ruleset = new AtomicRule(createContext({ prefix: 'tw', hash: true }))
-  ruleset.process({ styles: obj })
-  return ruleset.toCss()
-}
+const backend = createCssFn({ prefix: 'tw', hash: true })
 
 const frontend = createCss(createContext({ prefix: 'tw', hash: true }))
 
