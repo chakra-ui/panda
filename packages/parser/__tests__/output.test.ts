@@ -2687,6 +2687,74 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('urls as value', () => {
+    const code = `
+    const App = () => {
+      return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
+    }
+     `
+    const result = run(code, { strictTokens: true })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "content": "https://www.buymeacoffee.com/grizzlycodes",
+            },
+          ],
+          "name": "CopyButton",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot('""')
+  })
+
+  test('strictTokens arbitrary value escape hatch', () => {
+    const code = `
+    import { css } from '.panda/css';
+
+    css({
+      color: '[#fff]',
+      bg: 'red.300',
+      bgColor: '[rgb(51 155 240)]',
+    })
+     `
+    const result = run(code, { strictTokens: true })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "bg": "red.300",
+              "bgColor": "[rgb(51 155 240)]",
+              "color": "[#fff]",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_\\\\[\\\\#fff\\\\] {
+          color: #fff
+          }
+
+        .bg_red\\\\.300 {
+          background: var(--colors-red-300)
+          }
+
+        .bg_\\\\[rgb\\\\(51_155_240\\\\)\\\\] {
+          background-color: rgb(51 155 240)
+          }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {
