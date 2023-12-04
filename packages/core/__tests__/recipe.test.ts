@@ -96,6 +96,7 @@ describe('recipe ruleset', () => {
         "jsx": [
           "ButtonStyle",
         ],
+        "staticCss": [],
         "variants": {
           "size": {
             "md": {
