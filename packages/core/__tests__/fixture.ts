@@ -7,14 +7,6 @@ import type { StylesheetContext } from '../src/types'
 
 type ContextOptions = Partial<Omit<StylesheetContext, 'recipes'>> & { prefix?: string; recipes?: Dict }
 
-export const defaultLayers = {
-  reset: 'reset',
-  base: 'base',
-  tokens: 'tokens',
-  recipes: 'recipes',
-  utilities: 'utilities',
-}
-
 export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
   const { hash, prefix, recipes: recipeObj = {}, ...rest } = opts
 
@@ -36,7 +28,7 @@ export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
     shorthands: true,
   })
 
-  const layers = new Layers(defaultLayers)
+  const layers = new Layers(mocks.layers)
 
   const recipes = new Recipes(recipeObj, {
     utility,
