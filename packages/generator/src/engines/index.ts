@@ -1,12 +1,11 @@
 import {
   Conditions,
+  Layers,
   Recipes,
   Stylesheet,
   Utility,
   assignCompositions,
-  createSheetRoot,
-  type StylesheetContext,
-  type StylesheetRoot,
+  type RecipeContext,
 } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
@@ -56,6 +55,7 @@ export class Context {
   recipes: Recipes
   conditions: Conditions
   patterns: Patterns
+  layers: Layers
   jsx: JsxEngine
   paths: PathEngine
   file: FileEngine
@@ -63,12 +63,6 @@ export class Context {
   // Props
   properties!: Set<string>
   isValidProperty!: (key: string) => boolean
-
-  // Layers
-  layers!: CascadeLayers
-  isValidLayerRule!: (layerRule: string) => boolean
-  layerString!: string
-  layerNames!: string[]
 
   constructor(public conf: ConfigResultWithHooks) {
     const config = defaults(conf.config)
@@ -78,6 +72,8 @@ export class Context {
     this.tokens = this.createTokenDictionary(theme)
     this.utility = this.createUtility(config)
     this.conditions = this.createConditions(config)
+    this.layers = this.createLayers(config.layers as CascadeLayers)
+
     this.patterns = new Patterns(config)
     this.jsx = new JsxEngine(config)
     this.paths = new PathEngine(config)
@@ -85,11 +81,10 @@ export class Context {
 
     this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
     this.setupCompositions(theme)
-    this.setupLayers(config.layers as CascadeLayers)
     this.setupProperties()
 
     // Relies on this.conditions, this.utility, this.layers
-    this.recipes = this.createRecipes(theme, this.createSheetContext())
+    this.recipes = this.createRecipes(theme, this.baseSheetContext)
   }
 
   get config() {
@@ -146,20 +141,14 @@ export class Context {
     })
   }
 
+  createLayers(layers: CascadeLayers): Layers {
+    return new Layers(layers)
+  }
+
   setupCompositions(theme: Theme): void {
     const { textStyles, layerStyles } = theme
     const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
     assignCompositions(compositions, { conditions: this.conditions, utility: this.utility })
-  }
-
-  setupLayers(layers: CascadeLayers): void {
-    this.layers = layers
-    this.layerNames = Object.values(layers)
-    this.isValidLayerRule = memo((layerRule: string) => {
-      const names = new Set(layerRule.split(',').map((name) => name.trim()))
-      return names.size >= 5 && this.layerNames.every((name) => names.has(name))
-    })
-    this.layerString = `@layer ${this.layerNames.join(', ')};`
   }
 
   setupProperties(): void {
@@ -167,31 +156,25 @@ export class Context {
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
 
-  private get staticSheetContext() {
+  private get baseSheetContext() {
     return {
       conditions: this.conditions,
+      layers: this.layers,
       utility: this.utility,
-      recipes: this.recipes,
       helpers,
       hash: this.hash.className,
     }
   }
 
   createSheet(): Stylesheet {
-    const sheetContext = this.createSheetContext()
-    return new Stylesheet(sheetContext)
+    return new Stylesheet({
+      ...this.baseSheetContext,
+      recipes: this.recipes,
+    })
   }
 
-  createRecipes(theme: Theme, context: StylesheetContext): Recipes {
+  createRecipes(theme: Theme, context: RecipeContext): Recipes {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
     return new Recipes(recipeConfigs, context)
-  }
-
-  createSheetRoot(): StylesheetRoot {
-    return createSheetRoot(this.layers)
-  }
-
-  createSheetContext(): StylesheetContext {
-    return Object.assign({}, this.createSheetRoot(), this.staticSheetContext)
   }
 }

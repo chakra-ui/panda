@@ -13,7 +13,7 @@ export interface FlattenedCssOptions {
 function getUnresolvedCss(ctx: Context) {
   const { theme: { keyframes } = {}, preflight, staticCss } = ctx.config
   return [
-    ctx.layerString,
+    ctx.layers.params,
     preflight && "@import './reset.css';",
     "@import './global.css';",
     staticCss && "@import './static.css';",

@@ -1,4 +1,4 @@
-@layer reset {
+@layer @layer reset {} {
   * {
     margin: 0;
     padding: 0;

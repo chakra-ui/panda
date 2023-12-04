@@ -1,8 +1,13 @@
 import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
 import type { AtRule, Root } from 'postcss'
 import type { Conditions } from './conditions'
+import type { Layers } from './layers'
 import type { Recipes } from './recipes'
 import type { Utility } from './utility'
+
+export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions' | 'layers'>
+
+export type AtomicRuleContext = Pick<StylesheetContext, 'conditions' | 'hash' | 'utility' | 'transform' | 'layers'>
 
 export interface TransformResult {
   layer?: string
@@ -27,7 +32,8 @@ export interface StylesheetRoot {
   insertLayers(): Root
 }
 
-export interface StylesheetContext extends StylesheetRoot {
+export interface StylesheetContext {
+  layers: Layers
   utility: Utility
   conditions: Conditions
   recipes: Recipes

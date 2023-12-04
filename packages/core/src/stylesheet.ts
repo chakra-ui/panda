@@ -23,7 +23,7 @@ export class Stylesheet {
   processObject(styleObject: SystemStyleObject) {
     const result = toCss(styleObject)
     const output = result.root
-    this.context.root.append(output)
+    this.context.layers.root.append(output)
   }
 
   processAtomic = (...styleObject: (SystemStyleObject | undefined)[]) => {
@@ -95,11 +95,12 @@ export class Stylesheet {
         utility,
       } = this.context
 
-      this.context.insertLayers()
-      breakpoints.expandScreenAtRule(this.context.root)
-      expandCssFunctions(this.context.root, { token: utility.getToken, raw: this.context.utility.tokens.getByName })
+      const root = this.context.layers.insert()
 
-      let css = this.context.root.toString()
+      breakpoints.expandScreenAtRule(root)
+      expandCssFunctions(root, { token: utility.getToken, raw: this.context.utility.tokens.getByName })
+
+      let css = root.toString()
 
       if (optimize) {
         css = optimizeCss(css, { minify })
@@ -126,10 +127,10 @@ export class Stylesheet {
   }
 
   append = (...css: string[]) => {
-    this.context.root.append(...css)
+    this.context.layers.root.append(...css)
   }
 
   prepend = (...css: string[]) => {
-    this.context.root.prepend(...css)
+    this.context.layers.root.prepend(...css)
   }
 }

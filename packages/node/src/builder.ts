@@ -129,7 +129,7 @@ export class Builder {
     let valid = false
 
     root.walkAtRules('layer', (rule) => {
-      if (ctx.isValidLayerRule(rule.params)) {
+      if (ctx.layers.isValidParams(rule.params)) {
         valid = true
       }
     })

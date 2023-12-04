@@ -4,7 +4,7 @@ import merge from 'lodash.merge'
 import { AtomicRule, createRecipeAtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
-import type { RecipeNode, StylesheetContext } from './types'
+import type { RecipeContext, RecipeNode } from './types'
 
 interface RecipeRecord {
   [key: string]: RecipeConfig | SlotRecipeConfig
@@ -28,8 +28,6 @@ const sharedState = {
    */
   slots: new Map<string, Map<string, RecipeConfig>>(),
 }
-
-type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions' | 'layers'>
 
 export class Recipes {
   /**

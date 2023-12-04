@@ -11,7 +11,7 @@ import type { Dict } from '@pandacss/types'
 import postcss, { Container } from 'postcss'
 import { match } from 'ts-pattern'
 import { toCss } from './to-css'
-import type { StylesheetContext } from './types'
+import type { AtomicRuleContext } from './types'
 
 export interface ProcessOptions {
   styles: Dict
@@ -23,8 +23,6 @@ interface WriteOptions {
   layer: string | undefined
   rule: Container
 }
-
-type AtomicRuleContext = Pick<StylesheetContext, 'conditions' | 'hash' | 'utility' | 'transform' | 'layers'>
 
 export class AtomicRule {
   constructor(private context: AtomicRuleContext, private fn: (opts: WriteOptions) => void) {}

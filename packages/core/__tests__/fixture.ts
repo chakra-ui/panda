@@ -1,7 +1,7 @@
 import * as mocks from '@pandacss/fixture'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { Dict } from '@pandacss/types'
-import { Conditions, Recipes, Utility, createSheetRoot } from '../src'
+import type { Dict } from '@pandacss/types'
+import { Conditions, Layers, Recipes, Utility } from '../src'
 import { createAtomicRule } from '../src/atomic-rule'
 import type { StylesheetContext } from '../src/types'
 
@@ -36,16 +36,16 @@ export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
     shorthands: true,
   })
 
-  const sheetRoot = createSheetRoot(defaultLayers)
+  const layers = new Layers(defaultLayers)
 
   const recipes = new Recipes(recipeObj, {
     utility,
     conditions,
-    layers: sheetRoot.layers,
+    layers,
   })
 
   return {
-    ...sheetRoot,
+    layers,
     hash,
     recipes,
     conditions,
@@ -61,8 +61,7 @@ export const createCssFn =
     const ctx = createContext(opts)
     const rule = createAtomicRule(ctx)
     rule.process({ styles })
-    ctx.insertLayers()
-    return ctx.root.toString()
+    return ctx.layers.insert().toString()
   }
 
 export const createRecipeFn =
@@ -70,8 +69,7 @@ export const createRecipeFn =
   (recipe: string, styles: Dict) => {
     const ctx = createContext(opts)
     ctx.recipes.process(recipe, { styles })
-    ctx.insertLayers()
-    return ctx.root.toString()
+    return ctx.layers.insert().toString()
   }
 
 export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
