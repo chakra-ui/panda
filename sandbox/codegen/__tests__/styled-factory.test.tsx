@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { styled } from '../styled-system/jsx'
+import { Box, Stack, styled } from '../styled-system/jsx'
 import { render } from '@testing-library/react'
 import { buttonWithCompoundVariants } from '../styled-system/recipes'
 import React from 'react'
@@ -300,5 +300,37 @@ describe('styled factory - button recipe', () => {
         Click me
       </div>
     `)
+  })
+
+  test('box pattern', () => {
+    const { container } = render(<Box color="red.300">Click me</Box>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(
+      `
+      <div
+        class="text_red.300"
+      >
+        Click me
+      </div>
+    `,
+    )
+  })
+
+  test('stack pattern', () => {
+    const { container } = render(
+      <Stack direction="column" color="red.400">
+        Click me
+      </Stack>,
+    )
+
+    expect(container.firstChild).toMatchInlineSnapshot(
+      `
+      <div
+        class="d_flex flex_column gap_10px text_red.400"
+      >
+        Click me
+      </div>
+    `,
+    )
   })
 })

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'vitest'
-import { styled } from '../../styled-system-solid/jsx'
+import { Box, Stack, styled } from '../../styled-system-solid/jsx'
 import { cleanup, render } from '@solidjs/testing-library'
 import { buttonWithCompoundVariants } from '../../styled-system-solid/recipes'
 import React from 'react'
@@ -303,5 +303,37 @@ describe('styled factory - button recipe', () => {
         Click me
       </button>
     `)
+  })
+
+  test('box pattern', () => {
+    const { container } = render(<Box color="red.300">Click me</Box>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(
+      `
+      <div
+        class="text_red.300"
+      >
+        Click me
+      </div>
+    `,
+    )
+  })
+
+  test('stack pattern', () => {
+    const { container } = render(
+      <Stack direction="column" color="red.400">
+        Click me
+      </Stack>,
+    )
+
+    expect(container.firstChild).toMatchInlineSnapshot(
+      `
+      <div
+        class="text_red.400 d_flex flex_column gap_10px"
+      >
+        Click me
+      </div>
+    `,
+    )
   })
 })

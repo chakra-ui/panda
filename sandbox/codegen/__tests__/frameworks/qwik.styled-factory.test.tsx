@@ -1,6 +1,6 @@
 import { createDOM } from '@builder.io/qwik/testing'
 import { describe, expect, test } from 'vitest'
-import { styled } from '../../styled-system-qwik/jsx'
+import { Box, Stack, styled } from '../../styled-system-qwik/jsx'
 import { buttonWithCompoundVariants } from '../../styled-system-qwik/recipes'
 import React from 'react'
 
@@ -252,5 +252,25 @@ describe('styled factory - button recipe', async () => {
     expect(container.outerHTML).toMatchInlineSnapshot(
       '"<button class=\\"button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn\\">Click me</button>"',
     )
+  })
+
+  test('box pattern', async () => {
+    const { render, screen } = await createDOM()
+    await render(<Box color="red.300">Click me</Box>)
+
+    const container = screen.querySelector('div')!
+    expect(container.outerHTML).toMatchInlineSnapshot('"<div class=\\"text_red.300\\">Click me</div>"')
+  })
+
+  test('stack pattern', async () => {
+    const { render, screen } = await createDOM()
+    await render(
+      <Stack direction="column" color="red.400">
+        Click me
+      </Stack>,
+    )
+
+    const container = screen.querySelector('div')!
+    expect(container.outerHTML).toMatchInlineSnapshot('"<div class=\\"d_flex flex_column gap_10px text_red.400\\">Click me</div>"')
   })
 })

@@ -24,9 +24,4 @@ dist-ssr
 *.sw?
 
 styled-system
-styled-system-preact
-styled-system-vue
-styled-system-qwik
-styled-system-solid
-styled-system-vue
-styled-system-strict
+styled-system-*

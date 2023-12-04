@@ -1,9 +1,10 @@
 import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import type { Context } from '../../engines'
+import { match } from 'ts-pattern'
 
 export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
-  const { typeName, factoryName } = ctx.jsx
+  const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
   const details = ctx.patterns.filterDetails(filters)
 
@@ -11,6 +12,12 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div' } = pattern.config
     const propList = props.map((v) => JSON.stringify(v)).join(', ')
+
+    const cssProps = match(jsxStyleProps)
+      .with('all', () => 'styleProps')
+      .with('minimal', () => '{ css: styleProps }')
+      .with('none', () => '{}')
+      .exhaustive()
 
     return {
       name: dashName,
@@ -24,11 +31,26 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
         inheritAttrs: false,
         props: [${propList}],
         setup(props, { attrs, slots }) {
-            const styleProps = computed(() => ${styleFnName}(props))
+          ${match(jsxStyleProps)
+            .with(
+              'none',
+              () => outdent`
+            const Comp = ${factoryName}("${jsxElement}", { base: ${styleFnName}(props) })
             return () => {
-                const computedProps = { ...styleProps.value, ...attrs }
-                return h(${factoryName}.${jsxElement}, computedProps, slots)
+                return h(Comp, attrs, slots)
             }
+            `,
+            )
+            .otherwise(
+              () => outdent`
+              const styleProps = computed(() => ${styleFnName}(props))
+              const cssProps = computed(() => ${cssProps}.value)
+              return () => {
+                  const computedProps = { ...cssProps.value, ...attrs }
+                  return h(${factoryName}.${jsxElement}, computedProps, slots)
+              }
+            `,
+            )}
         }
     })
     `,
