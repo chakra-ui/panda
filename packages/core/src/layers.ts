@@ -52,46 +52,22 @@ export class Layers {
   }
 
   insert() {
+    // inset in order: reset, base, tokens, recipes, utilities
     const { root, reset, base, tokens, recipes, slotRecipes, utilities } = this
 
-    if (reset.nodes.length) {
-      root.append(reset)
-    }
+    if (reset.nodes.length) root.append(reset)
+    if (base.nodes.length) root.append(base)
+    if (tokens.nodes.length) root.append(tokens)
 
-    if (base.nodes.length) {
-      root.append(base)
-    }
+    if (recipes.base.nodes.length) recipes.root.prepend(recipes.base)
+    if (recipes.root.nodes.length) root.append(recipes.root)
+    if (slotRecipes.base.nodes.length) slotRecipes.root.prepend(slotRecipes.base)
+    if (slotRecipes.root.nodes.length) root.append(slotRecipes.root)
 
-    if (tokens.nodes.length) {
-      root.append(tokens)
-    }
-
-    if (recipes.base.nodes.length) {
-      recipes.root.prepend(recipes.base)
-    }
-
-    if (recipes.root.nodes.length) {
-      root.append(recipes.root)
-    }
-
-    if (slotRecipes.base.nodes.length) {
-      slotRecipes.root.prepend(slotRecipes.base)
-    }
-
-    if (slotRecipes.root.nodes.length) {
-      root.append(slotRecipes.root)
-    }
-
-    if (utilities.compositions.nodes.length) {
-      utilities.root.prepend(utilities.compositions)
-    }
-
+    if (utilities.compositions.nodes.length) utilities.root.prepend(utilities.compositions)
     this.utilityRuleMap.forEach((rules) => {
-      if (rules.nodes.length) {
-        utilities.root.append(rules)
-      }
+      if (rules.nodes.length) utilities.root.append(rules)
     })
-
     if (utilities.root.nodes.length) {
       root.append(utilities.root)
     }
