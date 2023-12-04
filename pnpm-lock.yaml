@@ -304,8 +304,8 @@ importers:
         specifier: ^6.0.13
         version: 6.0.13
       ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
+        specifier: 5.0.6
+        version: 5.0.6
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -373,8 +373,8 @@ importers:
         specifier: ^8.4.31
         version: 8.4.31
       ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
+        specifier: 5.0.6
+        version: 5.0.6
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -501,8 +501,8 @@ importers:
         specifier: 19.0.0
         version: 19.0.0
       ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
+        specifier: 5.0.6
+        version: 5.0.6
       tsconfck:
         specifier: ^2.1.2
         version: 2.1.2(typescript@5.2.2)
@@ -565,8 +565,8 @@ importers:
         specifier: 19.0.0
         version: 19.0.0
       ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
+        specifier: 5.0.6
+        version: 5.0.6
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -672,8 +672,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
+        specifier: 5.0.6
+        version: 5.0.6
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -781,8 +781,8 @@ importers:
         specifier: ^1.0.5
         version: 1.0.5(react-dom@18.2.0)(react@18.2.0)
       ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
+        specifier: 5.0.6
+        version: 5.0.6
       typescript:
         specifier: 5.2.2
         version: 5.2.2
@@ -29350,8 +29350,8 @@ packages:
       yn: 3.1.1
     dev: false
 
-  /ts-pattern@5.0.5:
-    resolution: {integrity: sha512-tL0w8U/pgaacOmkb9fRlYzWEUDCfVjjv9dD4wHTgZ61MjhuMt46VNWTG747NqW6vRzoWIKABVhFSOJ82FvXrfA==}
+  /ts-pattern@5.0.6:
+    resolution: {integrity: sha512-Y+jOjihlFriWzcBjncPCf2/am+Hgz7LtsWs77pWg5vQQKLQj07oNrJryo/wK2G0ndNaoVn2ownFMeoeAuReu3Q==}
     dev: false
 
   /ts-toolbelt@6.15.5:

@@ -47,7 +47,7 @@
     "postcss-nested": "6.0.1",
     "postcss-normalize-whitespace": "^6.0.0",
     "postcss-selector-parser": "^6.0.13",
-    "ts-pattern": "5.0.5"
+    "ts-pattern": "5.0.6"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
