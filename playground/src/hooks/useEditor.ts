@@ -1,8 +1,4 @@
-import { OnMount, OnChange, BeforeMount, EditorProps } from '@monaco-editor/react'
-import { parse } from '@babel/parser'
-import traverse from '@babel/traverse'
-//@ts-expect-error
-import MonacoJSXHighlighter from 'monaco-jsx-highlighter'
+import { OnMount, OnChange, BeforeMount, EditorProps, Monaco } from '@monaco-editor/react'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
@@ -12,6 +8,7 @@ import { State } from './usePlayground'
 
 import { pandaTheme } from '../lib/gruvbox-theme'
 import { useTheme } from 'next-themes'
+import { MonacoJsxSyntaxHighlight, getWorker } from 'monaco-jsx-syntax-highlight'
 
 // @ts-ignore
 import pandaDevDts from '../dts/@pandacss_dev.d.ts?raw'
@@ -42,6 +39,24 @@ export const defaultEditorOptions: EditorProps['options'] = {
   fontWeight: '400',
 }
 
+const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) => {
+  const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(getWorker(), monaco)
+  const uri = monacoEditor.getModel().uri
+
+  const { highlighter, dispose } = monacoJsxSyntaxHighlight.highlighterBuilder({
+    editor: monacoEditor,
+    filePath: uri?.toString() ?? uri.path,
+  })
+
+  highlighter()
+
+  monacoEditor.onDidChangeModelContent(() => {
+    highlighter()
+  })
+
+  return dispose
+}
+
 export function useEditor(props: PandaEditorProps) {
   const { onChange, value, artifacts } = props
   const { resolvedTheme } = useTheme()
@@ -54,13 +69,8 @@ export function useEditor(props: PandaEditorProps) {
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
   const configureEditor: OnMount = useCallback((editor, monaco) => {
-    // Instantiate the highlighter
-    const monacoJSXHighlighter = new MonacoJSXHighlighter(monaco, parse, traverse, editor)
-    // Activate highlighting (debounceTime default: 100ms)
-    monacoJSXHighlighter.highlightOnDidChangeModelContent()
-    // Activate JSX commenting
-    monacoJSXHighlighter.addJSXCommentCommand()
-
+    activateMonacoJSXHighlighter(editor, monaco)
+    
     function registerKeybindings() {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         editor.trigger('editor', 'editor.action.formatDocument', undefined)

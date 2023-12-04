@@ -702,12 +702,6 @@ importers:
       '@ark-ui/react':
         specifier: 0.15.0
         version: 0.15.0(@internationalized/date@3.5.0)(react-dom@18.2.0)(react@18.2.0)
-      '@babel/parser':
-        specifier: ^7.22.7
-        version: 7.22.7
-      '@babel/traverse':
-        specifier: ^7.23.2
-        version: 7.23.2
       '@monaco-editor/react':
         specifier: 4.5.2
         version: 4.5.2(monaco-editor@0.40.0)(react-dom@18.2.0)(react@18.2.0)
@@ -741,9 +735,9 @@ importers:
       monaco-editor:
         specifier: 0.40.0
         version: 0.40.0
-      monaco-jsx-highlighter:
-        specifier: ^2.0.4
-        version: 2.0.4(@babel/parser@7.22.7)(@babel/traverse@7.23.2)(monaco-editor@0.40.0)
+      monaco-jsx-syntax-highlight:
+        specifier: ^1.2.0
+        version: 1.2.0
       nanoid:
         specifier: 4.0.2
         version: 4.0.2
@@ -11389,7 +11383,7 @@ packages:
   /@types/eslint@8.44.1:
     resolution: {integrity: sha512-XpNDc4Z5Tb4x+SW1MriMVeIsMoONHCkWFMkR/aPJbzEsxqHy+4Glu/BqTdPrApfDeMaXbtNh6bseNgl5KaWrSg==}
     dependencies:
-      '@types/estree': 1.0.1
+      '@types/estree': 1.0.4
       '@types/json-schema': 7.0.12
 
   /@types/estree-jsx@0.0.1:
@@ -23917,17 +23911,8 @@ packages:
     resolution: {integrity: sha512-1wymccLEuFSMBvCk/jT1YDW/GuxMLYwnFwF9CDyYCxoTw2Pt379J3FUhwy9c43j51JdcxVPjwk0jm0EVDsBS2g==}
     dev: false
 
-  /monaco-jsx-highlighter@2.0.4(@babel/parser@7.22.7)(@babel/traverse@7.23.2)(monaco-editor@0.40.0):
-    resolution: {integrity: sha512-ReHfXj49UtxpTEGKNko3kv0AnqEeuEXhp0DCxJbfSEEEO+0FhFKjffTVuYE+m+4nAHrwzhmMpAWtMbEpxCmEGw==}
-    engines: {node: '>=8.6', npm: '>=6'}
-    peerDependencies:
-      '@babel/parser': '>=6.x'
-      '@babel/traverse': '>=6.x'
-      monaco-editor: '>=0.20'
-    dependencies:
-      '@babel/parser': 7.22.7
-      '@babel/traverse': 7.23.2
-      monaco-editor: 0.40.0
+  /monaco-jsx-syntax-highlight@1.2.0:
+    resolution: {integrity: sha512-sKzfmNMxLp3Dcwndz0F/EdP3rqe+Z6FbDPazj+/ByNbqoXWkzgb/ocat8h3vpiTwPPiDtSHidT0BFMvLkMtG8A==}
     dev: false
 
   /morgan@1.10.0:

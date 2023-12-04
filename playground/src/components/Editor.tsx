@@ -97,30 +97,27 @@ export const Editor = (props: PandaEditorProps) => {
 
 const editorTokenizer = cva({
   base: {
-    '& .JSXElement.JSXBracket, & .JSXOpeningFragment.JSXBracket, & .JSXClosingFragment.JSXBracket': {
-      color: { base: '#000000!', _dark: '#83A598!' },
+    '& .bracket-highlighting-0, & .bracket-highlighting-4': {
+      color: { _dark: '#A89984!' },
     },
     '& .bracket-highlighting-1, & .bracket-highlighting-3': {
       color: { _dark: '#EBDBB2!' },
     },
-    '& .JSXElement.JSXIdentifier, & .JSXAttribute.JSXIdentifier + *': {
+
+    '& .jsx-tag-angle-bracket': {
+      color: { base: '#000000!', _dark: '#83A598!' },
+    },
+    '& .jsx-tag-name': {
       color: { base: '#22863a!', _dark: '#8EC07C!' },
     },
-    '& .JSXAttribute.JSXIdentifier, & .JSXExpressionContainer.JSXBracket + :not(.bracket-highlighting-3):not(.JSXElement)':
-      {
-        color: { base: '#6f42c1!', _dark: '#FABD2F!' },
-      },
-    '& .JSXExpressionContainer.JSXBracket, & .bracket-highlighting-0': {
+    '& .jsx-tag-attribute-key, & .jsx-expression-braces + :not(.jsx-tag-angle-bracket):not(.bracket-highlighting-3)': {
+      color: { base: '#6f42c1!', _dark: '#FABD2F!' },
+    },
+    '& .jsx-expression-braces': {
       color: { _dark: '#A89984!' },
     },
-    '& .bracket-highlighting-0, & .bracket-highlighting-4': {
-      color: { _dark: '#A89984!' },
-    },
-    '& .JSXElement.JSXText': {
+    '& .jsx-text': {
       color: { base: '#000000!', _dark: '#EBDBB2!' },
-    },
-    '& .JSXClosingFragment.JSXBracket, & .JSXOpeningElement.JSXBracket, & .JSXOpeningFragment.JSXBracket': {
-      fontWeight: 'normal!',
     },
   },
 })
