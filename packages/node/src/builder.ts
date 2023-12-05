@@ -41,11 +41,13 @@ export class Builder {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
+
     if (!this.context) {
       return this.setupContext({ configPath, cwd: options.cwd })
     }
 
     const ctx = this.getContextOrThrow()
+
     this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
       this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
       this.context.appendBaselineCss()
@@ -53,13 +55,18 @@ export class Builder {
 
     this.hasConfigChanged = this.affecteds.hasConfigChanged
 
+    // config change
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
       await ctx.hooks.callHook('config:change', ctx.config)
       return
     }
 
-    ctx.project.reloadSourceFiles()
+    // file change
+    const hasFilesChanged = this.checkFilesChanged(ctx.getFiles())
+    if (hasFilesChanged) {
+      ctx.project.reloadSourceFiles()
+    }
   }
 
   async emit() {
@@ -73,9 +80,11 @@ export class Builder {
 
   setupContext = async (options: { configPath: string; cwd?: string }) => {
     const { configPath, cwd } = options
+
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
     ctx.appendBaselineCss()
     this.context = ctx
+
     return ctx
   }
 
@@ -107,16 +116,17 @@ export class Builder {
     return files.some((file) => !this.getFileMeta(file).isUnchanged)
   }
 
+  hasChanged() {
+    const ctx = this.getContextOrThrow()
+    const files = ctx.getFiles()
+    return this.hasConfigChanged || this.checkFilesChanged(files)
+  }
+
   extract = async () => {
     const ctx = this.getContextOrThrow()
     const files = ctx.getFiles()
 
-    // if file is unchanged and config is unchanged, skip
-    // (sometimes vite and nextjs will trigger a rebuild without any changes)
-    if (!this.hasConfigChanged && !this.checkFilesChanged(files)) return
-
     const done = logger.time.info('Extracted in')
-
     // limit concurrency since we might parse a lot of files
     const promises = files.map((file) => limit(() => this.extractFile(ctx, file)))
     await Promise.allSettled(promises)
@@ -142,9 +152,21 @@ export class Builder {
     return valid
   }
 
+  private initialRoot: string | undefined
+
   write = (root: Root) => {
-    root.append(this.toString())
-    optimizeCss(root)
+    if (!this.initialRoot) {
+      this.initialRoot = root.toString()
+    }
+
+    root.removeAll()
+
+    const newCss = optimizeCss(`
+    ${this.initialRoot}
+    ${this.toString()}
+    `)
+
+    root.append(newCss)
   }
 
   registerDependency = (fn: (dep: Message) => void) => {

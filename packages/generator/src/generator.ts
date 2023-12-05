@@ -60,7 +60,7 @@ export class Generator extends Context {
 
   getCss() {
     return this.stylesheet.toCss({
-      optimize: this.config.optimize,
+      optimize: true,
       minify: this.config.minify,
     })
   }
