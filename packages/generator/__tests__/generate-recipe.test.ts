@@ -1,4 +1,4 @@
-import { ConfigResultWithHooks } from '@pandacss/types'
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'

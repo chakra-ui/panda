@@ -1,27 +1,24 @@
 import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
+  PandaContext,
   analyzeTokens,
-  bundleCss,
-  bundleMinimalFilesCss,
   debugFiles,
   emitArtifacts,
   generate,
-  generateCssArtifactOfType,
   loadConfigAndCreateContext,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
   shipFiles,
   writeAnalyzeJSON,
-  writeAndBundleCssChunks,
   type CssArtifactType,
-  PandaContext,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
+import { P, match } from 'ts-pattern'
 import { version } from '../package.json'
 import { interactive } from './interactive'
 import type {
@@ -176,35 +173,64 @@ export async function main() {
         configPath,
       })
 
+      const ensureFile = (ctx: PandaContext, file: string) => {
+        const outPath = resolve(cwd, file)
+        const dirname = ctx.runtime.path.dirname(outPath)
+        ctx.runtime.fs.ensureDirSync(dirname)
+      }
+
       const cssgen = async (ctx: PandaContext) => {
-        if (outfile) {
-          const outPath = resolve(cwd, outfile)
-          const dirname = ctx.runtime.path.dirname(outPath)
-          ctx.runtime.fs.ensureDirSync(dirname)
+        //
+        await match(cssArtifact)
+          //
+          .with(P.string.minLength(1), async (cssArtifact) => {
+            //
+            if (outfile) ensureFile(ctx, outfile)
 
-          if (cssArtifact) {
-            const { msg } = await generateCssArtifactOfType(ctx, cssArtifact, outfile)
+            ctx.appendCss(cssArtifact)
+
+            if (outfile) {
+              ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
+            } else {
+              await ctx.output.write({
+                id: 'styles.css',
+                dir: ctx.paths.root,
+                files: [{ file: 'styles.css', code: ctx.getCss() }],
+              })
+            }
+
+            const msg = ctx.messages.cssArtifactComplete(cssArtifact)
             logger.info('css:emit:artifact', msg)
-            return
-          }
+          })
 
-          if (minimal) {
-            const { msg } = await bundleMinimalFilesCss(ctx, outPath)
-            logger.info('css:emit:min', msg)
-          } else {
-            const { msg } = await bundleCss(ctx, outPath)
+          .with(P.nullish, async () => {
+            if (outfile) ensureFile(ctx, outfile)
+
+            if (!minimal) {
+              ctx.appendLayerParams()
+              ctx.appendBaselineCss()
+            }
+
+            const files = ctx.appendFilesCss()
+
+            if (outfile) {
+              ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
+            } else {
+              await ctx.output.write({
+                id: 'styles.css',
+                dir: ctx.paths.root,
+                files: [{ file: 'styles.css', code: ctx.getCss() }],
+              })
+            }
+
+            const msg = ctx.messages.buildComplete(files.length)
             logger.info('css:emit:out', msg)
-          }
-          //
-        } else {
-          if (cssArtifact) {
-            logger.warn('cssgen:warn', 'Cannot generate css artifact without an outfile')
-          }
+          })
 
-          //
-          const { msg } = await writeAndBundleCssChunks(ctx)
-          logger.info('css:emit:bundle', msg)
-        }
+          .otherwise(() => {
+            throw new Error('Invalid arguments or flags for cssgen command')
+            // no op
+          })
       }
 
       await cssgen(ctx)

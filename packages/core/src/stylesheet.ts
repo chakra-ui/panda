@@ -133,4 +133,8 @@ export class Stylesheet {
   prepend = (...css: string[]) => {
     this.context.layers.root.prepend(...css)
   }
+
+  clean = () => {
+    this.context.layers.clean()
+  }
 }

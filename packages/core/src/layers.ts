@@ -75,6 +75,10 @@ export class Layers {
     return root
   }
 
+  clean() {
+    this.root.removeAll()
+  }
+
   get layerNames() {
     return Object.values(this.names)
   }

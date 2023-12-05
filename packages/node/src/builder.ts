@@ -9,10 +9,10 @@ import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import type { DiffConfigResult } from './diff-engine'
-import { emitArtifacts, extractFile } from './extract'
+import { emitArtifacts } from './emit-artifact'
+import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
 
-const fileCssMap = new Map<string, string>()
 const fileModifiedMap = new Map<string, number>()
 
 const limit = pLimit(20)
@@ -48,6 +48,7 @@ export class Builder {
     const ctx = this.getContextOrThrow()
     this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
       this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
+      this.context.appendBaselineCss()
     })
 
     this.hasConfigChanged = this.affecteds.hasConfigChanged
@@ -73,6 +74,7 @@ export class Builder {
   setupContext = async (options: { configPath: string; cwd?: string }) => {
     const { configPath, cwd } = options
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
+    ctx.appendBaselineCss()
     this.context = ctx
     return ctx
   }
@@ -84,33 +86,39 @@ export class Builder {
     return this.context
   }
 
-  extractFile = async (ctx: PandaContext, file: string) => {
+  getFileMeta = (file: string) => {
     const mtime = existsSync(file) ? fsExtra.statSync(file).mtimeMs : -Infinity
-
     const isUnchanged = fileModifiedMap.has(file) && mtime === fileModifiedMap.get(file)
-    if (isUnchanged && !this.hasConfigChanged) return
+    return { mtime, isUnchanged }
+  }
 
-    const css = extractFile(ctx, file)
+  extractFile = async (ctx: PandaContext, file: string) => {
+    const meta = this.getFileMeta(file)
 
-    fileModifiedMap.set(file, mtime)
+    if (meta.isUnchanged && !this.hasConfigChanged) return
 
-    if (!css) {
-      fileCssMap.delete(file)
-      return
-    }
+    const result = extractFile(ctx, file)
+    fileModifiedMap.set(file, meta.mtime)
 
-    fileCssMap.set(file, css)
+    return result
+  }
 
-    return css
+  checkFilesChanged(files: string[]) {
+    return files.some((file) => !this.getFileMeta(file).isUnchanged)
   }
 
   extract = async () => {
     const ctx = this.getContextOrThrow()
+    const files = ctx.getFiles()
+
+    // if file is unchanged and config is unchanged, skip
+    // (sometimes vite and nextjs will trigger a rebuild without any changes)
+    if (!this.hasConfigChanged && !this.checkFilesChanged(files)) return
 
     const done = logger.time.info('Extracted in')
 
     // limit concurrency since we might parse a lot of files
-    const promises = ctx.getFiles().map((file) => limit(() => this.extractFile(ctx, file)))
+    const promises = files.map((file) => limit(() => this.extractFile(ctx, file)))
     await Promise.allSettled(promises)
 
     done()
@@ -118,10 +126,7 @@ export class Builder {
 
   toString = () => {
     const ctx = this.getContextOrThrow()
-    return ctx.getCss({
-      files: Array.from(fileCssMap.values()),
-      resolve: true,
-    })
+    return ctx.getCss()
   }
 
   isValidRoot = (root: Root) => {
@@ -138,15 +143,8 @@ export class Builder {
   }
 
   write = (root: Root) => {
-    const rootCssContent = root.toString()
-    root.removeAll()
-
-    root.append(
-      optimizeCss(`
-    ${rootCssContent}
-    ${this.toString()}
-    `),
-    )
+    root.append(this.toString())
+    optimizeCss(root)
   }
 
   registerDependency = (fn: (dep: Message) => void) => {

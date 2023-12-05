@@ -1,4 +1,4 @@
-import { ConfigResultWithHooks } from '@pandacss/types'
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generateTokenJs } from '../src/artifacts/js/token'

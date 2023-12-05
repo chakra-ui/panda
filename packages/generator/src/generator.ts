@@ -7,7 +7,7 @@ import { generateParserCss } from './artifacts/css/parser-css'
 import { generateResetCss } from './artifacts/css/reset-css'
 import { generateStaticCss } from './artifacts/css/static-css'
 import { generateTokenCss } from './artifacts/css/token-css'
-import { Context } from './engines' // Previously Engine
+import { Context } from './engines'
 import { getMessages } from './messages'
 import { getParserOptions, type ParserOptions } from './parser-options'
 
@@ -39,7 +39,29 @@ export class Generator extends Context {
       })
   }
 
-  appendParserCss(result: ParserResultType) {
-    generateParserCss(this, result)
+  appendLayerParams() {
+    this.stylesheet.prepend(this.layers.params)
+  }
+
+  appendBaselineCss() {
+    if (this.config.preflight) this.appendCss('preflight')
+    if (!this.tokens.isEmpty) this.appendCss('tokens')
+    if (this.config.staticCss) this.appendCss('static')
+    this.appendCss('global')
+    if (this.config.theme?.keyframes) this.appendCss('keyframes')
+  }
+
+  appendParserCss(...results: Array<ParserResultType | undefined>) {
+    results.forEach((result) => {
+      if (!result) return
+      generateParserCss(this, result)
+    })
+  }
+
+  getCss() {
+    return this.stylesheet.toCss({
+      optimize: this.config.optimize,
+      minify: this.config.minify,
+    })
   }
 }

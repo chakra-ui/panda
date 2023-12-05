@@ -1,8 +1,8 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
+import { Generator } from '../src'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
 import { generatorConfig } from './fixture'
-import { Generator } from '../src'
-import { ConfigResultWithHooks } from '@pandacss/types'
 
 const propTypes = (config: ConfigResultWithHooks) => {
   const ctx = new Generator(config)

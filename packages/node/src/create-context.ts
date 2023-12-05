@@ -1,6 +1,6 @@
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import { createProject, type PandaProject } from '@pandacss/parser'
+import { createParserResult, createProject, type PandaProject } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime } from '@pandacss/types'
 import { getChunkEngine, type PandaChunksEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
@@ -41,5 +41,27 @@ export class PandaContext extends Generator {
     this.chunks = getChunkEngine(this)
     this.output = new PandaOutputEngine(this)
     this.diff = new DiffEngine(this)
+  }
+
+  appendFilesCss() {
+    const files = this.getFiles()
+    const filesWithCss: string[] = []
+
+    const mergedResult = createParserResult()
+
+    files.forEach((file) => {
+      const measure = logger.time.debug(`Parsed ${file}`)
+      const result = this.project.parseSourceFile(file)
+
+      measure()
+      if (!result) return
+
+      mergedResult.merge(result)
+      filesWithCss.push(file)
+    })
+
+    this.appendParserCss(mergedResult)
+
+    return filesWithCss
   }
 }

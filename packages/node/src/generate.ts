@@ -2,7 +2,7 @@ import { logger } from '@pandacss/logger'
 import type { ArtifactId, Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import type { PandaContext } from './create-context'
-import { bundleStyleChunksWithImports, emitArtifacts, writeAndBundleCssChunks, writeFileChunk } from './extract'
+import { emitArtifacts } from './emit-artifact'
 
 import { loadConfigAndCreateContext } from './config'
 
@@ -17,8 +17,8 @@ async function build(ctx: PandaContext, ids?: ArtifactId[]) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
   }
 
-  const { msg } = await writeAndBundleCssChunks(ctx)
-  logger.info('css:emit', msg)
+  // const { msg } = await writeAndBundleCssChunks(ctx)
+  // logger.info('css:emit', msg)
 }
 
 export async function generate(config: Config, configPath?: string) {
@@ -51,12 +51,12 @@ export async function generate(config: Config, configPath?: string) {
         })
         .with('change', async () => {
           ctx.project.reloadSourceFile(file)
-          await writeFileChunk(ctx, file)
-          return bundleStyleChunksWithImports(ctx)
+          // await writeFileChunk(ctx, file)
+          // return bundleStyleChunksWithImports(ctx)
         })
         .with('add', async () => {
           ctx.project.createSourceFile(file)
-          return bundleStyleChunksWithImports(ctx)
+          // return bundleStyleChunksWithImports(ctx)
         })
         .otherwise(() => {
           // noop

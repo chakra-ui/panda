@@ -1,9 +1,11 @@
+import { isObject } from '@pandacss/shared'
 import type { Context } from '../../engines'
 
 const css = String.raw
 
 export function generateResetCss(ctx: Context) {
-  const scope = ctx.config.cssVarRoot
+  const { preflight } = ctx.config
+  const scope = isObject(preflight) ? preflight.scope : undefined
   const selector = scope ? `${scope} ` : ''
   // prettier-ignore
   const output = css`

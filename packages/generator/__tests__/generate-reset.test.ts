@@ -15,7 +15,7 @@ describe('generate reset', () => {
       ...generatorConfig,
       config: {
         ...generatorConfig.config,
-        cssVarRoot: '.pd-reset',
+        preflight: { scope: '.pd-reset' },
       },
     })
 
