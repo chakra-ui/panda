@@ -13,12 +13,13 @@ import { loadConfigAndCreateContext } from './config'
  */
 async function build(ctx: PandaContext, ids?: ArtifactId[]) {
   await emitArtifacts(ctx, ids)
+
   if (ctx.config.emitTokensOnly) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
   }
 
-  // const { msg } = await writeAndBundleCssChunks(ctx)
-  // logger.info('css:emit', msg)
+  await ctx.writeCss()
+  logger.info('css:emit', 'Successfully built the css files ✨')
 }
 
 export async function generate(config: Config, configPath?: string) {
@@ -44,19 +45,21 @@ export async function generate(config: Config, configPath?: string) {
     const contentWatcher = fs.watch(ctx.config)
     contentWatcher.on('all', async (event, file) => {
       logger.info(`file:${event}`, file)
-      match(event)
+      await match(event)
         .with('unlink', () => {
           ctx.project.removeSourceFile(path.abs(cwd, file))
-          ctx.chunks.rm(file)
         })
-        .with('change', async () => {
+        .with('change', () => {
           ctx.project.reloadSourceFile(file)
-          // await writeFileChunk(ctx, file)
-          // return bundleStyleChunksWithImports(ctx)
+          const result = ctx.project.parseSourceFile(file)
+          ctx.appendParserCss(result)
+          return ctx.writeCss()
         })
-        .with('add', async () => {
+        .with('add', () => {
           ctx.project.createSourceFile(file)
-          // return bundleStyleChunksWithImports(ctx)
+          const result = ctx.project.parseSourceFile(file)
+          ctx.appendParserCss(result)
+          return ctx.writeCss()
         })
         .otherwise(() => {
           // noop

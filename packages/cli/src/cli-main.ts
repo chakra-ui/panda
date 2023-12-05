@@ -138,7 +138,7 @@ export async function main() {
     )
     .option('--silent', "Don't print any logs")
     .option('-m, --minify', 'Minify generated code')
-    .option('--clean', 'Clean the chunks before generating')
+    .option('--clean', 'Clean the output before generating')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('-w, --watch', 'Watch files and rebuild')
     .option('--minimal', 'Do not include CSS generation for theme tokens, preflight, keyframes, static and global css')
@@ -192,11 +192,7 @@ export async function main() {
             if (outfile) {
               ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
             } else {
-              await ctx.output.write({
-                id: 'styles.css',
-                dir: ctx.paths.root,
-                files: [{ file: 'styles.css', code: ctx.getCss() }],
-              })
+              await ctx.writeCss()
             }
 
             const msg = ctx.messages.cssArtifactComplete(cssArtifact)
@@ -216,11 +212,7 @@ export async function main() {
             if (outfile) {
               ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
             } else {
-              await ctx.output.write({
-                id: 'styles.css',
-                dir: ctx.paths.root,
-                files: [{ file: 'styles.css', code: ctx.getCss() }],
-              })
+              await ctx.writeCss()
             }
 
             const msg = ctx.messages.buildComplete(files.length)

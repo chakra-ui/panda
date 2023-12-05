@@ -2,7 +2,6 @@ import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { createParserResult, createProject, type PandaProject } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime } from '@pandacss/types'
-import { getChunkEngine, type PandaChunksEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
 import { PandaOutputEngine } from './output-engine'
 import { DiffEngine } from './diff-engine'
@@ -11,7 +10,6 @@ export class PandaContext extends Generator {
   runtime: Runtime
   project: PandaProject
   getFiles: () => string[]
-  chunks: PandaChunksEngine
   output: PandaOutputEngine
   diff: DiffEngine
 
@@ -38,7 +36,6 @@ export class PandaContext extends Generator {
       parserOptions: { join: this.runtime.path.join, ...this.parserOptions },
     })
 
-    this.chunks = getChunkEngine(this)
     this.output = new PandaOutputEngine(this)
     this.diff = new DiffEngine(this)
   }
@@ -63,5 +60,13 @@ export class PandaContext extends Generator {
     this.appendParserCss(mergedResult)
 
     return filesWithCss
+  }
+
+  async writeCss() {
+    return this.output.write({
+      id: 'styles.css',
+      dir: this.paths.root,
+      files: [{ file: 'styles.css', code: this.getCss() }],
+    })
   }
 }
