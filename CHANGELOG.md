@@ -6,6 +6,93 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.20.1] - 2023-12-01
+
+### Fixed
+
+- Fix issue where conditional recipe variant doesn't work as expected
+- Fix issue with the `token(xxx.yyy)` fn used in AtRule, things like:
+
+```ts
+css({
+  '@container (min-width: token(sizes.xl))': {
+    color: 'green.300',
+  },
+  '@media (min-width: token(sizes.2xl))': {
+    color: 'red.300',
+  },
+})
+```
+
+### Added
+
+- Add a --watch flag to the `panda ship` command
+- Add support for granular config change detection
+- Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Added `strokeWidth` to svg utilities.
+- Connected `outlineWidth` utility to `borderWidths` token.
+- Add `borderWidth`, `borderTopWidth`, `borderLeftWidth`, `borderRightWidth`, `borderBottomWidth` to berder utilities.
+- Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+- Add support for extending `staticCss` defined in presets
+
+```jsx
+const presetWithStaticCss = definePreset({
+  staticCss: {
+    recipes: {
+      // generate all button styles and variants
+      button: ['*'],
+    },
+  },
+})
+
+export default defineConfig({
+  presets: [presetWithStaticCss],
+  staticCss: {
+    extend: {
+      recipes: {
+        // extend and pre-generate all sizes for card
+        card: [{ size: ['small', 'medium', 'large'] }],
+      },
+    },
+  },
+})
+```
+
+## [0.19.0] - 2023-11-24
+
+### Fixed
+
+- Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+  > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
+- Fix issue in preflight where monospace fallback pointed to the wrong variable
+- Fix issue where css variables were not supported in layer styles and text styles types.
+- Fix issue where recipe artifacts might not match the recipes defined in the theme due to the internal cache not being
+  cleared as needed.
+
+### Changed
+
+- Require explicit installation of `@pandacss/studio` to use the `panda studio` command.
+- Improves the `config.strictTokens` type-safety by allowing CSS predefined values (like 'flex' or 'block' for the
+  property 'display') and throwing when using anything else than those, if no theme tokens was found on that property.
+
+Before:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+```
+
+Now:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
+```
+
 ## [0.18.3] - 2023-11-15
 
 ### Fixed

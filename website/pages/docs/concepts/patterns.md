@@ -347,7 +347,7 @@ import { visuallyHidden } from '../styled-system/patterns'
 export function Checkbox() {
   return (
     <label>
-      <input type="checkbox" class={visuallyHidden()}>
+      <input type="checkbox" className={visuallyHidden()}>
         I'm hidden
       </input>
       <span>Checkbox</span>
@@ -371,8 +371,8 @@ import { bleed } from '../styled-system/patterns'
 
 export function Page() {
   return (
-    <div class={css({ px: '6' })}>
-      <div class={bleed({ inline: '6' })}>Welcome</div>
+    <div className={css({ px: '6' })}>
+      <div className={bleed({ inline: '6' })}>Welcome</div>
     </div>
   )
 }

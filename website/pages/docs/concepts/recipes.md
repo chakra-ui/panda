@@ -372,8 +372,8 @@ import { button } from '../styled-system/recipes'
 function App() {
   return (
     <div>
-      <button class={button()}>Click me</button>
-      <button class={button({ shape: 'circle' })}>Click me</button>
+      <button className={button()}>Click me</button>
+      <button className={button({ shape: 'circle' })}>Click me</button>
     </div>
   )
 }
@@ -415,7 +415,7 @@ import { button } from '../styled-system/recipes'
 function App() {
   return (
     <div>
-      <button class={button({ size: { base: 'sm', md: 'lg' } })}>
+      <button className={button({ size: { base: 'sm', md: 'lg' } })}>
         Click me
       </button>
     </div>

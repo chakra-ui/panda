@@ -1,4 +1,5 @@
 export type * from './analyze-report'
+export type * from './artifact'
 export type * from './composition'
 export type * from './conditions'
 export type * from './config'

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { usePreview } from '@/src/hooks/usePreview'
 import { css } from '@/styled-system/css'
 import { flex } from '@/styled-system/patterns'
-import { useResponsiveView } from '@/src/hooks/useResponsiveView'
+import { UseResponsiveView } from '@/src/hooks/useResponsiveView'
 import { responsiveBorder } from '@/src/components/Preview/responsive-border'
 import { ErrorIcon } from '@/src/components/icons'
 import { UsePanda } from '@/src/hooks/usePanda'
@@ -14,11 +14,13 @@ export type PreviewProps = {
   source: string
   isResponsive: boolean
   panda: UsePanda
+  responsiveView: UseResponsiveView
 }
 
 export const Preview = (props: PreviewProps) => {
-  const { source, isResponsive, panda } = props
+  const { source, isResponsive, responsiveView, panda } = props
   const { previewCss = '', previewJs } = panda
+
   const isClient = useIsClient()
 
   const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc } = usePreview()
@@ -35,7 +37,8 @@ export const Preview = (props: PreviewProps) => {
     startTop,
     startTopRight,
     resizing,
-  } = useResponsiveView()
+    activeBreakpoint,
+  } = responsiveView
 
   // prevent false positive for server-side rendering
   if (!isClient) {
@@ -121,12 +124,12 @@ export const Preview = (props: PreviewProps) => {
                 color: { base: 'gray.600', _dark: 'gray.400' },
               })}
             >
-              {`${constrainedResponsiveSize.width} × ${constrainedResponsiveSize.height}`}
-              {'  '}
+              {`${constrainedResponsiveSize.width} × ${constrainedResponsiveSize.height}`}{' '}
               <span className={css({ color: 'gray.500' })}>
                 ({Math.round(constrainedResponsiveSize.zoom * 100)}
                 %)
-              </span>
+              </span>{' '}
+              - {activeBreakpoint}
             </div>
           </div>
           {Object.entries(resizers).map(([position, handler], key) => (

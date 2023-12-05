@@ -37,7 +37,7 @@ describe('recipe', () => {
 
   test('using conditions', () => {
     const result = button({ visual: { base: 'solid', _hover: 'outline' } })
-    expect(result).toMatchInlineSnapshot('"button button--visual_solid _hover:button--visual_outline"')
+    expect(result).toMatchInlineSnapshot('"button button--visual_solid hover:button--visual_outline"')
   })
 
   test('compoundVariants', () => {

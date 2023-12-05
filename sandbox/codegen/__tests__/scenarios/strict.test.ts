@@ -61,6 +61,15 @@ describe('css', () => {
     )
   })
 
+  test('arbitrary value escape hatch', () => {
+    assertType(
+      css({
+        color: '[#fff]',
+        fontSize: '[123px]',
+      }),
+    )
+  })
+
   test('arbitrary selector', () => {
     assertType(css({ ['&:data-panda']: { display: 'flex' } }))
   })

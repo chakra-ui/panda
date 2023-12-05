@@ -42,6 +42,9 @@ function expandTokenFn(
       if (node.type === 'atrule' && node.params.includes('token(')) {
         node.params = expandToken(node.params, atRuleReplace, (path: string) => rawTokenFn?.(path)?.value)
       }
+      if (node.type === 'rule' && node.selector.includes('token(')) {
+        node.selector = expandToken(node.selector, atRuleReplace, (path: string) => rawTokenFn?.(path)?.value)
+      }
     })
   }
 }

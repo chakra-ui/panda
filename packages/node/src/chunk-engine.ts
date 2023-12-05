@@ -24,6 +24,7 @@ export const getChunkEngine = ({
     const fileName = this.format(file)
     const newCss = mergeCss(this.readFile(file), css)
     return {
+      id: fileName,
       dir: paths.chunk,
       files: [{ file: fileName, code: newCss }],
     }

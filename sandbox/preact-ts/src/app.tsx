@@ -77,7 +77,7 @@ export function App() {
       <button>
         <span class={btnClass.label}>Button Label</span>
       </button>
-      <SplitComponent w="2" onClick={() => console.log('123')}>
+      <SplitComponent w="2" bgColor="red.300" onClick={() => console.log('123')}>
         Click me
       </SplitComponent>
       <div className={grid({ minChildWidth: '80px', gap: 8 })}>grid.minChildWidth 80px</div>

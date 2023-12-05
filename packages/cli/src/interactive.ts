@@ -1,7 +1,7 @@
 import * as p from '@clack/prompts'
 import { version } from '../package.json'
 
-export const cliInit = async () => {
+export const interactive = async () => {
   p.intro(`panda v${version}`)
 
   const initFlags = await p.group(

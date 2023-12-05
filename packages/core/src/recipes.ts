@@ -1,5 +1,5 @@
 import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
-import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
+import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
@@ -35,11 +35,13 @@ export class Recipes {
    */
   rules: Map<string, AtomicRule> = new Map()
 
-  keys: string[] = []
+  get keys() {
+    return Object.keys(this.recipes)
+  }
 
   constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
     this.prune()
-    this.assignRules()
+    this.save()
   }
 
   private getPropKey = (recipe: string, variant: string, value: any) => {
@@ -61,35 +63,46 @@ export class Recipes {
     const cachedRecipeNames = Array.from(sharedState.nodes.keys())
     const removedRecipes = cachedRecipeNames.filter((name) => !recipeNames.includes(name))
     removedRecipes.forEach((name) => {
-      sharedState.nodes.delete(name)
-      sharedState.classNames.delete(name)
-      sharedState.styles.delete(name)
+      this.remove(name)
     })
   }
 
   save = () => {
     for (const [name, recipe] of Object.entries(this.recipes)) {
-      if (isSlotRecipe(recipe)) {
-        // extract recipes for each slot
-        const slots = getSlotRecipes(recipe)
-
-        const slotsMap = new Map()
-
-        // normalize each recipe
-        Object.entries(slots).forEach(([slot, slotRecipe]) => {
-          const slotName = this.getSlotKey(name, slot)
-          this.normalize(slotName, slotRecipe)
-          slotsMap.set(slotName, slotRecipe)
-        })
-
-        // save the root recipe
-        this.assignRecipe(name, recipe)
-        sharedState.slots.set(name, slotsMap)
-        //
-      } else {
-        this.assignRecipe(name, this.normalize(name, recipe))
-      }
+      this.saveOne(name, recipe)
     }
+  }
+
+  saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
+    if (isSlotRecipe(recipe)) {
+      // extract recipes for each slot
+      const slots = getSlotRecipes(recipe)
+
+      const slotsMap = new Map()
+
+      // normalize each recipe
+      Object.entries(slots).forEach(([slot, slotRecipe]) => {
+        const slotName = this.getSlotKey(name, slot)
+        this.normalize(slotName, slotRecipe)
+        slotsMap.set(slotName, slotRecipe)
+        this.rules.set(slotName, this.createRule(slotName, true))
+      })
+
+      // save the root recipe
+      this.assignRecipe(name, recipe)
+      sharedState.slots.set(name, slotsMap)
+      //
+    } else {
+      this.assignRecipe(name, this.normalize(name, recipe))
+      this.rules.set(name, this.createRule(name))
+    }
+  }
+
+  remove(name: string) {
+    this.rules.delete(name)
+    sharedState.nodes.delete(name)
+    sharedState.classNames.delete(name)
+    sharedState.styles.delete(name)
   }
 
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
@@ -123,27 +136,6 @@ export class Recipes {
 
   getSlotKey = (name: string, slot: string) => {
     return `${name}__${slot}`
-  }
-
-  assignRules = () => {
-    if (!this.context) return
-
-    for (const [name, recipe] of Object.entries(this.recipes)) {
-      //
-      if (isSlotRecipe(recipe)) {
-        //
-        recipe.slots.forEach((slotName) => {
-          const slotKey = this.getSlotKey(name, slotName)
-          this.rules.set(slotKey, this.createRule(slotKey, true))
-        })
-        //
-      } else {
-        //
-        this.rules.set(name, this.createRule(name))
-      }
-
-      this.keys.push(name)
-    }
   }
 
   isEmpty = () => {
@@ -311,5 +303,10 @@ export class Recipes {
   toCss = () => {
     if (!this.context) return ''
     return this.context.root.toString()
+  }
+
+  filterDetails = (filters?: ArtifactFilters) => {
+    const recipeDiffs = filters?.affecteds?.recipes
+    return recipeDiffs ? this.details.filter((recipe) => recipeDiffs.includes(recipe.dashName)) : this.details
   }
 }

@@ -4,6 +4,7 @@ export const outline: UtilityConfig = {
   outlineWidth: {
     className: 'ring',
     shorthand: 'ringWidth',
+    values: 'borderWidths',
   },
   outlineColor: {
     className: 'ring',

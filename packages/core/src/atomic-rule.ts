@@ -17,6 +17,8 @@ export interface ProcessOptions {
   styles: Dict
 }
 
+const urlRegex = /^https?:\/\//
+
 export class AtomicRule {
   root: Root
   layer: string
@@ -60,6 +62,11 @@ export class AtomicRule {
     walkObject(styleObject, (value, paths) => {
       // if value doesn't exist
       if (value == null) return
+
+      // we don't want to extract and generate invalid CSS for urls
+      if (urlRegex.test(value)) {
+        return
+      }
 
       const important = isImportant(value)
 

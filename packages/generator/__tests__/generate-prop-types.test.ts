@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
 import { generator, generatorConfig } from './fixture'
-import { createGenerator } from '../src'
+import { Generator } from '../src'
 
 describe('generate property types', () => {
   test('should ', () => {
@@ -65,6 +65,7 @@ describe('generate property types', () => {
       	marginInline: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineEnd: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineStart: \\"auto\\" | Tokens[\\"spacing\\"];
+      	outlineWidth: Tokens[\\"borderWidths\\"];
       	outlineColor: Tokens[\\"colors\\"];
       	outline: Tokens[\\"borders\\"];
       	outlineOffset: Tokens[\\"spacing\\"];
@@ -122,6 +123,11 @@ describe('generate property types', () => {
       	borderEndEndRadius: Tokens[\\"radii\\"];
       	borderEndRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
       	border: Tokens[\\"borders\\"];
+      	borderWidth: Tokens[\\"borderWidths\\"];
+      	borderTopWidth: Tokens[\\"borderWidths\\"];
+      	borderLeftWidth: Tokens[\\"borderWidths\\"];
+      	borderRightWidth: Tokens[\\"borderWidths\\"];
+      	borderBottomWidth: Tokens[\\"borderWidths\\"];
       	borderColor: Tokens[\\"colors\\"];
       	borderInline: Tokens[\\"borders\\"];
       	borderInlineWidth: Tokens[\\"borderWidths\\"];
@@ -207,6 +213,7 @@ describe('generate property types', () => {
       	scrollSnapMarginRight: Tokens[\\"spacing\\"];
       	fill: Tokens[\\"colors\\"];
       	stroke: Tokens[\\"colors\\"];
+      	strokeWidth: Tokens[\\"borderWidths\\"];
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
@@ -309,18 +316,28 @@ describe('generate property types', () => {
       }
 
 
-      export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
-        : T extends keyof CssProperties
-        ? ConditionalValue<CssProperties[T] | (string & {})>
-        : ConditionalValue<string | number>"
+
+        type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+          ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
+          : never;
+
+        type CssPropertyValue<T extends string> = T extends keyof CssProperties
+          ? ConditionalValue<CssProperties[T] | (string & {})>
+          : never;
+
+        export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+          ? PropertyTypeValue<T>
+          : T extends keyof CssProperties
+            ? CssPropertyValue<T>
+            : ConditionalValue<string | number>
+        "
     `)
   })
 
   test('with stricTokens true', () => {
     const conf = Object.assign({}, generatorConfig)
     conf.config.strictTokens = true
-    expect(generatePropTypes(createGenerator(conf as any))).toMatchInlineSnapshot(`
+    expect(generatePropTypes(new Generator(conf))).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -380,6 +397,7 @@ describe('generate property types', () => {
       	marginInline: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineEnd: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineStart: \\"auto\\" | Tokens[\\"spacing\\"];
+      	outlineWidth: Tokens[\\"borderWidths\\"];
       	outlineColor: Tokens[\\"colors\\"];
       	outline: Tokens[\\"borders\\"];
       	outlineOffset: Tokens[\\"spacing\\"];
@@ -436,6 +454,11 @@ describe('generate property types', () => {
       	borderEndEndRadius: Tokens[\\"radii\\"];
       	borderEndRadius: Tokens[\\"radii\\"];
       	border: Tokens[\\"borders\\"];
+      	borderWidth: Tokens[\\"borderWidths\\"];
+      	borderTopWidth: Tokens[\\"borderWidths\\"];
+      	borderLeftWidth: Tokens[\\"borderWidths\\"];
+      	borderRightWidth: Tokens[\\"borderWidths\\"];
+      	borderBottomWidth: Tokens[\\"borderWidths\\"];
       	borderColor: Tokens[\\"colors\\"];
       	borderInline: Tokens[\\"borders\\"];
       	borderInlineWidth: Tokens[\\"borderWidths\\"];
@@ -521,6 +544,7 @@ describe('generate property types', () => {
       	scrollSnapMarginRight: Tokens[\\"spacing\\"];
       	fill: Tokens[\\"colors\\"];
       	stroke: Tokens[\\"colors\\"];
+      	strokeWidth: Tokens[\\"borderWidths\\"];
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
@@ -622,12 +646,24 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
-      type FilterString<T> = T extends \`\${infer _}\` ? T : never;
-      export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<FilterString<PropertyTypes[T]>>
-        : T extends keyof CssProperties
-        ? ConditionalValue<FilterString<CssProperties[T]>>
-        : ConditionalValue<string | number>"
+
+        type FilterString<T> = T extends \`\${infer _}\` ? T : never;
+        type WithArbitraryValue<T> = T | \`[\${string}]\`
+
+        type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+          ? ConditionalValue<FilterString<PropertyTypes[T]>>
+          : never;
+
+        type CssPropertyValue<T extends string> = T extends keyof CssProperties
+          ? ConditionalValue<FilterString<CssProperties[T]>>
+          : never;
+
+        export type PropertyValue<T extends string> = WithArbitraryValue<T extends keyof PropertyTypes
+          ? PropertyTypeValue<T>
+          : T extends keyof CssProperties
+            ? CssPropertyValue<T>
+            : ConditionalValue<string | number>
+          >"
     `)
   })
 })

@@ -76,6 +76,7 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
       patterns: mergeExtensions(configs.map((config) => config.patterns ?? {})),
       utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
       globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
+      staticCss: mergeExtensions(configs.map((config) => config.staticCss ?? {})),
     },
     ...configs,
   )

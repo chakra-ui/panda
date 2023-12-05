@@ -12,6 +12,10 @@ const tabs = [
     label: 'Code',
   },
   {
+    id: 'css',
+    label: 'CSS',
+  },
+  {
     id: 'config',
     label: 'Config',
   },
@@ -20,6 +24,12 @@ const tabs = [
 export const Editor = (props: PandaEditorProps) => {
   const { activeTab, setActiveTab, onBeforeMount, onCodeEditorChange, onCodeEditorMount, onCodeEditorFormat } =
     useEditor(props)
+
+  const editorPaths = {
+    code: 'code.tsx',
+    css: 'custom.css',
+    config: 'config.ts',
+  }
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
@@ -72,8 +82,8 @@ export const Editor = (props: PandaEditorProps) => {
         <div className={cx(css({ flex: '1', pt: '2' }), editorTokenizer())}>
           <MonacoEditor
             value={props.value[activeTab]}
-            language="typescript"
-            path={activeTab === 'code' ? 'code.tsx' : 'config.ts'}
+            language={activeTab === 'css' ? 'css' : 'typescript'}
+            path={editorPaths[activeTab]}
             options={defaultEditorOptions}
             beforeMount={onBeforeMount}
             onMount={onCodeEditorMount}

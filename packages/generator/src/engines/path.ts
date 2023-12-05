@@ -1,31 +1,57 @@
 import type { UserConfig } from '@pandacss/types'
 
-export const getPathEngine = ({ cwd, emitPackage, outdir }: UserConfig): PandaPathEngine => {
-  const get = (file?: string) =>
-    [cwd, emitPackage ? 'node_modules' : undefined, outdir, file].filter(Boolean) as string[]
-  return {
-    get,
-    root: get(),
-    css: get('css'),
-    token: get('tokens'),
-    types: get('types'),
-    recipe: get('recipes'),
-    pattern: get('patterns'),
-    chunk: get('chunks'),
-    outCss: get('styles.css'),
-    jsx: get('jsx'),
-  }
-}
+export class PathEngine {
+  constructor(private config: UserConfig) {}
 
-export interface PandaPathEngine {
-  get: (file?: string) => string[]
-  root: string[]
-  css: string[]
-  token: string[]
-  types: string[]
-  recipe: string[]
-  pattern: string[]
-  chunk: string[]
-  outCss: string[]
-  jsx: string[]
+  private get cwd() {
+    return this.config.cwd
+  }
+
+  private get emitPackage() {
+    return this.config.emitPackage || false
+  }
+
+  private get outdir() {
+    return this.config.outdir
+  }
+
+  private getFilePath(file?: string) {
+    return [this.cwd, this.emitPackage ? 'node_modules' : undefined, this.outdir, file].filter(Boolean) as string[]
+  }
+
+  get root() {
+    return this.getFilePath()
+  }
+
+  get css() {
+    return this.getFilePath('css')
+  }
+
+  get token() {
+    return this.getFilePath('tokens')
+  }
+
+  get types() {
+    return this.getFilePath('types')
+  }
+
+  get recipe() {
+    return this.getFilePath('recipes')
+  }
+
+  get pattern() {
+    return this.getFilePath('patterns')
+  }
+
+  get chunk() {
+    return this.getFilePath('chunks')
+  }
+
+  get outCss() {
+    return this.getFilePath('styles.css')
+  }
+
+  get jsx() {
+    return this.getFilePath('jsx')
+  }
 }

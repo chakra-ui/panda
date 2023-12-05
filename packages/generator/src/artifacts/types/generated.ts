@@ -8,8 +8,6 @@ import selectors from '../generated/selectors.d.ts.json' assert { type: 'json' }
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
-const jsxStyleProps = 'export type JsxStyleProps = StyleProps & WithCss'
-
 export function getGeneratedTypes(ctx: Context) {
   /**
    * convert import type { CompositionStyleObject } from './system-types'
@@ -25,6 +23,19 @@ export function getGeneratedTypes(ctx: Context) {
     parts: rewriteImports(parts.content),
     composition: rewriteImports(composition.content),
     selectors: rewriteImports(selectors.content),
+  }
+}
+
+const jsxStyleProps = 'export type JsxStyleProps = StyleProps & WithCss'
+export function getGeneratedSystemTypes(ctx: Context) {
+  /**
+   * convert import type { CompositionStyleObject } from './system-types'
+   * to import type { CompositionStyleObject } from './system-types.d.ts'
+   */
+  const rewriteImports = (code: string) =>
+    code.replace(/import\s+type\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"]/g, ctx.file.importType('$1', '$2'))
+
+  return {
     system: rewriteImports(
       match(ctx.jsx.styleProps)
         .with('all', () => system.content)

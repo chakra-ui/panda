@@ -1,5 +1,53 @@
 # @pandacss/types
 
+## 0.20.1
+
+## 0.20.0
+
+### Minor Changes
+
+- 904aec7b: - Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+
+  - Add support for extending `staticCss` defined in presets
+
+  ```jsx
+  const presetWithStaticCss = definePreset({
+    staticCss: {
+      recipes: {
+        // generate all button styles and variants
+        button: ['*'],
+      },
+    },
+  })
+
+  export default defineConfig({
+    presets: [presetWithStaticCss],
+    staticCss: {
+      extend: {
+        recipes: {
+          // extend and pre-generate all sizes for card
+          card: [{ size: ['small', 'medium', 'large'] }],
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+
+## 0.19.0
+
+### Patch Changes
+
+- 61831040: Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+
+  > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
+
+- 89f86923: Fix issue where css variables were not supported in layer styles and text styles types.
+
 ## 0.18.3
 
 ## 0.18.2

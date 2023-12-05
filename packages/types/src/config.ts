@@ -2,7 +2,7 @@ import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
 import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
-import type { RequiredBy } from './shared'
+import type { Keys, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
 import type { ExtendableGlobalStyleObject, GlobalStyleObject } from './system-types'
 import type { ExtendableTheme, Theme } from './theme'
@@ -14,7 +14,7 @@ export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
 export type CascadeLayers = Record<CascadeLayer, string>
 
-interface StudioOptions {
+export interface StudioOptions {
   /**
    * Used to customize the design system studio
    * @default { title: 'Panda', logo: '🐼' }
@@ -53,6 +53,10 @@ interface PresetCore {
    */
   globalCss: GlobalStyleObject
   /**
+   * Used to generate css utility classes for your project.
+   */
+  staticCss: StaticCssOptions
+  /**
    * The theme configuration for your project.
    */
   theme: Theme
@@ -71,6 +75,10 @@ interface ExtendablePatterns {
   extend?: Patterns | undefined
 }
 
+interface ExtendableStaticCssOptions extends StaticCssOptions {
+  extend?: StaticCssOptions | undefined
+}
+
 export interface ExtendableOptions {
   /**
    * The css selectors or media queries shortcuts.
@@ -81,6 +89,10 @@ export interface ExtendableOptions {
    * The global styles for your project.
    */
   globalCss?: ExtendableGlobalStyleObject
+  /**
+   * Used to generate css utility classes for your project.
+   */
+  staticCss?: ExtendableStaticCssOptions
   /**
    * The theme configuration for your project.
    */
@@ -233,11 +245,6 @@ interface CssgenOptions {
    */
   cssVarRoot?: string
   /**
-   * @experimental
-   * Used to generate css utility classes for your project.
-   */
-  staticCss?: StaticCssOptions
-  /**
    * The css syntax kind to use
    * @default 'object-literal'
    */
@@ -336,8 +343,11 @@ export interface ConfigTsOptions {
 }
 
 export interface LoadConfigResult {
+  /** Config path */
   path: string
   config: UserConfig
+  serialized: string
+  deserialize: () => Config
   tsconfig?: TSConfig
   tsOptions?: ConfigTsOptions
   tsconfigFile?: string
@@ -353,3 +363,14 @@ export interface PrefixOptions {
   tokens: string | undefined
   className: string | undefined
 }
+
+type ReqConf = Required<UserConfig>
+
+export type ConfigPath = Exclude<
+  | Exclude<NonNullable<Keys<ReqConf>>, 'theme'>
+  | PathIn<ReqConf, 'theme'>
+  | PathIn<ReqConf, 'patterns'>
+  | PathIn<ReqConf, 'staticCss'>
+  | (string & {}),
+  undefined
+>

@@ -1,45 +1,43 @@
 import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { LoadConfigResult } from '@pandacss/types'
 import { bundle } from './bundle'
+import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './get-resolved-config'
-
-import { preset as presetBase } from '@pandacss/preset-base'
-import { preset as presetPanda } from '@pandacss/preset-panda'
-
-const bundledPresets = {
-  '@pandacss/preset-base': presetBase,
-  '@pandacss/preset-panda': presetPanda,
-  '@pandacss/dev/presets': presetPanda,
-}
-const bundledPresetsNames = Object.keys(bundledPresets)
-const isBundledPreset = (preset: string): preset is keyof typeof bundledPresets => bundledPresetsNames.includes(preset)
 
 interface ConfigFileOptions {
   cwd: string
   file?: string
 }
 
+/**
+ * Find, load and resolve the final config (including presets)
+ */
 export async function loadConfigFile(options: ConfigFileOptions) {
   const result = await bundleConfigFile(options)
   return resolveConfigFile(result, options.cwd)
 }
 
+/**
+ * Resolve the final config (including presets)
+ * @pandacss/preset-base: ALWAYS included if NOT using eject: true
+ * @pandacss/preset-panda: only included by default if no presets
+ */
 export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
   const presets = new Set<any>()
+
   if (!result.config.eject) {
     presets.add(presetBase)
   }
 
   if (result.config.presets) {
+    //
     result.config.presets.forEach((preset: any) => {
-      if (typeof preset === 'string' && isBundledPreset(preset)) {
-        presets.add(bundledPresets[preset])
-      } else {
-        presets.add(preset)
-      }
+      presets.add(getBundledPreset(preset) ?? preset)
     })
+    //
   } else if (!result.config.eject) {
     presets.add(presetPanda)
   }
@@ -48,9 +46,15 @@ export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundle
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
 
-  return { ...result, config: mergedConfig } as LoadConfigResult
+  const serialized = stringifyJson(mergedConfig)
+  const deserialize = () => parseJson(serialized)
+
+  return { ...result, serialized, deserialize, config: mergedConfig } as LoadConfigResult
 }
 
+/**
+ * Find and bundle the config file
+ */
 export async function bundleConfigFile(options: ConfigFileOptions) {
   const { cwd, file } = options
   const filePath = findConfigFile({ cwd, file })

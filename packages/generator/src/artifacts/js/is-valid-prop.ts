@@ -14,7 +14,7 @@ export function generateIsValidProp(ctx: Context) {
   content = content.replace(
     'var userGeneratedStr = "";',
     `var userGeneratedStr = "${match(ctx.jsx.styleProps)
-      .with('all', () => Array.from(new Set(ctx.properties)).join(','))
+      .with('all', () => Array.from(ctx.properties).join(','))
       .with('minimal', () => 'css')
       .with('none', () => '')
       .exhaustive()}"`,

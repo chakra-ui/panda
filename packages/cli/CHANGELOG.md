@@ -1,5 +1,58 @@
 # @pandacss/dev
 
+## 0.20.1
+
+### Patch Changes
+
+- @pandacss/config@0.20.1
+- @pandacss/node@0.20.1
+- @pandacss/token-dictionary@0.20.1
+- @pandacss/postcss@0.20.1
+- @pandacss/error@0.20.1
+- @pandacss/logger@0.20.1
+- @pandacss/preset-panda@0.20.1
+- @pandacss/shared@0.20.1
+- @pandacss/types@0.20.1
+
+## 0.20.0
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- da7a5d59: Add a --watch flag to the `panda ship` command
+- Updated dependencies [24ee49a5]
+- Updated dependencies [904aec7b]
+  - @pandacss/postcss@0.20.0
+  - @pandacss/config@0.20.0
+  - @pandacss/types@0.20.0
+  - @pandacss/node@0.20.0
+  - @pandacss/preset-panda@0.20.0
+  - @pandacss/token-dictionary@0.20.0
+  - @pandacss/error@0.20.0
+  - @pandacss/logger@0.20.0
+  - @pandacss/shared@0.20.0
+
+## 0.19.0
+
+### Minor Changes
+
+- b3ca8412: Require explicit installation of `@pandacss/studio` to use the `panda studio` command.
+
+### Patch Changes
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/node@0.19.0
+  - @pandacss/config@0.19.0
+  - @pandacss/preset-panda@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/postcss@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
 ## 0.18.3
 
 ### Patch Changes

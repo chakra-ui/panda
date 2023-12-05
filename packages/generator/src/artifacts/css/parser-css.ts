@@ -3,7 +3,7 @@ import type { Dict, ParserResultType } from '@pandacss/types'
 import { P, match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
-export const generateParserCss = (ctx: Context) => (result: ParserResultType) => {
+export const generateParserCss = (ctx: Context, result: ParserResultType) => {
   const { patterns, recipes } = ctx
   const sheet = ctx.createSheet()
 

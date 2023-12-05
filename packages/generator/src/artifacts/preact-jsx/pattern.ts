@@ -1,11 +1,14 @@
+import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
-export function generatePreactJsxPattern(ctx: Context) {
+export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters) {
   const { typeName, factoryName } = ctx.jsx
 
-  return ctx.patterns.details.map((pattern) => {
+  const details = ctx.patterns.filterDetails(filters)
+
+  return details.map((pattern) => {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div' } = pattern.config
 
