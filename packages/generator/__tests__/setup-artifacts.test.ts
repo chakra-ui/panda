@@ -130,13 +130,9 @@ describe('setup-artifacts', () => {
           "/helpers.mjs",
         ],
         [
-          "tokens/index.css",
           "tokens/index.d.ts",
           "tokens/index.mjs",
           "tokens/tokens.d.ts",
-        ],
-        [
-          "tokens/keyframes.css",
         ],
         [],
         [
@@ -248,13 +244,6 @@ describe('setup-artifacts', () => {
         [
           "css/index.mjs",
           "css/index.d.ts",
-        ],
-        [],
-        [
-          "/global.css",
-        ],
-        [
-          "/static.css",
         ],
         [],
       ]
