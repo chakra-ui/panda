@@ -116,15 +116,11 @@ export class Builder {
     return files.some((file) => !this.getFileMeta(file).isUnchanged)
   }
 
-  hasChanged() {
-    const ctx = this.getContextOrThrow()
-    const files = ctx.getFiles()
-    return this.hasConfigChanged || this.checkFilesChanged(files)
-  }
-
   extract = async () => {
     const ctx = this.getContextOrThrow()
     const files = ctx.getFiles()
+
+    if (!this.hasConfigChanged && !this.checkFilesChanged(files)) return
 
     const done = logger.time.info('Extracted in')
     // limit concurrency since we might parse a lot of files

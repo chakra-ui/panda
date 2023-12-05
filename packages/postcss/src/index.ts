@@ -39,9 +39,6 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
 
         await builder.emit()
 
-        // ignore non-changed files or config
-        if (!builder.hasChanged()) return
-
         await builder.extract()
 
         builder.registerDependency((dep) => {
