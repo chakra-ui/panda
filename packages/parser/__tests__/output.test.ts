@@ -2182,6 +2182,125 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('import map as string', () => {
+    const code = `
+    import { css } from "string-import-map/css";
+    import { buttonStyle } from "string-import-map/recipes";
+    import { stack } from "string-import-map/patterns";
+    import { Box } from "string-import-map/jsx";
+
+    css({ mx: '3' })
+    stack({ direction: "column" })
+    buttonStyle({ visual: "funky" })
+
+    const App = () => {
+      return (
+        <>
+          <Box color="red" />
+        </>
+      );
+    }
+     `
+    const result = run(code, {
+      outdir: 'anywhere',
+      importMap: 'string-import-map',
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "mx": "3",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "visual": "funky",
+            },
+          ],
+          "name": "buttonStyle",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "color": "red",
+            },
+          ],
+          "name": "Box",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .text_red {
+          color: red
+          }
+      }
+
+      @layer recipes {
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+          }
+
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+          }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black)
+              }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue
+              }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+              }
+          }
+      }"
+    `)
+  })
+
   test('array syntax - simple', () => {
     const code = `
         import { Box } from ".panda/jsx"
