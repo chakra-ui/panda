@@ -41,7 +41,7 @@
     "solid-js": "^1.7.12",
     "tsx": "3.12.10",
     "typescript": "^5.0.2",
-    "vite": "^4.4.5",
+    "vite": "^4.4.12",
     "vite-plugin-solid": "^2.7.0",
     "vitest": "0.33.0",
     "vue": "^3.3.3"
