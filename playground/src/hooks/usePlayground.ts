@@ -71,6 +71,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   }
 
   const [state, setState] = useState(initialState ?? example)
+  const [diffState, setDiffState] = useState<State | null>(null)
 
   function copyCurrentURI() {
     const currentURI = window.location.href
@@ -128,6 +129,9 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     share({
       onDone(id) {
         history.pushState({ id }, '', `${original}/${id}`)
+        if (!initialState) return
+        setDiffState(state)
+        setState(initialState)
       },
     })
   }
@@ -159,6 +163,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     setExample,
     onShare,
     onShareDiff,
+    diffState,
     isSharing,
     isResponsive,
   }
