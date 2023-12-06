@@ -29,6 +29,7 @@ export const Playground = (props: UsePlayGroundProps) => {
     setState,
     onShare,
     onShareDiff,
+    diffState,
     isSharing,
     isResponsive,
     setExample,
@@ -111,7 +112,12 @@ export const Playground = (props: UsePlayGroundProps) => {
             className={splitter()}
           >
             <SplitterPanel id="editor">
-              <Editor value={state} onChange={setState} artifacts={artifacts} diffState={props.diffState} />
+              <Editor
+                value={state}
+                onChange={setState}
+                artifacts={artifacts}
+                diffState={diffState ?? props.diffState}
+              />
             </SplitterPanel>
 
             <ArtifactsPanel panda={panda} />
