@@ -12,6 +12,9 @@ import { ArtifactsPanel } from '@/src/components/ArtifactsPanel'
 import { button, splitter } from '@/styled-system/recipes'
 import { Examples } from '@/src/components/Examples'
 import { useResponsiveView } from '@/src/hooks/useResponsiveView'
+import { GitCompareArrowsIcon } from '@/src/components/icons'
+import { flex } from '@/styled-system/patterns'
+import { useParams } from 'next/navigation'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const {
@@ -25,31 +28,69 @@ export const Playground = (props: UsePlayGroundProps) => {
     state,
     setState,
     onShare,
+    onShareDiff,
     isSharing,
     isResponsive,
     setExample,
   } = usePlayground(props)
-  const panda = usePanda(state.code, state.css, state.config)
+  const panda = usePanda(props.diffState ?? state)
   const responsiveView = useResponsiveView(panda)
 
   const { artifacts } = panda
+
+  const params = useParams()
 
   return (
     <>
       <Toolbar>
         <Examples setExample={setExample} />
-        <button
-          className={cx(
-            button({
-              visual: 'yellow',
-            }),
-            css({ px: '4' }),
-          )}
-          onClick={onShare}
-          disabled={isPristine || isSharing}
-        >
-          {isSharing ? 'Saving...' : 'Share'}
-        </button>
+        {params?.id2 ? (
+          <a
+            href={`/${params.id2}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cx(
+              button({
+                visual: 'yellow',
+              }),
+              css({ h: '10', p: '2', '& svg': { h: '6' } }),
+            )}
+            title="Open updated playground"
+          >
+            <GitCompareArrowsIcon />
+          </a>
+        ) : (
+          <div className={flex({ align: 'center', h: '10', divideX: '1px', divideColor: '#282828' })}>
+            <button
+              data-saved={params?.id ? '' : undefined}
+              className={cx(
+                button({
+                  visual: 'yellow',
+                }),
+                css({ px: '4', h: 'full', '&[data-saved]': { roundedRight: '0', pr: '2' } }),
+              )}
+              title="Share playground"
+              onClick={onShare}
+              disabled={isPristine || isSharing}
+            >
+              {isSharing ? 'Saving...' : 'Share'}
+            </button>
+            <button
+              hidden={!params?.id}
+              className={cx(
+                button({
+                  visual: 'yellow',
+                }),
+                css({ p: '0', h: 'full', roundedLeft: '0', '& svg': { h: '4' } }),
+              )}
+              title="Share diff playground"
+              onClick={onShareDiff}
+              disabled={isPristine || isSharing}
+            >
+              <GitCompareArrowsIcon />
+            </button>
+          </div>
+        )}
         <LayoutControl
           value={layoutValue}
           onChange={switchLayout}
@@ -70,7 +111,7 @@ export const Playground = (props: UsePlayGroundProps) => {
             className={splitter()}
           >
             <SplitterPanel id="editor">
-              <Editor value={state} onChange={setState} artifacts={artifacts} />
+              <Editor value={state} onChange={setState} artifacts={artifacts} diffState={props.diffState} />
             </SplitterPanel>
 
             <ArtifactsPanel panda={panda} />

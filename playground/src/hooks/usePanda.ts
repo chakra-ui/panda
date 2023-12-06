@@ -12,6 +12,7 @@ import { merge } from 'merge-anything'
 import { createHooks } from 'hookable'
 
 import { getResolvedConfig } from '@/src/lib/resolve-config'
+import { State } from '@/src/hooks/usePlayground'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -75,7 +76,8 @@ const playgroundPreset: Preset = {
   },
 }
 
-export function usePanda(source: string, css: string, config: string) {
+export function usePanda(state: State) {
+  const { code: source, css, config } = state
   const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
   const prevGenerator = useRef<Generator | null>(null)
 
