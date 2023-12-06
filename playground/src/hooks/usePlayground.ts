@@ -127,7 +127,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
     share({
       onDone(id) {
-        history.pushState({ id }, '', `${original}/${id}}`)
+        history.pushState({ id }, '', `${original}/${id}`)
       },
     })
   }
