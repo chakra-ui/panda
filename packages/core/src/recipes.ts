@@ -186,6 +186,7 @@ export class Recipes {
       defaultVariants = {},
       description = '',
       compoundVariants = [],
+      staticCss = [],
     } = config
 
     const recipe: Required<RecipeConfig> = {
@@ -197,6 +198,7 @@ export class Recipes {
       variants: {},
       defaultVariants,
       compoundVariants,
+      staticCss,
     }
 
     recipe.base = this.serialize(base)

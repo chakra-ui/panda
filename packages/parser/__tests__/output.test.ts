@@ -2874,4 +2874,39 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('recipe.staticCss', () => {
+    const { generator } = getFixtureProject('', {
+      theme: {
+        extend: {
+          recipes: {
+            textStyle: {
+              staticCss: [{ size: ['h1'] }],
+            },
+          },
+        },
+      },
+    })
+
+    expect(generator.getStaticCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .textStyle--size_h1 {
+          font-size: 5rem;
+          line-height: 1em;
+          font-weight: 800
+          }
+
+        @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+              }
+
+          .textStyle > :not([hidden]) ~ :not([hidden]) {
+            border-inline-start-width: 20px;
+            border-inline-end-width: 0px
+                  }
+          }
+      }"
+    `)
+  })
 })
