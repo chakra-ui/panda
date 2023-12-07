@@ -14,7 +14,6 @@ import { Examples } from '@/src/components/Examples'
 import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 import { GitCompareArrowsIcon } from '@/src/components/icons'
 import { flex } from '@/styled-system/patterns'
-import { useParams } from 'next/navigation'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const {
@@ -39,15 +38,13 @@ export const Playground = (props: UsePlayGroundProps) => {
 
   const { artifacts } = panda
 
-  const params = useParams()
-
   return (
     <>
       <Toolbar>
         <Examples setExample={setExample} />
-        {params?.id2 ? (
+        {diffState ? (
           <a
-            href={`/${params.id2}`}
+            href={`/${diffState.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className={cx(
@@ -63,7 +60,7 @@ export const Playground = (props: UsePlayGroundProps) => {
         ) : (
           <div className={flex({ align: 'center', h: '10', divideX: '1px', divideColor: '#282828' })}>
             <button
-              data-saved={params?.id ? '' : undefined}
+              data-saved={state.id ? '' : undefined}
               className={cx(
                 button({
                   visual: 'yellow',
@@ -77,7 +74,7 @@ export const Playground = (props: UsePlayGroundProps) => {
               {isSharing ? 'Saving...' : 'Share'}
             </button>
             <button
-              hidden={!params?.id}
+              hidden={!state.id}
               className={cx(
                 button({
                   visual: 'yellow',
@@ -112,12 +109,7 @@ export const Playground = (props: UsePlayGroundProps) => {
             className={splitter()}
           >
             <SplitterPanel id="editor">
-              <Editor
-                value={state}
-                onChange={setState}
-                artifacts={artifacts}
-                diffState={diffState ?? props.diffState}
-              />
+              <Editor value={state} onChange={setState} artifacts={artifacts} diffState={diffState} />
             </SplitterPanel>
 
             <ArtifactsPanel panda={panda} />

@@ -24,6 +24,8 @@ export interface PandaEditorProps {
   diffState?: State | null
 }
 
+type Tab = 'css' | 'code' | 'config'
+
 export const defaultEditorOptions: EditorProps['options'] = {
   minimap: { enabled: false },
   fontSize: 13,
@@ -51,6 +53,10 @@ const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) =
 
   highlighter()
 
+  monacoEditor.onDidChangeModel(() => {
+    highlighter()
+  })
+
   monacoEditor.onDidChangeModelContent(() => {
     highlighter()
   })
@@ -63,15 +69,15 @@ export function useEditor(props: PandaEditorProps) {
   const { resolvedTheme } = useTheme()
 
   const searchParams = useSearchParams()
-  const initialTab = searchParams?.get('tab') as keyof State | null
-  const [activeTab, setActiveTab] = useState<keyof State>(initialTab ?? 'code')
+  const initialTab = searchParams?.get('tab') as Tab | null
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab ?? 'code')
 
   const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
   const configureEditor: OnMount = useCallback((editor, monaco) => {
     activateMonacoJSXHighlighter(editor, monaco)
-    
+
     function registerKeybindings() {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         editor.trigger('editor', 'editor.action.formatDocument', undefined)

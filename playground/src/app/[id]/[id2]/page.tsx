@@ -11,7 +11,7 @@ const Page = async (props: any) => {
   const initialState = await prisma.session
     .findFirst({
       where: { id },
-      select: { code: true, css: true, config: true },
+      select: { id: true, code: true, css: true, config: true },
     })
     .catch(() => {
       return notFound()
@@ -20,7 +20,7 @@ const Page = async (props: any) => {
   const diffState = await prisma.session
     .findFirst({
       where: { id: id2 },
-      select: { code: true, css: true, config: true },
+      select: { id: true, code: true, css: true, config: true },
     })
     .catch(() => {
       return notFound()

@@ -32,7 +32,7 @@ export const Editor = (props: PandaEditorProps) => {
   }
 
   return (
-    <Flex flex="1" direction="column" align="flex-start">
+    <Flex flex="1" direction="column" align="flex-start" minW="0">
       <div className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}>
         <SegmentGroup
           className={cx(
@@ -112,13 +112,12 @@ export const Editor = (props: PandaEditorProps) => {
 
 const editorTokenizer = cva({
   base: {
-    '& .bracket-highlighting-0, & .bracket-highlighting-4': {
+    '& .jsx-expression-braces, & .bracket-highlighting-0, & .bracket-highlighting-4': {
       color: { _dark: '#A89984!' },
     },
     '& .bracket-highlighting-1, & .bracket-highlighting-3': {
       color: { _dark: '#EBDBB2!' },
     },
-
     '& .jsx-tag-angle-bracket': {
       color: { base: '#000000!', _dark: '#83A598!' },
     },
@@ -127,9 +126,6 @@ const editorTokenizer = cva({
     },
     '& .jsx-tag-attribute-key, & .jsx-expression-braces + :not(.jsx-tag-angle-bracket):not(.bracket-highlighting-3)': {
       color: { base: '#6f42c1!', _dark: '#FABD2F!' },
-    },
-    '& .jsx-expression-braces': {
-      color: { _dark: '#A89984!' },
     },
     '& .jsx-text': {
       color: { base: '#000000!', _dark: '#EBDBB2!' },

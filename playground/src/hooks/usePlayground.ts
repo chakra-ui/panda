@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
-import { EXAMPLES, Example, initialCSS } from '@/src/components/Examples/data'
+import { EXAMPLES, Example } from '@/src/components/Examples/data'
 import { useParams } from 'next/navigation'
+import { parseState } from '@/src/lib/parse-state'
 
 export type State = {
   code: string
   config: string
   css: string
+  id?: string | null
 }
 
 export type UsePlayGroundProps = {
@@ -16,7 +18,6 @@ export type UsePlayGroundProps = {
 }
 
 export const usePlayground = (props: UsePlayGroundProps) => {
-  const { initialState } = props
   const [layout, setLayout] = useState<Extract<Layout, 'horizontal' | 'vertical'>>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
   const [isSharing, setIsSharing] = useState(false)
@@ -62,16 +63,15 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     }
   }
 
-  const { code, config, css = initialCSS } = EXAMPLES.find((example) => example.id === 'css')!
+  const { code, config } = EXAMPLES.find((example) => example.id === 'css')!
 
   const example = {
     code,
     config,
-    css,
   }
 
-  const [state, setState] = useState(initialState ?? example)
-  const [diffState, setDiffState] = useState<State | null>(null)
+  const [state, setState] = useState(props.initialState ?? parseState(example))
+  const [diffState, setDiffState] = useState(props.diffState)
 
   function copyCurrentURI() {
     const currentURI = window.location.href
@@ -118,6 +118,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     share({
       onDone(id) {
         history.pushState({ id }, '', id)
+        setState((prev) => Object.assign({}, prev, { id }))
       },
     })
   }
@@ -129,9 +130,9 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     share({
       onDone(id) {
         history.pushState({ id }, '', `${original}/${id}`)
-        if (!initialState) return
-        setDiffState(state)
-        setState(initialState)
+        if (!props.initialState) return
+        setDiffState(Object.assign({}, state, { id }))
+        setState(props.initialState)
       },
     })
   }
@@ -140,11 +141,12 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     const example = EXAMPLES.find((example) => example.id === _example)
     if (!example) return
     setIsPristine(true)
-    setState({
-      code: example.code,
-      css: example.css,
-      config: example.config,
-    })
+    setState(
+      parseState({
+        code: example.code,
+        config: example.config,
+      }),
+    )
   }
 
   return {
