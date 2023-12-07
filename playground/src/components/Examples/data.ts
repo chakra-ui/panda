@@ -291,6 +291,6 @@ export const EXAMPLES = [
     `,
     config: getConfig(`theme: { extend: {} },`),
   },
-] as const
+]
 
 export type Example = (typeof EXAMPLES)[number]['id']
