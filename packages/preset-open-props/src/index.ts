@@ -1,0 +1,29 @@
+import type { Preset } from '@pandacss/types'
+import { keyframes, semanticAnimations } from './keyframes'
+import { tokens } from './tokens'
+
+const definePreset = <T extends Preset>(config: T) => config
+
+export const preset = definePreset({
+  theme: {
+    keyframes,
+    tokens,
+    semanticTokens: {
+      animations: semanticAnimations,
+    },
+  },
+  utilities: {
+    //* -- Mask -- Using -webkit-mask
+    // MaskEdges and MaskCornerCuts
+  },
+  conditions: {
+    // Media;
+    // Supports;
+  },
+  globalCss: {
+    // Layouts
+    // Highlights
+  },
+})
+
+export default preset
