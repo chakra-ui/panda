@@ -51,6 +51,10 @@ const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) =
 
   highlighter()
 
+  monacoEditor.onDidChangeModel(() => {
+    highlighter()
+  })
+
   monacoEditor.onDidChangeModelContent(() => {
     highlighter()
   })
@@ -71,7 +75,7 @@ export function useEditor(props: PandaEditorProps) {
 
   const configureEditor: OnMount = useCallback((editor, monaco) => {
     activateMonacoJSXHighlighter(editor, monaco)
-    
+
     function registerKeybindings() {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         editor.trigger('editor', 'editor.action.formatDocument', undefined)
