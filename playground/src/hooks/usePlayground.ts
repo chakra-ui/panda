@@ -119,6 +119,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
       onDone(id) {
         history.pushState({ id }, '', id)
         setState((prev) => Object.assign({}, prev, { id }))
+        pristineState.current = state
       },
     })
   }
