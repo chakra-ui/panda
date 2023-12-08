@@ -1,5 +1,6 @@
 import type { Preset } from '@pandacss/types'
 import { keyframes, semanticAnimations } from './keyframes'
+import { breakpoints } from './breakpoints'
 import { tokens } from './tokens'
 
 const definePreset = <T extends Preset>(config: T) => config
@@ -12,9 +13,7 @@ export const preset = definePreset({
       animations: semanticAnimations,
     },
 
-    breakpoints: {
-      // Breakpoints
-    },
+    breakpoints,
   },
 
   utilities: {
