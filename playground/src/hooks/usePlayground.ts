@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
-import { useParams } from 'next/navigation'
 import { parseState } from '@/src/lib/parse-state'
 
 export type State = {
@@ -23,7 +22,6 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   const [isSharing, setIsSharing] = useState(false)
   const [isResponsive, setIsResponsive] = useState(false)
   const toast = useToast()
-  const params = useParams()
 
   const [panels, setPanels] = useState([
     { id: 'left', size: 50, minSize: 15 },
@@ -124,7 +122,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   }
 
   const onShareDiff = () => {
-    const original = params?.id
+    const original = state.id
     if (!original) return
 
     share({
