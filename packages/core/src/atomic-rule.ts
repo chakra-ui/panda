@@ -15,7 +15,6 @@ import type { StylesheetContext } from './types'
 
 export interface ProcessOptions {
   styles: Dict
-  normalizeShorthand?: boolean
 }
 
 export class AtomicRule {
@@ -48,11 +47,13 @@ export class AtomicRule {
     return this.context?.transform ?? this.context.utility.transform
   }
 
-  process = (options: ProcessOptions) => {
-    const { styles, normalizeShorthand = true } = options
-    const { conditions: cond } = this.context
+  normalize = (styles: Dict, normalizeShorthand = true) => {
+    return normalizeStyleObject(styles, this.context, normalizeShorthand) as Dict
+  }
 
-    const styleObject = normalizeStyleObject(styles, this.context, normalizeShorthand)
+  process = (options: ProcessOptions) => {
+    const { styles: styleObject } = options
+    const { conditions: cond } = this.context
 
     // shouldn't happen, but just in case
     if (typeof styleObject !== 'object') return

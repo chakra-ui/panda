@@ -112,7 +112,7 @@ function normalizeShorthand(styles, context) {
     }
   });
 }
-function normalizeStyleObject(styles, context, shorthand = true) {
+function normalizeStyleObject(styles, context) {
   const { utility, conditions } = context;
   const { hasShorthand, resolveShorthand } = utility;
   return walkObject(
@@ -122,7 +122,9 @@ function normalizeStyleObject(styles, context, shorthand = true) {
     },
     {
       stop: (value) => Array.isArray(value),
-      getKey: shorthand ? (prop) => hasShorthand ? resolveShorthand(prop) : prop : void 0
+      getKey: (prop) => {
+        return hasShorthand ? resolveShorthand(prop) : prop;
+      }
     }
   );
 }

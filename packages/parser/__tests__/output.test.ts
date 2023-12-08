@@ -4650,6 +4650,12 @@ describe('preset patterns', () => {
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot('""')
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .card--rounded_true {
+          border-radius: 0.375rem
+          }
+      }"
+    `)
   })
 })

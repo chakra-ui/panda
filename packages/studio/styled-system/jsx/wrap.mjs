@@ -5,5 +5,8 @@ import { getWrapStyle } from '../patterns/wrap.mjs';
 export const Wrap = /* @__PURE__ */ forwardRef(function Wrap(props, ref) {
   const { gap, rowGap, columnGap, align, justify, ...restProps } = props
 const styleProps = getWrapStyle({gap, rowGap, columnGap, align, justify})
-return createElement(panda.div, { ref, ...styleProps, ...restProps })
-})
+const cssProps = styleProps
+const mergedProps = { ref, ...cssProps, ...restProps }
+
+return createElement(panda.div, mergedProps)
+  })

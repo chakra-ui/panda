@@ -5,5 +5,8 @@ import { getGridStyle } from '../patterns/grid.mjs';
 export const Grid = /* @__PURE__ */ forwardRef(function Grid(props, ref) {
   const { gap, columnGap, rowGap, columns, minChildWidth, ...restProps } = props
 const styleProps = getGridStyle({gap, columnGap, rowGap, columns, minChildWidth})
-return createElement(panda.div, { ref, ...styleProps, ...restProps })
-})
+const cssProps = styleProps
+const mergedProps = { ref, ...cssProps, ...restProps }
+
+return createElement(panda.div, mergedProps)
+  })

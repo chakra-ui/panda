@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import { getSlotRecipes } from '@pandacss/shared'
+import { getSlotRecipes, normalizeStyleObject } from '@pandacss/shared'
 import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
@@ -65,7 +65,9 @@ export class Stylesheet {
     const ruleset = new AtomicRule(this.context)
     styleObject.forEach((styles) => {
       if (!styles) return
-      ruleset.process({ styles })
+
+      const normalized = normalizeStyleObject(styles, this.context)
+      ruleset.process({ styles: normalized })
     })
   }
 
