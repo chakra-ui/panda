@@ -1021,12 +1021,6 @@ importers:
       '@pandacss/dev':
         specifier: workspace:*
         version: link:../../packages/cli
-      '@pandacss/preset-open-props':
-        specifier: workspace:*
-        version: link:../../packages/preset-open-props
-      '@pandacss/studio':
-        specifier: workspace:^
-        version: link:../../packages/studio
       '@types/node':
         specifier: 20.4.5
         version: 20.4.5
