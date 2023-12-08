@@ -5,7 +5,6 @@ export const generateStaticCss = (ctx: Context) => {
   const { config, utility, recipes } = ctx
   const { staticCss = {}, theme = {} } = config
 
-  // const sheet = ctx.createSheet()
   const fn = getStaticCss(staticCss)
 
   const results = fn({

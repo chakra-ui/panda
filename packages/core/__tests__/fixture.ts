@@ -52,7 +52,7 @@ export const createCssFn =
   (styles: Dict) => {
     const ctx = createContext(opts)
     const rule = createAtomicRule(ctx)
-    rule.process({ styles })
+    rule.process({ styles: rule.normalize(styles) })
     return ctx.layers.insert().toString()
   }
 
@@ -64,7 +64,7 @@ export const createRecipeFn =
     return ctx.layers.insert().toString()
   }
 
-export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
+export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle' | 'cardStyle') {
   const ctx = createContext()
   const recipes = new Recipes(mocks.recipes, ctx)
   return recipes.getRecipe(key)!
@@ -76,7 +76,10 @@ export function getSlotRecipe(key: 'button') {
   return recipes.getRecipe(key)!
 }
 
-export function processRecipe(recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle', styles: Record<string, any>) {
+export function processRecipe(
+  recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle' | 'cardStyle',
+  styles: Record<string, any>,
+) {
   const recipeFn = createRecipeFn({ recipes: mocks.recipes })
   return recipeFn(recipe, styles)
 }

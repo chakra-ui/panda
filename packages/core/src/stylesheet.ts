@@ -41,7 +41,8 @@ export class Stylesheet {
 
     styleObject.forEach((styles) => {
       if (!styles) return
-      ruleset.process({ styles })
+      const normalizedStyles = ruleset.normalize(styles)
+      ruleset.process({ styles: normalizedStyles })
     })
   }
 

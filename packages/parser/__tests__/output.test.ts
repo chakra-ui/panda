@@ -2173,6 +2173,125 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('import map as string', () => {
+    const code = `
+    import { css } from "string-import-map/css";
+    import { buttonStyle } from "string-import-map/recipes";
+    import { stack } from "string-import-map/patterns";
+    import { Box } from "string-import-map/jsx";
+
+    css({ mx: '3' })
+    stack({ direction: "column" })
+    buttonStyle({ visual: "funky" })
+
+    const App = () => {
+      return (
+        <>
+          <Box color="red" />
+        </>
+      );
+    }
+     `
+    const result = run(code, {
+      outdir: 'anywhere',
+      importMap: 'string-import-map',
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "mx": "3",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "visual": "funky",
+            },
+          ],
+          "name": "buttonStyle",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "color": "red",
+            },
+          ],
+          "name": "Box",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .text_red {
+          color: red
+          }
+      }
+
+      @layer recipes {
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+          }
+
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+          }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black)
+              }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue
+              }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+              }
+          }
+      }"
+    `)
+  })
+
   test('array syntax - simple', () => {
     const code = `
         import { Box } from ".panda/jsx"
@@ -2742,6 +2861,109 @@ describe('extract to css output pipeline', () => {
 
         .bg_\\\\[rgb\\\\(51_155_240\\\\)\\\\] {
           background-color: rgb(51 155 240)
+          }
+      }"
+    `)
+  })
+
+  test('recipe.staticCss', () => {
+    const { generator } = getFixtureProject('', {
+      theme: {
+        extend: {
+          recipes: {
+            textStyle: {
+              staticCss: [{ size: ['h1'] }],
+            },
+          },
+        },
+      },
+    })
+
+    expect(generator.getStaticCss()).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .textStyle--size_h1 {
+          font-size: 5rem;
+          line-height: 1em;
+          font-weight: 800
+          }
+
+        @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+              }
+
+          .textStyle > :not([hidden]) ~ :not([hidden]) {
+            border-inline-start-width: 20px;
+            border-inline-end-width: 0px
+                  }
+          }
+      }"
+    `)
+  })
+
+  test('recipe issue', () => {
+    const code = `
+    import { css } from '.panda/css';
+    import { styled } from '.panda/jsx';
+    import { cardStyle2  } from '.panda/recipes';
+    import { cardStyle } from '.panda/recipes';
+
+    const CardStyle = styled("div", cardStyle)
+    const CardStyle2 = styled("div", cardStyle2)
+
+    export const App = () => {
+      return (
+        <CardStyle rounded={true}>Card rounded={"true"}</CardStyle>
+        <CardStyle rounded={false}>Card rounded={"false"}</CardStyle>
+
+        <CardStyle2 isRounded={true}>Card2 isRounded={"true"}</CardStyle2>
+        <CardStyle2 isRounded={false}>Card2 isRounded={"false"}</CardStyle2>
+      );
+    };
+
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "CardStyle2",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "CardStyle2",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {
+              "rounded": true,
+            },
+          ],
+          "name": "CardStyle",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "rounded": false,
+            },
+          ],
+          "name": "CardStyle",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .card--rounded_true {
+          border-radius: 0.375rem
           }
       }"
     `)

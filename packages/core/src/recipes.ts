@@ -186,6 +186,7 @@ export class Recipes {
       defaultVariants = {},
       description = '',
       compoundVariants = [],
+      staticCss = [],
     } = config
 
     const recipe: Required<RecipeConfig> = {
@@ -197,6 +198,7 @@ export class Recipes {
       variants: {},
       defaultVariants,
       compoundVariants,
+      staticCss,
     }
 
     recipe.base = this.serialize(base)
@@ -286,7 +288,10 @@ export class Recipes {
         if (isEmpty) return
 
         const rule = this.rules.get(slotKey)
-        rule?.process({ styles })
+        if (!rule) return
+
+        const normalizedStyles = rule?.normalize(styles, false)
+        rule.process({ styles: normalizedStyles })
       })
       //
     } else {
@@ -295,7 +300,10 @@ export class Recipes {
       if (isEmpty) return
 
       const rule = this.rules.get(recipeName)
-      rule?.process({ styles })
+      if (!rule) return
+
+      const normalizedStyles = rule.normalize(styles, false)
+      rule.process({ styles: normalizedStyles })
       //
     }
   }

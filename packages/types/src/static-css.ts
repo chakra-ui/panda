@@ -17,7 +17,7 @@ interface CssRule {
   responsive?: boolean
 }
 
-type RecipeRule =
+export type RecipeRule =
   | '*'
   | ({
       conditions?: string[]
