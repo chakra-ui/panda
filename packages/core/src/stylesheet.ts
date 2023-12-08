@@ -1,6 +1,6 @@
 import { logger } from '@pandacss/logger'
 import { getSlotRecipes } from '@pandacss/shared'
-import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
+import type { CascadeLayer, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
@@ -87,6 +87,24 @@ export class Stylesheet {
     compoundVariants.forEach((compoundVariant) => {
       this.processAtomic(compoundVariant.css)
     })
+  }
+
+  getLayerCss = (...layers: CascadeLayer[]) => {
+    const getLayer = (layer: CascadeLayer) => {
+      if (!Reflect.has(this.context.layers, layer)) return ''
+
+      if (layer === 'utilities') {
+        return Reflect.get(this.context.layers.utilities, 'root').toString()
+      }
+
+      if (layer === 'recipes') {
+        return Reflect.get(this.context.layers.recipes, 'root').toString()
+      }
+
+      return Reflect.get(this.context.layers, layer).toString()
+    }
+
+    return optimizeCss(layers.map(getLayer).join('\n'))
   }
 
   toCss = ({ optimize = false, minify }: { optimize?: boolean; minify?: boolean } = {}) => {

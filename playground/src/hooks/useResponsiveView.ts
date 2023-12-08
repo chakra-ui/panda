@@ -18,7 +18,7 @@ const getPointerPosition = (e: Event) => {
 
 export function useResponsiveView(panda: UsePanda) {
   const ASPECT_RATIO = 4 / 5
-  const _breakpoints = panda.generator.config.theme?.breakpoints ?? {}
+  const _breakpoints = panda.context.config.theme?.breakpoints ?? {}
   const breakpoints = Object.assign(
     { base: { width: 320, height: 670 } },
     Object.entries(_breakpoints).reduce((acc, nxt) => {
