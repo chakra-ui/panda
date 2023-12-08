@@ -2,6 +2,7 @@ import type { Tokens } from '@pandacss/types'
 import { colors } from './colors'
 import { zIndex } from './zIndex'
 import { assets } from './assets'
+import { gradients } from './gradients'
 import { animations, easings } from './keyframes'
 import { borderWidths, radii } from './borders'
 // import { shadows } from './shadows'
@@ -26,10 +27,7 @@ export const tokens = defineTokens({
   // shadows,
 
   assets,
-
-  //* -- GRADIENTS --
-  // gradients,
-
+  gradients,
   colors,
   spacing,
   sizes,
