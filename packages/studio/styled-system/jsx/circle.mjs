@@ -5,8 +5,5 @@ import { getCircleStyle } from '../patterns/circle.mjs';
 export const Circle = /* @__PURE__ */ forwardRef(function Circle(props, ref) {
   const { size, ...restProps } = props
 const styleProps = getCircleStyle({size})
-const cssProps = styleProps
-const mergedProps = { ref, ...cssProps, ...restProps }
-
-return createElement(panda.div, mergedProps)
-  })
+return createElement(panda.div, { ref, ...styleProps, ...restProps })
+})

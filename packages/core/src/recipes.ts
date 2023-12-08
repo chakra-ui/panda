@@ -1,12 +1,4 @@
-import {
-  capitalize,
-  createRegex,
-  dashCase,
-  getSlotRecipes,
-  memo,
-  normalizeStyleObject,
-  splitProps,
-} from '@pandacss/shared'
+import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
 import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
@@ -294,7 +286,10 @@ export class Recipes {
         if (isEmpty) return
 
         const rule = this.rules.get(slotKey)
-        rule?.process({ styles: normalizeStyleObject(styles, this.context, false) })
+        if (!rule) return
+
+        const normalizedStyles = rule?.normalize(styles, false)
+        rule.process({ styles: normalizedStyles })
       })
       //
     } else {
@@ -303,7 +298,10 @@ export class Recipes {
       if (isEmpty) return
 
       const rule = this.rules.get(recipeName)
-      rule?.process({ styles: normalizeStyleObject(styles, this.context, false) })
+      if (!rule) return
+
+      const normalizedStyles = rule.normalize(styles, false)
+      rule.process({ styles: normalizedStyles })
       //
     }
   }

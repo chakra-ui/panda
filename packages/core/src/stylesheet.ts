@@ -1,10 +1,10 @@
 import { logger } from '@pandacss/logger'
-import { getSlotRecipes, normalizeStyleObject } from '@pandacss/shared'
+import { getSlotRecipes } from '@pandacss/shared'
 import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
-import { optimizeCss, expandCssFunctions } from './optimize'
+import { expandCssFunctions, optimizeCss } from './optimize'
 import { Recipes } from './recipes'
 import { safeParse } from './safe-parse'
 import { serializeStyles } from './serialize'
@@ -65,9 +65,8 @@ export class Stylesheet {
     const ruleset = new AtomicRule(this.context)
     styleObject.forEach((styles) => {
       if (!styles) return
-
-      const normalized = normalizeStyleObject(styles, this.context)
-      ruleset.process({ styles: normalized })
+      const normalizedStyles = ruleset.normalize(styles)
+      ruleset.process({ styles: normalizedStyles })
     })
   }
 
