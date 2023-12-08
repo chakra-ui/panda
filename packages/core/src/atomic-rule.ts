@@ -49,11 +49,14 @@ export class AtomicRule {
     return this.context?.transform ?? this.context.utility.transform
   }
 
+  normalize = (styles: Dict, normalizeShorthand = true) => {
+    return normalizeStyleObject(styles, this.context, normalizeShorthand) as Dict
+  }
+
   process = (options: ProcessOptions) => {
-    const { styles } = options
+    const { styles: styleObject } = options
     const { conditions: cond } = this.context
 
-    const styleObject = normalizeStyleObject(styles, this.context)
     // shouldn't happen, but just in case
     if (typeof styleObject !== 'object') return
 
