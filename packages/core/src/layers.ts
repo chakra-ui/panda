@@ -1,4 +1,4 @@
-import type { CascadeLayers } from '@pandacss/types'
+import type { CascadeLayer, CascadeLayers } from '@pandacss/types'
 import postcss, { AtRule, Root } from 'postcss'
 
 export class Layers {
@@ -51,26 +51,58 @@ export class Layers {
     }
   }
 
-  insert() {
+  getLayer(layer: CascadeLayer) {
     // inset in order: reset, base, tokens, recipes, utilities
-    const { root, reset, base, tokens, recipes, slotRecipes, utilities } = this
+    const { reset, base, tokens, recipes, slotRecipes, utilities } = this
 
+    switch (layer) {
+      case 'base':
+        return base
+
+      case 'reset':
+        return reset
+
+      case 'tokens': {
+        return tokens
+      }
+
+      case 'recipes': {
+        if (recipes.base.nodes.length) recipes.root.prepend(recipes.base)
+        if (slotRecipes.base.nodes.length) slotRecipes.root.prepend(slotRecipes.base)
+        if (slotRecipes.root.nodes.length) recipes.root.append(slotRecipes.root)
+        return recipes.root
+      }
+
+      case 'utilities': {
+        if (utilities.compositions.nodes.length) utilities.root.prepend(utilities.compositions)
+        this.utilityRuleMap.forEach((rules) => {
+          if (rules.nodes.length) utilities.root.append(rules)
+        })
+        return utilities.root
+      }
+
+      default:
+        throw new Error(`Unknown layer: ${layer}`)
+    }
+  }
+
+  insert() {
+    const { root } = this
+
+    const reset = this.getLayer('reset')
     if (reset.nodes.length) root.append(reset)
+
+    const base = this.getLayer('base')
     if (base.nodes.length) root.append(base)
+
+    const tokens = this.getLayer('tokens')
     if (tokens.nodes.length) root.append(tokens)
 
-    if (recipes.base.nodes.length) recipes.root.prepend(recipes.base)
-    if (recipes.root.nodes.length) root.append(recipes.root)
-    if (slotRecipes.base.nodes.length) slotRecipes.root.prepend(slotRecipes.base)
-    if (slotRecipes.root.nodes.length) root.append(slotRecipes.root)
+    const recipes = this.getLayer('recipes')
+    if (recipes.nodes.length) root.append(recipes)
 
-    if (utilities.compositions.nodes.length) utilities.root.prepend(utilities.compositions)
-    this.utilityRuleMap.forEach((rules) => {
-      if (rules.nodes.length) utilities.root.append(rules)
-    })
-    if (utilities.root.nodes.length) {
-      root.append(utilities.root)
-    }
+    const utilities = this.getLayer('utilities')
+    if (utilities.nodes.length) root.append(utilities)
 
     return root
   }

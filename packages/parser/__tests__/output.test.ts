@@ -2238,29 +2238,7 @@ describe('extract to css output pipeline', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .mx_3 {
-          margin-inline: var(--spacing-3)
-          }
-
-        .d_flex {
-          display: flex
-          }
-
-        .flex_column {
-          flex-direction: column
-          }
-
-        .gap_10px {
-          gap: 10px
-          }
-
-        .text_red {
-          color: red
-          }
-      }
-
-      @layer recipes {
+      "@layer recipes {
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -2287,6 +2265,28 @@ describe('extract to css output pipeline', () => {
             align-items: center;
             justify-content: center
               }
+          }
+      }
+
+      @layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .text_red {
+          color: red
           }
       }"
     `)
@@ -2867,7 +2867,7 @@ describe('extract to css output pipeline', () => {
   })
 
   test('recipe.staticCss', () => {
-    const result = parseAndExtract('', {
+    const { generator } = parseAndExtract('', {
       theme: {
         extend: {
           recipes: {
@@ -2879,7 +2879,10 @@ describe('extract to css output pipeline', () => {
       },
     })
 
-    expect(result.css).toMatchInlineSnapshot(`
+    generator.appendCss('static')
+    const css = generator.stylesheet.getLayerCss('recipes')
+
+    expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
         .textStyle--size_h1 {
           font-size: 5rem;
@@ -2888,13 +2891,13 @@ describe('extract to css output pipeline', () => {
           }
 
         @layer _base {
+
           .textStyle {
             font-family: var(--fonts-mono);
               }
-
-          .textStyle > :not([hidden]) ~ :not([hidden]) {
-            border-inline-start-width: 20px;
-            border-inline-end-width: 0px
+            .textStyle > :not([hidden]) ~ :not([hidden]) {
+              border-inline-start-width: 20px;
+              border-inline-end-width: 0px
                   }
           }
       }"

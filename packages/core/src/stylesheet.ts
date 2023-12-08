@@ -90,21 +90,13 @@ export class Stylesheet {
   }
 
   getLayerCss = (...layers: CascadeLayer[]) => {
-    const getLayer = (layer: CascadeLayer) => {
-      if (!Reflect.has(this.context.layers, layer)) return ''
-
-      if (layer === 'utilities') {
-        return Reflect.get(this.context.layers.utilities, 'root').toString()
-      }
-
-      if (layer === 'recipes') {
-        return Reflect.get(this.context.layers.recipes, 'root').toString()
-      }
-
-      return Reflect.get(this.context.layers, layer).toString()
-    }
-
-    return optimizeCss(layers.map(getLayer).join('\n'))
+    return optimizeCss(
+      layers
+        .map((layer: CascadeLayer) => {
+          return this.context.layers.getLayer(layer).toString()
+        })
+        .join('\n'),
+    )
   }
 
   toCss = ({ optimize = false, minify }: { optimize?: boolean; minify?: boolean } = {}) => {

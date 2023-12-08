@@ -5,9 +5,19 @@ export const generateStaticCss = (ctx: Context) => {
   const { config, utility, recipes } = ctx
   const { staticCss = {}, theme = {} } = config
 
-  const fn = getStaticCss(staticCss)
+  staticCss.recipes = staticCss.recipes ?? {}
 
-  const results = fn({
+  const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
+
+  Object.entries(recipeConfigs).forEach(([name, recipe]) => {
+    if (recipe.staticCss) {
+      staticCss.recipes![name] = recipe.staticCss
+    }
+  })
+
+  const getResult = getStaticCss(staticCss)
+
+  const results = getResult({
     breakpoints: Object.keys(theme.breakpoints ?? {}),
     getPropertyKeys: (prop: string) => {
       const propConfig = utility.config[prop]

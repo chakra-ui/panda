@@ -200,10 +200,10 @@ export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TS
 
   const parserResult = parse()!
   generator.appendParserCss(parserResult)
-
   const parserCss = generator.stylesheet.toCss({ optimize: true })
 
   return {
+    generator,
     json: parserResult?.toArray().flatMap(({ box, ...item }) => item),
     css: parserCss,
   }
