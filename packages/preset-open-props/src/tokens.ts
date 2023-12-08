@@ -5,7 +5,7 @@ import { assets } from './assets'
 import { gradients } from './gradients'
 import { animations, easings } from './keyframes'
 import { borderWidths, radii } from './borders'
-// import { shadows } from './shadows'
+import { shadows } from './shadows'
 import { sizes, spacing } from './sizes'
 import { fonts, fontSizes, fontWeights, letterSpacings, lineHeights } from './typography'
 
@@ -16,16 +16,12 @@ export const tokens = defineTokens({
   radii,
   easings,
   zIndex,
-
   letterSpacings,
   fonts,
   lineHeights,
   fontWeights,
   fontSizes,
-
-  //* -- SHADOWS --
-  // shadows,
-
+  shadows,
   assets,
   gradients,
   colors,

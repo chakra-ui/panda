@@ -3,6 +3,7 @@ import { keyframes, semanticAnimations } from './keyframes'
 import { breakpoints } from './breakpoints'
 import { tokens } from './tokens'
 import { utilities } from './utilities'
+import { semanticShadows } from './shadows'
 
 const definePreset = <T extends Preset>(config: T) => config
 
@@ -12,15 +13,13 @@ export const preset = definePreset({
     tokens,
     semanticTokens: {
       animations: semanticAnimations,
+      shadows: semanticShadows,
     },
 
     breakpoints,
   },
 
   utilities,
-  globalCss: {
-    // Layouts
-  },
 })
 
 export default preset
