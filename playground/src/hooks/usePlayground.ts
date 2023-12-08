@@ -82,7 +82,6 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   const share = async ({ onDone }: { onDone: (id: string) => void }) => {
     setIsSharing(true)
-    pristineState.current = state
     fetch('/api/share', {
       method: 'POST',
       headers: {
@@ -130,6 +129,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     share({
       onDone(id) {
         history.pushState({ id }, '', `${state.id}/${id}`)
+        console.log('pristineState', pristineState)
         if (!pristineState.current) return
         setDiffState(Object.assign({}, state, { id }))
         setState(pristineState.current)
