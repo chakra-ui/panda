@@ -5815,7 +5815,9 @@ it('extracts props after a JSX attribute containing a JSX element', () => {
       "Flex": [
         {
           "conditions": [],
-          "raw": {},
+          "raw": {
+            "ml": "2",
+          },
           "spreadConditions": [],
         },
       ],
@@ -5852,7 +5854,9 @@ it('extracts props after a JSX spread containing a JSX element', () => {
       "Flex": [
         {
           "conditions": [],
-          "raw": {},
+          "raw": {
+            "ml": "2",
+          },
           "spreadConditions": [],
         },
       ],
