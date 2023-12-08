@@ -30,7 +30,7 @@ export const tokens = defineTokens({
   //* -- GRADIENTS --
   // gradients,
 
-  colors, //* OKLCH colors
+  colors,
   spacing,
   sizes,
   animations,

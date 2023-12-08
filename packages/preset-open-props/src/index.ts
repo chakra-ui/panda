@@ -2,6 +2,7 @@ import type { Preset } from '@pandacss/types'
 import { keyframes, semanticAnimations } from './keyframes'
 import { breakpoints } from './breakpoints'
 import { tokens } from './tokens'
+import { utilities } from './utilities'
 
 const definePreset = <T extends Preset>(config: T) => config
 
@@ -16,10 +17,7 @@ export const preset = definePreset({
     breakpoints,
   },
 
-  utilities: {
-    //* -- Mask -- Using -webkit-mask
-    // MaskEdges and MaskCornerCuts
-  },
+  utilities,
   globalCss: {
     // Layouts
   },
