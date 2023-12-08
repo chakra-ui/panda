@@ -1,4 +1,5 @@
 import { toPx } from '@pandacss/shared'
+import { Fragment } from 'react'
 import { Grid, panda } from '../../styled-system/jsx'
 import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
@@ -36,8 +37,8 @@ export function Sizes(props: SizesProps) {
         <panda.hr gridColumn="span 5 / span 5" />
         {sizes
           .sort((a, b) => a.extensions.prop - b.extensions.prop)
-          .map((size) => (
-            <>
+          .map((size, index) => (
+            <Fragment key={index}>
               <b>{size.extensions.prop}</b>
               <span>{size.value}</span>
               <span>{toPx(size.value as string)}</span>
@@ -47,7 +48,7 @@ export function Sizes(props: SizesProps) {
                 gridColumn="span 2 / span 2"
                 style={{ width: size.value }}
               />
-            </>
+            </Fragment>
           ))}
       </Grid>
     </TokenGroup>

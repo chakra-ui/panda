@@ -15,7 +15,7 @@ function vitePlugin(configPath: string): PluginOption {
   }
 
   return {
-    name: 'vite:panda',
+    name: '@pandacss/studio',
 
     async configureServer(server) {
       server.watcher.add(configPath).on('change', async (path) => {
@@ -44,8 +44,8 @@ function vitePlugin(configPath: string): PluginOption {
   }
 }
 
-const virtualPanda = (): AstroIntegration => ({
-  name: 'virtual:panda',
+const pandaStudio = (): AstroIntegration => ({
+  name: '@pandacss/studio',
   hooks: {
     'astro:config:setup': ({ updateConfig }) => {
       const configPath = process.env.PUBLIC_CONFIG_PATH
@@ -59,4 +59,4 @@ const virtualPanda = (): AstroIntegration => ({
   },
 })
 
-export default virtualPanda
+export default pandaStudio

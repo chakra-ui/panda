@@ -322,7 +322,8 @@ export async function main() {
       try {
         const studioPath = require.resolve('@pandacss/studio', { paths: [cwd] })
         studio = require(studioPath)
-      } catch {
+      } catch (error) {
+        logger.error('studio', error)
         throw new Error("You need to install '@pandacss/studio' to use this command")
       }
 

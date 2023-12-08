@@ -50,20 +50,17 @@
     "@astrojs/react": "2.3.2",
     "@pandacss/config": "workspace:*",
     "@pandacss/logger": "workspace:*",
-    "@pandacss/node": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
+    "@pandacss/vite-plugin-studio": "workspace:*",
     "astro": "4.0.3",
-    "javascript-stringify": "2.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "vite": "5.0.7"
   },
   "devDependencies": {
     "@types/react": "18.2.42",
-    "@types/react-dom": "18.2.17",
-    "@vitejs/plugin-react": "4.0.4",
-    "execa": "7.2.0"
+    "@types/react-dom": "18.2.17"
   }
 }
