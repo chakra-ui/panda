@@ -4590,4 +4590,66 @@ describe('preset patterns', () => {
       }"
     `)
   })
+
+  test('recipe issue', () => {
+    const code = `
+    import { css } from '.panda/css';
+    import { styled } from '.panda/jsx';
+    import { cardStyle2  } from '.panda/recipes';
+    import { cardStyle } from '.panda/recipes';
+
+    const CardStyle = styled("div", cardStyle)
+    const CardStyle2 = styled("div", cardStyle2)
+
+    export const App = () => {
+      return (
+        <CardStyle rounded={true}>Card rounded={"true"}</CardStyle>
+        <CardStyle rounded={false}>Card rounded={"false"}</CardStyle>
+
+        <CardStyle2 isRounded={true}>Card2 isRounded={"true"}</CardStyle2>
+        <CardStyle2 isRounded={false}>Card2 isRounded={"false"}</CardStyle2>
+      );
+    };
+
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "CardStyle2",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "CardStyle2",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {
+              "rounded": true,
+            },
+          ],
+          "name": "CardStyle",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "rounded": false,
+            },
+          ],
+          "name": "CardStyle",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot('""')
+  })
 })
