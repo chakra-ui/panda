@@ -1,6 +1,6 @@
 import Fonts from 'open-props/src/fonts'
 
-const transformFonts = (_v: string) => {
+export const transformFonts = (_v: string) => {
   const v = `--font-${_v}-`
   return Object.fromEntries(
     Object.entries(Fonts)
