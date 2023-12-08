@@ -11,7 +11,12 @@ export const preset = definePreset({
     semanticTokens: {
       animations: semanticAnimations,
     },
+
+    breakpoints: {
+      // Breakpoints
+    },
   },
+
   utilities: {
     //* -- Mask -- Using -webkit-mask
     // MaskEdges and MaskCornerCuts
@@ -22,7 +27,6 @@ export const preset = definePreset({
   },
   globalCss: {
     // Layouts
-    // Highlights
   },
 })
 

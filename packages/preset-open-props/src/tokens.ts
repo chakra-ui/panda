@@ -1,6 +1,7 @@
 import type { Tokens } from '@pandacss/types'
 import { colors } from './colors'
 import { zIndex } from './zIndex'
+import { assets } from './assets'
 import { animations, easings } from './keyframes'
 import { borderWidths, radii } from './borders'
 // import { shadows } from './shadows'
@@ -25,8 +26,7 @@ export const tokens = defineTokens({
   //* -- SHADOWS --
   // shadows,
 
-  //* -- SVG --
-  // assets,
+  assets,
 
   //* -- GRADIENTS --
   // gradients,
