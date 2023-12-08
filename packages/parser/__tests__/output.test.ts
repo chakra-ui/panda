@@ -2192,7 +2192,7 @@ describe('extract to css output pipeline', () => {
       );
     }
      `
-    const result = run(code, {
+    const result = parseAndExtract(code, {
       outdir: 'anywhere',
       importMap: 'string-import-map',
     })
@@ -2867,7 +2867,7 @@ describe('extract to css output pipeline', () => {
   })
 
   test('recipe.staticCss', () => {
-    const { generator } = getFixtureProject('', {
+    const result = parseAndExtract('', {
       theme: {
         extend: {
           recipes: {
@@ -2879,7 +2879,7 @@ describe('extract to css output pipeline', () => {
       },
     })
 
-    expect(generator.getStaticCss()).toMatchInlineSnapshot(`
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
         .textStyle--size_h1 {
           font-size: 5rem;
@@ -2922,7 +2922,7 @@ describe('extract to css output pipeline', () => {
     };
 
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {

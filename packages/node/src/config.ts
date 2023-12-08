@@ -32,6 +32,7 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
 
   const tsconfigResult = await parse(conf.path, {
     root: cwd,
+    // @ts-ignore
     resolveWithEmptyIfConfigNotFound: true,
   })
 
