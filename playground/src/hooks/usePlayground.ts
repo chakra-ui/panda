@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
@@ -68,6 +68,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     config,
   }
 
+  const pristineState = useRef(props.initialState)
   const [state, setState] = useState(props.initialState ?? parseState(example))
   const [diffState, setDiffState] = useState(props.diffState)
 
@@ -81,6 +82,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   const share = async ({ onDone }: { onDone: (id: string) => void }) => {
     setIsSharing(true)
+    pristineState.current = state
     fetch('/api/share', {
       method: 'POST',
       headers: {
@@ -122,15 +124,14 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   }
 
   const onShareDiff = () => {
-    const original = state.id
-    if (!original) return
+    if (!state.id) return
 
     share({
       onDone(id) {
-        history.pushState({ id }, '', `${original}/${id}`)
-        if (!props.initialState) return
+        history.pushState({ id }, '', `${state.id}/${id}`)
+        if (!pristineState.current) return
         setDiffState(Object.assign({}, state, { id }))
-        setState(props.initialState)
+        setState(pristineState.current)
       },
     })
   }
