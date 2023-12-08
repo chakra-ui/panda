@@ -4,7 +4,7 @@ import { createContext } from './fixture'
 
 function css(obj: ProcessOptions) {
   const ruleset = new AtomicRule(createContext())
-  ruleset.process({ styles: ruleset.normalize(obj.styles, true) })
+  ruleset.process({ styles: ruleset.normalize(obj.styles) })
   return ruleset.toCss()
 }
 
