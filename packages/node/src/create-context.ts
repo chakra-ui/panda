@@ -62,6 +62,12 @@ export class PandaContext extends Generator {
     return filesWithCss
   }
 
+  appendAllCss() {
+    this.appendLayerParams()
+    this.appendBaselineCss()
+    this.appendFilesCss()
+  }
+
   async writeCss() {
     return this.output.write({
       id: 'styles.css',
