@@ -1,5 +1,4 @@
 /* eslint-disable */
-import type {  RecipeRule  } from './static-css';
 import type {  SystemStyleObject, DistributiveOmit, Pretty  } from './system-types';
 
 type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
@@ -64,10 +63,6 @@ export interface RecipeDefinition<T extends RecipeVariantRecord> {
    * The styles to apply when a combination of variants is selected.
    */
   compoundVariants?: Pretty<RecipeCompoundVariant<RecipeCompoundSelection<T>>>[]
-  /**
-   * Variants to pre-generate, will be include in the final `config.staticCss`
-   */
-  staticCss?: RecipeRule[]
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
