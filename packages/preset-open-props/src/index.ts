@@ -20,10 +20,6 @@ export const preset = definePreset({
     //* -- Mask -- Using -webkit-mask
     // MaskEdges and MaskCornerCuts
   },
-  conditions: {
-    // Media;
-    // Supports;
-  },
   globalCss: {
     // Layouts
   },

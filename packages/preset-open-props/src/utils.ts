@@ -9,10 +9,7 @@ export const camelize = (text: string) => {
 }
 
 export const transformOpenPropsObj = (obj: Dict, keyTransform = camelize, valueTransform = (text: string) => text) =>
-  Object.entries(obj).reduce(
-    (acc, [key, value]) => Object.assign({}, acc, { [keyTransform(key)]: { value: valueTransform(value) } }),
-    {},
-  )
+  Object.fromEntries(Object.entries(obj).map(([key, value]) => [keyTransform(key), { value: valueTransform(value) }]))
 
 type Keyframes = Omit<Required<css.KeyFrames>, 'keyframes'> & { keyframes: Array<Required<css.KeyFrame>> }
 
