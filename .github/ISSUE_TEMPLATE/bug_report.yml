@@ -25,7 +25,8 @@ body:
     attributes:
       label: "Link to Reproduction"
       description: |
-        A link to a Stackblitz reproduction which demonstrates the bug
+        A link to a minimal Panda playground or if really needed a Stackblitz reproduction which demonstrates the bug
+        https://play.panda-css.com/ or https://stackblitz.com/edit/vitejs-vite-lfwyue?file=src%2FApp.tsx&terminal=dev
       placeholder: "https://stackblitz.com/edit/vitejs-vite-lfwyue?file=src%2FApp.tsx&terminal=dev"
     validations:
       required: true
