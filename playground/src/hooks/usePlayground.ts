@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
-import { EXAMPLES, Example, initialCSS } from '@/src/components/Examples/data'
-import { useParams } from 'next/navigation'
+import { EXAMPLES, Example } from '@/src/components/Examples/data'
+import { parseState } from '@/src/lib/parse-state'
 
 export type State = {
   code: string
   config: string
   css: string
+  id?: string | null
 }
 
 export type UsePlayGroundProps = {
@@ -16,13 +17,11 @@ export type UsePlayGroundProps = {
 }
 
 export const usePlayground = (props: UsePlayGroundProps) => {
-  const { initialState } = props
   const [layout, setLayout] = useState<Extract<Layout, 'horizontal' | 'vertical'>>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
   const [isSharing, setIsSharing] = useState(false)
   const [isResponsive, setIsResponsive] = useState(false)
   const toast = useToast()
-  const params = useParams()
 
   const [panels, setPanels] = useState([
     { id: 'left', size: 50, minSize: 15 },
@@ -62,16 +61,16 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     }
   }
 
-  const { code, config, css = initialCSS } = EXAMPLES.find((example) => example.id === 'css')!
+  const { code, config } = EXAMPLES.find((example) => example.id === 'css')!
 
   const example = {
     code,
     config,
-    css,
   }
 
-  const [state, setState] = useState(initialState ?? example)
-  const [diffState, setDiffState] = useState<State | null>(null)
+  const pristineState = useRef(props.initialState)
+  const [state, setState] = useState(props.initialState ?? parseState(example))
+  const [diffState, setDiffState] = useState(props.diffState)
 
   function copyCurrentURI() {
     const currentURI = window.location.href
@@ -83,6 +82,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   const share = async ({ onDone }: { onDone: (id: string) => void }) => {
     setIsSharing(true)
+    pristineState.current = state
     fetch('/api/share', {
       method: 'POST',
       headers: {
@@ -118,20 +118,21 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     share({
       onDone(id) {
         history.pushState({ id }, '', id)
+        setState((prev) => Object.assign({}, prev, { id }))
+        pristineState.current = state
       },
     })
   }
 
   const onShareDiff = () => {
-    const original = params?.id
-    if (!original) return
+    if (!state.id) return
 
     share({
       onDone(id) {
-        history.pushState({ id }, '', `${original}/${id}`)
-        if (!initialState) return
-        setDiffState(state)
-        setState(initialState)
+        history.pushState({ id }, '', `${state.id}/${id}`)
+        if (!pristineState.current) return
+        setDiffState(Object.assign({}, state, { id }))
+        setState(pristineState.current)
       },
     })
   }
@@ -140,11 +141,12 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     const example = EXAMPLES.find((example) => example.id === _example)
     if (!example) return
     setIsPristine(true)
-    setState({
-      code: example.code,
-      css: example.css,
-      config: example.config,
-    })
+    setState(
+      parseState({
+        code: example.code,
+        config: example.config,
+      }),
+    )
   }
 
   return {
