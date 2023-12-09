@@ -6,6 +6,151 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.21.0] - 2023-12-09
+
+### Fixed
+
+- Fix static extraction issue when using JSX attributes (props) that are other JSX nodes
+
+While parsing over the AST Nodes, due to an optimization where we skipped retrieving the current JSX element and instead
+kept track of the latest one, the logic was flawed and did not extract other properties after encountering a JSX
+attribute that was another JSX node.
+
+```tsx
+const Component = () => {
+  return (
+    <>
+      {/* ❌ this wasn't extracting ml="2" */}
+      <Flex icon={<svg className="icon" />} ml="2" />
+
+      {/* ✅ this was fine */}
+      <Stack ml="4" icon={<div className="icon" />} />
+    </>
+  )
+}
+```
+
+Now both will be fine again.
+
+- Fix an edge-case when Panda eagerly extracted and tried to generate the CSS for a JSX property that contains an URL.
+
+```tsx
+const App = () => {
+  // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
+  // but since it's an URL, it would produce invalid CSS
+  // we now check if the property value is an URL and skip it if needed
+  return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
+}
+```
+
+- Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the normalization that
+  happens internally.
+- Fix issue where Preact JSX types are not merging recipes correctly
+- Fix vue `styled` factory internal class merging, for example:
+
+```js
+<script setup>
+import { styled } from '../styled-system/jsx'
+
+const StyledButton = styled('button', {
+  base: {
+    bgColor: 'red.300',
+  },
+})
+</script>
+<template>
+  <StyledButton id="test" class="test">
+    <slot></slot>
+  </StyledButton>
+</template>
+```
+
+Will now correctly include the `test` class in the final output.
+
+### Added
+
+- Add `configPath` and `cwd` options in the `@pandacss/astro` integration just like in the `@pandacss/postcss`
+
+> This can be useful with Nx monorepos where the `panda.config.ts` is not in the root of the project.
+
+- Add an escape-hatch for arbitrary values when using `config.strictTokens`, by prefixing the value with `[` and
+  suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
+
+```ts
+import { css } from '../styled-system/css'
+
+css({
+  // @ts-expect-error TS will throw when using from strictTokens: true
+  color: '#fff',
+  // @ts-expect-error TS will throw when using from strictTokens: true
+  width: '100px',
+
+  // ✅ but this is now allowed:
+  bgColor: '[rgb(51 155 240)]',
+  fontSize: '[12px]',
+})
+```
+
+- Add a shortcut for the `config.importMap` option
+
+You can now also use a string to customize the base import path and keep the default entrypoints:
+
+```json
+{
+  "importMap": "@scope/styled-system"
+}
+```
+
+is the equivalent of:
+
+```json
+{
+  "importMap": {
+    "css": "@scope/styled-system/css",
+    "recipes": "@scope/styled-system/recipes",
+    "patterns": "@scope/styled-system/patterns",
+    "jsx": "@scope/styled-system/jsx"
+  }
+}
+```
+
+- Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+
+```js
+import { defineRecipe } from '@pandacss/dev'
+
+const card = defineRecipe({
+  className: 'card',
+  base: { color: 'white' },
+  variants: {
+    size: {
+      small: { fontSize: '14px' },
+      large: { fontSize: '18px' },
+    },
+  },
+  staticCss: [{ size: ['*'] }],
+})
+```
+
+would be the equivalent of defining it inside the main config:
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: {
+      card: {
+        size: ['*'],
+      },
+    },
+  },
+})
+```
+
+- Add Open Props preset
+
 ## [0.20.1] - 2023-12-01
 
 ### Fixed
