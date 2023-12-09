@@ -123,9 +123,6 @@ importers:
       perfect-debounce:
         specifier: ^1.0.0
         version: 1.0.0
-      ts-pattern:
-        specifier: 5.0.5
-        version: 5.0.5
     devDependencies:
       '@types/update-notifier':
         specifier: 6.0.8
@@ -5409,7 +5406,7 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.22.5(@babel/core@7.22.5)
       '@babel/plugin-transform-unicode-sets-regex': 7.22.5(@babel/core@7.22.5)
       '@babel/preset-modules': 0.1.5(@babel/core@7.22.5)
-      '@babel/types': 7.23.5
+      '@babel/types': 7.23.0
       babel-plugin-polyfill-corejs2: 0.4.5(@babel/core@7.22.5)
       babel-plugin-polyfill-corejs3: 0.8.3(@babel/core@7.22.5)
       babel-plugin-polyfill-regenerator: 0.5.2(@babel/core@7.22.5)
@@ -5591,7 +5588,7 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.22.5(@babel/core@7.23.5)
       '@babel/plugin-transform-unicode-sets-regex': 7.22.5(@babel/core@7.23.5)
       '@babel/preset-modules': 0.1.5(@babel/core@7.23.5)
-      '@babel/types': 7.23.5
+      '@babel/types': 7.23.0
       babel-plugin-polyfill-corejs2: 0.4.5(@babel/core@7.23.5)
       babel-plugin-polyfill-corejs3: 0.8.3(@babel/core@7.23.5)
       babel-plugin-polyfill-regenerator: 0.5.2(@babel/core@7.23.5)
