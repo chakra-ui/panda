@@ -67,10 +67,14 @@ export class Layers {
       }
 
       case 'recipes': {
+        const recipeRoot = postcss.root()
+
         if (recipes.base.nodes.length) recipes.root.prepend(recipes.base)
         if (slotRecipes.base.nodes.length) slotRecipes.root.prepend(slotRecipes.base)
-        if (slotRecipes.root.nodes.length) recipes.root.append(slotRecipes.root)
-        return recipes.root
+
+        if (recipes.root.nodes.length) recipeRoot.append(recipes.root)
+        if (slotRecipes.root.nodes.length) recipeRoot.append(slotRecipes.root)
+        return recipeRoot
       }
 
       case 'utilities': {
