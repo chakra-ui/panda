@@ -1,5 +1,32 @@
 # @pandacss/node
 
+## 0.21.0
+
+### Patch Changes
+
+- 7f846be2: Add `configPath` and `cwd` options in the `@pandacss/astro` integration just like in the `@pandacss/postcss`
+
+  This can be useful with Nx monorepos where the `panda.config.ts` is not in the root of the project.
+
+- Updated dependencies [1464460f]
+- Updated dependencies [788aaba3]
+- Updated dependencies [26e6051a]
+- Updated dependencies [5b061615]
+- Updated dependencies [d81dcbe6]
+- Updated dependencies [105f74ce]
+- Updated dependencies [052283c2]
+  - @pandacss/extractor@0.21.0
+  - @pandacss/core@0.21.0
+  - @pandacss/generator@0.21.0
+  - @pandacss/shared@0.21.0
+  - @pandacss/types@0.21.0
+  - @pandacss/parser@0.21.0
+  - @pandacss/config@0.21.0
+  - @pandacss/token-dictionary@0.21.0
+  - @pandacss/error@0.21.0
+  - @pandacss/is-valid-prop@0.21.0
+  - @pandacss/logger@0.21.0
+
 ## 0.20.1
 
 ### Patch Changes
