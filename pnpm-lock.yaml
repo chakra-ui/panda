@@ -603,6 +603,22 @@ importers:
         specifier: workspace:*
         version: link:../types
 
+  packages/preset-open-props:
+    dependencies:
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
+      css:
+        specifier: ^3.0.0
+        version: 3.0.0
+      open-props:
+        specifier: ^1.6.13
+        version: 1.6.13
+    devDependencies:
+      '@types/css':
+        specifier: ^0.0.37
+        version: 0.0.37
+
   packages/preset-panda:
     dependencies:
       '@pandacss/types':
@@ -11466,6 +11482,10 @@ packages:
       '@types/node': 20.4.5
     dev: true
 
+  /@types/css@0.0.37:
+    resolution: {integrity: sha512-IVhWCNH1mw3VRjkOMHsxVAcnANhee9w//TX1fqmALP628Dzf6VMG1LRnOngpptnrilcWCkmcY1tj6QkKGUy0CA==}
+    dev: true
+
   /@types/debug@0.0.30:
     resolution: {integrity: sha512-orGL5LXERPYsLov6CWs3Fh6203+dXzJkR7OnddIr2514Hsecwc8xRpzCapshBbKFImCsvS/mk6+FWiN5LyZJAQ==}
     dev: false
@@ -14519,6 +14539,12 @@ packages:
     engines: {node: '>= 4.0.0'}
     dev: false
 
+  /atob@2.1.2:
+    resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
+    engines: {node: '>= 4.5.0'}
+    hasBin: true
+    dev: false
+
   /auto-bind@4.0.0:
     resolution: {integrity: sha512-Hdw8qdNiqdJ8LqT0iK0sVzkFbzg6fhnQqqfWhBDxcHZvU75+B+ayzTy8x+k5Ix0Y92XOhOUlx74ps+bA6BeYMQ==}
     engines: {node: '>=8'}
@@ -16430,6 +16456,14 @@ packages:
 
   /css.escape@1.5.1:
     resolution: {integrity: sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==}
+
+  /css@3.0.0:
+    resolution: {integrity: sha512-DG9pFfwOrzc+hawpmqX/dHYHJG+Bsdb0klhyi1sDneOgGOXy9wQIC8hzyVp1e4NRYDBdxcylvywPkkXCHAzTyQ==}
+    dependencies:
+      inherits: 2.0.4
+      source-map: 0.6.1
+      source-map-resolve: 0.6.0
+    dev: false
 
   /cssesc@3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
@@ -24909,6 +24943,10 @@ packages:
     dependencies:
       mimic-fn: 4.0.0
 
+  /open-props@1.6.13:
+    resolution: {integrity: sha512-2RnJCI3tBHpj1FHSw+jTF1BjdfnpV99IMzZB00srkEX5wy33sR6zdcE0xFVE61VKrgd6QIW6w90NAaR2lIKhqQ==}
+    dev: false
+
   /open@7.4.2:
     resolution: {integrity: sha512-MVHddDVweXZF3awtlAS+6pgKLlm/JgxZ90+/NBurBoQctVOOB/zDdVjcyPzQ+0laDGbsWgrRkflI65sQeOgT9Q==}
     engines: {node: '>=8'}
@@ -28328,6 +28366,14 @@ packages:
   /source-map-js@1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
+
+  /source-map-resolve@0.6.0:
+    resolution: {integrity: sha512-KXBr9d/fO/bWo97NXsPIAW1bFSBOuCnjbNTBMO7N59hsv5i9yzRDfcYwwt0l04+VqnKC+EwzvJZIP/qkuMgR/w==}
+    deprecated: See https://github.com/lydell/source-map-resolve#deprecated
+    dependencies:
+      atob: 2.1.2
+      decode-uri-component: 0.2.2
+    dev: false
 
   /source-map-support@0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
