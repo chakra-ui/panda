@@ -53,7 +53,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@pandacss/vite-plugin-studio": "workspace:*",
+    "@pandacss/astro-plugin-studio": "workspace:*",
     "astro": "4.0.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",

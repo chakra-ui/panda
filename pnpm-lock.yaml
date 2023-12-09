@@ -82,6 +82,19 @@ importers:
         specifier: 5.0.7
         version: 5.0.7(@types/node@20.4.5)
 
+  packages/astro-plugin-studio:
+    dependencies:
+      '@pandacss/node':
+        specifier: workspace:*
+        version: link:../node
+      javascript-stringify:
+        specifier: 2.1.0
+        version: 2.1.0
+    devDependencies:
+      astro:
+        specifier: 4.0.3
+        version: 4.0.3(@types/node@20.4.5)(typescript@5.3.3)
+
   packages/cli:
     dependencies:
       '@clack/prompts':
@@ -623,6 +636,9 @@ importers:
       '@astrojs/react':
         specifier: 2.3.2
         version: 2.3.2(@types/react-dom@18.2.17)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)
+      '@pandacss/astro-plugin-studio':
+        specifier: workspace:*
+        version: link:../astro-plugin-studio
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
@@ -638,9 +654,6 @@ importers:
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
-      '@pandacss/vite-plugin-studio':
-        specifier: workspace:*
-        version: link:../vite-plugin-studio
       astro:
         specifier: 4.0.3
         version: 4.0.3(@types/node@20.4.5)(typescript@5.3.3)
@@ -694,19 +707,6 @@ importers:
       pkg-types:
         specifier: 1.0.3
         version: 1.0.3
-
-  packages/vite-plugin-studio:
-    dependencies:
-      '@pandacss/node':
-        specifier: workspace:*
-        version: link:../node
-      javascript-stringify:
-        specifier: 2.1.0
-        version: 2.1.0
-    devDependencies:
-      astro:
-        specifier: 4.0.3
-        version: 4.0.3(@types/node@20.4.5)(typescript@5.3.3)
 
   playground:
     dependencies:
@@ -5422,7 +5422,7 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.22.5(@babel/core@7.22.5)
       '@babel/plugin-transform-unicode-sets-regex': 7.22.5(@babel/core@7.22.5)
       '@babel/preset-modules': 0.1.5(@babel/core@7.22.5)
-      '@babel/types': 7.23.0
+      '@babel/types': 7.23.5
       babel-plugin-polyfill-corejs2: 0.4.5(@babel/core@7.22.5)
       babel-plugin-polyfill-corejs3: 0.8.3(@babel/core@7.22.5)
       babel-plugin-polyfill-regenerator: 0.5.2(@babel/core@7.22.5)
@@ -5604,7 +5604,7 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.22.5(@babel/core@7.23.5)
       '@babel/plugin-transform-unicode-sets-regex': 7.22.5(@babel/core@7.23.5)
       '@babel/preset-modules': 0.1.5(@babel/core@7.23.5)
-      '@babel/types': 7.23.0
+      '@babel/types': 7.23.5
       babel-plugin-polyfill-corejs2: 0.4.5(@babel/core@7.23.5)
       babel-plugin-polyfill-corejs3: 0.8.3(@babel/core@7.23.5)
       babel-plugin-polyfill-regenerator: 0.5.2(@babel/core@7.23.5)
@@ -27414,7 +27414,7 @@ packages:
     hasBin: true
     dependencies:
       '@babel/core': 7.23.5
-      '@babel/generator': 7.23.0
+      '@babel/generator': 7.23.5
       '@babel/runtime': 7.23.2
       ast-types: 0.14.2
       commander: 2.20.3

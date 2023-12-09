@@ -13,7 +13,7 @@ const appPath = join(__dirname, '..')
 export async function buildStudio({ outDir, configPath }: BuildOpts) {
   const astro = await import('astro')
   const { default: react } = await import('@astrojs/react')
-  const { default: studio } = await import('@pandacss/vite-plugin-studio')
+  const { default: studio } = await import('@pandacss/astro-plugin-studio')
 
   try {
     process.env.PUBLIC_CONFIG_PATH = configPath
@@ -30,7 +30,7 @@ export async function buildStudio({ outDir, configPath }: BuildOpts) {
 export async function serveStudio({ configPath, port, host, outDir }: BuildOpts) {
   const astro = await import('astro')
   const { default: react } = await import('@astrojs/react')
-  const { default: studio } = await import('@pandacss/vite-plugin-studio')
+  const { default: studio } = await import('@pandacss/astro-plugin-studio')
 
   try {
     process.env.PUBLIC_CONFIG_PATH = configPath
@@ -51,7 +51,7 @@ export async function serveStudio({ configPath, port, host, outDir }: BuildOpts)
 export async function previewStudio({ outDir }: BuildOpts) {
   const astro = await import('astro')
   const { default: react } = await import('@astrojs/react')
-  const { default: studio } = await import('@pandacss/vite-plugin-studio')
+  const { default: studio } = await import('@pandacss/astro-plugin-studio')
 
   try {
     await astro.preview({
