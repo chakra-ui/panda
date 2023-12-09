@@ -12,13 +12,5 @@ export { sharedHooks } from './shared-hooks'
 export { getStaticCss } from './static-css'
 export { Stylesheet } from './stylesheet'
 export { toCss } from './to-css'
-export type {
-  RecipeNode,
-  StylesheetContext,
-  StylesheetLayers,
-  StylesheetRoot,
-  TransformResult,
-  RecipeContext,
-  AtomicRuleContext,
-} from './types'
+export type { RecipeNode, StylesheetContext, TransformResult, RecipeContext, AtomicRuleContext } from './types'
 export { Utility } from './utility'

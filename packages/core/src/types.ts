@@ -1,5 +1,4 @@
 import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
-import type { AtRule, Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Layers } from './layers'
 import type { Recipes } from './recipes'
@@ -16,21 +15,6 @@ export interface TransformResult {
 }
 
 type AtomicRuleTransform = (prop: string, value: any) => TransformResult
-
-export interface StylesheetLayers {
-  reset: AtRule
-  base: AtRule
-  tokens: AtRule
-  recipes: { root: AtRule; base: AtRule }
-  slotRecipes: { root: AtRule; base: AtRule }
-  utilities: { root: AtRule; compositions: AtRule; custom(layer: string): AtRule }
-}
-
-export interface StylesheetRoot {
-  root: Root
-  layers: StylesheetLayers
-  insertLayers(): Root
-}
 
 export interface StylesheetContext {
   layers: Layers
