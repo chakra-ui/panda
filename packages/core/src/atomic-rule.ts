@@ -9,7 +9,6 @@ import {
 } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
 import postcss, { Container } from 'postcss'
-import { match } from 'ts-pattern'
 import { toCss } from './to-css'
 import type { AtomicRuleContext } from './types'
 
@@ -107,19 +106,15 @@ export class AtomicRule {
 
 export function createRecipeAtomicRule(ctx: AtomicRuleContext, slot?: boolean) {
   return new AtomicRule(ctx, ({ rule, layer }) => {
-    match({ layer, slot })
-      .with({ layer: '_base', slot: true }, () => {
-        ctx.layers.slotRecipes.base.append(rule)
-      })
-      .with({ slot: true }, () => {
-        ctx.layers.slotRecipes.root.append(rule)
-      })
-      .with({ layer: '_base' }, () => {
-        ctx.layers.recipes.base.append(rule)
-      })
-      .otherwise(() => {
-        ctx.layers.recipes.root.append(rule)
-      })
+    if (layer === '_base' && slot) {
+      ctx.layers.slotRecipes.base.append(rule)
+    } else if (slot) {
+      ctx.layers.slotRecipes.root.append(rule)
+    } else if (layer === '_base') {
+      ctx.layers.recipes.base.append(rule)
+    } else {
+      ctx.layers.recipes.root.append(rule)
+    }
   })
 }
 

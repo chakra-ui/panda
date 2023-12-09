@@ -18,7 +18,6 @@ import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
-import { P, match } from 'ts-pattern'
 import { version } from '../package.json'
 import { interactive } from './interactive'
 import type {
@@ -181,48 +180,39 @@ export async function main() {
 
       const cssgen = async (ctx: PandaContext) => {
         //
-        await match(cssArtifact)
+        if (cssArtifact) {
           //
-          .with(P.string.minLength(1), async (cssArtifact) => {
-            //
-            if (outfile) ensureFile(ctx, outfile)
+          ctx.appendCss(cssArtifact)
 
-            ctx.appendCss(cssArtifact)
+          if (outfile) {
+            ensureFile(ctx, outfile)
+            ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
+          } else {
+            await ctx.writeCss()
+          }
 
-            if (outfile) {
-              ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
-            } else {
-              await ctx.writeCss()
-            }
+          const msg = ctx.messages.cssArtifactComplete(cssArtifact)
+          logger.info('css:emit:artifact', msg)
+          //
+        } else {
+          //
+          if (!minimal) {
+            ctx.appendLayerParams()
+            ctx.appendBaselineCss()
+          }
 
-            const msg = ctx.messages.cssArtifactComplete(cssArtifact)
-            logger.info('css:emit:artifact', msg)
-          })
+          const files = ctx.appendFilesCss()
 
-          .with(P.nullish, async () => {
-            if (outfile) ensureFile(ctx, outfile)
+          if (outfile) {
+            ensureFile(ctx, outfile)
+            ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
+          } else {
+            await ctx.writeCss()
+          }
 
-            if (!minimal) {
-              ctx.appendLayerParams()
-              ctx.appendBaselineCss()
-            }
-
-            const files = ctx.appendFilesCss()
-
-            if (outfile) {
-              ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
-            } else {
-              await ctx.writeCss()
-            }
-
-            const msg = ctx.messages.buildComplete(files.length)
-            logger.info('css:emit:out', msg)
-          })
-
-          .otherwise(() => {
-            throw new Error('Invalid arguments or flags for cssgen command')
-            // no op
-          })
+          const msg = ctx.messages.buildComplete(files.length)
+          logger.info('css:emit:out', msg)
+        }
       }
 
       await cssgen(ctx)

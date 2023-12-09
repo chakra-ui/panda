@@ -2,9 +2,9 @@ import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { createParserResult, createProject, type PandaProject } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime } from '@pandacss/types'
+import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
 import { PandaOutputEngine } from './output-engine'
-import { DiffEngine } from './diff-engine'
 
 export class PandaContext extends Generator {
   runtime: Runtime
