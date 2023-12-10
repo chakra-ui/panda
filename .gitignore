@@ -18,6 +18,7 @@ __generated__
 *.env
 .idea
 *.vsix
+.vercel
 
 ## Panda
 styled-system
