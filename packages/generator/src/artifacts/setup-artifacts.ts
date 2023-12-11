@@ -301,7 +301,7 @@ function setupJsxHelpers(ctx: Context): Artifact {
 }
 
 function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
-  if (!ctx.jsx.framework) return
+  if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
 
   const patterns = generateJsxPatterns(ctx, filters)
 
@@ -327,15 +327,12 @@ function setupJsxPatternsIndex(ctx: Context): Artifact {
     js: outdent`
   ${ctx.file.exportStar('./factory')}
   ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
-  ${outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n'))}
+  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
   `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./factory')}
-
   ${isStyleProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
-
-  ${outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n'))}
-
+  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')) : ''}
   ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
     `,
   }
