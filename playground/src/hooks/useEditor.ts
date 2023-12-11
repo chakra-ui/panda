@@ -40,7 +40,6 @@ export const defaultEditorOptions: EditorProps['options'] = {
   fontLigatures: true,
   fontFamily: "'Fira Code', 'Fira Mono', 'Menlo', 'Monaco', 'Courier', monospace",
   fontWeight: '400',
-  wordWrap: 'on',
 }
 
 const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) => {
@@ -76,39 +75,56 @@ export function useEditor(props: PandaEditorProps) {
   const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
-  const configureEditor: OnMount = useCallback((editor, monaco) => {
-    activateMonacoJSXHighlighter(editor, monaco)
+  const [wordWrap, setWordwrap] = useState<'on' | 'off'>('off')
 
-    function registerKeybindings() {
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-        editor.trigger('editor', 'editor.action.formatDocument', undefined)
-      })
-    }
-
-    editor.onDidFocusEditorText(() => {
-      // workaround for using multiple monaco editors on the same page
-      // see https://github.com/microsoft/monaco-editor/issues/2947
-      registerKeybindings()
-    })
-
-    //@ts-expect-error
-    monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
-
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true,
-      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-      module: monaco.languages.typescript.ModuleKind.CommonJS,
-      noEmit: true,
-      esModuleInterop: true,
-      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-      reactNamespace: 'React',
-      allowJs: true,
-      checkJs: true,
-      strict: true,
-      typeRoots: ['node_modules/@types'],
-    })
+  const onToggleWrap = useCallback(() => {
+    setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
   }, [])
+
+  useEffect(() => {
+    monacoEditorRef.current?.updateOptions({ wordWrap })
+  }, [wordWrap])
+
+  const configureEditor: OnMount = useCallback(
+    (editor, monaco) => {
+      activateMonacoJSXHighlighter(editor, monaco)
+
+      function registerKeybindings() {
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+          editor.trigger('editor', 'editor.action.formatDocument', undefined)
+        })
+        editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
+          // const wrapState = editor.getOption(monaco.editor.EditorOption.wordWrap)
+          onToggleWrap()
+        })
+      }
+
+      editor.onDidFocusEditorText(() => {
+        // workaround for using multiple monaco editors on the same page
+        // see https://github.com/microsoft/monaco-editor/issues/2947
+        registerKeybindings()
+      })
+
+      //@ts-expect-error
+      monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
+
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.Latest,
+        allowNonTsExtensions: true,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+        module: monaco.languages.typescript.ModuleKind.CommonJS,
+        noEmit: true,
+        esModuleInterop: true,
+        jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+        reactNamespace: 'React',
+        allowJs: true,
+        checkJs: true,
+        strict: true,
+        typeRoots: ['node_modules/@types'],
+      })
+    },
+    [onToggleWrap],
+  )
 
   const setupLibs = useCallback(
     (monaco: Parameters<OnMount>[1]) => {
@@ -195,5 +211,7 @@ export function useEditor(props: PandaEditorProps) {
     onCodeEditorChange,
     onCodeEditorMount,
     onCodeEditorFormat,
+    onToggleWrap,
+    wordWrap,
   }
 }
