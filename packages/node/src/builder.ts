@@ -12,7 +12,9 @@ import type { DiffConfigResult } from './diff-engine'
 import { emitArtifacts } from './emit-artifact'
 import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
+import type { ParserResult } from '@pandacss/parser'
 
+const parserResultMap = new Map<string, ParserResult>()
 const fileModifiedMap = new Map<string, number>()
 
 const limit = pLimit(20)
@@ -24,7 +26,6 @@ export class Builder {
   context: PandaContext | undefined
 
   private hasEmitted = false
-  private hasConfigChanged = false
   private affecteds: DiffConfigResult | undefined
 
   getConfigPath = () => {
@@ -52,8 +53,6 @@ export class Builder {
       this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
       this.context.appendBaselineCss()
     })
-
-    this.hasConfigChanged = this.affecteds.hasConfigChanged
 
     // config change
     if (this.affecteds.hasConfigChanged) {
@@ -104,10 +103,17 @@ export class Builder {
   extractFile = async (ctx: PandaContext, file: string) => {
     const meta = this.getFileMeta(file)
 
-    if (meta.isUnchanged && !this.hasConfigChanged) return
+    if (meta.isUnchanged) {
+      ctx.appendParserCss(parserResultMap.get(file)!)
+      return
+    }
 
     const result = extractFile(ctx, file)
     fileModifiedMap.set(file, meta.mtime)
+
+    if (result) {
+      parserResultMap.set(file, result)
+    }
 
     return result
   }
@@ -120,9 +126,11 @@ export class Builder {
     const ctx = this.getContextOrThrow()
     const files = ctx.getFiles()
 
-    if (!this.hasConfigChanged && !this.checkFilesChanged(files)) return
+    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : false
+    if (hasConfigChanged) return
 
     const done = logger.time.info('Extracted in')
+
     // limit concurrency since we might parse a lot of files
     const promises = files.map((file) => limit(() => this.extractFile(ctx, file)))
     await Promise.allSettled(promises)

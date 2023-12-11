@@ -74,6 +74,9 @@ importers:
       '@pandacss/postcss':
         specifier: workspace:*
         version: link:../postcss
+      postcss-load-config:
+        specifier: 4.0.1
+        version: 4.0.1(postcss@8.4.31)
     devDependencies:
       astro:
         specifier: 4.0.3

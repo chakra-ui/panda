@@ -34,7 +34,8 @@
     "base.css"
   ],
   "dependencies": {
-    "@pandacss/postcss": "workspace:*"
+    "@pandacss/postcss": "workspace:*",
+    "postcss-load-config": "4.0.1"
   },
   "devDependencies": {
     "astro": "4.0.3",
