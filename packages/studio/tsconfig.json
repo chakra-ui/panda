@@ -2,6 +2,7 @@
   "extends": "astro/tsconfigs/strict",
   "include": ["src", "index.ts"],
   "compilerOptions": {
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "customConditions": ["source"]
   }
 }

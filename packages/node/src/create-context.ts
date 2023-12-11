@@ -1,17 +1,15 @@
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import { createProject, type PandaProject } from '@pandacss/parser'
+import { createParserResult, createProject, type PandaProject } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime } from '@pandacss/types'
-import { getChunkEngine, type PandaChunksEngine } from './chunk-engine'
+import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
 import { PandaOutputEngine } from './output-engine'
-import { DiffEngine } from './diff-engine'
 
 export class PandaContext extends Generator {
   runtime: Runtime
   project: PandaProject
   getFiles: () => string[]
-  chunks: PandaChunksEngine
   output: PandaOutputEngine
   diff: DiffEngine
 
@@ -38,8 +36,43 @@ export class PandaContext extends Generator {
       parserOptions: { join: this.runtime.path.join, ...this.parserOptions },
     })
 
-    this.chunks = getChunkEngine(this)
     this.output = new PandaOutputEngine(this)
     this.diff = new DiffEngine(this)
+  }
+
+  appendFilesCss() {
+    const files = this.getFiles()
+    const filesWithCss: string[] = []
+
+    const mergedResult = createParserResult()
+
+    files.forEach((file) => {
+      const measure = logger.time.debug(`Parsed ${file}`)
+      const result = this.project.parseSourceFile(file)
+
+      measure()
+      if (!result) return
+
+      mergedResult.merge(result)
+      filesWithCss.push(file)
+    })
+
+    this.appendParserCss(mergedResult)
+
+    return filesWithCss
+  }
+
+  appendAllCss() {
+    this.appendLayerParams()
+    this.appendBaselineCss()
+    this.appendFilesCss()
+  }
+
+  async writeCss() {
+    return this.output.write({
+      id: 'styles.css',
+      dir: this.paths.root,
+      files: [{ file: 'styles.css', code: this.getCss() }],
+    })
   }
 }

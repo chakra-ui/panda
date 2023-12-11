@@ -9,10 +9,12 @@ import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import type { DiffConfigResult } from './diff-engine'
-import { emitArtifacts, extractFile } from './extract'
+import { emitArtifacts } from './emit-artifact'
+import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
+import type { ParserResult } from '@pandacss/parser'
 
-const fileCssMap = new Map<string, string>()
+const parserResultMap = new Map<string, ParserResult>()
 const fileModifiedMap = new Map<string, number>()
 
 const limit = pLimit(20)
@@ -24,7 +26,6 @@ export class Builder {
   context: PandaContext | undefined
 
   private hasEmitted = false
-  private hasConfigChanged = false
   private affecteds: DiffConfigResult | undefined
 
   getConfigPath = () => {
@@ -41,24 +42,30 @@ export class Builder {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
+
     if (!this.context) {
       return this.setupContext({ configPath, cwd: options.cwd })
     }
 
     const ctx = this.getContextOrThrow()
+
     this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
       this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
+      this.context.appendBaselineCss()
     })
 
-    this.hasConfigChanged = this.affecteds.hasConfigChanged
-
+    // config change
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
       await ctx.hooks.callHook('config:change', ctx.config)
       return
     }
 
-    ctx.project.reloadSourceFiles()
+    // file change
+    const hasFilesChanged = this.checkFilesChanged(ctx.getFiles())
+    if (hasFilesChanged) {
+      ctx.project.reloadSourceFiles()
+    }
   }
 
   async emit() {
@@ -72,8 +79,11 @@ export class Builder {
 
   setupContext = async (options: { configPath: string; cwd?: string }) => {
     const { configPath, cwd } = options
+
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
+    ctx.appendBaselineCss()
     this.context = ctx
+
     return ctx
   }
 
@@ -84,33 +94,45 @@ export class Builder {
     return this.context
   }
 
-  extractFile = async (ctx: PandaContext, file: string) => {
+  getFileMeta = (file: string) => {
     const mtime = existsSync(file) ? fsExtra.statSync(file).mtimeMs : -Infinity
-
     const isUnchanged = fileModifiedMap.has(file) && mtime === fileModifiedMap.get(file)
-    if (isUnchanged && !this.hasConfigChanged) return
+    return { mtime, isUnchanged }
+  }
 
-    const css = extractFile(ctx, file)
+  extractFile = async (ctx: PandaContext, file: string) => {
+    const meta = this.getFileMeta(file)
 
-    fileModifiedMap.set(file, mtime)
-
-    if (!css) {
-      fileCssMap.delete(file)
+    if (meta.isUnchanged) {
+      ctx.appendParserCss(parserResultMap.get(file)!)
       return
     }
 
-    fileCssMap.set(file, css)
+    const result = extractFile(ctx, file)
+    fileModifiedMap.set(file, meta.mtime)
 
-    return css
+    if (result) {
+      parserResultMap.set(file, result)
+    }
+
+    return result
+  }
+
+  checkFilesChanged(files: string[]) {
+    return files.some((file) => !this.getFileMeta(file).isUnchanged)
   }
 
   extract = async () => {
     const ctx = this.getContextOrThrow()
+    const files = ctx.getFiles()
+
+    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : false
+    if (hasConfigChanged) return
 
     const done = logger.time.info('Extracted in')
 
     // limit concurrency since we might parse a lot of files
-    const promises = ctx.getFiles().map((file) => limit(() => this.extractFile(ctx, file)))
+    const promises = files.map((file) => limit(() => this.extractFile(ctx, file)))
     await Promise.allSettled(promises)
 
     done()
@@ -118,10 +140,7 @@ export class Builder {
 
   toString = () => {
     const ctx = this.getContextOrThrow()
-    return ctx.getCss({
-      files: Array.from(fileCssMap.values()),
-      resolve: true,
-    })
+    return ctx.getCss()
   }
 
   isValidRoot = (root: Root) => {
@@ -129,7 +148,7 @@ export class Builder {
     let valid = false
 
     root.walkAtRules('layer', (rule) => {
-      if (ctx.isValidLayerRule(rule.params)) {
+      if (ctx.layers.isValidParams(rule.params)) {
         valid = true
       }
     })
@@ -137,16 +156,21 @@ export class Builder {
     return valid
   }
 
+  private initialRoot: string | undefined
+
   write = (root: Root) => {
-    const rootCssContent = root.toString()
+    if (!this.initialRoot) {
+      this.initialRoot = root.toString()
+    }
+
     root.removeAll()
 
-    root.append(
-      optimizeCss(`
-    ${rootCssContent}
+    const newCss = optimizeCss(`
+    ${this.initialRoot}
     ${this.toString()}
-    `),
-    )
+    `)
+
+    root.append(newCss)
   }
 
   registerDependency = (fn: (dep: Message) => void) => {

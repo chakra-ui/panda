@@ -1,6 +1,7 @@
 import { Builder } from '@pandacss/node'
-import type { PluginCreator } from 'postcss'
 import { createRequire } from 'module'
+import path from 'path'
+import type { PluginCreator } from 'postcss'
 
 const customRequire = createRequire(__dirname)
 
@@ -12,6 +13,13 @@ export const loadConfig = () => interopDefault(customRequire('@pandacss/postcss'
 
 const builder = new Builder()
 
+const nodeModulesRegex = /node_modules/
+
+function isValidCss(file: string) {
+  const [filePath] = file.split('?')
+  return path.extname(filePath) === '.css'
+}
+
 export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (options = {}) => {
   const { configPath, cwd } = options
 
@@ -19,12 +27,15 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
     postcssPlugin: PLUGIN_NAME,
     plugins: [
       async function (root, result) {
+        const fileName = result.opts.from
+
+        const skip = fileName ? !isValidCss(fileName) || nodeModulesRegex.test(fileName) : true
+        if (skip) return
+
         await builder.setup({ configPath, cwd })
 
         // ignore non-panda css file
-        if (!builder.isValidRoot(root)) {
-          return
-        }
+        if (!builder.isValidRoot(root)) return
 
         await builder.emit()
 

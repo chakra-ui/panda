@@ -79,7 +79,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
             <SegmentLabel
               className={css({
                 alignSelf: 'center',
-                textStyle: 'xs',
+                textStyle: 'sm',
                 fontWeight: 'medium',
                 color: { base: 'text.default', _dark: 'white', _checked: 'black' },
                 transition: 'color 170ms ease-in-out',

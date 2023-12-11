@@ -5,29 +5,28 @@ import type { Context } from '../../engines'
 
 export const generateParserCss = (ctx: Context, result: ParserResultType) => {
   const { patterns, recipes } = ctx
-  const sheet = ctx.createSheet()
 
   result.css.forEach((css) => {
     css.data.forEach((data) => {
-      sheet.processAtomic(data)
+      ctx.stylesheet.processAtomic(data)
     })
   })
 
   result.cva.forEach((cva) => {
     cva.data.forEach((data) => {
-      sheet.processAtomicRecipe(data)
+      ctx.stylesheet.processAtomicRecipe(data)
     })
   })
 
   result.sva.forEach((sva) => {
     sva.data.forEach((data) => {
-      sheet.processAtomicSlotRecipe(data)
+      ctx.stylesheet.processAtomicSlotRecipe(data)
     })
   })
 
   result.jsx.forEach((jsx) => {
     jsx.data.forEach((data) => {
-      sheet.processStyleProps(filterProps(ctx, data))
+      ctx.stylesheet.processStyleProps(filterProps(ctx, data))
     })
   })
 
@@ -43,13 +42,13 @@ export const generateParserCss = (ctx: Context, result: ParserResultType) => {
             recipe.data.forEach((data) => {
               const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
 
-              sheet.processStyleProps(filterProps(ctx, styleProps))
-              sheet.processRecipe(recipeName, recipeConfig, recipeProps)
+              ctx.stylesheet.processStyleProps(filterProps(ctx, styleProps))
+              ctx.stylesheet.processRecipe(recipeName, recipeConfig, recipeProps)
             })
           })
           .otherwise(() => {
             recipe.data.forEach((data) => {
-              sheet.processRecipe(recipeName, recipeConfig, data)
+              ctx.stylesheet.processRecipe(recipeName, recipeConfig, data)
             })
           })
       }
@@ -67,13 +66,13 @@ export const generateParserCss = (ctx: Context, result: ParserResultType) => {
             pattern.data.forEach((data) => {
               const fnName = patterns.find(jsxName)
               const styleProps = patterns.transform(fnName, data)
-              sheet.processStyleProps(filterProps(ctx, styleProps))
+              ctx.stylesheet.processStyleProps(filterProps(ctx, styleProps))
             })
           })
           .otherwise(() => {
             pattern.data.forEach((data) => {
               const styleProps = patterns.transform(name, data)
-              sheet.processAtomic(styleProps)
+              ctx.stylesheet.processAtomic(styleProps)
             })
           })
       }
@@ -82,14 +81,7 @@ export const generateParserCss = (ctx: Context, result: ParserResultType) => {
     }
   })
 
-  try {
-    const { minify, optimize } = ctx.config
-    const css = !result.isEmpty() ? sheet.toCss({ minify, optimize }) : undefined
-    void ctx.hooks.callHook('parser:css', result.filePath ?? '', css)
-    return css
-  } catch (err) {
-    logger.error('serializer:css', 'Failed to serialize CSS: ' + err)
-  }
+  void ctx.hooks.callHook('parser:css', result.filePath ?? '', '')
 }
 
 const filterProps = (ctx: Context, props: Dict) => {

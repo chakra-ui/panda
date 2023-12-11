@@ -5,14 +5,18 @@ import { css, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { fontClassName } from 'styles/fonts'
 import seoConfig from '../seo.config'
-
 import '../styles/panda.css'
 
-type Props = {
+interface Props {
   children: React.ReactNode
 }
 
-export const metadata = seoConfig
+const { themeColor, ...metadata } = seoConfig
+export { metadata }
+
+export const viewport = {
+  viewport: seoConfig.themeColor
+}
 
 export default function RootLayout(props: Props) {
   const { children } = props

@@ -1,15 +1,5 @@
-import { describe, test, expect } from 'vitest'
-import { getFixtureProject } from './fixture'
-import type { Config, TSConfig } from '@pandacss/types'
-
-const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
-  const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
-  const result = parse()!
-  return {
-    json: result?.toArray().map(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
-  }
-}
+import { describe, expect, test } from 'vitest'
+import { parseAndExtract } from './fixture'
 
 describe('preset patterns', () => {
   // stack vstack hstack spacer circle absoluteCenter grid gridItem wrap container center aspectRatio
@@ -25,7 +15,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -61,7 +51,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -97,7 +87,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -131,7 +121,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -171,7 +161,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -213,7 +203,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -261,7 +251,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -307,7 +297,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -359,7 +349,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -405,7 +395,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -457,7 +447,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -499,7 +489,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -576,7 +566,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -653,7 +643,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -701,7 +691,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -751,7 +741,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -807,7 +797,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -873,7 +863,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -945,7 +935,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -983,7 +973,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1027,7 +1017,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1055,7 +1045,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1091,7 +1081,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1133,7 +1123,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1181,7 +1171,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1239,7 +1229,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1303,7 +1293,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1345,7 +1335,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1393,7 +1383,7 @@ describe('preset patterns', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1479,7 +1469,7 @@ describe('preset patterns', () => {
           )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1554,360 +1544,6 @@ describe('preset patterns', () => {
 
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
-          }
-      }"
-    `)
-  })
-
-  test('nested outdir + tsconfig.compilerOptions.baseUrl importMap behaviour', () => {
-    const code = `
-    import { css } from "../styled-system/css";
-    import { container } from "../styled-system/patterns";
-
-    export default function App() {
-      return (
-        <div
-          className={container({
-            page: "A4",
-            width: {
-              _print: "210mm",
-            },
-            height: {
-              _print: "297mm",
-              base: "600px",
-            },
-            display: "flex",
-            margin: "auto",
-            flexDir: {
-              _print: "row",
-              base: "column",
-              sm: "row",
-            },
-          })}
-        >
-          <div className={css({ flex: 2 })}>aaa</div>
-          <div className={css({ flex: 1 })}>bbb</div>
-        </div>
-      );
-    }
-
-     `
-    const result = run(code, { outdir: 'src/styled-system', cwd: 'app' }, { compilerOptions: { baseUrl: 'app/src' } })
-    expect(result.json).toMatchInlineSnapshot(`
-      [
-        {
-          "data": [
-            {
-              "flex": 2,
-            },
-          ],
-          "name": "css",
-          "type": "object",
-        },
-        {
-          "data": [
-            {
-              "flex": 1,
-            },
-          ],
-          "name": "css",
-          "type": "object",
-        },
-        {
-          "data": [
-            {
-              "display": "flex",
-              "flexDir": {
-                "_print": "row",
-                "base": "column",
-                "sm": "row",
-              },
-              "height": {
-                "_print": "297mm",
-                "base": "600px",
-              },
-              "margin": "auto",
-              "page": "A4",
-              "width": {
-                "_print": "210mm",
-              },
-            },
-          ],
-          "name": "container",
-          "type": "pattern",
-        },
-      ]
-    `)
-
-    expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .flex_2 {
-          flex: 2
-          }
-
-        .flex_1 {
-          flex: 1 1 0%
-          }
-
-        .pos_relative {
-          position: relative
-          }
-
-        .max-w_8xl {
-          max-width: var(--sizes-8xl)
-          }
-
-        .mx_auto {
-          margin-inline: auto
-          }
-
-        .px_4 {
-          padding-inline: var(--spacing-4)
-          }
-
-        .page_A4 {
-          page: A4
-          }
-
-        .h_600px {
-          height: 600px
-          }
-
-        .d_flex {
-          display: flex
-          }
-
-        .m_auto {
-          margin: auto
-          }
-
-        .flex_column {
-          flex-direction: column
-          }
-
-        @media screen and (min-width: 40em) {
-          .sm\\\\:flex_row {
-            flex-direction: row
-          }
-              }
-
-        @media screen and (min-width: 48em) {
-          .md\\\\:px_6 {
-            padding-inline: var(--spacing-6)
-          }
-              }
-
-        @media screen and (min-width: 64em) {
-          .lg\\\\:px_8 {
-            padding-inline: var(--spacing-8)
-          }
-              }
-
-        @media print {
-          .print\\\\:w_210mm {
-            width: 210mm
-          }
-
-          .print\\\\:h_297mm {
-            height: 297mm
-          }
-
-          .print\\\\:flex_row {
-            flex-direction: row
-          }
-              }
-      }"
-    `)
-  })
-
-  test('{fn}.raw', () => {
-    const code = `
-    import { css } from ".panda/css";
-    import { buttonStyle } from ".panda/recipes";
-    import { stack } from ".panda/patterns";
-
-    const filePath = String.raw\`C:\\Development\\profile\\aboutme.html\`;
-
-    css.raw({ mx: '3', paddingTop: '4', color: 'amber.100' }, { mx: '10', pt: '6', color: 'blue.950' })
-
-    export default function App() {
-      return (
-        <ButtonStyle rootProps={css.raw({ bg: "red.400" })} />
-      );
-    }
-
-    // recipe in storybook
-    export const Funky: Story = {
-      args: buttonStyle.raw({
-        visual: "funky",
-        shape: "circle",
-        size: "sm",
-      }),
-    };
-
-    // mixed with pattern
-    const stackProps = {
-      sm: stack.raw({ direction: "column" }),
-      md: stack.raw({ direction: "row" })
-    }
-
-    stack(stackProps[props.size]))
-
-     `
-    const result = run(code)
-    expect(result.json).toMatchInlineSnapshot(`
-      [
-        {
-          "data": [
-            {
-              "color": "amber.100",
-              "mx": "3",
-              "paddingTop": "4",
-            },
-            {
-              "color": "blue.950",
-              "mx": "10",
-              "pt": "6",
-            },
-          ],
-          "name": "css",
-          "type": "object",
-        },
-        {
-          "data": [
-            {
-              "bg": "red.400",
-            },
-          ],
-          "name": "css",
-          "type": "object",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ButtonStyle",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
-            {
-              "shape": "circle",
-              "size": "sm",
-              "visual": "funky",
-            },
-          ],
-          "name": "buttonStyle",
-          "type": "recipe",
-        },
-        {
-          "data": [
-            {
-              "direction": "column",
-            },
-          ],
-          "name": "stack",
-          "type": "pattern",
-        },
-        {
-          "data": [
-            {
-              "direction": "row",
-            },
-          ],
-          "name": "stack",
-          "type": "pattern",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "stack",
-          "type": "pattern",
-        },
-      ]
-    `)
-
-    expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .mx_3 {
-          margin-inline: var(--spacing-3)
-          }
-
-        .pt_4 {
-          padding-top: var(--spacing-4)
-          }
-
-        .text_amber\\\\.100 {
-          color: var(--colors-amber-100)
-          }
-
-        .mx_10 {
-          margin-inline: var(--spacing-10)
-          }
-
-        .pt_6 {
-          padding-top: var(--spacing-6)
-          }
-
-        .text_blue\\\\.950 {
-          color: var(--colors-blue-950)
-          }
-
-        .bg_red\\\\.400 {
-          background: var(--colors-red-400)
-          }
-
-        .flex_row {
-          flex-direction: row
-          }
-
-        .d_flex {
-          display: flex
-          }
-
-        .flex_column {
-          flex-direction: column
-          }
-
-        .gap_10px {
-          gap: 10px
-          }
-      }
-
-      @layer recipes {
-        .buttonStyle--size_md {
-          height: 3rem;
-          min-width: 3rem;
-          padding: 0 0.75rem
-          }
-
-        .buttonStyle--size_sm {
-          height: 2.5rem;
-          min-width: 2.5rem;
-          padding: 0 0.5rem
-          }
-
-        .buttonStyle--variant_solid {
-          background-color: blue;
-          color: var(--colors-white);
-          }
-
-        .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
-          color: var(--colors-black)
-              }
-
-        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue
-              }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center
-              }
           }
       }"
     `)

@@ -35,13 +35,11 @@
   ],
   "dependencies": {
     "@pandacss/postcss": "workspace:*",
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.31",
-    "postcss-load-config": "^4.0.1"
+    "postcss-load-config": "4.0.1"
   },
   "devDependencies": {
-    "astro": "2.10.15",
-    "vite": "^4.0.5"
+    "astro": "4.0.3",
+    "vite": "5.0.7"
   },
   "peerDependencies": {
     "astro": ">=2.x"

@@ -1,8 +1,8 @@
 import { logger } from '@pandacss/logger'
 import type { ArtifactId, Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
-import type { PandaContext } from './create-context'
-import { bundleStyleChunksWithImports, emitArtifacts, writeAndBundleCssChunks, writeFileChunk } from './extract'
+import { PandaContext } from './create-context'
+import { emitArtifacts } from './emit-artifact'
 
 import { loadConfigAndCreateContext } from './config'
 
@@ -13,16 +13,18 @@ import { loadConfigAndCreateContext } from './config'
  */
 async function build(ctx: PandaContext, ids?: ArtifactId[]) {
   await emitArtifacts(ctx, ids)
+
   if (ctx.config.emitTokensOnly) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
   }
 
-  const { msg } = await writeAndBundleCssChunks(ctx)
-  logger.info('css:emit', msg)
+  ctx.appendAllCss()
+  await ctx.writeCss()
+  logger.info('css:emit', 'Successfully built the css files ✨')
 }
 
 export async function generate(config: Config, configPath?: string) {
-  const ctx = await loadConfigAndCreateContext({ config, configPath })
+  let ctx = await loadConfigAndCreateContext({ config, configPath })
   await build(ctx)
 
   const {
@@ -33,7 +35,9 @@ export async function generate(config: Config, configPath?: string) {
   if (ctx.config.watch) {
     const configWatcher = fs.watch({ include: ctx.conf.dependencies })
     configWatcher.on('change', async () => {
-      const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
+      const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+        ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+      })
       if (!affecteds.artifacts.size) return
 
       logger.info('config:change', 'Config changed, restarting...')
@@ -44,19 +48,21 @@ export async function generate(config: Config, configPath?: string) {
     const contentWatcher = fs.watch(ctx.config)
     contentWatcher.on('all', async (event, file) => {
       logger.info(`file:${event}`, file)
-      match(event)
+      await match(event)
         .with('unlink', () => {
           ctx.project.removeSourceFile(path.abs(cwd, file))
-          ctx.chunks.rm(file)
         })
-        .with('change', async () => {
+        .with('change', () => {
           ctx.project.reloadSourceFile(file)
-          await writeFileChunk(ctx, file)
-          return bundleStyleChunksWithImports(ctx)
+          const result = ctx.project.parseSourceFile(file)
+          ctx.appendParserCss(result)
+          return ctx.writeCss()
         })
-        .with('add', async () => {
+        .with('add', () => {
           ctx.project.createSourceFile(file)
-          return bundleStyleChunksWithImports(ctx)
+          const result = ctx.project.parseSourceFile(file)
+          ctx.appendParserCss(result)
+          return ctx.writeCss()
         })
         .otherwise(() => {
           // noop

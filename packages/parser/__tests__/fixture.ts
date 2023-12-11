@@ -197,9 +197,14 @@ export function jsxRecipeParser(code: string) {
 
 export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
-  const result = parse()!
+
+  const parserResult = parse()!
+  generator.appendParserCss(parserResult)
+  const parserCss = generator.stylesheet.toCss({ optimize: true })
+
   return {
-    json: result?.toArray().flatMap(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
+    generator,
+    json: parserResult?.toArray().flatMap(({ box, ...item }) => item),
+    css: parserCss,
   }
 }

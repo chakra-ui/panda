@@ -1,9 +1,16 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { expect, test } from 'vitest'
+import { Generator } from '../src'
 import { generateTokenJs } from '../src/artifacts/js/token'
-import { generator } from './fixture'
+import { generatorConfig } from './fixture'
+
+const tokenJs = (config: ConfigResultWithHooks) => {
+  const generator = new Generator(config)
+  return generateTokenJs(generator).js
+}
 
 test('[dts] should generate package', () => {
-  expect(generateTokenJs(generator).js).toMatchInlineSnapshot(
+  expect(tokenJs(generatorConfig)).toMatchInlineSnapshot(
     `
     "const tokens = {
       \\"borders.none\\": {

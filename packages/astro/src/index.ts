@@ -1,5 +1,4 @@
 import type { AstroConfig, AstroIntegration } from 'astro'
-import autoprefixerPlugin from 'autoprefixer'
 import type { CSSOptions, UserConfig } from 'vite'
 import { createRequire } from 'module'
 
@@ -33,8 +32,6 @@ async function getViteConfig(viteConfig: AstroConfig['vite'], options?: PandaOpt
       cwd: options?.cwd,
     }),
   )
-  postcssPlugins.push(autoprefixerPlugin())
-
   return {
     css: {
       postcss: {
@@ -69,7 +66,7 @@ export default function pandaIntegration(options?: PandaOptions): AstroIntegrati
     hooks: {
       'astro:config:setup': async ({ config, updateConfig, injectScript }) => {
         updateConfig({
-          vite: await getViteConfig(config.vite, options),
+          vite: (await getViteConfig(config.vite, options)) as any,
         })
 
         if (applyBaseStyles) {

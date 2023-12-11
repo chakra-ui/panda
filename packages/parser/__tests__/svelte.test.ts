@@ -1,15 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { svelteToTsx } from '../src/svelte-to-tsx'
-import { getFixtureProject } from './fixture'
-
-const run = (code: string) => {
-  const { parse, generator } = getFixtureProject(code)
-  const result = parse()!
-  return {
-    json: result?.toArray().map(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
-  }
-}
+import { parseAndExtract } from './fixture'
 
 describe('extract svelte templates', () => {
   test('template with svelte-specific syntax + Typescript usage', () => {
@@ -181,7 +172,7 @@ describe('extract svelte templates', () => {
           </div>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {

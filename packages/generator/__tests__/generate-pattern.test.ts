@@ -1,9 +1,16 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { expect, test } from 'vitest'
+import { Generator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
-import { generator } from './fixture'
+import { generatorConfig } from './fixture'
+
+const patterns = (config: ConfigResultWithHooks) => {
+  const generator = new Generator(config)
+  return generatePattern(generator)
+}
 
 test('should generate pattern', () => {
-  expect(generatePattern(generator)).toMatchInlineSnapshot(`
+  expect(patterns(generatorConfig)).toMatchInlineSnapshot(`
     [
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';

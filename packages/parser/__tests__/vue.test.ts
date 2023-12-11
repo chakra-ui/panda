@@ -1,15 +1,6 @@
-import { describe, test, expect } from 'vitest'
-import { getFixtureProject } from './fixture'
+import { describe, expect, test } from 'vitest'
 import { vueToTsx } from '../src/vue-to-tsx'
-
-const run = (code: string) => {
-  const { parse, generator } = getFixtureProject(code)
-  const result = parse()!
-  return {
-    json: result?.toArray().map(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
-  }
-}
+import { parseAndExtract } from './fixture'
 
 describe('extract Vue templates', () => {
   test('vue 3 composition API', () => {
@@ -76,7 +67,7 @@ describe('extract Vue templates', () => {
             </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -221,7 +212,7 @@ describe('extract Vue templates', () => {
         </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -340,7 +331,7 @@ describe('extract Vue templates', () => {
               </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -481,7 +472,7 @@ describe('extract Vue templates', () => {
           </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {

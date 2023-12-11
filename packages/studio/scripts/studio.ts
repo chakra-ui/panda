@@ -1,7 +1,5 @@
 import { colors, logger } from '@pandacss/logger'
-import { execa } from 'execa'
 import { join } from 'node:path'
-import { createRequire } from 'node:module'
 
 export interface BuildOpts {
   outDir: string
@@ -10,41 +8,60 @@ export interface BuildOpts {
   host?: boolean
 }
 
-const require = createRequire(import.meta.url)
-const astroBin = require.resolve('astro')
 const appPath = join(__dirname, '..')
 
 export async function buildStudio({ outDir, configPath }: BuildOpts) {
-  process.env.ASTRO_OUT_DIR = outDir
-  const { stdout } = await execa(astroBin, ['build', '--root', appPath], {
-    cwd: appPath,
-    env: {
-      PUBLIC_CONFIG_PATH: configPath,
-    },
-  })
-  logger.log(stdout)
+  const astro = await import('astro')
+  const { default: react } = await import('@astrojs/react')
+  const { default: studio } = await import('@pandacss/astro-plugin-studio')
+
+  try {
+    process.env.PUBLIC_CONFIG_PATH = configPath
+    await astro.build({
+      outDir,
+      root: appPath,
+      integrations: [react(), studio()],
+    })
+  } catch (error) {
+    console.log(error)
+  }
 }
 
-export async function serveStudio({ configPath, port, host }: BuildOpts) {
-  const result = execa(astroBin, ['dev', '--root', appPath, '--port', port ?? '', host ? '--host' : ''], {
-    stdio: 'inherit',
-    cwd: appPath,
-    env: {
-      PUBLIC_CONFIG_PATH: configPath,
-    },
-  })
-  result.stdout?.pipe(process.stdout)
-  result.stderr?.pipe(process.stderr)
+export async function serveStudio({ configPath, port, host, outDir }: BuildOpts) {
+  const astro = await import('astro')
+  const { default: react } = await import('@astrojs/react')
+  const { default: studio } = await import('@pandacss/astro-plugin-studio')
+
+  try {
+    process.env.PUBLIC_CONFIG_PATH = configPath
+    await astro.dev({
+      outDir,
+      root: appPath,
+      integrations: [react(), studio()],
+      server: {
+        port: port ? Number(port) : undefined,
+        host,
+      },
+    })
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 export async function previewStudio({ outDir }: BuildOpts) {
-  process.env.ASTRO_OUT_DIR = outDir
-  const result = execa(astroBin, ['preview', '--root', appPath], {
-    stdio: 'inherit',
-    cwd: appPath,
-  })
-  result.stdout?.pipe(process.stdout)
-  result.stderr?.pipe(process.stderr)
+  const astro = await import('astro')
+  const { default: react } = await import('@astrojs/react')
+  const { default: studio } = await import('@pandacss/astro-plugin-studio')
+
+  try {
+    await astro.preview({
+      outDir,
+      root: appPath,
+      integrations: [react(), studio()],
+    })
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 export function printUrls(options: { host: string; port: number; https: boolean }) {

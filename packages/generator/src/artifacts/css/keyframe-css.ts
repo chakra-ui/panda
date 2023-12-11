@@ -16,15 +16,6 @@ export function generateKeyframeCss(ctx: Context) {
     )
   }
 
-  const rule = postcss.atRule({
-    name: 'layer',
-    params: 'tokens',
-    nodes: root.nodes,
-  })
-
-  const output = rule.toString()
-
-  void ctx.hooks.callHook('generator:css', 'keyframes.css', output)
-
-  return output
+  ctx.layers.tokens.append(root)
+  void ctx.hooks.callHook('generator:css', 'keyframes.css', '')
 }

@@ -1,22 +1,18 @@
 import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
+  PandaContext,
   analyzeTokens,
-  bundleCss,
-  bundleMinimalFilesCss,
   debugFiles,
   emitArtifacts,
   generate,
-  generateCssArtifactOfType,
   loadConfigAndCreateContext,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
   shipFiles,
   writeAnalyzeJSON,
-  writeAndBundleCssChunks,
   type CssArtifactType,
-  PandaContext,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
@@ -141,7 +137,7 @@ export async function main() {
     )
     .option('--silent', "Don't print any logs")
     .option('-m, --minify', 'Minify generated code')
-    .option('--clean', 'Clean the chunks before generating')
+    .option('--clean', 'Clean the output before generating')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('-w, --watch', 'Watch files and rebuild')
     .option('--minimal', 'Do not include CSS generation for theme tokens, preflight, keyframes, static and global css')
@@ -176,34 +172,46 @@ export async function main() {
         configPath,
       })
 
+      const ensureFile = (ctx: PandaContext, file: string) => {
+        const outPath = resolve(cwd, file)
+        const dirname = ctx.runtime.path.dirname(outPath)
+        ctx.runtime.fs.ensureDirSync(dirname)
+      }
+
       const cssgen = async (ctx: PandaContext) => {
-        if (outfile) {
-          const outPath = resolve(cwd, outfile)
-          const dirname = ctx.runtime.path.dirname(outPath)
-          ctx.runtime.fs.ensureDirSync(dirname)
+        //
+        if (cssArtifact) {
+          //
+          ctx.appendCss(cssArtifact)
 
-          if (cssArtifact) {
-            const { msg } = await generateCssArtifactOfType(ctx, cssArtifact, outfile)
-            logger.info('css:emit:artifact', msg)
-            return
-          }
-
-          if (minimal) {
-            const { msg } = await bundleMinimalFilesCss(ctx, outPath)
-            logger.info('css:emit:min', msg)
+          if (outfile) {
+            ensureFile(ctx, outfile)
+            ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
           } else {
-            const { msg } = await bundleCss(ctx, outPath)
-            logger.info('css:emit:out', msg)
+            await ctx.writeCss()
           }
+
+          const msg = ctx.messages.cssArtifactComplete(cssArtifact)
+          logger.info('css:emit:artifact', msg)
           //
         } else {
-          if (cssArtifact) {
-            logger.warn('cssgen:warn', 'Cannot generate css artifact without an outfile')
+          //
+          if (!minimal) {
+            ctx.appendLayerParams()
+            ctx.appendBaselineCss()
           }
 
-          //
-          const { msg } = await writeAndBundleCssChunks(ctx)
-          logger.info('css:emit:bundle', msg)
+          const files = ctx.appendFilesCss()
+
+          if (outfile) {
+            ensureFile(ctx, outfile)
+            ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
+          } else {
+            await ctx.writeCss()
+          }
+
+          const msg = ctx.messages.buildComplete(files.length)
+          logger.info('css:emit:out', msg)
         }
       }
 
@@ -304,7 +312,8 @@ export async function main() {
       try {
         const studioPath = require.resolve('@pandacss/studio', { paths: [cwd] })
         studio = require(studioPath)
-      } catch {
+      } catch (error) {
+        logger.error('studio', error)
         throw new Error("You need to install '@pandacss/studio' to use this command")
       }
 
