@@ -40,6 +40,7 @@ export const defaultEditorOptions: EditorProps['options'] = {
   fontLigatures: true,
   fontFamily: "'Fira Code', 'Fira Mono', 'Menlo', 'Monaco', 'Courier', monospace",
   fontWeight: '400',
+  wordWrap: 'on',
 }
 
 const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) => {
