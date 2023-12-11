@@ -1,5 +1,5 @@
 import { colors, logger } from '@pandacss/logger'
-import * as nodePath from 'path'
+import { parse } from 'pathe'
 import type { PandaContext } from './create-context'
 
 export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean; onlyConfig?: boolean }) {
@@ -46,7 +46,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
 
     if (outdir) {
       filesWithCss.push(file)
-      const parsedPath = nodePath.parse(file)
+      const parsedPath = parse(file)
       const relative = path.relative(ctx.config.cwd, parsedPath.dir)
 
       const astJsonPath = `${relative}/${parsedPath.name}.ast.json`.replaceAll(path.sep, '__')
