@@ -1,4 +1,4 @@
-import { FormatCode } from '@/src/components/icons'
+import { FormatCode, WrapText } from '@/src/components/icons'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
@@ -22,8 +22,16 @@ const tabs = [
 ]
 
 export const Editor = (props: PandaEditorProps) => {
-  const { activeTab, setActiveTab, onBeforeMount, onCodeEditorChange, onCodeEditorMount, onCodeEditorFormat } =
-    useEditor(props)
+  const {
+    activeTab,
+    setActiveTab,
+    onBeforeMount,
+    onCodeEditorChange,
+    onCodeEditorMount,
+    onCodeEditorFormat,
+    wordWrap,
+    onToggleWrap,
+  } = useEditor(props)
 
   const editorPaths = {
     code: 'code.tsx',
@@ -60,26 +68,24 @@ export const Editor = (props: PandaEditorProps) => {
             </Segment>
           ))}
 
-          <button
-            className={css({
-              ml: 'auto',
-              borderRadius: 'sm',
-              cursor: 'pointer',
-              p: '1',
-              color: 'text.default',
-              _hover: {
-                color: { base: 'gray.700', _dark: 'gray.100' },
-                bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
-              },
-              transition: 'all 0.2s ease-in-out',
-              _disabled: { cursor: 'not-allowed' },
-            })}
-            title="Format code"
-            disabled={!!props.diffState}
-            onClick={onCodeEditorFormat}
-          >
-            <FormatCode />
-          </button>
+          <div className={css({ ml: 'auto', display: 'flex', gap: '0.5' })}>
+            <button
+              className={actionButton()}
+              title="Toggle word wrap (Alt + Z)"
+              data-active={wordWrap === 'on' ? '' : undefined}
+              onClick={onToggleWrap}
+            >
+              <WrapText />
+            </button>
+            <button
+              className={actionButton()}
+              title="Format code (Shift + Alt + F)"
+              disabled={!!props.diffState}
+              onClick={onCodeEditorFormat}
+            >
+              <FormatCode />
+            </button>
+          </div>
         </SegmentGroup>
         <div className={cx(css({ flex: '1', pt: '2' }), editorTokenizer())}>
           {props.diffState ? (
@@ -109,6 +115,26 @@ export const Editor = (props: PandaEditorProps) => {
     </Flex>
   )
 }
+
+const actionButton = cva({
+  base: {
+    borderRadius: 'sm',
+    cursor: 'pointer',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    h: '8',
+    w: '8',
+    '& > svg': { h: '5' },
+    color: 'text.default',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover, &[data-active]': {
+      color: { base: 'gray.700', _dark: 'gray.100' },
+      bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
+    },
+    _disabled: { cursor: 'not-allowed' },
+  },
+})
 
 const editorTokenizer = cva({
   base: {
