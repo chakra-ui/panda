@@ -1,8 +1,10 @@
 {
   "cascade-layers": "Cascade Layers",
   "writing-styles": "Writing Styles",
+  "merging-styles": "Merging Styles",
   "conditional-styles": "Conditional Styles",
   "responsive-design": "Responsive Design",
+  "virtual-color": "Virtual Color",
   "patterns": "Patterns",
   "recipes": "Recipes",
   "slot-recipes": "Slot Recipes",

@@ -8,8 +8,6 @@ description: Panda allows you to create a virtual color or color placeholder in 
 Panda allows you to create a virtual color or color placeholder in your project. The `colorPalette` property is how you
 create virtual color.
 
-> **Important:** A valid `colorPalette` value is an color object that has `50` to `900` keys.
-
 ```js
 import { css } from '../styled-system/css'
 
