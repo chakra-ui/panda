@@ -214,7 +214,7 @@ Hash the class names and css variables:
 
 ```json
 {
-  "hash": false
+  "hash": true
 }
 ```
 
