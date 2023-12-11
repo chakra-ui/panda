@@ -57,9 +57,8 @@ export function generateReactJsxFactory(ctx: Context) {
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
-          children,
           className: classes(),
-        })
+        }, combinedProps.children ?? children)
       })
 
       const name = getDisplayName(Dynamic)

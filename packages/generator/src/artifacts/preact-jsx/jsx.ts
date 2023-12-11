@@ -58,10 +58,9 @@ export function generatePreactJsxFactory(ctx: Context) {
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
-          children,
           ref,
           className: classes()
-        })
+        }, combinedProps.children ?? children)
       })
 
       const name = getDisplayName(Dynamic)
