@@ -594,8 +594,8 @@ importers:
         version: link:../types
     devDependencies:
       '@atlaskit/tokens':
-        specifier: 1.29.0
-        version: 1.29.0(react@16.14.0)
+        specifier: 1.29.2
+        version: 1.29.2(react@16.14.0)
 
   packages/preset-base:
     dependencies:
@@ -1717,8 +1717,8 @@ packages:
       '@babel/runtime': 7.23.2
     dev: true
 
-  /@atlaskit/tokens@1.29.0(react@16.14.0):
-    resolution: {integrity: sha512-VDSl6+HKwInNt9mHXO2M2wKlWDo9rCOFhcAbXD+V3z5AsM7ccjX7Dl9Z2H9lciV6o+pkS0FkdE83DfJVgCBiRg==}
+  /@atlaskit/tokens@1.29.2(react@16.14.0):
+    resolution: {integrity: sha512-gxJSfvpDPmVDPt76swB1GFPhrAlKcKnmKtyP/I18amBbvvW3dmcPWJn94f1e78Aax363ozfcmGbsYj/NK3bZ6A==}
     peerDependencies:
       react: ^16.8.0
     dependencies:
@@ -2413,7 +2413,7 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
     dependencies:
-      '@babel/types': 7.22.5
+      '@babel/types': 7.23.0
 
   /@babel/parser@7.23.0:
     resolution: {integrity: sha512-vvPKKdMemU85V9WE/l5wZEmImpCtLqbnTvqDS2U1fJ96KrxoW7KrXhNsNCblQlg8Ck4b85yxdTyelsMUgFUXiw==}
