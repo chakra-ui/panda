@@ -9,5 +9,5 @@ export const borderWidths = Object.fromEntries(
 export const radii = Object.fromEntries(
   Object.entries(Borders)
     .filter(([key]) => !key.includes('-size-'))
-    .map(([key, value]) => [key.replace('--radius-', ''), { value }]),
+    .map(([key, value]) => [key.replace('--radius-', ''), { value: value.replace('--radius-', '--radii-') }]),
 )
