@@ -8,6 +8,7 @@ const fileMap = [
   'recipe.ts',
   'pattern.ts',
   'parts.ts',
+  'static-css.ts',
   'composition.ts',
 ]
 

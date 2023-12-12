@@ -99,6 +99,7 @@ function setupGeneratedTypes(ctx: Context): Artifact {
     dir: ctx.paths.types,
     files: [
       { file: ctx.file.extDts('csstype'), code: gen.cssType },
+      { file: ctx.file.extDts('static-css'), code: gen.static },
       { file: ctx.file.extDts('selectors'), code: gen.selectors },
       { file: ctx.file.extDts('composition'), code: gen.composition },
       { file: ctx.file.extDts('recipe'), code: gen.recipe },

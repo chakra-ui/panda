@@ -150,6 +150,7 @@ describe('setup-artifacts', () => {
         ],
         [
           "types/csstype.d.ts",
+          "types/static-css.d.ts",
           "types/selectors.d.ts",
           "types/composition.d.ts",
           "types/recipe.d.ts",
