@@ -153,10 +153,12 @@ export function usePanda(state: State) {
       .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
       ?.join('\n')
 
-    const cssArtifacts = staticArtifacts.concat([
-      { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
-      { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
-    ])
+    const cssArtifacts = (
+      [
+        { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
+        { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
+      ] as CssFileArtifact[]
+    ).concat(staticArtifacts)
     const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
 
     const panda = {
