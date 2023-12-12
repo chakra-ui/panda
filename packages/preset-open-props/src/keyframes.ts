@@ -6,7 +6,7 @@ import type { Dict } from '@pandacss/types'
 export const easings = transformOpenPropsObj(
   Easings,
   (key) => key.replace('--ease-', ''),
-  (value) => value.replace('ease', 'easings'),
+  (value) => value.replace(/var\(--ease-([^)]+)\)/g, '{easings.$1}'),
 )
 
 const _keyframes = Object.entries(Animations).filter(([key]) => key.includes('@'))
@@ -23,7 +23,9 @@ export const animations = Object.entries(Animations)
   .filter(([key]) => !key.includes('@'))
   .reduce(
     (acc, [key, value]) =>
-      Object.assign({}, acc, { [key.replace('--animation-', '')]: { value: value.replace('ease', 'easings') } }),
+      Object.assign({}, acc, {
+        [key.replace('--animation-', '')]: { value: value.replace(/var\(--ease-([^)]+)\)/g, '{easings.$1}') },
+      }),
     {} as Dict,
   )
 
