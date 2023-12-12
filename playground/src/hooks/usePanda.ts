@@ -111,13 +111,24 @@ export function usePanda(state: State) {
         config: config as any,
       })
       previousContext.current = context
-      context.appendLayerParams()
-      context.appendBaselineCss()
       return context
     } catch {
       return previousContext.current!
     }
   }, [userConfig])
+
+  const staticArtifacts = useMemo(() => {
+    context.appendLayerParams()
+    context.appendBaselineCss()
+
+    const cssArtifacts: CssFileArtifact[] = [
+      { file: 'Tokens', code: context.stylesheet.getLayerCss('tokens') },
+      { file: 'Reset', code: context.stylesheet.getLayerCss('reset') },
+      { file: 'Global', code: context.stylesheet.getLayerCss('base') },
+    ]
+
+    return cssArtifacts
+  }, [context])
 
   return useMemo(() => {
     const project = createProject({
@@ -135,8 +146,6 @@ export function usePanda(state: State) {
 
     const parserResult = project.parseSourceFile('code.tsx')
     context.appendParserCss(parserResult)
-
-    const parsedCss = context.getCss()
     const artifacts = context.getArtifacts() ?? []
 
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
@@ -144,15 +153,11 @@ export function usePanda(state: State) {
       .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
       ?.join('\n')
 
-    const previewCss = [css, parsedCss].join('\n')
-
-    const cssArtifacts: CssFileArtifact[] = [
+    const cssArtifacts = staticArtifacts.concat([
       { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
       { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
-      { file: 'Tokens', code: context.stylesheet.getLayerCss('tokens') },
-      { file: 'Reset', code: context.stylesheet.getLayerCss('reset') },
-      { file: 'Global', code: context.stylesheet.getLayerCss('base') },
-    ]
+    ])
+    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
 
     const panda = {
       previewCss,
@@ -161,11 +166,10 @@ export function usePanda(state: State) {
       parserResult,
       cssArtifacts,
       context,
-      parsedCss,
     }
     console.log(panda) // <-- useful for debugging purposes, don't remove
     return panda
-  }, [source, css, context])
+  }, [source, css, context, staticArtifacts])
 }
 
 export type CssFileArtifact = {
