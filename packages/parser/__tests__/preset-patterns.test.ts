@@ -1548,4 +1548,89 @@ describe('preset patterns', () => {
       }"
     `)
   })
+
+  test('responsive array syntax', () => {
+    const code = `
+      import { grid, gridItem } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={grid({ columns: [2, 3, 4] })}>
+                <div className={gridItem({ colSpan: [1, 2, 3] })}>Click me</div>
+              </div>
+          </div>
+        )
+      }
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "columns": [
+                2,
+                3,
+                4,
+              ],
+            },
+          ],
+          "name": "grid",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "colSpan": [
+                1,
+                2,
+                3,
+              ],
+            },
+          ],
+          "name": "gridItem",
+          "type": "pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_grid {
+          display: grid
+          }
+
+        .grid-cols_repeat\\\\(2\\\\,_minmax\\\\(0\\\\,_1fr\\\\)\\\\) {
+          grid-template-columns: repeat(2, minmax(0, 1fr))
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .col-span_span_1 {
+          grid-column: span 1
+          }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:grid-cols_repeat\\\\(3\\\\,_minmax\\\\(0\\\\,_1fr\\\\)\\\\) {
+            grid-template-columns: repeat(3, minmax(0, 1fr))
+          }
+          .sm\\\\:col-span_span_2 {
+            grid-column: span 2
+          }
+              }
+
+        @media screen and (min-width: 48em) {
+          .md\\\\:grid-cols_repeat\\\\(4\\\\,_minmax\\\\(0\\\\,_1fr\\\\)\\\\) {
+            grid-template-columns: repeat(4, minmax(0, 1fr))
+          }
+          .md\\\\:col-span_span_3 {
+            grid-column: span 3
+          }
+              }
+      }"
+    `)
+  })
 })
