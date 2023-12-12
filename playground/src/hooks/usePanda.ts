@@ -111,6 +111,8 @@ export function usePanda(state: State) {
         config: config as any,
       })
       previousContext.current = context
+      context.appendLayerParams()
+      context.appendBaselineCss()
       return context
     } catch {
       return previousContext.current!
@@ -131,8 +133,6 @@ export function usePanda(state: State) {
       hooks: context.hooks,
     })
 
-    context.appendBaselineCss()
-    context.appendLayerParams()
     const parserResult = project.parseSourceFile('code.tsx')
     context.appendParserCss(parserResult)
 
