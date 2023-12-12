@@ -55,7 +55,7 @@ export const conditions = {
   groupExpanded: '.group:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) &',
   groupInvalid: '.group:invalid &',
 
-  indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate")',
+  indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate"])',
   required: '&:is(:required, [data-required], [aria-required=true])',
   valid: '&:is(:valid, [data-valid])',
   invalid: '&:is(:invalid, [data-invalid])',
