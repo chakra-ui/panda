@@ -1,5 +1,13 @@
 # @pandacss/preset-open-props
 
+## 0.22.0
+
+### Patch Changes
+
+- 4634df0e: Fix conditional variables in border radii
+- Updated dependencies [526c6e34]
+  - @pandacss/types@0.22.0
+
 ## 0.21.0
 
 ### Patch Changes
