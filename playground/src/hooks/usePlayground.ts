@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { startTransition, useDeferredValue, useRef, useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
@@ -70,6 +70,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   const pristineState = useRef(props.initialState)
   const [state, setState] = useState(props.initialState ?? parseState(example))
+  const deferredState = useDeferredValue(state)
   const [diffState, setDiffState] = useState(props.diffState)
 
   function copyCurrentURI() {
@@ -157,10 +158,12 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     panels,
     onResizePanels,
     switchLayout,
-    state,
+    state: deferredState,
     setState: (newState: State) => {
       setIsPristine(false)
-      setState(newState)
+      startTransition(() => {
+        setState(newState)
+      })
     },
     setExample,
     onShare,
