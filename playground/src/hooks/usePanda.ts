@@ -121,7 +121,7 @@ export function usePanda(state: State) {
     context.appendLayerParams()
     context.appendBaselineCss()
 
-    const cssArtifacts: CssFileArtifact[] = [
+    const cssArtifacts = [
       { file: 'Tokens', code: context.stylesheet.getLayerCss('tokens') },
       { file: 'Reset', code: context.stylesheet.getLayerCss('reset') },
       { file: 'Global', code: context.stylesheet.getLayerCss('base') },
@@ -153,10 +153,10 @@ export function usePanda(state: State) {
       .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
       ?.join('\n')
 
-    const cssArtifacts = staticArtifacts.concat([
+    const cssArtifacts: CssFileArtifact[] = [
       { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
       { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
-    ])
+    ].concat(staticArtifacts)
     const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
 
     const panda = {
