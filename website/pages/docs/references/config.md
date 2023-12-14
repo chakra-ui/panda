@@ -60,7 +60,7 @@ Disable preflight:
 
 ```json
 {
-  "preflight": true
+  "preflight": false
 }
 ```
 
