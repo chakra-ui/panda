@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.22.0
+
+### Patch Changes
+
+- 526c6e34: Fix issue where static-css types was not exported.
+
 ## 0.21.0
 
 ### Patch Changes

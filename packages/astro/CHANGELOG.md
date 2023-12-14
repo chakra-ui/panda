@@ -1,5 +1,16 @@
 # @pandacss/astro
 
+## 0.22.0
+
+### Minor Changes
+
+- 11753fea: - Redesign astro integration and studio to use the new Astro v4 (experimental) JavaScript API
+  - Update Astro version to v4 for the @pandacss/studio
+
+### Patch Changes
+
+- @pandacss/postcss@0.22.0
+
 ## 0.21.0
 
 ### Patch Changes

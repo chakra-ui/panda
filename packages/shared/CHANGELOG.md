@@ -1,5 +1,11 @@
 # @pandacss/shared
 
+## 0.22.0
+
+### Patch Changes
+
+- 8db47ec6: Fix issue where array syntax did not generate reponsive values in mapped pattern properties
+
 ## 0.21.0
 
 ### Minor Changes

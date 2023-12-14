@@ -1,5 +1,26 @@
 # @pandacss/generator
 
+## 0.22.0
+
+### Minor Changes
+
+- e83afef0: Update csstype to support newer css features
+
+### Patch Changes
+
+- 8db47ec6: Fix issue where array syntax did not generate reponsive values in mapped pattern properties
+- 9c0d3f8f: Fix regression where `styled-system/jsx/index` had the wrong exports
+- c95c40bd: Fix issue where `children` does not work in styled factory's `defaultProps` in React, Preact and Qwik
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+- Updated dependencies [11753fea]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/core@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/is-valid-prop@0.22.0
+  - @pandacss/logger@0.22.0
+
 ## 0.21.0
 
 ### Minor Changes

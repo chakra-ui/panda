@@ -1,5 +1,24 @@
 # @pandacss/studio
 
+## 0.22.0
+
+### Minor Changes
+
+- 11753fea: - Redesign astro integration and studio to use the new Astro v4 (experimental) JavaScript API
+  - Update Astro version to v4 for the @pandacss/studio
+
+### Patch Changes
+
+- 1cc8fcff: Fixes a missing bracket in \_indeterminate condition
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/config@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/astro-plugin-studio@0.22.0
+  - @pandacss/logger@0.22.0
+
 ## 0.21.0
 
 ### Patch Changes

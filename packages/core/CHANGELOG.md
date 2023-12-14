@@ -1,5 +1,31 @@
 # @pandacss/core
 
+## 0.22.0
+
+### Patch Changes
+
+- 11753fea: Improve initial css extraction time by at least 5x 🚀
+
+  Initial extraction time can get slow when using static CSS with lots of recipes or parsing a lot of files.
+
+  **Scenarios**
+
+  - Park UI went from 3500ms to 580ms (6x faster)
+  - Panda Website went from 2900ms to 208ms (14x faster)
+
+  **Potential Breaking Change**
+
+  If you use `hooks` in your `panda.config` file to listen for when css is extracted, we no longer return the `css`
+  string for performance reasons. We might reconsider this in the future.
+
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/error@0.22.0
+  - @pandacss/logger@0.22.0
+
 ## 0.21.0
 
 ### Minor Changes
