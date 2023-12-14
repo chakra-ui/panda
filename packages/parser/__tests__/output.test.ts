@@ -2904,6 +2904,77 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('slotRecipes.staticCss', () => {
+    const { generator } = parseAndExtract('', {
+      theme: {
+        extend: {
+          slotRecipes: {
+            someRecipe: {
+              staticCss: [{ size: ['sm'] }],
+              className: 'button',
+              slots: ['container', 'icon'],
+              base: {
+                container: {
+                  fontFamily: 'mono',
+                },
+                icon: {
+                  fontSize: '1.5rem',
+                },
+              },
+              variants: {
+                size: {
+                  sm: {
+                    container: {
+                      fontSize: '5rem',
+                      lineHeight: '1em',
+                    },
+                    icon: {
+                      fontSize: '2rem',
+                    },
+                  },
+
+                  md: {
+                    container: {
+                      fontSize: '3rem',
+                      lineHeight: '1.2em',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    generator.appendCss('static')
+    const css = generator.stylesheet.getLayerCss('recipes')
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        .button__container--size_sm {
+          font-size: 5rem;
+          line-height: 1em
+          }
+
+        .button__icon--size_sm {
+          font-size: 2rem
+          }
+
+        @layer _base {
+
+          .button__container {
+            font-family: var(--fonts-mono)
+              }
+
+          .button__icon {
+            font-size: 1.5rem
+              }
+          }
+      }"
+    `)
+  })
+
   test('recipe issue', () => {
     const code = `
     import { css } from '.panda/css';
