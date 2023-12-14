@@ -6,6 +6,43 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.22.1] - 2023-12-15
+
+### Fixed
+
+- Fix `slotRecipes` typings, [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added
+  to `config.recipes` weren't added to `config.slotRecipes`
+- Fix a typing issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with property-based
+  conditionals
+
+```ts
+css({
+  bg: '[#3B00B9]', // ✅ was okay
+  _dark: {
+    // ✅ was okay
+    color: '[#3B00B9]',
+  },
+
+  // ❌ Not okay, will be fixed in this patch
+  color: {
+    _dark: '[#3B00B9]',
+  },
+})
+```
+
+- Fix a regression with the @pandacss/astro integration where the automatically provided `base.css` would be ignored by
+  the @pandacss/postcss plugin
+
+- Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
+  `!important`
+
+```ts
+css({
+  borderWidth: '[2px!]',
+  width: '[2px !important]',
+})
+```
+
 ## [0.22.0] - 2023-12-14
 
 ### Fixed
