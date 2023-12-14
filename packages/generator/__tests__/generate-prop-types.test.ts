@@ -1,11 +1,17 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { generatePropTypes } from '../src/artifacts/types/prop-types'
-import { generator, generatorConfig } from './fixture'
 import { Generator } from '../src'
+import { generatePropTypes } from '../src/artifacts/types/prop-types'
+import { generatorConfig } from './fixture'
+
+const propTypes = (config: ConfigResultWithHooks) => {
+  const ctx = new Generator(config)
+  return generatePropTypes(ctx)
+}
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
+    expect(propTypes(generatorConfig)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -337,7 +343,8 @@ describe('generate property types', () => {
   test('with stricTokens true', () => {
     const conf = Object.assign({}, generatorConfig)
     conf.config.strictTokens = true
-    expect(generatePropTypes(new Generator(conf))).toMatchInlineSnapshot(`
+
+    expect(propTypes(conf)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';

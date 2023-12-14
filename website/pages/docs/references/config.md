@@ -214,7 +214,7 @@ Hash the class names and css variables:
 
 ```json
 {
-  "hash": false
+  "hash": true
 }
 ```
 
@@ -361,7 +361,7 @@ The output directory for the generated css.
 
 ### importMap
 
-**Type**: `Partial<OutdirImportMap>`
+**Type**: `string | Partial<OutdirImportMap>`
 
 **Default**: `{ "css": "styled-system/css", "recipes": "styled-system/recipes", "patterns": "styled-system/patterns", "jsx": "styled-system/jsx" }`
 
@@ -374,6 +374,27 @@ Allows you to customize the import paths for the generated outdir.
     "recipes": "@acme/styled-system",
     "patterns": "@acme/styled-system",
     "jsx": "@acme/styled-system"
+  }
+}
+```
+
+You can also use a string to customize the base import path and keep the default entrypoints:
+
+```json
+{
+  "importMap": "@scope/styled-system"
+}
+```
+
+is the equivalent of:
+
+```json
+{
+  "importMap": {
+    "css": "@scope/styled-system/css",
+    "recipes": "@scope/styled-system/recipes",
+    "patterns": "@scope/styled-system/patterns",
+    "jsx": "@scope/styled-system/jsx"
   }
 }
 ```

@@ -1,0 +1,41 @@
+{
+  "name": "@pandacss/preset-open-props",
+  "version": "0.22.0",
+  "description": "A preset for Open Props",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Abraham Aremu <anubra266@gmail.com>",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@pandacss/types": "workspace:*",
+    "css": "^3.0.0",
+    "open-props": "^1.6.13"
+  },
+  "devDependencies": {
+    "@types/css": "^0.0.37"
+  }
+}

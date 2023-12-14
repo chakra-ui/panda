@@ -1,5 +1,41 @@
 # @pandacss/dev
 
+## 0.22.0
+
+### Patch Changes
+
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+- Updated dependencies [a2f6c2c8]
+- Updated dependencies [11753fea]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/node@0.22.0
+  - @pandacss/config@0.22.0
+  - @pandacss/preset-panda@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/postcss@0.22.0
+  - @pandacss/error@0.22.0
+  - @pandacss/logger@0.22.0
+
+## 0.21.0
+
+### Patch Changes
+
+- Updated dependencies [7f846be2]
+- Updated dependencies [26e6051a]
+- Updated dependencies [5b061615]
+- Updated dependencies [105f74ce]
+  - @pandacss/node@0.21.0
+  - @pandacss/shared@0.21.0
+  - @pandacss/types@0.21.0
+  - @pandacss/postcss@0.21.0
+  - @pandacss/config@0.21.0
+  - @pandacss/token-dictionary@0.21.0
+  - @pandacss/preset-panda@0.21.0
+  - @pandacss/error@0.21.0
+  - @pandacss/logger@0.21.0
+
 ## 0.20.1
 
 ### Patch Changes

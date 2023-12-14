@@ -5,6 +5,7 @@ import recipe from '../generated/recipe.d.ts.json' assert { type: 'json' }
 import pattern from '../generated/pattern.d.ts.json' assert { type: 'json' }
 import parts from '../generated/parts.d.ts.json' assert { type: 'json' }
 import selectors from '../generated/selectors.d.ts.json' assert { type: 'json' }
+import staticCss from '../generated/static-css.d.ts.json' assert { type: 'json' }
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
@@ -18,6 +19,7 @@ export function getGeneratedTypes(ctx: Context) {
 
   return {
     cssType: csstype.content,
+    static: staticCss.content,
     recipe: rewriteImports(recipe.content),
     pattern: rewriteImports(pattern.content.replace('../tokens', '../tokens/index')),
     parts: rewriteImports(parts.content),

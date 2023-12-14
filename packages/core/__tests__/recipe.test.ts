@@ -79,7 +79,7 @@ describe('recipe ruleset', () => {
   })
 
   test('should process recipe with conditions', () => {
-    expect(getRecipe('buttonStyle')).toMatchInlineSnapshot(`
+    expect(getRecipe('buttonStyle').config).toMatchInlineSnapshot(`
       {
         "base": {
           "alignItems": "center",
@@ -96,6 +96,7 @@ describe('recipe ruleset', () => {
         "jsx": [
           "ButtonStyle",
         ],
+        "staticCss": [],
         "variants": {
           "size": {
             "md": {

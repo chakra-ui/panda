@@ -35,14 +35,13 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
   logger.debug('analyze', `Analyzed ${files.length} files in ${totalMs.toFixed(2)}ms`)
 
   const minify = ctx.config.minify
-  const chunkFiles = ctx.chunks.getFiles()
 
   ctx.config.optimize = true
   ctx.config.minify = false
-  const css = ctx.getCss({ files: chunkFiles })
 
-  ctx.config.minify = true
-  const minifiedCss = ctx.getCss({ files: chunkFiles })
+  // TODO
+  const css = ''
+  const minifiedCss = ''
 
   // restore minify config
   ctx.config.minify = minify

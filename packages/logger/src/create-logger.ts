@@ -72,6 +72,9 @@ export const createLogger = (conf: Config = {}) => {
     set level(newLevel: LogLevel) {
       level = newLevel
     },
+    print(data: any) {
+      console.dir(data, { depth: null, colors: true })
+    },
     warn: stdout('warn'),
     info: stdout('info'),
     debug: stdout('debug'),

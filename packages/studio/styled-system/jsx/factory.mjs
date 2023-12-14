@@ -46,9 +46,8 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
       ...forwardedProps,
       ...elementProps,
       ...normalizeHTMLProps(htmlProps),
-      children,
       className: classes(),
-    })
+    }, combinedProps.children ?? children)
   })
 
   const name = getDisplayName(Dynamic)

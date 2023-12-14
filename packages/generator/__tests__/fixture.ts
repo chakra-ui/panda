@@ -11,7 +11,6 @@ import {
 import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { ConfigResultWithHooks, UserConfig } from '@pandacss/types'
 import { createHooks } from 'hookable'
-import { Generator } from '../src'
 
 const config: UserConfig = {
   cwd: '',
@@ -42,5 +41,3 @@ export const generatorConfig = {
   serialized: stringifyJson(config),
   deserialize: () => parseJson(stringifyJson(config)),
 } as ConfigResultWithHooks
-
-export const generator = new Generator(generatorConfig)

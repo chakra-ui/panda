@@ -1,21 +1,14 @@
 import { describe, expect, test } from 'vitest'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
-import { createContext } from './fixture'
+import { createCssFn } from './fixture'
 
-function css(obj: ProcessOptions) {
-  const ruleset = new AtomicRule(createContext())
-  ruleset.process(obj)
-  return ruleset.toCss()
-}
+const css = createCssFn()
 
 describe('atomic / with basic style object', () => {
   test('respect important syntax', () => {
     expect(
       css({
-        styles: {
-          color: 'red !important',
-          fontSize: '30px!',
-        },
+        color: 'red !important',
+        fontSize: '30px!',
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -30,7 +23,7 @@ describe('atomic / with basic style object', () => {
   })
 
   test('should work with basic', () => {
-    expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
+    expect(css({ bg: 'red.300' })).toMatchInlineSnapshot(`
       "@layer utilities {
           .bg_red\\\\.300 {
               background: var(--colors-red-300)
@@ -40,7 +33,7 @@ describe('atomic / with basic style object', () => {
   })
 
   test('should resolve shorthand', () => {
-    expect(css({ styles: { width: '50px', w: '20px' } })).toMatchInlineSnapshot(`
+    expect(css({ width: '50px', w: '20px' })).toMatchInlineSnapshot(`
       "@layer utilities {
           .w_20px {
               width: 20px
@@ -48,7 +41,7 @@ describe('atomic / with basic style object', () => {
       }"
     `)
 
-    expect(css({ styles: { width: { base: '50px', md: '60px' }, w: '70px' } })).toMatchInlineSnapshot(`
+    expect(css({ width: { base: '50px', md: '60px' }, w: '70px' })).toMatchInlineSnapshot(`
       "@layer utilities {
           .w_70px {
               width: 70px
@@ -58,7 +51,7 @@ describe('atomic / with basic style object', () => {
   })
 
   test('should resolve responsive array', () => {
-    expect(css({ styles: { width: ['50px', '60px'] } })).toMatchInlineSnapshot(`
+    expect(css({ width: ['50px', '60px'] })).toMatchInlineSnapshot(`
       "@layer utilities {
           .w_50px {
               width: 50px
@@ -73,7 +66,7 @@ describe('atomic / with basic style object', () => {
   })
 
   test('should resolve responsive array with gaps', () => {
-    expect(css({ styles: { width: ['50px', null, '60px'] } })).toMatchInlineSnapshot(`
+    expect(css({ width: ['50px', null, '60px'] })).toMatchInlineSnapshot(`
       "@layer utilities {
           .w_50px {
               width: 50px
@@ -90,9 +83,7 @@ describe('atomic / with basic style object', () => {
   test('should work with inner responsive', () => {
     expect(
       css({
-        styles: {
-          ml: { _ltr: { sm: '4' }, _rtl: '-4' },
-        },
+        ml: { _ltr: { sm: '4' }, _rtl: '-4' },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -115,10 +106,8 @@ describe('atomic / with basic style object', () => {
   test('respect color mode', () => {
     expect(
       css({
-        styles: {
-          color: { _light: 'red', _dark: 'green' },
-          opacity: { _dark: 'slate400' },
-        },
+        color: { _light: 'red', _dark: 'green' },
+        opacity: { _dark: 'slate400' },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -144,9 +133,7 @@ describe('atomic / with basic style object', () => {
   test('should work with outer responsive', () => {
     expect(
       css({
-        styles: {
-          top: { sm: { _rtl: '20px', _hover: '50px' }, lg: '120px' },
-        },
+        top: { sm: { _rtl: '20px', _hover: '50px' }, lg: '120px' },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -176,9 +163,7 @@ describe('atomic / with basic style object', () => {
   test('should skip `_` notation', () => {
     expect(
       css({
-        styles: {
-          left: { base: '20px', md: '40px' },
-        },
+        left: { base: '20px', md: '40px' },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -199,12 +184,10 @@ describe('atomic / with nesting scope', () => {
   test('[pseudo] should work with nested selector', () => {
     expect(
       css({
-        styles: {
-          '& > p': {
-            left: { base: '20px', md: '40px' },
-            bg: { _light: 'red400', _dark: 'green500' },
-            font: { _rtl: 'sans', _ltr: { _dark: { sm: { _hover: 'serif' } } } },
-          },
+        '& > p': {
+          left: { base: '20px', md: '40px' },
+          bg: { _light: 'red400', _dark: 'green500' },
+          font: { _rtl: 'sans', _ltr: { _dark: { sm: { _hover: 'serif' } } } },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -262,11 +245,9 @@ describe('atomic / with nesting scope', () => {
   test('[parent selector] should work with nested selector', () => {
     expect(
       css({
-        styles: {
-          'input:hover &': {
-            bg: 'red400',
-            fontSize: { sm: '14px', lg: '18px' },
-          },
+        'input:hover &': {
+          bg: 'red400',
+          fontSize: { sm: '14px', lg: '18px' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -297,12 +278,10 @@ describe('atomic / with nesting scope', () => {
   test('[selector] should work with nested selector', () => {
     expect(
       css({
-        styles: {
-          '&::placeholder': {
-            left: '40px',
-            bg: 'red400',
-            textAlign: { sm: 'left' },
-          },
+        '&::placeholder': {
+          left: '40px',
+          bg: 'red400',
+          textAlign: { sm: 'left' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -331,11 +310,9 @@ describe('atomic / with nesting scope', () => {
   test('[@media] should work with nested selector', () => {
     expect(
       css({
-        styles: {
-          '@media base': {
-            left: '40px',
-            textAlign: { sm: 'left' },
-          },
+        '@media base': {
+          left: '40px',
+          textAlign: { sm: 'left' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -361,9 +338,7 @@ describe('atomic / with grouped conditions styles', () => {
   test('simple', () => {
     expect(
       css({
-        styles: {
-          _hover: { bg: 'pink.400' },
-        },
+        _hover: { bg: 'pink.400' },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -379,9 +354,7 @@ describe('atomic / with grouped conditions styles', () => {
   test('nested > property', () => {
     expect(
       css({
-        styles: {
-          _hover: { bg: { sm: { _dark: 'red.300' } }, color: 'pink.400' },
-        },
+        _hover: { bg: { sm: { _dark: 'red.300' } }, color: 'pink.400' },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -406,9 +379,7 @@ describe('atomic / with grouped conditions styles', () => {
   test('nested > nested > property', () => {
     expect(
       css({
-        styles: {
-          _hover: { _disabled: { bg: { sm: 'red.300' } } },
-        },
+        _hover: { _disabled: { bg: { sm: 'red.300' } } },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -428,12 +399,10 @@ describe('atomic / with grouped conditions styles', () => {
   test('multiple scopes', () => {
     expect(
       css({
-        styles: {
-          '@media base': {
-            '&:hover': {
-              left: '40px',
-              textAlign: { sm: 'left' },
-            },
+        '@media base': {
+          '&:hover': {
+            left: '40px',
+            textAlign: { sm: 'left' },
           },
         },
       }),
@@ -464,10 +433,8 @@ describe('atomic / with direct nesting', () => {
   test('should work for inline media', () => {
     expect(
       css({
-        styles: {
-          '@media (min-width: 768px)': {
-            backgroundColor: 'green',
-          },
+        '@media (min-width: 768px)': {
+          backgroundColor: 'green',
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -484,39 +451,37 @@ describe('atomic / with direct nesting', () => {
   test('outlier: should work with basic', () => {
     expect(
       css({
-        styles: {
-          all: 'unset',
-          backgroundColor: 'red',
-          border: 'none',
-          padding: '$3 $3',
-          borderRadius: '$button',
-          fontSize: '$xsmall',
-          cursor: 'pointer',
-          '& + span': {
-            marginLeft: '$2',
+        all: 'unset',
+        backgroundColor: 'red',
+        border: 'none',
+        padding: '$3 $3',
+        borderRadius: '$button',
+        fontSize: '$xsmall',
+        cursor: 'pointer',
+        '& + span': {
+          marginLeft: '$2',
+        },
+        '&:focus, &:hover': {
+          boxShadow: 'none',
+        },
+        '.test &': {
+          backgroundColor: 'blue',
+        },
+        '& .my-class': {
+          color: 'red',
+        },
+        ':focus > &': {
+          color: 'white',
+        },
+        '@media (min-width: 768px)': {
+          backgroundColor: 'green',
+          fontSize: '$small',
+          '&:hover': {
+            backgroundColor: 'yellow',
           },
-          '&:focus, &:hover': {
-            boxShadow: 'none',
-          },
-          '.test &': {
-            backgroundColor: 'blue',
-          },
-          '& .my-class': {
-            color: 'red',
-          },
-          ':focus > &': {
-            color: 'white',
-          },
-          '@media (min-width: 768px)': {
-            backgroundColor: 'green',
-            fontSize: '$small',
-            '&:hover': {
-              backgroundColor: 'yellow',
-            },
-          },
-          '& span': {
-            color: 'red',
-          },
+        },
+        '& span': {
+          color: 'red',
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -596,10 +561,8 @@ describe('atomic / with direct nesting', () => {
   test('simple nesting', () => {
     expect(
       css({
-        styles: {
-          '& kbd': {
-            color: 'red',
-          },
+        '& kbd': {
+          color: 'red',
         },
       }),
     ).toMatchInlineSnapshot(`

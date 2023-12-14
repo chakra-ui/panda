@@ -43,10 +43,6 @@ export class PathEngine {
     return this.getFilePath('patterns')
   }
 
-  get chunk() {
-    return this.getFilePath('chunks')
-  }
-
   get outCss() {
     return this.getFilePath('styles.css')
   }

@@ -1,12 +1,6 @@
-import { isObject } from '@pandacss/shared'
 import type { AffectedArtifacts, Artifact, ArtifactFilters, ArtifactId } from '@pandacss/types'
 import outdent from 'outdent'
 import type { Context } from '../engines'
-import { generateGlobalCss } from './css/global-css'
-import { generateKeyframeCss } from './css/keyframe-css'
-import { generateResetCss } from './css/reset-css'
-import { generateStaticCss } from './css/static-css'
-import { generateTokenCss } from './css/token-css'
 import { generateConditions } from './js/conditions'
 import { generateStringLiteralConditions } from './js/conditions.string-literal'
 import { generateCssFn } from './js/css-fn'
@@ -36,26 +30,15 @@ function setupHelpers(ctx: Context): Artifact {
   }
 }
 
-function setupKeyframes(ctx: Context): Artifact {
-  const code = generateKeyframeCss(ctx)
-  return {
-    id: 'keyframes',
-    dir: ctx.paths.token,
-    files: [{ file: 'keyframes.css', code }],
-  }
-}
-
 export function setupDesignTokens(ctx: Context): Artifact {
   if (ctx.tokens.isEmpty) return
 
   const code = generateTokenJs(ctx)
-  const css = generateTokenCss(ctx)
 
   return {
     id: 'design-tokens',
     dir: ctx.paths.token,
     files: [
-      { file: 'index.css', code: css },
       { file: ctx.file.extDts('index'), code: code.dts },
       { file: ctx.file.ext('index'), code: code.js },
       { file: ctx.file.extDts('tokens'), code: generateTokenTypes(ctx) },
@@ -116,6 +99,7 @@ function setupGeneratedTypes(ctx: Context): Artifact {
     dir: ctx.paths.types,
     files: [
       { file: ctx.file.extDts('csstype'), code: gen.cssType },
+      { file: ctx.file.extDts('static-css'), code: gen.static },
       { file: ctx.file.extDts('selectors'), code: gen.selectors },
       { file: ctx.file.extDts('composition'), code: gen.composition },
       { file: ctx.file.extDts('recipe'), code: gen.recipe },
@@ -318,7 +302,7 @@ function setupJsxHelpers(ctx: Context): Artifact {
 }
 
 function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
-  if (!ctx.jsx.framework) return
+  if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
 
   const patterns = generateJsxPatterns(ctx, filters)
 
@@ -344,15 +328,12 @@ function setupJsxPatternsIndex(ctx: Context): Artifact {
     js: outdent`
   ${ctx.file.exportStar('./factory')}
   ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
-  ${outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n'))}
+  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
   `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./factory')}
-
   ${isStyleProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
-
-  ${outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n'))}
-
+  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')) : ''}
   ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
     `,
   }
@@ -391,24 +372,6 @@ function setupCssIndex(ctx: Context): Artifact {
       { file: ctx.file.extDts('index'), code: index.dts },
     ],
   }
-}
-
-function setupResetCss(ctx: Context): Artifact {
-  const { preflight } = ctx.config
-  if (!preflight) return
-  const scope = isObject(preflight) ? preflight.scope : undefined
-  const code = generateResetCss(ctx, scope)
-  return { id: 'reset.css', files: [{ file: 'reset.css', code }] }
-}
-
-function setupGlobalCss(ctx: Context): Artifact {
-  const code = generateGlobalCss(ctx)
-  return { id: 'global.css', files: [{ file: 'global.css', code }] }
-}
-
-function setupStaticCss(ctx: Context): Artifact {
-  const code = generateStaticCss(ctx)
-  return { id: 'static.css', files: [{ file: 'static.css', code }] }
 }
 
 function setupPackageJson(ctx: Context): Artifact {
@@ -478,7 +441,6 @@ type ArtifactEntry = [ArtifactId, (ctx: Context, filters?: ArtifactFilters) => A
 const entries: ArtifactEntry[] = [
   ['helpers', setupHelpers],
   ['design-tokens', setupDesignTokens],
-  ['keyframes', setupKeyframes],
   ['types-jsx', setupJsxTypes],
   ['types-entry', setupEntryTypes],
   ['types-styles', setupStyleTypes],
@@ -500,9 +462,6 @@ const entries: ArtifactEntry[] = [
   ['jsx-patterns', setupJsxPatterns],
   ['jsx-patterns-index', setupJsxPatternsIndex],
   ['css-index', setupCssIndex],
-  ['reset.css', setupResetCss],
-  ['global.css', setupGlobalCss],
-  ['static.css', setupStaticCss],
   ['package.json', setupPackageJson],
 ]
 

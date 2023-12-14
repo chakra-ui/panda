@@ -1,5 +1,114 @@
 # @pandacss/core
 
+## 0.22.0
+
+### Patch Changes
+
+- 11753fea: Improve initial css extraction time by at least 5x 🚀
+
+  Initial extraction time can get slow when using static CSS with lots of recipes or parsing a lot of files.
+
+  **Scenarios**
+
+  - Park UI went from 3500ms to 580ms (6x faster)
+  - Panda Website went from 2900ms to 208ms (14x faster)
+
+  **Potential Breaking Change**
+
+  If you use `hooks` in your `panda.config` file to listen for when css is extracted, we no longer return the `css`
+  string for performance reasons. We might reconsider this in the future.
+
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/error@0.22.0
+  - @pandacss/logger@0.22.0
+
+## 0.21.0
+
+### Minor Changes
+
+- 26e6051a: Add an escape-hatch for arbitrary values when using `config.strictTokens`, by prefixing the value with `[`
+  and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
+
+  ```ts
+  import { css } from '../styled-system/css'
+
+  css({
+    // @ts-expect-error TS will throw when using from strictTokens: true
+    color: '#fff',
+    // @ts-expect-error TS will throw when using from strictTokens: true
+    width: '100px',
+
+    // ✅ but this is now allowed:
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
+  ```
+
+### Patch Changes
+
+- 788aaba3: Fix an edge-case when Panda eagerly extracted and tried to generate the CSS for a JSX property that contains
+  an URL.
+
+  ```tsx
+  const App = () => {
+    // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
+    // but since it's an URL, it would produce invalid CSS
+    // we now check if the property value is an URL and skip it if needed
+    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
+  }
+  ```
+
+- d81dcbe6: - Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the
+  normalization that happens internally.
+  - Fix issue where Preact JSX types are not merging recipes correctly
+- 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+
+  ```js
+  import { defineRecipe } from '@pandacss/dev'
+
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+    },
+    staticCss: [{ size: ['*'] }],
+  })
+  ```
+
+  would be the equivalent of defining it inside the main config:
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: {
+          size: ['*'],
+        },
+      },
+    },
+  })
+  ```
+
+- Updated dependencies [26e6051a]
+- Updated dependencies [5b061615]
+- Updated dependencies [105f74ce]
+  - @pandacss/shared@0.21.0
+  - @pandacss/types@0.21.0
+  - @pandacss/token-dictionary@0.21.0
+  - @pandacss/error@0.21.0
+  - @pandacss/logger@0.21.0
+
 ## 0.20.1
 
 ### Patch Changes

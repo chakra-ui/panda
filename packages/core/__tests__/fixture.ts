@@ -1,23 +1,15 @@
 import * as mocks from '@pandacss/fixture'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import postcss from 'postcss'
-import { Conditions, Utility, Recipes } from '../src'
+import type { Dict } from '@pandacss/types'
+import { Conditions, Layers, Recipes, Utility } from '../src'
+import { createAtomicRule } from '../src/atomic-rule'
 import type { StylesheetContext } from '../src/types'
 
-type ContextOptions = {
-  hash?: boolean
-  prefix?: string
-}
+type ContextOptions = Partial<Omit<StylesheetContext, 'recipes'>> & { prefix?: string; recipes?: Dict }
 
-export const defaultLayers = {
-  reset: 'reset',
-  base: 'base',
-  tokens: 'tokens',
-  recipes: 'recipes',
-  utilities: 'utilities',
-}
+export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
+  const { hash, prefix, recipes: recipeObj = {}, ...rest } = opts
 
-export const createContext = ({ hash, prefix }: ContextOptions = {}): StylesheetContext => {
   const conditions = new Conditions({
     conditions: mocks.conditions,
     breakpoints: mocks.breakpoints,
@@ -36,35 +28,65 @@ export const createContext = ({ hash, prefix }: ContextOptions = {}): Stylesheet
     shorthands: true,
   })
 
+  const layers = new Layers(mocks.layers)
+
+  const recipes = new Recipes(recipeObj, {
+    utility,
+    conditions,
+    layers,
+  })
+
   return {
+    layers,
     hash,
-    root: postcss.root(),
-    conditions: conditions,
-    utility: utility,
+    recipes,
+    conditions,
+    utility,
     helpers: { map: () => '' },
-    layers: defaultLayers,
+    ...rest,
   }
 }
 
-export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
-  const recipes = new Recipes(mocks.recipes, createContext())
-  recipes.save()
-  const recipe = recipes.getRecipe(key)
-  return recipe!.config
+export const createCssFn =
+  (opts: ContextOptions = {}) =>
+  (styles: Dict) => {
+    const ctx = createContext(opts)
+    const rule = createAtomicRule(ctx)
+    rule.process({ styles: rule.normalize(styles) })
+    return ctx.layers.insert().toString()
+  }
+
+export const createRecipeFn =
+  (opts: ContextOptions = {}) =>
+  (recipe: string, styles: Dict) => {
+    const ctx = createContext(opts)
+    ctx.recipes.process(recipe, { styles })
+    return ctx.layers.insert().toString()
+  }
+
+export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle' | 'cardStyle') {
+  const ctx = createContext()
+  const recipes = new Recipes(mocks.recipes, ctx)
+  return recipes.getRecipe(key)!
 }
 
-export function processRecipe(recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle', value: Record<string, any>) {
-  const recipes = new Recipes(mocks.recipes, createContext())
-  recipes.save()
-  recipes.process(recipe, { styles: value })
-  return recipes.toCss()
+export function getSlotRecipe(key: 'button') {
+  const ctx = createContext()
+  const recipes = new Recipes(mocks.slotRecipes, ctx)
+  return recipes.getRecipe(key)!
 }
 
-export function processSlotRecipe(recipe: 'button', value: Record<string, any>) {
-  const recipes = new Recipes(mocks.slotRecipes, createContext())
-  recipes.save()
-  recipes.process(recipe, { styles: value })
-  return recipes
+export function processRecipe(
+  recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle' | 'cardStyle',
+  styles: Record<string, any>,
+) {
+  const recipeFn = createRecipeFn({ recipes: mocks.recipes })
+  return recipeFn(recipe, styles)
+}
+
+export function processSlotRecipe(recipe: 'button', styles: Record<string, any>) {
+  const recipeFn = createRecipeFn({ recipes: mocks.slotRecipes })
+  return recipeFn(recipe, styles)
 }
 
 export const compositions = {

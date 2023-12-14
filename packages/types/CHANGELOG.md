@@ -1,5 +1,73 @@
 # @pandacss/types
 
+## 0.22.0
+
+### Patch Changes
+
+- 526c6e34: Fix issue where static-css types was not exported.
+
+## 0.21.0
+
+### Patch Changes
+
+- 5b061615: Add a shortcut for the `config.importMap` option
+
+  You can now also use a string to customize the base import path and keep the default entrypoints:
+
+  ```json
+  {
+    "importMap": "@scope/styled-system"
+  }
+  ```
+
+  is the equivalent of:
+
+  ```json
+  {
+    "importMap": {
+      "css": "@scope/styled-system/css",
+      "recipes": "@scope/styled-system/recipes",
+      "patterns": "@scope/styled-system/patterns",
+      "jsx": "@scope/styled-system/jsx"
+    }
+  }
+  ```
+
+- 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+
+  ```js
+  import { defineRecipe } from '@pandacss/dev'
+
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+    },
+    staticCss: [{ size: ['*'] }],
+  })
+  ```
+
+  would be the equivalent of defining it inside the main config:
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: {
+          size: ['*'],
+        },
+      },
+    },
+  })
+  ```
+
 ## 0.20.1
 
 ## 0.20.0

@@ -1,10 +1,10 @@
 import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
 import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
-import { AtomicRule, type ProcessOptions } from './atomic-rule'
+import { AtomicRule, createRecipeAtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
-import type { RecipeNode, StylesheetContext } from './types'
+import type { RecipeContext, RecipeNode } from './types'
 
 interface RecipeRecord {
   [key: string]: RecipeConfig | SlotRecipeConfig
@@ -39,7 +39,7 @@ export class Recipes {
     return Object.keys(this.recipes)
   }
 
-  constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
+  constructor(private recipes: RecipeRecord = {}, private context: RecipeContext) {
     this.prune()
     this.save()
   }
@@ -186,6 +186,7 @@ export class Recipes {
       defaultVariants = {},
       description = '',
       compoundVariants = [],
+      staticCss = [],
     } = config
 
     const recipe: Required<RecipeConfig> = {
@@ -197,6 +198,7 @@ export class Recipes {
       variants: {},
       defaultVariants,
       compoundVariants,
+      staticCss,
     }
 
     recipe.base = this.serialize(base)
@@ -252,13 +254,13 @@ export class Recipes {
       throw new Error("Can't create a rule without a context")
     }
 
-    const rule = new AtomicRule({
+    const context = {
       ...this.context,
       transform: this.getTransform(name),
-    })
+    }
 
-    const layer = this.context.layers.recipes
-    rule.layer = slot ? `${layer}.slots` : layer
+    const rule = createRecipeAtomicRule(context, slot)
+
     return rule
   }
 
@@ -286,7 +288,10 @@ export class Recipes {
         if (isEmpty) return
 
         const rule = this.rules.get(slotKey)
-        rule?.process({ styles })
+        if (!rule) return
+
+        const normalizedStyles = rule?.normalize(styles, false)
+        rule.process({ styles: normalizedStyles })
       })
       //
     } else {
@@ -295,14 +300,12 @@ export class Recipes {
       if (isEmpty) return
 
       const rule = this.rules.get(recipeName)
-      rule?.process({ styles })
+      if (!rule) return
+
+      const normalizedStyles = rule.normalize(styles, false)
+      rule.process({ styles: normalizedStyles })
       //
     }
-  }
-
-  toCss = () => {
-    if (!this.context) return ''
-    return this.context.root.toString()
   }
 
   filterDetails = (filters?: ArtifactFilters) => {

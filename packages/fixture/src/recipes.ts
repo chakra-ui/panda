@@ -31,6 +31,16 @@ export const recipes: Record<string, RecipeConfig> = {
       },
     },
   },
+  cardStyle: {
+    className: 'card',
+    variants: {
+      rounded: {
+        true: {
+          borderRadius: '0.375rem',
+        },
+      },
+    },
+  },
   buttonStyle: {
     className: 'buttonStyle',
     base: {

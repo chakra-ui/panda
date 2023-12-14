@@ -1,7 +1,7 @@
 import { colors, logger } from '@pandacss/logger'
 import { createParserResult } from '@pandacss/parser'
 import { writeFile } from 'fs/promises'
-import * as path from 'path'
+import * as path from 'pathe'
 import type { PandaContext } from './create-context'
 
 export async function shipFiles(ctx: PandaContext, outfile: string) {
@@ -13,10 +13,6 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   files.forEach(async (file) => {
     const result = ctx.project.parseSourceFile(file)
     if (!result || result.isEmpty()) return
-
-    const css = ctx.getParserCss(result)
-    if (!css) return
-
     extractResult.merge(result)
     filesWithCss.push(path.relative(ctx.config.cwd, file))
   })

@@ -1,17 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-
+import { State } from '@/src/hooks/usePlayground'
+import { getResolvedConfig } from '@/src/lib/resolve-config'
+import * as pandaDefs from '@pandacss/dev'
 import { Generator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
-import * as pandaDefs from '@pandacss/dev'
-import { Config, Preset } from '@pandacss/types'
-import { StaticCssOptions } from '@pandacss/types'
-
-import { merge } from 'merge-anything'
+import { Config, Preset, StaticCssOptions } from '@pandacss/types'
 import { createHooks } from 'hookable'
-
-import { getResolvedConfig } from '@/src/lib/resolve-config'
+import { merge } from 'merge-anything'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -75,16 +72,17 @@ const playgroundPreset: Preset = {
   },
 }
 
-export function usePanda(source: string, css: string, config: string) {
+export function usePanda(state: State) {
+  const { code: source, css, config } = state
   const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
-  const prevGenerator = useRef<Generator | null>(null)
+  const previousContext = useRef<Generator | null>(null)
 
   useEffect(() => {
     const newUserConfig = evalConfig(config)
     if (newUserConfig) setUserConfig(newUserConfig)
   }, [config])
 
-  const generator = useMemo(() => {
+  const context = useMemo(() => {
     const { presets, ...restConfig } = userConfig ?? {}
 
     const config = getResolvedConfig({
@@ -104,7 +102,7 @@ export function usePanda(source: string, css: string, config: string) {
 
     try {
       // in event of error (invalid token format), use previous generator
-      const generator = new Generator({
+      const context = new Generator({
         dependencies: [],
         serialized: '',
         deserialize: () => config!,
@@ -112,12 +110,25 @@ export function usePanda(source: string, css: string, config: string) {
         hooks: createHooks(),
         config: config as any,
       })
-      prevGenerator.current = generator
-      return generator
+      previousContext.current = context
+      return context
     } catch {
-      return prevGenerator.current!
+      return previousContext.current!
     }
   }, [userConfig])
+
+  const staticArtifacts = useMemo(() => {
+    context.appendLayerParams()
+    context.appendBaselineCss()
+
+    const cssArtifacts = [
+      { file: 'Tokens', code: context.stylesheet.getLayerCss('tokens') },
+      { file: 'Reset', code: context.stylesheet.getLayerCss('reset') },
+      { file: 'Global', code: context.stylesheet.getLayerCss('base') },
+    ]
+
+    return cssArtifacts
+  }, [context])
 
   return useMemo(() => {
     const project = createProject({
@@ -126,40 +137,27 @@ export function usePanda(source: string, css: string, config: string) {
         join(...paths) {
           return paths.join('/')
         },
-        ...generator.parserOptions,
+        ...context.parserOptions,
       },
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
-      hooks: generator.hooks,
+      hooks: context.hooks,
     })
 
     const parserResult = project.parseSourceFile('code.tsx')
-    const parsedCss = parserResult ? generator.getParserCss(parserResult) ?? '' : ''
-    const artifacts = generator.getArtifacts() ?? []
-
-    const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
+    context.appendParserCss(parserResult)
+    const artifacts = context.getArtifacts() ?? []
 
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
-
     const previewJs = allJsFiles
       .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
       ?.join('\n')
 
-    const presetCss = cssFiles.map((f) => f.code).join('\n')
-    const previewCss = [css, presetCss, parsedCss].join('\n')
-
-    const cssArtifacts = artifacts.reduce(
-      (acc, artifact) => {
-        const artifactCss = (artifact?.files?.filter((art) => art.code && art.file.endsWith('.css')) ?? []).map(
-          (file) => ({
-            ...file,
-            dir: artifact?.dir,
-          }),
-        )
-        return acc.concat(artifactCss)
-      },
-      [{ code: parsedCss, file: 'styles.css' }] as CssFileArtifact[],
-    )
+    const cssArtifacts: CssFileArtifact[] = [
+      { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
+      { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
+    ].concat(staticArtifacts)
+    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
 
     const panda = {
       previewCss,
@@ -167,18 +165,17 @@ export function usePanda(source: string, css: string, config: string) {
       previewJs,
       parserResult,
       cssArtifacts,
-      generator,
-      parsedCss,
+      context,
     }
     console.log(panda) // <-- useful for debugging purposes, don't remove
     return panda
-  }, [source, css, generator])
+  }, [source, css, context, staticArtifacts])
 }
 
 export type CssFileArtifact = {
   file: string
   code: string | undefined
-  dir: string[] | undefined
+  dir?: string[] | undefined
 }
 
 export type UsePanda = ReturnType<typeof usePanda>

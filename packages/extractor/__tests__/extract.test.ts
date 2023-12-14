@@ -22,7 +22,7 @@ const config: Record<string, string[]> = {
 
 const componentsMatcher: ComponentMatchers = {
   matchTag: ({ tagName }) => Boolean(config[tagName]),
-  matchProp: ({ tagName, propName }) => config[tagName].includes(propName),
+  matchProp: ({ tagName, propName }) => config[tagName]?.includes(propName),
 }
 
 type TestExtractOptions = Omit<ExtractOptions, 'ast'> & { tagNameList?: string[]; functionNameList?: string[] }
@@ -5788,6 +5788,84 @@ it('extracts arrays without removing nullish values', () => {
               "display": "flex",
             },
           ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
+
+it('extracts props after a JSX attribute containing a JSX element', () => {
+  expect(
+    extractFromCode(
+      `
+      export const App = () => {
+        return (
+          <>
+            <Flex icon={<svg />} ml="2" />
+            <Stack ml="4" icon={<div />} />
+          </>
+        );
+      };
+          `,
+      { tagNameList: ['Flex', 'Stack'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "Flex": [
+        {
+          "conditions": [],
+          "raw": {
+            "ml": "2",
+          },
+          "spreadConditions": [],
+        },
+      ],
+      "Stack": [
+        {
+          "conditions": [],
+          "raw": {
+            "ml": "4",
+          },
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
+
+it('extracts props after a JSX spread containing a JSX element', () => {
+  expect(
+    extractFromCode(
+      `
+      export const App = () => {
+        return (
+          <>
+            <Flex {...{ icon: <svg /> }} ml="2" />
+            <Stack ml="4" {...{ icon: <div /> }} />
+          </>
+        );
+      };
+          `,
+      { tagNameList: ['Flex', 'Stack'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "Flex": [
+        {
+          "conditions": [],
+          "raw": {
+            "ml": "2",
+          },
+          "spreadConditions": [],
+        },
+      ],
+      "Stack": [
+        {
+          "conditions": [],
+          "raw": {
+            "ml": "4",
+          },
           "spreadConditions": [],
         },
       ],

@@ -1,15 +1,5 @@
-import { describe, test, expect } from 'vitest'
-import { getFixtureProject } from './fixture'
-import type { Config, TSConfig } from '@pandacss/types'
-
-const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
-  const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
-  const result = parse()!
-  return {
-    json: result?.toArray().map(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
-  }
-}
+import { describe, expect, test } from 'vitest'
+import { parseAndExtract } from './fixture'
 
 describe('extract to css output pipeline', () => {
   test('basic usage', () => {
@@ -52,7 +42,7 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -197,7 +187,7 @@ describe('extract to css output pipeline', () => {
 
       css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -255,7 +245,7 @@ describe('extract to css output pipeline', () => {
       )
     }
      `
-    const result = run(code, {
+    const result = parseAndExtract(code, {
       theme: {
         extend: {
           recipes: {
@@ -465,7 +455,7 @@ describe('extract to css output pipeline', () => {
       )
     }
      `
-    const result = run(code, {
+    const result = parseAndExtract(code, {
       theme: {
         extend: {
           recipes: {
@@ -614,7 +604,7 @@ describe('extract to css output pipeline', () => {
     }
 
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -673,7 +663,7 @@ describe('extract to css output pipeline', () => {
         }
     \`
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -800,7 +790,7 @@ describe('extract to css output pipeline', () => {
         color: token(colors.blue.100);
     \`
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -852,7 +842,7 @@ describe('extract to css output pipeline', () => {
        }
      `
 
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -910,7 +900,7 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -981,7 +971,7 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1070,7 +1060,7 @@ describe('extract to css output pipeline', () => {
         );
       };
      `
-      const result = run(code, {
+      const result = parseAndExtract(code, {
         theme: {
           extend: {
             semanticTokens: {
@@ -1206,7 +1196,7 @@ describe('extract to css output pipeline', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1275,7 +1265,7 @@ describe('extract to css output pipeline', () => {
         )
       }
      `
-    const result = run(code, {
+    const result = parseAndExtract(code, {
       patterns: {
         extend: {
           stack: {
@@ -1351,7 +1341,7 @@ describe('extract to css output pipeline', () => {
       color: var(--colors-purple-100);
     \`
    `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1448,7 +1438,7 @@ describe('extract to css output pipeline', () => {
         )
       }
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1571,7 +1561,7 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const { parse, generator } = getFixtureProject(code, {
+    const result = parseAndExtract(code, {
       theme: {
         extend: {
           recipes: {
@@ -1617,8 +1607,8 @@ describe('extract to css output pipeline', () => {
         },
       },
     })
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1704,9 +1694,36 @@ describe('extract to css output pipeline', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
-      "@layer utilities {
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .button--size_md {
+          padding: var(--spacing-4);
+          border-radius: var(--radii-md)
+          }
+
+        .button--variant_danger {
+          color: var(--colors-white);
+          background-color: var(--colors-red-500)
+          }
+
+        .anotherButton--spacing_sm {
+          padding: var(--spacing-2);
+          border-radius: var(--radii-sm)
+          }
+
+        .complexButton--color_blue {
+          color: var(--colors-blue-500)
+          }
+
+        @layer _base {
+          .button {
+            font-size: var(--font-sizes-lg)
+              }
+          }
+      }
+
+      @layer utilities {
         .mt_40px {
           margin-top: 40px
           }
@@ -1733,33 +1750,6 @@ describe('extract to css output pipeline', () => {
 
         .gap_10px {
           gap: 10px
-          }
-      }
-
-      @layer recipes {
-        .button--size_md {
-          padding: var(--spacing-4);
-          border-radius: var(--radii-md)
-          }
-
-        .button--variant_danger {
-          color: var(--colors-white);
-          background-color: var(--colors-red-500)
-          }
-
-        .anotherButton--spacing_sm {
-          padding: var(--spacing-2);
-          border-radius: var(--radii-sm)
-          }
-
-        .complexButton--color_blue {
-          color: var(--colors-blue-500)
-          }
-
-        @layer _base {
-          .button {
-            font-size: var(--font-sizes-lg)
-              }
           }
       }"
     `)
@@ -1792,7 +1782,7 @@ describe('extract to css output pipeline', () => {
     };
 
      `
-    const { parse, generator } = getFixtureProject(code, {
+    const result = parseAndExtract(code, {
       outdir: 'styled-system',
       jsxFactory: 'styled',
       theme: {
@@ -1806,8 +1796,8 @@ describe('extract to css output pipeline', () => {
         },
       },
     })
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1855,8 +1845,8 @@ describe('extract to css output pipeline', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .bg_tomato {
           background-color: tomato
@@ -1894,7 +1884,7 @@ describe('extract to css output pipeline', () => {
       "& h2": paragraphSpacingStyle,
     });`
 
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -1991,7 +1981,7 @@ describe('extract to css output pipeline', () => {
     })
      `
 
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2077,7 +2067,7 @@ describe('extract to css output pipeline', () => {
       );
     }
      `
-    const result = run(code, {
+    const result = parseAndExtract(code, {
       outdir: 'anywhere',
       importMap: {
         css: 'controlled-import-map/css',
@@ -2085,6 +2075,126 @@ describe('extract to css output pipeline', () => {
         patterns: 'controlled-import-map/common',
         jsx: 'controlled-import-map',
       },
+    })
+
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "mx": "3",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "visual": "funky",
+            },
+          ],
+          "name": "buttonStyle",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "color": "red",
+            },
+          ],
+          "name": "Box",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+          }
+
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+          }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black)
+              }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue
+              }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+              }
+          }
+      }
+
+      @layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .text_red {
+          color: red
+          }
+      }"
+    `)
+  })
+
+  test('import map as string', () => {
+    const code = `
+    import { css } from "string-import-map/css";
+    import { buttonStyle } from "string-import-map/recipes";
+    import { stack } from "string-import-map/patterns";
+    import { Box } from "string-import-map/jsx";
+
+    css({ mx: '3' })
+    stack({ direction: "column" })
+    buttonStyle({ visual: "funky" })
+
+    const App = () => {
+      return (
+        <>
+          <Box color="red" />
+        </>
+      );
+    }
+     `
+    const result = parseAndExtract(code, {
+      outdir: 'anywhere',
+      importMap: 'string-import-map',
     })
     expect(result.json).toMatchInlineSnapshot(`
       [
@@ -2128,29 +2238,7 @@ describe('extract to css output pipeline', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .mx_3 {
-          margin-inline: var(--spacing-3)
-          }
-
-        .d_flex {
-          display: flex
-          }
-
-        .flex_column {
-          flex-direction: column
-          }
-
-        .gap_10px {
-          gap: 10px
-          }
-
-        .text_red {
-          color: red
-          }
-      }
-
-      @layer recipes {
+      "@layer recipes {
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -2178,6 +2266,28 @@ describe('extract to css output pipeline', () => {
             justify-content: center
               }
           }
+      }
+
+      @layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .text_red {
+          color: red
+          }
       }"
     `)
   })
@@ -2193,7 +2303,7 @@ describe('extract to css output pipeline', () => {
          }
        `
 
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2230,7 +2340,7 @@ describe('extract to css output pipeline', () => {
          }
        `
 
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2277,7 +2387,7 @@ describe('extract to css output pipeline', () => {
          }
        `
 
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2363,7 +2473,7 @@ describe('extract to css output pipeline', () => {
     }
 
      `
-    const result = run(code, {
+    const result = parseAndExtract(code, {
       theme: {
         extend: {
           recipes: {
@@ -2428,25 +2538,7 @@ describe('extract to css output pipeline', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .text_amber\\\\.400 {
-          color: var(--colors-amber-400)
-          }
-
-        [data-theme=dark] .dark\\\\:text_sky\\\\.300, .dark .dark\\\\:text_sky\\\\.300, .dark\\\\:text_sky\\\\.300.dark, .dark\\\\:text_sky\\\\.300[data-theme=dark] {
-          color: var(--colors-sky-300)
-              }
-
-        .hover\\\\:text_amber\\\\.500:is(:hover, [data-hover]) {
-          color: var(--colors-amber-500)
-              }
-
-        [data-theme=dark] .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .dark .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]).dark, .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover])[data-theme=dark] {
-          color: var(--colors-sky-200)
-                  }
-      }
-
-      @layer recipes {
+      "@layer recipes {
         .button--size_md {
           border-radius: var(--radii-md)
           }
@@ -2465,6 +2557,24 @@ describe('extract to css output pipeline', () => {
             background: var(--colors-red-900)
               }
           }
+      }
+
+      @layer utilities {
+        .text_amber\\\\.400 {
+          color: var(--colors-amber-400)
+          }
+
+        [data-theme=dark] .dark\\\\:text_sky\\\\.300, .dark .dark\\\\:text_sky\\\\.300, .dark\\\\:text_sky\\\\.300.dark, .dark\\\\:text_sky\\\\.300[data-theme=dark] {
+          color: var(--colors-sky-300)
+              }
+
+        .hover\\\\:text_amber\\\\.500:is(:hover, [data-hover]) {
+          color: var(--colors-amber-500)
+              }
+
+        [data-theme=dark] .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .dark .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]).dark, .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover])[data-theme=dark] {
+          color: var(--colors-sky-200)
+                  }
       }"
     `)
   })
@@ -2483,7 +2593,7 @@ describe('extract to css output pipeline', () => {
     }
 
      `
-    const result = run(code, {
+    const result = parseAndExtract(code, {
       theme: {
         extend: {
           recipes: {
@@ -2532,19 +2642,7 @@ describe('extract to css output pipeline', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .fs_2 {
-          font-size: 2px
-          }
-
-        @media screen and (min-width: 40em) {
-          .sm\\\\:fs_5 {
-            font-size: 5px
-          }
-              }
-      }
-
-      @layer recipes {
+      "@layer recipes {
         .card--size_sm {
           border-radius: var(--radii-sm);
           padding: var(--spacing-2);
@@ -2562,6 +2660,18 @@ describe('extract to css output pipeline', () => {
                       }
                   }
           }
+      }
+
+      @layer utilities {
+        .fs_2 {
+          font-size: 2px
+          }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:fs_5 {
+            font-size: 5px
+          }
+              }
       }"
     `)
   })
@@ -2579,7 +2689,7 @@ describe('extract to css output pipeline', () => {
       );
     };
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2642,7 +2752,7 @@ describe('extract to css output pipeline', () => {
       }
     })
      `
-    const result = run(code)
+    const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2694,7 +2804,7 @@ describe('extract to css output pipeline', () => {
       return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
     }
      `
-    const result = run(code, { strictTokens: true })
+    const result = parseAndExtract(code, { strictTokens: true })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2722,7 +2832,7 @@ describe('extract to css output pipeline', () => {
       bgColor: '[rgb(51 155 240)]',
     })
      `
-    const result = run(code, { strictTokens: true })
+    const result = parseAndExtract(code, { strictTokens: true })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -2751,6 +2861,112 @@ describe('extract to css output pipeline', () => {
 
         .bg_\\\\[rgb\\\\(51_155_240\\\\)\\\\] {
           background-color: rgb(51 155 240)
+          }
+      }"
+    `)
+  })
+
+  test('recipe.staticCss', () => {
+    const { generator } = parseAndExtract('', {
+      theme: {
+        extend: {
+          recipes: {
+            textStyle: {
+              staticCss: [{ size: ['h1'] }],
+            },
+          },
+        },
+      },
+    })
+
+    generator.appendCss('static')
+    const css = generator.stylesheet.getLayerCss('recipes')
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .textStyle--size_h1 {
+          font-size: 5rem;
+          line-height: 1em;
+          font-weight: 800
+          }
+
+        @layer _base {
+
+          .textStyle {
+            font-family: var(--fonts-mono);
+              }
+            .textStyle > :not([hidden]) ~ :not([hidden]) {
+              border-inline-start-width: 20px;
+              border-inline-end-width: 0px
+                  }
+          }
+      }"
+    `)
+  })
+
+  test('recipe issue', () => {
+    const code = `
+    import { css } from '.panda/css';
+    import { styled } from '.panda/jsx';
+    import { cardStyle2  } from '.panda/recipes';
+    import { cardStyle } from '.panda/recipes';
+
+    const CardStyle = styled("div", cardStyle)
+    const CardStyle2 = styled("div", cardStyle2)
+
+    export const App = () => {
+      return (
+        <CardStyle rounded={true}>Card rounded={"true"}</CardStyle>
+        <CardStyle rounded={false}>Card rounded={"false"}</CardStyle>
+
+        <CardStyle2 isRounded={true}>Card2 isRounded={"true"}</CardStyle2>
+        <CardStyle2 isRounded={false}>Card2 isRounded={"false"}</CardStyle2>
+      );
+    };
+
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "CardStyle2",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "CardStyle2",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {
+              "rounded": true,
+            },
+          ],
+          "name": "CardStyle",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "rounded": false,
+            },
+          ],
+          "name": "CardStyle",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .card--rounded_true {
+          border-radius: 0.375rem
           }
       }"
     `)

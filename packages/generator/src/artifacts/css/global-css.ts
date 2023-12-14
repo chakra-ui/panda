@@ -1,11 +1,9 @@
 import type { Context } from '../../engines'
 
 export const generateGlobalCss = (ctx: Context) => {
-  const { globalCss = {}, optimize = true } = ctx.config
+  const { globalCss = {} } = ctx.config
 
-  const sheet = ctx.createSheet()
-
-  sheet.processGlobalCss({
+  ctx.stylesheet.processGlobalCss({
     ':root': {
       '--made-with-panda': `'🐼'`,
     },
@@ -41,11 +39,7 @@ export const generateGlobalCss = (ctx: Context) => {
     },
   })
 
-  sheet.processGlobalCss(globalCss)
+  ctx.stylesheet.processGlobalCss(globalCss)
 
-  const output = sheet.toCss({ optimize })
-
-  void ctx.hooks.callHook('generator:css', 'global.css', output)
-
-  return output
+  void ctx.hooks.callHook('generator:css', 'global.css', '')
 }

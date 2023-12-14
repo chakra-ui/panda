@@ -40,6 +40,8 @@ describe('setup-artifacts', () => {
           "recipes/text-style.d.ts",
           "recipes/tooltip-style.mjs",
           "recipes/tooltip-style.d.ts",
+          "recipes/card-style.mjs",
+          "recipes/card-style.d.ts",
           "recipes/button-style.mjs",
           "recipes/button-style.d.ts",
         ],
@@ -130,13 +132,9 @@ describe('setup-artifacts', () => {
           "/helpers.mjs",
         ],
         [
-          "tokens/index.css",
           "tokens/index.d.ts",
           "tokens/index.mjs",
           "tokens/tokens.d.ts",
-        ],
-        [
-          "tokens/keyframes.css",
         ],
         [],
         [
@@ -152,6 +150,7 @@ describe('setup-artifacts', () => {
         ],
         [
           "types/csstype.d.ts",
+          "types/static-css.d.ts",
           "types/selectors.d.ts",
           "types/composition.d.ts",
           "types/recipe.d.ts",
@@ -191,6 +190,8 @@ describe('setup-artifacts', () => {
           "recipes/text-style.d.ts",
           "recipes/tooltip-style.mjs",
           "recipes/tooltip-style.d.ts",
+          "recipes/card-style.mjs",
+          "recipes/card-style.d.ts",
           "recipes/button-style.mjs",
           "recipes/button-style.d.ts",
         ],
@@ -248,13 +249,6 @@ describe('setup-artifacts', () => {
         [
           "css/index.mjs",
           "css/index.d.ts",
-        ],
-        [],
-        [
-          "/global.css",
-        ],
-        [
-          "/static.css",
         ],
         [],
       ]

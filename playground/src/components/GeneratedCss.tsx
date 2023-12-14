@@ -2,31 +2,18 @@ import { defaultEditorOptions } from '@/src/hooks/useEditor'
 import { css } from '@/styled-system/css'
 import { Stack } from '@/styled-system/jsx'
 import { Segment, SegmentControl, SegmentGroup, SegmentGroupIndicator, SegmentLabel } from '@ark-ui/react'
-import MonacoEditor, { BeforeMount, OnMount } from '@monaco-editor/react'
-import { useTheme } from 'next-themes'
+import MonacoEditor from '@monaco-editor/react'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import parserHtml from 'prettier/parser-html'
 import parserPostCSS from 'prettier/parser-postcss'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { CssFileArtifact } from '../hooks/usePanda'
-import { pandaTheme } from '../lib/gruvbox-theme'
 
 export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileArtifact[]; visible: boolean }) => {
   const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')
-  const { resolvedTheme } = useTheme()
 
   const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
-
-  const monacoRef = useRef<Parameters<OnMount>[1]>()
-
-  useEffect(() => {
-    monacoRef.current?.editor.setTheme(resolvedTheme === 'dark' ? 'panda-dark' : 'vs')
-  }, [monacoRef, resolvedTheme])
-
-  const onBeforeMount: BeforeMount = (monaco) => {
-    monaco.editor.defineTheme('panda-dark', pandaTheme)
-  }
 
   const formatCode = (code: string) => {
     try {
@@ -38,11 +25,6 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
       console.log('e', e)
       return code
     }
-  }
-
-  const onCodeEditorMount: OnMount = (editor, monaco) => {
-    if (resolvedTheme === 'dark') monaco.editor.setTheme('panda-dark')
-    monacoRef.current = monaco
   }
 
   return (
@@ -97,7 +79,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
             <SegmentLabel
               className={css({
                 alignSelf: 'center',
-                textStyle: 'xs',
+                textStyle: 'sm',
                 fontWeight: 'medium',
                 color: { base: 'text.default', _dark: 'white', _checked: 'black' },
                 transition: 'color 170ms ease-in-out',
@@ -114,9 +96,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
         value={formatCode(content)}
         language="css"
         path={activeTab}
-        options={{ ...defaultEditorOptions, readOnly: true }}
-        beforeMount={onBeforeMount}
-        onMount={onCodeEditorMount}
+        options={{ ...defaultEditorOptions, readOnly: true, wordWrap: 'on' }}
       />
     </Stack>
   )

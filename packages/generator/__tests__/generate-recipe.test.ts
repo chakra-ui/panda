@@ -1,10 +1,22 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
+import { Generator } from '../src'
 import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
-import { generator } from './fixture'
+import { generatorConfig } from './fixture'
+
+const createRecipeJs = (config: ConfigResultWithHooks) => {
+  const generator = new Generator(config)
+  return generateCreateRecipe(generator)
+}
+
+const recipeJs = (config: ConfigResultWithHooks) => {
+  const generator = new Generator(config)
+  return generateRecipes(generator)
+}
 
 describe('generate recipes', () => {
   test('should ', () => {
-    expect(generateCreateRecipe(generator)).toMatchInlineSnapshot(`
+    expect(createRecipeJs(generatorConfig)).toMatchInlineSnapshot(`
       {
         "dts": "",
         "js": "import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
@@ -91,7 +103,7 @@ describe('generate recipes', () => {
       }
     `)
 
-    expect(generateRecipes(generator)).toMatchInlineSnapshot(`
+    expect(recipeJs(generatorConfig)).toMatchInlineSnapshot(`
       [
         {
           "dts": "import type { ConditionalValue } from '../types/index';
@@ -199,6 +211,61 @@ describe('generate recipes', () => {
         },
       })",
           "name": "tooltip-style",
+        },
+        {
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
+
+      interface CardStyleVariant {
+        rounded: boolean
+      }
+
+      type CardStyleVariantMap = {
+        [key in keyof CardStyleVariant]: Array<CardStyleVariant[key]>
+      }
+
+      export type CardStyleVariantProps = {
+        [key in keyof CardStyleVariant]?: ConditionalValue<CardStyleVariant[key]> | undefined
+      }
+
+      export interface CardStyleRecipe {
+        __type: CardStyleVariantProps
+        (props?: CardStyleVariantProps): string
+        raw: (props?: CardStyleVariantProps) => CardStyleVariantProps
+        variantMap: CardStyleVariantMap
+        variantKeys: Array<keyof CardStyleVariant>
+        splitVariantProps<Props extends CardStyleVariantProps>(props: Props): [CardStyleVariantProps, Pretty<DistributiveOmit<Props, keyof CardStyleVariantProps>>]
+      }
+
+
+      export declare const cardStyle: CardStyleRecipe",
+          "js": "import { splitProps } from '../helpers.mjs';
+      import { createRecipe, mergeRecipes } from './create-recipe.mjs';
+
+      const cardStyleFn = /* @__PURE__ */ createRecipe('card', {}, [])
+
+      const cardStyleVariantMap = {
+        \\"rounded\\": [
+          \\"true\\"
+        ]
+      }
+
+      const cardStyleVariantKeys = Object.keys(cardStyleVariantMap)
+
+      export const cardStyle = /* @__PURE__ */ Object.assign(cardStyleFn, {
+        __recipe__: true,
+        __name__: 'cardStyle',
+        raw: (props) => props,
+        variantKeys: cardStyleVariantKeys,
+        variantMap: cardStyleVariantMap,
+        merge(recipe) {
+          return mergeRecipes(this, recipe)
+        },
+        splitVariantProps(props) {
+          return splitProps(props, cardStyleVariantKeys)
+        },
+      })",
+          "name": "card-style",
         },
         {
           "dts": "import type { ConditionalValue } from '../types/index';

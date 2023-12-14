@@ -50,8 +50,8 @@
     "ts-morph": "19.0.0",
     "tsup": "7.1.0",
     "tsx": "3.12.10",
-    "typescript": "5.2.2",
-    "vite-tsconfig-paths": "4.2.0",
+    "typescript": "5.3.3",
+    "vite-tsconfig-paths": "4.2.2",
     "vitest": "0.33.0"
   },
   "lint-staged": {

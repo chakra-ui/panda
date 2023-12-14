@@ -1,7 +1,12 @@
-import type { CascadeLayers, Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
-import type { Root } from 'postcss'
+import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
 import type { Conditions } from './conditions'
+import type { Layers } from './layers'
+import type { Recipes } from './recipes'
 import type { Utility } from './utility'
+
+export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions' | 'layers'>
+
+export type AtomicRuleContext = Pick<StylesheetContext, 'conditions' | 'hash' | 'utility' | 'transform' | 'layers'>
 
 export interface TransformResult {
   layer?: string
@@ -12,13 +17,13 @@ export interface TransformResult {
 type AtomicRuleTransform = (prop: string, value: any) => TransformResult
 
 export interface StylesheetContext {
-  root: Root
+  layers: Layers
   utility: Utility
   conditions: Conditions
+  recipes: Recipes
   helpers: PatternHelpers
   hash?: boolean
   transform?: AtomicRuleTransform
-  layers: CascadeLayers
 }
 
 export interface RecipeNode {

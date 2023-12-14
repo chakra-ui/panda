@@ -137,7 +137,7 @@ interface FileSystemOptions {
    * }
    * ```
    */
-  importMap?: OutdirImportMap
+  importMap?: string | OutdirImportMap
   /**
    * List of files glob to watch for changes.
    * @default []
