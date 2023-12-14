@@ -6,6 +6,38 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.22.0] - 2023-12-14
+
+### Fixed
+
+- Fix issue where static-css types was not exported.
+- Fix conditional variables in border radii
+- Fix regression where `styled-system/jsx/index` had the wrong exports
+- Fix potential cross-platform issues with path resolving by using `pathe` instead of `path`
+- Fix issue where `children` does not work in styled factory's `defaultProps` in React, Preact and Qwik
+- Fixes a missing bracket in \_indeterminate condition
+- Fix issue where array syntax did not generate reponsive values in mapped pattern properties
+
+### Changed
+
+- Update csstype to support newer css features
+- Redesign astro integration and studio to use the new Astro v4 (experimental) JavaScript API
+- Update Astro version to v4 for the @pandacss/studio
+
+- Improve initial css extraction time by at least 5x 🚀
+
+  Initial extraction time can get slow when using static CSS with lots of recipes or parsing a lot of files.
+
+  **Scenarios**
+
+  - Park UI went from 3500ms to 580ms (6x faster)
+  - Panda Website went from 2900ms to 208ms (14x faster)
+
+  **Potential Breaking Change**
+
+  If you use `hooks` in your `panda.config` file to listen for when css is extracted, we no longer return the `css`
+  string for performance reasons. We might reconsider this in the future.
+
 ## [0.21.0] - 2023-12-09
 
 ### Fixed
