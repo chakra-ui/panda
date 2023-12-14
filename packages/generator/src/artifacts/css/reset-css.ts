@@ -221,6 +221,10 @@ export function generateResetCss(ctx: Context) {
   ${selector}:-moz-focusring {
     outline: auto;
   }
+
+  ${selector}[hidden] {
+    display: none;
+  }
 `
 
   ctx.layers.reset.append(output)
