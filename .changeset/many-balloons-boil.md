@@ -2,7 +2,7 @@
 '@pandacss/generator': patch
 ---
 
-Fix a typing issue with config.strictTokens when using the `[xxx]` arbitrary escape-hatch with property-based
+Fix a typing issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with property-based
 conditionals
 
 ```ts

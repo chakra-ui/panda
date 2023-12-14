@@ -2867,11 +2867,11 @@ describe('extract to css output pipeline', () => {
           background-color: rgb(51 155 240)
           }
 
-        .ring_\\\\[rgb\\\\(51_155_240\\\\)\\\\!\\\\] {
-          outline-color: rgb(51 155 240)!
+        .ring_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
+          outline-color: rgb(51 155 240) !important
           }
 
-        .border_\\\\[rgb\\\\(51_155_240\\\\)\\\\!important\\\\] {
+        .border_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
           border-color: rgb(51 155 240) !important
           }
       }"
