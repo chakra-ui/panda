@@ -2822,7 +2822,7 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot('""')
   })
 
-  test.only('strictTokens arbitrary value escape hatch', () => {
+  test('strictTokens arbitrary value escape hatch', () => {
     const code = `
     import { css } from '.panda/css';
 
