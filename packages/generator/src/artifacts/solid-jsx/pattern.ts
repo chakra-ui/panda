@@ -12,17 +12,6 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div' } = pattern.config
 
-    const restProps = match(props.length)
-      .with(0, () => 'const restProps = props')
-      .otherwise(
-        () =>
-          `const [patternProps, restProps] = splitProps(props, [${props.map((v) => JSON.stringify(v)).join(', ')}]);`,
-      )
-
-    const styleProps = match(props.length)
-      .with(0, () => `${styleFnName}()`)
-      .otherwise(() => `${styleFnName}(patternProps)`)
-
     const cssProps = match(jsxStyleProps)
       .with('all', () => 'styleProps')
       .with('minimal', () => '{ css: styleProps }')
@@ -42,16 +31,16 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
         .with(
           'none',
           () => outdent`
-        ${restProps}
-        const styleProps = ${styleProps}
+        const [patternProps, restProps] = splitProps(props, [${props.map((v) => JSON.stringify(v)).join(', ')}]);
+        const styleProps = ${styleFnName}(patternProps)
         const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
         return createComponent(Comp, restProps)
         `,
         )
         .otherwise(
           () => outdent`
-        ${restProps}
-        const styleProps = ${styleProps}
+        const [patternProps, restProps] = splitProps(props, [${props.map((v) => JSON.stringify(v)).join(', ')}]);
+        const styleProps = ${styleFnName}(patternProps)
         const cssProps = ${cssProps}
         const mergedProps = mergeProps(cssProps, restProps)
 

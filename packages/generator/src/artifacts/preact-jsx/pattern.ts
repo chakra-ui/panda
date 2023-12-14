@@ -12,14 +12,6 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div' } = pattern.config
 
-    const restProps = match(props.length)
-      .with(0, () => 'const restProps = props')
-      .otherwise(() => `const { ${props.join(', ')}, ...restProps } = props`)
-
-    const styleProps = match(props.length)
-      .with(0, () => `${styleFnName}()`)
-      .otherwise(() => `${styleFnName}({${props.join(', ')}})`)
-
     const cssProps = match(jsxStyleProps)
       .with('all', () => 'styleProps')
       .with('minimal', () => '{ css: styleProps }')
@@ -39,16 +31,16 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
           .with(
             'none',
             () => outdent`
-          ${restProps}
-          const styleProps = ${styleProps}
+          const { ${props.join(', ')}${props.length ? ',' : ''} ...restProps } = props
+          const styleProps = ${styleFnName}({${props.join(', ')}})
           const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
           return h(Comp, { ref, ...restProps })
           `,
           )
           .otherwise(
             () => outdent`
-          ${restProps}
-          const styleProps = ${styleProps}
+          const { ${props.join(', ')}${props.length ? ',' : ''} ...restProps } = props
+          const styleProps = ${styleFnName}({${props.join(', ')}})
           const cssProps = ${cssProps}
           const mergedProps = { ref, ...cssProps, ...restProps }
 
