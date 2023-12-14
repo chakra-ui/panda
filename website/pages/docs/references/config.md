@@ -50,15 +50,42 @@ Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@p
 
 ### preflight
 
-**Type**: `boolean`
+**Type**: `boolean` | `{ scope: string; }`
 
 **Default**: `true`
 
 Whether to enable css reset styles.
 
+Disable preflight:
+
 ```json
 {
-  "preflight": true
+  "preflight": false
+}
+```
+
+You can also scope the preflight; Especially useful for being able to scope the CSS reset to only a part of the app for some reason.
+
+Enable preflight and customize the scope:
+
+```json
+{
+  "preflight": { "scope": ".extension" }
+}
+```
+
+The resulting `reset` css would look like this:
+
+```css
+.extension button,
+.extension select {
+  text-transform: none;
+}
+
+.extension table {
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
 }
 ```
 
@@ -816,4 +843,8 @@ The log level for the built-in logger.
 {
   "logLevel": "info"
 }
+```
+
+```
+
 ```
