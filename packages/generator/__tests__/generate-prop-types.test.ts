@@ -656,21 +656,22 @@ describe('generate property types', () => {
 
         type FilterString<T> = T extends \`\${infer _}\` ? T : never;
         type WithArbitraryValue<T> = T | \`[\${string}]\`
+        type PropOrCondition<T> = ConditionalValue<WithArbitraryValue<T>>;
 
         type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-          ? ConditionalValue<FilterString<PropertyTypes[T]>>
+          ? PropOrCondition<FilterString<PropertyTypes[T]>>
           : never;
 
         type CssPropertyValue<T extends string> = T extends keyof CssProperties
-          ? ConditionalValue<FilterString<CssProperties[T]>>
+          ? PropOrCondition<FilterString<CssProperties[T]>>
           : never;
 
-        export type PropertyValue<T extends string> = WithArbitraryValue<T extends keyof PropertyTypes
+        export type PropertyValue<T extends string> = T extends keyof PropertyTypes
           ? PropertyTypeValue<T>
           : T extends keyof CssProperties
             ? CssPropertyValue<T>
-            : ConditionalValue<string | number>
-          >"
+            : PropOrCondition<string | number>
+          "
     `)
   })
 })

@@ -2830,6 +2830,8 @@ describe('extract to css output pipeline', () => {
       color: '[#fff]',
       bg: 'red.300',
       bgColor: '[rgb(51 155 240)]',
+      outlineColor: '[rgb(51 155 240)!]',
+      borderColor: '[rgb(51 155 240)!important]',
     })
      `
     const result = parseAndExtract(code, { strictTokens: true })
@@ -2840,7 +2842,9 @@ describe('extract to css output pipeline', () => {
             {
               "bg": "red.300",
               "bgColor": "[rgb(51 155 240)]",
+              "borderColor": "[rgb(51 155 240)!important]",
               "color": "[#fff]",
+              "outlineColor": "[rgb(51 155 240)!]",
             },
           ],
           "name": "css",
@@ -2861,6 +2865,14 @@ describe('extract to css output pipeline', () => {
 
         .bg_\\\\[rgb\\\\(51_155_240\\\\)\\\\] {
           background-color: rgb(51 155 240)
+          }
+
+        .ring_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
+          outline-color: rgb(51 155 240) !important
+          }
+
+        .border_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
+          border-color: rgb(51 155 240) !important
           }
       }"
     `)

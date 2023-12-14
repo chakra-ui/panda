@@ -1,4 +1,4 @@
-const importantRegex = /!(important)?$/
+const importantRegex = /!(important)?/
 
 export function isImportant(value: string) {
   return typeof value === 'string' ? importantRegex.test(value) : false
