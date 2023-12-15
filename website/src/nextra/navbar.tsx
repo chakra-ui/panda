@@ -345,49 +345,47 @@ export function Navbar({
                         ({
                           route,
                           frontMatter: { title, description }
-                        }: MDXPageItem) => {
-                          return (
-                            <Link
-                              href={route}
-                              className={stack({
-                                gap: '1',
-                                p: '2',
-                                rounded: 'md',
-                                _hover: {
-                                  bg: {
-                                    base: 'blackAlpha.200',
-                                    _dark: 'rgb(219 234 254 / 0.1)'
+                        }: MDXPageItem) => (
+                          <Link
+                            href={route}
+                            className={stack({
+                              gap: '1',
+                              p: '2',
+                              rounded: 'md',
+                              _hover: {
+                                bg: {
+                                  base: 'blackAlpha.200',
+                                  _dark: 'rgb(219 234 254 / 0.1)'
+                                }
+                              }
+                            })}
+                            key={title}
+                          >
+                            <span
+                              className={css({
+                                fontWeight: 'medium',
+                                lineClamp: '2'
+                              })}
+                            >
+                              {title}
+                            </span>
+                            <span
+                              className={css({
+                                lineClamp: '3',
+                                color: {
+                                  base: 'gray.500',
+                                  _hover: 'gray.900',
+                                  _dark: {
+                                    base: 'gray.400',
+                                    _hover: 'gray.50'
                                   }
                                 }
                               })}
-                              key={title}
                             >
-                              <span
-                                className={css({
-                                  fontWeight: 'medium',
-                                  lineClamp: '2'
-                                })}
-                              >
-                                {title}
-                              </span>
-                              <span
-                                className={css({
-                                  lineClamp: '3',
-                                  color: {
-                                    base: 'gray.500',
-                                    _hover: 'gray.900',
-                                    _dark: {
-                                      base: 'gray.400',
-                                      _hover: 'gray.50'
-                                    }
-                                  }
-                                })}
-                              >
-                                {description}
-                              </span>
-                            </Link>
-                          )
-                        }
+                              {description}
+                            </span>
+                          </Link>
+                        )
                       )}
                     </Grid>
                   </PopoverContent>
