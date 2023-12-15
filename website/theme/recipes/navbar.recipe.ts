@@ -190,7 +190,6 @@ export const navbarRecipe = defineRecipe({
       maxW: 'lg',
       p: '4',
       position: 'relative',
-      zIndex: '20',
       _open: {
         animation: 'fadeIn 0.25s ease-out'
       },

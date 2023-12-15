@@ -326,7 +326,9 @@ export function Navbar({
                 </span>
               </PopoverTrigger>
               <Portal>
-                <PopoverPositioner className={css({ pos: 'relative' })}>
+                <PopoverPositioner
+                  className={css({ pos: 'relative', zIndex: '20' })}
+                >
                   <PopoverContent
                     className={navbar()}
                     data-scope="navbar"
