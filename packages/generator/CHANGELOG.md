@@ -1,5 +1,49 @@
 # @pandacss/generator
 
+## 0.22.1
+
+### Patch Changes
+
+- 8f4ce97c: Fix `slotRecipes` typings,
+  [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
+  weren't added to `config.slotRecipes`
+- 647f05c9: Fix a typing issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with property-based
+  conditionals
+
+  ```ts
+  css({
+    bg: '[#3B00B9]', // ✅ was okay
+    _dark: {
+      // ✅ was okay
+      color: '[#3B00B9]',
+    },
+
+    // ❌ Not okay, will be fixed in this patch
+    color: {
+      _dark: '[#3B00B9]',
+    },
+  })
+  ```
+
+- 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
+  `!important`
+
+  ```ts
+  css({
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
+  ```
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/shared@0.22.1
+  - @pandacss/core@0.22.1
+  - @pandacss/token-dictionary@0.22.1
+  - @pandacss/is-valid-prop@0.22.1
+  - @pandacss/logger@0.22.1
+
 ## 0.22.0
 
 ### Minor Changes
