@@ -179,28 +179,29 @@ export const navbarRecipe = defineRecipe({
       }
     },
     folderContent: {
-      '--hover-card-background': 'colors.white',
+      '--popover-background': 'colors.white',
       _dark: {
-        '--hover-card-background': 'colors.neutral.900'
+        '--popover-background': 'colors.neutral.900'
       },
-      background: 'var(--hover-card-background)',
+      background: 'var(--popover-background)',
       borderRadius: 'lg',
       borderWidth: '1px',
       boxShadow: 'lg',
       maxW: 'lg',
       p: '4',
       position: 'relative',
-      zIndex: 'popover',
+      zIndex: '20',
       _open: {
         animation: 'fadeIn 0.25s ease-out'
       },
       _closed: {
-        animation: 'fadeOut 0.2s ease-out'
+        animation: 'fadeOut 0.2s ease-out',
+        display: 'none'
       }
     },
     arrow: {
-      '--arrow-size': '12px',
-      '--arrow-background': 'var(--hover-card-background)'
+      '--arrow-size': 'sizes.3',
+      '--arrow-background': 'var(--popover-background)'
     },
     arrowTip: {
       borderTopWidth: '1px',

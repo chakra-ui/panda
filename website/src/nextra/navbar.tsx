@@ -326,7 +326,7 @@ export function Navbar({
                 </span>
               </PopoverTrigger>
               <Portal>
-                <PopoverPositioner>
+                <PopoverPositioner className={css({ pos: 'relative' })}>
                   <PopoverContent
                     className={navbar()}
                     data-scope="navbar"
@@ -370,7 +370,15 @@ export function Navbar({
                               </span>
                               <span
                                 className={css({
-                                  lineClamp: '3'
+                                  lineClamp: '3',
+                                  color: {
+                                    base: 'gray.500',
+                                    _hover: 'gray.900',
+                                    _dark: {
+                                      base: 'gray.400',
+                                      _hover: 'gray.50'
+                                    }
+                                  }
                                 })}
                               >
                                 {description}
