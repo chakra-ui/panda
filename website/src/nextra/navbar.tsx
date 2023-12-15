@@ -6,7 +6,13 @@ import {
   MenuItem,
   MenuPositioner,
   MenuTrigger,
-  Portal
+  Portal,
+  Popover,
+  PopoverArrow,
+  PopoverArrowTip,
+  PopoverContent,
+  PopoverPositioner,
+  PopoverTrigger
 } from '@ark-ui/react'
 import { useFSRoute } from 'nextra/hooks'
 import { ArrowRightIcon, MenuIcon } from 'nextra/icons'
@@ -18,9 +24,17 @@ import type {
 import { renderComponent } from './lib'
 import { Anchor } from './anchor'
 import { useConfig, useMenu } from './contexts'
+import { Grid } from '@/styled-system/jsx'
+import { stack } from '@/styled-system/patterns'
+import Link from 'next/link'
+
+type MDXPageItem = PageItem & {
+  frontMatter: { title: string; description: string }
+}
 
 export type NavBarProps = {
   flatDirectories: Item[]
+  navbarDocDirectories: PageItem[]
   items: (PageItem | MenuItemData)[]
 }
 
@@ -130,10 +144,16 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
   )
 }
 
-export function Navbar({ flatDirectories, items }: NavBarProps) {
+export function Navbar({
+  flatDirectories,
+  navbarDocDirectories,
+  items
+}: NavBarProps) {
   const config = useConfig()
   const activeRoute = useFSRoute()
   const { menu, setMenu } = useMenu()
+  const routeOriginal = useFSRoute()
+  const [route] = routeOriginal.split('#')
 
   return (
     <div
@@ -146,7 +166,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps) {
         data-part="blur"
         className={cx('nextra-nav-container-blur')}
       />
-      <nav data-scope="navbar" data-part="nav">
+      <div data-scope="navbar" data-part="nav">
         {config.logoLink ? (
           <Anchor
             data-scope="navbar"
@@ -288,6 +308,84 @@ export function Navbar({ flatDirectories, items }: NavBarProps) {
           {config.darkMode &&
             renderComponent(config.themeSwitch.component, { lite: true })}
         </div>
+      </div>
+      <nav data-scope="navbar" data-part="sec-nav">
+        {navbarDocDirectories.map(dir => {
+          const active = [route, route + '/'].includes(dir.route + '/')
+          const activeRouteInside = active || route.startsWith(dir.route + '/')
+
+          return (
+            <Popover key={dir.name} portalled positioning={{ gutter: -9 }}>
+              <PopoverTrigger asChild>
+                <span
+                  data-scope="navbar"
+                  data-part="nav-folder"
+                  aria-current={activeRouteInside ? 'page' : undefined}
+                >
+                  {dir.title} <ArrowRightIcon />
+                </span>
+              </PopoverTrigger>
+              <Portal>
+                <PopoverPositioner>
+                  <PopoverContent
+                    className={navbar()}
+                    data-scope="navbar"
+                    data-part="folder-content"
+                  >
+                    <PopoverArrow data-scope="navbar" data-part="arrow">
+                      <PopoverArrowTip
+                        data-scope="navbar"
+                        data-part="arrow-tip"
+                      />
+                    </PopoverArrow>
+                    <Grid columns={{ base: 1, md: 2 }}>
+                      {dir.children?.map(
+                        ({
+                          route,
+                          frontMatter: { title, description }
+                        }: MDXPageItem) => {
+                          return (
+                            <Link
+                              href={route}
+                              className={stack({
+                                gap: '1',
+                                p: '2',
+                                rounded: 'md',
+                                _hover: {
+                                  bg: {
+                                    base: 'blackAlpha.200',
+                                    _dark: 'rgb(219 234 254 / 0.1)'
+                                  }
+                                }
+                              })}
+                              key={title}
+                            >
+                              <span
+                                className={css({
+                                  fontWeight: 'medium',
+                                  lineClamp: '2'
+                                })}
+                              >
+                                {title}
+                              </span>
+                              <span
+                                className={css({
+                                  lineClamp: '3'
+                                })}
+                              >
+                                {description}
+                              </span>
+                            </Link>
+                          )
+                        }
+                      )}
+                    </Grid>
+                  </PopoverContent>
+                </PopoverPositioner>
+              </Portal>
+            </Popover>
+          )
+        })}
       </nav>
     </div>
   )

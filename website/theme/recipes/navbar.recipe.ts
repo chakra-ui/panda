@@ -12,7 +12,12 @@ const anatomy = createAnatomy('navbar', [
   'navLinkText',
   'projectLink',
   'chatLink',
-  'mobileMenu'
+  'secNav',
+  'mobileMenu',
+  'navFolder',
+  'folderContent',
+  'arrow',
+  'arrowTip'
 ])
 
 const parts = defineParts(anatomy.build())
@@ -28,7 +33,10 @@ export const navbarRecipe = defineRecipe({
       zIndex: 20,
       w: 'full',
       bg: 'transparent',
-      _print: { display: 'none' }
+      _print: { display: 'none' },
+      h: 'var(--nextra-navbar-height)',
+      display: 'flex',
+      flexDir: 'column'
     },
     blur: {
       pointerEvents: 'none',
@@ -51,15 +59,16 @@ export const navbarRecipe = defineRecipe({
       }
     },
     nav: {
-      mx: 'auto',
       display: 'flex',
-      h: 'var(--nextra-navbar-height)',
       maxW: '90rem',
+      mx: 'auto',
+      w: 'full',
       alignItems: 'center',
       justifyContent: 'flex-end',
       gap: '2',
       pl: 'max(env(safe-area-inset-left),1.5rem)',
-      pr: 'max(env(safe-area-inset-right),1.5rem)'
+      pr: 'max(env(safe-area-inset-right),1.5rem)',
+      pt: 'max(env(safe-area-inset-top),0.625rem)'
     },
     logoLink: {
       display: 'flex',
@@ -135,6 +144,67 @@ export const navbarRecipe = defineRecipe({
           }
         }
       }
+    },
+    secNav: {
+      display: 'flex',
+      maxW: '90rem',
+      mx: 'auto',
+      w: 'full',
+      alignItems: 'center',
+      gap: { base: '4', lg: '8' },
+      pl: 'max(env(safe-area-inset-left),1.5rem)',
+      pr: 'max(env(safe-area-inset-right),1.5rem)',
+      flexGrow: '1',
+      overflowX: 'auto'
+    },
+    navFolder: {
+      cursor: 'pointer',
+      display: 'flex',
+      h: 'full',
+      gap: '2',
+      alignItems: 'center',
+      borderBottom: '2px solid transparent',
+      borderColor: { _currentPage: 'currentcolor' },
+      color: {
+        base: 'gray.500',
+        _hover: 'gray.900',
+        _currentPage: { base: 'black', _dark: 'white' },
+        _dark: { base: 'gray.400', _hover: 'gray.50' }
+      },
+      fontWeight: { _currentPage: 'semibold' },
+      '& > svg': {
+        w: '3.5',
+        transform: 'rotate(90deg)',
+        strokeWidth: '1'
+      }
+    },
+    folderContent: {
+      '--hover-card-background': 'colors.white',
+      _dark: {
+        '--hover-card-background': 'colors.neutral.900'
+      },
+      background: 'var(--hover-card-background)',
+      borderRadius: 'lg',
+      borderWidth: '1px',
+      boxShadow: 'lg',
+      maxW: 'lg',
+      p: '4',
+      position: 'relative',
+      zIndex: 'popover',
+      _open: {
+        animation: 'fadeIn 0.25s ease-out'
+      },
+      _closed: {
+        animation: 'fadeOut 0.2s ease-out'
+      }
+    },
+    arrow: {
+      '--arrow-size': '12px',
+      '--arrow-background': 'var(--hover-card-background)'
+    },
+    arrowTip: {
+      borderTopWidth: '1px',
+      borderLeftWidth: '1px'
     }
   })
 })

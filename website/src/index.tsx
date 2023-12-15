@@ -8,7 +8,11 @@ import { useMemo } from 'react'
 import { css, cx } from '@/styled-system/css'
 import type { PageTheme } from 'nextra/normalize-pages'
 import { normalizePages } from 'nextra/normalize-pages'
-import { DEFAULT_LOCALE, PartialDocsThemeConfig } from './constants'
+import {
+  DEFAULT_LOCALE,
+  PartialDocsThemeConfig,
+  SIDEBAR_FOLDERS
+} from './constants'
 import { renderComponent } from './nextra/lib'
 import { getComponents } from './mdx-components'
 import {
@@ -217,6 +221,22 @@ const InnerLayout = ({
 
   const direction = isRTL ? 'rtl' : 'ltr'
 
+  const sidebarDocDirectories = docsDirectories.filter(dir =>
+    SIDEBAR_FOLDERS.includes(dir.name)
+  )
+  const sidebarFullDirectories = directories.map(dir => {
+    if (dir.name !== 'docs') return dir
+    return Object.assign({}, dir, {
+      children: dir.children?.filter(_dir =>
+        SIDEBAR_FOLDERS.includes(_dir.name)
+      )
+    })
+  })
+
+  const navbarDocDirectories = docsDirectories.filter(
+    dir => !SIDEBAR_FOLDERS.includes(dir.name) && dir.isUnderCurrentDocsTree
+  )
+
   return (
     // This makes sure that selectors like `[dir=ltr] .nextra-container` work
     // before hydration as Panda expects the `dir` attribute to exist on the
@@ -232,6 +252,7 @@ const InnerLayout = ({
       {themeContext.navbar &&
         renderComponent(config.navbar.component, {
           flatDirectories,
+          navbarDocDirectories,
           items: topLevelNavbarItems
         })}
       <div
@@ -242,9 +263,9 @@ const InnerLayout = ({
       >
         <ActiveAnchorProvider>
           <Sidebar
-            docsDirectories={docsDirectories}
+            docsDirectories={sidebarDocDirectories}
             flatDirectories={flatDirectories}
-            fullDirectories={directories}
+            fullDirectories={sidebarFullDirectories}
             headings={headings}
             asPopover={hideSidebar}
             includePlaceholder={themeContext.layout === 'default'}
