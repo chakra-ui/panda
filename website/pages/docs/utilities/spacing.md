@@ -1,6 +1,6 @@
 ---
 title: Spacing
-description: Style properties for controlling the padding of an element.
+description: Controlling the padding or margin of an element.
 ---
 
 ## Padding

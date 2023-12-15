@@ -1,6 +1,6 @@
 ---
 title: Border
-description: Panda's border utilities.
+description: Styling borders.
 ---
 
 # Border
@@ -160,9 +160,9 @@ Panda also provides the logical properties for border color, which map to corres
 <div className={css({ borderInlineStartColor: 'red.500' })} />
 ```
 
-| Prop                                        | CSS Property               | Token Category |
-| ------------------------------------------- | -------------------------- | -------------- |
+| Prop                                          | CSS Property               | Token Category |
+| --------------------------------------------- | -------------------------- | -------------- |
 | `borderStartColor` , `borderInlineStartColor` | `border-{start+end}-color` | `colors`       |
-| `borderEndColor` , `borderInlineEndColor`   | `border-{start+end}-color` | `colors`       |
-| `borderXColor`, `borderInlineColor`         | `border-inline-color`      | `colors`       |
-| `borderYColor`, `borderBlockColor`          | `border-block-color`       | `colors`       |
+| `borderEndColor` , `borderInlineEndColor`     | `border-{start+end}-color` | `colors`       |
+| `borderXColor`, `borderInlineColor`           | `border-inline-color`      | `colors`       |
+| `borderYColor`, `borderBlockColor`            | `border-block-color`       | `colors`       |

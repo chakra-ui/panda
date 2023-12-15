@@ -1,6 +1,6 @@
 ---
 title: Transforms
-description: Panda provides utilities for transforming elements.
+description: Transforming elements.
 ---
 
 # Transforms

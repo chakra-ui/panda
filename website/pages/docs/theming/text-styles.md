@@ -1,6 +1,6 @@
 ---
 title: Text Styles
-description: Typography forms the core of any interface design, making it important to establish patterns for consistent and legible typography early in the development process. This will also help you avoid duplicating typography properties.
+description: Establish typography patterns for consistency and legibility.
 ---
 
 # Text Styles

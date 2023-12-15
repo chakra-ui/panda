@@ -1,6 +1,6 @@
 ---
 title: Interactivity
-description: Panda CSS provides a variety of utility classes to enhance interactivity and user experience on your web applications.
+description: Enhance interactivity and user experience.
 ---
 
 # Interactivity

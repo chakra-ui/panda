@@ -1,6 +1,6 @@
 ---
 title: Display
-description: Panda provides style properties for styling display of an element
+description: Styling the display of an element
 ---
 
 # Display

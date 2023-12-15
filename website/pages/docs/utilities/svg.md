@@ -1,6 +1,6 @@
 ---
 title: SVG
-description: Panda provides utilities for styling SVG elements.
+description: Styling SVG elements.
 ---
 
 # SVG
@@ -39,6 +39,6 @@ Change the stroke width of an SVG element.
 <div className={css({ strokeWidth: '1px' })} />
 ```
 
-| Prop          | CSS Property | Token Category |
-| ------------- | ------------ | -------------- |
-| `strokeWidth` | `stroke-width`     | borderWidths   |
+| Prop          | CSS Property   | Token Category |
+| ------------- | -------------- | -------------- |
+| `strokeWidth` | `stroke-width` | borderWidths   |

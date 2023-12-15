@@ -1,6 +1,6 @@
 ---
 title: Transitions
-description: Panda provides utilities for defining and customizing transitions.
+description: Defining and customizing transitions.
 ---
 
 # Transitions

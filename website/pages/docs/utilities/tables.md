@@ -1,6 +1,6 @@
 ---
 title: Tables
-description: Panda provides utilities for styling tables.
+description: Styling tables.
 ---
 
 # Tables

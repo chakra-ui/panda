@@ -1,6 +1,6 @@
 ---
 title: Layout
-description: Panda provides style properties for styling layout of an element
+description: Styling the layout of an element
 ---
 
 # Layout
