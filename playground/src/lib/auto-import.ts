@@ -71,8 +71,6 @@ const buildSuggestions = (opts: BuildSuggestionsOpts): Monaco.languages.Completi
       documentation: 'sva',
     },
     { label: 'token', path: 'tokens', documentation: 'token' },
-    { label: 'token', path: 'jsx', documentation: 'jsx' },
-    { label: 'token', path: 'jsx', documentation: 'jsx' },
   ]
 
   const recipeImports = context.recipes.map((r) => ({
