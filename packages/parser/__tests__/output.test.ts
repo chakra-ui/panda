@@ -2987,7 +2987,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test('recipe issue', () => {
+  test('recipe coarsing shorthands issue', () => {
     const code = `
     import { css } from '.panda/css';
     import { styled } from '.panda/jsx';
@@ -3050,6 +3050,133 @@ describe('extract to css output pipeline', () => {
       "@layer recipes {
         .card--rounded_true {
           border-radius: 0.375rem
+          }
+      }"
+    `)
+  })
+
+  test('recipes customizable layer', () => {
+    const { generator } = parseAndExtract('', {
+      theme: {
+        extend: {
+          recipes: {
+            pinkRecipe: {
+              // default
+              className: 'pinkRecipe',
+              base: { color: 'pink.100' },
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            greenRecipe: {
+              // still default
+              className: 'greenRecipe',
+              base: { color: 'green.100' },
+              layer: 'recipes',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            blueRecipe: {
+              // custom layer
+              className: 'blueRecipe',
+              base: { color: 'blue.100' },
+              layer: 'recipes.aaa',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            yellowRecipe: {
+              // custom layer
+              className: 'yellowRecipe',
+              base: { color: 'yellow.100' },
+              layer: 'recipes.bbb',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            redRecipe: {
+              // custom layer
+              className: 'redRecipe',
+              base: { color: 'red.100' },
+              layer: 'outside',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    generator.appendCss('static')
+    const css = generator.getCss()
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes.aaa._base {
+        .blueRecipe {
+          color: var(--colors-blue-100)
+          }
+      }
+
+      @layer recipes.aaa {
+        .blueRecipe--variant_small {
+          font-size: var(--font-sizes-sm)
+          }
+      }
+
+      @layer recipes.bbb._base {
+        .yellowRecipe {
+          color: var(--colors-yellow-100)
+          }
+      }
+
+      @layer recipes.bbb {
+        .yellowRecipe--variant_small {
+          font-size: var(--font-sizes-sm)
+          }
+      }
+
+      @layer outside._base {
+        .redRecipe {
+          color: var(--colors-red-100)
+          }
+      }
+
+      @layer outside {
+        .redRecipe--variant_small {
+          font-size: var(--font-sizes-sm)
+          }
+      }
+
+      @layer recipes {
+        .pinkRecipe--variant_small,.greenRecipe--variant_small {
+          font-size: var(--font-sizes-sm)
+          }
+
+        @layer _base {
+          .pinkRecipe {
+            color: var(--colors-pink-100)
+              }
+
+          .greenRecipe {
+            color: var(--colors-green-100)
+              }
           }
       }"
     `)

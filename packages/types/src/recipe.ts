@@ -67,6 +67,11 @@ export interface RecipeDefinition<T extends RecipeVariantRecord> {
    * Variants to pre-generate, will be include in the final `config.staticCss`
    */
   staticCss?: RecipeRule[]
+  /**
+   * Specifiy a custom CSS @layer in which to generate the recipe's css rules
+   * @default 'recipes'
+   */
+  layer?: string
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
@@ -142,6 +147,11 @@ export interface SlotRecipeDefinition<S extends string, T extends SlotRecipeVari
    * Variants to pre-generate, will be include in the final `config.staticCss`
    */
   staticCss?: RecipeRule[]
+  /**
+   * Specifiy a custom CSS @layer in which to generate the recipe's css rules
+   * @default 'recipes'
+   */
+  layer?: string
 }
 
 export type SlotRecipeCreatorFn = <S extends string, T extends SlotRecipeVariantRecord<S>>(

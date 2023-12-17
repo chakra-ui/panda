@@ -85,7 +85,7 @@ export class Recipes {
         const slotName = this.getSlotKey(name, slot)
         this.normalize(slotName, slotRecipe)
         slotsMap.set(slotName, slotRecipe)
-        this.rules.set(slotName, this.createRule(slotName, true))
+        this.rules.set(slotName, this.createRule(recipe, slotName, true))
       })
 
       // save the root recipe
@@ -94,7 +94,7 @@ export class Recipes {
       //
     } else {
       this.assignRecipe(name, this.normalize(name, recipe))
-      this.rules.set(name, this.createRule(name))
+      this.rules.set(name, this.createRule(recipe, name))
     }
   }
 
@@ -187,6 +187,7 @@ export class Recipes {
       description = '',
       compoundVariants = [],
       staticCss = [],
+      layer = 'recipes',
     } = config
 
     const recipe: Required<RecipeConfig> = {
@@ -199,6 +200,7 @@ export class Recipes {
       defaultVariants,
       compoundVariants,
       staticCss,
+      layer,
     }
 
     recipe.base = this.serialize(base)
@@ -230,11 +232,16 @@ export class Recipes {
     return serializeStyle(styleObject, this.context)
   }
 
-  private getTransform = (name: string) => {
+  private getTransform = (config: RecipeConfig | SlotRecipeConfig, name: string) => {
+    // if user specifies a custom layer but used the default one (`recipes`), ignore it
+    // so we can avoid nesting it (with a `.`) and just use the predefined `_base` layer
+    const layer = config.layer === 'recipes' ? '' : config.layer
+
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
-          layer: '_base',
+          // -> using the predefined layer unless using a custom one
+          layer: (layer ? layer + '.' : '') + '_base',
           className: sharedState.classNames.get(name)!,
           styles: sharedState.styles.get(name) ?? {},
         }
@@ -243,20 +250,21 @@ export class Recipes {
       const propKey = this.getPropKey(name, variant, value)
 
       return {
+        layer,
         className: sharedState.classNames.get(propKey)!,
         styles: sharedState.styles.get(propKey) ?? {},
       }
     }
   }
 
-  private createRule = (name: string, slot?: boolean) => {
+  private createRule = (recipe: RecipeConfig | SlotRecipeConfig, name: string, slot?: boolean) => {
     if (!this.context) {
       throw new Error("Can't create a rule without a context")
     }
 
     const context = {
       ...this.context,
-      transform: this.getTransform(name),
+      transform: this.getTransform(recipe, name),
     }
 
     const rule = createRecipeAtomicRule(context, slot)

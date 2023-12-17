@@ -106,14 +106,33 @@ export class AtomicRule {
 
 export function createRecipeAtomicRule(ctx: AtomicRuleContext, slot?: boolean) {
   return new AtomicRule(ctx, ({ rule, layer }) => {
-    if (layer === '_base' && slot) {
-      ctx.layers.slotRecipes.base.append(rule)
-    } else if (slot) {
-      ctx.layers.slotRecipes.root.append(rule)
-    } else if (layer === '_base') {
-      ctx.layers.recipes.base.append(rule)
+    // recipe variants
+    if (!layer) {
+      if (slot) {
+        ctx.layers.slotRecipes.root.append(rule)
+      } else {
+        ctx.layers.recipes.root.append(rule)
+      }
+
+      return
+    }
+
+    // recipe base
+    if (layer === '_base') {
+      if (slot) {
+        ctx.layers.slotRecipes.base.append(rule)
+      } else {
+        ctx.layers.recipes.base.append(rule)
+      }
+
+      return
+    }
+
+    // custom recipe layer
+    if (slot) {
+      ctx.layers.slotRecipes.custom(layer).append(rule)
     } else {
-      ctx.layers.recipes.root.append(rule)
+      ctx.layers.recipes.custom(layer).append(rule)
     }
   })
 }

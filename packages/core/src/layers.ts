@@ -1,15 +1,19 @@
 import type { CascadeLayer, CascadeLayers } from '@pandacss/types'
 import postcss, { AtRule, Root } from 'postcss'
 
+type CustomLayerFn = (layer: string) => AtRule
+
 export class Layers {
   root: Root
   reset: AtRule
   base: AtRule
   tokens: AtRule
-  recipes: { root: AtRule; base: AtRule }
-  slotRecipes: { root: AtRule; base: AtRule }
 
-  utilities: { root: AtRule; compositions: AtRule; custom(layer: string): AtRule }
+  recipes: { root: AtRule; base: AtRule; custom: CustomLayerFn }
+  slotRecipes: { root: AtRule; base: AtRule; custom: CustomLayerFn }
+  private recipeRuleMap = new Map<string, AtRule>()
+
+  utilities: { root: AtRule; compositions: AtRule; custom: CustomLayerFn }
   private utilityRuleMap = new Map<string, AtRule>()
 
   constructor(private names: CascadeLayers) {
@@ -25,16 +29,26 @@ export class Layers {
     // @layer tokens
     this.tokens = postcss.atRule({ name: 'layer', params: names.tokens, nodes: [] })
 
+    const customRecipe: CustomLayerFn = (layer) => {
+      if (!this.recipeRuleMap.has(layer)) {
+        const atRule = postcss.atRule({ name: 'layer', params: layer, nodes: [] })
+        this.recipeRuleMap.set(layer, atRule)
+      }
+      return this.recipeRuleMap.get(layer) as AtRule
+    }
+
     // @layer recipes
     this.recipes = {
       root: postcss.atRule({ name: 'layer', params: names.recipes, nodes: [] }),
       base: postcss.atRule({ name: 'layer', params: '_base', nodes: [] }),
+      custom: customRecipe,
     }
 
     // @layer recipes.slots
     this.slotRecipes = {
       root: postcss.atRule({ name: 'layer', params: names.recipes + '.slots', nodes: [] }),
       base: postcss.atRule({ name: 'layer', params: '_base', nodes: [] }),
+      custom: customRecipe,
     }
 
     // @layer utilities
@@ -53,7 +67,7 @@ export class Layers {
 
   getLayer(layer: CascadeLayer) {
     // inset in order: reset, base, tokens, recipes, utilities
-    const { reset, base, tokens, recipes, slotRecipes, utilities } = this
+    const { root, reset, base, tokens, recipes, slotRecipes, utilities } = this
 
     switch (layer) {
       case 'base':
@@ -74,6 +88,11 @@ export class Layers {
 
         if (recipes.root.nodes.length) recipeRoot.append(recipes.root)
         if (slotRecipes.root.nodes.length) recipeRoot.append(slotRecipes.root)
+
+        this.recipeRuleMap.forEach((rules) => {
+          if (rules.nodes.length) root.append(rules)
+        })
+
         return recipeRoot
       }
 
