@@ -2,22 +2,12 @@ import { Monaco as MonacoType } from '@monaco-editor/react'
 import * as Monaco from 'monaco-editor'
 import { Artifact } from '@pandacss/types'
 
-interface Import {
-  name: string
-}
-
-interface ImportObject extends Import {
-  file: File
-}
-
-interface File {
-  path: string
-  aliases?: string[]
-
-  imports?: Import[]
-}
-
 const IMPORT_COMMAND = 'resolveImport'
+
+interface ImportObject {
+  name: string
+  path: string
+}
 
 type AutoImportOpts = {
   monaco: MonacoType
@@ -60,12 +50,13 @@ type BuildSuggestionsOpts = {
 
 const buildSuggestions = (opts: BuildSuggestionsOpts): Monaco.languages.CompletionItem[] => {
   const { monaco, range, model } = opts
-  const SUGGESTIONS_TEMPLATE = [
+
+  const imports = [
     { label: 'css', documentation: 'css', path: 'css' },
     { label: 'cx', documentation: 'cx', path: 'css' },
   ]
 
-  return SUGGESTIONS_TEMPLATE.map(({ label, documentation, path }) => ({
+  return imports.map(({ label, documentation, path }) => ({
     label,
     kind: monaco.languages.CompletionItemKind.Function,
     documentation,
@@ -77,9 +68,7 @@ const buildSuggestions = (opts: BuildSuggestionsOpts): Monaco.languages.Completi
       arguments: [
         {
           name: label,
-          file: {
-            path: `styled-system/${path}`,
-          },
+          path: `styled-system/${path}`,
         },
         model,
       ],
@@ -164,7 +153,7 @@ const parseResolved = (model: Monaco.editor.ITextModel, imp: ImportObject) => {
     names: names.split(',').map((imp) => imp.trim().replace(/\n/g, '')),
     path,
   }))
-  const imports = parsed.filter(({ path }) => path === imp.file.path || (imp.file.aliases?.indexOf(path) || -1) > -1)
+  const imports = parsed.filter(({ path }) => path === imp.path)
 
   const importResolved = imports.findIndex((i) => i.names.indexOf(imp.name) > -1) > -1
 
@@ -174,14 +163,8 @@ const parseResolved = (model: Monaco.editor.ITextModel, imp: ImportObject) => {
 /**
  * Adds a new import statement to the editor model
  */
-const createImportStatement = (
-  imp: ImportObject | { name: string; path: string },
-  endline: boolean = false,
-): string => {
-  console.log('imp', imp)
-  const path = 'path' in imp ? imp.path : imp.file.aliases?.[0] || imp.file.path
-
-  const formattedPath = path.replace(/"/g, '').replace(/'/g, '')
+const createImportStatement = (imp: ImportObject, endline: boolean = false): string => {
+  const formattedPath = imp.path.replace(/"/g, '').replace(/'/g, '')
   let returnStr = ''
 
   const newLine = endline ? '\r\n' : ''
@@ -202,9 +185,9 @@ const getMatches = (string: string, regex: RegExp) => {
 // TODO auto imports for config helpers like defineRecipe
 // cx
 // css
-// jsx
-// cva
-// sva
-// recipes
-// patterns
-// token from styled-system/tokens'
+// TODO jsx
+// TODO cva
+// TODO sva
+// TODO recipes
+// TODO patterns
+// TODO token from styled-system/tokens'
