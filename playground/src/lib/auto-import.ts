@@ -165,8 +165,7 @@ const mergeImports = (model: Monaco.editor.ITextModel, imp: ImportObject, path: 
 
     workingString = workingString.replace(replaceTarget, '').replace(path, '')
 
-    const imports = [...workingString.split(','), imp.name]
-    console.log('imports', imports)
+    const imports = [...workingString.split(','), imp.name].filter(Boolean)
 
     const newImport = createImportStatement({
       name: imports.join(', '),
