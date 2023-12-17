@@ -109,7 +109,16 @@ export const Playground = (props: UsePlayGroundProps) => {
             className={splitter()}
           >
             <SplitterPanel id="editor">
-              <Editor value={state} onChange={setState} artifacts={artifacts} diffState={diffState} />
+              <Editor
+                value={state}
+                onChange={setState}
+                artifacts={artifacts}
+                context={{
+                  patterns: panda.context.patterns.details,
+                  recipes: Array.from(panda.context.recipes.rules.keys()),
+                }}
+                diffState={diffState}
+              />
             </SplitterPanel>
 
             <ArtifactsPanel panda={panda} />
