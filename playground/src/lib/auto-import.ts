@@ -1,22 +1,27 @@
 import { Monaco as MonacoType } from '@monaco-editor/react'
 import * as Monaco from 'monaco-editor'
-import { Artifact } from '@pandacss/types'
+import { Dict } from '@pandacss/types'
 
 const IMPORT_COMMAND = 'resolveImport'
+
+export type AutoImportContext = {
+  patterns: Dict[]
+  recipes: string[]
+}
+
+type AutoImportOpts = {
+  monaco: MonacoType
+  editor: Monaco.editor.IStandaloneCodeEditor
+  context: AutoImportContext
+}
 
 interface ImportObject {
   name: string
   path: string
 }
 
-type AutoImportOpts = {
-  monaco: MonacoType
-  editor: Monaco.editor.IStandaloneCodeEditor
-  artifacts: Artifact[]
-}
-
 export const configureAutoImports = (opts: AutoImportOpts) => {
-  const { monaco, editor, artifacts } = opts
+  const { monaco, editor, context } = opts
 
   monaco.languages.registerCompletionItemProvider('typescript', {
     provideCompletionItems(model, position) {
@@ -36,7 +41,7 @@ export const configureAutoImports = (opts: AutoImportOpts) => {
       })
 
       return {
-        suggestions: buildSuggestions({ range, model, monaco }),
+        suggestions: buildSuggestions({ range, model, monaco, context }),
       }
     },
   })
@@ -46,15 +51,47 @@ type BuildSuggestionsOpts = {
   range: Monaco.IRange
   model: Monaco.editor.ITextModel
   monaco: MonacoType
+  context: AutoImportContext
 }
 
 const buildSuggestions = (opts: BuildSuggestionsOpts): Monaco.languages.CompletionItem[] => {
-  const { monaco, range, model } = opts
+  const { monaco, range, model, context } = opts
 
-  const imports = [
-    { label: 'css', documentation: 'css', path: 'css' },
-    { label: 'cx', documentation: 'cx', path: 'css' },
+  const staticImports: { label: string; path: string; documentation?: string }[] = [
+    { label: 'css', path: 'css', documentation: 'css' },
+    { label: 'cx', path: 'css', documentation: 'cx' },
+    {
+      label: 'cva',
+      path: 'css',
+      documentation: 'cva',
+    },
+    {
+      label: 'sva',
+      path: 'css',
+      documentation: 'sva',
+    },
+    { label: 'token', path: 'tokens', documentation: 'token' },
+    { label: 'token', path: 'jsx', documentation: 'jsx' },
+    { label: 'token', path: 'jsx', documentation: 'jsx' },
   ]
+
+  const recipeImports = context.recipes.map((r) => ({
+    label: r,
+    path: 'recipes',
+  }))
+
+  const patternWithJSXImports = context.patterns.flatMap((p) => [
+    {
+      label: p.baseName,
+      path: 'patterns',
+    },
+    {
+      label: p.jsxName,
+      path: 'jsx',
+    },
+  ])
+
+  const imports = staticImports.concat(recipeImports, patternWithJSXImports)
 
   return imports.map(({ label, documentation, path }) => ({
     label,
@@ -129,6 +166,7 @@ const mergeImports = (model: Monaco.editor.ITextModel, imp: ImportObject, path: 
     workingString = workingString.replace(replaceTarget, '').replace(path, '')
 
     const imports = [...workingString.split(','), imp.name]
+    console.log('imports', imports)
 
     const newImport = createImportStatement({
       name: imports.join(', '),
@@ -181,13 +219,3 @@ const getMatches = (string: string, regex: RegExp) => {
   }
   return matches
 }
-
-// TODO auto imports for config helpers like defineRecipe
-// cx
-// css
-// TODO jsx
-// TODO cva
-// TODO sva
-// TODO recipes
-// TODO patterns
-// TODO token from styled-system/tokens'
