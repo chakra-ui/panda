@@ -17,6 +17,7 @@ import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
+import { configureAutoImports } from '../lib/auto-import'
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
@@ -88,6 +89,7 @@ export function useEditor(props: PandaEditorProps) {
   const configureEditor: OnMount = useCallback(
     (editor, monaco) => {
       activateMonacoJSXHighlighter(editor, monaco)
+      configureAutoImports({ artifacts, monaco, editor })
 
       function registerKeybindings() {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -123,7 +125,7 @@ export function useEditor(props: PandaEditorProps) {
         typeRoots: ['node_modules/@types'],
       })
     },
-    [onToggleWrap],
+    [onToggleWrap, artifacts],
   )
 
   const setupLibs = useCallback(
