@@ -26,6 +26,7 @@ export class Builder {
   context: PandaContext | undefined
 
   private hasEmitted = false
+  private hasFilesChanged = true
   private affecteds: DiffConfigResult | undefined
 
   getConfigPath = () => {
@@ -62,8 +63,8 @@ export class Builder {
     }
 
     // file change
-    const hasFilesChanged = this.checkFilesChanged(ctx.getFiles())
-    if (hasFilesChanged) {
+    this.hasFilesChanged = this.checkFilesChanged(ctx.getFiles())
+    if (this.hasFilesChanged) {
       ctx.project.reloadSourceFiles()
     }
   }
@@ -123,11 +124,11 @@ export class Builder {
   }
 
   extract = async () => {
+    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : true
+    if (!this.hasFilesChanged && !hasConfigChanged) return
+
     const ctx = this.getContextOrThrow()
     const files = ctx.getFiles()
-
-    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : false
-    if (hasConfigChanged) return
 
     const done = logger.time.info('Extracted in')
 
@@ -165,9 +166,10 @@ export class Builder {
 
     root.removeAll()
 
+    const css = this.toString()
     const newCss = optimizeCss(`
     ${this.initialRoot}
-    ${this.toString()}
+    ${css}
     `)
 
     root.append(newCss)
