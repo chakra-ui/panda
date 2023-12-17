@@ -57,20 +57,20 @@ type BuildSuggestionsOpts = {
 const buildSuggestions = (opts: BuildSuggestionsOpts): Monaco.languages.CompletionItem[] => {
   const { monaco, range, model, context } = opts
 
-  const staticImports: { label: string; path: string; documentation?: string }[] = [
-    { label: 'css', path: 'css', documentation: 'css' },
-    { label: 'cx', path: 'css', documentation: 'cx' },
+  const staticImports = [
+    { label: 'css', path: 'css' },
+    { label: 'cx', path: 'css' },
     {
       label: 'cva',
       path: 'css',
-      documentation: 'cva',
     },
     {
       label: 'sva',
       path: 'css',
-      documentation: 'sva',
     },
-    { label: 'token', path: 'tokens', documentation: 'token' },
+    { label: 'token', path: 'tokens' },
+    { label: 'isCssProperty', path: 'jsx' },
+    { label: 'splitCssProps', path: 'jsx' },
   ]
 
   const recipeImports = context.recipes.map((r) => ({
@@ -91,10 +91,11 @@ const buildSuggestions = (opts: BuildSuggestionsOpts): Monaco.languages.Completi
 
   const imports = staticImports.concat(recipeImports, patternWithJSXImports)
 
-  return imports.map(({ label, documentation, path }) => ({
+  return imports.map(({ label, path }) => ({
     label,
-    kind: monaco.languages.CompletionItemKind.Function,
-    documentation,
+    kind: monaco.languages.CompletionItemKind.Method,
+    documentation: `Add import from "styled-system/${path}"`,
+    detail: `styled-system/${path}`,
     insertText: label,
     range: range,
     command: {
