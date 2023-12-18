@@ -1285,8 +1285,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/cli
       '@sveltejs/adapter-auto':
-        specifier: 2.1.0
-        version: 2.1.0(@sveltejs/kit@1.22.4)
+        specifier: 2.1.1
+        version: 2.1.1(@sveltejs/kit@1.22.4)
       '@sveltejs/kit':
         specifier: 1.22.4
         version: 1.22.4(svelte@4.1.2)(vite@5.0.7)
@@ -5428,7 +5428,7 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.22.5(@babel/core@7.22.5)
       '@babel/plugin-transform-unicode-sets-regex': 7.22.5(@babel/core@7.22.5)
       '@babel/preset-modules': 0.1.5(@babel/core@7.22.5)
-      '@babel/types': 7.23.5
+      '@babel/types': 7.23.0
       babel-plugin-polyfill-corejs2: 0.4.5(@babel/core@7.22.5)
       babel-plugin-polyfill-corejs3: 0.8.3(@babel/core@7.22.5)
       babel-plugin-polyfill-regenerator: 0.5.2(@babel/core@7.22.5)
@@ -5610,7 +5610,7 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.22.5(@babel/core@7.23.5)
       '@babel/plugin-transform-unicode-sets-regex': 7.22.5(@babel/core@7.23.5)
       '@babel/preset-modules': 0.1.5(@babel/core@7.23.5)
-      '@babel/types': 7.23.5
+      '@babel/types': 7.23.0
       babel-plugin-polyfill-corejs2: 0.4.5(@babel/core@7.23.5)
       babel-plugin-polyfill-corejs3: 0.8.3(@babel/core@7.23.5)
       babel-plugin-polyfill-regenerator: 0.5.2(@babel/core@7.23.5)
@@ -11282,13 +11282,13 @@ packages:
       file-system-cache: 2.3.0
     dev: true
 
-  /@sveltejs/adapter-auto@2.1.0(@sveltejs/kit@1.22.4):
-    resolution: {integrity: sha512-o2pZCfATFtA/Gw/BB0Xm7k4EYaekXxaPGER3xGSY3FvzFJGTlJlZjBseaXwYSM94lZ0HniOjTokN3cWaLX6fow==}
+  /@sveltejs/adapter-auto@2.1.1(@sveltejs/kit@1.22.4):
+    resolution: {integrity: sha512-nzi6x/7/3Axh5VKQ8Eed3pYxastxoa06Y/bFhWb7h3Nu+nGRVxKAy3+hBJgmPCwWScy8n0TsstZjSVKfyrIHkg==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
     dependencies:
       '@sveltejs/kit': 1.22.4(svelte@4.1.2)(vite@5.0.7)
-      import-meta-resolve: 3.0.0
+      import-meta-resolve: 4.0.0
     dev: true
 
   /@sveltejs/kit@1.22.4(svelte@4.1.2)(vite@5.0.7):
@@ -21602,10 +21602,6 @@ packages:
   /import-lazy@4.0.0:
     resolution: {integrity: sha512-rKtvo6a868b5Hu3heneU+L4yEQ4jYKLtjpnPeUdK7h0yzXGmyBTypknlkCvHFBqfX9YlorEiMM6Dnq/5atfHkw==}
     engines: {node: '>=8'}
-    dev: true
-
-  /import-meta-resolve@3.0.0:
-    resolution: {integrity: sha512-4IwhLhNNA8yy445rPjD/lWh++7hMDOml2eHtd58eG7h+qK3EryMuuRbsHGPikCoAgIkkDnckKfWSk2iDla/ejg==}
     dev: true
 
   /import-meta-resolve@4.0.0:
