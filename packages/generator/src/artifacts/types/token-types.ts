@@ -29,7 +29,7 @@ const categories = [
 export function generateTokenTypes(ctx: Context) {
   const {
     tokens,
-    config: { theme, formatTokenName },
+    config: { theme },
   } = ctx
 
   const set = new Set<string>()
