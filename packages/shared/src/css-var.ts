@@ -1,13 +1,16 @@
 import { toHash } from './hash'
 
-const escRegex = /[^a-zA-Z0-9_\u0081-\uffff-]/g
-function esc(string: string) {
-  return `${string}`.replace(escRegex, (s) => `\\${s}`)
+const dashCaseRegex = /[^a-zA-Z0-9]+/g
+const dashTrimRegex = /^-+|-+$/g
+// Hello, 123!?@#$%^&*()  =>  hello-123
+function dashCase(string: string) {
+  return string.replace(dashCaseRegex, '-').replace(dashTrimRegex, '').toLowerCase()
 }
 
-const dashCaseRegex = /[A-Z]/g
-function dashCase(string: string) {
-  return string.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`)
+const escRegex = /[^a-zA-Z0-9_\u0081-\uffff-]/g
+const escDashRegex = /[A-Z]/g
+function esc(string: string) {
+  return string.replace(escRegex, (s) => `\\${s}`).replace(escDashRegex, (match) => `-${match.toLowerCase()}`)
 }
 
 export interface CssVar {
@@ -19,14 +22,20 @@ export interface CssVarOptions {
   fallback?: string
   prefix?: string
   hash?: boolean
+  formatCssVar?: 'escape' | 'dash'
+}
+
+const formatMapping = {
+  escape: esc,
+  dash: dashCase,
 }
 
 export function cssVar(name: string, options: CssVarOptions = {}): CssVar {
-  const { fallback = '', prefix = '', hash } = options
+  const { fallback = '', prefix = '', hash, formatCssVar = 'escape' } = options
 
-  const variable = hash
-    ? ['-', prefix, toHash(name)].filter(Boolean).join('-')
-    : dashCase(['-', prefix, esc(name)].filter(Boolean).join('-'))
+  let variable: string | string[] = hash ? [prefix, toHash(name)] : [prefix, formatMapping[formatCssVar](name)]
+
+  variable = `--${variable.filter(Boolean).join('-')}`
 
   const result = {
     var: variable,

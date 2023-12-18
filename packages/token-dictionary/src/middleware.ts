@@ -28,12 +28,13 @@ export const addNegativeTokens: TokenMiddleware = {
       node.value = calc.negate(originalVar)
 
       const last = node.path.at(-1)
+
       if (last != null) {
-        node.path[node.path.length - 1] = `-${last}`
+        node.path[node.path.length - 1] = `-${dictionary.formatTokenName([last])}`
       }
 
       if (node.path) {
-        node.name = node.path.join('.')
+        node.name = dictionary.formatTokenName(node.path)
       }
 
       dictionary.allTokens.push(node)
@@ -113,15 +114,17 @@ export const addVirtualPalette: TokenMiddleware = {
     })
 
     keys.forEach((key) => {
+      const path = key.split('.')
+      const name = dictionary.formatTokenName(['colors', 'colorPalette', ...path].filter(Boolean))
       const node = new Token({
-        name: ['colors.colorPalette', key].filter(Boolean).join('.'),
-        value: ['colors.colorPalette', key].filter(Boolean).join('.'),
-        path: ['colors', 'colorPalette', ...key.split('.')],
+        name,
+        value: name,
+        path: ['colors', 'colorPalette', ...path],
       })
 
       node.setExtensions({
         category: 'colors',
-        prop: ['colorPalette', key].filter(Boolean).join('.'),
+        prop: dictionary.formatTokenName(['colorPalette', key].filter(Boolean)),
         isVirtual: true,
       })
 

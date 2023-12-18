@@ -33,6 +33,12 @@ export function generateStringLiteralCssFn(ctx: Context) {
         resolveShorthand(prop) {
           return prop
         },
+        formatClassName(token) {
+          return token
+        },
+        classNameWithPrefix(className) {
+          return [this.prefix, className].filter(Boolean).join('${separator}')
+        }
       }
     }
 

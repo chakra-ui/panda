@@ -28,12 +28,13 @@ export class AtomicRule {
 
   hashFn = (conditions: string[], className: string) => {
     const { conditions: cond, hash, utility } = this.context
+
     let result: string
     if (hash) {
       const baseArray = [...cond.finalize(conditions), className]
-      result = utility.formatClassName(toHash(baseArray.join(':')))
+      result = utility.classNameWithPrefix(toHash(baseArray.join(':')))
     } else {
-      const baseArray = [...cond.finalize(conditions), utility.formatClassName(className)]
+      const baseArray = [...cond.finalize(conditions), utility.classNameWithPrefix(utility.formatClassName(className))]
       result = baseArray.join(':')
     }
     return esc(result)

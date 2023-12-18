@@ -14,6 +14,9 @@ export interface CreateCssContext {
    */
   utility: {
     prefix: string
+    separator: string
+    classNameWithPrefix: (className: string) => string
+    formatClassName: (token: string) => string
     hasShorthand: boolean
     resolveShorthand: (prop: string) => string
     transform: (prop: string, value: any) => { className: string }
@@ -39,15 +42,13 @@ const sanitize = (value: any) => (typeof value === 'string' ? value.replaceAll(/
 export function createCss(context: CreateCssContext) {
   const { utility, hash, conditions: conds = fallbackCondition } = context
 
-  const formatClassName = (str: string) => [utility.prefix, str].filter(Boolean).join('-')
-
   const hashFn = (conditions: string[], className: string) => {
     let result: string
     if (hash) {
       const baseArray = [...conds.finalize(conditions), className]
-      result = formatClassName(toHash(baseArray.join(':')))
+      result = utility.classNameWithPrefix(toHash(baseArray.join(':')))
     } else {
-      const baseArray = [...conds.finalize(conditions), formatClassName(className)]
+      const baseArray = [...conds.finalize(conditions), utility.classNameWithPrefix(className)]
       result = baseArray.join(':')
     }
     return result
@@ -65,7 +66,7 @@ export function createCss(context: CreateCssContext) {
       const [prop, ...allConditions] = conds.shift(paths)
       const conditions = filterBaseConditions(allConditions)
 
-      const transformed = utility.transform(prop, withoutImportant(sanitize(value)))
+      const transformed = utility.transform(prop, withoutImportant(sanitize(utility.formatClassName(value))))
 
       let className = hashFn(conditions, transformed.className)
       if (important) className = `${className}!`

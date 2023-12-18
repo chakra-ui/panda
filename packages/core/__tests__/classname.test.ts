@@ -77,4 +77,18 @@ describe('generate classnames', () => {
       }),
     ).toMatchInlineSnapshot('"[&_span]:fs_20px [.bold_&]:font_bold sm:fs_50px [@media_print]:fs_40px"')
   })
+
+  test('should format the class name', () => {
+    const css = createCss(
+      createContext({
+        formatClassName: (token) => token.replace('$', '').replace('.', '='),
+      }),
+    )
+    expect(
+      css({
+        color: 'pink.400',
+        background: '$pink.400',
+      }),
+    ).toMatchInlineSnapshot('"text_pink=400 bg_pink=400"')
+  })
 })

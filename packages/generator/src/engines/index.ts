@@ -67,7 +67,7 @@ export class Context {
 
   constructor(public conf: ConfigResultWithHooks) {
     const config = defaults(conf.config)
-    const theme = config.theme ?? {}
+    const theme = config.theme ?? { keyframes: {} }
     conf.config = config
 
     this.tokens = this.createTokenDictionary(theme)
@@ -122,6 +122,7 @@ export class Context {
       semanticTokens: theme.semanticTokens,
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
+      formatTokenName: this.config.formatTokenName,
     })
   }
 
@@ -133,6 +134,7 @@ export class Context {
       separator: config.separator,
       shorthands: config.shorthands,
       strictTokens: config.strictTokens,
+      formatClassName: config.formatClassName,
     })
   }
 

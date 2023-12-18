@@ -28,6 +28,7 @@ const css_obj = createCss({
     breakpoints: { keys: [] },
   },
   utility: {
+    separator: '_',
     prefix: '',
     hasShorthand: false,
     resolveShorthand(prop) {
@@ -35,6 +36,12 @@ const css_obj = createCss({
     },
     transform(prop, value) {
       return { className: `${prop}_${withoutSpace(value)}` }
+    },
+    formatClassName(token) {
+      return token
+    },
+    classNameWithPrefix(className) {
+      return [this.prefix, className].filter(Boolean).join('_')
     },
   },
 })

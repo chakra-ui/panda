@@ -56,6 +56,10 @@ describe('generate recipes', () => {
            utility: {
              
              transform,
+             formatClassName: (token) => token,
+             classNameWithPrefix(className) {
+               return [this.prefix, className].filter(Boolean).join('_')
+             }
            }
          })
 

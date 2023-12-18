@@ -16,6 +16,7 @@ export interface UtilityOptions {
   tokens: TokenDictionary
   separator?: string
   prefix?: string
+  formatClassName?: (token: string) => string
   shorthands?: boolean
   strictTokens?: boolean
 }
@@ -62,6 +63,11 @@ export class Utility {
   customValues: Map<string, string> = new Map()
 
   /**
+   * The function to format the class name based on the token final token
+   */
+  formatClassName = (token: string) => token
+
+  /**
    * The map of property names to their transform functions
    */
   private transforms: Map<string, PropertyTransform> = new Map()
@@ -78,7 +84,7 @@ export class Utility {
   strictTokens = false
 
   constructor(options: UtilityOptions) {
-    const { tokens, config = {}, separator, prefix, shorthands, strictTokens } = options
+    const { tokens, config = {}, separator, prefix, shorthands, strictTokens, formatClassName } = options
 
     this.tokens = tokens
     this.config = config
@@ -93,6 +99,10 @@ export class Utility {
 
     if (strictTokens) {
       this.strictTokens = strictTokens
+    }
+
+    if (formatClassName) {
+      this.formatClassName = formatClassName
     }
 
     if (shorthands) {
@@ -327,9 +337,7 @@ export class Utility {
     return this
   }
 
-  formatClassName = (className: string) => {
-    return [this.prefix, className].filter(Boolean).join('-')
-  }
+  classNameWithPrefix = (className: string) => [this.prefix, className].filter(Boolean).join(this.separator)
 
   private setClassName = (property: string, raw: string) => {
     const propKey = this.getPropKey(property, raw)

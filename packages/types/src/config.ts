@@ -249,6 +249,11 @@ interface CssgenOptions {
    * @default 'object-literal'
    */
   syntax?: 'template-literal' | 'object-literal'
+  /**
+   * How to format the css variables.
+   * @default 'escape'
+   */
+  formatCssVar?: 'escape' | 'dash'
 }
 
 interface CodegenOptions {
@@ -258,10 +263,18 @@ interface CodegenOptions {
    */
   emitPackage?: boolean
   /**
-   * Whether to only emit the `tokens` directory
+   * Whether to only emit the `tokens` directory.
    * @default false
    */
   emitTokensOnly?: boolean
+  /**
+   * Format the tokens based on the theme definitions.
+   */
+  formatTokenName?: (path: string[]) => string
+  /**
+   * Format how a token should be used in the class name.
+   */
+  formatClassName?: (token: string) => string
   /**
    * Whether to hash the generated class names / css variables.
    * This is useful if want to shorten the class names or css variables.
@@ -278,7 +291,7 @@ interface CodegenOptions {
    */
   gitignore?: boolean
   /**
-   * Whether to allow shorthand properties
+   * Whether to allow shorthand properties.
    * @default 'true'
    */
   shorthands?: boolean

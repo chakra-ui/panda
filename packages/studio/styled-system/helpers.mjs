@@ -138,14 +138,13 @@ var fallbackCondition = {
 var sanitize = (value) => typeof value === "string" ? value.replaceAll(/[\n\s]+/g, " ") : value;
 function createCss(context) {
   const { utility, hash, conditions: conds = fallbackCondition } = context;
-  const formatClassName = (str) => [utility.prefix, str].filter(Boolean).join("-");
   const hashFn = (conditions, className) => {
     let result;
     if (hash) {
       const baseArray = [...conds.finalize(conditions), className];
-      result = formatClassName(toHash(baseArray.join(":")));
+      result = utility.classNameWithPrefix(toHash(baseArray.join(":")));
     } else {
-      const baseArray = [...conds.finalize(conditions), formatClassName(className)];
+      const baseArray = [...conds.finalize(conditions), utility.classNameWithPrefix(className)];
       result = baseArray.join(":");
     }
     return result;
@@ -159,7 +158,7 @@ function createCss(context) {
         return;
       const [prop, ...allConditions] = conds.shift(paths);
       const conditions = filterBaseConditions(allConditions);
-      const transformed = utility.transform(prop, withoutImportant(sanitize(value)));
+      const transformed = utility.transform(prop, withoutImportant(sanitize(utility.formatClassName(value))));
       let className = hashFn(conditions, transformed.className);
       if (important)
         className = `${className}!`;

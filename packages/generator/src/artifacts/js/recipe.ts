@@ -14,7 +14,7 @@ export function generateCreateRecipe(ctx: Context) {
     recipes,
     prefix,
     hash,
-    utility: { separator },
+    utility: { separator, formatClassName },
   } = ctx
 
   if (recipes.isEmpty()) return
@@ -60,6 +60,10 @@ export function generateCreateRecipe(ctx: Context) {
         utility: {
           ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
           transform,
+          formatClassName: ${formatClassName ?? 'token => token'},
+          classNameWithPrefix(className) {
+            return [this.prefix, className].filter(Boolean).join('${separator}')
+          }
         }
       })
 

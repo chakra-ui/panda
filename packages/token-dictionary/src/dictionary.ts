@@ -26,6 +26,7 @@ export interface TokenDictionaryOptions {
   breakpoints?: Record<string, string>
   prefix?: string
   hash?: boolean
+  formatTokenName?: (path: string[]) => string
 }
 
 export interface TokenMiddleware {
@@ -50,13 +51,14 @@ export class TokenDictionary {
   allTokens: Token[] = []
   prefix: string | undefined
   hash: boolean | undefined
+  formatTokenName = (path: string[]) => path.join('.')
 
   get allNames() {
     return Array.from(new Set(this.allTokens.map((token) => token.name)))
   }
 
   constructor(options: TokenDictionaryOptions) {
-    const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash } = options
+    const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash, formatTokenName } = options
 
     const breakpointTokens = expandBreakpoints(breakpoints)
 
@@ -72,6 +74,10 @@ export class TokenDictionary {
     this.prefix = prefix
     this.hash = hash
 
+    if (formatTokenName) {
+      this.formatTokenName = formatTokenName
+    }
+
     walkObject(
       computedTokens,
       (token, path) => {
@@ -79,13 +85,13 @@ export class TokenDictionary {
         assertTokenFormat(token)
 
         const category = path[0]
-        const name = path.join('.')
+        const name = this.formatTokenName(path)
 
         const node = new Token({ ...token, name, path })
 
         node.setExtensions({
           category,
-          prop: path.slice(1).join('.'),
+          prop: this.formatTokenName(path.slice(1)),
         })
 
         this.allTokens.push(node)
@@ -100,7 +106,7 @@ export class TokenDictionary {
         assertTokenFormat(token)
 
         const category = path[0]
-        const name = path.join('.')
+        const name = this.formatTokenName(path)
 
         const normalizedToken =
           isString(token.value) || isCompositeTokenValue(token.value) ? { value: { base: token.value } } : token
@@ -117,7 +123,7 @@ export class TokenDictionary {
         node.setExtensions({
           category,
           conditions: value,
-          prop: path.slice(1).join('.'),
+          prop: this.formatTokenName(path.slice(1)),
         })
 
         this.allTokens.push(node)

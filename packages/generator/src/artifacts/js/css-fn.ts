@@ -4,7 +4,7 @@ import type { Context } from '../../engines'
 export function generateCssFn(ctx: Context) {
   const { utility, hash, prefix, conditions } = ctx
 
-  const { separator, getPropShorthands } = utility
+  const { separator, getPropShorthands, formatClassName, hasShorthand } = utility
 
   return {
     dts: outdent`
@@ -59,7 +59,7 @@ export function generateCssFn(ctx: Context) {
 
     const classNameByProp = new Map()
     ${
-      utility.hasShorthand
+      hasShorthand
         ? outdent`
     const shorthands = new Map()
     utilities.split(',').forEach((utility) => {
@@ -93,7 +93,7 @@ export function generateCssFn(ctx: Context) {
       utility: {
         ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
         transform: ${
-          utility.hasShorthand
+          hasShorthand
             ? `(prop, value) => {
               const key = resolveShorthand(prop)
               const propKey = classNameByProp.get(key) || hypenateProperty(key)
@@ -101,8 +101,12 @@ export function generateCssFn(ctx: Context) {
             }`
             : `(key, value) => ({ className: \`$\{classNameByProp.get(key) || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
         },
-        ${utility.hasShorthand ? 'hasShorthand: true,' : ''}
-        resolveShorthand: ${utility.hasShorthand ? 'resolveShorthand' : 'prop => prop'},
+        ${hasShorthand ? 'hasShorthand: true,' : ''}
+        resolveShorthand: ${hasShorthand ? 'resolveShorthand' : 'prop => prop'},
+        formatClassName: ${formatClassName ?? 'token => token'},
+        classNameWithPrefix(className) {
+          return [this.prefix, className].filter(Boolean).join('${separator}')
+        }
       }
     }
 

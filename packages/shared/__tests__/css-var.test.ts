@@ -46,4 +46,13 @@ describe('css var', () => {
       }
     `)
   })
+
+  test('with dashed var format', () => {
+    expect(cssVar('%%%colors-special-.*+?^${}()|[]\\red-200%%%', { formatCssVar: 'dash' })).toMatchInlineSnapshot(`
+      {
+        "ref": "var(--colors-special-red-200)",
+        "var": "--colors-special-red-200",
+      }
+    `)
+  })
 })

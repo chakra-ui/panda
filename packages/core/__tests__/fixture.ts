@@ -5,10 +5,16 @@ import { Conditions, Layers, Recipes, Utility } from '../src'
 import { createAtomicRule } from '../src/atomic-rule'
 import type { StylesheetContext } from '../src/types'
 
-type ContextOptions = Partial<Omit<StylesheetContext, 'recipes'>> & { prefix?: string; recipes?: Dict }
+type ContextOptions = Partial<Omit<StylesheetContext, 'recipes'>> & {
+  recipes?: Dict
+  prefix?: string
+  formatTokenName?: (path: string[]) => string
+  formatClassName?: (token: string) => string
+  formatCssVar?: 'escape' | 'dash'
+}
 
 export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
-  const { hash, prefix, recipes: recipeObj = {}, ...rest } = opts
+  const { hash, prefix, formatTokenName, formatClassName, recipes: recipeObj = {}, ...rest } = opts
 
   const conditions = new Conditions({
     conditions: mocks.conditions,
@@ -19,6 +25,7 @@ export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
     tokens: mocks.tokens,
     semanticTokens: mocks.semanticTokens,
     prefix,
+    formatTokenName,
   })
 
   const utility = new Utility({
@@ -26,6 +33,7 @@ export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
     tokens,
     prefix,
     shorthands: true,
+    formatClassName,
   })
 
   const layers = new Layers(mocks.layers)
