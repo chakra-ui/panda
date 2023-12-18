@@ -1400,8 +1400,8 @@ importers:
         specifier: 5.2.0
         version: 5.2.0
       git-url-parse:
-        specifier: 13.1.0
-        version: 13.1.0
+        specifier: 13.1.1
+        version: 13.1.1
       intersection-observer:
         specifier: 0.12.2
         version: 0.12.2
@@ -8449,7 +8449,7 @@ packages:
       destr: 2.0.0
       dotenv: 16.3.1
       fs-extra: 11.1.1
-      git-url-parse: 13.1.0
+      git-url-parse: 13.1.1
       is-docker: 3.0.0
       jiti: 1.19.1
       mri: 1.2.0
@@ -20735,8 +20735,8 @@ packages:
       is-ssh: 1.4.0
       parse-url: 8.1.0
 
-  /git-url-parse@13.1.0:
-    resolution: {integrity: sha512-5FvPJP/70WkIprlUZ33bm4UAaFdjcLkJLpWft1BeZKqwR0uhhNGoKwlUaPtVb4LxCSQ++erHapRak9kWGj+FCA==}
+  /git-url-parse@13.1.1:
+    resolution: {integrity: sha512-PCFJyeSSdtnbfhSNRw9Wk96dDCNx+sogTe4YNXeXSJxt7xz5hvXekuRn9JX7m+Mf4OscCu8h+mtAl3+h5Fo8lQ==}
     dependencies:
       git-up: 7.0.0
 
