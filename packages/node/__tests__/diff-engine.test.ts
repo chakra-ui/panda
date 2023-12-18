@@ -70,84 +70,6 @@ describe('DiffEngine affecteds', () => {
       [
         {
           "path": [
-            "utilities",
-            "colorPalette",
-          ],
-          "type": "CREATE",
-          "value": {
-            "transform": "transform(value) {
-              return values[value];
-            }",
-            "values": [
-              "current",
-              "black",
-              "white",
-              "transparent",
-              "rose",
-              "pink",
-              "fuchsia",
-              "purple",
-              "violet",
-              "indigo",
-              "blue",
-              "sky",
-              "cyan",
-              "teal",
-              "emerald",
-              "green",
-              "lime",
-              "yellow",
-              "amber",
-              "orange",
-              "red",
-              "neutral",
-              "stone",
-              "zinc",
-              "gray",
-              "slate",
-              "deep",
-              "deep.test",
-              "deep.test.pool",
-              "primary",
-              "secondary",
-              "complex",
-              "surface",
-              "button",
-              "button.card",
-            ],
-          },
-        },
-        {
-          "path": [
-            "utilities",
-            "textStyle",
-          ],
-          "type": "CREATE",
-          "value": {
-            "className": "textStyle",
-            "layer": "compositions",
-            "transform": "(value) => {
-              return __vite_ssr_import_1__.serializeStyle(flatValues[value], ctx);
-            }",
-            "values": [
-              "xs",
-              "sm",
-              "md",
-              "lg",
-              "xl",
-              "2xl",
-              "3xl",
-              "4xl",
-              "5xl",
-              "6xl",
-              "7xl",
-              "8xl",
-              "9xl",
-            ],
-          },
-        },
-        {
-          "path": [
             "theme",
             "tokens",
             "colors",
@@ -742,5 +664,28 @@ describe('DiffEngine affecteds', () => {
         },
       ]
     `)
+  })
+
+  test('nothing changes', () => {
+    const defaultConfig = (): Config => ({
+      outdir: '',
+      cwd: '',
+      cssVarRoot: ':where(html)',
+      ...fixtureConfig,
+    })
+
+    const config = defaultConfig() as UserConfig
+    const generator = new Generator(createConfigResult(config))
+    const diffEngine = new DiffEngine(generator)
+    const nextConfig = mergeConfigs([{}, config, {}])
+
+    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(affecteds.artifacts).toMatchInlineSnapshot('Set {}')
+    expect(affecteds.diffs).toMatchInlineSnapshot('[]')
+
+    const resetConfig = mergeConfigs([defaultConfig()])
+    const affectedsAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
+    expect(affectedsAfterReset.artifacts).toMatchInlineSnapshot('Set {}')
+    expect(affecteds.diffs).toMatchInlineSnapshot('[]')
   })
 })
