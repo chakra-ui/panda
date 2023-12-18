@@ -2443,7 +2443,7 @@ describe('Utility', () => {
     `)
   })
 
-  test.only('allow retrieving the token object with the raw value', () => {
+  test('allow retrieving the token object with the raw value', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({
         tokens: { colors: { someColor: { value: '#aabbcc' } } },
