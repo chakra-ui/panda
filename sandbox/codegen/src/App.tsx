@@ -9,7 +9,7 @@ export default function App() {
           display: 'flex',
           flexDir: 'column',
           fontWeight: 'semibold',
-          color: 'blue.300',
+          color: '$red-500',
           textAlign: 'center',
           textStyle: '4xl',
         })}

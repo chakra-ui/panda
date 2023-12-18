@@ -17,4 +17,9 @@ export default defineConfig({
 
   // The JSX framework to use
   jsxFramework: 'react',
+
+  // Stitches preset
+  formatTokenName: (path) => `$${path.join('-')}`,
+  formatClassName: (token) => token.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+  formatCssVar: 'dash',
 })
