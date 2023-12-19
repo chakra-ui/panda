@@ -96,28 +96,6 @@ const styles = css({ bg: '|' })
 
 > You can also enable the `strictTokens: true` setting in the Panda configuration. This allows only token values and prevents the use of custom or raw CSS values.
 
-### Numeric values
-
-If you use React, you might be familar with the fact that it auto-converts some CSS properties to "px".
-
-**Panda does not auto convert numeric values** and requires that you use "px" when needed. This also helps to differentiate between token values and raw CSS values.
-
-```jsx
-import { css } from '../styled-system/css'
-
-// ❌ Won't work
-const styles = css({
-  fontSize: 13,
-  paddingTop: 10
-})
-
-// ✅ Works
-const styles = css({
-  fontSize: '13px',
-  paddingTop: '10px'
-})
-```
-
 ## Nested Styles
 
 Panda provides different ways of nesting style declarations. You can use the native css nesting syntax, or the built-in pseudo props like `_hover` and `_focus`. Pseudo props are covered more in-depth in the next section.
