@@ -68,7 +68,9 @@ export class Stylesheet {
     this.processCompoundVariants(config)
   }
 
-  processAtomicSlotRecipe = (recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants' | 'slots'>) => {
+  processAtomicSlotRecipe = (
+    recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'> & Partial<Pick<SlotRecipeConfig, 'slots'>>,
+  ) => {
     if (!recipe.slots) {
       const slots = new Set<string>()
       Object.keys(recipe.base ?? {}).forEach((name) => {
