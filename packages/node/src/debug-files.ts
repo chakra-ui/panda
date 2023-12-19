@@ -20,8 +20,6 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
     return
   }
 
-  const filesWithCss = []
-
   const results = await Promise.all(
     files.map(async (file) => {
       const measure = logger.time.debug(`Parsed ${file}`)
@@ -31,9 +29,9 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
     }),
   )
 
-  results.forEach(({ file, result }) => {
-    if (!result) return
+  const filteredResults = results.filter(({ result }) => result && !result.isEmpty())
 
+  filteredResults.forEach(({ file, result }) => {
     // clean the stylesheet
     ctx.stylesheet.clean()
 
@@ -45,7 +43,6 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
     }
 
     if (outdir) {
-      filesWithCss.push(file)
       const parsedPath = parse(file)
       const relative = path.relative(ctx.config.cwd, parsedPath.dir)
 
@@ -56,13 +53,13 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
 
       return Promise.allSettled([
-        fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result.toJSON(), null, 2)),
+        fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result!.toJSON(), null, 2)),
         fs.writeFile(`${outdir}/${cssPath}`, css),
       ])
     }
   })
 
-  logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
+  logger.info('cli', `Found ${colors.bold(`${filteredResults.length}/${files.length}`)} files using Panda`)
 
   measureTotal()
 }
