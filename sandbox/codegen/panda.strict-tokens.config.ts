@@ -13,7 +13,7 @@ export default defineConfig({
   exclude: [],
 
   // The output directory for your css system
-  outdir: 'styled-system-strict',
+  outdir: 'styled-system-strict-tokens',
 
   // The JSX framework to use
   jsxFramework: 'react',

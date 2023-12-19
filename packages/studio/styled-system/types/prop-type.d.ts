@@ -309,19 +309,19 @@ interface PropertyValueTypes {
 	y: Shorthand<"translateY">;
 }
 
+type WithArbitraryValue<T> = T
+type PropOrCondition<T> = ConditionalValue<T | (string & {})>
 
+type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+  ? PropOrCondition<PropertyTypes[T] | CssValue<T>>
+  : never;
 
-  type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-    ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
-    : never;
+type CssPropertyValue<T extends string> = T extends keyof CssProperties
+  ? PropOrCondition<CssProperties[T]>
+  : never;
 
-  type CssPropertyValue<T extends string> = T extends keyof CssProperties
-    ? ConditionalValue<CssProperties[T] | (string & {})>
-    : never;
-
-  export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-    ? PropertyTypeValue<T>
-    : T extends keyof CssProperties
-      ? CssPropertyValue<T>
-      : ConditionalValue<string | number>
-  
+export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+  ? PropertyTypeValue<T>
+  : T extends keyof CssProperties
+    ? CssPropertyValue<T>
+    : PropOrCondition<string | number>

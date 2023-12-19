@@ -43,19 +43,17 @@ export function generatePropTypes(ctx: Context) {
   return outdent`
   ${result.join('\n')}
 
-  ${
-    strictTokens
-      ? `
-  type FilterString<T> = T extends \`\${infer _}\` ? T : never;
-  type WithArbitraryValue<T> = T | \`[\${string}]\`
-  type PropOrCondition<T> = ConditionalValue<WithArbitraryValue<T>>;
+  type WithArbitraryValue<T> = ${strictTokens ? `T | \`[\${string}]\`` : 'T'}
+  type PropOrCondition<T> = ${
+    strictTokens ? 'ConditionalValue<WithArbitraryValue<T>>' : 'ConditionalValue<T | (string & {})>'
+  }
 
   type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-    ? PropOrCondition<FilterString<PropertyTypes[T]>>
+    ? PropOrCondition<PropertyTypes[T]${strictTokens ? '' : ' | CssValue<T>'}>
     : never;
 
   type CssPropertyValue<T extends string> = T extends keyof CssProperties
-    ? PropOrCondition<FilterString<CssProperties[T]>>
+    ? PropOrCondition<CssProperties[T]>
     : never;
 
   export type PropertyValue<T extends string> = T extends keyof PropertyTypes
@@ -63,23 +61,5 @@ export function generatePropTypes(ctx: Context) {
     : T extends keyof CssProperties
       ? CssPropertyValue<T>
       : PropOrCondition<string | number>
-    `
-      : `
-
-  type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-    ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
-    : never;
-
-  type CssPropertyValue<T extends string> = T extends keyof CssProperties
-    ? ConditionalValue<CssProperties[T] | (string & {})>
-    : never;
-
-  export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-    ? PropertyTypeValue<T>
-    : T extends keyof CssProperties
-      ? CssPropertyValue<T>
-      : ConditionalValue<string | number>
-  `
-  }
   `
 }

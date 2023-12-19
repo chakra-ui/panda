@@ -1,12 +1,13 @@
 import { assertType, describe, test } from 'vitest'
-import { css } from '../../styled-system-strict/css'
+import { css } from '../../styled-system-strict-tokens/css'
 
 describe('css', () => {
   test('native CSS prop and value', () => {
     assertType(css({ display: 'flex' }))
 
-    // @ts-expect-error expected from strictTokens: true
     assertType(css({ display: 'abc' }))
+    assertType(css({ content: 'abc' }))
+    assertType(css({ willChange: 'abc' }))
   })
 
   test('token value', () => {
@@ -16,7 +17,6 @@ describe('css', () => {
   test('utility prop', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictTokens: true
         srOnly: true,
       }),
     )
@@ -75,12 +75,18 @@ describe('css', () => {
       css({
         color: '[#fff]',
         fontSize: '[123px]',
+        bgColor: '[#fff!]',
+        borderColor: '[#fff !important]',
         _hover: {
           color: '[#fff]',
           fontSize: '[123px]',
+          bgColor: '[#fff!]',
+          borderColor: '[#fff !important]',
         },
         backgroundColor: {
           _dark: '[#3B00B9]',
+          _hover: '[#3B00B9!]',
+          _focus: '[#3B00B9 !important]',
         },
       }),
     )
@@ -88,6 +94,39 @@ describe('css', () => {
 
   test('arbitrary selector', () => {
     assertType(css({ ['&:data-panda']: { display: 'flex' } }))
+  })
+
+  test('important', () => {
+    assertType(
+      css({
+        // @ts-expect-error expected from strictTokens: true
+        fontSize: '2xl!',
+        // @ts-expect-error expected from strictTokens: true
+        p: '4 !important',
+        // @ts-expect-error expected from strictTokens: true
+        bgColor: '#fff!',
+        // @ts-expect-error expected from strictTokens: true
+        borderColor: '#fff !important',
+        _hover: {
+          // @ts-expect-error expected from strictTokens: true
+          fontSize: '2xl!',
+          // @ts-expect-error expected from strictTokens: true
+          p: '4 !important',
+          // @ts-expect-error expected from strictTokens: true
+
+          bgColor: '#fff!',
+          // @ts-expect-error expected from strictTokens: true
+          borderColor: '#fff !important',
+        },
+        // @ts-expect-error expected from strictTokens: true
+        backgroundColor: {
+          _disabled: '2xl!',
+          _active: '4 !important',
+          _hover: '#3B00B9!',
+          _focus: '#3B00B9 !important',
+        },
+      }),
+    )
   })
 
   test('responsive condition', () => {
