@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { cssParser } from './fixture'
+import { cssTemplateLiteralParser } from './fixture'
 
 describe('ast parser / string literal', () => {
   test('should parse', () => {
@@ -19,7 +19,7 @@ describe('ast parser / string literal', () => {
     \`
      `
 
-    expect(cssParser(code)).toMatchInlineSnapshot(`
+    expect(cssTemplateLiteralParser(code)).toMatchInlineSnapshot(`
       {
         "css": Set {
           {

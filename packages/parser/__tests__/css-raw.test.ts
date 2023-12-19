@@ -40,77 +40,77 @@ describe('{fn}.raw', () => {
     const result = parseAndExtract(code)
 
     expect(result.json).toMatchInlineSnapshot(`
-          [
+      [
+        {
+          "data": [
             {
-              "data": [
-                {
-                  "color": "amber.100",
-                  "mx": "3",
-                  "paddingTop": "4",
-                },
-                {
-                  "color": "blue.950",
-                  "mx": "10",
-                  "pt": "6",
-                },
-              ],
-              "name": "css",
-              "type": "object",
+              "color": "amber.100",
+              "mx": "3",
+              "paddingTop": "4",
             },
             {
-              "data": [
-                {
-                  "bg": "red.400",
-                },
-              ],
-              "name": "css",
-              "type": "object",
+              "color": "blue.950",
+              "mx": "10",
+              "pt": "6",
             },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
             {
-              "data": [
-                {},
-              ],
-              "name": "ButtonStyle",
-              "type": "jsx-recipe",
+              "bg": "red.400",
             },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ButtonStyle",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
             {
-              "data": [
-                {
-                  "shape": "circle",
-                  "size": "sm",
-                  "visual": "funky",
-                },
-              ],
-              "name": "buttonStyle",
-              "type": "recipe",
+              "shape": "circle",
+              "size": "sm",
+              "visual": "funky",
             },
+          ],
+          "name": "buttonStyle",
+          "type": "recipe",
+        },
+        {
+          "data": [
             {
-              "data": [
-                {
-                  "direction": "column",
-                },
-              ],
-              "name": "stack",
-              "type": "pattern",
+              "direction": "column",
             },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
             {
-              "data": [
-                {
-                  "direction": "row",
-                },
-              ],
-              "name": "stack",
-              "type": "pattern",
+              "direction": "row",
             },
-            {
-              "data": [
-                {},
-              ],
-              "name": "stack",
-              "type": "pattern",
-            },
-          ]
-        `)
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+      ]
+    `)
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {

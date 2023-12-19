@@ -41,6 +41,7 @@ const defaults: Omit<LoadConfigResult, 'serialized' | 'deserialize'> = {
     },
     outdir: '.panda',
     jsxFactory: 'panda',
+    jsxFramework: 'react',
   },
   path: '',
 }
@@ -69,6 +70,7 @@ export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: 
     getFiles: () => [staticFilePath],
     readFile: () => code,
     parserOptions: {
+      isTemplateLiteralSyntax: false,
       join(...paths) {
         return paths.join('/')
       },
@@ -93,6 +95,14 @@ export function importParser(code: string, option: { name: string; module: strin
 
 export function cssParser(code: string) {
   const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
+  return {
+    css: data.css,
+  }
+}
+
+export function cssTemplateLiteralParser(code: string) {
+  const project = getProject(code, { syntax: 'template-literal' })
   const data = project.parseSourceFile(staticFilePath)!
   return {
     css: data.css,

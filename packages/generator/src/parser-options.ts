@@ -42,6 +42,7 @@ export const getParserOptions = (ctx: Context): ParserOptions => {
       isStyleProp: isValidProperty,
       nodes: [...patterns.details, ...recipes.details],
     },
+    isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
     patternKeys: patterns.keys,
     recipeKeys: recipes.keys,
     getRecipesByJsxName: recipes.filter,
