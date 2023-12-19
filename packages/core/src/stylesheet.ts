@@ -72,16 +72,7 @@ export class Stylesheet {
     recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'> & Partial<Pick<SlotRecipeConfig, 'slots'>>,
   ) => {
     if (!recipe.slots) {
-      const slots = new Set<string>()
-      Object.keys(recipe.base ?? {}).forEach((name) => {
-        slots.add(name)
-      })
-
-      Object.keys(recipe.variants ?? {}).forEach((name) => {
-        slots.add(name)
-      })
-
-      recipe.slots = Array.from(slots)
+      recipe.slots = Array.from(inferSlots(recipe as any))
     }
 
     const slots = getSlotRecipes(recipe)
@@ -164,4 +155,19 @@ export class Stylesheet {
   clean = () => {
     this.context.layers.clean()
   }
+}
+
+const inferSlots = (recipe: SlotRecipeConfig) => {
+  const slots = new Set<string>()
+  Object.keys(recipe.base ?? {}).forEach((name) => {
+    slots.add(name)
+  })
+
+  Object.values(recipe.variants ?? {}).forEach((variants) => {
+    Object.keys(variants).forEach((name) => {
+      slots.add(name)
+    })
+  })
+
+  return slots
 }
