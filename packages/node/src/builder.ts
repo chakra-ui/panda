@@ -1,6 +1,7 @@
 import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import type { ParserResult } from '@pandacss/parser'
 import { existsSync } from 'fs'
 import fsExtra from 'fs-extra'
 import pLimit from 'p-limit'
@@ -12,7 +13,6 @@ import type { DiffConfigResult } from './diff-engine'
 import { emitArtifacts } from './emit-artifact'
 import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
-import type { ParserResult } from '@pandacss/parser'
 
 const parserResultMap = new Map<string, ParserResult>()
 const fileModifiedMap = new Map<string, number>()
@@ -108,7 +108,7 @@ export class Builder {
   extractFile = async (ctx: PandaContext, file: string) => {
     const meta = this.getFileMeta(file)
 
-    if (meta.isUnchanged) {
+    if (meta.isUnchanged && this.affecteds?.hasConfigChanged) {
       ctx.appendParserCss(parserResultMap.get(file)!)
       return
     }

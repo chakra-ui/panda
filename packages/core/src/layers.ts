@@ -113,6 +113,20 @@ export class Layers {
 
   clean() {
     this.root.removeAll()
+    this.base.removeAll()
+    this.reset.removeAll()
+    this.tokens.removeAll()
+
+    this.recipes.root.removeAll()
+    this.recipes.base.removeAll()
+
+    this.slotRecipes.root.removeAll()
+    this.slotRecipes.base.removeAll()
+
+    this.utilities.root.removeAll()
+    this.utilities.compositions.removeAll()
+    this.utilityRuleMap.forEach((rules) => rules.removeAll())
+    this.utilityRuleMap.clear()
   }
 
   get layerNames() {
