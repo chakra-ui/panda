@@ -308,8 +308,9 @@ export function createParser(options: ParserOptions) {
     measure()
 
     extractResultByName.forEach((result, alias) => {
-      let name = imports.getName(alias)
+      let name = alias
       if (isRawFn(name)) name = name.replace('.raw', '')
+      name = imports.getName(name)
 
       logger.debug(`ast:${name}`, name !== alias ? { kind: result.kind, alias } : { kind: result.kind })
 

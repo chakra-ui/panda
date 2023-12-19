@@ -3054,4 +3054,37 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('extract aliased {xxx}.raw', () => {
+    const code = `
+    import { css } from '.panda/css';
+    import { styled } from '.panda/jsx';
+    import { cardStyle as aliasedCard } from '.panda/recipes';
+
+    const className = aliasedCard.raw({ rounded: true })
+
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "rounded": true,
+            },
+          ],
+          "name": "cardStyle",
+          "type": "recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .card--rounded_true {
+          border-radius: 0.375rem
+          }
+      }"
+    `)
+  })
 })
