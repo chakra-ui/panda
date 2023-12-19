@@ -70,7 +70,6 @@ export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: 
     getFiles: () => [staticFilePath],
     readFile: () => code,
     parserOptions: {
-      isTemplateLiteralSyntax: false,
       join(...paths) {
         return paths.join('/')
       },

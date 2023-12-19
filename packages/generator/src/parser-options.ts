@@ -70,6 +70,7 @@ export interface ParserJsxOptions {
 export interface ParserOptions {
   importMap: ParserImportMap
   jsx: ParserJsxOptions
+  isTemplateLiteralSyntax: boolean
   patternKeys: Context['patterns']['keys']
   recipeKeys: Context['recipes']['keys']
   getRecipesByJsxName: Context['recipes']['filter']
