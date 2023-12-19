@@ -14,7 +14,7 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
 
     const cssProps = match(jsxStyleProps)
       .with('all', () => 'styleProps')
-      .with('minimal', () => '{ css: styleProps }')
+      .with('minimal', () => '{ css: mergeCss(styleProps, props.css) }')
       .with('none', () => '{}')
       .exhaustive()
 
@@ -23,6 +23,7 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
       js: outdent`
       import { h } from 'preact'
       import { forwardRef } from 'preact/compat'
+      ${ctx.file.import('mergeCss', '../css/css')}
       ${ctx.file.import(factoryName, './factory')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
 

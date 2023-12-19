@@ -90,7 +90,7 @@ function walkObject(target, predicate, options = {}) {
 }
 function mapObject(obj, fn) {
   if (Array.isArray(obj))
-    return obj.map(fn);
+    return obj.map((value) => fn(value));
   if (!isObject(obj))
     return fn(obj);
   return walkObject(obj, (value) => fn(value));

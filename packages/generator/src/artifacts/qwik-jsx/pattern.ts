@@ -14,7 +14,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
 
     const cssProps = match(jsxStyleProps)
       .with('all', () => 'styleProps')
-      .with('minimal', () => '{ css: styleProps }')
+      .with('minimal', () => '{ css: mergeCss(styleProps, props.css) }')
       .with('none', () => '{}')
       .exhaustive()
 
@@ -22,6 +22,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
       name: dashName,
       js: outdent`
       import { h } from '@builder.io/qwik'
+      ${ctx.file.import('mergeCss', '../css/css')}
       ${ctx.file.import(factoryName, './factory')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
 

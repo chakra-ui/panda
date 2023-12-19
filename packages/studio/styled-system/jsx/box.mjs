@@ -1,4 +1,5 @@
 import { createElement, forwardRef } from 'react'
+import { mergeCss } from '../css/css.mjs';
 import { panda } from './factory.mjs';
 import { getBoxStyle } from '../patterns/box.mjs';
 

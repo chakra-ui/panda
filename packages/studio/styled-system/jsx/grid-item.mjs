@@ -1,4 +1,5 @@
 import { createElement, forwardRef } from 'react'
+import { mergeCss } from '../css/css.mjs';
 import { panda } from './factory.mjs';
 import { getGridItemStyle } from '../patterns/grid-item.mjs';
 

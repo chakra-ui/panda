@@ -15,7 +15,7 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
 
     const cssProps = match(jsxStyleProps)
       .with('all', () => 'styleProps')
-      .with('minimal', () => '{ css: styleProps }')
+      .with('minimal', () => '{ css: mergeCss(styleProps, props.css) }')
       .with('none', () => '{}')
       .exhaustive()
 
@@ -23,6 +23,7 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
       name: dashName,
       js: outdent`
     import { defineComponent, h, computed } from 'vue'
+    ${ctx.file.import('mergeCss', '../css/css')}
     ${ctx.file.import(factoryName, './factory')}
     ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
 
@@ -44,7 +45,7 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
             .otherwise(
               () => outdent`
               const styleProps = computed(() => ${styleFnName}(props))
-              const cssProps = computed(() => ${cssProps}.value)
+              const cssProps = computed(() => (${cssProps}).value)
               return () => {
                   const computedProps = { ...cssProps.value, ...attrs }
                   return h(${factoryName}.${jsxElement}, computedProps, slots)
