@@ -68,8 +68,22 @@ export class Stylesheet {
     this.processCompoundVariants(config)
   }
 
-  processAtomicSlotRecipe = (recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
+  processAtomicSlotRecipe = (recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants' | 'slots'>) => {
+    if (!recipe.slots) {
+      const slots = new Set<string>()
+      Object.keys(recipe.base ?? {}).forEach((name) => {
+        slots.add(name)
+      })
+
+      Object.keys(recipe.variants ?? {}).forEach((name) => {
+        slots.add(name)
+      })
+
+      recipe.slots = Array.from(slots)
+    }
+
     const slots = getSlotRecipes(recipe)
+
     for (const slotRecipe of Object.values(slots)) {
       this.processAtomicRecipe(slotRecipe)
     }

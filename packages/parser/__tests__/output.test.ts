@@ -3087,4 +3087,120 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('sva with unresolvable slots', () => {
+    const code = `
+    import { sva } from '.panda/css'
+    import { slots } from './slots'
+
+    const card = sva({
+      slots,
+      base: {
+        root: {
+          p: '6',
+          m: '4',
+          w: 'md',
+          boxShadow: 'md',
+          borderRadius: 'md',
+          _dark: { bg: '#262626', color: 'white' },
+        },
+        content: {
+          textStyle: 'lg',
+        },
+        title: {
+          textStyle: 'xl',
+          fontWeight: 'semibold',
+          pb: '2',
+        },
+      },
+    })
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "content": {
+                  "textStyle": "lg",
+                },
+                "root": {
+                  "_dark": {
+                    "bg": "#262626",
+                    "color": "white",
+                  },
+                  "borderRadius": "md",
+                  "boxShadow": "md",
+                  "m": "4",
+                  "p": "6",
+                  "w": "md",
+                },
+                "title": {
+                  "fontWeight": "semibold",
+                  "pb": "2",
+                  "textStyle": "xl",
+                },
+              },
+              "slots": [
+                "root",
+                "content",
+                "title",
+              ],
+            },
+          ],
+          "name": "sva",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_6 {
+          padding: var(--spacing-6)
+          }
+
+        .m_4 {
+          margin: var(--spacing-4)
+          }
+
+        .w_md {
+          width: var(--sizes-md)
+          }
+
+        .shadow_md {
+          box-shadow: var(--shadows-md)
+          }
+
+        .rounded_md {
+          border-radius: var(--radii-md)
+          }
+
+        [data-theme=dark] .dark\\\\:bg_\\\\#262626, .dark .dark\\\\:bg_\\\\#262626, .dark\\\\:bg_\\\\#262626.dark, .dark\\\\:bg_\\\\#262626[data-theme=dark] {
+          background: #262626
+              }
+
+        [data-theme=dark] .dark\\\\:text_white, .dark .dark\\\\:text_white, .dark\\\\:text_white.dark, .dark\\\\:text_white[data-theme=dark] {
+          color: var(--colors-white)
+              }
+
+        .text-style_lg {
+          text-style: lg
+          }
+
+        .text-style_xl {
+          text-style: xl
+          }
+
+        .font_semibold {
+          font-weight: var(--font-weights-semibold)
+          }
+
+        .pb_2 {
+          padding-bottom: var(--spacing-2)
+          }
+      }"
+    `)
+  })
 })
