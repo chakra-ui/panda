@@ -13,6 +13,8 @@ import {
   shipFiles,
   writeAnalyzeJSON,
   type CssArtifactType,
+  cssgen,
+  type CssGenOptions,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
@@ -172,52 +174,8 @@ export async function main() {
         configPath,
       })
 
-      const ensureFile = (ctx: PandaContext, file: string) => {
-        const outPath = resolve(cwd, file)
-        const dirname = ctx.runtime.path.dirname(outPath)
-        ctx.runtime.fs.ensureDirSync(dirname)
-      }
-
-      const cssgen = async (ctx: PandaContext) => {
-        const sheet = ctx.createSheet()
-        //
-        if (cssArtifact) {
-          //
-          ctx.appendCss(cssArtifact, sheet)
-
-          if (outfile) {
-            ensureFile(ctx, outfile)
-            ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
-          } else {
-            await ctx.writeCss()
-          }
-
-          const msg = ctx.messages.cssArtifactComplete(cssArtifact)
-          logger.info('css:emit:artifact', msg)
-          //
-        } else {
-          //
-          if (!minimal) {
-            ctx.appendLayerParams(sheet)
-            ctx.appendBaselineCss(sheet)
-          }
-
-          const { files, collect } = ctx.appendFilesCss()
-
-          if (outfile) {
-            ensureFile(ctx, outfile)
-            const css = ctx.getParserCss(collect(), outfile)
-            ctx.runtime.fs.writeFileSync(outfile, css)
-          } else {
-            await ctx.writeCss()
-          }
-
-          const msg = ctx.messages.buildComplete(files.length)
-          logger.info('css:emit:out', msg)
-        }
-      }
-
-      await cssgen(ctx)
+      const options: CssGenOptions = { cwd, outfile, cssArtifact, minimal }
+      await cssgen(ctx, options)
 
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())
@@ -230,7 +188,7 @@ export async function main() {
             await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
             })
-            await cssgen(ctx)
+            await cssgen(ctx, options)
             logger.info('ctx:updated', 'config rebuilt ✅')
           }),
         )
@@ -244,10 +202,10 @@ export async function main() {
               ctx.project.removeSourceFile(ctx.runtime.path.abs(cwd, file))
             } else if (event === 'change') {
               ctx.project.reloadSourceFile(file)
-              await cssgen(ctx)
+              await cssgen(ctx, options)
             } else if (event === 'add') {
               ctx.project.createSourceFile(file)
-              await cssgen(ctx)
+              await cssgen(ctx, options)
             }
           }),
         )

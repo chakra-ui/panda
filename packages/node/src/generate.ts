@@ -40,7 +40,10 @@ export async function generate(config: Config, configPath?: string) {
       const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
         ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
       })
-      if (!affecteds.artifacts.size) return
+      if (!affecteds.hasConfigChanged) {
+        logger.debug('builder', 'Config didnt change, skipping rebuild')
+        return
+      }
 
       logger.info('config:change', 'Config changed, restarting...')
       await ctx.hooks.callHook('config:change', ctx.config)
@@ -48,25 +51,34 @@ export async function generate(config: Config, configPath?: string) {
     })
 
     const contentWatcher = fs.watch(ctx.config)
+
+    const bundleStyles = async (ctx: PandaContext, changedFilePath: string) => {
+      const outfile = ctx.runtime.path.join(...ctx.paths.root, 'styles.css')
+      const parserResult = ctx.project.parseSourceFile(changedFilePath)
+
+      if (parserResult) {
+        const css = ctx.getCss()
+        await ctx.runtime.fs.writeFile(outfile, css)
+        return { msg: ctx.messages.buildComplete(1) }
+      }
+    }
+
     contentWatcher.on('all', async (event, file) => {
       logger.info(`file:${event}`, file)
-      await match(event)
+
+      const filePath = path.abs(cwd, file)
+
+      match(event)
         .with('unlink', () => {
           ctx.project.removeSourceFile(path.abs(cwd, file))
         })
-        .with('change', () => {
+        .with('change', async () => {
           ctx.project.reloadSourceFile(file)
-          const result = ctx.project.parseSourceFile(file)
-          if (result) {
-            return ctx.writeCss()
-          }
+          return bundleStyles(ctx, filePath)
         })
-        .with('add', () => {
+        .with('add', async () => {
           ctx.project.createSourceFile(file)
-          const result = ctx.project.parseSourceFile(file)
-          if (result) {
-            return ctx.writeCss()
-          }
+          return bundleStyles(ctx, filePath)
         })
         .otherwise(() => {
           // noop

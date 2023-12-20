@@ -1,6 +1,6 @@
 import { colors, logger } from '@pandacss/logger'
-import { parse } from 'pathe'
 import type { PandaContext } from './create-context'
+import { parse } from 'pathe'
 
 export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean; onlyConfig?: boolean }) {
   const files = ctx.getFiles()
