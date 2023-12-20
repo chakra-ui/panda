@@ -3,7 +3,7 @@ import { walkObject } from './walk-object'
 
 type NormalizeContext = Pick<CreateCssContext, 'utility' | 'conditions'>
 
-function toResponsiveObject(values: string[], breakpoints: string[]) {
+export function toResponsiveObject(values: string[], breakpoints: string[]) {
   return values.reduce((acc, current, index) => {
     const key = breakpoints[index]
     if (current != null) {

@@ -25,6 +25,8 @@ import { FileEngine } from './file'
 import { JsxEngine } from './jsx'
 import { PathEngine } from './path'
 import { Patterns } from './pattern'
+import { HashFactory } from './hash-factory'
+import { StyleCollector } from './style-collector'
 
 const helpers = { map: mapObject }
 
@@ -60,6 +62,8 @@ export class Context {
   paths: PathEngine
   file: FileEngine
   stylesheet: Stylesheet
+  hashFactory: HashFactory
+  styleCollector: StyleCollector
 
   // Props
   properties!: Set<string>
@@ -87,6 +91,9 @@ export class Context {
     // Relies on this.conditions, this.utility, this.layers
     this.recipes = this.createRecipes(theme, this.baseSheetContext)
     this.stylesheet = this.createSheet()
+
+    this.hashFactory = new HashFactory(this)
+    this.styleCollector = new StyleCollector(this)
   }
 
   get config() {
@@ -178,5 +185,9 @@ export class Context {
   createRecipes(theme: Theme, context: RecipeContext): Recipes {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
     return new Recipes(recipeConfigs, context)
+  }
+
+  collectStyles() {
+    return this.styleCollector.collect(this.hashFactory)
   }
 }

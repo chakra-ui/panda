@@ -59,6 +59,9 @@ export class Generator extends Context {
   }
 
   getCss() {
+    const collector = this.styleCollector.collect(this.hashFactory)
+    this.stylesheet.processStyleCollector(collector)
+
     return this.stylesheet.toCss({
       optimize: true,
       minify: this.config.minify,

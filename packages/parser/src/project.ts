@@ -1,9 +1,11 @@
-import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind, SourceFile } from 'ts-morph'
+import type { StyleCollectorType } from '@pandacss/types'
+import type { ParserOptions } from '@pandacss/generator'
+import { ScriptKind, SourceFile, Project as TsProject, type ProjectOptions as TsProjectOptions } from 'ts-morph'
 import { createParser } from './parser'
 import { ParserResult } from './parser-result'
-import { vueToTsx } from './vue-to-tsx'
-import { svelteToTsx } from './svelte-to-tsx'
 import type { ProjectOptions } from './project-types'
+import { svelteToTsx } from './svelte-to-tsx'
+import { vueToTsx } from './vue-to-tsx'
 
 const createTsProject = (options: Partial<TsProjectOptions>) =>
   new TsProject({
@@ -28,6 +30,12 @@ export const createProject = ({
 }: ProjectOptions): PandaProject => {
   const project = createTsProject(projectOptions)
   const parser = createParser(parserOptions)
+  const fork = () => {
+    const hash = parserOptions.hashFactory.fork()
+    const styles = parserOptions.styleCollector.fork()
+
+    return () => styles.collect(hash)
+  }
 
   const getSourceFile = (filePath: string) => project.getSourceFile(filePath)
 
@@ -48,14 +56,11 @@ export const createProject = ({
       scriptKind: ScriptKind.TSX,
     })
 
-  const parseSourceFile = (filePath: string) => {
+  const parseSourceFile = (filePath: string, hashFactory?: ParserOptions['hashFactory']) => {
     if (filePath.endsWith('.json')) {
       const content = readFile(filePath)
-
-      hooks.callHook('parser:before', filePath, content)
-      const result = ParserResult.fromJSON(content).setFilePath(filePath)
-      hooks.callHook('parser:after', filePath, result)
-
+      parserOptions.hashFactory.fromJSON(content)
+      const result = new ParserResult(parserOptions).setFilePath(filePath)
       return result
     }
 
@@ -71,7 +76,7 @@ export const createProject = ({
     }
 
     hooks.callHook('parser:before', filePath, content)
-    const result = parser(sourceFile)?.setFilePath(filePath)
+    const result = parser(sourceFile, hashFactory)?.setFilePath(filePath)
     hooks.callHook('parser:after', filePath, result)
 
     return result
@@ -92,6 +97,7 @@ export const createProject = ({
   }
 
   return {
+    fork,
     getSourceFile,
     removeSourceFile,
     createSourceFile,
@@ -106,11 +112,12 @@ export const createProject = ({
 }
 
 export interface PandaProject {
+  fork: () => () => StyleCollectorType
   getSourceFile: (filePath: string) => SourceFile | undefined
   removeSourceFile: (filePath: string) => void
   createSourceFile: (filePath: string) => SourceFile
   addSourceFile: (filePath: string, content: string) => SourceFile
-  parseSourceFile: (filePath: string) => ParserResult | undefined
+  parseSourceFile: (filePath: string, hashFactory?: ParserOptions['hashFactory']) => ParserResult | undefined
   reloadSourceFile: (filePath: string) => void
   reloadSourceFiles: () => void
   files: string[]
