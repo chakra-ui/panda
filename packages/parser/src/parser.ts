@@ -19,7 +19,7 @@ const isNodePattern = (node: ParserNodeOptions): node is ParserPatternNode => no
 
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
-const noop = (..._args: any[]) => ({} as any)
+const noop = (..._args: any[]) => void 0 as any
 
 export interface ParserOptions {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
@@ -145,24 +145,22 @@ export function createParser(options: ParserOptions) {
     }
 
     const patternPropertiesByName = new Map<string, Set<string>>()
+    const initialpatterns = { string: new Set<string>(), regex: [] as RegExp[] }
     const patternJsxLists = isJsxEnabled
-      ? (jsx?.nodes ?? []).filter(isNodePattern).reduce(
-          (acc, pattern) => {
-            patternPropertiesByName.set(pattern.jsxName, new Set(pattern.props ?? []))
+      ? (jsx?.nodes ?? []).filter(isNodePattern).reduce((acc, pattern) => {
+          patternPropertiesByName.set(pattern.jsxName, new Set(pattern.props ?? []))
 
-            pattern.jsx?.forEach((jsx) => {
-              if (typeof jsx === 'string') {
-                acc.string.add(jsx)
-              } else if (jsx) {
-                acc.regex.push(jsx)
-              }
-            })
+          pattern.jsx?.forEach((jsx) => {
+            if (typeof jsx === 'string') {
+              acc.string.add(jsx)
+            } else if (jsx) {
+              acc.regex.push(jsx)
+            }
+          })
 
-            return acc
-          },
-          { string: new Set<string>(), regex: [] as RegExp[] },
-        )
-      : { string: new Set<string>(), regex: [] as RegExp[] }
+          return acc
+        }, initialpatterns)
+      : initialpatterns
 
     const recipes = new Set<string>()
     const patterns = new Set<string>()
@@ -184,24 +182,22 @@ export function createParser(options: ParserOptions) {
     const propertiesMap = new Map<string, boolean>()
     const recipePropertiesByJsxName = new Map<string, Set<string>>()
 
+    const initialRecipes = { string: new Set<string>(), regex: [] as RegExp[] }
     const recipeJsxLists = isJsxEnabled
-      ? (jsx?.nodes ?? []).filter(isNodeRecipe).reduce(
-          (acc, recipe) => {
-            recipePropertiesByJsxName.set(recipe.jsxName, new Set(recipe.props ?? []))
+      ? (jsx?.nodes ?? []).filter(isNodeRecipe).reduce((acc, recipe) => {
+          recipePropertiesByJsxName.set(recipe.jsxName, new Set(recipe.props ?? []))
 
-            recipe.jsx?.forEach((jsx) => {
-              if (typeof jsx === 'string') {
-                acc.string.add(jsx)
-              } else {
-                acc.regex.push(jsx)
-              }
-            })
+          recipe.jsx?.forEach((jsx) => {
+            if (typeof jsx === 'string') {
+              acc.string.add(jsx)
+            } else {
+              acc.regex.push(jsx)
+            }
+          })
 
-            return acc
-          },
-          { string: new Set<string>(), regex: [] as RegExp[] },
-        )
-      : { string: new Set<string>(), regex: [] as RegExp[] }
+          return acc
+        }, initialRecipes)
+      : initialRecipes
 
     const cvaAlias = imports.getAlias('cva')
     const cssAlias = imports.getAlias('css')
