@@ -48,10 +48,17 @@ describe('css var', () => {
   })
 
   test('with dashed var format', () => {
-    expect(cssVar('%%%colors-special-.*+?^${}()|[]\\red-200%%%', { formatCssVar: 'dash' })).toMatchInlineSnapshot(`
+    expect(cssVar('%%%colors-special-_*+?^${}()|[]\\red-200%%%', { formatCssVar: 'dash' })).toMatchInlineSnapshot(`
       {
         "ref": "var(--colors-special-red-200)",
         "var": "--colors-special-red-200",
+      }
+    `)
+
+    expect(cssVar('--spacing--0.5', { formatCssVar: 'dash' })).toMatchInlineSnapshot(`
+      {
+        "ref": "var(--spacing--0.5)",
+        "var": "--spacing--0.5",
       }
     `)
   })

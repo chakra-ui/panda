@@ -271,14 +271,14 @@ describe('styled factory - button recipe', () => {
 
   test('all together', () => {
     const { container } = render(
-      <Button className="custom-btn" css={{ color: '$red-200', fontSize: '$xl' }} size="md" visual="outline" mx="$2">
+      <Button className="custom-btn" css={{ color: '$red-200', fontSize: '$xl' }} size="md" visual="outline" mx="$-2">
         Click me
       </Button>,
     )
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual-outline button--size-md text-red-200 mx-2 fs-xl custom-btn"
+        class="button button--visual-outline button--size-md text-red-200 mx--2 fs-xl custom-btn"
       >
         Click me
       </button>

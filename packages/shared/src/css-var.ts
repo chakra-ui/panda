@@ -1,10 +1,10 @@
 import { toHash } from './hash'
 
-const dashCaseRegex = /[^a-zA-Z0-9]+/g
-const dashTrimRegex = /^-+|-+$/g
+const dashRegex = /[^a-zA-Z0-9-.]/g
+const dashTrimRegex = /^-+|-+$/
 // Hello, 123!?@#$%^&*()  =>  hello-123
 function dashCase(string: string) {
-  return string.replace(dashCaseRegex, '-').replace(dashTrimRegex, '').toLowerCase()
+  return string.replace(dashRegex, '').replace(dashTrimRegex, '').toLowerCase()
 }
 
 const escRegex = /[^a-zA-Z0-9_\u0081-\uffff-]/g
