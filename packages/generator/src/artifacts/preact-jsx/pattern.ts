@@ -18,50 +18,47 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
       import { h } from 'preact'
       import { forwardRef } from 'preact/compat'
       ${ctx.file.import('mergeCss', '../css/css')}
-      ${ctx.file.import(factoryName, './factory')}
+      ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
+      ${ctx.file.import(factoryName, './factory')}
 
       export const ${jsxName} = /* @__PURE__ */ forwardRef(function ${jsxName}(props, ref) {
         ${match(jsxStyleProps)
           .with(
             'none',
             () => outdent`
-          const { ${props.join(', ')}${props.length ? ',' : ''} ...restProps } = props
-          const styleProps = ${styleFnName}({${props.join(', ')}})
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
           const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+          
           return h(Comp, { ref, ...restProps })
           `,
           )
-          .otherwise(
+          .with(
+            'minimal',
             () => outdent`
-          const { ${props.join(', ')}${props.length ? ',' : ''} ...restProps } = props
-          const styleProps = ${styleFnName}({${props.join(', ')}})
-
-          ${match(jsxStyleProps)
-            .with(
-              'all',
-              () => outdent`
-            const mergedProps = { ref, ...styleProps, ...restProps }
-            `,
-            )
-            .with(
-              'minimal',
-              () => outdent`
-            const cssProps = { css: mergeCss(styleProps, props.css) }
-            const mergedProps = { ref, ...restProps, ...cssProps }
-            `,
-            )
-            .with(
-              'none',
-              () => outdent`
-            const mergedProps = { ref, ...restProps }
-            `,
-            )
-            .exhaustive()}
-
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const cssProps = { css: mergeCss(styleProps, props.css) }
+          const mergedProps = { ref, ...restProps, ...cssProps }
+          
           return h(${factoryName}.${jsxElement}, mergedProps)
           `,
-          )}
+          )
+          .with(
+            'all',
+            () => outdent`
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const mergedProps = { ref, ...styleProps, ...restProps }
+          
+          return h(${factoryName}.${jsxElement}, mergedProps)
+          `,
+          )
+          .exhaustive()}
       })
       `,
 
