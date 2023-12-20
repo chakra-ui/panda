@@ -38,7 +38,7 @@
     "postcss-load-config": "4.0.1"
   },
   "devDependencies": {
-    "astro": "4.0.3",
+    "astro": "4.0.6",
     "vite": "5.0.7"
   },
   "peerDependencies": {

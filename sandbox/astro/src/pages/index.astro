@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import { Button } from '../components/button.jsx'
+import Card from '../components/Card.astro';
 import { css } from '../../styled-system/css'
 import { circle, hstack } from '../../panda/patterns'
 ---
@@ -28,6 +29,12 @@ import { circle, hstack } from '../../panda/patterns'
           })}>4</span
         >
       </div>
+      <Card
+				href="https://docs.astro.build/"
+				title="Documentation"
+				body="Learn how Astro works and explore the official API docs."
+				position="Test 12345"
+			/>
     </div>
   </main>
 </Layout>
