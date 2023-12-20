@@ -55,13 +55,13 @@ export async function generate(config: Config, configPath?: string) {
         .with('change', () => {
           ctx.project.reloadSourceFile(file)
           const result = ctx.project.parseSourceFile(file)
-          ctx.appendParserCss(result)
+          ctx.getParserCss(result)
           return ctx.writeCss()
         })
         .with('add', () => {
           ctx.project.createSourceFile(file)
           const result = ctx.project.parseSourceFile(file)
-          ctx.appendParserCss(result)
+          ctx.getParserCss(result)
           return ctx.writeCss()
         })
         .otherwise(() => {

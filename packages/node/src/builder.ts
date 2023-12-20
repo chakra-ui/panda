@@ -109,7 +109,7 @@ export class Builder {
     const meta = this.getFileMeta(file)
 
     if (meta.isUnchanged && this.affecteds?.hasConfigChanged) {
-      ctx.appendParserCss(parserResultMap.get(file)!)
+      ctx.getParserCss(parserResultMap.get(file)!)
       return
     }
 

@@ -141,13 +141,12 @@ export function jsxRecipeParser(code: string) {
 export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const ctx = getFixtureProject(code, userConfig, tsconfig)
 
-  const parserResult = ctx.project.parseSourceFile(staticFilePath)!
-  ctx.appendParserCss(parserResult)
-  const parserCss = ctx.stylesheet.toCss({ optimize: true })
+  const hashFactory = ctx.hashFactory.fork()
+  const result = ctx.project.parseSourceFile(staticFilePath, hashFactory)!
+  const styles = ctx.styleCollector.fork().collect(hashFactory)
 
   return {
-    ctx,
-    json: parserResult?.toArray().flatMap(({ box, ...item }) => item),
-    css: parserCss,
+    json: result?.toArray().flatMap(({ box, ...item }) => item),
+    css: ctx.getParserCss(styles),
   }
 }

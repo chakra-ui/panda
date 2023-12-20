@@ -1,10 +1,10 @@
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import { createParserResult, createProject, type PandaProject } from '@pandacss/parser'
+import { createProject, ParserResult, type PandaProject } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime } from '@pandacss/types'
-import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
 import { PandaOutputEngine } from './output-engine'
+import { DiffEngine } from './diff-engine'
 
 export class PandaContext extends Generator {
   runtime: Runtime
@@ -33,6 +33,7 @@ export class PandaContext extends Generator {
       getFiles: this.getFiles.bind(this),
       readFile: this.runtime.fs.readFileSync.bind(this),
       hooks: conf.hooks,
+      // @ts-expect-error join is specified more than once
       parserOptions: { join: this.runtime.path.join, ...this.parserOptions },
     })
 
@@ -44,7 +45,7 @@ export class PandaContext extends Generator {
     const files = this.getFiles()
     const filesWithCss: string[] = []
 
-    const mergedResult = createParserResult()
+    const collector = new ParserResult(this.parserOptions, this.hashFactory)
 
     files.forEach((file) => {
       const measure = logger.time.debug(`Parsed ${file}`)
@@ -53,11 +54,11 @@ export class PandaContext extends Generator {
       measure()
       if (!result) return
 
-      mergedResult.merge(result)
+      collector.merge(result)
       filesWithCss.push(file)
     })
 
-    this.appendParserCss(mergedResult)
+    // this.getParserCss(collector)
 
     return filesWithCss
   }

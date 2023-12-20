@@ -1,4 +1,4 @@
-import type { ArtifactId, ConfigResultWithHooks, ParserResultType } from '@pandacss/types'
+import type { ArtifactId, ConfigResultWithHooks, StyleCollectorType } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -51,11 +51,8 @@ export class Generator extends Context {
     if (this.config.theme?.keyframes) this.appendCss('keyframes')
   }
 
-  appendParserCss(...results: Array<ParserResultType | undefined>) {
-    results.forEach((result) => {
-      if (!result) return
-      generateParserCss(this, result)
-    })
+  getParserCss(collector: StyleCollectorType, filePath?: string) {
+    return generateParserCss(this, collector, filePath)
   }
 
   getCss() {

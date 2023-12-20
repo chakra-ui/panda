@@ -145,7 +145,7 @@ export function usePanda(state: State) {
     })
 
     const parserResult = project.parseSourceFile('code.tsx')
-    context.appendParserCss(parserResult)
+    context.getParserCss(parserResult)
     const artifacts = context.getArtifacts() ?? []
 
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])

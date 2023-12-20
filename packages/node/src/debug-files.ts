@@ -35,7 +35,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
     // clean the stylesheet
     ctx.stylesheet.clean()
 
-    ctx.appendParserCss(result)
+    ctx.getParserCss(result)
     const css = ctx.stylesheet.toCss({ optimize: true, minify: false })
 
     if (options.dry) {

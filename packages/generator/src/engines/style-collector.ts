@@ -131,6 +131,7 @@ export class StyleCollector {
       details.push({ hash, entry, conditions, result })
     })
 
+    // TODO sort
     details.forEach((value) => {
       if (value.conditions) {
         const path = basePath.concat(value.conditions.map((c) => c.rawValue ?? c.raw))
@@ -171,6 +172,7 @@ export class StyleCollector {
       atomic.push(styleResult)
     })
 
+    // TODO sort
     atomic.forEach((styleResult) => {
       this.atomic.add(styleResult)
       this.classNames.set(styleResult.className, styleResult)
