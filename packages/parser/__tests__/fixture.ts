@@ -147,6 +147,8 @@ export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TS
 
   return {
     ctx,
+    hashFactory,
+    styles,
     json: result?.toArray().flatMap(({ box, ...item }) => item),
     css: ctx.getParserCss(styles),
   }

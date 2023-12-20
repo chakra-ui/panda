@@ -227,7 +227,7 @@ export class Recipes {
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
-          layer: slot ? 'slotRecipes._base' : 'recipes_base',
+          layer: slot ? 'recipes_slots_base' : 'recipes_base',
           className: sharedState.classNames.get(name)!,
           styles: sharedState.styles.get(name) ?? {},
         }

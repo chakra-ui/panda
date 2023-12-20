@@ -49,7 +49,7 @@ export class HashFactory {
     return !this.atomic.size && !this.recipes.size && !this.compound_variants.size && !this.recipes_base.size
   }
 
-  get hashes() {
+  get results() {
     return {
       atomic: this.atomic,
       recipes: this.recipes,
@@ -88,7 +88,6 @@ export class HashFactory {
 
         // we don't want to extract and generate invalid CSS for urls
         if (urlRegex.test(rawValue)) {
-          console.log('bide', { rawValue })
           return
         }
 
@@ -161,8 +160,8 @@ export class HashFactory {
     }
 
     const set = getOrCreateSet(this.recipes, recipeName)
-    const styles = Object.assign({}, config.defaultVariants, variants)
-    this.hashStyleObject(set, styles, { recipe: recipeName, variants: true })
+    const variantObj = Object.assign({}, config.defaultVariants, variants)
+    this.hashStyleObject(set, variantObj, { recipe: recipeName, variants: true })
 
     if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
       this.compound_variants.add(recipeName)

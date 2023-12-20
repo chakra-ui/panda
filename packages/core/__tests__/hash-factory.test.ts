@@ -326,7 +326,7 @@ describe('hash factory', () => {
         "btn",
       ]
     `)
-    expect(processor.hashFactory?.hashes).toMatchInlineSnapshot(`
+    expect(processor.hashFactory?.results).toMatchInlineSnapshot(`
       {
         "atomic": Set {},
         "recipes": Map {
@@ -450,7 +450,7 @@ describe('hash factory', () => {
         "navbar",
       ]
     `)
-    expect(processor.hashFactory?.hashes).toMatchInlineSnapshot(`
+    expect(processor.hashFactory?.results).toMatchInlineSnapshot(`
       {
         "atomic": Set {},
         "recipes": Map {
@@ -553,7 +553,7 @@ describe('hash factory', () => {
             },
           },
         }),
-      ).hashes,
+      ).results,
     ).toMatchInlineSnapshot(`
       {
         "atomic": Set {

@@ -47,7 +47,7 @@ export class Stylesheet {
       layer.append(toCss(styles).toString())
     } catch (error) {
       if (error instanceof CssSyntaxError) {
-        logger.error('sheet', error)
+        logger.error('sheet:process', error)
       }
     }
     return
@@ -118,12 +118,12 @@ export class Stylesheet {
       return optimize ? optimizeCss(css, { minify }) : css
     } catch (error) {
       if (error instanceof CssSyntaxError) {
-        logger.error('sheet', error.message)
-        error.plugin && logger.error('sheet', `By plugin: ${error.plugin}:`)
+        logger.error('sheet:toCss', error.message)
+        error.plugin && logger.error('sheet:toCss', `By plugin: ${error.plugin}:`)
 
         if (error.source) {
-          logger.error('sheet', `Line ${error.line}:${error.column}, in:`)
-          logger.error('sheet', error.source)
+          logger.error('sheet:toCss', `Line ${error.line}:${error.column}, in:`)
+          logger.error('sheet:toCss', error.source)
         }
       }
 

@@ -4,7 +4,7 @@ import { parseAndExtract } from './fixture'
 describe('extract to css output pipeline', () => {
   test('basic usage', () => {
     const code = `
-      import { panda } from "styled-system/jsx"
+      import { styled } from "styled-system/jsx"
       import { css } from "styled-system/css"
 
       const color = "red.100";
@@ -2495,7 +2495,7 @@ describe('extract to css output pipeline', () => {
 
   test('styled FactoryOptions defaultProps extraction', () => {
     const code = `
-    import { panda } from "styled-system/jsx"
+    import { styled } from "styled-system/jsx"
     import { cva } from "styled-system/css"
     import { button as aliasedButton } from "styled-system/recipes"
 
@@ -2955,7 +2955,6 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
-
           .textStyle {
             font-family: var(--fonts-mono);
       }
@@ -3054,12 +3053,11 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
-
-          .button__container {
+          .someRecipe__container {
             font-family: var(--fonts-mono)
       }
 
-          .button__icon {
+          .someRecipe__icon {
             font-size: 1.5rem
       }
       }
