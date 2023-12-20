@@ -663,7 +663,7 @@ describe('extract to css output pipeline', () => {
         }
     \`
      `
-    const result = parseAndExtract(code)
+    const result = parseAndExtract(code, { syntax: 'template-literal' })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -712,16 +712,16 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_lightgreen {
+        .color_lightgreen {
           color: lightgreen
           }
 
-        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:text_hotpink > strong {
+        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
           color: hotpink
               }
 
-        .bg_transparent {
-          background: var(--colors-transparent)
+        .background_transparent {
+          background: transparent
           }
 
         .border-radius_3px {
@@ -732,19 +732,19 @@ describe('extract to css output pipeline', () => {
           border: 1px solid var(--accent-color)
           }
 
-        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
           color: var(--colors-blue-100)
           }
 
-        .d_inline-block {
+        .display_inline-block {
           display: inline-block
           }
 
-        .m_0\\\\.5rem_1rem {
+        .margin_0\\\\.5rem_1rem {
           margin: 0.5rem 1rem
           }
 
-        .p_0\\\\.5rem_0 {
+        .padding_0\\\\.5rem_0 {
           padding: 0.5rem 0
           }
 
@@ -752,7 +752,7 @@ describe('extract to css output pipeline', () => {
           transition: all 200ms ease-in-out
           }
 
-        .w_11rem {
+        .width_11rem {
           width: 11rem
           }
 
@@ -771,7 +771,7 @@ describe('extract to css output pipeline', () => {
                   }
 
         @media (min-width: 768px) {
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:p_1rem_0 {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:padding_1rem_0 {
             padding: 1rem 0
           }
               }
@@ -790,7 +790,7 @@ describe('extract to css output pipeline', () => {
         color: token(colors.blue.100);
     \`
      `
-    const result = parseAndExtract(code)
+    const result = parseAndExtract(code, { syntax: 'template-literal' })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -810,8 +810,8 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .bg_transparent {
-          background: var(--colors-transparent)
+        .background_transparent {
+          background: transparent
           }
 
         .border-radius_3px {
@@ -822,7 +822,7 @@ describe('extract to css output pipeline', () => {
           border: 1px solid var(--accent-color)
           }
 
-        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
           color: var(--colors-blue-100)
           }
       }"
@@ -1356,15 +1356,6 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "color": "var(--colors-purple-100)",
-            },
-          ],
-          "name": "panda.div",
-          "type": "object",
-        },
-        {
-          "data": [
-            {
               "color": "yellow.100",
             },
           ],
@@ -1380,12 +1371,41 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-red-100)
           }
 
-        .text_var\\\\(--colors-purple-100\\\\) {
-          color: var(--colors-purple-100)
-          }
-
         .text_yellow\\\\.100 {
           color: var(--colors-yellow-100)
+          }
+      }"
+    `)
+  })
+
+  test('factory css - tagged template literal', () => {
+    const code = `
+    import { panda } from ".panda/jsx"
+
+    // TaggedTemplateExpression factory css
+    panda.div\`
+      color: var(--colors-purple-100);
+    \`
+   `
+    const result = parseAndExtract(code, { syntax: 'template-literal' })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "var(--colors-purple-100)",
+            },
+          ],
+          "name": "panda.div",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .color_var\\\\(--colors-purple-100\\\\) {
+          color: var(--colors-purple-100)
           }
       }"
     `)
