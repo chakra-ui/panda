@@ -1,9 +1,9 @@
-import { center } from '../styled-system/patterns'
-import { css } from '../styled-system/css'
+import { center } from '../styled-system-format-names/patterns'
+import { css } from '../styled-system-format-names/css'
 
 export default function App() {
   return (
-    <div className={center({ w: 'full', h: 'full' })}>
+    <div className={center({ w: '$full', h: '$full' })}>
       <div
         className={css({
           display: 'flex',

@@ -66,7 +66,8 @@ export function createCss(context: CreateCssContext) {
       const [prop, ...allConditions] = conds.shift(paths)
       const conditions = filterBaseConditions(allConditions)
 
-      const transformed = utility.transform(prop, withoutImportant(sanitize(utility.formatClassName(value))))
+      const formattedValue = value === '__ignore__' ? value : utility.formatClassName(value)
+      const transformed = utility.transform(prop, withoutImportant(sanitize(formattedValue)))
 
       let className = hashFn(conditions, transformed.className)
       if (important) className = `${className}!`

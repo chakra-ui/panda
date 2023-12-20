@@ -28,6 +28,12 @@ const options = {
       include: ['**/__tests__/scenarios/strict.{test,spec}.{j,t}s?(x)'],
     },
   },
+  'format-names': {
+    test: {
+      include: ['**/__tests__/scenarios/format-names*.{test,spec}.{j,t}s?(x)'],
+      environment: 'happy-dom',
+    },
+  },
   //
   preact: {
     plugins: [preact()],

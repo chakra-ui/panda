@@ -129,6 +129,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         ${ctx.file.import('splitProps, getSlotCompoundVariant', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
+
         const ${baseName}DefaultVariants = ${stringify(defaultVariants ?? {})}
         const ${baseName}CompoundVariants = ${stringify(compoundVariants ?? [])}
 
