@@ -18,22 +18,10 @@ import type {
   StyleResultObject,
   SystemStyleObject,
 } from '@pandacss/types'
-import type { Context } from './index'
-
-export interface CollectorContext
-  extends Pick<
-    Context,
-    | 'hash'
-    | 'isTemplateLiteralSyntax'
-    | 'isValidProperty'
-    | 'conditions'
-    | 'recipes'
-    | 'utility'
-    | 'patterns'
-    | 'createSheet'
-  > {}
+import type { CoreContext } from './core-context'
 
 const identity = (v: any) => v
+const urlRegex = /^https?:\/\//
 
 export class HashFactory {
   static separator = ']___['
@@ -47,7 +35,7 @@ export class HashFactory {
 
   private filterStyleProps: (props: Dict) => Dict
 
-  constructor(private context: CollectorContext) {
+  constructor(private context: CoreContext) {
     this.filterStyleProps = context.isTemplateLiteralSyntax
       ? identity
       : (props: Dict) => filterProps(this.context.isValidProperty, props)
@@ -89,12 +77,18 @@ export class HashFactory {
     let prevProp = ''
 
     // { mx: 4 } => { marginX: 4 }
-    const normalized = normalizeStyleObject(obj, this.context)
+    const normalized = normalizeStyleObject(obj, this.context, !baseEntry?.variants)
 
     traverse(
       normalized,
       ({ key, value: rawValue, path }) => {
         if (rawValue === undefined) {
+          return
+        }
+
+        // we don't want to extract and generate invalid CSS for urls
+        if (urlRegex.test(rawValue)) {
+          console.log('bide', { rawValue })
           return
         }
 
@@ -168,7 +162,7 @@ export class HashFactory {
 
     const set = getOrCreateSet(this.recipes, recipeName)
     const styles = Object.assign({}, config.defaultVariants, variants)
-    this.hashStyleObject(set, styles, { recipe: recipeName })
+    this.hashStyleObject(set, styles, { recipe: recipeName, variants: true })
 
     if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
       this.compound_variants.add(recipeName)
@@ -206,7 +200,13 @@ export class HashFactory {
     })
   }
 
-  processAtomicSlotRecipe(recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) {
+  processAtomicSlotRecipe(
+    recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'> & Partial<Pick<SlotRecipeConfig, 'slots'>>,
+  ) {
+    if (!recipe.slots) {
+      recipe.slots = Array.from(inferSlots(recipe as any))
+    }
+
     const slots = getSlotRecipes(recipe)
     for (const slotRecipe of Object.values(slots)) {
       this.processAtomicRecipe(slotRecipe)
@@ -301,4 +301,19 @@ const getResolvedCondition = (cond: string, isCondition: (key: string) => boolea
   }
 
   return cond
+}
+
+const inferSlots = (recipe: SlotRecipeConfig) => {
+  const slots = new Set<string>()
+  Object.keys(recipe.base ?? {}).forEach((name) => {
+    slots.add(name)
+  })
+
+  Object.values(recipe.variants ?? {}).forEach((variants) => {
+    Object.keys(variants).forEach((name) => {
+      slots.add(name)
+    })
+  })
+
+  return slots
 }

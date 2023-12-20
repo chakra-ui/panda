@@ -1,7 +1,5 @@
 import type { SlotRecipeConfig } from '@pandacss/types'
 
-// TODO checkbox
-
 export const slotRecipes: Record<string, SlotRecipeConfig> = {
   checkbox: {
     className: 'checkbox',

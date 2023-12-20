@@ -179,10 +179,11 @@ export async function main() {
       }
 
       const cssgen = async (ctx: PandaContext) => {
+        const sheet = ctx.createSheet()
         //
         if (cssArtifact) {
           //
-          ctx.appendCss(cssArtifact)
+          ctx.appendCss(cssArtifact, sheet)
 
           if (outfile) {
             ensureFile(ctx, outfile)
@@ -197,15 +198,16 @@ export async function main() {
         } else {
           //
           if (!minimal) {
-            ctx.appendLayerParams()
-            ctx.appendBaselineCss()
+            ctx.appendLayerParams(sheet)
+            ctx.appendBaselineCss(sheet)
           }
 
-          const files = ctx.appendFilesCss()
+          const { files, collect } = ctx.appendFilesCss()
 
           if (outfile) {
             ensureFile(ctx, outfile)
-            ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
+            const css = ctx.getParserCss(collect(), outfile)
+            ctx.runtime.fs.writeFileSync(outfile, css)
           } else {
             await ctx.writeCss()
           }

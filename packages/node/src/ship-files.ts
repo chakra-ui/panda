@@ -1,19 +1,17 @@
 import { colors, logger } from '@pandacss/logger'
-import { createParserResult } from '@pandacss/parser'
 import { writeFile } from 'fs/promises'
-import * as path from 'pathe'
+import * as path from 'path'
 import type { PandaContext } from './create-context'
+import { version } from '../package.json'
 
 export async function shipFiles(ctx: PandaContext, outfile: string) {
   const files = ctx.getFiles()
-
-  const extractResult = createParserResult()
   const filesWithCss = [] as string[]
 
   files.forEach(async (file) => {
     const result = ctx.project.parseSourceFile(file)
     if (!result || result.isEmpty()) return
-    extractResult.merge(result)
+
     filesWithCss.push(path.relative(ctx.config.cwd, file))
   })
 
@@ -22,9 +20,25 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   const minify = ctx.config.minify
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
-  const output = JSON.stringify(extractResult.toJSON(), null, minify ? 0 : 2)
+  const collector = ctx.collectStyles()
+  const styles = {
+    atomic: Array.from(collector.atomic).map(({ hash }) => hash),
+    recipes: Object.fromEntries(
+      Array.from(collector.recipes.entries()).map(([name, set]) => [name, Array.from(set).map(({ hash }) => hash)]),
+    ),
+  }
+  const output = JSON.stringify(
+    {
+      schemaVersion: version,
+      styles,
+    },
+    null,
+    minify ? 0 : 2,
+  )
+
   const dirname = ctx.runtime.path.dirname(outfile)
   ctx.runtime.fs.ensureDirSync(dirname)
+
   await writeFile(outfile, output)
   logger.info('cli', 'Done!')
 }

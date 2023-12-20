@@ -52,7 +52,6 @@ export class Builder {
 
     this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
       this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
-      this.context.appendBaselineCss()
     })
 
     logger.debug('builder', this.affecteds)
@@ -86,7 +85,6 @@ export class Builder {
     const { configPath, cwd } = options
 
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
-    ctx.appendBaselineCss()
     this.context = ctx
 
     return ctx
@@ -109,7 +107,6 @@ export class Builder {
     const meta = this.getFileMeta(file)
 
     if (meta.isUnchanged && this.affecteds?.hasConfigChanged) {
-      ctx.getParserCss(parserResultMap.get(file)!)
       return
     }
 
@@ -156,7 +153,7 @@ export class Builder {
     let valid = false
 
     root.walkAtRules('layer', (rule) => {
-      if (ctx.layers.isValidParams(rule.params)) {
+      if (ctx.isValidLayerParams(rule.params)) {
         valid = true
       }
     })

@@ -261,7 +261,6 @@ describe('Global css', () => {
             body {
               color: var(--colors-red-200)
                   }
-
             body a {
               color: var(--colors-red-400)
                   }

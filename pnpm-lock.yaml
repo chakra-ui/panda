@@ -265,6 +265,9 @@ importers:
       '@pandacss/error':
         specifier: workspace:*
         version: link:../error
+      '@pandacss/is-valid-prop':
+        specifier: workspace:^
+        version: link:../is-valid-prop
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger

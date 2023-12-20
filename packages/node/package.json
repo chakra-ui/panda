@@ -42,7 +42,6 @@
     "@pandacss/error": "workspace:*",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/generator": "workspace:*",
-    "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/parser": "workspace:*",
     "@pandacss/shared": "workspace:*",

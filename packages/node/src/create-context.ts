@@ -1,10 +1,11 @@
+import type { Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import { createProject, ParserResult, type PandaProject } from '@pandacss/parser'
+import { createProject, type PandaProject } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime } from '@pandacss/types'
+import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
 import { PandaOutputEngine } from './output-engine'
-import { DiffEngine } from './diff-engine'
 
 export class PandaContext extends Generator {
   runtime: Runtime
@@ -43,10 +44,9 @@ export class PandaContext extends Generator {
 
   appendFilesCss() {
     const files = this.getFiles()
-    const filesWithCss: string[] = []
+    const filesWithCss = [] as string[]
 
-    const collector = new ParserResult(this.parserOptions, this.hashFactory)
-
+    const collect = this.project.fork()
     files.forEach((file) => {
       const measure = logger.time.debug(`Parsed ${file}`)
       const result = this.project.parseSourceFile(file)
@@ -54,26 +54,17 @@ export class PandaContext extends Generator {
       measure()
       if (!result) return
 
-      collector.merge(result)
       filesWithCss.push(file)
     })
 
-    // this.getParserCss(collector)
-
-    return filesWithCss
+    return { files: filesWithCss, collect }
   }
 
-  appendAllCss() {
-    this.appendLayerParams()
-    this.appendBaselineCss()
-    this.appendFilesCss()
-  }
-
-  async writeCss() {
+  async writeCss(sheet?: Stylesheet) {
     return this.output.write({
       id: 'styles.css',
       dir: this.paths.root,
-      files: [{ file: 'styles.css', code: this.getCss() }],
+      files: [{ file: 'styles.css', code: this.getCss(sheet) }],
     })
   }
 }

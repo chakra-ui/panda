@@ -1,9 +1,10 @@
+import type { Stylesheet } from '@pandacss/core'
 import type { Context } from '../../engines'
 
-export const generateGlobalCss = (ctx: Context) => {
+export const generateGlobalCss = (ctx: Context, sheet: Stylesheet) => {
   const { globalCss = {} } = ctx.config
 
-  ctx.stylesheet.processGlobalCss({
+  sheet.processGlobalCss({
     ':root': {
       '--made-with-panda': `'🐼'`,
     },
@@ -39,7 +40,6 @@ export const generateGlobalCss = (ctx: Context) => {
     },
   })
 
-  ctx.stylesheet.processGlobalCss(globalCss)
-
+  sheet.processGlobalCss(globalCss)
   void ctx.hooks.callHook('generator:css', 'global.css', '')
 }

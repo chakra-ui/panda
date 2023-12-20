@@ -1,8 +1,8 @@
-import { toCss } from '@pandacss/core'
+import { Stylesheet, toCss } from '@pandacss/core'
 import postcss from 'postcss'
 import type { Context } from '../../engines'
 
-export function generateKeyframeCss(ctx: Context) {
+export function generateKeyframeCss(ctx: Context, sheet: Stylesheet) {
   const { keyframes = {} } = ctx.config.theme ?? {}
   const root = postcss.root()
 
@@ -16,6 +16,6 @@ export function generateKeyframeCss(ctx: Context) {
     )
   }
 
-  ctx.layers.tokens.append(root)
+  sheet.layers.tokens.append(root)
   void ctx.hooks.callHook('generator:css', 'keyframes.css', '')
 }

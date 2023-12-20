@@ -14,6 +14,7 @@ export interface StyleEntry {
   recipe?: string
   slot?: string
   layer?: string
+  variants?: boolean
 }
 
 interface ExpandedCondition extends RawCondition {

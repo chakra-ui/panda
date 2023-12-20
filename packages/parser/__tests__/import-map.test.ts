@@ -42,128 +42,126 @@ describe('config.importMap', () => {
     )
 
     expect(result.json).toMatchInlineSnapshot(`
-          [
+      [
+        {
+          "data": [
             {
-              "data": [
-                {
-                  "flex": 2,
-                },
-              ],
-              "name": "css",
-              "type": "object",
+              "display": "flex",
+              "flexDir": {
+                "_print": "row",
+                "base": "column",
+                "sm": "row",
+              },
+              "height": {
+                "_print": "297mm",
+                "base": "600px",
+              },
+              "margin": "auto",
+              "page": "A4",
+              "width": {
+                "_print": "210mm",
+              },
             },
+          ],
+          "name": "container",
+          "type": "pattern",
+        },
+        {
+          "data": [
             {
-              "data": [
-                {
-                  "flex": 1,
-                },
-              ],
-              "name": "css",
-              "type": "object",
+              "flex": 2,
             },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
             {
-              "data": [
-                {
-                  "display": "flex",
-                  "flexDir": {
-                    "_print": "row",
-                    "base": "column",
-                    "sm": "row",
-                  },
-                  "height": {
-                    "_print": "297mm",
-                    "base": "600px",
-                  },
-                  "margin": "auto",
-                  "page": "A4",
-                  "width": {
-                    "_print": "210mm",
-                  },
-                },
-              ],
-              "name": "container",
-              "type": "pattern",
+              "flex": 1,
             },
-          ]
-        `)
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .flex_2 {
-          flex: 2
-          }
-
-        .flex_1 {
-          flex: 1 1 0%
-          }
-
         .pos_relative {
           position: relative
-          }
+      }
 
         .max-w_8xl {
           max-width: var(--sizes-8xl)
-          }
+      }
 
         .mx_auto {
           margin-inline: auto
-          }
+      }
 
         .px_4 {
           padding-inline: var(--spacing-4)
-          }
+      }
 
         .page_A4 {
           page: A4
-          }
+      }
 
         .h_600px {
           height: 600px
-          }
+      }
 
         .d_flex {
           display: flex
-          }
+      }
 
         .m_auto {
           margin: auto
-          }
+      }
 
         .flex_column {
           flex-direction: column
-          }
+      }
+
+        .flex_2 {
+          flex: 2
+      }
+
+        .flex_1 {
+          flex: 1 1 0%
+      }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:flex_row {
             flex-direction: row
           }
-              }
+      }
 
         @media screen and (min-width: 48em) {
           .md\\\\:px_6 {
             padding-inline: var(--spacing-6)
           }
-              }
+      }
 
         @media screen and (min-width: 64em) {
           .lg\\\\:px_8 {
             padding-inline: var(--spacing-8)
           }
-              }
+      }
 
         @media print {
           .print\\\\:w_210mm {
             width: 210mm
           }
-
           .print\\\\:h_297mm {
             height: 297mm
           }
-
           .print\\\\:flex_row {
             flex-direction: row
           }
-              }
+      }
       }"
     `)
   })

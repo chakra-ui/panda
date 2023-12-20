@@ -7,10 +7,11 @@ import type {
   StyleEntry,
   StyleResultObject,
 } from '@pandacss/types'
-import { HashFactory, type CollectorContext } from './hash-factory'
+import { HashFactory } from './hash-factory'
+import type { CoreContext } from './core-context'
 
 export class StyleCollector {
-  constructor(private context: CollectorContext) {}
+  constructor(private context: CoreContext) {}
 
   classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
   //
@@ -150,7 +151,8 @@ export class StyleCollector {
     const recipe = this.context.recipes.getConfig(recipeName)
     if (!recipe) return
 
-    const className = 'slots' in recipe && slot ? this.context.recipes.getSlotKey(recipeName, slot) : recipe.className
+    const className =
+      'slots' in recipe && slot ? this.context.recipes.getSlotKey(recipe.className, slot) : recipe.className
     const classSelector = this.formatSelector([], className)
     const style = this.getGroup(hashSet, className)
 
@@ -224,7 +226,11 @@ const entryKeys = ['cond', 'recipe', 'layer', 'slot'] as const
 const getEntryFromHash = (hash: string) => {
   const parts = hash.split(HashFactory.separator)
   const prop = parts[0]
-  const value = parts[1].replace('value:', '')
+
+  const rawValue = parts[1].replace('value:', '')
+  const parsed = Number(rawValue)
+  const value = parsed ? parsed : rawValue
+
   const entry = { prop, value } as StyleEntry
 
   parts.forEach((part) => {

@@ -1,10 +1,9 @@
 import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
 import type { Conditions } from './conditions'
 import type { Layers } from './layers'
-import type { Recipes } from './recipes'
 import type { Utility } from './utility'
 
-export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions' | 'layers'>
+export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>
 
 export type AtomicRuleContext = Pick<StylesheetContext, 'conditions' | 'hash' | 'utility' | 'transform' | 'layers'>
 
@@ -20,7 +19,6 @@ export interface StylesheetContext {
   layers: Layers
   utility: Utility
   conditions: Conditions
-  recipes: Recipes
   helpers: PatternHelpers
   hash?: boolean
   transform?: AtomicRuleTransform

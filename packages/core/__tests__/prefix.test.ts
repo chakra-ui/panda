@@ -16,7 +16,7 @@ describe('atomic-rule / prefix', () => {
       "@layer utilities {
         .tw-eIKWVi {
           color: red
-          }
+      }
       }"
     `)
     expect(frontend({ color: 'red' })).toMatchInlineSnapshot('"tw-eIKWVi"')
@@ -27,7 +27,7 @@ describe('atomic-rule / prefix', () => {
           .tw-geqOyW {
             color: red
           }
-              }
+      }
       }"
     `)
     expect(frontend({ color: { sm: 'red' } })).toMatchInlineSnapshot('"tw-geqOyW"')

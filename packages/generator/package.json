@@ -38,7 +38,6 @@
   ],
   "dependencies": {
     "@pandacss/core": "workspace:*",
-    "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",

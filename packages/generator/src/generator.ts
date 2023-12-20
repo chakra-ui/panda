@@ -10,6 +10,7 @@ import { generateTokenCss } from './artifacts/css/token-css'
 import { Context } from './engines'
 import { getMessages } from './messages'
 import { getParserOptions, type ParserOptions } from './parser-options'
+import type { Stylesheet } from '@pandacss/core'
 
 export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 
@@ -27,39 +28,40 @@ export class Generator extends Context {
     return generateArtifacts(this, ids)
   }
 
-  appendCss(type: CssArtifactType) {
+  appendCss(type: CssArtifactType, sheet: Stylesheet) {
     match(type)
-      .with('preflight', () => generateResetCss(this))
-      .with('tokens', () => generateTokenCss(this))
-      .with('static', () => generateStaticCss(this))
-      .with('global', () => generateGlobalCss(this))
-      .with('keyframes', () => generateKeyframeCss(this))
+      .with('preflight', () => generateResetCss(this, sheet))
+      .with('tokens', () => generateTokenCss(this, sheet))
+      .with('static', () => generateStaticCss(this, sheet))
+      .with('global', () => generateGlobalCss(this, sheet))
+      .with('keyframes', () => generateKeyframeCss(this, sheet))
       .otherwise(() => {
         throw new Error(`Unknown css artifact type <${type}>`)
       })
   }
 
-  appendLayerParams() {
-    this.stylesheet.prepend(this.layers.params)
+  appendLayerParams(sheet: Stylesheet) {
+    sheet.prepend(sheet.layers.params)
   }
 
-  appendBaselineCss() {
-    if (this.config.preflight) this.appendCss('preflight')
-    if (!this.tokens.isEmpty) this.appendCss('tokens')
-    if (this.config.staticCss) this.appendCss('static')
-    this.appendCss('global')
-    if (this.config.theme?.keyframes) this.appendCss('keyframes')
+  appendBaselineCss(sheet: Stylesheet) {
+    if (this.config.preflight) this.appendCss('preflight', sheet)
+    if (!this.tokens.isEmpty) this.appendCss('tokens', sheet)
+    if (this.config.staticCss) this.appendCss('static', sheet)
+    this.appendCss('global', sheet)
+    if (this.config.theme?.keyframes) this.appendCss('keyframes', sheet)
   }
 
   getParserCss(collector: StyleCollectorType, filePath?: string) {
     return generateParserCss(this, collector, filePath)
   }
 
-  getCss() {
+  getCss(sheet?: Stylesheet) {
+    const stylesheet = sheet ?? this.createSheet()
     const collector = this.styleCollector.collect(this.hashFactory)
-    this.stylesheet.processStyleCollector(collector)
+    stylesheet.processStyleCollector(collector)
 
-    return this.stylesheet.toCss({
+    return stylesheet.toCss({
       optimize: true,
       minify: this.config.minify,
     })

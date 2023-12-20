@@ -49,7 +49,7 @@ describe('compositions', () => {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
             font-weight: var(--font-weights-bold)
-              }
+      }
           }
       }"
     `)
@@ -60,13 +60,13 @@ describe('compositions', () => {
           .textStyle_headline\\\\.h2 {
             font-size: 1.5rem;
             font-weight: var(--font-weights-bold);
-              }
+      }
 
           @media screen and (min-width: 64em) {
             .textStyle_headline\\\\.h2 {
-              font-size: 2rem
-                      }
-                  }
+              font-size: 2rem;
+          }
+      }
           }
       }"
     `)

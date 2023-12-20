@@ -18,8 +18,10 @@ async function build(ctx: PandaContext, ids?: ArtifactId[]) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
   }
 
-  ctx.appendAllCss()
-  await ctx.writeCss()
+  const sheet = ctx.createSheet()
+  ctx.appendLayerParams(sheet)
+  ctx.appendBaselineCss(sheet)
+  await ctx.writeCss(sheet)
   logger.info('css:emit', 'Successfully built the css files ✨')
 }
 
@@ -55,14 +57,16 @@ export async function generate(config: Config, configPath?: string) {
         .with('change', () => {
           ctx.project.reloadSourceFile(file)
           const result = ctx.project.parseSourceFile(file)
-          ctx.getParserCss(result)
-          return ctx.writeCss()
+          if (result) {
+            return ctx.writeCss()
+          }
         })
         .with('add', () => {
           ctx.project.createSourceFile(file)
           const result = ctx.project.parseSourceFile(file)
-          ctx.getParserCss(result)
-          return ctx.writeCss()
+          if (result) {
+            return ctx.writeCss()
+          }
         })
         .otherwise(() => {
           // noop

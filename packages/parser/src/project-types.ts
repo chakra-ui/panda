@@ -1,5 +1,5 @@
 import { type ProjectOptions as TsProjectOptions } from 'ts-morph'
-import { type ParserOptions } from './parser'
+import type { ParserOptions } from '@pandacss/generator'
 import type { ConfigTsOptions, PandaHookable, Runtime } from '@pandacss/types'
 
 export type ProjectOptions = Partial<TsProjectOptions> & {

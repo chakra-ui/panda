@@ -6,6 +6,10 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   const files = ctx.getFiles()
   const measureTotal = logger.time.debug(`Done parsing ${files.length} files`)
 
+  // easier to debug
+  ctx.config.minify = false
+  ctx.config.optimize = true
+
   const { fs, path } = ctx.runtime
   const outdir = options.outdir
 
@@ -20,29 +24,26 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
     return
   }
 
-  const results = await Promise.all(
-    files.map(async (file) => {
-      const measure = logger.time.debug(`Parsed ${file}`)
-      const result = ctx.project.parseSourceFile(file)
-      measure()
-      return { file, result }
-    }),
-  )
+  const filesWithCss = []
+  files.map((file) => {
+    const measure = logger.time.debug(`Parsed ${file}`)
+    const hashFactory = ctx.hashFactory.fork()
+    const result = ctx.project.parseSourceFile(file, hashFactory)
 
-  const filteredResults = results.filter(({ result }) => result && !result.isEmpty())
+    measure()
+    if (!result || hashFactory.isEmpty()) return
 
-  filteredResults.forEach(({ file, result }) => {
-    // clean the stylesheet
-    ctx.stylesheet.clean()
-
-    ctx.getParserCss(result)
-    const css = ctx.stylesheet.toCss({ optimize: true, minify: false })
+    const styles = ctx.styleCollector.fork().collect(hashFactory)
+    const css = ctx.getParserCss(styles, file)
+    if (!css) return
 
     if (options.dry) {
       console.log({ path: file, ast: result, code: css })
+      return
     }
 
     if (outdir) {
+      filesWithCss.push(file)
       const parsedPath = parse(file)
       const relative = path.relative(ctx.config.cwd, parsedPath.dir)
 
@@ -53,13 +54,12 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
 
       return Promise.allSettled([
-        fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result!.toJSON(), null, 2)),
+        fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result.toJSON(), null, 2)),
         fs.writeFile(`${outdir}/${cssPath}`, css),
       ])
     }
   })
 
-  logger.info('cli', `Found ${colors.bold(`${filteredResults.length}/${files.length}`)} files using Panda`)
-
+  logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
   measureTotal()
 }

@@ -1,6 +1,6 @@
 import { logger } from '@pandacss/logger'
-import type { Dict, StyleCollectorType, SystemStyleObject, UserConfig } from '@pandacss/types'
-import { CssSyntaxError } from 'postcss'
+import type { CascadeLayer, Dict, StyleCollectorType, SystemStyleObject, UserConfig } from '@pandacss/types'
+import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
@@ -28,24 +28,12 @@ export class Stylesheet {
 
   constructor(private context: StylesheetContext) {}
 
+  get layers() {
+    return this.context.layers
+  }
+
   getLayer(layer: LayerName) {
-    // return this.context.layers[layer] as postcss.AtRule | undefined
-    switch (layer) {
-      case 'base':
-        return this.context.layers.base
-      case 'tokens':
-        return this.context.layers.tokens
-      case 'recipes':
-        return this.context.layers.recipes.root
-      case 'recipes_base':
-        return this.context.layers.recipes.base
-      case 'recipes_slots':
-        return this.context.layers.slotRecipes.root
-      case 'recipes_slots_base':
-        return this.context.layers.slotRecipes.base
-      default:
-        return this.context.layers.utilities.custom(layer)
-    }
+    return this.context.layers[layer] as postcss.AtRule | undefined
   }
 
   process(options: ProcessOptions) {
@@ -102,6 +90,16 @@ export class Stylesheet {
     return this
   }
 
+  getLayerCss = (...layers: CascadeLayer[]) => {
+    return optimizeCss(
+      layers
+        .map((layer: CascadeLayer) => {
+          return this.context.layers.getLayerRoot(layer).toString()
+        })
+        .join('\n'),
+    )
+  }
+
   toCss = ({ optimize = false, minify }: ToCssOptions = {}) => {
     try {
       const { utility } = this.context
@@ -134,15 +132,7 @@ export class Stylesheet {
     }
   }
 
-  append = (...css: string[]) => {
-    this.context.layers.root.append(...css)
-  }
-
   prepend = (...css: string[]) => {
     this.context.layers.root.prepend(...css)
-  }
-
-  clean = () => {
-    this.context.layers.clean()
   }
 }

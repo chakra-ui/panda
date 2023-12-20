@@ -290,51 +290,51 @@ describe('extract svelte templates', () => {
       "@layer utilities {
         .text_blue\\\\.400 {
           color: var(--colors-blue-400)
-          }
+      }
 
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
-          }
+      }
 
         .text_green\\\\.400 {
           color: var(--colors-green-400)
-          }
+      }
 
         .text_purple\\\\.400 {
           color: var(--colors-purple-400)
-          }
+      }
 
         .text_red\\\\.500 {
           color: var(--colors-red-500)
-          }
+      }
 
         .text_teal\\\\.100 {
           color: var(--colors-teal-100)
-          }
+      }
 
         .text_teal\\\\.200 {
           color: var(--colors-teal-200)
-          }
+      }
 
         .text_teal\\\\.300 {
           color: var(--colors-teal-300)
-          }
+      }
 
         .text_teal\\\\.400 {
           color: var(--colors-teal-400)
-          }
+      }
 
         .text_teal\\\\.500 {
           color: var(--colors-teal-500)
-          }
+      }
 
         .text_teal\\\\.600 {
           color: var(--colors-teal-600)
-          }
+      }
 
         .text_teal\\\\.700 {
           color: var(--colors-teal-700)
-          }
+      }
       }"
     `)
   })

@@ -19,8 +19,6 @@ export function extractFile(ctx: PandaContext, filePath: string) {
     logger.error('file:parse', error)
   }
 
-  ctx.getParserCss(result)
-
   measure()
 
   return result

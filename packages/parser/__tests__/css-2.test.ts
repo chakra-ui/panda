@@ -543,11 +543,11 @@ export function Card({ className }) {
       "@layer utilities {
         .text_red\\\\.400 {
           color: var(--colors-red-400)
-          }
+      }
 
         .max-w_1000px {
           max-width: 1000px
-          }
+      }
       }"
     `)
   })

@@ -1,7 +1,6 @@
 import type { ConfigResultWithHooks, OutdirImportMap, TSConfig } from '@pandacss/types'
 import type { Context } from './engines'
-import type { PatternDetail } from './engines/pattern'
-import type { RecipeNode } from '@pandacss/core'
+import type { RecipeNode, PatternDetail } from '@pandacss/core'
 
 const getImportMap = (outdir: string, configImportMap?: string | OutdirImportMap): ParserImportMap => {
   if (typeof configImportMap === 'string') {
@@ -47,7 +46,7 @@ export const getParserOptions = (ctx: Context): ParserOptions => {
     recipes,
     patterns,
     hashFactory: ctx.hashFactory,
-    // styleCollector: ctx.styleCollector,
+    styleCollector: ctx.styleCollector,
     compilerOptions: compilerOptions as any,
     tsOptions: ctx.conf.tsOptions,
     join: (...paths: string[]) => paths.join('/'),
@@ -78,7 +77,7 @@ export interface ParserOptions {
   recipes: Context['recipes']
   patterns: Context['patterns']
   hashFactory: Context['hashFactory']
-  // styleCollector: Context['styleCollector']
+  styleCollector: Context['styleCollector']
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
   tsOptions: ConfigResultWithHooks['tsOptions']
