@@ -12,12 +12,6 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div' } = pattern.config
 
-    const cssProps = match(jsxStyleProps)
-      .with('all', () => 'styleProps')
-      .with('minimal', () => '{ css: mergeCss(styleProps, props.css) }')
-      .with('none', () => '{}')
-      .exhaustive()
-
     return {
       name: dashName,
       js: outdent`
@@ -42,8 +36,28 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
             () => outdent`
           const { ${props.join(', ')}${props.length ? ',' : ''} ...restProps } = props
           const styleProps = ${styleFnName}({${props.join(', ')}})
-          const cssProps = ${cssProps}
-          const mergedProps = { ref, ...cssProps, ...restProps }
+
+          ${match(jsxStyleProps)
+            .with(
+              'all',
+              () => outdent`
+            const mergedProps = { ref, ...styleProps, ...restProps }
+            `,
+            )
+            .with(
+              'minimal',
+              () => outdent`
+            const cssProps = { css: mergeCss(styleProps, props.css) }
+            const mergedProps = { ref, ...restProps, ...cssProps }
+            `,
+            )
+            .with(
+              'none',
+              () => outdent`
+            const mergedProps = { ref, ...restProps }
+            `,
+            )
+            .exhaustive()}
 
           return h(${factoryName}.${jsxElement}, mergedProps)
           `,

@@ -13,12 +13,6 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
     const { description, jsxElement = 'div' } = pattern.config
     const propList = props.map((v) => JSON.stringify(v)).join(', ')
 
-    const cssProps = match(jsxStyleProps)
-      .with('all', () => 'styleProps')
-      .with('minimal', () => '{ css: mergeCss(styleProps, props.css) }')
-      .with('none', () => '{}')
-      .exhaustive()
-
     return {
       name: dashName,
       js: outdent`
@@ -45,7 +39,28 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
             .otherwise(
               () => outdent`
               const styleProps = computed(() => ${styleFnName}(props))
-              const cssProps = computed(() => (${cssProps}).value)
+
+              ${match(jsxStyleProps)
+                .with(
+                  'all',
+                  () => outdent`
+                const cssProps = computed(() => styleProps.value)
+                `,
+                )
+                .with(
+                  'minimal',
+                  () => outdent`
+                  const cssProps = computed(() => ({ css: mergeCss(styleProps.value, attrs.css) }))
+                  `,
+                )
+                .with(
+                  'none',
+                  () => outdent`
+                const cssProps = {}
+                `,
+                )
+                .exhaustive()}
+
               return () => {
                   const computedProps = { ...cssProps.value, ...attrs }
                   return h(${factoryName}.${jsxElement}, computedProps, slots)

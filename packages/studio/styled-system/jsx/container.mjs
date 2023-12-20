@@ -6,8 +6,8 @@ import { getContainerStyle } from '../patterns/container.mjs';
 export const Container = /* @__PURE__ */ forwardRef(function Container(props, ref) {
   const {  ...restProps } = props
 const styleProps = getContainerStyle({})
-const cssProps = styleProps
-const mergedProps = { ref, ...cssProps, ...restProps }
+
+const mergedProps = { ref, ...styleProps, ...restProps }
 
 return createElement(panda.div, mergedProps)
   })
