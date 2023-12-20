@@ -1,6 +1,7 @@
 import { logger } from '@pandacss/logger'
-import { PandaContext, type CssArtifactType } from '@pandacss/node'
 import { resolve } from 'pathe'
+import type { PandaContext } from './create-context'
+import type { CssArtifactType } from './extract'
 
 const ensureFile = (ctx: PandaContext, cwd: string, file: string) => {
   const outPath = resolve(cwd, file)
