@@ -665,5 +665,6 @@ When dealing with simple use cases, or if you need code colocation, or even avoi
 | Can both use any theme tokens, utilities or conditions | ✅ yes                                                                      | ✅ yes                                                                   |
 | Are generated just in time (JIT) based on usage        | ✅ yes, only the recipe variants found in your code will be generated       | ❌ no, all variants found in your `cva` recipes will always be generated |
 | Can be shared in a preset                              | ✅ yes, you can include it in your `preset.theme.recipes`                   | ❌ no                                                                    |
+| Can be applied responsively                            | ✅ yes, `button({ size: { base: 'sm', md: 'lg' } })`                        | ❌ no, only the styles in the recipe can be responsive                   |
 | Can be colocated in your markup code                   | ❌ no, they must be defined or imported in your `panda.config`              | ✅ yes, you can place it anywhere in your app                            |
 | Generate atomic classes                                | ❌ no, a specific className will be generated using your `recipe.className` | ✅ yes                                                                   |
