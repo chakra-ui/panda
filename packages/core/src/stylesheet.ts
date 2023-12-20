@@ -24,8 +24,6 @@ export type LayerName =
   | 'compositions'
 
 export class Stylesheet {
-  content: string = ''
-
   constructor(private context: StylesheetContext) {}
 
   get layers() {
@@ -85,9 +83,14 @@ export class Stylesheet {
     })
   }
 
-  setContent = (content: string) => {
-    this.content = content
-    return this
+  getLayerCss = (...layers: CascadeLayer[]) => {
+    return optimizeCss(
+      layers
+        .map((layer: CascadeLayer) => {
+          return this.context.layers.getLayer(layer).toString()
+        })
+        .join('\n'),
+    )
   }
 
   getLayerCss = (...layers: CascadeLayer[]) => {
@@ -110,11 +113,7 @@ export class Stylesheet {
       breakpoints.expandScreenAtRule(root)
       expandCssFunctions(root, { token: utility.getToken, raw: this.context.utility.tokens.getByName })
 
-      let css = root.toString()
-
-      if (this.content) {
-        css = `${this.content}\n\n${css}`
-      }
+      const css = root.toString()
 
       return optimize ? optimizeCss(css, { minify }) : css
     } catch (error) {
