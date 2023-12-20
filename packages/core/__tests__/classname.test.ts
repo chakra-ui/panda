@@ -78,6 +78,11 @@ describe('generate classnames', () => {
     ).toMatchInlineSnapshot('"[&_span]:fs_20px [.bold_&]:font_bold sm:fs_50px [@media_print]:fs_40px"')
   })
 
+  test('should use dash for negative tokens', () => {
+    const css = createCss(createContext())
+    expect(css({ mx: '-2' })).toMatchInlineSnapshot('"mx_-2"')
+  })
+
   test('should format the class name', () => {
     const css = createCss(
       createContext({

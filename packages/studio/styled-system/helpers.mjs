@@ -158,7 +158,9 @@ function createCss(context) {
         return;
       const [prop, ...allConditions] = conds.shift(paths);
       const conditions = filterBaseConditions(allConditions);
-      const formattedValue = value === "__ignore__" ? value : utility.formatClassName(value);
+      const isNegative = value.toString().startsWith("-");
+      const absValue = isNegative ? value.toString().slice(1) : value;
+      const formattedValue = value === "__ignore__" ? value : `${isNegative ? "-" : ""}${utility.formatClassName(absValue)}`;
       const transformed = utility.transform(prop, withoutImportant(sanitize(formattedValue)));
       let className = hashFn(conditions, transformed.className);
       if (important)
