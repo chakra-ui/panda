@@ -1,9 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { getSlotRecipe, processSlotRecipe } from './fixture'
+import { processRecipe } from './fixture'
+import { createGeneratorContext } from '@pandacss/fixture'
 
 describe('slot recipe ruleset', () => {
   test('should work', () => {
-    expect(processSlotRecipe('button', { size: 'sm' })).toMatchInlineSnapshot(`
+    expect(processRecipe('checkbox', { size: 'sm' })).toMatchInlineSnapshot(`
       "@layer recipes.slots {
           @layer _base {
               .button__container {
@@ -25,7 +26,7 @@ describe('slot recipe ruleset', () => {
   })
 
   test('assigned recipe with default jsx from slots', () => {
-    expect(getSlotRecipe('button')).toMatchInlineSnapshot(`
+    expect(createGeneratorContext().recipes.details.find((r) => r.baseName === 'checkbox')).toMatchInlineSnapshot(`
       {
         "baseName": "button",
         "config": {

@@ -1,12 +1,12 @@
-import { semanticTokens, tokens } from '@pandacss/fixture'
+import { fixturePreset } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src'
 import { formats } from '../src/format'
 
 test('should work with default fixture', () => {
   const dictionary = new TokenDictionary({
-    tokens,
-    semanticTokens,
+    tokens: fixturePreset.theme.tokens,
+    semanticTokens: fixturePreset.theme.semanticTokens,
   })
 
   const allSpacings = dictionary.filter({ extensions: { category: 'spacing' } })

@@ -6,6 +6,8 @@ import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
 import { createHooks } from 'hookable'
 import { fixturePreset } from './config'
 
+export { fixturePreset }
+
 const config: UserConfig = {
   ...fixturePreset,
   optimize: true,

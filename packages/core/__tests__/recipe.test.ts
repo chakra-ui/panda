@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { getRecipe, processRecipe } from './fixture'
+import { processRecipe } from './fixture'
+import { createGeneratorContext } from '@pandacss/fixture'
 
 describe('recipe ruleset', () => {
   test('should work with basic', () => {
@@ -79,7 +80,7 @@ describe('recipe ruleset', () => {
   })
 
   test('should process recipe with conditions', () => {
-    expect(getRecipe('buttonStyle').config).toMatchInlineSnapshot(`
+    expect(createGeneratorContext().recipes.details.find((r) => r.baseName === 'buttonStyle')).toMatchInlineSnapshot(`
       {
         "base": {
           "alignItems": "center",

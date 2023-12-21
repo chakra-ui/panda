@@ -1,13 +1,10 @@
+import type { SystemStyleObject } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { createCssFn } from './fixture'
+import { createRuleProcessor } from './fixture'
 
-const css = createCssFn({
-  conditions: {
-    hover: '&[data-hover], &:hover',
-    dark: "&[data-theme='dark'], &&[data-theme='dark']",
-  },
-})
-
+const css = (styles: SystemStyleObject) => {
+  return createRuleProcessor().css(styles).toCss()
+}
 describe('complex-rule', () => {
   test('should process complex rule', () => {
     expect(

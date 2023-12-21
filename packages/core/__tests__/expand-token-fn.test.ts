@@ -1,9 +1,9 @@
+import { createGeneratorContext } from '@pandacss/fixture'
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import expandTokenFn from '../src/plugins/expand-token-fn'
-import { createContext } from './fixture'
 
-const ctx = createContext()
+const ctx = createGeneratorContext()
 
 function run(code: string) {
   return postcss([expandTokenFn(ctx.utility.getToken, ctx.utility.tokens.getByName)]).process(code, {

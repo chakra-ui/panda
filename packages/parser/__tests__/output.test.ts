@@ -2899,7 +2899,7 @@ describe('extract to css output pipeline', () => {
   })
 
   test('recipe.staticCss', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       theme: {
         extend: {
           recipes: {
@@ -2911,8 +2911,8 @@ describe('extract to css output pipeline', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.stylesheet.getLayerCss('recipes')
+    ctx.appendCss('static')
+    const css = ctx.stylesheet.getLayerCss('recipes')
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
@@ -2937,7 +2937,7 @@ describe('extract to css output pipeline', () => {
   })
 
   test('slotRecipes.staticCss', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       theme: {
         extend: {
           slotRecipes: {
@@ -2979,8 +2979,8 @@ describe('extract to css output pipeline', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.stylesheet.getLayerCss('recipes')
+    ctx.appendCss('static')
+    const css = ctx.stylesheet.getLayerCss('recipes')
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes.slots {

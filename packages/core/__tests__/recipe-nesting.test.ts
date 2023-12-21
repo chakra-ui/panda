@@ -1,50 +1,59 @@
 import { expect, test } from 'vitest'
-import { createRecipeFn } from './fixture'
+import { createRuleProcessor } from './fixture'
+import type { Config } from '@pandacss/types'
 
-const recipe = createRecipeFn({
-  recipes: {
-    text: {
-      className: 'text',
-      base: {
-        marginTop: 'auto',
-        marginBottom: 0,
-        paddingTop: 0,
-        objectPos: 'center',
-      },
-      variants: {
-        variant: {
-          sm: {
-            '&:first-child': {
-              marginRight: '4',
-              '&:hover': {
-                color: { base: 'red.200', md: 'gray.300' },
-              },
-            },
-            '&:disabled': {
-              marginRight: '40px',
-              filter: 'unset',
-            },
+const config: Config = {
+  theme: {
+    extend: {
+      recipes: {
+        text: {
+          className: 'text',
+          base: {
+            marginTop: 'auto',
+            marginBottom: 0,
+            paddingTop: 0,
+            objectPos: 'center',
           },
-          md: {
-            '&:before': {
-              '--mb': 'colors.gray.300',
-              left: '5',
-              borderBottomRightRadius: 'sm',
-            },
-            '&:after': {
-              right: 90,
-              borderBottomRightRadius: 'lg',
-              transform: 'scaleX(-1)',
+          variants: {
+            variant: {
+              sm: {
+                '&:first-child': {
+                  marginRight: '4',
+                  '&:hover': {
+                    color: { base: 'red.200', md: 'gray.300' },
+                  },
+                },
+                '&:disabled': {
+                  marginRight: '40px',
+                  filter: 'unset',
+                },
+              },
+              md: {
+                '&:before': {
+                  '--mb': 'colors.gray.300',
+                  left: '5',
+                  borderBottomRightRadius: 'sm',
+                },
+                '&:after': {
+                  right: 90,
+                  borderBottomRightRadius: 'lg',
+                  transform: 'scaleX(-1)',
+                },
+              },
             },
           },
         },
       },
     },
   },
-})
+}
+
+function textRecipe(variants: Record<string, any> = {}) {
+  return createRuleProcessor(config).recipe('text', variants)!.toCss()
+}
 
 test('[recipe] direct nesting / recipe ruleset', () => {
-  expect(recipe('text', { variant: 'sm' })).toMatchInlineSnapshot(`
+  expect(textRecipe({ variant: 'sm' })).toMatchInlineSnapshot(`
     "@layer recipes {
         @layer _base {
             .text {
@@ -74,7 +83,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
     }"
   `)
 
-  expect(recipe('text', { variant: 'md' })).toMatchInlineSnapshot(`
+  expect(textRecipe({ variant: 'md' })).toMatchInlineSnapshot(`
     "@layer recipes {
         @layer _base {
             .text {

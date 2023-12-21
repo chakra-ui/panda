@@ -1,7 +1,9 @@
-import { semanticTokens, tokens } from '@pandacss/fixture'
+import { fixturePreset } from '@pandacss/fixture'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { describe, expect, test } from 'vitest'
 import { Utility } from '../src/utility'
+
+const { tokens, semanticTokens } = fixturePreset.theme
 
 describe('Utility', () => {
   test('should resolve hideFrom and hideBelow', () => {

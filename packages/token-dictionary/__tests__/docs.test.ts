@@ -1,12 +1,12 @@
-import { semanticTokens, tokens } from '@pandacss/fixture'
+import { fixturePreset } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src'
 import { getTokenDocs } from '../src/docs'
 
 test('should generate categorize token', () => {
   const dictionary = new TokenDictionary({
-    tokens,
-    semanticTokens,
+    tokens: fixturePreset.theme.tokens,
+    semanticTokens: fixturePreset.theme.semanticTokens,
   })
 
   expect(getTokenDocs(dictionary.filter({ isConditional: true, extensions: { category: 'colors' } })))

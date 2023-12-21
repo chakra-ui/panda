@@ -158,7 +158,7 @@ export class Context {
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
 
-  private get baseSheetContext() {
+  get baseSheetContext() {
     return {
       conditions: this.conditions,
       layers: this.layers,

@@ -4,7 +4,6 @@ import type { Recipes, Stylesheet, ToCssOptions } from '@pandacss/core'
 export interface CollectorContext {
   recipes: Recipes
   createSheet: () => Stylesheet
-  appendAllCss: () => void
 }
 
 export class RuleProcessor {
@@ -28,8 +27,6 @@ export class RuleProcessor {
 
   toCss(options?: ToCssOptions) {
     const { sheet } = this.prepare()
-
-    this.context.appendAllCss()
 
     return sheet.toCss({ optimize: true, ...options })
   }

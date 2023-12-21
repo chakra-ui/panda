@@ -34,6 +34,14 @@ export function cssParser(code: string) {
   }
 }
 
+export function cssTemplateLiteralParser(code: string) {
+  const project = getProject(code, { syntax: 'template-literal' })
+  const data = project.parseSourceFile(staticFilePath)!
+  return {
+    css: data.css,
+  }
+}
+
 export function cvaParser(code: string) {
   const project = getProject(code)
   const data = project.parseSourceFile(staticFilePath)!

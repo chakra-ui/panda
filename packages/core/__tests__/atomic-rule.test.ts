@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { createCssFn } from './fixture'
+import { createRuleProcessor } from './fixture'
+import type { SystemStyleObject } from '@pandacss/types'
 
-const css = createCssFn()
+const css = (styles: SystemStyleObject) => {
+  return createRuleProcessor().css(styles).toCss()
+}
 
 describe('atomic / with basic style object', () => {
   test('respect important syntax', () => {
