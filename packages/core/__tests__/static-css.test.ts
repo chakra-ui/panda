@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { StaticContext, getStaticCss } from '../src/static-css'
+import { type StaticContext, getStaticCss } from '../src/static-css'
 
 const ctx: StaticContext = {
   breakpoints: ['sm', 'md'],
