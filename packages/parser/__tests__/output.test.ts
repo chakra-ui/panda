@@ -279,7 +279,7 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-red-100)
           }
 
-        .mx-3 {
+        .mx--3 {
           margin-inline: calc(var(--spacing-3) * -1)
           }
 
