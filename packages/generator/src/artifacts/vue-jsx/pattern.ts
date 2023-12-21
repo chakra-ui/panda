@@ -1,7 +1,7 @@
 import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
-import type { Context } from '../../engines'
 import { match } from 'ts-pattern'
+import type { Context } from '../../engines'
 
 export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
