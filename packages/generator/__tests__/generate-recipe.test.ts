@@ -2,7 +2,7 @@ import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 const createRecipeJs = (config: ConfigResultWithHooks) => {
   const generator = new Generator(config)
@@ -16,7 +16,7 @@ const recipeJs = (config: ConfigResultWithHooks) => {
 
 describe('generate recipes', () => {
   test('should ', () => {
-    expect(createRecipeJs(generatorConfig)).toMatchInlineSnapshot(`
+    expect(createRecipeJs(fixtureDefaults)).toMatchInlineSnapshot(`
       {
         "dts": "",
         "js": "import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
@@ -47,14 +47,14 @@ describe('generate recipes', () => {
          }
 
          const recipeCss = createCss({
-           
+
            conditions: {
              shift: sortConditions,
              finalize: finalizeConditions,
              breakpoints: { keys: [\\"base\\",\\"sm\\",\\"md\\",\\"lg\\",\\"xl\\",\\"2xl\\"] }
            },
            utility: {
-             
+
              transform,
            }
          })
@@ -103,7 +103,7 @@ describe('generate recipes', () => {
       }
     `)
 
-    expect(recipeJs(generatorConfig)).toMatchInlineSnapshot(`
+    expect(recipeJs(fixtureDefaults)).toMatchInlineSnapshot(`
       [
         {
           "dts": "import type { ConditionalValue } from '../types/index';
@@ -166,7 +166,7 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface TooltipStyleVariant {
-        
+
       }
 
       type TooltipStyleVariantMap = {

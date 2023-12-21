@@ -15,6 +15,12 @@
     "skipLibCheck": true,
     "strict": true,
     "verbatimModuleSyntax": true,
+    //
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "baseUrl": "./",
+    "paths": {
+      "@pandacss/fixture": ["./packages/fixture/src/index.ts"]
+    },
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "customConditions": ["source"]

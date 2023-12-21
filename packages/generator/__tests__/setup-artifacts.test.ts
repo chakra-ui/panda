@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 import { type Artifact } from '@pandacss/types'
 
 const formatArtifact = (artifact: Artifact) => {
@@ -11,7 +11,7 @@ const formatArtifact = (artifact: Artifact) => {
 
 describe('setup-artifacts', () => {
   test('filter by ArtifactId', () => {
-    const generator = new Generator(generatorConfig)
+    const generator = new Generator(fixtureDefaults)
     expect(generator.getArtifacts(['create-recipe']).map(formatArtifact)).toMatchInlineSnapshot(`
       [
         [
@@ -125,7 +125,7 @@ describe('setup-artifacts', () => {
   })
 
   test('getArtifacts', () => {
-    const generator = new Generator(generatorConfig)
+    const generator = new Generator(fixtureDefaults)
     expect(generator.getArtifacts().map(formatArtifact)).toMatchInlineSnapshot(`
       [
         [

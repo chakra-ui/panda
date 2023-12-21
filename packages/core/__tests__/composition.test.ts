@@ -1,13 +1,15 @@
 import { describe, expect, test } from 'vitest'
 import { assignCompositions } from '../src/compositions'
-import { compositions, createContext, createCssFn } from './fixture'
+import { createCssFn } from './fixture'
+import { createContext } from '@pandacss/fixture'
+import { fixturePreset } from 'packages/fixture/src/config'
 
 const css = createCssFn()
 
 describe('compositions', () => {
   test('should assign composition', () => {
     const ctx = createContext()
-    assignCompositions(compositions, ctx)
+    assignCompositions(fixturePreset.theme.textStyles!, ctx)
     const result = ctx.utility.transform('textStyle', 'headline.h2')
     expect(result).toMatchInlineSnapshot(`
       {

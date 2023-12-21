@@ -2,7 +2,7 @@ import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 const propTypes = (config: ConfigResultWithHooks) => {
   const ctx = new Generator(config)
@@ -11,7 +11,7 @@ const propTypes = (config: ConfigResultWithHooks) => {
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(propTypes(generatorConfig)).toMatchInlineSnapshot(`
+    expect(propTypes(fixtureDefaults)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -232,7 +232,7 @@ describe('generate property types', () => {
         type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | CssValue<T> : CssValue<T>
 
         export interface PropertyTypes extends PropertyValueTypes {
-        
+
       	pos: Shorthand<\\"position\\">;
       	insetEnd: Shorthand<\\"insetInlineEnd\\">;
       	end: Shorthand<\\"insetInlineEnd\\">;
@@ -341,7 +341,7 @@ describe('generate property types', () => {
   })
 
   test('with stricTokens true', () => {
-    const conf = Object.assign({}, generatorConfig)
+    const conf = Object.assign({}, fixtureDefaults)
     conf.config.strictTokens = true
 
     expect(propTypes(conf)).toMatchInlineSnapshot(`
@@ -564,7 +564,7 @@ describe('generate property types', () => {
         type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] : CssValue<T>
 
         export interface PropertyTypes extends PropertyValueTypes {
-        
+
       	pos: Shorthand<\\"position\\">;
       	insetEnd: Shorthand<\\"insetInlineEnd\\">;
       	end: Shorthand<\\"insetInlineEnd\\">;

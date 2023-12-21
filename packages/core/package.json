@@ -50,7 +50,6 @@
     "ts-pattern": "5.0.5"
   },
   "devDependencies": {
-    "@pandacss/fixture": "workspace:*",
     "@types/lodash.merge": "4.6.8"
   }
 }

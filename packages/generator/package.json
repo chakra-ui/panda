@@ -45,7 +45,6 @@
     "ts-pattern": "5.0.5"
   },
   "devDependencies": {
-    "@pandacss/fixture": "workspace:*",
     "@types/pluralize": "0.0.33",
     "hookable": "5.5.3"
   }

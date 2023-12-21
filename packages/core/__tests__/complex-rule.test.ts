@@ -1,17 +1,12 @@
-import * as mocks from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { Conditions } from '../src'
 import { createCssFn } from './fixture'
 
-const conditions = new Conditions({
-  breakpoints: mocks.breakpoints,
+const css = createCssFn({
   conditions: {
     hover: '&[data-hover], &:hover',
     dark: "&[data-theme='dark'], &&[data-theme='dark']",
   },
 })
-
-const css = createCssFn({ conditions })
 
 describe('complex-rule', () => {
   test('should process complex rule', () => {

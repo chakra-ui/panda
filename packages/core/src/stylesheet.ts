@@ -1,6 +1,6 @@
 import { logger } from '@pandacss/logger'
 import { getSlotRecipes } from '@pandacss/shared'
-import type { CascadeLayer, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
+import type { CascadeLayer, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject, UserConfig } from '@pandacss/types'
 import { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
@@ -9,6 +9,7 @@ import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
+export interface ToCssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
 export class Stylesheet {
   content = ''
 
@@ -106,7 +107,7 @@ export class Stylesheet {
     )
   }
 
-  toCss = ({ optimize = false, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
+  toCss = ({ optimize = false, minify }: ToCssOptions = {}) => {
     try {
       const {
         conditions: { breakpoints },

@@ -2,7 +2,7 @@ import type { ConfigResultWithHooks } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 const patterns = (config: ConfigResultWithHooks) => {
   const generator = new Generator(config)
@@ -10,7 +10,7 @@ const patterns = (config: ConfigResultWithHooks) => {
 }
 
 test('should generate pattern', () => {
-  expect(patterns(generatorConfig)).toMatchInlineSnapshot(`
+  expect(patterns(fixtureDefaults)).toMatchInlineSnapshot(`
     [
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
@@ -20,7 +20,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface BoxProperties {
-       
+
     }
 
 
@@ -421,7 +421,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface LinkBoxProperties {
-       
+
     }
 
 
@@ -464,7 +464,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface LinkOverlayProperties {
-       
+
     }
 
 
@@ -722,7 +722,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface ContainerProperties {
-       
+
     }
 
 
@@ -927,7 +927,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface VisuallyHiddenProperties {
-       
+
     }
 
 
