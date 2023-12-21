@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { getStaticCss } from '../src/static-css'
+import { StaticContext, getStaticCss } from '../src/static-css'
 
-const ctx = {
+const ctx: StaticContext = {
   breakpoints: ['sm', 'md'],
   getRecipeKeys: (recipe: string) => {
     const values: Record<string, any> = {
@@ -9,13 +9,7 @@ const ctx = {
         size: ['sm', 'md'],
         variant: ['primary', 'secondary'],
       },
-      tooltipStyle: {
-        __base: {
-          '&[data-tooltip], & [data-tooltip]': {
-            color: { _dark: 'red' },
-          },
-        },
-      },
+      tooltipStyle: {},
     }
 
     return values[recipe] ?? {}
@@ -27,6 +21,10 @@ const ctx = {
       color: ['red.200', 'blue.200', 'green.200'],
     }
     return values[property] ?? []
+  },
+  getPatternKeys: () => [],
+  getPatternPropValues() {
+    return []
   },
 }
 
@@ -120,7 +118,13 @@ describe('static-css', () => {
             },
           },
         ],
+        "patterns": [],
         "recipes": [
+          {
+            "buttonStyle": {
+              "buttonStyle": "__ignore__",
+            },
+          },
           {
             "buttonStyle": {
               "size": {
@@ -151,27 +155,7 @@ describe('static-css', () => {
           },
           {
             "tooltipStyle": {
-              "base": {
-                "&[data-tooltip], & [data-tooltip]": {
-                  "color": {
-                    "_dark": "red",
-                  },
-                },
-              },
-              "md": {
-                "&[data-tooltip], & [data-tooltip]": {
-                  "color": {
-                    "_dark": "red",
-                  },
-                },
-              },
-              "sm": {
-                "&[data-tooltip], & [data-tooltip]": {
-                  "color": {
-                    "_dark": "red",
-                  },
-                },
-              },
+              "tooltipStyle": "__ignore__",
             },
           },
         ],
@@ -190,41 +174,31 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": [],
+        "patterns": [],
         "recipes": [
           {
             "buttonStyle": {
-              "size": {
-                "base": "sm",
-                "md": "sm",
-                "sm": "sm",
-              },
+              "buttonStyle": "__ignore__",
             },
           },
           {
             "buttonStyle": {
-              "size": {
-                "base": "md",
-                "md": "md",
-                "sm": "md",
-              },
+              "size": "sm",
             },
           },
           {
             "buttonStyle": {
-              "variant": {
-                "base": "primary",
-                "md": "primary",
-                "sm": "primary",
-              },
+              "size": "md",
             },
           },
           {
             "buttonStyle": {
-              "variant": {
-                "base": "secondary",
-                "md": "secondary",
-                "sm": "secondary",
-              },
+              "variant": "primary",
+            },
+          },
+          {
+            "buttonStyle": {
+              "variant": "secondary",
             },
           },
         ],
@@ -247,6 +221,7 @@ describe('static-css', () => {
             "margin": "40px",
           },
         ],
+        "patterns": [],
         "recipes": [],
       }
     `)
@@ -282,6 +257,7 @@ describe('static-css', () => {
             },
           },
         ],
+        "patterns": [],
         "recipes": [],
       }
     `)
@@ -323,6 +299,7 @@ describe('static-css', () => {
             },
           },
         ],
+        "patterns": [],
         "recipes": [],
       }
     `)

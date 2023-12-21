@@ -2959,6 +2959,1200 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('staticCss.recipe base', () => {
+    const { generator } = parseAndExtract('', {
+      staticCss: {
+        recipes: {
+          tooltipStyle: [],
+        },
+      },
+    })
+
+    generator.appendCss('static')
+    const css = generator.getCss()
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red
+                  }
+          }
+      }"
+    `)
+  })
+
+  test('staticCss.patterns', () => {
+    const { generator } = parseAndExtract('', {
+      staticCss: {
+        patterns: {
+          // type: 'number'
+          aspectRatio: [
+            { properties: { ratio: ['4/3', '16/9', '1/1'] } },
+            { properties: { ratio: ['1/4'] }, conditions: ['md'] },
+          ],
+          // type: 'token'
+          spacer: [{ properties: { size: ['sm', 'md', 'lg'] } }],
+          // type: 'property'
+          circle: [{ properties: { size: ['sm', 'md', 'lg'] } }],
+          bleed: [{ properties: { inline: ['*'] } }],
+          // type: 'enum' + type: 'token'
+          divider: [{ properties: { orientation: ['*'], thickness: ['*'] } }],
+          float: ['*'],
+        },
+      },
+    })
+
+    generator.appendCss('static')
+    const css = generator.getCss()
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .aspectRatio\\\\:ratio_4\\\\/3 {
+          ratio: 4/3
+          }
+
+        .aspectRatio\\\\:ratio_16\\\\/9 {
+          ratio: 16/9
+          }
+
+        .aspectRatio\\\\:ratio_1\\\\/1 {
+          ratio: 1/1
+          }
+
+        .aspectRatio\\\\:ratio_1\\\\/4 {
+          ratio: 1/4
+          }
+
+        .spacer\\\\:size_sm {
+          size: sm
+          }
+
+        .spacer\\\\:size_md {
+          size: md
+          }
+
+        .spacer\\\\:size_lg {
+          size: lg
+          }
+
+        .circle\\\\:size_sm {
+          size: sm
+          }
+
+        .circle\\\\:size_md {
+          size: md
+          }
+
+        .circle\\\\:size_lg {
+          size: lg
+          }
+
+        .divider\\\\:orientation_horizontal {
+          orientation: horizontal
+          }
+
+        .divider\\\\:orientation_vertical {
+          orientation: vertical
+          }
+
+        .divider\\\\:thickness_0 {
+          thickness: 0
+          }
+
+        .divider\\\\:thickness_1 {
+          thickness: 1
+          }
+
+        .divider\\\\:thickness_2 {
+          thickness: 2
+          }
+
+        .divider\\\\:thickness_3 {
+          thickness: 3
+          }
+
+        .divider\\\\:thickness_4 {
+          thickness: 4
+          }
+
+        .divider\\\\:thickness_5 {
+          thickness: 5
+          }
+
+        .divider\\\\:thickness_6 {
+          thickness: 6
+          }
+
+        .divider\\\\:thickness_7 {
+          thickness: 7
+          }
+
+        .divider\\\\:thickness_8 {
+          thickness: 8
+          }
+
+        .divider\\\\:thickness_9 {
+          thickness: 9
+          }
+
+        .divider\\\\:thickness_10 {
+          thickness: 10
+          }
+
+        .divider\\\\:thickness_11 {
+          thickness: 11
+          }
+
+        .divider\\\\:thickness_12 {
+          thickness: 12
+          }
+
+        .divider\\\\:thickness_14 {
+          thickness: 14
+          }
+
+        .divider\\\\:thickness_16 {
+          thickness: 16
+          }
+
+        .divider\\\\:thickness_20 {
+          thickness: 20
+          }
+
+        .divider\\\\:thickness_24 {
+          thickness: 24
+          }
+
+        .divider\\\\:thickness_28 {
+          thickness: 28
+          }
+
+        .divider\\\\:thickness_32 {
+          thickness: 32
+          }
+
+        .divider\\\\:thickness_36 {
+          thickness: 36
+          }
+
+        .divider\\\\:thickness_40 {
+          thickness: 40
+          }
+
+        .divider\\\\:thickness_44 {
+          thickness: 44
+          }
+
+        .divider\\\\:thickness_48 {
+          thickness: 48
+          }
+
+        .divider\\\\:thickness_52 {
+          thickness: 52
+          }
+
+        .divider\\\\:thickness_56 {
+          thickness: 56
+          }
+
+        .divider\\\\:thickness_60 {
+          thickness: 60
+          }
+
+        .divider\\\\:thickness_64 {
+          thickness: 64
+          }
+
+        .divider\\\\:thickness_72 {
+          thickness: 72
+          }
+
+        .divider\\\\:thickness_80 {
+          thickness: 80
+          }
+
+        .divider\\\\:thickness_96 {
+          thickness: 96
+          }
+
+        .divider\\\\:thickness_0\\\\.5 {
+          thickness: 0.5
+          }
+
+        .divider\\\\:thickness_1\\\\.5 {
+          thickness: 1.5
+          }
+
+        .divider\\\\:thickness_2\\\\.5 {
+          thickness: 2.5
+          }
+
+        .divider\\\\:thickness_3\\\\.5 {
+          thickness: 3.5
+          }
+
+        .divider\\\\:thickness_xs {
+          thickness: xs
+          }
+
+        .divider\\\\:thickness_sm {
+          thickness: sm
+          }
+
+        .divider\\\\:thickness_md {
+          thickness: md
+          }
+
+        .divider\\\\:thickness_lg {
+          thickness: lg
+          }
+
+        .divider\\\\:thickness_xl {
+          thickness: xl
+          }
+
+        .divider\\\\:thickness_2xl {
+          thickness: 2xl
+          }
+
+        .divider\\\\:thickness_3xl {
+          thickness: 3xl
+          }
+
+        .divider\\\\:thickness_4xl {
+          thickness: 4xl
+          }
+
+        .divider\\\\:thickness_5xl {
+          thickness: 5xl
+          }
+
+        .divider\\\\:thickness_6xl {
+          thickness: 6xl
+          }
+
+        .divider\\\\:thickness_7xl {
+          thickness: 7xl
+          }
+
+        .divider\\\\:thickness_8xl {
+          thickness: 8xl
+          }
+
+        .divider\\\\:thickness_prose {
+          thickness: prose
+          }
+
+        .divider\\\\:thickness_full {
+          thickness: full
+          }
+
+        .divider\\\\:thickness_min {
+          thickness: min
+          }
+
+        .divider\\\\:thickness_max {
+          thickness: max
+          }
+
+        .divider\\\\:thickness_fit {
+          thickness: fit
+          }
+
+        .divider\\\\:thickness_breakpoint-sm {
+          thickness: breakpoint-sm
+          }
+
+        .divider\\\\:thickness_breakpoint-md {
+          thickness: breakpoint-md
+          }
+
+        .divider\\\\:thickness_breakpoint-lg {
+          thickness: breakpoint-lg
+          }
+
+        .divider\\\\:thickness_breakpoint-xl {
+          thickness: breakpoint-xl
+          }
+
+        .divider\\\\:thickness_breakpoint-2xl {
+          thickness: breakpoint-2xl
+          }
+
+        .float\\\\:offset-x_0 {
+          offset-x: 0
+          }
+
+        .float\\\\:offset-x_1 {
+          offset-x: 1
+          }
+
+        .float\\\\:offset-x_2 {
+          offset-x: 2
+          }
+
+        .float\\\\:offset-x_3 {
+          offset-x: 3
+          }
+
+        .float\\\\:offset-x_4 {
+          offset-x: 4
+          }
+
+        .float\\\\:offset-x_5 {
+          offset-x: 5
+          }
+
+        .float\\\\:offset-x_6 {
+          offset-x: 6
+          }
+
+        .float\\\\:offset-x_7 {
+          offset-x: 7
+          }
+
+        .float\\\\:offset-x_8 {
+          offset-x: 8
+          }
+
+        .float\\\\:offset-x_9 {
+          offset-x: 9
+          }
+
+        .float\\\\:offset-x_10 {
+          offset-x: 10
+          }
+
+        .float\\\\:offset-x_11 {
+          offset-x: 11
+          }
+
+        .float\\\\:offset-x_12 {
+          offset-x: 12
+          }
+
+        .float\\\\:offset-x_14 {
+          offset-x: 14
+          }
+
+        .float\\\\:offset-x_16 {
+          offset-x: 16
+          }
+
+        .float\\\\:offset-x_20 {
+          offset-x: 20
+          }
+
+        .float\\\\:offset-x_24 {
+          offset-x: 24
+          }
+
+        .float\\\\:offset-x_28 {
+          offset-x: 28
+          }
+
+        .float\\\\:offset-x_32 {
+          offset-x: 32
+          }
+
+        .float\\\\:offset-x_36 {
+          offset-x: 36
+          }
+
+        .float\\\\:offset-x_40 {
+          offset-x: 40
+          }
+
+        .float\\\\:offset-x_44 {
+          offset-x: 44
+          }
+
+        .float\\\\:offset-x_48 {
+          offset-x: 48
+          }
+
+        .float\\\\:offset-x_52 {
+          offset-x: 52
+          }
+
+        .float\\\\:offset-x_56 {
+          offset-x: 56
+          }
+
+        .float\\\\:offset-x_60 {
+          offset-x: 60
+          }
+
+        .float\\\\:offset-x_64 {
+          offset-x: 64
+          }
+
+        .float\\\\:offset-x_72 {
+          offset-x: 72
+          }
+
+        .float\\\\:offset-x_80 {
+          offset-x: 80
+          }
+
+        .float\\\\:offset-x_96 {
+          offset-x: 96
+          }
+
+        .float\\\\:offset-x_0\\\\.5 {
+          offset-x: 0.5
+          }
+
+        .float\\\\:offset-x_1\\\\.5 {
+          offset-x: 1.5
+          }
+
+        .float\\\\:offset-x_2\\\\.5 {
+          offset-x: 2.5
+          }
+
+        .float\\\\:offset-x_3\\\\.5 {
+          offset-x: 3.5
+          }
+
+        .float\\\\:offset-x_gutter {
+          offset-x: gutter
+          }
+
+        .float\\\\:offset-x_-1 {
+          offset-x: -1
+          }
+
+        .float\\\\:offset-x_-2 {
+          offset-x: -2
+          }
+
+        .float\\\\:offset-x_-3 {
+          offset-x: -3
+          }
+
+        .float\\\\:offset-x_-4 {
+          offset-x: -4
+          }
+
+        .float\\\\:offset-x_-5 {
+          offset-x: -5
+          }
+
+        .float\\\\:offset-x_-6 {
+          offset-x: -6
+          }
+
+        .float\\\\:offset-x_-7 {
+          offset-x: -7
+          }
+
+        .float\\\\:offset-x_-8 {
+          offset-x: -8
+          }
+
+        .float\\\\:offset-x_-9 {
+          offset-x: -9
+          }
+
+        .float\\\\:offset-x_-10 {
+          offset-x: -10
+          }
+
+        .float\\\\:offset-x_-11 {
+          offset-x: -11
+          }
+
+        .float\\\\:offset-x_-12 {
+          offset-x: -12
+          }
+
+        .float\\\\:offset-x_-14 {
+          offset-x: -14
+          }
+
+        .float\\\\:offset-x_-16 {
+          offset-x: -16
+          }
+
+        .float\\\\:offset-x_-20 {
+          offset-x: -20
+          }
+
+        .float\\\\:offset-x_-24 {
+          offset-x: -24
+          }
+
+        .float\\\\:offset-x_-28 {
+          offset-x: -28
+          }
+
+        .float\\\\:offset-x_-32 {
+          offset-x: -32
+          }
+
+        .float\\\\:offset-x_-36 {
+          offset-x: -36
+          }
+
+        .float\\\\:offset-x_-40 {
+          offset-x: -40
+          }
+
+        .float\\\\:offset-x_-44 {
+          offset-x: -44
+          }
+
+        .float\\\\:offset-x_-48 {
+          offset-x: -48
+          }
+
+        .float\\\\:offset-x_-52 {
+          offset-x: -52
+          }
+
+        .float\\\\:offset-x_-56 {
+          offset-x: -56
+          }
+
+        .float\\\\:offset-x_-60 {
+          offset-x: -60
+          }
+
+        .float\\\\:offset-x_-64 {
+          offset-x: -64
+          }
+
+        .float\\\\:offset-x_-72 {
+          offset-x: -72
+          }
+
+        .float\\\\:offset-x_-80 {
+          offset-x: -80
+          }
+
+        .float\\\\:offset-x_-96 {
+          offset-x: -96
+          }
+
+        .float\\\\:offset-x_-0\\\\.5 {
+          offset-x: -0.5
+          }
+
+        .float\\\\:offset-x_-1\\\\.5 {
+          offset-x: -1.5
+          }
+
+        .float\\\\:offset-x_-2\\\\.5 {
+          offset-x: -2.5
+          }
+
+        .float\\\\:offset-x_-3\\\\.5 {
+          offset-x: -3.5
+          }
+
+        .float\\\\:offset-x_-gutter {
+          offset-x: -gutter
+          }
+
+        .float\\\\:offset-y_0 {
+          offset-y: 0
+          }
+
+        .float\\\\:offset-y_1 {
+          offset-y: 1
+          }
+
+        .float\\\\:offset-y_2 {
+          offset-y: 2
+          }
+
+        .float\\\\:offset-y_3 {
+          offset-y: 3
+          }
+
+        .float\\\\:offset-y_4 {
+          offset-y: 4
+          }
+
+        .float\\\\:offset-y_5 {
+          offset-y: 5
+          }
+
+        .float\\\\:offset-y_6 {
+          offset-y: 6
+          }
+
+        .float\\\\:offset-y_7 {
+          offset-y: 7
+          }
+
+        .float\\\\:offset-y_8 {
+          offset-y: 8
+          }
+
+        .float\\\\:offset-y_9 {
+          offset-y: 9
+          }
+
+        .float\\\\:offset-y_10 {
+          offset-y: 10
+          }
+
+        .float\\\\:offset-y_11 {
+          offset-y: 11
+          }
+
+        .float\\\\:offset-y_12 {
+          offset-y: 12
+          }
+
+        .float\\\\:offset-y_14 {
+          offset-y: 14
+          }
+
+        .float\\\\:offset-y_16 {
+          offset-y: 16
+          }
+
+        .float\\\\:offset-y_20 {
+          offset-y: 20
+          }
+
+        .float\\\\:offset-y_24 {
+          offset-y: 24
+          }
+
+        .float\\\\:offset-y_28 {
+          offset-y: 28
+          }
+
+        .float\\\\:offset-y_32 {
+          offset-y: 32
+          }
+
+        .float\\\\:offset-y_36 {
+          offset-y: 36
+          }
+
+        .float\\\\:offset-y_40 {
+          offset-y: 40
+          }
+
+        .float\\\\:offset-y_44 {
+          offset-y: 44
+          }
+
+        .float\\\\:offset-y_48 {
+          offset-y: 48
+          }
+
+        .float\\\\:offset-y_52 {
+          offset-y: 52
+          }
+
+        .float\\\\:offset-y_56 {
+          offset-y: 56
+          }
+
+        .float\\\\:offset-y_60 {
+          offset-y: 60
+          }
+
+        .float\\\\:offset-y_64 {
+          offset-y: 64
+          }
+
+        .float\\\\:offset-y_72 {
+          offset-y: 72
+          }
+
+        .float\\\\:offset-y_80 {
+          offset-y: 80
+          }
+
+        .float\\\\:offset-y_96 {
+          offset-y: 96
+          }
+
+        .float\\\\:offset-y_0\\\\.5 {
+          offset-y: 0.5
+          }
+
+        .float\\\\:offset-y_1\\\\.5 {
+          offset-y: 1.5
+          }
+
+        .float\\\\:offset-y_2\\\\.5 {
+          offset-y: 2.5
+          }
+
+        .float\\\\:offset-y_3\\\\.5 {
+          offset-y: 3.5
+          }
+
+        .float\\\\:offset-y_gutter {
+          offset-y: gutter
+          }
+
+        .float\\\\:offset-y_-1 {
+          offset-y: -1
+          }
+
+        .float\\\\:offset-y_-2 {
+          offset-y: -2
+          }
+
+        .float\\\\:offset-y_-3 {
+          offset-y: -3
+          }
+
+        .float\\\\:offset-y_-4 {
+          offset-y: -4
+          }
+
+        .float\\\\:offset-y_-5 {
+          offset-y: -5
+          }
+
+        .float\\\\:offset-y_-6 {
+          offset-y: -6
+          }
+
+        .float\\\\:offset-y_-7 {
+          offset-y: -7
+          }
+
+        .float\\\\:offset-y_-8 {
+          offset-y: -8
+          }
+
+        .float\\\\:offset-y_-9 {
+          offset-y: -9
+          }
+
+        .float\\\\:offset-y_-10 {
+          offset-y: -10
+          }
+
+        .float\\\\:offset-y_-11 {
+          offset-y: -11
+          }
+
+        .float\\\\:offset-y_-12 {
+          offset-y: -12
+          }
+
+        .float\\\\:offset-y_-14 {
+          offset-y: -14
+          }
+
+        .float\\\\:offset-y_-16 {
+          offset-y: -16
+          }
+
+        .float\\\\:offset-y_-20 {
+          offset-y: -20
+          }
+
+        .float\\\\:offset-y_-24 {
+          offset-y: -24
+          }
+
+        .float\\\\:offset-y_-28 {
+          offset-y: -28
+          }
+
+        .float\\\\:offset-y_-32 {
+          offset-y: -32
+          }
+
+        .float\\\\:offset-y_-36 {
+          offset-y: -36
+          }
+
+        .float\\\\:offset-y_-40 {
+          offset-y: -40
+          }
+
+        .float\\\\:offset-y_-44 {
+          offset-y: -44
+          }
+
+        .float\\\\:offset-y_-48 {
+          offset-y: -48
+          }
+
+        .float\\\\:offset-y_-52 {
+          offset-y: -52
+          }
+
+        .float\\\\:offset-y_-56 {
+          offset-y: -56
+          }
+
+        .float\\\\:offset-y_-60 {
+          offset-y: -60
+          }
+
+        .float\\\\:offset-y_-64 {
+          offset-y: -64
+          }
+
+        .float\\\\:offset-y_-72 {
+          offset-y: -72
+          }
+
+        .float\\\\:offset-y_-80 {
+          offset-y: -80
+          }
+
+        .float\\\\:offset-y_-96 {
+          offset-y: -96
+          }
+
+        .float\\\\:offset-y_-0\\\\.5 {
+          offset-y: -0.5
+          }
+
+        .float\\\\:offset-y_-1\\\\.5 {
+          offset-y: -1.5
+          }
+
+        .float\\\\:offset-y_-2\\\\.5 {
+          offset-y: -2.5
+          }
+
+        .float\\\\:offset-y_-3\\\\.5 {
+          offset-y: -3.5
+          }
+
+        .float\\\\:offset-y_-gutter {
+          offset-y: -gutter
+          }
+
+        .float\\\\:offset_0 {
+          offset: 0
+          }
+
+        .float\\\\:offset_1 {
+          offset: 1
+          }
+
+        .float\\\\:offset_2 {
+          offset: 2
+          }
+
+        .float\\\\:offset_3 {
+          offset: 3
+          }
+
+        .float\\\\:offset_4 {
+          offset: 4
+          }
+
+        .float\\\\:offset_5 {
+          offset: 5
+          }
+
+        .float\\\\:offset_6 {
+          offset: 6
+          }
+
+        .float\\\\:offset_7 {
+          offset: 7
+          }
+
+        .float\\\\:offset_8 {
+          offset: 8
+          }
+
+        .float\\\\:offset_9 {
+          offset: 9
+          }
+
+        .float\\\\:offset_10 {
+          offset: 10
+          }
+
+        .float\\\\:offset_11 {
+          offset: 11
+          }
+
+        .float\\\\:offset_12 {
+          offset: 12
+          }
+
+        .float\\\\:offset_14 {
+          offset: 14
+          }
+
+        .float\\\\:offset_16 {
+          offset: 16
+          }
+
+        .float\\\\:offset_20 {
+          offset: 20
+          }
+
+        .float\\\\:offset_24 {
+          offset: 24
+          }
+
+        .float\\\\:offset_28 {
+          offset: 28
+          }
+
+        .float\\\\:offset_32 {
+          offset: 32
+          }
+
+        .float\\\\:offset_36 {
+          offset: 36
+          }
+
+        .float\\\\:offset_40 {
+          offset: 40
+          }
+
+        .float\\\\:offset_44 {
+          offset: 44
+          }
+
+        .float\\\\:offset_48 {
+          offset: 48
+          }
+
+        .float\\\\:offset_52 {
+          offset: 52
+          }
+
+        .float\\\\:offset_56 {
+          offset: 56
+          }
+
+        .float\\\\:offset_60 {
+          offset: 60
+          }
+
+        .float\\\\:offset_64 {
+          offset: 64
+          }
+
+        .float\\\\:offset_72 {
+          offset: 72
+          }
+
+        .float\\\\:offset_80 {
+          offset: 80
+          }
+
+        .float\\\\:offset_96 {
+          offset: 96
+          }
+
+        .float\\\\:offset_0\\\\.5 {
+          offset: 0.5
+          }
+
+        .float\\\\:offset_1\\\\.5 {
+          offset: 1.5
+          }
+
+        .float\\\\:offset_2\\\\.5 {
+          offset: 2.5
+          }
+
+        .float\\\\:offset_3\\\\.5 {
+          offset: 3.5
+          }
+
+        .float\\\\:offset_gutter {
+          offset: gutter
+          }
+
+        .float\\\\:offset_-1 {
+          offset: -1
+          }
+
+        .float\\\\:offset_-2 {
+          offset: -2
+          }
+
+        .float\\\\:offset_-3 {
+          offset: -3
+          }
+
+        .float\\\\:offset_-4 {
+          offset: -4
+          }
+
+        .float\\\\:offset_-5 {
+          offset: -5
+          }
+
+        .float\\\\:offset_-6 {
+          offset: -6
+          }
+
+        .float\\\\:offset_-7 {
+          offset: -7
+          }
+
+        .float\\\\:offset_-8 {
+          offset: -8
+          }
+
+        .float\\\\:offset_-9 {
+          offset: -9
+          }
+
+        .float\\\\:offset_-10 {
+          offset: -10
+          }
+
+        .float\\\\:offset_-11 {
+          offset: -11
+          }
+
+        .float\\\\:offset_-12 {
+          offset: -12
+          }
+
+        .float\\\\:offset_-14 {
+          offset: -14
+          }
+
+        .float\\\\:offset_-16 {
+          offset: -16
+          }
+
+        .float\\\\:offset_-20 {
+          offset: -20
+          }
+
+        .float\\\\:offset_-24 {
+          offset: -24
+          }
+
+        .float\\\\:offset_-28 {
+          offset: -28
+          }
+
+        .float\\\\:offset_-32 {
+          offset: -32
+          }
+
+        .float\\\\:offset_-36 {
+          offset: -36
+          }
+
+        .float\\\\:offset_-40 {
+          offset: -40
+          }
+
+        .float\\\\:offset_-44 {
+          offset: -44
+          }
+
+        .float\\\\:offset_-48 {
+          offset: -48
+          }
+
+        .float\\\\:offset_-52 {
+          offset: -52
+          }
+
+        .float\\\\:offset_-56 {
+          offset: -56
+          }
+
+        .float\\\\:offset_-60 {
+          offset: -60
+          }
+
+        .float\\\\:offset_-64 {
+          offset: -64
+          }
+
+        .float\\\\:offset_-72 {
+          offset: -72
+          }
+
+        .float\\\\:offset_-80 {
+          offset: -80
+          }
+
+        .float\\\\:offset_-96 {
+          offset: -96
+          }
+
+        .float\\\\:offset_-0\\\\.5 {
+          offset: -0.5
+          }
+
+        .float\\\\:offset_-1\\\\.5 {
+          offset: -1.5
+          }
+
+        .float\\\\:offset_-2\\\\.5 {
+          offset: -2.5
+          }
+
+        .float\\\\:offset_-3\\\\.5 {
+          offset: -3.5
+          }
+
+        .float\\\\:offset_-gutter {
+          offset: -gutter
+          }
+
+        .float\\\\:placement_bottom-end {
+          placement: bottom-end
+          }
+
+        .float\\\\:placement_bottom-start {
+          placement: bottom-start
+          }
+
+        .float\\\\:placement_top-end {
+          placement: top-end
+          }
+
+        .float\\\\:placement_top-start {
+          placement: top-start
+          }
+
+        .float\\\\:placement_bottom-center {
+          placement: bottom-center
+          }
+
+        .float\\\\:placement_top-center {
+          placement: top-center
+          }
+
+        .float\\\\:placement_middle-center {
+          placement: middle-center
+          }
+
+        .float\\\\:placement_middle-end {
+          placement: middle-end
+          }
+
+        .float\\\\:placement_middle-start {
+          placement: middle-start
+          }
+
+        @media screen and (min-width: 48em) {
+          .aspectRatio\\\\:md\\\\:ratio_1\\\\/4 {
+            ratio: 1/4
+          }
+              }
+      }"
+    `)
+  })
+
   test('slotRecipes.staticCss', () => {
     const { ctx } = parseAndExtract('', {
       theme: {
