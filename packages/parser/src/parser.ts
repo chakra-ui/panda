@@ -19,7 +19,6 @@ const isNodePattern = (node: ParserNodeOptions): node is ParserPatternNode => no
 
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
-const noop = (..._args: any[]) => void 0 as any
 
 export interface ParserOptions {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
@@ -144,11 +143,11 @@ export function createParser(options: ParserOptions) {
       return name === 'css' || isValidPattern(name) || isValidRecipe(name)
     }
 
-    const patternPropertiesByName = new Map<string, Set<string>>()
-    const initialpatterns = { string: new Set<string>(), regex: [] as RegExp[] }
+    const patternPropertiesByJsxName = new Map<string, Set<string>>()
+    const initialPatterns = { string: new Set<string>(), regex: [] as RegExp[] }
     const patternJsxLists = isJsxEnabled
       ? (jsx?.nodes ?? []).filter(isNodePattern).reduce((acc, pattern) => {
-          patternPropertiesByName.set(pattern.jsxName, new Set(pattern.props ?? []))
+          patternPropertiesByJsxName.set(pattern.jsxName, new Set(pattern.props ?? []))
 
           pattern.jsx?.forEach((jsx) => {
             if (typeof jsx === 'string') {
@@ -159,8 +158,8 @@ export function createParser(options: ParserOptions) {
           })
 
           return acc
-        }, initialpatterns)
-      : initialpatterns
+        }, initialPatterns)
+      : initialPatterns
 
     const recipes = new Set<string>()
     const patterns = new Set<string>()
@@ -219,13 +218,14 @@ export function createParser(options: ParserOptions) {
           (tagName: string) =>
             recipeJsxLists.string.has(tagName) || recipeJsxLists.regex.some((regex) => regex.test(tagName)),
         )
-      : noop
+      : undefined
+
     const isJsxTagPattern = isJsxEnabled
       ? memo(
           (tagName: string) =>
             patternJsxLists.string.has(tagName) || patternJsxLists.regex.some((regex) => regex.test(tagName)),
         )
-      : noop
+      : undefined
 
     const matchTag = isJsxEnabled
       ? memo((tagName: string) => {
@@ -236,21 +236,21 @@ export function createParser(options: ParserOptions) {
             components.has(tagName) ||
             isUpperCase(tagName) ||
             isFactory(tagName) ||
-            isJsxTagRecipe(tagName) ||
-            isJsxTagPattern(tagName)
+            isJsxTagRecipe?.(tagName) ||
+            isJsxTagPattern?.(tagName)
           )
         })
-      : noop
+      : undefined
 
     const isRecipeOrPatternProp = memo((tagName: string, propName: string) => {
-      if (isJsxEnabled && isJsxTagRecipe(tagName)) {
+      if (isJsxEnabled && isJsxTagRecipe?.(tagName)) {
         const recipeList = getRecipesByJsxName(tagName)
         return recipeList.some((recipe) => recipePropertiesByJsxName.get(recipe.jsxName)?.has(propName))
       }
 
-      if (isJsxEnabled && isJsxTagPattern(tagName)) {
+      if (isJsxEnabled && isJsxTagPattern?.(tagName)) {
         const patternList = getPatternsByJsxName(tagName)
-        return patternList.some((pattern) => patternPropertiesByName.get(pattern.baseName)?.has(propName))
+        return patternList.some((pattern) => patternPropertiesByJsxName.get(pattern.jsxName)?.has(propName))
       }
 
       return false
@@ -268,11 +268,14 @@ export function createParser(options: ParserOptions) {
               )
             }),
           )
-          .with('minimal', () => (tagName: string, propName: string) => {
-            return propName === 'css' || isRecipeOrPatternProp(tagName, propName)
-          })
-          .otherwise(() => (tagName: string, propName: string) => isRecipeOrPatternProp(tagName, propName))
-      : noop
+          .with('minimal', () =>
+            memo((tagName: string, propName: string) => {
+              return propName === 'css' || isRecipeOrPatternProp(tagName, propName)
+            }),
+          )
+          .with('none', () => memo((tagName: string, propName: string) => isRecipeOrPatternProp(tagName, propName)))
+          .exhaustive()
+      : undefined
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
@@ -287,8 +290,8 @@ export function createParser(options: ParserOptions) {
       ast: sourceFile,
       components: isJsxEnabled
         ? {
-            matchTag: (prop) => matchTag(prop.tagName),
-            matchProp: (prop) => matchTagProp(prop.tagName, prop.propName),
+            matchTag: (prop) => !!matchTag?.(prop.tagName),
+            matchProp: (prop) => !!matchTagProp?.(prop.tagName, prop.propName),
           }
         : undefined,
       functions: {
@@ -483,10 +486,10 @@ export function createParser(options: ParserOptions) {
             .when(isFactory, (jsxName) => {
               collector.setJsx({ name: jsxName, box: query.box, type: 'jsx-factory', data })
             })
-            .when(isJsxTagPattern, (jsxName) => {
+            .when(isJsxTagPattern!, (jsxName) => {
               collector.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
             })
-            .when(isJsxTagRecipe, (jsxName) => {
+            .when(isJsxTagRecipe!, (jsxName) => {
               const recipeList = getRecipesByJsxName(jsxName)
               recipeList.map((recipe) => {
                 collector.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })

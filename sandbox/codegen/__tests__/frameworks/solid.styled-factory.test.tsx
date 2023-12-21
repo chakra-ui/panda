@@ -1,8 +1,8 @@
+/** @jsxImportSource solid-js */
 import { afterEach, describe, expect, test } from 'vitest'
-import { styled } from '../../styled-system-solid/jsx'
+import { Box, Stack, styled } from '../../styled-system-solid/jsx'
 import { cleanup, render } from '@solidjs/testing-library'
 import { buttonWithCompoundVariants } from '../../styled-system-solid/recipes'
-import React from 'react'
 import '@testing-library/jest-dom'
 
 describe('styled factory - cva', () => {
@@ -45,7 +45,7 @@ describe('styled factory - cva', () => {
   afterEach(cleanup)
 
   test('base styles', () => {
-    const { container } = render(<Button>Click me</Button>)
+    const { container } = render(() => <Button>Click me</Button>)
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -57,7 +57,7 @@ describe('styled factory - cva', () => {
   })
 
   test('variant styles', () => {
-    const { container } = render(<Button size="sm">Click me</Button>)
+    const { container } = render(() => <Button size="sm">Click me</Button>)
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -69,11 +69,11 @@ describe('styled factory - cva', () => {
   })
 
   test('custom className', () => {
-    const { container } = render(
-      <Button className="custom-btn" size="sm">
+    const { container } = render(() => (
+      <Button class="custom-btn" size="sm">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -85,11 +85,11 @@ describe('styled factory - cva', () => {
   })
 
   test('style prop', () => {
-    const { container } = render(
-      <Button className="custom-btn" mx="2">
+    const { container } = render(() => (
+      <Button class="custom-btn" mx="2">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -101,11 +101,11 @@ describe('styled factory - cva', () => {
   })
 
   test('style prop with variant', () => {
-    const { container } = render(
-      <Button className="custom-btn" size="sm" mx="2">
+    const { container } = render(() => (
+      <Button class="custom-btn" size="sm" mx="2">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -117,11 +117,11 @@ describe('styled factory - cva', () => {
   })
 
   test('css prop', () => {
-    const { container } = render(
-      <Button className="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
+    const { container } = render(() => (
+      <Button class="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -133,11 +133,11 @@ describe('styled factory - cva', () => {
   })
 
   test('css prop with variant', () => {
-    const { container } = render(
-      <Button className="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
+    const { container } = render(() => (
+      <Button class="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -149,11 +149,11 @@ describe('styled factory - cva', () => {
   })
 
   test('all together', () => {
-    const { container } = render(
-      <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
+    const { container } = render(() => (
+      <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -165,11 +165,11 @@ describe('styled factory - cva', () => {
   })
 
   test('html props', () => {
-    const { container } = render(
+    const { container } = render(() => (
       <styled.div htmlWidth={123} height="123">
         Click me
-      </styled.div>,
-    )
+      </styled.div>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <div
@@ -186,7 +186,7 @@ describe('styled factory - button recipe', () => {
   const Button = styled('button', buttonWithCompoundVariants)
 
   test('base styles', () => {
-    const { container } = render(<Button>Click me</Button>)
+    const { container } = render(() => <Button>Click me</Button>)
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -198,7 +198,7 @@ describe('styled factory - button recipe', () => {
   })
 
   test('variant styles', () => {
-    const { container } = render(<Button size="sm">Click me</Button>)
+    const { container } = render(() => <Button size="sm">Click me</Button>)
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -210,11 +210,11 @@ describe('styled factory - button recipe', () => {
   })
 
   test('custom className', () => {
-    const { container } = render(
-      <Button className="custom-btn" size="sm">
+    const { container } = render(() => (
+      <Button class="custom-btn" size="sm">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -226,11 +226,11 @@ describe('styled factory - button recipe', () => {
   })
 
   test('style prop', () => {
-    const { container } = render(
-      <Button className="custom-btn" mx="2">
+    const { container } = render(() => (
+      <Button class="custom-btn" mx="2">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -242,11 +242,11 @@ describe('styled factory - button recipe', () => {
   })
 
   test('style prop with variant', () => {
-    const { container } = render(
-      <Button className="custom-btn" size="sm" mx="2">
+    const { container } = render(() => (
+      <Button class="custom-btn" size="sm" mx="2">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -258,11 +258,11 @@ describe('styled factory - button recipe', () => {
   })
 
   test('css prop', () => {
-    const { container } = render(
-      <Button className="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
+    const { container } = render(() => (
+      <Button class="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -274,11 +274,11 @@ describe('styled factory - button recipe', () => {
   })
 
   test('css prop with variant', () => {
-    const { container } = render(
-      <Button className="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
+    const { container } = render(() => (
+      <Button class="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -290,11 +290,11 @@ describe('styled factory - button recipe', () => {
   })
 
   test('all together', () => {
-    const { container } = render(
-      <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
+    const { container } = render(() => (
+      <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
-      </Button>,
-    )
+      </Button>
+    ))
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
@@ -303,5 +303,37 @@ describe('styled factory - button recipe', () => {
         Click me
       </button>
     `)
+  })
+
+  test('box pattern', () => {
+    const { container } = render(() => <Box color="red.300">Click me</Box>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(
+      `
+      <div
+        class="text_red.300"
+      >
+        Click me
+      </div>
+    `,
+    )
+  })
+
+  test('stack pattern', () => {
+    const { container } = render(() => (
+      <Stack direction="column" color="red.400">
+        Click me
+      </Stack>
+    ))
+
+    expect(container.firstChild).toMatchInlineSnapshot(
+      `
+      <div
+        class="text_red.400 d_flex flex_column gap_10px"
+      >
+        Click me
+      </div>
+    `,
+    )
   })
 })

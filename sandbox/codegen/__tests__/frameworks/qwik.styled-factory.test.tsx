@@ -1,8 +1,8 @@
+/** @jsxImportSource @builder.io/qwik */
 import { createDOM } from '@builder.io/qwik/testing'
 import { describe, expect, test } from 'vitest'
-import { styled } from '../../styled-system-qwik/jsx'
+import { Box, Stack, styled } from '../../styled-system-qwik/jsx'
 import { buttonWithCompoundVariants } from '../../styled-system-qwik/recipes'
-import React from 'react'
 
 describe('styled factory - cva', async () => {
   const Button = styled('button', {
@@ -64,7 +64,7 @@ describe('styled factory - cva', async () => {
   test('custom className', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" size="sm">
+      <Button class="custom-btn" size="sm">
         Click me
       </Button>,
     )
@@ -78,7 +78,7 @@ describe('styled factory - cva', async () => {
   test('style prop', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" mx="2">
+      <Button class="custom-btn" mx="2">
         Click me
       </Button>,
     )
@@ -93,7 +93,7 @@ describe('styled factory - cva', async () => {
     const { render, screen } = await createDOM()
 
     await render(
-      <Button className="custom-btn" size="sm" mx="2">
+      <Button class="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
     )
@@ -107,7 +107,7 @@ describe('styled factory - cva', async () => {
   test('css prop', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
+      <Button class="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
@@ -121,7 +121,7 @@ describe('styled factory - cva', async () => {
   test('css prop with variant', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
+      <Button class="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
@@ -134,7 +134,7 @@ describe('styled factory - cva', async () => {
   test('all together', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
+      <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
       </Button>,
     )
@@ -178,7 +178,7 @@ describe('styled factory - button recipe', async () => {
   test('custom className', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" size="sm">
+      <Button class="custom-btn" size="sm">
         Click me
       </Button>,
     )
@@ -191,7 +191,7 @@ describe('styled factory - button recipe', async () => {
   test('style prop', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" mx="2">
+      <Button class="custom-btn" mx="2">
         Click me
       </Button>,
     )
@@ -202,7 +202,7 @@ describe('styled factory - button recipe', async () => {
   test('style prop with variant', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" size="sm" mx="2">
+      <Button class="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
     )
@@ -216,7 +216,7 @@ describe('styled factory - button recipe', async () => {
   test('css prop', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
+      <Button class="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
@@ -229,7 +229,7 @@ describe('styled factory - button recipe', async () => {
   test('css prop with variant', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
+      <Button class="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
@@ -243,7 +243,7 @@ describe('styled factory - button recipe', async () => {
   test('all together', async () => {
     const { render, screen } = await createDOM()
     await render(
-      <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
+      <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
       </Button>,
     )
@@ -251,6 +251,28 @@ describe('styled factory - button recipe', async () => {
     const container = screen.querySelector('button')!
     expect(container.outerHTML).toMatchInlineSnapshot(
       '"<button class=\\"button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn\\">Click me</button>"',
+    )
+  })
+
+  test('box pattern', async () => {
+    const { render, screen } = await createDOM()
+    await render(<Box color="red.300">Click me</Box>)
+
+    const container = screen.querySelector('div')!
+    expect(container.outerHTML).toMatchInlineSnapshot('"<div class=\\"text_red.300\\">Click me</div>"')
+  })
+
+  test('stack pattern', async () => {
+    const { render, screen } = await createDOM()
+    await render(
+      <Stack direction="column" color="red.400">
+        Click me
+      </Stack>,
+    )
+
+    const container = screen.querySelector('div')!
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      '"<div class=\\"d_flex flex_column gap_10px text_red.400\\">Click me</div>"',
     )
   })
 })
