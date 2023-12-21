@@ -50,6 +50,16 @@ describe('atomic / with basic style object', () => {
     `)
   })
 
+  test('should work with negative tokens', () => {
+    expect(css({ mx: -2 })).toMatchInlineSnapshot(`
+      "@layer utilities {
+          .mx_-2 {
+              margin-inline: calc(var(--spacing-2) * -1)
+          }
+      }"
+    `)
+  })
+
   test('should resolve responsive array', () => {
     expect(css({ width: ['50px', '60px'] })).toMatchInlineSnapshot(`
       "@layer utilities {

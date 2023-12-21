@@ -26,7 +26,7 @@ interface WriteOptions {
 export class AtomicRule {
   constructor(private context: AtomicRuleContext, private fn: (opts: WriteOptions) => void) {}
 
-  hashFn = (conditions: string[], className: string) => {
+  hashFn = (conditions: string[], className: string, value: string) => {
     const { conditions: cond, hash, utility } = this.context
 
     let result: string
@@ -34,9 +34,14 @@ export class AtomicRule {
       const baseArray = [...cond.finalize(conditions), className]
       result = utility.classNameWithPrefix(toHash(baseArray.join(':')))
     } else {
-      const baseArray = [...cond.finalize(conditions), utility.classNameWithPrefix(utility.formatClassName(className))]
+      const isNegative = value.toString().startsWith('-')
+      const absValue = isNegative ? value.toString().slice(1) : value
+      const formatRegex = new RegExp(`${esc(absValue)}$`)
+      const formattedClassName = className.replace(formatRegex, utility.formatClassName(value))
+      const baseArray = [...cond.finalize(conditions), utility.classNameWithPrefix(formattedClassName)]
       result = baseArray.join(':')
     }
+
     return esc(result)
   }
 
@@ -89,7 +94,7 @@ export class AtomicRule {
       // no empty rulesets
       if (rule.isEmpty) return
 
-      const selector = this.hashFn(conditions, transformed.className)
+      const selector = this.hashFn(conditions, transformed.className, value)
 
       rule.selector = important ? `.${selector}\\!` : `.${selector}`
 

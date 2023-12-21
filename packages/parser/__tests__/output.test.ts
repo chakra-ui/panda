@@ -228,6 +228,68 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('basic usage with format options', () => {
+    const code = `
+      import { panda } from ".panda/jsx"
+      import { css } from ".panda/css"
+
+      const color = "$red-100";
+
+       function Button() {
+         return (
+          <div className={css({
+            color,
+            mx: '-$3',
+            w: '$full',
+          })} />
+        )
+       }
+     `
+
+    const result = parseAndExtract(code, {
+      separator: '-',
+      formatTokenName: (path) => `$${path.join('-')}`,
+      formatClassName: (token) =>
+        token
+          .toString()
+          .replace(/[^a-zA-Z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, ''),
+      formatCssVar: 'dash',
+    })
+
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "$red-100",
+              "mx": "-$3",
+              "w": "$full",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text-red-100 {
+          color: var(--colors-red-100)
+          }
+
+        .mx-3 {
+          margin-inline: calc(var(--spacing-3) * -1)
+          }
+
+        .w-full {
+          width: var(--sizes-full)
+          }
+      }"
+    `)
+  })
+
   test('multiple recipes on 1 component', () => {
     const code = `
     import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe, bgRecipe } from ".panda/recipes"

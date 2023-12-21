@@ -86,6 +86,7 @@ describe('generate classnames', () => {
   test('should format the class name', () => {
     const css = createCss(
       createContext({
+        formatTokenName: (path) => `$${path.join('-')}`,
         formatClassName: (token) => token.replace('$', '').replace('.', '='),
       }),
     )
@@ -93,7 +94,8 @@ describe('generate classnames', () => {
       css({
         color: 'pink.400',
         background: '$pink.400',
+        mx: '-$2',
       }),
-    ).toMatchInlineSnapshot('"text_pink=400 bg_pink=400"')
+    ).toMatchInlineSnapshot('"text_pink=400 bg_pink=400 mx_-2"')
   })
 })
