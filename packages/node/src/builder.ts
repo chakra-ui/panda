@@ -1,6 +1,7 @@
 import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import type { ParserResult } from '@pandacss/parser'
 import { existsSync } from 'fs'
 import fsExtra from 'fs-extra'
 import pLimit from 'p-limit'
@@ -12,7 +13,6 @@ import type { DiffConfigResult } from './diff-engine'
 import { emitArtifacts } from './emit-artifact'
 import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
-import type { ParserResult } from '@pandacss/parser'
 
 const parserResultMap = new Map<string, ParserResult>()
 const fileModifiedMap = new Map<string, number>()
@@ -26,6 +26,7 @@ export class Builder {
   context: PandaContext | undefined
 
   private hasEmitted = false
+  private hasFilesChanged = true
   private affecteds: DiffConfigResult | undefined
 
   getConfigPath = () => {
@@ -54,6 +55,8 @@ export class Builder {
       this.context.appendBaselineCss()
     })
 
+    logger.debug('builder', this.affecteds)
+
     // config change
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
@@ -62,8 +65,9 @@ export class Builder {
     }
 
     // file change
-    const hasFilesChanged = this.checkFilesChanged(ctx.getFiles())
-    if (hasFilesChanged) {
+    this.hasFilesChanged = this.checkFilesChanged(ctx.getFiles())
+    if (this.hasFilesChanged) {
+      logger.debug('builder', 'Files changed, invalidating them')
       ctx.project.reloadSourceFiles()
     }
   }
@@ -71,6 +75,7 @@ export class Builder {
   async emit() {
     // ensure emit is only called when the config is changed
     if (this.hasEmitted && this.affecteds?.hasConfigChanged) {
+      logger.debug('builder', 'Emit artifacts after config change')
       await emitArtifacts(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
     }
 
@@ -103,7 +108,7 @@ export class Builder {
   extractFile = async (ctx: PandaContext, file: string) => {
     const meta = this.getFileMeta(file)
 
-    if (meta.isUnchanged) {
+    if (meta.isUnchanged && this.affecteds?.hasConfigChanged) {
       ctx.appendParserCss(parserResultMap.get(file)!)
       return
     }
@@ -123,11 +128,14 @@ export class Builder {
   }
 
   extract = async () => {
+    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : true
+    if (!this.hasFilesChanged && !hasConfigChanged) {
+      logger.debug('builder', 'No files or config changed, skipping extract')
+      return
+    }
+
     const ctx = this.getContextOrThrow()
     const files = ctx.getFiles()
-
-    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : false
-    if (hasConfigChanged) return
 
     const done = logger.time.info('Extracted in')
 
@@ -165,9 +173,10 @@ export class Builder {
 
     root.removeAll()
 
+    const css = this.toString()
     const newCss = optimizeCss(`
     ${this.initialRoot}
-    ${this.toString()}
+    ${css}
     `)
 
     root.append(newCss)

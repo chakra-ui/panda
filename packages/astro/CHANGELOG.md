@@ -1,5 +1,14 @@
 # @pandacss/astro
 
+## 0.22.1
+
+### Patch Changes
+
+- 0f7793c7: Fix a regression with the @pandacss/astro integration where the automatically provided `base.css` would be
+  ignored by the @pandacss/postcss plugin
+- Updated dependencies [0f7793c7]
+  - @pandacss/postcss@0.22.1
+
 ## 0.22.0
 
 ### Minor Changes

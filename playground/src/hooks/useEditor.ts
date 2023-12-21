@@ -17,10 +17,12 @@ import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
+import { AutoImportContext, configureAutoImports } from '../lib/auto-import'
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
   artifacts: Artifact[]
+  context: AutoImportContext
   diffState?: State | null
 }
 
@@ -65,7 +67,7 @@ const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) =
 }
 
 export function useEditor(props: PandaEditorProps) {
-  const { onChange, value, artifacts } = props
+  const { onChange, value, artifacts, context } = props
   const { resolvedTheme } = useTheme()
 
   const searchParams = useSearchParams()
@@ -88,6 +90,7 @@ export function useEditor(props: PandaEditorProps) {
   const configureEditor: OnMount = useCallback(
     (editor, monaco) => {
       activateMonacoJSXHighlighter(editor, monaco)
+      configureAutoImports({ context, monaco, editor })
 
       function registerKeybindings() {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -123,7 +126,7 @@ export function useEditor(props: PandaEditorProps) {
         typeRoots: ['node_modules/@types'],
       })
     },
-    [onToggleWrap],
+    [onToggleWrap, context],
   )
 
   const setupLibs = useCallback(

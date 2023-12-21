@@ -129,7 +129,7 @@ export class Context {
     return new Utility({
       prefix: this.prefix.className,
       tokens: this.tokens,
-      config: this.isTemplateLiteralSyntax ? {} : config.utilities,
+      config: this.isTemplateLiteralSyntax ? {} : Object.assign({}, config.utilities),
       separator: config.separator,
       shorthands: config.shorthands,
       strictTokens: config.strictTokens,

@@ -108,7 +108,7 @@ export class Recipes {
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
     const variantKeys = Object.keys(recipe.variants ?? {})
     const capitalized = capitalize(name)
-    const jsx = recipe.jsx ?? [capitalized]
+    const jsx = Array.from(recipe.jsx ?? [capitalized])
     if ('slots' in recipe) {
       jsx.push(...recipe.slots.map((slot) => capitalized + '.' + capitalize(slot)))
     }

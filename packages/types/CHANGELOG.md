@@ -1,5 +1,13 @@
 # @pandacss/types
 
+## 0.22.1
+
+### Patch Changes
+
+- 8f4ce97c: Fix `slotRecipes` typings,
+  [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
+  weren't added to `config.slotRecipes`
+
 ## 0.22.0
 
 ### Patch Changes

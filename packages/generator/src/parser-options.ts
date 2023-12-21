@@ -42,6 +42,7 @@ export const getParserOptions = (ctx: Context): ParserOptions => {
       isStyleProp: isValidProperty,
       nodes: [...patterns.details, ...recipes.details],
     },
+    isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
     patternKeys: patterns.keys,
     recipeKeys: recipes.keys,
     getRecipesByJsxName: recipes.filter,
@@ -69,6 +70,7 @@ export interface ParserJsxOptions {
 export interface ParserOptions {
   importMap: ParserImportMap
   jsx: ParserJsxOptions
+  isTemplateLiteralSyntax: boolean
   patternKeys: Context['patterns']['keys']
   recipeKeys: Context['recipes']['keys']
   getRecipesByJsxName: Context['recipes']['filter']

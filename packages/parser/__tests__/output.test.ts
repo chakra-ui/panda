@@ -663,7 +663,7 @@ describe('extract to css output pipeline', () => {
         }
     \`
      `
-    const result = parseAndExtract(code)
+    const result = parseAndExtract(code, { syntax: 'template-literal' })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -712,16 +712,16 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_lightgreen {
+        .color_lightgreen {
           color: lightgreen
           }
 
-        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:text_hotpink > strong {
+        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
           color: hotpink
               }
 
-        .bg_transparent {
-          background: var(--colors-transparent)
+        .background_transparent {
+          background: transparent
           }
 
         .border-radius_3px {
@@ -732,19 +732,19 @@ describe('extract to css output pipeline', () => {
           border: 1px solid var(--accent-color)
           }
 
-        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
           color: var(--colors-blue-100)
           }
 
-        .d_inline-block {
+        .display_inline-block {
           display: inline-block
           }
 
-        .m_0\\\\.5rem_1rem {
+        .margin_0\\\\.5rem_1rem {
           margin: 0.5rem 1rem
           }
 
-        .p_0\\\\.5rem_0 {
+        .padding_0\\\\.5rem_0 {
           padding: 0.5rem 0
           }
 
@@ -752,7 +752,7 @@ describe('extract to css output pipeline', () => {
           transition: all 200ms ease-in-out
           }
 
-        .w_11rem {
+        .width_11rem {
           width: 11rem
           }
 
@@ -771,7 +771,7 @@ describe('extract to css output pipeline', () => {
                   }
 
         @media (min-width: 768px) {
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:p_1rem_0 {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:padding_1rem_0 {
             padding: 1rem 0
           }
               }
@@ -790,7 +790,7 @@ describe('extract to css output pipeline', () => {
         color: token(colors.blue.100);
     \`
      `
-    const result = parseAndExtract(code)
+    const result = parseAndExtract(code, { syntax: 'template-literal' })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -810,8 +810,8 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .bg_transparent {
-          background: var(--colors-transparent)
+        .background_transparent {
+          background: transparent
           }
 
         .border-radius_3px {
@@ -822,7 +822,7 @@ describe('extract to css output pipeline', () => {
           border: 1px solid var(--accent-color)
           }
 
-        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
           color: var(--colors-blue-100)
           }
       }"
@@ -1356,15 +1356,6 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "color": "var(--colors-purple-100)",
-            },
-          ],
-          "name": "panda.div",
-          "type": "object",
-        },
-        {
-          "data": [
-            {
               "color": "yellow.100",
             },
           ],
@@ -1380,12 +1371,41 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-red-100)
           }
 
-        .text_var\\\\(--colors-purple-100\\\\) {
-          color: var(--colors-purple-100)
-          }
-
         .text_yellow\\\\.100 {
           color: var(--colors-yellow-100)
+          }
+      }"
+    `)
+  })
+
+  test('factory css - tagged template literal', () => {
+    const code = `
+    import { panda } from ".panda/jsx"
+
+    // TaggedTemplateExpression factory css
+    panda.div\`
+      color: var(--colors-purple-100);
+    \`
+   `
+    const result = parseAndExtract(code, { syntax: 'template-literal' })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "var(--colors-purple-100)",
+            },
+          ],
+          "name": "panda.div",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .color_var\\\\(--colors-purple-100\\\\) {
+          color: var(--colors-purple-100)
           }
       }"
     `)
@@ -2830,6 +2850,8 @@ describe('extract to css output pipeline', () => {
       color: '[#fff]',
       bg: 'red.300',
       bgColor: '[rgb(51 155 240)]',
+      outlineColor: '[rgb(51 155 240)!]',
+      borderColor: '[rgb(51 155 240)!important]',
     })
      `
     const result = parseAndExtract(code, { strictTokens: true })
@@ -2840,7 +2862,9 @@ describe('extract to css output pipeline', () => {
             {
               "bg": "red.300",
               "bgColor": "[rgb(51 155 240)]",
+              "borderColor": "[rgb(51 155 240)!important]",
               "color": "[#fff]",
+              "outlineColor": "[rgb(51 155 240)!]",
             },
           ],
           "name": "css",
@@ -2861,6 +2885,14 @@ describe('extract to css output pipeline', () => {
 
         .bg_\\\\[rgb\\\\(51_155_240\\\\)\\\\] {
           background-color: rgb(51 155 240)
+          }
+
+        .ring_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
+          outline-color: rgb(51 155 240) !important
+          }
+
+        .border_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
+          border-color: rgb(51 155 240) !important
           }
       }"
     `)
@@ -2899,6 +2931,77 @@ describe('extract to css output pipeline', () => {
               border-inline-start-width: 20px;
               border-inline-end-width: 0px
                   }
+          }
+      }"
+    `)
+  })
+
+  test('slotRecipes.staticCss', () => {
+    const { generator } = parseAndExtract('', {
+      theme: {
+        extend: {
+          slotRecipes: {
+            someRecipe: {
+              staticCss: [{ size: ['sm'] }],
+              className: 'button',
+              slots: ['container', 'icon'],
+              base: {
+                container: {
+                  fontFamily: 'mono',
+                },
+                icon: {
+                  fontSize: '1.5rem',
+                },
+              },
+              variants: {
+                size: {
+                  sm: {
+                    container: {
+                      fontSize: '5rem',
+                      lineHeight: '1em',
+                    },
+                    icon: {
+                      fontSize: '2rem',
+                    },
+                  },
+
+                  md: {
+                    container: {
+                      fontSize: '3rem',
+                      lineHeight: '1.2em',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    generator.appendCss('static')
+    const css = generator.stylesheet.getLayerCss('recipes')
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        .button__container--size_sm {
+          font-size: 5rem;
+          line-height: 1em
+          }
+
+        .button__icon--size_sm {
+          font-size: 2rem
+          }
+
+        @layer _base {
+
+          .button__container {
+            font-family: var(--fonts-mono)
+              }
+
+          .button__icon {
+            font-size: 1.5rem
+              }
           }
       }"
     `)
@@ -2967,6 +3070,155 @@ describe('extract to css output pipeline', () => {
       "@layer recipes {
         .card--rounded_true {
           border-radius: 0.375rem
+          }
+      }"
+    `)
+  })
+
+  test('extract aliased {xxx}.raw', () => {
+    const code = `
+    import { css } from '.panda/css';
+    import { styled } from '.panda/jsx';
+    import { cardStyle as aliasedCard } from '.panda/recipes';
+
+    const className = aliasedCard.raw({ rounded: true })
+
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "rounded": true,
+            },
+          ],
+          "name": "cardStyle",
+          "type": "recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .card--rounded_true {
+          border-radius: 0.375rem
+          }
+      }"
+    `)
+  })
+
+  test('sva with unresolvable slots', () => {
+    const code = `
+    import { sva } from '.panda/css'
+    import { slots } from './slots'
+
+    const card = sva({
+      slots,
+      base: {
+        root: {
+          p: '6',
+          m: '4',
+          w: 'md',
+          boxShadow: 'md',
+          borderRadius: 'md',
+          _dark: { bg: '#262626', color: 'white' },
+        },
+        content: {
+          textStyle: 'lg',
+        },
+        title: {
+          textStyle: 'xl',
+          fontWeight: 'semibold',
+          pb: '2',
+        },
+      },
+    })
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "content": {
+                  "textStyle": "lg",
+                },
+                "root": {
+                  "_dark": {
+                    "bg": "#262626",
+                    "color": "white",
+                  },
+                  "borderRadius": "md",
+                  "boxShadow": "md",
+                  "m": "4",
+                  "p": "6",
+                  "w": "md",
+                },
+                "title": {
+                  "fontWeight": "semibold",
+                  "pb": "2",
+                  "textStyle": "xl",
+                },
+              },
+              "slots": [
+                "root",
+                "content",
+                "title",
+              ],
+            },
+          ],
+          "name": "sva",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_6 {
+          padding: var(--spacing-6)
+          }
+
+        .m_4 {
+          margin: var(--spacing-4)
+          }
+
+        .w_md {
+          width: var(--sizes-md)
+          }
+
+        .shadow_md {
+          box-shadow: var(--shadows-md)
+          }
+
+        .rounded_md {
+          border-radius: var(--radii-md)
+          }
+
+        [data-theme=dark] .dark\\\\:bg_\\\\#262626, .dark .dark\\\\:bg_\\\\#262626, .dark\\\\:bg_\\\\#262626.dark, .dark\\\\:bg_\\\\#262626[data-theme=dark] {
+          background: #262626
+              }
+
+        [data-theme=dark] .dark\\\\:text_white, .dark .dark\\\\:text_white, .dark\\\\:text_white.dark, .dark\\\\:text_white[data-theme=dark] {
+          color: var(--colors-white)
+              }
+
+        .text-style_lg {
+          text-style: lg
+          }
+
+        .text-style_xl {
+          text-style: xl
+          }
+
+        .font_semibold {
+          font-weight: var(--font-weights-semibold)
+          }
+
+        .pb_2 {
+          padding-bottom: var(--spacing-2)
           }
       }"
     `)
