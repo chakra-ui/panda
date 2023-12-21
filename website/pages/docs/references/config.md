@@ -748,6 +748,64 @@ Only allow token values and prevent custom or raw CSS values.
 }
 ```
 
+### formatTokenName
+
+**Type**: `(path: string[]) => string`
+
+**Default**: `path => path.join('.')`
+
+Define how the tokens will be generated in TS.
+
+```js
+{
+  "theme": {
+    "tokens": {
+      "colors": {
+        "red": {
+          100: { "value": "#EE0F0F" },
+          200: { "value": "#F00000" },
+        }
+      }
+    },
+  },
+  "formatTokenName": path => `$${path.join('-')}`,
+}
+
+css({ color: '$red-100' })
+```
+
+### formatClassName
+
+**Type**: `(token: string) => string`
+
+**Default**: `token => token`
+
+Format the final class name based on a token.
+
+```js
+{
+  "formatClassName": token => token.toUpperCase(),
+}
+
+css({ color: 'red.100' }) // RED.100
+```
+
+### formatCssVar
+
+**Type**: `'escape' | 'dash'`
+
+**Default**: `'escape'`
+
+Define how the CSS vars will consume the tokens.
+
+```js
+{ "formatCssVar": 'escape' }
+css({ color: '$red.100' }) // --colors-\$red.100
+
+{ "formatCssVar": 'dash' }
+css({ color: '$red.100' }) // --colors-red-100
+```
+
 ## JSX options
 
 ### jsxFramework
