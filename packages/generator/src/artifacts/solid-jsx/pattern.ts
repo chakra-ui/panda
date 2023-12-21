@@ -4,7 +4,7 @@ import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters) {
-  const { typeName, factoryName } = ctx.jsx
+  const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
   const details = ctx.patterns.filterDetails(filters)
 
@@ -15,27 +15,51 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
     return {
       name: dashName,
       js: outdent`
-    import { splitProps, mergeProps } from 'solid-js'
+    import { createMemo, mergeProps, splitProps } from 'solid-js'
     import { createComponent } from 'solid-js/web'
-    ${ctx.file.import(factoryName, './factory')}
+    ${ctx.file.import('mergeCss', '../css/css')}
     ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
+    ${ctx.file.import(factoryName, './factory')}
 
-    export function ${jsxName}(props) {
-      ${match(props.length)
+    export const ${jsxName} = /* @__PURE__ */ function ${jsxName}(props) {
+      ${match(jsxStyleProps)
         .with(
-          0,
+          'none',
           () => outdent`
-          const styleProps = ${styleFnName}()
-          return createComponent(${factoryName}.${jsxElement}, mergeProps(styleProps, props))
+        const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+        
+        const styleProps = ${styleFnName}(patternProps)
+        const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+        
+        return createComponent(Comp, restProps)
         `,
         )
-        .otherwise(
+        .with(
+          'minimal',
           () => outdent`
-          const [patternProps, restProps] = splitProps(props, [${props.map((v) => JSON.stringify(v)).join(', ')}]);
+        const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+        
+        const cssProps = createMemo(() => {
           const styleProps = ${styleFnName}(patternProps)
-          return createComponent(${factoryName}.${jsxElement}, mergeProps(styleProps, restProps))
+          return { css: mergeCss(styleProps, props.css) }
+        })
+        const mergedProps = mergeProps(restProps, cssProps)
+
+        return createComponent(${factoryName}.${jsxElement}, mergedProps)
         `,
-        )}
+        )
+        .with(
+          'all',
+          () => outdent`
+        const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+        
+        const styleProps = ${styleFnName}(patternProps)        
+        const mergedProps = mergeProps(styleProps, restProps)
+        
+        return createComponent(${factoryName}.${jsxElement}, mergedProps)
+        `,
+        )
+        .exhaustive()}
     }
     `,
 

@@ -6,4 +6,5 @@ export default defineConfig({
   exclude: [],
   outdir: 'styled-system',
   jsxFramework: 'vue',
+  jsxStyleProps: 'minimal',
 })

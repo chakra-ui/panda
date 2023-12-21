@@ -4,7 +4,7 @@ import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters) {
-  const { typeName, factoryName } = ctx.jsx
+  const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
   const details = ctx.patterns.filterDetails(filters)
 
@@ -17,25 +17,48 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
       js: outdent`
       import { h } from 'preact'
       import { forwardRef } from 'preact/compat'
-      ${ctx.file.import(factoryName, './factory')}
+      ${ctx.file.import('mergeCss', '../css/css')}
+      ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
+      ${ctx.file.import(factoryName, './factory')}
 
       export const ${jsxName} = /* @__PURE__ */ forwardRef(function ${jsxName}(props, ref) {
-        ${match(props.length)
+        ${match(jsxStyleProps)
           .with(
-            0,
+            'none',
             () => outdent`
-          const styleProps = ${styleFnName}()
-          return h(${factoryName}.${jsxElement}, { ref, ...styleProps, ...props })
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+          
+          return h(Comp, { ref, ...restProps })
           `,
           )
-          .otherwise(
+          .with(
+            'minimal',
             () => outdent`
-          const { ${props.join(', ')}, ...restProps } = props
-          const styleProps = ${styleFnName}({${props.join(', ')}})
-          return h(${factoryName}.${jsxElement}, { ref, ...styleProps, ...restProps })
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const cssProps = { css: mergeCss(styleProps, props.css) }
+          const mergedProps = { ref, ...restProps, ...cssProps }
+          
+          return h(${factoryName}.${jsxElement}, mergedProps)
           `,
-          )}
+          )
+          .with(
+            'all',
+            () => outdent`
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const mergedProps = { ref, ...styleProps, ...restProps }
+          
+          return h(${factoryName}.${jsxElement}, mergedProps)
+          `,
+          )
+          .exhaustive()}
       })
       `,
 

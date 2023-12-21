@@ -39,7 +39,7 @@ export function generateVueJsxFactory(ctx: Context) {
           const combinedProps = computed(() => Object.assign({}, defaultProps, attrs))
 
           const splittedProps = computed(() => {
-            return splitProps(combinedProps.value, normalizeHTMLProps.keys, shouldForwardProp, __cvaFn__.variantKeys, isCssProperty)
+            return splitProps(combinedProps.value, normalizeHTMLProps.keys, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty)
           })
 
           const recipeClass = computed(() => {

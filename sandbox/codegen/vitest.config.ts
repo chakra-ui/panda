@@ -4,6 +4,7 @@ import Vue from '@vitejs/plugin-vue'
 import preact from '@preact/preset-vite'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import { UserConfig } from 'vite'
+import { UserConfig as TestUserConfig } from 'vitest'
 
 import { createRequire } from 'module'
 
@@ -16,7 +17,7 @@ const generateCjsAlias = (cjsPackages: Array<string>) => {
   }))
 }
 
-const options = {
+const options: TestUserConfig = {
   react: {
     test: {
       include: ['**/__tests__/*.{test,spec}.{j,t}s?(x)'],
@@ -26,6 +27,18 @@ const options = {
   strict: {
     test: {
       include: ['**/__tests__/scenarios/strict.{test,spec}.{j,t}s?(x)'],
+    },
+  },
+  'jsx-minimal': {
+    test: {
+      environment: 'happy-dom',
+      include: ['**/__tests__/scenarios/jsx-minimal.{test,spec}.{j,t}s?(x)'],
+    },
+  },
+  'jsx-none': {
+    test: {
+      environment: 'happy-dom',
+      include: ['**/__tests__/scenarios/jsx-none.{test,spec}.{j,t}s?(x)'],
     },
   },
   //
