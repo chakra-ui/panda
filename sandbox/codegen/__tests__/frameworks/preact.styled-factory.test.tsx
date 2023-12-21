@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-preact/jsx'
 // @ts-expect-error https://github.com/vitest-dev/vitest/issues/747#issuecomment-1140225294
