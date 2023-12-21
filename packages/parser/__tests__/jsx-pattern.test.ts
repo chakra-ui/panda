@@ -4,7 +4,7 @@ import { patternParser } from './fixture'
 describe('pattern jsx', () => {
   test('should extract', () => {
     const code = `
-       import { Stack } from ".panda/jsx"
+       import { Stack } from "styled-system/jsx"
 
        function Button() {
          return (

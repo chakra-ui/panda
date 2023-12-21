@@ -223,6 +223,7 @@ describe('generate property types', () => {
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 
@@ -232,7 +233,7 @@ describe('generate property types', () => {
         type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | CssValue<T> : CssValue<T>
 
         export interface PropertyTypes extends PropertyValueTypes {
-
+        
       	pos: Shorthand<\\"position\\">;
       	insetEnd: Shorthand<\\"insetInlineEnd\\">;
       	end: Shorthand<\\"insetInlineEnd\\">;
@@ -555,6 +556,7 @@ describe('generate property types', () => {
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 
@@ -564,7 +566,7 @@ describe('generate property types', () => {
         type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] : CssValue<T>
 
         export interface PropertyTypes extends PropertyValueTypes {
-
+        
       	pos: Shorthand<\\"position\\">;
       	insetEnd: Shorthand<\\"insetInlineEnd\\">;
       	end: Shorthand<\\"insetInlineEnd\\">;

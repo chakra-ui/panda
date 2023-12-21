@@ -14,6 +14,7 @@ const config: UserConfig = {
   include: [],
   //
   cssVarRoot: ':where(html)',
+  jsxFramework: 'react',
 }
 
 export const fixtureDefaults = {

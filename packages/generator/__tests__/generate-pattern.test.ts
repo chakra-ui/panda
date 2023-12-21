@@ -20,7 +20,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface BoxProperties {
-
+       
     }
 
 
@@ -421,7 +421,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface LinkBoxProperties {
-
+       
     }
 
 
@@ -464,7 +464,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface LinkOverlayProperties {
-
+       
     }
 
 
@@ -722,7 +722,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface ContainerProperties {
-
+       
     }
 
 
@@ -927,7 +927,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface VisuallyHiddenProperties {
-
+       
     }
 
 

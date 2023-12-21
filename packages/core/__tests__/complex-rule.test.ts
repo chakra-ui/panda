@@ -15,20 +15,17 @@ describe('complex-rule', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .dark\\\\:text_green500 {
-              &[data-theme='dark'], &&[data-theme='dark'] {
-                  color: green500
+        [data-theme=dark] .dark\\\\:text_green500, .dark .dark\\\\:text_green500, .dark\\\\:text_green500.dark, .dark\\\\:text_green500[data-theme=dark] {
+          color: green500
               }
-          }
-          .dark\\\\:sm\\\\:md\\\\:text_red200 {
-              &[data-theme='dark'], &&[data-theme='dark'] {
-                  @media screen and (min-width: 40em) {
-                      @media screen and (min-width: 48em) {
-                          color: red200
+
+        @media screen and (min-width: 40em) {
+          @media screen and (min-width: 48em) {
+            [data-theme=dark] .dark\\\\:sm\\\\:md\\\\:text_red200, .dark .dark\\\\:sm\\\\:md\\\\:text_red200, .dark\\\\:sm\\\\:md\\\\:text_red200.dark, .dark\\\\:sm\\\\:md\\\\:text_red200[data-theme=dark] {
+              color: red200
+              }
                       }
                   }
-              }
-          }
       }"
     `)
   })

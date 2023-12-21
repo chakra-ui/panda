@@ -47,14 +47,14 @@ describe('generate recipes', () => {
          }
 
          const recipeCss = createCss({
-
+           
            conditions: {
              shift: sortConditions,
              finalize: finalizeConditions,
              breakpoints: { keys: [\\"base\\",\\"sm\\",\\"md\\",\\"lg\\",\\"xl\\",\\"2xl\\"] }
            },
            utility: {
-
+             
              transform,
            }
          })
@@ -166,7 +166,7 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface TooltipStyleVariant {
-
+        
       }
 
       type TooltipStyleVariantMap = {
@@ -330,6 +330,83 @@ describe('generate recipes', () => {
         },
       })",
           "name": "button-style",
+        },
+        {
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
+
+      interface CheckboxVariant {
+        size: \\"sm\\" | \\"md\\" | \\"lg\\"
+      }
+
+      type CheckboxVariantMap = {
+        [key in keyof CheckboxVariant]: Array<CheckboxVariant[key]>
+      }
+
+      export type CheckboxVariantProps = {
+        [key in keyof CheckboxVariant]?: ConditionalValue<CheckboxVariant[key]> | undefined
+      }
+
+      export interface CheckboxRecipe {
+        __type: CheckboxVariantProps
+        (props?: CheckboxVariantProps): Pretty<Record<\\"root\\" | \\"control\\" | \\"label\\", string>>
+        raw: (props?: CheckboxVariantProps) => CheckboxVariantProps
+        variantMap: CheckboxVariantMap
+        variantKeys: Array<keyof CheckboxVariant>
+        splitVariantProps<Props extends CheckboxVariantProps>(props: Props): [CheckboxVariantProps, Pretty<DistributiveOmit<Props, keyof CheckboxVariantProps>>]
+      }
+
+
+      export declare const checkbox: CheckboxRecipe",
+          "js": "import { splitProps, getSlotCompoundVariant } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
+
+      const checkboxDefaultVariants = {
+        \\"size\\": \\"sm\\"
+      }
+      const checkboxCompoundVariants = []
+
+      const checkboxSlotNames = [
+        [
+          \\"root\\",
+          \\"checkbox__root\\"
+        ],
+        [
+          \\"control\\",
+          \\"checkbox__control\\"
+        ],
+        [
+          \\"label\\",
+          \\"checkbox__label\\"
+        ]
+      ]
+      const checkboxSlotFns = /* @__PURE__ */ checkboxSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, checkboxDefaultVariants, getSlotCompoundVariant(checkboxCompoundVariants, slotName))])
+
+      const checkboxFn = (props = {}) => {
+        return Object.fromEntries(checkboxSlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
+      }
+
+      const checkboxVariantKeys = [
+        \\"size\\"
+      ]
+
+      export const checkbox = /* @__PURE__ */ Object.assign(checkboxFn, {
+        __recipe__: false,
+        __name__: 'checkbox',
+        raw: (props) => props,
+        variantKeys: checkboxVariantKeys,
+        variantMap: {
+        \\"size\\": [
+          \\"sm\\",
+          \\"md\\",
+          \\"lg\\"
+        ]
+      },
+        splitVariantProps(props) {
+          return splitProps(props, checkboxVariantKeys)
+        },
+      })",
+          "name": "checkbox",
         },
       ]
     `)

@@ -198,7 +198,7 @@ describe('generate reset', () => {
         .pd-reset input[type=\\"search\\"],
         .pd-reset input[type=\\"password\\"] {
           -webkit-appearance: none;
-          -moz-appearance: none;
+          -moz-appearance: none; 
         }
 
         .pd-reset input[type='search'] {

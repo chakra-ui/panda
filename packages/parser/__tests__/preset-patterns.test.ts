@@ -5,7 +5,7 @@ describe('preset patterns', () => {
   // stack vstack hstack spacer circle absoluteCenter grid gridItem wrap container center aspectRatio
   test('box', () => {
     const code = `
-      import { box } from ".panda/patterns"
+      import { box } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -41,7 +41,7 @@ describe('preset patterns', () => {
 
   test('jsx box', () => {
     const code = `
-      import { Box } from ".panda/jsx"
+      import { Box } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -77,7 +77,7 @@ describe('preset patterns', () => {
 
   test('flex', () => {
     const code = `
-      import { flex } from ".panda/patterns"
+      import { flex } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -111,7 +111,7 @@ describe('preset patterns', () => {
 
   test('jsx flex', () => {
     const code = `
-      import { Flex } from ".panda/jsx"
+      import { Flex } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -151,7 +151,7 @@ describe('preset patterns', () => {
 
   test('stack', () => {
     const code = `
-      import { stack } from ".panda/patterns"
+      import { stack } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -193,7 +193,7 @@ describe('preset patterns', () => {
 
   test('jsx stack', () => {
     const code = `
-      import { Stack } from ".panda/jsx"
+      import { Stack } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -241,7 +241,7 @@ describe('preset patterns', () => {
 
   test('vstack', () => {
     const code = `
-      import { vstack } from ".panda/patterns"
+      import { vstack } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -287,7 +287,7 @@ describe('preset patterns', () => {
 
   test('jsx vStack', () => {
     const code = `
-      import { VStack } from ".panda/jsx"
+      import { VStack } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -339,7 +339,7 @@ describe('preset patterns', () => {
 
   test('hstack', () => {
     const code = `
-      import { hstack } from ".panda/patterns"
+      import { hstack } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -385,7 +385,7 @@ describe('preset patterns', () => {
 
   test('jsx hStack', () => {
     const code = `
-      import { HStack } from ".panda/jsx"
+      import { HStack } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -437,7 +437,7 @@ describe('preset patterns', () => {
 
   test('spacer', () => {
     const code = `
-      import { spacer } from ".panda/patterns"
+      import { spacer } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -479,7 +479,7 @@ describe('preset patterns', () => {
 
   test('linkOverlay, linkBox', () => {
     const code = `
-      import { linkOverlay, linkBox } from ".panda/patterns"
+      import { linkOverlay, linkBox } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -556,7 +556,7 @@ describe('preset patterns', () => {
 
   test('jsx linkOverlay, linkBox', () => {
     const code = `
-      import { LinkBox, LinkOverlay } from ".panda/jsx"
+      import { LinkBox, LinkOverlay } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -633,7 +633,7 @@ describe('preset patterns', () => {
 
   test('jsx spacer', () => {
     const code = `
-      import { Spacer } from ".panda/jsx"
+      import { Spacer } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -681,7 +681,7 @@ describe('preset patterns', () => {
 
   test('circle', () => {
     const code = `
-      import { circle } from ".panda/patterns"
+      import { circle } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -731,7 +731,7 @@ describe('preset patterns', () => {
 
   test('jsx circle', () => {
     const code = `
-      import { Circle } from ".panda/jsx"
+      import { Circle } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -787,7 +787,7 @@ describe('preset patterns', () => {
 
   test('float', () => {
     const code = `
-      import { float } from ".panda/patterns"
+      import { float } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -853,7 +853,7 @@ describe('preset patterns', () => {
 
   test('jsx absoluteCenter', () => {
     const code = `
-      import { Float } from ".panda/jsx"
+      import { Float } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -925,7 +925,7 @@ describe('preset patterns', () => {
 
   test('grid', () => {
     const code = `
-      import { grid } from ".panda/patterns"
+      import { grid } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -963,7 +963,7 @@ describe('preset patterns', () => {
 
   test('jsx grid', () => {
     const code = `
-      import { Grid } from ".panda/jsx"
+      import { Grid } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -1007,7 +1007,7 @@ describe('preset patterns', () => {
 
   test('gridItem', () => {
     const code = `
-      import { gridItem } from ".panda/patterns"
+      import { gridItem } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -1035,7 +1035,7 @@ describe('preset patterns', () => {
 
   test('jsx gridItem', () => {
     const code = `
-      import { GridItem } from ".panda/jsx"
+      import { GridItem } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -1071,7 +1071,7 @@ describe('preset patterns', () => {
 
   test('wrap', () => {
     const code = `
-      import { wrap } from ".panda/patterns"
+      import { wrap } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -1113,7 +1113,7 @@ describe('preset patterns', () => {
 
   test('jsx wrap', () => {
     const code = `
-      import { Wrap } from ".panda/jsx"
+      import { Wrap } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -1161,7 +1161,7 @@ describe('preset patterns', () => {
 
   test('container', () => {
     const code = `
-      import { container } from ".panda/patterns"
+      import { container } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -1219,7 +1219,7 @@ describe('preset patterns', () => {
 
   test('jsx container', () => {
     const code = `
-      import { Container } from ".panda/jsx"
+      import { Container } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -1283,7 +1283,7 @@ describe('preset patterns', () => {
 
   test('center', () => {
     const code = `
-      import { center } from ".panda/patterns"
+      import { center } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -1325,7 +1325,7 @@ describe('preset patterns', () => {
 
   test('jsx center', () => {
     const code = `
-      import { Center } from ".panda/jsx"
+      import { Center } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -1373,7 +1373,7 @@ describe('preset patterns', () => {
 
   test('aspectRatio', () => {
     const code = `
-      import { aspectRatio } from ".panda/patterns"
+      import { aspectRatio } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -1459,7 +1459,7 @@ describe('preset patterns', () => {
 
   test('jsx aspectRatio', () => {
     const code = `
-      import { AspectRatio } from ".panda/jsx"
+      import { AspectRatio } from "styled-system/jsx"
 
       function Button() {
         return (
@@ -1551,7 +1551,7 @@ describe('preset patterns', () => {
 
   test('responsive array syntax', () => {
     const code = `
-      import { grid, gridItem } from ".panda/patterns"
+      import { grid, gridItem } from "styled-system/patterns"
 
       function Button() {
         return (

@@ -14,8 +14,8 @@ describe('atomic-rule / prefix', () => {
   test('should product consistent hash', () => {
     expect(backend({ color: 'red' })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .tw-eIKWVi {
-              color: red
+        .tw-eIKWVi {
+          color: red
           }
       }"
     `)
@@ -23,11 +23,11 @@ describe('atomic-rule / prefix', () => {
 
     expect(backend({ color: { sm: 'red' } })).toMatchInlineSnapshot(`
       "@layer utilities {
+        @media screen and (min-width: 40em) {
           .tw-geqOyW {
-              @media screen and (min-width: 40em) {
-                  color: red
-              }
+            color: red
           }
+              }
       }"
     `)
     expect(frontend({ color: { sm: 'red' } })).toMatchInlineSnapshot('"tw-geqOyW"')
