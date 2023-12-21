@@ -59,7 +59,7 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
             const styleProps = computed(() => ${styleFnName}(props))
             
             return () => {
-              const mergedProps = { ...attrs, ...styleProps.value }
+              const mergedProps = { ...styleProps.value, ...attrs }
               return h(${factoryName}.${jsxElement}, mergedProps, slots)
             }
             `,
