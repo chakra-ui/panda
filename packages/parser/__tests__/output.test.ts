@@ -246,7 +246,7 @@ describe('extract to css output pipeline', () => {
        }
      `
 
-    const dasherize = (token) =>
+    const dasherize = (token: string | string[]) =>
       token
         .toString()
         .replace(/[^a-zA-Z0-9]+/g, '-')

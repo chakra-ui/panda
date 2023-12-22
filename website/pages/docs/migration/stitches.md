@@ -292,16 +292,19 @@ const styles = css({
 })
 ```
 
-Notice that in Panda, you don't need to use the `$` prefix to access the tokens. If you really want to use the `$` prefix, update the name of the token.
+Notice that in Panda, you don't need to use the `$` prefix to access the tokens. If you really want to use the `$` prefix, you can format how the tokens, classes and css vars will be generated.
 
-```diff
+```ts
+const dasherize = (token) => token.toString()
+  .replace(/[^a-zA-Z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+
 export default defineConfig({
-  theme: {
-    colors: {
--      gray100: { value: 'hsl(206,22%,99%)' },
-+      $gray100: { value: 'hsl(206,22%,99%)' },
-    },
-  }
+  // Stitches preset
+  separator: '-',
+  formatTokenName: (path) => `$${path.join('-')}`,
+  formatClassName: dasherize,
+  formatCssVar: dasherize,
 })
 ```
 
