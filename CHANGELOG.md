@@ -6,6 +6,79 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.23.] - 2023-12-15
+
+### Fixed
+
+- Fix issue where style props wouldn't be properly passed when using `config.jsxStyleProps` set to `minimal` or `none`
+  with JSX patterns (`Box`, `Stack`, `Flex`, etc.)
+- Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
+- Fix performance issue where process could get slower due to postcss rules held in memory.
+- Fix an issue with the postcss plugin when a config change sometimes didn't trigger files extraction
+- Fix & perf improvement: skip JSX parsing when not using `config.jsxFramework` / skip tagged template literal parsing
+  when not using `config.syntax` set to "template-literal"
+- Fix a parser issue where we didn't handle import aliases when using a {xxx}.raw() function.
+
+ex:
+
+```ts
+// button.stories.ts
+import { button as buttonRecipe } from '@ui/styled-system/recipes'
+
+export const Primary: Story = {
+  // ❌ this wouldn't be parsed as a recipe because of the alias + .raw()
+  //  -> ✅ it's now fixed
+  args: buttonRecipe.raw({
+    color: 'primary',
+  }),
+}
+```
+
+### Added
+
+- Add support for emit-pkg command to emit just the `package.json` file with the required entrypoints. If an existing
+  `package.json` file is present, the `exports` field will be updated.
+
+When setting up Panda in a monorepo, this command is useful in monorepo setups where you want the codegen to run only in
+a dedicated workspace package.
+
+- Automatically extract/generate CSS for `sva` even if `slots` are not statically extractable, since it will only
+  produce atomic styles, we don't care much about slots for `sva` specifically
+
+Currently the CSS won't be generated if the `slots` are missing which can be problematic when getting them from another
+file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
+
+```ts
+import { sva } from '../styled-system/css'
+import { slots } from './slots'
+
+const card = sva({
+  slots, // ❌ did NOT work -> ✅ will now work as expected
+  base: {
+    root: {
+      p: '6',
+      m: '4',
+      w: 'md',
+      boxShadow: 'md',
+      borderRadius: 'md',
+      _dark: { bg: '#262626', color: 'white' },
+    },
+    content: {
+      textStyle: 'lg',
+    },
+    title: {
+      textStyle: 'xl',
+      fontWeight: 'semibold',
+      pb: '2',
+    },
+  },
+})
+```
+
+### Changed
+
+- Log stacktrace on error instead of only logging the message
+
 ## [0.22.1] - 2023-12-15
 
 ### Fixed
