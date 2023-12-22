@@ -14,7 +14,7 @@ export interface CssRule extends WithConditions {
    * @example ['margin', 'padding']
    */
   properties: {
-    [property: string]: string[]
+    [property: string]: Array<string | number>
   }
 }
 

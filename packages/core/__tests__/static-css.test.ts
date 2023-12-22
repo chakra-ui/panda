@@ -26,6 +26,7 @@ const ctx: StaticContext = {
   getPatternPropValues() {
     return []
   },
+  getPatternTransform: (name: string, data: Record<string, any>) => data,
 }
 
 const getStyles = getStaticCss({
