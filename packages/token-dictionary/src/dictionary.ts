@@ -7,7 +7,13 @@ import { assertTokenFormat, getReferences, isToken } from './utils'
 
 type EnforcePhase = 'pre' | 'post'
 
-interface Options {
+interface TokenFormatters {
+  formatTokenName?: (path: string[]) => string
+  formatClassName?: (token: string) => string
+  formatCssVar?: (path: string[]) => string
+}
+
+interface TransformOptions extends TokenFormatters {
   prefix?: string
   hash?: boolean
 }
@@ -17,21 +23,20 @@ export interface TokenTransformer {
   enforce?: EnforcePhase
   type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
-  transform: (token: Token, options: Options) => any
+  transform: (token: Token, options: TransformOptions) => any
 }
 
-export interface TokenDictionaryOptions {
+export interface TokenDictionaryOptions extends TokenFormatters {
   tokens?: Tokens
   semanticTokens?: SemanticTokens
   breakpoints?: Record<string, string>
   prefix?: string
   hash?: boolean
-  formatTokenName?: (path: string[]) => string
 }
 
 export interface TokenMiddleware {
   enforce?: EnforcePhase
-  transform: (dict: TokenDictionary, options: Options) => void
+  transform: (dict: TokenDictionary, options: TransformOptions) => void
 }
 
 function expandBreakpoints(breakpoints?: Record<string, string>) {
@@ -47,18 +52,29 @@ function filterDefault(path: string[]) {
   return path.filter((item) => item !== 'DEFAULT')
 }
 
-export class TokenDictionary {
+export class TokenDictionary implements TokenFormatters {
   allTokens: Token[] = []
   prefix: string | undefined
   hash: boolean | undefined
   formatTokenName = (path: string[]) => path.join('.')
+  formatClassName?: (token: string) => string
+  formatCssVar?: (path: string[]) => string
 
   get allNames() {
     return Array.from(new Set(this.allTokens.map((token) => token.name)))
   }
 
   constructor(options: TokenDictionaryOptions) {
-    const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash, formatTokenName } = options
+    const {
+      tokens = {},
+      semanticTokens = {},
+      breakpoints,
+      prefix,
+      hash,
+      formatTokenName,
+      formatClassName,
+      formatCssVar,
+    } = options
 
     const breakpointTokens = expandBreakpoints(breakpoints)
 
@@ -73,6 +89,8 @@ export class TokenDictionary {
 
     this.prefix = prefix
     this.hash = hash
+    this.formatClassName = formatClassName
+    this.formatCssVar = formatCssVar
 
     if (formatTokenName) {
       this.formatTokenName = formatTokenName
@@ -157,7 +175,14 @@ export class TokenDictionary {
       if (token.extensions.hasReference) return
       if (typeof transform.match === 'function' && !transform.match(token)) return
 
-      const exec = (v: Token) => transform.transform(v, { prefix: this.prefix, hash: this.hash })
+      const exec = (v: Token) =>
+        transform.transform(v, {
+          prefix: this.prefix,
+          hash: this.hash,
+          formatTokenName: this.formatTokenName,
+          formatClassName: this.formatClassName,
+          formatCssVar: this.formatCssVar,
+        })
 
       const transformed = exec(token)
 

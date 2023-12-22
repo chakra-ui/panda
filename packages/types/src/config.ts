@@ -251,9 +251,9 @@ interface CssgenOptions {
   syntax?: 'template-literal' | 'object-literal'
   /**
    * How to format the css variables.
-   * @default 'escape'
+   * @default '(token) => escape(token)'
    */
-  formatCssVar?: 'escape' | 'dash'
+  formatCssVar?: (token: string) => string
 }
 
 interface CodegenOptions {
@@ -269,10 +269,12 @@ interface CodegenOptions {
   emitTokensOnly?: boolean
   /**
    * Format the tokens based on the theme definitions.
+   * @default '(path) => path.join(".")'
    */
   formatTokenName?: (path: string[]) => string
   /**
    * Format how a token should be used in the class name.
+   * @default '(token) => token'
    */
   formatClassName?: (token: string) => string
   /**

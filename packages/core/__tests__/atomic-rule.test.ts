@@ -321,12 +321,12 @@ describe('atomic / with nesting scope', () => {
     const css = createCssFn({
       formatTokenName: (path) => `$${path.join('-')}`,
       formatClassName: (token) => token.replace(/\$/, '').replace(/-/g, '='),
-      formatCssVar: 'dash',
+      formatCssVar: (path) => path.join('='),
     })
     expect(css({ bg: '$pink-400' })).toMatchInlineSnapshot(`
       "@layer utilities {
           .bg_pink\\\\=400 {
-              background: var(--colors-pink-400)
+              background: var(--colors=pink=400)
           }
       }"
     `)

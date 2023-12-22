@@ -3,7 +3,7 @@ import { cssVar } from '../src'
 
 describe('css var', () => {
   test('with negative', () => {
-    expect(cssVar('-2.4', { prefix: 'vc-spacing' })).toMatchInlineSnapshot(`
+    expect(cssVar(['-2.4'], { prefix: 'vc-spacing' })).toMatchInlineSnapshot(`
       {
         "ref": "var(--vc-spacing--2\\\\.4)",
         "var": "--vc-spacing--2\\\\.4",
@@ -12,7 +12,7 @@ describe('css var', () => {
   })
 
   test('with hash', () => {
-    expect(cssVar('colors-red-200', { hash: true })).toMatchInlineSnapshot(`
+    expect(cssVar(['colors', 'red', '200'], { hash: true })).toMatchInlineSnapshot(`
       {
         "ref": "var(--bLdQLg)",
         "var": "--bLdQLg",
@@ -21,7 +21,7 @@ describe('css var', () => {
   })
 
   test('with hash + prefix', () => {
-    expect(cssVar('colors-red-200', { hash: true, prefix: 'pd' })).toMatchInlineSnapshot(`
+    expect(cssVar(['colors', 'red', '200'], { hash: true, prefix: 'pd' })).toMatchInlineSnapshot(`
       {
         "ref": "var(--pd-bLdQLg)",
         "var": "--pd-bLdQLg",
@@ -30,7 +30,7 @@ describe('css var', () => {
   })
 
   test('with special characters', () => {
-    expect(cssVar('.*+?^${}()|[]\\/', { prefix: 'special' })).toMatchInlineSnapshot(`
+    expect(cssVar(['.*+?^${}()|[]\\/'], { prefix: 'special' })).toMatchInlineSnapshot(`
       {
         "ref": "var(--special-\\\\.\\\\*\\\\+\\\\?\\\\^\\\\$\\\\{\\\\}\\\\(\\\\)\\\\|\\\\[\\\\]\\\\\\\\\\\\/)",
         "var": "--special-\\\\.\\\\*\\\\+\\\\?\\\\^\\\\$\\\\{\\\\}\\\\(\\\\)\\\\|\\\\[\\\\]\\\\\\\\\\\\/",
@@ -39,7 +39,7 @@ describe('css var', () => {
   })
 
   test('with percentage', () => {
-    expect(cssVar('100%', { prefix: 'sizes' })).toMatchInlineSnapshot(`
+    expect(cssVar(['100%'], { prefix: 'sizes' })).toMatchInlineSnapshot(`
       {
         "ref": "var(--sizes-100\\\\%)",
         "var": "--sizes-100\\\\%",
@@ -47,18 +47,15 @@ describe('css var', () => {
     `)
   })
 
-  test('with dashed var format', () => {
-    expect(cssVar('%%%colors-special-_*+?^${}()|[]\\red-200%%%', { formatCssVar: 'dash' })).toMatchInlineSnapshot(`
+  test('with formatCssVar', () => {
+    expect(
+      cssVar(['$colors', 'special*+?^${}()|[]\\', 'red', '200%%%'], {
+        formatCssVar: (path) => path.map((x) => x.replace(/[^a-zA-Z0-9-.]/g, '').toUpperCase()).join('-'),
+      }),
+    ).toMatchInlineSnapshot(`
       {
-        "ref": "var(--colors-special-red-200)",
-        "var": "--colors-special-red-200",
-      }
-    `)
-
-    expect(cssVar('--spacing--0.5', { formatCssVar: 'dash' })).toMatchInlineSnapshot(`
-      {
-        "ref": "var(--spacing--0.5)",
-        "var": "--spacing--0.5",
+        "ref": "var(--COLORS-SPECIAL-RED-200)",
+        "var": "--COLORS-SPECIAL-RED-200",
       }
     `)
   })

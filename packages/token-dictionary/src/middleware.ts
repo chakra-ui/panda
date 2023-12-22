@@ -4,7 +4,7 @@ import { Token } from './token'
 
 export const addNegativeTokens: TokenMiddleware = {
   enforce: 'pre',
-  transform(dictionary: TokenDictionary, { prefix, hash }) {
+  transform(dictionary: TokenDictionary, { prefix, hash, formatCssVar }) {
     const tokens = dictionary.filter({
       extensions: { category: 'spacing' },
     })
@@ -12,7 +12,7 @@ export const addNegativeTokens: TokenMiddleware = {
     tokens.forEach((token) => {
       //
       const originalPath = [...token.path]
-      const originalVar = cssVar(originalPath.join('-'), { prefix, hash })
+      const originalVar = cssVar(originalPath, { prefix, hash, formatCssVar })
 
       if (token.value === '0rem') {
         return

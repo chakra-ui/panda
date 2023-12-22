@@ -792,17 +792,14 @@ css({ color: 'red.100' }) // RED.100
 
 ### formatCssVar
 
-**Type**: `'escape' | 'dash'`
+**Type**: `(token: string) => string`
 
-**Default**: `'escape'`
+**Default**: `token => escape(token)`
 
 Define how the CSS vars will consume the tokens.
 
 ```js
-{ "formatCssVar": 'escape' }
-css({ color: '$red.100' }) // --colors-\$red.100
-
-{ "formatCssVar": 'dash' }
+{ "formatCssVar": token => token.replace('$', '').replace('.', '-') }
 css({ color: '$red.100' }) // --colors-red-100
 ```
 

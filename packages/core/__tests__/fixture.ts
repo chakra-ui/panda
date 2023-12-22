@@ -10,11 +10,11 @@ type ContextOptions = Partial<Omit<StylesheetContext, 'recipes'>> & {
   prefix?: string
   formatTokenName?: (path: string[]) => string
   formatClassName?: (token: string) => string
-  formatCssVar?: 'escape' | 'dash'
+  formatCssVar?: (path: string[]) => string
 }
 
 export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
-  const { hash, prefix, formatTokenName, formatClassName, recipes: recipeObj = {}, ...rest } = opts
+  const { hash, prefix, formatTokenName, formatClassName, formatCssVar, recipes: recipeObj = {}, ...rest } = opts
 
   const conditions = new Conditions({
     conditions: mocks.conditions,
@@ -26,6 +26,8 @@ export const createContext = (opts: ContextOptions = {}): StylesheetContext => {
     semanticTokens: mocks.semanticTokens,
     prefix,
     formatTokenName,
+    formatClassName,
+    formatCssVar,
   })
 
   const utility = new Utility({

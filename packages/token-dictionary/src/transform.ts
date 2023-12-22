@@ -135,10 +135,10 @@ export const transformAssets: TokenTransformer = {
 export const addCssVariables: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/css-var',
-  transform(token, { prefix, hash }) {
+  transform(token, { prefix, hash, formatCssVar }) {
     const { isNegative, originalPath } = token.extensions
     const pathValue = isNegative ? originalPath : token.path
-    const variable = cssVar(pathValue.filter(Boolean).join('-'), { prefix, hash })
+    const variable = cssVar(pathValue.filter(Boolean), { prefix, hash, formatCssVar })
     return {
       var: variable.var,
       varRef: variable.ref,
@@ -153,11 +153,11 @@ export const addCssVariables: TokenTransformer = {
 export const addConditionalCssVariables: TokenTransformer = {
   enforce: 'post',
   name: 'tokens/conditionals',
-  transform(token, { prefix, hash }) {
+  transform(token, { prefix, hash, formatCssVar }) {
     const refs = getReferences(token.value)
     if (!refs.length) return token.value
     refs.forEach((ref) => {
-      const variable = cssVar(ref.split('.').join('-'), { prefix, hash }).ref
+      const variable = cssVar(ref.split('.'), { prefix, hash, formatCssVar }).ref
       token.value = token.value.replace(`{${ref}}`, variable)
     })
     return token.value
