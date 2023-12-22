@@ -246,15 +246,18 @@ describe('extract to css output pipeline', () => {
        }
      `
 
+    const dasherize = (token) =>
+      token
+        .toString()
+        .replace(/[^a-zA-Z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+
     const result = parseAndExtract(code, {
+      // Stitches preset
       separator: '-',
       formatTokenName: (path) => `$${path.join('-')}`,
-      formatClassName: (token) =>
-        token
-          .toString()
-          .replace(/[^a-zA-Z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, ''),
-      formatCssVar: 'dash',
+      formatClassName: dasherize,
+      formatCssVar: dasherize,
     })
 
     expect(result.json).toMatchInlineSnapshot(`
