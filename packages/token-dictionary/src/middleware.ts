@@ -114,12 +114,12 @@ export const addVirtualPalette: TokenMiddleware = {
     })
 
     keys.forEach((key) => {
-      const path = key.split('.')
-      const name = dictionary.formatTokenName(['colors', 'colorPalette', ...path].filter(Boolean))
+      const path = ['colors', 'colorPalette', ...key.split('.')].filter(Boolean)
+      const name = dictionary.formatTokenName(path)
       const node = new Token({
         name,
-        value: name,
-        path: ['colors', 'colorPalette', ...path],
+        value: path.join('.'),
+        path: path,
       })
 
       node.setExtensions({

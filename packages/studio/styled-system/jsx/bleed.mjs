@@ -1,9 +1,14 @@
 import { createElement, forwardRef } from 'react'
-import { panda } from './factory.mjs';
+import { mergeCss } from '../css/css.mjs';
+import { splitProps } from '../helpers.mjs';
 import { getBleedStyle } from '../patterns/bleed.mjs';
+import { panda } from './factory.mjs';
 
 export const Bleed = /* @__PURE__ */ forwardRef(function Bleed(props, ref) {
-  const { inline, block, ...restProps } = props
-const styleProps = getBleedStyle({inline, block})
-return createElement(panda.div, { ref, ...styleProps, ...restProps })
-})
+  const [patternProps, restProps] = splitProps(props, ["inline","block"])
+
+const styleProps = getBleedStyle(patternProps)
+const mergedProps = { ref, ...styleProps, ...restProps }
+
+return createElement(panda.div, mergedProps)
+  })

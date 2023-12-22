@@ -172,7 +172,6 @@ test('should generate virtual palette', () => {
         "path": [
           "colors",
           "colorPalette",
-          "",
         ],
         "type": "color",
         "value": "colors.colorPalette",
