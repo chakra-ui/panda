@@ -1,4 +1,4 @@
-import type { CssRule, StaticCssOptions } from '@pandacss/types'
+import type { CssRule, Dict, StaticCssOptions } from '@pandacss/types'
 
 export interface StaticContext {
   breakpoints: string[]
@@ -8,6 +8,7 @@ export interface StaticContext {
   }
   getPatternPropValues: (patternName: string, propery: string) => string[] | undefined
   getPatternKeys: (patternName: string) => string[] | undefined
+  getPatternTransform: (name: string, data: Dict) => Dict
 }
 
 interface StaticCssResults {
@@ -109,10 +110,11 @@ export function getStaticCss(options: StaticCssOptions) {
         }
 
         Object.entries(properties).forEach(([property, values]) => {
-          const patternKeys = ctx.getPatternPropValues(pattern, property)
-          const computedValues = values.flatMap((value) => (value === '*' ? patternKeys : value))
+          const propValues = ctx.getPatternPropValues(pattern, property)
+          const computedValues = values.flatMap((value) => (value === '*' ? propValues : value))
 
-          computedValues.forEach((value) => {
+          computedValues.forEach((patternValue) => {
+            const value = ctx.getPatternTransform(pattern, { [property]: patternValue })
             const conditionalValues = conditions.reduce(
               (acc, condition) => ({
                 base: value,
@@ -122,9 +124,7 @@ export function getStaticCss(options: StaticCssOptions) {
               {},
             )
 
-            results.patterns.push({
-              [pattern]: { [property]: conditions.length ? conditionalValues : value },
-            })
+            results.patterns.push(conditions.length ? conditionalValues : value)
           })
         })
       })

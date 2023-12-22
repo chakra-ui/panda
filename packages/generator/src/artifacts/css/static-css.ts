@@ -49,7 +49,7 @@ export const generateStaticCss = (ctx: Context) => {
       }
 
       if (propType.type === 'property') {
-        return getPropertyKeys(property)
+        return getPropertyKeys(propType.value || property)
       }
 
       if (propType.type === 'token') {
@@ -63,6 +63,7 @@ export const generateStaticCss = (ctx: Context) => {
 
       return details.props ?? []
     },
+    getPatternTransform: ctx.patterns.transform.bind(ctx.patterns),
   })
 
   results.css.forEach((css) => {
