@@ -9,8 +9,8 @@ Add `patterns` to `config.staticCss`
 
 ---
 
-Fix the special `[*]` rule which used to generate the same rule for every conditions, which is not what most people need
-(it's still possible by explicitly using `conditions: true`).
+Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+need (it's still possible by explicitly using `responsive: true`).
 
 ```ts
 const card = defineRecipe({
