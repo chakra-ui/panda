@@ -87,16 +87,6 @@ export class Stylesheet {
     return optimizeCss(
       layers
         .map((layer: CascadeLayer) => {
-          return this.context.layers.getLayer(layer).toString()
-        })
-        .join('\n'),
-    )
-  }
-
-  getLayerCss = (...layers: CascadeLayer[]) => {
-    return optimizeCss(
-      layers
-        .map((layer: CascadeLayer) => {
           return this.context.layers.getLayerRoot(layer).toString()
         })
         .join('\n'),

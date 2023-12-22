@@ -12,7 +12,6 @@ export interface StyleEntry {
   value: string
   cond: string
   recipe?: string
-  variants?: boolean
   slot?: string
   layer?: string
   variants?: boolean

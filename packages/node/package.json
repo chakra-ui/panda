@@ -19,8 +19,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup --tsconfig tsconfig.build.json src/index.ts --format=cjs,esm --shims --dts",
+    "build-fast": "tsup --tsconfig tsconfig.build.json src/index.ts --format=cjs,esm --shims --no-dts",
     "dev": "pnpm build-fast --watch"
   },
   "files": [

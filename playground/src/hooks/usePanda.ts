@@ -133,19 +133,15 @@ export function usePanda(state: State) {
   return useMemo(() => {
     const project = createProject({
       useInMemoryFileSystem: true,
-      parserOptions: {
-        join(...paths) {
-          return paths.join('/')
-        },
-        ...context.parserOptions,
-      },
+      parserOptions: context.parserOptions,
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
       hooks: context.hooks,
     })
 
     const parserResult = project.parseSourceFile('code.tsx')
-    context.getParserCss(parserResult)
+    const parsedCss = context.getCss()
+
     const artifacts = context.getArtifacts() ?? []
 
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
@@ -157,7 +153,7 @@ export function usePanda(state: State) {
       { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
       { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
     ].concat(staticArtifacts)
-    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
+    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? ''), parsedCss].join('\n')
 
     const panda = {
       previewCss,
