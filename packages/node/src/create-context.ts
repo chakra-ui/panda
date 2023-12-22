@@ -42,7 +42,7 @@ export class PandaContext extends Generator {
     this.diff = new DiffEngine(this)
   }
 
-  appendFilesCss() {
+  parseFiles() {
     const files = this.getFiles()
     const filesWithCss = [] as string[]
 
@@ -52,7 +52,7 @@ export class PandaContext extends Generator {
       const result = this.project.parseSourceFile(file)
 
       measure()
-      if (!result) return
+      if (!result || this.hashFactory.isEmpty()) return
 
       filesWithCss.push(file)
     })

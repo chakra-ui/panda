@@ -7,6 +7,8 @@ const ensureFile = (ctx: PandaContext, cwd: string, file: string) => {
   const outPath = resolve(cwd, file)
   const dirname = ctx.runtime.path.dirname(outPath)
   ctx.runtime.fs.ensureDirSync(dirname)
+
+  return outPath
 }
 
 export interface CssGenOptions {
@@ -18,6 +20,7 @@ export interface CssGenOptions {
 
 export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
   const { cwd, outfile, cssArtifact, minimal } = options
+  let outPath = ctx.runtime.path.join(...ctx.paths.getFilePath('styles.css'))
 
   const sheet = ctx.createSheet()
   //
@@ -26,13 +29,15 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
     ctx.appendCss(cssArtifact, sheet)
 
     if (outfile) {
-      ensureFile(ctx, cwd, outfile)
-      ctx.runtime.fs.writeFileSync(outfile, ctx.getCss())
+      outPath = ensureFile(ctx, cwd, outfile)
+      const css = ctx.getCss(sheet)
+      ctx.runtime.fs.writeFileSync(outfile, css)
     } else {
-      await ctx.writeCss()
+      await ctx.writeCss(sheet)
     }
 
     const msg = ctx.messages.cssArtifactComplete(cssArtifact)
+    logger.info('css:emit:path', outPath)
     logger.info('css:emit:artifact', msg)
     //
   } else {
@@ -42,10 +47,10 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
       ctx.appendBaselineCss(sheet)
     }
 
-    const { files, collect } = ctx.appendFilesCss()
+    const { files, collect } = ctx.parseFiles()
 
     if (outfile) {
-      ensureFile(ctx, cwd, outfile)
+      outPath = ensureFile(ctx, cwd, outfile)
       const css = ctx.getParserCss(collect(), outfile)
       ctx.runtime.fs.writeFileSync(outfile, css)
     } else {
@@ -53,6 +58,7 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
     }
 
     const msg = ctx.messages.buildComplete(files.length)
+    logger.info('css:emit:path', outPath)
     logger.info('css:emit:out', msg)
   }
 }

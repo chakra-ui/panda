@@ -44,7 +44,7 @@ export const artifactsGenerated = (ctx: Context) => {
 export const configExists = (cmd: string) => outdent`
       \n
       It looks like you already have panda created\`.
-      
+
       You can now run ${quote(cmd, ' panda --watch')}.
 
       `
@@ -61,9 +61,9 @@ export const codegenComplete = () =>
   outdent`
 
   ${colors.bold().cyan('Next steps:')}
-  
+
   [1] Create a ${quote('index.css')} file in your project that contains:
-  
+
       @layer reset, base, tokens, recipes, utilities;
 
 

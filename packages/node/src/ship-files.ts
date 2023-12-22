@@ -10,7 +10,7 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
 
   files.forEach(async (file) => {
     const result = ctx.project.parseSourceFile(file)
-    if (!result || result.isEmpty()) return
+    if (!result || result.isEmpty() || ctx.hashFactory.isEmpty()) return
 
     filesWithCss.push(path.relative(ctx.config.cwd, file))
   })
