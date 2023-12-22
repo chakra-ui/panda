@@ -337,7 +337,7 @@ export class Utility {
     return this
   }
 
-  classNameWithPrefix = (className: string) => [this.prefix, className].filter(Boolean).join(this.separator)
+  classNameWithPrefix = (className: string) => [this.prefix, className].filter(Boolean).join('-')
 
   private setClassName = (property: string, raw: string) => {
     const propKey = this.getPropKey(property, raw)
