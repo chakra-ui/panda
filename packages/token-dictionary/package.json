@@ -34,8 +34,5 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "ts-pattern": "5.0.5"
-  },
-  "devDependencies": {
-    "@pandacss/fixture": "workspace:*"
   }
 }

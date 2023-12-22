@@ -4,20 +4,20 @@ import { parseAndExtract } from './fixture'
 describe('{fn}.raw', () => {
   test('using raw syntax works', () => {
     const code = `
-        import { css } from ".panda/css";
-        import { buttonStyle } from ".panda/recipes";
-        import { stack } from ".panda/patterns";
-    
+        import { css } from "styled-system/css";
+        import { buttonStyle } from "styled-system/recipes";
+        import { stack } from "styled-system/patterns";
+
         const filePath = String.raw\`C:\\Development\\profile\\aboutme.html\`;
-    
+
         css.raw({ mx: '3', paddingTop: '4', color: 'amber.100' }, { mx: '10', pt: '6', color: 'blue.950' })
-    
+
         export default function App() {
           return (
             <ButtonStyle rootProps={css.raw({ bg: "red.400" })} />
           );
         }
-    
+
         // recipe in storybook
         export const Funky: Story = {
           args: buttonStyle.raw({
@@ -26,15 +26,15 @@ describe('{fn}.raw', () => {
             size: "sm",
           }),
         };
-    
+
         // mixed with pattern
         const stackProps = {
           sm: stack.raw({ direction: "column" }),
           md: stack.raw({ direction: "row" })
         }
-    
+
         stack(stackProps[props.size]))
-    
+
          `
 
     const result = parseAndExtract(code)
@@ -144,8 +144,12 @@ describe('{fn}.raw', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
               }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200)
+                  }
           }
       }
 

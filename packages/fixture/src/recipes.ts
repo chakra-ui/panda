@@ -47,6 +47,9 @@ export const recipes: Record<string, RecipeConfig> = {
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
+      _hover: {
+        backgroundColor: 'red.200',
+      },
     },
     variants: {
       size: {

@@ -4,8 +4,8 @@ import { parseAndExtract } from './fixture'
 describe('ast parser / css prop', () => {
   test('should parse', () => {
     const code = `
-    import { css } from ".panda/css"
-    
+    import { css } from "styled-system/css"
+
     const Test = ({ css: cssProp }) => {
       return <div className={css(cssProp)} />
     }

@@ -1,17 +1,14 @@
-import type { Dict } from '@pandacss/types'
+import type { RecipeDefinition } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { Stylesheet } from '../src'
-import { createContext } from './fixture'
+import { createRuleProcessor } from './fixture'
 
-function recipe(values: Dict) {
-  const sheet = new Stylesheet(createContext())
-  sheet.processAtomicRecipe(values)
-  return sheet.toCss({ optimize: true })
+function processAtomicRule(config: RecipeDefinition<any>) {
+  return createRuleProcessor().cva(config).toCss()
 }
 
 describe('Atomic recipe', () => {
   test('should work', () => {
-    const sheet = recipe({
+    const sheet = processAtomicRule({
       base: {
         fontSize: 'lg',
       },

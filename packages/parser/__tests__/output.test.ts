@@ -4,8 +4,8 @@ import { parseAndExtract } from './fixture'
 describe('extract to css output pipeline', () => {
   test('basic usage', () => {
     const code = `
-      import { panda } from ".panda/jsx"
-      import { css } from ".panda/css"
+      import { panda } from "styled-system/jsx"
+      import { css } from "styled-system/css"
 
       const color = "red.100";
 
@@ -25,7 +25,7 @@ describe('extract to css output pipeline', () => {
                 boxShadow: "0 0 0 4px var(--shadow)",
                 outlineColor: "var(--colors-pink-200)",
               })} />
-              <panda.div
+              <styled.div
                 debug
                 p="2"
                 m={{
@@ -37,7 +37,7 @@ describe('extract to css output pipeline', () => {
                 css={{
                   md: { p: 4 },
                   _hover: { color: "#2ecc71", backgroundColor: "var(--some-bg)" }
-                }}>Click me</panda.div>
+                }}>Click me</styled.div>
             </div>
         )
        }
@@ -90,7 +90,7 @@ describe('extract to css output pipeline', () => {
               "p": "2",
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "jsx-factory",
         },
       ]
@@ -183,7 +183,7 @@ describe('extract to css output pipeline', () => {
 
   test('basic usage with multiple style objects', () => {
     const code = `
-      import { css } from ".panda/css"
+      import { css } from "styled-system/css"
 
       css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
      `
@@ -230,7 +230,7 @@ describe('extract to css output pipeline', () => {
 
   test('multiple recipes on 1 component', () => {
     const code = `
-    import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe, bgRecipe } from ".panda/recipes"
+    import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe, bgRecipe } from "styled-system/recipes"
 
     const ComponentWithMultipleRecipes = ({ variant, size, color }) => {
       return <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }), sizeRecipe({ size }), bgRecipe({ color }))}>Hello</button>
@@ -436,7 +436,7 @@ describe('extract to css output pipeline', () => {
 
   test('multiple recipes on 1 component using {recipe}.raw', () => {
     const code = `
-    import { button, pinkRecipe, sizeRecipe, bgRecipe } from ".panda/recipes"
+    import { button, pinkRecipe, sizeRecipe, bgRecipe } from "styled-system/recipes"
 
     const ComponentWithMultipleRecipes = ({ pinkProps: { variant } = {}, sizeProps: { size } = {}, colorProps: { color } = {} }) => {
       return <button className={cx(pinkRecipe({ variant }), sizeRecipe({ size }), bgRecipe({ color }))}>Hello</button>
@@ -629,9 +629,9 @@ describe('extract to css output pipeline', () => {
 
   test('string literal - factory', () => {
     const code = `
-    import { panda } from ".panda/jsx"
+    import { styled } from "styled-system/jsx"
 
-    const Example = panda('span')\`
+    const Example = styled('span')\`
       color: lightgreen;
 
       & > strong {
@@ -639,7 +639,7 @@ describe('extract to css output pipeline', () => {
       }
     \`
 
-    const baseStyle = panda.div\`
+    const baseStyle = styled.div\`
         background: transparent;
         border-radius: 3px;
         border: 1px solid var(--accent-color);
@@ -675,7 +675,7 @@ describe('extract to css output pipeline', () => {
               "color": "lightgreen",
             },
           ],
-          "name": "panda",
+          "name": "styled",
           "type": "object",
         },
         {
@@ -704,7 +704,7 @@ describe('extract to css output pipeline', () => {
               "width": "11rem",
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "object",
         },
       ]
@@ -781,7 +781,7 @@ describe('extract to css output pipeline', () => {
 
   test('string literal - css', () => {
     const code = `
-    import { css } from ".panda/css"
+    import { css } from "styled-system/css"
 
     const className = css\`
         background: transparent;
@@ -831,7 +831,7 @@ describe('extract to css output pipeline', () => {
 
   test('runtime conditions', () => {
     const code = `
-      import { css } from ".panda/css"
+      import { css } from "styled-system/css"
 
        function Button() {
         const [isHovered, setIsHovered] = useState(false)
@@ -876,7 +876,7 @@ describe('extract to css output pipeline', () => {
 
   test('arbitrary selectors', () => {
     const code = `
-      import { css } from ".panda/css"
+      import { css } from "styled-system/css"
 
        function Button() {
 
@@ -963,7 +963,7 @@ describe('extract to css output pipeline', () => {
 
   test('colorPalette', () => {
     const code = `
-      import { css } from ".panda/css"
+      import { css } from "styled-system/css"
 
        function Button() {
          return (
@@ -1021,7 +1021,7 @@ describe('extract to css output pipeline', () => {
   describe('issue 1062: expand colorPalette flexibility', () => {
     test('should extract color palette with more than one level of nesting', () => {
       const code = `
-      import { css } from ".panda/css"
+      import { css } from "styled-system/css"
 
       export const App = () => {
         return (
@@ -1185,7 +1185,7 @@ describe('extract to css output pipeline', () => {
 
   test('patterns', () => {
     const code = `
-      import { stack, hstack as aliased } from ".panda/patterns"
+      import { stack, hstack as aliased } from "styled-system/patterns"
 
       function Button() {
         return (
@@ -1251,7 +1251,7 @@ describe('extract to css output pipeline', () => {
 
   test('jsx patterns + custom wrapper', () => {
     const code = `
-      import { stack } from ".panda/patterns"
+      import { stack } from "styled-system/patterns"
 
       const CustomStack = ({ align = "center", ...props }) => (
         <div className={stack({ align, ...props })} />
@@ -1324,20 +1324,20 @@ describe('extract to css output pipeline', () => {
 
   test('factory css', () => {
     const code = `
-    import { panda } from ".panda/jsx"
+    import { styled } from "styled-system/jsx"
 
     // PropertyAccess factory css
-    panda.div({
+    styled.div({
       color: "red.100",
     })
 
     // CallExpression factory css
-    panda("div", {
+    styled("div", {
         color: "yellow.100",
     })
 
     // TaggedTemplateExpression factory css
-    panda.div\`
+    styled.div\`
       color: var(--colors-purple-100);
     \`
    `
@@ -1350,7 +1350,7 @@ describe('extract to css output pipeline', () => {
               "color": "red.100",
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "object",
         },
         {
@@ -1359,7 +1359,7 @@ describe('extract to css output pipeline', () => {
               "color": "yellow.100",
             },
           ],
-          "name": "panda",
+          "name": "styled",
           "type": "object",
         },
       ]
@@ -1380,10 +1380,10 @@ describe('extract to css output pipeline', () => {
 
   test('factory css - tagged template literal', () => {
     const code = `
-    import { panda } from ".panda/jsx"
+    import { styled } from "styled-system/jsx"
 
     // TaggedTemplateExpression factory css
-    panda.div\`
+    styled.div\`
       color: var(--colors-purple-100);
     \`
    `
@@ -1396,7 +1396,7 @@ describe('extract to css output pipeline', () => {
               "color": "var(--colors-purple-100)",
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "object",
         },
       ]
@@ -1413,11 +1413,11 @@ describe('extract to css output pipeline', () => {
 
   test('cva and factory recipes', () => {
     const code = `
-      import { panda } from ".panda/jsx"
-      import { cva } from ".panda/css"
+      import { styled } from "styled-system/jsx"
+      import { cva } from "styled-system/css"
 
       // PropertyAccess factory inline recipe
-      panda.div({
+      styled.div({
         base: {
           color: "blue.100",
         },
@@ -1427,7 +1427,7 @@ describe('extract to css output pipeline', () => {
       })
 
       // CallExpression factory inline recipe
-      panda("div", {
+      styled("div", {
         base: {
           color: "green.100",
         },
@@ -1437,7 +1437,7 @@ describe('extract to css output pipeline', () => {
       })
 
       // PropertyAccess factory + cva
-      panda.div(cva({
+      styled.div(cva({
         base: {
           color: "rose.100",
         },
@@ -1465,7 +1465,7 @@ describe('extract to css output pipeline', () => {
           "data": [
             {},
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "object",
         },
         {
@@ -1477,7 +1477,7 @@ describe('extract to css output pipeline', () => {
               "variants": {},
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "cva",
         },
         {
@@ -1489,7 +1489,7 @@ describe('extract to css output pipeline', () => {
               "variants": {},
             },
           ],
-          "name": "panda",
+          "name": "styled",
           "type": "cva",
         },
         {
@@ -1552,8 +1552,8 @@ describe('extract to css output pipeline', () => {
 
   test('should extract config recipes', () => {
     const code = `
-       import { panda, Stack } from ".panda/jsx"
-      import { button, anotherButton, complexButton } from ".panda/recipes"
+       import { panda, Stack } from "styled-system/jsx"
+      import { button, anotherButton, complexButton } from "styled-system/recipes"
 
       function AnotherButtonWithRegex({ children, variant, size, css: cssProp }: ButtonProps) {
         return <button className={cx(button({ variant, size }), css(cssProp))}>{children}</button>
@@ -1571,8 +1571,8 @@ describe('extract to css output pipeline', () => {
          return (
             <div marginTop="55555px">
                 <Stack>
-                    <panda.button marginTop="40px" marginBottom="42px">Click me</panda.button>
-                    <panda.div bg="red.200">Click me</panda.div>
+                    <styled.button marginTop="40px" marginBottom="42px">Click me</styled.button>
+                    <styled.div bg="red.200">Click me</styled.div>
                     <AnotherButtonWithRegex variant="danger" size="md" />
                     <AnotherButton spacing="sm" />
                     <ComplexDesignSystemButton color="blue" />
@@ -1644,7 +1644,7 @@ describe('extract to css output pipeline', () => {
               "marginTop": "40px",
             },
           ],
-          "name": "panda.button",
+          "name": "styled.button",
           "type": "jsx-factory",
         },
         {
@@ -1653,7 +1653,7 @@ describe('extract to css output pipeline', () => {
               "bg": "red.200",
             },
           ],
-          "name": "panda.div",
+          "name": "styled.div",
           "type": "jsx-factory",
         },
         {
@@ -1779,7 +1779,7 @@ describe('extract to css output pipeline', () => {
     const code = `
     import { styled, type HTMLStyledProps } from 'styled-system/jsx';
     type ButtonProps = HTMLStyledProps<'button'>;
-    const StyledButton = styled('button', { base: { padding: 'md' } });
+    const StyledButton = styled('button', { base: { padding: '10' } });
 
     const Button = ({ children, ...props }: ButtonProps) => (
       <StyledButton {...props}>{children}</StyledButton>
@@ -1819,6 +1819,17 @@ describe('extract to css output pipeline', () => {
 
     expect(result.json).toMatchInlineSnapshot(`
       [
+        {
+          "data": [
+            {
+              "base": {
+                "padding": "10",
+              },
+            },
+          ],
+          "name": "styled",
+          "type": "cva",
+        },
         {
           "data": [
             {},
@@ -1868,6 +1879,10 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .p_10 {
+          padding: var(--spacing-10)
+          }
+
         .bg_tomato {
           background-color: tomato
           }
@@ -1972,7 +1987,7 @@ describe('extract to css output pipeline', () => {
 
   test('should evaluate variants supplied a function', () => {
     const code = `
-    import {cva} from ".panda/css"
+    import {cva} from "styled-system/css"
     const variants = () => {
       const spacingTokens = Object.entries({
           s: 'token(spacing.1)',
@@ -2164,8 +2179,12 @@ describe('extract to css output pipeline', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
               }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200)
+                  }
           }
       }
 
@@ -2283,8 +2302,12 @@ describe('extract to css output pipeline', () => {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
               }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200)
+                  }
           }
       }
 
@@ -2314,7 +2337,7 @@ describe('extract to css output pipeline', () => {
 
   test('array syntax - simple', () => {
     const code = `
-        import { Box } from ".panda/jsx"
+        import { Box } from "styled-system/jsx"
 
          function App() {
            return (
@@ -2351,7 +2374,7 @@ describe('extract to css output pipeline', () => {
 
   test('array syntax - simple conditional', () => {
     const code = `
-        import { Box } from ".panda/jsx"
+        import { Box } from "styled-system/jsx"
 
          function App() {
            return (
@@ -2398,7 +2421,7 @@ describe('extract to css output pipeline', () => {
 
   test('array syntax - conditional in middle', () => {
     const code = `
-        import { Box } from ".panda/jsx"
+        import { Box } from "styled-system/jsx"
 
          function App() {
            return (
@@ -2465,11 +2488,11 @@ describe('extract to css output pipeline', () => {
 
   test('styled FactoryOptions defaultProps extraction', () => {
     const code = `
-    import { panda } from ".panda/jsx"
-    import { cva } from ".panda/css"
-    import { button as aliasedButton } from ".panda/recipes"
+    import { panda } from "styled-system/jsx"
+    import { cva } from "styled-system/css"
+    import { button as aliasedButton } from "styled-system/recipes"
 
-    const Button = panda("button", aliasedButton, {
+    const Button = styled("button", aliasedButton, {
       defaultProps: {
         size: 'md',
         variant: 'second',
@@ -2526,7 +2549,7 @@ describe('extract to css output pipeline', () => {
           "data": [
             {},
           ],
-          "name": "panda",
+          "name": "styled",
           "type": "object",
         },
         {
@@ -2601,8 +2624,8 @@ describe('extract to css output pipeline', () => {
 
   test('array syntax within config recipes', () => {
     const code = `
-    import { css } from ".panda/css"
-    import { card } from ".panda/recipes"
+    import { css } from "styled-system/css"
+    import { card } from "styled-system/recipes"
 
     export default function Page() {
       return (
@@ -2698,7 +2721,7 @@ describe('extract to css output pipeline', () => {
 
   test('grid pattern minChildWidth not interpreted as token value', () => {
     const code = `
-    import { grid } from '.panda/patterns';
+    import { grid } from 'styled-system/patterns';
 
     export const App = () => {
       return (
@@ -2758,7 +2781,7 @@ describe('extract to css output pipeline', () => {
 
   test('token fn in at-rules', () => {
     const code = `
-    import { css } from '.panda/css';
+    import { css } from 'styled-system/css';
 
     css({
       '@container (min-width: token(sizes.xl))': {
@@ -2844,7 +2867,7 @@ describe('extract to css output pipeline', () => {
 
   test('strictTokens arbitrary value escape hatch', () => {
     const code = `
-    import { css } from '.panda/css';
+    import { css } from 'styled-system/css';
 
     css({
       color: '[#fff]',
@@ -2899,7 +2922,7 @@ describe('extract to css output pipeline', () => {
   })
 
   test('recipe.staticCss', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       theme: {
         extend: {
           recipes: {
@@ -2911,8 +2934,8 @@ describe('extract to css output pipeline', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.stylesheet.getLayerCss('recipes')
+    ctx.appendCss('static')
+    const css = ctx.stylesheet.getLayerCss('recipes')
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
@@ -2937,7 +2960,7 @@ describe('extract to css output pipeline', () => {
   })
 
   test('slotRecipes.staticCss', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       theme: {
         extend: {
           slotRecipes: {
@@ -2979,8 +3002,8 @@ describe('extract to css output pipeline', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.stylesheet.getLayerCss('recipes')
+    ctx.appendCss('static')
+    const css = ctx.stylesheet.getLayerCss('recipes')
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
@@ -3009,10 +3032,10 @@ describe('extract to css output pipeline', () => {
 
   test('recipe issue', () => {
     const code = `
-    import { css } from '.panda/css';
-    import { styled } from '.panda/jsx';
-    import { cardStyle2  } from '.panda/recipes';
-    import { cardStyle } from '.panda/recipes';
+    import { css } from 'styled-system/css';
+    import { styled } from 'styled-system/jsx';
+    import { cardStyle2  } from 'styled-system/recipes';
+    import { cardStyle } from 'styled-system/recipes';
 
     const CardStyle = styled("div", cardStyle)
     const CardStyle2 = styled("div", cardStyle2)
@@ -3031,6 +3054,20 @@ describe('extract to css output pipeline', () => {
     const result = parseAndExtract(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
+        {
+          "data": [
+            {},
+          ],
+          "name": "styled",
+          "type": "object",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "styled",
+          "type": "object",
+        },
         {
           "data": [
             {},
@@ -3077,9 +3114,9 @@ describe('extract to css output pipeline', () => {
 
   test('extract aliased {xxx}.raw', () => {
     const code = `
-    import { css } from '.panda/css';
-    import { styled } from '.panda/jsx';
-    import { cardStyle as aliasedCard } from '.panda/recipes';
+    import { css } from 'styled-system/css';
+    import { styled } from 'styled-system/jsx';
+    import { cardStyle as aliasedCard } from 'styled-system/recipes';
 
     const className = aliasedCard.raw({ rounded: true })
 
@@ -3110,7 +3147,7 @@ describe('extract to css output pipeline', () => {
 
   test('sva with unresolvable slots', () => {
     const code = `
-    import { sva } from '.panda/css'
+    import { sva } from 'styled-system/css'
     import { slots } from './slots'
 
     const card = sva({
@@ -3204,14 +3241,6 @@ describe('extract to css output pipeline', () => {
         [data-theme=dark] .dark\\\\:text_white, .dark .dark\\\\:text_white, .dark\\\\:text_white.dark, .dark\\\\:text_white[data-theme=dark] {
           color: var(--colors-white)
               }
-
-        .text-style_lg {
-          text-style: lg
-          }
-
-        .text-style_xl {
-          text-style: xl
-          }
 
         .font_semibold {
           font-weight: var(--font-weights-semibold)

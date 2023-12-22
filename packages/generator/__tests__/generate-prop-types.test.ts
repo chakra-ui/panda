@@ -2,7 +2,7 @@ import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 const propTypes = (config: ConfigResultWithHooks) => {
   const ctx = new Generator(config)
@@ -11,7 +11,7 @@ const propTypes = (config: ConfigResultWithHooks) => {
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(propTypes(generatorConfig)).toMatchInlineSnapshot(`
+    expect(propTypes(fixtureDefaults)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -223,6 +223,7 @@ describe('generate property types', () => {
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 
@@ -341,7 +342,7 @@ describe('generate property types', () => {
   })
 
   test('with stricTokens true', () => {
-    const conf = Object.assign({}, generatorConfig)
+    const conf = Object.assign({}, fixtureDefaults)
     conf.config.strictTokens = true
 
     expect(propTypes(conf)).toMatchInlineSnapshot(`
@@ -555,6 +556,7 @@ describe('generate property types', () => {
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 

@@ -1,17 +1,17 @@
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 import { type Artifact } from '@pandacss/types'
 
 const formatArtifact = (artifact: Artifact) => {
   if (!artifact) return
-  const dir = artifact.dir ?? []
+  const dir = (artifact.dir ?? []).filter((f) => f !== fixtureDefaults.config.outdir)
   return artifact.files.map((f) => dir + '/' + f.file)
 }
 
 describe('setup-artifacts', () => {
   test('filter by ArtifactId', () => {
-    const generator = new Generator(generatorConfig)
+    const generator = new Generator(fixtureDefaults)
     expect(generator.getArtifacts(['create-recipe']).map(formatArtifact)).toMatchInlineSnapshot(`
       [
         [
@@ -44,6 +44,8 @@ describe('setup-artifacts', () => {
           "recipes/card-style.d.ts",
           "recipes/button-style.mjs",
           "recipes/button-style.d.ts",
+          "recipes/checkbox.mjs",
+          "recipes/checkbox.d.ts",
         ],
       ]
     `)
@@ -125,7 +127,7 @@ describe('setup-artifacts', () => {
   })
 
   test('getArtifacts', () => {
-    const generator = new Generator(generatorConfig)
+    const generator = new Generator(fixtureDefaults)
     expect(generator.getArtifacts().map(formatArtifact)).toMatchInlineSnapshot(`
       [
         [
@@ -136,7 +138,9 @@ describe('setup-artifacts', () => {
           "tokens/index.mjs",
           "tokens/tokens.d.ts",
         ],
-        [],
+        [
+          "types/jsx.d.ts",
+        ],
         [
           "types/global.d.ts",
           "types/index.d.ts",
@@ -194,6 +198,8 @@ describe('setup-artifacts', () => {
           "recipes/card-style.d.ts",
           "recipes/button-style.mjs",
           "recipes/button-style.d.ts",
+          "recipes/checkbox.mjs",
+          "recipes/checkbox.d.ts",
         ],
         [
           "patterns/index.mjs",
@@ -241,11 +247,63 @@ describe('setup-artifacts', () => {
           "patterns/visually-hidden.mjs",
           "patterns/visually-hidden.d.ts",
         ],
-        [],
-        [],
-        [],
-        [],
-        [],
+        [
+          "jsx/is-valid-prop.mjs",
+          "jsx/is-valid-prop.d.ts",
+        ],
+        [
+          "jsx/factory.mjs",
+          "jsx/factory.d.ts",
+        ],
+        [
+          "jsx/factory-helper.mjs",
+        ],
+        [
+          "jsx/box.mjs",
+          "jsx/box.d.ts",
+          "jsx/flex.mjs",
+          "jsx/flex.d.ts",
+          "jsx/stack.mjs",
+          "jsx/stack.d.ts",
+          "jsx/vstack.mjs",
+          "jsx/vstack.d.ts",
+          "jsx/hstack.mjs",
+          "jsx/hstack.d.ts",
+          "jsx/spacer.mjs",
+          "jsx/spacer.d.ts",
+          "jsx/square.mjs",
+          "jsx/square.d.ts",
+          "jsx/circle.mjs",
+          "jsx/circle.d.ts",
+          "jsx/center.mjs",
+          "jsx/center.d.ts",
+          "jsx/link-box.mjs",
+          "jsx/link-box.d.ts",
+          "jsx/link-overlay.mjs",
+          "jsx/link-overlay.d.ts",
+          "jsx/aspect-ratio.mjs",
+          "jsx/aspect-ratio.d.ts",
+          "jsx/grid.mjs",
+          "jsx/grid.d.ts",
+          "jsx/grid-item.mjs",
+          "jsx/grid-item.d.ts",
+          "jsx/wrap.mjs",
+          "jsx/wrap.d.ts",
+          "jsx/container.mjs",
+          "jsx/container.d.ts",
+          "jsx/divider.mjs",
+          "jsx/divider.d.ts",
+          "jsx/float.mjs",
+          "jsx/float.d.ts",
+          "jsx/bleed.mjs",
+          "jsx/bleed.d.ts",
+          "jsx/visually-hidden.mjs",
+          "jsx/visually-hidden.d.ts",
+        ],
+        [
+          "jsx/index.mjs",
+          "jsx/index.d.ts",
+        ],
         [
           "css/index.mjs",
           "css/index.d.ts",
