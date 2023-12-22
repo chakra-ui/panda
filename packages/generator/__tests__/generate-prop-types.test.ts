@@ -322,7 +322,8 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
-      type WithArbitraryValue<T> = T
+      type WithEscapeHatch<T> = T | \`[\${string}]\`
+      type FilterVagueString<T> = T extends boolean ? T : T extends \`\${infer _}\` ? T : never
       type PropOrCondition<T> = ConditionalValue<T | (string & {})>
 
       type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
@@ -655,8 +656,9 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
-      type WithArbitraryValue<T> = T | \`[\${string}]\`
-      type PropOrCondition<T> = ConditionalValue<WithArbitraryValue<T>>
+      type WithEscapeHatch<T> = T | \`[\${string}]\`
+      type FilterVagueString<T> = T extends boolean ? T : T extends \`\${infer _}\` ? T : never
+      type PropOrCondition<T> = ConditionalValue<WithEscapeHatch<T>>
 
       type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
         ? PropOrCondition<PropertyTypes[T]>

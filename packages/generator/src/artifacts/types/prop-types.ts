@@ -1,5 +1,6 @@
 import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
+import { match } from 'ts-pattern'
 
 export function generatePropTypes(ctx: Context) {
   const {
@@ -43,10 +44,16 @@ export function generatePropTypes(ctx: Context) {
   return outdent`
   ${result.join('\n')}
 
-  type WithArbitraryValue<T> = ${strictTokens ? `T | \`[\${string}]\`` : 'T'}
-  type PropOrCondition<T> = ${
-    strictTokens ? 'ConditionalValue<WithArbitraryValue<T>>' : 'ConditionalValue<T | (string & {})>'
-  }
+  type WithEscapeHatch<T> = T | \`[\${string}]\`
+  type FilterVagueString<T> = T extends boolean ? T : T extends \`\${infer _}\` ? T : never
+  type PropOrCondition<T> = ${match(ctx.config)
+    .with(
+      { strictTokens: true, strictPropertyValues: true },
+      () => 'ConditionalValue<WithEscapeHatch<FilterVagueString<T>>>',
+    )
+    .with({ strictTokens: true }, () => 'ConditionalValue<WithEscapeHatch<T>>')
+    .with({ strictPropertyValues: true }, () => 'ConditionalValue<WithEscapeHatch<FilterVagueString<T>>>')
+    .otherwise(() => 'ConditionalValue<T | (string & {})>')}
 
   type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
     ? PropOrCondition<PropertyTypes[T]${strictTokens ? '' : ' | CssValue<T>'}>

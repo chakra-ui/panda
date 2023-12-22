@@ -1,12 +1,16 @@
 import { assertType, describe, test } from 'vitest'
-import { css } from '../../styled-system-strict-tokens/css'
+import { css } from '../../styled-system-strict-property-values/css'
 
 describe('css', () => {
   test('native CSS prop and value', () => {
     assertType(css({ display: 'flex' }))
 
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ display: 'abc' }))
+
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ content: 'abc' }))
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ willChange: 'abc' }))
 
     assertType(css({ pos: 'absolute' }))
@@ -30,9 +34,7 @@ describe('css', () => {
   test('shorthand prop', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictTokens: true
         backgroundColor: 'red',
-        // @ts-expect-error expected from strictTokens: true
         bg: 'red',
       }),
     )
@@ -51,7 +53,6 @@ describe('css', () => {
       css({
         _hover: {
           _dark: {
-            // @ts-expect-error expected from strictTokens: true
             bg: 'pink',
           },
         },
@@ -62,7 +63,7 @@ describe('css', () => {
   test('arbitrary value', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictTokens: true
+        // @ts-expect-error expected from strictPropertyValues: true
         color: '#fff',
       }),
     )
@@ -106,26 +107,26 @@ describe('css', () => {
   test('important', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictTokens: true
+        // @ts-expect-error expected from strictPropertyValues: true
         fontSize: '2xl!',
-        // @ts-expect-error expected from strictTokens: true
+        // @ts-expect-error expected from strictPropertyValues: true
         p: '4 !important',
-        // @ts-expect-error expected from strictTokens: true
+        // @ts-expect-error expected from strictPropertyValues: true
         bgColor: '#fff!',
-        // @ts-expect-error expected from strictTokens: true
+        // @ts-expect-error expected from strictPropertyValues: true
         borderColor: '#fff !important',
         _hover: {
-          // @ts-expect-error expected from strictTokens: true
+          // @ts-expect-error expected from strictPropertyValues: true
           fontSize: '2xl!',
-          // @ts-expect-error expected from strictTokens: true
+          // @ts-expect-error expected from strictPropertyValues: true
           p: '4 !important',
-          // @ts-expect-error expected from strictTokens: true
+          // @ts-expect-error expected from strictPropertyValues: true
 
           bgColor: '#fff!',
-          // @ts-expect-error expected from strictTokens: true
+          // @ts-expect-error expected from strictPropertyValues: true
           borderColor: '#fff !important',
         },
-        // @ts-expect-error expected from strictTokens: true
+        // @ts-expect-error expected from strictPropertyValues: true
         backgroundColor: {
           _disabled: '2xl!',
           _active: '4 !important',
@@ -140,7 +141,6 @@ describe('css', () => {
     assertType(
       css({
         sm: {
-          // @ts-expect-error expected from strictTokens: true
           bg: 'purple',
         },
       }),
@@ -154,7 +154,7 @@ describe('css', () => {
           'cyan.100',
           'cyan.200',
           null,
-          // @ts-expect-error expected from strictTokens: true
+          // @ts-expect-error expected from strictPropertyValues: true
           undefined,
           'cyan.300',
         ],
@@ -165,7 +165,7 @@ describe('css', () => {
   test('using inline token helper - in value', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictTokens: true
+        // @ts-expect-error expected from strictPropertyValues: true
         border: '1px solid token(colors.blue.400)',
       }),
     )

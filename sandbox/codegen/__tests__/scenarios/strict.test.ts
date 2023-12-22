@@ -1,12 +1,15 @@
 import { assertType, describe, test } from 'vitest'
-import { css } from '../../styled-system-strict-tokens/css'
+import { css } from '../../styled-system-strict/css'
 
 describe('css', () => {
   test('native CSS prop and value', () => {
     assertType(css({ display: 'flex' }))
 
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ display: 'abc' }))
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ content: 'abc' }))
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ willChange: 'abc' }))
 
     assertType(css({ pos: 'absolute' }))

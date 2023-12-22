@@ -309,7 +309,8 @@ interface PropertyValueTypes {
 	y: Shorthand<"translateY">;
 }
 
-type WithArbitraryValue<T> = T
+type WithEscapeHatch<T> = T | `[${string}]`
+type FilterVagueString<T> = T extends boolean ? T : T extends `${infer _}` ? T : never
 type PropOrCondition<T> = ConditionalValue<T | (string & {})>
 
 type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
