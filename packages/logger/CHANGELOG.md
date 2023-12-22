@@ -1,5 +1,11 @@
 # @pandacss/logger
 
+## 0.23.0
+
+### Patch Changes
+
+- bd552b1f: Log stacktrace on error instead of only logging the message
+
 ## 0.22.1
 
 ## 0.22.0

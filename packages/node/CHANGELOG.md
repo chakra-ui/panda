@@ -1,5 +1,31 @@
 # @pandacss/node
 
+## 0.23.0
+
+### Patch Changes
+
+- 1ea7459c: Fix performance issue where process could get slower due to postcss rules held in memory.
+- 383b6d1b: Fix an issue with the postcss plugin when a config change sometimes didn't trigger files extraction
+- 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
+- Updated dependencies [d30b1737]
+- Updated dependencies [1ea7459c]
+- Updated dependencies [80ada336]
+- Updated dependencies [b01eb049]
+- Updated dependencies [a3b6ed5f]
+- Updated dependencies [bd552b1f]
+- Updated dependencies [840ed66b]
+  - @pandacss/generator@0.23.0
+  - @pandacss/core@0.23.0
+  - @pandacss/parser@0.23.0
+  - @pandacss/logger@0.23.0
+  - @pandacss/config@0.23.0
+  - @pandacss/error@0.23.0
+  - @pandacss/extractor@0.23.0
+  - @pandacss/is-valid-prop@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/token-dictionary@0.23.0
+  - @pandacss/types@0.23.0
+
 ## 0.22.1
 
 ### Patch Changes

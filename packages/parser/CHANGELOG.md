@@ -1,5 +1,69 @@
 # @pandacss/parser
 
+## 0.23.0
+
+### Patch Changes
+
+- 80ada336: Automatically extract/generate CSS for `sva` even if `slots` are not statically extractable, since it will
+  only produce atomic styles, we don't care much about slots for `sva` specifically
+
+  Currently the CSS won't be generated if the `slots` are missing which can be problematic when getting them from
+  another file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
+
+  ```ts
+  import { sva } from '../styled-system/css'
+  import { slots } from './slots'
+
+  const card = sva({
+    slots, // ❌ did NOT work -> ✅ will now work as expected
+    base: {
+      root: {
+        p: '6',
+        m: '4',
+        w: 'md',
+        boxShadow: 'md',
+        borderRadius: 'md',
+        _dark: { bg: '#262626', color: 'white' },
+      },
+      content: {
+        textStyle: 'lg',
+      },
+      title: {
+        textStyle: 'xl',
+        fontWeight: 'semibold',
+        pb: '2',
+      },
+    },
+  })
+  ```
+
+- b01eb049: Fix a parser issue where we didn't handle import aliases when using a {xxx}.raw() function.
+
+  ex:
+
+  ```ts
+  // button.stories.ts
+  import { button as buttonRecipe } from '@ui/styled-system/recipes'
+
+  export const Primary: Story = {
+    // ❌ this wouldn't be parsed as a recipe because of the alias + .raw()
+    //  -> ✅ it's now fixed
+    args: buttonRecipe.raw({
+      color: 'primary',
+    }),
+  }
+  ```
+
+- a3b6ed5f: Fix & perf improvement: skip JSX parsing when not using `config.jsxFramework` / skip tagged template literal
+  parsing when not using `config.syntax` set to "template-literal"
+- Updated dependencies [bd552b1f]
+  - @pandacss/logger@0.23.0
+  - @pandacss/config@0.23.0
+  - @pandacss/extractor@0.23.0
+  - @pandacss/is-valid-prop@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/types@0.23.0
+
 ## 0.22.1
 
 ### Patch Changes

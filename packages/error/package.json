@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/error",
-  "version": "0.22.1",
+  "version": "0.23.0",
   "description": "Common error messages for css panda",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "main": "dist/index.js",

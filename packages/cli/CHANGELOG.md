@@ -1,5 +1,31 @@
 # @pandacss/dev
 
+## 0.23.0
+
+### Minor Changes
+
+- 1efc4277: Add support for emit-pkg command to emit just the `package.json` file with the required entrypoints. If an
+  existing `package.json` file is present, the `exports` field will be updated.
+
+  When setting up Panda in a monorepo, this command is useful in monorepo setups where you want the codegen to run only
+  in a dedicated workspace package.
+
+### Patch Changes
+
+- Updated dependencies [1ea7459c]
+- Updated dependencies [383b6d1b]
+- Updated dependencies [bd552b1f]
+- Updated dependencies [840ed66b]
+  - @pandacss/node@0.23.0
+  - @pandacss/logger@0.23.0
+  - @pandacss/postcss@0.23.0
+  - @pandacss/config@0.23.0
+  - @pandacss/error@0.23.0
+  - @pandacss/preset-panda@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/token-dictionary@0.23.0
+  - @pandacss/types@0.23.0
+
 ## 0.22.1
 
 ### Patch Changes
