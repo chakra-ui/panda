@@ -123,7 +123,7 @@ export function createParser(context: ParserOptions) {
 
     const isValidPattern = imports.createMatch(importMap.pattern, patternKeys)
     const isValidRecipe = imports.createMatch(importMap.recipe, recipeKeys)
-    const isValidStyleFn = (name: string) => name === jsx?.factory
+    const isValidStyleFn = (name: string) => name === jsx.factory
     const isFactory = (name: string) => Boolean(isJsxEnabled && name.startsWith(jsxFactoryAlias))
     const isRawFn = (fullName: string) => {
       const name = fullName.split('.raw')[0] ?? ''
@@ -133,10 +133,10 @@ export function createParser(context: ParserOptions) {
     const patternPropertiesByJsxName = new Map<string, Set<string>>()
     const initialPatterns = { string: new Set<string>(), regex: [] as RegExp[] }
     const patternJsxLists = isJsxEnabled
-      ? (jsx?.nodes ?? []).filter(isNodePattern).reduce((acc, pattern) => {
+      ? (jsx.nodes ?? []).filter(isNodePattern).reduce((acc, pattern) => {
           patternPropertiesByJsxName.set(pattern.jsxName, new Set(pattern.props ?? []))
 
-          pattern.jsx?.forEach((jsx) => {
+          pattern.jsx.forEach((jsx) => {
             if (typeof jsx === 'string') {
               acc.string.add(jsx)
             } else if (jsx) {
@@ -170,10 +170,10 @@ export function createParser(context: ParserOptions) {
 
     const initialRecipes = { string: new Set<string>(), regex: [] as RegExp[] }
     const recipeJsxLists = isJsxEnabled
-      ? (jsx?.nodes ?? []).filter(isNodeRecipe).reduce((acc, recipe) => {
+      ? (jsx.nodes ?? []).filter(isNodeRecipe).reduce((acc, recipe) => {
           recipePropertiesByJsxName.set(recipe.jsxName, new Set(recipe.props ?? []))
 
-          recipe.jsx?.forEach((jsx) => {
+          recipe.jsx.forEach((jsx) => {
             if (typeof jsx === 'string') {
               acc.string.add(jsx)
             } else {
@@ -223,19 +223,19 @@ export function createParser(context: ParserOptions) {
             components.has(tagName) ||
             isUpperCase(tagName) ||
             isFactory(tagName) ||
-            isJsxTagRecipe?.(tagName) ||
-            isJsxTagPattern?.(tagName)
+            isJsxTagRecipe(tagName) ||
+            isJsxTagPattern(tagName)
           )
         })
       : noop
 
     const isRecipeOrPatternProp = memo((tagName: string, propName: string) => {
-      if (isJsxEnabled && isJsxTagRecipe?.(tagName)) {
+      if (isJsxEnabled && isJsxTagRecipe(tagName)) {
         const recipeList = getRecipesByJsxName(tagName)
         return recipeList.some((recipe) => recipePropertiesByJsxName.get(recipe.jsxName)?.has(propName))
       }
 
-      if (isJsxEnabled && isJsxTagPattern?.(tagName)) {
+      if (isJsxEnabled && isJsxTagPattern(tagName)) {
         const patternList = getPatternsByJsxName(tagName)
         return patternList.some((pattern) => patternPropertiesByJsxName.get(pattern.jsxName)?.has(propName))
       }
@@ -244,7 +244,7 @@ export function createParser(context: ParserOptions) {
     })
 
     const matchTagProp = isJsxEnabled
-      ? match(jsx?.styleProps)
+      ? match(jsx.styleProps)
           .with('all', () =>
             memo((tagName: string, propName: string) => {
               return (
@@ -277,8 +277,8 @@ export function createParser(context: ParserOptions) {
       ast: sourceFile,
       components: isJsxEnabled
         ? {
-            matchTag: (prop) => !!matchTag?.(prop.tagName),
-            matchProp: (prop) => !!matchTagProp?.(prop.tagName, prop.propName),
+            matchTag: (prop) => !!matchTag(prop.tagName),
+            matchProp: (prop) => !!matchTagProp(prop.tagName, prop.propName),
           }
         : undefined,
       functions: {
@@ -477,7 +477,7 @@ export function createParser(context: ParserOptions) {
             .when(isJsxTagPattern, (jsxName) => {
               parserResult.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
             })
-            .when(isJsxTagRecipe!, (jsxName) => {
+            .when(isJsxTagRecipe, (jsxName) => {
               const recipeList = getRecipesByJsxName(jsxName)
               recipeList.map((recipe) => {
                 parserResult.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })
