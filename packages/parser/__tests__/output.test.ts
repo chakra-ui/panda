@@ -2959,6 +2959,29 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('staticCss.recipe base', () => {
+    const { ctx } = parseAndExtract('', {
+      staticCss: {
+        recipes: {
+          tooltipStyle: [],
+        },
+      },
+    })
+
+    ctx.appendCss('static')
+    const css = ctx.getCss()
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red
+                  }
+          }
+      }"
+    `)
+  })
+
   test('slotRecipes.staticCss', () => {
     const { ctx } = parseAndExtract('', {
       theme: {

@@ -17,21 +17,53 @@ export const generateStaticCss = (ctx: Context) => {
 
   const getResult = getStaticCss(staticCss)
 
+  const getPropertyKeys = (prop: string) => {
+    const propConfig = utility.config[prop]
+    if (!propConfig) return []
+
+    const values = utility.getPropertyValues(propConfig)
+    if (!values) return []
+
+    return Object.keys(values)
+  }
+
   const results = getResult({
     breakpoints: Object.keys(theme.breakpoints ?? {}),
-    getPropertyKeys: (prop: string) => {
-      const propConfig = utility.config[prop]
-      if (!propConfig) return []
-
-      const values = utility.getPropertyValues(propConfig)
-      if (!values) return []
-
-      return Object.keys(values)
-    },
+    getPropertyKeys,
     getRecipeKeys: (recipe) => {
-      const recipeConfig = recipes.details.find((detail) => detail.baseName === recipe)
-      return Object.assign({ __base: recipeConfig?.config.base }, recipeConfig?.variantKeyMap ?? {})
+      return recipes.details.find((detail) => detail.baseName === recipe)?.variantKeyMap ?? {}
     },
+    getPatternPropValues: (patternName, property) => {
+      const patternConfig = ctx.patterns.getConfig(patternName)
+      if (!patternConfig) return []
+
+      const propType = patternConfig.properties?.[property]
+      if (!propType) return
+
+      if (propType.type === 'enum') {
+        return propType.value
+      }
+
+      if (propType.type === 'boolean') {
+        return ['true', 'false']
+      }
+
+      if (propType.type === 'property') {
+        return getPropertyKeys(propType.value || property)
+      }
+
+      if (propType.type === 'token') {
+        const values = ctx.tokens.getValue(propType.value)
+        return Object.keys(values ?? {})
+      }
+    },
+    getPatternKeys: (patternName) => {
+      const details = ctx.patterns.details.find((d) => d.baseName === patternName)
+      if (!details) return
+
+      return details.props ?? []
+    },
+    getPatternTransform: ctx.patterns.transform.bind(ctx.patterns),
   })
 
   results.css.forEach((css) => {
@@ -43,6 +75,12 @@ export const generateStaticCss = (ctx: Context) => {
       const recipeConfig = recipes.getConfig(name)
       if (!recipeConfig) return
       ctx.stylesheet.processRecipe(name, recipeConfig, value)
+    })
+  })
+
+  results.patterns.forEach((result) => {
+    Object.entries(result).forEach(([name, value]) => {
+      ctx.stylesheet.processAtomic({ [name]: value })
     })
   })
 

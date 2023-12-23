@@ -1,19 +1,28 @@
-import type { StaticCssOptions } from '@pandacss/types'
+import type { CssRule, Dict, StaticCssOptions } from '@pandacss/types'
 
-interface StaticContext {
+export interface StaticContext {
   breakpoints: string[]
   getPropertyKeys: (property: string) => string[]
   getRecipeKeys: (recipe: string) => {
     [variant: string]: string[]
   }
+  getPatternPropValues: (patternName: string, propery: string) => string[] | undefined
+  getPatternKeys: (patternName: string) => string[] | undefined
+  getPatternTransform: (name: string, data: Dict) => Dict
+}
+
+interface StaticCssResults {
+  css: Record<string, any>[]
+  recipes: Record<string, any>[]
+  patterns: Record<string, any>[]
 }
 
 const formatCondition = (ctx: StaticContext, value: string) => (ctx.breakpoints.includes(value) ? value : `_${value}`)
 
 export function getStaticCss(options: StaticCssOptions) {
-  const { css = [], recipes = {} } = options
+  const { css = [], recipes = {}, patterns = {} } = options
 
-  const results: { css: Record<string, any>[]; recipes: Record<string, any>[] } = { css: [], recipes: [] }
+  const results: StaticCssResults = { css: [], recipes: [], patterns: [] }
 
   return (ctx: StaticContext) => {
     css.forEach((rule) => {
@@ -23,7 +32,8 @@ export function getStaticCss(options: StaticCssOptions) {
       }
 
       Object.entries(rule.properties).forEach(([property, values]) => {
-        const computedValues = values.flatMap((value) => (value === '*' ? ctx.getPropertyKeys(property) : value))
+        const propKeys = ctx.getPropertyKeys(property)
+        const computedValues = values.flatMap((value) => (value === '*' ? propKeys : value))
 
         computedValues.forEach((value) => {
           const conditionalValues = conditions.reduce(
@@ -43,40 +53,27 @@ export function getStaticCss(options: StaticCssOptions) {
     })
 
     Object.entries(recipes).forEach(([recipe, rules]) => {
+      results.recipes.push({
+        [recipe]: {
+          [recipe]: '__ignore__',
+        },
+      })
+
       rules.forEach((rule) => {
-        const { __base, ...recipeKeys } = ctx.getRecipeKeys(recipe)
+        const recipeKeys = ctx.getRecipeKeys(recipe)
+        if (!recipeKeys) return
+
         const useAllKeys = rule === '*'
-        const { conditions = [], responsive = useAllKeys, ...variants } = useAllKeys ? recipeKeys : rule
+        const { conditions = [], responsive, ...variants } = useAllKeys ? recipeKeys : rule
 
         if (responsive) {
           conditions.push(...ctx.breakpoints)
         }
 
-        if (__base) {
-          const conditionalValues = conditions.reduce(
-            (acc, condition) => ({
-              base: __base,
-              ...acc,
-              [formatCondition(ctx, condition)]: __base,
-            }),
-            {},
-          )
-
-          results.recipes.push({
-            [recipe]: conditions.length ? conditionalValues : __base,
-          })
-        }
-
         Object.entries(variants).forEach(([variant, values]) => {
           if (!Array.isArray(values)) return
 
-          const computedValues = values.flatMap((value) => {
-            if (value === '*') {
-              return recipeKeys[variant]
-            }
-
-            return value
-          })
+          const computedValues = values.flatMap((value) => (value === '*' ? recipeKeys[variant] : value))
 
           computedValues.forEach((value) => {
             const conditionalValues = conditions.reduce(
@@ -89,10 +86,45 @@ export function getStaticCss(options: StaticCssOptions) {
             )
 
             results.recipes.push({
-              [recipe]: {
-                [variant]: conditions.length ? conditionalValues : value,
-              },
+              [recipe]: { [variant]: conditions.length ? conditionalValues : value },
             })
+          })
+        })
+      })
+    })
+
+    Object.entries(patterns).forEach(([pattern, rules]) => {
+      rules.forEach((rule) => {
+        const patternProps = ctx.getPatternKeys(pattern)
+        if (!patternProps) return
+
+        let props = {} as CssRule['properties']
+        const useAllKeys = rule === '*'
+        if (useAllKeys) {
+          props = Object.fromEntries(patternProps.map((key) => [key, ['*']]))
+        }
+
+        const { conditions = [], responsive = false, properties = props } = useAllKeys ? {} : rule
+        if (responsive) {
+          conditions.push(...ctx.breakpoints)
+        }
+
+        Object.entries(properties).forEach(([property, values]) => {
+          const propValues = ctx.getPatternPropValues(pattern, property)
+          const computedValues = values.flatMap((value) => (value === '*' ? propValues : value))
+
+          computedValues.forEach((patternValue) => {
+            const value = ctx.getPatternTransform(pattern, { [property]: patternValue })
+            const conditionalValues = conditions.reduce(
+              (acc, condition) => ({
+                base: value,
+                ...acc,
+                [formatCondition(ctx, condition)]: value,
+              }),
+              {},
+            )
+
+            results.patterns.push(conditions.length ? conditionalValues : value)
           })
         })
       })
