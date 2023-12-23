@@ -2960,7 +2960,7 @@ describe('extract to css output pipeline', () => {
   })
 
   test('staticCss.recipe base', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         recipes: {
           tooltipStyle: [],
@@ -2968,8 +2968,8 @@ describe('extract to css output pipeline', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {

@@ -1637,7 +1637,7 @@ describe('preset patterns', () => {
 
 describe('staticCss', () => {
   test('type: number', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         patterns: {
           // type: 'number'
@@ -1646,8 +1646,8 @@ describe('staticCss', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -1719,7 +1719,7 @@ describe('staticCss', () => {
   })
 
   test('type: number + conditions', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         patterns: {
           // type: 'number'
@@ -1728,8 +1728,8 @@ describe('staticCss', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -1877,7 +1877,7 @@ describe('staticCss', () => {
   })
 
   test('type: token', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         patterns: {
           // type: 'token'
@@ -1886,8 +1886,8 @@ describe('staticCss', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -1915,7 +1915,7 @@ describe('staticCss', () => {
   })
 
   test('type: property', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         patterns: {
           // type: 'property'
@@ -1924,8 +1924,8 @@ describe('staticCss', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -1977,7 +1977,7 @@ describe('staticCss', () => {
   })
 
   test('type: property *', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         patterns: {
           // type: 'property'
@@ -1986,8 +1986,8 @@ describe('staticCss', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -2287,7 +2287,7 @@ describe('staticCss', () => {
   })
 
   test('type: enum', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         patterns: {
           // type: 'enum' + type: 'token'
@@ -2296,8 +2296,8 @@ describe('staticCss', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -2549,7 +2549,7 @@ describe('staticCss', () => {
   })
 
   test('type: enum *', () => {
-    const { generator } = parseAndExtract('', {
+    const { ctx } = parseAndExtract('', {
       staticCss: {
         patterns: {
           // type: 'enum' + type: 'token'
@@ -2558,8 +2558,8 @@ describe('staticCss', () => {
       },
     })
 
-    generator.appendCss('static')
-    const css = generator.getCss()
+    ctx.appendCss('static')
+    const css = ctx.getCss()
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
