@@ -1,5 +1,5 @@
 import * as pandaDefs from '@pandacss/dev'
-import { Dict } from '@pandacss/types'
+import { Config, Dict } from '@pandacss/types'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -7,7 +7,7 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-export const evalConfig = (config: string, _scope?: Dict) => {
+export const evalConfig = (config: string, _scope?: Dict): Config | null => {
   const codeTrimmed = config
     .replace(/export /g, '')
     .replace(/\bimport\b[^;]+;/g, '')

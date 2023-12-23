@@ -5,7 +5,7 @@ import { Generator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
-import { Config, Preset, StaticCssOptions } from '@pandacss/types'
+import { Preset, StaticCssOptions } from '@pandacss/types'
 import { createHooks } from 'hookable'
 import { merge } from 'merge-anything'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -54,7 +54,7 @@ const playgroundPreset: Preset = {
 
 export function usePanda(state: State) {
   const { code: source, css, config } = state
-  const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
+  const [userConfig, setUserConfig] = useState(evalConfig(config))
   const previousContext = useRef<Generator | null>(null)
   const compileWorkerRef = useRef<Worker>()
 

@@ -21,8 +21,8 @@ const require = async (module: string) => {
 }
 
 addEventListener('message', async (event: MessageEvent<string>) => {
-  const config = event.data
-  const imports = extractImports(config)
+  const _config = event.data
+  const imports = extractImports(_config)
 
   const modules = await Promise.all(
     imports.map(async (_mod) => {
@@ -37,6 +37,18 @@ addEventListener('message', async (event: MessageEvent<string>) => {
 
   const scope = modules.flat().reduce((acc, cur) => Object.assign({}, acc, cur), {})
 
-  const newUserConfig = evalConfig(config, scope)
-  postMessage(JSON.stringify(newUserConfig))
+  const newConfig = evalConfig(_config, scope)
+  const _presets = newConfig?.presets?.filter(Boolean) ?? []
+  const presets = await Promise.all(
+    _presets.map(async (_preset) => {
+      if (typeof _preset !== 'string') return _preset
+
+      const preset = await require(_preset)
+      return preset.default
+    }),
+  )
+
+  const config = Object.assign({}, newConfig, presets.length ? { presets } : {})
+  console.log('conf', config)
+  postMessage(JSON.stringify(config))
 })
