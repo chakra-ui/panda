@@ -1,6 +1,6 @@
 import { State } from '@/src/hooks/usePlayground'
+import { evalConfig } from '@/src/lib/compile-config/eval-config'
 import { getResolvedConfig } from '@/src/lib/resolve-config'
-import * as pandaDefs from '@pandacss/dev'
 import { Generator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
@@ -9,26 +9,6 @@ import { Config, Preset, StaticCssOptions } from '@pandacss/types'
 import { createHooks } from 'hookable'
 import { merge } from 'merge-anything'
 import { useEffect, useMemo, useRef, useState } from 'react'
-
-const evalCode = (code: string, scope: Record<string, unknown>) => {
-  const scopeKeys = Object.keys(scope)
-  const scopeValues = scopeKeys.map((key) => scope[key])
-  return new Function(...scopeKeys, code)(...scopeValues)
-}
-
-const evalConfig = (config: string) => {
-  const codeTrimmed = config
-    .replaceAll(/export /g, '')
-    .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
-    .trim()
-    .replace(/;$/, '')
-
-  try {
-    return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
-  } catch (e) {
-    return null
-  }
-}
 
 const playgroundPreset: Preset = {
   theme: {
@@ -76,10 +56,22 @@ export function usePanda(state: State) {
   const { code: source, css, config } = state
   const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
   const previousContext = useRef<Generator | null>(null)
+  const compileWorkerRef = useRef<Worker>()
 
   useEffect(() => {
-    const newUserConfig = evalConfig(config)
-    if (newUserConfig) setUserConfig(newUserConfig)
+    compileWorkerRef.current = new Worker(new URL('../lib/compile-config/compile-worker.ts', import.meta.url))
+    compileWorkerRef.current.onmessage = (event: MessageEvent<string>) => {
+      const newUserConfig = JSON.parse(event.data)
+      if (newUserConfig) setUserConfig(newUserConfig)
+    }
+
+    return () => {
+      compileWorkerRef.current?.terminate()
+    }
+  }, [])
+
+  useEffect(() => {
+    compileWorkerRef.current?.postMessage(config)
   }, [config])
 
   const context = useMemo(() => {
