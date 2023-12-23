@@ -27,6 +27,12 @@
     "dist"
   ],
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/node"
+  },
   "publishConfig": {
     "access": "public"
   },

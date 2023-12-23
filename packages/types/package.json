@@ -18,6 +18,12 @@
     "build": "PANDA_BUILD=1 tsx scripts/postbuild.ts && tsx scripts/build.ts"
   },
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/types"
+  },
   "publishConfig": {
     "access": "public"
   },

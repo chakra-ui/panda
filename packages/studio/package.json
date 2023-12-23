@@ -6,6 +6,12 @@
   "module": "dist/studio.mjs",
   "types": "dist/studio.d.ts",
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/studio"
+  },
   "publishConfig": {
     "access": "public"
   },
