@@ -1,4 +1,4 @@
-import { FormatCode, WrapText } from '@/src/components/icons'
+import { FormatCode, LoaderIcon, WrapText } from '@/src/components/icons'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
@@ -69,6 +69,16 @@ export const Editor = (props: PandaEditorProps) => {
           ))}
 
           <div className={css({ ml: 'auto', display: 'flex', gap: '0.5' })}>
+            <button
+              hidden={!props.isLoading}
+              className={cx(
+                actionButton(),
+                css({ bg: 'transparent!', animation: 'spin', _hidden: { display: 'none' } }),
+              )}
+              data-active
+            >
+              <LoaderIcon />
+            </button>
             <button
               className={actionButton()}
               title="Toggle word wrap (Alt + Z)"

@@ -16,10 +16,11 @@ export type PreviewProps = {
   panda: UsePanda
   responsiveView: UseResponsiveView
   isConfigReady: boolean
+  error: Error | null
 }
 
 export const Preview = (props: PreviewProps) => {
-  const { source, isResponsive, responsiveView, panda, isConfigReady } = props
+  const { source, isResponsive, responsiveView, panda, isConfigReady, error } = props
   const { previewCss = '', previewJs } = panda
 
   const isClient = useIsClient()
@@ -75,9 +76,9 @@ export const Preview = (props: PreviewProps) => {
     const transformed = `${previewJs.replaceAll(/export /g, '')}\n${source
       .replaceAll(/(?<!!)import.*/g, '')
       .concat(`\nrender(<${defaultExportName} />)`)}`
-
+    const errorThrow = error ? `throw new Error("${error.message}");\n` : ''
     const contents = (
-      <LiveProvider code={transformed} scope={React}>
+      <LiveProvider code={errorThrow + transformed} scope={React}>
         <LiveError />
         <LivePreview />
       </LiveProvider>

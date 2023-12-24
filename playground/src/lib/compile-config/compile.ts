@@ -12,7 +12,12 @@ export const compile = async (_config: string) => {
       throw new Error("The argument 'id' must be a non-empty string. Received ''")
     }
     const href = 'https://cdn.skypack.dev/' + module + '?min'
-    const res = await importShim(href)
+    let res: any
+    try {
+      res = await importShim(href)
+    } catch (error) {
+      throw new Error("Failed to fetch module '" + module + "'")
+    }
 
     return res
   }

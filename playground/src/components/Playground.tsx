@@ -37,7 +37,7 @@ export const Playground = (props: UsePlayGroundProps) => {
 
   const _state = props.diffState ?? state
 
-  const { config } = useConfig(_state.config)
+  const { config, isLoading, error } = useConfig(_state.config)
   const panda = usePanda(_state, config)
   const responsiveView = useResponsiveView(panda)
 
@@ -121,6 +121,7 @@ export const Playground = (props: UsePlayGroundProps) => {
                   recipes: Array.from(panda.context.recipes.rules.keys()),
                 }}
                 diffState={diffState}
+                isLoading={isLoading}
               />
             </SplitterPanel>
 
@@ -137,6 +138,7 @@ export const Playground = (props: UsePlayGroundProps) => {
             responsiveView={responsiveView}
             isResponsive={isResponsive}
             isConfigReady={!!config}
+            error={error}
           />
         </SplitterPanel>
       </Splitter>

@@ -23,6 +23,7 @@ export interface PandaEditorProps {
   onChange: (state: State) => void
   artifacts: Artifact[]
   context: AutoImportContext
+  isLoading: boolean
   diffState?: State | null
 }
 
