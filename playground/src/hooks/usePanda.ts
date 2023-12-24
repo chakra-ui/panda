@@ -5,7 +5,7 @@ import { Generator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
-import { Preset, StaticCssOptions } from '@pandacss/types'
+import { Config, Preset, StaticCssOptions } from '@pandacss/types'
 import { createHooks } from 'hookable'
 import { merge } from 'merge-anything'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -54,14 +54,14 @@ const playgroundPreset: Preset = {
 
 export function usePanda(state: State) {
   const { code: source, css, config } = state
-  const [userConfig, setUserConfig] = useState(evalConfig(config))
+  const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
   const previousContext = useRef<Generator | null>(null)
   const compileWorkerRef = useRef<Worker>()
 
   useEffect(() => {
     compileWorkerRef.current = new Worker(new URL('../lib/compile-config/compile-worker.ts', import.meta.url))
-    compileWorkerRef.current.onmessage = (event: MessageEvent<string>) => {
-      const newUserConfig = JSON.parse(event.data)
+    compileWorkerRef.current.onmessage = (event: MessageEvent<{ config: string }>) => {
+      const newUserConfig = JSON.parse(event.data.config)
       if (newUserConfig) setUserConfig(newUserConfig)
     }
 
@@ -75,7 +75,7 @@ export function usePanda(state: State) {
   }, [config])
 
   const context = useMemo(() => {
-    const { presets, ...restConfig } = userConfig ?? {}
+    const { presets, ...restConfig } = userConfig
 
     const config = getResolvedConfig({
       cwd: '',

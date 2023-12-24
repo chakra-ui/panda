@@ -79,6 +79,10 @@ export function useEditor(props: PandaEditorProps) {
 
   const [wordWrap, setWordwrap] = useState<'on' | 'off'>('off')
 
+  const refreshModel = () => {
+    monacoEditorRef.current?.getModel()?.setValue(value[activeTab])
+  }
+
   const onToggleWrap = useCallback(() => {
     setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
   }, [])
@@ -97,7 +101,6 @@ export function useEditor(props: PandaEditorProps) {
           editor.trigger('editor', 'editor.action.formatDocument', undefined)
         })
         editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
-          // const wrapState = editor.getOption(monaco.editor.EditorOption.wordWrap)
           onToggleWrap()
         })
       }
@@ -205,6 +208,7 @@ export function useEditor(props: PandaEditorProps) {
 
   useUpdateEffect(() => {
     setupLibs(monacoRef.current!)
+    refreshModel()
   }, [artifacts])
 
   return {

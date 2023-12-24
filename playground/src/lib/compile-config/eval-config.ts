@@ -15,7 +15,9 @@ export const evalConfig = (config: string, _scope?: Dict): Config | null => {
 
   try {
     const scope = Object.assign({}, pandaDefs, _scope)
-    return evalCode(`return (() => {${codeTrimmed}; return config})()`, scope)
+    const config = evalCode(`return (() => {${codeTrimmed}; return config})()`, scope)
+    if (!_scope) delete config.presets
+    return config
   } catch (e) {
     return null
   }
