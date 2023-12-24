@@ -15,10 +15,11 @@ export type PreviewProps = {
   isResponsive: boolean
   panda: UsePanda
   responsiveView: UseResponsiveView
+  isConfigReady: boolean
 }
 
 export const Preview = (props: PreviewProps) => {
-  const { source, isResponsive, responsiveView, panda } = props
+  const { source, isResponsive, responsiveView, panda, isConfigReady } = props
   const { previewCss = '', previewJs } = panda
 
   const isClient = useIsClient()
@@ -56,8 +57,18 @@ export const Preview = (props: PreviewProps) => {
   } as const
 
   function renderContent() {
-    if (!isReady) {
-      return null
+    const doc = contentRef?.contentDocument
+    if (!isReady || !isConfigReady) {
+      return [
+        doc?.head &&
+          createPortal(
+            <style>{`  body.dark,
+      .dark body {
+        background: #2c2c2c;
+      }`}</style>,
+            doc.head,
+          ),
+      ]
     }
 
     const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
@@ -71,8 +82,6 @@ export const Preview = (props: PreviewProps) => {
         <LivePreview />
       </LiveProvider>
     )
-
-    const doc = contentRef?.contentDocument
 
     return [
       doc?.head && createPortal(<style>{previewCss}</style>, doc.head),

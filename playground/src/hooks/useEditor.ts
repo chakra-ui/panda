@@ -79,10 +79,6 @@ export function useEditor(props: PandaEditorProps) {
 
   const [wordWrap, setWordwrap] = useState<'on' | 'off'>('off')
 
-  const refreshModel = () => {
-    monacoEditorRef.current?.getModel()?.setValue(value[activeTab])
-  }
-
   const onToggleWrap = useCallback(() => {
     setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
   }, [])
@@ -208,7 +204,6 @@ export function useEditor(props: PandaEditorProps) {
 
   useUpdateEffect(() => {
     setupLibs(monacoRef.current!)
-    refreshModel()
   }, [artifacts])
 
   return {
