@@ -1,8 +1,13 @@
+import { evalConfig } from '@/src/lib/compile-config/eval-config'
+import { extractImports } from '@/src/lib/compile-config/extract-imports'
 import { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
 
 export const useConfig = (_config: string) => {
-  const [config, setConfig] = useState<Config | null>(null)
+  const imports = extractImports(_config)
+  const initialConfig = imports.length ? null : evalConfig(_config)
+
+  const [config, setConfig] = useState<Config | null>(initialConfig)
   const [isLoading, setIsLoading] = useState(true)
 
   const compileWorkerRef = useRef<Worker>()
