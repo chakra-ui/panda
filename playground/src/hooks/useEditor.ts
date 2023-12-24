@@ -91,7 +91,6 @@ export function useEditor(props: PandaEditorProps) {
   const configureEditor: OnMount = useCallback(
     (editor, monaco) => {
       activateMonacoJSXHighlighter(editor, monaco)
-      configureAutoImports({ context, monaco, editor })
 
       function registerKeybindings() {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -126,7 +125,7 @@ export function useEditor(props: PandaEditorProps) {
         typeRoots: ['node_modules/@types'],
       })
     },
-    [onToggleWrap, context],
+    [onToggleWrap],
   )
 
   const setupLibs = useCallback(
@@ -164,6 +163,7 @@ export function useEditor(props: PandaEditorProps) {
 
       configureEditor(editor, monaco)
       setupLibs(monaco)
+      configureAutoImports({ context, monaco, editor })
 
       const typeSources = [
         {
@@ -206,6 +206,14 @@ export function useEditor(props: PandaEditorProps) {
   useUpdateEffect(() => {
     setupLibs(monacoRef.current!)
   }, [artifacts])
+
+  useUpdateEffect(() => {
+    const autoImport = configureAutoImports({ context, monaco: monacoRef.current!, editor: monacoEditorRef.current! })
+
+    return () => {
+      autoImport?.dispose()
+    }
+  }, [context])
 
   return {
     activeTab,
