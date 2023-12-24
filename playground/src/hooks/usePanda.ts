@@ -75,7 +75,7 @@ export function usePanda(state: State) {
   }, [config])
 
   const context = useMemo(() => {
-    const { presets, ...restConfig } = userConfig
+    const { presets, ...restConfig } = userConfig ?? {}
 
     const config = getResolvedConfig({
       cwd: '',

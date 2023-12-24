@@ -2,7 +2,6 @@
 
 import { HookKeys, Hookable } from 'hookable';
 import { TSConfig } from 'pkg-types';
-import * as ts_morph from 'ts-morph';
 import { Node } from 'ts-morph';
 
 export interface WithNode {
