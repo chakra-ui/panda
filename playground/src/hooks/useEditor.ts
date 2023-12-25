@@ -138,20 +138,17 @@ export function useEditor(props: PandaEditorProps) {
     [onToggleWrap, autoImportCtx],
   )
 
-  const setupLibs = useCallback(
-    (monaco: Parameters<OnMount>[1]) => {
-      const libs = artifacts.flatMap((artifact) => {
-        if (!artifact) return []
-        return artifact.files.map((file) => ({
-          filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
-          content: file.code ?? '',
-        }))
-      })
+  const setupLibs = (monaco: Parameters<OnMount>[1]) => {
+    const libs = artifacts.flatMap((artifact) => {
+      if (!artifact) return []
+      return artifact.files.map((file) => ({
+        filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
+        content: file.code ?? '',
+      }))
+    })
 
-      return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
-    },
-    [artifacts],
-  )
+    return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
+  }
 
   const getPandaTypes = useCallback(async () => {}, [])
 
@@ -196,7 +193,7 @@ export function useEditor(props: PandaEditorProps) {
       })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [configureEditor, setupLibs, getPandaTypes],
+    [configureEditor, getPandaTypes],
   )
 
   const onCodeEditorChange = (content: Parameters<OnChange>[0]) => {

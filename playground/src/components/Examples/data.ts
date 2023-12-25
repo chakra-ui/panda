@@ -11,24 +11,20 @@ export const EXAMPLES = [
   {
     id: 'css',
     label: 'Writing styles (css)',
-    code: outdent`import { css } from 'styled-system/css';
-    import { center } from 'styled-system/patterns';
+    code: outdent`import { center } from 'styled-system/patterns';
+    import { button, alert, alertTitle, alertDescription } from 'styled-system/recipes';
     
     export const App = () => {
       return (
-        <div className={center({ h: 'full' })}>
-          <div
-            className={css({
-              display: 'flex',
-              flexDirection: 'column',
-              fontWeight: 'semibold',
-              color: 'yellow.300',
-              textAlign: 'center',
-              textStyle: '4xl',
-            })}
-          >
-            <span>🐼</span>
-            <span>Hello from Panda</span>
+        <div className={center({ h: 'full', flexDir: "column", gap: '2', p: "2" })}>
+          <div className={button()}>
+            <span>Shadow Panda Button</span>
+          </div>
+          <div className={alert()}>
+            <div className={alertTitle()}>Alert!</div>
+            <div className={alertDescription()}>
+              A shadow panda alert
+            </div>
           </div>
         </div>
       );

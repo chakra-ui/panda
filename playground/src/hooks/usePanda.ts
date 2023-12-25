@@ -1,5 +1,5 @@
 import { State } from '@/src/hooks/usePlayground'
-import { getResolvedConfig } from '@/src/lib/resolve-config'
+import { getResolvedConfig } from '@/src/lib/config/resolve-config'
 import { Generator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'

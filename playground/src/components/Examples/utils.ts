@@ -19,6 +19,7 @@ export const getConfig = (
   ${otherCode ?? ''}
   
   export const config = defineConfig({
+      presets: ["@shadow-panda/preset"],
       ${config ?? ''}${config?.endsWith(',') ? '' : ','}
       globalCss: {
         html: {
