@@ -1438,8 +1438,8 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       react-fast-marquee:
-        specifier: 1.6.0
-        version: 1.6.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 1.6.2
+        version: 1.6.2(react-dom@18.2.0)(react@18.2.0)
       scroll-into-view-if-needed:
         specifier: 3.0.10
         version: 3.0.10
@@ -27242,8 +27242,8 @@ packages:
     resolution: {integrity: sha512-/6UZ2qgEyH2aqzYZgQPxEnz33NJ2gNsnHA2o5+o4wW9bLM/JYQitNP9xPhsXwC08hMMovfGe/8retsdDsczPRg==}
     dev: false
 
-  /react-fast-marquee@1.6.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-jtuwT9SNjrqxnE7lGZ8mTL1I8Q4+9G4aBta2p+y2Pa3SjR17QROblwrLICyM8rbjQFHgHawTHcaH9HvoVO2NOA==}
+  /react-fast-marquee@1.6.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-bXUuW1r+Yzd8ZjsPmMDy8WJMubHAZd/7n0W/IzUQHtd0iBfxWohP6hzCFnEHWMCOtC9wxSAq/BiEnig4kdI2Vw==}
     peerDependencies:
       react: '>= 16.8.0 || 18.0.0'
       react-dom: '>= 16.8.0 || 18.0.0'
