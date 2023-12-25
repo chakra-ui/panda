@@ -138,17 +138,20 @@ export function useEditor(props: PandaEditorProps) {
     [onToggleWrap, autoImportCtx],
   )
 
-  const setupLibs = (monaco: Parameters<OnMount>[1]) => {
-    const libs = artifacts.flatMap((artifact) => {
-      if (!artifact) return []
-      return artifact.files.map((file) => ({
-        filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
-        content: file.code ?? '',
-      }))
-    })
+  const setupLibs = useCallback(
+    (monaco: Parameters<OnMount>[1]) => {
+      const libs = artifacts.flatMap((artifact) => {
+        if (!artifact) return []
+        return artifact.files.map((file) => ({
+          filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
+          content: file.code ?? '',
+        }))
+      })
 
-    return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
-  }
+      return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
+    },
+    [artifacts],
+  )
 
   const getPandaTypes = useCallback(async () => {}, [])
 
