@@ -17,8 +17,9 @@ export const getConfig = (
   return formatText(`${imports ?? ''}
 
   ${otherCode ?? ''}
-  
+
   export const config = defineConfig({
+    presets: ["@pandacss/preset-panda", "@shadow-panda/preset"],
       ${config ?? ''}${config?.endsWith(',') ? '' : ','}
       globalCss: {
         html: {
