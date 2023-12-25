@@ -14,6 +14,7 @@ import { Examples } from '@/src/components/Examples'
 import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 import { GitCompareArrowsIcon } from '@/src/components/icons'
 import { flex } from '@/styled-system/patterns'
+import { useConfig } from '@/src/hooks/useConfig'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const {
@@ -33,7 +34,11 @@ export const Playground = (props: UsePlayGroundProps) => {
     isResponsive,
     setExample,
   } = usePlayground(props)
-  const panda = usePanda(props.diffState ?? state)
+
+  const _state = diffState ?? state
+
+  const { config, error } = useConfig(_state.config)
+  const panda = usePanda(_state, config)
   const responsiveView = useResponsiveView(panda)
 
   return (
@@ -117,7 +122,13 @@ export const Playground = (props: UsePlayGroundProps) => {
           <div />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
-          <Preview source={state.code} panda={panda} responsiveView={responsiveView} isResponsive={isResponsive} />
+          <Preview
+            source={state.code}
+            panda={panda}
+            responsiveView={responsiveView}
+            isResponsive={isResponsive}
+            error={error}
+          />
         </SplitterPanel>
       </Splitter>
     </>
