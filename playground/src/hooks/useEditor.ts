@@ -3,7 +3,6 @@ import { OnMount, OnChange, BeforeMount, EditorProps, Monaco } from '@monaco-edi
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
 
-import { Artifact } from '@pandacss/types'
 import { State } from './usePlayground'
 
 import { pandaTheme } from '../lib/gruvbox-theme'
@@ -17,12 +16,12 @@ import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
-import { AutoImportContext, configureAutoImports } from '../lib/auto-import'
+import { configureAutoImports } from '../lib/auto-import'
+import { UsePanda } from '@/src/hooks/usePanda'
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
-  artifacts: Artifact[]
-  context: AutoImportContext
+  panda: UsePanda
   isLoading: boolean
   diffState?: State | null
 }
@@ -68,7 +67,14 @@ const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) =
 }
 
 export function useEditor(props: PandaEditorProps) {
-  const { onChange, value, artifacts, context } = props
+  const { onChange, value, panda } = props
+  const { artifacts } = panda
+
+  const context = {
+    patterns: panda.context.patterns.details,
+    recipes: Array.from(panda.context.recipes.rules.keys()),
+  }
+
   const { resolvedTheme } = useTheme()
 
   const searchParams = useSearchParams()
@@ -138,9 +144,7 @@ export function useEditor(props: PandaEditorProps) {
         }))
       })
 
-      for (const lib of libs) {
-        monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath)
-      }
+      return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
     },
     [artifacts],
   )
@@ -163,6 +167,8 @@ export function useEditor(props: PandaEditorProps) {
 
       configureEditor(editor, monaco)
       setupLibs(monaco)
+      refreshModel()
+
       configureAutoImports({ context, monaco, editor })
 
       const typeSources = [
@@ -203,8 +209,18 @@ export function useEditor(props: PandaEditorProps) {
     monacoEditorRef.current?.getAction('editor.action.formatDocument')?.run()
   }
 
+  const refreshModel = () => {
+    monacoEditorRef.current?.getModel()?.setValue(value[activeTab])
+  }
+
   useUpdateEffect(() => {
-    setupLibs(monacoRef.current!)
+    const libsSetup = setupLibs(monacoRef.current!)
+    refreshModel()
+    return () => {
+      for (const lib of libsSetup) {
+        lib?.dispose()
+      }
+    }
   }, [artifacts])
 
   useUpdateEffect(() => {

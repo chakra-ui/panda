@@ -15,12 +15,11 @@ export type PreviewProps = {
   isResponsive: boolean
   panda: UsePanda
   responsiveView: UseResponsiveView
-  isConfigReady: boolean
   error: Error | null
 }
 
 export const Preview = (props: PreviewProps) => {
-  const { source, isResponsive, responsiveView, panda, isConfigReady, error } = props
+  const { source, isResponsive, responsiveView, panda, error } = props
   const { previewCss = '', previewJs } = panda
 
   const isClient = useIsClient()
@@ -59,7 +58,7 @@ export const Preview = (props: PreviewProps) => {
 
   function renderContent() {
     const doc = contentRef?.contentDocument
-    if (!isReady || !isConfigReady) {
+    if (!isReady) {
       return [
         doc?.head &&
           createPortal(
