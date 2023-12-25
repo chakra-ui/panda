@@ -1,9 +1,8 @@
 import { OnMount, OnChange, BeforeMount, EditorProps, Monaco } from '@monaco-editor/react'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
 
-import { Artifact } from '@pandacss/types'
 import { State } from './usePlayground'
 
 import { pandaTheme } from '../lib/gruvbox-theme'
@@ -17,12 +16,12 @@ import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
-import { AutoImportContext, configureAutoImports } from '../lib/auto-import'
+import { configureAutoImports } from '../lib/auto-import'
+import { UsePanda } from '@/src/hooks/usePanda'
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
-  artifacts: Artifact[]
-  context: AutoImportContext
+  panda: UsePanda
   diffState?: State | null
 }
 
@@ -67,7 +66,10 @@ const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) =
 }
 
 export function useEditor(props: PandaEditorProps) {
-  const { onChange, value, artifacts, context } = props
+  const { onChange, value, panda } = props
+
+  const { artifacts, context } = panda
+
   const { resolvedTheme } = useTheme()
 
   const searchParams = useSearchParams()
@@ -87,10 +89,17 @@ export function useEditor(props: PandaEditorProps) {
     monacoEditorRef.current?.updateOptions({ wordWrap })
   }, [wordWrap])
 
+  const autoImportCtx = useMemo(() => {
+    return {
+      patterns: context.patterns.details,
+      recipes: Array.from(context.recipes.rules.keys()),
+    }
+  }, [context])
+
   const configureEditor: OnMount = useCallback(
     (editor, monaco) => {
       activateMonacoJSXHighlighter(editor, monaco)
-      configureAutoImports({ context, monaco, editor })
+      configureAutoImports({ context: autoImportCtx, monaco, editor })
 
       function registerKeybindings() {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -126,7 +135,7 @@ export function useEditor(props: PandaEditorProps) {
         typeRoots: ['node_modules/@types'],
       })
     },
-    [onToggleWrap, context],
+    [onToggleWrap, autoImportCtx],
   )
 
   const setupLibs = useCallback(
@@ -139,9 +148,7 @@ export function useEditor(props: PandaEditorProps) {
         }))
       })
 
-      for (const lib of libs) {
-        monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath)
-      }
+      return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
     },
     [artifacts],
   )
@@ -204,8 +211,26 @@ export function useEditor(props: PandaEditorProps) {
   }
 
   useUpdateEffect(() => {
-    setupLibs(monacoRef.current!)
+    const libsSetup = setupLibs(monacoRef.current!)
+
+    return () => {
+      for (const lib of libsSetup) {
+        lib?.dispose()
+      }
+    }
   }, [artifacts])
+
+  useUpdateEffect(() => {
+    const autoImports = configureAutoImports({
+      context: autoImportCtx,
+      monaco: monacoRef.current!,
+      editor: monacoEditorRef.current!,
+    })
+
+    return () => {
+      autoImports?.dispose()
+    }
+  }, [context])
 
   return {
     activeTab,

@@ -23,7 +23,7 @@ interface ImportObject {
 export const configureAutoImports = (opts: AutoImportOpts) => {
   const { monaco, editor, context } = opts
 
-  monaco.languages.registerCompletionItemProvider('typescript', {
+  return monaco?.languages.registerCompletionItemProvider('typescript', {
     provideCompletionItems(model, position) {
       const word = model.getWordUntilPosition(position)
       const range = {
