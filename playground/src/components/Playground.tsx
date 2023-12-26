@@ -36,8 +36,6 @@ export const Playground = (props: UsePlayGroundProps) => {
   const panda = usePanda(props.diffState ?? state)
   const responsiveView = useResponsiveView(panda)
 
-  const { artifacts } = panda
-
   return (
     <>
       <Toolbar>
@@ -109,16 +107,7 @@ export const Playground = (props: UsePlayGroundProps) => {
             className={splitter()}
           >
             <SplitterPanel id="editor">
-              <Editor
-                value={state}
-                onChange={setState}
-                artifacts={artifacts}
-                context={{
-                  patterns: panda.context.patterns.details,
-                  recipes: Array.from(panda.context.recipes.rules.keys()),
-                }}
-                diffState={diffState}
-              />
+              <Editor value={state} onChange={setState} panda={panda} diffState={diffState} />
             </SplitterPanel>
 
             <ArtifactsPanel panda={panda} />
