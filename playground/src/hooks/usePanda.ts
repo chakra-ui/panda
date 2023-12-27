@@ -1,10 +1,10 @@
 import { usePandaContext } from '@/src/hooks/usePandaContext'
 import { State } from '@/src/hooks/usePlayground'
+import { PlaygroundConfig } from '@/src/lib/config/eval-config'
 import { createProject } from '@pandacss/parser'
-import { Config } from '@pandacss/types'
 import { useMemo } from 'react'
 
-export function usePanda(state: State, config: Config | null) {
+export function usePanda(state: State, config: PlaygroundConfig | null) {
   const { code: source, css } = state
 
   const context = usePandaContext(config)

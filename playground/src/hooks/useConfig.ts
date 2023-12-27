@@ -1,10 +1,9 @@
-import { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
-import { evalConfig } from '@/src/lib/config/eval-config'
+import { PlaygroundConfig, evalConfig } from '@/src/lib/config/eval-config'
 import { useUpdateEffect } from 'usehooks-ts'
 
 export const useConfig = (_config: string) => {
-  const [config, setConfig] = useState<Config | null>(evalConfig(_config))
+  const [config, setConfig] = useState<PlaygroundConfig | null>(evalConfig(_config))
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)

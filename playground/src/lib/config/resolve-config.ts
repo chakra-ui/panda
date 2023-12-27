@@ -1,12 +1,13 @@
-import type { Config, Preset } from '@pandacss/types'
+import type { Config } from '@pandacss/types'
 import { mergeConfigs } from '@pandacss/config/merge'
+import { PlaygroundConfig } from '@/src/lib/config/eval-config'
 
 type Extendable<T> = T & { extend?: T }
 type ExtendableConfig = Extendable<Config>
 
 /**
  * Recursively merge all presets into a single config
- * PLayground won't be able to handle bundling presets
+ * Playground won't be able to handle bundling presets
  */
 export function getResolvedConfig(config: ExtendableConfig) {
   const presets = config.presets ?? []
@@ -15,7 +16,7 @@ export function getResolvedConfig(config: ExtendableConfig) {
   while (presets.length > 0) {
     const preset = presets.shift()!
 
-    if (!isPlaygroundPreset(preset)) {
+    if (typeof preset === 'string') {
       console.error(`Invalid preset: ${preset}`)
       return
     }
@@ -32,9 +33,5 @@ export function getResolvedConfig(config: ExtendableConfig) {
   }
 
   configs.unshift(config)
-  return mergeConfigs(configs) as Config
-}
-
-function isPlaygroundPreset(preset: string | Preset | Promise<Preset>): preset is Preset | Promise<Preset> {
-  return typeof preset !== 'string'
+  return mergeConfigs(configs) as PlaygroundConfig
 }

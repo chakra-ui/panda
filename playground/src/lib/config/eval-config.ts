@@ -1,5 +1,7 @@
 import * as pandaDefs from '@pandacss/dev'
-import { Config, Dict } from '@pandacss/types'
+import { Config, Dict, Preset } from '@pandacss/types'
+
+export type PlaygroundConfig = Config & { presets: Preset[] }
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -7,7 +9,7 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-export const evalConfig = (config: string, _scope?: Dict): Config | null => {
+export const evalConfig = (config: string, _scope?: Dict): PlaygroundConfig | null => {
   const codeTrimmed = config
     .replace(/export /g, '')
     .replace(/\bimport\b[^;]+;/g, '')
