@@ -5,7 +5,7 @@ import { merge } from 'merge-anything'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
 import { createHooks } from 'hookable'
-import { getResolvedConfig } from '@/src/lib/resolve-config'
+import { getResolvedConfig } from '@/src/lib/config/resolve-config'
 
 export const usePandaContext = (_config: Config | null) => {
   const previousContext = useRef<Generator | null>(null)
