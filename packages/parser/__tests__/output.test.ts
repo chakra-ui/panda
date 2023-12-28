@@ -2955,6 +2955,7 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
+
           .textStyle {
             font-family: var(--fonts-mono);
       }
@@ -3053,11 +3054,12 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
-          .someRecipe__container {
+
+          .button__container {
             font-family: var(--fonts-mono)
       }
 
-          .someRecipe__icon {
+          .button__icon {
             font-size: 1.5rem
       }
       }

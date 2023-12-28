@@ -374,7 +374,7 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@pandacss/is-valid-prop':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../is-valid-prop
       '@pandacss/logger':
         specifier: workspace:*
@@ -450,9 +450,6 @@ importers:
       '@pandacss/generator':
         specifier: workspace:*
         version: link:../generator
-      '@pandacss/is-valid-prop':
-        specifier: workspace:*
-        version: link:../is-valid-prop
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger
@@ -565,9 +562,6 @@ importers:
       '@pandacss/extractor':
         specifier: workspace:*
         version: link:../extractor
-      '@pandacss/is-valid-prop':
-        specifier: workspace:*
-        version: link:../is-valid-prop
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger
