@@ -146,8 +146,8 @@ export function usePanda(state: State) {
     const parserResult = project.parseSourceFile('code.tsx', encoder)
     const sheet = context.createSheet()
 
-    const collector = context.decoder.clone().collect(encoder)
-    const parsedCss = sheet.processStyleCollector(collector)
+    const decoder = context.decoder.clone().collect(encoder)
+    const parsedCss = sheet.processDecoder(decoder)
 
     const artifacts = context.getArtifacts() ?? []
 
@@ -160,6 +160,7 @@ export function usePanda(state: State) {
       { file: 'Utilities', code: sheet.getLayerCss('utilities') },
       { file: 'Recipes', code: sheet.getLayerCss('recipes') },
     ].concat(staticArtifacts)
+
     const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? ''), parsedCss].join('\n')
 
     const panda = {
@@ -175,7 +176,7 @@ export function usePanda(state: State) {
   }, [source, css, context, staticArtifacts])
 }
 
-export type CssFileArtifact = {
+export interface CssFileArtifact {
   file: string
   code: string | undefined
   dir?: string[] | undefined

@@ -1,4 +1,5 @@
-import type { ArtifactId, ConfigResultWithHooks, StyleCollectorType } from '@pandacss/types'
+import type { Stylesheet } from '@pandacss/core'
+import type { ArtifactId, ConfigResultWithHooks, StyleDecoderInterface } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -10,7 +11,6 @@ import { generateTokenCss } from './artifacts/css/token-css'
 import { Context } from './engines'
 import { getMessages } from './messages'
 import { getParserOptions, type ParserOptions } from './parser-options'
-import type { Stylesheet } from '@pandacss/core'
 
 export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 
@@ -52,14 +52,14 @@ export class Generator extends Context {
     if (this.config.theme?.keyframes) this.appendCss('keyframes', sheet)
   }
 
-  getParserCss(collector: StyleCollectorType, filePath?: string) {
-    return generateParserCss(this, collector, filePath)
+  getParserCss(decoder: StyleDecoderInterface, filePath?: string) {
+    return generateParserCss(this, decoder, filePath)
   }
 
   getCss(sheet?: Stylesheet) {
     const stylesheet = sheet ?? this.createSheet()
-    const collector = this.decoder.collect(this.encoder)
-    stylesheet.processStyleCollector(collector)
+    const decoder = this.decoder.collect(this.encoder)
+    stylesheet.processDecoder(decoder)
 
     return stylesheet.toCss({
       optimize: true,

@@ -25,15 +25,16 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   }
 
   const filesWithCss = []
+
   files.map((file) => {
     const measure = logger.time.debug(`Parsed ${file}`)
-    const hashFactory = ctx.encoder.clone()
-    const result = ctx.project.parseSourceFile(file, hashFactory)
+    const encoder = ctx.encoder.clone()
+    const result = ctx.project.parseSourceFile(file, encoder)
 
     measure()
-    if (!result || hashFactory.isEmpty()) return
+    if (!result || encoder.isEmpty()) return
 
-    const styles = ctx.decoder.clone().collect(hashFactory)
+    const styles = ctx.decoder.clone().collect(encoder)
     const css = ctx.getParserCss(styles, file)
     if (!css) return
 

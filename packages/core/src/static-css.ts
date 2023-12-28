@@ -230,7 +230,7 @@ export class StaticCss {
       encoder.hashStyleObject(encoder.atomic, result)
     })
 
-    sheet.processStyleCollector(decoder.collect(encoder))
+    sheet.processDecoder(decoder.collect(encoder))
 
     const createRegex = () => createClassNameRegex(Array.from(decoder.classNames.keys()))
 
@@ -249,6 +249,7 @@ export class StaticCss {
   }
 }
 
+// ??? Replace with shared one
 function createClassNameRegex(classNames: string[]) {
   const escapedClassNames = classNames.map((name) => escapeRegExp(name))
   const pattern = `(${escapedClassNames.join('|')})`

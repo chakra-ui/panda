@@ -20,11 +20,11 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   const minify = ctx.config.minify
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
-  const collector = ctx.collectStyles()
+  const decoder = ctx.collectStyles()
   const styles = {
-    atomic: Array.from(collector.atomic).map(({ hash }) => hash),
+    atomic: Array.from(decoder.atomic).map(({ hash }) => hash),
     recipes: Object.fromEntries(
-      Array.from(collector.recipes.entries()).map(([name, set]) => [name, Array.from(set).map(({ hash }) => hash)]),
+      Array.from(decoder.recipes.entries()).map(([name, set]) => [name, Array.from(set).map(({ hash }) => hash)]),
     ),
   }
   const output = JSON.stringify(

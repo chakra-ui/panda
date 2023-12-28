@@ -14,10 +14,10 @@ export class ParserResult implements ParserResultType {
   pattern = new Map<string, Set<ResultItem>>()
 
   filePath: string | undefined
-  hashFactory: ParserOptions['encoder']
+  encoder: ParserOptions['encoder']
 
-  constructor(private context: ParserOptions, hashFactory?: ParserOptions['encoder']) {
-    this.hashFactory = hashFactory ?? context.encoder
+  constructor(private context: ParserOptions, encoder?: ParserOptions['encoder']) {
+    this.encoder = encoder ?? context.encoder
   }
 
   append(result: ResultItem) {
@@ -28,19 +28,19 @@ export class ParserResult implements ParserResultType {
   set(name: 'cva' | 'css' | 'sva', result: ResultItem) {
     this[name].add(this.append(Object.assign({ type: 'object' }, result)))
 
-    const hashFactory = this.hashFactory
+    const encoder = this.encoder
     if (name == 'css') {
-      result.data.forEach((obj) => hashFactory.processStyleProps(obj))
+      result.data.forEach((obj) => encoder.processStyleProps(obj))
       return
     }
 
     if (name === 'cva') {
-      result.data.forEach((data) => hashFactory.processAtomicRecipe(data))
+      result.data.forEach((data) => encoder.processAtomicRecipe(data))
       return
     }
 
     if (name === 'sva') {
-      result.data.forEach((data) => hashFactory.processAtomicSlotRecipe(data))
+      result.data.forEach((data) => encoder.processAtomicSlotRecipe(data))
       return
     }
   }
@@ -48,31 +48,31 @@ export class ParserResult implements ParserResultType {
   setCva(result: ResultItem) {
     this.cva.add(this.append(Object.assign({ type: 'cva' }, result)))
 
-    const hashFactory = this.hashFactory
-    result.data.forEach((data) => hashFactory.processAtomicRecipe(data))
+    const encoder = this.encoder
+    result.data.forEach((data) => encoder.processAtomicRecipe(data))
   }
 
   setSva(result: ResultItem) {
     this.sva.add(this.append(Object.assign({ type: 'sva' }, result)))
 
-    const hashFactory = this.hashFactory
-    result.data.forEach((data) => hashFactory.processAtomicSlotRecipe(data))
+    const encoder = this.encoder
+    result.data.forEach((data) => encoder.processAtomicSlotRecipe(data))
   }
 
   setJsx(result: ResultItem) {
     this.jsx.add(this.append(Object.assign({ type: 'jsx' }, result)))
 
-    const hashFactory = this.hashFactory
-    result.data.forEach((obj) => hashFactory.processStyleProps(obj))
+    const encoder = this.encoder
+    result.data.forEach((obj) => encoder.processStyleProps(obj))
   }
 
   setPattern(name: string, result: ResultItem) {
     const set = getOrCreateSet(this.pattern, name)
     set.add(this.append(Object.assign({ type: 'pattern', name }, result)))
 
-    const hashFactory = this.hashFactory
+    const encoder = this.encoder
     result.data.forEach((obj) =>
-      hashFactory.processPattern(name, obj, (result.type as 'pattern' | undefined) ?? 'pattern', result.name),
+      encoder.processPattern(name, obj, (result.type as 'pattern' | undefined) ?? 'pattern', result.name),
     )
   }
 
@@ -80,8 +80,9 @@ export class ParserResult implements ParserResultType {
     const set = getOrCreateSet(this.recipe, recipeName)
     set.add(this.append(Object.assign({ type: 'recipe' }, result)))
 
-    const hashFactory = this.hashFactory
+    const encoder = this.encoder
     const recipes = this.context.recipes
+
     const recipeConfig = recipes.getConfig(recipeName)
     if (!recipeConfig) return
 
@@ -90,12 +91,12 @@ export class ParserResult implements ParserResultType {
     if (result.type) {
       recipe.data.forEach((data) => {
         const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
-        hashFactory.processStyleProps(styleProps)
-        hashFactory.processRecipe(recipeName, recipeProps)
+        encoder.processStyleProps(styleProps)
+        encoder.processRecipe(recipeName, recipeProps)
       })
     } else {
       recipe.data.forEach((data) => {
-        hashFactory.processRecipe(recipeName, data)
+        encoder.processRecipe(recipeName, data)
       })
     }
   }

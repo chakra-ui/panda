@@ -49,7 +49,7 @@ export const createProject = ({
       scriptKind: ScriptKind.TSX,
     })
 
-  const parseSourceFile = (filePath: string, hashFactory?: ParserOptions['encoder']) => {
+  const parseSourceFile = (filePath: string, encoder?: ParserOptions['encoder']) => {
     if (filePath.endsWith('.json')) {
       const content = readFile(filePath)
       parserOptions.encoder.fromJSON(content)
@@ -69,7 +69,7 @@ export const createProject = ({
     }
 
     hooks.callHook('parser:before', filePath, content)
-    const result = parser(sourceFile, hashFactory)?.setFilePath(filePath)
+    const result = parser(sourceFile, encoder)?.setFilePath(filePath)
     hooks.callHook('parser:after', filePath, result)
 
     return result
@@ -108,7 +108,7 @@ export interface PandaProject {
   removeSourceFile: (filePath: string) => void
   createSourceFile: (filePath: string) => SourceFile
   addSourceFile: (filePath: string, content: string) => SourceFile
-  parseSourceFile: (filePath: string, hashFactory?: ParserOptions['encoder']) => ParserResult | undefined
+  parseSourceFile: (filePath: string, encoder?: ParserOptions['encoder']) => ParserResult | undefined
   reloadSourceFile: (filePath: string) => void
   reloadSourceFiles: () => void
   files: string[]

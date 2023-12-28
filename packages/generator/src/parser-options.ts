@@ -46,7 +46,6 @@ export const getParserOptions = (ctx: Context): ParserOptions => {
     recipes,
     patterns,
     encoder: ctx.encoder,
-    decoder: ctx.decoder,
     compilerOptions: compilerOptions as any,
     tsOptions: ctx.conf.tsOptions,
     join: (...paths: string[]) => paths.join('/'),
@@ -77,7 +76,6 @@ export interface ParserOptions {
   recipes: Context['recipes']
   patterns: Context['patterns']
   encoder: Context['encoder']
-  decoder: Context['decoder']
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
   tsOptions: ConfigResultWithHooks['tsOptions']

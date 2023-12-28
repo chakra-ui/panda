@@ -781,8 +781,8 @@ describe('rule processor', () => {
     const processor = new RuleProcessor(ctx as any)
 
     const step1 = processor.prepare()
-    step1.hash.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
-    step1.styles.collect(step1.hash)
+    step1.encoder.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+    step1.decoder.collect(step1.encoder)
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_red {
@@ -796,8 +796,8 @@ describe('rule processor', () => {
     `)
 
     const step2 = processor.prepare()
-    step2.hash.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
-    step2.styles.collect(step2.hash)
+    step2.encoder.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+    step2.decoder.collect(step2.encoder)
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         .variant_solid {
@@ -830,7 +830,7 @@ describe('rule processor', () => {
     `)
 
     const step3 = processor.prepare()
-    step3.hash.fromJSON(
+    step3.encoder.fromJSON(
       JSON.stringify({
         styles: {
           atomic: [
@@ -853,7 +853,7 @@ describe('rule processor', () => {
         },
       }),
     )
-    step3.styles.collect(step3.hash)
+    step3.decoder.collect(step3.encoder)
     expect(step3.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
 

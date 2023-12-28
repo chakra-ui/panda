@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { CascadeLayer, Dict, StyleCollectorType, SystemStyleObject } from '@pandacss/types'
+import type { CascadeLayer, Dict, StyleDecoderInterface, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
@@ -36,32 +36,31 @@ export class Stylesheet {
     return
   }
 
-  processGlobalCss = (styleObject: Dict) => {
+  processGlobalCss = (styles: Dict) => {
     const { conditions, utility } = this.context
-    const css = serializeStyles(styleObject, { conditions, utility })
-
+    const css = serializeStyles(styles, { conditions, utility })
     this.context.layers.base.append(css)
   }
 
-  processCssObject = (styles: SystemStyleObject | undefined, layer: LayerName) => {
+  processCss = (styles: SystemStyleObject | undefined, layer: LayerName) => {
     if (!styles) return
     this.process({ styles, layer })
   }
 
-  processStyleCollector = (collector: StyleCollectorType) => {
-    collector.atomic.forEach((css) => {
-      this.processCssObject(css.result, (css.layer as LayerName) ?? 'utilities')
+  processDecoder = (decoder: StyleDecoderInterface) => {
+    decoder.atomic.forEach((css) => {
+      this.processCss(css.result, (css.layer as LayerName) ?? 'utilities')
     })
 
-    collector.recipes.forEach((recipeSet) => {
+    decoder.recipes.forEach((recipeSet) => {
       recipeSet.forEach((recipe) => {
-        this.processCssObject(recipe.result, recipe.entry.slot ? 'recipes_slots' : 'recipes')
+        this.processCss(recipe.result, recipe.entry.slot ? 'recipes_slots' : 'recipes')
       })
     })
 
-    collector.recipes_base.forEach((recipeSet) => {
+    decoder.recipes_base.forEach((recipeSet) => {
       recipeSet.forEach((recipe) => {
-        this.processCssObject(recipe.result, recipe.slot ? 'recipes_slots_base' : 'recipes_base')
+        this.processCss(recipe.result, recipe.slot ? 'recipes_slots_base' : 'recipes_base')
       })
     })
   }

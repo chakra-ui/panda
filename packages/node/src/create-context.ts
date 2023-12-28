@@ -1,4 +1,4 @@
-import type { HashFactory, Stylesheet } from '@pandacss/core'
+import type { Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { createProject, type PandaProject } from '@pandacss/parser'
@@ -42,10 +42,9 @@ export class PandaContext extends Generator {
     this.diff = new DiffEngine(this)
   }
 
-  parseFiles(hash?: HashFactory) {
+  parseFiles(encoder = this.parserOptions.encoder) {
     const files = this.getFiles()
     const filesWithCss = [] as string[]
-    const encoder = hash || this.parserOptions.encoder
 
     files.forEach((file) => {
       const measure = logger.time.debug(`Parsed ${file}`)

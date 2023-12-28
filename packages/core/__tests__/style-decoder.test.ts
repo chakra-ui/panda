@@ -43,7 +43,7 @@ const cva = (styles: Dict) => {
   return ctx.decoder.atomic
 }
 
-describe('style collector', () => {
+describe('style decoder', () => {
   test('css', () => {
     const result = css({
       color: 'red !important',

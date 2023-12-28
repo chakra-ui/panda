@@ -2,17 +2,25 @@ export { Breakpoints } from './breakpoints'
 export { assignCompositions } from './compositions'
 export { Conditions } from './conditions'
 export { CoreContext } from './core-context'
-export { StyleEncoder as HashFactory } from './style-encoder'
+export { sharedHooks } from './hooks'
 export { isSlotRecipe } from './is-slot-recipe'
 export { Layers } from './layers'
 export { expandCssFunctions, expandNestedCss, optimizeCss, prettifyCss } from './optimize'
 export { Patterns, type PatternDetail } from './patterns'
 export { Recipes } from './recipes'
 export { extractParentSelectors } from './selector'
-export { sharedHooks } from './shared-hooks'
 export { StaticCss } from './static-css'
-export { StyleDecoder as StyleCollector } from './style-decoder'
-export { Stylesheet, type LayerName, type ToCssOptions } from './stylesheet'
+export { StyleDecoder } from './style-decoder'
+export { StyleEncoder } from './style-encoder'
+export { Stylesheet } from './stylesheet'
 export { toCss } from './to-css'
-export type { RecipeNode, StylesheetContext, TransformResult, RecipeContext, AtomicRuleContext } from './types'
+export type {
+  AtomicRuleContext,
+  CssOptions,
+  LayerName,
+  RecipeContext,
+  RecipeNode,
+  StylesheetContext,
+  TransformResult,
+} from './types'
 export { Utility } from './utility'

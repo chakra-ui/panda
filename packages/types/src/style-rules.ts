@@ -44,7 +44,7 @@ export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash
   result: StyleResultObject
 }
 
-export interface StyleCollectorType {
+export interface StyleDecoderInterface {
   classNames: Map<string, AtomicStyleResult | RecipeBaseResult>
   //
   results: {
