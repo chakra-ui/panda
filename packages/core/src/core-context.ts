@@ -1,15 +1,3 @@
-import {
-  Conditions,
-  Layers,
-  Recipes,
-  Stylesheet,
-  Utility,
-  assignCompositions,
-  type RecipeContext,
-  Patterns,
-  HashFactory,
-  StyleCollector,
-} from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
@@ -25,6 +13,18 @@ import type {
 } from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
 import { StaticCss } from './static-css'
+import {
+  Utility,
+  Recipes,
+  Patterns,
+  HashFactory,
+  StyleCollector,
+  Conditions,
+  Layers,
+  assignCompositions,
+  Stylesheet,
+  type RecipeContext,
+} from '.'
 const helpers = { map: mapObject }
 
 const defaults = (config: UserConfig): UserConfig => ({
