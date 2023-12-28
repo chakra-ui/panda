@@ -1,27 +1,10 @@
 import { logger } from '@pandacss/logger'
-import type { CascadeLayer, Dict, StyleCollectorType, SystemStyleObject, UserConfig } from '@pandacss/types'
+import type { CascadeLayer, Dict, StyleCollectorType, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
-import type { StylesheetContext } from './types'
-
-export interface ToCssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
-export interface ProcessOptions {
-  styles: Dict
-  layer: LayerName
-}
-
-export type LayerName =
-  | 'base'
-  | 'reset'
-  | 'recipes_slots_base'
-  | 'recipes_base'
-  | 'tokens'
-  | 'recipes'
-  | 'utilities'
-  | 'recipes_slots'
-  | 'compositions'
+import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
 
 export class Stylesheet {
   constructor(private context: StylesheetContext) {}
@@ -93,7 +76,7 @@ export class Stylesheet {
     )
   }
 
-  toCss = ({ optimize = false, minify }: ToCssOptions = {}) => {
+  toCss = ({ optimize = false, minify }: CssOptions = {}) => {
     try {
       const { utility } = this.context
       const breakpoints = this.context.conditions.breakpoints

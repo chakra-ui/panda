@@ -30,10 +30,10 @@ export const createProject = ({
 }: ProjectOptions): PandaProject => {
   const project = createTsProject(projectOptions)
   const parser = createParser(parserOptions)
-  const fork = () => {
-    const hash = parserOptions.hashFactory.fork()
-    const styles = parserOptions.styleCollector.fork()
 
+  const clone = () => {
+    const hash = parserOptions.encoder.clone()
+    const styles = parserOptions.decoder.clone()
     return () => styles.collect(hash)
   }
 
@@ -56,10 +56,10 @@ export const createProject = ({
       scriptKind: ScriptKind.TSX,
     })
 
-  const parseSourceFile = (filePath: string, hashFactory?: ParserOptions['hashFactory']) => {
+  const parseSourceFile = (filePath: string, hashFactory?: ParserOptions['encoder']) => {
     if (filePath.endsWith('.json')) {
       const content = readFile(filePath)
-      parserOptions.hashFactory.fromJSON(content)
+      parserOptions.encoder.fromJSON(content)
       const result = new ParserResult(parserOptions).setFilePath(filePath)
       return result
     }
@@ -97,7 +97,7 @@ export const createProject = ({
   }
 
   return {
-    fork,
+    clone,
     getSourceFile,
     removeSourceFile,
     createSourceFile,
@@ -112,12 +112,12 @@ export const createProject = ({
 }
 
 export interface PandaProject {
-  fork: () => () => StyleCollectorType
+  clone: () => () => StyleCollectorType
   getSourceFile: (filePath: string) => SourceFile | undefined
   removeSourceFile: (filePath: string) => void
   createSourceFile: (filePath: string) => SourceFile
   addSourceFile: (filePath: string, content: string) => SourceFile
-  parseSourceFile: (filePath: string, hashFactory?: ParserOptions['hashFactory']) => ParserResult | undefined
+  parseSourceFile: (filePath: string, hashFactory?: ParserOptions['encoder']) => ParserResult | undefined
   reloadSourceFile: (filePath: string) => void
   reloadSourceFiles: () => void
   files: string[]

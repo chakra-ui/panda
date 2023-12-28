@@ -35,7 +35,7 @@ describe('static-css', () => {
 
   const ctx = new CoreContext(conf)
   const getStaticCss = (options: StaticCssOptions) => {
-    const engine = ctx.staticCss.fork().process(options)
+    const engine = ctx.staticCss.clone().process(options)
     return { results: engine.results, css: engine.sheet.toCss({ optimize: true }) }
   }
 

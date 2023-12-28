@@ -7,10 +7,11 @@ import type {
   StyleEntry,
   StyleResultObject,
 } from '@pandacss/types'
-import { HashFactory } from './hash-factory'
 import type { CoreContext } from './core-context'
+import { deepSet } from './deep-set'
+import { StyleEncoder } from './style-encoder'
 
-export class StyleCollector {
+export class StyleDecoder {
   constructor(private context: CoreContext) {}
 
   classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
@@ -23,8 +24,8 @@ export class StyleCollector {
   recipes = new Map<string, Set<AtomicStyleResult>>()
   recipes_base = new Map<string, Set<RecipeBaseResult>>()
 
-  fork() {
-    return new StyleCollector(this.context)
+  clone() {
+    return new StyleDecoder(this.context)
   }
 
   isEmpty() {
@@ -67,6 +68,7 @@ export class StyleCollector {
 
     const transform = recipeName ? this.context.recipes.getTransform(recipeName) : this.context.utility.transform
     const transformed = transform(entry.prop, withoutImportant(entry.value))
+
     if (!transformed.className) {
       return
     }
@@ -74,7 +76,7 @@ export class StyleCollector {
     const important = isImportant(entry.value)
     const styles = important ? markImportant(transformed.styles) : transformed.styles
 
-    const parts = entry.cond ? entry.cond.split(HashFactory.conditionSeparator) : []
+    const parts = entry.cond ? entry.cond.split(StyleEncoder.conditionSeparator) : []
     const className = this.formatSelector(parts, transformed.className)
     const classSelector = important ? `.${className}\\!` : `.${className}`
 
@@ -122,7 +124,7 @@ export class StyleCollector {
       const important = isImportant(entry.value)
       const result = important ? markImportant(transformed.styles) : transformed.styles
 
-      const parts = entry.cond ? entry.cond.split(HashFactory.conditionSeparator) : []
+      const parts = entry.cond ? entry.cond.split(StyleEncoder.conditionSeparator) : []
 
       let conditions
       if (entry.cond) {
@@ -136,9 +138,9 @@ export class StyleCollector {
     details.forEach((value) => {
       if (value.conditions) {
         const path = basePath.concat(value.conditions.map((c) => c.rawValue ?? c.raw))
-        obj = setValueIn(obj, path, value.result)
+        obj = deepSet(obj, path, value.result)
       } else {
-        obj = setValueIn(obj, basePath, value.result)
+        obj = deepSet(obj, basePath, value.result)
       }
     })
 
@@ -164,7 +166,7 @@ export class StyleCollector {
    * Collect and re-create all styles and recipes objects from the hash collector
    * So that we can just iterate over them and transform resulting CSS objects into CSS strings
    */
-  collect(hashFactory: HashFactory) {
+  collect(hashFactory: StyleEncoder) {
     const atomic = [] as AtomicStyleResult[]
 
     hashFactory.atomic.forEach((item) => {
@@ -197,7 +199,7 @@ export class StyleCollector {
         }
 
         if ('slots' in recipeConfig) {
-          recipeConfig.slots.forEach((slot) => process(item + HashFactory.separator + 'slot:' + slot))
+          recipeConfig.slots.forEach((slot) => process(item + StyleEncoder.separator + 'slot:' + slot))
         } else {
           process(item)
         }
@@ -224,7 +226,7 @@ export class StyleCollector {
 
 const entryKeys = ['cond', 'recipe', 'layer', 'slot'] as const
 const getEntryFromHash = (hash: string) => {
-  const parts = hash.split(HashFactory.separator)
+  const parts = hash.split(StyleEncoder.separator)
   const prop = parts[0]
 
   const rawValue = parts[1].replace('value:', '')
@@ -243,6 +245,7 @@ const getEntryFromHash = (hash: string) => {
   return entry
 }
 
+// ???
 const makeObjAt = (path: string[], value: Record<string, unknown>) => {
   if (!path.length) return value as StyleResultObject
 
@@ -255,26 +258,6 @@ const makeObjAt = (path: string[], value: Record<string, unknown>) => {
     } else {
       current[key] = {}
       current = current[key] as StyleResultObject
-    }
-  }
-
-  return obj
-}
-
-const setValueIn = (obj: StyleResultObject, path: string[], value: Record<string, unknown>) => {
-  if (!path.length) return Object.assign(obj, value) as StyleResultObject
-
-  let current = obj as Record<string, any>
-  for (let i = 0; i < path.length; i++) {
-    const key = path[i]
-    if (!current[key]) {
-      current[key] = {}
-    }
-
-    if (i === path.length - 1) {
-      Object.assign(current[key], value)
-    } else {
-      current = current[key]
     }
   }
 

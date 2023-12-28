@@ -4,38 +4,40 @@ import type { Dict, SystemStyleObject } from '@pandacss/types'
 import { createGeneratorContext } from '@pandacss/fixture'
 import { createAnatomy } from './create-anatomy'
 
+// ???
 const css = (styles: Dict) => {
   const ctx = createGeneratorContext()
-  ctx.hashFactory.processAtomic(styles)
-  return ctx.hashFactory.atomic
+  ctx.encoder.processAtomic(styles)
+  return ctx.encoder.atomic
 }
 
+// ???
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
   const recipeConfig = ctx.recipes.getConfig(name)
   if (!recipeConfig) throw new Error(`Recipe ${name} not found`)
 
-  ctx.hashFactory.processRecipe(name, styles)
+  ctx.encoder.processRecipe(name, styles)
   if ('slots' in recipeConfig) {
     const base = {} as Dict
     recipeConfig.slots.map((slot) => {
       const recipeKey = ctx.recipes.getSlotKey(name, slot)
-      base[slot] = ctx.hashFactory.recipes_base.get(recipeKey)!
+      base[slot] = ctx.encoder.recipes_base.get(recipeKey)!
     })
-    return { base, variants: ctx.hashFactory.recipes.get(name)! }
+    return { base, variants: ctx.encoder.recipes.get(name)! }
   }
 
-  return { base: ctx.hashFactory.recipes_base.get(name)!, variants: ctx.hashFactory.recipes.get(name)! }
+  return { base: ctx.encoder.recipes_base.get(name)!, variants: ctx.encoder.recipes.get(name)! }
 }
 
 const cva = (styles: Dict) => {
   const ctx = createGeneratorContext()
   if ('slots' in styles) {
-    ctx.hashFactory.processAtomicSlotRecipe(styles)
+    ctx.encoder.processAtomicSlotRecipe(styles)
   }
 
-  ctx.hashFactory.processAtomicRecipe(styles)
-  return ctx.hashFactory.atomic
+  ctx.encoder.processAtomicRecipe(styles)
+  return ctx.encoder.atomic
 }
 
 describe('hash factory', () => {
@@ -326,7 +328,7 @@ describe('hash factory', () => {
         "btn",
       ]
     `)
-    expect(processor.hashFactory?.results).toMatchInlineSnapshot(`
+    expect(processor.encoder?.results).toMatchInlineSnapshot(`
       {
         "atomic": Set {},
         "recipes": Map {
@@ -450,7 +452,7 @@ describe('hash factory', () => {
         "navbar",
       ]
     `)
-    expect(processor.hashFactory?.results).toMatchInlineSnapshot(`
+    expect(processor.encoder?.results).toMatchInlineSnapshot(`
       {
         "atomic": Set {},
         "recipes": Map {
@@ -501,7 +503,7 @@ describe('hash factory', () => {
 
   test('fromJSON', () => {
     const ctx = createGeneratorContext()
-    const hf = ctx.hashFactory
+    const hf = ctx.encoder
     hf.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
     expect(hf.atomic).toMatchInlineSnapshot(`
       Set {
@@ -531,7 +533,7 @@ describe('hash factory', () => {
     `)
 
     expect(
-      hf.fork().fromJSON(
+      hf.clone().fromJSON(
         JSON.stringify({
           styles: {
             atomic: [

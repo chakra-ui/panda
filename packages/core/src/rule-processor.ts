@@ -1,40 +1,40 @@
 import type { RecipeDefinition, SlotRecipeDefinition, StyleCollectorType, SystemStyleObject } from '@pandacss/types'
-import type { HashFactory } from './hash-factory'
-import type { StyleCollector } from './style-collector'
+import type { StyleEncoder } from './style-encoder'
+import type { StyleDecoder } from './style-decoder'
 import type { Stylesheet, ToCssOptions } from '@pandacss/core'
 import type { CoreContext } from './core-context'
 
 export class RuleProcessor {
-  hashFactory: HashFactory | undefined
-  styleCollector: StyleCollector | undefined
+  encoder: StyleEncoder | undefined
+  decoder: StyleDecoder | undefined
   sheet: Stylesheet | undefined
 
   params: Pick<RuleProcessorPrepareParams, 'hash' | 'styles'>
 
   constructor(private context: CoreContext, params?: Pick<RuleProcessorPrepareParams, 'hash' | 'styles'>) {
     this.params = params ?? {
-      hash: context.hashFactory,
-      styles: context.styleCollector,
+      hash: context.encoder,
+      styles: context.decoder,
     }
   }
 
   isReady() {
-    return Boolean(this.hashFactory && this.styleCollector && this.sheet)
+    return Boolean(this.encoder && this.decoder && this.sheet)
   }
 
   prepare(options?: RuleProcessorPrepareParams) {
-    if (!this.isReady() || options?.fork) {
+    if (!this.isReady() || options?.clone) {
       this.sheet = options?.sheet ?? this.context.createSheet()
-      this.hashFactory = options?.hash ?? this.params.hash.fork()
-      this.styleCollector = options?.styles ?? this.params.styles.fork()
+      this.encoder = options?.hash ?? this.params.hash.clone()
+      this.decoder = options?.styles ?? this.params.styles.clone()
     }
 
     return {
-      hash: this.hashFactory!,
-      styles: this.styleCollector!,
+      hash: this.encoder!,
+      styles: this.decoder!,
       sheet: this.sheet!,
       toCss: (options?: ToCssOptions) => {
-        this.sheet!.processStyleCollector(this.styleCollector as StyleCollectorType)
+        this.sheet!.processStyleCollector(this.decoder as StyleCollectorType)
         return this.sheet!.toCss({ optimize: true, ...options })
       },
     }
@@ -125,8 +125,8 @@ interface RecipeRule extends BaseRule {
 }
 
 interface RuleProcessorPrepareParams {
-  fork?: boolean
-  hash: HashFactory
-  styles: StyleCollector
+  clone?: boolean
+  hash: StyleEncoder
+  styles: StyleDecoder
   sheet?: Stylesheet
 }

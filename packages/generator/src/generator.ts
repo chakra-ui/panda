@@ -58,7 +58,7 @@ export class Generator extends Context {
 
   getCss(sheet?: Stylesheet) {
     const stylesheet = sheet ?? this.createSheet()
-    const collector = this.styleCollector.collect(this.hashFactory)
+    const collector = this.decoder.collect(this.encoder)
     stylesheet.processStyleCollector(collector)
 
     return stylesheet.toCss({

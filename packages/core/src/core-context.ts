@@ -12,19 +12,18 @@ import type {
   UserConfig,
 } from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
+import { assignCompositions } from './compositions'
+import { Conditions } from './conditions'
+import { Layers } from './layers'
+import { Patterns } from './patterns'
+import { Recipes } from './recipes'
 import { StaticCss } from './static-css'
-import {
-  Utility,
-  Recipes,
-  Patterns,
-  HashFactory,
-  StyleCollector,
-  Conditions,
-  Layers,
-  assignCompositions,
-  Stylesheet,
-  type RecipeContext,
-} from '.'
+import { StyleDecoder } from './style-decoder'
+import { StyleEncoder } from './style-encoder'
+import { Stylesheet } from './stylesheet'
+import type { RecipeContext } from './types'
+import { Utility } from './utility'
+
 const helpers = { map: mapObject }
 
 const defaults = (config: UserConfig): UserConfig => ({
@@ -54,9 +53,10 @@ export class CoreContext {
   recipes: Recipes
   conditions: Conditions
   patterns: Patterns
-  hashFactory: HashFactory
-  styleCollector: StyleCollector
   staticCss: StaticCss
+
+  encoder: StyleEncoder
+  decoder: StyleDecoder
 
   // Props
   properties!: Set<string>
@@ -80,8 +80,8 @@ export class CoreContext {
     // Relies on this.conditions, this.utility, this.layers
     this.recipes = this.createRecipes(theme, this.baseSheetContext)
 
-    this.hashFactory = new HashFactory(this)
-    this.styleCollector = new StyleCollector(this)
+    this.encoder = new StyleEncoder(this)
+    this.decoder = new StyleDecoder(this)
     this.staticCss = new StaticCss(this)
   }
 
@@ -176,7 +176,7 @@ export class CoreContext {
   }
 
   collectStyles() {
-    return this.styleCollector.collect(this.hashFactory)
+    return this.decoder.collect(this.encoder)
   }
 
   isValidLayerParams(params: string) {

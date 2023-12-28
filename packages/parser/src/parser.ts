@@ -72,7 +72,7 @@ export function createParser(context: ParserOptions) {
     importRegex.push(createImportMatcher(importMap.jsx, [jsx.factory, ...jsx.nodes.map((node) => node.jsxName)]))
   }
 
-  return function parse(sourceFile: SourceFile | undefined, hashFactory?: Generator['hashFactory']) {
+  return function parse(sourceFile: SourceFile | undefined, hashFactory?: Generator['encoder']) {
     if (!sourceFile) return
 
     const filePath = sourceFile.getFilePath()

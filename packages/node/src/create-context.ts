@@ -46,13 +46,13 @@ export class PandaContext extends Generator {
     const files = this.getFiles()
     const filesWithCss = [] as string[]
 
-    const collect = this.project.fork()
+    const collect = this.project.clone()
     files.forEach((file) => {
       const measure = logger.time.debug(`Parsed ${file}`)
       const result = this.project.parseSourceFile(file)
 
       measure()
-      if (!result || this.hashFactory.isEmpty()) return
+      if (!result || this.encoder.isEmpty()) return
 
       filesWithCss.push(file)
     })

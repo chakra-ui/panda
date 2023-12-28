@@ -141,9 +141,9 @@ export function jsxRecipeParser(code: string) {
 export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const ctx = getFixtureProject(code, userConfig, tsconfig)
 
-  const hashFactory = ctx.hashFactory.fork()
+  const hashFactory = ctx.encoder.clone()
   const result = ctx.project.parseSourceFile(staticFilePath, hashFactory)!
-  const styles = ctx.styleCollector.fork().collect(hashFactory)
+  const styles = ctx.decoder.clone().collect(hashFactory)
 
   return {
     ctx,

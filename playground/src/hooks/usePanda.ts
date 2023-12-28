@@ -142,11 +142,11 @@ export function usePanda(state: State) {
 
     // Fork to discard any cache from previous runs
     // so the CSS won't grow indefinitely
-    const hashFactory = context.hashFactory.fork()
-    const parserResult = project.parseSourceFile('code.tsx', hashFactory)
+    const encoder = context.encoder.clone()
+    const parserResult = project.parseSourceFile('code.tsx', encoder)
     const sheet = context.createSheet()
 
-    const collector = context.styleCollector.fork().collect(hashFactory)
+    const collector = context.decoder.clone().collect(encoder)
     const parsedCss = sheet.processStyleCollector(collector)
 
     const artifacts = context.getArtifacts() ?? []

@@ -45,8 +45,8 @@ export const getParserOptions = (ctx: Context): ParserOptions => {
     isValidProperty,
     recipes,
     patterns,
-    hashFactory: ctx.hashFactory,
-    styleCollector: ctx.styleCollector,
+    encoder: ctx.encoder,
+    decoder: ctx.decoder,
     compilerOptions: compilerOptions as any,
     tsOptions: ctx.conf.tsOptions,
     join: (...paths: string[]) => paths.join('/'),
@@ -76,8 +76,8 @@ export interface ParserOptions {
   isValidProperty: Context['isValidProperty']
   recipes: Context['recipes']
   patterns: Context['patterns']
-  hashFactory: Context['hashFactory']
-  styleCollector: Context['styleCollector']
+  encoder: Context['encoder']
+  decoder: Context['decoder']
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
   tsOptions: ConfigResultWithHooks['tsOptions']

@@ -1,16 +1,10 @@
 import { logger } from '@pandacss/logger'
 import type { ArtifactId, Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
+import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import { emitArtifacts } from './emit-artifact'
 
-import { loadConfigAndCreateContext } from './config'
-
-/**
- * 1. Emit artifacts
- * 2. Writes all the css chunks in outdir/chunks/{file}.css
- * 3. Bundles them in outdir/styles.css
- */
 async function build(ctx: PandaContext, ids?: ArtifactId[]) {
   await emitArtifacts(ctx, ids)
 

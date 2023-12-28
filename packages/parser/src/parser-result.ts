@@ -14,10 +14,10 @@ export class ParserResult implements ParserResultType {
   pattern = new Map<string, Set<ResultItem>>()
 
   filePath: string | undefined
-  hashFactory: ParserOptions['hashFactory']
+  hashFactory: ParserOptions['encoder']
 
-  constructor(private context: ParserOptions, hashFactory?: ParserOptions['hashFactory']) {
-    this.hashFactory = hashFactory ?? context.hashFactory
+  constructor(private context: ParserOptions, hashFactory?: ParserOptions['encoder']) {
+    this.hashFactory = hashFactory ?? context.encoder
   }
 
   append(result: ResultItem) {

@@ -1,44 +1,46 @@
+import { createGeneratorContext } from '@pandacss/fixture'
+import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { createRuleProcessor } from './fixture'
-import type { Dict } from '@pandacss/types'
-import { createGeneratorContext } from '@pandacss/fixture'
 
+// ???
 const css = (styles: Dict) => {
   const ctx = createGeneratorContext()
-  ctx.hashFactory.processAtomic(styles)
-  ctx.styleCollector.collect(ctx.hashFactory)
-  return ctx.styleCollector.atomic
+  ctx.encoder.processAtomic(styles)
+  ctx.decoder.collect(ctx.encoder)
+  return ctx.decoder.atomic
 }
 
+// ???
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
   const recipeConfig = ctx.recipes.getConfig(name)
   if (!recipeConfig) throw new Error(`Recipe ${name} not found`)
 
-  ctx.hashFactory.processRecipe(name, styles)
-  ctx.styleCollector.collect(ctx.hashFactory)
+  ctx.encoder.processRecipe(name, styles)
+  ctx.decoder.collect(ctx.encoder)
 
   if ('slots' in recipeConfig) {
     const base = {} as Dict
     recipeConfig.slots.map((slot) => {
       const recipeKey = ctx.recipes.getSlotKey(name, slot)
-      base[slot] = ctx.styleCollector.recipes_base.get(recipeKey)!
+      base[slot] = ctx.decoder.recipes_base.get(recipeKey)!
     })
-    return { base, variants: ctx.styleCollector.recipes.get(name)! }
+    return { base, variants: ctx.decoder.recipes.get(name)! }
   }
 
-  return { base: ctx.styleCollector.recipes_base.get(name)!, variants: ctx.styleCollector.recipes.get(name)! }
+  return { base: ctx.decoder.recipes_base.get(name)!, variants: ctx.decoder.recipes.get(name)! }
 }
 
 const cva = (styles: Dict) => {
   const ctx = createGeneratorContext()
   if ('slots' in styles) {
-    ctx.hashFactory.processAtomicSlotRecipe(styles)
+    ctx.encoder.processAtomicSlotRecipe(styles)
   }
 
-  ctx.hashFactory.processAtomicRecipe(styles)
-  ctx.styleCollector.collect(ctx.hashFactory)
-  return ctx.styleCollector.atomic
+  ctx.encoder.processAtomicRecipe(styles)
+  ctx.decoder.collect(ctx.encoder)
+  return ctx.decoder.atomic
 }
 
 describe('hash factory', () => {
@@ -1864,11 +1866,12 @@ describe('hash factory', () => {
 
   test('fromJSON', () => {
     const ctx = createGeneratorContext()
-    const hf = ctx.hashFactory
-    const collector = ctx.styleCollector
+    const encoder = ctx.encoder
+    const decoder = ctx.decoder
 
-    hf.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
-    expect(collector.collect(hf).atomic).toMatchInlineSnapshot(`
+    encoder.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+
+    expect(decoder.collect(encoder).atomic).toMatchInlineSnapshot(`
       Set {
         {
           "className": "text_red",
@@ -1903,8 +1906,9 @@ describe('hash factory', () => {
       }
     `)
 
-    hf.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
-    expect(collector.collect(hf).recipes).toMatchInlineSnapshot(`
+    encoder.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+
+    expect(decoder.collect(encoder).recipes).toMatchInlineSnapshot(`
       Map {
         "buttonStyle" => Set {
           {
@@ -1926,7 +1930,7 @@ describe('hash factory', () => {
       }
     `)
 
-    expect(collector.collect(hf).recipes_base).toMatchInlineSnapshot(`
+    expect(decoder.collect(encoder).recipes_base).toMatchInlineSnapshot(`
       Map {
         "buttonStyle" => Set {
           {
@@ -2089,7 +2093,7 @@ describe('hash factory', () => {
       }
     `)
 
-    const forked = hf.fork().fromJSON(
+    const forked = encoder.clone().fromJSON(
       JSON.stringify({
         styles: {
           atomic: [
@@ -2112,7 +2116,7 @@ describe('hash factory', () => {
         },
       }),
     )
-    expect(collector.fork().collect(forked).results).toMatchInlineSnapshot(`
+    expect(decoder.clone().collect(forked).results).toMatchInlineSnapshot(`
       {
         "atomic": Set {
           {

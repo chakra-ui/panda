@@ -1,8 +1,8 @@
 import type { Stylesheet } from '@pandacss/core'
-import type { CssRule, StaticCssOptions, StyleCollectorType } from '@pandacss/types'
-import { HashFactory } from './hash-factory'
-import { StyleCollector } from './style-collector'
+import type { CssRule, StaticCssOptions } from '@pandacss/types'
 import type { CoreContext } from './core-context'
+import { StyleDecoder } from './style-decoder'
+import { StyleEncoder } from './style-encoder'
 
 interface StaticCssResults {
   css: Record<string, any>[]
@@ -18,17 +18,17 @@ interface StaticCssEngine {
 }
 
 export class StaticCss {
-  hash: HashFactory
-  styles: StyleCollector
+  encoder: StyleEncoder
+  decoder: StyleDecoder
 
   constructor(private context: CoreContext) {
-    this.hash = context.hashFactory
-    this.styles = context.styleCollector
+    this.encoder = context.encoder
+    this.decoder = context.decoder
   }
 
-  fork() {
-    this.hash = this.hash.fork()
-    this.styles = this.styles.fork()
+  clone() {
+    this.encoder = this.encoder.clone()
+    this.decoder = this.decoder.clone()
     return this
   }
 
@@ -211,10 +211,10 @@ export class StaticCss {
     const results = this.getStyleObjects(staticCss)
     // console.log(JSON.stringify(results.recipes, null, 2))
 
-    const { hash, styles } = this
+    const { encoder, decoder } = this
 
     results.css.forEach((css) => {
-      hash.hashStyleObject(hash.atomic, css)
+      encoder.hashStyleObject(encoder.atomic, css)
     })
 
     results.recipes.forEach((result) => {
@@ -222,17 +222,18 @@ export class StaticCss {
         const recipeConfig = recipes.getConfig(name)
         if (!recipeConfig) return
 
-        hash.processRecipe(name, value)
+        encoder.processRecipe(name, value)
       })
     })
 
     results.patterns.forEach((result) => {
-      hash.hashStyleObject(hash.atomic, result)
+      encoder.hashStyleObject(encoder.atomic, result)
     })
 
-    sheet.processStyleCollector(styles.collect(hash) as StyleCollectorType)
+    sheet.processStyleCollector(decoder.collect(encoder))
 
-    const createRegex = () => createClassNameRegex(Array.from(styles.classNames.keys()))
+    const createRegex = () => createClassNameRegex(Array.from(decoder.classNames.keys()))
+
     const parse = (text: string) => {
       const regex = createRegex()
 

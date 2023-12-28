@@ -23,7 +23,7 @@ import type { CoreContext } from './core-context'
 const identity = (v: any) => v
 const urlRegex = /^https?:\/\//
 
-export class HashFactory {
+export class StyleEncoder {
   static separator = ']___['
   static conditionSeparator = '<___>'
 
@@ -41,8 +41,8 @@ export class HashFactory {
       : (props: Dict) => filterProps(this.context.isValidProperty, props)
   }
 
-  fork() {
-    return new HashFactory(this.context)
+  clone() {
+    return new StyleEncoder(this.context)
   }
 
   isEmpty() {
@@ -68,7 +68,7 @@ export class HashFactory {
     baseEntry?: Partial<Omit<StyleEntry, 'prop' | 'value' | 'cond'>>,
   ) {
     const isCondition = this.context.conditions.isCondition
-    const traverseOptions = { separator: HashFactory.conditionSeparator }
+    const traverseOptions = { separator: StyleEncoder.conditionSeparator }
 
     // Is the final (leading to a raw value, not an object) property a condition ?
     // mx: { base: { p: 4, _hover: 5 } }
@@ -255,7 +255,7 @@ const filterProps = (isValidProperty: (key: string) => boolean, props: Dict) => 
 }
 
 const hashStyleEntry = (entry: StyleEntry) => {
-  const parts = [`${entry.prop}${HashFactory.separator}value:${entry.value}`]
+  const parts = [`${entry.prop}${StyleEncoder.separator}value:${entry.value}`]
 
   if (entry.cond) {
     parts.push(`cond:${entry.cond}`)
@@ -273,7 +273,7 @@ const hashStyleEntry = (entry: StyleEntry) => {
     parts.push(`slot:${entry.slot}`)
   }
 
-  return parts.join(HashFactory.separator)
+  return parts.join(StyleEncoder.separator)
 }
 
 /**
@@ -292,11 +292,11 @@ const getResolvedCondition = (cond: string, isCondition: (key: string) => boolea
     return ''
   }
 
-  const parts = cond.split(HashFactory.conditionSeparator)
+  const parts = cond.split(StyleEncoder.conditionSeparator)
   const relevantParts = parts.filter((part) => part !== 'base' && isCondition(part))
 
   if (parts.length !== relevantParts.length) {
-    return relevantParts.join(HashFactory.conditionSeparator)
+    return relevantParts.join(StyleEncoder.conditionSeparator)
   }
 
   return cond

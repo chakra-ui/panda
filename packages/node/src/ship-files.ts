@@ -1,8 +1,8 @@
 import { colors, logger } from '@pandacss/logger'
 import { writeFile } from 'fs/promises'
 import * as path from 'path'
-import type { PandaContext } from './create-context'
 import { version } from '../package.json'
+import type { PandaContext } from './create-context'
 
 export async function shipFiles(ctx: PandaContext, outfile: string) {
   const files = ctx.getFiles()
@@ -10,7 +10,7 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
 
   files.forEach(async (file) => {
     const result = ctx.project.parseSourceFile(file)
-    if (!result || result.isEmpty() || ctx.hashFactory.isEmpty()) return
+    if (!result || result.isEmpty() || ctx.encoder.isEmpty()) return
 
     filesWithCss.push(path.relative(ctx.config.cwd, file))
   })
