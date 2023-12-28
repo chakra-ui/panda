@@ -120,8 +120,4 @@ export class Stylesheet {
       throw error
     }
   }
-
-  prepend = (...css: string[]) => {
-    this.context.layers.root.prepend(...css)
-  }
 }

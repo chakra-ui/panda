@@ -41,7 +41,7 @@ export class Generator extends Context {
   }
 
   appendLayerParams(sheet: Stylesheet) {
-    sheet.prepend(sheet.layers.params)
+    sheet.layers.root.prepend(sheet.layers.params)
   }
 
   appendBaselineCss(sheet: Stylesheet) {

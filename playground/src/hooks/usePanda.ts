@@ -118,13 +118,14 @@ export function usePanda(state: State) {
   }, [userConfig])
 
   const staticArtifacts = useMemo(() => {
-    context.appendLayerParams()
-    context.appendBaselineCss()
+    const sheet = context.createSheet()
+    context.appendLayerParams(sheet)
+    context.appendBaselineCss(sheet)
 
     const cssArtifacts = [
-      { file: 'Tokens', code: context.stylesheet.getLayerCss('tokens') },
-      { file: 'Reset', code: context.stylesheet.getLayerCss('reset') },
-      { file: 'Global', code: context.stylesheet.getLayerCss('base') },
+      { file: 'Tokens', code: sheet.getLayerCss('tokens') },
+      { file: 'Reset', code: sheet.getLayerCss('reset') },
+      { file: 'Global', code: sheet.getLayerCss('base') },
     ]
 
     return cssArtifacts
@@ -139,8 +140,14 @@ export function usePanda(state: State) {
       hooks: context.hooks,
     })
 
-    const parserResult = project.parseSourceFile('code.tsx')
-    const parsedCss = context.getCss()
+    // Fork to discard any cache from previous runs
+    // so the CSS won't grow indefinitely
+    const hashFactory = context.hashFactory.fork()
+    const parserResult = project.parseSourceFile('code.tsx', hashFactory)
+    const sheet = context.createSheet()
+
+    const collector = context.styleCollector.fork().collect(hashFactory)
+    const parsedCss = sheet.processStyleCollector(collector)
 
     const artifacts = context.getArtifacts() ?? []
 
@@ -150,8 +157,8 @@ export function usePanda(state: State) {
       ?.join('\n')
 
     const cssArtifacts: CssFileArtifact[] = [
-      { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
-      { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
+      { file: 'Utilities', code: sheet.getLayerCss('utilities') },
+      { file: 'Recipes', code: sheet.getLayerCss('recipes') },
     ].concat(staticArtifacts)
     const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? ''), parsedCss].join('\n')
 
