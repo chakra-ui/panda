@@ -1,4 +1,3 @@
-import type { StyleCollectorType } from '@pandacss/types'
 import type { ParserOptions } from '@pandacss/generator'
 import { ScriptKind, SourceFile, Project as TsProject, type ProjectOptions as TsProjectOptions } from 'ts-morph'
 import { createParser } from './parser'
@@ -30,12 +29,6 @@ export const createProject = ({
 }: ProjectOptions): PandaProject => {
   const project = createTsProject(projectOptions)
   const parser = createParser(parserOptions)
-  const fork = () => {
-    const hash = parserOptions.hashFactory.fork()
-    const styles = parserOptions.styleCollector.fork()
-
-    return () => styles.collect(hash)
-  }
 
   const getSourceFile = (filePath: string) => project.getSourceFile(filePath)
 
@@ -97,7 +90,6 @@ export const createProject = ({
   }
 
   return {
-    fork,
     getSourceFile,
     removeSourceFile,
     createSourceFile,
@@ -112,7 +104,6 @@ export const createProject = ({
 }
 
 export interface PandaProject {
-  fork: () => () => StyleCollectorType
   getSourceFile: (filePath: string) => SourceFile | undefined
   removeSourceFile: (filePath: string) => void
   createSourceFile: (filePath: string) => SourceFile

@@ -41,7 +41,7 @@ const cva = (styles: Dict) => {
   return ctx.styleCollector.atomic
 }
 
-describe('hash factory', () => {
+describe('style collector', () => {
   test('css', () => {
     const result = css({
       color: 'red !important',

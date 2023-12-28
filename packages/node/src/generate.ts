@@ -21,6 +21,8 @@ async function build(ctx: PandaContext, ids?: ArtifactId[]) {
   const sheet = ctx.createSheet()
   ctx.appendLayerParams(sheet)
   ctx.appendBaselineCss(sheet)
+
+  ctx.parseFiles()
   await ctx.writeCss(sheet)
   logger.info('css:emit', 'Successfully built the css files ✨')
 }
@@ -57,7 +59,11 @@ export async function generate(config: Config, configPath?: string) {
       const parserResult = ctx.project.parseSourceFile(changedFilePath)
 
       if (parserResult) {
-        const css = ctx.getCss()
+        const sheet = ctx.createSheet()
+        ctx.appendLayerParams(sheet)
+        ctx.appendBaselineCss(sheet)
+
+        const css = ctx.getCss(sheet)
         await ctx.runtime.fs.writeFile(outfile, css)
         return { msg: ctx.messages.buildComplete(1) }
       }
