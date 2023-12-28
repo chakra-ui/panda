@@ -144,11 +144,6 @@ export class Builder {
     done()
   }
 
-  toString = () => {
-    const ctx = this.getContextOrThrow()
-    return ctx.getCss()
-  }
-
   isValidRoot = (root: Root) => {
     const ctx = this.getContextOrThrow()
     let valid = false
@@ -166,10 +161,16 @@ export class Builder {
     const rootCssContent = root.toString()
     root.removeAll()
 
+    const ctx = this.getContextOrThrow()
+    const sheet = ctx.createSheet()
+    ctx.appendLayerParams(sheet)
+    ctx.appendBaselineCss(sheet)
+    const css = ctx.getCss(sheet)
+
     root.append(
       optimizeCss(`
     ${rootCssContent}
-    ${this.toString()}
+    ${css}
     `),
     )
   }
