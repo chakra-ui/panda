@@ -47,11 +47,11 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
       ctx.appendBaselineCss(sheet)
     }
 
-    const { files, collect } = ctx.parseFiles()
+    const files = ctx.parseFiles()
 
     if (outfile) {
       outPath = ensureFile(ctx, cwd, outfile)
-      const css = ctx.getParserCss(collect(), outfile)
+      const css = ctx.getParserCss(ctx.collectStyles(), outfile)
       ctx.runtime.fs.writeFileSync(outfile, css)
     } else {
       await ctx.writeCss()
