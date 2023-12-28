@@ -17,7 +17,6 @@ export class Layers {
   compositions: AtRule
   private utilityRuleMap = new Map<string, AtRule>()
 
-  // TODO remettre obj pour custom recipe.layer
   constructor(private names: CascadeLayers) {
     this.root = postcss.root()
     this.reset = postcss.atRule({ name: 'layer', params: names.reset, nodes: [] })
@@ -90,24 +89,6 @@ export class Layers {
     if (utilities.nodes.length) root.append(utilities)
 
     return root
-  }
-
-  clean() {
-    this.root.removeAll()
-    this.base.removeAll()
-    this.reset.removeAll()
-    this.tokens.removeAll()
-
-    this.recipes.removeAll()
-    this.recipes_base.removeAll()
-
-    this.recipes_slots.removeAll()
-    this.recipes_slots_base.removeAll()
-
-    this.utilities.removeAll()
-    this.compositions.removeAll()
-    this.utilityRuleMap.forEach((rules) => rules.removeAll())
-    this.utilityRuleMap.clear()
   }
 
   get layerNames() {
