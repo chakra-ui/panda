@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { PlaygroundConfig, evalConfig } from '@/src/lib/config/eval-config'
 import { useUpdateEffect } from 'usehooks-ts'
+import { extractImports } from '@/src/lib/config/extract-imports'
 
 export const useConfig = (_config: string) => {
-  const [config, setConfig] = useState<PlaygroundConfig | null>(evalConfig(_config))
+  const hasPresets = extractImports(_config).length || evalConfig(_config)?.presets?.length
+  const defaultConfig = hasPresets ? null : evalConfig(_config)
+  const [config, setConfig] = useState<PlaygroundConfig | null>(defaultConfig)
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -37,3 +40,5 @@ export const useConfig = (_config: string) => {
 
   return { config, isLoading, error }
 }
+
+export type UseConfig = ReturnType<typeof useConfig>
