@@ -39,7 +39,7 @@ export const Playground = (props: UsePlayGroundProps) => {
 
   const { config, error } = useConfig(_state.config)
   const panda = usePanda(_state, config)
-  const responsiveView = useResponsiveView(panda)
+  const responsiveView = useResponsiveView(panda.context.config.theme?.breakpoints)
 
   return (
     <>
