@@ -52,16 +52,20 @@ export class Generator extends Context {
     if (this.config.theme?.keyframes) this.appendCss('keyframes', sheet)
   }
 
+  appendParserCss = (sheet: Stylesheet) => {
+    const decoder = this.decoder.collect(this.encoder)
+    sheet.processDecoder(decoder)
+  }
+
   getParserCss = (decoder: StyleDecoder, filePath?: string) => {
     return generateParserCss(this, decoder, filePath)
   }
 
-  getCss = (sheet?: Stylesheet) => {
-    const stylesheet = sheet ?? this.createSheet()
-    const decoder = this.decoder.collect(this.encoder)
-    stylesheet.processDecoder(decoder)
+  getCss = (_sheet?: Stylesheet) => {
+    const sheet = _sheet ?? this.createSheet()
+    this.appendParserCss(sheet)
 
-    return stylesheet.toCss({
+    return sheet.toCss({
       optimize: true,
       minify: this.config.minify,
     })
