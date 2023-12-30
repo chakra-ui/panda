@@ -37,3 +37,5 @@ const evalConfig = (config: string) => {
     return null
   }
 }
+
+export type UseConfig = ReturnType<typeof useConfig>
