@@ -1,26 +1,7 @@
-import type { ConfigResultWithHooks, OutdirImportMap, TSConfig } from '@pandacss/types'
+import type { PatternDetail, RecipeNode } from '@pandacss/core'
+import type { ConfigResultWithHooks, TSConfig } from '@pandacss/types'
 import type { Context } from './engines'
-import type { RecipeNode, PatternDetail } from '@pandacss/core'
-
-const getImportMap = (outdir: string, configImportMap?: string | OutdirImportMap): ParserImportMap => {
-  if (typeof configImportMap === 'string') {
-    return {
-      css: [configImportMap, 'css'],
-      recipe: [configImportMap, 'recipes'],
-      pattern: [configImportMap, 'patterns'],
-      jsx: [configImportMap, 'jsx'],
-    }
-  }
-
-  const { css, recipes, patterns, jsx } = configImportMap ?? {}
-
-  return {
-    css: css ? [css] : [outdir, 'css'],
-    recipe: recipes ? [recipes] : [outdir, 'recipes'],
-    pattern: patterns ? [patterns] : [outdir, 'patterns'],
-    jsx: jsx ? [jsx] : [outdir, 'jsx'],
-  }
-}
+import { getImportMap, type ParserImportMap } from './import-map'
 
 export const getParserOptions = (ctx: Context): ParserOptions => {
   const { config, jsx, isValidProperty, patterns, recipes } = ctx
@@ -50,13 +31,6 @@ export const getParserOptions = (ctx: Context): ParserOptions => {
     tsOptions: ctx.conf.tsOptions,
     join: (...paths: string[]) => paths.join('/'),
   }
-}
-
-export interface ParserImportMap {
-  css: string[]
-  recipe: string[]
-  pattern: string[]
-  jsx: string[]
 }
 
 export interface ParserJsxOptions {
