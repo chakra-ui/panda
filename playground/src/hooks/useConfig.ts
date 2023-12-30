@@ -4,10 +4,10 @@ import { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
 
-export const useConfig = (_config: string) => {
-  const hasPresets = getImports(_config).length || evalConfig(_config)?.presets?.length
+export const useConfig = (configStr: string) => {
+  const hasPresets = getImports(configStr).length || evalConfig(configStr)?.presets?.length
 
-  const initialConfig = hasPresets ? null : evalConfig(_config)
+  const initialConfig = hasPresets ? null : evalConfig(configStr)
 
   const [config, setConfig] = useState<Config | null>(initialConfig)
   const [error, setError] = useState<Error | null>(null)
@@ -19,7 +19,7 @@ export const useConfig = (_config: string) => {
   useEffect(() => {
     compileWorkerRef.current = new Worker(new URL('../lib/config/compile.worker.ts', import.meta.url))
 
-    if (hasPresets) compileWorkerRef.current?.postMessage(_config)
+    if (hasPresets) compileWorkerRef.current?.postMessage(configStr)
     else {
       setIsLoading(false)
     }
@@ -42,13 +42,13 @@ export const useConfig = (_config: string) => {
 
   useUpdateEffect(() => {
     if (hasPresets) {
-      compileWorkerRef.current?.postMessage(_config)
+      compileWorkerRef.current?.postMessage(configStr)
       setIsLoading(true)
     } else {
-      const newConfig = evalConfig(_config)
+      const newConfig = evalConfig(configStr)
       if (newConfig) setConfig(newConfig)
     }
-  }, [_config])
+  }, [configStr])
 
   return { config, isLoading, error }
 }
