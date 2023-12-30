@@ -1,5 +1,5 @@
-import type { Stylesheet } from '@pandacss/core'
-import type { ArtifactId, ConfigResultWithHooks, StyleDecoderInterface } from '@pandacss/types'
+import type { StyleDecoder, Stylesheet } from '@pandacss/core'
+import type { ArtifactId, ConfigResultWithHooks } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -24,11 +24,11 @@ export class Generator extends Context {
     this.messages = getMessages(this)
   }
 
-  getArtifacts(ids?: ArtifactId[] | undefined) {
+  getArtifacts = (ids?: ArtifactId[] | undefined) => {
     return generateArtifacts(this, ids)
   }
 
-  appendCss(type: CssArtifactType, sheet: Stylesheet) {
+  appendCss = (type: CssArtifactType, sheet: Stylesheet) => {
     match(type)
       .with('preflight', () => generateResetCss(this, sheet))
       .with('tokens', () => generateTokenCss(this, sheet))
@@ -40,11 +40,11 @@ export class Generator extends Context {
       })
   }
 
-  appendLayerParams(sheet: Stylesheet) {
+  appendLayerParams = (sheet: Stylesheet) => {
     sheet.layers.root.prepend(sheet.layers.params)
   }
 
-  appendBaselineCss(sheet: Stylesheet) {
+  appendBaselineCss = (sheet: Stylesheet) => {
     if (this.config.preflight) this.appendCss('preflight', sheet)
     if (!this.tokens.isEmpty) this.appendCss('tokens', sheet)
     if (this.config.staticCss) this.appendCss('static', sheet)
@@ -52,11 +52,11 @@ export class Generator extends Context {
     if (this.config.theme?.keyframes) this.appendCss('keyframes', sheet)
   }
 
-  getParserCss(decoder: StyleDecoderInterface, filePath?: string) {
+  getParserCss = (decoder: StyleDecoder, filePath?: string) => {
     return generateParserCss(this, decoder, filePath)
   }
 
-  getCss(sheet?: Stylesheet) {
+  getCss = (sheet?: Stylesheet) => {
     const stylesheet = sheet ?? this.createSheet()
     const decoder = this.decoder.collect(this.encoder)
     stylesheet.processDecoder(decoder)
