@@ -1,17 +1,16 @@
 import type { Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import { createProject, type PandaProject } from '@pandacss/parser'
+import { Project } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime } from '@pandacss/types'
 import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
-import { PandaOutputEngine } from './output-engine'
+import { OutputEngine } from './output-engine'
 
 export class PandaContext extends Generator {
   runtime: Runtime
-  project: PandaProject
-  getFiles: () => string[]
-  output: PandaOutputEngine
+  project: Project
+  output: OutputEngine
   diff: DiffEngine
 
   constructor(conf: ConfigResultWithHooks) {
@@ -26,23 +25,27 @@ export class PandaContext extends Generator {
       logger.level = config.logLevel
     }
 
-    const { include, exclude, cwd } = config
-    this.getFiles = () => this.runtime.fs.glob({ include, exclude, cwd })
-
-    this.project = createProject({
+    this.project = new Project({
       ...conf.tsconfig,
       getFiles: this.getFiles.bind(this),
       readFile: this.runtime.fs.readFileSync.bind(this),
       hooks: conf.hooks,
-      // @ts-expect-error join is specified more than once
-      parserOptions: { join: this.runtime.path.join, ...this.parserOptions },
+      parserOptions: {
+        ...this.parserOptions,
+        join: this.runtime.path.join || this.parserOptions.join,
+      },
     })
 
-    this.output = new PandaOutputEngine(this)
+    this.output = new OutputEngine(this)
     this.diff = new DiffEngine(this)
   }
 
-  parseFiles(encoder = this.parserOptions.encoder) {
+  getFiles = () => {
+    const { include, exclude, cwd } = this.config
+    return this.runtime.fs.glob({ include, exclude, cwd })
+  }
+
+  parseFiles = (encoder = this.parserOptions.encoder) => {
     const files = this.getFiles()
     const filesWithCss = [] as string[]
 
@@ -59,7 +62,7 @@ export class PandaContext extends Generator {
     return filesWithCss
   }
 
-  async writeCss(sheet?: Stylesheet) {
+  writeCss = (sheet?: Stylesheet) => {
     return this.output.write({
       id: 'styles.css',
       dir: this.paths.root,

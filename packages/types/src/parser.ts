@@ -7,7 +7,7 @@ export interface ResultItem {
   box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray
 }
 
-export interface ParserResultType {
+export interface ParserResultInterface {
   all: Array<ResultItem>
   jsx: Set<ResultItem>
   css: Set<ResultItem>

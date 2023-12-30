@@ -1,8 +1,8 @@
 import type { ParserOptions } from '@pandacss/generator'
 import { getOrCreateSet } from '@pandacss/shared'
-import type { ParserResultType, ResultItem } from '@pandacss/types'
+import type { ParserResultInterface, ResultItem } from '@pandacss/types'
 
-export class ParserResult implements ParserResultType {
+export class ParserResult implements ParserResultInterface {
   /** Ordered list of all ResultItem */
   all = [] as Array<ResultItem>
   jsx = new Set<ResultItem>()
