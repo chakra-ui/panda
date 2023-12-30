@@ -5,15 +5,11 @@ import type { Utility } from './utility'
 
 export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>
 
-export type AtomicRuleContext = Pick<StylesheetContext, 'conditions' | 'hash' | 'utility' | 'transform' | 'layers'>
-
 export interface TransformResult {
   layer?: string
   className: string
   styles: Dict
 }
-
-type AtomicRuleTransform = (prop: string, value: any) => TransformResult
 
 export interface StylesheetContext {
   layers: Layers
@@ -21,7 +17,6 @@ export interface StylesheetContext {
   conditions: Conditions
   helpers: PatternHelpers
   hash?: boolean
-  transform?: AtomicRuleTransform
 }
 
 export interface RecipeNode {

@@ -51,10 +51,10 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
 
     if (outfile) {
       outPath = ensureFile(ctx, cwd, outfile)
-      const css = ctx.getParserCss(ctx.collectStyles(), outfile)
+      const css = ctx.getCss(sheet)
       ctx.runtime.fs.writeFileSync(outfile, css)
     } else {
-      await ctx.writeCss()
+      await ctx.writeCss(sheet)
     }
 
     const msg = ctx.messages.buildComplete(files.length)

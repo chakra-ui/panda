@@ -14,13 +14,5 @@ export { StyleDecoder } from './style-decoder'
 export { StyleEncoder } from './style-encoder'
 export { Stylesheet } from './stylesheet'
 export { toCss } from './to-css'
-export type {
-  AtomicRuleContext,
-  CssOptions,
-  LayerName,
-  RecipeContext,
-  RecipeNode,
-  StylesheetContext,
-  TransformResult,
-} from './types'
+export type { RecipeNode, StylesheetContext, TransformResult, RecipeContext } from './types'
 export { Utility } from './utility'
