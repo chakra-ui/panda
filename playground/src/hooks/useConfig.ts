@@ -7,7 +7,9 @@ import { useUpdateEffect } from 'usehooks-ts'
 export const useConfig = (_config: string) => {
   const hasPresets = getImports(_config).length || evalConfig(_config)?.presets?.length
 
-  const [config, setConfig] = useState<Config | null>(evalConfig(_config))
+  const initialConfig = hasPresets ? null : evalConfig(_config)
+
+  const [config, setConfig] = useState<Config | null>(initialConfig)
   const [error, setError] = useState<Error | null>(null)
 
   const [isLoading, setIsLoading] = useState(true)
