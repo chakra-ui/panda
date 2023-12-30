@@ -2,7 +2,7 @@ import { evalConfig } from '@/src/lib/config/eval-config'
 import { getImports } from '@/src/lib/config/get-imports'
 import { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
-import { useUpdateEffect } from 'usehooks-ts'
+import { useDebounce, useUpdateEffect } from 'usehooks-ts'
 
 export const useConfig = (configStr: string) => {
   const hasPresets = getImports(configStr).length || evalConfig(configStr)?.presets?.length
@@ -12,7 +12,8 @@ export const useConfig = (configStr: string) => {
   const [config, setConfig] = useState<Config | null>(initialConfig)
   const [error, setError] = useState<Error | null>(null)
 
-  const [isLoading, setIsLoading] = useState(true)
+  const [_isLoading, setIsLoading] = useState(true)
+  const isLoading = useDebounce(_isLoading, 500)
 
   const compileWorkerRef = useRef<Worker>()
 
