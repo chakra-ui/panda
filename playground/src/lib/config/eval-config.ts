@@ -9,17 +9,13 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-export const evalConfig = (config: string, _scope?: Dict): PlaygroundConfig | null => {
-  const codeTrimmed = config
+export const evalConfig = (configStr: string, _scope?: Dict): PlaygroundConfig | null => {
+  const codeTrimmed = configStr
     .replace(/export /g, '')
-    .replace(/\bimport\b[^;]+;/g, '')
+    .replace(/\bimport\b[^\n;]+[;\n]?/g, '')
     .trim()
 
-  try {
-    const scope = Object.assign({}, pandaDefs, _scope)
-    const config = evalCode(`return (() => {${codeTrimmed}; return config})()`, scope)
-    return config
-  } catch (e) {
-    return null
-  }
+  const scope = Object.assign({}, pandaDefs, _scope)
+  const config = evalCode(`return (() => {${codeTrimmed}; return config})()`, scope)
+  return config
 }
