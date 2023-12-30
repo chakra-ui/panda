@@ -18,11 +18,13 @@ import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
 import { configureAutoImports } from '../lib/auto-import'
 import { UsePanda } from '@/src/hooks/usePanda'
+
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
   panda: UsePanda
   diffState?: State | null
+  isLoading: boolean
 }
 
 type Tab = 'css' | 'code' | 'config'

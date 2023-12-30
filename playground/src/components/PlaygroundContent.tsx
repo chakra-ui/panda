@@ -43,7 +43,7 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
 
   const _state = diffState ?? state
 
-  const { config, error } = _config
+  const { config, isLoading, error } = _config
   const panda = usePanda(_state, config)
   const responsiveView = useResponsiveView(panda.context.config.theme?.breakpoints)
 
@@ -118,7 +118,7 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
             className={splitter()}
           >
             <SplitterPanel id="editor">
-              <Editor value={state} onChange={setState} panda={panda} diffState={diffState} />
+              <Editor value={state} onChange={setState} panda={panda} diffState={diffState} isLoading={isLoading} />
             </SplitterPanel>
 
             <ArtifactsPanel panda={panda} />
