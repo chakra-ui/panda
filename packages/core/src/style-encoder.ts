@@ -75,7 +75,8 @@ export class StyleEncoder {
     let prevProp = ''
 
     // { mx: 4 } => { marginX: 4 }
-    const normalized = normalizeStyleObject(obj, this.context, !baseEntry?.variants)
+    const isRecipe = !!baseEntry?.variants
+    const normalized = normalizeStyleObject(obj, this.context, !isRecipe)
 
     traverse(
       normalized,
