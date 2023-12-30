@@ -45,7 +45,7 @@ export class PandaContext extends Generator {
     return this.runtime.fs.glob({ include, exclude, cwd })
   }
 
-  parseFiles = (_encoder: StyleEncoder) => {
+  parseFiles = (_encoder?: StyleEncoder) => {
     const encoder = _encoder || this.parserOptions.encoder
 
     const files = this.getFiles()
