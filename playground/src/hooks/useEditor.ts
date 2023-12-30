@@ -3,7 +3,7 @@ import * as Monaco from 'monaco-editor'
 import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings/custom-editor'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useUpdateEffect } from 'usehooks-ts'
+import { useLocalStorage, useUpdateEffect } from 'usehooks-ts'
 
 import { State } from './usePlayground'
 
@@ -108,10 +108,11 @@ export function useEditor(props: PandaEditorProps) {
   const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
-  const [wordWrap, setWordwrap] = useState<'on' | 'off'>('off')
+  const [wordWrap, setWordwrap] = useLocalStorage<'on' | 'off'>('editor_wordWrap', 'off')
 
   const onToggleWrap = useCallback(() => {
     setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
