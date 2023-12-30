@@ -20,7 +20,6 @@ import type {
 } from '@pandacss/types'
 import type { CoreContext } from './core-context'
 
-const identity = (v: any) => v
 const urlRegex = /^https?:\/\//
 
 export class StyleEncoder {
@@ -33,12 +32,11 @@ export class StyleEncoder {
   recipes = new Map<string, Set<string>>()
   recipes_base = new Map<string, Set<string>>()
 
-  private filterStyleProps: (props: Dict) => Dict
+  constructor(private context: CoreContext) {}
 
-  constructor(private context: CoreContext) {
-    this.filterStyleProps = context.isTemplateLiteralSyntax
-      ? identity
-      : (props: Dict) => filterProps(this.context.isValidProperty, props)
+  filterStyleProps(props: Dict): Dict {
+    if (this.context.isTemplateLiteralSyntax) return props
+    return filterProps(this.context.isValidProperty, props)
   }
 
   clone() {

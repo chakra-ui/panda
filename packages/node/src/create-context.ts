@@ -1,4 +1,4 @@
-import type { Stylesheet } from '@pandacss/core'
+import type { StyleEncoder, Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { Project } from '@pandacss/parser'
@@ -45,7 +45,9 @@ export class PandaContext extends Generator {
     return this.runtime.fs.glob({ include, exclude, cwd })
   }
 
-  parseFiles = (encoder = this.parserOptions.encoder) => {
+  parseFiles = (_encoder: StyleEncoder) => {
+    const encoder = _encoder || this.parserOptions.encoder
+
     const files = this.getFiles()
     const filesWithCss = [] as string[]
 
@@ -54,7 +56,7 @@ export class PandaContext extends Generator {
       const result = this.project.parseSourceFile(file, encoder)
 
       measure()
-      if (!result || this.encoder.isEmpty()) return
+      if (!result || encoder.isEmpty()) return
 
       filesWithCss.push(file)
     })
