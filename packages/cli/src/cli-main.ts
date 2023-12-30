@@ -1,4 +1,4 @@
-import { findConfigFile } from '@pandacss/config'
+import { findConfig } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
   PandaContext,
@@ -261,7 +261,7 @@ export async function main() {
       })
 
       const buildOpts = {
-        configPath: findConfigFile({ cwd, file: config })!,
+        configPath: findConfig({ cwd, file: config })!,
         outDir: resolve(outdir || ctx.studio.outdir),
         port,
         host,

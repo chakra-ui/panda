@@ -1,3 +1,4 @@
+import { findConfig } from '@pandacss/config'
 import { messages } from '@pandacss/generator'
 import { logger, quote } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
@@ -6,7 +7,6 @@ import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
 import { join } from 'pathe'
 import getPackageManager from 'preferred-pm'
-import { findConfig } from './config'
 import prettier from 'prettier'
 
 type SetupOptions = Partial<Config> & {
@@ -16,7 +16,7 @@ type SetupOptions = Partial<Config> & {
 export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
   const { force, outExtension, jsxFramework, syntax } = opts
 
-  const configFile = findConfig()
+  const configFile = findConfig({ cwd })
 
   const pmResult = await getPackageManager(cwd)
   const pm = pmResult?.name ?? 'npm'

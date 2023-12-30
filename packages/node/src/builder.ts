@@ -1,3 +1,4 @@
+import { findConfig, type DiffConfigResult } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
@@ -5,11 +6,10 @@ import { existsSync } from 'fs'
 import fsExtra from 'fs-extra'
 import { resolve } from 'pathe'
 import type { Message, Root } from 'postcss'
-import { findConfig, loadConfigAndCreateContext } from './config'
-import { PandaContext } from './create-context'
-import type { DiffConfigResult } from './diff-engine'
-import { extractFile } from './extract'
 import { codegen } from './codegen'
+import { loadConfigAndCreateContext } from './config'
+import { PandaContext } from './create-context'
+import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
 
 const fileModifiedMap = new Map<string, number>()
@@ -24,8 +24,8 @@ export class Builder {
   private filesMeta: { changes: Map<string, FileMeta>; hasFilesChanged: boolean } | undefined
   private affecteds: DiffConfigResult | undefined
 
-  getConfigPath = () => {
-    const configPath = findConfig()
+  getConfigPath = (cwd?: string) => {
+    const configPath = findConfig({ cwd })
 
     if (!configPath) {
       throw new ConfigNotFoundError()
@@ -37,7 +37,7 @@ export class Builder {
   setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
-    const configPath = options.configPath ?? this.getConfigPath()
+    const configPath = options.configPath ?? this.getConfigPath(options.cwd)
 
     if (!this.context) {
       return this.setupContext({ configPath, cwd: options.cwd })
