@@ -1,4 +1,6 @@
-import { OnMount, OnChange, BeforeMount, EditorProps, Monaco } from '@monaco-editor/react'
+import { OnMount, OnChange, BeforeMount, EditorProps, Monaco as MonacoType } from '@monaco-editor/react'
+import * as Monaco from 'monaco-editor'
+import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings/custom-editor'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
@@ -45,13 +47,24 @@ export const defaultEditorOptions: EditorProps['options'] = {
   fontWeight: '400',
 }
 
-const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) => {
+const activateAutoTypings = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
+  const { dispose } = await AutoTypings.create(monacoEditor, {
+    monaco,
+    sourceCache: new LocalStorageCache(),
+    fileRootPath: 'file:///',
+    debounceDuration: 500,
+  })
+
+  return dispose
+}
+
+const activateMonacoJSXHighlighter = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
   const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(getWorker(), monaco)
-  const uri = monacoEditor.getModel().uri
+  const uri = monacoEditor.getModel()?.uri
 
   const { highlighter, dispose } = monacoJsxSyntaxHighlight.highlighterBuilder({
     editor: monacoEditor,
-    filePath: uri?.toString() ?? uri.path,
+    filePath: uri?.toString() ?? uri?.path,
   })
 
   highlighter()
@@ -102,6 +115,7 @@ export function useEditor(props: PandaEditorProps) {
     (editor, monaco) => {
       activateMonacoJSXHighlighter(editor, monaco)
       configureAutoImports({ context: autoImportCtx, monaco, editor })
+      activateAutoTypings(editor, monaco)
 
       function registerKeybindings() {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
