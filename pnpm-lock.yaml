@@ -394,9 +394,6 @@ importers:
       javascript-stringify:
         specifier: 2.1.0
         version: 2.1.0
-      lil-fp:
-        specifier: 1.4.5
-        version: 1.4.5
       outdent:
         specifier: ' ^0.8.0'
         version: 0.8.0
@@ -492,9 +489,6 @@ importers:
       is-glob:
         specifier: ^4.0.3
         version: 4.0.3
-      lil-fp:
-        specifier: 1.4.5
-        version: 1.4.5
       lodash.merge:
         specifier: 4.6.2
         version: 4.6.2
@@ -574,9 +568,6 @@ importers:
       '@vue/compiler-sfc':
         specifier: ^3.3.4
         version: 3.3.4
-      lil-fp:
-        specifier: 1.4.5
-        version: 1.4.5
       magic-string:
         specifier: ^0.30.2
         version: 0.30.2

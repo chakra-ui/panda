@@ -1,5 +1,5 @@
 import { isCssProperty } from '@pandacss/is-valid-prop'
-import { compact, mapObject, memo } from '@pandacss/shared'
+import { compact, isBoolean, isString, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
@@ -11,7 +11,6 @@ import type {
   Theme,
   UserConfig,
 } from '@pandacss/types'
-import { isBool, isStr } from 'lil-fp'
 import { assignCompositions } from './compositions'
 import { Conditions } from './conditions'
 import { Layers } from './layers'
@@ -99,15 +98,15 @@ export class CoreContext {
 
   get hash(): HashOptions {
     return {
-      tokens: isBool(this.config.hash) ? this.config.hash : this.config.hash?.cssVar,
-      className: isBool(this.config.hash) ? this.config.hash : this.config.hash?.className,
+      tokens: isBoolean(this.config.hash) ? this.config.hash : this.config.hash?.cssVar,
+      className: isBoolean(this.config.hash) ? this.config.hash : this.config.hash?.className,
     }
   }
 
   get prefix(): PrefixOptions {
     return {
-      tokens: isStr(this.config.prefix) ? this.config.prefix : this.config.prefix?.cssVar,
-      className: isStr(this.config.prefix) ? this.config.prefix : this.config.prefix?.className,
+      tokens: isString(this.config.prefix) ? this.config.prefix : this.config.prefix?.cssVar,
+      className: isString(this.config.prefix) ? this.config.prefix : this.config.prefix?.className,
     }
   }
 
