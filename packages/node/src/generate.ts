@@ -3,10 +3,10 @@ import type { ArtifactId, Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
-import { emitArtifacts } from './emit-artifact'
+import { codegen } from './codegen'
 
 async function build(ctx: PandaContext, artifactIds?: ArtifactId[]) {
-  await emitArtifacts(ctx, artifactIds)
+  await codegen(ctx, artifactIds)
 
   if (ctx.config.emitTokensOnly) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')

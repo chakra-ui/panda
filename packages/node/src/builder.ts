@@ -9,7 +9,7 @@ import { findConfig, loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import type { DiffConfigResult } from './diff-engine'
 import { extractFile } from './extract'
-import { emitArtifacts } from './emit-artifact'
+import { codegen } from './codegen'
 import { parseDependency } from './parse-dependency'
 
 const fileModifiedMap = new Map<string, number>()
@@ -70,7 +70,7 @@ export class Builder {
     // ensure emit is only called when the config is changed
     if (this.hasEmitted && this.affecteds?.hasConfigChanged) {
       logger.debug('builder', 'Emit artifacts after config change')
-      await emitArtifacts(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
+      await codegen(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
     }
 
     this.hasEmitted = true

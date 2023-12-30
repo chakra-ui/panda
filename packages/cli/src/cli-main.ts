@@ -3,8 +3,9 @@ import { colors, logger } from '@pandacss/logger'
 import {
   PandaContext,
   analyzeTokens,
+  codegen,
+  cssgen,
   debugFiles,
-  emitArtifacts,
   generate,
   loadConfigAndCreateContext,
   setupConfig,
@@ -13,7 +14,6 @@ import {
   shipFiles,
   writeAnalyzeJSON,
   type CssArtifactType,
-  cssgen,
   type CssGenOptions,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
@@ -78,7 +78,7 @@ export async function main() {
       await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
       const ctx = await loadConfigAndCreateContext({ cwd, configPath })
-      const { msg, box } = await emitArtifacts(ctx)
+      const { msg, box } = await codegen(ctx)
 
       if (gitignore) {
         setupGitIgnore(ctx)
@@ -108,7 +108,7 @@ export async function main() {
 
       const ctx = await loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
 
-      const { msg } = await emitArtifacts(ctx)
+      const { msg } = await codegen(ctx)
       logger.log(msg)
 
       if (watch) {
@@ -124,7 +124,7 @@ export async function main() {
           logger.info('ctx:change', 'config changed, rebuilding...')
           // in the codegen, we don't need to create a new panda context
           const affecteds = await ctx.diff.reloadConfigAndRefreshContext()
-          await emitArtifacts(ctx, Array.from(affecteds.artifacts))
+          await codegen(ctx, Array.from(affecteds.artifacts))
           logger.info('ctx:updated', 'config rebuilt ✅')
         })
 
