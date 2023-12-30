@@ -48,14 +48,26 @@ export const defaultEditorOptions: EditorProps['options'] = {
 }
 
 const activateAutoTypings = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
-  const { dispose } = await AutoTypings.create(monacoEditor, {
-    monaco,
-    sourceCache: new LocalStorageCache(),
-    fileRootPath: 'file:///',
-    debounceDuration: 500,
+  const activate = async () => {
+    const { dispose } = await AutoTypings.create(monacoEditor, {
+      monaco,
+      sourceCache: new LocalStorageCache(),
+      fileRootPath: 'file:///',
+      debounceDuration: 500,
+    })
+
+    return dispose
+  }
+
+  activate()
+
+  monacoEditor.onDidChangeModel(() => {
+    activate()
   })
 
-  return dispose
+  monacoEditor.onDidChangeModelContent(() => {
+    activate()
+  })
 }
 
 const activateMonacoJSXHighlighter = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
