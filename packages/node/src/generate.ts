@@ -5,8 +5,8 @@ import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import { emitArtifacts } from './emit-artifact'
 
-async function build(ctx: PandaContext, ids?: ArtifactId[]) {
-  await emitArtifacts(ctx, ids)
+async function build(ctx: PandaContext, artifactIds?: ArtifactId[]) {
+  await emitArtifacts(ctx, artifactIds)
 
   if (ctx.config.emitTokensOnly) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
@@ -15,8 +15,8 @@ async function build(ctx: PandaContext, ids?: ArtifactId[]) {
   const sheet = ctx.createSheet()
   ctx.appendLayerParams(sheet)
   ctx.appendBaselineCss(sheet)
-
   ctx.parseFiles()
+
   await ctx.writeCss(sheet)
   logger.info('css:emit', 'Successfully built the css files ✨')
 }
@@ -36,6 +36,7 @@ export async function generate(config: Config, configPath?: string) {
       const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
         ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
       })
+
       if (!affecteds.hasConfigChanged) {
         logger.debug('builder', 'Config didnt change, skipping rebuild')
         return
