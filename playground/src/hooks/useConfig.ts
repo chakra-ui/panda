@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useDebounce, useUpdateEffect } from 'usehooks-ts'
 
 export const useConfig = (configStr: string) => {
-  const hasPresets = getImports(configStr).length || evalConfig(configStr)?.presets?.length
+  const hasPresets = getImports(configStr).length || validateConfig(configStr)?.presets?.length
 
-  const initialConfig = hasPresets ? null : evalConfig(configStr)
+  const initialConfig = hasPresets ? null : validateConfig(configStr)
 
   const [config, setConfig] = useState<Config | null>(initialConfig)
   const [error, setError] = useState<Error | null>(null)
@@ -19,7 +19,6 @@ export const useConfig = (configStr: string) => {
 
   useEffect(() => {
     compileWorkerRef.current = new Worker(new URL('../lib/config/compile.worker.ts', import.meta.url))
-
     if (hasPresets) compileWorkerRef.current?.postMessage(configStr)
     else {
       setIsLoading(false)
@@ -46,8 +45,12 @@ export const useConfig = (configStr: string) => {
       compileWorkerRef.current?.postMessage(configStr)
       setIsLoading(true)
     } else {
-      const newConfig = evalConfig(configStr)
-      if (newConfig) setConfig(newConfig)
+      try {
+        const newConfig = evalConfig(configStr)
+        if (newConfig) setConfig(newConfig)
+      } catch (error) {
+        setError(error as Error)
+      }
     }
   }, [configStr])
 
@@ -55,3 +58,11 @@ export const useConfig = (configStr: string) => {
 }
 
 export type UseConfig = ReturnType<typeof useConfig>
+
+const validateConfig = (configStr: string) => {
+  try {
+    return evalConfig(configStr)
+  } catch (error) {
+    return null
+  }
+}

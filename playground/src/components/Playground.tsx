@@ -10,7 +10,7 @@ export const Playground = (props: UsePlayGroundProps) => {
 
   const config = useConfig(_state.config)
 
-  if (!config.config) return null
+  if (!config.config && !config.error) return null
 
   return <PlaygroundContent playground={playground} config={config} />
 }
