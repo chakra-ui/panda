@@ -20,6 +20,7 @@ import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
 import { configureAutoImports } from '../lib/auto-import'
 import { UsePanda } from '@/src/hooks/usePanda'
+import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
 
 export interface PandaEditorProps {
   value: State
@@ -54,6 +55,7 @@ const activateAutoTypings = async (monacoEditor: Monaco.editor.IStandaloneCodeEd
       sourceCache: new LocalStorageCache(),
       fileRootPath: 'file:///',
       debounceDuration: 500,
+      sourceResolver: new TypingsSourceResolver(),
     })
 
     return dispose
