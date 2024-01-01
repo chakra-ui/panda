@@ -115,6 +115,7 @@ export class StyleEncoder {
           prevProp = prop
           return
         }
+
         const resolvedCondition = getResolvedCondition(path, isCondition)
 
         const hashed = hashStyleEntry(Object.assign(baseEntry ?? {}, { prop, value, cond: resolvedCondition }))
@@ -208,6 +209,13 @@ export class StyleEncoder {
     const slots = getSlotRecipes(recipe)
     for (const slotRecipe of Object.values(slots)) {
       this.processAtomicRecipe(slotRecipe)
+    }
+  }
+
+  toJSON() {
+    return {
+      atomic: Array.from(this.atomic),
+      recipes: Object.fromEntries(Array.from(this.recipes.entries()).map(([name, set]) => [name, Array.from(set)])),
     }
   }
 

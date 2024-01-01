@@ -41,6 +41,28 @@ const cva = (styles: Dict) => {
 }
 
 describe('hash factory', () => {
+  test('simple', () => {
+    const result = css({
+      mt: {
+        base: 'xs',
+        _hover: { _dark: '40px' },
+        md: '50px',
+      },
+      _dark: {
+        mt: 5,
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        "marginTop]___[value:xs",
+        "marginTop]___[value:40px]___[cond:_hover<___>_dark",
+        "marginTop]___[value:50px]___[cond:md",
+        "marginTop]___[value:5]___[cond:_dark",
+      }
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',
@@ -72,8 +94,8 @@ describe('hash factory', () => {
           '.target &': {
             color: {
               base: 'cyan',
-              _opened: 'orange',
-              _xl: 'pink',
+              _open: 'orange',
+              xl: 'pink',
             },
           },
         },
@@ -102,8 +124,8 @@ describe('hash factory', () => {
         "color]___[value:green]___[cond:&[data-attr='test']",
         "color]___[value:purple]___[cond:&[data-attr='test']<___>_expanded",
         "color]___[value:cyan]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
-        "_opened]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
-        "_xl]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
+        "color]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>_open",
+        "color]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>xl",
       }
     `,
     )
@@ -503,17 +525,17 @@ describe('hash factory', () => {
 
   test('fromJSON', () => {
     const ctx = createGeneratorContext()
-    const hf = ctx.encoder
-    hf.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
-    expect(hf.atomic).toMatchInlineSnapshot(`
+    const encoder = ctx.encoder
+    encoder.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+    expect(encoder.atomic).toMatchInlineSnapshot(`
       Set {
         "color]___[value:red",
         "color]___[value:blue",
       }
     `)
 
-    hf.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
-    expect(hf.recipes).toMatchInlineSnapshot(`
+    encoder.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+    expect(encoder.recipes).toMatchInlineSnapshot(`
       Map {
         "buttonStyle" => Set {
           "variant]___[value:solid",
@@ -521,7 +543,7 @@ describe('hash factory', () => {
       }
     `)
 
-    expect(hf.recipes_base).toMatchInlineSnapshot(`
+    expect(encoder.recipes_base).toMatchInlineSnapshot(`
       Map {
         "buttonStyle" => Set {
           "display]___[value:inline-flex]___[recipe:buttonStyle",
@@ -533,7 +555,7 @@ describe('hash factory', () => {
     `)
 
     expect(
-      hf.clone().fromJSON(
+      encoder.clone().fromJSON(
         JSON.stringify({
           styles: {
             atomic: [

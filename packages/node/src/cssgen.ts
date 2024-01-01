@@ -1,42 +1,33 @@
 import { logger } from '@pandacss/logger'
-import { resolve } from 'pathe'
+import type { CssArtifactType } from '@pandacss/types'
 import type { PandaContext } from './create-context'
-import type { CssArtifactType } from './extract'
-
-const ensureFile = (ctx: PandaContext, cwd: string, file: string) => {
-  const outPath = resolve(cwd, file)
-  const dirname = ctx.runtime.path.dirname(outPath)
-  ctx.runtime.fs.ensureDirSync(dirname)
-
-  return outPath
-}
 
 export interface CssGenOptions {
   cwd: string
   outfile?: string
-  cssArtifact?: CssArtifactType
+  type?: CssArtifactType
   minimal?: boolean
 }
 
 export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
-  const { cwd, outfile, cssArtifact, minimal } = options
+  const { cwd, outfile, type, minimal } = options
   let outPath = ctx.runtime.path.join(...ctx.paths.getFilePath('styles.css'))
 
   const sheet = ctx.createSheet()
   //
-  if (cssArtifact) {
+  if (type) {
     //
-    ctx.appendCss(cssArtifact, sheet)
+    ctx.appendCssOfType(type, sheet)
 
     if (outfile) {
-      outPath = ensureFile(ctx, cwd, outfile)
+      outPath = ctx.output.ensure(outfile, cwd)
       const css = ctx.getCss(sheet)
       ctx.runtime.fs.writeFileSync(outfile, css)
     } else {
       await ctx.writeCss(sheet)
     }
 
-    const msg = ctx.messages.cssArtifactComplete(cssArtifact)
+    const msg = ctx.messages.cssArtifactComplete(type)
     logger.info('css:emit:path', outPath)
     logger.info('css:emit:artifact', msg)
     //
@@ -47,13 +38,18 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
       ctx.appendBaselineCss(sheet)
     }
 
-    const files = ctx.parseFiles()
+    const { files } = ctx.parseFiles()
+    ctx.appendParserCss(sheet)
 
     if (outfile) {
-      outPath = ensureFile(ctx, cwd, outfile)
+      //
+      outPath = ctx.output.ensure(outfile, cwd)
+
       const css = ctx.getCss(sheet)
       ctx.runtime.fs.writeFileSync(outfile, css)
+      //
     } else {
+      //
       await ctx.writeCss(sheet)
     }
 

@@ -6,7 +6,7 @@ import { fixtureDefaults } from '@pandacss/fixture'
 const resetCss = (config: ConfigResultWithHooks) => {
   const ctx = new Generator(config)
   const sheet = ctx.createSheet()
-  ctx.appendCss('preflight', sheet)
+  ctx.appendCssOfType('preflight', sheet)
   return sheet.toCss({ optimize: true })
 }
 

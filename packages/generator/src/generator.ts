@@ -1,5 +1,5 @@
 import type { StyleDecoder, Stylesheet } from '@pandacss/core'
-import type { ArtifactId, ConfigResultWithHooks } from '@pandacss/types'
+import type { ArtifactId, ConfigResultWithHooks, CssArtifactType } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -11,8 +11,6 @@ import { generateTokenCss } from './artifacts/css/token-css'
 import { Context } from './engines'
 import { getMessages } from './messages'
 import { getParserOptions, type ParserOptions } from './parser-options'
-
-export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 
 export class Generator extends Context {
   messages: ReturnType<typeof getMessages>
@@ -28,7 +26,7 @@ export class Generator extends Context {
     return generateArtifacts(this, ids)
   }
 
-  appendCss = (type: CssArtifactType, sheet: Stylesheet) => {
+  appendCssOfType = (type: CssArtifactType, sheet: Stylesheet) => {
     match(type)
       .with('preflight', () => generateResetCss(this, sheet))
       .with('tokens', () => generateTokenCss(this, sheet))
@@ -45,11 +43,11 @@ export class Generator extends Context {
   }
 
   appendBaselineCss = (sheet: Stylesheet) => {
-    if (this.config.preflight) this.appendCss('preflight', sheet)
-    if (!this.tokens.isEmpty) this.appendCss('tokens', sheet)
-    if (this.config.staticCss) this.appendCss('static', sheet)
-    this.appendCss('global', sheet)
-    if (this.config.theme?.keyframes) this.appendCss('keyframes', sheet)
+    if (this.config.preflight) this.appendCssOfType('preflight', sheet)
+    if (!this.tokens.isEmpty) this.appendCssOfType('tokens', sheet)
+    if (this.config.staticCss) this.appendCssOfType('static', sheet)
+    this.appendCssOfType('global', sheet)
+    if (this.config.theme?.keyframes) this.appendCssOfType('keyframes', sheet)
   }
 
   appendParserCss = (sheet: Stylesheet) => {
@@ -61,10 +59,8 @@ export class Generator extends Context {
     return generateParserCss(this, decoder, filePath)
   }
 
-  getCss = (_sheet?: Stylesheet) => {
-    const sheet = _sheet ?? this.createSheet()
-    this.appendParserCss(sheet)
-
+  getCss = (stylesheet?: Stylesheet) => {
+    const sheet = stylesheet ?? this.createSheet()
     return sheet.toCss({
       optimize: true,
       minify: this.config.minify,

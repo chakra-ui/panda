@@ -2942,12 +2942,11 @@ describe('extract to css output pipeline', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
-
         .textStyle--size_h1 {
           font-size: 5rem;
           line-height: 1em;
@@ -2955,7 +2954,6 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
-
           .textStyle {
             font-family: var(--fonts-mono);
       }
@@ -2979,13 +2977,12 @@ describe('extract to css output pipeline', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
-    const css = ctx.getCss()
+    ctx.appendCssOfType('static', sheet)
+    const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-
           [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
             color: red
       }
@@ -3038,12 +3035,11 @@ describe('extract to css output pipeline', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
-
         .button__container--size_sm {
           font-size: 5rem;
           line-height: 1em
@@ -3054,7 +3050,6 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
-
           .button__container {
             font-family: var(--fonts-mono)
       }

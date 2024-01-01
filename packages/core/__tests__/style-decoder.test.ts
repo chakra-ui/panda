@@ -75,8 +75,8 @@ describe('style decoder', () => {
           '.target &': {
             color: {
               base: 'cyan',
-              _opened: 'orange',
-              _xl: 'pink',
+              _open: 'orange',
+              xl: 'pink',
             },
           },
         },
@@ -553,7 +553,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange",
+          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange",
           "conditions": [
             {
               "raw": "&[data-attr='test']",
@@ -566,24 +566,31 @@ describe('style decoder', () => {
               "value": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
             },
             {
+              "raw": "&:is([open], [data-open], [data-state=\\"open\\"])",
+              "type": "self-nesting",
+              "value": "&:is([open], [data-open], [data-state=\\"open\\"])",
+            },
+            {
               "raw": ".target &",
               "type": "parent-nesting",
               "value": ".target &",
             },
           ],
           "entry": {
-            "cond": "&[data-attr='test']<___>_expanded<___>.target &",
-            "prop": "_opened",
+            "cond": "&[data-attr='test']<___>_expanded<___>.target &<___>_open",
+            "prop": "color",
             "value": "orange",
           },
-          "hash": "_opened]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
+          "hash": "color]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>_open",
           "layer": undefined,
           "result": {
-            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange": {
+            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange": {
               "&[data-attr='test']": {
                 "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])": {
-                  ".target &": {
-                    "_opened": "orange",
+                  "&:is([open], [data-open], [data-state=\\"open\\"])": {
+                    ".target &": {
+                      "color": "orange",
+                    },
                   },
                 },
               },
@@ -591,7 +598,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink",
+          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink",
           "conditions": [
             {
               "raw": "&[data-attr='test']",
@@ -608,20 +615,30 @@ describe('style decoder', () => {
               "type": "parent-nesting",
               "value": ".target &",
             },
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 80em)",
+              "raw": "xl",
+              "rawValue": "@media screen and (min-width: 80em)",
+              "type": "at-rule",
+              "value": "xl",
+            },
           ],
           "entry": {
-            "cond": "&[data-attr='test']<___>_expanded<___>.target &",
-            "prop": "_xl",
+            "cond": "&[data-attr='test']<___>_expanded<___>.target &<___>xl",
+            "prop": "color",
             "value": "pink",
           },
-          "hash": "_xl]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
+          "hash": "color]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>xl",
           "layer": undefined,
           "result": {
-            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink": {
+            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink": {
               "&[data-attr='test']": {
                 "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])": {
                   ".target &": {
-                    "_xl": "pink",
+                    "@media screen and (min-width: 80em)": {
+                      "color": "pink",
+                    },
                   },
                 },
               },

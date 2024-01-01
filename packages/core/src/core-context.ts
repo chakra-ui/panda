@@ -174,10 +174,6 @@ export class CoreContext {
     return new Recipes(recipeConfigs, context)
   }
 
-  collectStyles() {
-    return this.decoder.collect(this.encoder)
-  }
-
   isValidLayerParams(params: string) {
     const names = new Set(params.split(',').map((name) => name.trim()))
     return names.size >= 5 && Object.values(this.config.layers as CascadeLayers).every((name) => names.has(name))

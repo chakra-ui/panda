@@ -136,9 +136,6 @@ importers:
       pathe:
         specifier: 1.1.1
         version: 1.1.1
-      perfect-debounce:
-        specifier: ^1.0.0
-        version: 1.0.0
     devDependencies:
       '@types/update-notifier':
         specifier: 6.0.8
@@ -501,6 +498,9 @@ importers:
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
+      perfect-debounce:
+        specifier: ^1.0.0
+        version: 1.0.0
       pkg-types:
         specifier: 1.0.3
         version: 1.0.3

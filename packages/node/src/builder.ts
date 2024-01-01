@@ -2,14 +2,11 @@ import { findConfig, type DiffConfigResult } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
-import { existsSync } from 'fs'
-import fsExtra from 'fs-extra'
-import { resolve } from 'pathe'
+import { existsSync, statSync } from 'fs'
 import type { Message, Root } from 'postcss'
 import { codegen } from './codegen'
 import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
-import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
 
 const fileModifiedMap = new Map<string, number>()
@@ -93,7 +90,7 @@ export class Builder {
   }
 
   getFileMeta = (file: string) => {
-    const mtime = existsSync(file) ? fsExtra.statSync(file).mtimeMs : -Infinity
+    const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
     const isUnchanged = fileModifiedMap.has(file) && mtime === fileModifiedMap.get(file)
     return { mtime, isUnchanged }
   }
@@ -120,8 +117,7 @@ export class Builder {
     const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : true
     if (meta.isUnchanged && !hasConfigChanged) return
 
-    const parserResult = extractFile(ctx, file)
-
+    const parserResult = ctx.parseFile(file)
     fileModifiedMap.set(file, meta.mtime)
 
     return parserResult
@@ -162,9 +158,11 @@ export class Builder {
     root.removeAll()
 
     const ctx = this.getContextOrThrow()
+
     const sheet = ctx.createSheet()
     ctx.appendLayerParams(sheet)
     ctx.appendBaselineCss(sheet)
+    ctx.appendParserCss(sheet)
     const css = ctx.getCss(sheet)
 
     root.append(
@@ -186,7 +184,7 @@ export class Builder {
     }
 
     for (const file of ctx.conf.dependencies) {
-      fn({ type: 'dependency', file: resolve(file) })
+      fn({ type: 'dependency', file: ctx.runtime.path.resolve(file) })
     }
   }
 }

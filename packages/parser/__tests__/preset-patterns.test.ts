@@ -1647,7 +1647,9 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
+    ctx.appendParserCss(sheet)
+
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
@@ -1731,7 +1733,9 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
+    ctx.appendParserCss(sheet)
+
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
@@ -1891,7 +1895,9 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
+    ctx.appendParserCss(sheet)
+
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
@@ -1931,7 +1937,9 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
+    ctx.appendParserCss(sheet)
+
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
@@ -1995,7 +2003,9 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
+    ctx.appendParserCss(sheet)
+
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
@@ -2306,7 +2316,9 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
+    ctx.appendParserCss(sheet)
+
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
@@ -2569,7 +2581,9 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
+    ctx.appendParserCss(sheet)
+
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
