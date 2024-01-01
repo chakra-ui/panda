@@ -2,7 +2,7 @@ import { State } from '@/src/hooks/usePlayground'
 import { getResolvedConfig } from '@/src/lib/resolve-config'
 import * as pandaDefs from '@pandacss/dev'
 import { Generator } from '@pandacss/generator'
-import { createProject } from '@pandacss/parser'
+import { Project } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
 import { Config, Preset, StaticCssOptions } from '@pandacss/types'
@@ -132,7 +132,7 @@ export function usePanda(state: State) {
   }, [context])
 
   return useMemo(() => {
-    const project = createProject({
+    const project = new Project({
       useInMemoryFileSystem: true,
       parserOptions: context.parserOptions,
       getFiles: () => ['code.tsx'],
