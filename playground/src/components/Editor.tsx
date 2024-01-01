@@ -95,7 +95,7 @@ export const Editor = (props: PandaEditorProps) => {
               language={activeTab === 'css' ? 'css' : 'typescript'}
               originalModelPath={editorPaths[activeTab]}
               modifiedModelPath={'modified-' + editorPaths[activeTab]}
-              options={{ ...defaultEditorOptions, renderSideBySide: false, readOnly: true }}
+              options={{ ...defaultEditorOptions, wordWrap, renderSideBySide: false, readOnly: true }}
               beforeMount={onBeforeMount}
               onMount={(editor, monaco) => onCodeEditorMount(editor.getModifiedEditor(), monaco)}
             />
@@ -104,7 +104,7 @@ export const Editor = (props: PandaEditorProps) => {
               value={props.value[activeTab]}
               language={activeTab === 'css' ? 'css' : 'typescript'}
               path={editorPaths[activeTab]}
-              options={defaultEditorOptions}
+              options={{ ...defaultEditorOptions, wordWrap }}
               beforeMount={onBeforeMount}
               onMount={onCodeEditorMount}
               onChange={onCodeEditorChange}
