@@ -12,13 +12,15 @@ async function build(ctx: PandaContext, artifactIds?: ArtifactId[]) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
   }
 
+  const done = logger.time.info('Successfully built the css files ✨')
+
   const sheet = ctx.createSheet()
   ctx.appendLayerParams(sheet)
   ctx.appendBaselineCss(sheet)
   ctx.parseFiles()
 
   await ctx.writeCss(sheet)
-  logger.info('css:emit', 'Successfully built the css files ✨')
+  done()
 }
 
 export async function generate(config: Config, configPath?: string) {

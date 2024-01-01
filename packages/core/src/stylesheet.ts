@@ -87,7 +87,7 @@ export class Stylesheet {
 
       const css = root.toString()
 
-      return optimize ? optimizeCss(css, { minify }) : css
+      return optimize ? optimizeCss(css, { minify, lightningcss: this.context.lightningcss }) : css
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet:toCss', error.message)

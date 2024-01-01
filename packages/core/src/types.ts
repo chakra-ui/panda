@@ -17,6 +17,7 @@ export interface StylesheetContext {
   conditions: Conditions
   helpers: PatternHelpers
   hash?: boolean
+  lightningcss?: boolean
 }
 
 export interface RecipeNode {

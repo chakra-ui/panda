@@ -249,6 +249,11 @@ interface CssgenOptions {
    * @default 'object-literal'
    */
   syntax?: 'template-literal' | 'object-literal'
+  /**
+   * Whether to use `lightningcss` instead of `postcss` for css optimization.
+   * @default false
+   */
+  lightningcss?: boolean
 }
 
 interface CodegenOptions {

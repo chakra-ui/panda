@@ -11,6 +11,7 @@ import type {
 import type { CoreContext } from './core-context'
 import { deepSet } from './deep-set'
 import { StyleEncoder } from './style-encoder'
+import { sortStyleRules } from './sort-style-rules'
 
 export class StyleDecoder implements StyleDecoderInterface {
   constructor(private context: CoreContext) {}
@@ -140,8 +141,19 @@ export class StyleDecoder implements StyleDecoderInterface {
       details.push({ hash, entry, conditions, result })
     })
 
-    // TODO sort
-    details.forEach((value) => {
+    // sorting here prevents postcss-nested from creating multiple rules with the same selector
+    // if we have a rule without a condition, then one with a condition, then one without a condition
+    // if not sorted, the object would look like
+    // 1. `{ lineHeight: '1.2', _hover: { boxShadow: 'outline' }, outline: 'none', }`
+    // instead of
+    // 2. `{ lineHeight: '1.2', outline: 'none', _hover: { boxShadow: 'outline' } }`
+    //
+    // which would result in a CSS like
+    // 1. `.class { line-height: 1.2; } .class:hover { box-shadow: outline; } .class { outline: none }`
+    // instead of:
+    // 2. `.class { line-height: 1.2; outline: none; } .class:hover { box-shadow: outline; }`
+    const sorted = this.context.config.lightningcss ? sortStyleRules(details) : details
+    sorted.forEach((value) => {
       if (value.conditions) {
         const path = basePath.concat(value.conditions.map((c) => c.rawValue ?? c.raw))
         obj = deepSet(obj, path, value.result)
@@ -182,8 +194,8 @@ export class StyleDecoder implements StyleDecoderInterface {
       atomic.push(styleResult)
     })
 
-    // TODO sort
-    atomic.forEach((styleResult) => {
+    const sorted = this.context.config.lightningcss ? sortStyleRules(atomic) : atomic
+    sorted.forEach((styleResult) => {
       this.atomic.add(styleResult)
       this.classNames.set(styleResult.className, styleResult)
     })

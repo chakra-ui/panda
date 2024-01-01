@@ -227,6 +227,7 @@ export async function main() {
     .option('-e, --exclude <files>', 'Exclude files', { default: [] })
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
+    .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
     .option('--emitTokensOnly', 'Whether to only emit the `tokens` directory')
     .action(async (files: string[], flags: MainCommandFlags) => {
       const { config: configPath, silent, ...rest } = flags
