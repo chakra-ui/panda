@@ -168,10 +168,17 @@ export class Builder {
     const css = ctx.getCss(sheet)
 
     root.append(
-      optimizeCss(`
+      optimizeCss(
+        `
     ${rootCssContent}
     ${css}
-    `),
+    `,
+        {
+          browserslist: ctx.config.browserslist,
+          minify: ctx.config.minify,
+          lightningcss: ctx.config.lightningcss,
+        },
+      ),
     )
   }
 
