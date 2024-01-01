@@ -1,29 +1,12 @@
 {
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "allowJs": false,
-    "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "jsx": "preserve",
     "incremental": true,
-    "noEmit": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "target": "esnext",
-    "noImplicitReturns": false,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    //
     "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
       "@pandacss/fixture": ["./packages/fixture/src/index.ts"]
-    },
-    "moduleResolution": "Bundler",
-    "module": "ESNext",
-    "customConditions": ["source"]
+    }
   },
   "include": ["packages/**/*.ts"],
   "types": ["vitest/globals"],
