@@ -1444,8 +1444,8 @@ importers:
         specifier: 3.0.10
         version: 3.0.10
       zod:
-        specifier: 3.22.3
-        version: 3.22.3
+        specifier: 3.22.4
+        version: 3.22.4
     devDependencies:
       '@pandacss/dev':
         specifier: workspace:*
@@ -32483,10 +32483,6 @@ packages:
       compress-commons: 4.1.1
       readable-stream: 3.6.2
     dev: true
-
-  /zod@3.22.3:
-    resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
-    dev: false
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
