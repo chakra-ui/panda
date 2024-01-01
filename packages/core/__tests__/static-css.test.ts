@@ -161,51 +161,19 @@ describe('static-css', () => {
           padding: 60px
       }
 
-        .text_red\\\\.200 {
+        .text_red\\\\.200,[data-theme=light] .light\\\\:text_red\\\\.200, .light .light\\\\:text_red\\\\.200, .light\\\\:text_red\\\\.200.light, .light\\\\:text_red\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_red\\\\.200, .dark .dark\\\\:text_red\\\\.200, .dark\\\\:text_red\\\\.200.dark, .dark\\\\:text_red\\\\.200[data-theme=dark] {
           color: var(--colors-red-200)
       }
 
-        [data-theme=light] .light\\\\:text_red\\\\.200, .light .light\\\\:text_red\\\\.200, .light\\\\:text_red\\\\.200.light, .light\\\\:text_red\\\\.200[data-theme=light] {
-          color: var(--colors-red-200)
-      }
-
-        [data-theme=dark] .dark\\\\:text_red\\\\.200, .dark .dark\\\\:text_red\\\\.200, .dark\\\\:text_red\\\\.200.dark, .dark\\\\:text_red\\\\.200[data-theme=dark] {
-          color: var(--colors-red-200)
-      }
-
-        .text_blue\\\\.200 {
+        .text_blue\\\\.200,[data-theme=light] .light\\\\:text_blue\\\\.200, .light .light\\\\:text_blue\\\\.200, .light\\\\:text_blue\\\\.200.light, .light\\\\:text_blue\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_blue\\\\.200, .dark .dark\\\\:text_blue\\\\.200, .dark\\\\:text_blue\\\\.200.dark, .dark\\\\:text_blue\\\\.200[data-theme=dark] {
           color: var(--colors-blue-200)
       }
 
-        [data-theme=light] .light\\\\:text_blue\\\\.200, .light .light\\\\:text_blue\\\\.200, .light\\\\:text_blue\\\\.200.light, .light\\\\:text_blue\\\\.200[data-theme=light] {
-          color: var(--colors-blue-200)
-      }
-
-        [data-theme=dark] .dark\\\\:text_blue\\\\.200, .dark .dark\\\\:text_blue\\\\.200, .dark\\\\:text_blue\\\\.200.dark, .dark\\\\:text_blue\\\\.200[data-theme=dark] {
-          color: var(--colors-blue-200)
-      }
-
-        .text_green\\\\.200 {
+        .text_green\\\\.200,[data-theme=light] .light\\\\:text_green\\\\.200, .light .light\\\\:text_green\\\\.200, .light\\\\:text_green\\\\.200.light, .light\\\\:text_green\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_green\\\\.200, .dark .dark\\\\:text_green\\\\.200, .dark\\\\:text_green\\\\.200.dark, .dark\\\\:text_green\\\\.200[data-theme=dark] {
           color: var(--colors-green-200)
       }
 
-        [data-theme=light] .light\\\\:text_green\\\\.200, .light .light\\\\:text_green\\\\.200, .light\\\\:text_green\\\\.200.light, .light\\\\:text_green\\\\.200[data-theme=light] {
-          color: var(--colors-green-200)
-      }
-
-        [data-theme=dark] .dark\\\\:text_green\\\\.200, .dark .dark\\\\:text_green\\\\.200, .dark\\\\:text_green\\\\.200.dark, .dark\\\\:text_green\\\\.200[data-theme=dark] {
-          color: var(--colors-green-200)
-      }
-
-        .text_colorPalette\\\\.200 {
-          color: var(--colors-color-palette-200)
-      }
-
-        [data-theme=light] .light\\\\:text_colorPalette\\\\.200, .light .light\\\\:text_colorPalette\\\\.200, .light\\\\:text_colorPalette\\\\.200.light, .light\\\\:text_colorPalette\\\\.200[data-theme=light] {
-          color: var(--colors-color-palette-200)
-      }
-
-        [data-theme=dark] .dark\\\\:text_colorPalette\\\\.200, .dark .dark\\\\:text_colorPalette\\\\.200, .dark\\\\:text_colorPalette\\\\.200.dark, .dark\\\\:text_colorPalette\\\\.200[data-theme=dark] {
+        .text_colorPalette\\\\.200,[data-theme=light] .light\\\\:text_colorPalette\\\\.200, .light .light\\\\:text_colorPalette\\\\.200, .light\\\\:text_colorPalette\\\\.200.light, .light\\\\:text_colorPalette\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_colorPalette\\\\.200, .dark .dark\\\\:text_colorPalette\\\\.200, .dark\\\\:text_colorPalette\\\\.200.dark, .dark\\\\:text_colorPalette\\\\.200[data-theme=dark] {
           color: var(--colors-color-palette-200)
       }
 
@@ -1181,81 +1149,42 @@ describe('static-css', () => {
           .md\\\\:pos_relative {
             position: relative
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:content_\\\\\\"\\\\\\"::before {
             content: \\"\\"
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:d_block::before {
             display: block
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:h_0::before {
             height: 0
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:pb_NaN\\\\%::before {
             padding-bottom: NaN%
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
             display: flex
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
             justify-content: center
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
             align-items: center
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
             overflow: hidden
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
             position: absolute
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
             inset: 0
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
             width: 100%
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
             height: 100%
           }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img, .md\\\\:\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
             object-fit: cover
           }
