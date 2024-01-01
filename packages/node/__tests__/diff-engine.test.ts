@@ -544,7 +544,6 @@ describe('DiffEngine affecteds', () => {
 
   test('update theme.patterns', () => {
     const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
-
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
     const nextConfig = mergeConfigs([

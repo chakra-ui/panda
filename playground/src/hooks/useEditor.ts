@@ -93,7 +93,7 @@ export function useEditor(props: PandaEditorProps) {
   const autoImportCtx = useMemo(() => {
     return {
       patterns: context.patterns.details,
-      recipes: Array.from(context.recipes.rules.keys()),
+      recipes: Array.from(context.recipes.keys),
     }
   }, [context])
 

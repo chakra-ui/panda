@@ -46,7 +46,7 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
 
         await builder.emit()
 
-        await builder.extract()
+        builder.extract()
 
         builder.registerDependency((dep) => {
           result.messages.push({

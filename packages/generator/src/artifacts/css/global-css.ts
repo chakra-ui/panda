@@ -1,31 +1,32 @@
+import type { Stylesheet } from '@pandacss/core'
 import type { Context } from '../../engines'
 
-export const generateGlobalCss = (ctx: Context) => {
+export const generateGlobalCss = (ctx: Context, sheet: Stylesheet) => {
   const { globalCss = {} } = ctx.config
 
-  ctx.stylesheet.processGlobalCss({
+  sheet.processGlobalCss({
     ':root': {
       '--made-with-panda': `'🐼'`,
     },
     '*, *::before, *::after, ::backdrop': {
-      '--blur': '/*!*/ /*!*/',
-      '--brightness': '/*!*/ /*!*/',
-      '--contrast': '/*!*/ /*!*/',
-      '--grayscale': '/*!*/ /*!*/',
-      '--hue-rotate': '/*!*/ /*!*/',
-      '--invert': '/*!*/ /*!*/',
-      '--saturate': '/*!*/ /*!*/',
-      '--sepia': '/*!*/ /*!*/',
-      '--drop-shadow': '/*!*/ /*!*/',
-      '--backdrop-blur': '/*!*/ /*!*/',
-      '--backdrop-brightness': '/*!*/ /*!*/',
-      '--backdrop-contrast': '/*!*/ /*!*/',
-      '--backdrop-grayscale': '/*!*/ /*!*/',
-      '--backdrop-hue-rotate': '/*!*/ /*!*/',
-      '--backdrop-invert': '/*!*/ /*!*/',
-      '--backdrop-opacity': '/*!*/ /*!*/',
-      '--backdrop-saturate': '/*!*/ /*!*/',
-      '--backdrop-sepia': '/*!*/ /*!*/',
+      '--blur': '/*-*/ /*-*/',
+      '--brightness': '/*-*/ /*-*/',
+      '--contrast': '/*-*/ /*-*/',
+      '--grayscale': '/*-*/ /*-*/',
+      '--hue-rotate': '/*-*/ /*-*/',
+      '--invert': '/*-*/ /*-*/',
+      '--saturate': '/*-*/ /*-*/',
+      '--sepia': '/*-*/ /*-*/',
+      '--drop-shadow': '/*-*/ /*-*/',
+      '--backdrop-blur': '/*-*/ /*-*/',
+      '--backdrop-brightness': '/*-*/ /*-*/',
+      '--backdrop-contrast': '/*-*/ /*-*/',
+      '--backdrop-grayscale': '/*-*/ /*-*/',
+      '--backdrop-hue-rotate': '/*-*/ /*-*/',
+      '--backdrop-invert': '/*-*/ /*-*/',
+      '--backdrop-opacity': '/*-*/ /*-*/',
+      '--backdrop-saturate': '/*-*/ /*-*/',
+      '--backdrop-sepia': '/*-*/ /*-*/',
       '--scroll-snap-strictness': 'proximity',
       '--border-spacing-x': 0,
       '--border-spacing-y': 0,
@@ -39,7 +40,6 @@ export const generateGlobalCss = (ctx: Context) => {
     },
   })
 
-  ctx.stylesheet.processGlobalCss(globalCss)
-
+  sheet.processGlobalCss(globalCss)
   void ctx.hooks.callHook('generator:css', 'global.css', '')
 }

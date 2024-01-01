@@ -19,7 +19,7 @@ describe('ast parser / css prop', () => {
       "@layer utilities {
         .bg_red\\\\.200 {
           background: var(--colors-red-200)
-          }
+      }
       }"
     `)
   })

@@ -1,8 +1,8 @@
-import { expandNestedCss, extractParentSelectors, toCss } from '@pandacss/core'
+import { Stylesheet, expandNestedCss, extractParentSelectors, toCss } from '@pandacss/core'
 import postcss, { AtRule, Rule } from 'postcss'
 import type { Context } from '../../engines'
 
-export function generateTokenCss(ctx: Context) {
+export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   const {
     config: { cssVarRoot },
     conditions,
@@ -47,7 +47,7 @@ export function generateTokenCss(ctx: Context) {
   let css = results.join('\n\n')
   css = '\n\n' + cleanupSelectors(css, root)
 
-  ctx.layers.tokens.append(css)
+  sheet.layers.tokens.append(css)
   void ctx.hooks.callHook('generator:css', 'tokens.css', '')
 }
 

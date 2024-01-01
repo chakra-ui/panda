@@ -10,18 +10,18 @@ describe('recipe ruleset', () => {
           font-size: 5rem;
           line-height: 1em;
           font-weight: 800
-          }
+      }
 
         @layer _base {
           .textStyle {
             font-family: var(--fonts-mono);
-              }
+      }
 
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
-            border-inline-end-width: 0px
-                  }
-          }
+            border-inline-end-width: 0px;
+      }
+      }
       }"
     `)
 
@@ -30,12 +30,12 @@ describe('recipe ruleset', () => {
         @layer _base {
           .textStyle {
             font-family: var(--fonts-mono);
-              }
+      }
 
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
-            border-inline-end-width: 0px
-                  }
+            border-inline-end-width: 0px;
+      }
           }
       }"
     `)
@@ -46,18 +46,18 @@ describe('recipe ruleset', () => {
           font-size: 5rem;
           line-height: 1em;
           font-weight: 800
-          }
+      }
 
         @layer _base {
           .textStyle {
             font-family: var(--fonts-mono);
-              }
+      }
 
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
-            border-inline-end-width: 0px
-                  }
-          }
+            border-inline-end-width: 0px;
+      }
+      }
 
         @media screen and (min-width: 48em) {
           .md\\\\:textStyle--size_h2 {
@@ -66,7 +66,7 @@ describe('recipe ruleset', () => {
             font-weight: 700;
             letter-spacing: -0.03em
           }
-              }
+      }
       }"
     `)
   })
@@ -77,7 +77,7 @@ describe('recipe ruleset', () => {
         @layer _base {
           [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
             color: red
-                  }
+      }
           }
       }"
     `)
@@ -191,33 +191,33 @@ describe('recipe ruleset', () => {
           height: 3rem;
           min-width: 3rem;
           padding: 0 0.75rem
-          }
+      }
 
         .buttonStyle--variant_solid {
           background-color: blue;
           color: var(--colors-white);
-          }
+      }
 
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
-          color: var(--colors-black)
-              }
+          color: var(--colors-black);
+      }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue
-              }
+          background-color: darkblue;
+      }
 
         @layer _base {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-              }
+      }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200)
-                  }
-          }
+            background-color: var(--colors-red-200);
+      }
+      }
       }"
     `)
 
@@ -227,33 +227,33 @@ describe('recipe ruleset', () => {
           height: 3rem;
           min-width: 3rem;
           padding: 0 0.75rem
-          }
+      }
 
         .buttonStyle--variant_solid {
           background-color: blue;
           color: var(--colors-white);
-          }
+      }
 
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
-          color: var(--colors-black)
-              }
+          color: var(--colors-black);
+      }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue
-              }
+          background-color: darkblue;
+      }
 
         @layer _base {
           .buttonStyle {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-              }
+      }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200)
-                  }
-          }
+            background-color: var(--colors-red-200);
+      }
+      }
 
         @media screen and (min-width: 64em) {
           .lg\\\\:buttonStyle--variant_outline {
@@ -266,13 +266,13 @@ describe('recipe ruleset', () => {
             background-color: var(--colors-transparent);
             border: 1px solid gray;
             color: gray
-                  }
+          }
 
           .lg\\\\:buttonStyle--variant_outline:is(:hover, [data-hover]) {
             background-color: blue;
             color: var(--colors-white)
-                  }
-              }
+          }
+      }
       }"
     `)
   })

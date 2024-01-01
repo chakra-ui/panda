@@ -1,12 +1,9 @@
-import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
+import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig, UserConfig } from '@pandacss/types'
 import type { Conditions } from './conditions'
 import type { Layers } from './layers'
-import type { Recipes } from './recipes'
 import type { Utility } from './utility'
 
-export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions' | 'layers'>
-
-export type AtomicRuleContext = Pick<StylesheetContext, 'conditions' | 'hash' | 'utility' | 'transform' | 'layers'>
+export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>
 
 export interface TransformResult {
   layer?: string
@@ -14,16 +11,12 @@ export interface TransformResult {
   styles: Dict
 }
 
-type AtomicRuleTransform = (prop: string, value: any) => TransformResult
-
 export interface StylesheetContext {
   layers: Layers
   utility: Utility
   conditions: Conditions
-  recipes: Recipes
   helpers: PatternHelpers
   hash?: boolean
-  transform?: AtomicRuleTransform
 }
 
 export interface RecipeNode {
@@ -76,3 +69,21 @@ export interface RecipeNode {
    */
   props: string[]
 }
+
+export interface CssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
+
+export interface ProcessOptions {
+  styles: Dict
+  layer: LayerName
+}
+
+export type LayerName =
+  | 'base'
+  | 'reset'
+  | 'recipes_slots_base'
+  | 'recipes_base'
+  | 'tokens'
+  | 'recipes'
+  | 'utilities'
+  | 'recipes_slots'
+  | 'compositions'

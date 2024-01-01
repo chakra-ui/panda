@@ -35,18 +35,17 @@
   "dependencies": {
     "@pandacss/config": "workspace:^",
     "@pandacss/extractor": "workspace:*",
-    "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@vue/compiler-sfc": "^3.3.4",
-    "lil-fp": "1.4.5",
-    "magic-string": "^0.30.2",
+    "@vue/compiler-sfc": "3.3.4",
+    "magic-string": "0.30.2",
     "ts-morph": "19.0.0",
     "ts-pattern": "5.0.5"
   },
   "devDependencies": {
     "@pandacss/generator": "workspace:*",
+    "@vue/compiler-core": "3.3.4",
     "hookable": "5.5.3"
   },
   "files": [

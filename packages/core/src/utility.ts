@@ -49,7 +49,7 @@ export class Utility {
   /**
    * The map of the property keys
    */
-  propertyKeys: Map<string, Set<string>> = new Map()
+  propertyTypeKeys: Map<string, Set<string>> = new Map()
 
   /**
    * The utility config
@@ -229,8 +229,18 @@ export class Utility {
     }
   }
 
-  getPropertyKeys = (property: string) => {
-    const keys = this.propertyKeys.get(property)
+  getPropertyKeys = (prop: string) => {
+    const propConfig = this.config[prop]
+    if (!propConfig) return []
+
+    const values = this.getPropertyValues(propConfig)
+    if (!values) return []
+
+    return Object.keys(values)
+  }
+
+  getPropertyTypeKeys = (property: string) => {
+    const keys = this.propertyTypeKeys.get(property)
     return keys ? Array.from(keys) : []
   }
 
@@ -249,7 +259,7 @@ export class Utility {
     if (values) {
       const keys = new Set(Object.keys(values))
       this.types.set(property, keys)
-      this.propertyKeys.set(property, keys)
+      this.propertyTypeKeys.set(property, keys)
     }
 
     const set = this.types.get(property) ?? new Set()

@@ -6,7 +6,7 @@ import { recipes } from './recipes'
 import { slotRecipes } from './slot-recipes'
 import { semanticTokens } from './semantic-tokens'
 
-const conditions = {
+export const conditions = {
   ...presetBase.conditions,
   materialTheme: '[data-color=material] &',
   pastelTheme: '[data-color=pastel] &',

@@ -1,62 +1,83 @@
+import type { CssOptions, Stylesheet } from '@pandacss/core'
 import type { RecipeDefinition, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
-import type { Recipes, Stylesheet, ToCssOptions } from '@pandacss/core'
-
-export interface CollectorContext {
-  recipes: Recipes
-  createSheet: () => Stylesheet
-}
+import type { CoreContext } from './core-context'
+import type { StyleDecoder } from './style-decoder'
+import type { StyleEncoder } from './style-encoder'
 
 export class RuleProcessor {
+  encoder: StyleEncoder | undefined
+  decoder: StyleDecoder | undefined
   sheet: Stylesheet | undefined
+  params: Pick<PrepareParams, 'encoder' | 'decoder'>
 
-  constructor(private context: CollectorContext) {}
-
-  isReady() {
-    return Boolean(this.sheet)
+  constructor(private context: CoreContext, params?: Pick<PrepareParams, 'encoder' | 'decoder'>) {
+    this.params = params ?? {
+      encoder: context.encoder,
+      decoder: context.decoder,
+    }
   }
 
-  prepare() {
-    if (!this.isReady()) {
-      this.sheet = this.context.createSheet()
+  isReady() {
+    return Boolean(this.encoder && this.decoder && this.sheet)
+  }
+
+  prepare(options?: PrepareParams) {
+    if (!this.isReady() || options?.clone) {
+      this.sheet = options?.sheet ?? this.context.createSheet()
+      this.encoder = options?.encoder ?? this.params.encoder.clone()
+      this.decoder = options?.decoder ?? this.params.decoder.clone()
     }
 
     return {
+      encoder: this.encoder!,
+      decoder: this.decoder!,
       sheet: this.sheet!,
+      toCss: (options?: CssOptions) => {
+        this.sheet!.processDecoder(this.decoder!)
+        return this.sheet!.toCss({ optimize: true, ...options })
+      },
     }
   }
 
-  toCss(options?: ToCssOptions) {
-    const { sheet } = this.prepare()
-
+  toCss(options?: CssOptions) {
+    const { decoder, sheet } = this.prepare()
+    sheet.processDecoder(decoder)
     return sheet.toCss({ optimize: true, ...options })
   }
 
-  css(styleObject: SystemStyleObject): AtomicRule {
-    const { sheet } = this.prepare()
+  css(styles: SystemStyleObject): AtomicRule {
+    const { encoder, decoder, sheet } = this.prepare()
 
-    sheet.processAtomic(styleObject)
+    encoder.processAtomic(styles)
+    decoder.collect(encoder)
 
     return {
-      styleObject,
-      toCss: (options?: ToCssOptions) => {
-        return this.toCss(options)
+      styles,
+      className: Array.from(decoder.classNames.keys()),
+      toCss: (options?: CssOptions) => {
+        sheet.processDecoder(decoder)
+        return sheet.toCss({ optimize: true, ...options })
       },
     }
   }
 
   cva(recipeConfig: RecipeDefinition<any> | SlotRecipeDefinition<string, any>): AtomicRecipeRule {
-    const { sheet } = this.prepare()
+    const { encoder, decoder, sheet } = this.prepare()
 
     if ('slots' in recipeConfig) {
-      sheet.processAtomicSlotRecipe(recipeConfig)
+      encoder.processAtomicSlotRecipe(recipeConfig)
     } else {
-      sheet.processAtomicRecipe(recipeConfig)
+      encoder.processAtomicRecipe(recipeConfig)
     }
+
+    decoder.collect(encoder)
 
     return {
       config: recipeConfig,
-      toCss: (options?: ToCssOptions) => {
-        return this.toCss(options)
+      className: Array.from(decoder.classNames.keys()),
+      toCss: (options?: CssOptions) => {
+        sheet.processDecoder(decoder)
+        return sheet.toCss({ optimize: true, ...options })
       },
     }
   }
@@ -69,25 +90,29 @@ export class RuleProcessor {
     const recipeConfig = this.context.recipes.getConfig(name)
     if (!recipeConfig) return
 
-    const { sheet } = this.prepare()
+    const { encoder, decoder, sheet } = this.prepare()
 
-    sheet.processRecipe(name, recipeConfig, variants)
+    encoder.processRecipe(name, variants)
+    decoder.collect(encoder)
 
     return {
       variants,
-      toCss: (options?: ToCssOptions) => {
-        return this.toCss(options)
+      className: Array.from(decoder.classNames.keys()),
+      toCss: (options?: CssOptions) => {
+        sheet.processDecoder(decoder)
+        return sheet.toCss({ optimize: true, ...options })
       },
     }
   }
 }
 
 interface BaseRule {
+  className: string[]
   toCss: () => string
 }
 
 interface AtomicRule extends BaseRule {
-  styleObject: SystemStyleObject
+  styles: SystemStyleObject
 }
 
 interface AtomicRecipeRule extends BaseRule {
@@ -96,4 +121,11 @@ interface AtomicRecipeRule extends BaseRule {
 
 interface RecipeRule extends BaseRule {
   variants: Record<string, any>
+}
+
+interface PrepareParams {
+  clone?: boolean
+  encoder: StyleEncoder
+  decoder: StyleDecoder
+  sheet?: Stylesheet
 }

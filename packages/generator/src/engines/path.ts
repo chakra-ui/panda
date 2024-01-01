@@ -15,7 +15,7 @@ export class PathEngine {
     return this.config.outdir
   }
 
-  private getFilePath(file?: string) {
+  getFilePath(file?: string) {
     return [this.cwd, this.emitPackage ? 'node_modules' : undefined, this.outdir, file].filter(Boolean) as string[]
   }
 

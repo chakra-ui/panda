@@ -2,7 +2,7 @@ import { createContext } from '@pandacss/fixture'
 import type { Config, TSConfig } from '@pandacss/types'
 import { getImportDeclarations } from '../src/import'
 
-const staticFilePath = 'app/src/test.tsx'
+const filePath = 'app/src/test.tsx'
 
 function getProject(code: string, userConfig?: Config) {
   return getFixtureProject(code, userConfig).project
@@ -10,14 +10,13 @@ function getProject(code: string, userConfig?: Config) {
 
 function getFixtureProject(code: string, userConfig?: Config, tsconfig?: TSConfig) {
   const ctx = createContext(Object.assign({}, userConfig, { tsconfig }))
-  ctx.project.addSourceFile(staticFilePath, code)
-
+  ctx.project.addSourceFile(filePath, code)
   return ctx
 }
 
 export function importParser(code: string, option: { name: string; module: string }) {
   const project = getProject(code)
-  const sourceFile = project.getSourceFile(staticFilePath)!
+  const sourceFile = project.getSourceFile(filePath)!
   const imports = getImportDeclarations(sourceFile, {
     match({ name, mod }) {
       return name === option.name && mod === option.module
@@ -28,7 +27,7 @@ export function importParser(code: string, option: { name: string; module: strin
 
 export function cssParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return {
     css: data.css,
   }
@@ -36,7 +35,7 @@ export function cssParser(code: string) {
 
 export function cssTemplateLiteralParser(code: string) {
   const project = getProject(code, { syntax: 'template-literal' })
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return {
     css: data.css,
   }
@@ -44,7 +43,7 @@ export function cssTemplateLiteralParser(code: string) {
 
 export function cvaParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return {
     cva: data.cva,
   }
@@ -52,7 +51,7 @@ export function cvaParser(code: string) {
 
 export function svaParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return {
     sva: data.sva,
   }
@@ -60,7 +59,7 @@ export function svaParser(code: string) {
 
 export function styledParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return {
     cva: data.cva,
   }
@@ -68,13 +67,13 @@ export function styledParser(code: string) {
 
 export function recipeParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return data.recipe
 }
 
 export function jsxParser(code: string) {
   const project = getProject(code, { jsxFramework: 'react' })
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return data.jsx
 }
 
@@ -104,7 +103,7 @@ export function patternParser(code: string) {
       },
     },
   })
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return data.pattern
 }
 
@@ -134,20 +133,21 @@ export function jsxRecipeParser(code: string) {
       },
     },
   })
-  const data = project.parseSourceFile(staticFilePath)!
+  const data = project.parseSourceFile(filePath)!
   return data.recipe
 }
 
 export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const ctx = getFixtureProject(code, userConfig, tsconfig)
-
-  const parserResult = ctx.project.parseSourceFile(staticFilePath)!
-  ctx.appendParserCss(parserResult)
-  const parserCss = ctx.stylesheet.toCss({ optimize: true })
+  const encoder = ctx.encoder.clone()
+  const result = ctx.project.parseSourceFile(filePath, encoder)!
+  const styles = ctx.decoder.clone().collect(encoder)
 
   return {
     ctx,
-    json: parserResult?.toArray().flatMap(({ box, ...item }) => item),
-    css: parserCss,
+    encoder,
+    styles,
+    json: result?.toArray().flatMap(({ box, ...item }) => item),
+    css: ctx.getParserCss(styles),
   }
 }

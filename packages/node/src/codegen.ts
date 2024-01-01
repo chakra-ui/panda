@@ -8,7 +8,7 @@ const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)
 
 const limit = pLimit(20)
 
-export async function emitArtifacts(ctx: PandaContext, ids?: ArtifactId[]) {
+export async function codegen(ctx: PandaContext, ids?: ArtifactId[]) {
   if (ctx.config.clean) ctx.output.empty()
 
   // limit concurrency since we might output a lot of files

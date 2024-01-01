@@ -2,7 +2,7 @@
   "name": "@pandacss/fixture",
   "version": "0.23.0",
   "private": true,
-  "description": "Test fixtures for css panda",
+  "description": "Test fixtures for Panda CSS",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",

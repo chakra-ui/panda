@@ -32,6 +32,8 @@ export type ArtifactId =
   | 'styles.css'
   | (string & {})
 
+export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
+
 export type Artifact = Nullable<{
   id: ArtifactId
   dir?: string[]

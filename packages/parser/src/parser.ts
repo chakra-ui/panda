@@ -1,14 +1,14 @@
-import { BoxNodeMap, extract, unbox, type BoxNode, type Unboxed, box } from '@pandacss/extractor'
+import { resolveTsPathPattern } from '@pandacss/config/ts-path'
+import { BoxNodeMap, box, extract, unbox, type BoxNode, type Unboxed } from '@pandacss/extractor'
+import type { Generator, ParserOptions } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { astish, memo } from '@pandacss/shared'
+import type { ResultItem } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
-import { createParserResult } from './parser-result'
-import type { Config, ConfigTsOptions, ResultItem, Runtime } from '@pandacss/types'
-import { resolveTsPathPattern } from '@pandacss/config/ts-path'
-import type { Generator } from '@pandacss/generator'
+import { ParserResult } from './parser-result'
 
 type ParserPatternNode = Generator['patterns']['details'][number]
 type ParserRecipeNode = Generator['recipes']['details'][number]
@@ -19,24 +19,7 @@ const isNodePattern = (node: ParserNodeOptions): node is ParserPatternNode => no
 
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
-
-export interface ParserOptions {
-  importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
-  jsx: {
-    framework: string | undefined
-    factory: string
-    styleProps: Exclude<Config['jsxStyleProps'], undefined>
-    nodes: ParserNodeOptions[]
-    isStyleProp: (prop: string) => boolean
-  }
-  isTemplateLiteralSyntax: boolean
-  patternKeys: string[]
-  recipeKeys: string[]
-  getRecipesByJsxName: (jsxName: string) => ParserRecipeNode[]
-  getPatternsByJsxName: (jsxName: string) => ParserPatternNode[]
-  tsOptions?: ConfigTsOptions
-  join: Runtime['path']['join']
-}
+const noop = (..._args: any[]) => void 0 as any
 
 // create strict regex from array of strings
 function createImportMatcher(mod: string, values?: string[]) {
@@ -68,9 +51,13 @@ const defaultEnv: EvalOptions['environment'] = { preset: 'ECMA' }
 const identityFn = (styles: any) => styles
 const evaluateOptions: EvalOptions = { environment: defaultEnv }
 
-export function createParser(options: ParserOptions) {
-  const { jsx, getRecipesByJsxName, getPatternsByJsxName, tsOptions, join, isTemplateLiteralSyntax } = options
-  const importMap = Object.fromEntries(Object.entries(options.importMap).map(([key, value]) => [key, join(...value)]))
+export function createParser(context: ParserOptions) {
+  const { jsx, isValidProperty, tsOptions, join, syntax } = context
+  const getRecipesByJsxName = context.recipes.filter
+  const getPatternsByJsxName = context.patterns.filter
+  const [recipeKeys, patternKeys] = [context.recipes.keys, context.patterns.keys]
+
+  const importMap = Object.fromEntries(Object.entries(context.importMap).map(([key, value]) => [key, join(...value)]))
 
   const isJsxEnabled = jsx.framework
 
@@ -85,7 +72,7 @@ export function createParser(options: ParserOptions) {
     importRegex.push(createImportMatcher(importMap.jsx, [jsx.factory, ...jsx.nodes.map((node) => node.jsxName)]))
   }
 
-  return function parse(sourceFile: SourceFile | undefined) {
+  return function parse(sourceFile: SourceFile | undefined, encoder?: Generator['encoder']) {
     if (!sourceFile) return
 
     const filePath = sourceFile.getFilePath()
@@ -120,7 +107,7 @@ export function createParser(options: ParserOptions) {
       },
     })
 
-    const collector = createParserResult()
+    const parserResult = new ParserResult(context, encoder)
 
     logger.debug(
       'ast:import',
@@ -128,15 +115,15 @@ export function createParser(options: ParserOptions) {
     )
 
     if (!imports.value.length && !isJsxEnabled) {
-      return collector
+      return parserResult
     }
 
     const [css] = importRegex
     const jsxFactoryAlias = isJsxEnabled ? imports.getAlias(jsx.factory) : 'styled'
 
-    const isValidPattern = imports.createMatch(importMap.pattern, options.patternKeys)
-    const isValidRecipe = imports.createMatch(importMap.recipe, options.recipeKeys)
-    const isValidStyleFn = (name: string) => name === jsx?.factory
+    const isValidPattern = imports.createMatch(importMap.pattern, patternKeys)
+    const isValidRecipe = imports.createMatch(importMap.recipe, recipeKeys)
+    const isValidStyleFn = (name: string) => name === jsx.factory
     const isFactory = (name: string) => Boolean(isJsxEnabled && name.startsWith(jsxFactoryAlias))
     const isRawFn = (fullName: string) => {
       const name = fullName.split('.raw')[0] ?? ''
@@ -146,10 +133,10 @@ export function createParser(options: ParserOptions) {
     const patternPropertiesByJsxName = new Map<string, Set<string>>()
     const initialPatterns = { string: new Set<string>(), regex: [] as RegExp[] }
     const patternJsxLists = isJsxEnabled
-      ? (jsx?.nodes ?? []).filter(isNodePattern).reduce((acc, pattern) => {
+      ? (jsx.nodes ?? []).filter(isNodePattern).reduce((acc, pattern) => {
           patternPropertiesByJsxName.set(pattern.jsxName, new Set(pattern.props ?? []))
 
-          pattern.jsx?.forEach((jsx) => {
+          pattern.jsx.forEach((jsx) => {
             if (typeof jsx === 'string') {
               acc.string.add(jsx)
             } else if (jsx) {
@@ -183,10 +170,10 @@ export function createParser(options: ParserOptions) {
 
     const initialRecipes = { string: new Set<string>(), regex: [] as RegExp[] }
     const recipeJsxLists = isJsxEnabled
-      ? (jsx?.nodes ?? []).filter(isNodeRecipe).reduce((acc, recipe) => {
+      ? (jsx.nodes ?? []).filter(isNodeRecipe).reduce((acc, recipe) => {
           recipePropertiesByJsxName.set(recipe.jsxName, new Set(recipe.props ?? []))
 
-          recipe.jsx?.forEach((jsx) => {
+          recipe.jsx.forEach((jsx) => {
             if (typeof jsx === 'string') {
               acc.string.add(jsx)
             } else {
@@ -202,8 +189,8 @@ export function createParser(options: ParserOptions) {
     const cssAlias = imports.getAlias('css')
     const svaAlias = imports.getAlias('sva')
 
-    if (options.jsx) {
-      options.jsx.nodes.forEach((node) => {
+    if (context.jsx) {
+      context.jsx.nodes.forEach((node) => {
         const alias = imports.getAlias(node.jsxName)
         node.props?.forEach((prop) => propertiesMap.set(prop, true))
 
@@ -218,14 +205,14 @@ export function createParser(options: ParserOptions) {
           (tagName: string) =>
             recipeJsxLists.string.has(tagName) || recipeJsxLists.regex.some((regex) => regex.test(tagName)),
         )
-      : undefined
+      : noop
 
     const isJsxTagPattern = isJsxEnabled
       ? memo(
           (tagName: string) =>
             patternJsxLists.string.has(tagName) || patternJsxLists.regex.some((regex) => regex.test(tagName)),
         )
-      : undefined
+      : noop
 
     const matchTag = isJsxEnabled
       ? memo((tagName: string) => {
@@ -236,19 +223,19 @@ export function createParser(options: ParserOptions) {
             components.has(tagName) ||
             isUpperCase(tagName) ||
             isFactory(tagName) ||
-            isJsxTagRecipe?.(tagName) ||
-            isJsxTagPattern?.(tagName)
+            isJsxTagRecipe(tagName) ||
+            isJsxTagPattern(tagName)
           )
         })
-      : undefined
+      : noop
 
     const isRecipeOrPatternProp = memo((tagName: string, propName: string) => {
-      if (isJsxEnabled && isJsxTagRecipe?.(tagName)) {
+      if (isJsxEnabled && isJsxTagRecipe(tagName)) {
         const recipeList = getRecipesByJsxName(tagName)
         return recipeList.some((recipe) => recipePropertiesByJsxName.get(recipe.jsxName)?.has(propName))
       }
 
-      if (isJsxEnabled && isJsxTagPattern?.(tagName)) {
+      if (isJsxEnabled && isJsxTagPattern(tagName)) {
         const patternList = getPatternsByJsxName(tagName)
         return patternList.some((pattern) => patternPropertiesByJsxName.get(pattern.jsxName)?.has(propName))
       }
@@ -257,12 +244,12 @@ export function createParser(options: ParserOptions) {
     })
 
     const matchTagProp = isJsxEnabled
-      ? match(jsx?.styleProps)
+      ? match(jsx.styleProps)
           .with('all', () =>
             memo((tagName: string, propName: string) => {
               return (
                 Boolean(components.get(tagName)?.has(propName)) ||
-                options.jsx?.isStyleProp(propName) ||
+                isValidProperty(propName) ||
                 propertiesMap.has(propName) ||
                 isRecipeOrPatternProp(tagName, propName)
               )
@@ -275,7 +262,7 @@ export function createParser(options: ParserOptions) {
           )
           .with('none', () => memo((tagName: string, propName: string) => isRecipeOrPatternProp(tagName, propName)))
           .exhaustive()
-      : undefined
+      : noop
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
@@ -290,8 +277,8 @@ export function createParser(options: ParserOptions) {
       ast: sourceFile,
       components: isJsxEnabled
         ? {
-            matchTag: (prop) => !!matchTag?.(prop.tagName),
-            matchProp: (prop) => !!matchTagProp?.(prop.tagName, prop.propName),
+            matchTag: (prop) => !!matchTag(prop.tagName),
+            matchProp: (prop) => !!matchTagProp(prop.tagName, prop.propName),
           }
         : undefined,
       functions: {
@@ -303,7 +290,8 @@ export function createParser(options: ParserOptions) {
           return true
         },
       },
-      taggedTemplates: isTemplateLiteralSyntax ? { matchTaggedTemplate: (tag) => matchFn(tag.fnName) } : undefined,
+      taggedTemplates:
+        syntax === 'template-literal' ? { matchTaggedTemplate: (tag) => matchFn(tag.fnName) } : undefined,
       getEvaluateOptions: (node) => {
         if (!Node.isCallExpression(node)) return evaluateOptions
         const propAccessExpr = node.getExpression()
@@ -341,7 +329,7 @@ export function createParser(options: ParserOptions) {
               if (query.kind === 'call-expression') {
                 // css({ ... }, { ... })
                 if (query.box.value.length > 1) {
-                  collector.set(name, {
+                  parserResult.set(name, {
                     name,
                     box: query.box,
                     data: query.box.value.reduce(
@@ -351,7 +339,7 @@ export function createParser(options: ParserOptions) {
                   })
                 } else {
                   // css({ ... })
-                  collector.set(name, {
+                  parserResult.set(name, {
                     name,
                     box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                     data: combineResult(unbox(query.box.value[0])),
@@ -361,7 +349,7 @@ export function createParser(options: ParserOptions) {
               } else if (query.kind === 'tagged-template') {
                 // css` ... `
                 const obj = astish(query.box.value as string)
-                collector.set(name, {
+                parserResult.set(name, {
                   name,
                   box: query.box ?? fallback(query.box),
                   data: [obj],
@@ -373,7 +361,7 @@ export function createParser(options: ParserOptions) {
           .when(isValidPattern, (name) => {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression') {
-                collector.setPattern(name, {
+                parserResult.setPattern(name, {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
@@ -385,7 +373,7 @@ export function createParser(options: ParserOptions) {
           .when(isValidRecipe, (name) => {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression') {
-                collector.setRecipe(name, {
+                parserResult.setRecipe(name, {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
@@ -407,11 +395,11 @@ export function createParser(options: ParserOptions) {
                 // CallExpression factory inline recipe
                 // panda("span", { base: {}, variants: { ... } })
                 if (box.isMap(map) && isCva(map.value)) {
-                  collector.setCva(result)
+                  parserResult.setCva(result)
                 } else {
                   // CallExpression factory css
                   // panda("span", { color: "red.100", ... })
-                  collector.set('css', result)
+                  parserResult.set('css', result)
                 }
 
                 // panda("div", badge, { ... })
@@ -424,7 +412,7 @@ export function createParser(options: ParserOptions) {
                     const recipeName = imports.getName(name)
 
                     // set it as JSX-recipe so that recipe & style props will be split correctly
-                    collector.setRecipe(recipeName, {
+                    parserResult.setRecipe(recipeName, {
                       type: 'jsx-recipe',
                       name: recipeName,
                       box: options,
@@ -436,7 +424,7 @@ export function createParser(options: ParserOptions) {
                 // TaggedTemplateExpression factory css
                 // panda('span')` color: red; `
                 const obj = astish(query.box.value as string)
-                collector.set('css', {
+                parserResult.set('css', {
                   name,
                   box: query.box ?? fallback(query.box),
                   data: [obj],
@@ -456,15 +444,15 @@ export function createParser(options: ParserOptions) {
                 // PropertyAccess factory inline recipe
                 // panda.span({ base: {}, variants: { ... } })
                 if (box.isMap(map) && isCva(map.value)) {
-                  collector.setCva(result)
+                  parserResult.setCva(result)
                 } else {
                   // PropertyAccess factory css
                   // panda.span({ ... })
-                  collector.set('css', result)
+                  parserResult.set('css', result)
                 }
               } else if (query.kind === 'tagged-template') {
                 const obj = astish(query.box.value as string)
-                collector.set('css', {
+                parserResult.set('css', {
                   name,
                   box: query.box ?? fallback(query.box),
                   data: [obj],
@@ -484,25 +472,26 @@ export function createParser(options: ParserOptions) {
 
           match(name)
             .when(isFactory, (jsxName) => {
-              collector.setJsx({ name: jsxName, box: query.box, type: 'jsx-factory', data })
+              parserResult.setJsx({ name: jsxName, box: query.box, type: 'jsx-factory', data })
             })
-            .when(isJsxTagPattern!, (jsxName) => {
-              collector.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
+            .when(isJsxTagPattern, (jsxName) => {
+              parserResult.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
             })
-            .when(isJsxTagRecipe!, (jsxName) => {
+            .when(isJsxTagRecipe, (jsxName) => {
               const recipeList = getRecipesByJsxName(jsxName)
               recipeList.map((recipe) => {
-                collector.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })
+                parserResult.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })
               })
             })
             .otherwise(() => {
-              collector.setJsx({ name, box: query.box, type: 'jsx', data })
+              parserResult.setJsx({ name, box: query.box, type: 'jsx', data })
             })
         })
       }
     })
 
-    return collector
+    // console.log(parserResult.toJSON().css)
+    return parserResult
   }
 }
 

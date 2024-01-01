@@ -1,15 +1,27 @@
 import { capitalize, createRegex, dashCase, mapObject, memo, uncapitalize } from '@pandacss/shared'
+import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { ArtifactFilters, Dict, PatternConfig, UserConfig } from '@pandacss/types'
+import type { Utility } from './utility'
 
 const helpers = { map: mapObject }
+
+interface PatternOptions {
+  config: UserConfig
+  tokens: TokenDictionary
+  utility: Utility
+}
 
 export class Patterns {
   patterns: Record<string, PatternConfig>
   details: PatternDetail[]
+  private utility: Utility
+  private tokens: TokenDictionary
 
-  constructor(config: UserConfig) {
-    this.patterns = config.patterns ?? {}
+  constructor(options: PatternOptions) {
+    this.patterns = options.config.patterns ?? {}
     this.details = Object.entries(this.patterns).map(([name, pattern]) => this.createDetail(name, pattern))
+    this.utility = options.utility
+    this.tokens = options.tokens
   }
 
   private createDetail(name: string, pattern: PatternConfig): PatternDetail {
@@ -87,6 +99,31 @@ export class Patterns {
   filterDetails(filters?: ArtifactFilters) {
     const patternDiffs = filters?.affecteds?.patterns
     return patternDiffs ? this.details.filter((pattern) => patternDiffs.includes(pattern.dashName)) : this.details
+  }
+
+  getPropertyValues = (patternName: string, property: string) => {
+    const patternConfig = this.getConfig(patternName)
+    if (!patternConfig) return []
+
+    const propType = patternConfig.properties?.[property]
+    if (!propType) return
+
+    if (propType.type === 'enum') {
+      return propType.value
+    }
+
+    if (propType.type === 'boolean') {
+      return ['true', 'false']
+    }
+
+    if (propType.type === 'property') {
+      return this.utility.getPropertyKeys(propType.value || property)
+    }
+
+    if (propType.type === 'token') {
+      const values = this.tokens.getValue(propType.value)
+      return Object.keys(values ?? {})
+    }
   }
 }
 

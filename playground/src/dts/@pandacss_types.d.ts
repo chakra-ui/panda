@@ -2,7 +2,6 @@
 
 import { HookKeys, Hookable } from 'hookable';
 import { TSConfig } from 'pkg-types';
-import * as ts_morph from 'ts-morph';
 import { Node } from 'ts-morph';
 
 export interface WithNode {
@@ -9927,9 +9926,10 @@ export interface ResultItem {
 	name?: string;
 	data: Array<Unboxed["raw"]>;
 	type?: "object" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
-	box: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
+	box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
 }
-export interface ParserResultType {
+export interface ParserResultInterface {
+	all: Array<ResultItem>;
 	jsx: Set<ResultItem>;
 	css: Set<ResultItem>;
 	cva: Set<ResultItem>;
@@ -9937,24 +9937,17 @@ export interface ParserResultType {
 	recipe: Map<string, Set<ResultItem>>;
 	pattern: Map<string, Set<ResultItem>>;
 	filePath: string | undefined;
-	set: (name: "cva" | "css", result: ResultItem) => void;
-	setSva: (result: ResultItem) => void;
-	setCva: (result: ResultItem) => void;
-	setJsx: (result: ResultItem) => void;
-	setRecipe: (name: string, result: ResultItem) => void;
-	setPattern: (name: string, result: ResultItem) => void;
 	isEmpty: () => boolean;
-	setFilePath: (filePath: string) => ParserResultType;
 	toArray: () => Array<ResultItem>;
-	toJSON: () => {
-		sva: Array<ResultItem>;
-		css: Array<ResultItem>;
-		cva: Array<ResultItem>;
-		recipe: Record<string, ResultItem[]>;
-		pattern: Record<string, ResultItem[]>;
-		jsx: Array<ResultItem>;
+}
+export interface ShipJson {
+	schemaVersion: string;
+	styles: {
+		atomic: string[];
+		recipes: {
+			[name: string]: string[];
+		};
 	};
-	merge: (result: ParserResultType) => ParserResultType;
 }
 export type MaybeAsyncReturn = Promise<void> | void;
 export interface PandaHooks {
@@ -9973,7 +9966,7 @@ export interface PandaHooks {
 	/**
 	 * Called after the file styles are extracted and processed into the resulting ParserResult object.
 	 */
-	"parser:after": (file: string, result: ParserResultType | undefined) => void;
+	"parser:after": (file: string, result: ParserResultInterface | undefined) => void;
 	/**
 	 * Called after the extracted ParserResult has been transformed to a CSS string
 	 */
@@ -10227,30 +10220,28 @@ export interface PatternConfig<T extends PatternProperties = PatternProperties> 
 	 */
 	blocklist?: LiteralUnion<CssProperty>[];
 }
-export interface CssRule {
+export interface WithConditions {
+	/**
+	 * The css conditions to generate for the rule.
+	 * @example ['hover', 'focus']
+	 */
+	conditions?: string[];
+	responsive?: boolean;
+}
+export interface CssRule extends WithConditions {
 	/**
 	 * The css properties to generate utilities for.
 	 * @example ['margin', 'padding']
 	 */
 	properties: {
-		[property: string]: string[];
+		[property: string]: Array<string | number>;
 	};
-	/**
-	 * The css conditions to generate utilities for.
-	 * @example ['hover', 'focus']
-	 */
-	conditions?: string[];
-	/**
-	 * Whether to generate responsive utilities.
-	 */
-	responsive?: boolean;
 }
-export type RecipeRule = "*" | ({
-	conditions?: string[];
-	responsive?: boolean;
-} & {
+export interface RecipeRuleVariants {
 	[variant: string]: boolean | string[];
-});
+}
+export type RecipeRule = "*" | (RecipeRuleVariants & WithConditions);
+export type PatternRule = "*" | CssRule;
 export interface StaticCssOptions {
 	/**
 	 * The css utility classes to generate.
@@ -10261,6 +10252,12 @@ export interface StaticCssOptions {
 	 */
 	recipes?: {
 		[recipe: string]: RecipeRule[];
+	};
+	/**
+	 * The css patterns to generate.
+	 */
+	patterns?: {
+		[pattern: string]: PatternRule[];
 	};
 }
 export interface Token<T> {
@@ -10400,6 +10397,10 @@ export interface SlotRecipeDefinition<S extends string, T extends SlotRecipeVari
 	 * The styles to apply when a combination of variants is selected.
 	 */
 	compoundVariants?: Pretty<SlotRecipeCompoundVariant<S, RecipeCompoundSelection<T>>>[];
+	/**
+	 * Variants to pre-generate, will be include in the final `config.staticCss`
+	 */
+	staticCss?: RecipeRule[];
 }
 export type SlotRecipeCreatorFn = <S extends string, T extends SlotRecipeVariantRecord<S>>(config: SlotRecipeDefinition<S, T>) => SlotRecipeRuntimeFn<S, T>;
 export type SlotRecipeConfig<S extends string = string, T extends SlotRecipeVariantRecord<S> = SlotRecipeVariantRecord<S>> = SlotRecipeDefinition<S, T> & RecipeConfigMeta;
@@ -11016,6 +11017,7 @@ export interface ArtifactContent {
 	code: string | undefined;
 }
 export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-patterns-index" | "css-index" | "reset.css" | "global.css" | "static.css" | "package.json" | "styles.css" | (string & {});
+export type CssArtifactType = "preflight" | "tokens" | "static" | "global" | "keyframes";
 export type Artifact = Nullable<{
 	id: ArtifactId;
 	dir?: string[];
@@ -11045,6 +11047,10 @@ export interface InputOptions {
 	exclude?: string[];
 	cwd?: string;
 }
+export type WatcherEventType = "add" | "addDir" | "change" | "unlink" | "unlinkDir";
+export interface WatchOptions extends InputOptions {
+	poll?: boolean;
+}
 export interface FileSystem {
 	readDirSync(dir: string): string[];
 	existsSync(fileLike: string): boolean;
@@ -11055,13 +11061,12 @@ export interface FileSystem {
 	rmFileSync(file: string): void;
 	ensureDirSync(dirPath: string): void;
 	writeFileSync(filePath: string, content: string): void;
-	watch(options: InputOptions & {
-		poll?: boolean;
-	}): Watcher;
+	watch(options: WatchOptions): Watcher;
 }
 export interface Path {
 	join(...paths: string[]): string;
 	dirname(path: string): string;
+	resolve(...paths: string[]): string;
 	extname(path: string): string;
 	relative(from: string, to: string): string;
 	isAbsolute(path: string): boolean;
@@ -11073,6 +11078,56 @@ export interface Runtime {
 	path: Path;
 	cwd(): string;
 	env(name: string): string | undefined;
+}
+export interface StyleResultObject {
+	[key: string]: any;
+}
+export interface StyleProps extends StyleResultObject {
+	css?: StyleResultObject;
+}
+export interface StyleEntry {
+	prop: string;
+	value: string;
+	cond: string;
+	recipe?: string;
+	slot?: string;
+	layer?: string;
+	variants?: boolean;
+}
+export interface ExpandedCondition extends RawCondition {
+	params?: string;
+}
+export interface AtomicStyleResult {
+	result: StyleResultObject;
+	entry: StyleEntry;
+	hash: string;
+	className: string;
+	conditions?: ExpandedCondition[];
+	layer?: string;
+}
+export interface GroupedResult extends Pick<AtomicStyleResult, "result" | "className"> {
+	hashSet: Set<string>;
+	details: GroupedStyleResultDetails[];
+}
+export interface RecipeBaseResult extends GroupedResult {
+	recipe: string;
+	slot?: string;
+}
+export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, "hash" | "entry" | "conditions"> {
+	result: StyleResultObject;
+}
+export interface StyleDecoderInterface {
+	classNames: Map<string, AtomicStyleResult | RecipeBaseResult>;
+	//
+	results: {
+		atomic: Set<AtomicStyleResult>;
+		recipes: Map<string, Set<AtomicStyleResult>>;
+		recipes_base: Map<string, Set<RecipeBaseResult>>;
+	};
+	atomic: Set<AtomicStyleResult>;
+	//
+	recipes: Map<string, Set<AtomicStyleResult>>;
+	recipes_base: Map<string, Set<RecipeBaseResult>>;
 }
 
 export {};

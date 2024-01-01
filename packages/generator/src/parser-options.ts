@@ -1,39 +1,19 @@
-import type { ConfigResultWithHooks, OutdirImportMap, TSConfig } from '@pandacss/types'
+import type { PatternDetail, RecipeNode } from '@pandacss/core'
+import type { ConfigResultWithHooks, TSConfig } from '@pandacss/types'
 import type { Context } from './engines'
-import type { PatternDetail } from './engines/pattern'
-import type { RecipeNode } from '@pandacss/core'
-
-const getImportMap = (outdir: string, configImportMap?: string | OutdirImportMap): ParserImportMap => {
-  if (typeof configImportMap === 'string') {
-    return {
-      css: [configImportMap, 'css'],
-      recipe: [configImportMap, 'recipes'],
-      pattern: [configImportMap, 'patterns'],
-      jsx: [configImportMap, 'jsx'],
-    }
-  }
-
-  const { css, recipes, patterns, jsx } = configImportMap ?? {}
-
-  return {
-    css: css ? [css] : [outdir, 'css'],
-    recipe: recipes ? [recipes] : [outdir, 'recipes'],
-    pattern: patterns ? [patterns] : [outdir, 'patterns'],
-    jsx: jsx ? [jsx] : [outdir, 'jsx'],
-  }
-}
+import { getImportMap, type ParserImportMap } from './import-map'
 
 export const getParserOptions = (ctx: Context): ParserOptions => {
   const { config, jsx, isValidProperty, patterns, recipes } = ctx
-  const { tsconfig, tsOptions } = ctx.conf
 
-  const compilerOptions = tsconfig?.compilerOptions ?? {}
+  const compilerOptions = ctx.conf.tsconfig?.compilerOptions ?? {}
   const baseUrl = compilerOptions.baseUrl ?? ''
 
   const cwd = config.cwd
   const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
 
   return {
+    hash: ctx.hash,
     importMap: getImportMap(config.outdir.replace(relativeBaseUrl, ''), config.importMap),
     jsx: {
       framework: jsx.framework,
@@ -42,21 +22,15 @@ export const getParserOptions = (ctx: Context): ParserOptions => {
       isStyleProp: isValidProperty,
       nodes: [...patterns.details, ...recipes.details],
     },
-    isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
-    patternKeys: patterns.keys,
-    recipeKeys: recipes.keys,
-    getRecipesByJsxName: recipes.filter,
-    getPatternsByJsxName: patterns.filter,
+    syntax: config.syntax,
+    isValidProperty,
+    recipes,
+    patterns,
+    encoder: ctx.encoder,
     compilerOptions: compilerOptions as any,
-    tsOptions: tsOptions,
+    tsOptions: ctx.conf.tsOptions,
+    join: (...paths: string[]) => paths.join('/'),
   }
-}
-
-export interface ParserImportMap {
-  css: string[]
-  recipe: string[]
-  pattern: string[]
-  jsx: string[]
 }
 
 export interface ParserJsxOptions {
@@ -68,13 +42,15 @@ export interface ParserJsxOptions {
 }
 
 export interface ParserOptions {
-  importMap: ParserImportMap
+  hash: Context['hash']
+  importMap: ParserImportMap | string
   jsx: ParserJsxOptions
-  isTemplateLiteralSyntax: boolean
-  patternKeys: Context['patterns']['keys']
-  recipeKeys: Context['recipes']['keys']
-  getRecipesByJsxName: Context['recipes']['filter']
-  getPatternsByJsxName: Context['patterns']['filter']
+  syntax: Context['config']['syntax']
+  isValidProperty: Context['isValidProperty']
+  recipes: Context['recipes']
+  patterns: Context['patterns']
+  encoder: Context['encoder']
+  join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
   tsOptions: ConfigResultWithHooks['tsOptions']
 }

@@ -1,6 +1,6 @@
 import { usePandaContext } from '@/src/hooks/usePandaContext'
 import { State } from '@/src/hooks/usePlayground'
-import { createProject } from '@pandacss/parser'
+import { Project } from '@pandacss/parser'
 import { Config } from '@pandacss/types'
 import { useMemo } from 'react'
 
@@ -10,34 +10,37 @@ export function usePanda(state: State, config: Config | null) {
   const context = usePandaContext(config)
 
   const staticArtifacts = useMemo(() => {
-    context.appendLayerParams()
-    context.appendBaselineCss()
+    const sheet = context.createSheet()
+    context.appendLayerParams(sheet)
+    context.appendBaselineCss(sheet)
 
     const cssArtifacts = [
-      { file: 'Tokens', code: context.stylesheet.getLayerCss('tokens') },
-      { file: 'Reset', code: context.stylesheet.getLayerCss('reset') },
-      { file: 'Global', code: context.stylesheet.getLayerCss('base') },
+      { file: 'Tokens', code: sheet.getLayerCss('tokens') },
+      { file: 'Reset', code: sheet.getLayerCss('reset') },
+      { file: 'Global', code: sheet.getLayerCss('base') },
     ]
 
     return cssArtifacts
   }, [context])
 
   return useMemo(() => {
-    const project = createProject({
+    const project = new Project({
       useInMemoryFileSystem: true,
-      parserOptions: {
-        join(...paths) {
-          return paths.join('/')
-        },
-        ...context.parserOptions,
-      },
+      parserOptions: context.parserOptions,
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
       hooks: context.hooks,
     })
 
-    const parserResult = project.parseSourceFile('code.tsx')
-    context.appendParserCss(parserResult)
+    // Fork to discard any cache from previous runs
+    // so the CSS won't grow indefinitely
+    const encoder = context.encoder.clone()
+    const parserResult = project.parseSourceFile('code.tsx', encoder)
+    const sheet = context.createSheet()
+
+    const decoder = context.decoder.clone().collect(encoder)
+    const parsedCss = sheet.processDecoder(decoder)
+
     const artifacts = context.getArtifacts() ?? []
 
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
@@ -46,10 +49,11 @@ export function usePanda(state: State, config: Config | null) {
       ?.join('\n')
 
     const cssArtifacts: CssFileArtifact[] = [
-      { file: 'Utilities', code: context.stylesheet.getLayerCss('utilities') },
-      { file: 'Recipes', code: context.stylesheet.getLayerCss('recipes') },
+      { file: 'Utilities', code: sheet.getLayerCss('utilities') },
+      { file: 'Recipes', code: sheet.getLayerCss('recipes') },
     ].concat(staticArtifacts)
-    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
+
+    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? ''), parsedCss].join('\n')
 
     const panda = {
       previewCss,
@@ -64,7 +68,7 @@ export function usePanda(state: State, config: Config | null) {
   }, [source, css, context, staticArtifacts])
 }
 
-export type CssFileArtifact = {
+export interface CssFileArtifact {
   file: string
   code: string | undefined
   dir?: string[] | undefined

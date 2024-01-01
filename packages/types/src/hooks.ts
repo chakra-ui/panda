@@ -1,6 +1,6 @@
 import type { HookKeys, Hookable } from 'hookable'
 import type { LoadConfigResult, UserConfig } from './config'
-import type { ParserResultType } from './parser'
+import type { ParserResultInterface } from './parser'
 
 type MaybeAsyncReturn = Promise<void> | void
 
@@ -20,7 +20,7 @@ export interface PandaHooks {
   /**
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
    */
-  'parser:after': (file: string, result: ParserResultType | undefined) => void
+  'parser:after': (file: string, result: ParserResultInterface | undefined) => void
   /**
    * Called after the extracted ParserResult has been transformed to a CSS string
    */
