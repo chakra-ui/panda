@@ -1,4 +1,10 @@
 {
   "extends": "../../tsconfig.build.json",
-  "include": ["src"]
+  "include": ["src", "__tests__"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@pandacss/fixture": ["../fixture/src/index.ts"]
+    }
+  }
 }
