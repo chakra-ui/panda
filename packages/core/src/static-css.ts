@@ -42,47 +42,12 @@ export class StaticCss {
    *
    */
   getStyleObjects(options: StaticCssOptions) {
-    const { config, utility } = this.context
+    const { config, utility, patterns: _patterns } = this.context
     const breakpoints = Object.keys(config.theme?.breakpoints ?? {})
-
-    const getPropertyKeys = (prop: string) => {
-      const propConfig = utility.config[prop]
-      if (!propConfig) return []
-
-      const values = utility.getPropertyValues(propConfig)
-      if (!values) return []
-
-      return Object.keys(values)
-    }
 
     const getRecipeKeys = (recipeName: string) => {
       const recipeConfig = this.context.recipes.details.find((detail) => detail.baseName === recipeName)
       return recipeConfig?.variantKeyMap
-    }
-
-    const getPatternPropValues = (patternName: string, property: string) => {
-      const patternConfig = this.context.patterns.getConfig(patternName)
-      if (!patternConfig) return []
-
-      const propType = patternConfig.properties?.[property]
-      if (!propType) return
-
-      if (propType.type === 'enum') {
-        return propType.value
-      }
-
-      if (propType.type === 'boolean') {
-        return ['true', 'false']
-      }
-
-      if (propType.type === 'property') {
-        return getPropertyKeys(propType.value || property)
-      }
-
-      if (propType.type === 'token') {
-        const values = this.context.tokens.getValue(propType.value)
-        return Object.keys(values ?? {})
-      }
     }
 
     const { css = [], recipes = {}, patterns = {} } = options
@@ -95,7 +60,7 @@ export class StaticCss {
       }
 
       Object.entries(rule.properties).forEach(([property, values]) => {
-        const propKeys = getPropertyKeys(property)
+        const propKeys = utility.getPropertyKeys(property)
         const computedValues = values.flatMap((value) => (value === '*' ? propKeys : value))
 
         computedValues.forEach((value) => {
@@ -170,7 +135,7 @@ export class StaticCss {
         }
 
         Object.entries(properties).forEach(([property, values]) => {
-          const propValues = getPatternPropValues(pattern, property)
+          const propValues = _patterns.getPropertyValues(pattern, property)
           const computedValues = values.flatMap((value) => (value === '*' ? propValues : value))
 
           computedValues.forEach((patternValue) => {
@@ -191,6 +156,11 @@ export class StaticCss {
     })
 
     return results
+  }
+
+  createRegex = () => {
+    const { decoder } = this
+    return createClassNameRegex(Array.from(decoder.classNames.keys()))
   }
 
   process(staticCss: StaticCssOptions, stylesheet?: Stylesheet) {
@@ -232,20 +202,21 @@ export class StaticCss {
 
     sheet.processDecoder(decoder.collect(encoder))
 
-    const createRegex = () => createClassNameRegex(Array.from(decoder.classNames.keys()))
-
     const parse = (text: string) => {
-      const regex = createRegex()
+      const regex = this.createRegex()
 
       const matches = text.match(regex)
-      if (!matches) {
-        return []
-      }
+      if (!matches) return []
 
       return matches.map((match) => match.replace('.', ''))
     }
 
-    return { results, regex: createRegex, parse, sheet } as StaticCssEngine
+    return {
+      results,
+      regex: this.createRegex.bind(this),
+      parse,
+      sheet,
+    } as StaticCssEngine
   }
 }
 

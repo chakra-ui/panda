@@ -69,8 +69,11 @@ export class CoreContext {
     this.tokens = this.createTokenDictionary(theme)
     this.utility = this.createUtility(config)
     this.conditions = this.createConditions(config)
-
-    this.patterns = new Patterns(config)
+    this.patterns = new Patterns({
+      config,
+      tokens: this.tokens,
+      utility: this.utility,
+    })
 
     this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
     this.setupCompositions(theme)
