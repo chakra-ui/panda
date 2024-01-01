@@ -8,6 +8,7 @@ import { optimizePostCss } from './plugins/optimize-postcss'
 interface OptimizeOptions {
   minify?: boolean
   lightningcss?: boolean
+  browserslist?: string[]
 }
 
 export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {

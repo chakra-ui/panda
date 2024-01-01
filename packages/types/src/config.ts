@@ -254,6 +254,11 @@ interface CssgenOptions {
    * @default false
    */
   lightningcss?: boolean
+  /**
+   * Browserslist query to target specific browsers.
+   * @see https://www.npmjs.com/package/browserslist
+   */
+  browserslist?: string[]
 }
 
 interface CodegenOptions {

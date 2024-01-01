@@ -18,6 +18,7 @@ export interface StylesheetContext {
   helpers: PatternHelpers
   hash?: boolean
   lightningcss?: boolean
+  browserslist?: string[]
 }
 
 export interface RecipeNode {

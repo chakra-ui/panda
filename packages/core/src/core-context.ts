@@ -165,6 +165,7 @@ export class CoreContext {
   createSheet(): Stylesheet {
     return new Stylesheet({
       ...this.baseSheetContext,
+      browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,
       layers: this.createLayers(this.config.layers as CascadeLayers),
     })

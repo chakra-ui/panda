@@ -2,6 +2,7 @@ import { convertTsPathsToRegexes, loadConfig } from '@pandacss/config'
 import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
 import { createDebugger, createHooks } from 'hookable'
 import { parse } from 'tsconfck'
+import browserslist from 'browserslist'
 import { PandaContext } from './create-context'
 
 export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
@@ -16,6 +17,10 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
 
   if (options.cwd) {
     conf.config.cwd = options.cwd
+  }
+
+  if (conf.config.lightningcss && !conf.config.browserslist) {
+    conf.config.browserslist ||= browserslist.findConfig(cwd)?.defaults
   }
 
   const tsconfigResult = await parse(conf.path, {
