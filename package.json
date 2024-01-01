@@ -51,7 +51,7 @@
     "tsup": "7.1.0",
     "tsx": "3.12.10",
     "typescript": "5.3.3",
-    "vite-tsconfig-paths": "4.2.2",
+    "vite-tsconfig-paths": "4.2.3",
     "vitest": "0.33.0"
   },
   "lint-staged": {
