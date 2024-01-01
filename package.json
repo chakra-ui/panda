@@ -48,7 +48,7 @@
     "prettier": "^2.8.8",
     "rimraf": "^5.0.1",
     "ts-morph": "19.0.0",
-    "tsup": "7.1.0",
+    "tsup": "8.0.1",
     "tsx": "3.12.10",
     "typescript": "5.3.3",
     "vite-tsconfig-paths": "4.2.2",
