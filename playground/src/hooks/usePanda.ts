@@ -14,10 +14,14 @@ export function usePanda(state: State, config: Config | null) {
     context.appendLayerParams(sheet)
     context.appendBaselineCss(sheet)
 
+    const staticSheet = context.createSheet()
+    context.appendCssOfType('static', staticSheet)
+
     const cssArtifacts = [
       { file: 'Tokens', code: sheet.getLayerCss('tokens') },
       { file: 'Reset', code: sheet.getLayerCss('reset') },
       { file: 'Global', code: sheet.getLayerCss('base') },
+      { file: 'Static', code: sheet.getLayerCss('recipes', 'utilities') },
     ]
 
     return cssArtifacts
