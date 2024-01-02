@@ -6,6 +6,15 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.24.1] - 2024-01-02
+
+### Fixed
+
+- Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS wasn't
+  applied correctly
+- Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+  through the config recipes)
+
 ## [0.24.0] - 2024-01-02
 
 ### Fixed
