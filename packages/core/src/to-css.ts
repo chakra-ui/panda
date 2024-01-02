@@ -1,15 +1,10 @@
 import type { Dict } from '@pandacss/types'
-import postcss from 'postcss'
-import postcssNested from 'postcss-nested'
 import { postCssJs } from './post-css-js'
 import { safeParse } from './safe-parse'
+import { stringify } from './stringify'
 
 export function toCss(styles: Dict) {
-  const result = postcss([postcssNested()]).process(styles, {
-    parser: postCssJs.parser,
-  })
-
-  return result as postcss.LazyResult
+  return stringify(styles)
 }
 
 export function cssToJs(css: string) {

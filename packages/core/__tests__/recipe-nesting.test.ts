@@ -73,14 +73,14 @@ test('[recipe] direct nesting / recipe ruleset', () => {
           margin-top: auto;
           margin-bottom: var(--spacing-0);
           padding-top: var(--spacing-0);
-          object-pos: center
+          object-pos: center;
     }
     }
 
       @media screen and (min-width: 48em) {
         .text--variant_sm:first-child:hover {
           color: var(--colors-gray-300);
-        }
+    }
     }
     }"
   `)
@@ -88,16 +88,15 @@ test('[recipe] direct nesting / recipe ruleset', () => {
   expect(textRecipe({ variant: 'md' })).toMatchInlineSnapshot(`
     "@layer recipes {
       .text--variant_md:before {
-        --mb: var(--colors-gray-300)
-        ;
+        --mb: var(--colors-gray-300);
         left: var(--spacing-5);
-        border-bottom-right-radius: var(--radii-sm)
+        border-bottom-right-radius: var(--radii-sm);
     }
 
       .text--variant_md:after {
-        right: 90px;
+        right: 90;
         border-bottom-right-radius: var(--radii-lg);
-        transform: scaleX(-1)
+        transform: scaleX(-1);
     }
 
       @layer _base {
@@ -105,7 +104,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
           margin-top: auto;
           margin-bottom: var(--spacing-0);
           padding-top: var(--spacing-0);
-          object-pos: center
+          object-pos: center;
     }
     }
     }"

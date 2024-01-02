@@ -48,7 +48,7 @@ describe('compositions', () => {
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+            font-weight: var(--font-weights-bold);
       }
           }
       }"
@@ -65,7 +65,7 @@ describe('compositions', () => {
           @media screen and (min-width: 64em) {
             .textStyle_headline\\\\.h2 {
               font-size: 2rem;
-          }
+      }
       }
           }
       }"

@@ -117,7 +117,7 @@ describe('{fn}.raw', () => {
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -133,7 +133,7 @@ describe('{fn}.raw', () => {
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
@@ -155,47 +155,47 @@ describe('{fn}.raw', () => {
 
       @layer utilities {
         .mx_3 {
-          margin-inline: var(--spacing-3)
+          margin-inline: var(--spacing-3);
       }
 
         .pt_4 {
-          padding-top: var(--spacing-4)
+          padding-top: var(--spacing-4);
       }
 
         .text_amber\\\\.100 {
-          color: var(--colors-amber-100)
+          color: var(--colors-amber-100);
       }
 
         .mx_10 {
-          margin-inline: var(--spacing-10)
+          margin-inline: var(--spacing-10);
       }
 
         .pt_6 {
-          padding-top: var(--spacing-6)
+          padding-top: var(--spacing-6);
       }
 
         .text_blue\\\\.950 {
-          color: var(--colors-blue-950)
+          color: var(--colors-blue-950);
       }
 
         .bg_red\\\\.400 {
-          background: var(--colors-red-400)
+          background: var(--colors-red-400);
       }
 
         .d_flex {
-          display: flex
+          display: flex;
       }
 
         .flex_column {
-          flex-direction: column
+          flex-direction: column;
       }
 
         .gap_10px {
-          gap: 10px
+          gap: 10px;
       }
 
         .flex_row {
-          flex-direction: row
+          flex-direction: row;
       }
       }"
     `)

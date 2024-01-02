@@ -11,13 +11,14 @@ import merge from 'lodash.merge'
 import type { Conditions } from './conditions'
 import { cssToJs, toCss } from './to-css'
 import type { Utility } from './utility'
-import type postcss from 'postcss'
+import postcss from 'postcss'
 
 export interface SerializeContext {
   conditions: Conditions
   utility: Utility
 }
 
+// TODO
 export function serializeStyle(styleObj: Dict, context: SerializeContext) {
   const { utility, conditions } = context
   const rule = conditions.rule()
@@ -47,15 +48,18 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
        */
       const segments = conditions.segment(conds)
 
-      rule.nodes = cssResult.root.nodes as postcss.ChildNode[]
+      // TODO
+      rule.nodes = [postcss.parse(cssResult)]
       rule.selector = segments.selector.length > 0 ? segments.selector[0] : '&'
 
       rule.update()
       rule.applyConditions(segments.condition)
 
+      // TODO
       styles = cssToJs(rule.toString())
     } else {
-      styles = cssToJs(cssResult.css)
+      // TODO
+      styles = cssToJs(cssResult)
     }
 
     merge(result, styles)
@@ -70,5 +74,5 @@ export function serializeStyles(groupedObject: Dict, context: SerializeContext) 
     result[scope] ||= {}
     merge(result[scope], serializeStyle(styles, context))
   }
-  return toCss(result).root
+  return toCss(result)
 }

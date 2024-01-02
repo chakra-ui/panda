@@ -9,7 +9,7 @@ describe('recipe ruleset', () => {
         .textStyle--size_h1 {
           font-size: 5rem;
           line-height: 1em;
-          font-weight: 800
+          font-weight: 800;
       }
 
         @layer _base {
@@ -45,7 +45,7 @@ describe('recipe ruleset', () => {
         .textStyle--size_h1 {
           font-size: 5rem;
           line-height: 1em;
-          font-weight: 800
+          font-weight: 800;
       }
 
         @layer _base {
@@ -64,8 +64,8 @@ describe('recipe ruleset', () => {
             font-size: 3rem;
             line-height: 1.2em;
             font-weight: 700;
-            letter-spacing: -0.03em
-          }
+            letter-spacing: -0.03em;
+      }
       }
       }"
     `)
@@ -75,8 +75,8 @@ describe('recipe ruleset', () => {
     expect(processRecipe('tooltipStyle', {})).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-          [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
-            color: red
+          [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red;
       }
           }
       }"
@@ -190,7 +190,7 @@ describe('recipe ruleset', () => {
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -226,7 +226,7 @@ describe('recipe ruleset', () => {
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -259,19 +259,19 @@ describe('recipe ruleset', () => {
           .lg\\\\:buttonStyle--variant_outline {
             background-color: var(--colors-transparent);
             border: 1px solid blue;
-            color: blue
-          }
+            color: blue;
+      }
 
           .lg\\\\:buttonStyle--variant_outline[data-disabled] {
             background-color: var(--colors-transparent);
             border: 1px solid gray;
-            color: gray
-          }
+            color: gray;
+      }
 
           .lg\\\\:buttonStyle--variant_outline:is(:hover, [data-hover]) {
             background-color: blue;
-            color: var(--colors-white)
-          }
+            color: var(--colors-white);
+      }
       }
       }"
     `)

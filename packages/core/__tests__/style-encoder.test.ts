@@ -474,7 +474,7 @@ describe('hash factory', () => {
     expect(result.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-          [data-theme=dark] .navbar[data-part=\\"blur\\"], .dark .navbar[data-part=\\"blur\\"], .navbar[data-part=\\"blur\\"].dark, .navbar[data-part=\\"blur\\"][data-theme=dark] {
+          [data-theme=dark] .navbar[data-part=\\"blur\\"],.dark .navbar[data-part=\\"blur\\"],.navbar[data-part=\\"blur\\"].dark,.navbar[data-part=\\"blur\\"][data-theme=dark] {
             background: dark;
             box-shadow: 0 -1px 0 rgba(255,255,255,.1) inset;
       }
@@ -484,14 +484,14 @@ describe('hash factory', () => {
       }
 
           @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-            [data-theme=dark] .navbar[data-part=\\"blur\\"], .dark .navbar[data-part=\\"blur\\"], .navbar[data-part=\\"blur\\"].dark, .navbar[data-part=\\"blur\\"][data-theme=dark] {
+            [data-theme=dark] .navbar[data-part=\\"blur\\"],.dark .navbar[data-part=\\"blur\\"],.navbar[data-part=\\"blur\\"].dark,.navbar[data-part=\\"blur\\"][data-theme=dark] {
               background-color: hsla(0,0%,7%,.8) !important;
-          }
+      }
             .navbar[data-part=\\"blur\\"] {
               backdrop-filter: blur(8px);
               -webkit-backdrop-filter: blur(8px);
               background-color: rgba(255, 255, 255, 0.85) !important;
-          }
+      }
       }
           }
       }"

@@ -11,7 +11,7 @@ export function generateKeyframeCss(ctx: Context, sheet: Stylesheet) {
       postcss.atRule({
         name: 'keyframes',
         params: name,
-        nodes: toCss(definition).root.nodes,
+        nodes: [postcss.parse(toCss(definition))],
       }),
     )
   }

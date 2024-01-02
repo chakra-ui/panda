@@ -111,95 +111,93 @@ describe('rule processor', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_red\\\\! {
-          color: red !important
+          color: red !important;
       }
 
         .border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\) {
-          border: 1px solid var(--colors-red-100)
+          border: 1px solid var(--colors-red-100);
       }
 
         .bg_blue\\\\.300 {
-          background: var(--colors-blue-300)
+          background: var(--colors-blue-300);
       }
 
         .w_1 {
-          width: var(--sizes-1)
+          width: var(--sizes-1);
       }
 
         .fs_xs {
-          font-size: var(--font-sizes-xs)
+          font-size: var(--font-sizes-xs);
       }
 
-        [data-theme=dark] .dark\\\\:fs_2xl, .dark .dark\\\\:fs_2xl, .dark\\\\:fs_2xl.dark, .dark\\\\:fs_2xl[data-theme=dark] {
-          font-size: var(--font-sizes-2xl)
+        [data-theme=dark] .dark\\\\:fs_2xl,.dark .dark\\\\:fs_2xl,.dark\\\\:fs_2xl.dark,.dark\\\\:fs_2xl[data-theme=dark] {
+          font-size: var(--font-sizes-2xl);
       }
 
         .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green[data-attr='test'] {
-          color: green
+          color: green;
       }
 
         .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: purple
+          color: purple;
       }
 
         .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: cyan
+          color: cyan;
       }
 
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          opened: orange
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {_opened: orange;
       }
 
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          xl: pink
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {_xl: pink;
       }
 
         .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
-          font-size: var(--font-sizes-xl)
+          font-size: var(--font-sizes-xl);
       }
 
         .hover\\\\:fs_md:is(:hover, [data-hover]) {
-          font-size: var(--font-sizes-md)
+          font-size: var(--font-sizes-md);
       }
 
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+            font-weight: var(--font-weights-bold);
       }
       }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:w_2 {
-            width: var(--sizes-2)
-          }
+            width: var(--sizes-2);
+      }
           .sm\\\\:fs_sm {
-            font-size: var(--font-sizes-sm)
-          }
+            font-size: var(--font-sizes-sm);
+      }
           .sm\\\\:text_yellow {
-            color: yellow
-          }
+            color: yellow;
+      }
           .sm\\\\:bg_red {
-            background-color: red
-          }
+            background-color: red;
+      }
       }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
-            background-color: green
-          }
+            background-color: green;
+      }
       }
 
         @media screen and (min-width: 48em) {
           .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
-            font-size: var(--font-sizes-lg)
-          }
+            font-size: var(--font-sizes-lg);
+      }
       }
 
         @media screen and (min-width: 80em) {
           .xl\\\\:w_3 {
-            width: var(--sizes-3)
-          }
+            width: var(--sizes-3);
+      }
       }
       }"
     `)
@@ -221,7 +219,7 @@ describe('rule processor', () => {
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_solid {
@@ -254,8 +252,8 @@ describe('rule processor', () => {
           .md\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
-            padding: 0 0.75rem
-          }
+            padding: 0 0.75rem;
+      }
       }
       }"
     `)
@@ -347,97 +345,97 @@ describe('rule processor', () => {
     expect(buttonStyle.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_inline-flex {
-          display: inline-flex
+          display: inline-flex;
       }
 
         .items_center {
-          align-items: center
+          align-items: center;
       }
 
         .justify_center {
-          justify-content: center
+          justify-content: center;
       }
 
         .h_2\\\\.5rem {
-          height: 2.5rem
+          height: 2.5rem;
       }
 
         .min-w_2\\\\.5rem {
-          min-width: 2.5rem
+          min-width: 2.5rem;
       }
 
         .p_0_0\\\\.5rem {
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
       }
 
         .h_3rem {
-          height: 3rem
+          height: 3rem;
       }
 
         .min-w_3rem {
-          min-width: 3rem
+          min-width: 3rem;
       }
 
         .p_0_0\\\\.75rem {
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .bg_blue {
-          background-color: blue
+          background-color: blue;
       }
 
         .text_white {
-          color: var(--colors-white)
+          color: var(--colors-white);
       }
 
         .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
-          background-color: gray
+          background-color: gray;
       }
 
         .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
-          color: var(--colors-black)
+          color: var(--colors-black);
       }
 
         .bg_transparent {
-          background-color: var(--colors-transparent)
+          background-color: var(--colors-transparent);
       }
 
         .border_1px_solid_blue {
-          border: 1px solid blue
+          border: 1px solid blue;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
 
         .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
-          background-color: var(--colors-transparent)
+          background-color: var(--colors-transparent);
       }
 
         .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray[data-disabled] {
-          border: 1px solid gray
+          border: 1px solid gray;
       }
 
         .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray[data-disabled] {
-          color: gray
+          color: gray;
       }
 
         .hover\\\\:bg_darkblue:is(:hover, [data-hover]) {
-          background-color: darkblue
+          background-color: darkblue;
       }
 
         .hover\\\\:bg_blue:is(:hover, [data-hover]) {
-          background-color: blue
+          background-color: blue;
       }
 
         .hover\\\\:text_white:is(:hover, [data-hover]) {
-          color: var(--colors-white)
+          color: var(--colors-white);
       }
 
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+            font-weight: var(--font-weights-bold);
       }
       }
       }"
@@ -462,43 +460,42 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
-
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
           width: var(--sizes-8);
-          height: var(--sizes-8)
+          height: var(--sizes-8);
       }
 
         .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm)
+          font-size: var(--font-sizes-sm);
       }
 
         @layer _base {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: var(--spacing-2)
+            gap: var(--spacing-2);
       }
 
           .checkbox__control {
             border-width: 1px;
-            border-radius: var(--radii-sm)
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {
-            margin-inline-start: var(--spacing-2)
+            margin-inline-start: var(--spacing-2);
       }
       }
 
         @media screen and (min-width: 48em) {
           .md\\\\:checkbox__control--size_md {
             width: var(--sizes-10);
-            height: var(--sizes-10)
-          }
+            height: var(--sizes-10);
+      }
           .md\\\\:checkbox__label--size_md {
-            font-size: var(--font-sizes-md)
-          }
+            font-size: var(--font-sizes-md);
+      }
       }
       }"
     `)
@@ -556,63 +553,63 @@ describe('rule processor', () => {
     expect(checkbox.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
-          display: flex
+          display: flex;
       }
 
         .items_center {
-          align-items: center
+          align-items: center;
       }
 
         .gap_2 {
-          gap: var(--spacing-2)
+          gap: var(--spacing-2);
       }
 
         .border-w_1px {
-          border-width: 1px
+          border-width: 1px;
       }
 
         .rounded_sm {
-          border-radius: var(--radii-sm)
+          border-radius: var(--radii-sm);
       }
 
         .w_8 {
-          width: var(--sizes-8)
+          width: var(--sizes-8);
       }
 
         .h_8 {
-          height: var(--sizes-8)
+          height: var(--sizes-8);
       }
 
         .w_10 {
-          width: var(--sizes-10)
+          width: var(--sizes-10);
       }
 
         .h_10 {
-          height: var(--sizes-10)
+          height: var(--sizes-10);
       }
 
         .w_12 {
-          width: var(--sizes-12)
+          width: var(--sizes-12);
       }
 
         .h_12 {
-          height: var(--sizes-12)
+          height: var(--sizes-12);
       }
 
         .ms_2 {
-          margin-inline-start: var(--spacing-2)
+          margin-inline-start: var(--spacing-2);
       }
 
         .fs_sm {
-          font-size: var(--font-sizes-sm)
+          font-size: var(--font-sizes-sm);
       }
 
         .fs_md {
-          font-size: var(--font-sizes-md)
+          font-size: var(--font-sizes-md);
       }
 
         .fs_lg {
-          font-size: var(--font-sizes-lg)
+          font-size: var(--font-sizes-lg);
       }
       }"
     `)
@@ -750,27 +747,27 @@ describe('rule processor', () => {
 
       @layer utilities {
         .text_blue\\\\.300 {
-          color: var(--colors-blue-300)
+          color: var(--colors-blue-300);
       }
 
         .fs_12px {
-          font-size: 12px
+          font-size: 12px;
       }
 
         .fs_14px {
-          font-size: 14px
+          font-size: 14px;
       }
 
         .fs_16px {
-          font-size: 16px
+          font-size: 16px;
       }
 
         .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
-          border: 2px solid var(--colors-green-100)
+          border: 2px solid var(--colors-green-100);
       }
 
         .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
-          color: var(--colors-red-400)
+          color: var(--colors-red-400);
       }
       }"
     `)
@@ -786,11 +783,11 @@ describe('rule processor', () => {
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_red {
-          color: red
+          color: red;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
       }"
     `)
@@ -801,7 +798,7 @@ describe('rule processor', () => {
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         .variant_solid {
-          variant: solid
+          variant: solid;
       }
 
         @layer _base {
@@ -820,11 +817,11 @@ describe('rule processor', () => {
       @layer utilities {
 
         .text_red {
-          color: red
+          color: red;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
       }"
     `)
@@ -858,7 +855,7 @@ describe('rule processor', () => {
       "@layer recipes {
 
         .variant_solid {
-          variant: solid
+          variant: solid;
       }
 
         @layer _base {
@@ -879,27 +876,27 @@ describe('rule processor', () => {
 
         .checkbox__control--size_md {
           width: var(--sizes-10);
-          height: var(--sizes-10)
+          height: var(--sizes-10);
       }
 
         .checkbox__label--size_md {
-          font-size: var(--font-sizes-md)
+          font-size: var(--font-sizes-md);
       }
 
         @layer _base {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: var(--spacing-2)
+            gap: var(--spacing-2);
       }
 
           .checkbox__control {
             border-width: 1px;
-            border-radius: var(--radii-sm)
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {
-            margin-inline-start: var(--spacing-2)
+            margin-inline-start: var(--spacing-2);
       }
       }
       }
@@ -907,45 +904,45 @@ describe('rule processor', () => {
       @layer utilities {
 
         .text_red {
-          color: red
+          color: red;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
 
         .d_none {
-          display: none
+          display: none;
       }
 
         .h_100\\\\% {
-          height: 100%
+          height: 100%;
       }
 
         .transition_all_\\\\.3s_ease-in-out {
-          transition: all .3s ease-in-out
+          transition: all .3s ease-in-out;
       }
 
         .opacity_0\\\\! {
-          opacity: 0 !important
+          opacity: 0 !important;
       }
 
         .opacity_1 {
-          opacity: 1
+          opacity: 1;
       }
 
         .h_10px {
-          height: 10px
+          height: 10px;
       }
 
         .bg-gradient_to-b {
           --gradient-stops: var(--gradient-from), var(--gradient-to);
           --gradient: var(--gradient-via-stops, var(--gradient-stops));
-          background-image: linear-gradient(to bottom, var(--gradient))
+          background-image: linear-gradient(to bottom, var(--gradient));
       }
 
         .from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\) {
-          --gradient-from: rgb(200 200 200 / .4)
+          --gradient-from: rgb(200 200 200 / .4);
       }
       }"
     `)
