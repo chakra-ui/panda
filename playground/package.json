@@ -31,6 +31,7 @@
     "hookable": "5.5.3",
     "merge-anything": "5.1.7",
     "monaco-editor": "0.40.0",
+    "monaco-editor-auto-typings": "^0.4.5",
     "monaco-jsx-syntax-highlight": "^1.2.0",
     "nanoid": "4.0.2",
     "next": "14.0.3",

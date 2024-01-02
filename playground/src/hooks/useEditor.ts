@@ -1,4 +1,6 @@
-import { OnMount, OnChange, BeforeMount, EditorProps, Monaco } from '@monaco-editor/react'
+import { OnMount, OnChange, BeforeMount, EditorProps, Monaco as MonacoType } from '@monaco-editor/react'
+import * as Monaco from 'monaco-editor'
+import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings/custom-editor'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocalStorage, useUpdateEffect } from 'usehooks-ts'
@@ -18,11 +20,14 @@ import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
 import { configureAutoImports } from '../lib/auto-import'
 import { UsePanda } from '@/src/hooks/usePanda'
+import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
+
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
   panda: UsePanda
   diffState?: State | null
+  isLoading: boolean
 }
 
 type Tab = 'css' | 'code' | 'config'
@@ -43,13 +48,37 @@ export const defaultEditorOptions: EditorProps['options'] = {
   fontWeight: '400',
 }
 
-const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) => {
+const activateAutoTypings = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
+  const activate = async () => {
+    const { dispose } = await AutoTypings.create(monacoEditor, {
+      monaco,
+      sourceCache: new LocalStorageCache(),
+      fileRootPath: 'file:///',
+      debounceDuration: 500,
+      sourceResolver: new TypingsSourceResolver(),
+    })
+
+    return dispose
+  }
+
+  activate()
+
+  monacoEditor.onDidChangeModel(() => {
+    activate()
+  })
+
+  monacoEditor.onDidChangeModelContent(() => {
+    activate()
+  })
+}
+
+const activateMonacoJSXHighlighter = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
   const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(getWorker(), monaco)
-  const uri = monacoEditor.getModel().uri
+  const uri = monacoEditor.getModel()?.uri
 
   const { highlighter, dispose } = monacoJsxSyntaxHighlight.highlighterBuilder({
     editor: monacoEditor,
-    filePath: uri?.toString() ?? uri.path,
+    filePath: uri?.toString() ?? uri?.path,
   })
 
   highlighter()
@@ -101,6 +130,7 @@ export function useEditor(props: PandaEditorProps) {
     (editor, monaco) => {
       activateMonacoJSXHighlighter(editor, monaco)
       configureAutoImports({ context: autoImportCtx, monaco, editor })
+      activateAutoTypings(editor, monaco)
 
       function registerKeybindings() {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {

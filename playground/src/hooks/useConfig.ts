@@ -1,39 +1,68 @@
+import { evalConfig } from '@/src/lib/config/eval-config'
+import { getImports } from '@/src/lib/config/get-imports'
 import { Config } from '@pandacss/types'
-import { useEffect, useState } from 'react'
-import * as pandaDefs from '@pandacss/dev'
+import { useEffect, useRef, useState } from 'react'
+import { useDebounce, useUpdateEffect } from 'usehooks-ts'
 
-export const useConfig = (_config: string) => {
-  const [config, setConfig] = useState<Config | null>(evalConfig(_config))
+export const useConfig = (configStr: string) => {
+  const hasPresets = getImports(configStr).length || validateConfig(configStr)?.presets?.length
+
+  const initialConfig = hasPresets ? null : validateConfig(configStr)
+
+  const [config, setConfig] = useState<Config | null>(initialConfig)
   const [error, setError] = useState<Error | null>(null)
 
+  const [_isLoading, setIsLoading] = useState(true)
+  const isLoading = useDebounce(_isLoading, 500)
+
+  const compileWorkerRef = useRef<Worker>()
+
   useEffect(() => {
-    try {
-      const newUserConfig = evalConfig(_config)
-      if (newUserConfig) setConfig(newUserConfig)
-    } catch (_error: any) {
-      setError(_error)
+    compileWorkerRef.current = new Worker(new URL('../lib/config/compile.worker.ts', import.meta.url))
+    if (hasPresets) compileWorkerRef.current?.postMessage(configStr)
+    else {
+      setIsLoading(false)
     }
-  }, [_config])
 
-  return { config, error }
+    compileWorkerRef.current.onmessage = (event: MessageEvent<{ config: string; error: any }>) => {
+      setIsLoading(false)
+      if (event.data.error) {
+        return setError(event.data.error)
+      }
+      const newConfig = JSON.parse(event.data.config)
+      if (newConfig) setConfig(newConfig)
+      setError(null)
+    }
+
+    return () => {
+      compileWorkerRef.current?.terminate()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useUpdateEffect(() => {
+    if (hasPresets) {
+      compileWorkerRef.current?.postMessage(configStr)
+      setIsLoading(true)
+    } else {
+      try {
+        const newConfig = evalConfig(configStr)
+        if (newConfig) setConfig(newConfig)
+      } catch (error) {
+        setError(error as Error)
+      }
+    }
+  }, [configStr])
+
+  return { config, isLoading, error }
 }
 
-const evalCode = (code: string, scope: Record<string, unknown>) => {
-  const scopeKeys = Object.keys(scope)
-  const scopeValues = scopeKeys.map((key) => scope[key])
-  return new Function(...scopeKeys, code)(...scopeValues)
-}
+export type UseConfig = ReturnType<typeof useConfig>
 
-const evalConfig = (config: string) => {
-  const codeTrimmed = config
-    .replaceAll(/export /g, '')
-    .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
-    .trim()
-    .replace(/;$/, '')
-
+const validateConfig = (configStr: string) => {
   try {
-    return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
-  } catch (e) {
+    return evalConfig(configStr)
+  } catch (error) {
     return null
   }
 }

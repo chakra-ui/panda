@@ -66,12 +66,9 @@ export const Preview = (props: PreviewProps) => {
       .replaceAll(/(?<!!)import.*/g, '')
       .concat(`\nrender(<${defaultExportName} />)`)}`
 
-    const errorThrow = error ? `throw new Error("${error.message}");\n` : ''
-    const code = errorThrow + transformed
-
     const contents = (
-      <LiveProvider code={code} scope={React}>
-        <LiveError />
+      <LiveProvider code={transformed} scope={React}>
+        <LiveError error={error} />
         <LivePreview />
       </LiveProvider>
     )
@@ -201,7 +198,7 @@ export const Preview = (props: PreviewProps) => {
   )
 }
 
-function LiveError() {
+function LiveError(props: { error: Error | null }) {
   const { error } = useLiveContext()
 
   function renderError() {
@@ -210,12 +207,12 @@ function LiveError() {
         <span>
           <ErrorIcon />
         </span>
-        <pre>{error}</pre>
+        <pre>{error ?? props.error?.stack?.split('\n')?.[0]}</pre>
       </div>
     )
   }
 
-  return error ? renderError() : <></>
+  return error || props.error ? renderError() : <></>
 }
 
 function LivePreview() {

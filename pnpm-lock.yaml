@@ -751,6 +751,9 @@ importers:
       monaco-editor:
         specifier: 0.40.0
         version: 0.40.0
+      monaco-editor-auto-typings:
+        specifier: ^0.4.5
+        version: 0.4.5(monaco-editor@0.40.0)
       monaco-jsx-syntax-highlight:
         specifier: ^1.2.0
         version: 1.2.0
@@ -24725,6 +24728,14 @@ packages:
 
   /moment@2.29.4:
     resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
+    dev: false
+
+  /monaco-editor-auto-typings@0.4.5(monaco-editor@0.40.0):
+    resolution: {integrity: sha512-J1iVXKKhcBRc8t3jhHl2l9WYhnnPBXFOSuRCIpiC7d2aEOX9ZhWuIAWcCtTtvAN4944lfi0lhjuTi4iebe8VDg==}
+    peerDependencies:
+      monaco-editor: '*'
+    dependencies:
+      monaco-editor: 0.40.0
     dev: false
 
   /monaco-editor@0.40.0:
