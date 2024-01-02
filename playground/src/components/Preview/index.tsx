@@ -57,6 +57,7 @@ export const Preview = (props: PreviewProps) => {
   } as const
 
   function renderContent() {
+    // if (1 + 1 == 2) return null
     if (!isReady) {
       return null
     }
@@ -185,9 +186,11 @@ export const Preview = (props: PreviewProps) => {
             allow="none"
             width="100%"
             onLoad={handleLoad}
+            data-loading={iframeLoaded ? undefined : ''}
             className={css({
               w: 'full',
               h: 'full',
+              visibility: { _loading: 'hidden' },
             })}
           >
             {iframeLoaded && renderContent()}
