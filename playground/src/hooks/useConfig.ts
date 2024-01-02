@@ -1,16 +1,16 @@
-import { evalConfig, validateConfigSilent, validateConfigVerbose } from '@/src/lib/config/eval-config'
+import { evalConfig, validateConfig, getConfigError } from '@/src/lib/config/eval-config'
 import { getImports } from '@/src/lib/config/get-imports'
 import { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
 import { useDebounce, useUpdateEffect } from 'usehooks-ts'
 
 export const useConfig = (configStr: string) => {
-  const hasPresets = getImports(configStr).length || validateConfigSilent(configStr)?.presets?.length
+  const hasPresets = getImports(configStr).length || validateConfig(configStr)?.presets?.length
 
-  const initialConfig = hasPresets ? null : validateConfigSilent(configStr)
+  const initialConfig = hasPresets ? null : validateConfig(configStr)
   const [config, setConfig] = useState<Config | null>(initialConfig)
 
-  const initialError = hasPresets ? null : validateConfigVerbose(configStr)
+  const initialError = hasPresets ? null : getConfigError(configStr)
   const [error, setError] = useState<Error | null>(initialError)
 
   const [_isLoading, setIsLoading] = useState(true)

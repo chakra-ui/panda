@@ -20,7 +20,7 @@ export const evalConfig = (configStr: string, _scope?: Dict): PlaygroundConfig |
   return config
 }
 
-export const validateConfigVerbose = (configStr: string) => {
+export const getConfigError = (configStr: string) => {
   try {
     evalConfig(configStr)
     return null
@@ -29,7 +29,7 @@ export const validateConfigVerbose = (configStr: string) => {
   }
 }
 
-export const validateConfigSilent = (configStr: string) => {
+export const validateConfig = (configStr: string) => {
   try {
     return evalConfig(configStr)
   } catch (error) {
