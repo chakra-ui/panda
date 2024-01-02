@@ -8,9 +8,7 @@ describe('css', () => {
     // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ display: 'abc' }))
 
-    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ content: 'abc' }))
-    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ willChange: 'abc' }))
 
     assertType(css({ pos: 'absolute' }))
@@ -63,7 +61,6 @@ describe('css', () => {
   test('arbitrary value', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictPropertyValues: true
         color: '#fff',
       }),
     )
@@ -107,26 +104,17 @@ describe('css', () => {
   test('important', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictPropertyValues: true
         fontSize: '2xl!',
-        // @ts-expect-error expected from strictPropertyValues: true
         p: '4 !important',
-        // @ts-expect-error expected from strictPropertyValues: true
         bgColor: '#fff!',
-        // @ts-expect-error expected from strictPropertyValues: true
         borderColor: '#fff !important',
         _hover: {
-          // @ts-expect-error expected from strictPropertyValues: true
           fontSize: '2xl!',
-          // @ts-expect-error expected from strictPropertyValues: true
           p: '4 !important',
-          // @ts-expect-error expected from strictPropertyValues: true
 
           bgColor: '#fff!',
-          // @ts-expect-error expected from strictPropertyValues: true
           borderColor: '#fff !important',
         },
-        // @ts-expect-error expected from strictPropertyValues: true
         backgroundColor: {
           _disabled: '2xl!',
           _active: '4 !important',
@@ -150,14 +138,7 @@ describe('css', () => {
   test('responsive array syntax prop', () => {
     assertType(
       css({
-        bg: [
-          'cyan.100',
-          'cyan.200',
-          null,
-          // @ts-expect-error expected from strictPropertyValues: true
-          undefined,
-          'cyan.300',
-        ],
+        bg: ['cyan.100', 'cyan.200', null, undefined, 'cyan.300'],
       }),
     )
   })

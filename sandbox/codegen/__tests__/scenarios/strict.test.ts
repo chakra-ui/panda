@@ -7,9 +7,7 @@ describe('css', () => {
 
     // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ display: 'abc' }))
-    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ content: 'abc' }))
-    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ willChange: 'abc' }))
 
     assertType(css({ pos: 'absolute' }))
