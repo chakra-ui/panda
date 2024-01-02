@@ -45,7 +45,7 @@ export class Generator extends Context {
   appendBaselineCss = (sheet: Stylesheet) => {
     if (this.config.preflight) this.appendCssOfType('preflight', sheet)
     if (!this.tokens.isEmpty) this.appendCssOfType('tokens', sheet)
-    if (this.config.staticCss) this.appendCssOfType('static', sheet)
+    this.appendCssOfType('static', sheet)
     this.appendCssOfType('global', sheet)
     if (this.config.theme?.keyframes) this.appendCssOfType('keyframes', sheet)
   }

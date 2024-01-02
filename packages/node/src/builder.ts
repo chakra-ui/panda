@@ -153,21 +153,25 @@ export class Builder {
     return valid
   }
 
+  private initialRoot: string | undefined
+
   write = (root: Root) => {
-    const rootCssContent = root.toString()
+    if (!this.initialRoot) {
+      this.initialRoot = root.toString()
+    }
+
     root.removeAll()
 
     const ctx = this.getContextOrThrow()
 
     const sheet = ctx.createSheet()
-    ctx.appendLayerParams(sheet)
     ctx.appendBaselineCss(sheet)
     ctx.appendParserCss(sheet)
     const css = ctx.getCss(sheet)
 
     root.append(
       optimizeCss(`
-    ${rootCssContent}
+    ${this.initialRoot}
     ${css}
     `),
     )
