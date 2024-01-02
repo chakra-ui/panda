@@ -48,6 +48,7 @@ export const useConfig = (configStr: string) => {
       try {
         const newConfig = evalConfig(configStr)
         if (newConfig) setConfig(newConfig)
+        setError(null)
       } catch (error) {
         setError(error as Error)
       }
