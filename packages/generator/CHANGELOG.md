@@ -1,5 +1,20 @@
 # @pandacss/generator
 
+## 0.24.1
+
+### Patch Changes
+
+- 10e74428: - Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS
+  wasn't applied correctly
+  - Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+    through the config recipes)
+  - @pandacss/core@0.24.1
+  - @pandacss/is-valid-prop@0.24.1
+  - @pandacss/logger@0.24.1
+  - @pandacss/shared@0.24.1
+  - @pandacss/token-dictionary@0.24.1
+  - @pandacss/types@0.24.1
+
 ## 0.24.0
 
 ### Patch Changes
