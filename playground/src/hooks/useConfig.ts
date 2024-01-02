@@ -1,4 +1,4 @@
-import { evalConfig } from '@/src/lib/config/eval-config'
+import { evalConfig, validateConfig, getConfigError } from '@/src/lib/config/eval-config'
 import { getImports } from '@/src/lib/config/get-imports'
 import { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
@@ -8,9 +8,10 @@ export const useConfig = (configStr: string) => {
   const hasPresets = getImports(configStr).length || validateConfig(configStr)?.presets?.length
 
   const initialConfig = hasPresets ? null : validateConfig(configStr)
-
   const [config, setConfig] = useState<Config | null>(initialConfig)
-  const [error, setError] = useState<Error | null>(null)
+
+  const initialError = hasPresets ? null : getConfigError(configStr)
+  const [error, setError] = useState<Error | null>(initialError)
 
   const [_isLoading, setIsLoading] = useState(true)
   const isLoading = useDebounce(_isLoading, 500)
@@ -59,11 +60,3 @@ export const useConfig = (configStr: string) => {
 }
 
 export type UseConfig = ReturnType<typeof useConfig>
-
-const validateConfig = (configStr: string) => {
-  try {
-    return evalConfig(configStr)
-  } catch (error) {
-    return null
-  }
-}

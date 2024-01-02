@@ -19,3 +19,20 @@ export const evalConfig = (configStr: string, _scope?: Dict): PlaygroundConfig |
   const config = evalCode(`return (() => {${codeTrimmed}; return config})()`, scope)
   return config
 }
+
+export const getConfigError = (configStr: string) => {
+  try {
+    evalConfig(configStr)
+    return null
+  } catch (error) {
+    return error as Error
+  }
+}
+
+export const validateConfig = (configStr: string) => {
+  try {
+    return evalConfig(configStr)
+  } catch (error) {
+    return null
+  }
+}
