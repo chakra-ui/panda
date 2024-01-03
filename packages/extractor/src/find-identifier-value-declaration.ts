@@ -93,7 +93,7 @@ export function findIdentifierValueDeclaration(
     if (!scope) return
 
     const refName = identifier.getText()
-    // eslint-disable-next-line @typescript-eslint/no-loop-func
+
     scope.forEachDescendant((node, traversal) => {
       if (visitedsWithStack.has(node)) {
         traversal.skip()
