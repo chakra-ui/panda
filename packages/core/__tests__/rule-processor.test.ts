@@ -950,4 +950,73 @@ describe('rule processor', () => {
       }"
     `)
   })
+
+  test('css - boolean utility', () => {
+    const result = css({ truncate: false })
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "truncate_false",
+        ],
+        "css": "",
+      }
+    `)
+
+    const result2 = css({ truncate: true })
+    expect(result2).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "truncate_true",
+        ],
+        "css": "@layer utilities {
+        .truncate_true {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap
+      }
+      }",
+      }
+    `)
+  })
+
+  test('cva - boolean variant', () => {
+    const result = cva({
+      base: {
+        color: '#fff',
+      },
+      variants: {
+        checked: {
+          true: {
+            display: 'block',
+          },
+          false: {
+            display: 'none',
+          },
+        },
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "text_\\\\#fff",
+          "d_block",
+          "d_none",
+        ],
+        "css": "@layer utilities {
+        .text_\\\\#fff {
+          color: #fff
+      }
+
+        .d_block {
+          display: block
+      }
+
+        .d_none {
+          display: none
+      }
+      }",
+      }
+    `)
+  })
 })

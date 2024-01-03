@@ -4,14 +4,12 @@ import type { Dict, SystemStyleObject } from '@pandacss/types'
 import { createGeneratorContext } from '@pandacss/fixture'
 import { createAnatomy } from './create-anatomy'
 
-// ???
 const css = (styles: Dict) => {
   const ctx = createGeneratorContext()
   ctx.encoder.processAtomic(styles)
   return ctx.encoder.atomic
 }
 
-// ???
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
   const recipeConfig = ctx.recipes.getConfig(name)
@@ -611,6 +609,16 @@ describe('hash factory', () => {
             "marginInlineStart]___[value:2]___[recipe:checkbox",
           },
         },
+      }
+    `)
+  })
+
+  test('css - boolean utility', () => {
+    const result = css({ truncate: false })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        "truncate]___[value:false",
       }
     `)
   })
