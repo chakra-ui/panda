@@ -9,7 +9,7 @@ export interface StyleProps extends StyleResultObject {
 
 export interface StyleEntry {
   prop: string
-  value: string
+  value: string | number | boolean
   cond: string
   recipe?: string
   slot?: string

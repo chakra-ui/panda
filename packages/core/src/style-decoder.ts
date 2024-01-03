@@ -71,7 +71,7 @@ export class StyleDecoder implements StyleDecoderInterface {
       : undefined
 
     const transform = recipeName ? this.context.recipes.getTransform(recipeName) : this.context.utility.transform
-    const transformed = transform(entry.prop, withoutImportant(entry.value))
+    const transformed = transform(entry.prop, withoutImportant(entry.value) as string)
 
     if (!transformed.className) {
       return
@@ -123,7 +123,7 @@ export class StyleDecoder implements StyleDecoderInterface {
       const entry = getEntryFromHash(hash)
 
       const transform = this.context.utility.transform
-      const transformed = transform(entry.prop, withoutImportant(entry.value))
+      const transformed = transform(entry.prop, withoutImportant(entry.value) as string)
 
       if (!transformed.className) return
 
@@ -238,8 +238,7 @@ const getEntryFromHash = (hash: string) => {
   const prop = parts[0]
 
   const rawValue = parts[1].replace('value:', '')
-  const parsed = Number(rawValue)
-  const value = parsed ? parsed : rawValue
+  const value = parseValue(rawValue)
 
   const entry = { prop, value } as StyleEntry
 
@@ -251,4 +250,19 @@ const getEntryFromHash = (hash: string) => {
   })
 
   return entry
+}
+
+const parseValue = (value: string) => {
+  const asNumber = Number(value)
+  if (!isNaN(asNumber)) {
+    return asNumber
+  }
+
+  return castBoolean(value)
+}
+
+const castBoolean = (value: string) => {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return value
 }

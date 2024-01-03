@@ -3,7 +3,6 @@ import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { createRuleProcessor } from './fixture'
 
-// ???
 const css = (styles: Dict) => {
   const ctx = createGeneratorContext()
   ctx.encoder.processAtomic(styles)
@@ -11,7 +10,6 @@ const css = (styles: Dict) => {
   return ctx.decoder.atomic
 }
 
-// ???
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
   const recipeConfig = ctx.recipes.getConfig(name)
@@ -2541,6 +2539,119 @@ describe('style decoder', () => {
                 },
               },
               "slot": "label",
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  test('css - boolean utility', () => {
+    const result = css({ truncate: false })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "truncate_false",
+          "conditions": undefined,
+          "entry": {
+            "prop": "truncate",
+            "value": false,
+          },
+          "hash": "truncate]___[value:false",
+          "layer": undefined,
+          "result": {
+            ".truncate_false": {},
+          },
+        },
+      }
+    `)
+
+    const result2 = css({ truncate: true })
+    expect(result2).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "truncate_true",
+          "conditions": undefined,
+          "entry": {
+            "prop": "truncate",
+            "value": true,
+          },
+          "hash": "truncate]___[value:true",
+          "layer": undefined,
+          "result": {
+            ".truncate_true": {
+              "overflow": "hidden",
+              "textOverflow": "ellipsis",
+              "whiteSpace": "nowrap",
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  test('cva - boolean variant', () => {
+    const result = cva({
+      base: {
+        color: '#fff',
+      },
+      variants: {
+        checked: {
+          true: {
+            display: 'block',
+          },
+          false: {
+            display: 'none',
+          },
+        },
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "text_\\\\#fff",
+          "conditions": undefined,
+          "entry": {
+            "prop": "color",
+            "value": "#fff",
+          },
+          "hash": "color]___[value:#fff",
+          "layer": undefined,
+          "result": {
+            ".text_\\\\#fff": {
+              "color": "#fff",
+            },
+          },
+        },
+        {
+          "className": "d_block",
+          "conditions": undefined,
+          "entry": {
+            "prop": "display",
+            "value": "block",
+          },
+          "hash": "display]___[value:block",
+          "layer": undefined,
+          "result": {
+            ".d_block": {
+              "display": "block",
+            },
+          },
+        },
+        {
+          "className": "d_none",
+          "conditions": undefined,
+          "entry": {
+            "prop": "display",
+            "value": "none",
+          },
+          "hash": "display]___[value:none",
+          "layer": undefined,
+          "result": {
+            ".d_none": {
+              "display": "none",
             },
           },
         },
