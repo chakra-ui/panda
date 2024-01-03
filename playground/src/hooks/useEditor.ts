@@ -184,6 +184,7 @@ export function useEditor(props: PandaEditorProps) {
     [artifacts],
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const getPandaTypes = useCallback(async () => {}, [])
 
   const onBeforeMount: BeforeMount = (monaco) => {
