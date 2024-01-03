@@ -76,7 +76,7 @@ export async function main() {
 
       await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
-      const ctx = await loadConfigAndCreateContext({ cwd, configPath })
+      const ctx = await loadConfigAndCreateContext({ cwd, configPath, config: { gitignore } })
       const { msg, box } = await codegen(ctx)
 
       if (gitignore) {
