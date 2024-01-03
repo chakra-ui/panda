@@ -1,8 +1,8 @@
+import type { StyleDecoder } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
-import type { StyleDecoderInterface } from '@pandacss/types'
 import type { Context } from '../../engines'
 
-export const generateParserCss = (ctx: Context, decoder: StyleDecoderInterface, filePath?: string) => {
+export const generateParserCss = (ctx: Context, decoder: StyleDecoder, filePath?: string) => {
   if (!decoder) return ''
 
   const sheet = ctx.createSheet()

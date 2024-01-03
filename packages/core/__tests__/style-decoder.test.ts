@@ -3,6 +3,10 @@ import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { createRuleProcessor } from './fixture'
 
+/* -----------------------------------------------------------------------------
+ * Test Setup
+ * -----------------------------------------------------------------------------*/
+
 const css = (styles: Dict) => {
   const ctx = createGeneratorContext()
   ctx.encoder.processAtomic(styles)
@@ -12,34 +16,28 @@ const css = (styles: Dict) => {
 
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
-  const recipeConfig = ctx.recipes.getConfig(name)
-  if (!recipeConfig) throw new Error(`Recipe ${name} not found`)
-
   ctx.encoder.processRecipe(name, styles)
   ctx.decoder.collect(ctx.encoder)
-
-  if ('slots' in recipeConfig) {
-    const base = {} as Dict
-    recipeConfig.slots.map((slot) => {
-      const recipeKey = ctx.recipes.getSlotKey(name, slot)
-      base[slot] = ctx.decoder.recipes_base.get(recipeKey)!
-    })
-    return { base, variants: ctx.decoder.recipes.get(name)! }
-  }
-
-  return { base: ctx.decoder.recipes_base.get(name)!, variants: ctx.decoder.recipes.get(name)! }
+  return ctx.decoder.getRecipeResult(name)
 }
 
 const cva = (styles: Dict) => {
   const ctx = createGeneratorContext()
-  if ('slots' in styles) {
-    ctx.encoder.processAtomicSlotRecipe(styles)
-  }
-
   ctx.encoder.processAtomicRecipe(styles)
   ctx.decoder.collect(ctx.encoder)
   return ctx.decoder.atomic
 }
+
+const sva = (styles: Dict) => {
+  const ctx = createGeneratorContext()
+  ctx.encoder.processAtomicSlotRecipe(styles)
+  ctx.decoder.collect(ctx.encoder)
+  return ctx.decoder.atomic
+}
+
+/* -----------------------------------------------------------------------------
+ * Actual Tests
+ * -----------------------------------------------------------------------------*/
 
 describe('style decoder', () => {
   test('css', () => {
@@ -1582,7 +1580,7 @@ describe('style decoder', () => {
 
   test('sva', () => {
     // packages/fixture/src/slot-recipes.ts
-    const checkbox = cva({
+    const checkbox = sva({
       slots: ['root', 'control', 'label'],
       base: {
         root: { display: 'flex', alignItems: 'center', gap: '2' },
@@ -1884,7 +1882,10 @@ describe('style decoder', () => {
     const encoder = ctx.encoder
     const decoder = ctx.decoder
 
-    encoder.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+    encoder.fromJSON({
+      schemaVersion: 'x',
+      styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] },
+    })
 
     expect(decoder.collect(encoder).atomic).toMatchInlineSnapshot(`
       Set {
@@ -1921,7 +1922,10 @@ describe('style decoder', () => {
       }
     `)
 
-    encoder.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+    encoder.fromJSON({
+      schemaVersion: 'x',
+      styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } },
+    })
 
     expect(decoder.collect(encoder).recipes).toMatchInlineSnapshot(`
       Map {
@@ -2108,30 +2112,31 @@ describe('style decoder', () => {
       }
     `)
 
-    const forked = encoder.clone().fromJSON(
-      JSON.stringify({
-        styles: {
-          atomic: [
-            'display]___[value:none',
-            'height]___[value:100%',
-            'transition]___[value:all .3s ease-in-out',
-            'opacity]___[value:0 !important',
-            'opacity]___[value:1',
-            'height]___[value:10px',
-            'backgroundGradient]___[value:to-b',
-            'gradientFrom]___[value:rgb(200 200 200 / .4)',
+    const _encoder = encoder.clone().fromJSON({
+      schemaVersion: 'x',
+      styles: {
+        atomic: [
+          'display]___[value:none',
+          'height]___[value:100%',
+          'transition]___[value:all .3s ease-in-out',
+          'opacity]___[value:0 !important',
+          'opacity]___[value:1',
+          'height]___[value:10px',
+          'backgroundGradient]___[value:to-b',
+          'gradientFrom]___[value:rgb(200 200 200 / .4)',
+        ],
+        recipes: {
+          checkbox: [
+            'size]___[value:md]___[recipe:checkbox]___[slot:container',
+            'size]___[value:md]___[recipe:checkbox]___[slot:control',
+            'size]___[value:md]___[recipe:checkbox]___[slot:label',
           ],
-          recipes: {
-            checkbox: [
-              'size]___[value:md]___[recipe:checkbox]___[slot:container',
-              'size]___[value:md]___[recipe:checkbox]___[slot:control',
-              'size]___[value:md]___[recipe:checkbox]___[slot:label',
-            ],
-          },
         },
-      }),
-    )
-    expect(decoder.clone().collect(forked).results).toMatchInlineSnapshot(`
+      },
+    })
+
+    const { results } = decoder.clone().collect(_encoder)
+    expect(results).toMatchInlineSnapshot(`
       {
         "atomic": Set {
           {
@@ -2421,9 +2426,10 @@ describe('style decoder', () => {
                   "entry": {
                     "prop": "display",
                     "recipe": "checkbox",
+                    "slot": "root",
                     "value": "flex",
                   },
-                  "hash": "display]___[value:flex]___[recipe:checkbox",
+                  "hash": "display]___[value:flex]___[recipe:checkbox]___[slot:root",
                   "result": {
                     "display": "flex",
                   },
@@ -2433,9 +2439,10 @@ describe('style decoder', () => {
                   "entry": {
                     "prop": "alignItems",
                     "recipe": "checkbox",
+                    "slot": "root",
                     "value": "center",
                   },
-                  "hash": "alignItems]___[value:center]___[recipe:checkbox",
+                  "hash": "alignItems]___[value:center]___[recipe:checkbox]___[slot:root",
                   "result": {
                     "alignItems": "center",
                   },
@@ -2445,18 +2452,19 @@ describe('style decoder', () => {
                   "entry": {
                     "prop": "gap",
                     "recipe": "checkbox",
+                    "slot": "root",
                     "value": 2,
                   },
-                  "hash": "gap]___[value:2]___[recipe:checkbox",
+                  "hash": "gap]___[value:2]___[recipe:checkbox]___[slot:root",
                   "result": {
                     "gap": "var(--spacing-2)",
                   },
                 },
               ],
               "hashSet": Set {
-                "display]___[value:flex]___[recipe:checkbox",
-                "alignItems]___[value:center]___[recipe:checkbox",
-                "gap]___[value:2]___[recipe:checkbox",
+                "display]___[value:flex]___[recipe:checkbox]___[slot:root",
+                "alignItems]___[value:center]___[recipe:checkbox]___[slot:root",
+                "gap]___[value:2]___[recipe:checkbox]___[slot:root",
               },
               "recipe": "checkbox",
               "result": {
@@ -2478,9 +2486,10 @@ describe('style decoder', () => {
                   "entry": {
                     "prop": "borderWidth",
                     "recipe": "checkbox",
+                    "slot": "control",
                     "value": "1px",
                   },
-                  "hash": "borderWidth]___[value:1px]___[recipe:checkbox",
+                  "hash": "borderWidth]___[value:1px]___[recipe:checkbox]___[slot:control",
                   "result": {
                     "borderWidth": "1px",
                   },
@@ -2490,17 +2499,18 @@ describe('style decoder', () => {
                   "entry": {
                     "prop": "borderRadius",
                     "recipe": "checkbox",
+                    "slot": "control",
                     "value": "sm",
                   },
-                  "hash": "borderRadius]___[value:sm]___[recipe:checkbox",
+                  "hash": "borderRadius]___[value:sm]___[recipe:checkbox]___[slot:control",
                   "result": {
                     "borderRadius": "var(--radii-sm)",
                   },
                 },
               ],
               "hashSet": Set {
-                "borderWidth]___[value:1px]___[recipe:checkbox",
-                "borderRadius]___[value:sm]___[recipe:checkbox",
+                "borderWidth]___[value:1px]___[recipe:checkbox]___[slot:control",
+                "borderRadius]___[value:sm]___[recipe:checkbox]___[slot:control",
               },
               "recipe": "checkbox",
               "result": {
@@ -2521,16 +2531,17 @@ describe('style decoder', () => {
                   "entry": {
                     "prop": "marginInlineStart",
                     "recipe": "checkbox",
+                    "slot": "label",
                     "value": 2,
                   },
-                  "hash": "marginInlineStart]___[value:2]___[recipe:checkbox",
+                  "hash": "marginInlineStart]___[value:2]___[recipe:checkbox]___[slot:label",
                   "result": {
                     "marginInlineStart": "var(--spacing-2)",
                   },
                 },
               ],
               "hashSet": Set {
-                "marginInlineStart]___[value:2]___[recipe:checkbox",
+                "marginInlineStart]___[value:2]___[recipe:checkbox]___[slot:label",
               },
               "recipe": "checkbox",
               "result": {
@@ -2548,7 +2559,6 @@ describe('style decoder', () => {
 
   test('css - boolean utility', () => {
     const result = css({ truncate: false })
-
     expect(result).toMatchInlineSnapshot(`
       Set {
         {

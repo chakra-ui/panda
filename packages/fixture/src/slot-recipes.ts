@@ -29,4 +29,33 @@ export const slotRecipes: Record<string, SlotRecipeConfig> = {
       size: 'sm',
     },
   },
+  badge: {
+    className: 'badge',
+    slots: ['title', 'body'],
+    base: {
+      title: { bg: 'red.300', rounded: 'sm' },
+    },
+    variants: {
+      size: {
+        sm: {
+          title: { px: '4' },
+          body: { color: 'red' },
+        },
+      },
+      raised: {
+        true: {
+          title: { shadow: 'md' },
+        },
+      },
+    },
+    compoundVariants: [
+      {
+        raised: true,
+        size: 'sm',
+        css: {
+          title: { color: 'ButtonHighlight' },
+        },
+      },
+    ],
+  },
 }

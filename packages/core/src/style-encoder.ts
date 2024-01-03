@@ -8,17 +8,19 @@ import {
 } from '@pandacss/shared'
 import type {
   Dict,
+  PartialBy,
   RecipeConfig,
   RecipeVariantRecord,
   ResultItem,
-  ShipJson,
-  SlotRecipeConfig,
+  EncoderJson,
+  SlotRecipeDefinition,
   StyleEntry,
   StyleProps,
   StyleResultObject,
-  SystemStyleObject,
 } from '@pandacss/types'
+import { version } from '../package.json'
 import type { CoreContext } from './core-context'
+import { Recipes } from './recipes'
 
 const urlRegex = /^https?:\/\//
 
@@ -34,16 +36,16 @@ export class StyleEncoder {
 
   constructor(private context: CoreContext) {}
 
-  filterStyleProps(props: Dict): Dict {
+  filterStyleProps = (props: Dict): Dict => {
     if (this.context.isTemplateLiteralSyntax) return props
     return filterProps(this.context.isValidProperty, props)
   }
 
-  clone() {
+  clone = () => {
     return new StyleEncoder(this.context)
   }
 
-  isEmpty() {
+  isEmpty = () => {
     return !this.atomic.size && !this.recipes.size && !this.compound_variants.size && !this.recipes_base.size
   }
 
@@ -60,11 +62,11 @@ export class StyleEncoder {
    * @param obj - The style object to hash.
    * @param baseEntry - An optional base style entry to use when hashing the style object.
    */
-  hashStyleObject(
+  hashStyleObject = (
     set: Set<string>,
     obj: ResultItem['data'][number],
     baseEntry?: Partial<Omit<StyleEntry, 'prop' | 'value' | 'cond'>>,
-  ) {
+  ) => {
     const isCondition = this.context.conditions.isCondition
     const traverseOptions = { separator: StyleEncoder.conditionSeparator }
 
@@ -127,11 +129,11 @@ export class StyleEncoder {
     )
   }
 
-  processAtomic(styles: StyleResultObject) {
+  processAtomic = (styles: StyleResultObject) => {
     this.hashStyleObject(this.atomic, styles)
   }
 
-  processStyleProps(styleProps: StyleProps) {
+  processStyleProps = (styleProps: StyleProps) => {
     const styles = this.filterStyleProps(styleProps)
 
     if (styles.css) {
@@ -141,42 +143,92 @@ export class StyleEncoder {
     this.processAtomic(styles.css ? Object.assign({}, styles, { css: undefined }) : styles)
   }
 
-  processRecipe(recipeName: string, variants: RecipeVariantRecord) {
+  processConfigSlotRecipeBase = (recipeName: string, config: SlotRecipeDefinition) => {
+    config.slots.forEach((slot) => {
+      const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
+
+      const slotBase = config.base?.[slot]
+      if (!slotBase || this.recipes_base.has(recipeKey)) return
+
+      const base_set = getOrCreateSet(this.recipes_base, recipeKey)
+      this.hashStyleObject(base_set, slotBase, { recipe: recipeName, slot })
+    })
+  }
+
+  processConfigSlotRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+    const config = this.context.recipes.getConfig(recipeName)
+    if (!Recipes.isSlotRecipeConfig(config)) return
+
+    // process base styles
+    this.processConfigSlotRecipeBase(recipeName, config)
+
+    // process variants
+    const set = getOrCreateSet(this.recipes, recipeName)
+    const computedVariants = Object.assign({}, config.defaultVariants, variants)
+    this.hashStyleObject(set, computedVariants, { recipe: recipeName, variants: true })
+
+    // process compound variants
+    if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
+    this.compound_variants.add(recipeName)
+    config.compoundVariants.forEach((compoundVariant) => {
+      Object.values(compoundVariant.css).forEach((values) => {
+        if (!values) return
+        this.processAtomic(values)
+      })
+    })
+  }
+
+  processConfigRecipeBase = (recipeName: string, config: RecipeConfig) => {
+    if (!config.base || this.recipes_base.has(recipeName)) return
+    const base_set = getOrCreateSet(this.recipes_base, recipeName)
+    this.hashStyleObject(base_set, config.base, { recipe: recipeName })
+  }
+
+  processConfigRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
     const config = this.context.recipes.getConfig(recipeName)
     if (!config) return
 
-    if ('slots' in config) {
-      config.slots.forEach((slot) => {
-        const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
-        const slotBase = config.base?.[slot]
-        if (slotBase && !this.recipes_base.has(recipeKey)) {
-          const base_set = getOrCreateSet(this.recipes_base, recipeKey)
-          this.hashStyleObject(base_set, slotBase, { recipe: recipeName, slot })
-        }
-      })
-    } else if (config.base && !this.recipes_base.has(recipeName)) {
-      const base_set = getOrCreateSet(this.recipes_base, recipeName)
-      this.hashStyleObject(base_set, config.base, { recipe: recipeName })
-    }
+    // process base styles
+    this.processConfigRecipeBase(recipeName, config)
 
+    // process variants
     const set = getOrCreateSet(this.recipes, recipeName)
-    const variantObj = Object.assign({}, config.defaultVariants, variants)
-    this.hashStyleObject(set, variantObj, { recipe: recipeName, variants: true })
+    const computedVariants = Object.assign({}, config.defaultVariants, variants)
+    this.hashStyleObject(set, computedVariants, { recipe: recipeName, variants: true })
 
-    if (config.compoundVariants && !this.compound_variants.has(recipeName)) {
-      this.compound_variants.add(recipeName)
-      config.compoundVariants.forEach((compoundVariant) => {
-        this.processAtomic(compoundVariant.css)
-      })
+    // process compound variants
+    if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
+    this.compound_variants.add(recipeName)
+    config.compoundVariants.forEach((compoundVariant) => {
+      this.processAtomic(compoundVariant.css)
+    })
+  }
+
+  processRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+    if (this.context.recipes.isSlotRecipe(recipeName)) {
+      this.processConfigSlotRecipe(recipeName, variants)
+    } else {
+      this.processConfigRecipe(recipeName, variants)
     }
   }
 
-  processPattern(
+  processRecipeBase(recipeName: string) {
+    const config = this.context.recipes.getConfig(recipeName)
+    if (!config) return
+
+    if (this.context.recipes.isSlotRecipe(recipeName)) {
+      this.processConfigSlotRecipeBase(recipeName, config as any)
+    } else {
+      this.processConfigRecipeBase(recipeName, config)
+    }
+  }
+
+  processPattern = (
     name: string,
     patternProps: StyleResultObject,
     type?: 'pattern' | 'jsx-pattern',
     jsxName?: string | undefined,
-  ) {
+  ) => {
     let fnName = name
     if (type === 'jsx-pattern' && jsxName) {
       fnName = this.context.patterns.find(jsxName)
@@ -185,9 +237,11 @@ export class StyleEncoder {
     this.processStyleProps(styleProps)
   }
 
-  processAtomicRecipe(recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) {
+  processAtomicRecipe = (recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
     const { base = {}, variants = {}, compoundVariants = [] } = recipe
+
     this.processAtomic(base)
+
     for (const variant of Object.values(variants)) {
       for (const styles of Object.values(variant)) {
         this.processAtomic(styles)
@@ -199,50 +253,74 @@ export class StyleEncoder {
     })
   }
 
-  processAtomicSlotRecipe(
-    recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'> & Partial<Pick<SlotRecipeConfig, 'slots'>>,
-  ) {
-    if (!recipe.slots) {
-      recipe.slots = Array.from(inferSlots(recipe as any))
-    }
-
+  processAtomicSlotRecipe = (recipe: PartialBy<SlotRecipeDefinition, 'slots'>) => {
+    recipe.slots ||= Recipes.inferSlots(recipe)
     const slots = getSlotRecipes(recipe)
+
     for (const slotRecipe of Object.values(slots)) {
       this.processAtomicRecipe(slotRecipe)
     }
   }
 
-  toJSON() {
+  getConfigRecipeHash = (recipeName: string) => {
     return {
-      atomic: Array.from(this.atomic),
-      recipes: Object.fromEntries(Array.from(this.recipes.entries()).map(([name, set]) => [name, Array.from(set)])),
+      atomic: this.atomic,
+      base: this.recipes_base.get(recipeName)!,
+      variants: this.recipes.get(recipeName)!,
     }
   }
 
-  fromJSON(json: string) {
-    const data = JSON.parse(json) as ShipJson
-    const { styles } = data
+  getConfigSlotRecipeHash = (recipeName: string) => {
+    const recipeConfig = this.context.recipes.getConfigOrThrow(recipeName)
 
-    ;(styles.atomic ?? []).forEach((hash) => this.atomic.add(hash))
+    if (!Recipes.isSlotRecipeConfig(recipeConfig)) {
+      throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
+    }
+
+    const base: Dict = Object.create(null)
+
+    recipeConfig.slots.map((slot) => {
+      const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
+      base[slot] = this.recipes_base.get(recipeKey)!
+    })
+
+    return {
+      atomic: this.atomic,
+      base,
+      variants: this.recipes.get(recipeName)!,
+    }
+  }
+
+  getRecipeHash = (recipeName: string) => {
+    if (this.context.recipes.isSlotRecipe(recipeName)) {
+      return this.getConfigSlotRecipeHash(recipeName)
+    }
+
+    return this.getConfigRecipeHash(recipeName)
+  }
+
+  toJSON = () => {
+    const styles = {
+      atomic: Array.from(this.atomic),
+      recipes: Object.fromEntries(Array.from(this.recipes.entries()).map(([name, set]) => [name, Array.from(set)])),
+    }
+
+    return {
+      schemaVersion: version,
+      styles,
+    }
+  }
+
+  fromJSON = (json: EncoderJson) => {
+    const { styles } = json
+
+    // process atomic styles + compound variants
+    styles.atomic?.forEach((hash) => this.atomic.add(hash))
 
     Object.entries(styles.recipes ?? {}).forEach(([recipeName, hashes]) => {
-      const config = this.context.recipes.getConfig(recipeName)
-      if (!config) return
-
-      if ('slots' in config) {
-        config.slots.forEach((slot) => {
-          const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
-          if (!this.recipes_base.has(recipeKey)) {
-            const slotBase = config.base?.[slot]
-            const base_set = getOrCreateSet(this.recipes_base, recipeKey)
-            this.hashStyleObject(base_set, slotBase as SystemStyleObject, { recipe: recipeName })
-          }
-        })
-      } else if (!this.recipes_base.has(recipeName)) {
-        const base_set = getOrCreateSet(this.recipes_base, recipeName)
-        this.hashStyleObject(base_set, config.base as SystemStyleObject, { recipe: recipeName })
-      }
-
+      // process base styles
+      this.processRecipeBase(recipeName)
+      // process variants hashes
       const set = getOrCreateSet(this.recipes, recipeName)
       hashes.forEach((hash) => set.add(hash))
     })
@@ -307,19 +385,4 @@ const getResolvedCondition = (cond: string, isCondition: (key: string) => boolea
   }
 
   return cond
-}
-
-const inferSlots = (recipe: SlotRecipeConfig) => {
-  const slots = new Set<string>()
-  Object.keys(recipe.base ?? {}).forEach((name) => {
-    slots.add(name)
-  })
-
-  Object.values(recipe.variants ?? {}).forEach((variants) => {
-    Object.keys(variants).forEach((name) => {
-      slots.add(name)
-    })
-  })
-
-  return slots
 }

@@ -1,4 +1,4 @@
-import { isSlotRecipe } from '@pandacss/core'
+import { Recipes } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
@@ -120,7 +120,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
 
     const jsCode = match(config)
       .when(
-        isSlotRecipe,
+        Recipes.isSlotRecipeConfig,
         (config) => outdent`
         ${ctx.file.import('splitProps, getSlotCompoundVariant', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
@@ -210,7 +210,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         export interface ${upperName}Recipe {
           __type: ${upperName}VariantProps
           (props?: ${upperName}VariantProps): ${
-        isSlotRecipe(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'
+        Recipes.isSlotRecipeConfig(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'
       }
           raw: (props?: ${upperName}VariantProps) => ${upperName}VariantProps
           variantMap: ${upperName}VariantMap
