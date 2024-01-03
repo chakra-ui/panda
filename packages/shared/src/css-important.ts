@@ -1,14 +1,14 @@
 const importantRegex = /!(important)?/
 
-export function isImportant(value: string | number | boolean) {
+export function isImportant<T extends string | number | boolean>(value: T) {
   return typeof value === 'string' ? importantRegex.test(value) : false
 }
 
-export function withoutImportant(value: string | number | boolean) {
+export function withoutImportant<T extends string | number | boolean>(value: T) {
   return typeof value === 'string' ? value.replace(importantRegex, '').trim() : value
 }
 
-export function withoutSpace(str: string | number | boolean) {
+export function withoutSpace<T extends string | number | boolean>(str: T) {
   return typeof str === 'string' ? str.replaceAll(' ', '_') : str
 }
 
