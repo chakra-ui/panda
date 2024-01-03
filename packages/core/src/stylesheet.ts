@@ -1,8 +1,9 @@
 import { logger } from '@pandacss/logger'
-import type { CascadeLayer, Dict, StyleDecoderInterface, SystemStyleObject } from '@pandacss/types'
+import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
+import type { StyleDecoder } from './style-decoder'
 import { toCss } from './to-css'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
 
@@ -47,7 +48,7 @@ export class Stylesheet {
     this.process({ styles, layer })
   }
 
-  processDecoder = (decoder: StyleDecoderInterface) => {
+  processDecoder = (decoder: StyleDecoder) => {
     decoder.atomic.forEach((css) => {
       this.processCss(css.result, (css.layer as LayerName) ?? 'utilities')
     })

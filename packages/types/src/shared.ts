@@ -35,3 +35,5 @@ type Paths<T, Prefix extends string = '', Depth extends number = 0> = {
 }[keyof T]
 
 export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never
+
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>

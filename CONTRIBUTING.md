@@ -24,7 +24,7 @@ cd panda
 ## Development
 
 To improve our development process, we've set up tooling and systems. Panda CSS uses a monorepo structure with the
-followin structure:
+following structure:
 
 ### Directory Structure
 

@@ -1,5 +1,6 @@
 import * as pandaDefs from '@pandacss/dev'
 import { Config, Dict, Preset } from '@pandacss/types'
+import { transform } from 'sucrase'
 
 export type PlaygroundConfig = Config & { presets: Preset[] }
 
@@ -10,7 +11,9 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
 }
 
 export const evalConfig = (configStr: string, _scope?: Dict): PlaygroundConfig | null => {
-  const codeTrimmed = configStr
+  const configJs = transform(configStr, { transforms: ['typescript'] }).code
+
+  const codeTrimmed = configJs
     .replace(/export /g, '')
     .replace(/\bimport\b[^\n;]+[;\n]?/g, '')
     .trim()
