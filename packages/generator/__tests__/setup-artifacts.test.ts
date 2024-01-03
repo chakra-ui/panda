@@ -46,6 +46,8 @@ describe('setup-artifacts', () => {
           "recipes/button-style.d.ts",
           "recipes/checkbox.mjs",
           "recipes/checkbox.d.ts",
+          "recipes/badge.mjs",
+          "recipes/badge.d.ts",
         ],
       ]
     `)
@@ -200,6 +202,8 @@ describe('setup-artifacts', () => {
           "recipes/button-style.d.ts",
           "recipes/checkbox.mjs",
           "recipes/checkbox.d.ts",
+          "recipes/badge.mjs",
+          "recipes/badge.d.ts",
         ],
         [
           "patterns/index.mjs",

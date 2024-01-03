@@ -1,5 +1,4 @@
 import { colors, logger } from '@pandacss/logger'
-import { version } from '../package.json'
 import type { PandaContext } from './create-context'
 
 export async function buildInfo(ctx: PandaContext, outfile: string) {
@@ -10,14 +9,7 @@ export async function buildInfo(ctx: PandaContext, outfile: string) {
   const minify = ctx.config.minify
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
-  const output = JSON.stringify(
-    {
-      schemaVersion: version,
-      styles: ctx.encoder.toJSON(),
-    },
-    null,
-    minify ? 0 : 2,
-  )
+  const output = JSON.stringify(ctx.encoder.toJSON(), null, minify ? 0 : 2)
 
   ctx.output.ensure(outfile, process.cwd())
 

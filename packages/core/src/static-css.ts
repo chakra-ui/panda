@@ -1,4 +1,5 @@
 import type { Stylesheet } from '@pandacss/core'
+import { esc } from '@pandacss/shared'
 import type { CssRule, StaticCssOptions } from '@pandacss/types'
 import type { CoreContext } from './core-context'
 import { StyleDecoder } from './style-decoder'
@@ -164,12 +165,12 @@ export class StaticCss {
   }
 
   process(staticCss: StaticCssOptions, stylesheet?: Stylesheet) {
-    const { recipes } = this.context
-    const sheet = stylesheet ?? this.context.createSheet()
+    const { encoder, decoder, context } = this
 
-    staticCss.recipes = staticCss.recipes ?? {}
+    const sheet = stylesheet ?? context.createSheet()
+    staticCss.recipes ||= {}
 
-    const { theme = {} } = this.context.config
+    const { theme = {} } = context.config
     const recipeConfigs = Object.assign({}, theme.recipes, theme.slotRecipes)
 
     Object.entries(recipeConfigs).forEach(([name, recipe]) => {
@@ -179,9 +180,6 @@ export class StaticCss {
     })
 
     const results = this.getStyleObjects(staticCss)
-    // console.log(JSON.stringify(results.recipes, null, 2))
-
-    const { encoder, decoder } = this
 
     results.css.forEach((css) => {
       encoder.hashStyleObject(encoder.atomic, css)
@@ -189,9 +187,6 @@ export class StaticCss {
 
     results.recipes.forEach((result) => {
       Object.entries(result).forEach(([name, value]) => {
-        const recipeConfig = recipes.getConfig(name)
-        if (!recipeConfig) return
-
         encoder.processRecipe(name, value)
       })
     })
@@ -220,33 +215,12 @@ export class StaticCss {
   }
 }
 
-// ??? Replace with shared one
 function createClassNameRegex(classNames: string[]) {
-  const escapedClassNames = classNames.map((name) => escapeRegExp(name))
+  const escapedClassNames = classNames.map((name) => esc(name))
   const pattern = `(${escapedClassNames.join('|')})`
   return new RegExp(`\\b${pattern}\\b`, 'g')
 }
 
-const ESCAPE_CHARS = /[.*+?^${}()|[\]\\]/g
-const ESCAPE_MAP: Record<string, string> = {
-  '.': '\\.',
-  '*': '\\*',
-  '+': '\\+',
-  '?': '\\?',
-  '^': '\\^',
-  $: '\\$',
-  '{': '\\{',
-  '}': '\\}',
-  '(': '\\(',
-  ')': '\\)',
-  '[': '\\[',
-  ']': '\\]',
-  '\\': '\\\\',
-  '|': '\\|',
+function formatCondition(breakpoints: string[], condition: string) {
+  return breakpoints.includes(condition) ? condition : `_${condition}`
 }
-
-function escapeRegExp(str: string): string {
-  return str.replace(ESCAPE_CHARS, (match) => ESCAPE_MAP[match])
-}
-
-const formatCondition = (breakpoints: string[], value: string) => (breakpoints.includes(value) ? value : `_${value}`)
