@@ -4,7 +4,7 @@ import { match } from 'ts-pattern'
 
 export function generatePropTypes(ctx: Context) {
   const {
-    config: { strictTokens },
+    config: { strictTokens, strictPropertyValues },
     utility,
   } = ctx
 
@@ -134,7 +134,11 @@ export function generatePropTypes(ctx: Context) {
     .otherwise(() => 'ConditionalValue<Value | (string & {})>')}
 
   type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-    ? PropOrCondition<T, PropertyTypes[T]${strictTokens ? '' : ' | CssValue<T>'}>
+    ? PropOrCondition<T, ${
+      strictPropertyValues && !strictTokens
+        ? 'T extends StrictableProps ? PropertyTypes[T] : PropertyTypes[T] | CssValue<T>'
+        : 'PropertyTypes[T] | CssValue<T>'
+    }>
     : never;
 
   type CssPropertyValue<T extends string> = T extends keyof CssProperties

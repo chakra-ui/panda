@@ -14,6 +14,8 @@ describe('css', () => {
 
     // @ts-expect-error always expected
     assertType(css({ pos: 'absolute123' }))
+    // @ts-expect-error expected from strictTokens: true
+    assertType(css({ flex: '0 1' }))
   })
 
   test('token value', () => {

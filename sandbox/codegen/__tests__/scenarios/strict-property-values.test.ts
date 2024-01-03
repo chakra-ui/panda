@@ -15,6 +15,7 @@ describe('css', () => {
 
     // @ts-expect-error always expected
     assertType(css({ pos: 'absolute123' }))
+    assertType(css({ flex: '0 1' }))
   })
 
   test('token value', () => {
@@ -107,11 +108,11 @@ describe('css', () => {
         fontSize: '2xl!',
         p: '4 !important',
         bgColor: '#fff!',
+        bg: '#fff!',
         borderColor: '#fff !important',
         _hover: {
           fontSize: '2xl!',
           p: '4 !important',
-
           bgColor: '#fff!',
           borderColor: '#fff !important',
         },

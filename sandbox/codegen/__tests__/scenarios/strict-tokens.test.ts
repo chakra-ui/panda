@@ -10,9 +10,10 @@ describe('css', () => {
     assertType(css({ willChange: 'abc' }))
 
     assertType(css({ pos: 'absolute' }))
-
     // @ts-expect-error always expected
     assertType(css({ pos: 'absolute123' }))
+    // @ts-expect-error expected from strictTokens: true
+    assertType(css({ flex: '0 1' }))
   })
 
   test('token value', () => {
@@ -31,7 +32,7 @@ describe('css', () => {
     assertType(
       css({
         // @ts-expect-error expected from strictTokens: true
-        backgroundColor: 'red',
+        backgroundColor: 'teal',
         // @ts-expect-error expected from strictTokens: true
         bg: 'red',
       }),
@@ -113,10 +114,11 @@ describe('css', () => {
         // @ts-expect-error expected from strictTokens: true
         bgColor: '#fff!',
         // @ts-expect-error expected from strictTokens: true
+        bg: '#fff!',
+        // @ts-expect-error expected from strictTokens: true
         borderColor: '#fff !important',
         _hover: {
-          // @ts-expect-error expected from strictTokens: true
-          fontSize: '2xl!',
+          fontSize: '3xl',
           // @ts-expect-error expected from strictTokens: true
           p: '4 !important',
           // @ts-expect-error expected from strictTokens: true

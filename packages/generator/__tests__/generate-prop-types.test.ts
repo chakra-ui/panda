@@ -817,7 +817,7 @@ describe('generate property types', () => {
       type PropOrCondition<Key, Value> = ConditionalValue<WithEscapeHatch<Value>>
 
       type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-        ? PropOrCondition<T, PropertyTypes[T]>
+        ? PropOrCondition<T, PropertyTypes[T] | CssValue<T>>
         : never;
 
       type CssPropertyValue<T extends string> = T extends keyof CssProperties
