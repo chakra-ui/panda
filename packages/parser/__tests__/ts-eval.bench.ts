@@ -1,15 +1,5 @@
 import { bench, describe } from 'vitest'
-import { getFixtureProject } from './fixture'
-import type { Config, TSConfig } from '@pandacss/types'
-
-const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
-  const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
-  const result = parse()!
-  return {
-    json: result?.toArray().map(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
-  }
-}
+import { parseAndExtract } from './fixture'
 
 describe('ts-eval', () => {
   bench(
@@ -44,7 +34,7 @@ describe('ts-eval', () => {
       })
       `
 
-      run(code)
+      parseAndExtract(code)
     },
     { iterations: 50 },
   )
@@ -59,7 +49,7 @@ describe('ts-eval', () => {
               variants: variants(),
           })`
 
-      run(code)
+      parseAndExtract(code)
     },
     { iterations: 50 },
   )

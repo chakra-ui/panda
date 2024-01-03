@@ -1,4 +1,5 @@
-import postcss, { Root } from 'postcss'
+import type { Token } from '@pandacss/types'
+import postcss, { Container, Root } from 'postcss'
 import dedupe from 'postcss-discard-duplicates'
 import discardEmpty from 'postcss-discard-empty'
 import mergeRules from 'postcss-merge-rules'
@@ -6,21 +7,20 @@ import minifySelectors from 'postcss-minify-selectors'
 import nested from 'postcss-nested'
 import normalizeWhiteSpace from 'postcss-normalize-whitespace'
 import expandTokenFn from './plugins/expand-token-fn'
-import mergeCascadeLayers from './plugins/merge-layers'
 import prettify from './plugins/prettify'
 import sortCss from './plugins/sort-css'
 import sortMediaQueries from './plugins/sort-mq'
-import type { Token } from '@pandacss/types'
 
 interface OptimizeOptions {
   minify?: boolean
 }
 
-export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
+export function optimizeCss(code: string | Container, options: OptimizeOptions = {}) {
   const { minify = false } = options
+
+  // prettier-ignore
   const plugins = [
     nested(),
-    mergeCascadeLayers(),
     sortMediaQueries(),
     dedupe(),
     mergeRules(),

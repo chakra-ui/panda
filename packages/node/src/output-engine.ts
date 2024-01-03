@@ -1,24 +1,37 @@
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import type { Artifact, PandaHookable } from '@pandacss/types'
-import type { Runtime } from '@pandacss/types'
+import type { Artifact, PandaHookable, Runtime } from '@pandacss/types'
 
-export class PandaOutputEngine {
+interface OutputEngineOptions extends Generator {
+  runtime: Runtime
+  hooks: PandaHookable
+}
+
+export class OutputEngine {
   private paths: Generator['paths']
   private fs: Runtime['fs']
   private path: Runtime['path']
 
-  constructor({ paths, runtime: { path, fs } }: Generator & { runtime: Runtime; hooks: PandaHookable }) {
+  constructor(options: OutputEngineOptions) {
+    const { paths, runtime } = options
+
     this.paths = paths
-    this.fs = fs
-    this.path = path
+    this.fs = runtime.fs
+    this.path = runtime.path
   }
 
-  empty(): void {
+  empty = () => {
     this.fs.rmDirSync(this.path.join(...this.paths.root))
   }
 
-  async write(output: Artifact | undefined): Promise<PromiseSettledResult<void>[] | undefined> {
+  ensure = (file: string, cwd: string) => {
+    const outPath = this.path.resolve(cwd, file)
+    const dirname = this.path.dirname(outPath)
+    this.fs.ensureDirSync(dirname)
+    return outPath
+  }
+
+  write = (output: Artifact | undefined) => {
     if (!output) return
 
     const { dir = this.paths.root, files } = output

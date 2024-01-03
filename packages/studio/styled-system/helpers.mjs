@@ -15,7 +15,7 @@ function filterBaseConditions(c) {
 }
 
 // src/css-important.ts
-var importantRegex = /!(important)?$/;
+var importantRegex = /!(important)?/;
 function isImportant(value) {
   return typeof value === "string" ? importantRegex.test(value) : false;
 }
@@ -89,6 +89,8 @@ function walkObject(target, predicate, options = {}) {
   return inner(target);
 }
 function mapObject(obj, fn) {
+  if (Array.isArray(obj))
+    return obj.map((value) => fn(value));
   if (!isObject(obj))
     return fn(obj);
   return walkObject(obj, (value) => fn(value));
@@ -112,7 +114,7 @@ function normalizeShorthand(styles, context) {
     }
   });
 }
-function normalizeStyleObject(styles, context) {
+function normalizeStyleObject(styles, context, shorthand = true) {
   const { utility, conditions } = context;
   const { hasShorthand, resolveShorthand } = utility;
   return walkObject(
@@ -122,9 +124,7 @@ function normalizeStyleObject(styles, context) {
     },
     {
       stop: (value) => Array.isArray(value),
-      getKey: (prop) => {
-        return hasShorthand ? resolveShorthand(prop) : prop;
-      }
+      getKey: shorthand ? (prop) => hasShorthand ? resolveShorthand(prop) : prop : void 0
     }
   );
 }

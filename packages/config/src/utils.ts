@@ -1,10 +1,5 @@
-const isObject = (value: any) => {
-  return Object.prototype.toString.call(value) === '[object Object]'
-}
-
-export const isFunction = (value: any) => {
-  return typeof value === 'function'
-}
+const isObject = (v: any) => Object.prototype.toString.call(v) === '[object Object]'
+export const isFunction = (v: any) => typeof v === 'function'
 
 export function mergeWith(target: any, ...sources: any[]) {
   const customizer = sources.pop()

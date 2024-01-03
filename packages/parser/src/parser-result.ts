@@ -1,6 +1,10 @@
-import type { ResultItem } from '@pandacss/types'
+import type { ParserOptions } from '@pandacss/generator'
+import { getOrCreateSet } from '@pandacss/shared'
+import type { ParserResultInterface, ResultItem } from '@pandacss/types'
 
-export class ParserResult {
+export class ParserResult implements ParserResultInterface {
+  /** Ordered list of all ResultItem */
+  all = [] as Array<ResultItem>
   jsx = new Set<ResultItem>()
   css = new Set<ResultItem>()
   cva = new Set<ResultItem>()
@@ -10,42 +14,95 @@ export class ParserResult {
   pattern = new Map<string, Set<ResultItem>>()
 
   filePath: string | undefined
+  encoder: ParserOptions['encoder']
+
+  constructor(private context: ParserOptions, encoder?: ParserOptions['encoder']) {
+    this.encoder = encoder ?? context.encoder
+  }
+
+  append(result: ResultItem) {
+    this.all.push(result)
+    return result
+  }
 
   set(name: 'cva' | 'css' | 'sva', result: ResultItem) {
-    this[name].add({ type: 'object', ...result })
+    this[name].add(this.append(Object.assign({ type: 'object' }, result)))
+
+    const encoder = this.encoder
+    if (name == 'css') {
+      result.data.forEach((obj) => encoder.processStyleProps(obj))
+      return
+    }
+
+    if (name === 'cva') {
+      result.data.forEach((data) => encoder.processAtomicRecipe(data))
+      return
+    }
+
+    if (name === 'sva') {
+      result.data.forEach((data) => encoder.processAtomicSlotRecipe(data))
+      return
+    }
   }
 
   setCva(result: ResultItem) {
-    this.cva.add({ type: 'cva', ...result })
+    this.cva.add(this.append(Object.assign({ type: 'cva' }, result)))
+
+    const encoder = this.encoder
+    result.data.forEach((data) => encoder.processAtomicRecipe(data))
   }
 
   setSva(result: ResultItem) {
-    this.sva.add({ type: 'sva', ...result })
+    this.sva.add(this.append(Object.assign({ type: 'sva' }, result)))
+
+    const encoder = this.encoder
+    result.data.forEach((data) => encoder.processAtomicSlotRecipe(data))
   }
 
   setJsx(result: ResultItem) {
-    this.jsx.add({ type: 'jsx', ...result })
+    this.jsx.add(this.append(Object.assign({ type: 'jsx' }, result)))
+
+    const encoder = this.encoder
+    result.data.forEach((obj) => encoder.processStyleProps(obj))
   }
 
   setPattern(name: string, result: ResultItem) {
-    this.pattern.get(name) ?? this.pattern.set(name, new Set())
-    this.pattern.get(name)?.add({ type: 'pattern', name, ...result })
+    const set = getOrCreateSet(this.pattern, name)
+    set.add(this.append(Object.assign({ type: 'pattern', name }, result)))
+
+    const encoder = this.encoder
+    result.data.forEach((obj) =>
+      encoder.processPattern(name, obj, (result.type as 'pattern' | undefined) ?? 'pattern', result.name),
+    )
   }
 
-  setRecipe(name: string, result: ResultItem) {
-    this.recipe.get(name) ?? this.recipe.set(name, new Set())
-    this.recipe.get(name)?.add({ type: 'recipe', ...result })
+  setRecipe(recipeName: string, result: ResultItem) {
+    const set = getOrCreateSet(this.recipe, recipeName)
+    set.add(this.append(Object.assign({ type: 'recipe' }, result)))
+
+    const encoder = this.encoder
+    const recipes = this.context.recipes
+
+    const recipeConfig = recipes.getConfig(recipeName)
+    if (!recipeConfig) return
+
+    const recipe = result
+    // treat recipe jsx like regular recipe + atomic
+    if (result.type) {
+      recipe.data.forEach((data) => {
+        const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
+        encoder.processStyleProps(styleProps)
+        encoder.processRecipe(recipeName, recipeProps)
+      })
+    } else {
+      recipe.data.forEach((data) => {
+        encoder.processRecipe(recipeName, data)
+      })
+    }
   }
 
   isEmpty() {
-    return (
-      this.css.size === 0 &&
-      this.cva.size === 0 &&
-      this.sva.size === 0 &&
-      this.recipe.size === 0 &&
-      this.pattern.size === 0 &&
-      this.jsx.size === 0
-    )
+    return this.all.length === 0
   }
 
   setFilePath(filePath: string) {
@@ -53,15 +110,26 @@ export class ParserResult {
     return this
   }
 
+  merge(result: ParserResult) {
+    result.css.forEach((item) => this.css.add(this.append(item)))
+    result.cva.forEach((item) => this.cva.add(this.append(item)))
+    result.sva.forEach((item) => this.sva.add(this.append(item)))
+    result.jsx.forEach((item) => this.jsx.add(this.append(item)))
+
+    result.recipe.forEach((items, name) => {
+      const set = getOrCreateSet(this.recipe, name)
+      items.forEach((item) => set.add(this.append(item)))
+    })
+    result.pattern.forEach((items, name) => {
+      const set = getOrCreateSet(this.pattern, name)
+      items.forEach((item) => set.add(this.append(item)))
+    })
+
+    return this
+  }
+
   toArray() {
-    const result: Array<ResultItem> = []
-    this.css.forEach((item) => result.push(item))
-    this.cva.forEach((item) => result.push(item))
-    this.sva.forEach((item) => result.push(item))
-    this.jsx.forEach((item) => result.push(item))
-    this.recipe.forEach((items) => items.forEach((item) => result.push(item)))
-    this.pattern.forEach((items) => items.forEach((item) => result.push(item)))
-    return result
+    return this.all
   }
 
   toJSON() {
@@ -74,39 +142,4 @@ export class ParserResult {
       pattern: Object.fromEntries(Array.from(this.pattern.entries()).map(([key, value]) => [key, Array.from(value)])),
     }
   }
-
-  merge(result: ParserResult) {
-    result.css.forEach((item) => this.css.add(item))
-    result.cva.forEach((item) => this.cva.add(item))
-    result.sva.forEach((item) => this.sva.add(item))
-    result.jsx.forEach((item) => this.jsx.add(item))
-
-    result.recipe.forEach((items, name) => {
-      this.recipe.get(name) ?? this.recipe.set(name, new Set())
-      items.forEach((item) => this.recipe.get(name)?.add(item))
-    })
-    result.pattern.forEach((items, name) => {
-      this.pattern.get(name) ?? this.pattern.set(name, new Set())
-      items.forEach((item) => this.pattern.get(name)?.add(item))
-    })
-
-    return this
-  }
-
-  static fromJSON(json: string) {
-    const data = JSON.parse(json)
-    const result = new ParserResult()
-
-    result.css = new Set(data.css)
-    result.cva = new Set(data.cva)
-    result.sva = new Set(data.sva)
-    result.jsx = new Set(data.jsx)
-
-    result.recipe = new Map(Object.entries(data.recipe))
-    result.pattern = new Map(Object.entries(data.pattern))
-
-    return result
-  }
 }
-
-export const createParserResult = () => new ParserResult()

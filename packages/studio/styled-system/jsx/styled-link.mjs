@@ -1,8 +1,14 @@
 import { createElement, forwardRef } from 'react'
-import { panda } from './factory.mjs';
+import { mergeCss } from '../css/css.mjs';
+import { splitProps } from '../helpers.mjs';
 import { getStyledLinkStyle } from '../patterns/styled-link.mjs';
+import { panda } from './factory.mjs';
 
 export const StyledLink = /* @__PURE__ */ forwardRef(function StyledLink(props, ref) {
-  const styleProps = getStyledLinkStyle()
-return createElement(panda.div, { ref, ...styleProps, ...props })
-})
+  const [patternProps, restProps] = splitProps(props, [])
+
+const styleProps = getStyledLinkStyle(patternProps)
+const mergedProps = { ref, ...styleProps, ...restProps }
+
+return createElement(panda.div, mergedProps)
+  })

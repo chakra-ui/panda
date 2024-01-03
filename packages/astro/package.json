@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/astro",
-  "version": "0.20.1",
+  "version": "0.24.1",
   "type": "module",
   "description": "Astro integration for Panda CSS",
   "main": "dist/index.js",
@@ -12,6 +12,12 @@
     "dev": "pnpm build-fast --watch"
   },
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/astro"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -35,13 +41,11 @@
   ],
   "dependencies": {
     "@pandacss/postcss": "workspace:*",
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.31",
-    "postcss-load-config": "^4.0.1"
+    "postcss-load-config": "4.0.2"
   },
   "devDependencies": {
-    "astro": "2.10.15",
-    "vite": "^4.4.8"
+    "astro": "4.0.6",
+    "vite": "5.0.7"
   },
   "peerDependencies": {
     "astro": ">=2.x"

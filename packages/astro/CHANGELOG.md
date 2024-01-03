@@ -1,5 +1,53 @@
 # @pandacss/astro
 
+## 0.24.1
+
+### Patch Changes
+
+- @pandacss/postcss@0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- @pandacss/postcss@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- @pandacss/postcss@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- 0f7793c7: Fix a regression with the @pandacss/astro integration where the automatically provided `base.css` would be
+  ignored by the @pandacss/postcss plugin
+- Updated dependencies [0f7793c7]
+  - @pandacss/postcss@0.22.1
+
+## 0.22.0
+
+### Minor Changes
+
+- 11753fea: - Redesign astro integration and studio to use the new Astro v4 (experimental) JavaScript API
+  - Update Astro version to v4 for the @pandacss/studio
+
+### Patch Changes
+
+- @pandacss/postcss@0.22.0
+
+## 0.21.0
+
+### Patch Changes
+
+- 7f846be2: Add `configPath` and `cwd` options in the `@pandacss/astro` integration just like in the `@pandacss/postcss`
+
+  This can be useful with Nx monorepos where the `panda.config.ts` is not in the root of the project.
+
+  - @pandacss/postcss@0.21.0
+
 ## 0.20.1
 
 ### Patch Changes

@@ -57,9 +57,8 @@ export function generateQwikJsxFactory(ctx: Context) {
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
-          children,
           class: classes(),
-        })
+        }, combinedProps.children ?? children)
       }
 
       const name = getDisplayName(Dynamic)

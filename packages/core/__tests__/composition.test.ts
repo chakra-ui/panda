@@ -1,19 +1,20 @@
+import type { SystemStyleObject } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { assignCompositions } from '../src/compositions'
-import { compositions, createContext } from './fixture'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
+import { assignCompositions } from '@pandacss/core'
+import { createRuleProcessor } from './fixture'
+import { createGeneratorContext, fixtureDefaults } from '@pandacss/fixture'
 
-function css(obj: ProcessOptions) {
-  const ctx = createContext()
+const compositions = { textStyle: fixtureDefaults.config.theme?.textStyles }
+
+function css(styles: SystemStyleObject) {
+  const ctx = createGeneratorContext()
   assignCompositions(compositions, ctx)
-  const ruleset = new AtomicRule(ctx)
-  ruleset.process(obj)
-  return ruleset.toCss()
+  return createRuleProcessor().css(styles).toCss()
 }
 
 describe('compositions', () => {
   test('should assign composition', () => {
-    const ctx = createContext()
+    const ctx = createGeneratorContext()
     assignCompositions(compositions, ctx)
     const result = ctx.utility.transform('textStyle', 'headline.h2')
     expect(result).toMatchInlineSnapshot(`
@@ -42,29 +43,30 @@ describe('compositions', () => {
   })
 
   test('should respect the layer', () => {
-    expect(css({ styles: { textStyle: 'headline.h1' } })).toMatchInlineSnapshot(`
+    expect(css({ textStyle: 'headline.h1' })).toMatchInlineSnapshot(`
       "@layer utilities {
-          @layer compositions {
-              .textStyle_headline\\\\.h1 {
-                  font-size: 2rem;
-                  font-weight: var(--font-weights-bold)
-              }
+        @layer compositions {
+          .textStyle_headline\\\\.h1 {
+            font-size: 2rem;
+            font-weight: var(--font-weights-bold)
+      }
           }
       }"
     `)
 
-    expect(css({ styles: { textStyle: 'headline.h2' } })).toMatchInlineSnapshot(`
+    expect(css({ textStyle: 'headline.h2' })).toMatchInlineSnapshot(`
       "@layer utilities {
-          @layer compositions {
-              .textStyle_headline\\\\.h2 {
-                  font-size: 1.5rem;
-                  @media screen and (min-width: 64em) {
-                      & {
-                          font-size: 2rem
-                      }
-                  }
-                  font-weight: var(--font-weights-bold)
-              }
+        @layer compositions {
+          .textStyle_headline\\\\.h2 {
+            font-size: 1.5rem;
+            font-weight: var(--font-weights-bold);
+      }
+
+          @media screen and (min-width: 64em) {
+            .textStyle_headline\\\\.h2 {
+              font-size: 2rem;
+          }
+      }
           }
       }"
     `)

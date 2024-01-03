@@ -3,7 +3,7 @@ import { walkObject } from './walk-object'
 
 type NormalizeContext = Pick<CreateCssContext, 'utility' | 'conditions'>
 
-function toResponsiveObject(values: string[], breakpoints: string[]) {
+export function toResponsiveObject(values: string[], breakpoints: string[]) {
   return values.reduce((acc, current, index) => {
     const key = breakpoints[index]
     if (current != null) {
@@ -22,7 +22,7 @@ export function normalizeShorthand(styles: Record<string, any>, context: Normali
   })
 }
 
-export function normalizeStyleObject(styles: Record<string, any>, context: NormalizeContext) {
+export function normalizeStyleObject(styles: Record<string, any>, context: NormalizeContext, shorthand = true) {
   const { utility, conditions } = context
   const { hasShorthand, resolveShorthand } = utility
 
@@ -33,9 +33,7 @@ export function normalizeStyleObject(styles: Record<string, any>, context: Norma
     },
     {
       stop: (value) => Array.isArray(value),
-      getKey: (prop) => {
-        return hasShorthand ? resolveShorthand(prop) : prop
-      },
+      getKey: shorthand ? (prop) => (hasShorthand ? resolveShorthand(prop) : prop) : undefined,
     },
   )
 }

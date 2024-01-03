@@ -42,7 +42,7 @@ interface Patterns {
   [pattern: string]: PatternConfig
 }
 
-interface PresetCore {
+export interface PresetCore {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
@@ -137,7 +137,7 @@ interface FileSystemOptions {
    * }
    * ```
    */
-  importMap?: OutdirImportMap
+  importMap?: string | OutdirImportMap
   /**
    * List of files glob to watch for changes.
    * @default []

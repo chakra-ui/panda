@@ -644,6 +644,12 @@ const button = defineRecipe({
 })
 ```
 
+## Static CSS
+
+Panda provides a way to generate `static CSS` for your recipes. This is useful when you want to generate CSS for a recipe without using the recipe in your code or if you use dynamic styling that Panda can't keep track of.
+
+More information about static CSS can be found [here](/docs/guides/static.md#generating-recipes).
+
 ## Should I use atomic or config recipes ?
 
 [Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
@@ -659,5 +665,6 @@ When dealing with simple use cases, or if you need code colocation, or even avoi
 | Can both use any theme tokens, utilities or conditions | ✅ yes                                                                      | ✅ yes                                                                   |
 | Are generated just in time (JIT) based on usage        | ✅ yes, only the recipe variants found in your code will be generated       | ❌ no, all variants found in your `cva` recipes will always be generated |
 | Can be shared in a preset                              | ✅ yes, you can include it in your `preset.theme.recipes`                   | ❌ no                                                                    |
+| Can be applied responsively                            | ✅ yes, `button({ size: { base: 'sm', md: 'lg' } })`                        | ❌ no, only the styles in the recipe can be responsive                   |
 | Can be colocated in your markup code                   | ❌ no, they must be defined or imported in your `panda.config`              | ✅ yes, you can place it anywhere in your app                            |
 | Generate atomic classes                                | ❌ no, a specific className will be generated using your `recipe.className` | ✅ yes                                                                   |

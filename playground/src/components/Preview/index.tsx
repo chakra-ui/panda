@@ -15,10 +15,11 @@ export type PreviewProps = {
   isResponsive: boolean
   panda: UsePanda
   responsiveView: UseResponsiveView
+  error: Error | null
 }
 
 export const Preview = (props: PreviewProps) => {
-  const { source, isResponsive, responsiveView, panda } = props
+  const { source, isResponsive, responsiveView, panda, error } = props
   const { previewCss = '', previewJs } = panda
 
   const isClient = useIsClient()
@@ -56,6 +57,7 @@ export const Preview = (props: PreviewProps) => {
   } as const
 
   function renderContent() {
+    // if (1 + 1 == 2) return null
     if (!isReady) {
       return null
     }
@@ -67,7 +69,7 @@ export const Preview = (props: PreviewProps) => {
 
     const contents = (
       <LiveProvider code={transformed} scope={React}>
-        <LiveError />
+        <LiveError error={error} />
         <LivePreview />
       </LiveProvider>
     )
@@ -184,9 +186,11 @@ export const Preview = (props: PreviewProps) => {
             allow="none"
             width="100%"
             onLoad={handleLoad}
+            data-loading={iframeLoaded ? undefined : ''}
             className={css({
               w: 'full',
               h: 'full',
+              visibility: { _loading: 'hidden' },
             })}
           >
             {iframeLoaded && renderContent()}
@@ -197,7 +201,7 @@ export const Preview = (props: PreviewProps) => {
   )
 }
 
-function LiveError() {
+function LiveError(props: { error: Error | null }) {
   const { error } = useLiveContext()
 
   function renderError() {
@@ -206,12 +210,12 @@ function LiveError() {
         <span>
           <ErrorIcon />
         </span>
-        <pre>{error}</pre>
+        <pre>{error ?? props.error?.stack?.split('\n')?.[0]}</pre>
       </div>
     )
   }
 
-  return error ? renderError() : <></>
+  return error || props.error ? renderError() : <></>
 }
 
 function LivePreview() {

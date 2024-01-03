@@ -1,8 +1,9 @@
-import { breakpoints } from '@pandacss/fixture'
+import { fixturePreset } from '@pandacss/fixture'
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import { Breakpoints } from '../src/breakpoints'
 
+const breakpoints = fixturePreset.theme.breakpoints!
 const parse = (value: string) => {
   const root = postcss.parse(value)
   const bp = new Breakpoints(breakpoints)

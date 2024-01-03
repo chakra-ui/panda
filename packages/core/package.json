@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/core",
-  "version": "0.20.1",
+  "version": "0.24.1",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -27,11 +27,18 @@
     "dist"
   ],
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/core"
+  },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
     "@pandacss/error": "workspace:*",
+    "@pandacss/is-valid-prop": "workspace:^",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
@@ -50,7 +57,6 @@
     "ts-pattern": "5.0.5"
   },
   "devDependencies": {
-    "@pandacss/fixture": "workspace:*",
     "@types/lodash.merge": "4.6.8"
   }
 }

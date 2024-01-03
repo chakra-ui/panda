@@ -1,11 +1,10 @@
 import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { Stylesheet } from '../src'
-import { createContext } from './fixture'
+import { createGeneratorContext } from '@pandacss/fixture'
 
 function globalCss(values: Dict) {
-  const ctx = createContext()
-  const sheet = new Stylesheet(ctx)
+  const ctx = createGeneratorContext()
+  const sheet = ctx.createSheet()
   sheet.processGlobalCss(values)
   return sheet.toCss({ optimize: true })
 }
@@ -262,7 +261,6 @@ describe('Global css', () => {
             body {
               color: var(--colors-red-200)
                   }
-
             body a {
               color: var(--colors-red-400)
                   }

@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { cssParser } from './fixture'
+import { cssTemplateLiteralParser } from './fixture'
 
 describe('ast parser / string literal', () => {
   test('should parse', () => {
     const code = `
-    import { panda } from ".panda/jsx"
+    import { styled } from "styled-system/jsx"
 
-    const baseStyle = panda.div\`
+    const baseStyle = styled.div\`
         background: transparent;
         border-radius: 3px;
         border: 1px solid var(--accent-color);
@@ -19,12 +19,12 @@ describe('ast parser / string literal', () => {
     \`
      `
 
-    expect(cssParser(code)).toMatchInlineSnapshot(`
+    expect(cssTemplateLiteralParser(code)).toMatchInlineSnapshot(`
       {
         "css": Set {
           {
             "box": {
-              "column": 32,
+              "column": 33,
               "line": 4,
               "node": "NoSubstitutionTemplateLiteral",
               "type": "literal",
@@ -43,7 +43,7 @@ describe('ast parser / string literal', () => {
                 "width": "11rem",
               },
             ],
-            "name": "panda.div",
+            "name": "styled.div",
             "type": "object",
           },
         },
