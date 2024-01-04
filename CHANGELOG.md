@@ -6,6 +6,15 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.24.2] - 2024-01-04
+
+### Fixed
+
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being seen as a
+  truthy value
+- Fix an issue with the `panda init` command which didn't update existing `.gitignore` to include the `styled-system`
+- Fix issue where config slot recipes with compound variants were not processed correctly
+
 ## [0.24.1] - 2024-01-02
 
 ### Fixed
