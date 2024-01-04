@@ -403,12 +403,18 @@ export class Utility {
     if (value == null) {
       return { className: '', styles: {} }
     }
+
     const key = this.resolveShorthand(prop)
+
+    let styleValue = getArbitraryValue(value)
+    if (isString(styleValue)) {
+      styleValue = this.tokens.expandReference(styleValue)
+    }
 
     return compact({
       layer: this.configs.get(key)?.layer,
       className: this.getOrCreateClassName(key, withoutSpace(value)),
-      styles: this.getOrCreateStyle(key, getArbitraryValue(value)),
+      styles: this.getOrCreateStyle(key, styleValue),
     })
   }
 
