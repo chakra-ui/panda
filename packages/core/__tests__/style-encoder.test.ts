@@ -63,6 +63,20 @@ describe('style encoder', () => {
     `)
   })
 
+  test('css with base', () => {
+    const result = css({
+      base: { color: 'blue' },
+      md: { color: 'red' },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        "color]___[value:blue",
+        "color]___[value:red]___[cond:md",
+      }
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',

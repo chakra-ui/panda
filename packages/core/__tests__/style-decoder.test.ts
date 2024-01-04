@@ -66,6 +66,60 @@ describe('style decoder', () => {
     `)
   })
 
+  test('css with base', () => {
+    const result = css({
+      base: { color: 'blue' },
+      md: { color: 'red' },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "text_blue",
+          "conditions": undefined,
+          "entry": {
+            "prop": "color",
+            "value": "blue",
+          },
+          "hash": "color]___[value:blue",
+          "layer": undefined,
+          "result": {
+            ".text_blue": {
+              "color": "blue",
+            },
+          },
+        },
+        {
+          "className": "md\\\\:text_red",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 48em)",
+              "raw": "md",
+              "rawValue": "@media screen and (min-width: 48em)",
+              "type": "at-rule",
+              "value": "md",
+            },
+          ],
+          "entry": {
+            "cond": "md",
+            "prop": "color",
+            "value": "red",
+          },
+          "hash": "color]___[value:red]___[cond:md",
+          "layer": undefined,
+          "result": {
+            ".md\\\\:text_red": {
+              "@media screen and (min-width: 48em)": {
+                "color": "red",
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',
