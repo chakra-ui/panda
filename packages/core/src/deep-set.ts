@@ -1,9 +1,10 @@
 import type { Dict } from '@pandacss/types'
 
-export const deepSet = <T extends Dict>(obj: T, path: string[], value: Dict) => {
-  if (!path.length) return Object.assign(obj, value) as T
+export const deepSet = <T extends Dict>(target: T, path: string[], value: Dict | string) => {
+  const isValueObject = typeof value === 'object' && value !== null
+  if (!path.length && isValueObject) return Object.assign(target, value) as T
 
-  let current = obj as Record<string, any>
+  let current = target as Record<string, any>
   for (let i = 0; i < path.length; i++) {
     const key = path[i]
     if (!current[key]) {
@@ -11,11 +12,15 @@ export const deepSet = <T extends Dict>(obj: T, path: string[], value: Dict) => 
     }
 
     if (i === path.length - 1) {
-      Object.assign(current[key], value)
+      if (isValueObject) {
+        Object.assign(current[key], value)
+      } else {
+        current[key] = value
+      }
     } else {
       current = current[key]
     }
   }
 
-  return obj
+  return target
 }

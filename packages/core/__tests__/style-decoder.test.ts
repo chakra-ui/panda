@@ -696,18 +696,60 @@ describe('style decoder', () => {
                 "backgroundColor": "var(--colors-red-200)",
               },
             },
+            {
+              "conditions": [
+                {
+                  "raw": "&:is(:hover, [data-hover])",
+                  "type": "self-nesting",
+                  "value": "&:is(:hover, [data-hover])",
+                },
+              ],
+              "entry": {
+                "cond": "_hover",
+                "prop": "fontSize",
+                "recipe": "buttonStyle",
+                "value": "3xl",
+              },
+              "hash": "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+              "result": {
+                "fontSize": "var(--font-sizes-3xl)",
+              },
+            },
+            {
+              "conditions": [
+                {
+                  "raw": "&:is(:hover, [data-hover])",
+                  "type": "self-nesting",
+                  "value": "&:is(:hover, [data-hover])",
+                },
+              ],
+              "entry": {
+                "cond": "_hover",
+                "prop": "color",
+                "recipe": "buttonStyle",
+                "value": "white",
+              },
+              "hash": "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
+              "result": {
+                "color": "var(--colors-white)",
+              },
+            },
           ],
           "hashSet": Set {
             "display]___[value:inline-flex]___[recipe:buttonStyle",
             "alignItems]___[value:center]___[recipe:buttonStyle",
             "justifyContent]___[value:center]___[recipe:buttonStyle",
             "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+            "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+            "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
           },
           "recipe": "buttonStyle",
           "result": {
             ".buttonStyle": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "var(--colors-red-200)",
+                "color": "var(--colors-white)",
+                "fontSize": "var(--font-sizes-3xl)",
               },
               "alignItems": "center",
               "display": "inline-flex",
@@ -781,14 +823,13 @@ describe('style decoder', () => {
           "layer": undefined,
           "result": {
             ".buttonStyle--variant_solid": {
-              "&": {
-                "&:is(:hover, [data-hover])": {
-                  "backgroundColor": "darkblue",
-                },
-                "&[data-disabled]": {
-                  "backgroundColor": "gray",
-                  "color": "var(--colors-black)",
-                },
+              "&:is(:hover, [data-hover])": {
+                "backgroundColor": "darkblue",
+              },
+              "&[data-disabled]": {
+                "backgroundColor": "gray",
+                "color": "var(--colors-black)",
+                "fontSize": "var(--font-sizes-2xl)",
               },
               "backgroundColor": "blue",
               "color": "var(--colors-white)",
@@ -1991,18 +2032,60 @@ describe('style decoder', () => {
                   "backgroundColor": "var(--colors-red-200)",
                 },
               },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "fontSize",
+                  "recipe": "buttonStyle",
+                  "value": "3xl",
+                },
+                "hash": "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "fontSize": "var(--font-sizes-3xl)",
+                },
+              },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "color",
+                  "recipe": "buttonStyle",
+                  "value": "white",
+                },
+                "hash": "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "color": "var(--colors-white)",
+                },
+              },
             ],
             "hashSet": Set {
               "display]___[value:inline-flex]___[recipe:buttonStyle",
               "alignItems]___[value:center]___[recipe:buttonStyle",
               "justifyContent]___[value:center]___[recipe:buttonStyle",
               "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+              "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+              "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
             },
             "recipe": "buttonStyle",
             "result": {
               ".buttonStyle": {
                 "&:is(:hover, [data-hover])": {
                   "backgroundColor": "var(--colors-red-200)",
+                  "color": "var(--colors-white)",
+                  "fontSize": "var(--font-sizes-3xl)",
                 },
                 "alignItems": "center",
                 "display": "inline-flex",
@@ -2069,18 +2152,60 @@ describe('style decoder', () => {
                   "backgroundColor": "var(--colors-red-200)",
                 },
               },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "fontSize",
+                  "recipe": "buttonStyle",
+                  "value": "3xl",
+                },
+                "hash": "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "fontSize": "var(--font-sizes-3xl)",
+                },
+              },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "color",
+                  "recipe": "buttonStyle",
+                  "value": "white",
+                },
+                "hash": "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "color": "var(--colors-white)",
+                },
+              },
             ],
             "hashSet": Set {
               "display]___[value:inline-flex]___[recipe:buttonStyle",
               "alignItems]___[value:center]___[recipe:buttonStyle",
               "justifyContent]___[value:center]___[recipe:buttonStyle",
               "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+              "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+              "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
             },
             "recipe": "buttonStyle",
             "result": {
               ".buttonStyle": {
                 "&:is(:hover, [data-hover])": {
                   "backgroundColor": "var(--colors-red-200)",
+                  "color": "var(--colors-white)",
+                  "fontSize": "var(--font-sizes-3xl)",
                 },
                 "alignItems": "center",
                 "display": "inline-flex",

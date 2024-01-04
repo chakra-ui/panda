@@ -9,6 +9,7 @@ import {
 import type {
   Dict,
   RecipeConfig,
+  RecipeSelection,
   RecipeVariantRecord,
   ResultItem,
   ShipJson,
@@ -140,7 +141,7 @@ export class StyleEncoder {
     this.processAtomic(styles.css ? Object.assign({}, styles, { css: undefined }) : styles)
   }
 
-  processRecipe(recipeName: string, variants: RecipeVariantRecord) {
+  processRecipe(recipeName: string, variants: RecipeSelection<RecipeVariantRecord>) {
     const config = this.context.recipes.getConfig(recipeName)
     if (!config) return
 

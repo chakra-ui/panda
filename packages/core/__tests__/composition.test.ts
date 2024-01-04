@@ -1,31 +1,23 @@
+import { createGeneratorContext } from '@pandacss/fixture'
 import type { SystemStyleObject } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { assignCompositions } from '@pandacss/core'
 import { createRuleProcessor } from './fixture'
-import { createGeneratorContext, fixtureDefaults } from '@pandacss/fixture'
-
-const compositions = { textStyle: fixtureDefaults.config.theme?.textStyles }
 
 function css(styles: SystemStyleObject) {
-  const ctx = createGeneratorContext()
-  assignCompositions(compositions, ctx)
   return createRuleProcessor().css(styles).toCss()
 }
 
 describe('compositions', () => {
   test('should assign composition', () => {
     const ctx = createGeneratorContext()
-    assignCompositions(compositions, ctx)
     const result = ctx.utility.transform('textStyle', 'headline.h2')
     expect(result).toMatchInlineSnapshot(`
       {
         "className": "textStyle_headline.h2",
         "layer": "compositions",
         "styles": {
-          "&": {
-            "@media screen and (min-width: 64em)": {
-              "fontSize": "2rem",
-            },
+          "@media screen and (min-width: 64em)": {
+            "fontSize": "2rem",
           },
           "fontSize": "1.5rem",
           "fontWeight": "var(--font-weights-bold)",

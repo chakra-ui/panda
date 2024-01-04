@@ -65,6 +65,7 @@ export class PandaContext extends Generator {
   }
 
   writeCss = (sheet?: Stylesheet) => {
+    logger.info('css', this.runtime.path.join(...this.paths.root, 'styles.css'))
     return this.output.write({
       id: 'styles.css',
       dir: this.paths.root,

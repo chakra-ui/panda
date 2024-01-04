@@ -1,7 +1,6 @@
 import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig, UserConfig } from '@pandacss/types'
-import type { Conditions } from './conditions'
+import type { CoreContext } from '.'
 import type { Layers } from './layers'
-import type { Utility } from './utility'
 
 export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>
 
@@ -11,10 +10,9 @@ export interface TransformResult {
   styles: Dict
 }
 
-export interface StylesheetContext {
+export interface StylesheetContext
+  extends Pick<CoreContext, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty'> {
   layers: Layers
-  utility: Utility
-  conditions: Conditions
   helpers: PatternHelpers
   hash?: boolean
   lightningcss?: boolean

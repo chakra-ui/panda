@@ -89,10 +89,10 @@ describe('recipe ruleset', () => {
         "baseName": "buttonStyle",
         "config": {
           "base": {
-            "&": {
-              "&:is(:hover, [data-hover])": {
-                "backgroundColor": "var(--colors-red-200)",
-              },
+            "&:is(:hover, [data-hover])": {
+              "backgroundColor": "var(--colors-red-200)",
+              "color": "var(--colors-white)",
+              "fontSize": "var(--font-sizes-3xl)",
             },
             "alignItems": "center",
             "display": "inline-flex",
@@ -124,30 +124,27 @@ describe('recipe ruleset', () => {
             },
             "variant": {
               "outline": {
-                "&": {
-                  "&:is(:hover, [data-hover])": {
-                    "backgroundColor": "blue",
-                    "color": "var(--colors-white)",
-                  },
-                  "&[data-disabled]": {
-                    "backgroundColor": "var(--colors-transparent)",
-                    "border": "1px solid gray",
-                    "color": "gray",
-                  },
+                "&:is(:hover, [data-hover])": {
+                  "backgroundColor": "blue",
+                  "color": "var(--colors-white)",
+                },
+                "&[data-disabled]": {
+                  "backgroundColor": "var(--colors-transparent)",
+                  "border": "1px solid gray",
+                  "color": "gray",
                 },
                 "backgroundColor": "var(--colors-transparent)",
                 "border": "1px solid blue",
                 "color": "blue",
               },
               "solid": {
-                "&": {
-                  "&:is(:hover, [data-hover])": {
-                    "backgroundColor": "darkblue",
-                  },
-                  "&[data-disabled]": {
-                    "backgroundColor": "gray",
-                    "color": "var(--colors-black)",
-                  },
+                "&:is(:hover, [data-hover])": {
+                  "backgroundColor": "darkblue",
+                },
+                "&[data-disabled]": {
+                  "backgroundColor": "gray",
+                  "color": "var(--colors-black)",
+                  "fontSize": "var(--font-sizes-2xl)",
                 },
                 "backgroundColor": "blue",
                 "color": "var(--colors-white)",
@@ -201,6 +198,7 @@ describe('recipe ruleset', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: var(--colors-black);
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
@@ -216,6 +214,8 @@ describe('recipe ruleset', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
       }"
@@ -237,6 +237,7 @@ describe('recipe ruleset', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: var(--colors-black);
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
@@ -252,6 +253,8 @@ describe('recipe ruleset', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
 

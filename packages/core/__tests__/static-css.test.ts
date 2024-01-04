@@ -85,6 +85,7 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--size_sm {
@@ -110,6 +111,8 @@ describe('static-css', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
       }
       }
 
@@ -346,6 +349,7 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--size_sm {
@@ -384,6 +388,8 @@ describe('static-css', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
       }
       }
       }",
@@ -665,6 +671,7 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
@@ -680,6 +687,8 @@ describe('static-css', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
       }
       }
 

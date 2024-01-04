@@ -1,26 +1,26 @@
 import { isCssProperty } from '@pandacss/is-valid-prop'
-import { compact, isBoolean, isString, mapObject, memo } from '@pandacss/shared'
+import { compact, flatten, isBoolean, isString, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
   ConfigResultWithHooks,
   HashOptions,
   PrefixOptions,
+  PropertyConfig,
   RequiredBy,
   StudioOptions,
   Theme,
   UserConfig,
 } from '@pandacss/types'
-import { assignCompositions } from './compositions'
 import { Conditions } from './conditions'
 import { Layers } from './layers'
 import { Patterns } from './patterns'
 import { Recipes } from './recipes'
+import { transformStyles } from './serialize'
 import { StaticCss } from './static-css'
 import { StyleDecoder } from './style-decoder'
 import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
-import type { RecipeContext } from './types'
 import { Utility } from './utility'
 
 const helpers = { map: mapObject }
@@ -71,16 +71,17 @@ export class CoreContext {
     this.conditions = this.createConditions(config)
 
     this.patterns = new Patterns(config)
-
-    this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
-    this.setupCompositions(theme)
-    this.setupProperties()
-
-    // Relies on this.conditions, this.utility, this.layers
-    this.recipes = this.createRecipes(theme, this.baseSheetContext)
-
     this.encoder = new StyleEncoder(this)
     this.decoder = new StyleDecoder(this)
+
+    this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
+    this.setupProperties()
+    this.setupCompositions(theme)
+
+    // Relies on this.conditions, this.utility, this.layers, this.encoder, this.decoder
+    this.recipes = this.createRecipes(theme, this)
+    this.recipes.save()
+
     this.staticCss = new StaticCss(this)
   }
 
@@ -145,11 +146,32 @@ export class CoreContext {
   setupCompositions(theme: Theme): void {
     const { textStyles, layerStyles } = theme
     const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
-    assignCompositions(compositions, { conditions: this.conditions, utility: this.utility })
+    const stylesheetCtx = {
+      ...this.baseSheetContext,
+      isValidProperty: this.isValidProperty,
+      browserslist: this.config.browserslist,
+      lightningcss: this.config.lightningcss,
+      layers: this.createLayers(this.config.layers as CascadeLayers),
+    }
+
+    for (const [key, values] of Object.entries(compositions)) {
+      const flatValues = flatten(values ?? {})
+
+      const config: PropertyConfig = {
+        layer: 'compositions',
+        className: key,
+        values: Object.keys(flatValues),
+        transform: (value) => {
+          return transformStyles(stylesheetCtx, flatValues[value], key + '.' + value)
+        },
+      }
+
+      this.utility.register(key, config)
+    }
   }
 
   setupProperties(): void {
-    this.properties = new Set(['css', ...this.utility.keys(), ...this.conditions.keys()])
+    this.properties = new Set(['css', 'textStyle', ...this.utility.keys(), ...this.conditions.keys()])
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
 
@@ -157,21 +179,24 @@ export class CoreContext {
     return {
       conditions: this.conditions,
       utility: this.utility,
-      helpers,
       hash: this.hash.className,
+      encoder: this.encoder,
+      decoder: this.decoder,
+      helpers,
     }
   }
 
   createSheet(): Stylesheet {
     return new Stylesheet({
       ...this.baseSheetContext,
+      isValidProperty: this.isValidProperty,
       browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,
       layers: this.createLayers(this.config.layers as CascadeLayers),
     })
   }
 
-  createRecipes(theme: Theme, context: RecipeContext): Recipes {
+  createRecipes(theme: Theme, context: CoreContext): Recipes {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
     return new Recipes(recipeConfigs, context)
   }

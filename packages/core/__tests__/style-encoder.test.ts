@@ -119,6 +119,8 @@ describe('hash factory', () => {
           "alignItems]___[value:center]___[recipe:buttonStyle",
           "justifyContent]___[value:center]___[recipe:buttonStyle",
           "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+          "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+          "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
         },
         "variants": Set {
           "size]___[value:sm]___[recipe:buttonStyle",
@@ -525,6 +527,8 @@ describe('hash factory', () => {
           "alignItems]___[value:center]___[recipe:buttonStyle",
           "justifyContent]___[value:center]___[recipe:buttonStyle",
           "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+          "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+          "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
         },
       }
     `)

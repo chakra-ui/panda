@@ -27,7 +27,7 @@ export class Stylesheet {
     if (typeof styles !== 'object') return
 
     try {
-      layer.append(toCss(styles).toString())
+      layer.append(toCss(styles))
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet:process', error)
@@ -37,8 +37,7 @@ export class Stylesheet {
   }
 
   processGlobalCss = (styles: Dict) => {
-    const { conditions, utility } = this.context
-    const css = serializeStyles(styles, { conditions, utility })
+    const css = serializeStyles(this.context, styles)
     this.context.layers.base.append(css)
   }
 

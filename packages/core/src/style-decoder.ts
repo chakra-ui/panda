@@ -112,8 +112,8 @@ export class StyleDecoder implements StyleDecoderInterface {
     return styleResult
   }
 
-  private getGroup(hashSet: Set<string>, className: string) {
-    const cached = this.group_cache.get(className)
+  getGroup(hashSet: Set<string>, key: string) {
+    const cached = this.group_cache.get(key)
     if (cached) return cached
 
     let obj = {}
@@ -162,8 +162,8 @@ export class StyleDecoder implements StyleDecoderInterface {
       }
     })
 
-    const result: GroupedResult = { result: obj, hashSet, details, className }
-    this.group_cache.set(className, result)
+    const result: GroupedResult = { result: obj, hashSet, details, className: key }
+    this.group_cache.set(key, result)
     return result
   }
 

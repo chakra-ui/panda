@@ -41,7 +41,7 @@ export function stringify(
     // Then selectors
     if (selectors.length && !used.has(selectors)) {
       used.add(selectors)
-      cssText += `${selectors} {`
+      cssText += `${selectors.map((s) => s.replace(' &', ''))} {`
     }
 
     // Format property
@@ -91,7 +91,6 @@ export function stringify(
         // Nested condition
         if (isAtRuleLike) {
           nextSelectors = selectors
-          // TODO rm recursion ?
           cssText += parse(data, nextSelectors, conditions.concat(usedName))
         } else {
           // Nested selector rule
@@ -99,7 +98,6 @@ export function stringify(
           nextSelectors = selectors.length
             ? getResolvedSelectors(selectors as string[], nestedSelectors)
             : nestedSelectors
-          // TODO rm recursion ?
           cssText += parse(data, nextSelectors, conditions)
         }
 
@@ -130,7 +128,7 @@ export function stringify(
  * parseSelectors('.switch:is(:checked, [data-checked]).dark, .dark .switch:is(:checked, [data-checked])') // ['.switch:is(:checked, [data-checked]).dark', '.dark .switch:is(:checked, [data-checked])']
  * parseSelectors('&:is(:disabled, [disabled], [data-disabled]), .another') // [':is(:disabled, [disabled], [data-disabled])', '.another']
  */
-function parseSelectors(selector: string): string[] {
+export function parseSelectors(selector: string): string[] {
   const result = [] as string[]
   let parenCount = 0
   let currentSelector = ''

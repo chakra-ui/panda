@@ -2172,6 +2172,7 @@ describe('extract to css output pipeline', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: var(--colors-black);
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
@@ -2187,6 +2188,8 @@ describe('extract to css output pipeline', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
       }
@@ -2295,6 +2298,7 @@ describe('extract to css output pipeline', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: var(--colors-black);
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
@@ -2310,6 +2314,8 @@ describe('extract to css output pipeline', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
       }
