@@ -1,6 +1,6 @@
 import { createGeneratorContext } from '@pandacss/fixture'
 import type { Dict, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { createAnatomy } from './create-anatomy'
 import { createRuleProcessor } from './fixture'
 
@@ -35,6 +35,10 @@ const sva = (styles: SlotRecipeDefinition) => {
 /* -----------------------------------------------------------------------------
  * Actual Tests
  * -----------------------------------------------------------------------------*/
+
+vi.mock('../package.json', () => {
+  return { version: 'x.x.x' }
+})
 
 describe('style encoder', () => {
   test('simple', () => {
@@ -692,7 +696,7 @@ describe('style encoder', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "schemaVersion": "0.24.1",
+        "schemaVersion": "x.x.x",
         "styles": {
           "atomic": [
             "color]___[value:red",
