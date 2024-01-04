@@ -40,6 +40,32 @@ const sva = (styles: Dict) => {
  * -----------------------------------------------------------------------------*/
 
 describe('style decoder', () => {
+  test('should resolve references', () => {
+    const result = css({
+      border: '2px solid {colors.red.300}',
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        {
+          "className": "border_2px_solid_\\\\{colors\\\\.red\\\\.300\\\\}",
+          "conditions": undefined,
+          "entry": {
+            "prop": "border",
+            "value": "2px solid {colors.red.300}",
+          },
+          "hash": "border]___[value:2px solid {colors.red.300}",
+          "layer": undefined,
+          "result": {
+            ".border_2px_solid_\\\\{colors\\\\.red\\\\.300\\\\}": {
+              "border": "2px solid var(--colors-red-300)",
+            },
+          },
+        },
+      }
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',

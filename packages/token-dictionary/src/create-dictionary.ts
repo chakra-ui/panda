@@ -3,6 +3,7 @@ import { TokenDictionary as BaseDictionary, type TokenDictionaryOptions } from '
 import { formats } from './format'
 import { middlewares } from './middleware'
 import { transforms } from './transform'
+import { expandReferences } from './utils'
 
 export class TokenDictionary extends BaseDictionary {
   constructor(options: TokenDictionaryOptions) {
@@ -46,5 +47,9 @@ export class TokenDictionary extends BaseDictionary {
   getTokenVar(path: string) {
     const json = mapToJson(this.values)
     return getDotPath(json, path)
+  }
+
+  expandReference(value: string) {
+    return expandReferences(value, (key) => this.get(key))
   }
 }
