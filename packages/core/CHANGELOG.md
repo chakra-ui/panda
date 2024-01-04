@@ -1,5 +1,20 @@
 # @pandacss/core
 
+## 0.24.2
+
+### Patch Changes
+
+- 71e82a4e: Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
+  seen as a truthy value
+- 61ebf3d2: Fix issue where config slot recipes with compound variants were not processed correctly
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/token-dictionary@0.24.2
+  - @pandacss/error@0.24.2
+  - @pandacss/is-valid-prop@0.24.2
+  - @pandacss/logger@0.24.2
+
 ## 0.24.1
 
 ### Patch Changes
