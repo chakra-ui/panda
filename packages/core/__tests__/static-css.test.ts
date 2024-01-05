@@ -1843,4 +1843,253 @@ describe('static-css', () => {
       }
     `)
   })
+
+  test('all recipes', () => {
+    expect(getStaticCss({ recipes: '*' })).toMatchInlineSnapshot(`
+      {
+        "css": "@layer recipes {
+        .textStyle--size_h1 {
+          font-size: 5rem;
+          line-height: 1em;
+          font-weight: 800
+      }
+
+        .textStyle--size_h2 {
+          font-size: 3rem;
+          line-height: 1.2em;
+          font-weight: 700;
+          letter-spacing: -0.03em
+      }
+
+        .card--rounded_true {
+          border-radius: 0.375rem
+      }
+
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+      }
+
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: white;
+      }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: black;
+      }
+
+        .buttonStyle--size_sm {
+          height: 2.5rem;
+          min-width: 2.5rem;
+          padding: 0 0.5rem
+      }
+
+        .buttonStyle--variant_outline {
+          background-color: transparent;
+          border: 1px solid blue;
+          color: blue;
+      }
+
+        .buttonStyle--variant_outline[data-disabled] {
+          background-color: transparent;
+          border: 1px solid gray;
+          color: gray;
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
+      }
+
+        .buttonStyle--variant_outline:is(:hover, [data-hover]) {
+          background-color: blue;
+          color: white;
+      }
+
+        @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
+          .textStyle > :not([hidden]) ~ :not([hidden]) {
+            border-inline-start-width: 20px;
+            border-inline-end-width: 0px;
+      }
+
+          [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red
+      }
+
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+      }
+      }
+      }
+
+      @layer recipes.slots {
+
+        .checkbox__control--size_sm {
+          font-size: 2rem;
+          font-weight: var(--font-weights-bold);
+          width: 8;
+          height: 8
+      }
+
+        .checkbox__label--size_sm {
+          font-size: var(--font-sizes-sm)
+      }
+
+        .checkbox__control--size_md {
+          width: 10;
+          height: 10
+      }
+
+        .checkbox__label--size_md {
+          font-size: var(--font-sizes-md)
+      }
+
+        .checkbox__control--size_lg {
+          width: 12;
+          height: 12
+      }
+
+        .checkbox__label--size_lg {
+          font-size: var(--font-sizes-lg)
+      }
+
+        .badge__title--size_sm {
+          padding-inline: 4
+      }
+
+        .badge__body--size_sm {
+          color: red
+      }
+
+        .badge__title--raised_true {
+          box-shadow: var(--shadows-md)
+      }
+
+        @layer _base {
+          .checkbox__root {
+            display: flex;
+            align-items: center;
+            gap: 2
+      }
+
+          .checkbox__control {
+            border-width: 1px;
+            border-radius: var(--radii-sm)
+      }
+
+          .checkbox__label {
+            margin-inline-start: 2
+      }
+
+          .badge__title {
+            background: red.300;
+            border-radius: var(--radii-sm)
+      }
+      }
+      }
+
+      @layer utilities {
+        .text_ButtonHighlight {
+          color: ButtonHighlight
+      }
+      }",
+        "results": {
+          "css": [],
+          "patterns": [],
+          "recipes": [
+            {
+              "textStyle": {},
+            },
+            {
+              "textStyle": {
+                "size": "h1",
+              },
+            },
+            {
+              "textStyle": {
+                "size": "h2",
+              },
+            },
+            {
+              "tooltipStyle": {},
+            },
+            {
+              "cardStyle": {},
+            },
+            {
+              "cardStyle": {
+                "rounded": "true",
+              },
+            },
+            {
+              "buttonStyle": {},
+            },
+            {
+              "buttonStyle": {
+                "size": "sm",
+              },
+            },
+            {
+              "buttonStyle": {
+                "size": "md",
+              },
+            },
+            {
+              "buttonStyle": {
+                "variant": "solid",
+              },
+            },
+            {
+              "buttonStyle": {
+                "variant": "outline",
+              },
+            },
+            {
+              "checkbox": {},
+            },
+            {
+              "checkbox": {
+                "size": "sm",
+              },
+            },
+            {
+              "checkbox": {
+                "size": "md",
+              },
+            },
+            {
+              "checkbox": {
+                "size": "lg",
+              },
+            },
+            {
+              "badge": {},
+            },
+            {
+              "badge": {
+                "size": "sm",
+              },
+            },
+            {
+              "badge": {
+                "raised": "true",
+              },
+            },
+          ],
+        },
+      }
+    `)
+  })
 })
