@@ -1807,27 +1807,54 @@ describe('static-css', () => {
     expect(getStaticCss({ recipes: '*' })).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
+          .textStyle > :not([hidden]) ~ :not([hidden]) {
+            border-inline-start-width: 20px;
+            border-inline-end-width: 0px;
+      }
+
+          [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red;
+      }
+
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+      }
+
         .textStyle--size_h1 {
           font-size: 5rem;
           line-height: 1em;
-          font-weight: 800
+          font-weight: 800;
       }
 
         .textStyle--size_h2 {
           font-size: 3rem;
           line-height: 1.2em;
           font-weight: 700;
-          letter-spacing: -0.03em
+          letter-spacing: -0.03em;
       }
 
         .card--rounded_true {
-          border-radius: 0.375rem
+          border-radius: 0.375rem;
       }
 
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -1838,12 +1865,17 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
+          font-size: var(--font-sizes-2xl);
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
       }
 
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_outline {
@@ -1858,110 +1890,80 @@ describe('static-css', () => {
           color: gray;
       }
 
-        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue;
-      }
-
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
           background-color: blue;
           color: white;
       }
-
-        @layer _base {
-          .textStyle {
-            font-family: var(--fonts-mono);
-      }
-
-          .textStyle > :not([hidden]) ~ :not([hidden]) {
-            border-inline-start-width: 20px;
-            border-inline-end-width: 0px;
-      }
-
-          [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
-            color: red
-      }
-
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
-      }
       }
 
       @layer recipes.slots {
+        @layer _base {
+          .checkbox__root {
+            display: flex;
+            align-items: center;
+            gap: 2;
+      }
+
+          .checkbox__control {
+            border-width: 1px;
+            border-radius: var(--radii-sm);
+      }
+
+          .checkbox__label {
+            margin-inline-start: 2;
+      }
+
+          .badge__title {
+            background: red.300;
+            border-radius: var(--radii-sm);
+      }
+      }
 
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
           width: 8;
-          height: 8
+          height: 8;
       }
 
         .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm)
+          font-size: var(--font-sizes-sm);
       }
 
         .checkbox__control--size_md {
           width: 10;
-          height: 10
+          height: 10;
       }
 
         .checkbox__label--size_md {
-          font-size: var(--font-sizes-md)
+          font-size: var(--font-sizes-md);
       }
 
         .checkbox__control--size_lg {
           width: 12;
-          height: 12
+          height: 12;
       }
 
         .checkbox__label--size_lg {
-          font-size: var(--font-sizes-lg)
+          font-size: var(--font-sizes-lg);
       }
 
         .badge__title--size_sm {
-          padding-inline: 4
+          padding-inline: 4;
       }
 
         .badge__body--size_sm {
-          color: red
+          color: red;
       }
 
         .badge__title--raised_true {
-          box-shadow: var(--shadows-md)
-      }
-
-        @layer _base {
-          .checkbox__root {
-            display: flex;
-            align-items: center;
-            gap: 2
-      }
-
-          .checkbox__control {
-            border-width: 1px;
-            border-radius: var(--radii-sm)
-      }
-
-          .checkbox__label {
-            margin-inline-start: 2
-      }
-
-          .badge__title {
-            background: red.300;
-            border-radius: var(--radii-sm)
-      }
+          box-shadow: var(--shadows-md);
       }
       }
 
       @layer utilities {
         .text_ButtonHighlight {
-          color: ButtonHighlight
+          color: ButtonHighlight;
       }
       }",
         "results": {
