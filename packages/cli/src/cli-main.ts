@@ -139,11 +139,12 @@ export async function main() {
     .option('-c, --config <path>', 'Path to panda config file')
     .option('-w, --watch', 'Watch files and rebuild')
     .option('--minimal', 'Do not include CSS generation for theme tokens, preflight, keyframes, static and global css')
+    .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
-      const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal } = flags
+      const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal, lightningcss } = flags
 
       const cwd = resolve(flags.cwd ?? '')
 
@@ -160,6 +161,7 @@ export async function main() {
       const overrideConfig = {
         clean,
         minify,
+        lightningcss,
         optimize: true,
         ...(glob ? { include: [glob] } : undefined),
       }

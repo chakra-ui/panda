@@ -523,7 +523,7 @@ describe('atomic / with direct nesting', () => {
     `)
   })
 
-  test.only('should sort mobile first', () => {
+  test('should sort mobile first', () => {
     expect(
       css({
         '@media screen and (max-width: 640px)': {
