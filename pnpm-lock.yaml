@@ -761,6 +761,9 @@ importers:
       hookable:
         specifier: 5.5.3
         version: 5.5.3
+      lightningcss-wasm:
+        specifier: ^1.22.1
+        version: 1.22.1
       merge-anything:
         specifier: 5.1.7
         version: 5.1.7
@@ -22735,6 +22738,13 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /lightningcss-wasm@1.22.1:
+    resolution: {integrity: sha512-GzY3oTNtkPhDVt1AY0H0ZEWdcAjTOD1Y72nJlEO1JSRgA4UTUDhrklzdMhSLTyVHTpVAEfCxnD6fULBIbwgT/A==}
+    engines: {node: '>= 12.0.0'}
+    dev: false
+    bundledDependencies:
+      - napi-wasm
 
   /lightningcss-win32-x64-msvc@1.22.1:
     resolution: {integrity: sha512-4pozV4eyD0MDET41ZLHAeBo+H04Nm2UEYIk5w/ts40231dRFV7E0cjwbnZvSoc1DXFgecAhiC0L16ruv/ZDCpg==}

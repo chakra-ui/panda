@@ -72,6 +72,11 @@ export class Stylesheet {
           return this.context.layers.getLayerRoot(layer).toString()
         })
         .join('\n'),
+      {
+        minify: false,
+        lightningcss: this.context.lightningcss,
+        browserslist: this.context.browserslist,
+      },
     )
   }
 

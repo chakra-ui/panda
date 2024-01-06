@@ -15,6 +15,8 @@ export const usePandaContext = (_config: Config | null) => {
       outdir: 'styled-system',
       preflight: true,
       optimize: true,
+      // can enable it
+      // lightningcss: true,
       ..._config,
       staticCss: merge(_config?.staticCss, {
         recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],

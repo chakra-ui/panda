@@ -9928,7 +9928,7 @@ export interface ResultItem {
 	type?: "object" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
 	box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
 }
-export interface ParserResultType {
+export interface ParserResultInterface {
 	all: Array<ResultItem>;
 	jsx: Set<ResultItem>;
 	css: Set<ResultItem>;
@@ -9940,11 +9940,11 @@ export interface ParserResultType {
 	isEmpty: () => boolean;
 	toArray: () => Array<ResultItem>;
 }
-export interface ShipJson {
+export interface EncoderJson {
 	schemaVersion: string;
 	styles: {
-		atomic: string[];
-		recipes: {
+		atomic?: string[];
+		recipes?: {
 			[name: string]: string[];
 		};
 	};
@@ -10086,6 +10086,7 @@ export type Paths<T, Prefix extends string = "", Depth extends number = 0> = {
 	[K in keyof T]: Depth extends 0 ? never : T[K] extends object ? K extends string ? `${Prefix}${K}` | Paths<T[K], `${Prefix}${K}.`, Depth extends 1 ? 0 : Subtract<Depth, 1>> : never : K extends string | number ? `${Prefix}${K}` : never;
 }[keyof T];
 export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never;
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type TokenStatus = "deprecated" | "experimental" | "new";
 export interface Token<Value = any> {
 	value: Value;
@@ -10316,7 +10317,7 @@ export type RecipeCompoundSelection<T> = {
 export type RecipeCompoundVariant<T> = T & {
 	css: SystemStyleObject;
 };
-export interface RecipeDefinition<T extends RecipeVariantRecord> {
+export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
 	/**
 	 * The base styles of the recipe.
 	 */
@@ -10376,7 +10377,7 @@ export interface SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVaria
 export type SlotRecipeCompoundVariant<S extends string, T> = T & {
 	css: SlotRecord<S, SystemStyleObject>;
 };
-export interface SlotRecipeDefinition<S extends string, T extends SlotRecipeVariantRecord<S>> {
+export interface SlotRecipeDefinition<S extends string = string, T extends SlotRecipeVariantRecord<S> = SlotRecipeVariantRecord<S>> {
 	/**
 	 * The parts/slots of the recipe.
 	 */
@@ -10734,6 +10735,16 @@ export interface CssgenOptions {
 	 * @default 'object-literal'
 	 */
 	syntax?: "template-literal" | "object-literal";
+	/**
+	 * Whether to use `lightningcss` instead of `postcss` for css optimization.
+	 * @default false
+	 */
+	lightningcss?: boolean;
+	/**
+	 * Browserslist query to target specific browsers.
+	 * @see https://www.npmjs.com/package/browserslist
+	 */
+	browserslist?: string[];
 }
 export interface CodegenOptions {
 	/**
@@ -11087,7 +11098,7 @@ export interface StyleProps extends StyleResultObject {
 }
 export interface StyleEntry {
 	prop: string;
-	value: string;
+	value: string | number | boolean;
 	cond: string;
 	recipe?: string;
 	slot?: string;
@@ -11115,19 +11126,6 @@ export interface RecipeBaseResult extends GroupedResult {
 }
 export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, "hash" | "entry" | "conditions"> {
 	result: StyleResultObject;
-}
-export interface StyleCollectorType {
-	classNames: Map<string, AtomicStyleResult | RecipeBaseResult>;
-	//
-	results: {
-		atomic: Set<AtomicStyleResult>;
-		recipes: Map<string, Set<AtomicStyleResult>>;
-		recipes_base: Map<string, Set<RecipeBaseResult>>;
-	};
-	atomic: Set<AtomicStyleResult>;
-	//
-	recipes: Map<string, Set<AtomicStyleResult>>;
-	recipes_base: Map<string, Set<RecipeBaseResult>>;
 }
 
 export {};

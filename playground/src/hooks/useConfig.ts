@@ -1,6 +1,6 @@
 import { evalConfig, validateConfig, getConfigError } from '@/src/lib/config/eval-config'
 import { getImports } from '@/src/lib/config/get-imports'
-import { Config } from '@pandacss/types'
+import type { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
 import { useDebounce, useUpdateEffect } from 'usehooks-ts'
 
