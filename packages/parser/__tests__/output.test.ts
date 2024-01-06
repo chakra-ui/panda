@@ -172,10 +172,6 @@ describe('extract to css output pipeline', () => {
           --shadow: var(--colors-orange-100);
       }
 
-        [data-theme=dark] .dark\\\\:--shadow_colors\\\\.gray\\\\.800,.dark .dark\\\\:--shadow_colors\\\\.gray\\\\.800,.dark\\\\:--shadow_colors\\\\.gray\\\\.800.dark,.dark\\\\:--shadow_colors\\\\.gray\\\\.800[data-theme=dark] {
-          --shadow: var(--colors-gray-800);
-      }
-
         .shadow_0_0_0_4px_var\\\\(--shadow\\\\) {
           box-shadow: 0 0 0 4px var(--shadow);
       }
@@ -196,6 +192,10 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-2);
       }
 
+        [data-theme=dark] .dark\\\\:--shadow_colors\\\\.gray\\\\.800,.dark .dark\\\\:--shadow_colors\\\\.gray\\\\.800,.dark\\\\:--shadow_colors\\\\.gray\\\\.800.dark,.dark\\\\:--shadow_colors\\\\.gray\\\\.800[data-theme=dark] {
+          --shadow: var(--colors-gray-800);
+      }
+
         .hover\\\\:text_\\\\#2ecc71:is(:hover, [data-hover]) {
           color: #2ecc71;
       }
@@ -211,6 +211,9 @@ describe('extract to css output pipeline', () => {
           .md\\\\:m_1px {
             margin: 1px;
       }
+          .md\\\\:text_red\\\\.100 {
+            color: var(--colors-red-100);
+      }
       }
 
         @media screen and (min-width: 48em) {
@@ -218,12 +221,6 @@ describe('extract to css output pipeline', () => {
             .md\\\\:sm\\\\:m_4px {
               margin: 4px;
       }
-      }
-      }
-
-        @media screen and (min-width: 48em) {
-          .md\\\\:text_red\\\\.100 {
-            color: var(--colors-red-100);
       }
       }
 
@@ -454,19 +451,6 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-
-        .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
-          font-size: var(--font-sizes-sm);
-      }
-
-        .sizeRecipe--size_medium {
-          font-size: var(--font-sizes-md);
-      }
-
-        .bgRecipe--color_yellow {
-          background-color: var(--colors-yellow-100);
-      }
-
         @layer _base {
           .pinkRecipe {
             color: var(--colors-pink-100);
@@ -479,6 +463,18 @@ describe('extract to css output pipeline', () => {
           .blueRecipe {
             color: var(--colors-blue-100);
       }
+      }
+
+        .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+
+        .sizeRecipe--size_medium {
+          font-size: var(--font-sizes-md);
+      }
+
+        .bgRecipe--color_yellow {
+          background-color: var(--colors-yellow-100);
       }
       }
 
@@ -624,6 +620,12 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .pinkRecipe {
+            color: var(--colors-pink-100);
+      }
+      }
+
         .pinkRecipe--variant_small {
           font-size: var(--font-sizes-sm);
       }
@@ -634,12 +636,6 @@ describe('extract to css output pipeline', () => {
 
         .bgRecipe--color_yellow {
           background-color: var(--colors-yellow-100);
-      }
-
-        @layer _base {
-          .pinkRecipe {
-            color: var(--colors-pink-100);
-      }
       }
       }"
     `)
@@ -772,10 +768,6 @@ describe('extract to css output pipeline', () => {
           color: lightgreen;
       }
 
-        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
-          color: hotpink;
-      }
-
         .background_transparent {
           background: transparent;
       }
@@ -810,6 +802,10 @@ describe('extract to css output pipeline', () => {
 
         .width_11rem {
           width: 11rem;
+      }
+
+        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
+          color: hotpink;
       }
 
         .\\\\[\\\\&\\\\:hover\\\\]\\\\:filter_brightness\\\\(0\\\\.85\\\\):hover {
@@ -991,10 +987,6 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-green-100);
       }
 
-        .closed > [data-theme=dark] .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900,.closed > .dark .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900,.closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900.dark,.closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900[data-theme=dark] {
-          color: var(--colors-green-900);
-      }
-
         .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px {
           margin: -2px;
       }
@@ -1003,12 +995,16 @@ describe('extract to css output pipeline', () => {
           cursor: pointer;
       }
 
-        .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:before\\\\:content_\\\\\\"👋\\\\\\"[data-state='open']::before {
-          content: \\"👋\\";
+        .closed > [data-theme=dark] .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900,.closed > .dark .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900,.closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900.dark,.closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900[data-theme=dark] {
+          color: var(--colors-green-900);
       }
 
-        :is(.\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0) + :is(.\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0):is(:hover, [data-hover]) {
+        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:is(:hover, [data-hover]) {
           margin: var(--spacing-0);
+      }
+
+        .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:before\\\\:content_\\\\\\"👋\\\\\\"[data-state='open']::before {
+          content: \\"👋\\";
       }
       }"
     `)
@@ -1770,6 +1766,12 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .button {
+            font-size: var(--font-sizes-lg);
+      }
+      }
+
         .button--size_md {
           padding: var(--spacing-4);
           border-radius: var(--radii-md);
@@ -1787,12 +1789,6 @@ describe('extract to css output pipeline', () => {
 
         .complexButton--color_blue {
           color: var(--colors-blue-500);
-      }
-
-        @layer _base {
-          .button {
-            font-size: var(--font-sizes-lg);
-      }
       }
       }
 
@@ -2015,12 +2011,12 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em:not(:first-child) {
-          margin-block-end: 1em;
-      }
-
         .max-w_800px {
           max-width: 800px;
+      }
+
+        .\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em:not(:first-child) {
+          margin-block-end: 1em;
       }
 
         .\\\\[\\\\&_p\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mt_1em p:not(:first-child) {
@@ -2204,6 +2200,20 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -2223,20 +2233,6 @@ describe('extract to css output pipeline', () => {
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
-      }
       }
       }
 
@@ -2330,6 +2326,20 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -2349,20 +2359,6 @@ describe('extract to css output pipeline', () => {
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
-      }
       }
       }
 
@@ -2636,6 +2632,13 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .button {
+            color: var(--colors-sky-100);
+            background: var(--colors-red-900);
+      }
+      }
+
         .button--size_md {
           border-radius: var(--radii-md);
       }
@@ -2646,13 +2649,6 @@ describe('extract to css output pipeline', () => {
 
         .button--size_sm {
           border-radius: var(--radii-sm);
-      }
-
-        @layer _base {
-          .button {
-            color: var(--colors-sky-100);
-            background: var(--colors-red-900);
-      }
       }
       }
 
@@ -2740,12 +2736,6 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        .card--size_sm {
-          border-radius: var(--radii-sm);
-          padding: var(--spacing-2);
-          margin: var(--spacing-4);
-      }
-
         @layer _base {
           .card {
             color: blue;
@@ -2756,6 +2746,12 @@ describe('extract to css output pipeline', () => {
               color: red;
       }
       }
+      }
+
+        .card--size_sm {
+          border-radius: var(--radii-sm);
+          padding: var(--spacing-2);
+          margin: var(--spacing-4);
       }
       }
 
@@ -2874,9 +2870,9 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        @container (min-width: 36rem) {
-          .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.xl\\\\)\\\\)\\\\]\\\\:text_green\\\\.300 {
-            color: var(--colors-green-300);
+        @media (min-width: 42rem) {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_token\\\\(sizes\\\\.2xl\\\\)\\\\)\\\\]\\\\:text_red\\\\.300 {
+            color: var(--colors-red-300);
       }
       }
 
@@ -2886,9 +2882,9 @@ describe('extract to css output pipeline', () => {
       }
       }
 
-        @media (min-width: 42rem) {
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_token\\\\(sizes\\\\.2xl\\\\)\\\\)\\\\]\\\\:text_red\\\\.300 {
-            color: var(--colors-red-300);
+        @container (min-width: 36rem) {
+          .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.xl\\\\)\\\\)\\\\]\\\\:text_green\\\\.300 {
+            color: var(--colors-green-300);
       }
       }
       }"
@@ -2994,12 +2990,6 @@ describe('extract to css output pipeline', () => {
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
-        .textStyle--size_h1 {
-          font-size: 5rem;
-          line-height: 1em;
-          font-weight: 800;
-      }
-
         @layer _base {
           .textStyle {
             font-family: var(--fonts-mono);
@@ -3009,6 +2999,12 @@ describe('extract to css output pipeline', () => {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
       }
+      }
+
+        .textStyle--size_h1 {
+          font-size: 5rem;
+          line-height: 1em;
+          font-weight: 800;
       }
       }"
     `)
@@ -3087,15 +3083,6 @@ describe('extract to css output pipeline', () => {
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
-        .button__container--size_sm {
-          font-size: 5rem;
-          line-height: 1em;
-      }
-
-        .button__icon--size_sm {
-          font-size: 2rem;
-      }
-
         @layer _base {
           .button__container {
             font-family: var(--fonts-mono);
@@ -3104,6 +3091,15 @@ describe('extract to css output pipeline', () => {
           .button__icon {
             font-size: 1.5rem;
       }
+      }
+
+        .button__container--size_sm {
+          font-size: 5rem;
+          line-height: 1em;
+      }
+
+        .button__icon--size_sm {
+          font-size: 2rem;
       }
       }"
     `)
@@ -3313,20 +3309,20 @@ describe('extract to css output pipeline', () => {
           border-radius: var(--radii-md);
       }
 
-        [data-theme=dark] .dark\\\\:bg_\\\\#262626,.dark .dark\\\\:bg_\\\\#262626,.dark\\\\:bg_\\\\#262626.dark,.dark\\\\:bg_\\\\#262626[data-theme=dark] {
-          background: #262626;
-      }
-
-        [data-theme=dark] .dark\\\\:text_white,.dark .dark\\\\:text_white,.dark\\\\:text_white.dark,.dark\\\\:text_white[data-theme=dark] {
-          color: var(--colors-white);
-      }
-
         .font_semibold {
           font-weight: var(--font-weights-semibold);
       }
 
         .pb_2 {
           padding-bottom: var(--spacing-2);
+      }
+
+        [data-theme=dark] .dark\\\\:bg_\\\\#262626,.dark .dark\\\\:bg_\\\\#262626,.dark\\\\:bg_\\\\#262626.dark,.dark\\\\:bg_\\\\#262626[data-theme=dark] {
+          background: #262626;
+      }
+
+        [data-theme=dark] .dark\\\\:text_white,.dark .dark\\\\:text_white,.dark\\\\:text_white.dark,.dark\\\\:text_white[data-theme=dark] {
+          color: var(--colors-white);
       }
       }"
     `)

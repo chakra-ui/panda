@@ -93,21 +93,21 @@ describe('rule processor', () => {
         "bg_blue\\\\.300",
         "textStyle_headline\\\\.h1",
         "w_1",
-        "sm\\\\:w_2",
-        "xl\\\\:w_3",
         "fs_xs",
-        "sm\\\\:fs_sm",
-        "hover\\\\:fs_md",
-        "hover\\\\:md\\\\:fs_lg",
-        "hover\\\\:focus\\\\:fs_xl",
         "dark\\\\:fs_2xl",
-        "sm\\\\:text_yellow",
-        "sm\\\\:bg_red",
-        "sm\\\\:hover\\\\:bg_green",
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green",
+        "hover\\\\:fs_md",
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple",
+        "hover\\\\:focus\\\\:fs_xl",
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan",
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange",
+        "sm\\\\:w_2",
+        "sm\\\\:fs_sm",
+        "sm\\\\:text_yellow",
+        "sm\\\\:bg_red",
+        "xl\\\\:w_3",
+        "sm\\\\:hover\\\\:bg_green",
+        "hover\\\\:md\\\\:fs_lg",
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink",
       ]
     `,
@@ -115,6 +115,13 @@ describe('rule processor', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        @layer compositions {
+          .textStyle_headline\\\\.h1 {
+            font-size: 2rem;
+            font-weight: var(--font-weights-bold);
+      }
+      }
+
         .text_red\\\\! {
           color: red !important;
       }
@@ -143,8 +150,16 @@ describe('rule processor', () => {
           color: green;
       }
 
+        .hover\\\\:fs_md:is(:hover, [data-hover]) {
+          font-size: var(--font-sizes-md);
+      }
+
         .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
           color: purple;
+      }
+
+        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+          font-size: var(--font-sizes-xl);
       }
 
         .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
@@ -153,21 +168,6 @@ describe('rule processor', () => {
 
         .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]):is([open], [data-open], [data-state=\\"open\\"]) {
           color: orange;
-      }
-
-        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
-          font-size: var(--font-sizes-xl);
-      }
-
-        .hover\\\\:fs_md:is(:hover, [data-hover]) {
-          font-size: var(--font-sizes-md);
-      }
-
-        @layer compositions {
-          .textStyle_headline\\\\.h1 {
-            font-size: 2rem;
-            font-weight: var(--font-weights-bold);
-      }
       }
 
         @media screen and (min-width: 40em) {
@@ -185,6 +185,12 @@ describe('rule processor', () => {
       }
       }
 
+        @media screen and (min-width: 80em) {
+          .xl\\\\:w_3 {
+            width: var(--sizes-3);
+      }
+      }
+
         @media screen and (min-width: 40em) {
           .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
             background-color: green;
@@ -194,12 +200,6 @@ describe('rule processor', () => {
         @media screen and (min-width: 48em) {
           .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
             font-size: var(--font-sizes-lg);
-      }
-      }
-
-        @media screen and (min-width: 80em) {
-          .xl\\\\:w_3 {
-            width: var(--sizes-3);
       }
       }
 
@@ -225,10 +225,32 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
           padding: 0 0.5rem;
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\\\:buttonStyle--size_md {
+            height: 3rem;
+            min-width: 3rem;
+            padding: 0 0.75rem;
+      }
       }
 
         .buttonStyle--variant_solid {
@@ -244,28 +266,6 @@ describe('rule processor', () => {
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
-      }
-      }
-
-        @media screen and (min-width: 48em) {
-          .md\\\\:buttonStyle--size_md {
-            height: 3rem;
-            min-width: 3rem;
-            padding: 0 0.75rem;
-      }
       }
       }"
     `)
@@ -341,21 +341,28 @@ describe('rule processor', () => {
         "p_0_0\\\\.75rem",
         "bg_blue",
         "text_white",
-        "hover\\\\:bg_darkblue",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black",
         "bg_transparent",
         "border_1px_solid_blue",
         "text_blue",
-        "hover\\\\:bg_blue",
-        "hover\\\\:text_white",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black",
         "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent",
         "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray",
         "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray",
+        "hover\\\\:bg_darkblue",
+        "hover\\\\:bg_blue",
+        "hover\\\\:text_white",
       ]
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        @layer compositions {
+          .textStyle_headline\\\\.h1 {
+            font-size: 2rem;
+            font-weight: var(--font-weights-bold);
+      }
+      }
+
         .d_inline-flex {
           display: inline-flex;
       }
@@ -400,14 +407,6 @@ describe('rule processor', () => {
           color: var(--colors-white);
       }
 
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
-          background-color: gray;
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
-          color: var(--colors-black);
-      }
-
         .bg_transparent {
           background-color: var(--colors-transparent);
       }
@@ -418,6 +417,14 @@ describe('rule processor', () => {
 
         .text_blue {
           color: blue;
+      }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
+          background-color: gray;
+      }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
+          color: var(--colors-black);
       }
 
         .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
@@ -443,13 +450,6 @@ describe('rule processor', () => {
         .hover\\\\:text_white:is(:hover, [data-hover]) {
           color: var(--colors-white);
       }
-
-        @layer compositions {
-          .textStyle_headline\\\\.h1 {
-            font-size: 2rem;
-            font-weight: var(--font-weights-bold);
-      }
-      }
       }"
     `)
   })
@@ -472,17 +472,6 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
-        .checkbox__control--size_sm {
-          font-size: 2rem;
-          font-weight: var(--font-weights-bold);
-          width: var(--sizes-8);
-          height: var(--sizes-8);
-      }
-
-        .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm);
-      }
-
         @layer _base {
           .checkbox__root {
             display: flex;
@@ -498,6 +487,17 @@ describe('rule processor', () => {
           .checkbox__label {
             margin-inline-start: var(--spacing-2);
       }
+      }
+
+        .checkbox__control--size_sm {
+          font-size: 2rem;
+          font-weight: var(--font-weights-bold);
+          width: var(--sizes-8);
+          height: var(--sizes-8);
+      }
+
+        .checkbox__label--size_sm {
+          font-size: var(--font-sizes-sm);
       }
 
         @media screen and (min-width: 48em) {
@@ -649,15 +649,12 @@ describe('rule processor', () => {
         @layer _base {
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -732,15 +729,12 @@ describe('rule processor', () => {
 
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -762,6 +756,10 @@ describe('rule processor', () => {
           color: var(--colors-blue-300);
       }
 
+        .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
+          color: var(--colors-red-400);
+      }
+
         .fs_12px {
           font-size: 12px;
       }
@@ -776,10 +774,6 @@ describe('rule processor', () => {
 
         .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
           border: 2px solid var(--colors-green-100);
-      }
-
-        .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
-          color: var(--colors-red-400);
       }
       }"
     `)
@@ -821,10 +815,6 @@ describe('rule processor', () => {
 
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
-        .variant_solid {
-          variant: solid;
-      }
-
         @layer _base {
           .buttonStyle {
             display: inline-flex;
@@ -837,6 +827,10 @@ describe('rule processor', () => {
             font-size: var(--font-sizes-3xl);
             color: var(--colors-white);
       }
+      }
+
+        .variant_solid {
+          variant: solid;
       }
       }
 
@@ -880,11 +874,6 @@ describe('rule processor', () => {
     step3.decoder.collect(step3.encoder)
     expect(step3.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
-
-        .variant_solid {
-          variant: solid;
-      }
-
         @layer _base {
 
           .buttonStyle {
@@ -899,19 +888,13 @@ describe('rule processor', () => {
             color: var(--colors-white);
       }
       }
+
+        .variant_solid {
+          variant: solid;
+      }
       }
 
       @layer recipes.slots {
-
-        .checkbox__control--size_md {
-          width: var(--sizes-10);
-          height: var(--sizes-10);
-      }
-
-        .checkbox__label--size_md {
-          font-size: var(--font-sizes-md);
-      }
-
         @layer _base {
           .checkbox__root {
             display: flex;
@@ -927,6 +910,15 @@ describe('rule processor', () => {
           .checkbox__label {
             margin-inline-start: var(--spacing-2);
       }
+      }
+
+        .checkbox__control--size_md {
+          width: var(--sizes-10);
+          height: var(--sizes-10);
+      }
+
+        .checkbox__label--size_md {
+          font-size: var(--font-sizes-md);
       }
       }
 

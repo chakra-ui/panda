@@ -116,6 +116,10 @@ describe('Global css', () => {
           cursor: ew-resize !important;
       }
 
+        html.dragging-ew:is(:hover, [data-hover]) {
+          color: red;
+      }
+
         .content-dark::-webkit-scrollbar-thumb {
           background-color: var(--colors-bg, #000) !important;
           border-color: var(--colors-fg, #333) !important;
@@ -132,10 +136,6 @@ describe('Global css', () => {
 
         .color-picker .react-colorful {
           width: 100%;
-      }
-
-        html.dragging-ew:is(:hover, [data-hover]) {
-          color: red;
       }
       }"
     `)

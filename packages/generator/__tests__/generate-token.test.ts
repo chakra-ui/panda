@@ -454,6 +454,12 @@ describe('generator', () => {
           --colors-button-card-heading: #000
       }
 
+        @media (forced-colors: active) {
+          :where([data-theme=dark], .dark) {
+            --colors-complex: var(--colors-red-700)
+                  }
+              }
+
         [data-color=material] {
           --colors-surface: #m-b
       }
@@ -477,12 +483,6 @@ describe('generator', () => {
             --spacing-gutter: var(--spacing-5)
               }
           }
-
-        @media (forced-colors: active) {
-          :where([data-theme=dark], .dark) {
-            --colors-complex: var(--colors-red-700)
-                  }
-              }
       }"
     `)
   })

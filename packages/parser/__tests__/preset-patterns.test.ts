@@ -515,16 +515,16 @@ describe('preset patterns', () => {
           position: relative;
       }
 
+        .pos_static {
+          position: static;
+      }
+
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:pos_relative :where(a, abbr) {
           position: relative;
       }
 
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:z_1 :where(a, abbr) {
           z-index: 1;
-      }
-
-        .pos_static {
-          position: static;
       }
 
         .before\\\\:content_\\\\\\"\\\\\\"::before {
@@ -592,16 +592,16 @@ describe('preset patterns', () => {
           position: relative;
       }
 
+        .pos_static {
+          position: static;
+      }
+
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:pos_relative :where(a, abbr) {
           position: relative;
       }
 
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:z_1 :where(a, abbr) {
           z-index: 1;
-      }
-
-        .pos_static {
-          position: static;
       }
 
         .before\\\\:content_\\\\\\"\\\\\\"::before {
@@ -1490,6 +1490,10 @@ describe('preset patterns', () => {
           position: relative;
       }
 
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100);
+      }
+
         .before\\\\:content_\\\\\\"\\\\\\"::before {
           content: \\"\\";
       }
@@ -1540,10 +1544,6 @@ describe('preset patterns', () => {
 
         .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img,.\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
           object-fit: cover;
-      }
-
-        .text_blue\\\\.100 {
-          color: var(--colors-blue-100);
       }
       }"
     `)

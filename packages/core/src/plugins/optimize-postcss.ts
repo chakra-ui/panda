@@ -6,8 +6,6 @@ import minifySelectors from 'postcss-minify-selectors'
 import nested from 'postcss-nested'
 import normalizeWhiteSpace from 'postcss-normalize-whitespace'
 import prettify from './prettify'
-import sortCss from './sort-css'
-import sortMediaQueries from './sort-mq'
 
 interface OptimizeOptions {
   minify?: boolean
@@ -19,17 +17,15 @@ export function optimizePostCss(code: string | Container, options: OptimizeOptio
   // prettier-ignore
   const plugins = [
     nested(),
-    sortMediaQueries(),
     dedupe(),
     mergeRules(),
-    sortCss(),
     discardEmpty(),
   ]
 
   if (minify) {
     plugins.push(normalizeWhiteSpace(), minifySelectors())
   } else {
-    plugins.push(prettify())
+    plugins.push(prettify() as any)
   }
 
   const { css } = postcss(plugins).process(code)

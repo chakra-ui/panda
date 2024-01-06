@@ -6,12 +6,6 @@ describe('recipe ruleset', () => {
   test('should work with basic', () => {
     expect(processRecipe('textStyle', { size: 'h1' })).toMatchInlineSnapshot(`
       "@layer recipes {
-        .textStyle--size_h1 {
-          font-size: 5rem;
-          line-height: 1em;
-          font-weight: 800;
-      }
-
         @layer _base {
           .textStyle {
             font-family: var(--fonts-mono);
@@ -21,6 +15,12 @@ describe('recipe ruleset', () => {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
       }
+      }
+
+        .textStyle--size_h1 {
+          font-size: 5rem;
+          line-height: 1em;
+          font-weight: 800;
       }
       }"
     `)
@@ -42,12 +42,6 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('textStyle', { size: { base: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
       "@layer recipes {
-        .textStyle--size_h1 {
-          font-size: 5rem;
-          line-height: 1em;
-          font-weight: 800;
-      }
-
         @layer _base {
           .textStyle {
             font-family: var(--fonts-mono);
@@ -57,6 +51,12 @@ describe('recipe ruleset', () => {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
       }
+      }
+
+        .textStyle--size_h1 {
+          font-size: 5rem;
+          line-height: 1em;
+          font-weight: 800;
       }
 
         @media screen and (min-width: 48em) {
@@ -184,6 +184,20 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('buttonStyle', { variant: 'solid' })).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -203,26 +217,26 @@ describe('recipe ruleset', () => {
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
-      }
       }
       }"
     `)
 
     expect(processRecipe('buttonStyle', { variant: { base: 'solid', lg: 'outline' } })).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -242,20 +256,6 @@ describe('recipe ruleset', () => {
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
-      }
       }
 
         @media screen and (min-width: 64em) {

@@ -173,7 +173,7 @@ export class StyleDecoder {
     // 1. `.class { line-height: 1.2; } .class:hover { box-shadow: outline; } .class { outline: none }`
     // instead of:
     // 2. `.class { line-height: 1.2; outline: none; } .class:hover { box-shadow: outline; }`
-    const sorted = this.context.config.lightningcss ? sortStyleRules(details) : details
+    const sorted = sortStyleRules(details)
     sorted.forEach((value) => {
       if (value.conditions) {
         const path = basePath.concat(value.conditions.map((c) => c.rawValue ?? c.raw))
@@ -219,7 +219,7 @@ export class StyleDecoder {
       atomic.push(result)
     })
 
-    const sorted = this.context.config.lightningcss ? sortStyleRules(atomic) : atomic
+    const sorted = sortStyleRules(atomic)
     sorted.forEach((styleResult) => {
       this.atomic.add(styleResult)
       this.classNames.set(styleResult.className, styleResult)

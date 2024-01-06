@@ -136,6 +136,12 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
+        @media screen and (min-width: 64em) {
+          .lg\\\\:top_120px {
+            top: 120px;
+      }
+      }
+
         @media screen and (min-width: 40em) {
           [dir=rtl] .sm\\\\:rtl\\\\:top_20px {
             top: 20px;
@@ -145,12 +151,6 @@ describe('atomic / with basic style object', () => {
         @media screen and (min-width: 40em) {
           .sm\\\\:hover\\\\:top_50px:is(:hover, [data-hover]) {
             top: 50px;
-      }
-      }
-
-        @media screen and (min-width: 64em) {
-          .lg\\\\:top_120px {
-            top: 120px;
       }
       }
       }"
@@ -206,15 +206,15 @@ describe('atomic / with nesting scope', () => {
           font: sans;
       }
 
-        @media screen and (min-width: 40em) {
-          [dir=ltr] [data-theme=dark] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover]),[dir=ltr] .dark .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover]),[dir=ltr] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover]).dark,[dir=ltr] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover])[data-theme=dark] {
-            font: serif;
-      }
-      }
-
         @media screen and (min-width: 48em) {
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:left_40px > p {
             left: 40px;
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          [dir=ltr] [data-theme=dark] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover]),[dir=ltr] .dark .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover]),[dir=ltr] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover]).dark,[dir=ltr] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif > p:is(:hover, [data-hover])[data-theme=dark] {
+            font: serif;
       }
       }
       }"
@@ -518,6 +518,114 @@ describe('atomic / with direct nesting', () => {
       "@layer utilities {
         .\\\\[\\\\&_kbd\\\\]\\\\:text_red kbd {
           color: red;
+      }
+      }"
+    `)
+  })
+
+  test.only('should sort mobile first', () => {
+    expect(
+      css({
+        '@media screen and (max-width: 640px)': {
+          margin: '8',
+        },
+        '@media screen and (min-width: 980px)': {
+          margin: '3',
+        },
+        '@media screen and (max-width: 980px)': {
+          margin: '6',
+        },
+        '@supports (display: grid)': {
+          backgroundColor: 'red',
+        },
+        '@media screen and (max-width: 768px)': {
+          margin: '7',
+        },
+        '@media screen and (min-width: 640px)': {
+          margin: '1',
+        },
+        '@supports not (display: grid)': {
+          backgroundColor: 'green',
+        },
+        '@media screen and (min-width: 1280px)': {
+          margin: '4',
+        },
+        '@supports (display: flex)': {
+          backgroundColor: 'blue',
+        },
+        '@media screen and (min-width: 768px)': {
+          margin: '2',
+        },
+        '@media screen and (max-width: 1280px)': {
+          margin: '5',
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 640px) {
+          .\\\\[\\\\@media_screen_and_\\\\(min-width\\\\:_640px\\\\)\\\\]\\\\:m_1 {
+            margin: var(--spacing-1);
+      }
+      }
+
+        @media screen and (min-width: 768px) {
+          .\\\\[\\\\@media_screen_and_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:m_2 {
+            margin: var(--spacing-2);
+      }
+      }
+
+        @media screen and (min-width: 980px) {
+          .\\\\[\\\\@media_screen_and_\\\\(min-width\\\\:_980px\\\\)\\\\]\\\\:m_3 {
+            margin: var(--spacing-3);
+      }
+      }
+
+        @media screen and (min-width: 1280px) {
+          .\\\\[\\\\@media_screen_and_\\\\(min-width\\\\:_1280px\\\\)\\\\]\\\\:m_4 {
+            margin: var(--spacing-4);
+      }
+      }
+
+        @media screen and (max-width: 1280px) {
+          .\\\\[\\\\@media_screen_and_\\\\(max-width\\\\:_1280px\\\\)\\\\]\\\\:m_5 {
+            margin: var(--spacing-5);
+      }
+      }
+
+        @media screen and (max-width: 980px) {
+          .\\\\[\\\\@media_screen_and_\\\\(max-width\\\\:_980px\\\\)\\\\]\\\\:m_6 {
+            margin: var(--spacing-6);
+      }
+      }
+
+        @media screen and (max-width: 768px) {
+          .\\\\[\\\\@media_screen_and_\\\\(max-width\\\\:_768px\\\\)\\\\]\\\\:m_7 {
+            margin: var(--spacing-7);
+      }
+      }
+
+        @media screen and (max-width: 640px) {
+          .\\\\[\\\\@media_screen_and_\\\\(max-width\\\\:_640px\\\\)\\\\]\\\\:m_8 {
+            margin: var(--spacing-8);
+      }
+      }
+
+        @supports (display: flex) {
+          .\\\\[\\\\@supports_\\\\(display\\\\:_flex\\\\)\\\\]\\\\:bg_blue {
+            background-color: blue;
+      }
+      }
+
+        @supports (display: grid) {
+          .\\\\[\\\\@supports_\\\\(display\\\\:_grid\\\\)\\\\]\\\\:bg_red {
+            background-color: red;
+      }
+      }
+
+        @supports not (display: grid) {
+          .\\\\[\\\\@supports_not_\\\\(display\\\\:_grid\\\\)\\\\]\\\\:bg_green {
+            background-color: green;
+      }
       }
       }"
     `)

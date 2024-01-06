@@ -114,6 +114,20 @@ describe('{fn}.raw', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -131,28 +145,14 @@ describe('{fn}.raw', () => {
           font-size: var(--font-sizes-2xl);
       }
 
-        .buttonStyle--size_sm {
-          height: 2.5rem;
-          min-width: 2.5rem;
-          padding: 0 0.5rem;
-      }
-
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
-      }
+        .buttonStyle--size_sm {
+          height: 2.5rem;
+          min-width: 2.5rem;
+          padding: 0 0.5rem;
       }
       }
 

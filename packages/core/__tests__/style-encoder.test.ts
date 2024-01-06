@@ -459,15 +459,12 @@ describe('style encoder', () => {
         @layer _base {
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -578,13 +575,13 @@ describe('style encoder', () => {
     expect(result.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
+          .navbar[data-part=\\"blur\\"] {
+            box-shadow: 0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06);
+      }
+
           [data-theme=dark] .navbar[data-part=\\"blur\\"],.dark .navbar[data-part=\\"blur\\"],.navbar[data-part=\\"blur\\"].dark,.navbar[data-part=\\"blur\\"][data-theme=dark] {
             background: dark;
             box-shadow: 0 -1px 0 rgba(255,255,255,.1) inset;
-      }
-
-          .navbar[data-part=\\"blur\\"] {
-            box-shadow: 0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06);
       }
 
           @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {

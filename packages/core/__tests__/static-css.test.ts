@@ -71,6 +71,24 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+
+          [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red;
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -88,32 +106,14 @@ describe('static-css', () => {
           font-size: var(--font-sizes-2xl);
       }
 
-        .buttonStyle--size_sm {
-          height: 2.5rem;
-          min-width: 2.5rem;
-          padding: 0 0.5rem;
-      }
-
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
-            color: red;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: white;
-      }
+        .buttonStyle--size_sm {
+          height: 2.5rem;
+          min-width: 2.5rem;
+          padding: 0 0.5rem;
       }
 
         @media screen and (min-width: 40em) {
@@ -121,11 +121,6 @@ describe('static-css', () => {
             height: 2.5rem;
             min-width: 2.5rem;
             padding: 0 0.5rem;
-      }
-          .sm\\\\:buttonStyle--size_md {
-            height: 3rem;
-            min-width: 3rem;
-            padding: 0 0.75rem;
       }
       }
 
@@ -135,6 +130,17 @@ describe('static-css', () => {
             min-width: 2.5rem;
             padding: 0 0.5rem;
       }
+      }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:buttonStyle--size_md {
+            height: 3rem;
+            min-width: 3rem;
+            padding: 0 0.75rem;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
           .md\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
@@ -164,19 +170,35 @@ describe('static-css', () => {
           padding: 60px;
       }
 
-        .text_red\\\\.200,[data-theme=light] .light\\\\:text_red\\\\.200,.light .light\\\\:text_red\\\\.200,.light\\\\:text_red\\\\.200.light,.light\\\\:text_red\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_red\\\\.200,.dark .dark\\\\:text_red\\\\.200,.dark\\\\:text_red\\\\.200.dark,.dark\\\\:text_red\\\\.200[data-theme=dark] {
+        .text_red\\\\.200 {
           color: var(--colors-red-200);
       }
 
-        .text_blue\\\\.200,[data-theme=light] .light\\\\:text_blue\\\\.200,.light .light\\\\:text_blue\\\\.200,.light\\\\:text_blue\\\\.200.light,.light\\\\:text_blue\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_blue\\\\.200,.dark .dark\\\\:text_blue\\\\.200,.dark\\\\:text_blue\\\\.200.dark,.dark\\\\:text_blue\\\\.200[data-theme=dark] {
+        .text_blue\\\\.200 {
           color: var(--colors-blue-200);
       }
 
-        .text_green\\\\.200,[data-theme=light] .light\\\\:text_green\\\\.200,.light .light\\\\:text_green\\\\.200,.light\\\\:text_green\\\\.200.light,.light\\\\:text_green\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_green\\\\.200,.dark .dark\\\\:text_green\\\\.200,.dark\\\\:text_green\\\\.200.dark,.dark\\\\:text_green\\\\.200[data-theme=dark] {
+        .text_green\\\\.200 {
           color: var(--colors-green-200);
       }
 
-        .text_colorPalette\\\\.200,[data-theme=light] .light\\\\:text_colorPalette\\\\.200,.light .light\\\\:text_colorPalette\\\\.200,.light\\\\:text_colorPalette\\\\.200.light,.light\\\\:text_colorPalette\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_colorPalette\\\\.200,.dark .dark\\\\:text_colorPalette\\\\.200,.dark\\\\:text_colorPalette\\\\.200.dark,.dark\\\\:text_colorPalette\\\\.200[data-theme=dark] {
+        .text_colorPalette\\\\.200 {
+          color: var(--colors-color-palette-200);
+      }
+
+        [data-theme=light] .light\\\\:text_red\\\\.200,.light .light\\\\:text_red\\\\.200,.light\\\\:text_red\\\\.200.light,.light\\\\:text_red\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_red\\\\.200,.dark .dark\\\\:text_red\\\\.200,.dark\\\\:text_red\\\\.200.dark,.dark\\\\:text_red\\\\.200[data-theme=dark] {
+          color: var(--colors-red-200);
+      }
+
+        [data-theme=light] .light\\\\:text_blue\\\\.200,.light .light\\\\:text_blue\\\\.200,.light\\\\:text_blue\\\\.200.light,.light\\\\:text_blue\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_blue\\\\.200,.dark .dark\\\\:text_blue\\\\.200,.dark\\\\:text_blue\\\\.200.dark,.dark\\\\:text_blue\\\\.200[data-theme=dark] {
+          color: var(--colors-blue-200);
+      }
+
+        [data-theme=light] .light\\\\:text_green\\\\.200,.light .light\\\\:text_green\\\\.200,.light\\\\:text_green\\\\.200.light,.light\\\\:text_green\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_green\\\\.200,.dark .dark\\\\:text_green\\\\.200,.dark\\\\:text_green\\\\.200.dark,.dark\\\\:text_green\\\\.200[data-theme=dark] {
+          color: var(--colors-green-200);
+      }
+
+        [data-theme=light] .light\\\\:text_colorPalette\\\\.200,.light .light\\\\:text_colorPalette\\\\.200,.light\\\\:text_colorPalette\\\\.200.light,.light\\\\:text_colorPalette\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_colorPalette\\\\.200,.dark .dark\\\\:text_colorPalette\\\\.200,.dark\\\\:text_colorPalette\\\\.200.dark,.dark\\\\:text_colorPalette\\\\.200[data-theme=dark] {
           color: var(--colors-color-palette-200);
       }
 
@@ -335,6 +357,20 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -350,6 +386,10 @@ describe('static-css', () => {
           background-color: gray;
           color: black;
           font-size: var(--font-sizes-2xl);
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
       }
 
         .buttonStyle--size_sm {
@@ -370,27 +410,9 @@ describe('static-css', () => {
           color: gray;
       }
 
-        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue;
-      }
-
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
           background-color: blue;
           color: white;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: white;
-      }
       }
       }",
         "results": {
@@ -657,6 +679,20 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -676,20 +712,6 @@ describe('static-css', () => {
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: white;
-      }
       }
 
         @media screen and (min-width: 48em) {
@@ -731,6 +753,23 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes.slots {
+        @layer _base {
+          .checkbox__root {
+            display: flex;
+            align-items: center;
+            gap: 2;
+      }
+
+          .checkbox__control {
+            border-width: 1px;
+            border-radius: var(--radii-sm);
+      }
+
+          .checkbox__label {
+            margin-inline-start: 2;
+      }
+      }
+
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
@@ -749,23 +788,6 @@ describe('static-css', () => {
 
         .checkbox__label--size_lg {
           font-size: var(--font-sizes-lg);
-      }
-
-        @layer _base {
-          .checkbox__root {
-            display: flex;
-            align-items: center;
-            gap: 2;
-      }
-
-          .checkbox__control {
-            border-width: 1px;
-            border-radius: var(--radii-sm);
-      }
-
-          .checkbox__label {
-            margin-inline-start: 2;
-      }
       }
 
         @media screen and (min-width: 64em) {
@@ -823,58 +845,6 @@ describe('static-css', () => {
         "css": "@layer utilities {
         .pos_relative {
           position: relative;
-      }
-
-        .before\\\\:content_\\\\\\"\\\\\\"::before {
-          content: \\"\\";
-      }
-
-        .before\\\\:d_block::before {
-          display: block;
-      }
-
-        .before\\\\:h_0::before {
-          height: 0;
-      }
-
-        .before\\\\:pb_NaN\\\\%::before {
-          padding-bottom: NaN%;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
-          display: flex;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
-          justify-content: center;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
-          align-items: center;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
-          overflow: hidden;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
-          position: absolute;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
-          inset: 0;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
-          width: 100%;
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
-          height: 100%;
-      }
-
-        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img,.\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
-          object-fit: cover;
       }
 
         .self_stretch {
@@ -1151,6 +1121,58 @@ describe('static-css', () => {
 
         .inset-b_50\\\\% {
           inset-block-end: 50%;
+      }
+
+        .before\\\\:content_\\\\\\"\\\\\\"::before {
+          content: \\"\\";
+      }
+
+        .before\\\\:d_block::before {
+          display: block;
+      }
+
+        .before\\\\:h_0::before {
+          height: 0;
+      }
+
+        .before\\\\:pb_NaN\\\\%::before {
+          padding-bottom: NaN%;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
+          display: flex;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
+          justify-content: center;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
+          align-items: center;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
+          overflow: hidden;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
+          position: absolute;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
+          inset: 0;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
+          width: 100%;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
+          height: 100%;
+      }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img,.\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
+          object-fit: cover;
       }
 
         @media screen and (min-width: 48em) {
