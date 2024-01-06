@@ -1,5 +1,25 @@
 # @pandacss/parser
 
+## 0.25.0
+
+### Patch Changes
+
+- de282f60: Fix issue where `base` doesn't work within css function
+
+  ```jsx
+  css({
+    // This didn't work, but now it does
+    base: { color: 'blue' },
+  })
+  ```
+
+- Updated dependencies [59fd291c]
+  - @pandacss/types@0.25.0
+  - @pandacss/config@0.25.0
+  - @pandacss/extractor@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
 ## 0.24.2
 
 ### Patch Changes
