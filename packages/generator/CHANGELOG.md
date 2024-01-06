@@ -1,5 +1,20 @@
 # @pandacss/generator
 
+## 0.25.0
+
+### Patch Changes
+
+- 59fd291c: Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+- Updated dependencies [59fd291c]
+- Updated dependencies [de282f60]
+- Updated dependencies [de282f60]
+  - @pandacss/types@0.25.0
+  - @pandacss/core@0.25.0
+  - @pandacss/token-dictionary@0.25.0
+  - @pandacss/is-valid-prop@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
 ## 0.24.2
 
 ### Patch Changes
