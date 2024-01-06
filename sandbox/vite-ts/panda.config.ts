@@ -11,7 +11,6 @@ const someRecipe = defineRecipe({
 
 export default defineConfig({
   preflight: true,
-  strictTokens: true,
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
   outdir: 'styled-system',
