@@ -10,6 +10,12 @@ interface InputOptions {
   cwd?: string
 }
 
+export type WatcherEventType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
+
+export interface WatchOptions extends InputOptions {
+  poll?: boolean
+}
+
 interface FileSystem {
   readDirSync(dir: string): string[]
   existsSync(fileLike: string): boolean
@@ -20,12 +26,13 @@ interface FileSystem {
   rmFileSync(file: string): void
   ensureDirSync(dirPath: string): void
   writeFileSync(filePath: string, content: string): void
-  watch(options: InputOptions & { poll?: boolean }): Watcher
+  watch(options: WatchOptions): Watcher
 }
 
 interface Path {
   join(...paths: string[]): string
   dirname(path: string): string
+  resolve(...paths: string[]): string
   extname(path: string): string
   relative(from: string, to: string): string
   isAbsolute(path: string): boolean

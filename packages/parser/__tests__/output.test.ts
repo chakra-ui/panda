@@ -2,6 +2,52 @@ import { describe, expect, test } from 'vitest'
 import { parseAndExtract } from './fixture'
 
 describe('extract to css output pipeline', () => {
+  test('css with base', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({
+      base: { color: "blue" },
+      md: { color: "red" }
+    })
+    `
+
+    const result = parseAndExtract(code)
+
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "color": "blue",
+              },
+              "md": {
+                "color": "red",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue {
+          color: blue;
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\\\:text_red {
+            color: red;
+      }
+      }
+      }"
+    `)
+  })
+
   test('basic usage', () => {
     const code = `
       import { styled } from "styled-system/jsx"
@@ -2943,12 +2989,11 @@ describe('extract to css output pipeline', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
-
         .textStyle--size_h1 {
           font-size: 5rem;
           line-height: 1em;
@@ -2956,7 +3001,6 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
-
           .textStyle {
             font-family: var(--fonts-mono);
       }
@@ -2980,13 +3024,12 @@ describe('extract to css output pipeline', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
-    const css = ctx.getCss()
+    ctx.appendCssOfType('static', sheet)
+    const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-
           [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
             color: red;
       }
@@ -3039,12 +3082,11 @@ describe('extract to css output pipeline', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
-
         .button__container--size_sm {
           font-size: 5rem;
           line-height: 1em;
@@ -3055,7 +3097,6 @@ describe('extract to css output pipeline', () => {
       }
 
         @layer _base {
-
           .button__container {
             font-family: var(--fonts-mono);
       }

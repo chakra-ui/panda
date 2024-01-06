@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/dev",
-  "version": "0.23.0",
+  "version": "0.24.2",
   "description": "The user facing package for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -67,8 +67,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "cac": "6.7.14",
-    "pathe": "1.1.1",
-    "perfect-debounce": "^1.0.0"
+    "pathe": "1.1.1"
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.8",

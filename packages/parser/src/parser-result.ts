@@ -30,7 +30,7 @@ export class ParserResult implements ParserResultInterface {
 
     const encoder = this.encoder
     if (name == 'css') {
-      result.data.forEach((obj) => encoder.processStyleProps(obj))
+      result.data.forEach((obj) => encoder.processAtomic(obj))
       return
     }
 

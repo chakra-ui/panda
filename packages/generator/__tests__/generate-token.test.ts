@@ -7,7 +7,7 @@ import { fixtureDefaults } from '@pandacss/fixture'
 const tokenCss = (config: ConfigResultWithHooks) => {
   const ctx = new Generator(config)
   const sheet = ctx.createSheet()
-  ctx.appendCss('tokens', sheet)
+  ctx.appendCssOfType('tokens', sheet)
   return sheet.toCss({ optimize: true })
 }
 

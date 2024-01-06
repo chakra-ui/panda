@@ -9966,7 +9966,7 @@ export interface PandaHooks {
 	/**
 	 * Called after the file styles are extracted and processed into the resulting ParserResult object.
 	 */
-	"parser:after": (file: string, result: ParserResultType | undefined) => void;
+	"parser:after": (file: string, result: ParserResultInterface | undefined) => void;
 	/**
 	 * Called after the extracted ParserResult has been transformed to a CSS string
 	 */
@@ -11017,6 +11017,7 @@ export interface ArtifactContent {
 	code: string | undefined;
 }
 export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-patterns-index" | "css-index" | "reset.css" | "global.css" | "static.css" | "package.json" | "styles.css" | (string & {});
+export type CssArtifactType = "preflight" | "tokens" | "static" | "global" | "keyframes";
 export type Artifact = Nullable<{
 	id: ArtifactId;
 	dir?: string[];
@@ -11046,6 +11047,10 @@ export interface InputOptions {
 	exclude?: string[];
 	cwd?: string;
 }
+export type WatcherEventType = "add" | "addDir" | "change" | "unlink" | "unlinkDir";
+export interface WatchOptions extends InputOptions {
+	poll?: boolean;
+}
 export interface FileSystem {
 	readDirSync(dir: string): string[];
 	existsSync(fileLike: string): boolean;
@@ -11056,13 +11061,12 @@ export interface FileSystem {
 	rmFileSync(file: string): void;
 	ensureDirSync(dirPath: string): void;
 	writeFileSync(filePath: string, content: string): void;
-	watch(options: InputOptions & {
-		poll?: boolean;
-	}): Watcher;
+	watch(options: WatchOptions): Watcher;
 }
 export interface Path {
 	join(...paths: string[]): string;
 	dirname(path: string): string;
+	resolve(...paths: string[]): string;
 	extname(path: string): string;
 	relative(from: string, to: string): string;
 	isAbsolute(path: string): boolean;

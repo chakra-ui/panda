@@ -6,7 +6,7 @@ describe('config.importMap', () => {
     const code = `
         import { css } from "../styled-system/css";
         import { container } from "../styled-system/patterns";
-    
+
         export default function App() {
           return (
             <div
@@ -33,7 +33,7 @@ describe('config.importMap', () => {
             </div>
           );
         }
-    
+
          `
     const result = parseAndExtract(
       code,

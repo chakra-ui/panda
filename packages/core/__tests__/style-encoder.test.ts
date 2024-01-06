@@ -1,46 +1,82 @@
-import { describe, expect, test } from 'vitest'
-import { createRuleProcessor } from './fixture'
-import type { Dict, SystemStyleObject } from '@pandacss/types'
 import { createGeneratorContext } from '@pandacss/fixture'
+import type { Dict, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
+import { describe, expect, test, vi } from 'vitest'
 import { createAnatomy } from './create-anatomy'
+import { createRuleProcessor } from './fixture'
 
-// ???
+/* -----------------------------------------------------------------------------
+ * Test Setup
+ * -----------------------------------------------------------------------------*/
+
 const css = (styles: Dict) => {
   const ctx = createGeneratorContext()
   ctx.encoder.processAtomic(styles)
   return ctx.encoder.atomic
 }
 
-// ???
 const recipe = (name: string, styles: Dict) => {
   const ctx = createGeneratorContext()
-  const recipeConfig = ctx.recipes.getConfig(name)
-  if (!recipeConfig) throw new Error(`Recipe ${name} not found`)
-
   ctx.encoder.processRecipe(name, styles)
-  if ('slots' in recipeConfig) {
-    const base = {} as Dict
-    recipeConfig.slots.map((slot) => {
-      const recipeKey = ctx.recipes.getSlotKey(name, slot)
-      base[slot] = ctx.encoder.recipes_base.get(recipeKey)!
-    })
-    return { base, variants: ctx.encoder.recipes.get(name)! }
-  }
-
-  return { base: ctx.encoder.recipes_base.get(name)!, variants: ctx.encoder.recipes.get(name)! }
+  return ctx.encoder.getRecipeHash(name)
 }
 
 const cva = (styles: Dict) => {
   const ctx = createGeneratorContext()
-  if ('slots' in styles) {
-    ctx.encoder.processAtomicSlotRecipe(styles)
-  }
-
   ctx.encoder.processAtomicRecipe(styles)
   return ctx.encoder.atomic
 }
 
-describe('hash factory', () => {
+const sva = (styles: SlotRecipeDefinition) => {
+  const ctx = createGeneratorContext()
+  ctx.encoder.processAtomicSlotRecipe(styles)
+  return ctx.encoder.atomic
+}
+
+/* -----------------------------------------------------------------------------
+ * Actual Tests
+ * -----------------------------------------------------------------------------*/
+
+vi.mock('../package.json', () => {
+  return { version: 'x.x.x' }
+})
+
+describe('style encoder', () => {
+  test('simple', () => {
+    const result = css({
+      mt: {
+        base: 'xs',
+        _hover: { _dark: '40px' },
+        md: '50px',
+      },
+      _dark: {
+        mt: 5,
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        "marginTop]___[value:xs",
+        "marginTop]___[value:40px]___[cond:_hover<___>_dark",
+        "marginTop]___[value:50px]___[cond:md",
+        "marginTop]___[value:5]___[cond:_dark",
+      }
+    `)
+  })
+
+  test('css with base', () => {
+    const result = css({
+      base: { color: 'blue' },
+      md: { color: 'red' },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        "color]___[value:blue",
+        "color]___[value:red]___[cond:md",
+      }
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',
@@ -72,8 +108,8 @@ describe('hash factory', () => {
           '.target &': {
             color: {
               base: 'cyan',
-              _opened: 'orange',
-              _xl: 'pink',
+              _open: 'orange',
+              xl: 'pink',
             },
           },
         },
@@ -102,8 +138,8 @@ describe('hash factory', () => {
         "color]___[value:green]___[cond:&[data-attr='test']",
         "color]___[value:purple]___[cond:&[data-attr='test']<___>_expanded",
         "color]___[value:cyan]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
-        "_opened]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
-        "_xl]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
+        "color]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>_open",
+        "color]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>xl",
       }
     `,
     )
@@ -114,6 +150,7 @@ describe('hash factory', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
+        "atomic": Set {},
         "base": Set {
           "display]___[value:inline-flex]___[recipe:buttonStyle",
           "alignItems]___[value:center]___[recipe:buttonStyle",
@@ -245,7 +282,7 @@ describe('hash factory', () => {
 
   test('sva', () => {
     // packages/fixture/src/slot-recipes.ts
-    const checkbox = cva({
+    const checkbox = sva({
       slots: ['root', 'control', 'label'],
       base: {
         root: { display: 'flex', alignItems: 'center', gap: '2' },
@@ -290,6 +327,71 @@ describe('hash factory', () => {
         "fontSize]___[value:sm",
         "fontSize]___[value:md",
         "fontSize]___[value:lg",
+      }
+    `)
+  })
+
+  test('sva + compound variants', () => {
+    const badge = sva({
+      slots: ['title', 'body'],
+      base: {
+        title: { bg: 'red.300', rounded: 'sm' },
+      },
+      variants: {
+        size: {
+          sm: {
+            title: { px: '4' },
+            body: { color: 'red' },
+          },
+        },
+        raised: {
+          true: {
+            title: { shadow: 'md' },
+          },
+        },
+      },
+      compoundVariants: [
+        {
+          raised: true,
+          size: 'sm',
+          css: {
+            title: { color: 'ButtonHighlight' },
+          },
+        },
+      ],
+    })
+
+    expect(badge).toMatchInlineSnapshot(`
+      Set {
+        "background]___[value:red.300",
+        "borderRadius]___[value:sm",
+        "paddingInline]___[value:4",
+        "boxShadow]___[value:md",
+        "color]___[value:ButtonHighlight",
+        "color]___[value:red",
+      }
+    `)
+  })
+
+  test('recipe + compound variants', () => {
+    const badge = recipe('badge', { size: 'sm', raised: true })
+
+    expect(badge).toMatchInlineSnapshot(`
+      {
+        "atomic": Set {
+          "color]___[value:ButtonHighlight",
+        },
+        "base": {
+          "body": undefined,
+          "title": Set {
+            "background]___[value:red.300]___[recipe:badge]___[slot:title",
+            "borderRadius]___[value:sm]___[recipe:badge]___[slot:title",
+          },
+        },
+        "variants": Set {
+          "size]___[value:sm]___[recipe:badge",
+          "raised]___[value:true]___[recipe:badge",
+        },
       }
     `)
   })
@@ -502,17 +604,24 @@ describe('hash factory', () => {
 
   test('fromJSON', () => {
     const ctx = createGeneratorContext()
-    const hf = ctx.encoder
-    hf.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
-    expect(hf.atomic).toMatchInlineSnapshot(`
+    const encoder = ctx.encoder
+
+    encoder.fromJSON({
+      schemaVersion: 'x',
+      styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] },
+    })
+    expect(encoder.atomic).toMatchInlineSnapshot(`
       Set {
         "color]___[value:red",
         "color]___[value:blue",
       }
     `)
 
-    hf.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
-    expect(hf.recipes).toMatchInlineSnapshot(`
+    encoder.fromJSON({
+      schemaVersion: 'x',
+      styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } },
+    })
+    expect(encoder.recipes).toMatchInlineSnapshot(`
       Map {
         "buttonStyle" => Set {
           "variant]___[value:solid",
@@ -520,7 +629,7 @@ describe('hash factory', () => {
       }
     `)
 
-    expect(hf.recipes_base).toMatchInlineSnapshot(`
+    expect(encoder.recipes_base).toMatchInlineSnapshot(`
       Map {
         "buttonStyle" => Set {
           "display]___[value:inline-flex]___[recipe:buttonStyle",
@@ -534,29 +643,28 @@ describe('hash factory', () => {
     `)
 
     expect(
-      hf.clone().fromJSON(
-        JSON.stringify({
-          styles: {
-            atomic: [
-              'display]___[value:none',
-              'height]___[value:100%',
-              'transition]___[value:all .3s ease-in-out',
-              'opacity]___[value:0 !important',
-              'opacity]___[value:1',
-              'height]___[value:10px',
-              'backgroundGradient]___[value:to-b',
-              'gradientFrom]___[value:rgb(200 200 200 / .4)',
+      encoder.clone().fromJSON({
+        schemaVersion: 'x',
+        styles: {
+          atomic: [
+            'display]___[value:none',
+            'height]___[value:100%',
+            'transition]___[value:all .3s ease-in-out',
+            'opacity]___[value:0 !important',
+            'opacity]___[value:1',
+            'height]___[value:10px',
+            'backgroundGradient]___[value:to-b',
+            'gradientFrom]___[value:rgb(200 200 200 / .4)',
+          ],
+          recipes: {
+            checkbox: [
+              'size]___[value:md]___[recipe:checkbox]___[slot:container',
+              'size]___[value:md]___[recipe:checkbox]___[slot:control',
+              'size]___[value:md]___[recipe:checkbox]___[slot:label',
             ],
-            recipes: {
-              checkbox: [
-                'size]___[value:md]___[recipe:checkbox]___[slot:container',
-                'size]___[value:md]___[recipe:checkbox]___[slot:control',
-                'size]___[value:md]___[recipe:checkbox]___[slot:label',
-              ],
-            },
           },
-        }),
-      ).results,
+        },
+      }).results,
     ).toMatchInlineSnapshot(`
       {
         "atomic": Set {
@@ -578,18 +686,56 @@ describe('hash factory', () => {
         },
         "recipes_base": Map {
           "checkbox__root" => Set {
-            "display]___[value:flex]___[recipe:checkbox",
-            "alignItems]___[value:center]___[recipe:checkbox",
-            "gap]___[value:2]___[recipe:checkbox",
+            "display]___[value:flex]___[recipe:checkbox]___[slot:root",
+            "alignItems]___[value:center]___[recipe:checkbox]___[slot:root",
+            "gap]___[value:2]___[recipe:checkbox]___[slot:root",
           },
           "checkbox__control" => Set {
-            "borderWidth]___[value:1px]___[recipe:checkbox",
-            "borderRadius]___[value:sm]___[recipe:checkbox",
+            "borderWidth]___[value:1px]___[recipe:checkbox]___[slot:control",
+            "borderRadius]___[value:sm]___[recipe:checkbox]___[slot:control",
           },
           "checkbox__label" => Set {
-            "marginInlineStart]___[value:2]___[recipe:checkbox",
+            "marginInlineStart]___[value:2]___[recipe:checkbox]___[slot:label",
           },
         },
+      }
+    `)
+  })
+
+  test('fromJSON <> toJSON', () => {
+    const ctx = createGeneratorContext()
+    ctx.encoder.processAtomic({ color: 'red', bg: 'blue' })
+
+    const encoder = ctx.encoder.clone()
+    const result = encoder.fromJSON(ctx.encoder.toJSON())
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "schemaVersion": "x.x.x",
+        "styles": {
+          "atomic": [
+            "color]___[value:red",
+            "background]___[value:blue",
+          ],
+          "recipes": {},
+        },
+      }
+    `)
+
+    expect(encoder.atomic).toMatchInlineSnapshot(`
+      Set {
+        "color]___[value:red",
+        "background]___[value:blue",
+      }
+    `)
+  })
+
+  test('css - boolean utility', () => {
+    const result = css({ truncate: false })
+
+    expect(result).toMatchInlineSnapshot(`
+      Set {
+        "truncate]___[value:false",
       }
     `)
   })

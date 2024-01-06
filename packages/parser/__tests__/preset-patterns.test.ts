@@ -1647,12 +1647,11 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-
         .pos_relative {
           position: relative;
       }
@@ -1731,12 +1730,11 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-
         .pos_relative {
           position: relative;
       }
@@ -1852,12 +1850,11 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-
         .self_stretch {
           align-self: stretch;
       }
@@ -1892,12 +1889,11 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-
         .d_flex {
           display: flex;
       }
@@ -1956,12 +1952,11 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-
         .\\\\--bleed-x_spacing\\\\.0 {
           --bleed-x: var(--spacing-0);
       }
@@ -2268,12 +2263,11 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-
         .\\\\--thickness_1px {
           --thickness: 1px;
       }
@@ -2532,12 +2526,11 @@ describe('staticCss', () => {
     })
 
     const sheet = ctx.createSheet()
-    ctx.appendCss('static', sheet)
+    ctx.appendCssOfType('static', sheet)
     const css = ctx.getCss(sheet)
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-
         .d_inline-flex {
           display: inline-flex;
       }

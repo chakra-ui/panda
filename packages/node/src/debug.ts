@@ -2,7 +2,13 @@ import { colors, logger } from '@pandacss/logger'
 import type { PandaContext } from './create-context'
 import { parse } from 'pathe'
 
-export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean; onlyConfig?: boolean }) {
+export interface DebugOptions {
+  outdir: string
+  dry: boolean
+  onlyConfig?: boolean
+}
+
+export async function debug(ctx: PandaContext, options: DebugOptions) {
   const files = ctx.getFiles()
   const measureTotal = logger.time.debug(`Done parsing ${files.length} files`)
 
@@ -32,7 +38,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
     const result = ctx.project.parseSourceFile(file, encoder)
 
     measure()
-    if (!result || encoder.isEmpty()) return
+    if (!result || result.isEmpty() || encoder.isEmpty()) return
 
     const styles = ctx.decoder.clone().collect(encoder)
     const css = ctx.getParserCss(styles, file)

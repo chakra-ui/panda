@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest'
 const keyframes = () => {
   const ctx = createGeneratorContext()
   const sheet = ctx.createSheet()
-  ctx.appendCss('keyframes', sheet)
+  ctx.appendCssOfType('keyframes', sheet)
   return sheet.toCss({ optimize: true })
 }
 

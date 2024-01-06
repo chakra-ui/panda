@@ -1,19 +1,21 @@
 import { esc, getOrCreateSet, isImportant, markImportant, toHash, withoutImportant } from '@pandacss/shared'
 import type {
   AtomicStyleResult,
+  Dict,
   GroupedResult,
   GroupedStyleResultDetails,
   RecipeBaseResult,
-  StyleDecoderInterface,
   StyleEntry,
   StyleResultObject,
 } from '@pandacss/types'
 import type { CoreContext } from './core-context'
 import { deepSet } from './deep-set'
-import { StyleEncoder } from './style-encoder'
 import { sortStyleRules } from './sort-style-rules'
+import { StyleEncoder } from './style-encoder'
 
-export class StyleDecoder implements StyleDecoderInterface {
+import { Recipes } from './recipes'
+
+export class StyleDecoder {
   constructor(private context: CoreContext) {}
 
   classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
@@ -26,11 +28,11 @@ export class StyleDecoder implements StyleDecoderInterface {
   recipes = new Map<string, Set<AtomicStyleResult>>()
   recipes_base = new Map<string, Set<RecipeBaseResult>>()
 
-  clone() {
+  clone = () => {
     return new StyleDecoder(this.context)
   }
 
-  isEmpty() {
+  isEmpty = () => {
     return !this.atomic.size && !this.recipes.size && !this.recipes_base.size
   }
 
@@ -59,20 +61,18 @@ export class StyleDecoder implements StyleDecoderInterface {
     return esc(result)
   }
 
-  private getAtomic(hash: string) {
-    const cached = this.atomic_cache.get(hash)
-    if (cached) return cached
-
+  private getRecipeName = (hash: string) => {
     const entry = getEntryFromHash(hash)
+    if (!entry.recipe) return
+    return entry.slot ? this.context.recipes.getSlotKey(entry.recipe, entry.slot) : entry.recipe
+  }
 
-    const recipeName = entry.recipe
-      ? entry.slot
-        ? this.context.recipes.getSlotKey(entry.recipe, entry.slot)
-        : entry.recipe
-      : undefined
+  private getTransformResult = (hash: string) => {
+    const entry = getEntryFromHash(hash)
+    const recipeName = this.getRecipeName(hash)
 
     const transform = recipeName ? this.context.recipes.getTransform(recipeName) : this.context.utility.transform
-    const transformed = transform(entry.prop, withoutImportant(entry.value))
+    const transformed = transform(entry.prop, withoutImportant(entry.value) as string)
 
     if (!transformed.className) {
       return
@@ -85,9 +85,30 @@ export class StyleDecoder implements StyleDecoderInterface {
     const className = this.formatSelector(parts, transformed.className)
     const classSelector = important ? `.${className}\\!` : `.${className}`
 
+    return {
+      className,
+      classSelector,
+      styles,
+      transformed,
+      parts,
+    }
+  }
+
+  private getAtomic = (hash: string) => {
+    const cached = this.atomic_cache.get(hash)
+    if (cached) return cached
+
+    const entry = getEntryFromHash(hash)
+
+    const transformResult = this.getTransformResult(hash)
+    if (!transformResult) return
+
+    const { className, classSelector, styles, transformed, parts } = transformResult
+
     const basePath = [classSelector]
 
-    const obj = {} as StyleResultObject
+    const obj: StyleResultObject = Object.create(null)
+
     let conditions
 
     if (entry.cond) {
@@ -112,7 +133,7 @@ export class StyleDecoder implements StyleDecoderInterface {
     return styleResult
   }
 
-  getGroup(hashSet: Set<string>, key: string) {
+  getGroup = (hashSet: Set<string>, key: string) => {
     const cached = this.group_cache.get(key)
     if (cached) return cached
 
@@ -124,7 +145,7 @@ export class StyleDecoder implements StyleDecoderInterface {
       const entry = getEntryFromHash(hash)
 
       const transform = this.context.utility.transform
-      const transformed = transform(entry.prop, withoutImportant(entry.value))
+      const transformed = transform(entry.prop, withoutImportant(entry.value) as string)
 
       if (!transformed.className) return
 
@@ -163,35 +184,39 @@ export class StyleDecoder implements StyleDecoderInterface {
     })
 
     const result: GroupedResult = { result: obj, hashSet, details, className: key }
+
     this.group_cache.set(key, result)
+
     return result
   }
 
-  private getRecipeBase(hashSet: Set<string>, recipeName: string, slot?: string) {
-    const recipe = this.context.recipes.getConfig(recipeName)
-    if (!recipe) return
+  private getRecipeBase = (hashSet: Set<string>, recipeName: string, slot?: string): RecipeBaseResult | undefined => {
+    const recipeConfig = this.context.recipes.getConfig(recipeName)
+    if (!recipeConfig) return
 
     const className =
-      'slots' in recipe && slot ? this.context.recipes.getSlotKey(recipe.className, slot) : recipe.className
-    const classSelector = this.formatSelector([], className)
+      'slots' in recipeConfig && slot
+        ? this.context.recipes.getSlotKey(recipeConfig.className, slot)
+        : recipeConfig.className
+
+    const selector = this.formatSelector([], className)
     const style = this.getGroup(hashSet, className)
 
-    const base = { ['.' + classSelector]: style.result }
-    return Object.assign({}, style, { result: base, recipe: recipeName, className, slot }) as RecipeBaseResult
+    return Object.assign({}, style, {
+      result: { ['.' + selector]: style.result },
+      recipe: recipeName,
+      className,
+      slot,
+    })
   }
 
-  /**
-   * Collect and re-create all styles and recipes objects from the style encoder
-   * So that we can just iterate over them and transform resulting CSS objects into CSS strings
-   */
-  collect(encoder: StyleEncoder) {
+  collectAtomic = (encoder: StyleEncoder) => {
     const atomic = [] as AtomicStyleResult[]
-
     encoder.atomic.forEach((item) => {
-      const styleResult = this.getAtomic(item)
-      if (!styleResult) return
+      const result = this.getAtomic(item)
+      if (!result) return
 
-      atomic.push(styleResult)
+      atomic.push(result)
     })
 
     const sorted = this.context.config.lightningcss ? sortStyleRules(atomic) : atomic
@@ -200,46 +225,101 @@ export class StyleDecoder implements StyleDecoderInterface {
       this.classNames.set(styleResult.className, styleResult)
     })
 
+    return this
+  }
+
+  private processClassName = (recipeName: string, hash: string) => {
+    const result = this.getAtomic(hash)
+    if (!result) return
+
+    const styleSet = getOrCreateSet(this.recipes, recipeName)
+    styleSet.add(result)
+
+    this.classNames.set(result.className, result)
+  }
+
+  collectRecipe = (encoder: StyleEncoder) => {
     // no need to sort, each recipe is scoped using recipe.className
-    encoder.recipes.forEach((set, recipeName) => {
+    encoder.recipes.forEach((hashSet, recipeName) => {
       const recipeConfig = this.context.recipes.getConfig(recipeName)
       if (!recipeConfig) return
 
-      set.forEach((item) => {
-        const process = (hash: string) => {
-          const styleResult = this.getAtomic(hash)
-          if (!styleResult) return
-
-          const stylesSet = getOrCreateSet(this.recipes, recipeName)
-          stylesSet.add(styleResult)
-
-          this.classNames.set(styleResult.className, styleResult)
-        }
-
+      hashSet.forEach((hash) => {
         if ('slots' in recipeConfig) {
-          recipeConfig.slots.forEach((slot) => process(item + StyleEncoder.separator + 'slot:' + slot))
+          recipeConfig.slots.forEach((slot) => {
+            const slotHash = hash + StyleEncoder.separator + 'slot:' + slot
+            this.processClassName(recipeName, slotHash)
+          })
         } else {
-          process(item)
+          this.processClassName(recipeName, hash)
         }
       })
     })
+  }
 
-    encoder.recipes_base.forEach((set, recipeKey) => {
+  collectRecipeBase = (encoder: StyleEncoder) => {
+    encoder.recipes_base.forEach((hashSet, recipeKey) => {
       const [recipeName, slot] = recipeKey.split(this.context.recipes.slotSeparator)
 
       const recipeConfig = this.context.recipes.getConfig(recipeName)
       if (!recipeConfig) return
 
-      const styleResult = this.getRecipeBase(set, recipeName, slot)
-      if (!styleResult) return
+      const result = this.getRecipeBase(hashSet, recipeName, slot)
+      if (!result) return
 
-      const stylesSet = getOrCreateSet(this.recipes_base, recipeKey)
-      stylesSet.add(styleResult)
+      const styleSet = getOrCreateSet(this.recipes_base, recipeKey)
+      styleSet.add(result)
 
-      this.classNames.set(styleResult.className, styleResult)
+      this.classNames.set(result.className, result)
+    })
+  }
+
+  /**
+   * Collect and re-create all styles and recipes objects from the style encoder
+   * So that we can just iterate over them and transform resulting CSS objects into CSS strings
+   */
+  collect = (encoder: StyleEncoder) => {
+    this.collectAtomic(encoder)
+    this.collectRecipe(encoder)
+    this.collectRecipeBase(encoder)
+    return this
+  }
+
+  getConfigRecipeResult = (recipeName: string) => {
+    return {
+      atomic: this.atomic,
+      base: this.recipes_base.get(recipeName)!,
+      variants: this.recipes.get(recipeName)!,
+    }
+  }
+
+  getConfigSlotRecipeResult = (recipeName: string) => {
+    const recipeConfig = this.context.recipes.getConfigOrThrow(recipeName)
+
+    if (!Recipes.isSlotRecipeConfig(recipeConfig)) {
+      throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
+    }
+
+    const base: Dict = Object.create(null)
+
+    recipeConfig.slots.map((slot) => {
+      const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
+      base[slot] = this.recipes_base.get(recipeKey)!
     })
 
-    return this
+    return {
+      atomic: this.atomic,
+      base,
+      variants: this.recipes.get(recipeName)!,
+    }
+  }
+
+  getRecipeResult = (recipeName: string) => {
+    if (this.context.recipes.isSlotRecipe(recipeName)) {
+      return this.getConfigSlotRecipeResult(recipeName)
+    }
+
+    return this.getConfigRecipeResult(recipeName)
   }
 }
 
@@ -250,8 +330,7 @@ const getEntryFromHash = (hash: string) => {
   const prop = parts[0]
 
   const rawValue = parts[1].replace('value:', '')
-  const parsed = Number(rawValue)
-  const value = parsed ? parsed : rawValue
+  const value = parseValue(rawValue)
 
   const entry = { prop, value } as StyleEntry
 
@@ -263,4 +342,16 @@ const getEntryFromHash = (hash: string) => {
   })
 
   return entry
+}
+
+const parseValue = (value: string) => {
+  const asNumber = Number(value)
+  if (!Number.isNaN(asNumber)) return asNumber
+  return castBoolean(value)
+}
+
+const castBoolean = (value: string) => {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return value
 }

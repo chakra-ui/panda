@@ -1,5 +1,5 @@
 import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig, UserConfig } from '@pandacss/types'
-import type { CoreContext } from '.'
+import type { CoreContext } from './core-context'
 import type { Layers } from './layers'
 
 export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>

@@ -1,5 +1,67 @@
 # @pandacss/node
 
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+- Updated dependencies [61ebf3d2]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/core@0.24.2
+  - @pandacss/config@0.24.2
+  - @pandacss/generator@0.24.2
+  - @pandacss/parser@0.24.2
+  - @pandacss/token-dictionary@0.24.2
+  - @pandacss/error@0.24.2
+  - @pandacss/extractor@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- 10e74428: - Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS
+  wasn't applied correctly
+  - Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+    through the config recipes)
+- Updated dependencies [10e74428]
+  - @pandacss/generator@0.24.1
+  - @pandacss/parser@0.24.1
+  - @pandacss/config@0.24.1
+  - @pandacss/core@0.24.1
+  - @pandacss/error@0.24.1
+  - @pandacss/extractor@0.24.1
+  - @pandacss/logger@0.24.1
+  - @pandacss/shared@0.24.1
+  - @pandacss/token-dictionary@0.24.1
+  - @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Minor Changes
+
+- 63b3f1f2: - Boost style extraction performance by moving more work away from postcss
+  - Using a hashing strategy, the compiler only computes styles/classname once per style object and prop-value-condition
+    pair
+  - Fix regression in previous implementation that increased memory usage per extraction, leading to slower performance
+    over time
+
+### Patch Changes
+
+- Updated dependencies [63b3f1f2]
+- Updated dependencies [f6881022]
+  - @pandacss/core@0.24.0
+  - @pandacss/generator@0.24.0
+  - @pandacss/parser@0.24.0
+  - @pandacss/types@0.24.0
+  - @pandacss/config@0.24.0
+  - @pandacss/token-dictionary@0.24.0
+  - @pandacss/error@0.24.0
+  - @pandacss/extractor@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
 ## 0.23.0
 
 ### Patch Changes

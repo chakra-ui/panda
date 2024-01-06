@@ -1,8 +1,15 @@
 import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
-import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
+import type {
+  ArtifactFilters,
+  Dict,
+  PartialBy,
+  RecipeConfig,
+  SlotRecipeConfig,
+  SlotRecipeDefinition,
+  SystemStyleObject,
+} from '@pandacss/types'
 import merge from 'lodash.merge'
 import { CoreContext } from '.'
-import { isSlotRecipe } from './is-slot-recipe'
 import type { RecipeNode } from './types'
 import { transformStyles } from './serialize'
 
@@ -70,7 +77,7 @@ export class Recipes {
   }
 
   saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
-    if (isSlotRecipe(recipe)) {
+    if (Recipes.isSlotRecipeConfig(recipe)) {
       // extract recipes for each slot
       const slots = getSlotRecipes(recipe)
 
@@ -152,6 +159,12 @@ export class Recipes {
     return this.recipes[name]
   })
 
+  getConfigOrThrow = memo((name: string) => {
+    const config = this.getConfig(name)
+    if (!config) throw new Error(`Recipe "${name}" not found`)
+    return config
+  })
+
   find = memo((jsxName: string) => {
     return this.details.find((node) => node.match.test(jsxName))
   })
@@ -168,6 +181,14 @@ export class Recipes {
     const recipe = this.details.find((node) => node.baseName === recipeName)
     if (!recipe) return [{}, props]
     return recipe.splitProps(props)
+  }
+
+  isSlotRecipe = (name: string) => {
+    return sharedState.slots.has(name)
+  }
+
+  static isSlotRecipeConfig = (config: RecipeConfig | SlotRecipeConfig): config is SlotRecipeConfig => {
+    return 'slots' in config && Array.isArray(config.slots) && config.slots.length > 0
   }
 
   normalize = (name: string, config: RecipeConfig) => {
@@ -240,5 +261,20 @@ export class Recipes {
   filterDetails = (filters?: ArtifactFilters) => {
     const recipeDiffs = filters?.affecteds?.recipes
     return recipeDiffs ? this.details.filter((recipe) => recipeDiffs.includes(recipe.dashName)) : this.details
+  }
+
+  static inferSlots = (recipe: PartialBy<SlotRecipeDefinition, 'slots'>) => {
+    const slots = new Set<string>()
+    Object.keys(recipe.base ?? {}).forEach((name) => {
+      slots.add(name)
+    })
+
+    Object.values(recipe.variants ?? {}).forEach((variants) => {
+      Object.keys(variants).forEach((name) => {
+        slots.add(name)
+      })
+    })
+
+    return Array.from(slots)
   }
 }

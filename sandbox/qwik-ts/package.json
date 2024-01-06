@@ -24,16 +24,10 @@
     "@builder.io/qwik": "^1.2.6",
     "@builder.io/qwik-city": "^1.2.6",
     "@pandacss/dev": "workspace:*",
-    "@types/eslint": "8.44.1",
-    "@types/node": "^20.4.5",
-    "@typescript-eslint/eslint-plugin": "6.2.1",
-    "@typescript-eslint/parser": "6.2.1",
-    "eslint": "8.46.0",
     "eslint-plugin-qwik": "^1.2.6",
-    "prettier": "^2.8.8",
-    "typescript": "5.3.3",
+    "typescript": "5.2.2",
     "undici": "5.22.1",
     "vite": "5.0.7",
-    "vite-tsconfig-paths": "4.2.2"
+    "vite-tsconfig-paths": "4.2.3"
   }
 }

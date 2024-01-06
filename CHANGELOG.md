@@ -6,7 +6,183 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
-## [0.23.] - 2023-12-15
+## [0.24.2] - 2024-01-04
+
+### Fixed
+
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being seen as a
+  truthy value
+- Fix an issue with the `panda init` command which didn't update existing `.gitignore` to include the `styled-system`
+- Fix issue where config slot recipes with compound variants were not processed correctly
+
+## [0.24.1] - 2024-01-02
+
+### Fixed
+
+- Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS wasn't
+  applied correctly
+- Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+  through the config recipes)
+
+## [0.24.0] - 2024-01-02
+
+### Fixed
+
+- Fix regression in previous implementation that increased memory usage per extraction, leading to slower performance
+  over time
+
+### Added
+
+Add `patterns` to `config.staticCss`
+
+### Changed
+
+- Boost style extraction performance by moving more work away from postcss
+- Using a hashing strategy, the compiler only computes styles/classname once per style object and prop-value-condition
+  pair
+- Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+  need (it's still possible by explicitly using `responsive: true`).
+
+```ts
+const card = defineRecipe({
+  className: 'card',
+  base: { color: 'white' },
+  variants: {
+    size: {
+      small: { fontSize: '14px' },
+      large: { fontSize: '18px' },
+    },
+    visual: {
+      primary: { backgroundColor: 'blue' },
+      secondary: { backgroundColor: 'gray' },
+    },
+  },
+})
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: {
+      card: ['*'], // this
+
+      // was equivalent to:
+      card: [
+        // notice how `responsive: true` was implicitly added
+        { size: ['*'], responsive: true },
+        { visual: ['*'], responsive: true },
+      ],
+
+      //   will now correctly be equivalent to:
+      card: [{ size: ['*'] }, { visual: ['*'] }],
+    },
+  },
+})
+```
+
+Here's the diff in the generated CSS:
+
+```diff
+@layer recipes {
+  .card--size_small {
+    font-size: 14px;
+  }
+
+  .card--size_large {
+    font-size: 18px;
+  }
+
+  .card--visual_primary {
+    background-color: blue;
+  }
+
+  .card--visual_secondary {
+    background-color: gray;
+  }
+
+  @layer _base {
+    .card {
+      color: var(--colors-white);
+    }
+  }
+
+-  @media screen and (min-width: 40em) {
+-    -.sm\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.sm\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.sm\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.sm\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 48em) {
+-    -.md\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.md\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.md\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.md\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 64em) {
+-    -.lg\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.lg\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.lg\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.lg\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 80em) {
+-    -.xl\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.xl\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.xl\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.xl\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 96em) {
+-    -.\32xl\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.\32xl\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.\32xl\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.\32xl\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+}
+```
+
+## [0.23.0] - 2023-12-15
 
 ### Fixed
 

@@ -18,6 +18,7 @@ async function build(ctx: PandaContext, artifactIds?: ArtifactId[]) {
   ctx.appendLayerParams(sheet)
   ctx.appendBaselineCss(sheet)
   ctx.parseFiles()
+  ctx.appendParserCss(sheet)
 
   await ctx.writeCss(sheet)
   done()
@@ -59,7 +60,7 @@ export async function generate(config: Config, configPath?: string) {
         const sheet = ctx.createSheet()
         ctx.appendLayerParams(sheet)
         ctx.appendBaselineCss(sheet)
-
+        ctx.appendParserCss(sheet)
         const css = ctx.getCss(sheet)
         await ctx.runtime.fs.writeFile(outfile, css)
         return { msg: ctx.messages.buildComplete(1) }

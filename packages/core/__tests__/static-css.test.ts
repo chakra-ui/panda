@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest'
 import { fixtureDefaults } from '@pandacss/fixture'
 import { type StaticCssOptions } from '@pandacss/types'
+import { describe, expect, test } from 'vitest'
 import { CoreContext } from '../src/core-context'
 
 describe('static-css', () => {

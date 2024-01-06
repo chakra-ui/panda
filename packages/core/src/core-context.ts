@@ -70,7 +70,11 @@ export class CoreContext {
     this.utility = this.createUtility(config)
     this.conditions = this.createConditions(config)
 
-    this.patterns = new Patterns(config)
+    this.patterns = new Patterns({
+      config,
+      tokens: this.tokens,
+      utility: this.utility,
+    })
     this.encoder = new StyleEncoder(this)
     this.decoder = new StyleDecoder(this)
 
@@ -199,10 +203,6 @@ export class CoreContext {
   createRecipes(theme: Theme, context: CoreContext): Recipes {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
     return new Recipes(recipeConfigs, context)
-  }
-
-  collectStyles() {
-    return this.decoder.collect(this.encoder)
   }
 
   isValidLayerParams(params: string) {

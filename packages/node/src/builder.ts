@@ -1,15 +1,13 @@
-import { findConfig, type DiffConfigResult } from '@pandacss/config'
+import { findConfig, getConfigDependencies, type DiffConfigResult } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
-import { existsSync } from 'fs'
-import fsExtra from 'fs-extra'
+import { existsSync, statSync } from 'fs'
 import { resolve } from 'pathe'
 import type { Message, Root } from 'postcss'
 import { codegen } from './codegen'
 import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
-import { extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
 
 const fileModifiedMap = new Map<string, number>()
@@ -23,6 +21,7 @@ export class Builder {
   private hasEmitted = false
   private filesMeta: { changes: Map<string, FileMeta>; hasFilesChanged: boolean } | undefined
   private affecteds: DiffConfigResult | undefined
+  private configDependencies: Set<string> = new Set()
 
   getConfigPath = (cwd?: string) => {
     const configPath = findConfig({ cwd })
@@ -34,10 +33,27 @@ export class Builder {
     return configPath
   }
 
+  setConfigDependencies(options: SetupContextOptions) {
+    const tsOptions = this.context?.conf.tsOptions ?? { baseUrl: undefined, pathMappings: [] }
+    const compilerOptions = this.context?.conf.tsconfig?.compilerOptions ?? {}
+
+    const { deps: foundDeps } = getConfigDependencies(options.configPath, tsOptions, compilerOptions)
+    const cwd = options?.cwd ?? this.context?.config.cwd ?? process.cwd()
+
+    const configDeps = new Set([
+      ...foundDeps,
+      ...(this.context?.conf.dependencies ?? []).map((file) => resolve(cwd, file)),
+    ])
+    this.configDependencies = configDeps
+    logger.debug('builder', 'Config dependencies')
+    logger.debug('builder', configDeps)
+  }
+
   setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath(options.cwd)
+    this.setConfigDependencies({ configPath, cwd: options.cwd })
 
     if (!this.context) {
       return this.setupContext({ configPath, cwd: options.cwd })
@@ -76,7 +92,7 @@ export class Builder {
     this.hasEmitted = true
   }
 
-  setupContext = async (options: { configPath: string; cwd?: string }) => {
+  setupContext = async (options: SetupContextOptions) => {
     const { configPath, cwd } = options
 
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
@@ -93,7 +109,7 @@ export class Builder {
   }
 
   getFileMeta = (file: string) => {
-    const mtime = existsSync(file) ? fsExtra.statSync(file).mtimeMs : -Infinity
+    const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
     const isUnchanged = fileModifiedMap.has(file) && mtime === fileModifiedMap.get(file)
     return { mtime, isUnchanged }
   }
@@ -120,8 +136,7 @@ export class Builder {
     const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : true
     if (meta.isUnchanged && !hasConfigChanged) return
 
-    const parserResult = extractFile(ctx, file)
-
+    const parserResult = ctx.parseFile(file)
     fileModifiedMap.set(file, meta.mtime)
 
     return parserResult
@@ -157,8 +172,13 @@ export class Builder {
     return valid
   }
 
+  private initialRoot: string | undefined
+
   write = (root: Root) => {
-    const rootCssContent = root.toString()
+    if (!this.initialRoot) {
+      this.initialRoot = root.toString()
+    }
+
     root.removeAll()
 
     const ctx = this.getContextOrThrow()
@@ -170,7 +190,7 @@ export class Builder {
     root.append(
       optimizeCss(
         `
-    ${rootCssContent}
+    ${this.initialRoot}
     ${css}
     `,
         {
@@ -192,8 +212,8 @@ export class Builder {
       }
     }
 
-    for (const file of ctx.conf.dependencies) {
-      fn({ type: 'dependency', file: resolve(file) })
+    for (const file of this.configDependencies) {
+      fn({ type: 'dependency', file: ctx.runtime.path.resolve(file) })
     }
   }
 }
@@ -201,4 +221,9 @@ export class Builder {
 interface FileMeta {
   mtime: number
   isUnchanged: boolean
+}
+
+interface SetupContextOptions {
+  configPath: string
+  cwd?: string
 }

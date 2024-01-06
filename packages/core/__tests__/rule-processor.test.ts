@@ -1,8 +1,8 @@
-import { describe, expect, test } from 'vitest'
-import { createRuleProcessor } from './fixture'
-import type { Dict } from '@pandacss/types'
 import { createGeneratorContext } from '@pandacss/fixture'
+import type { Dict, RecipeDefinition, SlotRecipeDefinition } from '@pandacss/types'
+import { describe, expect, test } from 'vitest'
 import { RuleProcessor } from '../src/rule-processor'
+import { createRuleProcessor } from './fixture'
 
 const css = (styles: Dict) => {
   const result = createRuleProcessor().css(styles)
@@ -14,8 +14,13 @@ const recipe = (name: string, styles: Dict) => {
   return { className: result.className, css: result.toCss() }
 }
 
-const cva = (styles: Dict) => {
+const cva = (styles: RecipeDefinition) => {
   const result = createRuleProcessor().cva(styles)!
+  return { className: result.className, css: result.toCss() }
+}
+
+const sva = (styles: SlotRecipeDefinition) => {
+  const result = createRuleProcessor().sva(styles)!
   return { className: result.className, css: result.toCss() }
 }
 
@@ -72,8 +77,8 @@ describe('rule processor', () => {
           '.target &': {
             color: {
               base: 'cyan',
-              _opened: 'orange',
-              _xl: 'pink',
+              _open: 'orange',
+              xl: 'pink',
             },
           },
         },
@@ -102,8 +107,8 @@ describe('rule processor', () => {
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green",
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple",
         "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink",
       ]
     `,
     )
@@ -146,10 +151,8 @@ describe('rule processor', () => {
           color: cyan;
       }
 
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {_opened: orange;
-      }
-
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {_xl: pink;
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]):is([open], [data-open], [data-state=\\"open\\"]) {
+          color: orange;
       }
 
         .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
@@ -197,6 +200,12 @@ describe('rule processor', () => {
         @media screen and (min-width: 80em) {
           .xl\\\\:w_3 {
             width: var(--sizes-3);
+      }
+      }
+
+        @media screen and (min-width: 80em) {
+          .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
+            color: pink;
       }
       }
       }"
@@ -506,7 +515,7 @@ describe('rule processor', () => {
 
   test('sva', () => {
     // packages/fixture/src/slot-recipes.ts
-    const checkbox = cva({
+    const checkbox = sva({
       slots: ['root', 'control', 'label'],
       base: {
         root: { display: 'flex', alignItems: 'center', gap: '2' },
@@ -781,8 +790,14 @@ describe('rule processor', () => {
     const processor = new RuleProcessor(ctx as any)
 
     const step1 = processor.prepare()
-    step1.encoder.fromJSON(JSON.stringify({ styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] } }))
+
+    step1.encoder.fromJSON({
+      schemaVersion: 'x',
+      styles: { atomic: ['color]___[value:red', 'color]___[value:blue'] },
+    })
+
     step1.decoder.collect(step1.encoder)
+
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_red {
@@ -796,8 +811,14 @@ describe('rule processor', () => {
     `)
 
     const step2 = processor.prepare()
-    step2.encoder.fromJSON(JSON.stringify({ styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } } }))
+
+    step2.encoder.fromJSON({
+      schemaVersion: 'x',
+      styles: { recipes: { buttonStyle: ['variant]___[value:solid'] } },
+    })
+
     step2.decoder.collect(step2.encoder)
+
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         .variant_solid {
@@ -832,29 +853,30 @@ describe('rule processor', () => {
     `)
 
     const step3 = processor.prepare()
-    step3.encoder.fromJSON(
-      JSON.stringify({
-        styles: {
-          atomic: [
-            'display]___[value:none',
-            'height]___[value:100%',
-            'transition]___[value:all .3s ease-in-out',
-            'opacity]___[value:0 !important',
-            'opacity]___[value:1',
-            'height]___[value:10px',
-            'backgroundGradient]___[value:to-b',
-            'gradientFrom]___[value:rgb(200 200 200 / .4)',
+
+    step3.encoder.fromJSON({
+      schemaVersion: 'x',
+      styles: {
+        atomic: [
+          'display]___[value:none',
+          'height]___[value:100%',
+          'transition]___[value:all .3s ease-in-out',
+          'opacity]___[value:0 !important',
+          'opacity]___[value:1',
+          'height]___[value:10px',
+          'backgroundGradient]___[value:to-b',
+          'gradientFrom]___[value:rgb(200 200 200 / .4)',
+        ],
+        recipes: {
+          checkbox: [
+            'size]___[value:md]___[recipe:checkbox]___[slot:container',
+            'size]___[value:md]___[recipe:checkbox]___[slot:control',
+            'size]___[value:md]___[recipe:checkbox]___[slot:label',
           ],
-          recipes: {
-            checkbox: [
-              'size]___[value:md]___[recipe:checkbox]___[slot:container',
-              'size]___[value:md]___[recipe:checkbox]___[slot:control',
-              'size]___[value:md]___[recipe:checkbox]___[slot:label',
-            ],
-          },
         },
-      }),
-    )
+      },
+    })
+
     step3.decoder.collect(step3.encoder)
     expect(step3.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
@@ -952,6 +974,75 @@ describe('rule processor', () => {
           --gradient-from: rgb(200 200 200 / .4);
       }
       }"
+    `)
+  })
+
+  test('css - boolean utility', () => {
+    const result = css({ truncate: false })
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "truncate_false",
+        ],
+        "css": "",
+      }
+    `)
+
+    const result2 = css({ truncate: true })
+    expect(result2).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "truncate_true",
+        ],
+        "css": "@layer utilities {
+        .truncate_true {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+      }",
+      }
+    `)
+  })
+
+  test('cva - boolean variant', () => {
+    const result = cva({
+      base: {
+        color: '#fff',
+      },
+      variants: {
+        checked: {
+          true: {
+            display: 'block',
+          },
+          false: {
+            display: 'none',
+          },
+        },
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "text_\\\\#fff",
+          "d_block",
+          "d_none",
+        ],
+        "css": "@layer utilities {
+        .text_\\\\#fff {
+          color: #fff;
+      }
+
+        .d_block {
+          display: block;
+      }
+
+        .d_none {
+          display: none;
+      }
+      }",
+      }
     `)
   })
 })

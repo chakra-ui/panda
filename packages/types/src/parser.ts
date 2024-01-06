@@ -20,11 +20,11 @@ export interface ParserResultInterface {
   toArray: () => Array<ResultItem>
 }
 
-export interface ShipJson {
+export interface EncoderJson {
   schemaVersion: string
   styles: {
-    atomic: string[]
-    recipes: {
+    atomic?: string[]
+    recipes?: {
       [name: string]: string[]
     }
   }

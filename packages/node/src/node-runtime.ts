@@ -3,7 +3,7 @@ import type { Runtime } from '@pandacss/types'
 import chokidar from 'chokidar'
 import glob from 'fast-glob'
 import fsExtra from 'fs-extra'
-import { dirname, extname, isAbsolute, join, relative, sep } from 'pathe'
+import { dirname, extname, isAbsolute, join, relative, sep, resolve } from 'pathe'
 
 export const nodeRuntime: Runtime = {
   cwd() {
@@ -19,6 +19,7 @@ export const nodeRuntime: Runtime = {
     extname,
     isAbsolute,
     sep,
+    resolve,
     abs(cwd: string, str: string) {
       return isAbsolute(str) ? str : join(cwd, str)
     },

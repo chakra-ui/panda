@@ -1,4 +1,5 @@
 import type { Stylesheet } from '@pandacss/core'
+import { esc } from '@pandacss/shared'
 import type { CssRule, StaticCssOptions } from '@pandacss/types'
 import type { CoreContext } from './core-context'
 import { StyleDecoder } from './style-decoder'
@@ -42,47 +43,12 @@ export class StaticCss {
    *
    */
   getStyleObjects(options: StaticCssOptions) {
-    const { config, utility } = this.context
+    const { config, utility, patterns: _patterns } = this.context
     const breakpoints = Object.keys(config.theme?.breakpoints ?? {})
-
-    const getPropertyKeys = (prop: string) => {
-      const propConfig = utility.config[prop]
-      if (!propConfig) return []
-
-      const values = utility.getPropertyValues(propConfig)
-      if (!values) return []
-
-      return Object.keys(values)
-    }
 
     const getRecipeKeys = (recipeName: string) => {
       const recipeConfig = this.context.recipes.details.find((detail) => detail.baseName === recipeName)
       return recipeConfig?.variantKeyMap
-    }
-
-    const getPatternPropValues = (patternName: string, property: string) => {
-      const patternConfig = this.context.patterns.getConfig(patternName)
-      if (!patternConfig) return []
-
-      const propType = patternConfig.properties?.[property]
-      if (!propType) return
-
-      if (propType.type === 'enum') {
-        return propType.value
-      }
-
-      if (propType.type === 'boolean') {
-        return ['true', 'false']
-      }
-
-      if (propType.type === 'property') {
-        return getPropertyKeys(propType.value || property)
-      }
-
-      if (propType.type === 'token') {
-        const values = this.context.tokens.getValue(propType.value)
-        return Object.keys(values ?? {})
-      }
     }
 
     const { css = [], recipes = {}, patterns = {} } = options
@@ -95,7 +61,7 @@ export class StaticCss {
       }
 
       Object.entries(rule.properties).forEach(([property, values]) => {
-        const propKeys = getPropertyKeys(property)
+        const propKeys = utility.getPropertyKeys(property)
         const computedValues = values.flatMap((value) => (value === '*' ? propKeys : value))
 
         computedValues.forEach((value) => {
@@ -170,7 +136,7 @@ export class StaticCss {
         }
 
         Object.entries(properties).forEach(([property, values]) => {
-          const propValues = getPatternPropValues(pattern, property)
+          const propValues = _patterns.getPropertyValues(pattern, property)
           const computedValues = values.flatMap((value) => (value === '*' ? propValues : value))
 
           computedValues.forEach((patternValue) => {
@@ -193,13 +159,18 @@ export class StaticCss {
     return results
   }
 
+  createRegex = () => {
+    const { decoder } = this
+    return createClassNameRegex(Array.from(decoder.classNames.keys()))
+  }
+
   process(staticCss: StaticCssOptions, stylesheet?: Stylesheet) {
-    const { recipes } = this.context
-    const sheet = stylesheet ?? this.context.createSheet()
+    const { encoder, decoder, context } = this
 
-    staticCss.recipes = staticCss.recipes ?? {}
+    const sheet = stylesheet ?? context.createSheet()
+    staticCss.recipes ||= {}
 
-    const { theme = {} } = this.context.config
+    const { theme = {} } = context.config
     const recipeConfigs = Object.assign({}, theme.recipes, theme.slotRecipes)
 
     Object.entries(recipeConfigs).forEach(([name, recipe]) => {
@@ -209,9 +180,6 @@ export class StaticCss {
     })
 
     const results = this.getStyleObjects(staticCss)
-    // console.log(JSON.stringify(results.recipes, null, 2))
-
-    const { encoder, decoder } = this
 
     results.css.forEach((css) => {
       encoder.hashStyleObject(encoder.atomic, css)
@@ -219,9 +187,6 @@ export class StaticCss {
 
     results.recipes.forEach((result) => {
       Object.entries(result).forEach(([name, value]) => {
-        const recipeConfig = recipes.getConfig(name)
-        if (!recipeConfig) return
-
         encoder.processRecipe(name, value)
       })
     })
@@ -232,50 +197,30 @@ export class StaticCss {
 
     sheet.processDecoder(decoder.collect(encoder))
 
-    const createRegex = () => createClassNameRegex(Array.from(decoder.classNames.keys()))
-
     const parse = (text: string) => {
-      const regex = createRegex()
+      const regex = this.createRegex()
 
       const matches = text.match(regex)
-      if (!matches) {
-        return []
-      }
+      if (!matches) return []
 
       return matches.map((match) => match.replace('.', ''))
     }
 
-    return { results, regex: createRegex, parse, sheet } as StaticCssEngine
+    return {
+      results,
+      regex: this.createRegex.bind(this),
+      parse,
+      sheet,
+    } as StaticCssEngine
   }
 }
 
-// ??? Replace with shared one
 function createClassNameRegex(classNames: string[]) {
-  const escapedClassNames = classNames.map((name) => escapeRegExp(name))
+  const escapedClassNames = classNames.map((name) => esc(name))
   const pattern = `(${escapedClassNames.join('|')})`
   return new RegExp(`\\b${pattern}\\b`, 'g')
 }
 
-const ESCAPE_CHARS = /[.*+?^${}()|[\]\\]/g
-const ESCAPE_MAP: Record<string, string> = {
-  '.': '\\.',
-  '*': '\\*',
-  '+': '\\+',
-  '?': '\\?',
-  '^': '\\^',
-  $: '\\$',
-  '{': '\\{',
-  '}': '\\}',
-  '(': '\\(',
-  ')': '\\)',
-  '[': '\\[',
-  ']': '\\]',
-  '\\': '\\\\',
-  '|': '\\|',
+function formatCondition(breakpoints: string[], condition: string) {
+  return breakpoints.includes(condition) ? condition : `_${condition}`
 }
-
-function escapeRegExp(str: string): string {
-  return str.replace(ESCAPE_CHARS, (match) => ESCAPE_MAP[match])
-}
-
-const formatCondition = (breakpoints: string[], value: string) => (breakpoints.includes(value) ? value : `_${value}`)

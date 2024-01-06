@@ -13,18 +13,22 @@ export class OutputEngine {
   private path: Runtime['path']
 
   constructor(options: OutputEngineOptions) {
-    const {
-      paths,
-      runtime: { path, fs },
-    } = options
+    const { paths, runtime } = options
 
     this.paths = paths
-    this.fs = fs
-    this.path = path
+    this.fs = runtime.fs
+    this.path = runtime.path
   }
 
   empty = () => {
     this.fs.rmDirSync(this.path.join(...this.paths.root))
+  }
+
+  ensure = (file: string, cwd: string) => {
+    const outPath = this.path.resolve(cwd, file)
+    const dirname = this.path.dirname(outPath)
+    this.fs.ensureDirSync(dirname)
+    return outPath
   }
 
   write = (output: Artifact | undefined) => {

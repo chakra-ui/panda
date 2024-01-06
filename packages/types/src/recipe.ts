@@ -46,7 +46,7 @@ export type RecipeCompoundVariant<T> = T & {
   css: SystemStyleObject
 }
 
-export interface RecipeDefinition<T extends RecipeVariantRecord> {
+export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
   /**
    * The base styles of the recipe.
    */
@@ -117,7 +117,10 @@ export type SlotRecipeCompoundVariant<S extends string, T> = T & {
   css: SlotRecord<S, SystemStyleObject>
 }
 
-export interface SlotRecipeDefinition<S extends string, T extends SlotRecipeVariantRecord<S>> {
+export interface SlotRecipeDefinition<
+  S extends string = string,
+  T extends SlotRecipeVariantRecord<S> = SlotRecipeVariantRecord<S>,
+> {
   /**
    * The parts/slots of the recipe.
    */

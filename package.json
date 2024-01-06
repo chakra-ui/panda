@@ -36,23 +36,28 @@
   "dependencies": {
     "@changesets/changelog-github": "0.4.8",
     "@changesets/cli": "2.26.2",
-    "@types/node": "20.4.5",
-    "@typescript-eslint/eslint-plugin": "6.2.1",
-    "@typescript-eslint/parser": "6.2.1",
     "chokidar": "^3.5.3",
     "concurrently": "^8.2.0",
     "happy-dom": "^12.1.6",
     "husky": "8.0.3",
-    "mdx-local-link-checker": "^2.1.1",
     "lint-staged": "13.2.3",
-    "prettier": "^2.8.8",
+    "mdx-local-link-checker": "^2.1.1",
     "rimraf": "^5.0.1",
     "ts-morph": "19.0.0",
-    "tsup": "7.1.0",
+    "tsup": "8.0.1",
     "tsx": "3.12.10",
     "typescript": "5.3.3",
-    "vite-tsconfig-paths": "4.2.2",
+    "vite-tsconfig-paths": "4.2.3",
     "vitest": "0.33.0"
+  },
+  "devDependencies": {
+    "@types/eslint": "8.44.1",
+    "@types/node": "20.4.5",
+    "@typescript-eslint/eslint-plugin": "6.2.1",
+    "@typescript-eslint/parser": "6.2.1",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^8.9.0",
+    "prettier": "^2.8.8"
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [

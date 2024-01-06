@@ -61,14 +61,10 @@ export class RuleProcessor {
     }
   }
 
-  cva(recipeConfig: RecipeDefinition<any> | SlotRecipeDefinition<string, any>): AtomicRecipeRule {
+  cva(recipeConfig: RecipeDefinition<any>): AtomicRecipeRule {
     const { encoder, decoder, sheet } = this.prepare()
-
-    if ('slots' in recipeConfig) {
-      encoder.processAtomicSlotRecipe(recipeConfig)
-    } else {
-      encoder.processAtomicRecipe(recipeConfig)
-    }
+    encoder.processAtomicRecipe(recipeConfig)
+    decoder.collect(encoder)
 
     decoder.collect(encoder)
 
@@ -83,7 +79,17 @@ export class RuleProcessor {
   }
 
   sva(recipeConfig: SlotRecipeDefinition<string, any>): AtomicRecipeRule {
-    return this.cva(recipeConfig)
+    const { encoder, decoder, sheet } = this.prepare()
+    encoder.processAtomicSlotRecipe(recipeConfig)
+    decoder.collect(encoder)
+    return {
+      config: recipeConfig,
+      className: Array.from(decoder.classNames.keys()),
+      toCss: (options?: CssOptions) => {
+        sheet.processDecoder(decoder)
+        return sheet.toCss({ optimize: true, ...options })
+      },
+    }
   }
 
   recipe(name: string, variants: Record<string, any>): RecipeRule | undefined {

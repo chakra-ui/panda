@@ -3,6 +3,7 @@ import { TokenDictionary as BaseDictionary, type TokenDictionaryOptions } from '
 import { formats } from './format'
 import { middlewares } from './middleware'
 import { transforms } from './transform'
+import { expandReferences } from './utils'
 
 export class TokenDictionary extends BaseDictionary {
   get: ReturnType<typeof formats.createVarGetter>
@@ -38,4 +39,8 @@ export class TokenDictionary extends BaseDictionary {
   getTokenVar = memo((path: string) => {
     return getDotPath(this.json, path)
   })
+
+  expandReference(value: string) {
+    return expandReferences(value, (key) => this.get(key))
+  }
 }
