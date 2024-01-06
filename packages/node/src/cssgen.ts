@@ -10,51 +10,41 @@ export interface CssGenOptions {
 }
 
 export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
-  const { cwd, outfile, type, minimal } = options
-  let outPath = ctx.runtime.path.join(...ctx.paths.getFilePath('styles.css'))
+  const { outfile, type, minimal } = options
 
   const sheet = ctx.createSheet()
   //
   if (type) {
-    //
+    const done = logger.time.info(ctx.messages.cssArtifactComplete(type))
+
     ctx.appendCssOfType(type, sheet)
 
     if (outfile) {
-      outPath = ctx.output.ensure(outfile, cwd)
       const css = ctx.getCss(sheet)
       ctx.runtime.fs.writeFileSync(outfile, css)
     } else {
       await ctx.writeCss(sheet)
     }
 
-    const msg = ctx.messages.cssArtifactComplete(type)
-    logger.info('css:emit:path', outPath)
-    logger.info('css:emit:artifact', msg)
-    //
+    done()
   } else {
-    //
+    const { files } = ctx.parseFiles()
+
+    const done = logger.time.info(ctx.messages.buildComplete(files.length))
     if (!minimal) {
       ctx.appendLayerParams(sheet)
       ctx.appendBaselineCss(sheet)
     }
 
-    const { files } = ctx.parseFiles()
     ctx.appendParserCss(sheet)
 
     if (outfile) {
-      //
-      outPath = ctx.output.ensure(outfile, cwd)
-
       const css = ctx.getCss(sheet)
       ctx.runtime.fs.writeFileSync(outfile, css)
-      //
     } else {
-      //
       await ctx.writeCss(sheet)
     }
 
-    const msg = ctx.messages.buildComplete(files.length)
-    logger.info('css:emit:path', outPath)
-    logger.info('css:emit:out', msg)
+    done()
   }
 }

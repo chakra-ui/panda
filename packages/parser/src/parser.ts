@@ -271,8 +271,6 @@ export function createParser(context: ParserOptions) {
       return functions.has(fnName)
     })
 
-    const measure = logger.time.debug(`Tokens extracted from ${filePath}`)
-
     const extractResultByName = extract({
       ast: sourceFile,
       components: isJsxEnabled
@@ -311,8 +309,6 @@ export function createParser(context: ParserOptions) {
       },
       flags: { skipTraverseFiles: true },
     })
-
-    measure()
 
     extractResultByName.forEach((result, alias) => {
       let name = alias
