@@ -460,8 +460,8 @@ Here's a list of all the condition shortcuts you can use in Panda:
 | \_autofill             | `&:autofill`                                                       |
 | \_inRange              | `&:in-range`                                                       |
 | \_outOfRange           | `&:out-of-range`                                                   |
-| \_placeholder          | `&:is(:placeholder, [data-placeholder])`                                                    |
-| \_placeholderShown     | `&:is(:placeholder-shown, [data-placeholder-shown])`                                              |
+| \_placeholder          | `&:is(:placeholder, [data-placeholder])`                           |
+| \_placeholderShown     | `&:is(:placeholder-shown, [data-placeholder-shown])`               |
 | \_pressed              | `&:is([aria-pressed=true], [data-pressed])`                        |
 | \_selected             | `&:is([aria-selected=true], [data-selected])`                      |
 | \_default              | `&:default`                                                        |
