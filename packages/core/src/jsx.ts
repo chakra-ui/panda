@@ -10,6 +10,7 @@ interface JsxMatcher {
 
 export class JsxEngine {
   nodes: Array<PatternNode | RecipeNode> = []
+  names: string[] = []
 
   recipeMatcher: JsxMatcher = { string: new Set(), regex: [] }
   recipePropertiesByJsxName = new Map<string, Set<string>>()
@@ -19,6 +20,8 @@ export class JsxEngine {
 
   constructor(private context: Pick<Context, 'patterns' | 'recipes' | 'config'>) {
     this.nodes = [...context.patterns.details, ...context.recipes.details]
+    this.names = [this.factoryName, ...this.nodes.map((node) => node.jsxName)]
+
     this.assignRecipeMatcher()
     this.assignPatternMatcher()
   }
@@ -53,12 +56,8 @@ export class JsxEngine {
     }
   }
 
-  get names() {
-    return [this.factoryName, ...this.nodes.map((node) => node.jsxName)]
-  }
-
   private get jsxFactory() {
-    return this.context.config.jsxFactory ?? ''
+    return this.context.config.jsxFactory ?? 'styled'
   }
 
   get styleProps() {
