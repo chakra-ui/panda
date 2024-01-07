@@ -132,21 +132,21 @@ export class FileImport {
     return this.isRawFn(fnName) ? fnName.replace('.raw', '') : fnName
   }
 
-  isAliasFnName = (fnName: string) => {
+  isAliasFnName = memo((fnName: string) => {
     return fnName === this.cvaAlias || fnName === this.cssAlias || fnName === this.svaAlias || this.isJsxFactory(fnName)
-  }
+  })
 
-  matchFn = (fnName: string) => {
+  matchFn = memo((fnName: string) => {
     if (this.recipeAliases.has(fnName) || this.patternAliases.has(fnName)) return true
     if (this.isAliasFnName(fnName) || this.isRawFn(fnName)) return true
     return this.functions.has(fnName)
-  }
+  })
 
-  isJsxFactory = (tagName: string) => {
+  isJsxFactory = memo((tagName: string) => {
     return tagName.startsWith(this.jsxFactoryAlias)
-  }
+  })
 
-  matchTag = (tagName: string) => {
+  matchTag = memo((tagName: string) => {
     // ignore fragments
     if (!tagName) return false
     const { jsx } = this.context
@@ -157,9 +157,9 @@ export class FileImport {
       jsx.isJsxTagRecipe(tagName) ||
       jsx.isJsxTagPattern(tagName)
     )
-  }
+  })
 
-  matchTagProp = (tagName: string, propName: string) => {
+  matchTagProp = memo((tagName: string, propName: string) => {
     const { jsx, isValidProperty } = this.context
     switch (jsx.styleProps) {
       case 'all':
@@ -176,7 +176,7 @@ export class FileImport {
       default:
         return false
     }
-  }
+  })
 }
 
 const isUpperCase = (value: string) => value[0] === value[0]?.toUpperCase()

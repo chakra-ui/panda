@@ -1,4 +1,4 @@
-import { capitalize } from '@pandacss/shared'
+import { capitalize, memo } from '@pandacss/shared'
 import type { Context } from './context'
 import type { PatternNode } from './patterns'
 import type { RecipeNode } from './types'
@@ -97,15 +97,15 @@ export class JsxEngine {
     return name === this.factoryName
   }
 
-  isJsxTagRecipe = (tagName: string) => {
+  isJsxTagRecipe = memo((tagName: string) => {
     return this.recipeMatcher.string.has(tagName) || this.recipeMatcher.regex.some((regex) => regex.test(tagName))
-  }
+  })
 
-  isJsxTagPattern = (tagName: string) => {
+  isJsxTagPattern = memo((tagName: string) => {
     return this.patternMatcher.string.has(tagName) || this.patternMatcher.regex.some((regex) => regex.test(tagName))
-  }
+  })
 
-  isRecipeOrPatternProp = (tagName: string, propName: string) => {
+  isRecipeOrPatternProp = memo((tagName: string, propName: string) => {
     if (this.isJsxTagRecipe(tagName)) {
       const recipeList = this.context.recipes.filter(tagName)
       return recipeList.some((recipe) => this.recipePropertiesByJsxName.get(recipe.jsxName)?.has(propName))
@@ -117,5 +117,5 @@ export class JsxEngine {
     }
 
     return false
-  }
+  })
 }
