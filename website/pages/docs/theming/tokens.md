@@ -387,6 +387,24 @@ const theme = {
 > Border tokens are typically used in `border`, `border-top`, `border-right`, `border-bottom`, `border-left`, `outline`
 > properties.
 
+### Border Widths
+
+Border width tokens represent the width of a border. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    borderWidths: {
+      thin: { value: '1px' },
+      thick: { value: '2px' },
+      medium: { value: '1.5px' }
+    }
+  }
+}
+```
+
+> Radii tokens are typically used in `border-radius` property.
+
 ### Shadows
 
 Shadow tokens represent the shadow of an element. Its value is defined as single or multiple values containing a
