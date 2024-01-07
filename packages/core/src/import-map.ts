@@ -1,7 +1,7 @@
 import { isString, mapEntries } from '@pandacss/shared'
 import type { ImportMapInput, ImportMapOutput } from '@pandacss/types'
 import type { Context } from './context'
-import { FileImport, type ImportResult } from './file-import'
+import { FileMatcher, type ImportResult } from './file-matcher'
 
 interface ImportMatcher {
   mod: string
@@ -97,6 +97,6 @@ export class ImportMap {
   }
 
   file = (results: ImportResult[]) => {
-    return new FileImport(this.context, { importMap: this.value, value: results })
+    return new FileMatcher(this.context, { importMap: this.value, value: results })
   }
 }

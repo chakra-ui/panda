@@ -1,7 +1,7 @@
 import { createContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 
-describe('file import', () => {
+describe('file matcher', () => {
   test('imports', () => {
     const ctx = createContext()
 

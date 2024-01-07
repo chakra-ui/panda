@@ -15,12 +15,12 @@ export interface ImportResult {
   importMapValue?: string
 }
 
-interface FileImportOptions {
+interface FileMatcherOptions {
   importMap: ImportMapOutput<string>
   value: ImportResult[]
 }
 
-export class FileImport {
+export class FileMatcher {
   imports: ImportResult[]
   private importMap: ImportMapOutput<string>
 
@@ -38,7 +38,7 @@ export class FileImport {
 
   constructor(
     private context: Pick<Context, 'jsx' | 'patterns' | 'recipes' | 'isValidProperty'>,
-    opts: FileImportOptions,
+    opts: FileMatcherOptions,
   ) {
     const { value, importMap } = opts
 

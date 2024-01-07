@@ -1,6 +1,6 @@
 import { createContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import type { ImportResult } from '../src/file-import'
+import type { ImportResult } from '../src/file-matcher'
 
 describe('import map', () => {
   test('value', () => {
