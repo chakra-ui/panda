@@ -305,11 +305,6 @@ interface PresetOptions {
    * Used to create reusable config presets for your project or team.
    */
   presets?: (string | Preset | Promise<Preset>)[]
-  /**
-   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-   * @default 'false'
-   */
-  eject?: boolean
 }
 
 interface HooksOptions {
@@ -324,7 +319,13 @@ export interface Config
     FileSystemOptions,
     JsxOptions,
     PresetOptions,
-    HooksOptions {}
+    HooksOptions {
+  /**
+   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
+   * @default 'false'
+   */
+  eject?: boolean
+}
 
 export interface Preset extends ExtendableOptions, PresetOptions {}
 
