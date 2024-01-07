@@ -116,9 +116,9 @@ export interface Conditions {
 	"_inRange": string
 	/** `&:out-of-range` */
 	"_outOfRange": string
-	/** `&:is(:placeholder, [data-placeholder])` */
+	/** `&::placeholder` */
 	"_placeholder": string
-	/** `&:is(:placeholder-shown, [data-placeholder-shown])` */
+	/** `&:placeholder-shown` */
 	"_placeholderShown": string
 	/** `&:is([aria-pressed=true], [data-pressed])` */
 	"_pressed": string
