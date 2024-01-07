@@ -1,13 +1,13 @@
-import { resolveTsPathPattern } from '@pandacss/config/ts-path'
 import type { ImportResult, ParserOptions } from '@pandacss/core'
 import { BoxNodeMap, box, extract, unbox, type EvaluateOptions, type Unboxed } from '@pandacss/extractor'
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { astish } from '@pandacss/shared'
 import type { ResultItem } from '@pandacss/types'
-import type { ImportDeclaration, SourceFile } from 'ts-morph'
+import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
+import { getImportDeclarations } from './get-import-declarations'
 import { ParserResult } from './parser-result'
 
 const combineResult = (unboxed: Unboxed) => {
@@ -22,42 +22,13 @@ const evaluateOptions: EvaluateOptions = {
   environment: defaultEnv,
 }
 
-const getModuleSpecifierValue = (node: ImportDeclaration) => {
-  try {
-    return node.getModuleSpecifierValue()
-  } catch {
-    return
-  }
-}
-
 export function createParser(context: ParserOptions) {
-  const { jsx, imports, recipes, tsOptions, syntax } = context
+  const { jsx, imports, recipes, syntax } = context
 
   return function parse(sourceFile: SourceFile | undefined, encoder?: Generator['encoder']) {
     if (!sourceFile) return
 
-    const importDeclarations: ImportResult[] = []
-
-    sourceFile.getImportDeclarations().forEach((node) => {
-      const mod = getModuleSpecifierValue(node)
-      if (!mod) return
-
-      node.getNamedImports().forEach((specifier) => {
-        const name = specifier.getNameNode().getText()
-        const alias = specifier.getAliasNode()?.getText() || name
-
-        const result = { name, alias, mod }
-
-        const found = imports.match(result, (mod) => {
-          if (!tsOptions?.pathMappings) return
-          return resolveTsPathPattern(tsOptions.pathMappings, mod)
-        })
-
-        if (!found) return
-
-        importDeclarations.push(result)
-      })
-    })
+    const importDeclarations: ImportResult[] = getImportDeclarations(context, sourceFile)
 
     const file = imports.file(importDeclarations)
 
