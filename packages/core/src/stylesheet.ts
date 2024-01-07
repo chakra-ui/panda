@@ -31,13 +31,7 @@ export class Stylesheet {
       layer.append(toCss(styles).toString())
     } catch (error) {
       if (error instanceof CssSyntaxError) {
-        logger.error('sheet:toCss', error.message)
-        error.plugin && logger.error('sheet:toCss', `By plugin: ${error.plugin}:`)
-
-        if (error.source) {
-          logger.error('sheet:toCss', `Line ${error.line}:${error.column}, in:`)
-          logger.error('sheet:toCss', error.source)
-        }
+        logger.error('sheet:process', error)
       }
     }
     return
