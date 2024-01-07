@@ -143,7 +143,8 @@ export class FileImport {
   })
 
   isJsxFactory = memo((tagName: string) => {
-    return tagName.startsWith(this.jsxFactoryAlias)
+    const { jsx } = this.context
+    return Boolean(jsx.isEnabled && tagName.startsWith(this.jsxFactoryAlias))
   })
 
   matchTag = memo((tagName: string) => {
