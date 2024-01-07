@@ -18,7 +18,7 @@ export function parseDependency(fileOrGlob: string) {
   }
 
   if (message.type === 'dir-dependency' && process.env.ROLLUP_WATCH === 'true') {
-    message = { type: 'dependency', file: message.dir }
+    message = { type: 'dependency', file: resolve(message.dir) }
   }
 
   return message

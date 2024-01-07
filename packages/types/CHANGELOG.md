@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.25.0
+
+### Patch Changes
+
+- 59fd291c: Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+
 ## 0.24.2
 
 ### Patch Changes

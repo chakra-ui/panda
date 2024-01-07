@@ -32,9 +32,11 @@ export interface StaticCssOptions {
   /**
    * The css recipes to generate.
    */
-  recipes?: {
-    [recipe: string]: RecipeRule[]
-  }
+  recipes?:
+    | '*'
+    | {
+        [recipe: string]: RecipeRule[]
+      }
   /**
    * The css patterns to generate.
    */

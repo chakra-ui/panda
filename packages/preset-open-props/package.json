@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/preset-open-props",
-  "version": "0.24.2",
+  "version": "0.25.0",
   "description": "A preset for Open Props",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -1,6 +1,6 @@
 import type { Stylesheet } from '@pandacss/core'
 import { esc } from '@pandacss/shared'
-import type { CssRule, StaticCssOptions } from '@pandacss/types'
+import type { CssRule, RecipeRule, StaticCssOptions } from '@pandacss/types'
 import type { Context } from './context'
 import { StyleDecoder } from './style-decoder'
 import { StyleEncoder } from './style-encoder'
@@ -56,7 +56,8 @@ export class StaticCss {
       return recipeConfig?.variantKeyMap
     }
 
-    const { css = [], recipes = {}, patterns = {} } = options
+    const { css = [], patterns = {} } = options
+    const recipes = (options.recipes ?? {}) as Record<string, RecipeRule[]>
     const results: StaticCssResults = { css: [], recipes: [], patterns: [] }
 
     css.forEach((rule) => {
@@ -169,18 +170,27 @@ export class StaticCss {
     return createClassNameRegex(Array.from(decoder.classNames.keys()))
   }
 
-  process(staticCss: StaticCssOptions, stylesheet?: Stylesheet) {
+  process(options: StaticCssOptions, stylesheet?: Stylesheet) {
     const { encoder, decoder, context } = this
 
     const sheet = stylesheet ?? context.createSheet()
-    staticCss.recipes ||= {}
+
+    const staticCss = {
+      ...options,
+      recipes: { ...(typeof options.recipes === 'string' ? {} : options.recipes) },
+    } satisfies StaticCssOptions
 
     const { theme = {} } = context.config
     const recipeConfigs = Object.assign({}, theme.recipes, theme.slotRecipes)
+    const useAllRecipes = options.recipes === '*'
 
     Object.entries(recipeConfigs).forEach(([name, recipe]) => {
+      if (useAllRecipes) {
+        staticCss.recipes[name] = ['*']
+      }
+
       if (recipe.staticCss) {
-        staticCss.recipes![name] = recipe.staticCss
+        staticCss.recipes[name] = recipe.staticCss
       }
     })
 
