@@ -1,7 +1,22 @@
-import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig, UserConfig } from '@pandacss/types'
+import type {
+  Config,
+  ConfigResultWithHooks,
+  Dict,
+  HashOptions,
+  PatternHelpers,
+  RecipeConfig,
+  SlotRecipeConfig,
+  TSConfig,
+  UserConfig,
+} from '@pandacss/types'
 import type { Conditions } from './conditions'
 import type { Layers } from './layers'
 import type { Utility } from './utility'
+import type { StyleEncoder } from './style-encoder'
+import type { Patterns } from './patterns'
+import type { Recipes } from './recipes'
+import type { JsxEngine } from './jsx'
+import type { ImportMap } from './import-map'
 
 export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>
 
@@ -87,3 +102,16 @@ export type LayerName =
   | 'utilities'
   | 'recipes_slots'
   | 'compositions'
+
+export interface ParserOptions {
+  hash: HashOptions
+  imports: ImportMap
+  jsx: JsxEngine
+  syntax: Config['syntax']
+  recipes: Recipes
+  patterns: Patterns
+  encoder: StyleEncoder
+  join: (...paths: string[]) => string
+  compilerOptions: TSConfig['compilerOptions']
+  tsOptions: ConfigResultWithHooks['tsOptions']
+}

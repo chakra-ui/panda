@@ -18,6 +18,6 @@ export { StyleDecoder } from './style-decoder'
 export { StyleEncoder } from './style-encoder'
 export { Stylesheet } from './stylesheet'
 export { toCss } from './to-css'
-export type { CssOptions, RecipeContext, RecipeNode, StylesheetContext, TransformResult } from './types'
+export type { CssOptions, RecipeContext, RecipeNode, StylesheetContext, TransformResult, ParserOptions } from './types'
 export { Utility } from './utility'
 export { messages }

@@ -1,5 +1,5 @@
 import type { StyleEncoder, Stylesheet } from '@pandacss/core'
-import { Generator, type ParserOptions } from '@pandacss/generator'
+import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { ParserResult, Project } from '@pandacss/parser'
 import type { ConfigResultWithHooks, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
@@ -13,7 +13,6 @@ export class PandaContext extends Generator {
   project: Project
   output: OutputEngine
   diff: DiffEngine
-  parserOptions: ParserOptions
 
   constructor(conf: ConfigResultWithHooks) {
     super(conf)
@@ -25,19 +24,6 @@ export class PandaContext extends Generator {
 
     if (config.logLevel) {
       logger.level = config.logLevel
-    }
-
-    this.parserOptions = {
-      hash: this.hash,
-      compilerOptions: this.conf.tsconfig?.compilerOptions ?? {},
-      recipes: this.recipes,
-      patterns: this.patterns,
-      jsx: this.jsx,
-      syntax: config.syntax,
-      encoder: this.encoder,
-      tsOptions: this.conf.tsOptions,
-      join: (...paths: string[]) => paths.join('/'),
-      imports: this.imports,
     }
 
     this.project = new Project({

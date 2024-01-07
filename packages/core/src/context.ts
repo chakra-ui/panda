@@ -25,10 +25,12 @@ import { StaticCss } from './static-css'
 import { StyleDecoder } from './style-decoder'
 import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
-import type { RecipeContext } from './types'
+import type { ParserOptions, RecipeContext } from './types'
 import { Utility } from './utility'
 
-const helpers = { map: mapObject }
+const helpers = {
+  map: mapObject,
+}
 
 const defaults = (config: UserConfig): UserConfig => ({
   cssVarRoot: ':where(:root, :host)',
@@ -70,6 +72,7 @@ export class Context {
   properties!: Set<string>
   isValidProperty!: (key: string) => boolean
   messages: Messages
+  parserOptions: ParserOptions
 
   constructor(public conf: ConfigResultWithHooks) {
     const config = defaults(conf.config)
@@ -149,6 +152,19 @@ export class Context {
       patterns: this.patterns,
       isTemplateLiteralSyntax: this.isTemplateLiteralSyntax,
     })
+
+    this.parserOptions = {
+      hash: this.hash,
+      compilerOptions: this.conf.tsconfig?.compilerOptions ?? {},
+      recipes: this.recipes,
+      patterns: this.patterns,
+      jsx: this.jsx,
+      syntax: config.syntax,
+      encoder: this.encoder,
+      tsOptions: this.conf.tsOptions,
+      join: (...paths: string[]) => paths.join('/'),
+      imports: this.imports,
+    }
   }
 
   get config() {
