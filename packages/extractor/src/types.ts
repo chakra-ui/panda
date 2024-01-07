@@ -114,6 +114,8 @@ export interface BoxContext {
   }
 }
 
+export type EvaluateOptions = Omit<EvaluateOptions, 'node' | 'policy'>
+
 export type ExtractOptions = BoxContext & {
   ast: SourceFile
   components?: ComponentMatchers

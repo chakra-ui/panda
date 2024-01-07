@@ -1,14 +1,14 @@
-import type { UserConfig } from '@pandacss/types'
+import type { Context } from './context'
 
 export class FileEngine {
-  constructor(private config: UserConfig) {}
+  constructor(private context: Pick<Context, 'config'>) {}
 
   private get forceConsistentTypeExtension() {
-    return this.config.forceConsistentTypeExtension || false
+    return this.context.config.forceConsistentTypeExtension || false
   }
 
   private get outExtension() {
-    return this.config.outExtension
+    return this.context.config.outExtension
   }
 
   ext(file: string): string {

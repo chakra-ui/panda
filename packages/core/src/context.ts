@@ -13,7 +13,12 @@ import type {
 } from '@pandacss/types'
 import { assignCompositions } from './compositions'
 import { Conditions } from './conditions'
+import { FileEngine } from './file'
+import { ImportMap } from './import-map'
+import { JsxEngine } from './jsx'
 import { Layers } from './layers'
+import { getMessages, type Messages } from './messages'
+import { PathEngine } from './path'
 import { Patterns } from './patterns'
 import { Recipes } from './recipes'
 import { StaticCss } from './static-css'
@@ -43,7 +48,7 @@ const defaults = (config: UserConfig): UserConfig => ({
   },
 })
 
-export class CoreContext {
+export class Context {
   studio: RequiredBy<NonNullable<StudioOptions['studio']>, 'outdir'>
 
   // Engines
@@ -53,6 +58,10 @@ export class CoreContext {
   conditions: Conditions
   patterns: Patterns
   staticCss: StaticCss
+  jsx: JsxEngine
+  imports: ImportMap
+  paths: PathEngine
+  file: FileEngine
 
   encoder: StyleEncoder
   decoder: StyleDecoder
@@ -60,6 +69,7 @@ export class CoreContext {
   // Props
   properties!: Set<string>
   isValidProperty!: (key: string) => boolean
+  messages: Messages
 
   constructor(public conf: ConfigResultWithHooks) {
     const config = defaults(conf.config)
@@ -82,9 +92,63 @@ export class CoreContext {
     // Relies on this.conditions, this.utility, this.layers
     this.recipes = this.createRecipes(theme, this.baseSheetContext)
 
-    this.encoder = new StyleEncoder(this)
-    this.decoder = new StyleDecoder(this)
-    this.staticCss = new StaticCss(this)
+    this.encoder = new StyleEncoder({
+      utility: this.utility,
+      recipes: this.recipes,
+      conditions: this.conditions,
+      patterns: this.patterns,
+      isTemplateLiteralSyntax: this.isTemplateLiteralSyntax,
+      isValidProperty: this.isValidProperty,
+    })
+
+    this.decoder = new StyleDecoder({
+      conditions: this.conditions,
+      utility: this.utility,
+      recipes: this.recipes,
+      hash: this.hash,
+    })
+
+    this.staticCss = new StaticCss({
+      config,
+      utility: this.utility,
+      patterns: this.patterns,
+      recipes: this.recipes,
+      createSheet: this.createSheet,
+      encoder: this.encoder,
+      decoder: this.decoder,
+    })
+
+    this.jsx = new JsxEngine({
+      patterns: this.patterns,
+      recipes: this.recipes,
+      config,
+    })
+
+    this.imports = new ImportMap({
+      jsx: this.jsx,
+      conf: this.conf,
+      config: this.config,
+      patterns: this.patterns,
+      recipes: this.recipes,
+      isValidProperty: this.isValidProperty,
+    })
+
+    this.paths = new PathEngine({
+      config: this.config,
+    })
+
+    this.file = new FileEngine({
+      config: this.config,
+    })
+
+    this.messages = getMessages({
+      jsx: this.jsx,
+      config: this.config,
+      tokens: this.tokens,
+      recipes: this.recipes,
+      patterns: this.patterns,
+      isTemplateLiteralSyntax: this.isTemplateLiteralSyntax,
+    })
   }
 
   get config() {
@@ -113,7 +177,7 @@ export class CoreContext {
     }
   }
 
-  createTokenDictionary(theme: Theme): TokenDictionary {
+  createTokenDictionary = (theme: Theme): TokenDictionary => {
     return new TokenDictionary({
       breakpoints: theme.breakpoints,
       tokens: theme.tokens,
@@ -123,7 +187,7 @@ export class CoreContext {
     })
   }
 
-  createUtility(config: UserConfig): Utility {
+  createUtility = (config: UserConfig): Utility => {
     return new Utility({
       prefix: this.prefix.className,
       tokens: this.tokens,
@@ -134,24 +198,24 @@ export class CoreContext {
     })
   }
 
-  createConditions(config: UserConfig): Conditions {
+  createConditions = (config: UserConfig): Conditions => {
     return new Conditions({
       conditions: config.conditions,
       breakpoints: config.theme?.breakpoints,
     })
   }
 
-  createLayers(layers: CascadeLayers): Layers {
+  createLayers = (layers: CascadeLayers): Layers => {
     return new Layers(layers)
   }
 
-  setupCompositions(theme: Theme): void {
+  setupCompositions = (theme: Theme): void => {
     const { textStyles, layerStyles } = theme
     const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
     assignCompositions(compositions, { conditions: this.conditions, utility: this.utility })
   }
 
-  setupProperties(): void {
+  setupProperties = (): void => {
     this.properties = new Set(['css', ...this.utility.keys(), ...this.conditions.keys()])
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
@@ -165,19 +229,19 @@ export class CoreContext {
     }
   }
 
-  createSheet(): Stylesheet {
+  createSheet = (): Stylesheet => {
     return new Stylesheet({
       ...this.baseSheetContext,
       layers: this.createLayers(this.config.layers as CascadeLayers),
     })
   }
 
-  createRecipes(theme: Theme, context: RecipeContext): Recipes {
+  createRecipes = (theme: Theme, context: RecipeContext): Recipes => {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
     return new Recipes(recipeConfigs, context)
   }
 
-  isValidLayerParams(params: string) {
+  isValidLayerParams = (params: string) => {
     const names = new Set(params.split(',').map((name) => name.trim()))
     return names.size >= 5 && Object.values(this.config.layers as CascadeLayers).every((name) => names.has(name))
   }

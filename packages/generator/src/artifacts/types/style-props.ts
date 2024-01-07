@@ -1,6 +1,6 @@
+import type { Context } from '@pandacss/core'
 import { allCssProperties } from '@pandacss/is-valid-prop'
 import outdent from 'outdent'
-import type { Context } from '../../engines'
 
 export function generateStyleProps(ctx: Context) {
   const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))

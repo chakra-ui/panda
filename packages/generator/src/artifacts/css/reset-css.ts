@@ -1,5 +1,5 @@
 import { isObject } from '@pandacss/shared'
-import type { Context } from '../../engines'
+import type { Context } from '@pandacss/core'
 import type { Stylesheet } from '@pandacss/core'
 
 const css = String.raw

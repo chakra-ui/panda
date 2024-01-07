@@ -1,7 +1,7 @@
-import isValidPropJson from '../generated/is-valid-prop.mjs.json' assert { type: 'json' }
-import type { Context } from '../../engines'
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
+import isValidPropJson from '../generated/is-valid-prop.mjs.json' assert { type: 'json' }
 
 const cssPropRegex = /var cssPropertiesStr = ".*?";/
 const memoFnDeclarationRegex = /function memo(.+?)\nvar cssPropertySelectorRegex/s

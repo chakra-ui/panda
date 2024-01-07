@@ -1,7 +1,7 @@
 import type { Stylesheet } from '@pandacss/core'
 import { esc } from '@pandacss/shared'
 import type { CssRule, StaticCssOptions } from '@pandacss/types'
-import type { CoreContext } from './core-context'
+import type { Context } from './context'
 import { StyleDecoder } from './style-decoder'
 import { StyleEncoder } from './style-encoder'
 
@@ -22,7 +22,12 @@ export class StaticCss {
   encoder: StyleEncoder
   decoder: StyleDecoder
 
-  constructor(private context: CoreContext) {
+  constructor(
+    private context: Pick<
+      Context,
+      'encoder' | 'decoder' | 'utility' | 'patterns' | 'recipes' | 'createSheet' | 'config'
+    >,
+  ) {
     this.encoder = context.encoder
     this.decoder = context.decoder
   }
