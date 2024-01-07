@@ -1,3 +1,4 @@
+import * as messages from './messages'
 export { Breakpoints } from './breakpoints'
 export { assignCompositions } from './compositions'
 export { Conditions } from './conditions'
@@ -19,3 +20,4 @@ export { Stylesheet } from './stylesheet'
 export { toCss } from './to-css'
 export type { CssOptions, RecipeContext, RecipeNode, StylesheetContext, TransformResult } from './types'
 export { Utility } from './utility'
+export { messages }

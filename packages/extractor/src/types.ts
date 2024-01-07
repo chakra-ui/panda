@@ -1,4 +1,4 @@
-import type { EvaluateOptions } from 'ts-evaluator'
+import type { EvaluateOptions as TEvaluateOptions } from 'ts-evaluator'
 import type {
   CallExpression,
   Expression,
@@ -114,7 +114,7 @@ export interface BoxContext {
   }
 }
 
-export type EvaluateOptions = Omit<EvaluateOptions, 'node' | 'policy'>
+export type EvaluateOptions = Omit<TEvaluateOptions, 'node' | 'policy'>
 
 export type ExtractOptions = BoxContext & {
   ast: SourceFile
