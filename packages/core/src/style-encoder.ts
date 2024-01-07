@@ -176,6 +176,7 @@ export class StyleEncoder {
     if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
     this.compound_variants.add(recipeName)
     config.compoundVariants.forEach((compoundVariant) => {
+      if (!compoundVariant) return
       Object.values(compoundVariant.css).forEach((values) => {
         if (!values) return
         this.processAtomic(values)
@@ -205,6 +206,7 @@ export class StyleEncoder {
     if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
     this.compound_variants.add(recipeName)
     config.compoundVariants.forEach((compoundVariant) => {
+      if (!compoundVariant) return
       this.processAtomic(compoundVariant.css)
     })
   }
@@ -254,6 +256,7 @@ export class StyleEncoder {
     }
 
     compoundVariants.forEach((compoundVariant) => {
+      if (!compoundVariant) return
       this.processAtomic(compoundVariant.css)
     })
   }
