@@ -1,6 +1,5 @@
 import { memo } from '@pandacss/shared'
 import type { ImportMapOutput } from '@pandacss/types'
-import { match } from 'ts-pattern'
 import type { Context } from './context'
 
 export interface ImportResult {
@@ -32,6 +31,11 @@ export class FileImport {
   private functions = new Map<string, Map<string, boolean>>()
   private components = new Map<string, Map<string, boolean>>()
 
+  cvaAlias = 'cva'
+  cssAlias = 'css'
+  svaAlias = 'sva'
+  jsxFactoryAlias = 'styled'
+
   constructor(
     private context: Pick<Context, 'jsx' | 'patterns' | 'recipes' | 'isValidProperty'>,
     opts: FileImportOptions,
@@ -43,6 +47,7 @@ export class FileImport {
 
     this.assignAliases()
     this.assignProperties()
+    this.assignImportAliases()
   }
 
   private assignAliases() {
@@ -65,6 +70,13 @@ export class FileImport {
       this.functions.set(alias, this.propertiesMap)
       this.components.set(alias, this.propertiesMap)
     })
+  }
+
+  private assignImportAliases() {
+    this.cvaAlias = this.getAlias('cva')
+    this.cssAlias = this.getAlias('css')
+    this.svaAlias = this.getAlias('sva')
+    this.jsxFactoryAlias = this.getAlias(this.context.jsx.factoryName)
   }
 
   isEmpty = () => {
@@ -120,29 +132,8 @@ export class FileImport {
     return this.isRawFn(fnName) ? fnName.replace('.raw', '') : fnName
   }
 
-  get cvaAlias() {
-    return this.getAlias('cva')
-  }
-
-  get cssAlias() {
-    return this.getAlias('css')
-  }
-
-  get svaAlias() {
-    return this.getAlias('sva')
-  }
-
-  get jsxFactoryAlias() {
-    return this.getAlias('jsx')
-  }
-
   isAliasFnName = (fnName: string) => {
-    return (
-      fnName === this.cvaAlias ||
-      fnName === this.cssAlias ||
-      fnName === this.svaAlias ||
-      fnName === this.jsxFactoryAlias
-    )
+    return fnName === this.cvaAlias || fnName === this.cssAlias || fnName === this.svaAlias || this.isJsxFactory(fnName)
   }
 
   matchFn = (fnName: string) => {
@@ -151,9 +142,8 @@ export class FileImport {
     return this.functions.has(fnName)
   }
 
-  isJsxFactory = (name: string) => {
-    const { jsx } = this.context
-    return Boolean(jsx.isEnabled && name.startsWith(this.jsxFactoryAlias))
+  isJsxFactory = (tagName: string) => {
+    return tagName.startsWith(this.jsxFactoryAlias)
   }
 
   matchTag = (tagName: string) => {
@@ -171,18 +161,21 @@ export class FileImport {
 
   matchTagProp = (tagName: string, propName: string) => {
     const { jsx, isValidProperty } = this.context
-    return match(jsx.styleProps)
-      .with(
-        'all',
-        () =>
+    switch (jsx.styleProps) {
+      case 'all':
+        return (
           Boolean(this.components.get(tagName)?.has(propName)) ||
           isValidProperty(propName) ||
           this.propertiesMap.has(propName) ||
-          jsx.isRecipeOrPatternProp(tagName, propName),
-      )
-      .with('minimal', () => propName === 'css' || jsx.isRecipeOrPatternProp(tagName, propName))
-      .with('none', () => jsx.isRecipeOrPatternProp(tagName, propName))
-      .exhaustive()
+          jsx.isRecipeOrPatternProp(tagName, propName)
+        )
+      case 'minimal':
+        return propName === 'css' || jsx.isRecipeOrPatternProp(tagName, propName)
+      case 'none':
+        return jsx.isRecipeOrPatternProp(tagName, propName)
+      default:
+        return false
+    }
   }
 }
 

@@ -44,7 +44,7 @@ describe('ast parser / string literal', () => {
               },
             ],
             "name": "styled.div",
-            "type": "object",
+            "type": "css",
           },
         },
       }

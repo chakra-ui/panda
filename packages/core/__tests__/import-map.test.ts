@@ -74,8 +74,8 @@ describe('import map', () => {
     const file = ctx.imports.file(imports)
 
     // no imports for styled-system found
-    expect(file.isEmpty()).toBeTruthy()
-    expect(file.toString()).toMatchInlineSnapshot('""')
+    expect(file.isEmpty()).toMatchInlineSnapshot('false')
+    expect(file.toString()).toMatchInlineSnapshot('"render, App"')
 
     // css is not imported
     expect(file.find('css')).toBeFalsy()

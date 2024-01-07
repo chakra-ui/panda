@@ -26,23 +26,26 @@ export class ParserResult implements ParserResultInterface {
   }
 
   set(name: 'cva' | 'css' | 'sva', result: ResultItem) {
-    this[name].add(this.append(Object.assign({ type: 'object' }, result)))
+    switch (name) {
+      case 'css':
+        this.setCss(result)
+        break
+      case 'cva':
+        this.setCva(result)
+        break
+      case 'sva':
+        this.setSva(result)
+        break
+      default:
+        throw new Error(`Unknown result type ${name}`)
+    }
+  }
+
+  setCss(result: ResultItem) {
+    this.css.add(this.append(Object.assign({ type: 'css' }, result)))
 
     const encoder = this.encoder
-    if (name == 'css') {
-      result.data.forEach((obj) => encoder.processAtomic(obj))
-      return
-    }
-
-    if (name === 'cva') {
-      result.data.forEach((data) => encoder.processAtomicRecipe(data))
-      return
-    }
-
-    if (name === 'sva') {
-      result.data.forEach((data) => encoder.processAtomicSlotRecipe(data))
-      return
-    }
+    result.data.forEach((obj) => encoder.processAtomic(obj))
   }
 
   setCva(result: ResultItem) {

@@ -28,7 +28,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -110,7 +110,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -257,7 +257,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -732,7 +732,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "styled",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -761,7 +761,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "styled.div",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -859,7 +859,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -912,7 +912,7 @@ describe('extract to css output pipeline', () => {
             {},
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -983,7 +983,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -1041,7 +1041,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -1159,7 +1159,7 @@ describe('extract to css output pipeline', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "data": [
@@ -1170,7 +1170,7 @@ describe('extract to css output pipeline', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "data": [
@@ -1180,7 +1180,7 @@ describe('extract to css output pipeline', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         ]
       `)
@@ -1405,7 +1405,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "styled.div",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -1414,7 +1414,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "styled",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -1451,7 +1451,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "styled.div",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -1532,7 +1532,7 @@ describe('extract to css output pipeline', () => {
             {},
           ],
           "name": "styled.div",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -1555,7 +1555,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "cva",
-          "type": "object",
+          "type": "cva",
         },
         {
           "data": [
@@ -1567,7 +1567,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "cva",
-          "type": "object",
+          "type": "cva",
         },
         {
           "data": [
@@ -1696,7 +1696,7 @@ describe('extract to css output pipeline', () => {
             {},
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -1985,7 +1985,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -2009,7 +2009,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -2103,7 +2103,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "cva",
-          "type": "object",
+          "type": "cva",
         },
       ]
     `)
@@ -2175,7 +2175,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -2298,7 +2298,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -2603,7 +2603,7 @@ describe('extract to css output pipeline', () => {
             {},
           ],
           "name": "styled",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -2732,7 +2732,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -2866,7 +2866,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -2944,7 +2944,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -3137,14 +3137,14 @@ describe('extract to css output pipeline', () => {
             {},
           ],
           "name": "styled",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
             {},
           ],
           "name": "styled",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -3285,7 +3285,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "sva",
-          "type": "object",
+          "type": "sva",
         },
       ]
     `)

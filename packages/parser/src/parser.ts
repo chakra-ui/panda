@@ -14,7 +14,9 @@ const combineResult = (unboxed: Unboxed) => {
   return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
 }
 
-const defaultEnv: EvaluateOptions['environment'] = { preset: 'ECMA' }
+const defaultEnv: EvaluateOptions['environment'] = {
+  preset: 'ECMA',
+}
 
 const evaluateOptions: EvaluateOptions = {
   environment: defaultEnv,
@@ -34,7 +36,7 @@ export function createParser(context: ParserOptions) {
   return function parse(sourceFile: SourceFile | undefined, encoder?: Generator['encoder']) {
     if (!sourceFile) return
 
-    const importResults: ImportResult[] = []
+    const importDeclarations: ImportResult[] = []
 
     sourceFile.getImportDeclarations().forEach((node) => {
       const mod = getModuleSpecifierValue(node)
@@ -46,18 +48,18 @@ export function createParser(context: ParserOptions) {
 
         const result = { name, alias, mod }
 
-        const found = context.imports.match(result, (mod) => {
+        const found = imports.match(result, (mod) => {
           if (!tsOptions?.pathMappings) return
           return resolveTsPathPattern(tsOptions.pathMappings, mod)
         })
 
         if (!found) return
 
-        importResults.push(result)
+        importDeclarations.push(result)
       })
     })
 
-    const file = context.imports.file(importResults)
+    const file = imports.file(importDeclarations)
 
     const filePath = sourceFile.getFilePath()
 
@@ -68,7 +70,7 @@ export function createParser(context: ParserOptions) {
 
     const parserResult = new ParserResult(context, encoder)
 
-    if (!file.imports.length && !jsx.isEnabled) {
+    if (file.isEmpty() && !jsx.isEnabled) {
       return parserResult
     }
 
@@ -92,7 +94,11 @@ export function createParser(context: ParserOptions) {
         },
       },
       taggedTemplates:
-        syntax === 'template-literal' ? { matchTaggedTemplate: (tag) => file.matchFn(tag.fnName) } : undefined,
+        syntax === 'template-literal'
+          ? {
+              matchTaggedTemplate: (tag) => file.matchFn(tag.fnName),
+            }
+          : undefined,
       getEvaluateOptions: (node) => {
         if (!Node.isCallExpression(node)) return evaluateOptions
         const propAccessExpr = node.getExpression()
@@ -109,9 +115,7 @@ export function createParser(context: ParserOptions) {
         return {
           environment: Object.assign({}, defaultEnv, {
             extra: {
-              [name]: {
-                raw: (v: any) => v,
-              },
+              [name]: { raw: (v: any) => v },
             },
           }),
         }
@@ -276,22 +280,26 @@ export function createParser(context: ParserOptions) {
           //
           const data = combineResult(unbox(query.box))
 
-          match(name)
-            .when(file.isJsxFactory, (jsxName) => {
-              parserResult.setJsx({ name: jsxName, box: query.box, type: 'jsx-factory', data })
-            })
-            .when(jsx.isJsxTagPattern, (jsxName) => {
-              parserResult.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
-            })
-            .when(jsx.isJsxTagRecipe, (jsxName) => {
-              const recipeList = recipes.filter(jsxName)
-              recipeList.map((recipe) => {
-                parserResult.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })
+          switch (true) {
+            case file.isJsxFactory(name): {
+              parserResult.setJsx({ type: 'jsx-factory', name: name, box: query.box, data })
+              break
+            }
+            case jsx.isJsxTagPattern(name): {
+              parserResult.setPattern(name, { type: 'jsx-pattern', name: name, box: query.box, data })
+              break
+            }
+            case jsx.isJsxTagRecipe(name): {
+              const matchingRecipes = recipes.filter(name)
+              matchingRecipes.map((recipe) => {
+                parserResult.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: name, box: query.box, data })
               })
-            })
-            .otherwise(() => {
-              parserResult.setJsx({ name, box: query.box, type: 'jsx', data })
-            })
+              break
+            }
+            default: {
+              parserResult.setJsx({ type: 'jsx', name, box: query.box, data })
+            }
+          }
         })
       }
     })

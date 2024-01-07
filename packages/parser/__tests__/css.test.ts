@@ -60,7 +60,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -110,7 +110,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -170,7 +170,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
