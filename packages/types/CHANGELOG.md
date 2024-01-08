@@ -1,5 +1,12 @@
 # @pandacss/types
 
+## 0.26.0
+
+### Patch Changes
+
+- b5cf6ee6: Add `borderWidths` token to types
+- 58df7d74: Remove eject type from presets
+
 ## 0.25.0
 
 ### Patch Changes
