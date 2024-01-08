@@ -77,7 +77,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -86,7 +86,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -95,7 +95,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -105,7 +105,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -114,7 +114,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -222,7 +222,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -231,7 +231,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -241,7 +241,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -329,7 +329,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -338,7 +338,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -347,7 +347,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -357,7 +357,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -366,7 +366,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -470,7 +470,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -479,7 +479,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -488,7 +488,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -498,7 +498,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -507,7 +507,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)

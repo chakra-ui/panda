@@ -34,12 +34,13 @@
   },
   "dependencies": {
     "@pandacss/config": "workspace:^",
+    "@pandacss/core": "workspace:^",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@vue/compiler-sfc": "3.3.4",
-    "magic-string": "0.30.2",
+    "magic-string": "0.30.5",
     "ts-morph": "19.0.0",
     "ts-pattern": "5.0.5"
   },

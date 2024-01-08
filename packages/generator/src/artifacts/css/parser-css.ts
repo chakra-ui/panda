@@ -1,6 +1,6 @@
 import type { StyleDecoder } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
-import type { Context } from '../../engines'
+import type { Context } from '@pandacss/core'
 
 export const generateParserCss = (ctx: Context, decoder: StyleDecoder, filePath?: string) => {
   if (!decoder) return ''

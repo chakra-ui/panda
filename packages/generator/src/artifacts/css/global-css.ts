@@ -1,5 +1,4 @@
-import type { Stylesheet } from '@pandacss/core'
-import type { Context } from '../../engines'
+import type { Context, Stylesheet } from '@pandacss/core'
 
 export const generateGlobalCss = (ctx: Context, sheet: Stylesheet) => {
   const { globalCss = {} } = ctx.config

@@ -1,8 +1,21 @@
-import type { Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig, UserConfig } from '@pandacss/types'
-import type { CoreContext } from './core-context'
+import type {
+  Config,
+  ConfigResultWithHooks,
+  Dict,
+  HashOptions,
+  PatternHelpers,
+  RecipeConfig,
+  SlotRecipeConfig,
+  TSConfig,
+  UserConfig,
+} from '@pandacss/types'
+import type { ImportMap } from './import-map'
+import type { JsxEngine } from './jsx'
 import type { Layers } from './layers'
-
-export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>
+import type { Patterns } from './patterns'
+import type { Recipes } from './recipes'
+import type { StyleEncoder } from './style-encoder'
+import type { Context } from './context'
 
 export interface TransformResult {
   layer?: string
@@ -11,7 +24,7 @@ export interface TransformResult {
 }
 
 export interface StylesheetContext
-  extends Pick<CoreContext, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty'> {
+  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty'> {
   layers: Layers
   helpers: PatternHelpers
   hash?: boolean
@@ -87,3 +100,16 @@ export type LayerName =
   | 'utilities'
   | 'recipes_slots'
   | 'compositions'
+
+export interface ParserOptions {
+  hash: HashOptions
+  imports: ImportMap
+  jsx: JsxEngine
+  syntax: Config['syntax']
+  recipes: Recipes
+  patterns: Patterns
+  encoder: StyleEncoder
+  join: (...paths: string[]) => string
+  compilerOptions: TSConfig['compilerOptions']
+  tsOptions: ConfigResultWithHooks['tsOptions']
+}

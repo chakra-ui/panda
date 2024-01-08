@@ -182,7 +182,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -191,7 +191,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -200,7 +200,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -209,7 +209,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -218,7 +218,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -227,7 +227,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -236,7 +236,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -245,7 +245,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -254,7 +254,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -263,7 +263,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -272,7 +272,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -281,7 +281,7 @@ describe('extract svelte templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)

@@ -1,4 +1,4 @@
-import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
+import { capitalize, createRegex, dashCase, getSlotRecipes, isObject, memo, splitProps } from '@pandacss/shared'
 import type {
   ArtifactFilters,
   Dict,
@@ -9,9 +9,8 @@ import type {
   SystemStyleObject,
 } from '@pandacss/types'
 import merge from 'lodash.merge'
-import { CoreContext } from '.'
 import type { RecipeNode } from './types'
-import { transformStyles } from './serialize'
+import { transformStyles, type SerializeContext } from './serialize'
 
 interface RecipeRecord {
   [key: string]: RecipeConfig | SlotRecipeConfig
@@ -43,7 +42,9 @@ export class Recipes {
     return Object.keys(this.recipes)
   }
 
-  constructor(private recipes: RecipeRecord = {}, private context: CoreContext) {
+  private context!: SerializeContext
+
+  constructor(private recipes: RecipeRecord = {}) {
     this.prune()
   }
 
@@ -70,7 +71,8 @@ export class Recipes {
     })
   }
 
-  save = () => {
+  save = (context: SerializeContext) => {
+    this.context = context
     for (const [name, recipe] of Object.entries(this.recipes)) {
       this.saveOne(name, recipe)
     }
@@ -276,5 +278,9 @@ export class Recipes {
     })
 
     return Array.from(slots)
+  }
+
+  static isValidNode = (node: unknown): node is RecipeNode => {
+    return isObject(node) && 'type' in node && node.type === 'recipe'
   }
 }

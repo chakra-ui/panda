@@ -172,15 +172,7 @@ export class Builder {
     return valid
   }
 
-  private initialRoot: string | undefined
-
   write = (root: Root) => {
-    if (!this.initialRoot) {
-      this.initialRoot = root.toString()
-    }
-
-    root.removeAll()
-
     const ctx = this.getContextOrThrow()
     const sheet = ctx.createSheet()
     ctx.appendLayerParams(sheet)
@@ -188,17 +180,11 @@ export class Builder {
     const css = ctx.getCss(sheet)
 
     root.append(
-      optimizeCss(
-        `
-    ${this.initialRoot}
-    ${css}
-    `,
-        {
-          browserslist: ctx.config.browserslist,
-          minify: ctx.config.minify,
-          lightningcss: ctx.config.lightningcss,
-        },
-      ),
+      optimizeCss(css, {
+        browserslist: ctx.config.browserslist,
+        minify: ctx.config.minify,
+        lightningcss: ctx.config.lightningcss,
+      }),
     )
   }
 

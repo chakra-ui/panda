@@ -1,4 +1,4 @@
-import type { ParserOptions } from '@pandacss/generator'
+import type { ParserOptions } from '@pandacss/core'
 import type { ConfigTsOptions, PandaHookable, Runtime } from '@pandacss/types'
 import {
   FileSystemRefreshResult,

@@ -1,6 +1,6 @@
 import { createContext } from '@pandacss/fixture'
 import type { Config, TSConfig } from '@pandacss/types'
-import { getImportDeclarations } from '../src/import'
+import { getImportDeclarations } from '../src/get-import-declarations'
 
 const filePath = 'app/src/test.tsx'
 
@@ -14,15 +14,10 @@ function getFixtureProject(code: string, userConfig?: Config, tsconfig?: TSConfi
   return ctx
 }
 
-export function importParser(code: string, option: { name: string; module: string }) {
-  const project = getProject(code)
-  const sourceFile = project.getSourceFile(filePath)!
-  const imports = getImportDeclarations(sourceFile, {
-    match({ name, mod }) {
-      return name === option.name && mod === option.module
-    },
-  })
-  return imports.value
+export function importParser(code: string, userConfig?: Config) {
+  const ctx = getFixtureProject(code, userConfig)
+  const sourceFile = ctx.project.getSourceFile(filePath)!
+  return getImportDeclarations(ctx.parserOptions, sourceFile)
 }
 
 export function cssParser(code: string) {

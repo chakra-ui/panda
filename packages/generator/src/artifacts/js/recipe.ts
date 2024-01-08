@@ -1,9 +1,9 @@
+import type { Context } from '@pandacss/core'
 import { Recipes } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import type { Context } from '../../engines'
 
 const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'

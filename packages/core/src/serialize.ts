@@ -5,7 +5,7 @@ import type { StylesheetContext } from '.'
 import { parseSelectors } from './stringify'
 import { toCss } from './to-css'
 
-interface SerializeContext extends Omit<StylesheetContext, 'layers' | 'helpers' | 'hash'> {}
+export interface SerializeContext extends Omit<StylesheetContext, 'layers' | 'helpers' | 'hash'> {}
 
 /**
  * Transform the style object (with conditions, shorthands, tokens) into a valid CSS (in JS) object

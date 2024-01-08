@@ -23,7 +23,6 @@ function isValidCss(file: string) {
 const shouldSkip = (fileName: string | undefined) => {
   if (!fileName) return true
   if (!isValidCss(fileName)) return true
-  if (fileName.includes('@pandacss/astro/base.css')) return false
   return nodeModulesRegex.test(fileName)
 }
 

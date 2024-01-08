@@ -1,6 +1,6 @@
 import type { CssOptions, Stylesheet } from '@pandacss/core'
 import type { RecipeDefinition, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
-import type { CoreContext } from './core-context'
+import type { Context } from './context'
 import type { StyleDecoder } from './style-decoder'
 import type { StyleEncoder } from './style-encoder'
 
@@ -10,7 +10,7 @@ export class RuleProcessor {
   sheet: Stylesheet | undefined
   params: Pick<PrepareParams, 'encoder' | 'decoder'>
 
-  constructor(private context: CoreContext, params?: Pick<PrepareParams, 'encoder' | 'decoder'>) {
+  constructor(private context: Context, params?: Pick<PrepareParams, 'encoder' | 'decoder'>) {
     this.params = params ?? {
       encoder: context.encoder,
       decoder: context.decoder,

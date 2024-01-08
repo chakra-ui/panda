@@ -1,7 +1,7 @@
 import { fixtureDefaults } from '@pandacss/fixture'
 import { type StaticCssOptions } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { CoreContext } from '../src/core-context'
+import { Context } from '../src/context'
 
 describe('static-css', () => {
   // limit the number of tokens to speed up tests and make snapshots more readable
@@ -33,7 +33,7 @@ describe('static-css', () => {
 
   conf.config.theme!.semanticTokens = {}
 
-  const ctx = new CoreContext(conf)
+  const ctx = new Context(conf)
   const getStaticCss = (options: StaticCssOptions) => {
     const engine = ctx.staticCss.clone().process(options)
     return { results: engine.results, css: engine.sheet.toCss({ optimize: true }) }

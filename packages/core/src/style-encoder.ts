@@ -8,18 +8,18 @@ import {
 } from '@pandacss/shared'
 import type {
   Dict,
+  EncoderJson,
   PartialBy,
   RecipeConfig,
   RecipeVariantRecord,
   ResultItem,
-  EncoderJson,
   SlotRecipeDefinition,
   StyleEntry,
   StyleProps,
   StyleResultObject,
 } from '@pandacss/types'
 import { version } from '../package.json'
-import type { CoreContext } from './core-context'
+import type { Context } from './context'
 import { Recipes } from './recipes'
 
 const urlRegex = /^https?:\/\//
@@ -34,7 +34,12 @@ export class StyleEncoder {
   recipes = new Map<string, Set<string>>()
   recipes_base = new Map<string, Set<string>>()
 
-  constructor(private context: CoreContext) {}
+  constructor(
+    private context: Pick<
+      Context,
+      'isTemplateLiteralSyntax' | 'isValidProperty' | 'recipes' | 'patterns' | 'conditions' | 'utility'
+    >,
+  ) {}
 
   filterStyleProps = (props: Dict): Dict => {
     if (this.context.isTemplateLiteralSyntax) return props
@@ -170,6 +175,7 @@ export class StyleEncoder {
     if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
     this.compound_variants.add(recipeName)
     config.compoundVariants.forEach((compoundVariant) => {
+      if (!compoundVariant) return
       Object.values(compoundVariant.css).forEach((values) => {
         if (!values) return
         this.processAtomic(values)
@@ -199,6 +205,7 @@ export class StyleEncoder {
     if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
     this.compound_variants.add(recipeName)
     config.compoundVariants.forEach((compoundVariant) => {
+      if (!compoundVariant) return
       this.processAtomic(compoundVariant.css)
     })
   }
@@ -248,6 +255,7 @@ export class StyleEncoder {
     }
 
     compoundVariants.forEach((compoundVariant) => {
+      if (!compoundVariant) return
       this.processAtomic(compoundVariant.css)
     })
   }

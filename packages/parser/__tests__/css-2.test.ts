@@ -49,7 +49,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -125,7 +125,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -180,7 +180,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -256,7 +256,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -311,7 +311,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -387,7 +387,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -456,7 +456,7 @@ console.log(
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -502,7 +502,7 @@ export function Card({ className }) {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }

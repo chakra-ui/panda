@@ -3,5 +3,6 @@
   "conditions": "Conditions",
   "utilities": "Utilities",
   "presets": "Presets",
-  "theme": "Theme"
+  "theme": "Theme",
+  "config-functions": "Config Functions"
 }

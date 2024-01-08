@@ -108,7 +108,7 @@ describe('ast parser / sva', () => {
               },
             ],
             "name": "sva",
-            "type": "object",
+            "type": "sva",
           },
         },
       }

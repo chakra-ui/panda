@@ -1,7 +1,7 @@
+import type { Context } from '@pandacss/core'
 import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import type { Context } from '../../engines'
 
 export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx

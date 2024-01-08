@@ -1,6 +1,6 @@
 import { Stylesheet, expandNestedCss, extractParentSelectors, toCss } from '@pandacss/core'
 import postcss, { AtRule, Rule } from 'postcss'
-import type { Context } from '../../engines'
+import type { Context } from '@pandacss/core'
 
 export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   const {

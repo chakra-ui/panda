@@ -44,8 +44,6 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
     }
   }
 
-  conf.config.outdir ??= 'styled-system'
-
   // Register user hooks
   const hooks = createHooks<PandaHooks>()
 

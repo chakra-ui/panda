@@ -1,9 +1,9 @@
+import type { Context } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import type { Context } from '../../engines'
 
 export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
   if (ctx.patterns.isEmpty()) return

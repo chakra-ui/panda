@@ -8,7 +8,7 @@ import type {
   StyleEntry,
   StyleResultObject,
 } from '@pandacss/types'
-import type { CoreContext } from './core-context'
+import type { Context } from './context'
 import { deepSet } from './deep-set'
 import { sortStyleRules } from './sort-style-rules'
 import { StyleEncoder } from './style-encoder'
@@ -16,7 +16,7 @@ import { StyleEncoder } from './style-encoder'
 import { Recipes } from './recipes'
 
 export class StyleDecoder {
-  constructor(private context: CoreContext) {}
+  constructor(private context: Pick<Context, 'conditions' | 'utility' | 'recipes' | 'hash'>) {}
 
   classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
   //

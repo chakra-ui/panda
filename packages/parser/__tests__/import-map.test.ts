@@ -73,7 +73,7 @@ describe('config.importMap', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -82,7 +82,7 @@ describe('config.importMap', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)

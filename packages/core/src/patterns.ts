@@ -1,4 +1,4 @@
-import { capitalize, createRegex, dashCase, mapObject, memo, uncapitalize } from '@pandacss/shared'
+import { capitalize, createRegex, dashCase, isObject, mapObject, memo, uncapitalize } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { ArtifactFilters, Dict, PatternConfig, UserConfig } from '@pandacss/types'
 import type { Utility } from './utility'
@@ -13,7 +13,7 @@ interface PatternOptions {
 
 export class Patterns {
   patterns: Record<string, PatternConfig>
-  details: PatternDetail[]
+  details: PatternNode[]
   private utility: Utility
   private tokens: TokenDictionary
 
@@ -24,7 +24,7 @@ export class Patterns {
     this.tokens = options.tokens
   }
 
-  private createDetail(name: string, pattern: PatternConfig): PatternDetail {
+  private createDetail(name: string, pattern: PatternConfig): PatternNode {
     const names = this.getNames(name)
     const jsx = (pattern.jsx ?? []).concat([names.jsxName])
 
@@ -66,7 +66,7 @@ export class Patterns {
     return this.details.find((node) => node.match.test(jsxName))?.baseName ?? uncapitalize(jsxName)
   })
 
-  filter = memo((jsxName: string): PatternDetail[] => {
+  filter = memo((jsxName: string): PatternNode[] => {
     return this.details.filter((node) => node.match.test(jsxName))
   })
 
@@ -125,6 +125,10 @@ export class Patterns {
       return Object.keys(values ?? {})
     }
   }
+
+  static isValidNode = (node: unknown): node is PatternNode => {
+    return isObject(node) && 'type' in node && node.type === 'recipe'
+  }
 }
 
 interface PatternNames {
@@ -135,7 +139,7 @@ interface PatternNames {
   jsxName: string
 }
 
-export interface PatternDetail extends PatternNames {
+export interface PatternNode extends PatternNames {
   props: string[]
   blocklistType: string
   config: PatternConfig
