@@ -26,9 +26,9 @@
     "outdent": " ^0.8.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-fast-marquee": "1.6.0",
+    "react-fast-marquee": "1.6.2",
     "scroll-into-view-if-needed": "3.0.10",
-    "zod": "3.22.3"
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",

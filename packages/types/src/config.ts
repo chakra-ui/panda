@@ -42,7 +42,7 @@ interface Patterns {
   [pattern: string]: PatternConfig
 }
 
-interface PresetCore {
+export interface PresetCore {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
@@ -107,11 +107,18 @@ export interface ExtendableOptions {
   patterns?: ExtendablePatterns
 }
 
-export interface OutdirImportMap {
+export interface ImportMapInput {
   css: string
   recipes: string
   patterns: string
   jsx?: string
+}
+
+export interface ImportMapOutput<T = string[]> {
+  css: T
+  recipe: T
+  pattern: T
+  jsx: T
 }
 
 interface FileSystemOptions {
@@ -137,7 +144,7 @@ interface FileSystemOptions {
    * }
    * ```
    */
-  importMap?: string | OutdirImportMap
+  importMap?: string | ImportMapInput
   /**
    * List of files glob to watch for changes.
    * @default []
@@ -320,11 +327,6 @@ interface PresetOptions {
    * Used to create reusable config presets for your project or team.
    */
   presets?: (string | Preset | Promise<Preset>)[]
-  /**
-   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-   * @default 'false'
-   */
-  eject?: boolean
 }
 
 interface HooksOptions {
@@ -339,7 +341,13 @@ export interface Config
     FileSystemOptions,
     JsxOptions,
     PresetOptions,
-    HooksOptions {}
+    HooksOptions {
+  /**
+   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
+   * @default 'false'
+   */
+  eject?: boolean
+}
 
 export interface Preset extends ExtendableOptions, PresetOptions {}
 

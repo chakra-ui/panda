@@ -1,26 +1,14 @@
-import { convertTsPathsToRegexes, loadConfigFile } from '@pandacss/config'
+import { convertTsPathsToRegexes, loadConfig } from '@pandacss/config'
 import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
 import { createDebugger, createHooks } from 'hookable'
-import { lookItUpSync } from 'look-it-up'
 import { parse } from 'tsconfck'
 import { PandaContext } from './create-context'
-
-const configs = ['.ts', '.js', '.mts', '.mjs', '.cts', '.cjs']
-
-export function findConfig() {
-  for (const config of configs) {
-    const result = lookItUpSync(`panda.config${config}`)
-    if (result) {
-      return result
-    }
-  }
-}
 
 export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
   const { config, configPath } = options
 
   const cwd = options.cwd ?? options?.config?.cwd ?? process.cwd()
-  const conf = await loadConfigFile({ cwd, file: configPath })
+  const conf = await loadConfig({ cwd, file: configPath })
 
   if (config) {
     Object.assign(conf.config, config)

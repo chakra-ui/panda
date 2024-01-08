@@ -62,8 +62,8 @@ export const conditions = {
   autofill: '&:autofill',
   inRange: '&:in-range',
   outOfRange: '&:out-of-range',
-  placeholder: '&::placeholder',
-  placeholderShown: '&:placeholder-shown',
+  placeholder: '&:is(:placeholder, [data-placeholder])',
+  placeholderShown: '&:is(:placeholder-shown, [data-placeholder-shown])',
   pressed: '&:is([aria-pressed=true], [data-pressed])',
   selected: '&:is([aria-selected=true], [data-selected])',
 

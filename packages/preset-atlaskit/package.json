@@ -1,12 +1,18 @@
 {
   "name": "@pandacss/preset-atlaskit",
-  "version": "0.22.1",
+  "version": "0.25.0",
   "description": "The preset for PandaCSS that contains the default theme",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/preset-atlaskit"
+  },
   "publishConfig": {
     "access": "public"
   },

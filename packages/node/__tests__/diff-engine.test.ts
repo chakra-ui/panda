@@ -1,5 +1,5 @@
 import { mergeConfigs } from '@pandacss/config'
-import { config as fixtureConfig } from '@pandacss/fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 import { Generator } from '@pandacss/generator'
 import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
@@ -14,7 +14,7 @@ const common: Partial<ConfigResultWithHooks> = {
 }
 
 const createConfigResult = (config: UserConfig) => {
-  const conf = { ...common, config }
+  const conf = { ...common, config: { ...config, include: [] } }
 
   const serialized = stringifyJson(conf.config)
   const deserialize = () => parseJson(serialized)
@@ -24,12 +24,7 @@ const createConfigResult = (config: UserConfig) => {
 
 describe('DiffEngine affecteds', () => {
   test('add theme.tokens', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
 
@@ -170,12 +165,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.tokens', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -285,12 +275,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('add theme.recipes', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const config = defaultConfig() as UserConfig
     const generator = new Generator(createConfigResult(config))
@@ -377,12 +362,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.recipes', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -440,12 +420,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('add theme.patterns', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -568,13 +543,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.patterns', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
-
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
     const nextConfig = mergeConfigs([
@@ -617,12 +586,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update separator', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -667,12 +631,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('nothing changes', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const config = defaultConfig() as UserConfig
     const generator = new Generator(createConfigResult(config))

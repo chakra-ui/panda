@@ -126,6 +126,8 @@ export class BoxNodeLiteral extends BoxNodeType<LiteralType> {
   }
 }
 
+const recipeProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
+
 export class BoxNodeMap extends BoxNodeType<MapType> {
   public value: MapType['value']
   public spreadConditions?: BoxNodeConditional[]
@@ -133,6 +135,10 @@ export class BoxNodeMap extends BoxNodeType<MapType> {
   constructor(definition: MapType) {
     super(definition)
     this.value = definition.value
+  }
+
+  isRecipe = () => {
+    return recipeProps.some((prop) => this.value.has(prop))
   }
 }
 

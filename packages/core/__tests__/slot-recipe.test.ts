@@ -1,85 +1,124 @@
 import { describe, expect, test } from 'vitest'
-import { getSlotRecipe, processSlotRecipe } from './fixture'
+import { processRecipe } from './fixture'
+import { createGeneratorContext } from '@pandacss/fixture'
 
 describe('slot recipe ruleset', () => {
   test('should work', () => {
-    expect(processSlotRecipe('button', { size: 'sm' })).toMatchInlineSnapshot(`
+    expect(processRecipe('checkbox', { size: 'sm' })).toMatchInlineSnapshot(`
       "@layer recipes.slots {
-          @layer _base {
-              .button__container {
-                  font-family: var(--fonts-mono)
-              }
-              .button__icon {
-                  font-size: 1.5rem
-              }
-          }
-          .button__container--size_sm {
-              font-size: 5rem;
-              line-height: 1em
-          }
-          .button__icon--size_sm {
-              font-size: 2rem
-          }
+
+        .checkbox__control--size_sm {
+          font-size: 2rem;
+          font-weight: var(--font-weights-bold);
+          width: var(--sizes-8);
+          height: var(--sizes-8)
+      }
+
+        .checkbox__label--size_sm {
+          font-size: var(--font-sizes-sm)
+      }
+
+        @layer _base {
+          .checkbox__root {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2)
+      }
+
+          .checkbox__control {
+            border-width: 1px;
+            border-radius: var(--radii-sm)
+      }
+
+          .checkbox__label {
+            margin-inline-start: var(--spacing-2)
+      }
+      }
       }"
     `)
   })
 
   test('assigned recipe with default jsx from slots', () => {
-    expect(getSlotRecipe('button')).toMatchInlineSnapshot(`
+    expect(createGeneratorContext().recipes.details.find((r) => r.baseName === 'checkbox')).toMatchInlineSnapshot(`
       {
-        "baseName": "button",
+        "baseName": "checkbox",
         "config": {
           "base": {
-            "container": {
-              "fontFamily": "mono",
+            "control": {
+              "borderRadius": "sm",
+              "borderWidth": "1px",
             },
-            "icon": {
-              "fontSize": "1.5rem",
+            "label": {
+              "marginStart": "2",
+            },
+            "root": {
+              "alignItems": "center",
+              "display": "flex",
+              "gap": "2",
             },
           },
-          "className": "button",
+          "className": "checkbox",
+          "defaultVariants": {
+            "size": "sm",
+          },
           "slots": [
-            "container",
-            "icon",
+            "root",
+            "control",
+            "label",
           ],
           "variants": {
             "size": {
+              "lg": {
+                "control": {
+                  "height": "12",
+                  "width": "12",
+                },
+                "label": {
+                  "fontSize": "lg",
+                },
+              },
               "md": {
-                "container": {
-                  "fontSize": "3rem",
-                  "lineHeight": "1.2em",
+                "control": {
+                  "height": "10",
+                  "width": "10",
+                },
+                "label": {
+                  "fontSize": "md",
                 },
               },
               "sm": {
-                "container": {
-                  "fontSize": "5rem",
-                  "lineHeight": "1em",
+                "control": {
+                  "height": "8",
+                  "textStyle": "headline.h1",
+                  "width": "8",
                 },
-                "icon": {
-                  "fontSize": "2rem",
+                "label": {
+                  "fontSize": "sm",
                 },
               },
             },
           },
         },
-        "dashName": "button",
+        "dashName": "checkbox",
         "jsx": [
-          "Button",
-          "Button.Container",
-          "Button.Icon",
+          "Checkbox",
+          "Checkbox.Root",
+          "Checkbox.Control",
+          "Checkbox.Label",
         ],
-        "jsxName": "Button",
-        "match": /\\^Button\\$\\|\\^Button\\.Container\\$\\|\\^Button\\.Icon\\$/,
+        "jsxName": "Checkbox",
+        "match": /\\^Checkbox\\$\\|\\^Checkbox\\.Root\\$\\|\\^Checkbox\\.Control\\$\\|\\^Checkbox\\.Label\\$/,
         "props": [
           "size",
         ],
         "splitProps": [Function],
         "type": "recipe",
-        "upperName": "Button",
+        "upperName": "Checkbox",
         "variantKeyMap": {
           "size": [
             "sm",
             "md",
+            "lg",
           ],
         },
         "variantKeys": [

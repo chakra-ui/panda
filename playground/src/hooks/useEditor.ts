@@ -1,9 +1,10 @@
-import { OnMount, OnChange, BeforeMount, EditorProps, Monaco } from '@monaco-editor/react'
+import { OnMount, OnChange, BeforeMount, EditorProps, Monaco as MonacoType } from '@monaco-editor/react'
+import * as Monaco from 'monaco-editor'
+import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings/custom-editor'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useUpdateEffect } from 'usehooks-ts'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocalStorage, useUpdateEffect } from 'usehooks-ts'
 
-import { Artifact } from '@pandacss/types'
 import { State } from './usePlayground'
 
 import { pandaTheme } from '../lib/gruvbox-theme'
@@ -17,13 +18,16 @@ import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
 import { useSearchParams } from 'next/navigation'
-import { AutoImportContext, configureAutoImports } from '../lib/auto-import'
+import { configureAutoImports } from '../lib/auto-import'
+import { UsePanda } from '@/src/hooks/usePanda'
+import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
+
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
-  artifacts: Artifact[]
-  context: AutoImportContext
+  panda: UsePanda
   diffState?: State | null
+  isLoading: boolean
 }
 
 type Tab = 'css' | 'code' | 'config'
@@ -44,13 +48,37 @@ export const defaultEditorOptions: EditorProps['options'] = {
   fontWeight: '400',
 }
 
-const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) => {
+const activateAutoTypings = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
+  const activate = async () => {
+    const { dispose } = await AutoTypings.create(monacoEditor, {
+      monaco,
+      sourceCache: new LocalStorageCache(),
+      fileRootPath: 'file:///',
+      debounceDuration: 500,
+      sourceResolver: new TypingsSourceResolver(),
+    })
+
+    return dispose
+  }
+
+  activate()
+
+  monacoEditor.onDidChangeModel(() => {
+    activate()
+  })
+
+  monacoEditor.onDidChangeModelContent(() => {
+    activate()
+  })
+}
+
+const activateMonacoJSXHighlighter = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
   const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(getWorker(), monaco)
-  const uri = monacoEditor.getModel().uri
+  const uri = monacoEditor.getModel()?.uri
 
   const { highlighter, dispose } = monacoJsxSyntaxHighlight.highlighterBuilder({
     editor: monacoEditor,
-    filePath: uri?.toString() ?? uri.path,
+    filePath: uri?.toString() ?? uri?.path,
   })
 
   highlighter()
@@ -67,7 +95,10 @@ const activateMonacoJSXHighlighter = async (monacoEditor: any, monaco: Monaco) =
 }
 
 export function useEditor(props: PandaEditorProps) {
-  const { onChange, value, artifacts, context } = props
+  const { onChange, value, panda } = props
+
+  const { artifacts, context } = panda
+
   const { resolvedTheme } = useTheme()
 
   const searchParams = useSearchParams()
@@ -77,20 +108,29 @@ export function useEditor(props: PandaEditorProps) {
   const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
-  const [wordWrap, setWordwrap] = useState<'on' | 'off'>('off')
+  const [wordWrap, setWordwrap] = useLocalStorage<'on' | 'off'>('editor_wordWrap', 'off')
 
   const onToggleWrap = useCallback(() => {
     setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     monacoEditorRef.current?.updateOptions({ wordWrap })
   }, [wordWrap])
 
+  const autoImportCtx = useMemo(() => {
+    return {
+      patterns: context.patterns.details,
+      recipes: Array.from(context.recipes.keys),
+    }
+  }, [context])
+
   const configureEditor: OnMount = useCallback(
     (editor, monaco) => {
       activateMonacoJSXHighlighter(editor, monaco)
-      configureAutoImports({ context, monaco, editor })
+      configureAutoImports({ context: autoImportCtx, monaco, editor })
+      activateAutoTypings(editor, monaco)
 
       function registerKeybindings() {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -126,7 +166,7 @@ export function useEditor(props: PandaEditorProps) {
         typeRoots: ['node_modules/@types'],
       })
     },
-    [onToggleWrap, context],
+    [onToggleWrap, autoImportCtx],
   )
 
   const setupLibs = useCallback(
@@ -139,13 +179,12 @@ export function useEditor(props: PandaEditorProps) {
         }))
       })
 
-      for (const lib of libs) {
-        monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath)
-      }
+      return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
     },
     [artifacts],
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const getPandaTypes = useCallback(async () => {}, [])
 
   const onBeforeMount: BeforeMount = (monaco) => {
@@ -204,8 +243,26 @@ export function useEditor(props: PandaEditorProps) {
   }
 
   useUpdateEffect(() => {
-    setupLibs(monacoRef.current!)
+    const libsSetup = setupLibs(monacoRef.current!)
+
+    return () => {
+      for (const lib of libsSetup) {
+        lib?.dispose()
+      }
+    }
   }, [artifacts])
+
+  useUpdateEffect(() => {
+    const autoImports = configureAutoImports({
+      context: autoImportCtx,
+      monaco: monacoRef.current!,
+      editor: monacoEditorRef.current!,
+    })
+
+    return () => {
+      autoImports?.dispose()
+    }
+  }, [context])
 
   return {
     activeTab,

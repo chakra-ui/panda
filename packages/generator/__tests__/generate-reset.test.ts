@@ -1,20 +1,21 @@
 import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 const resetCss = (config: ConfigResultWithHooks) => {
   const ctx = new Generator(config)
-  ctx.appendCss('preflight')
-  return ctx.stylesheet.toCss({ optimize: true })
+  const sheet = ctx.createSheet()
+  ctx.appendCssOfType('preflight', sheet)
+  return sheet.toCss({ optimize: true })
 }
 
 describe('generate reset', () => {
   test('should work', () => {
     const css = resetCss({
-      ...generatorConfig,
+      ...fixtureDefaults,
       config: {
-        ...generatorConfig.config,
+        ...fixtureDefaults.config,
         preflight: { scope: '.pd-reset' },
       },
     })
@@ -198,7 +199,7 @@ describe('generate reset', () => {
         .pd-reset input[type=\\"search\\"],
         .pd-reset input[type=\\"password\\"] {
           -webkit-appearance: none;
-          -moz-appearance: none; 
+          -moz-appearance: none;
         }
 
         .pd-reset input[type='search'] {

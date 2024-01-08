@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import outdent from 'outdent'
-import type { Context } from '../../engines'
 
 export function generateConditions(ctx: Context) {
   const keys = Object.keys(ctx.conditions.values).concat('base')

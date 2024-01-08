@@ -1,12 +1,18 @@
 {
   "name": "@pandacss/astro-plugin-studio",
-  "version": "0.22.1",
+  "version": "0.25.0",
   "description": "Vite plugin for Pandacss Studio",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/astro-plugin-studio"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -35,7 +41,8 @@
     "javascript-stringify": "2.1.0"
   },
   "devDependencies": {
-    "astro": "4.0.6"
+    "astro": "4.0.6",
+    "vite": "5.0.7"
   },
   "peerDependencies": {
     "astro": ">=4"

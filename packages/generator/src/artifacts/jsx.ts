@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import type { ArtifactFilters } from '@pandacss/types'
-import type { Context } from '../engines'
 import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
 import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
 import { generatePreactJsxStringLiteralTypes } from './preact-jsx/types.string-literal'

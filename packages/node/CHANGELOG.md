@@ -1,5 +1,112 @@
 # @pandacss/node
 
+## 0.25.0
+
+### Patch Changes
+
+- bc154358: Fix config dependencies detection by re-introducing the file tracing utility
+- Updated dependencies [59fd291c]
+- Updated dependencies [de282f60]
+- Updated dependencies [de282f60]
+  - @pandacss/generator@0.25.0
+  - @pandacss/types@0.25.0
+  - @pandacss/core@0.25.0
+  - @pandacss/token-dictionary@0.25.0
+  - @pandacss/parser@0.25.0
+  - @pandacss/config@0.25.0
+  - @pandacss/error@0.25.0
+  - @pandacss/extractor@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+- Updated dependencies [61ebf3d2]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/core@0.24.2
+  - @pandacss/config@0.24.2
+  - @pandacss/generator@0.24.2
+  - @pandacss/parser@0.24.2
+  - @pandacss/token-dictionary@0.24.2
+  - @pandacss/error@0.24.2
+  - @pandacss/extractor@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- 10e74428: - Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS
+  wasn't applied correctly
+  - Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+    through the config recipes)
+- Updated dependencies [10e74428]
+  - @pandacss/generator@0.24.1
+  - @pandacss/parser@0.24.1
+  - @pandacss/config@0.24.1
+  - @pandacss/core@0.24.1
+  - @pandacss/error@0.24.1
+  - @pandacss/extractor@0.24.1
+  - @pandacss/logger@0.24.1
+  - @pandacss/shared@0.24.1
+  - @pandacss/token-dictionary@0.24.1
+  - @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Minor Changes
+
+- 63b3f1f2: - Boost style extraction performance by moving more work away from postcss
+  - Using a hashing strategy, the compiler only computes styles/classname once per style object and prop-value-condition
+    pair
+  - Fix regression in previous implementation that increased memory usage per extraction, leading to slower performance
+    over time
+
+### Patch Changes
+
+- Updated dependencies [63b3f1f2]
+- Updated dependencies [f6881022]
+  - @pandacss/core@0.24.0
+  - @pandacss/generator@0.24.0
+  - @pandacss/parser@0.24.0
+  - @pandacss/types@0.24.0
+  - @pandacss/config@0.24.0
+  - @pandacss/token-dictionary@0.24.0
+  - @pandacss/error@0.24.0
+  - @pandacss/extractor@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- 1ea7459c: Fix performance issue where process could get slower due to postcss rules held in memory.
+- 383b6d1b: Fix an issue with the postcss plugin when a config change sometimes didn't trigger files extraction
+- 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
+- Updated dependencies [d30b1737]
+- Updated dependencies [1ea7459c]
+- Updated dependencies [80ada336]
+- Updated dependencies [b01eb049]
+- Updated dependencies [a3b6ed5f]
+- Updated dependencies [bd552b1f]
+- Updated dependencies [840ed66b]
+  - @pandacss/generator@0.23.0
+  - @pandacss/core@0.23.0
+  - @pandacss/parser@0.23.0
+  - @pandacss/logger@0.23.0
+  - @pandacss/config@0.23.0
+  - @pandacss/error@0.23.0
+  - @pandacss/extractor@0.23.0
+  - @pandacss/is-valid-prop@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/token-dictionary@0.23.0
+  - @pandacss/types@0.23.0
+
 ## 0.22.1
 
 ### Patch Changes

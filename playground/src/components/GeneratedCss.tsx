@@ -9,9 +9,12 @@ import parserHtml from 'prettier/parser-html'
 import parserPostCSS from 'prettier/parser-postcss'
 import { useState } from 'react'
 import { CssFileArtifact } from '../hooks/usePanda'
+import { useReadLocalStorage } from 'usehooks-ts'
 
 export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileArtifact[]; visible: boolean }) => {
   const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')
+
+  const wordWrap = useReadLocalStorage<'off' | 'on' | undefined>('wordWrap') ?? undefined
 
   const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
 
@@ -96,7 +99,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
         value={formatCode(content)}
         language="css"
         path={activeTab}
-        options={{ ...defaultEditorOptions, readOnly: true, wordWrap: 'on' }}
+        options={{ ...defaultEditorOptions, readOnly: true, wordWrap }}
       />
     </Stack>
   )

@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import type { Artifact, ArtifactId } from '@pandacss/types'
-import type { Context } from '../engines'
 import { setupArtifacts, setupDesignTokens } from './setup-artifacts'
 
 /**

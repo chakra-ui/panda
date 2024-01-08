@@ -2,17 +2,18 @@ import type { ConfigResultWithHooks } from '@pandacss/types'
 import { createHooks } from 'hookable'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 const tokenCss = (config: ConfigResultWithHooks) => {
   const ctx = new Generator(config)
-  ctx.appendCss('tokens')
-  return ctx.stylesheet.toCss({ optimize: true })
+  const sheet = ctx.createSheet()
+  ctx.appendCssOfType('tokens', sheet)
+  return sheet.toCss({ optimize: true })
 }
 
 describe('generator', () => {
   test('[css] should generate css', () => {
-    expect(tokenCss(generatorConfig)).toMatchInlineSnapshot(`
+    expect(tokenCss(fixtureDefaults)).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(html) {
           --borders-none: none;
