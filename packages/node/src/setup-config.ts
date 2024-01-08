@@ -1,5 +1,5 @@
 import { findConfig } from '@pandacss/config'
-import { messages } from '@pandacss/generator'
+import { messages } from '@pandacss/core'
 import { logger, quote } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import fsExtra from 'fs-extra'

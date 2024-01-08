@@ -1,6 +1,6 @@
-import { Stylesheet, toCss } from '@pandacss/core'
+import type { Context, Stylesheet } from '@pandacss/core'
+import { toCss } from '@pandacss/core'
 import postcss from 'postcss'
-import type { Context } from '../../engines'
 
 export function generateKeyframeCss(ctx: Context, sheet: Stylesheet) {
   const { keyframes = {} } = ctx.config.theme ?? {}

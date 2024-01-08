@@ -1,4 +1,4 @@
-import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
+import { capitalize, createRegex, dashCase, getSlotRecipes, isObject, memo, splitProps } from '@pandacss/shared'
 import type {
   ArtifactFilters,
   Dict,
@@ -281,5 +281,9 @@ export class Recipes {
     })
 
     return Array.from(slots)
+  }
+
+  static isValidNode = (node: unknown): node is RecipeNode => {
+    return isObject(node) && 'type' in node && node.type === 'recipe'
   }
 }

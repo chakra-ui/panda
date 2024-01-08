@@ -1,18 +1,18 @@
-import type { UserConfig } from '@pandacss/types'
+import type { Context } from './context'
 
 export class PathEngine {
-  constructor(private config: UserConfig) {}
+  constructor(private context: Pick<Context, 'config'>) {}
 
   private get cwd() {
-    return this.config.cwd
+    return this.context.config.cwd
   }
 
   private get emitPackage() {
-    return this.config.emitPackage || false
+    return this.context.config.emitPackage || false
   }
 
   private get outdir() {
-    return this.config.outdir
+    return this.context.config.outdir
   }
 
   getFilePath(file?: string) {

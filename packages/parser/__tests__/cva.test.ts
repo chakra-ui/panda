@@ -306,7 +306,7 @@ describe('ast parser / cva', () => {
               },
             ],
             "name": "cva",
-            "type": "object",
+            "type": "cva",
           },
         },
       }

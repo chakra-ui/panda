@@ -1,10 +1,12 @@
 import { colors, quote } from '@pandacss/logger'
 import { outdent } from 'outdent'
-import type { Context } from './engines'
+import type { Context } from './context'
 
 const tick = colors.green().bold('✔️')
 
-export const artifactsGenerated = (ctx: Context) => {
+export const artifactsGenerated = (
+  ctx: Pick<Context, 'config' | 'recipes' | 'patterns' | 'tokens' | 'jsx' | 'isTemplateLiteralSyntax'>,
+) => {
   const {
     config: { outdir },
     recipes,
@@ -94,7 +96,9 @@ export const buildComplete = (count: number) =>
 
 export const cssArtifactComplete = (type: string) => `Successfully generated ${type} css artifact ✨`
 
-export const getMessages = (ctx: Context) => ({
+export const getMessages = (
+  ctx: Pick<Context, 'config' | 'recipes' | 'patterns' | 'tokens' | 'jsx' | 'isTemplateLiteralSyntax'>,
+) => ({
   artifactsGenerated: artifactsGenerated(ctx),
   configExists,
   thankYou,
@@ -105,3 +109,5 @@ export const getMessages = (ctx: Context) => ({
   configWatch,
   cssArtifactComplete,
 })
+
+export type Messages = ReturnType<typeof getMessages>

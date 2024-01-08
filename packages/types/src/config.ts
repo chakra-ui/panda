@@ -107,11 +107,18 @@ export interface ExtendableOptions {
   patterns?: ExtendablePatterns
 }
 
-export interface OutdirImportMap {
+export interface ImportMapInput {
   css: string
   recipes: string
   patterns: string
   jsx?: string
+}
+
+export interface ImportMapOutput<T = string[]> {
+  css: T
+  recipe: T
+  pattern: T
+  jsx: T
 }
 
 interface FileSystemOptions {
@@ -137,7 +144,7 @@ interface FileSystemOptions {
    * }
    * ```
    */
-  importMap?: string | OutdirImportMap
+  importMap?: string | ImportMapInput
   /**
    * List of files glob to watch for changes.
    * @default []

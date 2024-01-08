@@ -55,7 +55,7 @@ describe('{fn}.raw', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -64,7 +64,7 @@ describe('{fn}.raw', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [

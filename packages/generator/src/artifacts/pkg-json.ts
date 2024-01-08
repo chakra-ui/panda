@@ -1,4 +1,4 @@
-import type { Context } from '../engines'
+import type { Context } from '@pandacss/core'
 
 export function generatePackageJson(ctx: Context) {
   const {

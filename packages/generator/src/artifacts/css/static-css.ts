@@ -1,4 +1,4 @@
-import type { Context } from '../../engines'
+import type { Context } from '@pandacss/core'
 import type { Stylesheet } from '@pandacss/core'
 
 export const generateStaticCss = (ctx: Context, sheet?: Stylesheet) => {
