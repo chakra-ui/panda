@@ -14,7 +14,7 @@
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "bright": "0.8.4",
-    "flexsearch": "0.7.31",
+    "flexsearch": "0.7.41",
     "focus-visible": "5.2.0",
     "git-url-parse": "13.1.1",
     "intersection-observer": "0.12.2",
