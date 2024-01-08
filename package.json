@@ -15,7 +15,7 @@
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",
     "test:import-map": "cd packages/config/__tests__/samples/ts-import-map && pnpm test && cd ../ts-import-map-one-source && pnpm test",
     "test": "vitest",
-    "test:codegen": "pnpm -r --filter=./sandbox/codegen test",
+    "test:codegen": "pnpm --filter=./sandbox/codegen test && pnpm --filter=./sandbox/codegen typecheck",
     "test-watch": "vitest --watch -u",
     "lint": "eslint packages --ext .ts",
     "prettier": "prettier --check packages",
