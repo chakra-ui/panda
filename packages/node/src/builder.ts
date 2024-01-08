@@ -172,15 +172,7 @@ export class Builder {
     return valid
   }
 
-  private initialRoot: string | undefined
-
   write = (root: Root) => {
-    if (!this.initialRoot) {
-      this.initialRoot = root.toString()
-    }
-
-    root.removeAll()
-
     const ctx = this.getContextOrThrow()
 
     const sheet = ctx.createSheet()
@@ -188,12 +180,7 @@ export class Builder {
     ctx.appendParserCss(sheet)
     const css = ctx.getCss(sheet)
 
-    root.append(
-      optimizeCss(`
-    ${this.initialRoot}
-    ${css}
-    `),
-    )
+    root.append(optimizeCss(css))
   }
 
   registerDependency = (fn: (dep: Message) => void) => {
