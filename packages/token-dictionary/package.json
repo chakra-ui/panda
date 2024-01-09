@@ -1,12 +1,18 @@
 {
   "name": "@pandacss/token-dictionary",
-  "version": "0.22.1",
+  "version": "0.26.1",
   "description": "Common error messages for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/token-dictionary"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -34,8 +40,5 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "ts-pattern": "5.0.5"
-  },
-  "devDependencies": {
-    "@pandacss/fixture": "workspace:*"
   }
 }

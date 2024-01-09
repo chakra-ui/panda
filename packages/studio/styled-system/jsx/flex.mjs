@@ -1,9 +1,14 @@
 import { createElement, forwardRef } from 'react'
-import { panda } from './factory.mjs';
+import { mergeCss } from '../css/css.mjs';
+import { splitProps } from '../helpers.mjs';
 import { getFlexStyle } from '../patterns/flex.mjs';
+import { panda } from './factory.mjs';
 
 export const Flex = /* @__PURE__ */ forwardRef(function Flex(props, ref) {
-  const { align, justify, direction, wrap, basis, grow, shrink, ...restProps } = props
-const styleProps = getFlexStyle({align, justify, direction, wrap, basis, grow, shrink})
-return createElement(panda.div, { ref, ...styleProps, ...restProps })
-})
+  const [patternProps, restProps] = splitProps(props, ["align","justify","direction","wrap","basis","grow","shrink"])
+
+const styleProps = getFlexStyle(patternProps)
+const mergedProps = { ref, ...styleProps, ...restProps }
+
+return createElement(panda.div, mergedProps)
+  })

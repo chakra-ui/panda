@@ -173,3 +173,5 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     isResponsive,
   }
 }
+
+export type UsePlayground = ReturnType<typeof usePlayground>

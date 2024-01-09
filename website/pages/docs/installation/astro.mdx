@@ -42,39 +42,25 @@ Install panda and create your `panda.config.ts` file.
   </Tab>
 </Tabs>
 
-### Add Panda to your Astro config
+### Update package.json scripts
 
-Add panda integration to your `astro.config.mjs` file.
+Open your `package.json` file and update the `scripts` section as follows:
 
-```js
-import { defineConfig } from 'astro/config'
-import pandacss from '@pandacss/astro'
-
-export default defineConfig({
-  // ...
-  integrations: [pandacss()]
-})
-```
-
-  ### Update package.json scripts
-
-  Open your `package.json` file and update the `scripts` section as follows:
-
-  ```diff {3}
-  {
-    "scripts": {
-  +    "prepare": "panda codegen",
-      "dev": "astro dev",
+```diff {3}
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "dev": "astro dev",
       "start": "astro start",
-      "build": "astro build",
-      "preview": "astro preview"
-    }
+    "build": "astro build",
+    "preview": "astro preview"
   }
-  ```
+}
+```
 
     The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
-  > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
 
 ### Configure the content
 
@@ -85,11 +71,19 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   preflight: true,
-  // define the content to scan 👇🏻
-  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
-  exclude: [],
-  outdir: 'styled-system'
+// define the content to scan 👇🏻
+ include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
+ exclude: [],
+outdir: 'styled-system'
 })
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `src/index.css` file imported in the root component of your project.
+
+```css filename="src/index.css"
+@layer reset, base, tokens, recipes, utilities;
 ```
 
 ### Start your build process
@@ -127,8 +121,8 @@ Use the generated style utilities in your code, and panda will extract them to t
 ---
 import { css } from '../../styled-system/css';
 ---
-<div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello !</div>
-```
+    <div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello !</div>
+  ```
 </Steps>
 
 ## Troubleshooting

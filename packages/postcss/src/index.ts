@@ -23,7 +23,6 @@ function isValidCss(file: string) {
 const shouldSkip = (fileName: string | undefined) => {
   if (!fileName) return true
   if (!isValidCss(fileName)) return true
-  if (fileName.includes('@pandacss/astro/base.css')) return false
   return nodeModulesRegex.test(fileName)
 }
 
@@ -46,7 +45,7 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
 
         await builder.emit()
 
-        await builder.extract()
+        builder.extract()
 
         builder.registerDependency((dep) => {
           result.messages.push({

@@ -1,11 +1,17 @@
 {
   "name": "@pandacss/studio",
-  "version": "0.22.1",
+  "version": "0.26.1",
   "description": "The automated token documentation for Panda CSS",
   "main": "dist/studio.js",
   "module": "dist/studio.mjs",
   "types": "dist/studio.d.ts",
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/studio"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -54,7 +60,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@pandacss/astro-plugin-studio": "workspace:*",
-    "astro": "4.0.3",
+    "astro": "4.0.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "vite": "5.0.7"

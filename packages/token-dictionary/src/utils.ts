@@ -29,6 +29,15 @@ export function hasReference(value: string) {
   return REFERENCE_REGEX.test(value)
 }
 
+export function expandReferences(value: string, fn: (key: string) => string) {
+  if (!hasReference(value)) return value
+  const references = getReferences(value)
+  return references.reduce((valueStr, key) => {
+    const value = fn(key) ?? key
+    return valueStr.replace(`{${key}}`, value)
+  }, value)
+}
+
 /* -----------------------------------------------------------------------------
  * Shared token utilities
  * -----------------------------------------------------------------------------*/

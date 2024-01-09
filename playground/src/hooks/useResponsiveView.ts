@@ -1,4 +1,3 @@
-import { UsePanda } from '@/src/hooks/usePanda'
 import { EventHandler, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type PointerEvent = TouchEvent & MouseEvent
@@ -16,9 +15,8 @@ const getPointerPosition = (e: Event) => {
   return { x: event.clientX, y: event.clientY }
 }
 
-export function useResponsiveView(panda: UsePanda) {
+export function useResponsiveView(_breakpoints: Record<string, string> = {}) {
   const ASPECT_RATIO = 4 / 5
-  const _breakpoints = panda.context.config.theme?.breakpoints ?? {}
   const breakpoints = Object.assign(
     { base: { width: 320, height: 670 } },
     Object.entries(_breakpoints).reduce((acc, nxt) => {

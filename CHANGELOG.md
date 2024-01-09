@@ -6,6 +6,469 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.26.1] - 2024-01-09
+
+### Fixed
+
+Hotfix `strictTokens` after introducing `strictPropertyValues`
+
+## [0.26.0] - 2024-01-09
+
+### Fixed
+
+- Fix issue where `[]` escape hatch clashed with named grid lines
+- Fix `@pandacss/postcss` plugin regression when the entry CSS file (with `@layer` rules order) contains user-defined
+  rules, those user-defined rules would not be reloaded correctly after being changed.
+- Fix an edge-case for when the `config.outdir` would not be set in the `panda.config`
+
+Internal details: The `outdir` would not have any value after a config change due to the fallback being set in the
+initial config resolving code path but not in context reloading code path, moving it inside the config loading function
+fixes this issue.
+
+### Added
+
+- Add `data-placeholder` and `data-placeholder-shown` to `preset-base` conditions
+- Display better CssSyntaxError logs
+- Add `borderWidths` token to types
+
+### Changed
+
+- Remove eject type from presets
+- Refactors the parser and import analysis logic. The goal is to ensure we can re-use the import logic in ESLint Plugin
+  and Node.js.
+- `config.strictTokens` will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`, etc.
+- `config.strictPropertyValues` is added and will throw for properties that do not have config tokens, such as
+  `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
+
+In version
+[0.19.0 we changed `config.strictTokens`](https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md#0190---2023-11-24)
+typings a bit so that the only property values allowed were the config tokens OR the predefined CSS values, ex: `flex`
+for the property `display`, which prevented typos such as `display: 'aaa'`.
+
+The problem with this change is that it means you would have to provide every CSS properties a given set of values so
+that TS wouldn't throw any error. Thus, we will partly revert this change and make it so that `config.strictTokens`
+shouldn't affect properties that do not have config tokens, such as `content`, `willChange`, `display`, etc.
+
+v0.19.0:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+```
+
+now:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
+```
+
+Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
+with `config.strictTokens` if you want to be strict on both properties with config tokens and properties without config
+tokens.
+
+The new `config.strictPropertyValues` option will only be applied to this exhaustive list of properties:
+
+```ts
+type StrictableProps =
+  | 'alignContent'
+  | 'alignItems'
+  | 'alignSelf'
+  | 'all'
+  | 'animationComposition'
+  | 'animationDirection'
+  | 'animationFillMode'
+  | 'appearance'
+  | 'backfaceVisibility'
+  | 'backgroundAttachment'
+  | 'backgroundClip'
+  | 'borderCollapse'
+  | 'border'
+  | 'borderBlock'
+  | 'borderBlockEnd'
+  | 'borderBlockStart'
+  | 'borderBottom'
+  | 'borderInline'
+  | 'borderInlineEnd'
+  | 'borderInlineStart'
+  | 'borderLeft'
+  | 'borderRight'
+  | 'borderTop'
+  | 'borderBlockEndStyle'
+  | 'borderBlockStartStyle'
+  | 'borderBlockStyle'
+  | 'borderBottomStyle'
+  | 'borderInlineEndStyle'
+  | 'borderInlineStartStyle'
+  | 'borderInlineStyle'
+  | 'borderLeftStyle'
+  | 'borderRightStyle'
+  | 'borderTopStyle'
+  | 'boxDecorationBreak'
+  | 'boxSizing'
+  | 'breakAfter'
+  | 'breakBefore'
+  | 'breakInside'
+  | 'captionSide'
+  | 'clear'
+  | 'columnFill'
+  | 'columnRuleStyle'
+  | 'contentVisibility'
+  | 'direction'
+  | 'display'
+  | 'emptyCells'
+  | 'flexDirection'
+  | 'flexWrap'
+  | 'float'
+  | 'fontKerning'
+  | 'forcedColorAdjust'
+  | 'isolation'
+  | 'lineBreak'
+  | 'mixBlendMode'
+  | 'objectFit'
+  | 'outlineStyle'
+  | 'overflow'
+  | 'overflowX'
+  | 'overflowY'
+  | 'overflowBlock'
+  | 'overflowInline'
+  | 'overflowWrap'
+  | 'pointerEvents'
+  | 'position'
+  | 'resize'
+  | 'scrollBehavior'
+  | 'touchAction'
+  | 'transformBox'
+  | 'transformStyle'
+  | 'userSelect'
+  | 'visibility'
+  | 'wordBreak'
+  | 'writingMode'
+```
+
+## [0.25.0] - 2024-01-06
+
+### Fixed
+
+- Fix config dependencies detection by re-introducing the file tracing utility
+- Fix issue where `base` doesn't work within css function
+
+```jsx
+css({
+  // This didn't work, but now it does
+  base: { color: 'blue' },
+})
+```
+
+## Added
+
+- Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: '*', // ✅ will generate the staticCss for all recipes
+  },
+})
+```
+
+- Support token reference syntax when authoring styles object, text styles and layer styles.
+
+```jsx
+import { css } from '../styled-system/css'
+
+const styles = css({
+  border: '2px solid {colors.primary}',
+})
+```
+
+This will resolve the token reference and convert it to css variables.
+
+```css
+.border_2px_solid_\{colors\.primary\} {
+  border: 2px solid var(--colors-primary);
+}
+```
+
+The alternative to this was to use the `token(...)` css function which will be resolved.
+
+### `token(...)` vs `{...}`
+
+Both approaches return the css variable
+
+```jsx
+const styles = css({
+  // token reference syntax
+  border: '2px solid {colors.primary}',
+  // token function syntax
+  border: '2px solid token(colors.primary)',
+})
+```
+
+However, The `token(...)` syntax allows you to set a fallback value.
+
+```jsx
+const styles = css({
+  border: '2px solid token(colors.primary, red)',
+})
+```
+
+## [0.24.2] - 2024-01-04
+
+### Fixed
+
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being seen as a
+  truthy value
+- Fix an issue with the `panda init` command which didn't update existing `.gitignore` to include the `styled-system`
+- Fix issue where config slot recipes with compound variants were not processed correctly
+
+## [0.24.1] - 2024-01-02
+
+### Fixed
+
+- Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS wasn't
+  applied correctly
+- Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+  through the config recipes)
+
+## [0.24.0] - 2024-01-02
+
+### Fixed
+
+- Fix regression in previous implementation that increased memory usage per extraction, leading to slower performance
+  over time
+
+### Added
+
+Add `patterns` to `config.staticCss`
+
+### Changed
+
+- Boost style extraction performance by moving more work away from postcss
+- Using a hashing strategy, the compiler only computes styles/classname once per style object and prop-value-condition
+  pair
+- Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+  need (it's still possible by explicitly using `responsive: true`).
+
+```ts
+const card = defineRecipe({
+  className: 'card',
+  base: { color: 'white' },
+  variants: {
+    size: {
+      small: { fontSize: '14px' },
+      large: { fontSize: '18px' },
+    },
+    visual: {
+      primary: { backgroundColor: 'blue' },
+      secondary: { backgroundColor: 'gray' },
+    },
+  },
+})
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: {
+      card: ['*'], // this
+
+      // was equivalent to:
+      card: [
+        // notice how `responsive: true` was implicitly added
+        { size: ['*'], responsive: true },
+        { visual: ['*'], responsive: true },
+      ],
+
+      //   will now correctly be equivalent to:
+      card: [{ size: ['*'] }, { visual: ['*'] }],
+    },
+  },
+})
+```
+
+Here's the diff in the generated CSS:
+
+```diff
+@layer recipes {
+  .card--size_small {
+    font-size: 14px;
+  }
+
+  .card--size_large {
+    font-size: 18px;
+  }
+
+  .card--visual_primary {
+    background-color: blue;
+  }
+
+  .card--visual_secondary {
+    background-color: gray;
+  }
+
+  @layer _base {
+    .card {
+      color: var(--colors-white);
+    }
+  }
+
+-  @media screen and (min-width: 40em) {
+-    -.sm\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.sm\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.sm\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.sm\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 48em) {
+-    -.md\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.md\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.md\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.md\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 64em) {
+-    -.lg\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.lg\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.lg\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.lg\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 80em) {
+-    -.xl\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.xl\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.xl\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.xl\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 96em) {
+-    -.\32xl\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.\32xl\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.\32xl\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.\32xl\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+}
+```
+
+## [0.23.0] - 2023-12-15
+
+### Fixed
+
+- Fix issue where style props wouldn't be properly passed when using `config.jsxStyleProps` set to `minimal` or `none`
+  with JSX patterns (`Box`, `Stack`, `Flex`, etc.)
+- Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
+- Fix performance issue where process could get slower due to postcss rules held in memory.
+- Fix an issue with the postcss plugin when a config change sometimes didn't trigger files extraction
+- Fix & perf improvement: skip JSX parsing when not using `config.jsxFramework` / skip tagged template literal parsing
+  when not using `config.syntax` set to "template-literal"
+- Fix a parser issue where we didn't handle import aliases when using a {xxx}.raw() function.
+
+ex:
+
+```ts
+// button.stories.ts
+import { button as buttonRecipe } from '@ui/styled-system/recipes'
+
+export const Primary: Story = {
+  // ❌ this wouldn't be parsed as a recipe because of the alias + .raw()
+  //  -> ✅ it's now fixed
+  args: buttonRecipe.raw({
+    color: 'primary',
+  }),
+}
+```
+
+### Added
+
+- Add support for emit-pkg command to emit just the `package.json` file with the required entrypoints. If an existing
+  `package.json` file is present, the `exports` field will be updated.
+
+When setting up Panda in a monorepo, this command is useful in monorepo setups where you want the codegen to run only in
+a dedicated workspace package.
+
+- Automatically extract/generate CSS for `sva` even if `slots` are not statically extractable, since it will only
+  produce atomic styles, we don't care much about slots for `sva` specifically
+
+Currently the CSS won't be generated if the `slots` are missing which can be problematic when getting them from another
+file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
+
+```ts
+import { sva } from '../styled-system/css'
+import { slots } from './slots'
+
+const card = sva({
+  slots, // ❌ did NOT work -> ✅ will now work as expected
+  base: {
+    root: {
+      p: '6',
+      m: '4',
+      w: 'md',
+      boxShadow: 'md',
+      borderRadius: 'md',
+      _dark: { bg: '#262626', color: 'white' },
+    },
+    content: {
+      textStyle: 'lg',
+    },
+    title: {
+      textStyle: 'xl',
+      fontWeight: 'semibold',
+      pb: '2',
+    },
+  },
+})
+```
+
+### Changed
+
+- Log stacktrace on error instead of only logging the message
+
 ## [0.22.1] - 2023-12-15
 
 ### Fixed

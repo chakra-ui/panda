@@ -1,4 +1,4 @@
-import { FormatCode, WrapText } from '@/src/components/icons'
+import { FormatCode, LoaderIcon, WrapText } from '@/src/components/icons'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
@@ -70,6 +70,16 @@ export const Editor = (props: PandaEditorProps) => {
 
           <div className={css({ ml: 'auto', display: 'flex', gap: '0.5' })}>
             <button
+              hidden={!props.isLoading}
+              className={cx(
+                actionButton(),
+                css({ bg: 'transparent!', animation: 'spin', _hidden: { display: 'none' } }),
+              )}
+              data-active
+            >
+              <LoaderIcon />
+            </button>
+            <button
               className={actionButton()}
               title="Toggle word wrap (Alt + Z)"
               data-active={wordWrap === 'on' ? '' : undefined}
@@ -95,7 +105,7 @@ export const Editor = (props: PandaEditorProps) => {
               language={activeTab === 'css' ? 'css' : 'typescript'}
               originalModelPath={editorPaths[activeTab]}
               modifiedModelPath={'modified-' + editorPaths[activeTab]}
-              options={{ ...defaultEditorOptions, renderSideBySide: false, readOnly: true }}
+              options={{ ...defaultEditorOptions, wordWrap, renderSideBySide: false, readOnly: true }}
               beforeMount={onBeforeMount}
               onMount={(editor, monaco) => onCodeEditorMount(editor.getModifiedEditor(), monaco)}
             />
@@ -104,7 +114,7 @@ export const Editor = (props: PandaEditorProps) => {
               value={props.value[activeTab]}
               language={activeTab === 'css' ? 'css' : 'typescript'}
               path={editorPaths[activeTab]}
-              options={defaultEditorOptions}
+              options={{ ...defaultEditorOptions, wordWrap }}
               beforeMount={onBeforeMount}
               onMount={onCodeEditorMount}
               onChange={onCodeEditorChange}

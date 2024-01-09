@@ -1,8 +1,10 @@
 {
-  "extends": "../../tsconfig.json",
-  "include": ["src", "index.ts"],
-  "exclude": ["node_modules", "./__tests__/npm-bench", "./__tests__/samples"],
+  "extends": "../../tsconfig.build.json",
+  "include": ["src", "__tests__"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
+    "baseUrl": ".",
+    "paths": {
+      "@pandacss/fixture": ["../fixture/src/index.ts"]
+    }
   }
 }

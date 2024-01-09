@@ -1,5 +1,96 @@
 # @pandacss/config
 
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/error@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/preset-base@0.26.1
+- @pandacss/preset-panda@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- 1bd7fbb7: Fix an edge-case for when the `config.outdir` would not be set in the `panda.config`
+
+  Internal details: The `outdir` would not have any value after a config change due to the fallback being set in the
+  initial config resolving code path but not in context reloading code path, moving it inside the config loading
+  function fixes this issue.
+
+- Updated dependencies [3f6b3662]
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+  - @pandacss/preset-base@0.26.0
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/preset-panda@0.26.0
+  - @pandacss/error@0.26.0
+  - @pandacss/logger@0.26.0
+
+## 0.25.0
+
+### Patch Changes
+
+- Updated dependencies [59fd291c]
+  - @pandacss/types@0.25.0
+  - @pandacss/preset-base@0.25.0
+  - @pandacss/preset-panda@0.25.0
+  - @pandacss/error@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/preset-base@0.24.2
+  - @pandacss/preset-panda@0.24.2
+  - @pandacss/error@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- @pandacss/error@0.24.1
+- @pandacss/logger@0.24.1
+- @pandacss/preset-base@0.24.1
+- @pandacss/preset-panda@0.24.1
+- @pandacss/shared@0.24.1
+- @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- Updated dependencies [f6881022]
+  - @pandacss/types@0.24.0
+  - @pandacss/preset-base@0.24.0
+  - @pandacss/preset-panda@0.24.0
+  - @pandacss/error@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- Updated dependencies [bd552b1f]
+  - @pandacss/logger@0.23.0
+  - @pandacss/error@0.23.0
+  - @pandacss/preset-base@0.23.0
+  - @pandacss/preset-panda@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/types@0.23.0
+
 ## 0.22.1
 
 ### Patch Changes

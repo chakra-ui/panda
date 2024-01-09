@@ -11,7 +11,7 @@ Panda provides utilities for defining and customizing transitions.
 
 A shorthand utility for defining common transition sets.
 
-Values are `all`, common`, `colors`, `opacity`, `shadow`, `transform`.
+Values are `all`, `common`, `colors`, `opacity`, `shadow`, `transform`.
 
 ```jsx
 <div className={css({ transition: 'all' })} />

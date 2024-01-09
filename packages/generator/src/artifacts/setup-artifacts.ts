@@ -1,6 +1,6 @@
+import type { Context } from '@pandacss/core'
 import type { AffectedArtifacts, Artifact, ArtifactFilters, ArtifactId } from '@pandacss/types'
 import outdent from 'outdent'
-import type { Context } from '../engines'
 import { generateConditions } from './js/conditions'
 import { generateStringLiteralConditions } from './js/conditions.string-literal'
 import { generateCssFn } from './js/css-fn'

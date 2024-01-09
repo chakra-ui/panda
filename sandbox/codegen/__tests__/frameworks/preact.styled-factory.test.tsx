@@ -1,5 +1,6 @@
+/** @jsxImportSource preact */
 import { describe, expect, test } from 'vitest'
-import { styled } from '../../styled-system-preact/jsx'
+import { Box, Stack, styled } from '../../styled-system-preact/jsx'
 // @ts-expect-error https://github.com/vitest-dev/vitest/issues/747#issuecomment-1140225294
 import tlp = require('@testing-library/preact')
 const render = tlp.render
@@ -137,7 +138,9 @@ describe('styled factory - cva', () => {
       </styled.div>,
     )
 
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot('"<div width=\\"123\\" class=\\"h_123\\">Click me</div>"')
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      '"<div width=\\"123\\" class=\\"h_123\\">Click me</div>"',
+    )
   })
 })
 
@@ -229,6 +232,26 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
       '"<button class=\\"button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn\\">Click me</button>"',
+    )
+  })
+
+  test('box pattern', () => {
+    const { container } = render(<Box color="red.300">Click me</Box>)
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      '"<div class=\\"text_red.300\\">Click me</div>"',
+    )
+  })
+
+  test('stack pattern', () => {
+    const { container } = render(
+      <Stack direction="column" color="red.400">
+        Click me
+      </Stack>,
+    )
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      '"<div class=\\"d_flex flex_column gap_10px text_red.400\\">Click me</div>"',
     )
   })
 })

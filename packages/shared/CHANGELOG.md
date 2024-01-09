@@ -1,5 +1,28 @@
 # @pandacss/shared
 
+## 0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- 657ca5da: Fix issue where `[]` escape hatch clashed with named grid lines
+
+## 0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- 71e82a4e: Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
+  seen as a truthy value
+
+## 0.24.1
+
+## 0.24.0
+
+## 0.23.0
+
 ## 0.22.1
 
 ### Patch Changes
