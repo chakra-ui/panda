@@ -1,5 +1,38 @@
 # @pandacss/node
 
+## 0.26.0
+
+### Minor Changes
+
+- 1bd7fbb7: Fix `@pandacss/postcss` plugin regression when the entry CSS file (with `@layer` rules order) contains
+  user-defined rules, those user-defined rules would not be reloaded correctly after being changed.
+
+### Patch Changes
+
+- 1bd7fbb7: Fix an edge-case for when the `config.outdir` would not be set in the `panda.config`
+
+  Internal details: The `outdir` would not have any value after a config change due to the fallback being set in the
+  initial config resolving code path but not in context reloading code path, moving it inside the config loading
+  function fixes this issue.
+
+- Updated dependencies [a179d74f]
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+- Updated dependencies [14033e00]
+- Updated dependencies [1bd7fbb7]
+- Updated dependencies [d420c676]
+  - @pandacss/generator@0.26.0
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/core@0.26.0
+  - @pandacss/config@0.26.0
+  - @pandacss/parser@0.26.0
+  - @pandacss/token-dictionary@0.26.0
+  - @pandacss/error@0.26.0
+  - @pandacss/extractor@0.26.0
+  - @pandacss/logger@0.26.0
+
 ## 0.25.0
 
 ### Patch Changes
