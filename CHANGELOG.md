@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.26.1] - 2024-01-09
+
+### Fixed
+
+Hotfix `strictTokens` after introducing `strictPropertyValues`
+
 ## [0.26.0] - 2024-01-09
 
 ### Fixed
