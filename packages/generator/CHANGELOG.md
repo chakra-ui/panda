@@ -1,5 +1,152 @@
 # @pandacss/generator
 
+## 0.26.1
+
+### Patch Changes
+
+- 6de4c737: Hotfix `strictTokens` after introducing `strictPropertyValues`
+  - @pandacss/core@0.26.1
+  - @pandacss/is-valid-prop@0.26.1
+  - @pandacss/logger@0.26.1
+  - @pandacss/shared@0.26.1
+  - @pandacss/token-dictionary@0.26.1
+  - @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- a179d74f: tl;dr:
+
+  - `config.strictTokens` will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`,
+    etc.
+  - `config.strictPropertyValues` is added and will throw for properties that do not have config tokens, such as
+    `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
+
+  ***
+
+  In version
+  [0.19.0 we changed `config.strictTokens`](https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md#0190---2023-11-24)
+  typings a bit so that the only property values allowed were the config tokens OR the predefined CSS values, ex: `flex`
+  for the property `display`, which prevented typos such as `display: 'aaa'`.
+
+  The problem with this change is that it means you would have to provide every CSS properties a given set of values so
+  that TS wouldn't throw any error. Thus, we will partly revert this change and make it so that `config.strictTokens`
+  shouldn't affect properties that do not have config tokens, such as `content`, `willChange`, `display`, etc.
+
+  v0.19.0:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+  ```
+
+  now:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
+  ```
+
+  Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
+  with `config.strictTokens` if you want to be strict on both properties with config tokens and properties without
+  config tokens.
+
+  The new `config.strictPropertyValues` option will only be applied to this exhaustive list of properties:
+
+  ```ts
+  type StrictableProps =
+    | 'alignContent'
+    | 'alignItems'
+    | 'alignSelf'
+    | 'all'
+    | 'animationComposition'
+    | 'animationDirection'
+    | 'animationFillMode'
+    | 'appearance'
+    | 'backfaceVisibility'
+    | 'backgroundAttachment'
+    | 'backgroundClip'
+    | 'borderCollapse'
+    | 'border'
+    | 'borderBlock'
+    | 'borderBlockEnd'
+    | 'borderBlockStart'
+    | 'borderBottom'
+    | 'borderInline'
+    | 'borderInlineEnd'
+    | 'borderInlineStart'
+    | 'borderLeft'
+    | 'borderRight'
+    | 'borderTop'
+    | 'borderBlockEndStyle'
+    | 'borderBlockStartStyle'
+    | 'borderBlockStyle'
+    | 'borderBottomStyle'
+    | 'borderInlineEndStyle'
+    | 'borderInlineStartStyle'
+    | 'borderInlineStyle'
+    | 'borderLeftStyle'
+    | 'borderRightStyle'
+    | 'borderTopStyle'
+    | 'boxDecorationBreak'
+    | 'boxSizing'
+    | 'breakAfter'
+    | 'breakBefore'
+    | 'breakInside'
+    | 'captionSide'
+    | 'clear'
+    | 'columnFill'
+    | 'columnRuleStyle'
+    | 'contentVisibility'
+    | 'direction'
+    | 'display'
+    | 'emptyCells'
+    | 'flexDirection'
+    | 'flexWrap'
+    | 'float'
+    | 'fontKerning'
+    | 'forcedColorAdjust'
+    | 'isolation'
+    | 'lineBreak'
+    | 'mixBlendMode'
+    | 'objectFit'
+    | 'outlineStyle'
+    | 'overflow'
+    | 'overflowX'
+    | 'overflowY'
+    | 'overflowBlock'
+    | 'overflowInline'
+    | 'overflowWrap'
+    | 'pointerEvents'
+    | 'position'
+    | 'resize'
+    | 'scrollBehavior'
+    | 'touchAction'
+    | 'transformBox'
+    | 'transformStyle'
+    | 'userSelect'
+    | 'visibility'
+    | 'wordBreak'
+    | 'writingMode'
+  ```
+
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+- Updated dependencies [14033e00]
+- Updated dependencies [d420c676]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/core@0.26.0
+  - @pandacss/token-dictionary@0.26.0
+  - @pandacss/is-valid-prop@0.26.0
+  - @pandacss/logger@0.26.0
+
 ## 0.25.0
 
 ### Patch Changes

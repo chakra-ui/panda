@@ -1,5 +1,35 @@
 # @pandacss/parser
 
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/config@0.26.1
+- @pandacss/core@0.26.1
+- @pandacss/extractor@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- d420c676: Refactors the parser and import analysis logic. The goal is to ensure we can re-use the import logic in
+  ESLint Plugin and Node.js.
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+- Updated dependencies [14033e00]
+- Updated dependencies [1bd7fbb7]
+- Updated dependencies [d420c676]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/core@0.26.0
+  - @pandacss/config@0.26.0
+  - @pandacss/extractor@0.26.0
+  - @pandacss/logger@0.26.0
+
 ## 0.25.0
 
 ### Patch Changes

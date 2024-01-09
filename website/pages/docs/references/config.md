@@ -740,11 +740,26 @@ Used to generate css utility classes for your project.
 
 **Default**: `false`
 
-Only allow token values and prevent custom or raw CSS values.
+Only allow token values and prevent custom or raw CSS values. Will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
 
 ```json
 {
   "strictTokens": false
+}
+```
+
+### strictPropertyValues
+
+**Type**: `boolean`
+
+**Default**: `false`
+
+Only use valid CSS values for properties that do have a predefined list of values. Will throw for properties that do not have config tokens, such as
+`display`, `content`, `willChange`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
+
+```json
+{
+  "strictPropertyValues": false
 }
 ```
 
