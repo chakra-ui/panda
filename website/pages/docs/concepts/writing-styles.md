@@ -115,6 +115,15 @@ css({ fontSize: '[123px]' }) // ✅ Valid, since `[123px]` is using the escape-h
 css({ content: 'abc' }) // ✅ Valid, since `content` isn't bound to a config token
 ```
 
+For one-off styles, you can always use the escape-hatch syntax `[xxx]` to use custom or raw CSS values without TypeScript errors.
+
+```ts filename="panda.config.ts"
+import { css } from '../styled-system/css'
+
+css({ bg: '[red]' }) // ✅ Valid, since `[red]` is using the escape-hatch syntax
+css({ fontSize: '[123px]' }) // ✅ Valid, since `[123px]` is using the escape-hatch syntax
+```
+
 #### strictPropertyValues
 
 With `config.strictPropertyValues` enabled, you can only use valid CSS values for properties that do have a predefined list of values in your styles. This prevents the use of custom or raw CSS values.
