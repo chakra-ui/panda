@@ -16,6 +16,12 @@ describe('generator', () => {
     expect(tokenCss(fixtureDefaults)).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(html) {
+          --aspect-ratios-square: 1 / 1;
+          --aspect-ratios-landscape: 4 / 3;
+          --aspect-ratios-portrait: 3 / 4;
+          --aspect-ratios-wide: 16 / 9;
+          --aspect-ratios-ultrawide: 18 / 5;
+          --aspect-ratios-golden: 1.618 / 1;
           --borders-none: none;
           --easings-default: cubic-bezier(0.4, 0, 0.2, 1);
           --easings-linear: linear;
