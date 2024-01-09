@@ -97,7 +97,7 @@ const styles = css({ bg: '|' })
 > You can also enable the `strictTokens: true` setting in the Panda configuration. This allows only token values and prevents the use of custom or raw CSS values.
 
 - `config.strictTokens` will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`, etc.
-- `config.strictPropertyValues` is added and will throw for properties that do not have config tokens, such as
+- `config.strictPropertyValues` will throw for properties that do not have config tokens, such as
   `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
 
 #### strictTokens
