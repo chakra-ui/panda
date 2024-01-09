@@ -1,5 +1,11 @@
 # @pandacss/postcss
 
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/node@0.26.1
+
 ## 0.26.0
 
 ### Patch Changes
