@@ -96,6 +96,119 @@ const styles = css({ bg: '|' })
 
 > You can also enable the `strictTokens: true` setting in the Panda configuration. This allows only token values and prevents the use of custom or raw CSS values.
 
+- `config.strictTokens` will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`, etc.
+- `config.strictPropertyValues` is added and will throw for properties that do not have config tokens, such as
+  `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
+
+#### strictTokens
+
+With `config.strictTokens` enabled, you can only use token values in your styles. This prevents the use of custom or raw CSS values.
+
+```ts filename="panda.config.ts"
+import { css } from '../styled-system/css'
+
+css({ bg: 'red' }) // ❌ Error: "red" is not a valid token value
+css({ fontSize: '123px' }) // ❌ Error: "123px" is not a valid token value
+
+css({ bg: 'red.400' }) // ✅ Valid
+css({ fontSize: '[123px]' }) // ✅ Valid, since `[123px]` is using the escape-hatch syntax
+css({ content: 'abc' }) // ✅ Valid, since `content` isn't bound to a config token
+```
+
+#### strictPropertyValues
+
+With `config.strictPropertyValues` enabled, you can only use valid CSS values for properties that do have a predefined list of values in your styles. This prevents the use of custom or raw CSS values.
+
+```ts filename="panda.config.ts"
+css({ display: 'flex' }) // ✅ Valid
+css({ display: 'block' }) // ✅ Valid
+
+css({ display: 'abc' }) // ❌ will throw since 'abc' is not part of predefined values of 'display'
+css({ pos: 'absolute123' }) // ❌ will throw since 'absolute123' is not part of predefined values of 'position'
+
+css({ content: '""' }) // ✅ Valid, since `content` does not have a predefined list of values
+css({ flex: '0 1' }) // ✅ Valid, since `flex` does not have a predefined list of values
+```
+
+The `config.strictPropertyValues` option will only be applied to this exhaustive list of properties:
+
+```ts
+type StrictableProps =
+  | 'alignContent'
+  | 'alignItems'
+  | 'alignSelf'
+  | 'all'
+  | 'animationComposition'
+  | 'animationDirection'
+  | 'animationFillMode'
+  | 'appearance'
+  | 'backfaceVisibility'
+  | 'backgroundAttachment'
+  | 'backgroundClip'
+  | 'borderCollapse'
+  | 'border'
+  | 'borderBlock'
+  | 'borderBlockEnd'
+  | 'borderBlockStart'
+  | 'borderBottom'
+  | 'borderInline'
+  | 'borderInlineEnd'
+  | 'borderInlineStart'
+  | 'borderLeft'
+  | 'borderRight'
+  | 'borderTop'
+  | 'borderBlockEndStyle'
+  | 'borderBlockStartStyle'
+  | 'borderBlockStyle'
+  | 'borderBottomStyle'
+  | 'borderInlineEndStyle'
+  | 'borderInlineStartStyle'
+  | 'borderInlineStyle'
+  | 'borderLeftStyle'
+  | 'borderRightStyle'
+  | 'borderTopStyle'
+  | 'boxDecorationBreak'
+  | 'boxSizing'
+  | 'breakAfter'
+  | 'breakBefore'
+  | 'breakInside'
+  | 'captionSide'
+  | 'clear'
+  | 'columnFill'
+  | 'columnRuleStyle'
+  | 'contentVisibility'
+  | 'direction'
+  | 'display'
+  | 'emptyCells'
+  | 'flexDirection'
+  | 'flexWrap'
+  | 'float'
+  | 'fontKerning'
+  | 'forcedColorAdjust'
+  | 'isolation'
+  | 'lineBreak'
+  | 'mixBlendMode'
+  | 'objectFit'
+  | 'outlineStyle'
+  | 'overflow'
+  | 'overflowX'
+  | 'overflowY'
+  | 'overflowBlock'
+  | 'overflowInline'
+  | 'overflowWrap'
+  | 'pointerEvents'
+  | 'position'
+  | 'resize'
+  | 'scrollBehavior'
+  | 'touchAction'
+  | 'transformBox'
+  | 'transformStyle'
+  | 'userSelect'
+  | 'visibility'
+  | 'wordBreak'
+  | 'writingMode'
+```
+
 ## Nested Styles
 
 Panda provides different ways of nesting style declarations. You can use the native css nesting syntax, or the built-in pseudo props like `_hover` and `_focus`. Pseudo props are covered more in-depth in the next section.
