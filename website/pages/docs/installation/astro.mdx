@@ -19,25 +19,25 @@ Install panda and create your `panda.config.ts` file.
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
-    pnpm panda init
+    pnpm panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
     npm install -D @pandacss/dev
-    npx panda init
+    npx panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
     yarn add -D @pandacss/dev
-    yarn panda init
+    yarn panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
     bun add -D @pandacss/dev
-    bun panda init
+    bun panda init --postcss
     ```
   </Tab>
 </Tabs>
@@ -85,6 +85,20 @@ Add this code to an `src/index.css` file imported in the root component of your 
 ```css filename="src/index.css"
 @layer reset, base, tokens, recipes, utilities;
 ```
+
+### Update the postcss config
+
+Astro requires a little change for the `postcss.config.[c]js`:
+
+```diff {3} filename="postcss.config.js"
+module.exports = {
+-  plugins: {
+-   '@pandacss/dev/postcss': {}
+-  }
++  plugins: [require('@pandacss/dev/postcss')()]
+}
+```
+
 
 ### Start your build process
 
