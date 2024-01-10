@@ -129,7 +129,7 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
           <Preview
-            source={state.code}
+            source={_state.code}
             panda={panda}
             responsiveView={responsiveView}
             isResponsive={isResponsive}
