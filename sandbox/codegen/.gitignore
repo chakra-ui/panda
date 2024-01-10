@@ -23,5 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 
-styled-system
-styled-system-*
+styled-system*

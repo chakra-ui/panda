@@ -40,6 +40,8 @@ export async function bundleConfig(options: ConfigFileOptions): Promise<BundleCo
     throw new ConfigError(`💥 Config must export or return an object.`)
   }
 
+  result.config.outdir ??= 'styled-system'
+
   return {
     ...result,
     config: result.config,

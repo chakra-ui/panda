@@ -1,5 +1,33 @@
 # @pandacss/core
 
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/error@0.26.1
+- @pandacss/is-valid-prop@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/token-dictionary@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- 14033e00: Display better CssSyntaxError logs
+- d420c676: Refactors the parser and import analysis logic. The goal is to ensure we can re-use the import logic in
+  ESLint Plugin and Node.js.
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/token-dictionary@0.26.0
+  - @pandacss/error@0.26.0
+  - @pandacss/is-valid-prop@0.26.0
+  - @pandacss/logger@0.26.0
+
 ## 0.25.0
 
 ### Minor Changes

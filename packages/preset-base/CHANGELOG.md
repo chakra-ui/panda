@@ -1,5 +1,20 @@
 # @pandacss/preset-base
 
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- 3f6b3662: Add `data-placeholder` and `data-placeholder-shown` conditions
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+  - @pandacss/types@0.26.0
+
 ## 0.25.0
 
 ### Patch Changes

@@ -43,6 +43,7 @@ export const createContext = (userConfig?: Config) => {
     ...fixtureDefaults,
     config: resolvedConfig,
     tsconfig: {
+      // @ts-expect-error
       useInMemoryFileSystem: true,
     },
   })
