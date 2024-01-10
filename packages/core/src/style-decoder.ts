@@ -1,4 +1,12 @@
-import { esc, getOrCreateSet, isImportant, markImportant, toHash, withoutImportant } from '@pandacss/shared'
+import {
+  esc,
+  getOrCreateSet,
+  isImportant,
+  markImportant,
+  toHash,
+  withoutImportant,
+  withoutSpace,
+} from '@pandacss/shared'
 import type {
   AtomicStyleResult,
   Dict,
@@ -52,10 +60,20 @@ export class StyleDecoder {
       conds.push(className)
       result = utility.classNameWithPrefix(toHash(conds.join(':')))
     } else {
-      const isNegative = value.startsWith('-')
-      const absValue = isNegative ? value.slice(1) : value
-      const formatRegex = new RegExp(`${esc(absValue)}$`)
-      const formattedClassName = className.replace(formatRegex, utility.formatClassName(value))
+      const split = ' '
+      let formattedValue = value
+        .split(split)
+        .map((v) => {
+          const isNegative = v.startsWith('-')
+          const absValue = isNegative ? v.slice(1) : v
+          return `${isNegative ? '-' : ''}${utility.formatClassName(absValue)}`
+        })
+        .join(split)
+
+      formattedValue = withoutSpace(formattedValue)
+
+      const formattedClassName = className.replace(new RegExp(esc(value) + '$'), formattedValue)
+
       conds.push(utility.classNameWithPrefix(formattedClassName))
       result = conds.join(':')
     }
@@ -195,7 +213,8 @@ export class StyleDecoder {
         ? this.context.recipes.getSlotKey(recipeConfig.className, slot)
         : recipeConfig.className
 
-    const selector = this.formatSelector([], className)
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    const selector = this.formatSelector([], className, 'xxx')
     const style = this.getGroup(hashSet, className)
 
     return Object.assign({}, style, {

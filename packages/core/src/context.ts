@@ -201,6 +201,8 @@ export class Context {
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
       formatTokenName: this.config.formatTokenName,
+      formatClassName: this.config.formatClassName,
+      formatCssVar: this.config.formatCssVar,
     })
   }
 

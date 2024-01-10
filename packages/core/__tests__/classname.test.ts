@@ -79,16 +79,16 @@ describe('generate classnames', () => {
   })
 
   test('should use dash for negative tokens', () => {
-    const css = createCss(createContext())
+    const css = createCss(createGeneratorContext().baseSheetContext)
     expect(css({ mx: '-2' })).toMatchInlineSnapshot('"mx_-2"')
   })
 
   test('should format the class name', () => {
     const css = createCss(
-      createContext({
+      createGeneratorContext({
         formatTokenName: (path) => `$${path.join('-')}`,
         formatClassName: (token) => token.replace('$', '').replace('.', '='),
-      }),
+      }).baseSheetContext,
     )
     expect(
       css({

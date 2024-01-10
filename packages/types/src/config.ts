@@ -260,7 +260,7 @@ interface CssgenOptions {
    * How to format the css variables.
    * @default '(token) => escape(token)'
    */
-  formatCssVar?: (token: string) => string
+  formatCssVar?: (path: string[]) => string
 }
 
 interface CodegenOptions {

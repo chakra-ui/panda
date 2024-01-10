@@ -74,7 +74,7 @@ test('[dts] should generate package', () => {
 })
 
 test('should format tokens name', () => {
-  const config = { ...generatorConfig }
+  const config = { ...fixtureDefaults }
   config.config.formatTokenName = (path) => `$${path.join('-')}`
 
   expect(tokenTypes(config)).toMatchInlineSnapshot(`

@@ -235,7 +235,7 @@ export class TokenDictionary implements TokenFormatters {
   applyMiddlewares(enforce: EnforcePhase) {
     this.middlewares.forEach((middleware) => {
       if (middleware.enforce === enforce) {
-        middleware.transform(this, { prefix: this.prefix, hash: this.hash })
+        middleware.transform(this, { prefix: this.prefix, hash: this.hash, formatCssVar: this.formatCssVar })
       }
     })
   }

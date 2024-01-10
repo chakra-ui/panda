@@ -326,7 +326,7 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -335,15 +335,15 @@ describe('extract to css output pipeline', () => {
       "@layer utilities {
         .text-red-100 {
           color: var(--colors-red-100)
-          }
+      }
 
         .mx--3 {
           margin-inline: calc(var(--spacing-3) * -1)
-          }
+      }
 
         .w-full {
           width: var(--sizes-full)
-          }
+      }
       }"
     `)
   })

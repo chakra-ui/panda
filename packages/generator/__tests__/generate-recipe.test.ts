@@ -365,6 +365,7 @@ describe('generate recipes', () => {
           "js": "import { splitProps, getSlotCompoundVariant } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
+
       const checkboxDefaultVariants = {
         \\"size\\": \\"sm\\"
       }
@@ -442,6 +443,7 @@ describe('generate recipes', () => {
       export declare const badge: BadgeRecipe",
           "js": "import { splitProps, getSlotCompoundVariant } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
+
 
       const badgeDefaultVariants = {}
       const badgeCompoundVariants = [

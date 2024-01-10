@@ -774,6 +774,21 @@ Define how the tokens will be generated in TS.
 css({ color: '$red-100' })
 ```
 
+### strictPropertyValues
+
+**Type**: `boolean`
+
+**Default**: `false`
+
+Only use valid CSS values for properties that do have a predefined list of values. Will throw for properties that do not have config tokens, such as
+`display`, `content`, `willChange`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
+
+```json
+{
+  "strictPropertyValues": false
+}
+```
+
 ### formatClassName
 
 **Type**: `(token: string) => string`
@@ -801,20 +816,6 @@ Define how the CSS vars will consume the tokens.
 ```js
 { "formatCssVar": token => token.replace('$', '').replace('.', '-') }
 css({ color: '$red.100' }) // --colors-red-100
-
-### strictPropertyValues
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Only use valid CSS values for properties that do have a predefined list of values. Will throw for properties that do not have config tokens, such as
-`display`, `content`, `willChange`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
-
-```json
-{
-  "strictPropertyValues": false
-}
 ```
 
 ## JSX options
