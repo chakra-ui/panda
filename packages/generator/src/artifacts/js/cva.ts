@@ -4,7 +4,7 @@ import { outdent } from 'outdent'
 export function generateCvaFn(ctx: Context) {
   return {
     js: outdent`
-    ${ctx.file.import('compact, mergeProps, splitProps, uniq', '../helpers')}
+    ${ctx.file.import('compact, mergeProps, memo, splitProps, uniq', '../helpers')}
     ${ctx.file.import('css, mergeCss', './css')}
 
     const defaults = (conf) => ({
@@ -55,7 +55,7 @@ export function generateCvaFn(ctx: Context) {
 
       const variantMap = Object.fromEntries(Object.entries(variants).map(([key, value]) => [key, Object.keys(value)]))
 
-      return Object.assign(cvaFn, {
+      return Object.assign(memo(cvaFn), {
         __cva__: true,
         variantMap,
         variantKeys,

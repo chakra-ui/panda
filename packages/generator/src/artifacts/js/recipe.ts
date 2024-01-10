@@ -27,7 +27,7 @@ export function generateCreateRecipe(ctx: Context) {
    ${ctx.file.import('css', '../css/css')}
    ${ctx.file.import('assertCompoundVariant, getCompoundVariantCss', '../css/cva')}
    ${ctx.file.import('cx', '../css/cx')}
-   ${ctx.file.import('compact, createCss, splitProps, uniq, withoutSpace', '../helpers')}
+   ${ctx.file.import('compact, createCss, memo, splitProps, uniq, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
     const getRecipeStyles = (variants) => {
@@ -73,7 +73,7 @@ export function generateCreateRecipe(ctx: Context) {
       return recipeCss(recipeStyles)
      }
 
-      return Object.assign(recipeFn, {
+      return Object.assign(memo(recipeFn), {
         __getCompoundVariantCss__: (variants) => {
           return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
         },

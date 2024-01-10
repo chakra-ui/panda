@@ -23,7 +23,7 @@ describe('generate recipes', () => {
       import { css } from '../css/css.mjs';
       import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
-      import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
+      import { compact, createCss, memo, splitProps, uniq, withoutSpace } from '../helpers.mjs';
 
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
        const getRecipeStyles = (variants) => {
@@ -69,7 +69,7 @@ describe('generate recipes', () => {
          return recipeCss(recipeStyles)
         }
 
-         return Object.assign(recipeFn, {
+         return Object.assign(memo(recipeFn), {
            __getCompoundVariantCss__: (variants) => {
              return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
            },
