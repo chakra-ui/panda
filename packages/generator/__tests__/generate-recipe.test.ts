@@ -23,7 +23,7 @@ describe('generate recipes', () => {
       import { css } from '../css/css.mjs';
       import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
-      import { compact, createCss, memo, splitProps, uniq, withoutSpace } from '../helpers.mjs';
+      import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
 
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
        const getRecipeStyles = (variants) => {
@@ -69,7 +69,7 @@ describe('generate recipes', () => {
          return recipeCss(recipeStyles)
         }
 
-         return Object.assign(memo(recipeFn), {
+         return Object.assign(recipeFn, {
            __getCompoundVariantCss__: (variants) => {
              return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
            },
@@ -132,7 +132,7 @@ describe('generate recipes', () => {
 
 
       export declare const textStyle: TextStyleRecipe",
-          "js": "import { splitProps } from '../helpers.mjs';
+          "js": "import { memo, splitProps } from '../helpers.mjs';
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const textStyleFn = /* @__PURE__ */ createRecipe('textStyle', {}, [])
@@ -146,7 +146,7 @@ describe('generate recipes', () => {
 
       const textStyleVariantKeys = Object.keys(textStyleVariantMap)
 
-      export const textStyle = /* @__PURE__ */ Object.assign(textStyleFn, {
+      export const textStyle = /* @__PURE__ */ Object.assign(memo(textStyleFn), {
         __recipe__: true,
         __name__: 'textStyle',
         raw: (props) => props,
@@ -188,7 +188,7 @@ describe('generate recipes', () => {
 
 
       export declare const tooltipStyle: TooltipStyleRecipe",
-          "js": "import { splitProps } from '../helpers.mjs';
+          "js": "import { memo, splitProps } from '../helpers.mjs';
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const tooltipStyleFn = /* @__PURE__ */ createRecipe('tooltipStyle', {}, [])
@@ -197,7 +197,7 @@ describe('generate recipes', () => {
 
       const tooltipStyleVariantKeys = Object.keys(tooltipStyleVariantMap)
 
-      export const tooltipStyle = /* @__PURE__ */ Object.assign(tooltipStyleFn, {
+      export const tooltipStyle = /* @__PURE__ */ Object.assign(memo(tooltipStyleFn), {
         __recipe__: true,
         __name__: 'tooltipStyle',
         raw: (props) => props,
@@ -239,7 +239,7 @@ describe('generate recipes', () => {
 
 
       export declare const cardStyle: CardStyleRecipe",
-          "js": "import { splitProps } from '../helpers.mjs';
+          "js": "import { memo, splitProps } from '../helpers.mjs';
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const cardStyleFn = /* @__PURE__ */ createRecipe('card', {}, [])
@@ -252,7 +252,7 @@ describe('generate recipes', () => {
 
       const cardStyleVariantKeys = Object.keys(cardStyleVariantMap)
 
-      export const cardStyle = /* @__PURE__ */ Object.assign(cardStyleFn, {
+      export const cardStyle = /* @__PURE__ */ Object.assign(memo(cardStyleFn), {
         __recipe__: true,
         __name__: 'cardStyle',
         raw: (props) => props,
@@ -295,7 +295,7 @@ describe('generate recipes', () => {
 
 
       export declare const buttonStyle: ButtonStyleRecipe",
-          "js": "import { splitProps } from '../helpers.mjs';
+          "js": "import { memo, splitProps } from '../helpers.mjs';
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const buttonStyleFn = /* @__PURE__ */ createRecipe('buttonStyle', {
@@ -316,7 +316,7 @@ describe('generate recipes', () => {
 
       const buttonStyleVariantKeys = Object.keys(buttonStyleVariantMap)
 
-      export const buttonStyle = /* @__PURE__ */ Object.assign(buttonStyleFn, {
+      export const buttonStyle = /* @__PURE__ */ Object.assign(memo(buttonStyleFn), {
         __recipe__: true,
         __name__: 'buttonStyle',
         raw: (props) => props,
@@ -358,7 +358,7 @@ describe('generate recipes', () => {
 
 
       export declare const checkbox: CheckboxRecipe",
-          "js": "import { splitProps, getSlotCompoundVariant } from '../helpers.mjs';
+          "js": "import { getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
       const checkboxDefaultVariants = {
@@ -382,9 +382,9 @@ describe('generate recipes', () => {
       ]
       const checkboxSlotFns = /* @__PURE__ */ checkboxSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, checkboxDefaultVariants, getSlotCompoundVariant(checkboxCompoundVariants, slotName))])
 
-      const checkboxFn = (props = {}) => {
+      const checkboxFn = memo((props = {}) => {
         return Object.fromEntries(checkboxSlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
-      }
+      })
 
       const checkboxVariantKeys = [
         \\"size\\"
@@ -436,7 +436,7 @@ describe('generate recipes', () => {
 
 
       export declare const badge: BadgeRecipe",
-          "js": "import { splitProps, getSlotCompoundVariant } from '../helpers.mjs';
+          "js": "import { getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
       const badgeDefaultVariants = {}
@@ -464,9 +464,9 @@ describe('generate recipes', () => {
       ]
       const badgeSlotFns = /* @__PURE__ */ badgeSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, badgeDefaultVariants, getSlotCompoundVariant(badgeCompoundVariants, slotName))])
 
-      const badgeFn = (props = {}) => {
+      const badgeFn = memo((props = {}) => {
         return Object.fromEntries(badgeSlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
-      }
+      })
 
       const badgeVariantKeys = [
         \\"size\\",
