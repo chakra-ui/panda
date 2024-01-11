@@ -91,9 +91,6 @@ export class RuleProcessor {
   }
 
   recipe(name: string, variants: Record<string, any>): RecipeRule | undefined {
-    const recipeConfig = this.context.recipes.getConfig(name)
-    if (!recipeConfig) return
-
     const { encoder, decoder, sheet } = this.prepare()
 
     encoder.processRecipe(name, variants)
