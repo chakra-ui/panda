@@ -116,7 +116,7 @@ export interface Conditions {
 	"_inRange": string
 	/** `&:out-of-range` */
 	"_outOfRange": string
-	/** `&:is(:placeholder, [data-placeholder])` */
+	/** `&::placeholder, &[data-placeholder]` */
 	"_placeholder": string
 	/** `&:is(:placeholder-shown, [data-placeholder-shown])` */
 	"_placeholderShown": string

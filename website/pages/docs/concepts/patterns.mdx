@@ -12,6 +12,22 @@ predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be
 
 ## Predefined Patterns
 
+### Box
+
+The Box pattern does not contain any additional styles. With its function form it's the equivalent of the `css` function. It can be useful with its JSX form and is the equivalent of a `styled.div` component, serving mostly to get style props available in JSX.
+
+```tsx
+import { Box } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Box color="blue.300">
+      <div>Cool !</div>
+    </Box>
+  )
+}
+```
+
 ### Container
 
 The Container pattern is used to create a container with a max-width and center the content.
@@ -22,6 +38,9 @@ By default, the container sets the following properties:
 - `marginX: auto`
 - `position: relative`
 - `paddingX: { base: 4, md: 6, lg: 8 }`
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { container } from '../styled-system/patterns'
@@ -37,6 +56,26 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { Container } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Container>
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </Container>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 ### Stack
 
 The Stack pattern is a layout primitive that can be used to create a vertical or horizontal stack of elements.
@@ -47,6 +86,9 @@ The `stack` function accepts the following properties:
 - `gap`: The gap between the elements in the stack.
 - `align`: An alias for the css `align-items` property.
 - `justify`: An alias for the css `justify-content` property.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { stack } from '../styled-system/patterns'
@@ -62,10 +104,33 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { Stack } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Stack gap="6" padding="4">
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </Stack>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 #### HStack
 
 The HStack pattern is a wrapper around the `stack` pattern that sets the `direction` property to `horizontal`, and
 centers the elements vertically.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { hstack } from '../styled-system/patterns'
@@ -81,10 +146,34 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { HStack } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <HStack gap="6">
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </HStack>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 #### VStack
 
 The VStack pattern is a wrapper around the `stack` pattern that sets the `direction` property to `vertical`, and centers
 the elements horizontally.
+
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { vstack } from '../styled-system/patterns'
@@ -100,6 +189,27 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { VStack } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <VStack gap="6">
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </VStack>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
+
 ### Wrap
 
 The Wrap pattern is used to add space between elements and wraps automatically if there isn't enough space.
@@ -111,6 +221,9 @@ The `wrap` function accepts the following properties:
 - `rowGap`: The gap between the elements in the stack vertically.
 - `align`: An alias for the css `align-items` property.
 - `justify`: An alias for the css `justify-content` property.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { wrap } from '../styled-system/patterns'
@@ -126,6 +239,26 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { Wrap } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Wrap gap="6">
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </Wrap>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 ### Aspect Ratio
 
 The Aspect Ratio pattern is used to create a container with a fixed aspect ratio. It is used when displaying images,
@@ -136,6 +269,9 @@ maps, videos and other media.
 The `aspectRatio` function accepts the following properties:
 
 - `ratio`: The aspect ratio of the container. Can be a number or a string.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { aspectRatio } from '../styled-system/patterns'
@@ -153,6 +289,28 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { AspectRatio } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <AspectRatio ratio={16 / 9}>
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m1"
+        title="Google map"
+        frameBorder="0"
+      />
+    </AspectRatio>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 ### Flex
 
 The Flex pattern is used to create a flex container and provides some shortcuts for the `flex` property.
@@ -166,6 +324,9 @@ The `flex` function accepts the following properties:
 - `basis`: An alias for the css `flex-basis` property.
 - `grow`: An alias for the css `flex-grow` property.
 - `shrink`: An alias for the css `flex-shrink` property.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { flex } from '../styled-system/patterns'
@@ -181,6 +342,26 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { Flex } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Flex direction="row" align="center">
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </Flex>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 ### Center
 
 The Center pattern is used to center the content of a container.
@@ -188,6 +369,9 @@ The Center pattern is used to center the content of a container.
 The `center` function accepts the following properties:
 
 - `inline`: Whether to use `inline-flex` or `flex` for the container. The value is a boolean.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { center } from '../styled-system/patterns'
@@ -200,6 +384,26 @@ function App() {
   )
 }
 ```
+
+  </Tab>
+  <Tab>
+
+```tsx
+import { Center } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Center bg="red.200">
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </Center>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
 
 ### Float
 
@@ -215,6 +419,9 @@ The `float` function accepts the following properties:
 - `offsetX`: Same as `offset`, but only for the horizontal axis.
 - `offsetY`: Same as `offset`, but only for the vertical axis.
 
+<Tabs items={['function', 'JSX']}>
+<Tab>
+
 ```tsx
 import { css } from '../styled-system/css'
 import { float } from '../styled-system/patterns'
@@ -228,6 +435,25 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { css } from '../styled-system/css'
+import { Float } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <div className={css({ position: 'relative' })}>
+      <Float placement="top-start">3</Float>
+    </div>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 ### Grid
 
 The Grid pattern is used to create a grid layout.
@@ -239,6 +465,9 @@ The `grid` function accepts the following properties:
 - `columnGap`: The gap between the elements in the stack horizontally.
 - `rowGap`: The gap between the elements in the stack vertically.
 - `minChildWidth`: The minimum width of the child elements before wrapping.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { grid } from '../styled-system/patterns'
@@ -254,6 +483,26 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { Grid } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Grid columns={3} gap="6">
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </Grid>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 #### Grid Item
 
 The Grid Item pattern is used to style the children of a grid container.
@@ -266,6 +515,9 @@ The `gridItem` function accepts the following properties:
 - `rowEnd`: The row the item ends at.
 - `colStart`: The column the item starts at.
 - `colEnd`: The column the item ends at.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { grid, gridItem } from '../styled-system/patterns'
@@ -281,6 +533,26 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { Grid, GridItem } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Grid columns={3} gap="6">
+      <GridItem colSpan={2}>First</GridItem>
+      <GridItem>Second</GridItem>
+      <GridItem>Third</GridItem>
+    </Grid>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 ### Divider
 
 The Divider pattern is used to create a horizontal or vertical divider.
@@ -290,6 +562,9 @@ The `divider` function accepts the following properties:
 - `orientation`: The orientation of the divider. Can be `horizontal` or `vertical`.
 - `thickness`: The thickness of the divider. Can be a sizing token, or arbitrary value.
 - `color`: The color of the divider. Can be a color token, or arbitrary value.
+
+<Tabs items={['function', 'JSX']}>
+<Tab>
 
 ```tsx
 import { divider, stack } from '../styled-system/patterns'
@@ -305,6 +580,26 @@ function App() {
 }
 ```
 
+  </Tab>
+  <Tab>
+
+```tsx
+import { Divider, Stack } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Stack>
+      <button>First</button>
+      <Divider orientation="horizontal" />
+      <button>Second</button>
+    </Stack>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
+
 ### Circle
 
 The Circle pattern is used to create a circle.
@@ -313,13 +608,30 @@ The `circle` function accepts the following properties:
 
 - `size`: The size of the circle. Can be a sizing token, or arbitrary value.
 
-```jsx
+<Tabs items={['function', 'JSX']}>
+<Tab>
+
+```tsx
 import { circle } from '../styled-system/patterns'
 
 function App() {
   return <div className={circle({ size: '12', bg: 'red.300' })} />
 }
 ```
+
+  </Tab>
+  <Tab>
+
+```tsx
+import { Circle } from '../styled-system/jsx'
+
+function App() {
+  return <Circle size="12" bg="red.300" />
+}
+```
+
+  </Tab>
+</Tabs>
 
 ### Square
 
@@ -329,13 +641,30 @@ The `square` function accepts the following properties:
 
 - `size`: The size of the square. Can be a sizing token, or arbitrary value.
 
-```jsx
+<Tabs items={['function', 'JSX']}>
+<Tab>
+
+```tsx
 import { square } from '../styled-system/patterns'
 
 function App() {
   return <div className={square({ size: '12', bg: 'red.300' })} />
 }
 ```
+
+  </Tab>
+  <Tab>
+
+```tsx
+import { Square } from '../styled-system/jsx'
+
+function App() {
+  return <Square size="12" bg="red.300" />
+}
+```
+
+  </Tab>
+</Tabs>
 
 ### Visually Hidden
 
@@ -365,6 +694,9 @@ The `bleed` function accepts the following properties:
 - `inline`: The amount of padding to negate on the horizontal axis. Should match the parent's padding.
 - `block`: The amount of padding to negate on the vertical axis. Should match the parent's padding.
 
+<Tabs items={['function', 'JSX']}>
+<Tab>
+
 ```tsx
 import { css } from '../styled-system/css'
 import { bleed } from '../styled-system/patterns'
@@ -377,6 +709,25 @@ export function Page() {
   )
 }
 ```
+
+  </Tab>
+  <Tab>
+
+```tsx
+import { css } from '../styled-system/css'
+import { Bleed } from '../styled-system/jsx'
+
+export function Page() {
+  return (
+    <div className={css({ px: '6' })}>
+      <Bleed inline="6">Welcome</div>
+    </div>
+  )
+}
+```
+
+  </Tab>
+</Tabs>
 
 ## Usage with JSX
 
