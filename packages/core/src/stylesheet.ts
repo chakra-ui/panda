@@ -38,8 +38,8 @@ export class Stylesheet {
   }
 
   processGlobalCss = (styles: Dict) => {
-    const css = serializeStyles(this.context, styles)
-    this.context.layers.base.append(css)
+    const result = serializeStyles(this.context, styles)
+    this.context.layers.base.append(toCss(result))
   }
 
   processCss = (styles: SystemStyleObject | undefined, layer: LayerName) => {

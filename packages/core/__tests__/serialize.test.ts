@@ -1,10 +1,10 @@
 import { createContext } from '@pandacss/fixture'
 import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { transformStyles } from '../src/serialize'
+import { serializeStyles } from '../src/serialize'
 
 const css = (style: Dict) => {
-  return transformStyles(createContext(), style, JSON.stringify(style))
+  return serializeStyles(createContext(), style)
 }
 
 describe('serialize', () => {
@@ -18,8 +18,10 @@ describe('serialize', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "border": "2px solid var(--colors-red-200)",
-        "color": "red",
+        "html": {
+          "border": "2px solid var(--colors-red-200)",
+          "color": "red",
+        },
       }
     `)
   })
@@ -34,8 +36,10 @@ describe('serialize', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "background": "colors.xxx",
-        "border": "2px solid colors.red.xxx",
+        "html": {
+          "background": "colors.xxx",
+          "border": "2px solid colors.red.xxx",
+        },
       }
     `)
   })
@@ -52,10 +56,12 @@ describe('serialize', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "&:is(:hover, [data-hover])": {
-          "padding": "var(--spacing-7)",
+        "html": {
+          "&:is(:hover, [data-hover])": {
+            "padding": "var(--spacing-7)",
+          },
+          "padding": "var(--spacing-3) var(--spacing-5)",
         },
-        "padding": "var(--spacing-3) var(--spacing-5)",
       }
     `)
   })

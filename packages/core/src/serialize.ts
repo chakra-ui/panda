@@ -3,7 +3,6 @@ import type { Dict } from '@pandacss/types'
 import merge from 'lodash.merge'
 import type { StylesheetContext } from '.'
 import { parseSelectors } from './stringify'
-import { toCss } from './to-css'
 
 export interface SerializeContext extends Omit<StylesheetContext, 'layers' | 'helpers' | 'hash'> {}
 
@@ -47,5 +46,5 @@ export function serializeStyles(context: SerializeContext, groupedObject: Dict) 
 
     merge(result[scope], transformStyles(context, styleObject, scope))
   }
-  return toCss(result)
+  return result
 }
