@@ -1,11 +1,11 @@
-import { Context, Stylesheet, toCss } from '@pandacss/core'
+import { Context, Stylesheet, stringify } from '@pandacss/core'
 
 export function generateKeyframeCss(ctx: Context, sheet: Stylesheet) {
   const { keyframes = {} } = ctx.config.theme ?? {}
   let css = ''
 
   for (const [name, definition] of Object.entries(keyframes)) {
-    css += toCss({
+    css += stringify({
       [`@keyframes ${name}`]: definition,
     })
   }

@@ -3,8 +3,8 @@ import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
+import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
-import { toCss } from './to-css'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
 
 export class Stylesheet {
@@ -28,7 +28,7 @@ export class Stylesheet {
     if (typeof styles !== 'object') return
 
     try {
-      layer.append(toCss(styles))
+      layer.append(stringify(styles))
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet:process', error.showSourceCode(true))
@@ -39,7 +39,7 @@ export class Stylesheet {
 
   processGlobalCss = (styles: Dict) => {
     const result = serializeStyles(this.context, styles)
-    this.context.layers.base.append(toCss(result))
+    this.context.layers.base.append(stringify(result))
   }
 
   processCss = (styles: SystemStyleObject | undefined, layer: LayerName) => {
