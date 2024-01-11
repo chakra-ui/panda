@@ -30,7 +30,7 @@ export const addNegativeTokens: TokenMiddleware = {
       const last = node.path.at(-1)
 
       if (last != null) {
-        node.path[node.path.length - 1] = `-${dictionary.formatTokenName([last])}`
+        node.path[node.path.length - 1] = `-${last}`
       }
 
       if (node.path) {
