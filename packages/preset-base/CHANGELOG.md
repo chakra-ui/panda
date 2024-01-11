@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.26.2
+
+### Patch Changes
+
+- f823a8c5: Fix `placeholder` condition in `preset-base`
+  - @pandacss/types@0.26.2
+
 ## 0.26.1
 
 ### Patch Changes
