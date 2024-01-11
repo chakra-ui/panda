@@ -66,8 +66,6 @@ export class RuleProcessor {
     encoder.processAtomicRecipe(recipeConfig)
     decoder.collect(encoder)
 
-    decoder.collect(encoder)
-
     return {
       config: recipeConfig,
       className: Array.from(decoder.classNames.keys()),
