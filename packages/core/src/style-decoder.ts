@@ -1,4 +1,4 @@
-import { esc, getOrCreateSet, isImportant, markImportant, toHash, withoutImportant } from '@pandacss/shared'
+import { deepSet, esc, getOrCreateSet, isImportant, markImportant, toHash, withoutImportant } from '@pandacss/shared'
 import type {
   AtomicStyleResult,
   Dict,
@@ -9,7 +9,6 @@ import type {
   StyleResultObject,
 } from '@pandacss/types'
 import type { Context } from './context'
-import { deepSet } from './deep-set'
 import { sortStyleRules } from './sort-style-rules'
 import { StyleEncoder } from './style-encoder'
 
@@ -107,7 +106,7 @@ export class StyleDecoder {
 
     const basePath = [classSelector]
 
-    const obj: StyleResultObject = Object.create(null)
+    const obj: StyleResultObject = {}
 
     let conditions
 
@@ -300,7 +299,7 @@ export class StyleDecoder {
       throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
     }
 
-    const base: Dict = Object.create(null)
+    const base: Dict = {}
 
     recipeConfig.slots.map((slot) => {
       const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)

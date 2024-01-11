@@ -284,7 +284,7 @@ export class StyleEncoder {
       throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
     }
 
-    const base: Dict = Object.create(null)
+    const base: Dict = {}
 
     recipeConfig.slots.map((slot) => {
       const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
