@@ -103,7 +103,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
     }
 
       .text--variant_md:after {
-        right: 90;
+        right: 90px;
         border-bottom-right-radius: var(--radii-lg);
         transform: scaleX(-1);
     }

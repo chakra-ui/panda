@@ -37,8 +37,12 @@ export class Stylesheet {
     return
   }
 
+  serialize = (styles: Dict) => {
+    return serializeStyles(this.context, styles)
+  }
+
   processGlobalCss = (styles: Dict) => {
-    const result = serializeStyles(this.context, styles)
+    const result = this.serialize(styles)
     this.context.layers.base.append(stringify(result))
   }
 

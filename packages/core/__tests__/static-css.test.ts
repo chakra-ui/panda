@@ -757,7 +757,7 @@ describe('static-css', () => {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: 2;
+            gap: 2px;
       }
 
           .checkbox__control {
@@ -766,15 +766,15 @@ describe('static-css', () => {
       }
 
           .checkbox__label {
-            margin-inline-start: 2;
+            margin-inline-start: 2px;
       }
       }
 
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
-          width: 8;
-          height: 8;
+          width: 8px;
+          height: 8px;
       }
 
         .checkbox__label--size_sm {
@@ -782,8 +782,8 @@ describe('static-css', () => {
       }
 
         .checkbox__control--size_lg {
-          width: 12;
-          height: 12;
+          width: 12px;
+          height: 12px;
       }
 
         .checkbox__label--size_lg {
@@ -792,8 +792,8 @@ describe('static-css', () => {
 
         @media screen and (min-width: 64em) {
           .lg\\\\:checkbox__control--size_lg {
-            width: 12;
-            height: 12;
+            width: 12px;
+            height: 12px;
       }
           .lg\\\\:checkbox__label--size_lg {
             font-size: var(--font-sizes-lg);
@@ -1901,7 +1901,7 @@ describe('static-css', () => {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: 2;
+            gap: 2px;
       }
 
           .checkbox__control {
@@ -1910,7 +1910,7 @@ describe('static-css', () => {
       }
 
           .checkbox__label {
-            margin-inline-start: 2;
+            margin-inline-start: 2px;
       }
 
           .badge__title {
@@ -1922,8 +1922,8 @@ describe('static-css', () => {
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
-          width: 8;
-          height: 8;
+          width: 8px;
+          height: 8px;
       }
 
         .checkbox__label--size_sm {
@@ -1931,8 +1931,8 @@ describe('static-css', () => {
       }
 
         .checkbox__control--size_md {
-          width: 10;
-          height: 10;
+          width: 10px;
+          height: 10px;
       }
 
         .checkbox__label--size_md {
@@ -1940,8 +1940,8 @@ describe('static-css', () => {
       }
 
         .checkbox__control--size_lg {
-          width: 12;
-          height: 12;
+          width: 12px;
+          height: 12px;
       }
 
         .checkbox__label--size_lg {
@@ -1949,7 +1949,7 @@ describe('static-css', () => {
       }
 
         .badge__title--size_sm {
-          padding-inline: 4;
+          padding-inline: 4px;
       }
 
         .badge__body--size_sm {

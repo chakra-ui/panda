@@ -28,7 +28,7 @@ export const fixtureDefaults = {
 
 export const createGeneratorContext = (userConfig?: Config) => {
   const resolvedConfig = (
-    userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
+    userConfig ? mergeConfigs([userConfig, fixtureDefaults.config]) : fixtureDefaults.config
   ) as UserConfig
 
   return new Generator({ ...fixtureDefaults, config: resolvedConfig })
