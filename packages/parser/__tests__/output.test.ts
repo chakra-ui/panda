@@ -2757,12 +2757,12 @@ describe('extract to css output pipeline', () => {
 
       @layer utilities {
         .fs_2 {
-          font-size: 2;
+          font-size: 2px;
       }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:fs_5 {
-            font-size: 5;
+            font-size: 5px;
       }
       }
       }"

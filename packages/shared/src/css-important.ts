@@ -1,4 +1,4 @@
-const importantRegex = /\s*!(important)?\s*$/i
+const importantRegex = /\s*!(important)?/i
 
 export function isImportant<T extends string | number | boolean>(value: T) {
   return typeof value === 'string' ? importantRegex.test(value) : false
