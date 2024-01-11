@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.26.2] - 2024-01-10
+
+### Fixed
+
+Fix `placeholder` condition in `preset-base`
+
 ## [0.26.1] - 2024-01-09
 
 ### Fixed
