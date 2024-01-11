@@ -1,8 +1,6 @@
 import { defineConfig } from '@pandacss/dev'
 import codegenPreset from './preset'
 
-const dasherize = (token) => token.toString().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-
 export default defineConfig({
   presets: ['@pandacss/dev/presets', codegenPreset],
   // Whether to use css reset
@@ -15,14 +13,8 @@ export default defineConfig({
   exclude: [],
 
   // The output directory for your css system
-  outdir: 'styled-system-format-names',
+  outdir: 'styled-system',
 
   // The JSX framework to use
   jsxFramework: 'react',
-
-  // Stitches preset
-  separator: '-',
-  formatTokenName: (path) => `$${path.join('-')}`,
-  formatClassName: dasherize,
-  formatCssVar: dasherize,
 })
