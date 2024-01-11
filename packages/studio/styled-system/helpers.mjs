@@ -15,7 +15,7 @@ function filterBaseConditions(c) {
 }
 
 // src/css-important.ts
-var importantRegex = /!(important)?/;
+var importantRegex = /\s*!(important)?\s*$/i;
 function isImportant(value) {
   return typeof value === "string" ? importantRegex.test(value) : false;
 }

@@ -1038,3 +1038,97 @@ describe('rule processor', () => {
     `)
   })
 })
+
+describe('js to css', () => {
+  test('ignores declarations with null', () => {
+    const result = css({
+      font: undefined,
+      color: null,
+      background: false,
+    })
+
+    expect(result.css).toMatchInlineSnapshot('""')
+  })
+
+  test('unitless', () => {
+    const result = css({
+      '--foo': 42,
+      width: 42,
+      opacity: 1,
+      zIndex: 0,
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\\\--foo_42 {
+          --foo: 42;
+      }
+
+        .w_42 {
+          width: 42px;
+      }
+
+        .opacity_1 {
+          opacity: 1;
+      }
+
+        .z_0 {
+          z-index: 0;
+      }
+      }"
+    `)
+  })
+
+  test('preserves casing for css variable', () => {
+    const result = css({
+      '--testVariable0': '0',
+      '--test-Variable-1': '1',
+      '--test-variable-2': '2',
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\\\--testVariable0_0 {
+          --testVariable0: 0;
+      }
+
+        .\\\\--test-Variable-1_1 {
+          --test-Variable-1: 1;
+      }
+
+        .\\\\--test-variable-2_2 {
+          --test-variable-2: 2;
+      }
+      }"
+    `)
+  })
+
+  test('parses declarations with !important', () => {
+    const result = css({
+      borderColor: 'red !important',
+      color: 'pink!',
+      background: 'white!IMPORTANT  ',
+      fontFamily: 'A',
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .border_red\\\\! {
+          border-color: red !important;
+      }
+
+        .text_pink\\\\! {
+          color: pink !important;
+      }
+
+        .bg_white\\\\! {
+          background: var(--colors-white) !important;
+      }
+
+        .font_A {
+          font-family: A;
+      }
+      }"
+    `)
+  })
+})

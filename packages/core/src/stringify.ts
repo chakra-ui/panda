@@ -1,5 +1,6 @@
 import { hypenateProperty } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
+import { unitlessProperties } from './unitless'
 
 // adapted from https://github.com/stitchesjs/stitches/blob/50fd8a1adc6360340fe348a8b3ebc8b06d38e230/packages/stringify/src/index.js
 
@@ -26,10 +27,12 @@ export function stringify(
     selectors: StringifyContext['selectors'],
     conditions: String[],
     name: string,
-    data: string | number,
+    data: string | number | boolean,
     isAtRuleLike: boolean,
     isVariableLike: boolean,
   ) => {
+    if (data === false) return ''
+
     // Add conditions
     for (let i = 0; i < conditions.length; ++i) {
       if (!used.has(conditions[i])) {
@@ -44,6 +47,15 @@ export function stringify(
       cssText += `${selectors.map((s) => s.replace(' &', ''))} {`
     }
 
+    let value = data
+
+    if (typeof value === 'number') {
+      const shouldAddPx = !(value === 0 || unitlessProperties.has(name) || isVariableLike)
+      if (shouldAddPx) {
+        value = `${value}px`
+      }
+    }
+
     // Format property
     if (isAtRuleLike) {
       name = `${name} `
@@ -54,7 +66,7 @@ export function stringify(
     }
 
     // Add it to the CSS string
-    cssText += `${name + String(data)};\n`
+    cssText += `${name + String(value)};\n`
 
     return cssText
   }
@@ -64,7 +76,7 @@ export function stringify(
 
     for (const name in style) {
       const isAtRuleLike = name[0] === '@'
-      const isVariableLike = (!isAtRuleLike && name === '--') || name[0] === '$'
+      const isVariableLike = !isAtRuleLike && name.startsWith('--')
       const rules = (isAtRuleLike && Array.isArray(style[name]) ? style[name] : [style[name]]) as Array<string | Dict>
 
       for (const data of rules) {

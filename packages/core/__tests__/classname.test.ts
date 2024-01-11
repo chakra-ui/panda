@@ -3,6 +3,18 @@ import { createCss } from '@pandacss/shared'
 import { describe, expect, test } from 'vitest'
 
 describe('generate classnames', () => {
+  test('css variables', () => {
+    const css = createCss(createGeneratorContext().baseSheetContext)
+
+    const result = css({
+      '--testVariable0': '0',
+      '--test-Variable-1': '1',
+      '--test-variable-2': '2',
+    })
+
+    expect(result).toMatchInlineSnapshot('"--testVariable0_0 --test-Variable-1_1 --test-variable-2_2"')
+  })
+
   test('should convert object to class', () => {
     const css = createCss(createGeneratorContext().baseSheetContext)
     expect(
