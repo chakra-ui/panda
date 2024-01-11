@@ -1,6 +1,6 @@
 import type { Container, TransformCallback } from 'postcss'
-import { sortAtRules } from './sort-at-rules'
-import { match, P } from 'ts-pattern'
+import { P, match } from 'ts-pattern'
+import { sortAtRules } from '../sort-at-rules'
 
 export default function sortMediaQueries(): TransformCallback {
   const inner = (root: Container) => {
