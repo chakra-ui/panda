@@ -1,10 +1,10 @@
 import { createContext } from '@pandacss/fixture'
 import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { serializeStyle } from '../src/serialize'
+import { serializeStyles } from '../src/serialize'
 
 const css = (style: Dict) => {
-  return serializeStyle(style, createContext())
+  return serializeStyles(createContext(), style)
 }
 
 describe('serialize', () => {

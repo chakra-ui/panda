@@ -3,6 +3,7 @@ import { AtRule } from 'postcss'
 import { safeParse } from './safe-parse'
 
 function parseAtRule(value: string): RawCondition {
+  // TODO this creates a new postcss.root for each media query !
   const result = safeParse(value)
   const rule = result.nodes[0] as AtRule
   return {

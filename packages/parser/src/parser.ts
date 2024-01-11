@@ -45,8 +45,6 @@ export function createParser(context: ParserOptions) {
       return parserResult
     }
 
-    const measure = logger.time.debug(`Extract AST from ${filePath}`)
-
     const extractResultByName = extract({
       ast: sourceFile,
       components: jsx.isEnabled
@@ -93,8 +91,6 @@ export function createParser(context: ParserOptions) {
       },
       flags: { skipTraverseFiles: true },
     })
-
-    measure()
 
     extractResultByName.forEach((result, alias) => {
       //

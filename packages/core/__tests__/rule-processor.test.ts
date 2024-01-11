@@ -77,8 +77,8 @@ describe('rule processor', () => {
           '.target &': {
             color: {
               base: 'cyan',
-              _opened: 'orange',
-              _xl: 'pink',
+              _open: 'orange',
+              xl: 'pink',
             },
           },
         },
@@ -93,118 +93,120 @@ describe('rule processor', () => {
         "bg_blue\\\\.300",
         "textStyle_headline\\\\.h1",
         "w_1",
-        "sm\\\\:w_2",
-        "xl\\\\:w_3",
         "fs_xs",
-        "sm\\\\:fs_sm",
-        "hover\\\\:fs_md",
-        "hover\\\\:md\\\\:fs_lg",
-        "hover\\\\:focus\\\\:fs_xl",
         "dark\\\\:fs_2xl",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green",
+        "hover\\\\:fs_md",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple",
+        "hover\\\\:focus\\\\:fs_xl",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange",
+        "sm\\\\:w_2",
+        "sm\\\\:fs_sm",
         "sm\\\\:text_yellow",
         "sm\\\\:bg_red",
+        "xl\\\\:w_3",
         "sm\\\\:hover\\\\:bg_green",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink",
+        "hover\\\\:md\\\\:fs_lg",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink",
       ]
     `,
     )
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\\\! {
-          color: red !important
-      }
-
-        .border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\) {
-          border: 1px solid var(--colors-red-100)
-      }
-
-        .bg_blue\\\\.300 {
-          background: var(--colors-blue-300)
-      }
-
-        .w_1 {
-          width: var(--sizes-1)
-      }
-
-        .fs_xs {
-          font-size: var(--font-sizes-xs)
-      }
-
-        [data-theme=dark] .dark\\\\:fs_2xl, .dark .dark\\\\:fs_2xl, .dark\\\\:fs_2xl.dark, .dark\\\\:fs_2xl[data-theme=dark] {
-          font-size: var(--font-sizes-2xl)
-      }
-
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green[data-attr='test'] {
-          color: green
-      }
-
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: purple
-      }
-
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: cyan
-      }
-
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          opened: orange
-      }
-
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          xl: pink
-      }
-
-        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
-          font-size: var(--font-sizes-xl)
-      }
-
-        .hover\\\\:fs_md:is(:hover, [data-hover]) {
-          font-size: var(--font-sizes-md)
-      }
-
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+            font-weight: var(--font-weights-bold);
       }
+      }
+
+        .text_red\\\\! {
+          color: red !important;
+      }
+
+        .border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\) {
+          border: 1px solid var(--colors-red-100);
+      }
+
+        .bg_blue\\\\.300 {
+          background: var(--colors-blue-300);
+      }
+
+        .w_1 {
+          width: var(--sizes-1);
+      }
+
+        .fs_xs {
+          font-size: var(--font-sizes-xs);
+      }
+
+        [data-theme=dark] .dark\\\\:fs_2xl,.dark .dark\\\\:fs_2xl,.dark\\\\:fs_2xl.dark,.dark\\\\:fs_2xl[data-theme=dark] {
+          font-size: var(--font-sizes-2xl);
+      }
+
+        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green[data-attr='test'] {
+          color: green;
+      }
+
+        .hover\\\\:fs_md:is(:hover, [data-hover]) {
+          font-size: var(--font-sizes-md);
+      }
+
+        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
+          color: purple;
+      }
+
+        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+          font-size: var(--font-sizes-xl);
+      }
+
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
+          color: cyan;
+      }
+
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]):is([open], [data-open], [data-state=\\"open\\"]) {
+          color: orange;
       }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:w_2 {
-            width: var(--sizes-2)
-          }
+            width: var(--sizes-2);
+      }
           .sm\\\\:fs_sm {
-            font-size: var(--font-sizes-sm)
-          }
+            font-size: var(--font-sizes-sm);
+      }
           .sm\\\\:text_yellow {
-            color: yellow
-          }
+            color: yellow;
+      }
           .sm\\\\:bg_red {
-            background-color: red
-          }
+            background-color: red;
       }
-
-        @media screen and (min-width: 40em) {
-          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
-            background-color: green
-          }
-      }
-
-        @media screen and (min-width: 48em) {
-          .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
-            font-size: var(--font-sizes-lg)
-          }
       }
 
         @media screen and (min-width: 80em) {
           .xl\\\\:w_3 {
-            width: var(--sizes-3)
-          }
+            width: var(--sizes-3);
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
+            background-color: green;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
+            font-size: var(--font-sizes-lg);
+      }
+      }
+
+        @media screen and (min-width: 80em) {
+          .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
+            color: pink;
+      }
       }
       }"
     `)
@@ -223,10 +225,32 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\\\:buttonStyle--size_md {
+            height: 3rem;
+            min-width: 3rem;
+            padding: 0 0.75rem;
+      }
       }
 
         .buttonStyle--variant_solid {
@@ -237,30 +261,11 @@ describe('rule processor', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: var(--colors-black);
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
-      }
-
-        @media screen and (min-width: 48em) {
-          .md\\\\:buttonStyle--size_md {
-            height: 3rem;
-            min-width: 3rem;
-            padding: 0 0.75rem
-          }
       }
       }"
     `)
@@ -336,114 +341,114 @@ describe('rule processor', () => {
         "p_0_0\\\\.75rem",
         "bg_blue",
         "text_white",
-        "hover\\\\:bg_darkblue",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black",
         "bg_transparent",
         "border_1px_solid_blue",
         "text_blue",
-        "hover\\\\:bg_blue",
-        "hover\\\\:text_white",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black",
         "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent",
         "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray",
         "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray",
+        "hover\\\\:bg_darkblue",
+        "hover\\\\:bg_blue",
+        "hover\\\\:text_white",
       ]
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .d_inline-flex {
-          display: inline-flex
-      }
-
-        .items_center {
-          align-items: center
-      }
-
-        .justify_center {
-          justify-content: center
-      }
-
-        .h_2\\\\.5rem {
-          height: 2.5rem
-      }
-
-        .min-w_2\\\\.5rem {
-          min-width: 2.5rem
-      }
-
-        .p_0_0\\\\.5rem {
-          padding: 0 0.5rem
-      }
-
-        .h_3rem {
-          height: 3rem
-      }
-
-        .min-w_3rem {
-          min-width: 3rem
-      }
-
-        .p_0_0\\\\.75rem {
-          padding: 0 0.75rem
-      }
-
-        .bg_blue {
-          background-color: blue
-      }
-
-        .text_white {
-          color: var(--colors-white)
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
-          background-color: gray
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
-          color: var(--colors-black)
-      }
-
-        .bg_transparent {
-          background-color: var(--colors-transparent)
-      }
-
-        .border_1px_solid_blue {
-          border: 1px solid blue
-      }
-
-        .text_blue {
-          color: blue
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
-          background-color: var(--colors-transparent)
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray[data-disabled] {
-          border: 1px solid gray
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray[data-disabled] {
-          color: gray
-      }
-
-        .hover\\\\:bg_darkblue:is(:hover, [data-hover]) {
-          background-color: darkblue
-      }
-
-        .hover\\\\:bg_blue:is(:hover, [data-hover]) {
-          background-color: blue
-      }
-
-        .hover\\\\:text_white:is(:hover, [data-hover]) {
-          color: var(--colors-white)
-      }
-
         @layer compositions {
           .textStyle_headline\\\\.h1 {
             font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+            font-weight: var(--font-weights-bold);
       }
+      }
+
+        .d_inline-flex {
+          display: inline-flex;
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .justify_center {
+          justify-content: center;
+      }
+
+        .h_2\\\\.5rem {
+          height: 2.5rem;
+      }
+
+        .min-w_2\\\\.5rem {
+          min-width: 2.5rem;
+      }
+
+        .p_0_0\\\\.5rem {
+          padding: 0 0.5rem;
+      }
+
+        .h_3rem {
+          height: 3rem;
+      }
+
+        .min-w_3rem {
+          min-width: 3rem;
+      }
+
+        .p_0_0\\\\.75rem {
+          padding: 0 0.75rem;
+      }
+
+        .bg_blue {
+          background-color: blue;
+      }
+
+        .text_white {
+          color: var(--colors-white);
+      }
+
+        .bg_transparent {
+          background-color: var(--colors-transparent);
+      }
+
+        .border_1px_solid_blue {
+          border: 1px solid blue;
+      }
+
+        .text_blue {
+          color: blue;
+      }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
+          background-color: gray;
+      }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
+          color: var(--colors-black);
+      }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
+          background-color: var(--colors-transparent);
+      }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray[data-disabled] {
+          border: 1px solid gray;
+      }
+
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray[data-disabled] {
+          color: gray;
+      }
+
+        .hover\\\\:bg_darkblue:is(:hover, [data-hover]) {
+          background-color: darkblue;
+      }
+
+        .hover\\\\:bg_blue:is(:hover, [data-hover]) {
+          background-color: blue;
+      }
+
+        .hover\\\\:text_white:is(:hover, [data-hover]) {
+          color: var(--colors-white);
       }
       }"
     `)
@@ -467,43 +472,42 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
+        @layer _base {
+          .checkbox__root {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+      }
+
+          .checkbox__control {
+            border-width: 1px;
+            border-radius: var(--radii-sm);
+      }
+
+          .checkbox__label {
+            margin-inline-start: var(--spacing-2);
+      }
+      }
 
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
           width: var(--sizes-8);
-          height: var(--sizes-8)
+          height: var(--sizes-8);
       }
 
         .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm)
-      }
-
-        @layer _base {
-          .checkbox__root {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-2)
-      }
-
-          .checkbox__control {
-            border-width: 1px;
-            border-radius: var(--radii-sm)
-      }
-
-          .checkbox__label {
-            margin-inline-start: var(--spacing-2)
-      }
+          font-size: var(--font-sizes-sm);
       }
 
         @media screen and (min-width: 48em) {
           .md\\\\:checkbox__control--size_md {
             width: var(--sizes-10);
-            height: var(--sizes-10)
-          }
+            height: var(--sizes-10);
+      }
           .md\\\\:checkbox__label--size_md {
-            font-size: var(--font-sizes-md)
-          }
+            font-size: var(--font-sizes-md);
+      }
       }
       }"
     `)
@@ -561,63 +565,63 @@ describe('rule processor', () => {
     expect(checkbox.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
-          display: flex
+          display: flex;
       }
 
         .items_center {
-          align-items: center
+          align-items: center;
       }
 
         .gap_2 {
-          gap: var(--spacing-2)
+          gap: var(--spacing-2);
       }
 
         .border-w_1px {
-          border-width: 1px
+          border-width: 1px;
       }
 
         .rounded_sm {
-          border-radius: var(--radii-sm)
+          border-radius: var(--radii-sm);
       }
 
         .w_8 {
-          width: var(--sizes-8)
+          width: var(--sizes-8);
       }
 
         .h_8 {
-          height: var(--sizes-8)
+          height: var(--sizes-8);
       }
 
         .w_10 {
-          width: var(--sizes-10)
+          width: var(--sizes-10);
       }
 
         .h_10 {
-          height: var(--sizes-10)
+          height: var(--sizes-10);
       }
 
         .w_12 {
-          width: var(--sizes-12)
+          width: var(--sizes-12);
       }
 
         .h_12 {
-          height: var(--sizes-12)
+          height: var(--sizes-12);
       }
 
         .ms_2 {
-          margin-inline-start: var(--spacing-2)
+          margin-inline-start: var(--spacing-2);
       }
 
         .fs_sm {
-          font-size: var(--font-sizes-sm)
+          font-size: var(--font-sizes-sm);
       }
 
         .fs_md {
-          font-size: var(--font-sizes-md)
+          font-size: var(--font-sizes-md);
       }
 
         .fs_lg {
-          font-size: var(--font-sizes-lg)
+          font-size: var(--font-sizes-lg);
       }
       }"
     `)
@@ -645,15 +649,12 @@ describe('rule processor', () => {
         @layer _base {
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -728,15 +729,12 @@ describe('rule processor', () => {
 
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -755,27 +753,27 @@ describe('rule processor', () => {
 
       @layer utilities {
         .text_blue\\\\.300 {
-          color: var(--colors-blue-300)
-      }
-
-        .fs_12px {
-          font-size: 12px
-      }
-
-        .fs_14px {
-          font-size: 14px
-      }
-
-        .fs_16px {
-          font-size: 16px
-      }
-
-        .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
-          border: 2px solid var(--colors-green-100)
+          color: var(--colors-blue-300);
       }
 
         .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
-          color: var(--colors-red-400)
+          color: var(--colors-red-400);
+      }
+
+        .fs_12px {
+          font-size: 12px;
+      }
+
+        .fs_14px {
+          font-size: 14px;
+      }
+
+        .fs_16px {
+          font-size: 16px;
+      }
+
+        .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
+          border: 2px solid var(--colors-green-100);
       }
       }"
     `)
@@ -797,11 +795,11 @@ describe('rule processor', () => {
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_red {
-          color: red
+          color: red;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
       }"
     `)
@@ -817,10 +815,6 @@ describe('rule processor', () => {
 
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
-        .variant_solid {
-          variant: solid
-      }
-
         @layer _base {
           .buttonStyle {
             display: inline-flex;
@@ -830,18 +824,24 @@ describe('rule processor', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
+      }
+
+        .variant_solid {
+          variant: solid;
       }
       }
 
       @layer utilities {
 
         .text_red {
-          color: red
+          color: red;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
       }"
     `)
@@ -874,11 +874,6 @@ describe('rule processor', () => {
     step3.decoder.collect(step3.encoder)
     expect(step3.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
-
-        .variant_solid {
-          variant: solid
-      }
-
         @layer _base {
 
           .buttonStyle {
@@ -889,81 +884,86 @@ describe('rule processor', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
+      }
+
+        .variant_solid {
+          variant: solid;
       }
       }
 
       @layer recipes.slots {
-
-        .checkbox__control--size_md {
-          width: var(--sizes-10);
-          height: var(--sizes-10)
-      }
-
-        .checkbox__label--size_md {
-          font-size: var(--font-sizes-md)
-      }
-
         @layer _base {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: var(--spacing-2)
+            gap: var(--spacing-2);
       }
 
           .checkbox__control {
             border-width: 1px;
-            border-radius: var(--radii-sm)
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {
-            margin-inline-start: var(--spacing-2)
+            margin-inline-start: var(--spacing-2);
       }
+      }
+
+        .checkbox__control--size_md {
+          width: var(--sizes-10);
+          height: var(--sizes-10);
+      }
+
+        .checkbox__label--size_md {
+          font-size: var(--font-sizes-md);
       }
       }
 
       @layer utilities {
 
         .text_red {
-          color: red
+          color: red;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
 
         .d_none {
-          display: none
+          display: none;
       }
 
         .h_100\\\\% {
-          height: 100%
+          height: 100%;
       }
 
         .transition_all_\\\\.3s_ease-in-out {
-          transition: all .3s ease-in-out
+          transition: all .3s ease-in-out;
       }
 
         .opacity_0\\\\! {
-          opacity: 0 !important
+          opacity: 0 !important;
       }
 
         .opacity_1 {
-          opacity: 1
+          opacity: 1;
       }
 
         .h_10px {
-          height: 10px
+          height: 10px;
       }
 
         .bg-gradient_to-b {
           --gradient-stops: var(--gradient-from), var(--gradient-to);
           --gradient: var(--gradient-via-stops, var(--gradient-stops));
-          background-image: linear-gradient(to bottom, var(--gradient))
+          background-image: linear-gradient(to bottom, var(--gradient));
       }
 
         .from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\) {
-          --gradient-from: rgb(200 200 200 / .4)
+          --gradient-from: rgb(200 200 200 / .4);
       }
       }"
     `)
@@ -990,7 +990,7 @@ describe('rule processor', () => {
         .truncate_true {
           overflow: hidden;
           text-overflow: ellipsis;
-          white-space: nowrap
+          white-space: nowrap;
       }
       }",
       }
@@ -1023,18 +1023,112 @@ describe('rule processor', () => {
         ],
         "css": "@layer utilities {
         .text_\\\\#fff {
-          color: #fff
+          color: #fff;
       }
 
         .d_block {
-          display: block
+          display: block;
       }
 
         .d_none {
-          display: none
+          display: none;
       }
       }",
       }
+    `)
+  })
+})
+
+describe('js to css', () => {
+  test('ignores declarations with null', () => {
+    const result = css({
+      font: undefined,
+      color: null,
+      background: false,
+    })
+
+    expect(result.css).toMatchInlineSnapshot('""')
+  })
+
+  test('unitless', () => {
+    const result = css({
+      '--foo': 42,
+      width: 42,
+      opacity: 1,
+      zIndex: 0,
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\\\--foo_42 {
+          --foo: 42;
+      }
+
+        .w_42 {
+          width: 42px;
+      }
+
+        .opacity_1 {
+          opacity: 1;
+      }
+
+        .z_0 {
+          z-index: 0;
+      }
+      }"
+    `)
+  })
+
+  test('preserves casing for css variable', () => {
+    const result = css({
+      '--testVariable0': '0',
+      '--test-Variable-1': '1',
+      '--test-variable-2': '2',
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\\\--testVariable0_0 {
+          --testVariable0: 0;
+      }
+
+        .\\\\--test-Variable-1_1 {
+          --test-Variable-1: 1;
+      }
+
+        .\\\\--test-variable-2_2 {
+          --test-variable-2: 2;
+      }
+      }"
+    `)
+  })
+
+  test('parses declarations with !important', () => {
+    const result = css({
+      borderColor: 'red !important',
+      color: 'pink!',
+      background: 'white!IMPORTANT  ',
+      fontFamily: 'A',
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .border_red\\\\! {
+          border-color: red !important;
+      }
+
+        .text_pink\\\\! {
+          color: pink !important;
+      }
+
+        .bg_white\\\\! {
+          background: var(--colors-white) !important;
+      }
+
+        .font_A {
+          font-family: A;
+      }
+      }"
     `)
   })
 })

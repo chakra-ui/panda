@@ -3,8 +3,8 @@ import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
+import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
-import { toCss } from './to-css'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
 
 export class Stylesheet {
@@ -28,7 +28,7 @@ export class Stylesheet {
     if (typeof styles !== 'object') return
 
     try {
-      layer.append(toCss(styles).toString())
+      layer.append(stringify(styles))
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet:process', error.showSourceCode(true))
@@ -37,10 +37,13 @@ export class Stylesheet {
     return
   }
 
+  serialize = (styles: Dict) => {
+    return serializeStyles(this.context, styles)
+  }
+
   processGlobalCss = (styles: Dict) => {
-    const { conditions, utility } = this.context
-    const css = serializeStyles(styles, { conditions, utility })
-    this.context.layers.base.append(css)
+    const result = this.serialize(styles)
+    this.context.layers.base.append(stringify(result))
   }
 
   processCss = (styles: SystemStyleObject | undefined, layer: LayerName) => {
@@ -73,6 +76,11 @@ export class Stylesheet {
           return this.context.layers.getLayerRoot(layer).toString()
         })
         .join('\n'),
+      {
+        minify: false,
+        lightningcss: this.context.lightningcss,
+        browserslist: this.context.browserslist,
+      },
     )
   }
 
@@ -88,7 +96,13 @@ export class Stylesheet {
 
       const css = root.toString()
 
-      return optimize ? optimizeCss(css, { minify }) : css
+      return optimize
+        ? optimizeCss(css, {
+            minify,
+            lightningcss: this.context.lightningcss,
+            browserslist: this.context.browserslist,
+          })
+        : css
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet:toCss', error.showSourceCode(true))

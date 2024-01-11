@@ -1,14 +1,14 @@
-import { findConfig, type DiffConfigResult, getConfigDependencies } from '@pandacss/config'
+import { findConfig, getConfigDependencies, type DiffConfigResult } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync, statSync } from 'fs'
+import { resolve } from 'pathe'
 import type { Message, Root } from 'postcss'
 import { codegen } from './codegen'
 import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import { parseDependency } from './parse-dependency'
-import { resolve } from 'pathe'
 
 const fileModifiedMap = new Map<string, number>()
 
@@ -174,13 +174,18 @@ export class Builder {
 
   write = (root: Root) => {
     const ctx = this.getContextOrThrow()
-
     const sheet = ctx.createSheet()
+    ctx.appendLayerParams(sheet)
     ctx.appendBaselineCss(sheet)
-    ctx.appendParserCss(sheet)
     const css = ctx.getCss(sheet)
 
-    root.append(optimizeCss(css))
+    root.append(
+      optimizeCss(css, {
+        browserslist: ctx.config.browserslist,
+        minify: ctx.config.minify,
+        lightningcss: ctx.config.lightningcss,
+      }),
+    )
   }
 
   registerDependency = (fn: (dep: Message) => void) => {

@@ -1,4 +1,4 @@
-import { Stylesheet, expandNestedCss, extractParentSelectors, toCss } from '@pandacss/core'
+import { Stylesheet, expandNestedCss, extractParentSelectors, stringify } from '@pandacss/core'
 import postcss, { AtRule, Rule } from 'postcss'
 import type { Context } from '@pandacss/core'
 
@@ -18,12 +18,12 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
     if (Object.keys(varsObj).length === 0) continue
 
     if (key === 'base') {
-      const { css } = toCss({ [root]: varsObj })
+      const css = stringify({ [root]: varsObj })
       results.push(css)
     } else {
       // nested conditionals in semantic tokens are joined by ":", so let's split it
       const keys = key.split(':')
-      const { css } = toCss(varsObj)
+      const css = stringify(varsObj)
 
       const mapped = keys
         .map((key) => conditions.get(key))

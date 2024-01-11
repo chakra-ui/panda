@@ -71,10 +71,28 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+
+          [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red;
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -85,164 +103,139 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
-      }
-
-        .buttonStyle--size_sm {
-          height: 2.5rem;
-          min-width: 2.5rem;
-          padding: 0 0.5rem
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
-            color: red
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
+        .buttonStyle--size_sm {
+          height: 2.5rem;
+          min-width: 2.5rem;
+          padding: 0 0.5rem;
       }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:buttonStyle--size_sm {
             height: 2.5rem;
             min-width: 2.5rem;
-            padding: 0 0.5rem
-          }
-          .sm\\\\:buttonStyle--size_md {
-            height: 3rem;
-            min-width: 3rem;
-            padding: 0 0.75rem
-          }
+            padding: 0 0.5rem;
+      }
       }
 
         @media screen and (min-width: 48em) {
           .md\\\\:buttonStyle--size_sm {
             height: 2.5rem;
             min-width: 2.5rem;
-            padding: 0 0.5rem
-          }
+            padding: 0 0.5rem;
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:buttonStyle--size_md {
+            height: 3rem;
+            min-width: 3rem;
+            padding: 0 0.75rem;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
           .md\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
-            padding: 0 0.75rem
-          }
+            padding: 0 0.75rem;
+      }
       }
       }
 
       @layer utilities {
         .m_20px {
-          margin: 20px
+          margin: 20px;
       }
 
         .m_40px {
-          margin: 40px
+          margin: 40px;
       }
 
         .p_20px {
-          padding: 20px
+          padding: 20px;
       }
 
         .p_40px {
-          padding: 40px
+          padding: 40px;
       }
 
         .p_60px {
-          padding: 60px
+          padding: 60px;
       }
 
         .text_red\\\\.200 {
-          color: var(--colors-red-200)
-      }
-
-        [data-theme=light] .light\\\\:text_red\\\\.200, .light .light\\\\:text_red\\\\.200, .light\\\\:text_red\\\\.200.light, .light\\\\:text_red\\\\.200[data-theme=light] {
-          color: var(--colors-red-200)
-      }
-
-        [data-theme=dark] .dark\\\\:text_red\\\\.200, .dark .dark\\\\:text_red\\\\.200, .dark\\\\:text_red\\\\.200.dark, .dark\\\\:text_red\\\\.200[data-theme=dark] {
-          color: var(--colors-red-200)
+          color: var(--colors-red-200);
       }
 
         .text_blue\\\\.200 {
-          color: var(--colors-blue-200)
-      }
-
-        [data-theme=light] .light\\\\:text_blue\\\\.200, .light .light\\\\:text_blue\\\\.200, .light\\\\:text_blue\\\\.200.light, .light\\\\:text_blue\\\\.200[data-theme=light] {
-          color: var(--colors-blue-200)
-      }
-
-        [data-theme=dark] .dark\\\\:text_blue\\\\.200, .dark .dark\\\\:text_blue\\\\.200, .dark\\\\:text_blue\\\\.200.dark, .dark\\\\:text_blue\\\\.200[data-theme=dark] {
-          color: var(--colors-blue-200)
+          color: var(--colors-blue-200);
       }
 
         .text_green\\\\.200 {
-          color: var(--colors-green-200)
-      }
-
-        [data-theme=light] .light\\\\:text_green\\\\.200, .light .light\\\\:text_green\\\\.200, .light\\\\:text_green\\\\.200.light, .light\\\\:text_green\\\\.200[data-theme=light] {
-          color: var(--colors-green-200)
-      }
-
-        [data-theme=dark] .dark\\\\:text_green\\\\.200, .dark .dark\\\\:text_green\\\\.200, .dark\\\\:text_green\\\\.200.dark, .dark\\\\:text_green\\\\.200[data-theme=dark] {
-          color: var(--colors-green-200)
+          color: var(--colors-green-200);
       }
 
         .text_colorPalette\\\\.200 {
-          color: var(--colors-color-palette-200)
+          color: var(--colors-color-palette-200);
       }
 
-        [data-theme=light] .light\\\\:text_colorPalette\\\\.200, .light .light\\\\:text_colorPalette\\\\.200, .light\\\\:text_colorPalette\\\\.200.light, .light\\\\:text_colorPalette\\\\.200[data-theme=light] {
-          color: var(--colors-color-palette-200)
+        [data-theme=light] .light\\\\:text_red\\\\.200,.light .light\\\\:text_red\\\\.200,.light\\\\:text_red\\\\.200.light,.light\\\\:text_red\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_red\\\\.200,.dark .dark\\\\:text_red\\\\.200,.dark\\\\:text_red\\\\.200.dark,.dark\\\\:text_red\\\\.200[data-theme=dark] {
+          color: var(--colors-red-200);
       }
 
-        [data-theme=dark] .dark\\\\:text_colorPalette\\\\.200, .dark .dark\\\\:text_colorPalette\\\\.200, .dark\\\\:text_colorPalette\\\\.200.dark, .dark\\\\:text_colorPalette\\\\.200[data-theme=dark] {
-          color: var(--colors-color-palette-200)
+        [data-theme=light] .light\\\\:text_blue\\\\.200,.light .light\\\\:text_blue\\\\.200,.light\\\\:text_blue\\\\.200.light,.light\\\\:text_blue\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_blue\\\\.200,.dark .dark\\\\:text_blue\\\\.200,.dark\\\\:text_blue\\\\.200.dark,.dark\\\\:text_blue\\\\.200[data-theme=dark] {
+          color: var(--colors-blue-200);
+      }
+
+        [data-theme=light] .light\\\\:text_green\\\\.200,.light .light\\\\:text_green\\\\.200,.light\\\\:text_green\\\\.200.light,.light\\\\:text_green\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_green\\\\.200,.dark .dark\\\\:text_green\\\\.200,.dark\\\\:text_green\\\\.200.dark,.dark\\\\:text_green\\\\.200[data-theme=dark] {
+          color: var(--colors-green-200);
+      }
+
+        [data-theme=light] .light\\\\:text_colorPalette\\\\.200,.light .light\\\\:text_colorPalette\\\\.200,.light\\\\:text_colorPalette\\\\.200.light,.light\\\\:text_colorPalette\\\\.200[data-theme=light],[data-theme=dark] .dark\\\\:text_colorPalette\\\\.200,.dark .dark\\\\:text_colorPalette\\\\.200,.dark\\\\:text_colorPalette\\\\.200.dark,.dark\\\\:text_colorPalette\\\\.200[data-theme=dark] {
+          color: var(--colors-color-palette-200);
       }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:m_20px {
-            margin: 20px
-          }
+            margin: 20px;
+      }
           .sm\\\\:m_40px {
-            margin: 40px
-          }
+            margin: 40px;
+      }
           .sm\\\\:p_20px {
-            padding: 20px
-          }
+            padding: 20px;
+      }
           .sm\\\\:p_40px {
-            padding: 40px
-          }
+            padding: 40px;
+      }
           .sm\\\\:p_60px {
-            padding: 60px
-          }
+            padding: 60px;
+      }
       }
 
         @media screen and (min-width: 48em) {
           .md\\\\:m_20px {
-            margin: 20px
-          }
+            margin: 20px;
+      }
           .md\\\\:m_40px {
-            margin: 40px
-          }
+            margin: 40px;
+      }
           .md\\\\:p_20px {
-            padding: 20px
-          }
+            padding: 20px;
+      }
           .md\\\\:p_40px {
-            padding: 40px
-          }
+            padding: 40px;
+      }
           .md\\\\:p_60px {
-            padding: 60px
-          }
+            padding: 60px;
+      }
       }
       }",
         "results": {
@@ -364,10 +357,24 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -378,12 +385,17 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
+          font-size: var(--font-sizes-2xl);
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
       }
 
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_outline {
@@ -398,25 +410,9 @@ describe('static-css', () => {
           color: gray;
       }
 
-        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue;
-      }
-
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
           background-color: blue;
           color: white;
-      }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
       }
       }",
         "results": {
@@ -461,31 +457,31 @@ describe('static-css', () => {
       {
         "css": "@layer utilities {
         .m_20 {
-          margin: var(--spacing-20)
+          margin: var(--spacing-20);
       }
 
         .m_40 {
-          margin: var(--spacing-40)
+          margin: var(--spacing-40);
       }
 
         .m_60 {
-          margin: var(--spacing-60)
+          margin: var(--spacing-60);
       }
 
         .m_auto {
-          margin: auto
+          margin: auto;
       }
 
         .m_-20 {
-          margin: calc(var(--spacing-20) * -1)
+          margin: calc(var(--spacing-20) * -1);
       }
 
         .m_-40 {
-          margin: calc(var(--spacing-40) * -1)
+          margin: calc(var(--spacing-40) * -1);
       }
 
         .m_-60 {
-          margin: calc(var(--spacing-60) * -1)
+          margin: calc(var(--spacing-60) * -1);
       }
       }",
         "results": {
@@ -528,27 +524,27 @@ describe('static-css', () => {
       {
         "css": "@layer utilities {
         .p_20 {
-          padding: var(--spacing-20)
+          padding: var(--spacing-20);
       }
 
         .p_40 {
-          padding: var(--spacing-40)
+          padding: var(--spacing-40);
       }
 
         .p_60 {
-          padding: var(--spacing-60)
+          padding: var(--spacing-60);
       }
 
         .p_-20 {
-          padding: calc(var(--spacing-20) * -1)
+          padding: calc(var(--spacing-20) * -1);
       }
 
         .p_-40 {
-          padding: calc(var(--spacing-40) * -1)
+          padding: calc(var(--spacing-40) * -1);
       }
 
         .p_-60 {
-          padding: calc(var(--spacing-60) * -1)
+          padding: calc(var(--spacing-60) * -1);
       }
       }",
         "results": {
@@ -588,51 +584,51 @@ describe('static-css', () => {
       {
         "css": "@layer utilities {
         .text_red\\\\.200 {
-          color: var(--colors-red-200)
+          color: var(--colors-red-200);
       }
 
         .text_blue\\\\.200 {
-          color: var(--colors-blue-200)
+          color: var(--colors-blue-200);
       }
 
         .text_green\\\\.200 {
-          color: var(--colors-green-200)
+          color: var(--colors-green-200);
       }
 
         .text_colorPalette\\\\.200 {
-          color: var(--colors-color-palette-200)
+          color: var(--colors-color-palette-200);
       }
 
         .focus\\\\:text_red\\\\.200:is(:focus, [data-focus]) {
-          color: var(--colors-red-200)
+          color: var(--colors-red-200);
       }
 
         .focus\\\\:text_blue\\\\.200:is(:focus, [data-focus]) {
-          color: var(--colors-blue-200)
+          color: var(--colors-blue-200);
       }
 
         .focus\\\\:text_green\\\\.200:is(:focus, [data-focus]) {
-          color: var(--colors-green-200)
+          color: var(--colors-green-200);
       }
 
         .focus\\\\:text_colorPalette\\\\.200:is(:focus, [data-focus]) {
-          color: var(--colors-color-palette-200)
+          color: var(--colors-color-palette-200);
       }
 
         .hover\\\\:text_red\\\\.200:is(:hover, [data-hover]) {
-          color: var(--colors-red-200)
+          color: var(--colors-red-200);
       }
 
         .hover\\\\:text_blue\\\\.200:is(:hover, [data-hover]) {
-          color: var(--colors-blue-200)
+          color: var(--colors-blue-200);
       }
 
         .hover\\\\:text_green\\\\.200:is(:hover, [data-hover]) {
-          color: var(--colors-green-200)
+          color: var(--colors-green-200);
       }
 
         .hover\\\\:text_colorPalette\\\\.200:is(:hover, [data-hover]) {
-          color: var(--colors-color-palette-200)
+          color: var(--colors-color-palette-200);
       }
       }",
         "results": {
@@ -683,10 +679,24 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+      }
+
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -697,30 +707,19 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
-      }
-
         @media screen and (min-width: 48em) {
           .md\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
-            padding: 0 0.75rem
-          }
+            padding: 0 0.75rem;
+      }
       }
       }",
         "results": {
@@ -754,52 +753,51 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes.slots {
-
-        .checkbox__control--size_sm {
-          font-size: 2rem;
-          font-weight: var(--font-weights-bold);
-          width: 8;
-          height: 8
-      }
-
-        .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm)
-      }
-
-        .checkbox__control--size_lg {
-          width: 12;
-          height: 12
-      }
-
-        .checkbox__label--size_lg {
-          font-size: var(--font-sizes-lg)
-      }
-
         @layer _base {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: 2
+            gap: 2px;
       }
 
           .checkbox__control {
             border-width: 1px;
-            border-radius: var(--radii-sm)
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {
-            margin-inline-start: 2
+            margin-inline-start: 2px;
       }
+      }
+
+        .checkbox__control--size_sm {
+          font-size: 2rem;
+          font-weight: var(--font-weights-bold);
+          width: 8px;
+          height: 8px;
+      }
+
+        .checkbox__label--size_sm {
+          font-size: var(--font-sizes-sm);
+      }
+
+        .checkbox__control--size_lg {
+          width: 12px;
+          height: 12px;
+      }
+
+        .checkbox__label--size_lg {
+          font-size: var(--font-sizes-lg);
       }
 
         @media screen and (min-width: 64em) {
           .lg\\\\:checkbox__control--size_lg {
-            width: 12;
-            height: 12
-          }
+            width: 12px;
+            height: 12px;
+      }
           .lg\\\\:checkbox__label--size_lg {
-            font-size: var(--font-sizes-lg)
-          }
+            font-size: var(--font-sizes-lg);
+      }
       }
       }",
         "results": {
@@ -846,419 +844,380 @@ describe('static-css', () => {
       {
         "css": "@layer utilities {
         .pos_relative {
-          position: relative
-      }
-
-        .before\\\\:content_\\\\\\"\\\\\\"::before {
-          content: \\"\\"
-      }
-
-        .before\\\\:d_block::before {
-          display: block
-      }
-
-        .before\\\\:h_0::before {
-          height: 0
-      }
-
-        .before\\\\:pb_NaN\\\\%::before {
-          padding-bottom: NaN%
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
-          display: flex
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
-          justify-content: center
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
-          align-items: center
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
-          overflow: hidden
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
-          position: absolute
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
-          inset: 0
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
-          width: 100%
-      }
-
-        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
-          height: 100%
-      }
-
-        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
-          object-fit: cover
+          position: relative;
       }
 
         .self_stretch {
-          align-self: stretch
+          align-self: stretch;
       }
 
         .justify-self_stretch {
-          justify-self: stretch
+          justify-self: stretch;
       }
 
         .flex_0_0_sm {
-          flex: 0 0 sm
+          flex: 0 0 sm;
       }
 
         .flex_0_0_md {
-          flex: 0 0 md
+          flex: 0 0 md;
       }
 
         .flex_0_0_lg {
-          flex: 0 0 lg
+          flex: 0 0 lg;
       }
 
         .d_flex {
-          display: flex
+          display: flex;
       }
 
         .items_center {
-          align-items: center
+          align-items: center;
       }
 
         .justify_center {
-          justify-content: center
+          justify-content: center;
       }
 
         .flex_0_0_auto {
-          flex: 0 0 auto
+          flex: 0 0 auto;
       }
 
         .w_sm {
-          width: sm
+          width: sm;
       }
 
         .h_sm {
-          height: sm
+          height: sm;
       }
 
         .rounded_9999px {
-          border-radius: 9999px
+          border-radius: 9999px;
       }
 
         .w_md {
-          width: md
+          width: md;
       }
 
         .h_md {
-          height: md
+          height: md;
       }
 
         .w_lg {
-          width: lg
+          width: lg;
       }
 
         .h_lg {
-          height: lg
+          height: lg;
       }
 
         .\\\\--bleed-x_spacing\\\\.20 {
-          --bleed-x: var(--spacing-20)
+          --bleed-x: var(--spacing-20);
       }
 
         .\\\\--bleed-y_spacing\\\\.0 {
-          --bleed-y: spacing.0
+          --bleed-y: spacing.0;
       }
 
         .mx_calc\\\\(var\\\\(--bleed-x\\\\,_0\\\\)_\\\\*_-1\\\\) {
-          margin-inline: calc(var(--bleed-x, 0) * -1)
+          margin-inline: calc(var(--bleed-x, 0) * -1);
       }
 
         .my_calc\\\\(var\\\\(--bleed-y\\\\,_0\\\\)_\\\\*_-1\\\\) {
-          margin-block: calc(var(--bleed-y, 0) * -1)
+          margin-block: calc(var(--bleed-y, 0) * -1);
       }
 
         .\\\\--bleed-x_spacing\\\\.40 {
-          --bleed-x: var(--spacing-40)
+          --bleed-x: var(--spacing-40);
       }
 
         .\\\\--bleed-x_spacing\\\\.60 {
-          --bleed-x: var(--spacing-60)
+          --bleed-x: var(--spacing-60);
       }
 
         .\\\\--bleed-x_spacing\\\\.auto {
-          --bleed-x: spacing.auto
+          --bleed-x: spacing.auto;
       }
 
         .\\\\--bleed-x_spacing\\\\.-20 {
-          --bleed-x: calc(var(--spacing-20) * -1)
+          --bleed-x: calc(var(--spacing-20) * -1);
       }
 
         .\\\\--bleed-x_spacing\\\\.-40 {
-          --bleed-x: calc(var(--spacing-40) * -1)
+          --bleed-x: calc(var(--spacing-40) * -1);
       }
 
         .\\\\--bleed-x_spacing\\\\.-60 {
-          --bleed-x: calc(var(--spacing-60) * -1)
+          --bleed-x: calc(var(--spacing-60) * -1);
       }
 
         .\\\\--thickness_1px {
-          --thickness: 1px
+          --thickness: 1px;
       }
 
         .w_100\\\\% {
-          width: 100%
+          width: 100%;
       }
 
         .border-block-end-width_var\\\\(--thickness\\\\) {
-          border-block-end-width: var(--thickness)
+          border-block-end-width: var(--thickness);
       }
 
         .h_100\\\\% {
-          height: 100%
+          height: 100%;
       }
 
         .border-e_var\\\\(--thickness\\\\) {
-          border-inline-end-width: var(--thickness)
+          border-inline-end-width: var(--thickness);
       }
 
         .\\\\--thickness_20 {
-          --thickness: 20
+          --thickness: 20;
       }
 
         .\\\\--thickness_40 {
-          --thickness: 40
+          --thickness: 40;
       }
 
         .\\\\--thickness_60 {
-          --thickness: 60
+          --thickness: 60;
       }
 
         .\\\\--thickness_breakpoint-sm {
-          --thickness: breakpoint-sm
+          --thickness: breakpoint-sm;
       }
 
         .\\\\--thickness_breakpoint-md {
-          --thickness: breakpoint-md
+          --thickness: breakpoint-md;
       }
 
         .\\\\--thickness_breakpoint-lg {
-          --thickness: breakpoint-lg
+          --thickness: breakpoint-lg;
       }
 
         .\\\\--thickness_breakpoint-xl {
-          --thickness: breakpoint-xl
+          --thickness: breakpoint-xl;
       }
 
         .\\\\--thickness_breakpoint-2xl {
-          --thickness: breakpoint-2xl
+          --thickness: breakpoint-2xl;
       }
 
         .d_inline-flex {
-          display: inline-flex
+          display: inline-flex;
       }
 
         .pos_absolute {
-          position: absolute
+          position: absolute;
       }
 
         .inset-t_0 {
-          inset-block-start: 0
+          inset-block-start: 0;
       }
 
         .inset-b_auto {
-          inset-block-end: auto
+          inset-block-end: auto;
       }
 
         .start_auto {
-          inset-inline-start: auto
+          inset-inline-start: auto;
       }
 
         .end_20 {
-          inset-inline-end: var(--spacing-20)
+          inset-inline-end: var(--spacing-20);
       }
 
         .translate_50\\\\%_-50\\\\% {
-          translate: 50% -50%
+          translate: 50% -50%;
       }
 
         .end_40 {
-          inset-inline-end: var(--spacing-40)
+          inset-inline-end: var(--spacing-40);
       }
 
         .end_60 {
-          inset-inline-end: var(--spacing-60)
+          inset-inline-end: var(--spacing-60);
       }
 
         .end_-20 {
-          inset-inline-end: calc(var(--spacing-20) * -1)
+          inset-inline-end: calc(var(--spacing-20) * -1);
       }
 
         .end_-40 {
-          inset-inline-end: calc(var(--spacing-40) * -1)
+          inset-inline-end: calc(var(--spacing-40) * -1);
       }
 
         .end_-60 {
-          inset-inline-end: calc(var(--spacing-60) * -1)
+          inset-inline-end: calc(var(--spacing-60) * -1);
       }
 
         .inset-t_20 {
-          inset-block-start: var(--spacing-20)
+          inset-block-start: var(--spacing-20);
       }
 
         .end_0 {
-          inset-inline-end: 0
+          inset-inline-end: 0;
       }
 
         .inset-t_40 {
-          inset-block-start: var(--spacing-40)
+          inset-block-start: var(--spacing-40);
       }
 
         .inset-t_60 {
-          inset-block-start: var(--spacing-60)
+          inset-block-start: var(--spacing-60);
       }
 
         .inset-t_-20 {
-          inset-block-start: calc(var(--spacing-20) * -1)
+          inset-block-start: calc(var(--spacing-20) * -1);
       }
 
         .inset-t_-40 {
-          inset-block-start: calc(var(--spacing-40) * -1)
+          inset-block-start: calc(var(--spacing-40) * -1);
       }
 
         .inset-t_-60 {
-          inset-block-start: calc(var(--spacing-60) * -1)
+          inset-block-start: calc(var(--spacing-60) * -1);
       }
 
         .inset-t_auto {
-          inset-block-start: auto
+          inset-block-start: auto;
       }
 
         .inset-b_0 {
-          inset-block-end: 0
+          inset-block-end: 0;
       }
 
         .translate_50\\\\%_50\\\\% {
-          translate: 50% 50%
+          translate: 50% 50%;
       }
 
         .start_0 {
-          inset-inline-start: 0
+          inset-inline-start: 0;
       }
 
         .end_auto {
-          inset-inline-end: auto
+          inset-inline-end: auto;
       }
 
         .translate_-50\\\\%_50\\\\% {
-          translate: -50% 50%
+          translate: -50% 50%;
       }
 
         .translate_-50\\\\%_-50\\\\% {
-          translate: -50% -50%
+          translate: -50% -50%;
       }
 
         .start_50\\\\% {
-          inset-inline-start: 50%
+          inset-inline-start: 50%;
       }
 
         .end_50\\\\% {
-          inset-inline-end: 50%
+          inset-inline-end: 50%;
       }
 
         .inset-t_50\\\\% {
-          inset-block-start: 50%
+          inset-block-start: 50%;
       }
 
         .inset-b_50\\\\% {
-          inset-block-end: 50%
+          inset-block-end: 50%;
+      }
+
+        .before\\\\:content_\\\\\\"\\\\\\"::before {
+          content: \\"\\";
+      }
+
+        .before\\\\:d_block::before {
+          display: block;
+      }
+
+        .before\\\\:h_0::before {
+          height: 0;
+      }
+
+        .before\\\\:pb_NaN\\\\%::before {
+          padding-bottom: NaN%;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
+          display: flex;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
+          justify-content: center;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
+          align-items: center;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
+          overflow: hidden;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
+          position: absolute;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
+          inset: 0;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
+          width: 100%;
+      }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
+          height: 100%;
+      }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img,.\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
+          object-fit: cover;
       }
 
         @media screen and (min-width: 48em) {
           .md\\\\:pos_relative {
-            position: relative
-          }
+            position: relative;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:content_\\\\\\"\\\\\\"::before {
-            content: \\"\\"
-          }
+            content: \\"\\";
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:d_block::before {
-            display: block
-          }
+            display: block;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:h_0::before {
-            height: 0
-          }
+            height: 0;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:before\\\\:pb_NaN\\\\%::before {
-            padding-bottom: NaN%
-          }
+            padding-bottom: NaN%;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
-            display: flex
-          }
+            display: flex;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
-            justify-content: center
-          }
+            justify-content: center;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
-            align-items: center
-          }
+            align-items: center;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
-            overflow: hidden
-          }
+            overflow: hidden;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
-            position: absolute
-          }
+            position: absolute;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
-            inset: 0
-          }
+            inset: 0;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
-            width: 100%
-          }
+            width: 100%;
       }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
-            height: 100%
-          }
+            height: 100%;
       }
-
-        @media screen and (min-width: 48em) {
-          .md\\\\:\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img, .md\\\\:\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
-            object-fit: cover
-          }
+          .md\\\\:\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img,.md\\\\:\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
+            object-fit: cover;
+      }
       }
       }",
         "results": {
@@ -1848,27 +1807,54 @@ describe('static-css', () => {
     expect(getStaticCss({ recipes: '*' })).toMatchInlineSnapshot(`
       {
         "css": "@layer recipes {
+        @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
+          .textStyle > :not([hidden]) ~ :not([hidden]) {
+            border-inline-start-width: 20px;
+            border-inline-end-width: 0px;
+      }
+
+          [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
+            color: red;
+      }
+
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: white;
+      }
+      }
+
         .textStyle--size_h1 {
           font-size: 5rem;
           line-height: 1em;
-          font-weight: 800
+          font-weight: 800;
       }
 
         .textStyle--size_h2 {
           font-size: 3rem;
           line-height: 1.2em;
           font-weight: 700;
-          letter-spacing: -0.03em
+          letter-spacing: -0.03em;
       }
 
         .card--rounded_true {
-          border-radius: 0.375rem
+          border-radius: 0.375rem;
       }
 
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem
+          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
@@ -1879,12 +1865,17 @@ describe('static-css', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: black;
+          font-size: var(--font-sizes-2xl);
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
       }
 
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_outline {
@@ -1899,110 +1890,80 @@ describe('static-css', () => {
           color: gray;
       }
 
-        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue;
-      }
-
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
           background-color: blue;
           color: white;
       }
-
-        @layer _base {
-          .textStyle {
-            font-family: var(--fonts-mono);
-      }
-
-          .textStyle > :not([hidden]) ~ :not([hidden]) {
-            border-inline-start-width: 20px;
-            border-inline-end-width: 0px;
-      }
-
-          [data-theme=dark] .tooltipStyle[data-tooltip], .dark .tooltipStyle[data-tooltip], .tooltipStyle[data-tooltip].dark, .tooltipStyle[data-tooltip][data-theme=dark], [data-theme=dark] .tooltipStyle [data-tooltip], .dark .tooltipStyle [data-tooltip], .tooltipStyle [data-tooltip].dark, .tooltipStyle [data-tooltip][data-theme=dark] {
-            color: red
-      }
-
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
-      }
       }
 
       @layer recipes.slots {
-
-        .checkbox__control--size_sm {
-          font-size: 2rem;
-          font-weight: var(--font-weights-bold);
-          width: 8;
-          height: 8
-      }
-
-        .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm)
-      }
-
-        .checkbox__control--size_md {
-          width: 10;
-          height: 10
-      }
-
-        .checkbox__label--size_md {
-          font-size: var(--font-sizes-md)
-      }
-
-        .checkbox__control--size_lg {
-          width: 12;
-          height: 12
-      }
-
-        .checkbox__label--size_lg {
-          font-size: var(--font-sizes-lg)
-      }
-
-        .badge__title--size_sm {
-          padding-inline: 4
-      }
-
-        .badge__body--size_sm {
-          color: red
-      }
-
-        .badge__title--raised_true {
-          box-shadow: var(--shadows-md)
-      }
-
         @layer _base {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: 2
+            gap: 2px;
       }
 
           .checkbox__control {
             border-width: 1px;
-            border-radius: var(--radii-sm)
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {
-            margin-inline-start: 2
+            margin-inline-start: 2px;
       }
 
           .badge__title {
             background: red.300;
-            border-radius: var(--radii-sm)
+            border-radius: var(--radii-sm);
       }
+      }
+
+        .checkbox__control--size_sm {
+          font-size: 2rem;
+          font-weight: var(--font-weights-bold);
+          width: 8px;
+          height: 8px;
+      }
+
+        .checkbox__label--size_sm {
+          font-size: var(--font-sizes-sm);
+      }
+
+        .checkbox__control--size_md {
+          width: 10px;
+          height: 10px;
+      }
+
+        .checkbox__label--size_md {
+          font-size: var(--font-sizes-md);
+      }
+
+        .checkbox__control--size_lg {
+          width: 12px;
+          height: 12px;
+      }
+
+        .checkbox__label--size_lg {
+          font-size: var(--font-sizes-lg);
+      }
+
+        .badge__title--size_sm {
+          padding-inline: 4px;
+      }
+
+        .badge__body--size_sm {
+          color: red;
+      }
+
+        .badge__title--raised_true {
+          box-shadow: var(--shadows-md);
       }
       }
 
       @layer utilities {
         .text_ButtonHighlight {
-          color: ButtonHighlight
+          color: ButtonHighlight;
       }
       }",
         "results": {

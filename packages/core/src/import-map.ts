@@ -11,7 +11,7 @@ interface ImportMatcher {
 
 export class ImportMap {
   value: ImportMapOutput<string>
-  matchers: Record<keyof ImportMapOutput, ImportMatcher> = Object.create(null)
+  matchers = {} as Record<keyof ImportMapOutput, ImportMatcher>
   outdir: string
 
   constructor(private context: Pick<Context, 'jsx' | 'config' | 'conf' | 'isValidProperty' | 'recipes' | 'patterns'>) {

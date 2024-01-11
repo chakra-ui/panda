@@ -449,7 +449,7 @@ describe('generator', () => {
           --colors-button-thick: #fff;
           --colors-button-card-body: #fff;
           --colors-button-card-heading: #fff;
-          --spacing-gutter: var(--spacing-4)
+          --spacing-gutter: var(--spacing-4);
       }
 
         :where([data-theme=dark], .dark) {
@@ -459,6 +459,12 @@ describe('generator', () => {
           --colors-button-card-body: #000;
           --colors-button-card-heading: #000
       }
+
+        @media (forced-colors: active) {
+          :where([data-theme=dark], .dark) {
+            --colors-complex: var(--colors-red-700)
+                  }
+              }
 
         [data-color=material] {
           --colors-surface: #m-b
@@ -483,12 +489,7 @@ describe('generator', () => {
             --spacing-gutter: var(--spacing-5)
               }
           }
-
-        @media (forced-colors: active) {
-          :where([data-theme=dark], .dark) {
-            --colors-complex: var(--colors-red-700)
-                  }
-              }}"
+      }"
     `)
   })
 
@@ -565,8 +566,9 @@ describe('generator', () => {
             --colors-deep-test-pool-tall: $dfdf;
             --colors-deep-test-pool-palette-50: #f9f9f9;
             --colors-deep-test-pool-palette-100: #f2f2f2;
-            --colors-deep-test-pool-palette-200: #ebebeb
-        }}"
+            --colors-deep-test-pool-palette-200: #ebebeb;
+        }
+        }"
       `)
     })
 
@@ -602,12 +604,13 @@ describe('generator', () => {
       expect(css).toMatchInlineSnapshot(`
         "@layer tokens {
           :where(:root, :host) {
-            --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)
+            --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
 
           .dark {
             --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
-        }}"
+        }
+        }"
       `)
     })
   })
@@ -669,8 +672,9 @@ describe('generator', () => {
           --borders-red: 1px solid var(--colors-red);
           --borders-semantic-red: var(--borders-danger);
           --colors-danger: var(--colors-red);
-          --borders-danger: var(--borders-red)
-      }}"
+          --borders-danger: var(--borders-red);
+      }
+      }"
     `)
   })
 
@@ -744,12 +748,13 @@ describe('generator', () => {
           --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
           --colors-test-pink: var(--colors-pink-900);
           --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
-          --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink)
+          --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink);
       }
 
         .dark {
           --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink)
-      }}"
+      }
+      }"
     `)
   })
 })

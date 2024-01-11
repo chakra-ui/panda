@@ -47,6 +47,7 @@ export class RuleProcessor {
 
   css(styles: SystemStyleObject): AtomicRule {
     const { encoder, decoder, sheet } = this.prepare()
+
     encoder.processAtomic(styles)
     decoder.collect(encoder)
 
@@ -91,8 +92,10 @@ export class RuleProcessor {
 
   recipe(name: string, variants: Record<string, any>): RecipeRule | undefined {
     const { encoder, decoder, sheet } = this.prepare()
+
     encoder.processRecipe(name, variants)
     decoder.collect(encoder)
+
     return {
       variants,
       className: Array.from(decoder.classNames.keys()),

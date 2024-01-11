@@ -256,6 +256,16 @@ interface CssgenOptions {
    * @default 'object-literal'
    */
   syntax?: 'template-literal' | 'object-literal'
+  /**
+   * Whether to use `lightningcss` instead of `postcss` for css optimization.
+   * @default false
+   */
+  lightningcss?: boolean
+  /**
+   * Browserslist query to target specific browsers.
+   * @see https://www.npmjs.com/package/browserslist
+   */
+  browserslist?: string[]
 }
 
 interface CodegenOptions {
