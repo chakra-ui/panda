@@ -10,6 +10,7 @@ export const createRuleProcessor = (userConfig?: Config) => {
 export function processRecipe(
   recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle' | 'checkbox',
   value: Record<string, any>,
+  userConfig?: Config,
 ) {
-  return createRuleProcessor().recipe(recipe, value)?.toCss()
+  return createRuleProcessor(userConfig).recipe(recipe, value)?.toCss()
 }

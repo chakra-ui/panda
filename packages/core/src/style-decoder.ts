@@ -50,7 +50,7 @@ export class StyleDecoder {
     }
   }
 
-  private formatSelector = (conditions: string[], className: string, value: string) => {
+  private formatSelector = (conditions: string[], className: string, value?: string) => {
     const { conditions: cond, hash, utility } = this.context
 
     const conds = cond.finalize(conditions)
@@ -60,21 +60,26 @@ export class StyleDecoder {
       conds.push(className)
       result = utility.classNameWithPrefix(toHash(conds.join(':')))
     } else {
-      const split = ' '
-      let formattedValue = value
-        .split(split)
-        .map((v) => {
-          const isNegative = v.startsWith('-')
-          const absValue = isNegative ? v.slice(1) : v
-          return `${isNegative ? '-' : ''}${utility.formatClassName(absValue)}`
-        })
-        .join(split)
+      let formattedValue
+      let formattedClassName
 
-      formattedValue = withoutSpace(formattedValue)
+      if (value) {
+        const split = ' '
 
-      const formattedClassName = className.replace(new RegExp(esc(value) + '$'), formattedValue)
+        formattedValue = value
+          .split(split)
+          .map((v) => {
+            const isNegative = v.startsWith('-')
+            const absValue = isNegative ? v.slice(1) : v
+            return `${isNegative ? '-' : ''}${utility.formatClassName(absValue)}`
+          })
+          .join(split)
 
-      conds.push(utility.classNameWithPrefix(formattedClassName))
+        formattedValue = withoutSpace(formattedValue)
+        formattedClassName = className.replace(new RegExp(esc(value) + '$'), formattedValue)
+      }
+
+      conds.push(utility.classNameWithPrefix(formattedClassName ?? className))
       result = conds.join(':')
     }
 
@@ -213,8 +218,7 @@ export class StyleDecoder {
         ? this.context.recipes.getSlotKey(recipeConfig.className, slot)
         : recipeConfig.className
 
-    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    const selector = this.formatSelector([], className, 'xxx')
+    const selector = this.formatSelector([], className)
     const style = this.getGroup(hashSet, className)
 
     return Object.assign({}, style, {

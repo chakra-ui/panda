@@ -276,4 +276,50 @@ describe('recipe ruleset', () => {
       }"
     `)
   })
+
+  test('should work with formatClassName', () => {
+    expect(
+      processRecipe(
+        'buttonStyle',
+        {},
+        {
+          formatClassName: (token) => `$${token}`,
+        },
+      ),
+    ).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .buttonStyle--size_\\\\$md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+      }
+
+        .buttonStyle--variant_\\\\$solid {
+          background-color: blue;
+          color: var(--colors-white);
+      }
+
+        .buttonStyle--variant_\\\\$solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black);
+      }
+
+        .buttonStyle--variant_\\\\$solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
+      }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+      }
+      }
+      }"
+    `)
+  })
 })
