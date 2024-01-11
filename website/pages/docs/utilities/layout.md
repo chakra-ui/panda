@@ -11,7 +11,7 @@ Panda provides style properties for styling layout of an element
 
 Use the `aspectRatio` utilities to set the desired aspect ratio of an element.
 
-Values can be `square`, `portrait`, `landscape`, `wide`, `ultrawide`, `golden` or a number.
+Values can reference the `aspectRatios` token category.
 
 ```jsx
 <div className={css({ aspectRatio: 'square' })} />

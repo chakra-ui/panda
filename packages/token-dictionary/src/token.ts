@@ -235,4 +235,5 @@ const TOKEN_TYPES = {
   borders: 'border',
   components: 'cti',
   assets: 'asset',
+  aspectRatios: 'aspectRatio',
 }

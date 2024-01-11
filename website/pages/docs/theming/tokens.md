@@ -566,6 +566,21 @@ const theme = {
 
 > Animation tokens are typically used in `animation` property.
 
+### Aspect Ratios
+
+Aspect ratio tokens represent the aspect ratio of an element. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    aspectRatios: {
+      '1:1': { value: '1 / 1' },
+      '16:9': { value: '16 / 9' }
+    }
+  }
+}
+```
+
 ## Token Helpers
 
 To help defining tokens in a type-safe way, you can use the tokens [Config Functions](/docs/customization/config-functions#token-creators).

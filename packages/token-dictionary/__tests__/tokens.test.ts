@@ -1522,6 +1522,14 @@ test('should work with default fixture', () => {
 
   expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
     Map {
+      "aspectRatios" => Map {
+        "square" => "var(--aspect-ratios-square)",
+        "landscape" => "var(--aspect-ratios-landscape)",
+        "portrait" => "var(--aspect-ratios-portrait)",
+        "wide" => "var(--aspect-ratios-wide)",
+        "ultrawide" => "var(--aspect-ratios-ultrawide)",
+        "golden" => "var(--aspect-ratios-golden)",
+      },
       "borders" => Map {
         "none" => "var(--borders-none)",
       },
