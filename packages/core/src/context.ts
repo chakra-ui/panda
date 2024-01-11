@@ -232,13 +232,18 @@ export class Context {
 
   setupCompositions = (theme: Theme): void => {
     const { textStyles, layerStyles } = theme
+
     const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
+
     const stylesheetCtx = {
       ...this.baseSheetContext,
       layers: this.createLayers(this.config.layers as CascadeLayers),
     }
 
     for (const [key, values] of Object.entries(compositions)) {
+      // add the composition to the list of valid properties
+      this.properties.add(key)
+
       const flatValues = flatten(values ?? {})
 
       const config: PropertyConfig = {
@@ -255,7 +260,7 @@ export class Context {
   }
 
   setupProperties = (): void => {
-    this.properties = new Set(['css', 'textStyle', ...this.utility.keys(), ...this.conditions.keys()])
+    this.properties = new Set(['css', ...this.utility.keys(), ...this.conditions.keys()])
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
   }
 
