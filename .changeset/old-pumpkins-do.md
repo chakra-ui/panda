@@ -15,7 +15,6 @@
 '@pandacss/parser': minor
 '@pandacss/shared': minor
 '@pandacss/studio': minor
-'@pandacss/astro': minor
 '@pandacss/error': minor
 '@pandacss/types': minor
 '@pandacss/core': minor
