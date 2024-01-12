@@ -1975,24 +1975,6 @@ packages:
       semver: 6.3.1
     dev: true
 
-  /@babel/helper-create-class-features-plugin@7.22.15(@babel/core@7.23.5):
-    resolution: {integrity: sha512-jKkwA59IXcvSaiK2UN45kKwSC9o+KuoXsBDvHvU/7BecYIp8GQ2UwrVvFgJASUT+hBnwJx6MhvMCuMzwZZ7jlg==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0
-    dependencies:
-      '@babel/core': 7.23.5
-      '@babel/helper-annotate-as-pure': 7.22.5
-      '@babel/helper-environment-visitor': 7.22.20
-      '@babel/helper-function-name': 7.23.0
-      '@babel/helper-member-expression-to-functions': 7.23.0
-      '@babel/helper-optimise-call-expression': 7.22.5
-      '@babel/helper-replace-supers': 7.22.20(@babel/core@7.23.5)
-      '@babel/helper-skip-transparent-expression-wrappers': 7.22.5
-      '@babel/helper-split-export-declaration': 7.22.6
-      semver: 6.3.1
-    dev: true
-
   /@babel/helper-create-class-features-plugin@7.22.5(@babel/core@7.22.20):
     resolution: {integrity: sha512-xkb58MyOYIslxu3gKmVXmjTtUPvBU4odYzbiIQbWwLKIHCsx6UGZGX6F1IznMFVnDdirseUZopzN+ZRt8Xb33Q==}
     engines: {node: '>=6.9.0'}
@@ -2430,7 +2412,6 @@ packages:
       '@babel/types': 7.23.5
     transitivePeerDependencies:
       - supports-color
-    dev: false
 
   /@babel/helpers@7.23.5:
     resolution: {integrity: sha512-oO7us8FzTEsG3U6ag9MfdF1iA/7Z6dz+MtFhifZk8C8o453rGJFFWUP1t+ULM9TUIAzC9uxXEiXjOiVMyd7QPg==}
@@ -4605,19 +4586,6 @@ packages:
       '@babel/helper-create-class-features-plugin': 7.22.15(@babel/core@7.22.20)
       '@babel/helper-plugin-utils': 7.22.5
       '@babel/plugin-syntax-typescript': 7.22.5(@babel/core@7.22.20)
-    dev: true
-
-  /@babel/plugin-transform-typescript@7.22.15(@babel/core@7.23.5):
-    resolution: {integrity: sha512-1uirS0TnijxvQLnlv5wQBwOX3E1wCFX7ITv+9pBV2wKEk4K+M5tqDaoNXnTH8tjEIYHLO98MwiTWO04Ggz4XuA==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-    dependencies:
-      '@babel/core': 7.23.5
-      '@babel/helper-annotate-as-pure': 7.22.5
-      '@babel/helper-create-class-features-plugin': 7.22.15(@babel/core@7.23.5)
-      '@babel/helper-plugin-utils': 7.22.5
-      '@babel/plugin-syntax-typescript': 7.22.5(@babel/core@7.23.5)
     dev: true
 
   /@babel/plugin-transform-typescript@7.22.5(@babel/core@7.22.20):
@@ -12174,9 +12142,9 @@ packages:
       vite: ^4.0.0
       vue: ^3.0.0
     dependencies:
-      '@babel/core': 7.23.5
-      '@babel/plugin-transform-typescript': 7.22.15(@babel/core@7.23.5)
-      '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.23.5)
+      '@babel/core': 7.22.20
+      '@babel/plugin-transform-typescript': 7.22.15(@babel/core@7.22.20)
+      '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.22.20)
       vite: 4.3.9(@types/node@20.4.5)
       vue: 3.3.4
     transitivePeerDependencies:
@@ -22207,6 +22175,8 @@ packages:
   /lightningcss-wasm@1.22.1:
     resolution: {integrity: sha512-GzY3oTNtkPhDVt1AY0H0ZEWdcAjTOD1Y72nJlEO1JSRgA4UTUDhrklzdMhSLTyVHTpVAEfCxnD6fULBIbwgT/A==}
     engines: {node: '>= 12.0.0'}
+    dependencies:
+      napi-wasm: 1.1.0
     dev: false
     bundledDependencies:
       - napi-wasm
@@ -24127,6 +24097,10 @@ packages:
 
   /napi-build-utils@1.0.2:
     resolution: {integrity: sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==}
+
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+    dev: false
 
   /natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
