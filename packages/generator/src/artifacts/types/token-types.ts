@@ -4,6 +4,7 @@ import { outdent } from 'outdent'
 import pluralize from 'pluralize'
 
 const categories = [
+  'aspectRatios',
   'zIndex',
   'opacity',
   'colors',

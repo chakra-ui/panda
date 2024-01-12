@@ -5,7 +5,7 @@ import { merge } from 'merge-anything'
 import { createHooks } from 'hookable'
 import { getResolvedConfig, resolveConfig } from '@/src/lib/config/resolve-config'
 
-export const usePandaContext = (_config: Config | null) => {
+export const usePandaContext = (userConfig: Config | null) => {
   const previousContext = useRef<Generator | null>(null)
 
   const config = getResolvedConfig(
@@ -15,12 +15,12 @@ export const usePandaContext = (_config: Config | null) => {
       outdir: 'styled-system',
       preflight: true,
       optimize: true,
-      ..._config,
-      staticCss: merge(_config?.staticCss, {
+      ...userConfig,
+      staticCss: merge(userConfig?.staticCss, {
         recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
       }),
 
-      jsxFramework: _config?.jsxFramework ? 'react' : undefined,
+      jsxFramework: userConfig?.jsxFramework ? 'react' : undefined,
     }),
   )
 

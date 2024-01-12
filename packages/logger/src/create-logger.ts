@@ -56,10 +56,10 @@ export const createLogger = (conf: Config = {}) => {
     Obj.assign(({ stdout }) => ({
       timing: (level: LogLevel) => (msg: string) => {
         const start = performance.now()
-        return () => {
+        return (_msg = msg) => {
           const end = performance.now()
           const ms = end - start
-          stdout(level)('hrtime', `${msg} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
+          stdout(level)('hrtime', `${_msg} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
         }
       },
     })),

@@ -9,8 +9,8 @@ import type {
   SystemStyleObject,
 } from '@pandacss/types'
 import merge from 'lodash.merge'
-import { serializeStyle } from './serialize'
-import type { RecipeContext, RecipeNode } from './types'
+import type { RecipeNode } from './types'
+import { transformStyles, type SerializeContext } from './serialize'
 
 interface RecipeRecord {
   [key: string]: RecipeConfig | SlotRecipeConfig
@@ -42,9 +42,10 @@ export class Recipes {
     return Object.keys(this.recipes)
   }
 
-  constructor(private recipes: RecipeRecord = {}, private context: RecipeContext) {
+  private context!: SerializeContext
+
+  constructor(private recipes: RecipeRecord = {}) {
     this.prune()
-    this.save()
   }
 
   private getPropKey = (recipe: string, variant: string, value: any) => {
@@ -70,7 +71,8 @@ export class Recipes {
     })
   }
 
-  save = () => {
+  save = (context: SerializeContext) => {
+    this.context = context
     for (const [name, recipe] of Object.entries(this.recipes)) {
       this.saveOne(name, recipe)
     }
@@ -215,7 +217,7 @@ export class Recipes {
       staticCss,
     }
 
-    recipe.base = this.serialize(base)
+    recipe.base = transformStyles(this.context, base, name)
 
     sharedState.styles.set(name, recipe.base)
     sharedState.classNames.set(name, className)
@@ -225,7 +227,7 @@ export class Recipes {
         const propKey = this.getPropKey(name, key, variantKey)
         const className = this.getClassName(config.className, key, variantKey)
 
-        const styleObject = this.serialize(styles)
+        const styleObject = transformStyles(this.context, styles, className)
 
         sharedState.styles.set(propKey, styleObject)
         sharedState.classNames.set(propKey, className)
@@ -237,11 +239,6 @@ export class Recipes {
     }
 
     return recipe
-  }
-
-  private serialize = (styleObject: Dict) => {
-    if (!this.context) return styleObject
-    return serializeStyle(styleObject, this.context)
   }
 
   getTransform = (name: string, slot?: boolean) => {

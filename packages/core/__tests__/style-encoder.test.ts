@@ -156,6 +156,8 @@ describe('style encoder', () => {
           "alignItems]___[value:center]___[recipe:buttonStyle",
           "justifyContent]___[value:center]___[recipe:buttonStyle",
           "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+          "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+          "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
         },
         "variants": Set {
           "size]___[value:sm]___[recipe:buttonStyle",
@@ -457,15 +459,12 @@ describe('style encoder', () => {
         @layer _base {
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -576,27 +575,24 @@ describe('style encoder', () => {
     expect(result.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-          [data-theme=dark] .navbar[data-part=\\"blur\\"], .dark .navbar[data-part=\\"blur\\"], .navbar[data-part=\\"blur\\"].dark, .navbar[data-part=\\"blur\\"][data-theme=dark] {
-            background: dark;
-            box-shadow: 0 -1px 0 rgba(255,255,255,.1) inset;
-      }
-
           .navbar[data-part=\\"blur\\"] {
             box-shadow: 0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06);
       }
 
-          @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-            [data-theme=dark] .navbar[data-part=\\"blur\\"], .dark .navbar[data-part=\\"blur\\"], .navbar[data-part=\\"blur\\"].dark, .navbar[data-part=\\"blur\\"][data-theme=dark] {
-              background-color: hsla(0,0%,7%,.8) !important;
-          }
+          [data-theme=dark] .navbar[data-part=\\"blur\\"],.dark .navbar[data-part=\\"blur\\"],.navbar[data-part=\\"blur\\"].dark,.navbar[data-part=\\"blur\\"][data-theme=dark] {
+            background: dark;
+            box-shadow: 0 -1px 0 rgba(255,255,255,.1) inset;
       }
 
           @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+            [data-theme=dark] .navbar[data-part=\\"blur\\"],.dark .navbar[data-part=\\"blur\\"],.navbar[data-part=\\"blur\\"].dark,.navbar[data-part=\\"blur\\"][data-theme=dark] {
+              background-color: hsla(0,0%,7%,.8) !important;
+      }
             .navbar[data-part=\\"blur\\"] {
               backdrop-filter: blur(8px);
               -webkit-backdrop-filter: blur(8px);
               background-color: rgba(255, 255, 255, 0.85) !important;
-          }
+      }
       }
           }
       }"
@@ -637,6 +633,8 @@ describe('style encoder', () => {
           "alignItems]___[value:center]___[recipe:buttonStyle",
           "justifyContent]___[value:center]___[recipe:buttonStyle",
           "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+          "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+          "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
         },
       }
     `)

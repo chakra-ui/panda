@@ -261,6 +261,16 @@ interface CssgenOptions {
    * @default '(token) => escape(token)'
    */
   formatCssVar?: (path: string[]) => string
+  /**
+   * Whether to use `lightningcss` instead of `postcss` for css optimization.
+   * @default false
+   */
+  lightningcss?: boolean
+  /**
+   * Browserslist query to target specific browsers.
+   * @see https://www.npmjs.com/package/browserslist
+   */
+  browserslist?: string[]
 }
 
 interface CodegenOptions {

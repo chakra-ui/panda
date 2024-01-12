@@ -113,6 +113,8 @@ export class TokenDictionary implements TokenFormatters {
         })
 
         this.allTokens.push(node)
+
+        // console.log(node)
       },
       { stop: isToken },
     )

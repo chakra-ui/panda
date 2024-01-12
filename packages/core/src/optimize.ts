@@ -1,41 +1,25 @@
 import type { Token } from '@pandacss/types'
-import postcss, { Container, Root } from 'postcss'
-import dedupe from 'postcss-discard-duplicates'
-import discardEmpty from 'postcss-discard-empty'
-import mergeRules from 'postcss-merge-rules'
-import minifySelectors from 'postcss-minify-selectors'
+import postcss, { Root } from 'postcss'
 import nested from 'postcss-nested'
-import normalizeWhiteSpace from 'postcss-normalize-whitespace'
 import expandTokenFn from './plugins/expand-token-fn'
 import prettify from './plugins/prettify'
-import sortCss from './plugins/sort-css'
-import sortMediaQueries from './plugins/sort-mq'
+import { optimizePostCss } from './plugins/optimize-postcss'
 
 interface OptimizeOptions {
   minify?: boolean
+  lightningcss?: boolean
+  browserslist?: string[]
 }
 
-export function optimizeCss(code: string | Container, options: OptimizeOptions = {}) {
-  const { minify = false } = options
+export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
+  const { lightningcss } = options
 
-  // prettier-ignore
-  const plugins = [
-    nested(),
-    sortMediaQueries(),
-    dedupe(),
-    mergeRules(),
-    sortCss(),
-    discardEmpty(),
-  ]
-
-  if (minify) {
-    plugins.push(normalizeWhiteSpace(), minifySelectors())
-  } else {
-    plugins.push(prettify())
+  if (lightningcss) {
+    const light = require('./plugins/optimize-lightningcss') as typeof import('./plugins/optimize-lightningcss')
+    return light.default(code, options)
   }
 
-  const { css } = postcss(plugins).process(code)
-  return css
+  return optimizePostCss(code, options)
 }
 
 export function expandCssFunctions(
@@ -49,10 +33,5 @@ export function expandCssFunctions(
 
 export function expandNestedCss(code: string) {
   const { css } = postcss([nested(), prettify()]).process(code)
-  return css
-}
-
-export function prettifyCss(code: string) {
-  const { css } = postcss([prettify()]).process(code)
   return css
 }

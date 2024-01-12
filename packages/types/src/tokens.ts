@@ -89,6 +89,7 @@ export interface TokenDataTypes {
   gradients: string | Gradient
   assets: string | Asset
   borderWidths: string
+  aspectRatios: string
 }
 
 export type Tokens = {

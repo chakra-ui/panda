@@ -1,21 +1,17 @@
-import type { Context, Stylesheet } from '@pandacss/core'
-import { toCss } from '@pandacss/core'
-import postcss from 'postcss'
+import { Context, Stylesheet, stringify } from '@pandacss/core'
+import type { Dict } from '@pandacss/types'
 
 export function generateKeyframeCss(ctx: Context, sheet: Stylesheet) {
   const { keyframes = {} } = ctx.config.theme ?? {}
-  const root = postcss.root()
+
+  const result: Dict = {}
 
   for (const [name, definition] of Object.entries(keyframes)) {
-    root.append(
-      postcss.atRule({
-        name: 'keyframes',
-        params: name,
-        nodes: toCss(definition).root.nodes,
-      }),
-    )
+    result[`@keyframes ${name}`] = definition
   }
 
-  sheet.layers.tokens.append(root)
+  const css = stringify(sheet.serialize(result))
+
+  sheet.layers.tokens.append(css)
   void ctx.hooks.callHook('generator:css', 'keyframes.css', '')
 }

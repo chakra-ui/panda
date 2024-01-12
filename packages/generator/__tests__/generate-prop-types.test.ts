@@ -17,7 +17,7 @@ describe('generate property types', () => {
       import type { Tokens } from '../tokens/index';
 
       interface PropertyValueTypes {
-      	aspectRatio: \\"auto\\" | \\"square\\" | \\"landscape\\" | \\"portrait\\" | \\"wide\\" | \\"ultrawide\\" | \\"golden\\";
+      	aspectRatio: Tokens[\\"aspectRatios\\"];
       	zIndex: Tokens[\\"zIndex\\"];
       	top: Tokens[\\"spacing\\"];
       	left: Tokens[\\"spacing\\"];
@@ -396,12 +396,15 @@ describe('generate property types', () => {
         | 'visibility'
         | 'wordBreak'
         | 'writingMode'
+
       type WithEscapeHatch<T> = T | \`[\${string}]\`
+
       type FilterVagueString<Key, Value> = Value extends boolean
         ? Value
         : Key extends StrictableProps
           ? Value extends \`\${infer _}\` ? Value : never
           : Value
+
       type PropOrCondition<Key, Value> = ConditionalValue<Value | (string & {})>
 
       type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
@@ -430,7 +433,7 @@ describe('generate property types', () => {
       import type { Tokens } from '../tokens/index';
 
       interface PropertyValueTypes {
-      	aspectRatio: \\"auto\\" | \\"square\\" | \\"landscape\\" | \\"portrait\\" | \\"wide\\" | \\"ultrawide\\" | \\"golden\\";
+      	aspectRatio: Tokens[\\"aspectRatios\\"];
       	zIndex: Tokens[\\"zIndex\\"];
       	top: Tokens[\\"spacing\\"];
       	left: Tokens[\\"spacing\\"];
@@ -808,12 +811,15 @@ describe('generate property types', () => {
         | 'visibility'
         | 'wordBreak'
         | 'writingMode'
+
       type WithEscapeHatch<T> = T | \`[\${string}]\`
+
       type FilterVagueString<Key, Value> = Value extends boolean
         ? Value
         : Key extends StrictableProps
           ? Value extends \`\${infer _}\` ? Value : never
           : Value
+
       type PropOrCondition<Key, Value> = ConditionalValue<WithEscapeHatch<Value>>
 
       type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
