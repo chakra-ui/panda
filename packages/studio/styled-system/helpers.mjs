@@ -64,6 +64,21 @@ function mergeProps(...sources) {
   }, {});
 }
 
+// src/memo.ts
+var memo = (fn) => {
+  const cache = /* @__PURE__ */ new Map();
+  const get = (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+  return get;
+};
+
 // src/walk-object.ts
 var isNotNullish = (element) => element != null;
 function walkObject(target, predicate, options = {}) {
@@ -150,7 +165,7 @@ function createCss(context) {
     }
     return result;
   };
-  return (styleObject = {}) => {
+  return memo((styleObject = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context);
     const classNames = /* @__PURE__ */ new Set();
     walkObject(normalizedObject, (value, paths) => {
@@ -166,7 +181,7 @@ function createCss(context) {
       classNames.add(className);
     });
     return Array.from(classNames).join(" ");
-  };
+  });
 }
 function compactStyles(...styles) {
   return styles.filter((style) => isObject(style) && Object.keys(compact(style)).length > 0);
@@ -184,23 +199,8 @@ function createMergeCss(context) {
   function assignCss(...styles) {
     return Object.assign({}, ...resolve(styles));
   }
-  return { mergeCss, assignCss };
+  return { mergeCss: memo(mergeCss), assignCss };
 }
-
-// src/memo.ts
-var memo = (fn) => {
-  const cache = /* @__PURE__ */ new Map();
-  const get = (...args) => {
-    const key = JSON.stringify(args);
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
-    const result = fn(...args);
-    cache.set(key, result);
-    return result;
-  };
-  return get;
-};
 
 // src/hypenate-property.ts
 var wordRegex = /([A-Z])/g;

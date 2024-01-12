@@ -1,0 +1,31 @@
+{
+  "name": "sandbox-runtime-perf",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "prepare": "panda",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "explore": "source-map-explorer 'dist/assets/*.js' --no-border-checks",
+    "analyze": "pnpm panda codegen --clean && ANALYZE=true vite build && pnpm explore",
+    "visualize": "pnpm panda codegen --clean && vite-bundle-visualizer"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/studio": "workspace:*",
+    "@types/react": "18.2.42",
+    "@types/react-dom": "18.2.17",
+    "@vitejs/plugin-react": "4.2.1",
+    "postcss": "^8.4.31",
+    "source-map-explorer": "^2.5.3",
+    "typescript": "5.3.3",
+    "vite": "5.0.7",
+    "vite-bundle-visualizer": "0.11.0"
+  }
+}
