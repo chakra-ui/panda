@@ -1,5 +1,97 @@
 # @pandacss/config
 
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- c9195a4e: ## Change
+
+  Change the config dependencies (files that are transitively imported) detection a bit more permissive to make it work
+  by default in more scenarios.
+
+  ## Context
+
+  This helps when you're in a monorepo and you have a workspace package for your preset, and you want to see the HMR
+  reflecting changes in your app.
+
+  Currently, we only traverse files with the `.ts` extension, this change makes it traverse all files ending with `.ts`,
+  meaning that it will also traverse `.d.ts`, `.d.mts`, `.mts`, etc.
+
+  ## Example
+
+  ```ts
+  // apps/storybook/panda.config.ts
+  import { defineConfig } from '@pandacss/dev'
+  import preset from '@acme/preset'
+
+  export default defineConfig({
+    // ...
+  })
+  ```
+
+  This would not work before, but now it does.
+
+  ```jsonc
+  {
+    "name": "@acme/preset",
+    "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs"
+  }
+  ```
+
+  ## Notes
+
+  This would have been fine before that change.
+
+  ```jsonc
+  // packages/preset/package.json
+  {
+    "name": "@acme/preset",
+    "types": "./src/index.ts", // this was fine
+    "main": "./dist/index.js",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+      }
+      // ...
+    }
+  }
+  ```
+
+- Updated dependencies [84304901]
+- Updated dependencies [bee3ec85]
+- Updated dependencies [74ac0d9d]
+  - @pandacss/preset-panda@0.27.0
+  - @pandacss/preset-base@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/error@0.27.0
+  - @pandacss/types@0.27.0
+
 ## 0.26.2
 
 ### Patch Changes
