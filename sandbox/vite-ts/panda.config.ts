@@ -1,18 +1,10 @@
-import { defineConfig, defineRecipe } from '@pandacss/dev'
-
-const someRecipe = defineRecipe({
-  className: 'some-recipe',
-  base: { color: 'green', fontSize: '16px' },
-  variants: {
-    size: { small: { fontSize: '14px' } },
-  },
-  compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
-})
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   hooks: {
     // Dynamically add a recipe
-    'config:resolved': (result) => {
+    'config:resolved': async (result) => {
+      const { someRecipe } = await import('./some-recipe')
       const recipes = result.config.theme?.recipes
       if (recipes) {
         recipes['someRecipe'] = someRecipe
