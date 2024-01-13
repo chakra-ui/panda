@@ -2,7 +2,7 @@ import type { StyleDecoder } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
 import type { Context } from '@pandacss/core'
 
-export const generateParserCss = (ctx: Context, decoder: StyleDecoder, filePath?: string) => {
+export const generateParserCss = (ctx: Context, decoder: StyleDecoder) => {
   if (!decoder) return ''
 
   const sheet = ctx.createSheet()
@@ -12,7 +12,6 @@ export const generateParserCss = (ctx: Context, decoder: StyleDecoder, filePath?
 
   try {
     const css = sheet.toCss({ minify, optimize })
-    ctx.hooks.callHook('parser:css', filePath ?? '', css)
     return css
   } catch (err) {
     logger.error('serializer:css', 'Failed to serialize CSS: ' + err)

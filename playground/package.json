@@ -28,7 +28,6 @@
     "@pandacss/preset-panda": "workspace:*",
     "@prisma/client": "5.1.0",
     "@textea/json-viewer": "3.2.3",
-    "hookable": "5.5.3",
     "lightningcss-wasm": "^1.22.1",
     "merge-anything": "5.1.7",
     "monaco-editor": "0.40.0",

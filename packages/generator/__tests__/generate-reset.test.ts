@@ -1,9 +1,9 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { fixtureDefaults } from '@pandacss/fixture'
 
-const resetCss = (config: ConfigResultWithHooks) => {
+const resetCss = (config: LoadConfigResult) => {
   const ctx = new Generator(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('preflight', sheet)

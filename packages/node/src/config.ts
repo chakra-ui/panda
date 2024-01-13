@@ -1,7 +1,6 @@
 import { loadConfig } from '@pandacss/config'
-import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
+import type { Config } from '@pandacss/types'
 import browserslist from 'browserslist'
-import { createDebugger, createHooks } from 'hookable'
 import { PandaContext } from './create-context'
 import { loadTsConfig } from './load-tsconfig'
 
@@ -29,18 +28,5 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
     Object.assign(conf, tsConfResult)
   }
 
-  // Register user hooks
-  const hooks = createHooks<PandaHooks>()
-
-  if (conf.config.hooks) {
-    hooks.addHooks(conf.config.hooks)
-  }
-
-  await hooks.callHook('config:resolved', conf)
-
-  if (conf.config.logLevel === 'debug') {
-    createDebugger(hooks, { tag: 'panda' })
-  }
-
-  return new PandaContext({ ...conf, hooks } as ConfigResultWithHooks)
+  return new PandaContext(conf)
 }

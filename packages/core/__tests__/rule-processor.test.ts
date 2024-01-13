@@ -6,22 +6,22 @@ import { createRuleProcessor } from './fixture'
 
 const css = (styles: Dict) => {
   const result = createRuleProcessor().css(styles)
-  return { className: result.className, css: result.toCss() }
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const recipe = (name: string, styles: Dict) => {
   const result = createRuleProcessor().recipe(name, styles)!
-  return { className: result.className, css: result.toCss() }
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const cva = (styles: RecipeDefinition) => {
   const result = createRuleProcessor().cva(styles)!
-  return { className: result.className, css: result.toCss() }
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const sva = (styles: SlotRecipeDefinition) => {
   const result = createRuleProcessor().sva(styles)!
-  return { className: result.className, css: result.toCss() }
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const buttonRecipe = {
@@ -639,7 +639,7 @@ describe('rule processor', () => {
     })
 
     const result = processor.recipe('button', {})!
-    expect(result.className).toMatchInlineSnapshot(`
+    expect(result.getClassNames()).toMatchInlineSnapshot(`
       [
         "btn",
       ]
@@ -683,7 +683,7 @@ describe('rule processor', () => {
         },
       },
     })
-    processor.prepare()
+    processor.clone()
     processor.css({
       color: 'blue.300',
       _hover: {
@@ -783,7 +783,7 @@ describe('rule processor', () => {
     const ctx = createGeneratorContext()
     const processor = new RuleProcessor(ctx as any)
 
-    const step1 = processor.prepare()
+    const step1 = processor.clone()
 
     step1.encoder.fromJSON({
       schemaVersion: 'x',
@@ -804,7 +804,7 @@ describe('rule processor', () => {
       }"
     `)
 
-    const step2 = processor.prepare()
+    const step2 = processor.clone()
 
     step2.encoder.fromJSON({
       schemaVersion: 'x',
@@ -846,7 +846,7 @@ describe('rule processor', () => {
       }"
     `)
 
-    const step3 = processor.prepare()
+    const step3 = processor.clone()
 
     step3.encoder.fromJSON({
       schemaVersion: 'x',

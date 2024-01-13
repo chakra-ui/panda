@@ -1,8 +1,8 @@
 import type {
   Config,
-  ConfigResultWithHooks,
   Dict,
   HashOptions,
+  LoadConfigResult,
   PatternHelpers,
   RecipeConfig,
   SlotRecipeConfig,
@@ -111,5 +111,5 @@ export interface ParserOptions {
   encoder: StyleEncoder
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
-  tsOptions: ConfigResultWithHooks['tsOptions']
+  tsOptions: LoadConfigResult['tsOptions']
 }

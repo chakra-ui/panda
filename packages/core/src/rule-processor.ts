@@ -5,110 +5,100 @@ import type { StyleDecoder } from './style-decoder'
 import type { StyleEncoder } from './style-encoder'
 
 export class RuleProcessor {
-  encoder: StyleEncoder | undefined
-  decoder: StyleDecoder | undefined
-  sheet: Stylesheet | undefined
-  params: Pick<PrepareParams, 'encoder' | 'decoder'>
+  encoder: StyleEncoder
+  decoder: StyleDecoder
+  sheet: Stylesheet
 
-  constructor(private context: Context, params?: Pick<PrepareParams, 'encoder' | 'decoder'>) {
-    this.params = params ?? {
-      encoder: context.encoder,
-      decoder: context.decoder,
-    }
+  constructor(private context: Context) {
+    this.encoder = context.encoder
+    this.decoder = context.decoder
+    this.sheet = context.createSheet()
   }
 
-  isReady() {
-    return Boolean(this.encoder && this.decoder && this.sheet)
-  }
-
-  prepare(options?: PrepareParams) {
-    if (!this.isReady() || options?.clone) {
-      this.sheet = options?.sheet ?? this.context.createSheet()
-      this.encoder = options?.encoder ?? this.params.encoder.clone()
-      this.decoder = options?.decoder ?? this.params.decoder.clone()
+  getParamsOrThrow() {
+    const isReady = Boolean(this.encoder && this.decoder && this.sheet)
+    if (!isReady) {
+      throw new Error('RuleProcessor is missing params, please call `clone` first')
     }
 
     return {
-      encoder: this.encoder!,
-      decoder: this.decoder!,
-      sheet: this.sheet!,
-      toCss: (options?: CssOptions) => {
-        this.sheet!.processDecoder(this.decoder!)
-        return this.sheet!.toCss({ optimize: true, ...options })
-      },
+      encoder: this.encoder,
+      decoder: this.decoder,
+      sheet: this.sheet,
     }
   }
 
+  clone() {
+    this.encoder = this.context.encoder.clone()
+    this.decoder = this.context.decoder.clone()
+    this.sheet = this.context.createSheet()
+
+    return this
+  }
+
   toCss(options?: CssOptions) {
-    const { decoder, sheet } = this.prepare()
+    const { decoder, sheet } = this.getParamsOrThrow()
+
     sheet.processDecoder(decoder)
     return sheet.toCss({ optimize: true, ...options })
   }
 
   css(styles: SystemStyleObject): AtomicRule {
-    const { encoder, decoder, sheet } = this.prepare()
+    const { encoder, decoder } = this.getParamsOrThrow()
 
     encoder.processAtomic(styles)
     decoder.collect(encoder)
 
     return {
       styles,
-      className: Array.from(decoder.classNames.keys()),
-      toCss: (options?: CssOptions) => {
-        sheet.processDecoder(decoder)
-        return sheet.toCss({ optimize: true, ...options })
-      },
+      getClassNames: () => Array.from(decoder.classNames.keys()),
+      toCss: this.toCss.bind(this),
     }
   }
 
   cva(recipeConfig: RecipeDefinition<any>): AtomicRecipeRule {
-    const { encoder, decoder, sheet } = this.prepare()
+    const { encoder, decoder } = this.getParamsOrThrow()
+
     encoder.processAtomicRecipe(recipeConfig)
     decoder.collect(encoder)
 
     return {
       config: recipeConfig,
-      className: Array.from(decoder.classNames.keys()),
-      toCss: (options?: CssOptions) => {
-        sheet.processDecoder(decoder)
-        return sheet.toCss({ optimize: true, ...options })
-      },
+      getClassNames: () => Array.from(decoder.classNames.keys()),
+      toCss: this.toCss.bind(this),
     }
   }
 
   sva(recipeConfig: SlotRecipeDefinition<string, any>): AtomicRecipeRule {
-    const { encoder, decoder, sheet } = this.prepare()
+    const { encoder, decoder } = this
+    this.getParamsOrThrow()
+
     encoder.processAtomicSlotRecipe(recipeConfig)
     decoder.collect(encoder)
     return {
       config: recipeConfig,
-      className: Array.from(decoder.classNames.keys()),
-      toCss: (options?: CssOptions) => {
-        sheet.processDecoder(decoder)
-        return sheet.toCss({ optimize: true, ...options })
-      },
+      getClassNames: () => Array.from(decoder.classNames.keys()),
+      toCss: this.toCss.bind(this),
     }
   }
 
-  recipe(name: string, variants: Record<string, any>): RecipeRule | undefined {
-    const { encoder, decoder, sheet } = this.prepare()
+  recipe(name: string, variants: Record<string, any> = {}): RecipeRule | undefined {
+    const { encoder, decoder } = this
+    this.getParamsOrThrow()
 
     encoder.processRecipe(name, variants)
     decoder.collect(encoder)
 
     return {
       variants,
-      className: Array.from(decoder.classNames.keys()),
-      toCss: (options?: CssOptions) => {
-        sheet.processDecoder(decoder)
-        return sheet.toCss({ optimize: true, ...options })
-      },
+      getClassNames: () => Array.from(decoder.classNames.keys()),
+      toCss: this.toCss.bind(this),
     }
   }
 }
 
 interface BaseRule {
-  className: string[]
+  getClassNames: () => string[]
   toCss: () => string
 }
 
@@ -122,11 +112,4 @@ interface AtomicRecipeRule extends BaseRule {
 
 interface RecipeRule extends BaseRule {
   variants: Record<string, any>
-}
-
-interface PrepareParams {
-  clone?: boolean
-  encoder: StyleEncoder
-  decoder: StyleDecoder
-  sheet?: Stylesheet
 }

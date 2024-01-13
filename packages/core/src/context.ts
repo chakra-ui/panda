@@ -3,8 +3,9 @@ import { compact, flatten, isBoolean, isString, mapObject, memo } from '@pandacs
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
-  ConfigResultWithHooks,
+  LoadConfigResult,
   HashOptions,
+  PandaHooks,
   PrefixOptions,
   PropertyConfig,
   RequiredBy,
@@ -28,6 +29,7 @@ import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
 import type { ParserOptions } from './types'
 import { Utility } from './utility'
+import { Api } from './api'
 
 const helpers = {
   map: mapObject,
@@ -68,6 +70,7 @@ export class Context {
 
   encoder: StyleEncoder
   decoder: StyleDecoder
+  api: Api
 
   // Props
   properties!: Set<string>
@@ -75,7 +78,7 @@ export class Context {
   messages: Messages
   parserOptions: ParserOptions
 
-  constructor(public conf: ConfigResultWithHooks) {
+  constructor(public conf: LoadConfigResult) {
     const config = defaults(conf.config)
     const theme = config.theme ?? {}
     conf.config = config
@@ -170,6 +173,9 @@ export class Context {
       join: (...paths: string[]) => paths.join('/'),
       imports: this.imports,
     }
+
+    this.api = new Api(this)
+    this.hooks['context:created']?.(this.api)
   }
 
   get config() {
@@ -177,7 +183,7 @@ export class Context {
   }
 
   get hooks() {
-    return this.conf.hooks
+    return this.conf.hooks ?? ({} as PandaHooks)
   }
 
   get isTemplateLiteralSyntax() {

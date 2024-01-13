@@ -1991,7 +1991,7 @@ describe('style decoder', () => {
     })
 
     const result = processor.recipe('button', {})!
-    expect(result.className).toMatchInlineSnapshot(`
+    expect(result.getClassNames()).toMatchInlineSnapshot(`
       [
         "btn",
       ]

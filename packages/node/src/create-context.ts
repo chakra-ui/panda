@@ -2,7 +2,7 @@ import type { StyleEncoder, Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { ParserResult, Project } from '@pandacss/parser'
-import type { ConfigResultWithHooks, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
+import type { LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
 import { debounce } from 'perfect-debounce'
 import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
@@ -14,7 +14,7 @@ export class PandaContext extends Generator {
   output: OutputEngine
   diff: DiffEngine
 
-  constructor(conf: ConfigResultWithHooks) {
+  constructor(conf: LoadConfigResult) {
     super(conf)
 
     const config = conf.config

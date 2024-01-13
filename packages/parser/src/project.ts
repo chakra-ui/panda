@@ -1,5 +1,5 @@
 import type { ParserOptions } from '@pandacss/core'
-import type { ConfigTsOptions, PandaHookable, Runtime } from '@pandacss/types'
+import type { ConfigTsOptions, PandaHooks, Runtime } from '@pandacss/types'
 import {
   FileSystemRefreshResult,
   ScriptKind,
@@ -29,7 +29,7 @@ const createTsProject = (options: Partial<TsProjectOptions>) =>
 export interface ProjectOptions extends TsProjectOptions {
   readFile: Runtime['fs']['readFileSync']
   getFiles(): string[]
-  hooks: PandaHookable
+  hooks: Partial<PandaHooks>
   parserOptions: ParserOptions
   tsOptions?: ConfigTsOptions
 }
@@ -133,11 +133,11 @@ export class Project {
       sourceFile.replaceWithText(transformed)
     }
 
-    hooks.callHook('parser:before', filePath, content)
+    hooks['parser:before']?.(filePath, content)
 
     const result = this.parser(sourceFile, encoder)?.setFilePath(filePath)
 
-    hooks.callHook('parser:after', filePath, result)
+    hooks['parser:after']?.(filePath, result)
 
     return result
   }

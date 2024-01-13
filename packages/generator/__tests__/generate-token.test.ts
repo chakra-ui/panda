@@ -1,10 +1,9 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
-import { createHooks } from 'hookable'
+import type { LoadConfigResult } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { fixtureDefaults } from '@pandacss/fixture'
 
-const tokenCss = (config: ConfigResultWithHooks) => {
+const tokenCss = (config: LoadConfigResult) => {
   const ctx = new Generator(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('tokens', sheet)
@@ -550,7 +549,7 @@ describe('generator', () => {
           outdir: '',
         },
         path: '',
-        hooks: createHooks(),
+        hooks: {},
         serialized: '',
         deserialize: () => ({} as any),
       })
@@ -596,7 +595,7 @@ describe('generator', () => {
           outdir: '',
         },
         path: '',
-        hooks: createHooks(),
+        hooks: {},
         serialized: '',
         deserialize: () => ({} as any),
       })
@@ -659,7 +658,7 @@ describe('generator', () => {
         outdir: '',
       },
       path: '',
-      hooks: createHooks(),
+      hooks: {},
       serialized: '',
       deserialize: () => ({} as any),
     })
@@ -739,7 +738,7 @@ describe('generator', () => {
         outdir: '',
       },
       path: '',
-      hooks: createHooks(),
+      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`

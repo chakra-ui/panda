@@ -225,5 +225,5 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
 `
 
   sheet.layers.reset.append(output)
-  void ctx.hooks.callHook('generator:css', 'reset.css', '')
+  void ctx.hooks['generator:css']?.('reset.css')
 }

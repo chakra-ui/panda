@@ -62,7 +62,7 @@ export class Builder {
     const ctx = this.getContextOrThrow()
 
     this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-      this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
+      this.context = new PandaContext(conf)
     })
 
     logger.debug('builder', this.affecteds)
@@ -70,7 +70,7 @@ export class Builder {
     // config change
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
-      await ctx.hooks.callHook('config:change', ctx.config)
+      await ctx.hooks['config:change']?.(ctx.config)
       return
     }
 

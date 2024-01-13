@@ -13,5 +13,5 @@ export function generateKeyframeCss(ctx: Context, sheet: Stylesheet) {
   const css = stringify(sheet.serialize(result))
 
   sheet.layers.tokens.append(css)
-  void ctx.hooks.callHook('generator:css', 'keyframes.css', '')
+  void ctx.hooks['generator:css']?.('keyframes.css')
 }

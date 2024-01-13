@@ -10,6 +10,19 @@ const someRecipe = defineRecipe({
 })
 
 export default defineConfig({
+  hooks: {
+    // Dynamically add a recipe
+    'config:resolved': (result) => {
+      const recipes = result.config.theme?.recipes
+      if (recipes) {
+        recipes['someRecipe'] = someRecipe
+      }
+    },
+    // Dynamically create a CSS rule
+    'context:created': (ctx) => {
+      ctx.processor.css({ color: 'lime.300' })
+    },
+  },
   preflight: true,
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
@@ -23,7 +36,7 @@ export default defineConfig({
       },
     },
     recipes: {
-      someRecipe,
+      // someRecipe,
       button: {
         className: 'button',
         jsx: ['Button', 'ListedButton', /WithRegex$/, 'PrimaryButtonLike'],

@@ -1,15 +1,15 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
 import { fixtureDefaults } from '@pandacss/fixture'
 
-const createRecipeJs = (config: ConfigResultWithHooks) => {
+const createRecipeJs = (config: LoadConfigResult) => {
   const generator = new Generator(config)
   return generateCreateRecipe(generator)
 }
 
-const recipeJs = (config: ConfigResultWithHooks) => {
+const recipeJs = (config: LoadConfigResult) => {
   const generator = new Generator(config)
   return generateRecipes(generator)
 }

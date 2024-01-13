@@ -9981,7 +9981,7 @@ export interface PandaHooks {
 	"generator:done": () => void | Promise<void>;
 }
 export type PandaHookable = Hookable<PandaHooks, HookKeys<PandaHooks>>;
-export interface ConfigResultWithHooks extends LoadConfigResult {
+export interface LoadConfigResult extends LoadConfigResult {
 	hooks: PandaHookable;
 }
 /* -----------------------------------------------------------------------------

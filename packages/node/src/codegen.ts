@@ -15,7 +15,7 @@ export async function codegen(ctx: PandaContext, ids?: ArtifactId[]) {
   const promises = ctx.getArtifacts(ids).map((artifact) => limit(() => ctx.output.write(artifact)))
   await Promise.allSettled(promises)
 
-  void ctx.hooks.callHook('generator:done')
+  await ctx.hooks['generator:done']?.()
 
   return {
     box: createBox({
