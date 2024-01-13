@@ -38,12 +38,15 @@ export function generateIsValidProp(ctx: Context) {
   return {
     js: content,
     dts: outdent`
-    import type { HTMLPandaProps, JsxStyleProps, Pretty, SystemStyleObject } from '../types';
-
-    type StylePropsKeys<TProps> = keyof TProps & keyof JsxStyleProps;
+    import type { DistributiveOmit, HTMLPandaProps, JsxStyleProps, Pretty } from '../types';
 
     declare const isCssProperty: (value: string) => boolean;
-    declare const splitCssProps: <TProps, Keys = StylePropsKeys<TProps>>(props: TProps) => [Pretty<Pick<TProps, Keys>>, Pretty<Omit<TProps, Keys>>]
+    
+    type CssPropKey = keyof JsxStyleProps
+    type PickedCssProps<T> = Pretty<Pick<T, CssPropKey>>
+    type OmittedCssProps<T> = Pretty<DistributiveOmit<T, CssPropKey>>
+
+    declare const splitCssProps: <T>(props: T) => [PickedCssProps<T>, OmittedCssProps<T>]
 
     export { isCssProperty, splitCssProps };
     `,
