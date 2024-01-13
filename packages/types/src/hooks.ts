@@ -1,37 +1,8 @@
+import type { ApiInterface } from './api'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { ParserResultInterface } from './parser'
-import type { RecipeDefinition, RecipeVariantRecord, SlotRecipeDefinition, SlotRecipeVariantRecord } from './recipe'
-import type { SystemStyleObject } from './system-types'
 
-type MaybeAsyncReturn = Promise<void> | void
-
-interface BaseRule {
-  getClassNames: () => string[]
-}
-
-interface AtomicRule extends BaseRule {
-  styles: SystemStyleObject
-}
-
-interface AtomicRecipeRule extends BaseRule {
-  config: RecipeDefinition<any> | SlotRecipeDefinition<string, any>
-}
-
-interface RecipeRule extends BaseRule {
-  variants: RecipeVariantRecord
-}
-
-interface ProcessorInterface {
-  css(styles: SystemStyleObject): AtomicRule
-  cva(recipeConfig: RecipeDefinition<RecipeVariantRecord>): AtomicRecipeRule
-  sva(recipeConfig: SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>): AtomicRecipeRule
-  recipe(name: string, variants?: RecipeVariantRecord): RecipeRule | undefined
-}
-
-interface ApiInterface {
-  config: UserConfig
-  processor: ProcessorInterface
-}
+type MaybeAsyncReturn<T = void> = Promise<T> | T
 
 export interface PandaHooks {
   /**
@@ -62,12 +33,12 @@ export interface PandaHooks {
    */
   'generator:css': (file: 'global.css' | 'static.css' | 'reset.css' | 'tokens.css' | 'keyframes.css') => void
   /**
-   * Called before writing/injecting the final CSS
-   * You can use this hook to tweak the final CSS before it's written to disk or injected through the postcss plugin.
-   */
-  'css:transform': (content: string) => string
-  /**
    * Called after the codegen is completed
    */
-  'generator:done': () => MaybeAsyncReturn
+  'codegen:done': () => MaybeAsyncReturn
+  /**
+   * Called before writing/injecting the final CSS
+   * This is the last hook called, you can use it to tweak the final CSS before it's written to disk or injected through the postcss plugin.
+   */
+  'css:transform': (content: string) => MaybeAsyncReturn<string | void>
 }

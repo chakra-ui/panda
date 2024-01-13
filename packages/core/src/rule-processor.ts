@@ -1,5 +1,12 @@
 import type { CssOptions, Stylesheet } from '@pandacss/core'
-import type { RecipeDefinition, SlotRecipeDefinition, SystemStyleObject } from '@pandacss/types'
+import type {
+  AtomicRecipeRule,
+  AtomicRule,
+  RecipeDefinition,
+  RecipeRule,
+  SlotRecipeDefinition,
+  SystemStyleObject,
+} from '@pandacss/types'
 import type { Context } from './context'
 import type { StyleDecoder } from './style-decoder'
 import type { StyleEncoder } from './style-encoder'
@@ -95,21 +102,4 @@ export class RuleProcessor {
       toCss: this.toCss.bind(this),
     }
   }
-}
-
-interface BaseRule {
-  getClassNames: () => string[]
-  toCss: () => string
-}
-
-interface AtomicRule extends BaseRule {
-  styles: SystemStyleObject
-}
-
-interface AtomicRecipeRule extends BaseRule {
-  config: RecipeDefinition<any> | SlotRecipeDefinition<string, any>
-}
-
-interface RecipeRule extends BaseRule {
-  variants: Record<string, any>
 }

@@ -11,4 +11,8 @@ export class Api {
   get config() {
     return this.ctx.conf.config
   }
+
+  get classNames() {
+    return this.ctx.decoder.classNames
+  }
 }
