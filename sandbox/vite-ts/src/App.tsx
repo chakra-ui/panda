@@ -131,6 +131,15 @@ function App() {
       <SomeRecipe size="small" color="red.400">
         config recipe compoundVariants overriding within styled, should be red.100
       </SomeRecipe>
+      <span
+        className={css({
+          height: '5',
+          width: '5',
+          animation: 'spin 1s linear infinite',
+        })}
+      >
+        spinning
+      </span>
     </div>
   )
 }

@@ -53,9 +53,15 @@ export class Generator extends Context {
 
   getCss = (stylesheet?: Stylesheet) => {
     const sheet = stylesheet ?? this.createSheet()
-    return sheet.toCss({
+    let css = sheet.toCss({
       optimize: true,
       minify: this.config.minify,
     })
+
+    if (this.hooks['css:transform']) {
+      css = this.hooks['css:transform']?.(css) ?? css
+    }
+
+    return css
   }
 }

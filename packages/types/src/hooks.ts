@@ -49,18 +49,23 @@ export interface PandaHooks {
   'config:change': (ctx: UserConfig) => MaybeAsyncReturn
   /**
    * Called after reading the file content but before parsing it.
+   * You can use this hook to tweak the file content before being parsed, or to parse it yourself using a custom parser.
    */
   'parser:before': (file: string, content: string) => void
   /**
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
+   * You can use this hook to add your own extraction results from your custom parser to the ParserResult object.
    */
   'parser:after': (file: string, result: ParserResultInterface | undefined) => void
   /**
-   * Called before generating the design-system CSS files (global, static, preflight, tokens, keyframes)
+   * Called before generating the design-system CSS (global, static, preflight, tokens, keyframes)
    */
-  'generator:css': (
-    file: 'global.css' | 'static.css' | 'reset.css' | 'tokens.css' | 'keyframes.css' | 'styles.css',
-  ) => void
+  'generator:css': (file: 'global.css' | 'static.css' | 'reset.css' | 'tokens.css' | 'keyframes.css') => void
+  /**
+   * Called before writing/injecting the final CSS
+   * You can use this hook to tweak the final CSS before it's written to disk or injected through the postcss plugin.
+   */
+  'css:transform': (content: string) => string
   /**
    * Called after the codegen is completed
    */

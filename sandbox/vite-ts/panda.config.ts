@@ -1,4 +1,6 @@
 import { defineConfig } from '@pandacss/dev'
+import { removeUnusedCssVars } from './remove-unused-css-vars'
+import { removeUnusedKeyframes } from './remove-unused-keyframes'
 
 export default defineConfig({
   hooks: {
@@ -13,6 +15,10 @@ export default defineConfig({
     // Dynamically create a CSS rule
     'context:created': (ctx) => {
       ctx.processor.css({ color: 'lime.300' })
+    },
+    // Remove unused CSS vars
+    'css:transform': (css) => {
+      return removeUnusedKeyframes(removeUnusedCssVars(css))
     },
   },
   preflight: true,
