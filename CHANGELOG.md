@@ -6,6 +6,117 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.27.0] - 2024-01-14
+
+### Added
+
+- Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+  `postcss`.
+- Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+- Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+  this run.
+- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define the aspect
+  ratio of an element.
+
+```js
+export default defineConfig({
+  // ...
+  theme: {
+    extend: {
+      // add aspect ratio tokens
+      tokens: {
+        aspectRatios: {
+          '1:1': '1',
+          '16:9': '16/9',
+        },
+      },
+    },
+  },
+})
+```
+
+Here's what the default aspect ratio tokens in the base preset looks like:
+
+```json
+{
+  "square": { "value": "1 / 1" },
+  "landscape": { "value": "4 / 3" },
+  "portrait": { "value": "3 / 4" },
+  "wide": { "value": "16 / 9" },
+  "ultrawide": { "value": "18 / 5" },
+  "golden": { "value": "1.618 / 1" }
+}
+```
+
+**Breaking Change**
+
+The built-in token values has been removed from the `aspectRatio` utility to the `@pandacss/preset-base` as a token.
+
+For most users, this change should be a drop-in replacement. However, if you used a custom preset in the config, you
+might need to update it to include the new aspect ratio tokens.
+
+### Changed
+
+- Enhance `splitCssProps` typings
+- Improve the performance of the runtime transform functions by caching their results (css, cva, sva, recipe/slot
+  recipe, patterns)
+
+> See detailed breakdown of the performance improvements
+> [here](https://github.com/chakra-ui/panda/pull/1986#issuecomment-1887459483) based on the React Profiler.
+
+- Change the config dependencies (files that are transitively imported) detection a bit more permissive to make it work
+  by default in more scenarios.
+
+**Context**
+
+This helps when you're in a monorepo and you have a workspace package for your preset, and you want to see the HMR
+reflecting changes in your app.
+
+Currently, we only traverse files with the `.ts` extension, this change makes it traverse all files ending with `.ts`,
+meaning that it will also traverse `.d.ts`, `.d.mts`, `.mts`, etc.
+
+**Example**
+
+```ts
+// apps/storybook/panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+import preset from '@acme/preset'
+
+export default defineConfig({
+  // ...
+})
+```
+
+This would not work before, but now it does.
+
+```jsonc
+{
+  "name": "@acme/preset",
+  "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs"
+}
+```
+
+**Notes** This would have been fine before that change.
+
+```jsonc
+// packages/preset/package.json
+{
+  "name": "@acme/preset",
+  "types": "./src/index.ts", // this was fine
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+    // ...
+  }
+}
+```
+
 ## [0.26.2] - 2024-01-10
 
 ### Fixed
