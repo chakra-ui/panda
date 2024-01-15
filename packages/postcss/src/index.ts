@@ -6,7 +6,6 @@ import type { PluginCreator } from 'postcss'
 const customRequire = createRequire(__dirname)
 
 const PLUGIN_NAME = 'pandacss'
-const WIN32_NORMALIZED_DEP_KEYS = ['dir', 'file']
 
 const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
 
@@ -49,14 +48,6 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
         builder.extract()
 
         builder.registerDependency((dep) => {
-          if (process.platform === 'win32') {
-            WIN32_NORMALIZED_DEP_KEYS.forEach((key) => {
-              if (typeof dep[key] === 'string') {
-                dep[key] = path.normalize(dep[key])
-              }
-            })
-          }
-
           result.messages.push({
             ...dep,
             plugin: PLUGIN_NAME,

@@ -23,6 +23,9 @@ importers:
       concurrently:
         specifier: ^8.2.0
         version: 8.2.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       happy-dom:
         specifier: ^12.1.6
         version: 12.1.6
@@ -706,9 +709,6 @@ importers:
       '@pandacss/extractor':
         specifier: workspace:*
         version: link:../extractor
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       csstype:
         specifier: 3.1.3
         version: 3.1.3
@@ -15996,7 +15996,7 @@ packages:
     hasBin: true
     dependencies:
       cross-spawn: 7.0.3
-    dev: true
+    dev: false
 
   /cross-fetch@3.1.6:
     resolution: {integrity: sha512-riRvo06crlE8HiqOwIpQhxwdOk4fOeR7FVM/wXoxchFEqMNUjvbs3bfo4OTgMEMHzppd4DxFBDbyySj8Cv781g==}

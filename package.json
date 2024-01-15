@@ -38,6 +38,7 @@
     "@changesets/cli": "2.26.2",
     "chokidar": "^3.5.3",
     "concurrently": "^8.2.0",
+    "cross-env": "^7.0.3",
     "happy-dom": "^12.1.6",
     "husky": "8.0.3",
     "lint-staged": "13.2.3",

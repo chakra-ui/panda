@@ -1,6 +1,7 @@
 ---
 '@pandacss/postcss': patch
+'@pandacss/node': patch
 '@pandacss/types': patch
 ---
 
-Correct windows paths for webpack
+Fix issue in windows environments where HMR doesn't work in webpack projects.
