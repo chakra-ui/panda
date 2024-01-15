@@ -1379,8 +1379,8 @@ importers:
         specifier: 0.8.4
         version: 0.8.4(react@18.2.0)
       flexsearch:
-        specifier: 0.7.31
-        version: 0.7.31
+        specifier: 0.7.43
+        version: 0.7.43
       focus-visible:
         specifier: 5.2.0
         version: 5.2.0
@@ -19156,8 +19156,8 @@ packages:
     resolution: {integrity: sha512-xU99gDEnciIwJdGcBmNHnzTJ/w5AT+VFJOu6sTB6WM8diOYNA3Sa+K1DiEBQ7XH4QikQq3iFW1U+jRVcotQnBw==}
     engines: {node: '>=8'}
 
-  /flexsearch@0.7.31:
-    resolution: {integrity: sha512-XGozTsMPYkm+6b5QL3Z9wQcJjNYxp0CYn3U1gO7dwD6PAqU1SVWZxI9CCg3z+ml3YfqdPnrBehaBrnH2AGKbNA==}
+  /flexsearch@0.7.43:
+    resolution: {integrity: sha512-c5o/+Um8aqCSOXGcZoqZOm+NqtVwNsvVpWv6lfmSclU954O3wvQKxxK8zj74fPaSJbXpSLTs4PRhh+wnoCXnKg==}
     dev: false
 
   /flow-parser@0.207.0:
