@@ -67,7 +67,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "cac": "6.7.14",
-    "pathe": "1.1.1"
+    "pathe": "1.1.2"
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.8",
