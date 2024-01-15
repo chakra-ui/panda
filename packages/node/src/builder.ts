@@ -3,7 +3,7 @@ import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync, statSync } from 'fs'
-import { resolve } from 'pathe'
+import { normalize, resolve } from 'pathe'
 import type { Message, Root } from 'postcss'
 import { codegen } from './codegen'
 import { loadConfigAndCreateContext } from './config'
@@ -175,7 +175,6 @@ export class Builder {
   write = (root: Root) => {
     const ctx = this.getContextOrThrow()
     const sheet = ctx.createSheet()
-    ctx.appendLayerParams(sheet)
     ctx.appendBaselineCss(sheet)
     const css = ctx.getCss(sheet)
 
@@ -193,13 +192,11 @@ export class Builder {
 
     for (const fileOrGlob of ctx.config.include) {
       const dependency = parseDependency(fileOrGlob)
-      if (dependency) {
-        fn(dependency)
-      }
+      if (dependency) fn(dependency)
     }
 
     for (const file of this.configDependencies) {
-      fn({ type: 'dependency', file: ctx.runtime.path.resolve(file) })
+      fn({ type: 'dependency', file: normalize(resolve(file)) })
     }
   }
 }
