@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.27.1
+
+### Patch Changes
+
+- ee9341db: Fix issue in windows environments where HMR doesn't work in webpack projects.
+
 ## 0.27.0
 
 ### Minor Changes
