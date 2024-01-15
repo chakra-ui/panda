@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.27.1] - 2024-01-15
+
+### Fixed
+
+Fix issue in windows environments where HMR doesn't work in webpack projects.
+
 ## [0.27.0] - 2024-01-14
 
 ### Added
