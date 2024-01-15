@@ -131,8 +131,8 @@ importers:
         specifier: 6.7.14
         version: 6.7.14
       pathe:
-        specifier: 1.1.1
-        version: 1.1.1
+        specifier: 1.1.2
+        version: 1.1.2
     devDependencies:
       '@types/update-notifier':
         specifier: 6.0.8
@@ -7793,7 +7793,7 @@ packages:
       jiti: 1.19.1
       knitwork: 1.0.0
       mlly: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       pkg-types: 1.0.3
       scule: 1.0.0
       semver: 7.5.4
@@ -7811,7 +7811,7 @@ packages:
     dependencies:
       defu: 6.1.2
       hookable: 5.5.3
-      pathe: 1.1.1
+      pathe: 1.1.2
       pkg-types: 1.0.3
       postcss-import-resolver: 2.0.0
       std-env: 3.3.3
@@ -7881,7 +7881,7 @@ packages:
       magic-string: 0.30.5
       mlly: 1.4.0
       ohash: 1.1.2
-      pathe: 1.1.1
+      pathe: 1.1.2
       perfect-debounce: 1.0.0
       pkg-types: 1.0.3
       postcss: 8.4.32
@@ -12201,13 +12201,13 @@ packages:
     dependencies:
       '@vitest/utils': 0.33.0
       p-limit: 4.0.0
-      pathe: 1.1.1
+      pathe: 1.1.2
 
   /@vitest/snapshot@0.33.0:
     resolution: {integrity: sha512-tJjrl//qAHbyHajpFvr8Wsk8DIOODEebTu7pgBrP07iOepR5jYkLFiqLq2Ltxv+r0uptUb4izv1J8XBOwKkVYA==}
     dependencies:
       magic-string: 0.30.5
-      pathe: 1.1.1
+      pathe: 1.1.2
       pretty-format: 29.6.1
 
   /@vitest/spy@0.33.0:
@@ -14054,7 +14054,7 @@ packages:
     dependencies:
       '@babel/parser': 7.23.5
       '@rollup/pluginutils': 5.0.2(rollup@3.28.0)
-      pathe: 1.1.1
+      pathe: 1.1.2
     transitivePeerDependencies:
       - rollup
     dev: true
@@ -14976,7 +14976,7 @@ packages:
       jiti: 1.19.1
       mlly: 1.4.0
       ohash: 1.1.2
-      pathe: 1.1.1
+      pathe: 1.1.2
       perfect-debounce: 1.0.0
       pkg-types: 1.0.3
       rc9: 2.1.1
@@ -18863,7 +18863,7 @@ packages:
     dependencies:
       enhanced-resolve: 5.15.0
       mlly: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       ufo: 1.1.2
     dev: true
 
@@ -20021,7 +20021,7 @@ packages:
       https-proxy-agent: 5.0.1
       mri: 1.2.0
       node-fetch-native: 1.2.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       tar: 6.1.15
     transitivePeerDependencies:
       - supports-color
@@ -23981,7 +23981,7 @@ packages:
     resolution: {integrity: sha512-ua8PAThnTwpprIaU47EPeZ/bPUVp2QYBbWMphUQpVdBI3Lgqzm5KZQ45Agm3YJedHXaIHl6pBGabaLSUPPSptg==}
     dependencies:
       acorn: 8.11.2
-      pathe: 1.1.1
+      pathe: 1.1.2
       pkg-types: 1.0.3
       ufo: 1.1.2
 
@@ -24330,7 +24330,7 @@ packages:
       ofetch: 1.1.1
       ohash: 1.1.2
       openapi-typescript: 6.2.8
-      pathe: 1.1.1
+      pathe: 1.1.2
       perfect-debounce: 1.0.0
       pkg-types: 1.0.3
       pretty-bytes: 6.1.0
@@ -24654,7 +24654,7 @@ packages:
       nypm: 0.2.2
       ofetch: 1.1.1
       ohash: 1.1.2
-      pathe: 1.1.1
+      pathe: 1.1.2
       perfect-debounce: 1.0.0
       prompts: 2.4.2
       scule: 1.0.0
@@ -25308,6 +25308,10 @@ packages:
 
   /pathe@1.1.1:
     resolution: {integrity: sha512-d+RQGp0MAYTIaDBIMmOfMwz3E+LOZnxx1HZd5R18mmCZY0QBlK0LDZfPc8FW8Ed2DlvsuE6PRjroDY+wg4+j/Q==}
+    dev: false
+
+  /pathe@1.1.2:
+    resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
 
   /pathval@1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
@@ -25400,7 +25404,7 @@ packages:
     dependencies:
       jsonc-parser: 3.2.0
       mlly: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
 
   /pkg-up@3.1.0:
     resolution: {integrity: sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==}
@@ -29963,7 +29967,7 @@ packages:
       defu: 6.1.2
       mime: 3.0.0
       node-fetch-native: 1.2.0
-      pathe: 1.1.1
+      pathe: 1.1.2
     dev: true
 
   /unhead@1.1.30:
@@ -30047,7 +30051,7 @@ packages:
       local-pkg: 0.4.3
       magic-string: 0.30.5
       mlly: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       pkg-types: 1.0.3
       scule: 1.0.0
       strip-literal: 1.0.1
@@ -30298,7 +30302,7 @@ packages:
       json5: 2.2.3
       local-pkg: 0.4.3
       mlly: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       scule: 1.0.0
       unplugin: 1.3.2
       vue-router: 4.2.4(vue@3.3.4)
@@ -30701,7 +30705,7 @@ packages:
       cac: 6.7.14
       debug: 4.3.4
       mlly: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       source-map: 0.6.1
       source-map-support: 0.5.21
@@ -30725,7 +30729,7 @@ packages:
       cac: 6.7.14
       debug: 4.3.4
       mlly: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       vite: 4.4.8(@types/node@20.4.5)
     transitivePeerDependencies:
@@ -31111,7 +31115,7 @@ packages:
       jsdom: 22.1.0
       local-pkg: 0.4.3
       magic-string: 0.30.5
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       std-env: 3.3.3
       strip-literal: 1.0.1
