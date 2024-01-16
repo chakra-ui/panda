@@ -18,7 +18,7 @@ import {
 import { compact } from '@pandacss/shared'
 import type { CssArtifactType } from '@pandacss/types'
 import { cac } from 'cac'
-import { join, resolve } from 'pathe'
+import { join, resolve } from 'path'
 import { version } from '../package.json'
 import { interactive } from './interactive'
 import type {
@@ -226,7 +226,7 @@ export async function main() {
     .action(async (files: string[], flags: MainCommandFlags) => {
       const { config: configPath, silent, ...rest } = flags
 
-      const cwd = resolve(flags.cwd)
+      const cwd = resolve(flags.cwd ?? '')
 
       if (silent) {
         logger.level = 'silent'

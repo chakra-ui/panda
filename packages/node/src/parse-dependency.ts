@@ -1,5 +1,5 @@
 import isGlob from 'is-glob'
-import { resolve, normalize } from 'pathe'
+import { normalize, resolve } from 'path'
 import type { Message } from 'postcss'
 import { parseGlob } from './parse-glob'
 
