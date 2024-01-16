@@ -133,9 +133,6 @@ importers:
       cac:
         specifier: 6.7.14
         version: 6.7.14
-      pathe:
-        specifier: 1.1.2
-        version: 1.1.2
     devDependencies:
       '@types/update-notifier':
         specifier: 6.0.8
@@ -504,9 +501,6 @@ importers:
       outdent:
         specifier: ' ^0.8.0'
         version: 0.8.0
-      pathe:
-        specifier: ^1.1.1
-        version: 1.1.1
       perfect-debounce:
         specifier: ^1.0.0
         version: 1.0.0
@@ -25543,10 +25537,6 @@ packages:
   /path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
-
-  /pathe@1.1.1:
-    resolution: {integrity: sha512-d+RQGp0MAYTIaDBIMmOfMwz3E+LOZnxx1HZd5R18mmCZY0QBlK0LDZfPc8FW8Ed2DlvsuE6PRjroDY+wg4+j/Q==}
-    dev: false
 
   /pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}

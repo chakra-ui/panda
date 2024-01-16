@@ -1,5 +1,5 @@
 import { colors, logger } from '@pandacss/logger'
-import { parse } from 'pathe'
+import { parse } from 'path'
 import type { PandaContext } from './create-context'
 
 export interface DebugOptions {

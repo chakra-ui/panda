@@ -5,7 +5,7 @@ import type { Config } from '@pandacss/types'
 import fsExtra from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
-import { join } from 'pathe'
+import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import prettier from 'prettier'
 
