@@ -1,5 +1,21 @@
 # @pandacss/node
 
+## 0.27.2
+
+### Patch Changes
+
+- bfa8b1ee: Switch back to `node:path` from `pathe` to resolve issues with windows path in PostCSS + Webpack set up
+  - @pandacss/config@0.27.2
+  - @pandacss/core@0.27.2
+  - @pandacss/error@0.27.2
+  - @pandacss/extractor@0.27.2
+  - @pandacss/generator@0.27.2
+  - @pandacss/logger@0.27.2
+  - @pandacss/parser@0.27.2
+  - @pandacss/shared@0.27.2
+  - @pandacss/token-dictionary@0.27.2
+  - @pandacss/types@0.27.2
+
 ## 0.27.1
 
 ### Patch Changes
