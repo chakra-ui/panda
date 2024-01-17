@@ -101,9 +101,7 @@ export class Utility {
       this.strictTokens = strictTokens
     }
 
-    if (formatClassName) {
-      this.formatClassName = formatClassName
-    }
+    this.formatClassName = formatClassName || ((v) => v)
 
     if (shorthands) {
       this.assignShorthands()
@@ -346,8 +344,6 @@ export class Utility {
 
     return this
   }
-
-  classNameWithPrefix = (className: string) => [this.prefix, className].filter(Boolean).join('-')
 
   private setClassName = (property: string, raw: string) => {
     const propKey = this.getPropKey(property, raw)

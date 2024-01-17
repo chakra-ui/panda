@@ -34,10 +34,7 @@ const context = {
             },
     hasShorthand: true,
     resolveShorthand: resolveShorthand,
-    formatClassName: (token) => token,
-    classNameWithPrefix(className) {
-      return [this.prefix, className].filter(Boolean).join('_')
-    }
+    formatClassName: (v) => v
   }
 }
 

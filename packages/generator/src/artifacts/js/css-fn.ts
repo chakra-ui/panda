@@ -1,5 +1,6 @@
 import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
+import { stringify } from 'javascript-stringify'
 
 export function generateCssFn(ctx: Context) {
   const { utility, hash, prefix, conditions } = ctx
@@ -103,10 +104,7 @@ export function generateCssFn(ctx: Context) {
         },
         ${hasShorthand ? 'hasShorthand: true,' : ''}
         resolveShorthand: ${hasShorthand ? 'resolveShorthand' : 'prop => prop'},
-        formatClassName: ${formatClassName ?? 'token => token'},
-        classNameWithPrefix(className) {
-          return [this.prefix, className].filter(Boolean).join('${separator}')
-        }
+        ${formatClassName ? 'formatClassName: ' + stringify(formatClassName) : ''}
       }
     }
 

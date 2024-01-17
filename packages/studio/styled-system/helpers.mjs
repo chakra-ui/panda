@@ -26,6 +26,16 @@ function withoutSpace(str) {
   return typeof str === "string" ? str.replaceAll(" ", "_") : str;
 }
 
+// src/format-negative-value.ts
+function formatNegativeValue(value, format) {
+  const valueString = value.toString();
+  const isNegative = valueString.startsWith("-");
+  const absValue = isNegative ? valueString.slice(1) : valueString;
+  if (valueString === "__ignore__")
+    return valueString;
+  return `${isNegative ? "-" : ""}${format(absValue)}`;
+}
+
 // src/hash.ts
 function toChar(code) {
   return String.fromCharCode(code + (code > 25 ? 39 : 97));
@@ -138,13 +148,16 @@ var fallbackCondition = {
 var sanitize = (value) => typeof value === "string" ? value.replaceAll(/[\n\s]+/g, " ") : value;
 function createCss(context) {
   const { utility, hash, conditions: conds = fallbackCondition } = context;
+  const classNameWithPrefix = (className) => {
+    return [utility.prefix, className].filter(Boolean).join("-");
+  };
   const hashFn = (conditions, className) => {
     let result;
     if (hash) {
       const baseArray = [...conds.finalize(conditions), className];
-      result = utility.classNameWithPrefix(toHash(baseArray.join(":")));
+      result = classNameWithPrefix(toHash(baseArray.join(":")));
     } else {
-      const baseArray = [...conds.finalize(conditions), utility.classNameWithPrefix(className)];
+      const baseArray = [...conds.finalize(conditions), classNameWithPrefix(className)];
       result = baseArray.join(":");
     }
     return result;
@@ -158,9 +171,7 @@ function createCss(context) {
         return;
       const [prop, ...allConditions] = conds.shift(paths);
       const conditions = filterBaseConditions(allConditions);
-      const isNegative = value.toString().startsWith("-");
-      const absValue = isNegative ? value.toString().slice(1) : value;
-      const formattedValue = value === "__ignore__" ? value : `${isNegative ? "-" : ""}${utility.formatClassName(absValue)}`;
+      const formattedValue = formatNegativeValue(value, utility.formatClassName);
       const transformed = utility.transform(prop, withoutImportant(sanitize(formattedValue)));
       let className = hashFn(conditions, transformed.className);
       if (important)

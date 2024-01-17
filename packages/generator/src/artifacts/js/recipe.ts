@@ -2,6 +2,7 @@ import type { Context } from '@pandacss/core'
 import { Recipes } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
+import { stringify as stringifyFn } from 'javascript-stringify'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 
@@ -60,10 +61,7 @@ export function generateCreateRecipe(ctx: Context) {
         utility: {
           ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
           transform,
-          formatClassName: ${formatClassName ?? 'token => token'},
-          classNameWithPrefix(className) {
-            return [this.prefix, className].filter(Boolean).join('${separator}')
-          }
+          ${formatClassName ? 'formatClassName: ' + stringifyFn(formatClassName) : ''}
         }
       })
 

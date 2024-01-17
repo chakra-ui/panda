@@ -53,6 +53,10 @@ export class StyleDecoder {
     }
   }
 
+  private classNameWithPrefix = (className: string) => {
+    return [this.context.utility.prefix, className].filter(Boolean).join('-')
+  }
+
   private formatSelector = (conditions: string[], className: string, value?: string) => {
     const { conditions: cond, hash, utility } = this.context
 
@@ -61,7 +65,7 @@ export class StyleDecoder {
 
     if (hash.className) {
       conds.push(className)
-      result = utility.classNameWithPrefix(toHash(conds.join(':')))
+      result = this.classNameWithPrefix(toHash(conds.join(':')))
     } else {
       let formattedValue
       let formattedClassName
@@ -82,7 +86,7 @@ export class StyleDecoder {
         formattedClassName = className.replace(new RegExp(esc(value) + '$'), formattedValue)
       }
 
-      conds.push(utility.classNameWithPrefix(formattedClassName ?? className))
+      conds.push(this.classNameWithPrefix(formattedClassName ?? className))
       result = conds.join(':')
     }
 

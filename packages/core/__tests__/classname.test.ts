@@ -99,15 +99,29 @@ describe('generate classnames', () => {
     const css = createCss(
       createGeneratorContext({
         formatTokenName: (path) => `$${path.join('-')}`,
-        formatClassName: (token) => token.replace('$', '').replace('.', '='),
+        formatClassName: (token) => token.replace('$', '').replace('.', ''),
       }).baseSheetContext,
     )
     expect(
       css({
-        color: 'pink.400',
         background: '$pink.400',
         mx: '-$2',
       }),
-    ).toMatchInlineSnapshot('"text_pink=400 bg_pink=400 mx_-2"')
+    ).toMatchInlineSnapshot('"bg_pink400 mx_-2"')
+  })
+
+  test('should format the non-string values', () => {
+    const css = createCss(
+      createGeneratorContext({
+        formatTokenName: (path) => `$${path.join('-')}`,
+        formatClassName: (token) => token.replace('$', '').replace('.', ''),
+      }).baseSheetContext,
+    )
+    expect(
+      css({
+        debug: true,
+        padding: 40,
+      }),
+    ).toMatchInlineSnapshot('"debug_true p_40"')
   })
 })
