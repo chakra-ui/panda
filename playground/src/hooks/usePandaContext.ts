@@ -8,21 +8,27 @@ import { getResolvedConfig, resolveConfig } from '@/src/lib/config/resolve-confi
 export const usePandaContext = (userConfig: Config | null) => {
   const previousContext = useRef<Generator | null>(null)
 
-  const config = getResolvedConfig(
-    resolveConfig({
-      cwd: '',
-      include: [],
-      outdir: 'styled-system',
-      preflight: true,
-      optimize: true,
-      ...userConfig,
-      staticCss: merge(userConfig?.staticCss, {
-        recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
-      }),
+  let config
 
-      jsxFramework: userConfig?.jsxFramework ? 'react' : undefined,
-    }),
-  )
+  try {
+    config = getResolvedConfig(
+      resolveConfig({
+        cwd: '',
+        include: [],
+        outdir: 'styled-system',
+        preflight: true,
+        optimize: true,
+        ...userConfig,
+        staticCss: merge(userConfig?.staticCss, {
+          recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
+        }),
+
+        jsxFramework: userConfig?.jsxFramework ? 'react' : undefined,
+      }),
+    )
+  } catch (error) {
+    console.log(error)
+  }
 
   try {
     // in event of error (invalid token format), use previous generator
