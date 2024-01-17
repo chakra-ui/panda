@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.27.2] - 2024-01-17
+
+### Fixed
+
+Switch back to `node:path` from `pathe` to resolve issues with windows path in PostCSS + Webpack set up
+
 ## [0.27.1] - 2024-01-15
 
 ### Fixed
