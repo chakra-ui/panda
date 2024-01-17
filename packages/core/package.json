@@ -19,8 +19,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup --entry src/index.ts --entry src/classname.ts --format=esm,cjs --dts",
-    "build-fast": "tsup --entry src/index.ts --entry src/classname.ts --format=esm,cjs --no-dts",
+    "build": "tsup --dts",
+    "build-fast": "tsup --no-dts",
     "dev": "pnpm build-fast --watch"
   },
   "files": [
