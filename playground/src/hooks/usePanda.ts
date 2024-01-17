@@ -43,7 +43,11 @@ export function usePanda(state: State, config: Config | null) {
     const sheet = context.createSheet()
 
     const decoder = context.decoder.clone().collect(encoder)
-    sheet.processDecoder(decoder)
+    try {
+      sheet.processDecoder(decoder)
+    } catch (error) {
+      console.log(error)
+    }
 
     const artifacts = context.getArtifacts() ?? []
 
