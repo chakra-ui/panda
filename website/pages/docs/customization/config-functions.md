@@ -169,9 +169,11 @@ Function for [keyframes](/docs/customization/theme#keyframes) definitions.
 ```ts
 import { defineKeyframes } from '@pandacss/dev'
 
-export const fadein = defineKeyframes({
-  '0%': { opacity: '0' },
-  '100%': { opacity: '1' }
+export const keyframes = defineKeyframes({
+  fadeIn: {
+    '0%': { opacity: '0' },
+    '100%': { opacity: '1' }
+  }
 })
 ```
 
