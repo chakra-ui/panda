@@ -5,6 +5,7 @@ import { parse } from 'tsconfck'
 export async function loadTsConfig(conf: LoadConfigResult, cwd: string): Promise<LoadTsConfigResult | undefined> {
   const tsconfigResult = await parse(conf.path, {
     root: cwd,
+    //@ts-ignore
     resolveWithEmptyIfConfigNotFound: true,
   })
 
