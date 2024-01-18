@@ -14,6 +14,11 @@ export class DiffEngine {
    */
   async reloadConfigAndRefreshContext(fn?: (conf: LoadConfigResult) => void) {
     const conf = await loadConfig({ cwd: this.ctx.config.cwd, file: this.ctx.conf.path })
+
+    // attach tsconfig options from previous config
+    const { tsconfig, tsconfigFile, tsOptions } = this.ctx.conf
+    Object.assign(conf, { tsconfig, tsconfigFile, tsOptions })
+
     return this.refresh(conf, fn)
   }
 

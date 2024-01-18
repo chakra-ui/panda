@@ -93,7 +93,7 @@ export class FileMatcher {
 
   private createMatch = (mod: string, keys: string[]) => {
     const mods = this.imports.filter((o) => {
-      const isFromMod = o.mod.includes(mod) || o.importMapValue === mod
+      const isFromMod = o.mod.includes(mod) || o.importMapValue?.includes(mod)
       const isOneOfKeys = keys.includes(o.name)
       return isFromMod && isOneOfKeys
     })

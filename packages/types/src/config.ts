@@ -364,15 +364,18 @@ export interface ConfigTsOptions {
   pathMappings: PathMapping[]
 }
 
-export interface LoadConfigResult {
+export interface LoadTsConfigResult {
+  tsconfig?: TSConfig
+  tsOptions?: ConfigTsOptions
+  tsconfigFile?: string
+}
+
+export interface LoadConfigResult extends LoadTsConfigResult {
   /** Config path */
   path: string
   config: UserConfig
   serialized: string
   deserialize: () => Config
-  tsconfig?: TSConfig
-  tsOptions?: ConfigTsOptions
-  tsconfigFile?: string
   dependencies: string[]
 }
 

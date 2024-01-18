@@ -52,13 +52,13 @@ export class ImportMap {
   }
 
   private getOutdir = () => {
+    const { cwd, outdir } = this.context.config
+
     const compilerOptions = this.context.conf.tsconfig?.compilerOptions ?? {}
-    const cwd = this.context.config.cwd
-
     const baseUrl = compilerOptions.baseUrl ?? ''
-    const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
 
-    return this.context.config.outdir.replace(relativeBaseUrl, '')
+    const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
+    return outdir.replace(relativeBaseUrl, '')
   }
 
   normalize = (map: string | ImportMapInput | undefined): ImportMapOutput => {
@@ -86,8 +86,9 @@ export class ImportMap {
 
       // that might be a TS path mapping, it could be completely different from the actual path
       const resolvedMod = resolveTsPath?.(result.mod)
+      const absMod = [this.context.config.cwd, mod].join('/')
 
-      if (resolvedMod?.includes(mod)) {
+      if (resolvedMod?.includes(absMod)) {
         result.importMapValue = resolvedMod
         return true
       }

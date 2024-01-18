@@ -1,9 +1,9 @@
-import { convertTsPathsToRegexes, loadConfig } from '@pandacss/config'
+import { loadConfig } from '@pandacss/config'
 import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
-import { createDebugger, createHooks } from 'hookable'
-import { parse } from 'tsconfck'
 import browserslist from 'browserslist'
+import { createDebugger, createHooks } from 'hookable'
 import { PandaContext } from './create-context'
+import { loadTsConfig } from './load-tsconfig'
 
 export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
   const { config, configPath } = options
@@ -23,25 +23,10 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
     conf.config.browserslist ||= browserslist.findConfig(cwd)?.defaults
   }
 
-  const tsconfigResult = await parse(conf.path, {
-    root: cwd,
-    // @ts-ignore
-    resolveWithEmptyIfConfigNotFound: true,
-  })
+  const tsConfResult = await loadTsConfig(conf, cwd)
 
-  if (tsconfigResult) {
-    conf.tsconfig = tsconfigResult.tsconfig
-    conf.tsconfigFile = tsconfigResult.tsconfigFile
-
-    const options = tsconfigResult.tsconfig?.compilerOptions
-
-    if (options?.paths) {
-      const baseUrl = options.baseUrl
-      conf.tsOptions = {
-        baseUrl,
-        pathMappings: convertTsPathsToRegexes(options.paths, baseUrl ?? cwd),
-      }
-    }
+  if (tsConfResult) {
+    Object.assign(conf, tsConfResult)
   }
 
   // Register user hooks
