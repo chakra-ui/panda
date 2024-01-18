@@ -1,5 +1,13 @@
 # @pandacss/token-dictionary
 
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/shared@0.27.3
+
 ## 0.27.2
 
 ### Patch Changes

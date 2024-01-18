@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.27.3
+
+### Patch Changes
+
+- 1ed4df77: Fix issue where HMR doesn't work when tsconfig paths is used.
+
 ## 0.27.2
 
 ## 0.27.1
