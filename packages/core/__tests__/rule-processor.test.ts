@@ -756,10 +756,6 @@ describe('rule processor', () => {
           color: var(--colors-blue-300);
       }
 
-        .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
-          color: var(--colors-red-400);
-      }
-
         .fs_12px {
           font-size: 12px;
       }
@@ -774,6 +770,10 @@ describe('rule processor', () => {
 
         .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
           border: 2px solid var(--colors-green-100);
+      }
+
+        .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
+          color: var(--colors-red-400);
       }
       }"
     `)
