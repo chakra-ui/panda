@@ -185,12 +185,6 @@ describe('rule processor', () => {
       }
       }
 
-        @media screen and (min-width: 80em) {
-          .xl\\\\:w_3 {
-            width: var(--sizes-3);
-      }
-      }
-
         @media screen and (min-width: 40em) {
           .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
             background-color: green;
@@ -200,6 +194,12 @@ describe('rule processor', () => {
         @media screen and (min-width: 48em) {
           .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
             font-size: var(--font-sizes-lg);
+      }
+      }
+
+        @media screen and (min-width: 80em) {
+          .xl\\\\:w_3 {
+            width: var(--sizes-3);
       }
       }
 
@@ -245,14 +245,6 @@ describe('rule processor', () => {
           padding: 0 0.5rem;
       }
 
-        @media screen and (min-width: 48em) {
-          .md\\\\:buttonStyle--size_md {
-            height: 3rem;
-            min-width: 3rem;
-            padding: 0 0.75rem;
-      }
-      }
-
         .buttonStyle--variant_solid {
           background-color: blue;
           color: var(--colors-white);
@@ -266,6 +258,14 @@ describe('rule processor', () => {
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\\\:buttonStyle--size_md {
+            height: 3rem;
+            min-width: 3rem;
+            padding: 0 0.75rem;
+      }
       }
       }"
     `)

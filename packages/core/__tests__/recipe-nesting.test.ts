@@ -72,15 +72,15 @@ test('[recipe] direct nesting / recipe ruleset', () => {
         color: var(--colors-red-200);
     }
 
+      .text--variant_sm:disabled {
+        margin-right: 40px;
+        filter: unset;
+    }
+
       @media screen and (min-width: 48em) {
         .text--variant_sm:first-child:hover {
           color: var(--colors-gray-300);
     }
-    }
-
-      .text--variant_sm:disabled {
-        margin-right: 40px;
-        filter: unset;
     }
     }"
   `)
