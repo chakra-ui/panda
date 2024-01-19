@@ -6,6 +6,13 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.27.3] - 2024-01-18
+
+### Fixed
+
+- Fix issue where HMR doesn't work when tsconfig paths is used.
+- Fix `prettier` parser warning in panda config setup.
+
 ## [0.27.2] - 2024-01-17
 
 ### Fixed
