@@ -1,5 +1,23 @@
 # @pandacss/node
 
+## 0.27.3
+
+### Patch Changes
+
+- 1ed4df77: Fix issue where HMR doesn't work when tsconfig paths is used.
+- 39d10c79: Fix `prettier` parser warning in panda config setup.
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/core@0.27.3
+  - @pandacss/config@0.27.3
+  - @pandacss/generator@0.27.3
+  - @pandacss/parser@0.27.3
+  - @pandacss/token-dictionary@0.27.3
+  - @pandacss/error@0.27.3
+  - @pandacss/extractor@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
 ## 0.27.2
 
 ### Patch Changes
