@@ -67,7 +67,7 @@ Related: [`config.syntax`](/docs/references/config#syntax)
 
 #### `--strict-tokens`
 
-Set strickTokens to true
+Set strictTokens to true
 
 Related: [`config.strictTokens`](/docs/references/config#strictTokens)
 
