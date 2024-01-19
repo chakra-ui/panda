@@ -170,7 +170,11 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
 
   ${selector}b,
   ${selector}strong {
-    font-weight: bolder;
+    font-weight: revert;
+  }
+
+  ${selector}em {
+    font-style: revert;
   }
 
   ${selector}code,
