@@ -6,6 +6,7 @@ import { serializeStyles } from './serialize'
 import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
+import { sortStyleRules } from './sort-style-rules'
 
 export class Stylesheet {
   constructor(private context: StylesheetContext) {}
@@ -52,7 +53,7 @@ export class Stylesheet {
   }
 
   processDecoder = (decoder: StyleDecoder) => {
-    decoder.atomic.forEach((css) => {
+    sortStyleRules([...decoder.atomic]).forEach((css) => {
       this.processCss(css.result, (css.layer as LayerName) ?? 'utilities')
     })
 
