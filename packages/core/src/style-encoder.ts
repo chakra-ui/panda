@@ -11,7 +11,6 @@ import type {
   EncoderJson,
   PartialBy,
   RecipeConfig,
-  RecipeVariantRecord,
   ResultItem,
   SlotRecipeDefinition,
   StyleEntry,
@@ -159,7 +158,7 @@ export class StyleEncoder {
     })
   }
 
-  processConfigSlotRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+  processConfigSlotRecipe = (recipeName: string, variants: Record<string, any>) => {
     const config = this.context.recipes.getConfig(recipeName)
     if (!Recipes.isSlotRecipeConfig(config)) return
 
@@ -189,7 +188,7 @@ export class StyleEncoder {
     this.hashStyleObject(base_set, config.base, { recipe: recipeName })
   }
 
-  processConfigRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+  processConfigRecipe = (recipeName: string, variants: Record<string, any>) => {
     const config = this.context.recipes.getConfig(recipeName)
     if (!config) return
 
@@ -210,7 +209,7 @@ export class StyleEncoder {
     })
   }
 
-  processRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+  processRecipe = (recipeName: string, variants: Record<string, any>) => {
     if (this.context.recipes.isSlotRecipe(recipeName)) {
       this.processConfigSlotRecipe(recipeName, variants)
     } else {

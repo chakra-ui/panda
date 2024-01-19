@@ -122,17 +122,6 @@ describe('static-css', () => {
             min-width: 2.5rem;
             padding: 0 0.5rem;
       }
-      }
-
-        @media screen and (min-width: 48em) {
-          .md\\\\:buttonStyle--size_sm {
-            height: 2.5rem;
-            min-width: 2.5rem;
-            padding: 0 0.5rem;
-      }
-      }
-
-        @media screen and (min-width: 40em) {
           .sm\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
@@ -141,6 +130,11 @@ describe('static-css', () => {
       }
 
         @media screen and (min-width: 48em) {
+          .md\\\\:buttonStyle--size_sm {
+            height: 2.5rem;
+            min-width: 2.5rem;
+            padding: 0 0.5rem;
+      }
           .md\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
