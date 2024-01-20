@@ -25,12 +25,14 @@ export default defineConfig({
   theme: {
     // 👇🏻 Define your tokens here
     tokens: {
-      colors: {
-        primary: { value: '#0FEE0F' },
-        secondary: { value: '#EE0F0F' }
-      },
-      fonts: {
-        body: { value: 'system-ui, sans-serif' }
+      extend: {
+        colors: {
+          primary: { value: '#0FEE0F' },
+          secondary: { value: '#EE0F0F' }
+        },
+        fonts: {
+          body: { value: 'system-ui, sans-serif' }
+        }
       }
     }
   }
