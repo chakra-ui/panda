@@ -67,7 +67,8 @@
     "prettier": "^2.8.8",
     "ts-morph": "19.0.0",
     "ts-pattern": "5.0.5",
-    "tsconfck": "^2.1.2"
+    "tsconfck": "^2.1.2",
+    "v8-profiler-next": "^1.10.0"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",

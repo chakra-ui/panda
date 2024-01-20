@@ -12,6 +12,7 @@ import {
   setupConfig,
   setupGitIgnore,
   setupPostcss,
+  startProfiling,
   writeAnalyzeJSON,
   type CssGenOptions,
 } from '@pandacss/node'
@@ -96,10 +97,16 @@ export async function main() {
     .option('-w, --watch', 'Watch files and rebuild')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .action(async (flags: CodegenCommandFlags) => {
       const { silent, clean, config: configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = startProfiling(cwd, 'codegen')
+      }
 
       if (silent) {
         logger.level = 'silent'
@@ -126,6 +133,8 @@ export async function main() {
           { cwd, poll },
         )
       }
+
+      stopProfiling()
     })
 
   cli
@@ -143,10 +152,16 @@ export async function main() {
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
       const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal, lightningcss } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = startProfiling(cwd, 'cssgen')
+      }
 
       const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
         (type) => type === maybeGlob,
@@ -206,6 +221,8 @@ export async function main() {
           }
         })
       }
+
+      stopProfiling()
     })
 
   cli
@@ -223,10 +240,16 @@ export async function main() {
     .option('--hash', 'Hash the generated classnames to make them shorter')
     .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
     .option('--emitTokensOnly', 'Whether to only emit the `tokens` directory')
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .action(async (files: string[], flags: MainCommandFlags) => {
       const { config: configPath, silent, ...rest } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = startProfiling(cwd, 'cli')
+      }
 
       if (silent) {
         logger.level = 'silent'
@@ -234,6 +257,7 @@ export async function main() {
 
       const config = compact({ include: files, ...rest, cwd })
       await generate(config, configPath)
+      stopProfiling()
     })
 
   cli
@@ -330,10 +354,16 @@ export async function main() {
     .option('--only-config', "Should only output the config file, default to 'false'")
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .action(async (maybeGlob?: string, flags: DebugCommandFlags = {}) => {
       const { silent, dry = false, outdir: outdirFlag, config: configPath } = flags ?? {}
 
       const cwd = resolve(flags.cwd!)
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = startProfiling(cwd, 'debug')
+      }
 
       if (silent) {
         logger.level = 'silent'
@@ -348,6 +378,7 @@ export async function main() {
       const outdir = outdirFlag ?? join(...ctx.paths.root, 'debug')
 
       await debug(ctx, { outdir, dry, onlyConfig: flags.onlyConfig })
+      stopProfiling()
     })
 
   cli
