@@ -507,6 +507,38 @@ const PageButton = (props: ButtonProps) => {
 }
 ```
 
+#### Extending a preset recipe
+
+If you're using a recipe from a preset, you can still extend it in your config.
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  jsxFramework: 'react',
+  theme: {
+    extend: {
+      recipes: {
+        button: {
+          className: 'something-else', // 👈 override the className
+          base: {
+            color: 'red', // 👈 replace some part of the recipe
+            fontSize: '1.5rem' // or add new styles
+          },
+          variants: {
+            // ... // 👈 add or extend new variants
+          },
+          jsx: ['Button', 'PageButton'] // 👈 extend the jsx tracking hint
+        }
+      }
+    }
+  }
+})
+```
+
+Learn more about the [extend](/docs/concepts/extend.md) keyword.
+
 ## Methods and Properties
 
 Both atomic and config recipe ships a helper methods and properties that can be used to get information about the recipe.
