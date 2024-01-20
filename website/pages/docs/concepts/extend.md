@@ -11,6 +11,7 @@ The `extend` keyword allows you to extend the following parts of Panda:
 
 - [conditions](/docs/customization/conditions)
 - [theme](/docs/customization/theme)
+- [recipes](/docs/concepts/recipes) (included in theme)
 - [patterns](/docs/customization/patterns)
 - [utilities](/docs/customization/utilities)
 - [globalCss](/docs/concepts/writing-styles#global-styles)
