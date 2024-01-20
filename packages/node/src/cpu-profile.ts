@@ -1,9 +1,9 @@
 import { logger } from '@pandacss/logger'
 import fs from 'fs'
 import path from 'path'
-import v8Profiler from 'v8-profiler-next'
 
-export const startProfiling = (cwd: string, prefix: string) => {
+export const startProfiling = async (cwd: string, prefix: string) => {
+  const v8Profiler = (await import('v8-profiler-next')).default
   const date = new Date()
   const timestamp = date.toISOString().replace(/[-:.]/g, '')
   const title = `panda-${prefix}-${timestamp}`

@@ -105,7 +105,7 @@ export async function main() {
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = startProfiling(cwd, 'codegen')
+        stopProfiling = await startProfiling(cwd, 'codegen')
       }
 
       if (silent) {
@@ -160,7 +160,7 @@ export async function main() {
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = startProfiling(cwd, 'cssgen')
+        stopProfiling = await startProfiling(cwd, 'cssgen')
       }
 
       const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
@@ -248,7 +248,7 @@ export async function main() {
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = startProfiling(cwd, 'cli')
+        stopProfiling = await startProfiling(cwd, 'cli')
       }
 
       if (silent) {
@@ -362,7 +362,7 @@ export async function main() {
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = startProfiling(cwd, 'debug')
+        stopProfiling = await startProfiling(cwd, 'debug')
       }
 
       if (silent) {
