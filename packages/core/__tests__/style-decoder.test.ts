@@ -188,7 +188,7 @@ describe('style decoder', () => {
           "layer": undefined,
           "result": {
             ".border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\)": {
-              "border": "1px solid token(colors.red.100)",
+              "border": "1px solid var(--colors-red-100)",
             },
           },
         },

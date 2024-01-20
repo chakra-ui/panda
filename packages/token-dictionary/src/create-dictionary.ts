@@ -40,7 +40,17 @@ export class TokenDictionary extends BaseDictionary {
     return getDotPath(this.json, path)
   })
 
+  /**
+   * Expand token references to their CSS variable
+   */
   expandReference(value: string) {
     return expandReferences(value, (key) => this.get(key))
+  }
+
+  /**
+   * Resolve token references to their actual raw value
+   */
+  resolveReference(value: string) {
+    return expandReferences(value, (key) => this.getByName(key)?.value)
   }
 }

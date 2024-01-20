@@ -112,7 +112,9 @@ export class StyleDecoder {
 
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
-      const path = basePath.concat(conditions.map((c) => c.rawValue ?? c.raw))
+      const path = basePath.concat(
+        conditions.map((c) => this.context.utility.tokens.resolveReference(c.rawValue ?? c.raw)),
+      )
       deepSet(obj, path, styles)
     } else {
       deepSet(obj, basePath, styles)
@@ -139,13 +141,12 @@ export class StyleDecoder {
     let obj = {}
     const basePath = [] as string[]
     const details = [] as GroupedStyleResultDetails[]
+    const transform = this.context.utility.transform.bind(this.context.utility)
 
     hashSet.forEach((hash) => {
       const entry = getEntryFromHash(hash)
 
-      const transform = this.context.utility.transform
       const transformed = transform(entry.prop, withoutImportant(entry.value) as string)
-
       if (!transformed.className) return
 
       const important = isImportant(entry.value)
@@ -175,7 +176,9 @@ export class StyleDecoder {
     const sorted = sortStyleRules(details)
     sorted.forEach((value) => {
       if (value.conditions) {
-        const path = basePath.concat(value.conditions.map((c) => c.rawValue ?? c.raw))
+        const path = basePath.concat(
+          value.conditions.map((c) => this.context.utility.tokens.resolveReference(c.rawValue ?? c.raw)),
+        )
         obj = deepSet(obj, path, value.result)
       } else {
         obj = deepSet(obj, basePath, value.result)
