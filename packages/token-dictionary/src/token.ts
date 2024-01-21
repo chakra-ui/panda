@@ -233,6 +233,7 @@ const TOKEN_TYPES = {
   gradients: 'gradient',
   easings: 'cubicBezier',
   borders: 'border',
+  borderWidths: 'borderWidth',
   components: 'cti',
   assets: 'asset',
   aspectRatios: 'aspectRatio',

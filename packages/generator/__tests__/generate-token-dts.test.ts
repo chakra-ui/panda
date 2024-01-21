@@ -72,6 +72,6 @@ test('[dts] should generate package', () => {
     		animationName: AnimationName
     } & { [token: string]: never }
 
-    export type TokenCategory = \\"aspectRatios\\" | \\"zIndex\\" | \\"opacity\\" | \\"colors\\" | \\"fonts\\" | \\"fontSizes\\" | \\"fontWeights\\" | \\"lineHeights\\" | \\"letterSpacings\\" | \\"sizes\\" | \\"shadows\\" | \\"spacing\\" | \\"radii\\" | \\"borders\\" | \\"durations\\" | \\"easings\\" | \\"animations\\" | \\"blurs\\" | \\"gradients\\" | \\"breakpoints\\" | \\"assets\\""
+    export type TokenCategory = \\"aspectRatios\\" | \\"zIndex\\" | \\"opacity\\" | \\"colors\\" | \\"fonts\\" | \\"fontSizes\\" | \\"fontWeights\\" | \\"lineHeights\\" | \\"letterSpacings\\" | \\"sizes\\" | \\"shadows\\" | \\"spacing\\" | \\"radii\\" | \\"borders\\" | \\"borderWidths\\" | \\"durations\\" | \\"easings\\" | \\"animations\\" | \\"blurs\\" | \\"gradients\\" | \\"breakpoints\\" | \\"assets\\""
   `)
 })
