@@ -16,5 +16,5 @@ function toPhash(h: number, x: string) {
 }
 
 export function toHash(value: string) {
-  return toName(toPhash(5381, value) >>> 0)
+  return toName(toPhash(5381, value) >>> 8)
 }

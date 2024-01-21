@@ -51,7 +51,10 @@ export class StyleDecoder {
 
     if (hash.className) {
       conds.push(className)
-      result = utility.formatClassName(toHash(conds.join(':')))
+      const stringConds = conds.join(':')
+      const splitConds = stringConds.split('_')
+      const hashConds = splitConds.map(toHash)
+      result = utility.formatClassName(hashConds.join('_'))
     } else {
       conds.push(utility.formatClassName(className))
       result = conds.join(':')

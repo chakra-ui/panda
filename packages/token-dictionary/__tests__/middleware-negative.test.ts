@@ -52,7 +52,7 @@ test('middleware / add negative', () => {
           "-sm",
         ],
         "type": "dimension",
-        "value": "calc(var(--jolVMp) * -1)",
+        "value": "calc(var(--bTXCt) * -1)",
       },
     ]
   `)

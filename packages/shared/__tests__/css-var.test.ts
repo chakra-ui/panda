@@ -14,8 +14,8 @@ describe('css var', () => {
   test('with hash', () => {
     expect(cssVar('colors-red-200', { hash: true })).toMatchInlineSnapshot(`
       {
-        "ref": "var(--bLdQLg)",
-        "var": "--bLdQLg",
+        "ref": "var(--seRF)",
+        "var": "--seRF",
       }
     `)
   })
@@ -23,8 +23,8 @@ describe('css var', () => {
   test('with hash + prefix', () => {
     expect(cssVar('colors-red-200', { hash: true, prefix: 'pd' })).toMatchInlineSnapshot(`
       {
-        "ref": "var(--pd-bLdQLg)",
-        "var": "--pd-bLdQLg",
+        "ref": "var(--pd-seRF)",
+        "var": "--pd-seRF",
       }
     `)
   })

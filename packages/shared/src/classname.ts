@@ -46,7 +46,10 @@ export function createCss(context: CreateCssContext) {
     let result: string
     if (hash) {
       const baseArray = [...conds.finalize(conditions), className]
-      result = formatClassName(toHash(baseArray.join(':')))
+      const stringBaseArray = baseArray.join(':')
+      const splitBaseArray = stringBaseArray.split('_')
+      const hashBaseArray = splitBaseArray.map(toHash)
+      result = formatClassName(hashBaseArray.join('_'))
     } else {
       const baseArray = [...conds.finalize(conditions), formatClassName(className)]
       result = baseArray.join(':')

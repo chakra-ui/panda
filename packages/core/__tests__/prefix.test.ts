@@ -14,22 +14,22 @@ describe('atomic-rule / prefix', () => {
   test('should product consistent hash', () => {
     expect(backend({ color: 'red' })).toMatchInlineSnapshot(`
       "@layer utilities {
-        .tw-eIKWVi {
+        .tw-bgaoI_ftuE {
           color: red;
       }
       }"
     `)
-    expect(frontend({ color: 'red' })).toMatchInlineSnapshot('"tw-eIKWVi"')
+    expect(frontend({ color: 'red' })).toMatchInlineSnapshot('"tw-bgaoI_ftuE"')
 
     expect(backend({ color: { sm: 'red' } })).toMatchInlineSnapshot(`
       "@layer utilities {
         @media screen and (min-width: 40em) {
-          .tw-geqOyW {
+          .tw-KGNB_ftuE {
             color: red;
       }
       }
       }"
     `)
-    expect(frontend({ color: { sm: 'red' } })).toMatchInlineSnapshot('"tw-geqOyW"')
+    expect(frontend({ color: { sm: 'red' } })).toMatchInlineSnapshot('"tw-KGNB_ftuE"')
   })
 })
