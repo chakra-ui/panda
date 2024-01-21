@@ -27,6 +27,7 @@ import type {
   CodegenCommandFlags,
   CssGenCommandFlags,
   DebugCommandFlags,
+  EmitPackageCommandFlags,
   InitCommandFlags,
   MainCommandFlags,
   ShipCommandFlags,
@@ -446,7 +447,7 @@ export async function main() {
     .command('emit-pkg', 'Emit package.json with entrypoints')
     .option('--outdir <dir>', 'Output directory', { default: '.' })
     .option('--silent', "Don't print any logs")
-    .action(async (flags: { outdir: string; silent: boolean }) => {
+    .action(async (flags: EmitPackageCommandFlags) => {
       const { outdir, silent } = flags
 
       if (silent) {

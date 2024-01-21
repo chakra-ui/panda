@@ -79,3 +79,8 @@ export interface MainCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'>
   lightningcss?: boolean
   cpuProf?: boolean
 }
+
+export interface EmitPackageCommandFlags {
+  outdir: string
+  silent?: boolean
+}
