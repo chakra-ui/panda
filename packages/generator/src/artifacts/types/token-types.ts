@@ -18,6 +18,7 @@ const categories = [
   'spacing',
   'radii',
   'borders',
+  'borderWidths',
   'durations',
   'easings',
   'animations',
