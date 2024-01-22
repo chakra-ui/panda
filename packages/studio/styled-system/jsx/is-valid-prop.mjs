@@ -14,4 +14,4 @@ export {
   allCssProperties,
   isCssProperty
 };
-export const splitCssProps = /* @__PURE__ */ (props) =>  splitProps(props, isCssProperty)
+export const splitCssProps = (props) =>  splitProps(props, isCssProperty)

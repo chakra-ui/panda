@@ -33,7 +33,7 @@ export function generateIsValidProp(ctx: Context) {
   }
 
   content = ctx.file.import('splitProps', '../helpers') + '\n' + content
-  content += `export const splitCssProps = /* @__PURE__ */ (props) =>  splitProps(props, isCssProperty)`
+  content += `export const splitCssProps = (props) =>  splitProps(props, isCssProperty)`
 
   return {
     js: content,
