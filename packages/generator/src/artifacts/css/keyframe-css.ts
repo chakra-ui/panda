@@ -13,7 +13,7 @@ export function generateKeyframeCss(ctx: Context, sheet: Stylesheet) {
   let css = stringify(sheet.serialize(result))
 
   if (ctx.hooks['cssgen:done']) {
-    css = ctx.hooks['cssgen:done']?.({ artifact: 'keyframes', content: css }) ?? css
+    css = ctx.hooks['cssgen:done']({ artifact: 'keyframes', content: css }) ?? css
   }
 
   sheet.layers.tokens.append(css)

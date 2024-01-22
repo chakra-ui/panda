@@ -39,7 +39,7 @@ export interface HooksApiInterface {
   /**
    * The list of all the config dependencies (direct/transitive imports) filepaths
    */
-  dependencies: string[]
+  configDependencies: string[]
   //
   /**
    * The processor can be used to generate atomic or recipe classes

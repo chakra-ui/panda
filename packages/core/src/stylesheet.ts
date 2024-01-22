@@ -47,7 +47,7 @@ export class Stylesheet {
     let css = stringify(result)
 
     if (this.context.hooks['cssgen:done']) {
-      css = this.context.hooks['cssgen:done']?.({ artifact: 'global', content: css }) ?? css
+      css = this.context.hooks['cssgen:done']({ artifact: 'global', content: css }) ?? css
     }
 
     this.context.layers.base.append(css)

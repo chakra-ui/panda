@@ -59,7 +59,7 @@ export class Generator extends Context {
     })
 
     if (this.hooks['cssgen:done']) {
-      css = this.hooks['cssgen:done']?.({ artifact: 'styles.css', content: css }) ?? css
+      css = this.hooks['cssgen:done']({ artifact: 'styles.css', content: css }) ?? css
     }
 
     return css

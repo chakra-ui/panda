@@ -16,7 +16,7 @@ export class HooksApi {
     return this.ctx.conf.path
   }
 
-  get dependencies() {
+  get configDependencies() {
     return this.ctx.conf.dependencies
   }
 

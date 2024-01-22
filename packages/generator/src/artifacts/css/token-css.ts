@@ -48,7 +48,7 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   css = '\n\n' + cleanupSelectors(css, root)
 
   if (ctx.hooks['cssgen:done']) {
-    css = ctx.hooks['cssgen:done']?.({ artifact: 'tokens', content: css }) ?? css
+    css = ctx.hooks['cssgen:done']({ artifact: 'tokens', content: css }) ?? css
   }
 
   sheet.layers.tokens.append(css)

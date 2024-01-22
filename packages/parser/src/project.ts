@@ -126,16 +126,9 @@ export class Project {
     if (!sourceFile) return
 
     const original = sourceFile.getText()
-    let transformed = original
 
     const custom = hooks['parser:before']?.({ filePath, content: original })
-    // if the content is transformed by the hook, skip the default transform
-    if (custom) {
-      transformed = custom
-    } else {
-      // otherwise, convert .vue and .svelte files to .tsx friendly context
-      transformed = this.transformFile(filePath, original)
-    }
+    const transformed = custom ?? this.transformFile(filePath, original)
 
     // update SourceFile AST if content is different (.vue, .svelte)
     // or if the hook returned a different content

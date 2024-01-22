@@ -225,7 +225,7 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
 `
 
   if (ctx.hooks['cssgen:done']) {
-    output = ctx.hooks['cssgen:done']?.({ artifact: 'reset', content: output }) ?? output
+    output = ctx.hooks['cssgen:done']({ artifact: 'reset', content: output }) ?? output
   }
   sheet.layers.reset.append(output)
 }
