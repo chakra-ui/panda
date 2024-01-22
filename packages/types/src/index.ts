@@ -1,4 +1,4 @@
-export type * from './api'
+export type * from './hooks-api'
 export type * from './analyze-report'
 export type * from './artifact'
 export type * from './composition'

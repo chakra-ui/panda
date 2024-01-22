@@ -21,6 +21,10 @@ export class HooksApi {
   }
 
   get classNames() {
+    return this.ctx.utility.classNames
+  }
+
+  get generatedClassNames() {
     return this.ctx.decoder.classNames
   }
 }

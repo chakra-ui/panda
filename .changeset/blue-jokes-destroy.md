@@ -1,9 +1,29 @@
-import type { HooksApiInterface } from './hooks-api'
-import type { LoadConfigResult, UserConfig } from './config'
-import type { ParserResultInterface } from './parser'
+---
+'@pandacss/generator': minor
+'@pandacss/fixture': minor
+'@pandacss/config': minor
+'@pandacss/parser': minor
+'@pandacss/types': minor
+'@pandacss/core': minor
+'@pandacss/node': minor
+'@pandacss/dev': minor
+---
 
-type MaybeAsyncReturn<T = void> = Promise<T> | T
+Refactor `config.hooks` to be much more powerful, you can now:
 
+- Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
+  load all `recipes` from a folder
+- Transform a source file's content before parsing it, this could be used to transform the file content to a
+  `tsx`-friendly syntax so that Panda's parser can parse it.
+- Implement your own parser logic and add the extracted results to the classic Panda pipeline, this could be used to
+  parse style usage from any template language
+- Tweak the CSS content for any `@layer` or even right before it's written to disk (if using the CLI) or injected
+  through the postcss plugin, allowing all kinds of customizations like removing the unused CSS variables, etc.
+- React to any config change or after the codegen step (your outdir, the `styled-system` folder) have been generated
+
+See the list of available `config.hooks` here:
+
+```ts
 export interface PandaHooks {
   /**
    * Called when the config is resolved, after all the presets are loaded and merged.
@@ -13,7 +33,7 @@ export interface PandaHooks {
   /**
    * Called when the Panda context has been created and the API is ready to be used.
    */
-  'context:created': (args: { ctx: HooksApiInterface; logger: LoggerInterface }) => void
+  'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
   /**
    * Called when the config file or one of its dependencies (imports) has changed.
    */
@@ -43,18 +63,4 @@ export interface PandaHooks {
     content: string
   }) => string | void
 }
-
-export interface LoggerInterface {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'silent'
-  print(data: any): void
-  warn: (type: string, data: any) => void
-  info: (type: string, data: any) => void
-  debug: (type: string, data: any) => void
-  error: (type: string, data: any) => void
-  log: (data: string) => void
-  time: {
-    info: (msg: string) => (_msg?: string) => void
-    debug: (msg: string) => (_msg?: string) => void
-  }
-  isDebug: boolean
-}
+```

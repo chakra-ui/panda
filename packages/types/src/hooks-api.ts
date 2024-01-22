@@ -27,11 +27,30 @@ export interface ProcessorInterface {
   recipe(name: string, variants?: RecipeVariantRecord): RecipeVariantsRule | undefined
 }
 
-export interface ApiInterface {
+export interface HooksApiInterface {
+  /**
+   * The resolved config (after all the presets are loaded and merged)
+   */
   config: UserConfig
+  /**
+   * The path to the config file
+   */
   configPath: string
+  /**
+   * The list of all the config dependencies (direct/transitive imports) filepaths
+   */
   dependencies: string[]
   //
+  /**
+   * The processor can be used to generate atomic or recipe classes
+   */
   processor: ProcessorInterface
-  classNames: Map<string, AtomicStyleResult | RecipeBaseResult>
+  /**
+   * Map that contains all the utility classNames
+   */
+  classNames: Map<string, string>
+  /**
+   * Map that contains all the classNames found (and therefore generated) in the app code
+   */
+  generatedClassNames: Map<string, AtomicStyleResult | RecipeBaseResult>
 }
