@@ -81,7 +81,7 @@ export class Utility {
     const { tokens, config = {}, separator, prefix, shorthands, strictTokens } = options
 
     this.tokens = tokens
-    this.config = config
+    this.config = this.normalizeConfig(config)
 
     if (separator) {
       this.separator = separator
@@ -105,15 +105,23 @@ export class Utility {
     this.assignPropertyTypes()
   }
 
+  private normalizeConfig(config: UtilityConfig) {
+    return Object.fromEntries(
+      Object.entries(config).map(([property, propertyConfig]) => {
+        return [property, this.normalize(propertyConfig)]
+      }),
+    )
+  }
+
   register = (property: string, config: PropertyConfig) => {
+    this.config[property] = this.normalize(config)
     this.assignProperty(property, config)
     this.assignPropertyType(property, config)
-    this.config[property] = config
   }
 
   private assignShorthands = () => {
     for (const [property, config] of Object.entries(this.config)) {
-      const { shorthand } = this.normalize(config) ?? {}
+      const { shorthand } = config ?? {}
 
       if (!shorthand) continue
 
@@ -201,11 +209,17 @@ export class Utility {
    * Normalize the property config
    */
   normalize = (value: PropertyConfig | undefined): PropertyConfig | undefined => {
-    return value
+    const config = { ...value }
+
+    // set graceful defaults for className
+    if (config.shorthand && !config.className) {
+      config.className = Array.isArray(config.shorthand) ? config.shorthand[0] : config.shorthand
+    }
+
+    return config
   }
 
-  private assignProperty = (property: string, propertyConfig: PropertyConfig) => {
-    const config = this.normalize(propertyConfig)
+  private assignProperty = (property: string, config: PropertyConfig) => {
     this.setTransform(property, config?.transform)
 
     if (!config) return
@@ -244,9 +258,7 @@ export class Utility {
     return keys ? Array.from(keys) : []
   }
 
-  private assignPropertyType = (property: string, propertyConfig: PropertyConfig) => {
-    const config = this.normalize(propertyConfig)
-
+  private assignPropertyType = (property: string, config: PropertyConfig | undefined) => {
     if (!config) return
 
     const values = this.getPropertyValues(config, (key) => `type:Tokens["${key}"]`)
