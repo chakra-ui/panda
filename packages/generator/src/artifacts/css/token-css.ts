@@ -1,8 +1,8 @@
-import { expandNestedCss, extractParentSelectors, prettifyCss, toCss } from '@pandacss/core'
+import { Stylesheet, expandNestedCss, extractParentSelectors, stringify } from '@pandacss/core'
 import postcss, { AtRule, Rule } from 'postcss'
-import type { Context } from '../../engines'
+import type { Context } from '@pandacss/core'
 
-export function generateTokenCss(ctx: Context) {
+export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   const {
     config: { cssVarRoot },
     conditions,
@@ -18,12 +18,12 @@ export function generateTokenCss(ctx: Context) {
     if (Object.keys(varsObj).length === 0) continue
 
     if (key === 'base') {
-      const { css } = toCss({ [root]: varsObj })
+      const css = stringify({ [root]: varsObj })
       results.push(css)
     } else {
       // nested conditionals in semantic tokens are joined by ":", so let's split it
       const keys = key.split(':')
-      const { css } = toCss(varsObj)
+      const css = stringify(varsObj)
 
       const mapped = keys
         .map((key) => conditions.get(key))
@@ -44,15 +44,11 @@ export function generateTokenCss(ctx: Context) {
     }
   }
 
-  const css = results.join('\n\n')
+  let css = results.join('\n\n')
+  css = '\n\n' + cleanupSelectors(css, root)
 
-  const output = `@layer ${ctx.layers.tokens} {
-    ${prettifyCss(cleanupSelectors(css, root))}
-  }
-  `
-
-  void ctx.hooks.callHook('generator:css', 'tokens.css', output)
-  return output
+  sheet.layers.tokens.append(css)
+  void ctx.hooks.callHook('generator:css', 'tokens.css', '')
 }
 
 function getDeepestRule(root: string, selectors: string[]) {

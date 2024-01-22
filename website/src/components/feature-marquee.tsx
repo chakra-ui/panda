@@ -16,7 +16,17 @@ const features = [
 export const FeatureMarquee = () => {
   return (
     <panda.div bg="bg.inverted" py="5" textStyle="2xl" fontWeight="semibold">
-      <Marquee className={css({ listStyleType: 'none' })} autoFill>
+      <Marquee
+        className={css({
+          listStyleType: 'none',
+          _motionReduce: {
+            '& .rfm-marquee': {
+              animation: 'none!'
+            }
+          }
+        })}
+        autoFill
+      >
         {features.map((feature, index) => (
           <panda.li key={index} mx="2">
             <HStack gap="4">

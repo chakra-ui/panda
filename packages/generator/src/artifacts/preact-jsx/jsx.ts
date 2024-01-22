@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
-import type { Context } from '../../engines'
 
 export function generatePreactJsxFactory(ctx: Context) {
   const { factoryName, componentName } = ctx.jsx
@@ -58,10 +58,9 @@ export function generatePreactJsxFactory(ctx: Context) {
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
-          children,
           ref,
           className: classes()
-        })
+        }, combinedProps.children ?? children)
       })
 
       const name = getDisplayName(Dynamic)

@@ -1,17 +1,23 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
+import { Generator } from '../src'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
-import { generator, generatorConfig } from './fixture'
-import { createGenerator } from '../src'
+import { fixtureDefaults } from '@pandacss/fixture'
+
+const propTypes = (config: ConfigResultWithHooks) => {
+  const ctx = new Generator(config)
+  return generatePropTypes(ctx)
+}
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
+    expect(propTypes(fixtureDefaults)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 
       interface PropertyValueTypes {
-      	aspectRatio: \\"auto\\" | \\"square\\" | \\"landscape\\" | \\"portrait\\" | \\"wide\\" | \\"ultrawide\\" | \\"golden\\";
+      	aspectRatio: Tokens[\\"aspectRatios\\"];
       	zIndex: Tokens[\\"zIndex\\"];
       	top: Tokens[\\"spacing\\"];
       	left: Tokens[\\"spacing\\"];
@@ -65,6 +71,7 @@ describe('generate property types', () => {
       	marginInline: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineEnd: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineStart: \\"auto\\" | Tokens[\\"spacing\\"];
+      	outlineWidth: Tokens[\\"borderWidths\\"];
       	outlineColor: Tokens[\\"colors\\"];
       	outline: Tokens[\\"borders\\"];
       	outlineOffset: Tokens[\\"spacing\\"];
@@ -122,6 +129,11 @@ describe('generate property types', () => {
       	borderEndEndRadius: Tokens[\\"radii\\"];
       	borderEndRadius: Tokens[\\"radii\\"] | CssProperties[\\"borderRadius\\"];
       	border: Tokens[\\"borders\\"];
+      	borderWidth: Tokens[\\"borderWidths\\"];
+      	borderTopWidth: Tokens[\\"borderWidths\\"];
+      	borderLeftWidth: Tokens[\\"borderWidths\\"];
+      	borderRightWidth: Tokens[\\"borderWidths\\"];
+      	borderBottomWidth: Tokens[\\"borderWidths\\"];
       	borderColor: Tokens[\\"colors\\"];
       	borderInline: Tokens[\\"borders\\"];
       	borderInlineWidth: Tokens[\\"borderWidths\\"];
@@ -207,9 +219,11 @@ describe('generate property types', () => {
       	scrollSnapMarginRight: Tokens[\\"spacing\\"];
       	fill: Tokens[\\"colors\\"];
       	stroke: Tokens[\\"colors\\"];
+      	strokeWidth: Tokens[\\"borderWidths\\"];
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 
@@ -308,24 +322,118 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
+      type StrictableProps =
+        | 'alignContent'
+        | 'alignItems'
+        | 'alignSelf'
+        | 'all'
+        | 'animationComposition'
+        | 'animationDirection'
+        | 'animationFillMode'
+        | 'appearance'
+        | 'backfaceVisibility'
+        | 'backgroundAttachment'
+        | 'backgroundClip'
+        | 'borderCollapse'
+        | 'border'
+        | 'borderBlock'
+        | 'borderBlockEnd'
+        | 'borderBlockStart'
+        | 'borderBottom'
+        | 'borderInline'
+        | 'borderInlineEnd'
+        | 'borderInlineStart'
+        | 'borderLeft'
+        | 'borderRight'
+        | 'borderTop'
+        | 'borderBlockEndStyle'
+        | 'borderBlockStartStyle'
+        | 'borderBlockStyle'
+        | 'borderBottomStyle'
+        | 'borderInlineEndStyle'
+        | 'borderInlineStartStyle'
+        | 'borderInlineStyle'
+        | 'borderLeftStyle'
+        | 'borderRightStyle'
+        | 'borderTopStyle'
+        | 'boxDecorationBreak'
+        | 'boxSizing'
+        | 'breakAfter'
+        | 'breakBefore'
+        | 'breakInside'
+        | 'captionSide'
+        | 'clear'
+        | 'columnFill'
+        | 'columnRuleStyle'
+        | 'contentVisibility'
+        | 'direction'
+        | 'display'
+        | 'emptyCells'
+        | 'flexDirection'
+        | 'flexWrap'
+        | 'float'
+        | 'fontKerning'
+        | 'forcedColorAdjust'
+        | 'isolation'
+        | 'lineBreak'
+        | 'mixBlendMode'
+        | 'objectFit'
+        | 'outlineStyle'
+        | 'overflow'
+        | 'overflowX'
+        | 'overflowY'
+        | 'overflowBlock'
+        | 'overflowInline'
+        | 'overflowWrap'
+        | 'pointerEvents'
+        | 'position'
+        | 'resize'
+        | 'scrollBehavior'
+        | 'touchAction'
+        | 'transformBox'
+        | 'transformStyle'
+        | 'userSelect'
+        | 'visibility'
+        | 'wordBreak'
+        | 'writingMode'
+
+      type WithEscapeHatch<T> = T | \`[\${string}]\`
+
+      type FilterVagueString<Key, Value> = Value extends boolean
+        ? Value
+        : Key extends StrictableProps
+          ? Value extends \`\${infer _}\` ? Value : never
+          : Value
+
+      type PropOrCondition<Key, Value> = ConditionalValue<Value | (string & {})>
+
+      type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+        ? PropOrCondition<T, PropertyTypes[T] | CssValue<T>>
+        : never;
+
+      type CssPropertyValue<T extends string> = T extends keyof CssProperties
+        ? PropOrCondition<T, CssProperties[T]>
+        : never;
+
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
+        ? PropertyTypeValue<T>
         : T extends keyof CssProperties
-        ? ConditionalValue<CssProperties[T] | (string & {})>
-        : ConditionalValue<string | number>"
+          ? CssPropertyValue<T>
+          : PropOrCondition<T, string | number>"
     `)
   })
 
   test('with stricTokens true', () => {
-    const conf = Object.assign({}, generatorConfig)
+    const conf = Object.assign({}, fixtureDefaults)
     conf.config.strictTokens = true
-    expect(generatePropTypes(createGenerator(conf as any))).toMatchInlineSnapshot(`
+
+    expect(propTypes(conf)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 
       interface PropertyValueTypes {
-      	aspectRatio: \\"auto\\" | \\"square\\" | \\"landscape\\" | \\"portrait\\" | \\"wide\\" | \\"ultrawide\\" | \\"golden\\";
+      	aspectRatio: Tokens[\\"aspectRatios\\"];
       	zIndex: Tokens[\\"zIndex\\"];
       	top: Tokens[\\"spacing\\"];
       	left: Tokens[\\"spacing\\"];
@@ -379,6 +487,7 @@ describe('generate property types', () => {
       	marginInline: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineEnd: \\"auto\\" | Tokens[\\"spacing\\"];
       	marginInlineStart: \\"auto\\" | Tokens[\\"spacing\\"];
+      	outlineWidth: Tokens[\\"borderWidths\\"];
       	outlineColor: Tokens[\\"colors\\"];
       	outline: Tokens[\\"borders\\"];
       	outlineOffset: Tokens[\\"spacing\\"];
@@ -435,6 +544,11 @@ describe('generate property types', () => {
       	borderEndEndRadius: Tokens[\\"radii\\"];
       	borderEndRadius: Tokens[\\"radii\\"];
       	border: Tokens[\\"borders\\"];
+      	borderWidth: Tokens[\\"borderWidths\\"];
+      	borderTopWidth: Tokens[\\"borderWidths\\"];
+      	borderLeftWidth: Tokens[\\"borderWidths\\"];
+      	borderRightWidth: Tokens[\\"borderWidths\\"];
+      	borderBottomWidth: Tokens[\\"borderWidths\\"];
       	borderColor: Tokens[\\"colors\\"];
       	borderInline: Tokens[\\"borders\\"];
       	borderInlineWidth: Tokens[\\"borderWidths\\"];
@@ -520,9 +634,11 @@ describe('generate property types', () => {
       	scrollSnapMarginRight: Tokens[\\"spacing\\"];
       	fill: Tokens[\\"colors\\"];
       	stroke: Tokens[\\"colors\\"];
+      	strokeWidth: Tokens[\\"borderWidths\\"];
       	srOnly: boolean;
       	debug: boolean;
       	colorPalette: \\"current\\" | \\"black\\" | \\"white\\" | \\"transparent\\" | \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"primary\\" | \\"secondary\\" | \\"complex\\" | \\"surface\\" | \\"button\\" | \\"button.card\\";
+      	textStyle: \\"headline.h1\\" | \\"headline.h2\\";
       }
 
 
@@ -621,11 +737,104 @@ describe('generate property types', () => {
       	y: Shorthand<\\"translateY\\">;
       }
 
+      type StrictableProps =
+        | 'alignContent'
+        | 'alignItems'
+        | 'alignSelf'
+        | 'all'
+        | 'animationComposition'
+        | 'animationDirection'
+        | 'animationFillMode'
+        | 'appearance'
+        | 'backfaceVisibility'
+        | 'backgroundAttachment'
+        | 'backgroundClip'
+        | 'borderCollapse'
+        | 'border'
+        | 'borderBlock'
+        | 'borderBlockEnd'
+        | 'borderBlockStart'
+        | 'borderBottom'
+        | 'borderInline'
+        | 'borderInlineEnd'
+        | 'borderInlineStart'
+        | 'borderLeft'
+        | 'borderRight'
+        | 'borderTop'
+        | 'borderBlockEndStyle'
+        | 'borderBlockStartStyle'
+        | 'borderBlockStyle'
+        | 'borderBottomStyle'
+        | 'borderInlineEndStyle'
+        | 'borderInlineStartStyle'
+        | 'borderInlineStyle'
+        | 'borderLeftStyle'
+        | 'borderRightStyle'
+        | 'borderTopStyle'
+        | 'boxDecorationBreak'
+        | 'boxSizing'
+        | 'breakAfter'
+        | 'breakBefore'
+        | 'breakInside'
+        | 'captionSide'
+        | 'clear'
+        | 'columnFill'
+        | 'columnRuleStyle'
+        | 'contentVisibility'
+        | 'direction'
+        | 'display'
+        | 'emptyCells'
+        | 'flexDirection'
+        | 'flexWrap'
+        | 'float'
+        | 'fontKerning'
+        | 'forcedColorAdjust'
+        | 'isolation'
+        | 'lineBreak'
+        | 'mixBlendMode'
+        | 'objectFit'
+        | 'outlineStyle'
+        | 'overflow'
+        | 'overflowX'
+        | 'overflowY'
+        | 'overflowBlock'
+        | 'overflowInline'
+        | 'overflowWrap'
+        | 'pointerEvents'
+        | 'position'
+        | 'resize'
+        | 'scrollBehavior'
+        | 'touchAction'
+        | 'transformBox'
+        | 'transformStyle'
+        | 'userSelect'
+        | 'visibility'
+        | 'wordBreak'
+        | 'writingMode'
+
+      type WithEscapeHatch<T> = T | \`[\${string}]\`
+
+      type FilterVagueString<Key, Value> = Value extends boolean
+        ? Value
+        : Key extends StrictableProps
+          ? Value extends \`\${infer _}\` ? Value : never
+          : Value
+
+      type PropOrCondition<Key, Value> = ConditionalValue<WithEscapeHatch<Value>>
+
+      type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+        ? PropOrCondition<T, PropertyTypes[T]>
+        : never;
+
+      type CssPropertyValue<T extends string> = T extends keyof CssProperties
+        ? PropOrCondition<T, CssProperties[T]>
+        : never;
+
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T]>
+        ? PropertyTypeValue<T>
         : T extends keyof CssProperties
-        ? ConditionalValue<CssProperties[T]>
-        : ConditionalValue<string | number>"
+          ? CssPropertyValue<T>
+          : PropOrCondition<T, string | number>"
     `)
   })
 })

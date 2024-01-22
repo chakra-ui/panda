@@ -2,7 +2,7 @@ import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
 import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
-import type { RequiredBy } from './shared'
+import type { Keys, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
 import type { ExtendableGlobalStyleObject, GlobalStyleObject } from './system-types'
 import type { ExtendableTheme, Theme } from './theme'
@@ -14,7 +14,7 @@ export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
 export type CascadeLayers = Record<CascadeLayer, string>
 
-interface StudioOptions {
+export interface StudioOptions {
   /**
    * Used to customize the design system studio
    * @default { title: 'Panda', logo: '🐼' }
@@ -42,7 +42,7 @@ interface Patterns {
   [pattern: string]: PatternConfig
 }
 
-interface PresetCore {
+export interface PresetCore {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
@@ -52,6 +52,10 @@ interface PresetCore {
    * The global styles for your project.
    */
   globalCss: GlobalStyleObject
+  /**
+   * Used to generate css utility classes for your project.
+   */
+  staticCss: StaticCssOptions
   /**
    * The theme configuration for your project.
    */
@@ -71,6 +75,10 @@ interface ExtendablePatterns {
   extend?: Patterns | undefined
 }
 
+interface ExtendableStaticCssOptions extends StaticCssOptions {
+  extend?: StaticCssOptions | undefined
+}
+
 export interface ExtendableOptions {
   /**
    * The css selectors or media queries shortcuts.
@@ -81,6 +89,10 @@ export interface ExtendableOptions {
    * The global styles for your project.
    */
   globalCss?: ExtendableGlobalStyleObject
+  /**
+   * Used to generate css utility classes for your project.
+   */
+  staticCss?: ExtendableStaticCssOptions
   /**
    * The theme configuration for your project.
    */
@@ -95,11 +107,18 @@ export interface ExtendableOptions {
   patterns?: ExtendablePatterns
 }
 
-export interface OutdirImportMap {
+export interface ImportMapInput {
   css: string
   recipes: string
   patterns: string
   jsx?: string
+}
+
+export interface ImportMapOutput<T = string[]> {
+  css: T
+  recipe: T
+  pattern: T
+  jsx: T
 }
 
 interface FileSystemOptions {
@@ -125,7 +144,7 @@ interface FileSystemOptions {
    * }
    * ```
    */
-  importMap?: OutdirImportMap
+  importMap?: string | ImportMapInput
   /**
    * List of files glob to watch for changes.
    * @default []
@@ -233,15 +252,20 @@ interface CssgenOptions {
    */
   cssVarRoot?: string
   /**
-   * @experimental
-   * Used to generate css utility classes for your project.
-   */
-  staticCss?: StaticCssOptions
-  /**
    * The css syntax kind to use
    * @default 'object-literal'
    */
   syntax?: 'template-literal' | 'object-literal'
+  /**
+   * Whether to use `lightningcss` instead of `postcss` for css optimization.
+   * @default false
+   */
+  lightningcss?: boolean
+  /**
+   * Browserslist query to target specific browsers.
+   * @see https://www.npmjs.com/package/browserslist
+   */
+  browserslist?: string[]
 }
 
 interface CodegenOptions {
@@ -262,9 +286,13 @@ interface CodegenOptions {
    */
   hash?: boolean | { cssVar: boolean; className: boolean }
   /**
-   * Options for the generated typescript definitions.
+   * Change generated typescript definitions to be more strict for property having a token or utility.
    */
   strictTokens?: boolean
+  /**
+   * Change generated typescript definitions to be more strict for built-in CSS properties to only allow valid CSS values.
+   */
+  strictPropertyValues?: boolean
   /**
    * Whether to update the .gitignore file.
    * @default 'true'
@@ -298,11 +326,6 @@ interface PresetOptions {
    * Used to create reusable config presets for your project or team.
    */
   presets?: (string | Preset | Promise<Preset>)[]
-  /**
-   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-   * @default 'false'
-   */
-  eject?: boolean
 }
 
 interface HooksOptions {
@@ -317,7 +340,13 @@ export interface Config
     FileSystemOptions,
     JsxOptions,
     PresetOptions,
-    HooksOptions {}
+    HooksOptions {
+  /**
+   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
+   * @default 'false'
+   */
+  eject?: boolean
+}
 
 export interface Preset extends ExtendableOptions, PresetOptions {}
 
@@ -335,12 +364,18 @@ export interface ConfigTsOptions {
   pathMappings: PathMapping[]
 }
 
-export interface LoadConfigResult {
-  path: string
-  config: UserConfig
+export interface LoadTsConfigResult {
   tsconfig?: TSConfig
   tsOptions?: ConfigTsOptions
   tsconfigFile?: string
+}
+
+export interface LoadConfigResult extends LoadTsConfigResult {
+  /** Config path */
+  path: string
+  config: UserConfig
+  serialized: string
+  deserialize: () => Config
   dependencies: string[]
 }
 
@@ -353,3 +388,14 @@ export interface PrefixOptions {
   tokens: string | undefined
   className: string | undefined
 }
+
+type ReqConf = Required<UserConfig>
+
+export type ConfigPath = Exclude<
+  | Exclude<NonNullable<Keys<ReqConf>>, 'theme'>
+  | PathIn<ReqConf, 'theme'>
+  | PathIn<ReqConf, 'patterns'>
+  | PathIn<ReqConf, 'staticCss'>
+  | (string & {}),
+  undefined
+>

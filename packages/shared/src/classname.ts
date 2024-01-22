@@ -4,6 +4,7 @@ import { filterBaseConditions } from './condition'
 import { isImportant, withoutImportant } from './css-important'
 import { toHash } from './hash'
 import { mergeProps } from './merge-props'
+import { memo } from './memo'
 import { normalizeShorthand, normalizeStyleObject } from './normalize-style-object'
 import { walkObject } from './walk-object'
 
@@ -53,7 +54,7 @@ export function createCss(context: CreateCssContext) {
     return result
   }
 
-  return (styleObject: Record<string, any> = {}) => {
+  return memo((styleObject: Record<string, any> = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context)
     const classNames = new Set<string>()
 
@@ -74,7 +75,7 @@ export function createCss(context: CreateCssContext) {
     })
 
     return Array.from(classNames).join(' ')
-  }
+  })
 }
 
 interface StyleObject {
@@ -100,5 +101,5 @@ export function createMergeCss(context: CreateCssContext) {
     return Object.assign({}, ...resolve(styles))
   }
 
-  return { mergeCss, assignCss }
+  return { mergeCss: memo(mergeCss), assignCss }
 }

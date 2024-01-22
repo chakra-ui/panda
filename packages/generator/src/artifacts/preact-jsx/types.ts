@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
-import type { Context } from '../../engines'
 
 export function generatePreactJsxTypes(ctx: Context) {
   const { factoryName, componentName, upperName, typeName, variantName } = ctx.jsx
@@ -24,7 +24,7 @@ interface Dict {
 }
 
 export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
-  (props: JsxHTMLProps<ComponentProps<T>, P> & JsxStyleProps): JSX.Element
+  (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
   displayName?: string
 }
 
@@ -40,7 +40,7 @@ export interface JsxFactoryOptions<TProps extends Dict> {
 
 export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>
 
-export type JsxElement<T extends ElementType, P> = T extends ${componentName}<infer A, infer B>
+export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
   ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
   : ${componentName}<T, P>
 

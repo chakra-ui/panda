@@ -31,12 +31,27 @@ export const recipes: Record<string, RecipeConfig> = {
       },
     },
   },
+  cardStyle: {
+    className: 'card',
+    variants: {
+      rounded: {
+        true: {
+          borderRadius: '0.375rem',
+        },
+      },
+    },
+  },
   buttonStyle: {
     className: 'buttonStyle',
     base: {
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
+      _hover: {
+        backgroundColor: 'red.200',
+        fontSize: '3xl',
+        color: 'white',
+      },
     },
     variants: {
       size: {
@@ -61,6 +76,7 @@ export const recipes: Record<string, RecipeConfig> = {
           '&[data-disabled]': {
             backgroundColor: 'gray',
             color: 'black',
+            fontSize: '2xl',
           },
         },
         outline: {

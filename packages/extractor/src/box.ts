@@ -41,6 +41,13 @@ export const box = {
   unresolvable: (node: Node, stack: Node[]) => {
     return new BoxNodeUnresolvable({ type: 'unresolvable', node, stack })
   },
+  fallback(node: BoxNode): BoxNode {
+    return <BoxNode>{
+      value: undefined,
+      getNode: () => node.getNode(),
+      getStack: () => node.getStack(),
+    }
+  },
   /**
    * box.type === “object” -> object that was resolved using ts-evaluator, most likely from a
    * complex condition OR a simple CallExpression eval result, we don’t have access to individual
@@ -58,6 +65,9 @@ export const box = {
    */
   isMap(value: BoxNode | undefined): value is BoxNodeMap {
     return value?.type === 'map'
+  },
+  isRecipe(value: BoxNode | undefined): value is BoxNodeMap {
+    return box.isMap(value) && value.isRecipe()
   },
   isArray(value: BoxNode | undefined): value is BoxNodeArray {
     return value?.type === 'array'

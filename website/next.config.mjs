@@ -34,7 +34,7 @@ export default withNextra({
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['images.unsplash.com']
+    remotePatterns: [{ hostname: 'images.unsplash.com' }]
   }
 })
 

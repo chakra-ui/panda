@@ -1,11 +1,10 @@
 import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { Stylesheet } from '../src'
-import { createContext } from './fixture'
+import { createGeneratorContext } from '@pandacss/fixture'
 
 function globalCss(values: Dict) {
-  const ctx = createContext()
-  const sheet = new Stylesheet(ctx)
+  const ctx = createGeneratorContext()
+  const sheet = ctx.createSheet()
   sheet.processGlobalCss(values)
   return sheet.toCss({ optimize: true })
 }
@@ -37,36 +36,36 @@ describe('Global css', () => {
       "@layer base {
         .btn {
           width: 40px;
-          }
+      }
 
         .btn:is(:focus, [data-focus]) {
           color: var(--colors-red-200);
-          }
+      }
 
         .btn:is(:focus, [data-focus]):is(:hover, [data-hover]) {
           background-color: var(--colors-red-400);
-          }
+      }
 
         .btn:hover > :not([hidden]) ~ :not([hidden]) {
           border-inline-start-width: 40px;
           border-inline-end-width: 0px;
-          }
+      }
 
         .btn:hover > span {
           color: pink;
-          }
+      }
 
         @media screen and (min-width: 40em) {
           .btn {
             font-size: 12px;
-              }
-          }
+      }
+      }
 
         @media screen and (min-width: 64em) {
           .btn {
             width: 90px;
-              }
-          }
+      }
+      }
       }"
     `)
   })
@@ -106,38 +105,38 @@ describe('Global css', () => {
       "@layer base {
         html {
           scroll-padding-top: 80px;
-          }
+      }
 
         html.dragging-ew {
           -webkit-user-select: none !important;
           user-select: none !important;
-          }
+      }
 
         html.dragging-ew * {
           cursor: ew-resize !important;
-          }
+      }
+
+        html.dragging-ew:is(:hover, [data-hover]) {
+          color: red;
+      }
 
         .content-dark::-webkit-scrollbar-thumb {
           background-color: var(--colors-bg, #000) !important;
           border-color: var(--colors-fg, #333) !important;
           border-radius: 9px;
           border: 2px solid;
-          }
+      }
 
         #corner {
           position: fixed;
           right: var(--spacing-0);
           bottom: var(--spacing-0);
           cursor: nwse-resize;
-          }
+      }
 
         .color-picker .react-colorful {
           width: 100%;
-          }
-
-        html.dragging-ew:is(:hover, [data-hover]) {
-          color: red;
-          }
+      }
       }"
     `)
   })
@@ -152,8 +151,8 @@ describe('Global css', () => {
     expect(sheet).toMatchInlineSnapshot(`
       "@layer base {
         x-element {
-          tab-size: none
-          }
+          tab-size: none;
+      }
       }"
     `)
   })
@@ -170,8 +169,8 @@ describe('Global css', () => {
     expect(sheet).toMatchInlineSnapshot(`
       "@layer base {
         body > a:not(:hover) {
-          text-decoration: none
-          }
+          text-decoration: none;
+      }
       }"
     `)
   })
@@ -190,11 +189,11 @@ describe('Global css', () => {
       "@layer base {
         p {
           margin: var(--spacing-0);
-          }
+      }
 
         p ~ p {
           margin-top: var(--spacing-0);
-          }
+      }
       }"
     `)
   })
@@ -211,13 +210,13 @@ describe('Global css', () => {
 
     expect(sheet).toMatchInlineSnapshot(`
       "@layer base {
-        body > p, body > ul {
+        body > p,body > ul {
           margin: var(--spacing-0);
-          }
+      }
 
-        body > p ~ body > p, body > ul ~ body > ul {
+        :is(body > p) ~ :is(body > p),body > ul ~ body > ul {
           margin-top: var(--spacing-10);
-          }
+      }
       }"
     `)
   })
@@ -233,10 +232,10 @@ describe('Global css', () => {
     expect(sheet).toMatchInlineSnapshot(`
       "@layer base {
         @media (min-width: 640px) {
-          body, :root {
-            color: var(--colors-red-200)
-              }
-          }
+          body,:root {
+            color: var(--colors-red-200);
+      }
+      }
       }"
     `)
   })
@@ -260,14 +259,13 @@ describe('Global css', () => {
         @media (min-width: 640px) {
           @supports (display: grid) and (display: contents) {
             body {
-              color: var(--colors-red-200)
-                  }
-
+              color: var(--colors-red-200);
+      }
             body a {
-              color: var(--colors-red-400)
-                  }
-              }
-          }
+              color: var(--colors-red-400);
+      }
+      }
+      }
       }"
     `)
   })

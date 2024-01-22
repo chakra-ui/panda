@@ -1,11 +1,14 @@
+import type { Context } from '@pandacss/core'
+import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import type { Context } from '../../engines'
 
-export function generateQwikJsxPattern(ctx: Context) {
-  const { typeName, factoryName } = ctx.jsx
+export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) {
+  const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
-  return ctx.patterns.details.map((pattern) => {
+  const details = ctx.patterns.filterDetails(filters)
+
+  return details.map((pattern) => {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div' } = pattern.config
 
@@ -13,25 +16,48 @@ export function generateQwikJsxPattern(ctx: Context) {
       name: dashName,
       js: outdent`
       import { h } from '@builder.io/qwik'
-      ${ctx.file.import(factoryName, './factory')}
+      ${ctx.file.import('mergeCss', '../css/css')}
+      ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
+      ${ctx.file.import(factoryName, './factory')}
 
-      export const ${jsxName} = function ${jsxName}(props) {
-        ${match(props.length)
+      export const ${jsxName} = /* @__PURE__ */ function ${jsxName}(props) {
+        ${match(jsxStyleProps)
           .with(
-            0,
+            'none',
             () => outdent`
-        const styleProps = ${styleFnName}()
-        return h(${factoryName}.${jsxElement}, { ...styleProps, ...props })
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+          
+          return h(Comp, restProps)
           `,
           )
-          .otherwise(
+          .with(
+            'minimal',
             () => outdent`
-        const { ${props.join(', ')}, ...restProps } = props
-        const styleProps = ${styleFnName}({${props.join(', ')}})
-        return h(${factoryName}.${jsxElement}, { ...styleProps, ...restProps })
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const cssProps = { css: mergeCss(styleProps, props.css) }
+          const mergedProps = { ...restProps, ...cssProps }
+
+          return h(${factoryName}.${jsxElement}, mergedProps)
           `,
-          )}
+          )
+          .with(
+            'all',
+            () => outdent`
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const mergedProps = { ...styleProps, ...restProps }
+          
+          return h(${factoryName}.${jsxElement}, mergedProps)
+          `,
+          )
+          .exhaustive()}
       }
       `,
 

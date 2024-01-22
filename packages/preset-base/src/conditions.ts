@@ -55,15 +55,15 @@ export const conditions = {
   groupExpanded: '.group:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) &',
   groupInvalid: '.group:invalid &',
 
-  indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate")',
+  indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate"])',
   required: '&:is(:required, [data-required], [aria-required=true])',
   valid: '&:is(:valid, [data-valid])',
   invalid: '&:is(:invalid, [data-invalid])',
   autofill: '&:autofill',
   inRange: '&:in-range',
   outOfRange: '&:out-of-range',
-  placeholder: '&::placeholder',
-  placeholderShown: '&:placeholder-shown',
+  placeholder: '&::placeholder, &[data-placeholder]',
+  placeholderShown: '&:is(:placeholder-shown, [data-placeholder-shown])',
   pressed: '&:is([aria-pressed=true], [data-pressed])',
   selected: '&:is([aria-selected=true], [data-selected])',
 

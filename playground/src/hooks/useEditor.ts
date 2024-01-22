@@ -1,17 +1,15 @@
-import { OnMount, OnChange, BeforeMount, EditorProps } from '@monaco-editor/react'
-import { parse } from '@babel/parser'
-import traverse from '@babel/traverse'
-//@ts-expect-error
-import MonacoJSXHighlighter from 'monaco-jsx-highlighter'
+import { OnMount, OnChange, BeforeMount, EditorProps, Monaco as MonacoType } from '@monaco-editor/react'
+import * as Monaco from 'monaco-editor'
+import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings/custom-editor'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useUpdateEffect } from 'usehooks-ts'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocalStorage, useUpdateEffect } from 'usehooks-ts'
 
-import { Artifact } from '@pandacss/types'
 import { State } from './usePlayground'
 
 import { pandaTheme } from '../lib/gruvbox-theme'
 import { useTheme } from 'next-themes'
+import { MonacoJsxSyntaxHighlight, getWorker } from 'monaco-jsx-syntax-highlight'
 
 // @ts-ignore
 import pandaDevDts from '../dts/@pandacss_dev.d.ts?raw'
@@ -19,11 +17,20 @@ import pandaDevDts from '../dts/@pandacss_dev.d.ts?raw'
 import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
+import { useSearchParams } from 'next/navigation'
+import { configureAutoImports } from '../lib/auto-import'
+import { UsePanda } from '@/src/hooks/usePanda'
+import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
+
 export interface PandaEditorProps {
   value: State
   onChange: (state: State) => void
-  artifacts: Artifact[]
+  panda: UsePanda
+  diffState?: State | null
+  isLoading: boolean
 }
+
+type Tab = 'css' | 'code' | 'config'
 
 export const defaultEditorOptions: EditorProps['options'] = {
   minimap: { enabled: false },
@@ -41,69 +48,125 @@ export const defaultEditorOptions: EditorProps['options'] = {
   fontWeight: '400',
 }
 
-export function useEditor(props: PandaEditorProps) {
-  const { onChange, value, artifacts } = props
-  const { resolvedTheme } = useTheme()
-
-  const [activeTab, setActiveTab] = useState<keyof State>('code')
-  const monacoRef = useRef<Parameters<OnMount>[1]>()
-
-  const formatText = async (text: string) => {
-    const prettier = await import('prettier/standalone')
-    const typescript = await import('prettier/parser-typescript')
-    return prettier.format(text, {
-      parser: 'typescript',
-      plugins: [typescript],
-      singleQuote: true,
+const activateAutoTypings = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
+  const activate = async () => {
+    const { dispose } = await AutoTypings.create(monacoEditor, {
+      monaco,
+      sourceCache: new LocalStorageCache(),
+      fileRootPath: 'file:///',
+      debounceDuration: 500,
+      sourceResolver: new TypingsSourceResolver(),
     })
+
+    return dispose
   }
 
-  const configureEditor: OnMount = useCallback((editor, monaco) => {
-    // Instantiate the highlighter
-    const monacoJSXHighlighter = new MonacoJSXHighlighter(monaco, parse, traverse, editor)
-    // Activate highlighting (debounceTime default: 100ms)
-    monacoJSXHighlighter.highlightOnDidChangeModelContent()
-    // Activate JSX commenting
-    monacoJSXHighlighter.addJSXCommentCommand()
+  activate()
 
-    function registerKeybindings() {
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-        editor.trigger('editor', 'editor.action.formatDocument', undefined)
-      })
-    }
+  monacoEditor.onDidChangeModel(() => {
+    activate()
+  })
 
-    editor.onDidFocusEditorText(() => {
-      // workaround for using multiple monaco editors on the same page
-      // see https://github.com/microsoft/monaco-editor/issues/2947
-      registerKeybindings()
-    })
+  monacoEditor.onDidChangeModelContent(() => {
+    activate()
+  })
+}
 
-    monaco.languages.registerDocumentFormattingEditProvider('typescript', {
-      async provideDocumentFormattingEdits(model) {
-        return [
-          {
-            range: model.getFullModelRange(),
-            text: await formatText(model.getValue()),
-          },
-        ]
-      },
-    })
+const activateMonacoJSXHighlighter = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
+  const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(getWorker(), monaco)
+  const uri = monacoEditor.getModel()?.uri
 
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true,
-      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-      module: monaco.languages.typescript.ModuleKind.CommonJS,
-      noEmit: true,
-      esModuleInterop: true,
-      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-      reactNamespace: 'React',
-      allowJs: true,
-      checkJs: true,
-      strict: true,
-      typeRoots: ['node_modules/@types'],
-    })
+  const { highlighter, dispose } = monacoJsxSyntaxHighlight.highlighterBuilder({
+    editor: monacoEditor,
+    filePath: uri?.toString() ?? uri?.path,
+  })
+
+  highlighter()
+
+  monacoEditor.onDidChangeModel(() => {
+    highlighter()
+  })
+
+  monacoEditor.onDidChangeModelContent(() => {
+    highlighter()
+  })
+
+  return dispose
+}
+
+export function useEditor(props: PandaEditorProps) {
+  const { onChange, value, panda } = props
+
+  const { artifacts, context } = panda
+
+  const { resolvedTheme } = useTheme()
+
+  const searchParams = useSearchParams()
+  const initialTab = searchParams?.get('tab') as Tab | null
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab ?? 'code')
+
+  const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
+  const monacoRef = useRef<Parameters<OnMount>[1]>()
+
+  const [wordWrap, setWordwrap] = useLocalStorage<'on' | 'off'>('editor_wordWrap', 'off')
+
+  const onToggleWrap = useCallback(() => {
+    setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    monacoEditorRef.current?.updateOptions({ wordWrap })
+  }, [wordWrap])
+
+  const autoImportCtx = useMemo(() => {
+    return {
+      patterns: context.patterns.details,
+      recipes: Array.from(context.recipes.keys),
+    }
+  }, [context])
+
+  const configureEditor: OnMount = useCallback(
+    (editor, monaco) => {
+      activateMonacoJSXHighlighter(editor, monaco)
+      configureAutoImports({ context: autoImportCtx, monaco, editor })
+      activateAutoTypings(editor, monaco)
+
+      function registerKeybindings() {
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+          editor.trigger('editor', 'editor.action.formatDocument', undefined)
+        })
+        editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
+          onToggleWrap()
+        })
+      }
+
+      editor.onDidFocusEditorText(() => {
+        // workaround for using multiple monaco editors on the same page
+        // see https://github.com/microsoft/monaco-editor/issues/2947
+        registerKeybindings()
+      })
+
+      //@ts-expect-error
+      monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
+
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.Latest,
+        allowNonTsExtensions: true,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+        module: monaco.languages.typescript.ModuleKind.CommonJS,
+        noEmit: true,
+        esModuleInterop: true,
+        jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+        reactNamespace: 'React',
+        allowJs: true,
+        checkJs: true,
+        strict: true,
+        typeRoots: ['node_modules/@types'],
+      })
+    },
+    [onToggleWrap, autoImportCtx],
+  )
 
   const setupLibs = useCallback(
     (monaco: Parameters<OnMount>[1]) => {
@@ -115,13 +178,12 @@ export function useEditor(props: PandaEditorProps) {
         }))
       })
 
-      for (const lib of libs) {
-        monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath)
-      }
+      return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
     },
     [artifacts],
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const getPandaTypes = useCallback(async () => {}, [])
 
   const onBeforeMount: BeforeMount = (monaco) => {
@@ -135,8 +197,8 @@ export function useEditor(props: PandaEditorProps) {
   const onCodeEditorMount: OnMount = useCallback(
     async (editor, monaco) => {
       if (resolvedTheme === 'dark') monaco.editor.setTheme('panda-dark')
-
       monacoRef.current = monaco
+      monacoEditorRef.current = editor
 
       configureEditor(editor, monaco)
       setupLibs(monaco)
@@ -175,13 +237,31 @@ export function useEditor(props: PandaEditorProps) {
     })
   }
 
-  const onCodeEditorFormat = async () => {
-    onCodeEditorChange(await formatText(value[activeTab]))
+  const onCodeEditorFormat = () => {
+    monacoEditorRef.current?.getAction('editor.action.formatDocument')?.run()
   }
 
   useUpdateEffect(() => {
-    setupLibs(monacoRef.current!)
+    const libsSetup = setupLibs(monacoRef.current!)
+
+    return () => {
+      for (const lib of libsSetup) {
+        lib?.dispose()
+      }
+    }
   }, [artifacts])
+
+  useUpdateEffect(() => {
+    const autoImports = configureAutoImports({
+      context: autoImportCtx,
+      monaco: monacoRef.current!,
+      editor: monacoEditorRef.current!,
+    })
+
+    return () => {
+      autoImports?.dispose()
+    }
+  }, [context])
 
   return {
     activeTab,
@@ -190,5 +270,7 @@ export function useEditor(props: PandaEditorProps) {
     onCodeEditorChange,
     onCodeEditorMount,
     onCodeEditorFormat,
+    onToggleWrap,
+    wordWrap,
   }
 }

@@ -1,6 +1,12 @@
 import { getConfig } from './utils'
 import outdent from 'outdent'
 
+export const initialCSS = `@layer reset,
+base,
+tokens,
+recipes,
+utilities;`
+
 export const EXAMPLES = [
   {
     id: 'css',
@@ -285,6 +291,6 @@ export const EXAMPLES = [
     `,
     config: getConfig(`theme: { extend: {} },`),
   },
-] as const
+]
 
 export type Example = (typeof EXAMPLES)[number]['id']

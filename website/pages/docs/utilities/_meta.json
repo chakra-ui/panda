@@ -1,8 +1,20 @@
 {
   "background": "Background",
-  "typography": "Typography",
   "border": "Border",
   "display": "Display",
+  "divide": "Divide",
+  "effects": "Effects",
+  "flex-and-grid": "Flex and Grid",
+  "helpers": "Helpers",
+  "interactivity": "Interactivity",
+  "layout": "Layout",
+  "list": "List",
+  "outline": "Outline",
   "sizing": "Sizing",
-  "layout": "Layout"
+  "spacing": "Spacing",
+  "svg": "SVG",
+  "tables": "Tables",
+  "transforms": "Transforms",
+  "transitions": "Transitions",
+  "typography": "Typography"
 }

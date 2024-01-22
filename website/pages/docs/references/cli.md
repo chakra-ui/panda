@@ -67,7 +67,7 @@ Related: [`config.syntax`](/docs/references/config#syntax)
 
 #### `--strict-tokens`
 
-Set strickTokens to true
+Set strictTokens to true
 
 Related: [`config.strictTokens`](/docs/references/config#strictTokens)
 
@@ -381,3 +381,17 @@ Related: [`config`](/docs/references/config.md)
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
+
+## `panda emit-pkg`
+
+Emit package.json with entrypoints, can be used to create a workspace package dedicated to the [`config.outdir`](/docs/references/config#outdir), in combination with [`config.importMap`](/docs/references/config#importMap)
+
+### Flags
+
+#### `--silent`
+
+Whether to suppress all output
+
+#### `--outdir`
+
+Output directory

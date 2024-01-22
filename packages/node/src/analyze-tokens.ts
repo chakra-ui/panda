@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { ParserResultType } from '@pandacss/types'
+import type { ParserResultInterface } from '@pandacss/types'
 import { filesize } from 'filesize'
 import { writeFile } from 'fs/promises'
 import zlib from 'zlib'
@@ -9,11 +9,11 @@ import type { PandaContext } from './create-context'
 const gzipSizeSync = (code: string | Buffer) => zlib.gzipSync(code, { level: zlib.constants.Z_BEST_COMPRESSION }).length
 
 interface Options {
-  onResult?: (file: string, result: ParserResultType) => void
+  onResult?: (file: string, result: ParserResultInterface) => void
 }
 
 export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
-  const filesMap = new Map<string, ParserResultType>()
+  const filesMap = new Map<string, ParserResultInterface>()
   const timesMap = new Map<string, number>()
 
   const files = ctx.getFiles()
@@ -35,14 +35,13 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
   logger.debug('analyze', `Analyzed ${files.length} files in ${totalMs.toFixed(2)}ms`)
 
   const minify = ctx.config.minify
-  const chunkFiles = ctx.chunks.getFiles()
 
   ctx.config.optimize = true
   ctx.config.minify = false
-  const css = ctx.getCss({ files: chunkFiles })
 
-  ctx.config.minify = true
-  const minifiedCss = ctx.getCss({ files: chunkFiles })
+  // TODO
+  const css = ''
+  const minifiedCss = ''
 
   // restore minify config
   ctx.config.minify = minify

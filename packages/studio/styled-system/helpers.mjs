@@ -15,7 +15,7 @@ function filterBaseConditions(c) {
 }
 
 // src/css-important.ts
-var importantRegex = /!(important)?$/;
+var importantRegex = /\s*!(important)?/i;
 function isImportant(value) {
   return typeof value === "string" ? importantRegex.test(value) : false;
 }
@@ -64,6 +64,21 @@ function mergeProps(...sources) {
   }, {});
 }
 
+// src/memo.ts
+var memo = (fn) => {
+  const cache = /* @__PURE__ */ new Map();
+  const get = (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+  return get;
+};
+
 // src/walk-object.ts
 var isNotNullish = (element) => element != null;
 function walkObject(target, predicate, options = {}) {
@@ -89,6 +104,8 @@ function walkObject(target, predicate, options = {}) {
   return inner(target);
 }
 function mapObject(obj, fn) {
+  if (Array.isArray(obj))
+    return obj.map((value) => fn(value));
   if (!isObject(obj))
     return fn(obj);
   return walkObject(obj, (value) => fn(value));
@@ -112,7 +129,7 @@ function normalizeShorthand(styles, context) {
     }
   });
 }
-function normalizeStyleObject(styles, context) {
+function normalizeStyleObject(styles, context, shorthand = true) {
   const { utility, conditions } = context;
   const { hasShorthand, resolveShorthand } = utility;
   return walkObject(
@@ -122,9 +139,7 @@ function normalizeStyleObject(styles, context) {
     },
     {
       stop: (value) => Array.isArray(value),
-      getKey: (prop) => {
-        return hasShorthand ? resolveShorthand(prop) : prop;
-      }
+      getKey: shorthand ? (prop) => hasShorthand ? resolveShorthand(prop) : prop : void 0
     }
   );
 }
@@ -150,7 +165,7 @@ function createCss(context) {
     }
     return result;
   };
-  return (styleObject = {}) => {
+  return memo((styleObject = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context);
     const classNames = /* @__PURE__ */ new Set();
     walkObject(normalizedObject, (value, paths) => {
@@ -166,7 +181,7 @@ function createCss(context) {
       classNames.add(className);
     });
     return Array.from(classNames).join(" ");
-  };
+  });
 }
 function compactStyles(...styles) {
   return styles.filter((style) => isObject(style) && Object.keys(compact(style)).length > 0);
@@ -184,23 +199,8 @@ function createMergeCss(context) {
   function assignCss(...styles) {
     return Object.assign({}, ...resolve(styles));
   }
-  return { mergeCss, assignCss };
+  return { mergeCss: memo(mergeCss), assignCss };
 }
-
-// src/memo.ts
-var memo = (fn) => {
-  const cache = /* @__PURE__ */ new Map();
-  const get = (...args) => {
-    const key = JSON.stringify(args);
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
-    const result = fn(...args);
-    cache.set(key, result);
-    return result;
-  };
-  return get;
-};
 
 // src/hypenate-property.ts
 var wordRegex = /([A-Z])/g;

@@ -1,5 +1,119 @@
 # @pandacss/shared
 
+## 0.27.3
+
+## 0.27.2
+
+## 0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- 74ac0d9d: Improve the performance of the runtime transform functions by caching their results (css, cva, sva,
+  recipe/slot recipe, patterns)
+
+  > See detailed breakdown of the performance improvements
+  > [here](https://github.com/chakra-ui/panda/pull/1986#issuecomment-1887459483) based on the React Profiler.
+
+## 0.26.2
+
+## 0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- 657ca5da: Fix issue where `[]` escape hatch clashed with named grid lines
+
+## 0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- 71e82a4e: Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
+  seen as a truthy value
+
+## 0.24.1
+
+## 0.24.0
+
+## 0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
+  `!important`
+
+  ```ts
+  css({
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
+  ```
+
+## 0.22.0
+
+### Patch Changes
+
+- 8db47ec6: Fix issue where array syntax did not generate reponsive values in mapped pattern properties
+
+## 0.21.0
+
+### Minor Changes
+
+- 26e6051a: Add an escape-hatch for arbitrary values when using `config.strictTokens`, by prefixing the value with `[`
+  and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
+
+  ```ts
+  import { css } from '../styled-system/css'
+
+  css({
+    // @ts-expect-error TS will throw when using from strictTokens: true
+    color: '#fff',
+    // @ts-expect-error TS will throw when using from strictTokens: true
+    width: '100px',
+
+    // ✅ but this is now allowed:
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
+  ```
+
+## 0.20.1
+
+## 0.20.0
+
+## 0.19.0
+
+## 0.18.3
+
+## 0.18.2
+
 ## 0.18.1
 
 ## 0.18.0

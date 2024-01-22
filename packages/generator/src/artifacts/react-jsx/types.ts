@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
-import type { Context } from '../../engines'
 
 export function generateReactJsxTypes(ctx: Context) {
   const { factoryName, componentName, upperName, typeName, variantName } = ctx.jsx
@@ -42,7 +42,7 @@ interface JsxFactoryOptions<TProps extends Dict> {
 
 export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
 
-export type JsxElement<T extends ElementType, P> = T extends ${componentName}<infer A, infer B>
+export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
   ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
   : ${componentName}<T, P>
 

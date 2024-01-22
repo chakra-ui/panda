@@ -1,11 +1,14 @@
+import type { Context } from '@pandacss/core'
+import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import type { Context } from '../../engines'
 
-export function generateReactJsxPattern(ctx: Context) {
-  const { typeName, factoryName } = ctx.jsx
+export function generateReactJsxPattern(ctx: Context, filters?: ArtifactFilters) {
+  const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
-  return ctx.patterns.details.map((pattern) => {
+  const details = ctx.patterns.filterDetails(filters)
+
+  return details.map((pattern) => {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div' } = pattern.config
 
@@ -13,26 +16,49 @@ export function generateReactJsxPattern(ctx: Context) {
       name: dashName,
       js: outdent`
       import { createElement, forwardRef } from 'react'
-      ${ctx.file.import(factoryName, './factory')}
+      ${ctx.file.import('mergeCss', '../css/css')}
+      ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
+      ${ctx.file.import(factoryName, './factory')}
 
       export const ${jsxName} = /* @__PURE__ */ forwardRef(function ${jsxName}(props, ref) {
-        ${match(props.length)
+        ${match(jsxStyleProps)
           .with(
-            0,
+            'none',
             () => outdent`
-        const styleProps = ${styleFnName}()
-        return createElement(${factoryName}.${jsxElement}, { ref, ...styleProps, ...props })
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+          
+          return createElement(Comp, { ref, ...restProps })
           `,
           )
-          .otherwise(
+          .with(
+            'minimal',
             () => outdent`
-        const { ${props.join(', ')}, ...restProps } = props
-        const styleProps = ${styleFnName}({${props.join(', ')}})
-        return createElement(${factoryName}.${jsxElement}, { ref, ...styleProps, ...restProps })
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const cssProps = { css: mergeCss(styleProps, props.css) }
+          const mergedProps = { ref, ...restProps, ...cssProps }
+
+          return createElement(${factoryName}.${jsxElement}, mergedProps)
           `,
-          )}
-      })
+          )
+          .with(
+            'all',
+            () => outdent`
+          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+          
+          const styleProps = ${styleFnName}(patternProps)
+          const mergedProps = { ref, ...styleProps, ...restProps }
+
+          return createElement(${factoryName}.${jsxElement}, mergedProps)
+          `,
+          )
+          .exhaustive()}
+        })
       `,
 
       dts: outdent`

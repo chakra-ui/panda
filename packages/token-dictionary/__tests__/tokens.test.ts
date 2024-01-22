@@ -1,12 +1,12 @@
-import { semanticTokens, tokens } from '@pandacss/fixture'
+import { fixturePreset } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src'
 import { formats } from '../src/format'
 
 test('should work with default fixture', () => {
   const dictionary = new TokenDictionary({
-    tokens,
-    semanticTokens,
+    tokens: fixturePreset.theme.tokens,
+    semanticTokens: fixturePreset.theme.semanticTokens,
   })
 
   const allSpacings = dictionary.filter({ extensions: { category: 'spacing' } })
@@ -1522,6 +1522,14 @@ test('should work with default fixture', () => {
 
   expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
     Map {
+      "aspectRatios" => Map {
+        "square" => "var(--aspect-ratios-square)",
+        "landscape" => "var(--aspect-ratios-landscape)",
+        "portrait" => "var(--aspect-ratios-portrait)",
+        "wide" => "var(--aspect-ratios-wide)",
+        "ultrawide" => "var(--aspect-ratios-ultrawide)",
+        "golden" => "var(--aspect-ratios-golden)",
+      },
       "borders" => Map {
         "none" => "var(--borders-none)",
       },

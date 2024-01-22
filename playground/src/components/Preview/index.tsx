@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { usePreview } from '@/src/hooks/usePreview'
 import { css } from '@/styled-system/css'
 import { flex } from '@/styled-system/patterns'
-import { useResponsiveView } from '@/src/hooks/useResponsiveView'
+import { UseResponsiveView } from '@/src/hooks/useResponsiveView'
 import { responsiveBorder } from '@/src/components/Preview/responsive-border'
 import { ErrorIcon } from '@/src/components/icons'
 import { UsePanda } from '@/src/hooks/usePanda'
@@ -14,11 +14,14 @@ export type PreviewProps = {
   source: string
   isResponsive: boolean
   panda: UsePanda
+  responsiveView: UseResponsiveView
+  error: Error | null
 }
 
 export const Preview = (props: PreviewProps) => {
-  const { source, isResponsive, panda } = props
+  const { source, isResponsive, responsiveView, panda, error } = props
   const { previewCss = '', previewJs } = panda
+
   const isClient = useIsClient()
 
   const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc } = usePreview()
@@ -35,7 +38,8 @@ export const Preview = (props: PreviewProps) => {
     startTop,
     startTopRight,
     resizing,
-  } = useResponsiveView()
+    activeBreakpoint,
+  } = responsiveView
 
   // prevent false positive for server-side rendering
   if (!isClient) {
@@ -53,6 +57,7 @@ export const Preview = (props: PreviewProps) => {
   } as const
 
   function renderContent() {
+    // if (1 + 1 == 2) return null
     if (!isReady) {
       return null
     }
@@ -64,7 +69,7 @@ export const Preview = (props: PreviewProps) => {
 
     const contents = (
       <LiveProvider code={transformed} scope={React}>
-        <LiveError />
+        <LiveError error={error} />
         <LivePreview />
       </LiveProvider>
     )
@@ -121,12 +126,12 @@ export const Preview = (props: PreviewProps) => {
                 color: { base: 'gray.600', _dark: 'gray.400' },
               })}
             >
-              {`${constrainedResponsiveSize.width} × ${constrainedResponsiveSize.height}`}
-              {'  '}
+              {`${constrainedResponsiveSize.width} × ${constrainedResponsiveSize.height}`}{' '}
               <span className={css({ color: 'gray.500' })}>
                 ({Math.round(constrainedResponsiveSize.zoom * 100)}
                 %)
-              </span>
+              </span>{' '}
+              - {activeBreakpoint}
             </div>
           </div>
           {Object.entries(resizers).map(([position, handler], key) => (
@@ -181,9 +186,11 @@ export const Preview = (props: PreviewProps) => {
             allow="none"
             width="100%"
             onLoad={handleLoad}
+            data-loading={iframeLoaded ? undefined : ''}
             className={css({
               w: 'full',
               h: 'full',
+              visibility: { _loading: 'hidden' },
             })}
           >
             {iframeLoaded && renderContent()}
@@ -194,7 +201,7 @@ export const Preview = (props: PreviewProps) => {
   )
 }
 
-function LiveError() {
+function LiveError(props: { error: Error | null }) {
   const { error } = useLiveContext()
 
   function renderError() {
@@ -203,12 +210,12 @@ function LiveError() {
         <span>
           <ErrorIcon />
         </span>
-        <pre>{error}</pre>
+        <pre>{error ?? props.error?.stack?.split('\n')?.[0]}</pre>
       </div>
     )
   }
 
-  return error ? renderError() : <></>
+  return error || props.error ? renderError() : <></>
 }
 
 function LivePreview() {

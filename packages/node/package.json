@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/node",
-  "version": "0.18.1",
+  "version": "0.27.3",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -19,14 +19,20 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup --tsconfig tsconfig.build.json src/index.ts --format=cjs,esm --shims --dts",
+    "build-fast": "tsup --tsconfig tsconfig.build.json src/index.ts --format=cjs,esm --shims --no-dts",
     "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist"
   ],
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/node"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -36,12 +42,12 @@
     "@pandacss/error": "workspace:*",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/generator": "workspace:*",
-    "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/parser": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
+    "browserslist": "^4.22.2",
     "chokidar": "^3.5.3",
     "fast-glob": "^3.3.1",
     "file-size": "^1.0.0",
@@ -50,11 +56,10 @@
     "glob-parent": "^6.0.2",
     "hookable": "5.5.3",
     "is-glob": "^4.0.3",
-    "lil-fp": "1.4.5",
     "lodash.merge": "4.6.2",
     "look-it-up": "2.1.0",
     "outdent": " ^0.8.0",
-    "pathe": "^1.1.1",
+    "perfect-debounce": "^1.0.0",
     "pkg-types": "1.0.3",
     "pluralize": "8.0.0",
     "postcss": "^8.4.31",
@@ -62,15 +67,15 @@
     "prettier": "^2.8.8",
     "ts-morph": "19.0.0",
     "ts-pattern": "5.0.5",
-    "tsconfck": "^2.1.2"
+    "tsconfck": "^2.1.2",
+    "v8-profiler-next": "^1.10.0"
   },
   "devDependencies": {
-    "@pandacss/fixture": "workspace:*",
-    "@types/fs-extra": "11.0.3",
+    "@types/fs-extra": "11.0.4",
     "@types/glob-parent": "^5.1.1",
     "@types/is-glob": "^4.0.2",
     "@types/lodash.merge": "4.6.8",
-    "@types/pluralize": "0.0.30",
+    "@types/pluralize": "0.0.33",
     "boxen": "^7.1.1",
     "p-limit": "^4.0.0"
   }

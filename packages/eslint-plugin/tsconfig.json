@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src", "index.ts", "test-utils.ts"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "baseUrl": ".",
+    "paths": {
+      "@pandacss/fixture": ["../fixture/src/index.ts"]
+    }
+  }
+}

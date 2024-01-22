@@ -6,6 +6,919 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.27.3] - 2024-01-18
+
+### Fixed
+
+- Fix issue where HMR doesn't work when tsconfig paths is used.
+- Fix `prettier` parser warning in panda config setup.
+
+## [0.27.2] - 2024-01-17
+
+### Fixed
+
+Switch back to `node:path` from `pathe` to resolve issues with windows path in PostCSS + Webpack set up
+
+## [0.27.1] - 2024-01-15
+
+### Fixed
+
+Fix issue in windows environments where HMR doesn't work in webpack projects.
+
+## [0.27.0] - 2024-01-14
+
+### Added
+
+- Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+  `postcss`.
+- Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+- Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+  this run.
+- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define the aspect
+  ratio of an element.
+
+```js
+export default defineConfig({
+  // ...
+  theme: {
+    extend: {
+      // add aspect ratio tokens
+      tokens: {
+        aspectRatios: {
+          '1:1': '1',
+          '16:9': '16/9',
+        },
+      },
+    },
+  },
+})
+```
+
+Here's what the default aspect ratio tokens in the base preset looks like:
+
+```json
+{
+  "square": { "value": "1 / 1" },
+  "landscape": { "value": "4 / 3" },
+  "portrait": { "value": "3 / 4" },
+  "wide": { "value": "16 / 9" },
+  "ultrawide": { "value": "18 / 5" },
+  "golden": { "value": "1.618 / 1" }
+}
+```
+
+**Breaking Change**
+
+The built-in token values has been removed from the `aspectRatio` utility to the `@pandacss/preset-base` as a token.
+
+For most users, this change should be a drop-in replacement. However, if you used a custom preset in the config, you
+might need to update it to include the new aspect ratio tokens.
+
+### Changed
+
+- Enhance `splitCssProps` typings
+- Improve the performance of the runtime transform functions by caching their results (css, cva, sva, recipe/slot
+  recipe, patterns)
+
+> See detailed breakdown of the performance improvements
+> [here](https://github.com/chakra-ui/panda/pull/1986#issuecomment-1887459483) based on the React Profiler.
+
+- Change the config dependencies (files that are transitively imported) detection a bit more permissive to make it work
+  by default in more scenarios.
+
+**Context**
+
+This helps when you're in a monorepo and you have a workspace package for your preset, and you want to see the HMR
+reflecting changes in your app.
+
+Currently, we only traverse files with the `.ts` extension, this change makes it traverse all files ending with `.ts`,
+meaning that it will also traverse `.d.ts`, `.d.mts`, `.mts`, etc.
+
+**Example**
+
+```ts
+// apps/storybook/panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+import preset from '@acme/preset'
+
+export default defineConfig({
+  // ...
+})
+```
+
+This would not work before, but now it does.
+
+```jsonc
+{
+  "name": "@acme/preset",
+  "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs"
+}
+```
+
+**Notes** This would have been fine before that change.
+
+```jsonc
+// packages/preset/package.json
+{
+  "name": "@acme/preset",
+  "types": "./src/index.ts", // this was fine
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+    // ...
+  }
+}
+```
+
+## [0.26.2] - 2024-01-10
+
+### Fixed
+
+Fix `placeholder` condition in `preset-base`
+
+## [0.26.1] - 2024-01-09
+
+### Fixed
+
+Hotfix `strictTokens` after introducing `strictPropertyValues`
+
+## [0.26.0] - 2024-01-09
+
+### Fixed
+
+- Fix issue where `[]` escape hatch clashed with named grid lines
+- Fix `@pandacss/postcss` plugin regression when the entry CSS file (with `@layer` rules order) contains user-defined
+  rules, those user-defined rules would not be reloaded correctly after being changed.
+- Fix an edge-case for when the `config.outdir` would not be set in the `panda.config`
+
+Internal details: The `outdir` would not have any value after a config change due to the fallback being set in the
+initial config resolving code path but not in context reloading code path, moving it inside the config loading function
+fixes this issue.
+
+### Added
+
+- Add `data-placeholder` and `data-placeholder-shown` to `preset-base` conditions
+- Display better CssSyntaxError logs
+- Add `borderWidths` token to types
+
+### Changed
+
+- Remove eject type from presets
+- Refactors the parser and import analysis logic. The goal is to ensure we can re-use the import logic in ESLint Plugin
+  and Node.js.
+- `config.strictTokens` will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`, etc.
+- `config.strictPropertyValues` is added and will throw for properties that do not have config tokens, such as
+  `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
+
+In version
+[0.19.0 we changed `config.strictTokens`](https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md#0190---2023-11-24)
+typings a bit so that the only property values allowed were the config tokens OR the predefined CSS values, ex: `flex`
+for the property `display`, which prevented typos such as `display: 'aaa'`.
+
+The problem with this change is that it means you would have to provide every CSS properties a given set of values so
+that TS wouldn't throw any error. Thus, we will partly revert this change and make it so that `config.strictTokens`
+shouldn't affect properties that do not have config tokens, such as `content`, `willChange`, `display`, etc.
+
+v0.19.0:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+```
+
+now:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
+```
+
+Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
+with `config.strictTokens` if you want to be strict on both properties with config tokens and properties without config
+tokens.
+
+The new `config.strictPropertyValues` option will only be applied to this exhaustive list of properties:
+
+```ts
+type StrictableProps =
+  | 'alignContent'
+  | 'alignItems'
+  | 'alignSelf'
+  | 'all'
+  | 'animationComposition'
+  | 'animationDirection'
+  | 'animationFillMode'
+  | 'appearance'
+  | 'backfaceVisibility'
+  | 'backgroundAttachment'
+  | 'backgroundClip'
+  | 'borderCollapse'
+  | 'border'
+  | 'borderBlock'
+  | 'borderBlockEnd'
+  | 'borderBlockStart'
+  | 'borderBottom'
+  | 'borderInline'
+  | 'borderInlineEnd'
+  | 'borderInlineStart'
+  | 'borderLeft'
+  | 'borderRight'
+  | 'borderTop'
+  | 'borderBlockEndStyle'
+  | 'borderBlockStartStyle'
+  | 'borderBlockStyle'
+  | 'borderBottomStyle'
+  | 'borderInlineEndStyle'
+  | 'borderInlineStartStyle'
+  | 'borderInlineStyle'
+  | 'borderLeftStyle'
+  | 'borderRightStyle'
+  | 'borderTopStyle'
+  | 'boxDecorationBreak'
+  | 'boxSizing'
+  | 'breakAfter'
+  | 'breakBefore'
+  | 'breakInside'
+  | 'captionSide'
+  | 'clear'
+  | 'columnFill'
+  | 'columnRuleStyle'
+  | 'contentVisibility'
+  | 'direction'
+  | 'display'
+  | 'emptyCells'
+  | 'flexDirection'
+  | 'flexWrap'
+  | 'float'
+  | 'fontKerning'
+  | 'forcedColorAdjust'
+  | 'isolation'
+  | 'lineBreak'
+  | 'mixBlendMode'
+  | 'objectFit'
+  | 'outlineStyle'
+  | 'overflow'
+  | 'overflowX'
+  | 'overflowY'
+  | 'overflowBlock'
+  | 'overflowInline'
+  | 'overflowWrap'
+  | 'pointerEvents'
+  | 'position'
+  | 'resize'
+  | 'scrollBehavior'
+  | 'touchAction'
+  | 'transformBox'
+  | 'transformStyle'
+  | 'userSelect'
+  | 'visibility'
+  | 'wordBreak'
+  | 'writingMode'
+```
+
+## [0.25.0] - 2024-01-06
+
+### Fixed
+
+- Fix config dependencies detection by re-introducing the file tracing utility
+- Fix issue where `base` doesn't work within css function
+
+```jsx
+css({
+  // This didn't work, but now it does
+  base: { color: 'blue' },
+})
+```
+
+## Added
+
+- Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: '*', // ✅ will generate the staticCss for all recipes
+  },
+})
+```
+
+- Support token reference syntax when authoring styles object, text styles and layer styles.
+
+```jsx
+import { css } from '../styled-system/css'
+
+const styles = css({
+  border: '2px solid {colors.primary}',
+})
+```
+
+This will resolve the token reference and convert it to css variables.
+
+```css
+.border_2px_solid_\{colors\.primary\} {
+  border: 2px solid var(--colors-primary);
+}
+```
+
+The alternative to this was to use the `token(...)` css function which will be resolved.
+
+### `token(...)` vs `{...}`
+
+Both approaches return the css variable
+
+```jsx
+const styles = css({
+  // token reference syntax
+  border: '2px solid {colors.primary}',
+  // token function syntax
+  border: '2px solid token(colors.primary)',
+})
+```
+
+However, The `token(...)` syntax allows you to set a fallback value.
+
+```jsx
+const styles = css({
+  border: '2px solid token(colors.primary, red)',
+})
+```
+
+## [0.24.2] - 2024-01-04
+
+### Fixed
+
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being seen as a
+  truthy value
+- Fix an issue with the `panda init` command which didn't update existing `.gitignore` to include the `styled-system`
+- Fix issue where config slot recipes with compound variants were not processed correctly
+
+## [0.24.1] - 2024-01-02
+
+### Fixed
+
+- Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS wasn't
+  applied correctly
+- Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+  through the config recipes)
+
+## [0.24.0] - 2024-01-02
+
+### Fixed
+
+- Fix regression in previous implementation that increased memory usage per extraction, leading to slower performance
+  over time
+
+### Added
+
+Add `patterns` to `config.staticCss`
+
+### Changed
+
+- Boost style extraction performance by moving more work away from postcss
+- Using a hashing strategy, the compiler only computes styles/classname once per style object and prop-value-condition
+  pair
+- Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+  need (it's still possible by explicitly using `responsive: true`).
+
+```ts
+const card = defineRecipe({
+  className: 'card',
+  base: { color: 'white' },
+  variants: {
+    size: {
+      small: { fontSize: '14px' },
+      large: { fontSize: '18px' },
+    },
+    visual: {
+      primary: { backgroundColor: 'blue' },
+      secondary: { backgroundColor: 'gray' },
+    },
+  },
+})
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: {
+      card: ['*'], // this
+
+      // was equivalent to:
+      card: [
+        // notice how `responsive: true` was implicitly added
+        { size: ['*'], responsive: true },
+        { visual: ['*'], responsive: true },
+      ],
+
+      //   will now correctly be equivalent to:
+      card: [{ size: ['*'] }, { visual: ['*'] }],
+    },
+  },
+})
+```
+
+Here's the diff in the generated CSS:
+
+```diff
+@layer recipes {
+  .card--size_small {
+    font-size: 14px;
+  }
+
+  .card--size_large {
+    font-size: 18px;
+  }
+
+  .card--visual_primary {
+    background-color: blue;
+  }
+
+  .card--visual_secondary {
+    background-color: gray;
+  }
+
+  @layer _base {
+    .card {
+      color: var(--colors-white);
+    }
+  }
+
+-  @media screen and (min-width: 40em) {
+-    -.sm\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.sm\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.sm\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.sm\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 48em) {
+-    -.md\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.md\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.md\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.md\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 64em) {
+-    -.lg\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.lg\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.lg\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.lg\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 80em) {
+-    -.xl\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.xl\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.xl\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.xl\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+
+-  @media screen and (min-width: 96em) {
+-    -.\32xl\:card--size_small {
+-      -font-size: 14px;
+-    -}
+-    -.\32xl\:card--size_large {
+-      -font-size: 18px;
+-    -}
+-    -.\32xl\:card--visual_primary {
+-      -background-color: blue;
+-    -}
+-    -.\32xl\:card--visual_secondary {
+-      -background-color: gray;
+-    -}
+-  }
+}
+```
+
+## [0.23.0] - 2023-12-15
+
+### Fixed
+
+- Fix issue where style props wouldn't be properly passed when using `config.jsxStyleProps` set to `minimal` or `none`
+  with JSX patterns (`Box`, `Stack`, `Flex`, etc.)
+- Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
+- Fix performance issue where process could get slower due to postcss rules held in memory.
+- Fix an issue with the postcss plugin when a config change sometimes didn't trigger files extraction
+- Fix & perf improvement: skip JSX parsing when not using `config.jsxFramework` / skip tagged template literal parsing
+  when not using `config.syntax` set to "template-literal"
+- Fix a parser issue where we didn't handle import aliases when using a {xxx}.raw() function.
+
+ex:
+
+```ts
+// button.stories.ts
+import { button as buttonRecipe } from '@ui/styled-system/recipes'
+
+export const Primary: Story = {
+  // ❌ this wouldn't be parsed as a recipe because of the alias + .raw()
+  //  -> ✅ it's now fixed
+  args: buttonRecipe.raw({
+    color: 'primary',
+  }),
+}
+```
+
+### Added
+
+- Add support for emit-pkg command to emit just the `package.json` file with the required entrypoints. If an existing
+  `package.json` file is present, the `exports` field will be updated.
+
+When setting up Panda in a monorepo, this command is useful in monorepo setups where you want the codegen to run only in
+a dedicated workspace package.
+
+- Automatically extract/generate CSS for `sva` even if `slots` are not statically extractable, since it will only
+  produce atomic styles, we don't care much about slots for `sva` specifically
+
+Currently the CSS won't be generated if the `slots` are missing which can be problematic when getting them from another
+file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
+
+```ts
+import { sva } from '../styled-system/css'
+import { slots } from './slots'
+
+const card = sva({
+  slots, // ❌ did NOT work -> ✅ will now work as expected
+  base: {
+    root: {
+      p: '6',
+      m: '4',
+      w: 'md',
+      boxShadow: 'md',
+      borderRadius: 'md',
+      _dark: { bg: '#262626', color: 'white' },
+    },
+    content: {
+      textStyle: 'lg',
+    },
+    title: {
+      textStyle: 'xl',
+      fontWeight: 'semibold',
+      pb: '2',
+    },
+  },
+})
+```
+
+### Changed
+
+- Log stacktrace on error instead of only logging the message
+
+## [0.22.1] - 2023-12-15
+
+### Fixed
+
+- Fix `slotRecipes` typings, [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added
+  to `config.recipes` weren't added to `config.slotRecipes`
+- Fix a typing issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with property-based
+  conditionals
+
+```ts
+css({
+  bg: '[#3B00B9]', // ✅ was okay
+  _dark: {
+    // ✅ was okay
+    color: '[#3B00B9]',
+  },
+
+  // ❌ Not okay, will be fixed in this patch
+  color: {
+    _dark: '[#3B00B9]',
+  },
+})
+```
+
+- Fix a regression with the @pandacss/astro integration where the automatically provided `base.css` would be ignored by
+  the @pandacss/postcss plugin
+
+- Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
+  `!important`
+
+```ts
+css({
+  borderWidth: '[2px!]',
+  width: '[2px !important]',
+})
+```
+
+## [0.22.0] - 2023-12-14
+
+### Fixed
+
+- Fix issue where static-css types was not exported.
+- Fix conditional variables in border radii
+- Fix regression where `styled-system/jsx/index` had the wrong exports
+- Fix potential cross-platform issues with path resolving by using `pathe` instead of `path`
+- Fix issue where `children` does not work in styled factory's `defaultProps` in React, Preact and Qwik
+- Fixes a missing bracket in \_indeterminate condition
+- Fix issue where array syntax did not generate reponsive values in mapped pattern properties
+
+### Changed
+
+- Update csstype to support newer css features
+- Redesign astro integration and studio to use the new Astro v4 (experimental) JavaScript API
+- Update Astro version to v4 for the @pandacss/studio
+
+- Improve initial css extraction time by at least 5x 🚀
+
+  Initial extraction time can get slow when using static CSS with lots of recipes or parsing a lot of files.
+
+  **Scenarios**
+
+  - Park UI went from 3500ms to 580ms (6x faster)
+  - Panda Website went from 2900ms to 208ms (14x faster)
+
+  **Potential Breaking Change**
+
+  If you use `hooks` in your `panda.config` file to listen for when css is extracted, we no longer return the `css`
+  string for performance reasons. We might reconsider this in the future.
+
+## [0.21.0] - 2023-12-09
+
+### Fixed
+
+- Fix static extraction issue when using JSX attributes (props) that are other JSX nodes
+
+While parsing over the AST Nodes, due to an optimization where we skipped retrieving the current JSX element and instead
+kept track of the latest one, the logic was flawed and did not extract other properties after encountering a JSX
+attribute that was another JSX node.
+
+```tsx
+const Component = () => {
+  return (
+    <>
+      {/* ❌ this wasn't extracting ml="2" */}
+      <Flex icon={<svg className="icon" />} ml="2" />
+
+      {/* ✅ this was fine */}
+      <Stack ml="4" icon={<div className="icon" />} />
+    </>
+  )
+}
+```
+
+Now both will be fine again.
+
+- Fix an edge-case when Panda eagerly extracted and tried to generate the CSS for a JSX property that contains an URL.
+
+```tsx
+const App = () => {
+  // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
+  // but since it's an URL, it would produce invalid CSS
+  // we now check if the property value is an URL and skip it if needed
+  return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
+}
+```
+
+- Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the normalization that
+  happens internally.
+- Fix issue where Preact JSX types are not merging recipes correctly
+- Fix vue `styled` factory internal class merging, for example:
+
+```js
+<script setup>
+import { styled } from '../styled-system/jsx'
+
+const StyledButton = styled('button', {
+  base: {
+    bgColor: 'red.300',
+  },
+})
+</script>
+<template>
+  <StyledButton id="test" class="test">
+    <slot></slot>
+  </StyledButton>
+</template>
+```
+
+Will now correctly include the `test` class in the final output.
+
+### Added
+
+- Add `configPath` and `cwd` options in the `@pandacss/astro` integration just like in the `@pandacss/postcss`
+
+> This can be useful with Nx monorepos where the `panda.config.ts` is not in the root of the project.
+
+- Add an escape-hatch for arbitrary values when using `config.strictTokens`, by prefixing the value with `[` and
+  suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
+
+```ts
+import { css } from '../styled-system/css'
+
+css({
+  // @ts-expect-error TS will throw when using from strictTokens: true
+  color: '#fff',
+  // @ts-expect-error TS will throw when using from strictTokens: true
+  width: '100px',
+
+  // ✅ but this is now allowed:
+  bgColor: '[rgb(51 155 240)]',
+  fontSize: '[12px]',
+})
+```
+
+- Add a shortcut for the `config.importMap` option
+
+You can now also use a string to customize the base import path and keep the default entrypoints:
+
+```json
+{
+  "importMap": "@scope/styled-system"
+}
+```
+
+is the equivalent of:
+
+```json
+{
+  "importMap": {
+    "css": "@scope/styled-system/css",
+    "recipes": "@scope/styled-system/recipes",
+    "patterns": "@scope/styled-system/patterns",
+    "jsx": "@scope/styled-system/jsx"
+  }
+}
+```
+
+- Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+
+```js
+import { defineRecipe } from '@pandacss/dev'
+
+const card = defineRecipe({
+  className: 'card',
+  base: { color: 'white' },
+  variants: {
+    size: {
+      small: { fontSize: '14px' },
+      large: { fontSize: '18px' },
+    },
+  },
+  staticCss: [{ size: ['*'] }],
+})
+```
+
+would be the equivalent of defining it inside the main config:
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: {
+      card: {
+        size: ['*'],
+      },
+    },
+  },
+})
+```
+
+- Add Open Props preset
+
+## [0.20.1] - 2023-12-01
+
+### Fixed
+
+- Fix issue where conditional recipe variant doesn't work as expected
+- Fix issue with the `token(xxx.yyy)` fn used in AtRule, things like:
+
+```ts
+css({
+  '@container (min-width: token(sizes.xl))': {
+    color: 'green.300',
+  },
+  '@media (min-width: token(sizes.2xl))': {
+    color: 'red.300',
+  },
+})
+```
+
+### Added
+
+- Add a --watch flag to the `panda ship` command
+- Add support for granular config change detection
+- Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Added `strokeWidth` to svg utilities.
+- Connected `outlineWidth` utility to `borderWidths` token.
+- Add `borderWidth`, `borderTopWidth`, `borderLeftWidth`, `borderRightWidth`, `borderBottomWidth` to berder utilities.
+- Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+- Add support for extending `staticCss` defined in presets
+
+```jsx
+const presetWithStaticCss = definePreset({
+  staticCss: {
+    recipes: {
+      // generate all button styles and variants
+      button: ['*'],
+    },
+  },
+})
+
+export default defineConfig({
+  presets: [presetWithStaticCss],
+  staticCss: {
+    extend: {
+      recipes: {
+        // extend and pre-generate all sizes for card
+        card: [{ size: ['small', 'medium', 'large'] }],
+      },
+    },
+  },
+})
+```
+
+## [0.19.0] - 2023-11-24
+
+### Fixed
+
+- Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+  > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
+- Fix issue in preflight where monospace fallback pointed to the wrong variable
+- Fix issue where css variables were not supported in layer styles and text styles types.
+- Fix issue where recipe artifacts might not match the recipes defined in the theme due to the internal cache not being
+  cleared as needed.
+
+### Changed
+
+- Require explicit installation of `@pandacss/studio` to use the `panda studio` command.
+- Improves the `config.strictTokens` type-safety by allowing CSS predefined values (like 'flex' or 'block' for the
+  property 'display') and throwing when using anything else than those, if no theme tokens was found on that property.
+
+Before:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+```
+
+Now:
+
+```ts
+// config.strictTokens = true
+css({ display: 'flex' }) // OK, didn't throw
+css({ display: 'block' }) // OK, didn't throw
+css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
+```
+
+## [0.18.3] - 2023-11-15
+
+### Fixed
+
+- Fix issue with `forceConsistentTypeExtension` where the `composition.d.mts` had an incorrect type import
+- Fix issue in studio here userland `@ark-ui/react` version could interfere with studio version
+
+## [0.18.2] - 2023-11-10
+
+### Fixed
+
+- Fix regression in grid pattern where `columns` doesn't not work as expected.
+
 ## [0.18.1] - 2023-11-09
 
 ### Fixed

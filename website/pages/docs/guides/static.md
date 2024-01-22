@@ -87,6 +87,41 @@ export default {
 }
 ```
 
+You can also directly specify a recipe's `staticCss` rules from inside a recipe config, e.g.:
+
+```js
+import { defineRecipe } from '@pandacss/dev'
+
+const card = defineRecipe({
+  className: 'card',
+  base: { color: 'white' },
+  variants: {
+    size: {
+      small: { fontSize: '14px' },
+      large: { fontSize: '18px' }
+    }
+  },
+  staticCss: [{ size: ['*'] }]
+})
+```
+
+would be the equivalent of defining it inside the main config:
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: {
+      card: {
+        size: ['*']
+      }
+    }
+  }
+})
+```
+
 ## Removing unused CSS
 
 For an even smaller css output size, you can utilize [PurgeCSS](https://purgecss.com/) to treeshake and remove unused

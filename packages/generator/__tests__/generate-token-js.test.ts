@@ -1,11 +1,42 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { expect, test } from 'vitest'
+import { Generator } from '../src'
 import { generateTokenJs } from '../src/artifacts/js/token'
-import { generator } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
+
+const tokenJs = (config: ConfigResultWithHooks) => {
+  const generator = new Generator(config)
+  return generateTokenJs(generator).js
+}
 
 test('[dts] should generate package', () => {
-  expect(generateTokenJs(generator).js).toMatchInlineSnapshot(
+  expect(tokenJs(fixtureDefaults)).toMatchInlineSnapshot(
     `
     "const tokens = {
+      \\"aspectRatios.square\\": {
+        \\"value\\": \\"1 / 1\\",
+        \\"variable\\": \\"var(--aspect-ratios-square)\\"
+      },
+      \\"aspectRatios.landscape\\": {
+        \\"value\\": \\"4 / 3\\",
+        \\"variable\\": \\"var(--aspect-ratios-landscape)\\"
+      },
+      \\"aspectRatios.portrait\\": {
+        \\"value\\": \\"3 / 4\\",
+        \\"variable\\": \\"var(--aspect-ratios-portrait)\\"
+      },
+      \\"aspectRatios.wide\\": {
+        \\"value\\": \\"16 / 9\\",
+        \\"variable\\": \\"var(--aspect-ratios-wide)\\"
+      },
+      \\"aspectRatios.ultrawide\\": {
+        \\"value\\": \\"18 / 5\\",
+        \\"variable\\": \\"var(--aspect-ratios-ultrawide)\\"
+      },
+      \\"aspectRatios.golden\\": {
+        \\"value\\": \\"1.618 / 1\\",
+        \\"variable\\": \\"var(--aspect-ratios-golden)\\"
+      },
       \\"borders.none\\": {
         \\"value\\": \\"none\\",
         \\"variable\\": \\"var(--borders-none)\\"

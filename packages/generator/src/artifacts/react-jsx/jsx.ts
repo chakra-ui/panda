@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
-import type { Context } from '../../engines'
 
 export function generateReactJsxFactory(ctx: Context) {
   const { factoryName, componentName } = ctx.jsx
@@ -57,9 +57,8 @@ export function generateReactJsxFactory(ctx: Context) {
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
-          children,
           className: classes(),
-        })
+        }, combinedProps.children ?? children)
       })
 
       const name = getDisplayName(Dynamic)

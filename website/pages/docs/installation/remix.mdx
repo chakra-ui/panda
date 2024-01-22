@@ -168,6 +168,7 @@ Create a new file `app/index.css` and add the following content:
 Import the `index.css` file in your `app/root.tsx` file and add the `styles` variable to the `links` function.
 
 ```tsx filename="app/root.tsx" {11,13}
+import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction } from "@remix-run/node";
 import {
   Links,
@@ -178,16 +179,19 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import styles from './index.css'
+import styles from "./index.css"
 
-export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
+export const links: LinksFunction = () => [
+  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
+  { rel: "stylesheet", href: styles },
+];
 
 export default function App() {
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
@@ -200,29 +204,6 @@ export default function App() {
     </html>
   );
 }
-```
-
-### Enable PostCSS in Remix
-
-Update the `remix.config.ts` file with the following content:
-
-```js {15} filename="remix.config.ts"
-/** @type {import('@remix-run/dev').AppConfig} */
-module.exports = {
-  ignoredRouteFiles: ["**/.*"],
-  // appDirectory: "app",
-  // assetsBuildDirectory: "public/build",
-  // serverBuildPath: "build/index.js",
-  // publicPath: "/build/",
-  serverModuleFormat: "cjs",
-  future: {
-    v2_errorBoundary: true,
-    v2_meta: true,
-    v2_normalizeFormMethod: true,
-    v2_routeConvention: true,
-  },
-  postcss: true,
-};
 ```
 
 ### Start your build process
@@ -258,10 +239,10 @@ Now you can start using Panda CSS in your project.
 Here is the snippet of code that you can use in your `app/routes/_index.tsx` file.
 
 ```tsx filename="app/routes/_index.tsx"
-import type { V2_MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 import { css } from "styled-system/css";
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [
     { title: "New Remix App" },
     { name: "description", content: "Welcome to Remix!" },

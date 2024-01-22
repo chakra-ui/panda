@@ -1,41 +1,26 @@
-import postcss, { Root } from 'postcss'
-import dedupe from 'postcss-discard-duplicates'
-import discardEmpty from 'postcss-discard-empty'
-import mergeRules from 'postcss-merge-rules'
-import minifySelectors from 'postcss-minify-selectors'
-import nested from 'postcss-nested'
-import normalizeWhiteSpace from 'postcss-normalize-whitespace'
-import expandTokenFn from './plugins/expand-token-fn'
-import mergeCascadeLayers from './plugins/merge-layers'
-import prettify from './plugins/prettify'
-import sortCss from './plugins/sort-css'
-import sortMediaQueries from './plugins/sort-mq'
 import type { Token } from '@pandacss/types'
+import postcss, { Root } from 'postcss'
+import nested from 'postcss-nested'
+import expandTokenFn from './plugins/expand-token-fn'
+import prettify from './plugins/prettify'
+import { optimizePostCss } from './plugins/optimize-postcss'
+import sortMediaQueries from './plugins/sort-mq'
 
 interface OptimizeOptions {
   minify?: boolean
+  lightningcss?: boolean
+  browserslist?: string[]
 }
 
 export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
-  const { minify = false } = options
-  const plugins = [
-    nested(),
-    mergeCascadeLayers(),
-    sortMediaQueries(),
-    dedupe(),
-    mergeRules(),
-    sortCss(),
-    discardEmpty(),
-  ]
+  const { lightningcss } = options
 
-  if (minify) {
-    plugins.push(normalizeWhiteSpace(), minifySelectors())
-  } else {
-    plugins.push(prettify())
+  if (lightningcss) {
+    const light = require('./plugins/optimize-lightningcss') as typeof import('./plugins/optimize-lightningcss')
+    return light.default(code, options)
   }
 
-  const { css } = postcss(plugins).process(code)
-  return css
+  return optimizePostCss(code, options)
 }
 
 export function expandCssFunctions(
@@ -43,16 +28,11 @@ export function expandCssFunctions(
   options: { token?: (key: string) => string; raw?: (path: string) => Token | undefined } = {},
 ) {
   const { token, raw } = options
-  const { css } = postcss([expandTokenFn(token, raw)]).process(code)
+  const { css } = postcss([expandTokenFn(token, raw), sortMediaQueries()]).process(code)
   return css
 }
 
 export function expandNestedCss(code: string) {
   const { css } = postcss([nested(), prettify()]).process(code)
-  return css
-}
-
-export function prettifyCss(code: string) {
-  const { css } = postcss([prettify()]).process(code)
   return css
 }

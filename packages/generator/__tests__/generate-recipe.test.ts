@@ -1,14 +1,26 @@
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { generateRecipes } from '../src/artifacts/js/recipe'
-import { generator } from './fixture'
+import { Generator } from '../src'
+import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
+import { fixtureDefaults } from '@pandacss/fixture'
+
+const createRecipeJs = (config: ConfigResultWithHooks) => {
+  const generator = new Generator(config)
+  return generateCreateRecipe(generator)
+}
+
+const recipeJs = (config: ConfigResultWithHooks) => {
+  const generator = new Generator(config)
+  return generateRecipes(generator)
+}
 
 describe('generate recipes', () => {
   test('should ', () => {
-    expect(generateRecipes(generator)).toMatchInlineSnapshot(`
-      [
-        {
-          "dts": "",
-          "js": "import { css } from '../css/css.mjs';
+    expect(createRecipeJs(fixtureDefaults)).toMatchInlineSnapshot(`
+      {
+        "dts": "",
+        "js": "import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
+      import { css } from '../css/css.mjs';
       import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
       import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
@@ -36,6 +48,11 @@ describe('generate recipes', () => {
 
          const recipeCss = createCss({
            
+           conditions: {
+             shift: sortConditions,
+             finalize: finalizeConditions,
+             breakpoints: { keys: [\\"base\\",\\"sm\\",\\"md\\",\\"lg\\",\\"xl\\",\\"2xl\\"] }
+           },
            utility: {
              
              transform,
@@ -82,8 +99,12 @@ describe('generate recipes', () => {
        })
        }
       ",
-          "name": "create-recipe",
-        },
+        "name": "create-recipe",
+      }
+    `)
+
+    expect(recipeJs(fixtureDefaults)).toMatchInlineSnapshot(`
+      [
         {
           "dts": "import type { ConditionalValue } from '../types/index';
       import type { DistributiveOmit, Pretty } from '../types/system-types';
@@ -97,7 +118,7 @@ describe('generate recipes', () => {
       }
 
       export type TextStyleVariantProps = {
-        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]>
+        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]> | undefined
       }
 
       export interface TextStyleRecipe {
@@ -111,7 +132,7 @@ describe('generate recipes', () => {
 
 
       export declare const textStyle: TextStyleRecipe",
-          "js": "import { splitProps } from '../helpers.mjs';
+          "js": "import { memo, splitProps } from '../helpers.mjs';
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const textStyleFn = /* @__PURE__ */ createRecipe('textStyle', {}, [])
@@ -125,7 +146,7 @@ describe('generate recipes', () => {
 
       const textStyleVariantKeys = Object.keys(textStyleVariantMap)
 
-      export const textStyle = /* @__PURE__ */ Object.assign(textStyleFn, {
+      export const textStyle = /* @__PURE__ */ Object.assign(memo(textStyleFn), {
         __recipe__: true,
         __name__: 'textStyle',
         raw: (props) => props,
@@ -153,7 +174,7 @@ describe('generate recipes', () => {
       }
 
       export type TooltipStyleVariantProps = {
-        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]>
+        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]> | undefined
       }
 
       export interface TooltipStyleRecipe {
@@ -167,7 +188,7 @@ describe('generate recipes', () => {
 
 
       export declare const tooltipStyle: TooltipStyleRecipe",
-          "js": "import { splitProps } from '../helpers.mjs';
+          "js": "import { memo, splitProps } from '../helpers.mjs';
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const tooltipStyleFn = /* @__PURE__ */ createRecipe('tooltipStyle', {}, [])
@@ -176,7 +197,7 @@ describe('generate recipes', () => {
 
       const tooltipStyleVariantKeys = Object.keys(tooltipStyleVariantMap)
 
-      export const tooltipStyle = /* @__PURE__ */ Object.assign(tooltipStyleFn, {
+      export const tooltipStyle = /* @__PURE__ */ Object.assign(memo(tooltipStyleFn), {
         __recipe__: true,
         __name__: 'tooltipStyle',
         raw: (props) => props,
@@ -195,6 +216,61 @@ describe('generate recipes', () => {
           "dts": "import type { ConditionalValue } from '../types/index';
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
+      interface CardStyleVariant {
+        rounded: boolean
+      }
+
+      type CardStyleVariantMap = {
+        [key in keyof CardStyleVariant]: Array<CardStyleVariant[key]>
+      }
+
+      export type CardStyleVariantProps = {
+        [key in keyof CardStyleVariant]?: ConditionalValue<CardStyleVariant[key]> | undefined
+      }
+
+      export interface CardStyleRecipe {
+        __type: CardStyleVariantProps
+        (props?: CardStyleVariantProps): string
+        raw: (props?: CardStyleVariantProps) => CardStyleVariantProps
+        variantMap: CardStyleVariantMap
+        variantKeys: Array<keyof CardStyleVariant>
+        splitVariantProps<Props extends CardStyleVariantProps>(props: Props): [CardStyleVariantProps, Pretty<DistributiveOmit<Props, keyof CardStyleVariantProps>>]
+      }
+
+
+      export declare const cardStyle: CardStyleRecipe",
+          "js": "import { memo, splitProps } from '../helpers.mjs';
+      import { createRecipe, mergeRecipes } from './create-recipe.mjs';
+
+      const cardStyleFn = /* @__PURE__ */ createRecipe('card', {}, [])
+
+      const cardStyleVariantMap = {
+        \\"rounded\\": [
+          \\"true\\"
+        ]
+      }
+
+      const cardStyleVariantKeys = Object.keys(cardStyleVariantMap)
+
+      export const cardStyle = /* @__PURE__ */ Object.assign(memo(cardStyleFn), {
+        __recipe__: true,
+        __name__: 'cardStyle',
+        raw: (props) => props,
+        variantKeys: cardStyleVariantKeys,
+        variantMap: cardStyleVariantMap,
+        merge(recipe) {
+          return mergeRecipes(this, recipe)
+        },
+        splitVariantProps(props) {
+          return splitProps(props, cardStyleVariantKeys)
+        },
+      })",
+          "name": "card-style",
+        },
+        {
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
+
       interface ButtonStyleVariant {
         size: \\"sm\\" | \\"md\\"
       variant: \\"solid\\" | \\"outline\\"
@@ -205,7 +281,7 @@ describe('generate recipes', () => {
       }
 
       export type ButtonStyleVariantProps = {
-        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]>
+        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]> | undefined
       }
 
       export interface ButtonStyleRecipe {
@@ -219,7 +295,7 @@ describe('generate recipes', () => {
 
 
       export declare const buttonStyle: ButtonStyleRecipe",
-          "js": "import { splitProps } from '../helpers.mjs';
+          "js": "import { memo, splitProps } from '../helpers.mjs';
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const buttonStyleFn = /* @__PURE__ */ createRecipe('buttonStyle', {
@@ -240,7 +316,7 @@ describe('generate recipes', () => {
 
       const buttonStyleVariantKeys = Object.keys(buttonStyleVariantMap)
 
-      export const buttonStyle = /* @__PURE__ */ Object.assign(buttonStyleFn, {
+      export const buttonStyle = /* @__PURE__ */ Object.assign(memo(buttonStyleFn), {
         __recipe__: true,
         __name__: 'buttonStyle',
         raw: (props) => props,
@@ -254,6 +330,167 @@ describe('generate recipes', () => {
         },
       })",
           "name": "button-style",
+        },
+        {
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
+
+      interface CheckboxVariant {
+        size: \\"sm\\" | \\"md\\" | \\"lg\\"
+      }
+
+      type CheckboxVariantMap = {
+        [key in keyof CheckboxVariant]: Array<CheckboxVariant[key]>
+      }
+
+      export type CheckboxVariantProps = {
+        [key in keyof CheckboxVariant]?: ConditionalValue<CheckboxVariant[key]> | undefined
+      }
+
+      export interface CheckboxRecipe {
+        __type: CheckboxVariantProps
+        (props?: CheckboxVariantProps): Pretty<Record<\\"root\\" | \\"control\\" | \\"label\\", string>>
+        raw: (props?: CheckboxVariantProps) => CheckboxVariantProps
+        variantMap: CheckboxVariantMap
+        variantKeys: Array<keyof CheckboxVariant>
+        splitVariantProps<Props extends CheckboxVariantProps>(props: Props): [CheckboxVariantProps, Pretty<DistributiveOmit<Props, keyof CheckboxVariantProps>>]
+      }
+
+
+      export declare const checkbox: CheckboxRecipe",
+          "js": "import { getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
+
+      const checkboxDefaultVariants = {
+        \\"size\\": \\"sm\\"
+      }
+      const checkboxCompoundVariants = []
+
+      const checkboxSlotNames = [
+        [
+          \\"root\\",
+          \\"checkbox__root\\"
+        ],
+        [
+          \\"control\\",
+          \\"checkbox__control\\"
+        ],
+        [
+          \\"label\\",
+          \\"checkbox__label\\"
+        ]
+      ]
+      const checkboxSlotFns = /* @__PURE__ */ checkboxSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, checkboxDefaultVariants, getSlotCompoundVariant(checkboxCompoundVariants, slotName))])
+
+      const checkboxFn = memo((props = {}) => {
+        return Object.fromEntries(checkboxSlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
+      })
+
+      const checkboxVariantKeys = [
+        \\"size\\"
+      ]
+
+      export const checkbox = /* @__PURE__ */ Object.assign(checkboxFn, {
+        __recipe__: false,
+        __name__: 'checkbox',
+        raw: (props) => props,
+        variantKeys: checkboxVariantKeys,
+        variantMap: {
+        \\"size\\": [
+          \\"sm\\",
+          \\"md\\",
+          \\"lg\\"
+        ]
+      },
+        splitVariantProps(props) {
+          return splitProps(props, checkboxVariantKeys)
+        },
+      })",
+          "name": "checkbox",
+        },
+        {
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
+
+      interface BadgeVariant {
+        size: \\"sm\\"
+      raised: boolean
+      }
+
+      type BadgeVariantMap = {
+        [key in keyof BadgeVariant]: Array<BadgeVariant[key]>
+      }
+
+      export type BadgeVariantProps = {
+        [key in keyof BadgeVariant]?: BadgeVariant[key] | undefined
+      }
+
+      export interface BadgeRecipe {
+        __type: BadgeVariantProps
+        (props?: BadgeVariantProps): Pretty<Record<\\"title\\" | \\"body\\", string>>
+        raw: (props?: BadgeVariantProps) => BadgeVariantProps
+        variantMap: BadgeVariantMap
+        variantKeys: Array<keyof BadgeVariant>
+        splitVariantProps<Props extends BadgeVariantProps>(props: Props): [BadgeVariantProps, Pretty<DistributiveOmit<Props, keyof BadgeVariantProps>>]
+      }
+
+
+      export declare const badge: BadgeRecipe",
+          "js": "import { getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
+
+      const badgeDefaultVariants = {}
+      const badgeCompoundVariants = [
+        {
+          \\"raised\\": true,
+          \\"size\\": \\"sm\\",
+          \\"css\\": {
+            \\"title\\": {
+              \\"color\\": \\"ButtonHighlight\\"
+            }
+          }
+        }
+      ]
+
+      const badgeSlotNames = [
+        [
+          \\"title\\",
+          \\"badge__title\\"
+        ],
+        [
+          \\"body\\",
+          \\"badge__body\\"
+        ]
+      ]
+      const badgeSlotFns = /* @__PURE__ */ badgeSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, badgeDefaultVariants, getSlotCompoundVariant(badgeCompoundVariants, slotName))])
+
+      const badgeFn = memo((props = {}) => {
+        return Object.fromEntries(badgeSlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
+      })
+
+      const badgeVariantKeys = [
+        \\"size\\",
+        \\"raised\\"
+      ]
+
+      export const badge = /* @__PURE__ */ Object.assign(badgeFn, {
+        __recipe__: false,
+        __name__: 'badge',
+        raw: (props) => props,
+        variantKeys: badgeVariantKeys,
+        variantMap: {
+        \\"size\\": [
+          \\"sm\\"
+        ],
+        \\"raised\\": [
+          \\"true\\"
+        ]
+      },
+        splitVariantProps(props) {
+          return splitProps(props, badgeVariantKeys)
+        },
+      })",
+          "name": "badge",
         },
       ]
     `)

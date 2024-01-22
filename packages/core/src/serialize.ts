@@ -1,67 +1,50 @@
-import { filterBaseConditions, isImportant, normalizeStyleObject, walkObject, withoutImportant } from '@pandacss/shared'
+import { walkObject } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
 import merge from 'lodash.merge'
-import type { Conditions } from './conditions'
-import { cssToJs, toCss } from './to-css'
-import type { Utility } from './utility'
-import type postcss from 'postcss'
+import type { StylesheetContext } from '.'
+import { parseSelectors } from './stringify'
 
-export interface SerializeContext {
-  conditions: Conditions
-  utility: Utility
+export interface SerializeContext extends Omit<StylesheetContext, 'layers' | 'helpers' | 'hash'> {}
+
+/**
+ * Transform the style object (with conditions, shorthands, tokens) into a valid CSS (in JS) object
+ */
+export function transformStyles(context: SerializeContext, styleObj: Dict, key: string) {
+  const encoder = context.encoder.clone()
+  const decoder = context.decoder.clone()
+
+  const hashSet = new Set<string>()
+  encoder.hashStyleObject(hashSet, styleObj)
+
+  const group = decoder.getGroup(hashSet, key)
+
+  return group.result
 }
 
-export function serializeStyle(styleObj: Dict, context: SerializeContext) {
-  const { utility, conditions } = context
-  const rule = conditions.rule()
-
+/**
+ * Serialize the style object (with conditions, shorthands, tokens) into a valid CSS string
+ */
+export function serializeStyles(context: SerializeContext, groupedObject: Dict) {
   const result: Dict = {}
 
-  const normalizedObject = normalizeStyleObject(styleObj, context)
-
-  walkObject(normalizedObject, (value, paths) => {
-    const important = isImportant(value)
-
-    const [prop, ...allConditions] = conditions.shift(paths)
-
-    const conds = filterBaseConditions(allConditions)
-    const hasConditions = conds.length > 0
-
-    let { styles } = utility.transform(prop, withoutImportant(value))
-    const cssResult = toCss(styles, { important })
-
-    if (hasConditions) {
-      /**
-       * Conditions can sometimes include an at-rule and then a selector.
-       * In this case, we need to split the conditions into two parts.
-       * The first part is the at-rule, and the second part is the selector.
-       *
-       * !!NOTE: The selector segment can only contain one selector.
-       */
-      const segments = conditions.segment(conds)
-
-      rule.nodes = cssResult.root.nodes as postcss.ChildNode[]
-      rule.selector = segments.selector.length > 0 ? segments.selector[0] : '&'
-
-      rule.update()
-      rule.applyConditions(segments.condition)
-
-      styles = cssToJs(rule.toString())
-    } else {
-      styles = cssToJs(cssResult.css)
-    }
-
-    merge(result, styles)
-  })
-
-  return result
-}
-
-export function serializeStyles(groupedObject: Dict, context: SerializeContext) {
-  const result: Dict = {}
   for (const [scope, styles] of Object.entries(groupedObject)) {
     result[scope] ||= {}
-    merge(result[scope], serializeStyle(styles, context))
+
+    const styleObject = walkObject(styles, (value) => value, {
+      getKey: (prop) => {
+        // Rewrite html selectors to include the parent selector so that it can be parsed later on
+        // ASSUMPTION: an object that has a key that is not a valid property/condition is a html selector
+        // ex: 'body, :root' => 'body &, :root &'
+        if (!context.conditions.isCondition(prop) && !context.isValidProperty(prop)) {
+          const selectors = parseSelectors(prop)
+          return selectors.map((s) => s + ' &').join(', ')
+        }
+
+        return prop
+      },
+    })
+
+    merge(result[scope], transformStyles(context, styleObject, scope))
   }
-  return toCss(result).root
+  return result
 }

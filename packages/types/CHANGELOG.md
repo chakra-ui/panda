@@ -1,5 +1,348 @@
 # @pandacss/types
 
+## 0.27.3
+
+### Patch Changes
+
+- 1ed4df77: Fix issue where HMR doesn't work when tsconfig paths is used.
+
+## 0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- ee9341db: Fix issue in windows environments where HMR doesn't work in webpack projects.
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+## 0.26.2
+
+## 0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- b5cf6ee6: Add `borderWidths` token to types
+- 58df7d74: Remove eject type from presets
+
+## 0.25.0
+
+### Patch Changes
+
+- 59fd291c: Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+
+## 0.24.2
+
+### Patch Changes
+
+- 71e82a4e: Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
+  seen as a truthy value
+
+## 0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- f6881022: Add `patterns` to `config.staticCss`
+
+  ***
+
+  Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+  need (it's still possible by explicitly using `responsive: true`).
+
+  ```ts
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+      visual: {
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
+      },
+    },
+  })
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: ['*'], // this
+
+        // was equivalent to:
+        card: [
+          // notice how `responsive: true` was implicitly added
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
+        ],
+
+        //   will now correctly be equivalent to:
+        card: [{ size: ['*'] }, { visual: ['*'] }],
+      },
+    },
+  })
+  ```
+
+  Here's the diff in the generated CSS:
+
+  ```diff
+  @layer recipes {
+    .card--size_small {
+      font-size: 14px;
+    }
+
+    .card--size_large {
+      font-size: 18px;
+    }
+
+    .card--visual_primary {
+      background-color: blue;
+    }
+
+    .card--visual_secondary {
+      background-color: gray;
+    }
+
+    @layer _base {
+      .card {
+        color: var(--colors-white);
+      }
+    }
+
+  -  @media screen and (min-width: 40em) {
+  -    -.sm\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.sm\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.sm\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.sm\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 48em) {
+  -    -.md\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.md\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.md\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.md\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 64em) {
+  -    -.lg\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.lg\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.lg\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.lg\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 80em) {
+  -    -.xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 96em) {
+  -    -.\32xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.\32xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.\32xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.\32xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+  }
+  ```
+
+## 0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- 8f4ce97c: Fix `slotRecipes` typings,
+  [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
+  weren't added to `config.slotRecipes`
+
+## 0.22.0
+
+### Patch Changes
+
+- 526c6e34: Fix issue where static-css types was not exported.
+
+## 0.21.0
+
+### Patch Changes
+
+- 5b061615: Add a shortcut for the `config.importMap` option
+
+  You can now also use a string to customize the base import path and keep the default entrypoints:
+
+  ```json
+  {
+    "importMap": "@scope/styled-system"
+  }
+  ```
+
+  is the equivalent of:
+
+  ```json
+  {
+    "importMap": {
+      "css": "@scope/styled-system/css",
+      "recipes": "@scope/styled-system/recipes",
+      "patterns": "@scope/styled-system/patterns",
+      "jsx": "@scope/styled-system/jsx"
+    }
+  }
+  ```
+
+- 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+
+  ```js
+  import { defineRecipe } from '@pandacss/dev'
+
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+    },
+    staticCss: [{ size: ['*'] }],
+  })
+  ```
+
+  would be the equivalent of defining it inside the main config:
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: {
+          size: ['*'],
+        },
+      },
+    },
+  })
+  ```
+
+## 0.20.1
+
+## 0.20.0
+
+### Minor Changes
+
+- 904aec7b: - Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+
+  - Add support for extending `staticCss` defined in presets
+
+  ```jsx
+  const presetWithStaticCss = definePreset({
+    staticCss: {
+      recipes: {
+        // generate all button styles and variants
+        button: ['*'],
+      },
+    },
+  })
+
+  export default defineConfig({
+    presets: [presetWithStaticCss],
+    staticCss: {
+      extend: {
+        recipes: {
+          // extend and pre-generate all sizes for card
+          card: [{ size: ['small', 'medium', 'large'] }],
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+
+## 0.19.0
+
+### Patch Changes
+
+- 61831040: Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+
+  > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
+
+- 89f86923: Fix issue where css variables were not supported in layer styles and text styles types.
+
+## 0.18.3
+
+## 0.18.2
+
 ## 0.18.1
 
 ## 0.18.0

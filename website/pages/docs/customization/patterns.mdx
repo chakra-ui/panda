@@ -18,6 +18,7 @@ A pattern accepts the following parameters:
 - `jsxElement` - The actual JSX element that will be rendered (when `jsxFramework` is set). Defaults to `div`.
 - `blocklist` - The list of properties that are not allowed to be used in the pattern. Can be used to ensure strict
   typings when using the pattern.
+- `strict` - Whether to only generate types for the specified properties. This will disallow css properties.
 
 ## Creating a Pattern
 
@@ -99,7 +100,7 @@ const App = () => {
 
 ## Customizing Built-in Patterns
 
-You can extend the default patterns by using the `patterns.extend` property in the config.
+You can extend the [default patterns](/docs/concepts/patterns#predefined-patterns) by using the `patterns.extend` property in the config.
 
 
 ```ts filename="panda.config.ts"
@@ -144,3 +145,7 @@ Then you can run the following command to update the pattern JS code:
     ```
   </Tab>
 </Tabs>
+
+## Minimal setup
+
+If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it [here](/docs/guide/minimal-setup)

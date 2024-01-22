@@ -1,4 +1,5 @@
 {
   "cli": "CLI",
-  "config": "Config"
+  "config": "Config",
+  "eslint": "ESLint"
 }

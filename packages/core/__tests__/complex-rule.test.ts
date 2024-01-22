@@ -1,70 +1,31 @@
-import * as mocks from '@pandacss/fixture'
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import postcss from 'postcss'
+import type { SystemStyleObject } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { Conditions, Utility } from '../src'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
-import type { StylesheetContext } from '../src/types'
-import { defaultLayers } from './fixture'
+import { createRuleProcessor } from './fixture'
 
-const conditions = new Conditions({
-  breakpoints: mocks.breakpoints,
-  conditions: {
-    hover: '&[data-hover], &:hover',
-    dark: "&[data-theme='dark'], &&[data-theme='dark']",
-  },
-})
-
-const tokens = new TokenDictionary({
-  tokens: mocks.tokens,
-  semanticTokens: mocks.semanticTokens,
-})
-
-const utility = new Utility({
-  config: mocks.utilities,
-  tokens,
-})
-
-export const createContext = (): StylesheetContext => ({
-  root: postcss.root(),
-  conditions: conditions,
-  utility: utility,
-  helpers: { map: () => '' },
-  layers: defaultLayers,
-})
-
-function css(obj: ProcessOptions) {
-  const ruleset = new AtomicRule(createContext())
-  ruleset.process(obj)
-  return ruleset.toCss()
+const css = (styles: SystemStyleObject) => {
+  return createRuleProcessor().css(styles).toCss()
 }
-
 describe('complex-rule', () => {
   test('should process complex rule', () => {
     expect(
       css({
-        styles: {
-          color: {
-            _dark: { base: 'green500', sm: { md: 'red200' } },
-          },
+        color: {
+          _dark: { base: 'green500', sm: { md: 'red200' } },
         },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .dark\\\\:text_green500 {
-              &[data-theme='dark'], &&[data-theme='dark'] {
-                  color: green500
-              }
-          }
-          .dark\\\\:sm\\\\:md\\\\:text_red200 {
-              &[data-theme='dark'], &&[data-theme='dark'] {
-                  @media screen and (min-width: 40em) {
-                      @media screen and (min-width: 48em) {
-                          color: red200
-                      }
-                  }
-              }
-          }
+        [data-theme=dark] .dark\\\\:text_green500,.dark .dark\\\\:text_green500,.dark\\\\:text_green500.dark,.dark\\\\:text_green500[data-theme=dark] {
+          color: green500;
+      }
+
+        @media screen and (min-width: 40em) {
+          @media screen and (min-width: 48em) {
+            [data-theme=dark] .dark\\\\:sm\\\\:md\\\\:text_red200,.dark .dark\\\\:sm\\\\:md\\\\:text_red200,.dark\\\\:sm\\\\:md\\\\:text_red200.dark,.dark\\\\:sm\\\\:md\\\\:text_red200[data-theme=dark] {
+              color: red200;
+      }
+      }
+      }
       }"
     `)
   })

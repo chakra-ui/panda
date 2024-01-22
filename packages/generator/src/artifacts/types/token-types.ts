@@ -1,9 +1,10 @@
+import type { Context } from '@pandacss/core'
 import { capitalize, unionType } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import pluralize from 'pluralize'
-import type { Context } from '../../engines'
 
 const categories = [
+  'aspectRatios',
   'zIndex',
   'opacity',
   'colors',
@@ -17,6 +18,7 @@ const categories = [
   'spacing',
   'radii',
   'borders',
+  'borderWidths',
   'durations',
   'easings',
   'animations',

@@ -372,8 +372,8 @@ import { button } from '../styled-system/recipes'
 function App() {
   return (
     <div>
-      <button class={button()}>Click me</button>
-      <button class={button({ shape: 'circle' })}>Click me</button>
+      <button className={button()}>Click me</button>
+      <button className={button({ shape: 'circle' })}>Click me</button>
     </div>
   )
 }
@@ -415,7 +415,7 @@ import { button } from '../styled-system/recipes'
 function App() {
   return (
     <div>
-      <button class={button({ size: { base: 'sm', md: 'lg' } })}>
+      <button className={button({ size: { base: 'sm', md: 'lg' } })}>
         Click me
       </button>
     </div>
@@ -506,6 +506,38 @@ const PageButton = (props: ButtonProps) => {
   )
 }
 ```
+
+#### Extending a preset recipe
+
+If you're using a recipe from a preset, you can still extend it in your config.
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  jsxFramework: 'react',
+  theme: {
+    extend: {
+      recipes: {
+        button: {
+          className: 'something-else', // 👈 override the className
+          base: {
+            color: 'red', // 👈 replace some part of the recipe
+            fontSize: '1.5rem' // or add new styles
+          },
+          variants: {
+            // ... // 👈 add or extend new variants
+          },
+          jsx: ['Button', 'PageButton'] // 👈 extend the jsx tracking hint
+        }
+      }
+    }
+  }
+})
+```
+
+Learn more about the [extend](/docs/concepts/extend.md) keyword.
 
 ## Methods and Properties
 
@@ -644,6 +676,12 @@ const button = defineRecipe({
 })
 ```
 
+## Static CSS
+
+Panda provides a way to generate `static CSS` for your recipes. This is useful when you want to generate CSS for a recipe without using the recipe in your code or if you use dynamic styling that Panda can't keep track of.
+
+More information about static CSS can be found [here](/docs/guides/static.md#generating-recipes).
+
 ## Should I use atomic or config recipes ?
 
 [Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
@@ -659,5 +697,6 @@ When dealing with simple use cases, or if you need code colocation, or even avoi
 | Can both use any theme tokens, utilities or conditions | ✅ yes                                                                      | ✅ yes                                                                   |
 | Are generated just in time (JIT) based on usage        | ✅ yes, only the recipe variants found in your code will be generated       | ❌ no, all variants found in your `cva` recipes will always be generated |
 | Can be shared in a preset                              | ✅ yes, you can include it in your `preset.theme.recipes`                   | ❌ no                                                                    |
+| Can be applied responsively                            | ✅ yes, `button({ size: { base: 'sm', md: 'lg' } })`                        | ❌ no, only the styles in the recipe can be responsive                   |
 | Can be colocated in your markup code                   | ❌ no, they must be defined or imported in your `panda.config`              | ✅ yes, you can place it anywhere in your app                            |
 | Generate atomic classes                                | ❌ no, a specific className will be generated using your `recipe.className` | ✅ yes                                                                   |

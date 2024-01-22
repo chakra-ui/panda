@@ -1,10 +1,22 @@
+import { createGeneratorContext } from '@pandacss/fixture'
 import { createCss } from '@pandacss/shared'
 import { describe, expect, test } from 'vitest'
-import { createContext } from './fixture'
 
 describe('generate classnames', () => {
+  test('css variables', () => {
+    const css = createCss(createGeneratorContext().baseSheetContext)
+
+    const result = css({
+      '--testVariable0': '0',
+      '--test-Variable-1': '1',
+      '--test-variable-2': '2',
+    })
+
+    expect(result).toMatchInlineSnapshot('"--testVariable0_0 --test-Variable-1_1 --test-variable-2_2"')
+  })
+
   test('should convert object to class', () => {
-    const css = createCss(createContext())
+    const css = createCss(createGeneratorContext().baseSheetContext)
     expect(
       css({
         color: { _light: 'red', _dark: 'green' },
@@ -26,7 +38,7 @@ describe('generate classnames', () => {
   })
 
   test('should expand shorthand before processing', () => {
-    const css = createCss(createContext())
+    const css = createCss(createGeneratorContext().baseSheetContext)
     expect(
       css({
         w: '40px',
@@ -51,7 +63,7 @@ describe('generate classnames', () => {
   })
 
   test('should respect important', () => {
-    const css = createCss(createContext())
+    const css = createCss(createGeneratorContext().baseSheetContext)
     expect(
       css({
         color: 'red !important',
@@ -61,7 +73,7 @@ describe('generate classnames', () => {
   })
 
   test('should omit spaces in nested selectors', () => {
-    const css = createCss(createContext())
+    const css = createCss(createGeneratorContext().baseSheetContext)
     expect(
       css({
         '& span': {

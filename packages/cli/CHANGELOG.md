@@ -1,5 +1,374 @@
 # @pandacss/dev
 
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+- Updated dependencies [39d10c79]
+  - @pandacss/types@0.27.3
+  - @pandacss/node@0.27.3
+  - @pandacss/config@0.27.3
+  - @pandacss/preset-panda@0.27.3
+  - @pandacss/token-dictionary@0.27.3
+  - @pandacss/postcss@0.27.3
+  - @pandacss/error@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- bfa8b1ee: Switch back to `node:path` from `pathe` to resolve issues with windows path in PostCSS + Webpack set up
+- Updated dependencies [bfa8b1ee]
+  - @pandacss/node@0.27.2
+  - @pandacss/postcss@0.27.2
+  - @pandacss/config@0.27.2
+  - @pandacss/error@0.27.2
+  - @pandacss/logger@0.27.2
+  - @pandacss/preset-panda@0.27.2
+  - @pandacss/shared@0.27.2
+  - @pandacss/token-dictionary@0.27.2
+  - @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/postcss@0.27.1
+  - @pandacss/node@0.27.1
+  - @pandacss/types@0.27.1
+  - @pandacss/config@0.27.1
+  - @pandacss/preset-panda@0.27.1
+  - @pandacss/token-dictionary@0.27.1
+  - @pandacss/error@0.27.1
+  - @pandacss/logger@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- Updated dependencies [84304901]
+- Updated dependencies [bee3ec85]
+- Updated dependencies [74ac0d9d]
+- Updated dependencies [c9195a4e]
+  - @pandacss/token-dictionary@0.27.0
+  - @pandacss/preset-panda@0.27.0
+  - @pandacss/postcss@0.27.0
+  - @pandacss/config@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/error@0.27.0
+  - @pandacss/types@0.27.0
+  - @pandacss/node@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- @pandacss/config@0.26.2
+- @pandacss/node@0.26.2
+- @pandacss/postcss@0.26.2
+- @pandacss/error@0.26.2
+- @pandacss/logger@0.26.2
+- @pandacss/preset-panda@0.26.2
+- @pandacss/shared@0.26.2
+- @pandacss/token-dictionary@0.26.2
+- @pandacss/types@0.26.2
+
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/node@0.26.1
+- @pandacss/postcss@0.26.1
+- @pandacss/config@0.26.1
+- @pandacss/error@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/preset-panda@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/token-dictionary@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+- Updated dependencies [1bd7fbb7]
+- Updated dependencies [1bd7fbb7]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/config@0.26.0
+  - @pandacss/node@0.26.0
+  - @pandacss/token-dictionary@0.26.0
+  - @pandacss/preset-panda@0.26.0
+  - @pandacss/postcss@0.26.0
+  - @pandacss/error@0.26.0
+  - @pandacss/logger@0.26.0
+
+## 0.25.0
+
+### Patch Changes
+
+- Updated dependencies [bc154358]
+- Updated dependencies [59fd291c]
+- Updated dependencies [de282f60]
+  - @pandacss/node@0.25.0
+  - @pandacss/types@0.25.0
+  - @pandacss/token-dictionary@0.25.0
+  - @pandacss/postcss@0.25.0
+  - @pandacss/config@0.25.0
+  - @pandacss/preset-panda@0.25.0
+  - @pandacss/error@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- b2e00ca0: Fix an issue with the `panda init` command which didn't update existing `.gitignore` to include the
+  `styled-system`
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/config@0.24.2
+  - @pandacss/node@0.24.2
+  - @pandacss/token-dictionary@0.24.2
+  - @pandacss/preset-panda@0.24.2
+  - @pandacss/postcss@0.24.2
+  - @pandacss/error@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- Updated dependencies [10e74428]
+  - @pandacss/node@0.24.1
+  - @pandacss/postcss@0.24.1
+  - @pandacss/config@0.24.1
+  - @pandacss/error@0.24.1
+  - @pandacss/logger@0.24.1
+  - @pandacss/preset-panda@0.24.1
+  - @pandacss/shared@0.24.1
+  - @pandacss/token-dictionary@0.24.1
+  - @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Minor Changes
+
+- 63b3f1f2: - Boost style extraction performance by moving more work away from postcss
+  - Using a hashing strategy, the compiler only computes styles/classname once per style object and prop-value-condition
+    pair
+  - Fix regression in previous implementation that increased memory usage per extraction, leading to slower performance
+    over time
+
+### Patch Changes
+
+- Updated dependencies [63b3f1f2]
+- Updated dependencies [f6881022]
+  - @pandacss/node@0.24.0
+  - @pandacss/types@0.24.0
+  - @pandacss/postcss@0.24.0
+  - @pandacss/config@0.24.0
+  - @pandacss/preset-panda@0.24.0
+  - @pandacss/token-dictionary@0.24.0
+  - @pandacss/error@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Minor Changes
+
+- 1efc4277: Add support for emit-pkg command to emit just the `package.json` file with the required entrypoints. If an
+  existing `package.json` file is present, the `exports` field will be updated.
+
+  When setting up Panda in a monorepo, this command is useful in monorepo setups where you want the codegen to run only
+  in a dedicated workspace package.
+
+### Patch Changes
+
+- Updated dependencies [1ea7459c]
+- Updated dependencies [383b6d1b]
+- Updated dependencies [bd552b1f]
+- Updated dependencies [840ed66b]
+  - @pandacss/node@0.23.0
+  - @pandacss/logger@0.23.0
+  - @pandacss/postcss@0.23.0
+  - @pandacss/config@0.23.0
+  - @pandacss/error@0.23.0
+  - @pandacss/preset-panda@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/token-dictionary@0.23.0
+  - @pandacss/types@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [0f7793c7]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/postcss@0.22.1
+  - @pandacss/shared@0.22.1
+  - @pandacss/node@0.22.1
+  - @pandacss/config@0.22.1
+  - @pandacss/preset-panda@0.22.1
+  - @pandacss/token-dictionary@0.22.1
+  - @pandacss/error@0.22.1
+  - @pandacss/logger@0.22.1
+
+## 0.22.0
+
+### Patch Changes
+
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+- Updated dependencies [a2f6c2c8]
+- Updated dependencies [11753fea]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/node@0.22.0
+  - @pandacss/config@0.22.0
+  - @pandacss/preset-panda@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/postcss@0.22.0
+  - @pandacss/error@0.22.0
+  - @pandacss/logger@0.22.0
+
+## 0.21.0
+
+### Patch Changes
+
+- Updated dependencies [7f846be2]
+- Updated dependencies [26e6051a]
+- Updated dependencies [5b061615]
+- Updated dependencies [105f74ce]
+  - @pandacss/node@0.21.0
+  - @pandacss/shared@0.21.0
+  - @pandacss/types@0.21.0
+  - @pandacss/postcss@0.21.0
+  - @pandacss/config@0.21.0
+  - @pandacss/token-dictionary@0.21.0
+  - @pandacss/preset-panda@0.21.0
+  - @pandacss/error@0.21.0
+  - @pandacss/logger@0.21.0
+
+## 0.20.1
+
+### Patch Changes
+
+- @pandacss/config@0.20.1
+- @pandacss/node@0.20.1
+- @pandacss/token-dictionary@0.20.1
+- @pandacss/postcss@0.20.1
+- @pandacss/error@0.20.1
+- @pandacss/logger@0.20.1
+- @pandacss/preset-panda@0.20.1
+- @pandacss/shared@0.20.1
+- @pandacss/types@0.20.1
+
+## 0.20.0
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- da7a5d59: Add a --watch flag to the `panda ship` command
+- Updated dependencies [24ee49a5]
+- Updated dependencies [904aec7b]
+  - @pandacss/postcss@0.20.0
+  - @pandacss/config@0.20.0
+  - @pandacss/types@0.20.0
+  - @pandacss/node@0.20.0
+  - @pandacss/preset-panda@0.20.0
+  - @pandacss/token-dictionary@0.20.0
+  - @pandacss/error@0.20.0
+  - @pandacss/logger@0.20.0
+  - @pandacss/shared@0.20.0
+
+## 0.19.0
+
+### Minor Changes
+
+- b3ca8412: Require explicit installation of `@pandacss/studio` to use the `panda studio` command.
+
+### Patch Changes
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/node@0.19.0
+  - @pandacss/config@0.19.0
+  - @pandacss/preset-panda@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/postcss@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
+## 0.18.3
+
+### Patch Changes
+
+- Updated dependencies [a30f660d]
+  - @pandacss/studio@0.18.3
+  - @pandacss/node@0.18.3
+  - @pandacss/postcss@0.18.3
+  - @pandacss/config@0.18.3
+  - @pandacss/error@0.18.3
+  - @pandacss/logger@0.18.3
+  - @pandacss/preset-panda@0.18.3
+  - @pandacss/shared@0.18.3
+  - @pandacss/token-dictionary@0.18.3
+  - @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- @pandacss/config@0.18.2
+- @pandacss/node@0.18.2
+- @pandacss/studio@0.18.2
+- @pandacss/token-dictionary@0.18.2
+- @pandacss/postcss@0.18.2
+- @pandacss/error@0.18.2
+- @pandacss/logger@0.18.2
+- @pandacss/preset-panda@0.18.2
+- @pandacss/shared@0.18.2
+- @pandacss/types@0.18.2
+
 ## 0.18.1
 
 ### Patch Changes

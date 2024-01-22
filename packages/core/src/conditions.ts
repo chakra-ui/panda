@@ -2,7 +2,6 @@ import { logger } from '@pandacss/logger'
 import { isBaseCondition, withoutSpace } from '@pandacss/shared'
 import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
-import { ConditionalRule } from './conditional-rule'
 import { parseCondition } from './parse-condition'
 
 const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
@@ -113,7 +112,14 @@ export class Conditions {
     return Object.keys(this.values)
   }
 
-  rule = () => {
-    return new ConditionalRule(this)
+  saveOne = (key: string, value: string) => {
+    const parsed = parseCondition(value)
+    if (!parsed) return
+
+    this.values[`_${key}`] = parsed
+  }
+
+  remove(key: string) {
+    delete this.values[`_${key}`]
   }
 }

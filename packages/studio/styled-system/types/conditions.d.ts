@@ -102,7 +102,7 @@ export interface Conditions {
 	"_groupExpanded": string
 	/** `.group:invalid &` */
 	"_groupInvalid": string
-	/** `&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate")` */
+	/** `&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate"])` */
 	"_indeterminate": string
 	/** `&:is(:required, [data-required], [aria-required=true])` */
 	"_required": string
@@ -116,9 +116,9 @@ export interface Conditions {
 	"_inRange": string
 	/** `&:out-of-range` */
 	"_outOfRange": string
-	/** `&::placeholder` */
+	/** `&::placeholder, &[data-placeholder]` */
 	"_placeholder": string
-	/** `&:placeholder-shown` */
+	/** `&:is(:placeholder-shown, [data-placeholder-shown])` */
 	"_placeholderShown": string
 	/** `&:is([aria-pressed=true], [data-pressed])` */
 	"_pressed": string

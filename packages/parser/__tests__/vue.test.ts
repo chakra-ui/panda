@@ -1,15 +1,6 @@
-import { describe, test, expect } from 'vitest'
-import { getFixtureProject } from './fixture'
+import { describe, expect, test } from 'vitest'
 import { vueToTsx } from '../src/vue-to-tsx'
-
-const run = (code: string) => {
-  const { parse, generator } = getFixtureProject(code)
-  const result = parse()!
-  return {
-    json: result?.toArray().map(({ box, ...item }) => item),
-    css: generator.getParserCss(result)!,
-  }
-}
+import { parseAndExtract } from './fixture'
 
 describe('extract Vue templates', () => {
   test('vue 3 composition API', () => {
@@ -76,7 +67,7 @@ describe('extract Vue templates', () => {
             </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -86,7 +77,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -95,7 +86,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -104,7 +95,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -114,7 +105,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -123,7 +114,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -131,28 +122,28 @@ describe('extract Vue templates', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_green\\\\.400 {
-          color: var(--colors-green-400)
-          }
+          color: var(--colors-green-400);
+      }
 
         .text_purple\\\\.400 {
-          color: var(--colors-purple-400)
-          }
+          color: var(--colors-purple-400);
+      }
 
         .text_red\\\\.500 {
-          color: var(--colors-red-500)
-          }
+          color: var(--colors-red-500);
+      }
 
         .text_red {
-          color: red
-          }
+          color: red;
+      }
 
         .font_bold {
-          font-weight: var(--font-weights-bold)
-          }
+          font-weight: var(--font-weights-bold);
+      }
 
         .text_green {
-          color: green
-          }
+          color: green;
+      }
       }"
     `)
   })
@@ -221,7 +212,7 @@ describe('extract Vue templates', () => {
         </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -231,7 +222,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -240,7 +231,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -250,7 +241,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -271,21 +262,9 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text-style_overline {
-          text-style: overline
-          }
-
-        .text-style_h7 {
-          text-style: h7
-          }
-
-        .text-style_text {
-          text-style: text
-          }
-
         .text_grey\\\\.70 {
-          color: grey.70
-          }
+          color: grey.70;
+      }
       }"
     `)
   })
@@ -340,7 +319,7 @@ describe('extract Vue templates', () => {
               </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -350,7 +329,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -359,7 +338,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -368,7 +347,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -378,7 +357,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -387,7 +366,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -395,28 +374,28 @@ describe('extract Vue templates', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_green\\\\.400 {
-          color: var(--colors-green-400)
-          }
+          color: var(--colors-green-400);
+      }
 
         .text_purple\\\\.400 {
-          color: var(--colors-purple-400)
-          }
+          color: var(--colors-purple-400);
+      }
 
         .text_red\\\\.500 {
-          color: var(--colors-red-500)
-          }
+          color: var(--colors-red-500);
+      }
 
         .text_red {
-          color: red
-          }
+          color: red;
+      }
 
         .font_bold {
-          font-weight: var(--font-weights-bold)
-          }
+          font-weight: var(--font-weights-bold);
+      }
 
         .text_green {
-          color: green
-          }
+          color: green;
+      }
       }"
     `)
   })
@@ -481,7 +460,7 @@ describe('extract Vue templates', () => {
           </template>"
     `)
 
-    const result = run(transformed)
+    const result = parseAndExtract(transformed)
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -491,7 +470,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -500,7 +479,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -509,7 +488,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -519,7 +498,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
         {
           "data": [
@@ -528,7 +507,7 @@ describe('extract Vue templates', () => {
             },
           ],
           "name": "css",
-          "type": "object",
+          "type": "css",
         },
       ]
     `)
@@ -536,28 +515,28 @@ describe('extract Vue templates', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_green\\\\.400 {
-          color: var(--colors-green-400)
-          }
+          color: var(--colors-green-400);
+      }
 
         .text_purple\\\\.400 {
-          color: var(--colors-purple-400)
-          }
+          color: var(--colors-purple-400);
+      }
 
         .text_red\\\\.500 {
-          color: var(--colors-red-500)
-          }
+          color: var(--colors-red-500);
+      }
 
         .text_red {
-          color: red
-          }
+          color: red;
+      }
 
         .font_bold {
-          font-weight: var(--font-weights-bold)
-          }
+          font-weight: var(--font-weights-bold);
+      }
 
         .text_green {
-          color: green
-          }
+          color: green;
+      }
       }"
     `)
   })

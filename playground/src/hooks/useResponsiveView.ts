@@ -15,8 +15,21 @@ const getPointerPosition = (e: Event) => {
   return { x: event.clientX, y: event.clientY }
 }
 
-export function useResponsiveView() {
-  const [responsiveSize, setResponsiveSize] = useState({ width: 320, height: 670 })
+export function useResponsiveView(_breakpoints: Record<string, string> = {}) {
+  const ASPECT_RATIO = 4 / 5
+  const breakpoints = Object.assign(
+    { base: { width: 320, height: 670 } },
+    Object.entries(_breakpoints).reduce((acc, nxt) => {
+      const width = parseInt(nxt[1].replace('px', ''))
+      return { ...acc, [nxt[0]]: { width, height: width / ASPECT_RATIO } }
+    }, {} as Record<string, Record<'width' | 'height', number>>),
+  )
+
+  const [responsiveSize, setResponsiveSize] = useState(breakpoints[Object.keys(breakpoints)[0]])
+
+  const activeBreakpoint = Object.entries(breakpoints).find(
+    ([, breakpoint]) => responsiveSize.width <= breakpoint.width,
+  )?.[0]
 
   const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null)
 
@@ -281,6 +294,8 @@ export function useResponsiveView() {
 
   return {
     setContainerRef,
+    setResponsiveSize,
+    activeBreakpoint,
     constrainedResponsiveSize,
     startLeft,
     startRight,
@@ -292,5 +307,8 @@ export function useResponsiveView() {
     startTopRight,
     resizing,
     size,
+    breakpoints,
   }
 }
+
+export type UseResponsiveView = ReturnType<typeof useResponsiveView>

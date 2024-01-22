@@ -1,9 +1,9 @@
+import { createGeneratorContext } from '@pandacss/fixture'
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import expandTokenFn from '../src/plugins/expand-token-fn'
-import { createContext } from './fixture'
 
-const ctx = createContext()
+const ctx = createGeneratorContext()
 
 function run(code: string) {
   return postcss([expandTokenFn(ctx.utility.getToken, ctx.utility.tokens.getByName)]).process(code, {
@@ -74,6 +74,11 @@ describe('expandTokenFn', () => {
             color: green;
           }
         }
+        @container (min-width: token(sizes.12345)) {
+          .\[\@container_\(min-width\:_token\(sizes\.12345\)\)\]\:text_green {
+            color: green;
+          }
+        }
       }
     `)
 
@@ -81,7 +86,12 @@ describe('expandTokenFn', () => {
       "
             @layer utilities {
               @container (min-width: 56rem) {
-                .[@container_(min-width:_token(sizes.4xl))]:text_green {
+                .[@container_(min-width:_56rem)]:text_green {
+                  color: green;
+                }
+              }
+              @container (min-width: sizes\\\\.12345) {
+                .[@container_(min-width:_sizes\\\\.12345)]:text_green {
                   color: green;
                 }
               }

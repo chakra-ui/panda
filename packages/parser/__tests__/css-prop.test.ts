@@ -4,8 +4,8 @@ import { parseAndExtract } from './fixture'
 describe('ast parser / css prop', () => {
   test('should parse', () => {
     const code = `
-    import { css } from ".panda/css"
-    
+    import { css } from "styled-system/css"
+
     const Test = ({ css: cssProp }) => {
       return <div className={css(cssProp)} />
     }
@@ -18,8 +18,8 @@ describe('ast parser / css prop', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .bg_red\\\\.200 {
-          background: var(--colors-red-200)
-          }
+          background: var(--colors-red-200);
+      }
       }"
     `)
   })

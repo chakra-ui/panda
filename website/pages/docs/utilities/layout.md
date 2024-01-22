@@ -11,7 +11,7 @@ Panda provides style properties for styling layout of an element
 
 Use the `aspectRatio` utilities to set the desired aspect ratio of an element.
 
-Values can be `square`, `portrait`, `landscape`, `widescreen`, `cinema`, `golden` or a number.
+Values can reference the `aspectRatios` token category.
 
 ```jsx
 <div className={css({ aspectRatio: 'square' })} />
@@ -55,7 +55,9 @@ Use the `inset{Start|End}` utilities to set the position of an element based on 
 <div className={css({ position: 'absolute', insetStart: '0' })} />
 ```
 
-| Prop         | CSS Property         | Token Category |
-| ------------ | -------------------- | -------------- |
-| `insetStart` | `inset-inline-start` | `spacing`      |
-| `insetEnd`   | `inset-inline-end`   | `spacing`      |
+| Prop                                      | CSS Property         | Token Category |
+| ----------------------------------------- | -------------------- | -------------- |
+| `start`, `insetStart`, `insetInlineStart` | `inset-inline-start` | `spacing`      |
+| `end` , `insetEnd`, `insetInlineEnd`      | `inset-inline-end`   | `spacing`      |
+| `insetX`, `insetInline`                   | `inset-inline`       | `spacing`      |
+| `insetY`, `insetBlock`                    | `inset-inline`       | `spacing`      |

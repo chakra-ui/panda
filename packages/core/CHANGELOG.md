@@ -1,5 +1,611 @@
 # @pandacss/core
 
+## 0.27.3
+
+### Patch Changes
+
+- 1ed4df77: Fix issue where HMR doesn't work when tsconfig paths is used.
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/token-dictionary@0.27.3
+  - @pandacss/error@0.27.3
+  - @pandacss/is-valid-prop@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/error@0.27.2
+- @pandacss/is-valid-prop@0.27.2
+- @pandacss/logger@0.27.2
+- @pandacss/shared@0.27.2
+- @pandacss/token-dictionary@0.27.2
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+  - @pandacss/token-dictionary@0.27.1
+  - @pandacss/error@0.27.1
+  - @pandacss/is-valid-prop@0.27.1
+  - @pandacss/logger@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- Updated dependencies [84304901]
+- Updated dependencies [bee3ec85]
+- Updated dependencies [74ac0d9d]
+  - @pandacss/token-dictionary@0.27.0
+  - @pandacss/is-valid-prop@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/error@0.27.0
+  - @pandacss/types@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- @pandacss/error@0.26.2
+- @pandacss/is-valid-prop@0.26.2
+- @pandacss/logger@0.26.2
+- @pandacss/shared@0.26.2
+- @pandacss/token-dictionary@0.26.2
+- @pandacss/types@0.26.2
+
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/error@0.26.1
+- @pandacss/is-valid-prop@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/token-dictionary@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- 14033e00: Display better CssSyntaxError logs
+- d420c676: Refactors the parser and import analysis logic. The goal is to ensure we can re-use the import logic in
+  ESLint Plugin and Node.js.
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/token-dictionary@0.26.0
+  - @pandacss/error@0.26.0
+  - @pandacss/is-valid-prop@0.26.0
+  - @pandacss/logger@0.26.0
+
+## 0.25.0
+
+### Minor Changes
+
+- de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
+
+  ```jsx
+  import { css } from '../styled-system/css'
+
+  const styles = css({
+    border: '2px solid {colors.primary}',
+  })
+  ```
+
+  This will resolve the token reference and convert it to css variables.
+
+  ```css
+  .border_2px_solid_\{colors\.primary\} {
+    border: 2px solid var(--colors-primary);
+  }
+  ```
+
+  The alternative to this was to use the `token(...)` css function which will be resolved.
+
+  ### `token(...)` vs `{...}`
+
+  Both approaches return the css variable
+
+  ```jsx
+  const styles = css({
+    // token reference syntax
+    border: '2px solid {colors.primary}',
+    // token function syntax
+    border: '2px solid token(colors.primary)',
+  })
+  ```
+
+  However, The `token(...)` syntax allows you to set a fallback value.
+
+  ```jsx
+  const styles = css({
+    border: '2px solid token(colors.primary, red)',
+  })
+  ```
+
+### Patch Changes
+
+- 59fd291c: Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+- de282f60: Fix issue where `base` doesn't work within css function
+
+  ```jsx
+  css({
+    // This didn't work, but now it does
+    base: { color: 'blue' },
+  })
+  ```
+
+- Updated dependencies [59fd291c]
+- Updated dependencies [de282f60]
+  - @pandacss/types@0.25.0
+  - @pandacss/token-dictionary@0.25.0
+  - @pandacss/error@0.25.0
+  - @pandacss/is-valid-prop@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- 71e82a4e: Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
+  seen as a truthy value
+- 61ebf3d2: Fix issue where config slot recipes with compound variants were not processed correctly
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/token-dictionary@0.24.2
+  - @pandacss/error@0.24.2
+  - @pandacss/is-valid-prop@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- @pandacss/error@0.24.1
+- @pandacss/is-valid-prop@0.24.1
+- @pandacss/logger@0.24.1
+- @pandacss/shared@0.24.1
+- @pandacss/token-dictionary@0.24.1
+- @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Minor Changes
+
+- 63b3f1f2: - Boost style extraction performance by moving more work away from postcss
+  - Using a hashing strategy, the compiler only computes styles/classname once per style object and prop-value-condition
+    pair
+  - Fix regression in previous implementation that increased memory usage per extraction, leading to slower performance
+    over time
+
+### Patch Changes
+
+- f6881022: Add `patterns` to `config.staticCss`
+
+  ***
+
+  Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+  need (it's still possible by explicitly using `responsive: true`).
+
+  ```ts
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+      visual: {
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
+      },
+    },
+  })
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: ['*'], // this
+
+        // was equivalent to:
+        card: [
+          // notice how `responsive: true` was implicitly added
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
+        ],
+
+        //   will now correctly be equivalent to:
+        card: [{ size: ['*'] }, { visual: ['*'] }],
+      },
+    },
+  })
+  ```
+
+  Here's the diff in the generated CSS:
+
+  ```diff
+  @layer recipes {
+    .card--size_small {
+      font-size: 14px;
+    }
+
+    .card--size_large {
+      font-size: 18px;
+    }
+
+    .card--visual_primary {
+      background-color: blue;
+    }
+
+    .card--visual_secondary {
+      background-color: gray;
+    }
+
+    @layer _base {
+      .card {
+        color: var(--colors-white);
+      }
+    }
+
+  -  @media screen and (min-width: 40em) {
+  -    -.sm\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.sm\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.sm\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.sm\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 48em) {
+  -    -.md\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.md\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.md\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.md\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 64em) {
+  -    -.lg\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.lg\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.lg\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.lg\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 80em) {
+  -    -.xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 96em) {
+  -    -.\32xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.\32xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.\32xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.\32xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+  }
+  ```
+
+- Updated dependencies [f6881022]
+  - @pandacss/types@0.24.0
+  - @pandacss/token-dictionary@0.24.0
+  - @pandacss/error@0.24.0
+  - @pandacss/is-valid-prop@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- 1ea7459c: Fix performance issue where process could get slower due to postcss rules held in memory.
+- 80ada336: Automatically extract/generate CSS for `sva` even if `slots` are not statically extractable, since it will
+  only produce atomic styles, we don't care much about slots for `sva` specifically
+
+  Currently the CSS won't be generated if the `slots` are missing which can be problematic when getting them from
+  another file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
+
+  ```ts
+  import { sva } from '../styled-system/css'
+  import { slots } from './slots'
+
+  const card = sva({
+    slots, // ❌ did NOT work -> ✅ will now work as expected
+    base: {
+      root: {
+        p: '6',
+        m: '4',
+        w: 'md',
+        boxShadow: 'md',
+        borderRadius: 'md',
+        _dark: { bg: '#262626', color: 'white' },
+      },
+      content: {
+        textStyle: 'lg',
+      },
+      title: {
+        textStyle: 'xl',
+        fontWeight: 'semibold',
+        pb: '2',
+      },
+    },
+  })
+  ```
+
+- 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
+- Updated dependencies [bd552b1f]
+  - @pandacss/logger@0.23.0
+  - @pandacss/error@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/token-dictionary@0.23.0
+  - @pandacss/types@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/shared@0.22.1
+  - @pandacss/token-dictionary@0.22.1
+  - @pandacss/error@0.22.1
+  - @pandacss/logger@0.22.1
+
+## 0.22.0
+
+### Patch Changes
+
+- 11753fea: Improve initial css extraction time by at least 5x 🚀
+
+  Initial extraction time can get slow when using static CSS with lots of recipes or parsing a lot of files.
+
+  **Scenarios**
+
+  - Park UI went from 3500ms to 580ms (6x faster)
+  - Panda Website went from 2900ms to 208ms (14x faster)
+
+  **Potential Breaking Change**
+
+  If you use `hooks` in your `panda.config` file to listen for when css is extracted, we no longer return the `css`
+  string for performance reasons. We might reconsider this in the future.
+
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/error@0.22.0
+  - @pandacss/logger@0.22.0
+
+## 0.21.0
+
+### Minor Changes
+
+- 26e6051a: Add an escape-hatch for arbitrary values when using `config.strictTokens`, by prefixing the value with `[`
+  and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
+
+  ```ts
+  import { css } from '../styled-system/css'
+
+  css({
+    // @ts-expect-error TS will throw when using from strictTokens: true
+    color: '#fff',
+    // @ts-expect-error TS will throw when using from strictTokens: true
+    width: '100px',
+
+    // ✅ but this is now allowed:
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
+  ```
+
+### Patch Changes
+
+- 788aaba3: Fix an edge-case when Panda eagerly extracted and tried to generate the CSS for a JSX property that contains
+  an URL.
+
+  ```tsx
+  const App = () => {
+    // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
+    // but since it's an URL, it would produce invalid CSS
+    // we now check if the property value is an URL and skip it if needed
+    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
+  }
+  ```
+
+- d81dcbe6: - Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the
+  normalization that happens internally.
+  - Fix issue where Preact JSX types are not merging recipes correctly
+- 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+
+  ```js
+  import { defineRecipe } from '@pandacss/dev'
+
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+    },
+    staticCss: [{ size: ['*'] }],
+  })
+  ```
+
+  would be the equivalent of defining it inside the main config:
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: {
+          size: ['*'],
+        },
+      },
+    },
+  })
+  ```
+
+- Updated dependencies [26e6051a]
+- Updated dependencies [5b061615]
+- Updated dependencies [105f74ce]
+  - @pandacss/shared@0.21.0
+  - @pandacss/types@0.21.0
+  - @pandacss/token-dictionary@0.21.0
+  - @pandacss/error@0.21.0
+  - @pandacss/logger@0.21.0
+
+## 0.20.1
+
+### Patch Changes
+
+- @pandacss/token-dictionary@0.20.1
+- @pandacss/error@0.20.1
+- @pandacss/logger@0.20.1
+- @pandacss/shared@0.20.1
+- @pandacss/types@0.20.1
+
+## 0.20.0
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- 4ba982f3: Fix issue with the `token(xxx.yyy)` fn used in AtRule, things like:
+
+  ```ts
+  css({
+    '@container (min-width: token(sizes.xl))': {
+      color: 'green.300',
+    },
+    '@media (min-width: token(sizes.2xl))': {
+      color: 'red.300',
+    },
+  })
+  ```
+
+- Updated dependencies [24ee49a5]
+- Updated dependencies [904aec7b]
+  - @pandacss/types@0.20.0
+  - @pandacss/token-dictionary@0.20.0
+  - @pandacss/error@0.20.0
+  - @pandacss/logger@0.20.0
+  - @pandacss/shared@0.20.0
+
+## 0.19.0
+
+### Patch Changes
+
+- 9f5711f9: Fix issue where recipe artifacts might not match the recipes defined in the theme due to the internal cache
+  not being cleared as needed.
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
+## 0.18.3
+
+### Patch Changes
+
+- @pandacss/error@0.18.3
+- @pandacss/logger@0.18.3
+- @pandacss/shared@0.18.3
+- @pandacss/token-dictionary@0.18.3
+- @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- @pandacss/token-dictionary@0.18.2
+- @pandacss/error@0.18.2
+- @pandacss/logger@0.18.2
+- @pandacss/shared@0.18.2
+- @pandacss/types@0.18.2
+
 ## 0.18.1
 
 ### Patch Changes

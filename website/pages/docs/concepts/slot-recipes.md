@@ -15,7 +15,7 @@ A slot recipe consists of these properties:
 - `defaultVariants`: The default variant for the component
 - `compoundVariants`: The compound variant combination and style overrides for each slot.
 
-> **Credit:** This API was inspired by multipart components in [Chakra UI](https://chakra-ui.com/docs/styled-system/component-style) and slot variants in [Tailwind Variants](tailwind-variants.org)
+> **Credit:** This API was inspired by multipart components in [Chakra UI](https://chakra-ui.com/docs/styled-system/component-style) and slot variants in [Tailwind Variants](https://tailwind-variants.org)
 
 ## Atomic Slot Recipe (or sva)
 
@@ -254,7 +254,7 @@ const { withProvider, withContext } = createStyleContext(checkbox)
 //                                  👇🏻 points to the root slot
 const Root = withProvider('label', 'root')
 //                                    👇🏻 points to the control slot
-const Control = withProvider('div', 'control')
+const Control = withContext('div', 'control')
 //                                  👇🏻 points to the label slot
 const Label = withContext('span', 'label')
 

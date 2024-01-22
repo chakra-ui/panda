@@ -1,6 +1,6 @@
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import type { Context } from '../../engines'
 
 export function generatedJsxHelpers(ctx: Context) {
   return {

@@ -1,11 +1,10 @@
 node_modules
 
-.cache
-.env
-.vercel
-.output
-
-/build/
+/.cache
+/build
 /public/build
-/api/index.js
-/api/index.js.map
+.env
+
+## Panda
+styled-system
+styled-system-studio

@@ -1,0 +1,311 @@
+---
+title: ESLint Plugin
+description: ESLint plugin for Panda CSS 
+---
+
+# ESLint Plugin
+
+ESLint plugin for Panda CSS: `@pandacss/eslint-plugin`.
+
+## Installation
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']} variant="code">
+  <Tab>
+    ```bash
+    pnpm add -D @pandacss/eslint-plugin
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/eslint-plugin
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/eslint-plugin
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/eslint-plugin
+    ```
+  </Tab>
+</Tabs>
+
+## Usage
+
+Add it to your `.eslintrc.json` file:
+
+```json
+{
+  "plugins": ["@pandacss"],
+}
+```
+
+Then configure the rules you want to use under the rules section:
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-shorthand-prop": "warn",
+  }
+}
+```
+
+You can also enable the `recommended` rules in extends:
+
+```diff
+{
+-   "plugins": ["@pandacss"]
++   "extends": ["plugin:@pandacss/recommended"]
+}
+```
+
+## Rules
+
+### file-not-included
+
+Disallow the use of panda css in files that are not included in the specified panda `include` config.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/file-not-included": "warn", // or error
+  }
+}
+```
+
+
+### no-config-function-in-source
+
+Prohibit the use of config functions outside the Panda config.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-config-function-in-source": "warn", // or error
+  }
+}
+```
+
+### no-debug
+
+Disallow the inclusion of the debug attribute when shipping code to the production environment.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-debug": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad
+const styles = css({ debug: true })
+
+// ✅ good
+const styles = css({ ... })
+```
+
+
+### no-dynamic-styling
+
+Ensure user doesn't use dynamic styling at any point. Prefer to use static styles, leverage css variables or recipes for known dynamic styles.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-dynamic-styling": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad
+const color = 'red'
+const styles = css({ background: color })
+
+// ✅ good
+const styles = css({ background: 'red' })
+```
+
+### no-escape-hatch
+
+Prohibit the use of escape hatch syntax in the code.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-escape-hatch": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad
+const styles = css({ background: '[#111]' })
+
+// ✅ good
+const styles = css({ background: 'gray.900' })
+```
+
+### no-hardcoded-color
+
+Enforce the exclusive use of design tokens as values for colors within the codebase.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-hardcoded-color": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad
+const styles = css({ background: '#111' })
+
+// ✅ good
+const styles = css({ background: 'gray.100' })
+```
+
+### no-invalid-token-paths
+
+Disallow the use of invalid token paths within token function syntax.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-invalid-token-paths": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad                                      ^
+const styles = css({ border: 'solid 1px {colorss.gray.50}' })
+
+// ✅ good
+const styles = css({ border: 'solid 1px {colors.gray.50}' })
+```
+
+### no-shorthand-prop
+
+Discourage the use of shorthand properties and promote the preference for longhand CSS properties in the codebase.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-shorthand-prop": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad
+const styles = css({ bgColor: 'gray.100' })
+
+// ✅ good
+const styles = css({ backgroundColor: 'gray.100' })
+```
+
+### no-unsafe-token-fn-usage
+
+Prevent users from using the token function in situations where they could simply use the raw design token.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-unsafe-token-fn-usage": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad
+const styles = css({ backgroundColor: '{colors.gray.100}' })
+
+// ✅ good
+const styles = css({ border: 'solid 1px {colors.gray.50}' })
+```
+
+### prefer-atomic-properties
+
+Encourage the use of atomic properties instead of composite shorthand properties in the codebase.
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/prefer-atomic-properties": "warn", // or error
+  }
+}
+```
+
+```js
+// ❌ bad
+const styles = css({ gap: '4' })
+
+// ✅ good
+const styles = css({ columngGap: '4', rowGap: '4' })
+```
+
+
+
+## Configs
+
+### all
+
+This configuration activates all rules with the corresponding severity level.
+
+```json
+{
+  "extends": ["plugin:@pandacss/all"]
+}
+```
+
+See [configs/all.ts](https://github.com/chakra-ui/css-panda/blob/eslint-plugin/packages/eslint-plugin/src/configs/all.ts) for the exact contents of this config.
+
+### recommended
+
+Suggested rules for ensuring code correctness, readily applicable without extra configuration. These rules primarily highlight instances of bad practices and/or potential bugs in most cases.
+
+```json
+{
+  "extends": ["plugin:@pandacss/recommended"]
+}
+```
+
+See [configs/recommended.ts](https://github.com/chakra-ui/css-panda/blob/eslint-plugin/packages/eslint-plugin/src/configs/recommended.ts) for the exact contents of this config.
+
+## Settings
+
+### `configPath`
+
+You can tell `eslint` to use a custom panda config file by setting the `configPath` option in your `.eslintrc.js` file.
+
+By default we find the nearest panda config to the linted file.
+
+```js filename=".eslintrc.(c)js"
+const path = require("path");
+
+module.exports = {
+  plugins: [
+    "@pandacss"
+  ],
+  settings: {
+    "@pandacss/configPath": path.join("PATH-TO/panda.config.js")
+  }
+};
+```

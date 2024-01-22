@@ -1,5 +1,365 @@
 # @pandacss/config
 
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/preset-base@0.27.3
+  - @pandacss/preset-panda@0.27.3
+  - @pandacss/error@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/error@0.27.2
+- @pandacss/logger@0.27.2
+- @pandacss/preset-base@0.27.2
+- @pandacss/preset-panda@0.27.2
+- @pandacss/shared@0.27.2
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+  - @pandacss/preset-base@0.27.1
+  - @pandacss/preset-panda@0.27.1
+  - @pandacss/error@0.27.1
+  - @pandacss/logger@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- c9195a4e: ## Change
+
+  Change the config dependencies (files that are transitively imported) detection a bit more permissive to make it work
+  by default in more scenarios.
+
+  ## Context
+
+  This helps when you're in a monorepo and you have a workspace package for your preset, and you want to see the HMR
+  reflecting changes in your app.
+
+  Currently, we only traverse files with the `.ts` extension, this change makes it traverse all files ending with `.ts`,
+  meaning that it will also traverse `.d.ts`, `.d.mts`, `.mts`, etc.
+
+  ## Example
+
+  ```ts
+  // apps/storybook/panda.config.ts
+  import { defineConfig } from '@pandacss/dev'
+  import preset from '@acme/preset'
+
+  export default defineConfig({
+    // ...
+  })
+  ```
+
+  This would not work before, but now it does.
+
+  ```jsonc
+  {
+    "name": "@acme/preset",
+    "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs"
+  }
+  ```
+
+  ## Notes
+
+  This would have been fine before that change.
+
+  ```jsonc
+  // packages/preset/package.json
+  {
+    "name": "@acme/preset",
+    "types": "./src/index.ts", // this was fine
+    "main": "./dist/index.js",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+      }
+      // ...
+    }
+  }
+  ```
+
+- Updated dependencies [84304901]
+- Updated dependencies [bee3ec85]
+- Updated dependencies [74ac0d9d]
+  - @pandacss/preset-panda@0.27.0
+  - @pandacss/preset-base@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/error@0.27.0
+  - @pandacss/types@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- Updated dependencies [f823a8c5]
+  - @pandacss/preset-base@0.26.2
+  - @pandacss/error@0.26.2
+  - @pandacss/logger@0.26.2
+  - @pandacss/preset-panda@0.26.2
+  - @pandacss/shared@0.26.2
+  - @pandacss/types@0.26.2
+
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/error@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/preset-base@0.26.1
+- @pandacss/preset-panda@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- 1bd7fbb7: Fix an edge-case for when the `config.outdir` would not be set in the `panda.config`
+
+  Internal details: The `outdir` would not have any value after a config change due to the fallback being set in the
+  initial config resolving code path but not in context reloading code path, moving it inside the config loading
+  function fixes this issue.
+
+- Updated dependencies [3f6b3662]
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+  - @pandacss/preset-base@0.26.0
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/preset-panda@0.26.0
+  - @pandacss/error@0.26.0
+  - @pandacss/logger@0.26.0
+
+## 0.25.0
+
+### Patch Changes
+
+- Updated dependencies [59fd291c]
+  - @pandacss/types@0.25.0
+  - @pandacss/preset-base@0.25.0
+  - @pandacss/preset-panda@0.25.0
+  - @pandacss/error@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/preset-base@0.24.2
+  - @pandacss/preset-panda@0.24.2
+  - @pandacss/error@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- @pandacss/error@0.24.1
+- @pandacss/logger@0.24.1
+- @pandacss/preset-base@0.24.1
+- @pandacss/preset-panda@0.24.1
+- @pandacss/shared@0.24.1
+- @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- Updated dependencies [f6881022]
+  - @pandacss/types@0.24.0
+  - @pandacss/preset-base@0.24.0
+  - @pandacss/preset-panda@0.24.0
+  - @pandacss/error@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- Updated dependencies [bd552b1f]
+  - @pandacss/logger@0.23.0
+  - @pandacss/error@0.23.0
+  - @pandacss/preset-base@0.23.0
+  - @pandacss/preset-panda@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/types@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/shared@0.22.1
+  - @pandacss/preset-base@0.22.1
+  - @pandacss/preset-panda@0.22.1
+  - @pandacss/error@0.22.1
+  - @pandacss/logger@0.22.1
+
+## 0.22.0
+
+### Patch Changes
+
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+- Updated dependencies [1cc8fcff]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/preset-base@0.22.0
+  - @pandacss/preset-panda@0.22.0
+  - @pandacss/error@0.22.0
+  - @pandacss/logger@0.22.0
+
+## 0.21.0
+
+### Patch Changes
+
+- Updated dependencies [26e6051a]
+- Updated dependencies [5b061615]
+- Updated dependencies [105f74ce]
+  - @pandacss/shared@0.21.0
+  - @pandacss/types@0.21.0
+  - @pandacss/preset-base@0.21.0
+  - @pandacss/preset-panda@0.21.0
+  - @pandacss/error@0.21.0
+  - @pandacss/logger@0.21.0
+
+## 0.20.1
+
+### Patch Changes
+
+- Updated dependencies [428e5401]
+  - @pandacss/preset-base@0.20.1
+  - @pandacss/error@0.20.1
+  - @pandacss/logger@0.20.1
+  - @pandacss/preset-panda@0.20.1
+  - @pandacss/shared@0.20.1
+  - @pandacss/types@0.20.1
+
+## 0.20.0
+
+### Minor Changes
+
+- 904aec7b: - Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+
+  - Add support for extending `staticCss` defined in presets
+
+  ```jsx
+  const presetWithStaticCss = definePreset({
+    staticCss: {
+      recipes: {
+        // generate all button styles and variants
+        button: ['*'],
+      },
+    },
+  })
+
+  export default defineConfig({
+    presets: [presetWithStaticCss],
+    staticCss: {
+      extend: {
+        recipes: {
+          // extend and pre-generate all sizes for card
+          card: [{ size: ['small', 'medium', 'large'] }],
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Updated dependencies [24ee49a5]
+- Updated dependencies [904aec7b]
+  - @pandacss/types@0.20.0
+  - @pandacss/preset-base@0.20.0
+  - @pandacss/preset-panda@0.20.0
+  - @pandacss/error@0.20.0
+  - @pandacss/logger@0.20.0
+  - @pandacss/shared@0.20.0
+
+## 0.19.0
+
+### Patch Changes
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/preset-base@0.19.0
+  - @pandacss/preset-panda@0.19.0
+  - @pandacss/error@0.19.0
+  - @pandacss/logger@0.19.0
+
+## 0.18.3
+
+### Patch Changes
+
+- @pandacss/error@0.18.3
+- @pandacss/logger@0.18.3
+- @pandacss/preset-base@0.18.3
+- @pandacss/preset-panda@0.18.3
+- @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- Updated dependencies [3e1ea626]
+  - @pandacss/preset-base@0.18.2
+  - @pandacss/error@0.18.2
+  - @pandacss/logger@0.18.2
+  - @pandacss/preset-panda@0.18.2
+  - @pandacss/types@0.18.2
+
 ## 0.18.1
 
 ### Patch Changes

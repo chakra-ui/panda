@@ -4,7 +4,7 @@ import { cssParser } from './fixture'
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
     const code = `
-    import {css} from ".panda/css"
+    import {css} from "styled-system/css"
 
         const baseStyle = css({
             color: 'red',
@@ -60,7 +60,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -110,7 +110,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -170,7 +170,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }

@@ -14,12 +14,11 @@
     "css:dev": "panda -w"
   },
   "dependencies": {
-    "@astrojs/solid-js": "2.2.0",
-    "astro": "2.9.6",
+    "@astrojs/solid-js": "3.0.3",
+    "astro": "4.2.1",
     "solid-js": "1.7.11"
   },
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
-    "@pandacss/astro": "workspace:*"
+    "@pandacss/dev": "workspace:*"
   }
 }

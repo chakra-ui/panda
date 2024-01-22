@@ -1,5 +1,292 @@
 # @pandacss/studio
 
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/config@0.27.3
+  - @pandacss/token-dictionary@0.27.3
+  - @pandacss/astro-plugin-studio@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/astro-plugin-studio@0.27.2
+- @pandacss/config@0.27.2
+- @pandacss/logger@0.27.2
+- @pandacss/shared@0.27.2
+- @pandacss/token-dictionary@0.27.2
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+  - @pandacss/astro-plugin-studio@0.27.1
+  - @pandacss/config@0.27.1
+  - @pandacss/token-dictionary@0.27.1
+  - @pandacss/logger@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- Updated dependencies [84304901]
+- Updated dependencies [bee3ec85]
+- Updated dependencies [74ac0d9d]
+- Updated dependencies [c9195a4e]
+  - @pandacss/astro-plugin-studio@0.27.0
+  - @pandacss/token-dictionary@0.27.0
+  - @pandacss/config@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/types@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- @pandacss/config@0.26.2
+- @pandacss/astro-plugin-studio@0.26.2
+- @pandacss/logger@0.26.2
+- @pandacss/shared@0.26.2
+- @pandacss/token-dictionary@0.26.2
+- @pandacss/types@0.26.2
+
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/astro-plugin-studio@0.26.1
+- @pandacss/config@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/token-dictionary@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+- Updated dependencies [1bd7fbb7]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/config@0.26.0
+  - @pandacss/token-dictionary@0.26.0
+  - @pandacss/astro-plugin-studio@0.26.0
+  - @pandacss/logger@0.26.0
+
+## 0.25.0
+
+### Patch Changes
+
+- Updated dependencies [59fd291c]
+- Updated dependencies [de282f60]
+  - @pandacss/types@0.25.0
+  - @pandacss/token-dictionary@0.25.0
+  - @pandacss/astro-plugin-studio@0.25.0
+  - @pandacss/config@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/config@0.24.2
+  - @pandacss/token-dictionary@0.24.2
+  - @pandacss/astro-plugin-studio@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- @pandacss/astro-plugin-studio@0.24.1
+- @pandacss/config@0.24.1
+- @pandacss/logger@0.24.1
+- @pandacss/shared@0.24.1
+- @pandacss/token-dictionary@0.24.1
+- @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- Updated dependencies [f6881022]
+  - @pandacss/types@0.24.0
+  - @pandacss/astro-plugin-studio@0.24.0
+  - @pandacss/config@0.24.0
+  - @pandacss/token-dictionary@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- Updated dependencies [bd552b1f]
+  - @pandacss/logger@0.23.0
+  - @pandacss/astro-plugin-studio@0.23.0
+  - @pandacss/config@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/token-dictionary@0.23.0
+  - @pandacss/types@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
+  `!important`
+
+  ```ts
+  css({
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
+  ```
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/shared@0.22.1
+  - @pandacss/config@0.22.1
+  - @pandacss/token-dictionary@0.22.1
+  - @pandacss/astro-plugin-studio@0.22.1
+  - @pandacss/logger@0.22.1
+
+## 0.22.0
+
+### Minor Changes
+
+- 11753fea: - Redesign astro integration and studio to use the new Astro v4 (experimental) JavaScript API
+  - Update Astro version to v4 for the @pandacss/studio
+
+### Patch Changes
+
+- 1cc8fcff: Fixes a missing bracket in \_indeterminate condition
+- Updated dependencies [526c6e34]
+- Updated dependencies [8db47ec6]
+  - @pandacss/types@0.22.0
+  - @pandacss/shared@0.22.0
+  - @pandacss/config@0.22.0
+  - @pandacss/token-dictionary@0.22.0
+  - @pandacss/astro-plugin-studio@0.22.0
+  - @pandacss/logger@0.22.0
+
+## 0.21.0
+
+### Patch Changes
+
+- Updated dependencies [7f846be2]
+- Updated dependencies [26e6051a]
+- Updated dependencies [5b061615]
+- Updated dependencies [105f74ce]
+  - @pandacss/node@0.21.0
+  - @pandacss/shared@0.21.0
+  - @pandacss/types@0.21.0
+  - @pandacss/config@0.21.0
+  - @pandacss/token-dictionary@0.21.0
+  - @pandacss/logger@0.21.0
+
+## 0.20.1
+
+### Patch Changes
+
+- @pandacss/config@0.20.1
+- @pandacss/node@0.20.1
+- @pandacss/token-dictionary@0.20.1
+- @pandacss/logger@0.20.1
+- @pandacss/shared@0.20.1
+- @pandacss/types@0.20.1
+
+## 0.20.0
+
+### Patch Changes
+
+- 24ee49a5: - Add support for granular config change detection
+  - Improve the `codegen` experience by only rewriting files affecteds by a config change
+- Updated dependencies [24ee49a5]
+- Updated dependencies [904aec7b]
+  - @pandacss/config@0.20.0
+  - @pandacss/types@0.20.0
+  - @pandacss/node@0.20.0
+  - @pandacss/token-dictionary@0.20.0
+  - @pandacss/logger@0.20.0
+  - @pandacss/shared@0.20.0
+
+## 0.19.0
+
+### Patch Changes
+
+- Updated dependencies [61831040]
+- Updated dependencies [89f86923]
+  - @pandacss/types@0.19.0
+  - @pandacss/node@0.19.0
+  - @pandacss/config@0.19.0
+  - @pandacss/token-dictionary@0.19.0
+  - @pandacss/logger@0.19.0
+  - @pandacss/shared@0.19.0
+
+## 0.18.3
+
+### Patch Changes
+
+- a30f660d: Fix issue in studio here userland `@ark-ui/react` version could interfere with studio version
+  - @pandacss/node@0.18.3
+  - @pandacss/config@0.18.3
+  - @pandacss/logger@0.18.3
+  - @pandacss/shared@0.18.3
+  - @pandacss/token-dictionary@0.18.3
+  - @pandacss/types@0.18.3
+
+## 0.18.2
+
+### Patch Changes
+
+- @pandacss/config@0.18.2
+- @pandacss/node@0.18.2
+- @pandacss/token-dictionary@0.18.2
+- @pandacss/logger@0.18.2
+- @pandacss/shared@0.18.2
+- @pandacss/types@0.18.2
+
 ## 0.18.1
 
 ### Patch Changes
