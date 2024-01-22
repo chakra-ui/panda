@@ -38,9 +38,7 @@ const sharedState = {
 export class Recipes {
   slotSeparator = '__'
 
-  get keys() {
-    return Object.keys(this.recipes)
-  }
+  keys: string[] = []
 
   private context!: SerializeContext
 
@@ -77,35 +75,6 @@ export class Recipes {
       this.saveOne(name, recipe)
     }
     this.keys = Object.keys(this.recipes)
-  }
-
-  saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
-    if (Recipes.isSlotRecipeConfig(recipe)) {
-      // extract recipes for each slot
-      const slots = getSlotRecipes(recipe)
-
-      const slotsMap = new Map()
-
-      // normalize each recipe
-      Object.entries(slots).forEach(([slot, slotRecipe]) => {
-        const slotName = this.getSlotKey(name, slot)
-        this.normalize(slotName, slotRecipe)
-        slotsMap.set(slotName, slotRecipe)
-      })
-
-      // save the root recipe
-      this.assignRecipe(name, recipe)
-      sharedState.slots.set(name, slotsMap)
-      //
-    } else {
-      this.assignRecipe(name, this.normalize(name, recipe))
-    }
-  }
-
-  remove(name: string) {
-    sharedState.nodes.delete(name)
-    sharedState.classNames.delete(name)
-    sharedState.styles.delete(name)
   }
 
   saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
