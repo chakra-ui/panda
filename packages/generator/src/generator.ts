@@ -58,8 +58,8 @@ export class Generator extends Context {
       minify: this.config.minify,
     })
 
-    if (this.hooks['css:transform']) {
-      css = this.hooks['css:transform']?.(css) ?? css
+    if (this.hooks['cssgen:done']) {
+      css = this.hooks['cssgen:done']?.({ artifact: 'styles.css', content: css }) ?? css
     }
 
     return css

@@ -9,7 +9,7 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   const scope = isObject(preflight) ? preflight.scope : undefined
   const selector = scope ? `${scope} ` : ''
   // prettier-ignore
-  const output = css`
+  let output = css`
   ${selector}* {
     margin: 0;
     padding: 0;
@@ -224,6 +224,8 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   }
 `
 
+  if (ctx.hooks['cssgen:done']) {
+    output = ctx.hooks['cssgen:done']?.({ artifact: 'reset', content: output }) ?? output
+  }
   sheet.layers.reset.append(output)
-  void ctx.hooks['generator:css']?.('reset.css')
 }

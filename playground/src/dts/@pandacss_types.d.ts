@@ -9974,7 +9974,7 @@ export interface PandaHooks {
 	/**
 	 * Called before generating the design-system CSS files (global, static, preflight, tokens, keyframes)
 	 */
-	"generator:css": (file: "global.css" | "static.css" | "reset.css" | "tokens.css" | "keyframes.css" | "styles.css", css: string) => void;
+	"cssgen:done": (file: "global.css" | "static.css" | "reset.css" | "tokens.css" | "keyframes.css" | "styles.css", css: string) => void;
 	/**
 	 * Called after the codegen is completed
 	 */

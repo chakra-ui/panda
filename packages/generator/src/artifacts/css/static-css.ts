@@ -7,8 +7,12 @@ export const generateStaticCss = (ctx: Context, sheet?: Stylesheet) => {
 
   if (!sheet) {
     const { optimize = true, minify } = config
-    const output = engine.sheet.toCss({ optimize, minify })
-    void ctx.hooks['generator:css']?.('static.css')
+    let output = engine.sheet.toCss({ optimize, minify })
+
+    if (ctx.hooks['cssgen:done']) {
+      output = ctx.hooks['cssgen:done']?.({ artifact: 'static', content: output }) ?? output
+    }
+
     return output
   }
 }

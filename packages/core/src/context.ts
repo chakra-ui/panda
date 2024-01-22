@@ -29,7 +29,8 @@ import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
 import type { ParserOptions } from './types'
 import { Utility } from './utility'
-import { Api } from './api'
+import { HooksApi } from './hooks-api'
+import { logger } from '@pandacss/logger'
 
 const helpers = {
   map: mapObject,
@@ -70,7 +71,7 @@ export class Context {
 
   encoder: StyleEncoder
   decoder: StyleDecoder
-  api: Api
+  hooksApi: HooksApi
 
   // Props
   properties!: Set<string>
@@ -174,8 +175,8 @@ export class Context {
       imports: this.imports,
     }
 
-    this.api = new Api(this)
-    this.hooks['context:created']?.(this.api)
+    this.hooksApi = new HooksApi(this)
+    this.hooks['context:created']?.({ ctx: this.hooksApi, logger: logger })
   }
 
   get config() {
@@ -277,6 +278,7 @@ export class Context {
       hash: this.hash.className,
       encoder: this.encoder,
       decoder: this.decoder,
+      hooks: this.hooks,
       isValidProperty: this.isValidProperty,
       browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,

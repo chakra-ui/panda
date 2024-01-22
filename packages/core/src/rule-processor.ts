@@ -3,7 +3,7 @@ import type {
   AtomicRecipeRule,
   AtomicRule,
   RecipeDefinition,
-  RecipeRule,
+  RecipeVariantsRule,
   SlotRecipeDefinition,
   SystemStyleObject,
 } from '@pandacss/types'
@@ -89,7 +89,7 @@ export class RuleProcessor {
     }
   }
 
-  recipe(name: string, variants: Record<string, any> = {}): RecipeRule | undefined {
+  recipe(name: string, variants: Record<string, any> = {}): RecipeVariantsRule | undefined {
     const { encoder, decoder } = this
     this.getParamsOrThrow()
 

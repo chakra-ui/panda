@@ -832,17 +832,6 @@ describe('rule processor', () => {
         .variant_solid {
           variant: solid;
       }
-      }
-
-      @layer utilities {
-
-        .text_red {
-          color: red;
-      }
-
-        .text_blue {
-          color: blue;
-      }
       }"
     `)
 
@@ -873,28 +862,7 @@ describe('rule processor', () => {
 
     step3.decoder.collect(step3.encoder)
     expect(step3.toCss()).toMatchInlineSnapshot(`
-      "@layer recipes {
-        @layer _base {
-
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-            font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
-      }
-      }
-
-        .variant_solid {
-          variant: solid;
-      }
-      }
-
-      @layer recipes.slots {
+      "@layer recipes.slots {
         @layer _base {
           .checkbox__root {
             display: flex;
@@ -923,15 +891,6 @@ describe('rule processor', () => {
       }
 
       @layer utilities {
-
-        .text_red {
-          color: red;
-      }
-
-        .text_blue {
-          color: blue;
-      }
-
         .d_none {
           display: none;
       }

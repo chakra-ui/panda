@@ -1,7 +1,7 @@
 import type { Context } from './context'
 import { RuleProcessor } from './rule-processor'
 
-export class Api {
+export class HooksApi {
   processor: RuleProcessor
 
   constructor(private ctx: Context) {
@@ -10,6 +10,14 @@ export class Api {
 
   get config() {
     return this.ctx.conf.config
+  }
+
+  get configPath() {
+    return this.ctx.conf.path
+  }
+
+  get dependencies() {
+    return this.ctx.conf.dependencies
   }
 
   get classNames() {

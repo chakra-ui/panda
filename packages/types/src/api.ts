@@ -16,7 +16,7 @@ export interface AtomicRecipeRule extends BaseRule {
   config: RecipeDefinition<any> | SlotRecipeDefinition<string, any>
 }
 
-export interface RecipeRule extends BaseRule {
+export interface RecipeVariantsRule extends BaseRule {
   variants: RecipeVariantRecord
 }
 
@@ -24,11 +24,14 @@ export interface ProcessorInterface {
   css(styles: SystemStyleObject): AtomicRule
   cva(recipeConfig: RecipeDefinition<RecipeVariantRecord>): AtomicRecipeRule
   sva(recipeConfig: SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>): AtomicRecipeRule
-  recipe(name: string, variants?: RecipeVariantRecord): RecipeRule | undefined
+  recipe(name: string, variants?: RecipeVariantRecord): RecipeVariantsRule | undefined
 }
 
 export interface ApiInterface {
   config: UserConfig
+  configPath: string
+  dependencies: string[]
+  //
   processor: ProcessorInterface
   classNames: Map<string, AtomicStyleResult | RecipeBaseResult>
 }

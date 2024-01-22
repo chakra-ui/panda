@@ -125,19 +125,27 @@ export class Project {
     const sourceFile = this.project.getSourceFile(filePath)
     if (!sourceFile) return
 
-    const content = sourceFile.getText()
-    const transformed = this.transformFile(filePath, content)
+    const original = sourceFile.getText()
+    let transformed = original
+
+    const custom = hooks['parser:before']?.({ filePath, content: original })
+    // if the content is transformed by the hook, skip the default transform
+    if (custom) {
+      transformed = custom
+    } else {
+      // otherwise, convert .vue and .svelte files to .tsx friendly context
+      transformed = this.transformFile(filePath, original)
+    }
 
     // update SourceFile AST if content is different (.vue, .svelte)
-    if (content !== transformed) {
+    // or if the hook returned a different content
+    if (original !== transformed) {
       sourceFile.replaceWithText(transformed)
     }
 
-    hooks['parser:before']?.(filePath, content)
-
     const result = this.parser(sourceFile, encoder)?.setFilePath(filePath)
 
-    hooks['parser:after']?.(filePath, result)
+    hooks['parser:after']?.({ filePath, result })
 
     return result
   }

@@ -5,20 +5,22 @@ import { removeUnusedKeyframes } from './remove-unused-keyframes'
 export default defineConfig({
   hooks: {
     // Dynamically add a recipe
-    'config:resolved': async (result) => {
+    'config:resolved': async ({ conf }) => {
       const { someRecipe } = await import('./some-recipe')
-      const recipes = result.config.theme?.recipes
+      const recipes = conf.config.theme?.recipes
       if (recipes) {
         recipes['someRecipe'] = someRecipe
       }
     },
     // Dynamically create a CSS rule
-    'context:created': (ctx) => {
+    'context:created': ({ ctx }) => {
       ctx.processor.css({ color: 'lime.300' })
     },
     // Remove unused CSS vars
-    'css:transform': (css) => {
-      return removeUnusedKeyframes(removeUnusedCssVars(css))
+    'cssgen:done': ({ artifact, content }) => {
+      if (artifact === 'styles.css') {
+        return removeUnusedCssVars(removeUnusedKeyframes(content))
+      }
     },
   },
   preflight: true,
