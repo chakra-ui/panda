@@ -14,12 +14,14 @@ interface PatternOptions {
 export class Patterns {
   patterns: Record<string, PatternConfig>
   details: PatternNode[]
+  keys: string[]
   private utility: Utility
   private tokens: TokenDictionary
 
   constructor(options: PatternOptions) {
     this.patterns = options.config.patterns ?? {}
     this.details = Object.entries(this.patterns).map(([name, pattern]) => this.createDetail(name, pattern))
+    this.keys = Object.keys(this.patterns)
     this.utility = options.utility
     this.tokens = options.tokens
   }
@@ -37,10 +39,6 @@ export class Patterns {
       match: createRegex(jsx),
       jsx,
     }
-  }
-
-  get keys(): string[] {
-    return Object.keys(this.patterns)
   }
 
   getConfig(name: string): PatternConfig {
