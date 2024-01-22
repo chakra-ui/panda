@@ -1,5 +1,5 @@
 import { Context, type StyleDecoder, type Stylesheet } from '@pandacss/core'
-import type { ArtifactId, ConfigResultWithHooks, CssArtifactType } from '@pandacss/types'
+import type { ArtifactId, CssArtifactType, LoadConfigResult } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -10,7 +10,7 @@ import { generateStaticCss } from './artifacts/css/static-css'
 import { generateTokenCss } from './artifacts/css/token-css'
 
 export class Generator extends Context {
-  constructor(conf: ConfigResultWithHooks) {
+  constructor(conf: LoadConfigResult) {
     super(conf)
   }
 
@@ -47,15 +47,21 @@ export class Generator extends Context {
     sheet.processDecoder(decoder)
   }
 
-  getParserCss = (decoder: StyleDecoder, filePath?: string) => {
-    return generateParserCss(this, decoder, filePath)
+  getParserCss = (decoder: StyleDecoder) => {
+    return generateParserCss(this, decoder)
   }
 
   getCss = (stylesheet?: Stylesheet) => {
     const sheet = stylesheet ?? this.createSheet()
-    return sheet.toCss({
+    let css = sheet.toCss({
       optimize: true,
       minify: this.config.minify,
     })
+
+    if (this.hooks['cssgen:done']) {
+      css = this.hooks['cssgen:done']({ artifact: 'styles.css', content: css }) ?? css
+    }
+
+    return css
   }
 }

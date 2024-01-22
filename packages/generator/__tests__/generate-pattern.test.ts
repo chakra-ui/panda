@@ -1,10 +1,10 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
 import { fixtureDefaults } from '@pandacss/fixture'
 
-const patterns = (config: ConfigResultWithHooks) => {
+const patterns = (config: LoadConfigResult) => {
   const generator = new Generator(config)
   return generatePattern(generator)
 }

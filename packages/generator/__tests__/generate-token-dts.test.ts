@@ -1,10 +1,10 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generateTokenTypes } from '../src/artifacts/types/token-types'
 import { fixtureDefaults } from '@pandacss/fixture'
 
-const tokenTypes = (config: ConfigResultWithHooks) => {
+const tokenTypes = (config: LoadConfigResult) => {
   const generator = new Generator(config)
   return generateTokenTypes(generator)
 }

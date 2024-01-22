@@ -44,7 +44,13 @@ export class Stylesheet {
 
   processGlobalCss = (styles: Dict) => {
     const result = this.serialize(styles)
-    this.context.layers.base.append(stringify(result))
+    let css = stringify(result)
+
+    if (this.context.hooks['cssgen:done']) {
+      css = this.context.hooks['cssgen:done']({ artifact: 'global', content: css }) ?? css
+    }
+
+    this.context.layers.base.append(css)
   }
 
   processCss = (styles: SystemStyleObject | undefined, layer: LayerName) => {

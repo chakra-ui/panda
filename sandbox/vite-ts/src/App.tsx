@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { css, cx } from '../styled-system/css'
 import { Circle, HStack, Stack, panda } from '../styled-system/jsx'
 import { circle as circleLike, stack, vstack } from '../styled-system/patterns'
@@ -22,13 +23,15 @@ function App() {
   const paddingY = '22px'
   const className = css({ padding: paddingY, fontSize: paddingY ? '2xl' : '4xl' })
 
+  const [color] = useState('lime.300')
+
   return (
     <div className={stack({ padding: '40px', align: 'stretch', color: 'red.300' })}>
       <section className={css({ padding: '5', borderWidth: '1px' })}>
         <p className={css({ fontWeight: 'semibold', mb: '2' })}>CSS - Function</p>
         <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>
           <div>
-            <h1 className={css({ color: 'black', fontSize: '56px', lineHeight: '1.1em' })}>
+            <h1 className={css({ color: color, fontSize: '56px', lineHeight: '1.1em' })}>
               Create accessible React apps <span className={css({ color: 'teal' })}>with speed</span>
             </h1>
             <p className={css({ color: 'text', fontSize: '20px', marginTop: '40px' })}>
@@ -128,6 +131,15 @@ function App() {
       <SomeRecipe size="small" color="red.400">
         config recipe compoundVariants overriding within styled, should be red.100
       </SomeRecipe>
+      <span
+        className={css({
+          height: '5',
+          width: '5',
+          animation: 'spin 1s linear infinite',
+        })}
+      >
+        spinning
+      </span>
     </div>
   )
 }

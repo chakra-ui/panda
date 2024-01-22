@@ -1,10 +1,10 @@
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import type { Artifact, PandaHookable, Runtime } from '@pandacss/types'
+import type { Artifact, PandaHooks, Runtime } from '@pandacss/types'
 
 interface OutputEngineOptions extends Generator {
   runtime: Runtime
-  hooks: PandaHookable
+  hooks: Partial<PandaHooks>
 }
 
 export class OutputEngine {

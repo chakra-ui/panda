@@ -46,8 +46,7 @@
   },
   "devDependencies": {
     "@pandacss/generator": "workspace:*",
-    "@vue/compiler-core": "3.3.4",
-    "hookable": "5.5.3"
+    "@vue/compiler-core": "3.3.4"
   },
   "files": [
     "dist"

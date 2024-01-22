@@ -364,9 +364,6 @@ importers:
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
-      hookable:
-        specifier: 5.5.3
-        version: 5.5.3
       postcss:
         specifier: ^8.4.27
         version: 8.4.32
@@ -410,9 +407,6 @@ importers:
       '@types/pluralize':
         specifier: 0.0.33
         version: 0.0.33
-      hookable:
-        specifier: 5.5.3
-        version: 5.5.3
 
   packages/is-valid-prop:
     devDependencies:
@@ -486,9 +480,6 @@ importers:
       glob-parent:
         specifier: ^6.0.2
         version: 6.0.2
-      hookable:
-        specifier: 5.5.3
-        version: 5.5.3
       is-glob:
         specifier: ^4.0.3
         version: 4.0.3
@@ -593,9 +584,6 @@ importers:
       '@vue/compiler-core':
         specifier: 3.3.4
         version: 3.3.4
-      hookable:
-        specifier: 5.5.3
-        version: 5.5.3
 
   packages/postcss:
     dependencies:
@@ -709,9 +697,6 @@ importers:
       csstype:
         specifier: 3.1.3
         version: 3.1.3
-      hookable:
-        specifier: 5.5.3
-        version: 5.5.3
       ncp:
         specifier: ^2.0.0
         version: 2.0.0
@@ -748,9 +733,6 @@ importers:
       '@textea/json-viewer':
         specifier: 3.2.3
         version: 3.2.3(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)
-      hookable:
-        specifier: 5.5.3
-        version: 5.5.3
       lightningcss-wasm:
         specifier: ^1.22.1
         version: 1.22.1

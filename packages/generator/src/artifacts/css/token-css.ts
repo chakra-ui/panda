@@ -47,8 +47,11 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   let css = results.join('\n\n')
   css = '\n\n' + cleanupSelectors(css, root)
 
+  if (ctx.hooks['cssgen:done']) {
+    css = ctx.hooks['cssgen:done']({ artifact: 'tokens', content: css }) ?? css
+  }
+
   sheet.layers.tokens.append(css)
-  void ctx.hooks.callHook('generator:css', 'tokens.css', '')
 }
 
 function getDeepestRule(root: string, selectors: string[]) {
