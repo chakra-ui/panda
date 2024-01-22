@@ -34,8 +34,37 @@ describe('arbitrary className', () => {
                 minmax(0, 16px)
               [breakout-end]
             minmax(16px, 1fr)
-          [full-end]
-        "
+          [full-end]"
+    `)
+
+    expect(
+      getArbitraryValue(`
+    [
+      [full-start]
+        minmax(16px, 1fr)
+          [breakout-start]
+            minmax(0, 16px)
+              [content-start]
+                minmax(min-content, 1024px)
+              [content-end]
+            minmax(0, 16px)
+          [breakout-end]
+        minmax(16px, 1fr)
+      [full-end]
+    ]
+  `),
+    ).toMatchInlineSnapshot(`
+      "[full-start]
+              minmax(16px, 1fr)
+                [breakout-start]
+                  minmax(0, 16px)
+                    [content-start]
+                      minmax(min-content, 1024px)
+                    [content-end]
+                  minmax(0, 16px)
+                [breakout-end]
+              minmax(16px, 1fr)
+            [full-end]"
     `)
   })
 })
