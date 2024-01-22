@@ -1424,8 +1424,8 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       react-fast-marquee:
-        specifier: 1.6.2
-        version: 1.6.2(react-dom@18.2.0)(react@18.2.0)
+        specifier: 1.6.3
+        version: 1.6.3(react-dom@18.2.0)(react@18.2.0)
       scroll-into-view-if-needed:
         specifier: 3.0.10
         version: 3.0.10
@@ -11968,9 +11968,9 @@ packages:
       vite: ^4.0.0
       vue: ^3.0.0
     dependencies:
-      '@babel/core': 7.23.5
-      '@babel/plugin-transform-typescript': 7.23.5(@babel/core@7.23.5)
-      '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.23.5)
+      '@babel/core': 7.22.20
+      '@babel/plugin-transform-typescript': 7.22.15(@babel/core@7.22.20)
+      '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.22.20)
       vite: 4.3.9(@types/node@20.4.5)
       vue: 3.3.4
     transitivePeerDependencies:
@@ -12080,25 +12080,6 @@ packages:
       '@babel/core': 7.22.20
       '@babel/helper-module-imports': 7.22.15
       '@babel/plugin-syntax-jsx': 7.23.3(@babel/core@7.22.20)
-      '@babel/template': 7.22.15
-      '@babel/traverse': 7.23.5
-      '@babel/types': 7.23.5
-      '@vue/babel-helper-vue-transform-on': 1.1.5
-      camelcase: 6.3.0
-      html-tags: 3.3.1
-      svg-tags: 1.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /@vue/babel-plugin-jsx@1.1.5(@babel/core@7.23.5):
-    resolution: {integrity: sha512-nKs1/Bg9U1n3qSWnsHhCVQtAzI6aQXqua8j/bZrau8ywT1ilXQbK4FwEJGmU8fV7tcpuFvWmmN7TMmV1OBma1g==}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-    dependencies:
-      '@babel/core': 7.23.5
-      '@babel/helper-module-imports': 7.22.15
-      '@babel/plugin-syntax-jsx': 7.23.3(@babel/core@7.23.5)
       '@babel/template': 7.22.15
       '@babel/traverse': 7.23.5
       '@babel/types': 7.23.5
@@ -26393,8 +26374,8 @@ packages:
     resolution: {integrity: sha512-/6UZ2qgEyH2aqzYZgQPxEnz33NJ2gNsnHA2o5+o4wW9bLM/JYQitNP9xPhsXwC08hMMovfGe/8retsdDsczPRg==}
     dev: false
 
-  /react-fast-marquee@1.6.2(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-bXUuW1r+Yzd8ZjsPmMDy8WJMubHAZd/7n0W/IzUQHtd0iBfxWohP6hzCFnEHWMCOtC9wxSAq/BiEnig4kdI2Vw==}
+  /react-fast-marquee@1.6.3(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-oEISmNElv6lua/4i4uPYIteUKDxU0hAKKjH/tY2icje4GCns1rX6pIrkwVhjX0FMCIepUVqeyCchvqkiO/s2vw==}
     peerDependencies:
       react: '>= 16.8.0 || 18.0.0'
       react-dom: '>= 16.8.0 || 18.0.0'
