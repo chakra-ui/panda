@@ -43,7 +43,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "autoprefixer": "10.4.15",
+    "autoprefixer": "10.4.17",
     "browserslist": "^4.22.2",
     "hookable": "5.5.3",
     "lightningcss": "^1.22.1",
