@@ -23,8 +23,7 @@ describe('arbitrary className', () => {
     [full-end]
   `),
     ).toMatchInlineSnapshot(`
-      "
-          [full-start]
+      "[full-start]
             minmax(16px, 1fr)
               [breakout-start]
                 minmax(0, 16px)
