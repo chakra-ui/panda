@@ -2,7 +2,8 @@
 '@pandacss/core': patch
 ---
 
-Fix issue in utility config where shorthands without `className` returns incorrect css when use the shorthand version.
+Fix the issue in the utility configuration where shorthand without `className` returns incorrect CSS when using the
+shorthand version.
 
 ```js
 utilities: {
