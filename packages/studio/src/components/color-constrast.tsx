@@ -1,46 +1,51 @@
-import { useState } from 'react'
+import * as React from 'react'
 import { HStack, Stack, VStack, panda } from '../../styled-system/jsx'
 import { getContrastPairs, getContrastRatio } from '../lib/color'
-import context from '../lib/panda.context'
-import { ErrorIcon, SuccessIcon } from './icons'
+import * as context from '../lib/panda-context'
+import { Select } from './input'
+import { TestScore } from './test-score'
 import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
 
-function TestScore(props: { score: { WCAG_AA: boolean; WCAG_AAA: boolean }; size: 'regular' | 'large' }) {
-  const { score, size } = props
+interface ColorSelectProps {
+  title: string
+  value: string
+  colors: {
+    label: string
+    value: string
+  }[]
+  onChange: (value: string) => void
+}
+
+function ColorSelect(props: ColorSelectProps) {
+  const { title, colors, onChange, value } = props
   return (
-    <>
-      <HStack justify="space-between" fontWeight="medium">
-        <HStack gap="2">
-          <span>{score.WCAG_AA ? <SuccessIcon /> : <ErrorIcon />}</span>
-          <span>AA</span>
-        </HStack>
-        <span>{size === 'regular' ? '4.5:1' : '3:1'}</span>
-      </HStack>
-      <HStack justify="space-between" fontWeight="medium">
-        <HStack gap="2">
-          <span>{score.WCAG_AAA ? <SuccessIcon /> : <ErrorIcon />}</span>
-          <span>AAA</span>
-        </HStack>
-        <span>{size === 'regular' ? '7:1' : '4.5:1'}</span>
-      </HStack>
-    </>
+    <Stack flex="1">
+      <panda.span fontWeight="semibold">{title}</panda.span>
+      <panda.div
+        display="flex"
+        flexDirection="column"
+        borderWidth="1px"
+        borderColor="card"
+        pt="16"
+        style={{ background: value }}
+      />
+      <Select value={value} onChange={(e) => onChange(e.currentTarget.value)}>
+        {colors.map((color) => (
+          <option key={color.label} value={color.label}>
+            {color.label}
+          </option>
+        ))}
+      </Select>
+    </Stack>
   )
 }
 
-export function ColorContrastChecker() {
-  const colorsMap = context.getCategory('colors')
-  const values = Array.from(colorsMap.values())
+export default function ColorContrastChecker() {
+  const colors = context.colors
 
-  const colors = values
-    .filter((color) => !color.isConditional && !color.extensions.isVirtual)
-    .map((color) => ({
-      label: color.extensions.prop,
-      value: color.value,
-    }))
-
-  const [foreground, setForeGround] = useState('#000000')
-  const [background, setBackground] = useState('#ffffff')
+  const [foreground, setForeGround] = React.useState('#000000')
+  const [background, setBackground] = React.useState('#ffffff')
 
   const activeForeground = (colors.find((col) => col.label === foreground)?.value || foreground) as string
   const activeBackground = (colors.find((col) => col.label === background)?.value || background) as string
@@ -52,40 +57,8 @@ export function ColorContrastChecker() {
     <TokenGroup>
       <TokenContent>
         <HStack gap="3" p="2">
-          <panda.div
-            display="flex"
-            flexDirection="column"
-            borderWidth="1px"
-            borderColor="card"
-            flex="1"
-            pt="16"
-            style={{ background: activeForeground }}
-          >
-            <select value={foreground} onChange={(e: any) => setForeGround(e.currentTarget.value)}>
-              {colors.map((color) => (
-                <option key={color.label} value={color.label}>
-                  {color.label}
-                </option>
-              ))}
-            </select>
-          </panda.div>
-          <panda.div
-            display="flex"
-            flexDirection="column"
-            borderWidth="1px"
-            borderColor="card"
-            flex="1"
-            pt="16"
-            style={{ background: activeBackground }}
-          >
-            <select value={background} onChange={(e: any) => setBackground(e.currentTarget.value)}>
-              {colors.map((color) => (
-                <option key={color.label} value={color.label}>
-                  {color.label}
-                </option>
-              ))}
-            </select>
-          </panda.div>
+          <ColorSelect title="Background" value={activeBackground} onChange={setBackground} colors={colors} />
+          <ColorSelect title="Foreground" value={activeForeground} onChange={setForeGround} colors={colors} />
         </HStack>
 
         <HStack

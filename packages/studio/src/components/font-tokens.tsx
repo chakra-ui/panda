@@ -1,50 +1,41 @@
-import { Fragment, useState } from 'react'
+import type { Token } from '@pandacss/token-dictionary'
+import * as React from 'react'
 import { HStack, panda, Stack } from '../../styled-system/jsx'
 import { TokenContent } from '../components/token-content'
 import { TokenGroup } from '../components/token-group'
 import { Input, Textarea } from './input'
+import { StickyTop } from './sticky-top'
 
 interface FontTokensProps {
   text?: string
   largeText?: boolean
   token: string
-  fontTokens: Map<string, any>
+  fontTokens: Token[]
   css?: any
 }
 
-export function FontTokens(props: FontTokensProps) {
+export default function FontTokens(props: FontTokensProps) {
   const { text: textProp = 'Hello World', largeText = false, token, fontTokens } = props
-  const [text, setText] = useState(textProp)
 
-  const values = Array.from(fontTokens.values())
+  const [text, setText] = React.useState(textProp)
+
+  const handleChange = (event: React.ChangeEvent<any>) => {
+    setText(event.target.value)
+  }
 
   return (
     <TokenGroup>
-      <panda.div mb="3.5" position="sticky" top="0" zIndex={1}>
+      <StickyTop>
         {largeText ? (
-          <Textarea
-            resize="vertical"
-            onChange={(event) => {
-              setText(event.currentTarget.value)
-            }}
-            rows={5}
-            value={text}
-            placeholder="Preview Text"
-          />
+          <Textarea resize="vertical" onChange={handleChange} rows={5} value={text} placeholder="Preview Text" />
         ) : (
-          <Input
-            value={text}
-            onChange={(event) => {
-              setText(event.currentTarget.value)
-            }}
-            placeholder="Preview Text"
-          />
+          <Input value={text} onChange={handleChange} placeholder="Preview Text" />
         )}
-      </panda.div>
+      </StickyTop>
 
       <TokenContent>
-        {values.map((fontToken) => (
-          <Fragment key={fontToken.extensions.prop}>
+        {fontTokens.map((fontToken) => (
+          <React.Fragment key={fontToken.extensions.prop}>
             <Stack gap="3.5">
               <HStack gap="1">
                 <panda.span fontWeight="medium">{fontToken.extensions.prop}</panda.span>
@@ -61,7 +52,7 @@ export function FontTokens(props: FontTokensProps) {
                 {text}
               </panda.span>
             </Stack>
-          </Fragment>
+          </React.Fragment>
         ))}
       </TokenContent>
     </TokenGroup>

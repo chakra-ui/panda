@@ -1,23 +1,24 @@
+import type { Token } from '@pandacss/token-dictionary'
+import * as React from 'react'
 import { useState } from 'react'
 import { Stack, panda } from '../../styled-system/jsx'
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
+import { Select } from './input'
 import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
-import type { Token } from '@pandacss/token-dictionary'
 
-const getFirstToken = <T extends Map<string, any>>(token?: T) =>
-  token ? Array.from(token.values())[0].extensions.prop : {}
 const tokens = Object.fromEntries<Map<string, Token> | undefined>(context.tokens.categoryMap)
 
 const defaultConfig = {
-  fontSize: getFirstToken(tokens.fontSizes),
-  letterSpacing: getFirstToken(tokens.letterSpacings),
-  fontWeight: getFirstToken(tokens.fontWeights),
-  lineHeight: getFirstToken(tokens.lineHeights),
+  fontSize: '',
+  letterSpacing: '',
+  fontWeight: '',
+  lineHeight: '',
 }
 
-export function TypographyPlayground() {
+export default function TypographyPlayground() {
   const [config, setConfig] = useState(defaultConfig)
+
   const configValues = Object.entries(config).reduce(
     (acc, [token, label]) => ({
       ...acc,
@@ -38,18 +39,18 @@ export function TypographyPlayground() {
     updateConfig(key, event.currentTarget.value)
   }
 
-  const renderTokenSwitch = (token: keyof typeof defaultConfig) => {
-    const _token = tokens[`${token}s`]
-    if (!_token) return
-    const values = Array.from(_token.values())
+  const renderTokenSwitch = (token: any) => {
+    const currentTokens = tokens[`${token}s`]
+    if (!currentTokens) return
+    const values = Array.from(currentTokens.values())
     return (
-      <panda.select background="card" value={config[token]} onChange={(e) => onChangeConfig(e, token)}>
+      <Select value={config[token]} onChange={(e) => onChangeConfig(e, token)}>
         {values.map((token) => (
           <option key={token.value} value={token.extensions.prop}>
             {`${token.extensions.prop} (${token.value})`}
           </option>
         ))}
-      </panda.select>
+      </Select>
     )
   }
 
@@ -67,7 +68,7 @@ export function TypographyPlayground() {
             width="fit-content"
             style={configValues}
           >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            Write type-safe styles with ease using Panda CSS
           </panda.div>
 
           <Stack gap="4">

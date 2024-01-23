@@ -41,6 +41,7 @@
     "src",
     "public",
     "styled-system",
+    "tsconfig.json",
     "*.ts",
     "*.mjs"
   ],

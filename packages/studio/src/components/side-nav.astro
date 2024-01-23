@@ -1,7 +1,7 @@
 ---
 import { navItems } from '../lib/constants'
 import { panda, Stack } from '../../styled-system/jsx'
-import NavItem from './side-nav-item.astro'
+import SideNavItem from './side-nav-item.astro'
 ---
 
 <panda.nav marginTop="8">
@@ -12,7 +12,7 @@ import NavItem from './side-nav-item.astro'
         {
           navItems
             .filter((item) => item.type === 'token')
-            .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
+            .map((item) => <SideNavItem href={`/${item.id}`}>{item.label}</SideNavItem>)
         }
       </panda.ul>
     </div>
@@ -22,7 +22,7 @@ import NavItem from './side-nav-item.astro'
         {
           navItems
             .filter((item) => item.type === 'playground')
-            .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
+            .map((item) => <SideNavItem href={`/${item.id}`}>{item.label}</SideNavItem>)
         }
       </panda.ul>
     </div>

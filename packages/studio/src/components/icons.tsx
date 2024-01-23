@@ -1,3 +1,5 @@
+import * as React from 'react'
+
 export function ErrorIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="red">

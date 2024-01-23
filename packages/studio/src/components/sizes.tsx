@@ -1,21 +1,22 @@
+import * as React from 'react'
 import { toPx } from '@pandacss/shared'
 import { Fragment } from 'react'
 import { Grid, panda } from '../../styled-system/jsx'
 import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
+import type { Token } from '@pandacss/token-dictionary'
 
 export interface SizesProps {
-  sizes: Map<string, any>
+  sizes: Token[]
 }
 
 const contentRegex = /^(min|max|fit)-content$/
 const unitRegex = /(ch|%)$/
 
-export function Sizes(props: SizesProps) {
-  const { sizes: tokens } = props
-  const values = Array.from(tokens.values())
+export default function Sizes(props: SizesProps) {
+  const { sizes } = props
 
-  const sizes = getSortedSizes(values).filter(
+  const sortedSizes = getSortedSizes(sizes).filter(
     (token) =>
       // remove negative values
       !token.extensions.isNegative &&
@@ -35,7 +36,7 @@ export function Sizes(props: SizesProps) {
           Pixels
         </panda.span>
         <panda.hr gridColumn="span 5 / span 5" />
-        {sizes
+        {sortedSizes
           .sort((a, b) => a.extensions.prop - b.extensions.prop)
           .map((size, index) => (
             <Fragment key={index}>

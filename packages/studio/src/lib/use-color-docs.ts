@@ -1,6 +1,6 @@
-import type { Token } from '@pandacss/types'
+import type { Token } from '@pandacss/token-dictionary'
 import { useState } from 'react'
-import context from './panda.context'
+import * as context from './panda-context'
 
 interface Color {
   isConditional?: boolean
@@ -14,15 +14,21 @@ type ColorToken = Token & Color
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
-const groupByColorPalette = (colors: Map<string, any>, filterMethod?: (token: ColorToken) => boolean) => {
-  const values = Array.from(colors.values()).filter((color) => !color.isConditional && !color.extensions.isVirtual)
-  return values.reduce((acc, nxt) => {
-    if (!filterMethod?.(nxt)) return acc
+const groupByColorPalette = (colors: Token[], filterMethod?: (token: ColorToken) => boolean) => {
+  const values = colors.filter((color) => !color.isConditional && !color.extensions.isVirtual)
 
-    const colorPalette = nxt.extensions.colorPalette || UNCATEGORIZED_ID
-    if (!(colorPalette in acc)) acc[colorPalette] = []
-    const exists = (acc[colorPalette] as any[]).find((tok) => tok.name === nxt.name)
-    if (!exists) acc[colorPalette].push(nxt)
+  return values.reduce<Record<string, any>>((acc, color) => {
+    if (!filterMethod?.(color)) return acc
+
+    const colorPalette = color.extensions.colorPalette || UNCATEGORIZED_ID
+
+    if (!(colorPalette in acc)) {
+      acc[colorPalette] = []
+    }
+
+    const exists = (acc[colorPalette] as any[]).find((tok) => tok.name === color.name)
+    if (!exists) acc[colorPalette].push(color)
+
     return acc
   }, {})
 }
@@ -44,13 +50,13 @@ const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: Color
       }
       return acc
     }, [] as ColorToken[])
-    .reduce(
+    .reduce<Record<string, any>>(
       (acc, nxt) => ({
         ...acc,
         [nxt.extensions?.prop]: {
-          //@ts-expect-error
           ...acc[nxt.extensions?.prop],
-          [nxt.extensions?.condition]: { value: nxt.value, isReference: nxt.isReference },
+          // @ts-ignore
+          [nxt.extensions.condition]: { value: nxt.value, isReference: nxt.isReference },
           extensions: nxt.extensions,
         },
       }),
@@ -59,7 +65,7 @@ const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: Color
 }
 
 const allTokens = context.tokens.allTokens
-const colors = context.getCategory('colors')
+const colors = context.getTokens('colors')
 
 export const useColorDocs = () => {
   const [filterQuery, setFilterQuery] = useState('')
