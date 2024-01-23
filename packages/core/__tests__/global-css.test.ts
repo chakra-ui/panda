@@ -29,6 +29,24 @@ describe('Global css', () => {
         sm: {
           fontSize: '12px',
         },
+        '& .aaa': {
+          color: 'blue.200',
+          '& .bbb': {
+            color: 'blue.300',
+            '& .ccc': {
+              color: 'blue.400',
+            },
+          },
+        },
+        '.yyy': {
+          color: 'blue.300',
+          '.zzz': {
+            color: 'green.400',
+            '.zzzzzzz': {
+              color: 'green.500',
+            },
+          },
+        },
       },
     })
 
@@ -36,6 +54,30 @@ describe('Global css', () => {
       "@layer base {
         .btn {
           width: 40px;
+      }
+
+        .btn .aaa {
+          color: var(--colors-blue-200);
+      }
+
+        .btn .aaa .bbb {
+          color: var(--colors-blue-300);
+      }
+
+        .btn .aaa .bbb .ccc {
+          color: var(--colors-blue-400);
+      }
+
+        .btn .yyy {
+          color: var(--colors-blue-300);
+      }
+
+        .btn .yyy .zzz {
+          color: var(--colors-green-400);
+      }
+
+        .btn .yyy .zzz .zzzzzzz {
+          color: var(--colors-green-500);
       }
 
         .btn:is(:focus, [data-focus]) {

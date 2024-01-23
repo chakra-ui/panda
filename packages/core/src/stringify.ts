@@ -44,7 +44,7 @@ export function stringify(
     // Then selectors
     if (selectors.length && !used.has(selectors)) {
       used.add(selectors)
-      cssText += `${selectors.map((s) => s.replace(' &', ''))} {`
+      cssText += `${selectors.map((s) => s.replace('& ', ''))} {`
     }
 
     let value = data
