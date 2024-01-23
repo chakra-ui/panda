@@ -1719,6 +1719,10 @@ const tokens = {
     "value": "var(--colors-border)",
     "variable": "var(--colors-border)"
   },
+  "colors.accent": {
+    "value": "var(--colors-accent)",
+    "variable": "var(--colors-accent)"
+  },
   "spacing.-1": {
     "value": "calc(var(--spacing-1) * -1)",
     "variable": "var(--spacing-1)"

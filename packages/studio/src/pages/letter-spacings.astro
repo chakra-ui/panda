@@ -1,11 +1,11 @@
 ---
-import { FontTokens } from '../components/font-tokens'
+import FontTokens from '../components/font-tokens'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
 
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
 
-const tokens = context.getCategory('letterSpacings')
+const tokens = context.getTokens('letterSpacings')
 ---
 
 <Layout>
@@ -18,3 +18,4 @@ const tokens = context.getCategory('letterSpacings')
     />
   </Sidebar>
 </Layout>
+

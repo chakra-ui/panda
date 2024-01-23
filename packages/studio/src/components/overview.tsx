@@ -1,65 +1,85 @@
-import { css } from '../../styled-system/css'
-import { panda, Wrap } from '../../styled-system/jsx'
-import { NavItem } from './nav-item'
+import * as React from 'react'
+import { css, cva } from '../../styled-system/css'
+import { flex, hstack, square, vstack } from '../../styled-system/patterns'
+import { Yums } from '../icons/yums'
+import { Logo } from '../icons/logo'
+import { Wrap } from '../../styled-system/jsx'
 import { navItems } from '../lib/constants'
-import { Logo } from './logo'
 
-export function Overview() {
+const buttonRecipe = cva({
+  base: {
+    display: 'inline-flex',
+    px: '6',
+    py: '3',
+    fontWeight: 'medium',
+    fontSize: '2xl',
+    rounded: 'sm',
+  },
+  variants: {
+    variant: {
+      solid: {
+        bg: 'yellow.300',
+        color: 'black',
+      },
+      outline: {
+        borderWidth: '1px',
+        color: 'yellow.300',
+      },
+    },
+  },
+})
+
+export default function Overview() {
   return (
-    <panda.div display="flex" flexDir="column">
-      <panda.span fontWeight="bold" fontSize="2xl" px="8" py="4" display="flex" gap="2">
+    <div
+      className={flex({
+        direction: 'column',
+        minH: 'dvh',
+        borderTopWidth: '8px',
+        borderTopColor: 'accent',
+      })}
+    >
+      <div className={vstack({ px: '8', py: '12dvh', mb: '10', flex: '1' })}>
         <Logo />
-      </panda.span>
-      <panda.div px="8" py="24" mb="10" background="card">
-        <panda.span display="block" fontSize="3xl" fontWeight="semibold" mb="6">
-          Design System
-        </panda.span>
-        <p>Build great products, faster.</p>
-        <panda.a
-          href="/colors"
-          className={css({
-            background: '#646cff',
-            color: 'white',
-            width: 'fit-content',
-            fontSize: 'small',
-            fontWeight: 'semibold',
-            px: '6',
-            py: '1',
-            borderRadius: 'sm',
-            marginTop: '6',
-            transition: 'all 0.2s ease',
-            display: 'block',
-            '&:hover': {
-              background: '#4049f0',
-              boxShadow: 'lg',
-            },
-          })}
-        >
-          Explore
-        </panda.a>
-      </panda.div>
-      <Wrap gap="6" p="8" my="2">
-        <div>
-          <panda.span display="block">TOKENS</panda.span>
-          <Wrap my="2" p="0" gap="6">
-            {navItems
-              .filter((k) => k.type === 'token')
-              .map((data, index) => (
-                <NavItem key={index} {...data} />
-              ))}
-          </Wrap>
+
+        <div className={vstack({ my: '10', textAlign: 'center' })}>
+          <Yums className={css({ fontSize: '24rem' })} />
+          <span className={css({ fontSize: '7xl', letterSpacing: 'tighter', fontWeight: 'medium' })}>Panda Studio</span>
+          <p className={css({ fontSize: '2xl' })}>Live documentation for your design tokens (colors, fonts, etc.)</p>
         </div>
-        <div>
-          <panda.span display="block">PLAYGROUND</panda.span>
-          <Wrap my="2" p="0" gap="6">
-            {navItems
-              .filter((k) => k.type === 'playground')
-              .map((data, index) => (
-                <NavItem key={index} {...data} />
-              ))}
-          </Wrap>
+
+        <div className={hstack({ gap: '6' })}>
+          <a href="/colors" className={buttonRecipe({ variant: 'solid' })}>
+            Get Started
+          </a>
+          <a href="https://panda-css.com?ref=studio" target="_blank" className={buttonRecipe({ variant: 'outline' })}>
+            View Docs
+          </a>
         </div>
-      </Wrap>
-    </panda.div>
+
+        <Wrap mt="20" p="0" gap="6" justify="center">
+          {navItems
+            .filter((k) => k.type === 'token')
+            .map((item, index) => (
+              <div key={index}>
+                <a
+                  title={item.label}
+                  href={`/${item.id}`}
+                  className={square({
+                    size: '20',
+                    fontSize: '2xl',
+                    fontWeight: 'medium',
+                    color: 'accent',
+                    borderWidth: '1px',
+                    borderColor: 'card',
+                  })}
+                >
+                  <item.icon />
+                </a>
+              </div>
+            ))}
+        </Wrap>
+      </div>
+    </div>
   )
 }
