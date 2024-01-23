@@ -46,7 +46,7 @@ export async function generate(config: Config, configPath?: string) {
       }
 
       logger.info('config:change', 'Config changed, restarting...')
-      await ctx.hooks['config:change']?.({ config: ctx.config })
+      await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
       return build(ctx, Array.from(affecteds.artifacts))
     })
 

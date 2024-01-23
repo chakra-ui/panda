@@ -1,5 +1,6 @@
-import type { HooksApiInterface } from './hooks-api'
+import type { ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
+import type { HooksApiInterface } from './hooks-api'
 import type { ParserResultInterface } from './parser'
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
@@ -17,7 +18,7 @@ export interface PandaHooks {
   /**
    * Called when the config file or one of its dependencies (imports) has changed.
    */
-  'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+  'config:change': (args: { config: UserConfig; changes: DiffConfigResult }) => MaybeAsyncReturn
   /**
    * Called after reading the file content but before parsing it.
    * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
@@ -32,7 +33,7 @@ export interface PandaHooks {
   /**
    * Called after the codegen is completed
    */
-  'codegen:done': () => MaybeAsyncReturn
+  'codegen:done': (args: { changed: ArtifactId[] | undefined }) => MaybeAsyncReturn
   /**
    * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
    * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
