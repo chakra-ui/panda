@@ -1136,8 +1136,8 @@ export const Yums = (props: React.ComponentProps<'svg'>) => (
         y2="973.557"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#27A8FF" />
-        <stop offset="1" stop-color="#2976FF" />
+        <stop stopColor="#27A8FF" />
+        <stop offset="1" stopColor="#2976FF" />
       </linearGradient>
     </defs>
   </svg>
