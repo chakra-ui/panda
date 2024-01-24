@@ -99,7 +99,7 @@ This is mostly intended for maintainers or can be asked by maintainers to help d
 
 ### Changed
 
-- Refactor `config.hooks` to be much more powerful, you can now:
+Refactor `config.hooks` to be much more powerful, you can now:
 
 - Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
   load all `recipes` from a folder
