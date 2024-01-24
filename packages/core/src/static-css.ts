@@ -162,6 +162,8 @@ export class StaticCss {
       })
     })
 
+    console.log(results.recipes)
+
     return results
   }
 

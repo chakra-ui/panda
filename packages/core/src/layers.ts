@@ -1,5 +1,6 @@
 import type { CascadeLayer, CascadeLayers } from '@pandacss/types'
 import postcss, { AtRule, Root } from 'postcss'
+import { type LayerType } from './types'
 
 export class Layers {
   root: Root
@@ -12,6 +13,7 @@ export class Layers {
 
   recipes_slots: AtRule
   recipes_slots_base: AtRule
+  private recipeRuleMap = new Map<string, AtRule>()
 
   utilities: AtRule
   compositions: AtRule
@@ -28,6 +30,35 @@ export class Layers {
     this.recipes_slots_base = postcss.atRule({ name: 'layer', params: '_base', nodes: [] })
     this.utilities = postcss.atRule({ name: 'layer', params: names.utilities, nodes: [] })
     this.compositions = postcss.atRule({ name: 'layer', params: 'compositions', nodes: [] })
+  }
+
+  getLayerOfType(kind: LayerType, name?: string) {
+    if (!name) return this[kind]
+    if (name === kind) return this[kind]
+
+    // inserting in predefined recipe layers when possible
+    if (name === 'recipes' || name === 'recipes.slots') return this[kind]
+
+    if (kind === 'utilities') {
+      let layer = this.utilityRuleMap.get(name)
+      if (!layer) {
+        layer = postcss.atRule({ name: 'layer', params: name, nodes: [] })
+        this.utilityRuleMap.set(name, layer)
+      }
+
+      return layer
+    }
+
+    if (kind.includes('recipes')) {
+      const layerName = kind.includes('base') ? name + '.base' : name
+      let layer = this.recipeRuleMap.get(layerName)
+      if (!layer) {
+        layer = postcss.atRule({ name: 'layer', params: layerName, nodes: [] })
+        this.recipeRuleMap.set(layerName, layer)
+      }
+
+      return layer
+    }
   }
 
   getLayerRoot(layer: CascadeLayer) {
@@ -54,6 +85,13 @@ export class Layers {
 
         if (recipes.nodes.length) recipeRoot.append(recipes)
         if (recipes_slots.nodes.length) recipeRoot.append(recipes_slots)
+
+        // sort recipes by @layer name A-Z
+        const sortedRecipes = new Map([...this.recipeRuleMap.entries()].sort())
+        sortedRecipes.forEach((rules) => {
+          if (rules.nodes.length) recipeRoot.append(rules)
+        })
+
         return recipeRoot
       }
 

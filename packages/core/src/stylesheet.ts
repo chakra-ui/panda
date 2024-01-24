@@ -1,12 +1,12 @@
 import { logger } from '@pandacss/logger'
-import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
+import type { CascadeLayer, Dict } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
+import { sortStyleRules } from './sort-style-rules'
 import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
-import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
-import { sortStyleRules } from './sort-style-rules'
+import type { CssOptions, LayerType, ProcessOptions, StylesheetContext } from './types'
 
 export class Stylesheet {
   constructor(private context: StylesheetContext) {}
@@ -15,12 +15,12 @@ export class Stylesheet {
     return this.context.layers
   }
 
-  getLayer(layer: LayerName) {
+  getLayer(layer: LayerType) {
     return this.context.layers[layer] as postcss.AtRule | undefined
   }
 
   process(options: ProcessOptions) {
-    const layer = this.getLayer(options.layer)
+    const layer = this.layers.getLayerOfType(options.layerType, options.layer)
     if (!layer) return
 
     const { styles } = options
@@ -35,7 +35,6 @@ export class Stylesheet {
         logger.error('sheet:process', error.showSourceCode(true))
       }
     }
-    return
   }
 
   serialize = (styles: Dict) => {
@@ -53,25 +52,33 @@ export class Stylesheet {
     this.context.layers.base.append(css)
   }
 
-  processCss = (styles: SystemStyleObject | undefined, layer: LayerName) => {
-    if (!styles) return
-    this.process({ styles, layer })
+  processCss = (options: ProcessOptions) => {
+    if (!options.styles) return
+    this.process(options)
   }
 
   processDecoder = (decoder: StyleDecoder) => {
     sortStyleRules([...decoder.atomic]).forEach((css) => {
-      this.processCss(css.result, (css.layer as LayerName) ?? 'utilities')
+      this.processCss({ styles: css.result, layer: css.layer, layerType: (css.layer as LayerType) ?? 'utilities' })
     })
 
     decoder.recipes.forEach((recipeSet) => {
       recipeSet.forEach((recipe) => {
-        this.processCss(recipe.result, recipe.entry.slot ? 'recipes_slots' : 'recipes')
+        this.processCss({
+          styles: recipe.result,
+          layer: recipe.layer,
+          layerType: recipe.entry.slot ? 'recipes_slots' : 'recipes',
+        })
       })
     })
 
     decoder.recipes_base.forEach((recipeSet) => {
       recipeSet.forEach((recipe) => {
-        this.processCss(recipe.result, recipe.slot ? 'recipes_slots_base' : 'recipes_base')
+        this.processCss({
+          styles: recipe.result,
+          layer: recipe.layer,
+          layerType: recipe.slot ? 'recipes_slots_base' : 'recipes_base',
+        })
       })
     })
   }

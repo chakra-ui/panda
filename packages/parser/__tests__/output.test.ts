@@ -3105,7 +3105,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test('recipe issue', () => {
+  test('recipe coarsing shorthands issue', () => {
     const code = `
     import { css } from 'styled-system/css';
     import { styled } from 'styled-system/jsx';
@@ -3323,6 +3323,267 @@ describe('extract to css output pipeline', () => {
 
         [data-theme=dark] .dark\\:text_white,.dark .dark\\:text_white,.dark\\:text_white.dark,.dark\\:text_white[data-theme=dark] {
           color: var(--colors-white);
+      }
+      }"
+    `)
+  })
+
+  test('recipes customizable layer', () => {
+    const { ctx } = parseAndExtract('', {
+      theme: {
+        extend: {
+          recipes: {
+            pink: {
+              // default
+              className: 'pink',
+              base: { color: 'pink.100' },
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            green: {
+              // still default
+              className: 'green',
+              base: { color: 'green.100' },
+              layer: 'recipes',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            blue: {
+              // custom layer
+              className: 'blue',
+              base: { color: 'blue.100' },
+              layer: 'recipes.aaa',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            yellow: {
+              // custom layer
+              className: 'yellow',
+              base: { color: 'yellow.100' },
+              layer: 'recipes.bbb',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            red: {
+              // custom layer
+              className: 'redRecipe',
+              base: { color: 'red.100' },
+              layer: 'super_recipes',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const sheet = ctx.createSheet()
+    ctx.appendCssOfType('static', sheet)
+    const css = ctx.getCss(sheet)
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .pink {
+            color: var(--colors-pink-100);
+      }
+
+          .green {
+            color: var(--colors-green-100);
+      }
+      }
+
+        .pink--variant_small,.green--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer recipes.aaa {
+        .blue--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer recipes.aaa.base {
+        .blue {
+          color: var(--colors-blue-100);
+      }
+      }
+
+      @layer recipes.bbb {
+        .yellow--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer recipes.bbb.base {
+        .yellow {
+          color: var(--colors-yellow-100);
+      }
+      }
+
+      @layer super_recipes {
+        .redRecipe--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer super_recipes.base {
+        .redRecipe {
+          color: var(--colors-red-100);
+      }
+      }"
+    `)
+  })
+
+  test('slot recipes customizable layer', () => {
+    const { ctx } = parseAndExtract('', {
+      theme: {
+        extend: {
+          slotRecipes: {
+            pink: {
+              // default
+              className: 'pink',
+              slots: ['root'],
+              base: { root: { color: 'pink.100' } },
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { root: { fontSize: 'sm' } },
+                },
+              },
+            },
+            green: {
+              // still default
+              className: 'green',
+              slots: ['root'],
+              base: { root: { color: 'green.100' } },
+              layer: 'recipes.slots',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { root: { fontSize: 'sm' } },
+                },
+              },
+            },
+            blue: {
+              // custom layer
+              className: 'blue',
+              slots: ['root'],
+              base: { root: { color: 'blue.100' } },
+              layer: 'recipes.slots.aaa',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { root: { fontSize: 'sm' } },
+                },
+              },
+            },
+            yellow: {
+              // custom layer
+              className: 'yellow',
+              slots: ['root'],
+              base: { root: { color: 'yellow.100' } },
+              layer: 'recipes.slots.bbb',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { root: { fontSize: 'sm' } },
+                },
+              },
+            },
+            red: {
+              // custom layer
+              className: 'red',
+              slots: ['root'],
+              base: { root: { color: 'red.100' } },
+              layer: 'super_recipes.slots',
+              staticCss: [{ variant: ['small'] }],
+              variants: {
+                variant: {
+                  small: { root: { fontSize: 'sm' } },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const sheet = ctx.createSheet()
+    ctx.appendCssOfType('static', sheet)
+    const css = ctx.getCss(sheet)
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        @layer _base {
+          .pink__root {
+            color: var(--colors-pink-100);
+      }
+
+          .green__root {
+            color: var(--colors-green-100);
+      }
+      }
+
+        .pink__root--variant_small,.green__root--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer recipes.slots.aaa {
+        .blue__root--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer recipes.slots.aaa.base {
+        .blue__root {
+          color: var(--colors-blue-100);
+      }
+      }
+
+      @layer recipes.slots.bbb {
+        .yellow__root--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer recipes.slots.bbb.base {
+        .yellow__root {
+          color: var(--colors-yellow-100);
+      }
+      }
+
+      @layer super_recipes.slots {
+        .red__root--variant_small {
+          font-size: var(--font-sizes-sm);
+      }
+      }
+
+      @layer super_recipes.slots.base {
+        .red__root {
+          color: var(--colors-red-100);
       }
       }"
     `)

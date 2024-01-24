@@ -87,10 +87,11 @@ export interface CssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
 
 export interface ProcessOptions {
   styles: Dict
-  layer: LayerName
+  layerType: LayerType
+  layer?: string
 }
 
-export type LayerName =
+export type LayerType =
   | 'base'
   | 'reset'
   | 'recipes_slots_base'

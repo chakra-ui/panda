@@ -60,17 +60,18 @@ export class StyleDecoder {
     return esc(result)
   }
 
-  private getRecipeName = (hash: string) => {
-    const entry = getEntryFromHash(hash)
+  private getRecipeKey = (entry: StyleEntry) => {
     if (!entry.recipe) return
+
     return entry.slot ? this.context.recipes.getSlotKey(entry.recipe, entry.slot) : entry.recipe
   }
 
-  private getTransformResult = (hash: string) => {
-    const entry = getEntryFromHash(hash)
-    const recipeName = this.getRecipeName(hash)
+  private getTransformResult = (entry: StyleEntry) => {
+    const recipeKey = this.getRecipeKey(entry)
 
-    const transform = recipeName ? this.context.recipes.getTransform(recipeName) : this.context.utility.transform
+    const transform = recipeKey
+      ? this.context.recipes.getTransform(recipeKey, Boolean(entry.slot))
+      : this.context.utility.transform
     const transformed = transform(entry.prop, withoutImportant(entry.value) as string)
 
     if (!transformed.className) {
@@ -83,6 +84,13 @@ export class StyleDecoder {
     const parts = entry.cond ? entry.cond.split(StyleEncoder.conditionSeparator) : []
     const className = this.formatSelector(parts, transformed.className)
     const classSelector = important ? `.${className}\\!` : `.${className}`
+
+    if (entry.recipe) {
+      const recipe = this.context.recipes.getConfig(entry.recipe)
+      if (recipe.layer) {
+        transformed.layer = recipe.layer
+      }
+    }
 
     return {
       className,
@@ -98,8 +106,7 @@ export class StyleDecoder {
     if (cached) return cached
 
     const entry = getEntryFromHash(hash)
-
-    const transformResult = this.getTransformResult(hash)
+    const transformResult = this.getTransformResult(entry)
     if (!transformResult) return
 
     const { className, classSelector, styles, transformed, parts } = transformResult
@@ -201,12 +208,18 @@ export class StyleDecoder {
     const selector = this.formatSelector([], className)
     const style = this.getGroup(hashSet, className)
 
-    return Object.assign({}, style, {
+    const result: RecipeBaseResult = Object.assign({}, style, {
       result: { ['.' + selector]: style.result },
       recipe: recipeName,
       className,
       slot,
     })
+
+    if (recipeConfig.layer) {
+      result.layer = recipeConfig.layer
+    }
+
+    return result
   }
 
   collectAtomic = (encoder: StyleEncoder) => {
@@ -229,15 +242,20 @@ export class StyleDecoder {
 
   private processClassName = (recipeName: string, hash: string) => {
     const result = this.getAtomic(hash)
+    // console.log({ recipeName, hash, result })
     if (!result) return
 
     const styleSet = getOrCreateSet(this.recipes, recipeName)
     styleSet.add(result)
 
     this.classNames.set(result.className, result)
+    // console.log(3, this.recipes)
+    // console.log(4, this.recipes)
+    // console.log(5, { recipeName, hash, result })
   }
 
   collectRecipe = (encoder: StyleEncoder) => {
+    // console.log(1, encoder.recipes)
     // no need to sort, each recipe is scoped using recipe.className
     encoder.recipes.forEach((hashSet, recipeName) => {
       const recipeConfig = this.context.recipes.getConfig(recipeName)
@@ -247,6 +265,7 @@ export class StyleDecoder {
         if ('slots' in recipeConfig) {
           recipeConfig.slots.forEach((slot) => {
             const slotHash = hash + StyleEncoder.separator + 'slot:' + slot
+            // console.log(2, { recipeName, slotHash })
             this.processClassName(recipeName, slotHash)
           })
         } else {

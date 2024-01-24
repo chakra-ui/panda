@@ -38,6 +38,7 @@ export interface GroupedResult extends Pick<AtomicStyleResult, 'result' | 'class
 export interface RecipeBaseResult extends GroupedResult {
   recipe: string
   slot?: string
+  layer?: string
 }
 
 export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {

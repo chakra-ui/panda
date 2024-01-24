@@ -87,7 +87,7 @@ export class Recipes {
       // normalize each recipe
       Object.entries(slots).forEach(([slot, slotRecipe]) => {
         const slotName = this.getSlotKey(name, slot)
-        this.normalize(slotName, slotRecipe)
+        this.normalize(slotName, slotRecipe, true)
         slotsMap.set(slotName, slotRecipe)
       })
 
@@ -192,7 +192,7 @@ export class Recipes {
     return 'slots' in config && Array.isArray(config.slots) && config.slots.length > 0
   }
 
-  normalize = (name: string, config: RecipeConfig) => {
+  normalize = (name: string, config: RecipeConfig, slot?: boolean) => {
     const {
       className,
       jsx = [capitalize(name)],
@@ -202,6 +202,7 @@ export class Recipes {
       description = '',
       compoundVariants = [],
       staticCss = [],
+      layer = slot ? 'recipes_slots' : 'recipes',
     } = config
 
     const recipe: Required<RecipeConfig> = {
@@ -214,6 +215,7 @@ export class Recipes {
       defaultVariants,
       compoundVariants,
       staticCss,
+      layer,
     }
 
     recipe.base = transformStyles(this.context, base, name)
@@ -240,17 +242,20 @@ export class Recipes {
     return recipe
   }
 
-  getTransform = (name: string, slot?: boolean) => {
+  getTransform = (key: string, slot?: boolean) => {
+    const baseClassName = sharedState.classNames.get(key)
+    const baseStyles = sharedState.styles.get(key) ?? {}
+
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
           layer: slot ? 'recipes_slots_base' : 'recipes_base',
-          className: sharedState.classNames.get(name)!,
-          styles: sharedState.styles.get(name) ?? {},
+          className: baseClassName,
+          styles: baseStyles,
         }
       }
 
-      const propKey = this.getPropKey(name, variant, value)
+      const propKey = this.getPropKey(key, variant, value)
 
       return {
         className: sharedState.classNames.get(propKey)!,
