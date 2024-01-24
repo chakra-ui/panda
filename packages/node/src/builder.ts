@@ -70,7 +70,7 @@ export class Builder {
     // config change
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
-      await ctx.hooks['config:change']?.({ config: ctx.config })
+      await ctx.hooks['config:change']?.({ config: ctx.config, changes: this.affecteds })
       return
     }
 
