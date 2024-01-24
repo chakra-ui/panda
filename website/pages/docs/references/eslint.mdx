@@ -198,6 +198,19 @@ const styles = css({ border: 'solid 1px {colorss.gray.50}' })
 const styles = css({ border: 'solid 1px {colors.gray.50}' })
 ```
 
+### no-property-renaming
+
+```json
+{
+  "plugins": ["@pandacss"],
+  "rules":{
+    "@pandacss/no-property-renaming": "warn", // or error
+  }
+}
+```
+
+Find more details [here](https://panda-css.com/docs/concepts/style-props#property-renaming).
+
 ### no-shorthand-prop
 
 Discourage the use of shorthand properties and promote the preference for longhand CSS properties in the codebase.
