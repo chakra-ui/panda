@@ -126,7 +126,7 @@ export async function main() {
         ctx.watchConfig(
           async () => {
             const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+              ctx = new PandaContext(conf)
             })
             await codegen(ctx, Array.from(affecteds.artifacts))
             logger.info('ctx:updated', 'config rebuilt ✅')
@@ -202,7 +202,7 @@ export async function main() {
         ctx.watchConfig(
           async () => {
             await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+              ctx = new PandaContext(conf)
             })
             await cssgen(ctx, options)
             logger.info('ctx:updated', 'config rebuilt ✅')
@@ -421,7 +421,7 @@ export async function main() {
         ctx.watchConfig(
           async () => {
             await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+              ctx = new PandaContext(conf)
             })
             await buildInfo(ctx, outfile)
             logger.info('ctx:updated', 'config rebuilt ✅')

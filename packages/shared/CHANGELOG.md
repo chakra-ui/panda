@@ -1,5 +1,11 @@
 # @pandacss/shared
 
+## 0.28.0
+
+### Patch Changes
+
+- 770c7aa4: Update `getArbitraryValue` so it works for values that start on a new line
+
 ## 0.27.3
 
 ## 0.27.2

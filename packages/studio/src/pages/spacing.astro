@@ -1,10 +1,10 @@
 ---
-import { Sizes } from '../components/sizes'
+import Sizes  from '../components/sizes'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
 
-const tokens = context.getCategory('spacing')
+const tokens = context.getTokens('spacing')
 ---
 
 <Layout>

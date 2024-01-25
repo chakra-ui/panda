@@ -29,14 +29,14 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
   result.config.presets = Array.from(presets)
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
+  const hooks = result.config.hooks ?? {}
 
-  const serialized = stringifyJson(mergedConfig)
+  // This allows editing the config before the context is created
+  const loadConfigResult = { ...result, config: mergedConfig as any } as LoadConfigResult
+  await hooks['config:resolved']?.({ conf: loadConfigResult })
+
+  const serialized = stringifyJson(loadConfigResult.config)
   const deserialize = () => parseJson(serialized)
 
-  return {
-    ...result,
-    serialized,
-    deserialize,
-    config: mergedConfig as any,
-  }
+  return { ...loadConfigResult, serialized, deserialize, hooks }
 }

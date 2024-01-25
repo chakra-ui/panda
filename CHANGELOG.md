@@ -6,6 +6,155 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.28.0] - 2024-01-24
+
+### Fixed
+
+- Allow custom logo in studio
+- Update `getArbitraryValue` so it works for values that start on a new line
+- Fix issue where `/* @__PURE__ */` annotation threw a warning in Vite build due to incorrect placement.
+- Fix a typing issue where the `borderWidths` wasn't specified in the generated `TokenCategory` type
+- Fix issue where throws "React is not defined error"
+- Fix a regression with rule insertion order after triggering HMR that re-uses some CSS already generated in previous
+  triggers, introuced in v0.27.0
+- Fix the issue in the utility configuration where shorthand without `className` returns incorrect CSS when using the
+  shorthand version.
+
+```js
+utilities: {
+  extend: {
+    coloredBorder: {
+      shorthand: 'cb', // no classname, returns incorrect css
+      values: ['red', 'green', 'blue'],
+      transform(value) {
+        return {
+          border: `1px solid ${value}`,
+        };
+      },
+    },
+  },
+},
+```
+
+- Fix a regression with globalCss selector order
+
+```ts
+{
+    globalCss: {
+        html: {
+          ".aaa": {
+            color: "red.100",
+            "& .bbb": {
+              color: "red.200",
+              "& .ccc": {
+                color: "red.300"
+              }
+            }
+          }
+        },
+    }
+}
+```
+
+would incorrectly generate (regression introduced in v0.26.2)
+
+```css
+.aaa html {
+  color: var(--colors-red-100);
+}
+
+.aaa html .bbb {
+  color: var(--colors-red-200);
+}
+
+.aaa html .bbb .ccc {
+  color: var(--colors-red-300);
+}
+```
+
+will now correctly generate again:
+
+```css
+.aaa html {
+  color: var(--colors-red-100);
+}
+
+.aaa html .bbb {
+  color: var(--colors-red-200);
+}
+
+.aaa html .bbb .ccc {
+  color: var(--colors-red-300);
+}
+```
+
+### Added
+
+- Add a `--cpu-prof` flag to `panda`, `panda cssgen`, `panda codegen` and `panda debug` commands This is useful for
+  debugging performance issues in `panda` itself. This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+  the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+- Slight perf improvement by caching a few computed properties that contains a loop
+
+This is mostly intended for maintainers or can be asked by maintainers to help debug issues.
+
+### Changed
+
+Refactor `config.hooks` to be much more powerful, you can now:
+
+- Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
+  load all `recipes` from a folder
+- Transform a source file's content before parsing it, this could be used to transform the file content to a
+  `tsx`-friendly syntax so that Panda's parser can parse it.
+- Implement your own parser logic and add the extracted results to the classic Panda pipeline, this could be used to
+  parse style usage from any template language
+- Tweak the CSS content for any `@layer` or even right before it's written to disk (if using the CLI) or injected
+  through the postcss plugin, allowing all kinds of customizations like removing the unused CSS variables, etc.
+- React to any config change or after the codegen step (your outdir, the `styled-system` folder) have been generated
+
+See the list of available `config.hooks` here:
+
+```ts
+export interface PandaHooks {
+  /**
+   * Called when the config is resolved, after all the presets are loaded and merged.
+   * This is the first hook called, you can use it to tweak the config before the context is created.
+   */
+  'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+  /**
+   * Called when the Panda context has been created and the API is ready to be used.
+   */
+  'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+  /**
+   * Called when the config file or one of its dependencies (imports) has changed.
+   */
+  'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+  /**
+   * Called after reading the file content but before parsing it.
+   * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
+   * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
+   */
+  'parser:before': (args: { filePath: string; content: string }) => string | void
+  /**
+   * Called after the file styles are extracted and processed into the resulting ParserResult object.
+   * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
+   */
+  'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+  /**
+   * Called after the codegen is completed
+   */
+  'codegen:done': () => MaybeAsyncReturn
+  /**
+   * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
+   * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
+   * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
+   */
+  'cssgen:done': (args: {
+    artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+    content: string
+  }) => string | void
+}
+```
+
 ## [0.27.3] - 2024-01-18
 
 ### Fixed

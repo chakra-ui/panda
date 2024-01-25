@@ -2,8 +2,7 @@ import { mergeConfigs } from '@pandacss/config'
 import { Generator } from '@pandacss/generator'
 import { PandaContext } from '@pandacss/node'
 import { stringifyJson, parseJson } from '@pandacss/shared'
-import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
-import { createHooks } from 'hookable'
+import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { fixturePreset } from './config'
 
 const config: UserConfig = {
@@ -21,10 +20,10 @@ export const fixtureDefaults = {
   dependencies: [],
   config,
   path: '',
-  hooks: createHooks(),
+  hooks: {},
   serialized: stringifyJson(config),
   deserialize: () => parseJson(stringifyJson(config)),
-} as ConfigResultWithHooks
+} as LoadConfigResult
 
 export const createGeneratorContext = (userConfig?: Config) => {
   const resolvedConfig = (

@@ -377,6 +377,7 @@ export interface LoadConfigResult extends LoadTsConfigResult {
   serialized: string
   deserialize: () => Config
   dependencies: string[]
+  hooks: Partial<PandaHooks>
 }
 
 export interface HashOptions {

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/parser",
-  "version": "0.27.3",
+  "version": "0.28.0",
   "description": "The static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -46,8 +46,7 @@
   },
   "devDependencies": {
     "@pandacss/generator": "workspace:*",
-    "@vue/compiler-core": "3.3.4",
-    "hookable": "5.5.3"
+    "@vue/compiler-core": "3.3.4"
   },
   "files": [
     "dist"

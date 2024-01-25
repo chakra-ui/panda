@@ -1,11 +1,12 @@
+import * as React from 'react'
 import { panda } from '../../styled-system/jsx'
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
 import { EmptyState } from './empty-state'
 import { TextStylesIcon } from './icons'
 import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
 
-export function TextStyles() {
+export default function TextStyles() {
   const textStyles = Object.entries(context.textStyles)
 
   return (

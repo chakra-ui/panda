@@ -41,7 +41,7 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
     if (!result || result.isEmpty() || encoder.isEmpty()) return
 
     const styles = ctx.decoder.clone().collect(encoder)
-    const css = ctx.getParserCss(styles, file)
+    const css = ctx.getParserCss(styles)
     if (!css) return
 
     if (options.dry) {

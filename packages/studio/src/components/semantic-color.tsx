@@ -1,6 +1,7 @@
+import * as React from 'react'
 import { Flex, panda } from '../../styled-system/jsx'
 import { ColorWrapper } from './color-wrapper'
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
 
 const getSemanticColorValue = (variable: string): string => {
   const _name = variable.match(/var\(\s*--(.*?)\s*\)/)
@@ -22,7 +23,7 @@ const getSemanticColorValue = (variable: string): string => {
 const cleanCondition = (condition: string) => condition.replace(/^_/, '')
 
 export function SemanticColorDisplay(props: { value: string; condition: string; token?: string }) {
-  const { value, condition, token } = props
+  const { value, condition } = props
 
   const tokenValue = getSemanticColorValue(value)
 
@@ -44,10 +45,7 @@ export function SemanticColorDisplay(props: { value: string; condition: string; 
           {cleanCondition(condition)}
         </panda.span>
       </ColorWrapper>
-      <panda.div fontWeight="medium" mt="2">
-        {token} &nbsp;
-      </panda.div>
-      <panda.div opacity="0.7" fontSize="sm" textTransform="uppercase">
+      <panda.div opacity="0.7" fontSize="sm">
         {value} {value !== tokenValue && `- ${tokenValue}`}
       </panda.div>
     </Flex>

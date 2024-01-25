@@ -1,11 +1,11 @@
 ---
-import { ColorContrastChecker } from '../../components/color-constrast'
+import ColorContrastChecker from '../../components/color-constrast'
 import Layout from '../../layouts/Layout.astro'
 import Sidebar from '../../layouts/Sidebar.astro'
 ---
 
 <Layout>
-  <Sidebar>
+  <Sidebar title="Playground / Constrast">
     <ColorContrastChecker client:load />
   </Sidebar>
 </Layout>

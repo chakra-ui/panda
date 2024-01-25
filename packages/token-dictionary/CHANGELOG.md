@@ -1,5 +1,15 @@
 # @pandacss/token-dictionary
 
+## 0.28.0
+
+### Patch Changes
+
+- d4fa5de9: Fix a typing issue where the `borderWidths` wasn't specified in the generated `TokenCategory` type
+- Updated dependencies [f58f6df2]
+- Updated dependencies [770c7aa4]
+  - @pandacss/types@0.28.0
+  - @pandacss/shared@0.28.0
+
 ## 0.27.3
 
 ### Patch Changes

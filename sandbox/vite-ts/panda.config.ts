@@ -1,15 +1,28 @@
-import { defineConfig, defineRecipe } from '@pandacss/dev'
-
-const someRecipe = defineRecipe({
-  className: 'some-recipe',
-  base: { color: 'green', fontSize: '16px' },
-  variants: {
-    size: { small: { fontSize: '14px' } },
-  },
-  compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
-})
+import { defineConfig } from '@pandacss/dev'
+import { removeUnusedCssVars } from './remove-unused-css-vars'
+import { removeUnusedKeyframes } from './remove-unused-keyframes'
 
 export default defineConfig({
+  hooks: {
+    // Dynamically add a recipe
+    'config:resolved': async ({ conf }) => {
+      const { someRecipe } = await import('./some-recipe')
+      const recipes = conf.config.theme?.recipes
+      if (recipes) {
+        recipes['someRecipe'] = someRecipe
+      }
+    },
+    // Dynamically create a CSS rule
+    'context:created': ({ ctx }) => {
+      ctx.processor.css({ color: 'lime.300' })
+    },
+    // Remove unused CSS vars
+    'cssgen:done': ({ artifact, content }) => {
+      if (artifact === 'styles.css') {
+        return removeUnusedCssVars(removeUnusedKeyframes(content))
+      }
+    },
+  },
   preflight: true,
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
@@ -23,7 +36,7 @@ export default defineConfig({
       },
     },
     recipes: {
-      someRecipe,
+      // someRecipe,
       button: {
         className: 'button',
         jsx: ['Button', 'ListedButton', /WithRegex$/, 'PrimaryButtonLike'],

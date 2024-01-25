@@ -2,15 +2,14 @@ import { mergeConfigs } from '@pandacss/config'
 import { fixtureDefaults } from '@pandacss/fixture'
 import { Generator } from '@pandacss/generator'
 import { parseJson, stringifyJson } from '@pandacss/shared'
-import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
-import { createHooks } from 'hookable'
+import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { DiffEngine } from '../src/diff-engine'
 
-const common: Partial<ConfigResultWithHooks> = {
+const common: Partial<LoadConfigResult> = {
   dependencies: [],
   path: '',
-  hooks: createHooks(),
+  hooks: {},
 }
 
 const createConfigResult = (config: UserConfig) => {
@@ -19,7 +18,7 @@ const createConfigResult = (config: UserConfig) => {
   const serialized = stringifyJson(conf.config)
   const deserialize = () => parseJson(serialized)
 
-  return { ...conf, serialized, deserialize } as ConfigResultWithHooks
+  return { ...conf, serialized, deserialize } as LoadConfigResult
 }
 
 describe('DiffEngine affecteds', () => {
@@ -460,7 +459,7 @@ describe('DiffEngine affecteds', () => {
           "type": "CREATE",
           "value": {
             "transform": "transform() {
-                      return { color: \\"blue.400\\" };
+                      return { color: "blue.400" };
                     }",
           },
         },
@@ -497,7 +496,7 @@ describe('DiffEngine affecteds', () => {
       [
         {
           "oldValue": "transform() {
-                      return { color: \\"blue.400\\" };
+                      return { color: "blue.400" };
                     }",
           "path": [
             "patterns",
@@ -506,7 +505,7 @@ describe('DiffEngine affecteds', () => {
           ],
           "type": "CHANGE",
           "value": "transform() {
-                      return { color: \\"blue.500\\" };
+                      return { color: "blue.500" };
                     }",
         },
       ]
@@ -529,7 +528,7 @@ describe('DiffEngine affecteds', () => {
         {
           "oldValue": {
             "transform": "transform() {
-                      return { color: \\"blue.500\\" };
+                      return { color: "blue.500" };
                     }",
           },
           "path": [

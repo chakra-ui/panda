@@ -1,4 +1,9 @@
-export function Logo(props: React.ComponentPropsWithoutRef<'svg'>) {
+import * as React from 'react'
+import { logo } from '../lib/panda-context'
+
+export function Logo(props: React.ComponentProps<'svg'>) {
+  if (logo) return <img src={logo} width="16" alt="logo" />
+
   return (
     <svg width="124" height="34" viewBox="0 0 124 34" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path

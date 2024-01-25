@@ -70,7 +70,7 @@ describe('walk object', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "a": {
-          "b": "value is {\\"c\\":[1,2,3]}",
+          "b": "value is {"c":[1,2,3]}",
         },
       }
     `)

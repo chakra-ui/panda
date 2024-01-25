@@ -38,9 +38,7 @@ const sharedState = {
 export class Recipes {
   slotSeparator = '__'
 
-  get keys() {
-    return Object.keys(this.recipes)
-  }
+  keys: string[] = []
 
   private context!: SerializeContext
 
@@ -76,6 +74,7 @@ export class Recipes {
     for (const [name, recipe] of Object.entries(this.recipes)) {
       this.saveOne(name, recipe)
     }
+    this.keys = Object.keys(this.recipes)
   }
 
   saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {

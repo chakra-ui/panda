@@ -1,8 +1,8 @@
 import type {
   Config,
-  ConfigResultWithHooks,
   Dict,
   HashOptions,
+  LoadConfigResult,
   PatternHelpers,
   RecipeConfig,
   SlotRecipeConfig,
@@ -24,7 +24,7 @@ export interface TransformResult {
 }
 
 export interface StylesheetContext
-  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty'> {
+  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks'> {
   layers: Layers
   helpers: PatternHelpers
   hash?: boolean
@@ -111,5 +111,5 @@ export interface ParserOptions {
   encoder: StyleEncoder
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
-  tsOptions: ConfigResultWithHooks['tsOptions']
+  tsOptions: LoadConfigResult['tsOptions']
 }

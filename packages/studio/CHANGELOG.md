@@ -1,5 +1,21 @@
 # @pandacss/studio
 
+## 0.28.0
+
+### Patch Changes
+
+- f05f56fd: Allow custom logo in studio
+- 7a492d72: Fix issue where throws "React is not defined error"
+- Updated dependencies [f58f6df2]
+- Updated dependencies [770c7aa4]
+- Updated dependencies [d4fa5de9]
+  - @pandacss/config@0.28.0
+  - @pandacss/types@0.28.0
+  - @pandacss/shared@0.28.0
+  - @pandacss/token-dictionary@0.28.0
+  - @pandacss/astro-plugin-studio@0.28.0
+  - @pandacss/logger@0.28.0
+
 ## 0.27.3
 
 ### Patch Changes
