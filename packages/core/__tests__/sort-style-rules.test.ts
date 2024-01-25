@@ -78,29 +78,29 @@ describe('sort style rules', () => {
           font-size: 1px;
       }
 
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:fs_2[data-attr='test'] {
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:fs_2[data-attr='test'] {
           font-size: 2px;
       }
 
-        .focus\\\\:fs_3:is(:focus, [data-focus]) {
+        .focus\\:fs_3:is(:focus, [data-focus]) {
           font-size: 3px;
       }
 
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:fs_4[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:fs_4[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
           font-size: 4px;
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:fs_5 {
+          .sm\\:fs_5 {
             font-size: 5px;
       }
-          .sm\\\\:bg_red {
+          .sm\\:bg_red {
             background-color: red;
       }
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
@@ -131,49 +131,49 @@ describe('sort style rules', () => {
           font-size: 1px;
       }
 
-        .fs_1\\\\.1 {
+        .fs_1\\.1 {
           font-size: 1.1px;
       }
 
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:fs_2[data-attr='test'] {
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:fs_2[data-attr='test'] {
           font-size: 2px;
       }
 
-        .focus\\\\:fs_3:is(:focus, [data-focus]) {
+        .focus\\:fs_3:is(:focus, [data-focus]) {
           font-size: 3px;
       }
 
-        .hover\\\\:fs_3\\\\.2:is(:hover, [data-hover]) {
+        .hover\\:fs_3\\.2:is(:hover, [data-hover]) {
           font-size: 3.2px;
       }
 
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:fs_4[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:fs_4[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
           font-size: 4px;
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:fs_5 {
+          .sm\\:fs_5 {
             font-size: 5px;
       }
-          .sm\\\\:bg_red {
+          .sm\\:bg_red {
             background-color: red;
       }
-          .sm\\\\:fs_5\\\\.3 {
+          .sm\\:fs_5\\.3 {
             font-size: 5.3px;
       }
-          .sm\\\\:bg_blue {
+          .sm\\:bg_blue {
             background-color: blue;
       }
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:hover\\\\:bg_purple:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg_purple:is(:hover, [data-hover]) {
             background-color: purple;
       }
       }

@@ -60,7 +60,7 @@ describe('expandTokenFn', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "
             * {
-              color: var(colors\\\\.doesntexist\\\\.400, pink);
+              color: var(colors\\.doesntexist\\.400, pink);
             }
           "
     `)
@@ -90,8 +90,8 @@ describe('expandTokenFn', () => {
                   color: green;
                 }
               }
-              @container (min-width: sizes\\\\.12345) {
-                .[@container_(min-width:_sizes\\\\.12345)]:text_green {
+              @container (min-width: sizes\\.12345) {
+                .[@container_(min-width:_sizes\\.12345)]:text_green {
                   color: green;
                 }
               }

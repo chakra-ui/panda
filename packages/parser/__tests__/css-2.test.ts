@@ -541,7 +541,7 @@ export function Card({ className }) {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\\\.400 {
+        .text_red\\.400 {
           color: var(--colors-red-400);
       }
 
