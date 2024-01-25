@@ -88,7 +88,7 @@ export class StyleDecoder {
     if (entry.recipe) {
       const recipe = this.context.recipes.getConfig(entry.recipe)
       if (recipe.layer) {
-        transformed.layer = recipe.layer
+        transformed.layer = 'recipes.' + ('slots' in recipe ? 'slots.' : '') + recipe.layer
       }
     }
 
@@ -216,7 +216,7 @@ export class StyleDecoder {
     })
 
     if (recipeConfig.layer) {
-      result.layer = recipeConfig.layer
+      result.layer = 'recipes.' + ('slots' in recipeConfig ? 'slots.' : '') + recipeConfig.layer
     }
 
     return result
@@ -242,20 +242,15 @@ export class StyleDecoder {
 
   private processClassName = (recipeName: string, hash: string) => {
     const result = this.getAtomic(hash)
-    // console.log({ recipeName, hash, result })
     if (!result) return
 
     const styleSet = getOrCreateSet(this.recipes, recipeName)
     styleSet.add(result)
 
     this.classNames.set(result.className, result)
-    // console.log(3, this.recipes)
-    // console.log(4, this.recipes)
-    // console.log(5, { recipeName, hash, result })
   }
 
   collectRecipe = (encoder: StyleEncoder) => {
-    // console.log(1, encoder.recipes)
     // no need to sort, each recipe is scoped using recipe.className
     encoder.recipes.forEach((hashSet, recipeName) => {
       const recipeConfig = this.context.recipes.getConfig(recipeName)
@@ -265,7 +260,6 @@ export class StyleDecoder {
         if ('slots' in recipeConfig) {
           recipeConfig.slots.forEach((slot) => {
             const slotHash = hash + StyleEncoder.separator + 'slot:' + slot
-            // console.log(2, { recipeName, slotHash })
             this.processClassName(recipeName, slotHash)
           })
         } else {

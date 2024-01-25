@@ -3344,23 +3344,11 @@ describe('extract to css output pipeline', () => {
                 },
               },
             },
-            green: {
-              // still default
-              className: 'green',
-              base: { color: 'green.100' },
-              layer: 'recipes',
-              staticCss: [{ variant: ['small'] }],
-              variants: {
-                variant: {
-                  small: { fontSize: 'sm' },
-                },
-              },
-            },
             blue: {
               // custom layer
               className: 'blue',
               base: { color: 'blue.100' },
-              layer: 'recipes.aaa',
+              layer: 'aaa',
               staticCss: [{ variant: ['small'] }],
               variants: {
                 variant: {
@@ -3372,19 +3360,7 @@ describe('extract to css output pipeline', () => {
               // custom layer
               className: 'yellow',
               base: { color: 'yellow.100' },
-              layer: 'recipes.bbb',
-              staticCss: [{ variant: ['small'] }],
-              variants: {
-                variant: {
-                  small: { fontSize: 'sm' },
-                },
-              },
-            },
-            red: {
-              // custom layer
-              className: 'redRecipe',
-              base: { color: 'red.100' },
-              layer: 'super_recipes',
+              layer: 'bbb',
               staticCss: [{ variant: ['small'] }],
               variants: {
                 variant: {
@@ -3407,13 +3383,9 @@ describe('extract to css output pipeline', () => {
           .pink {
             color: var(--colors-pink-100);
       }
-
-          .green {
-            color: var(--colors-green-100);
-      }
       }
 
-        .pink--variant_small,.green--variant_small {
+        .pink--variant_small {
           font-size: var(--font-sizes-sm);
       }
       }
@@ -3424,33 +3396,21 @@ describe('extract to css output pipeline', () => {
       }
       }
 
-      @layer recipes.aaa.base {
-        .blue {
-          color: var(--colors-blue-100);
-      }
-      }
-
       @layer recipes.bbb {
         .yellow--variant_small {
           font-size: var(--font-sizes-sm);
       }
       }
 
+      @layer recipes.aaa.base {
+        .blue {
+          color: var(--colors-blue-100);
+      }
+      }
+
       @layer recipes.bbb.base {
         .yellow {
           color: var(--colors-yellow-100);
-      }
-      }
-
-      @layer super_recipes {
-        .redRecipe--variant_small {
-          font-size: var(--font-sizes-sm);
-      }
-      }
-
-      @layer super_recipes.base {
-        .redRecipe {
-          color: var(--colors-red-100);
       }
       }"
     `)
@@ -3473,25 +3433,12 @@ describe('extract to css output pipeline', () => {
                 },
               },
             },
-            green: {
-              // still default
-              className: 'green',
-              slots: ['root'],
-              base: { root: { color: 'green.100' } },
-              layer: 'recipes.slots',
-              staticCss: [{ variant: ['small'] }],
-              variants: {
-                variant: {
-                  small: { root: { fontSize: 'sm' } },
-                },
-              },
-            },
             blue: {
               // custom layer
               className: 'blue',
               slots: ['root'],
               base: { root: { color: 'blue.100' } },
-              layer: 'recipes.slots.aaa',
+              layer: 'aaa',
               staticCss: [{ variant: ['small'] }],
               variants: {
                 variant: {
@@ -3504,20 +3451,7 @@ describe('extract to css output pipeline', () => {
               className: 'yellow',
               slots: ['root'],
               base: { root: { color: 'yellow.100' } },
-              layer: 'recipes.slots.bbb',
-              staticCss: [{ variant: ['small'] }],
-              variants: {
-                variant: {
-                  small: { root: { fontSize: 'sm' } },
-                },
-              },
-            },
-            red: {
-              // custom layer
-              className: 'red',
-              slots: ['root'],
-              base: { root: { color: 'red.100' } },
-              layer: 'super_recipes.slots',
+              layer: 'bbb',
               staticCss: [{ variant: ['small'] }],
               variants: {
                 variant: {
@@ -3540,13 +3474,9 @@ describe('extract to css output pipeline', () => {
           .pink__root {
             color: var(--colors-pink-100);
       }
-
-          .green__root {
-            color: var(--colors-green-100);
-      }
       }
 
-        .pink__root--variant_small,.green__root--variant_small {
+        .pink__root--variant_small {
           font-size: var(--font-sizes-sm);
       }
       }
@@ -3557,33 +3487,21 @@ describe('extract to css output pipeline', () => {
       }
       }
 
-      @layer recipes.slots.aaa.base {
-        .blue__root {
-          color: var(--colors-blue-100);
-      }
-      }
-
       @layer recipes.slots.bbb {
         .yellow__root--variant_small {
           font-size: var(--font-sizes-sm);
       }
       }
 
+      @layer recipes.slots.aaa.base {
+        .blue__root {
+          color: var(--colors-blue-100);
+      }
+      }
+
       @layer recipes.slots.bbb.base {
         .yellow__root {
           color: var(--colors-yellow-100);
-      }
-      }
-
-      @layer super_recipes.slots {
-        .red__root--variant_small {
-          font-size: var(--font-sizes-sm);
-      }
-      }
-
-      @layer super_recipes.slots.base {
-        .red__root {
-          color: var(--colors-red-100);
       }
       }"
     `)

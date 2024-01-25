@@ -69,7 +69,6 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
   staticCss?: RecipeRule[]
   /**
    * Specifiy a custom CSS `@layer` in which to generate the recipe's css rules
-   * @default 'recipes'
    */
   layer?: string
 }
@@ -152,7 +151,6 @@ export interface SlotRecipeDefinition<
   staticCss?: RecipeRule[]
   /**
    * Specifiy a custom CSS `@layer` in which to generate the recipe's css rules
-   * @default 'recipes'
    */
   layer?: string
 }

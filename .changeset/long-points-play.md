@@ -23,14 +23,6 @@ export default defaultConfig({
           staticCss: [{ variant: ['small'] }],
           variants: { variant: { small: { fontSize: 'sm' } } },
         },
-        green: {
-          // still default
-          className: 'green',
-          base: { color: 'green.100' },
-          layer: 'recipes',
-          staticCss: [{ variant: ['small'] }],
-          variants: { variant: { small: { fontSize: 'sm' } } },
-        },
         blue: {
           // custom layer
           className: 'blue',
@@ -44,14 +36,6 @@ export default defaultConfig({
           className: 'yellow',
           base: { color: 'yellow.100' },
           layer: 'recipes.bbb',
-          staticCss: [{ variant: ['small'] }],
-          variants: { variant: { small: { fontSize: 'sm' } } },
-        },
-        red: {
-          // custom layer outside of recipes
-          className: 'red',
-          base: { color: 'red.100' },
-          layer: 'super_recipe',
           staticCss: [{ variant: ['small'] }],
           variants: { variant: { small: { fontSize: 'sm' } } },
         },
@@ -69,27 +53,10 @@ will output a CSS like:
     .pink {
       color: var(--colors-pink-100);
     }
-
-    .green {
-      color: var(--colors-green-100);
-    }
   }
 
-  .pink--variant_small,
-  .green--variant_small {
+  .pink--variant_small {
     font-size: var(--font-sizes-sm);
-  }
-}
-
-@layer super_recipe {
-  .red--variant_small {
-    font-size: var(--font-sizes-sm);
-  }
-}
-
-@layer super_recipe.base {
-  .red {
-    color: var(--colors-red-100);
   }
 }
 
@@ -118,18 +85,14 @@ will output a CSS like:
 }
 ```
 
-> Note: the above CSS will be sorted alphabetically to get a consistent output, it's up to you to order the custom
-> recipes @layer
-
 you can define any order like:
 
 ```css
-@layer reset, base, tokens, recipes, utilities, super_recipe;
-@layer recipes._base, recipes.bbb, recipes.aaa;
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes.bbb, recipes.aaa;
 ```
 
 This order means that:
 
 - if a competing rule was found in `recipes` and `utilities`, the `utilities` will win.
-- if a competing rule was found in `utilities` and `super_recipe`, the `super_recipe` will win.
 - if a competing rule was found in `recipes.aaa` and `recipes.bbb`, the `recipes.aaa` will win.

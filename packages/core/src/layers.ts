@@ -86,9 +86,7 @@ export class Layers {
         if (recipes.nodes.length) recipeRoot.append(recipes)
         if (recipes_slots.nodes.length) recipeRoot.append(recipes_slots)
 
-        // sort recipes by @layer name A-Z
-        const sortedRecipes = new Map([...this.recipeRuleMap.entries()].sort())
-        sortedRecipes.forEach((rules) => {
+        this.recipeRuleMap.forEach((rules) => {
           if (rules.nodes.length) recipeRoot.append(rules)
         })
 
