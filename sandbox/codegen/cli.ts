@@ -60,13 +60,14 @@ cli
       env: { MODE: fw },
     }))
 
-    const results = await Promise.allSettled(commands.map(({ cmd, env }) => runCommand(cmd, env)))
-    const failed = results.filter((result) => result.status === 'rejected')
-
-    if (failed.length > 0) {
+    try {
+      await Promise.all(commands.map(({ cmd, env }) => runCommand(cmd, env)))
+    } catch (error) {
       console.error('Some commands failed:')
       process.exit(1)
     }
+
+    console.log('All commands succeeded 🎉')
   })
 
 cli.command('codegen [scenario]', 'Generate code').action(async (scenario) => {
