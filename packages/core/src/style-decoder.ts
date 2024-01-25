@@ -4,6 +4,7 @@ import type {
   Dict,
   GroupedResult,
   GroupedStyleResultDetails,
+  RawCondition,
   RecipeBaseResult,
   StyleEntry,
   StyleResultObject,
@@ -93,6 +94,10 @@ export class StyleDecoder {
     }
   }
 
+  resolveCondition = (condition: RawCondition) => {
+    return this.context.utility.tokens.resolveReference(condition.rawValue ?? condition.raw)
+  }
+
   private getAtomic = (hash: string) => {
     const cached = this.atomic_cache.get(hash)
     if (cached) return cached
@@ -112,9 +117,7 @@ export class StyleDecoder {
 
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
-      const path = basePath.concat(
-        conditions.map((c) => this.context.utility.tokens.resolveReference(c.rawValue ?? c.raw)),
-      )
+      const path = basePath.concat(conditions.map((c) => this.resolveCondition(c)))
       deepSet(obj, path, styles)
     } else {
       deepSet(obj, basePath, styles)
@@ -176,9 +179,7 @@ export class StyleDecoder {
     const sorted = sortStyleRules(details)
     sorted.forEach((value) => {
       if (value.conditions) {
-        const path = basePath.concat(
-          value.conditions.map((c) => this.context.utility.tokens.resolveReference(c.rawValue ?? c.raw)),
-        )
+        const path = basePath.concat(value.conditions.map((c) => this.resolveCondition(c)))
         obj = deepSet(obj, path, value.result)
       } else {
         obj = deepSet(obj, basePath, value.result)
