@@ -40,7 +40,7 @@ describe('extract to css output pipeline', () => {
       }
 
         @media screen and (min-width: 48em) {
-          .md\\\\:text_red {
+          .md\\:text_red {
             color: red;
       }
       }
@@ -100,7 +100,7 @@ describe('extract to css output pipeline', () => {
                 "_dark": "colors.gray.800",
                 "base": "colors.orange.100",
               },
-              "backgroundImage": "url(\\"https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true\\")",
+              "backgroundImage": "url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true")",
               "border": "1px solid token(colors.yellow.100)",
               "boxShadow": "0 0 0 4px var(--shadow)",
               "color": "blue.100",
@@ -156,27 +156,27 @@ describe('extract to css output pipeline', () => {
           inset: var(--spacing-0);
       }
 
-        .text_blue\\\\.100 {
+        .text_blue\\.100 {
           color: var(--colors-blue-100);
       }
 
-        .bg-img_url\\\\(\\\\\\"https\\\\:\\\\/\\\\/raw\\\\.githubusercontent\\\\.com\\\\/chakra-ui\\\\/chakra-ui\\\\/main\\\\/media\\\\/logo-colored\\\\@2x\\\\.png\\\\?raw\\\\=true\\\\\\"\\\\) {
-          background-image: url(\\"https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true\\");
+        .bg-img_url\\(\\"https\\:\\/\\/raw\\.githubusercontent\\.com\\/chakra-ui\\/chakra-ui\\/main\\/media\\/logo-colored\\@2x\\.png\\?raw\\=true\\"\\) {
+          background-image: url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true");
       }
 
-        .border_1px_solid_token\\\\(colors\\\\.yellow\\\\.100\\\\) {
+        .border_1px_solid_token\\(colors\\.yellow\\.100\\) {
           border: 1px solid var(--colors-yellow-100);
       }
 
-        .\\\\--shadow_colors\\\\.orange\\\\.100 {
+        .\\--shadow_colors\\.orange\\.100 {
           --shadow: var(--colors-orange-100);
       }
 
-        .shadow_0_0_0_4px_var\\\\(--shadow\\\\) {
+        .shadow_0_0_0_4px_var\\(--shadow\\) {
           box-shadow: 0 0 0 4px var(--shadow);
       }
 
-        .ring_var\\\\(--colors-pink-200\\\\) {
+        .ring_var\\(--colors-pink-200\\) {
           outline-color: var(--colors-pink-200);
       }
 
@@ -192,40 +192,40 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-2);
       }
 
-        [data-theme=dark] .dark\\\\:--shadow_colors\\\\.gray\\\\.800,.dark .dark\\\\:--shadow_colors\\\\.gray\\\\.800,.dark\\\\:--shadow_colors\\\\.gray\\\\.800.dark,.dark\\\\:--shadow_colors\\\\.gray\\\\.800[data-theme=dark] {
+        [data-theme=dark] .dark\\:--shadow_colors\\.gray\\.800,.dark .dark\\:--shadow_colors\\.gray\\.800,.dark\\:--shadow_colors\\.gray\\.800.dark,.dark\\:--shadow_colors\\.gray\\.800[data-theme=dark] {
           --shadow: var(--colors-gray-800);
       }
 
-        .hover\\\\:text_\\\\#2ecc71:is(:hover, [data-hover]) {
+        .hover\\:text_\\#2ecc71:is(:hover, [data-hover]) {
           color: #2ecc71;
       }
 
-        .hover\\\\:bg_var\\\\(--some-bg\\\\):is(:hover, [data-hover]) {
+        .hover\\:bg_var\\(--some-bg\\):is(:hover, [data-hover]) {
           background-color: var(--some-bg);
       }
 
         @media screen and (min-width: 48em) {
-          .md\\\\:p_4 {
+          .md\\:p_4 {
             padding: var(--spacing-4);
       }
-          .md\\\\:m_1px {
+          .md\\:m_1px {
             margin: 1px;
       }
-          .md\\\\:text_red\\\\.100 {
+          .md\\:text_red\\.100 {
             color: var(--colors-red-100);
       }
       }
 
         @media screen and (min-width: 48em) {
           @media screen and (min-width: 40em) {
-            .md\\\\:sm\\\\:m_4px {
+            .md\\:sm\\:m_4px {
               margin: 4px;
       }
       }
       }
 
         @media screen and (min-width: 48em) {
-          [data-theme=dark] .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]),.dark .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]),.md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]).dark,.md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
+          [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]).dark,.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
             margin: calc(var(--spacing-2) * -1);
       }
       }
@@ -776,11 +776,11 @@ describe('extract to css output pipeline', () => {
           border-radius: 3px;
       }
 
-        .border_1px_solid_var\\\\(--accent-color\\\\) {
+        .border_1px_solid_var\\(--accent-color\\) {
           border: 1px solid var(--accent-color);
       }
 
-        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\(colors\\.blue\\.100\\) {
           color: var(--colors-blue-100);
       }
 
@@ -788,11 +788,11 @@ describe('extract to css output pipeline', () => {
           display: inline-block;
       }
 
-        .margin_0\\\\.5rem_1rem {
+        .margin_0\\.5rem_1rem {
           margin: 0.5rem 1rem;
       }
 
-        .padding_0\\\\.5rem_0 {
+        .padding_0\\.5rem_0 {
           padding: 0.5rem 0;
       }
 
@@ -804,23 +804,23 @@ describe('extract to css output pipeline', () => {
           width: 11rem;
       }
 
-        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
+        .\\[\\&_\\>_strong\\]\\:color_hotpink > strong {
           color: hotpink;
       }
 
-        .\\\\[\\\\&\\\\:hover\\\\]\\\\:filter_brightness\\\\(0\\\\.85\\\\):hover {
+        .\\[\\&\\:hover\\]\\:filter_brightness\\(0\\.85\\):hover {
           filter: brightness(0.85);
       }
 
-        .\\\\[\\\\&\\\\:hover\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):hover:disabled {
+        .\\[\\&\\:hover\\]\\:\\[\\&\\:disabled\\]\\:filter_brightness\\(1\\):hover:disabled {
           filter: brightness(1);
       }
 
         @media (min-width: 768px) {
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:padding_1rem_0 {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:padding_1rem_0 {
             padding: 1rem 0;
       }
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):disabled {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:\\[\\&\\:disabled\\]\\:filter_brightness\\(1\\):disabled {
             filter: brightness(1);
       }
       }
@@ -867,11 +867,11 @@ describe('extract to css output pipeline', () => {
           border-radius: 3px;
       }
 
-        .border_1px_solid_var\\\\(--accent-color\\\\) {
+        .border_1px_solid_var\\(--accent-color\\) {
           border: 1px solid var(--accent-color);
       }
 
-        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\(colors\\.blue\\.100\\) {
           color: var(--colors-blue-100);
       }
       }"
@@ -912,11 +912,11 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_blue\\\\.100 {
+        .text_blue\\.100 {
           color: var(--colors-blue-100);
       }
 
-        .text_red\\\\.100 {
+        .text_red\\.100 {
           color: var(--colors-red-100);
       }
       }"
@@ -963,7 +963,7 @@ describe('extract to css output pipeline', () => {
               },
               "&[data-state='open']": {
                 "_before": {
-                  "content": "\\"👋\\"",
+                  "content": ""👋"",
                 },
                 "cursor": "pointer",
               },
@@ -983,28 +983,28 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:text_green\\\\.100 {
+        .closed > .\\[\\.closed_\\>_\\&\\]\\:text_green\\.100 {
           color: var(--colors-green-100);
       }
 
-        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px {
+        .\\[\\&_\\+_\\&\\]\\:m_-2px + .\\[\\&_\\+_\\&\\]\\:m_-2px {
           margin: -2px;
       }
 
-        .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:cursor_pointer[data-state='open'] {
+        .\\[\\&\\[data-state\\=\\'open\\'\\]\\]\\:cursor_pointer[data-state='open'] {
           cursor: pointer;
       }
 
-        .closed > [data-theme=dark] .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900,.closed > .dark .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900,.closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900.dark,.closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900[data-theme=dark] {
+        .closed > [data-theme=dark] .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900,.closed > .dark .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900.dark,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900[data-theme=dark] {
           color: var(--colors-green-900);
       }
 
-        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:is(:hover, [data-hover]) {
+        .\\[\\&_\\+_\\&\\]\\:hover\\:m_0 + .\\[\\&_\\+_\\&\\]\\:hover\\:m_0:is(:hover, [data-hover]) {
           margin: var(--spacing-0);
       }
 
-        .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:before\\\\:content_\\\\\\"👋\\\\\\"[data-state='open']::before {
-          content: \\"👋\\";
+        .\\[\\&\\[data-state\\=\\'open\\'\\]\\]\\:before\\:content_\\"👋\\"[data-state='open']::before {
+          content: "👋";
       }
       }"
     `)
@@ -1055,11 +1055,11 @@ describe('extract to css output pipeline', () => {
           --colors-color-palette-950: var(--colors-blue-950);
       }
 
-        .bg_colorPalette\\\\.100 {
+        .bg_colorPalette\\.100 {
           background: var(--colors-color-palette-100);
       }
 
-        .hover\\\\:text_colorPalette\\\\.300:is(:hover, [data-hover]) {
+        .hover\\:text_colorPalette\\.300:is(:hover, [data-hover]) {
           color: var(--colors-color-palette-300);
       }
       }"
@@ -1191,40 +1191,40 @@ describe('extract to css output pipeline', () => {
             --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary);
         }
 
-          .text_colorPalette\\\\.light {
+          .text_colorPalette\\.light {
             color: var(--colors-color-palette-light);
         }
 
-          .bg_colorPalette\\\\.dark {
+          .bg_colorPalette\\.dark {
             background-color: var(--colors-color-palette-dark);
         }
 
-          .color-palette_button\\\\.light {
+          .color-palette_button\\.light {
             --colors-color-palette-accent: var(--colors-button-light-accent);
             --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
         }
 
-          .text_colorPalette\\\\.accent {
+          .text_colorPalette\\.accent {
             color: var(--colors-color-palette-accent);
         }
 
-          .bg_colorPalette\\\\.accent\\\\.secondary {
+          .bg_colorPalette\\.accent\\.secondary {
             background: var(--colors-color-palette-accent-secondary);
         }
 
-          .color-palette_button\\\\.light\\\\.accent {
+          .color-palette_button\\.light\\.accent {
             --colors-color-palette-secondary: var(--colors-button-light-accent-secondary);
         }
 
-          .text_colorPalette\\\\.secondary {
+          .text_colorPalette\\.secondary {
             color: var(--colors-color-palette-secondary);
         }
 
-          .hover\\\\:text_colorPalette\\\\.light\\\\.accent:is(:hover, [data-hover]) {
+          .hover\\:text_colorPalette\\.light\\.accent:is(:hover, [data-hover]) {
             color: var(--colors-color-palette-light-accent);
         }
 
-          .hover\\\\:bg_colorPalette\\\\.light\\\\.accent\\\\.secondary:is(:hover, [data-hover]) {
+          .hover\\:bg_colorPalette\\.light\\.accent\\.secondary:is(:hover, [data-hover]) {
             background: var(--colors-color-palette-light-accent-secondary);
         }
         }"
@@ -1416,11 +1416,11 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\\\.100 {
+        .text_red\\.100 {
           color: var(--colors-red-100);
       }
 
-        .text_yellow\\\\.100 {
+        .text_yellow\\.100 {
           color: var(--colors-yellow-100);
       }
       }"
@@ -1453,7 +1453,7 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .color_var\\\\(--colors-purple-100\\\\) {
+        .color_var\\(--colors-purple-100\\) {
           color: var(--colors-purple-100);
       }
       }"
@@ -1576,23 +1576,23 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_blue\\\\.100 {
+        .text_blue\\.100 {
           color: var(--colors-blue-100);
       }
 
-        .text_green\\\\.100 {
+        .text_green\\.100 {
           color: var(--colors-green-100);
       }
 
-        .text_rose\\\\.100 {
+        .text_rose\\.100 {
           color: var(--colors-rose-100);
       }
 
-        .text_sky\\\\.100 {
+        .text_sky\\.100 {
           color: var(--colors-sky-100);
       }
 
-        .bg_red\\\\.900 {
+        .bg_red\\.900 {
           background: var(--colors-red-900);
       }
       }"
@@ -1817,7 +1817,7 @@ describe('extract to css output pipeline', () => {
           margin-bottom: 42px;
       }
 
-        .bg_red\\\\.200 {
+        .bg_red\\.200 {
           background: var(--colors-red-200);
       }
       }"
@@ -2015,15 +2015,15 @@ describe('extract to css output pipeline', () => {
           max-width: 800px;
       }
 
-        .\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em:not(:first-child) {
+        .\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em:not(:first-child) {
           margin-block-end: 1em;
       }
 
-        .\\\\[\\\\&_p\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mt_1em p:not(:first-child) {
+        .\\[\\&_p\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mt_1em p:not(:first-child) {
           margin-block-start: 1em;
       }
 
-        .\\\\[\\\\&_h1\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em h1:not(:first-child),.\\\\[\\\\&_h2\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em h2:not(:first-child) {
+        .\\[\\&_h1\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em h1:not(:first-child),.\\[\\&_h2\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em h2:not(:first-child) {
           margin-block-end: 1em;
       }
       }"
@@ -2101,27 +2101,27 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .px_token\\\\(spacing\\\\.1\\\\) {
+        .px_token\\(spacing\\.1\\) {
           padding-inline: var(--spacing-1);
       }
 
-        .px_token\\\\(spacing\\\\.2\\\\) {
+        .px_token\\(spacing\\.2\\) {
           padding-inline: var(--spacing-2);
       }
 
-        .px_token\\\\(spacing\\\\.3\\\\) {
+        .px_token\\(spacing\\.3\\) {
           padding-inline: var(--spacing-3);
       }
 
-        .py_token\\\\(spacing\\\\.1\\\\) {
+        .py_token\\(spacing\\.1\\) {
           padding-block: var(--spacing-1);
       }
 
-        .py_token\\\\(spacing\\\\.2\\\\) {
+        .py_token\\(spacing\\.2\\) {
           padding-block: var(--spacing-2);
       }
 
-        .py_token\\\\(spacing\\\\.3\\\\) {
+        .py_token\\(spacing\\.3\\) {
           padding-block: var(--spacing-3);
       }
       }"
@@ -2519,16 +2519,16 @@ describe('extract to css output pipeline', () => {
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:py_2 {
+          .sm\\:py_2 {
             padding-block: var(--spacing-2);
       }
-          .sm\\\\:py_3 {
+          .sm\\:py_3 {
             padding-block: var(--spacing-3);
       }
       }
 
         @media screen and (min-width: 48em) {
-          .md\\\\:py_4 {
+          .md\\:py_4 {
             padding-block: var(--spacing-4);
       }
       }
@@ -2653,19 +2653,19 @@ describe('extract to css output pipeline', () => {
       }
 
       @layer utilities {
-        .text_amber\\\\.400 {
+        .text_amber\\.400 {
           color: var(--colors-amber-400);
       }
 
-        [data-theme=dark] .dark\\\\:text_sky\\\\.300,.dark .dark\\\\:text_sky\\\\.300,.dark\\\\:text_sky\\\\.300.dark,.dark\\\\:text_sky\\\\.300[data-theme=dark] {
+        [data-theme=dark] .dark\\:text_sky\\.300,.dark .dark\\:text_sky\\.300,.dark\\:text_sky\\.300.dark,.dark\\:text_sky\\.300[data-theme=dark] {
           color: var(--colors-sky-300);
       }
 
-        .hover\\\\:text_amber\\\\.500:is(:hover, [data-hover]) {
+        .hover\\:text_amber\\.500:is(:hover, [data-hover]) {
           color: var(--colors-amber-500);
       }
 
-        [data-theme=dark] .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]),.dark .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]),.hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]).dark,.hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover])[data-theme=dark] {
+        [data-theme=dark] .hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover]),.dark .hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover]),.hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover]).dark,.hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover])[data-theme=dark] {
           color: var(--colors-sky-200);
       }
       }"
@@ -2761,7 +2761,7 @@ describe('extract to css output pipeline', () => {
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:fs_5 {
+          .sm\\:fs_5 {
             font-size: 5px;
       }
       }
@@ -2814,7 +2814,7 @@ describe('extract to css output pipeline', () => {
           display: grid;
       }
 
-        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(80px\\\\,_1fr\\\\)\\\\) {
+        .grid-cols_repeat\\(auto-fit\\,_minmax\\(80px\\,_1fr\\)\\) {
           grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
       }
 
@@ -2822,8 +2822,8 @@ describe('extract to css output pipeline', () => {
           gap: var(--spacing-8);
       }
 
-        .grid-cols_repeat\\\\(auto-fit\\\\,_minmax\\\\(token\\\\(sizes\\\\.20\\\\,_20\\\\)\\\\,_1fr\\\\)\\\\) {
-          grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, \\\\320), 1fr));
+        .grid-cols_repeat\\(auto-fit\\,_minmax\\(token\\(sizes\\.20\\,_20\\)\\,_1fr\\)\\) {
+          grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, \\320), 1fr));
       }
       }"
     `)
@@ -2871,19 +2871,19 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @container (min-width: 56rem) {
-          .\\\\[\\\\@container_\\\\(min-width\\\\:_\\\\{sizes\\\\.4xl\\\\}\\\\)\\\\]\\\\:d_flex {
+          .\\[\\@container_\\(min-width\\:_\\{sizes\\.4xl\\}\\)\\]\\:d_flex {
             display: flex;
       }
       }
 
         @container (min-width: 36rem) {
-          .\\\\[\\\\@container_\\\\(min-width\\\\:_token\\\\(sizes\\\\.xl\\\\)\\\\)\\\\]\\\\:text_green\\\\.300 {
+          .\\[\\@container_\\(min-width\\:_token\\(sizes\\.xl\\)\\)\\]\\:text_green\\.300 {
             color: var(--colors-green-300);
       }
       }
 
         @media (min-width: 42rem) {
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_token\\\\(sizes\\\\.2xl\\\\)\\\\)\\\\]\\\\:text_red\\\\.300 {
+          .\\[\\@media_\\(min-width\\:_token\\(sizes\\.2xl\\)\\)\\]\\:text_red\\.300 {
             color: var(--colors-red-300);
       }
       }
@@ -2948,23 +2948,23 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_\\\\[\\\\#fff\\\\] {
+        .text_\\[\\#fff\\] {
           color: #fff;
       }
 
-        .bg_red\\\\.300 {
+        .bg_red\\.300 {
           background: var(--colors-red-300);
       }
 
-        .bg_\\\\[rgb\\\\(51_155_240\\\\)\\\\] {
+        .bg_\\[rgb\\(51_155_240\\)\\] {
           background-color: rgb(51 155 240);
       }
 
-        .ring_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
+        .ring_\\[rgb\\(51_155_240\\)\\]\\! {
           outline-color: rgb(51 155 240) !important;
       }
 
-        .border_\\\\[rgb\\\\(51_155_240\\\\)\\\\]\\\\! {
+        .border_\\[rgb\\(51_155_240\\)\\]\\! {
           border-color: rgb(51 155 240) !important;
       }
       }"
@@ -3317,11 +3317,11 @@ describe('extract to css output pipeline', () => {
           padding-bottom: var(--spacing-2);
       }
 
-        [data-theme=dark] .dark\\\\:bg_\\\\#262626,.dark .dark\\\\:bg_\\\\#262626,.dark\\\\:bg_\\\\#262626.dark,.dark\\\\:bg_\\\\#262626[data-theme=dark] {
+        [data-theme=dark] .dark\\:bg_\\#262626,.dark .dark\\:bg_\\#262626,.dark\\:bg_\\#262626.dark,.dark\\:bg_\\#262626[data-theme=dark] {
           background: #262626;
       }
 
-        [data-theme=dark] .dark\\\\:text_white,.dark .dark\\\\:text_white,.dark\\\\:text_white.dark,.dark\\\\:text_white[data-theme=dark] {
+        [data-theme=dark] .dark\\:text_white,.dark .dark\\:text_white,.dark\\:text_white.dark,.dark\\:text_white[data-theme=dark] {
           color: var(--colors-white);
       }
       }"

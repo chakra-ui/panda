@@ -194,10 +194,10 @@ describe('generate reset', () => {
           font-family: var(--global-font-mono, var(--font-mono-fallback));
         }
 
-        .pd-reset input[type=\\"text\\"],
-        .pd-reset input[type=\\"email\\"],
-        .pd-reset input[type=\\"search\\"],
-        .pd-reset input[type=\\"password\\"] {
+        .pd-reset input[type="text"],
+        .pd-reset input[type="email"],
+        .pd-reset input[type="search"],
+        .pd-reset input[type="password"] {
           -webkit-appearance: none;
           -moz-appearance: none;
         }
@@ -217,8 +217,8 @@ describe('generate reset', () => {
           font: inherit;
         }
 
-        .pd-reset input[type=\\"number\\"]::-webkit-inner-spin-button,
-        .pd-reset input[type=\\"number\\"]::-webkit-outer-spin-button {
+        .pd-reset input[type="number"]::-webkit-inner-spin-button,
+        .pd-reset input[type="number"]::-webkit-outer-spin-button {
           height: auto;
         }
 

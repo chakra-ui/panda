@@ -96,8 +96,8 @@ describe('extract svelte templates', () => {
     expect(transformed).toMatchInlineSnapshot(`
       "let moduleStyle: string = css({ color: 'blue.400' })
 
-            type Something = \\"a\\" | \\"b\\" | \\"c\\";
-            type Another = Something | \\"d\\" | \\"e\\";
+            type Something = "a" | "b" | "c";
+            type Another = Something | "d" | "e";
 
             // the export keyword allows this function to imported with e.g.
             export function getStyles() {
@@ -107,30 +107,30 @@ describe('extract svelte templates', () => {
             export let title;
             export let person;
 
-            // this will update \\"document.title\\" whenever
-            // the \\"title\\" prop changes
+            // this will update "document.title" whenever
+            // the "title" prop changes
             $: document.title = title;
 
             $: {
-              console.log(\\"multiple statements can be combined\\");
+              console.log("multiple statements can be combined");
               css({ color: 'blue.100' })
             }
 
-            // this will update \\"name\\" when 'person' changes
+            // this will update "name" when 'person' changes
             $: ({ name } = person);
           
-              import { css } from \\"styled-system/css\\";
+              import { css } from "styled-system/css";
 
               export let variable: boolean;
-              type Something = \\"a\\" | \\"b\\" | \\"c\\";
-              type Another = Something | \\"d\\" | \\"e\\";
+              type Something = "a" | "b" | "c";
+              type Another = Something | "d" | "e";
 
               let style = css({ color: 'green.400' })
               let style2 = css({ color: 'purple.400' })
           
       const render = <div><h1 class={style}>using class binding</h1>
           <p class={css({ color: 'red.500' })}>using inline styles</p>
-          <span class=\\"style3\\">using actual class</span>
+          <span class="style3">using actual class</span>
 
           {@html post.content}
           {@debug}
@@ -288,51 +288,51 @@ describe('extract svelte templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_blue\\\\.400 {
+        .text_blue\\.400 {
           color: var(--colors-blue-400);
       }
 
-        .text_blue\\\\.100 {
+        .text_blue\\.100 {
           color: var(--colors-blue-100);
       }
 
-        .text_green\\\\.400 {
+        .text_green\\.400 {
           color: var(--colors-green-400);
       }
 
-        .text_purple\\\\.400 {
+        .text_purple\\.400 {
           color: var(--colors-purple-400);
       }
 
-        .text_red\\\\.500 {
+        .text_red\\.500 {
           color: var(--colors-red-500);
       }
 
-        .text_teal\\\\.100 {
+        .text_teal\\.100 {
           color: var(--colors-teal-100);
       }
 
-        .text_teal\\\\.200 {
+        .text_teal\\.200 {
           color: var(--colors-teal-200);
       }
 
-        .text_teal\\\\.300 {
+        .text_teal\\.300 {
           color: var(--colors-teal-300);
       }
 
-        .text_teal\\\\.400 {
+        .text_teal\\.400 {
           color: var(--colors-teal-400);
       }
 
-        .text_teal\\\\.500 {
+        .text_teal\\.500 {
           color: var(--colors-teal-500);
       }
 
-        .text_teal\\\\.600 {
+        .text_teal\\.600 {
           color: var(--colors-teal-600);
       }
 
-        .text_teal\\\\.700 {
+        .text_teal\\.700 {
           color: var(--colors-teal-700);
       }
       }"

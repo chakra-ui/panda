@@ -134,31 +134,31 @@ describe('config.importMap', () => {
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:flex_row {
+          .sm\\:flex_row {
             flex-direction: row;
       }
       }
 
         @media screen and (min-width: 48em) {
-          .md\\\\:px_6 {
+          .md\\:px_6 {
             padding-inline: var(--spacing-6);
       }
       }
 
         @media screen and (min-width: 64em) {
-          .lg\\\\:px_8 {
+          .lg\\:px_8 {
             padding-inline: var(--spacing-8);
       }
       }
 
         @media print {
-          .print\\\\:w_210mm {
+          .print\\:w_210mm {
             width: 210mm;
       }
-          .print\\\\:h_297mm {
+          .print\\:h_297mm {
             height: 297mm;
       }
-          .print\\\\:flex_row {
+          .print\\:flex_row {
             flex-direction: row;
       }
       }

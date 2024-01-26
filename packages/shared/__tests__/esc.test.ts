@@ -8,38 +8,38 @@ describe('esc className', () => {
   })
 
   test('number', () => {
-    expect(esc('0a')).toMatchInlineSnapshot('"\\\\30a"')
-    expect(esc('-0a')).toMatchInlineSnapshot('"-\\\\30a"')
-    expect(esc('2xl:bg_red')).toMatchInlineSnapshot('"\\\\32xl\\\\:bg_red"')
+    expect(esc('0a')).toMatchInlineSnapshot(`"\\30a"`)
+    expect(esc('-0a')).toMatchInlineSnapshot(`"-\\30a"`)
+    expect(esc('2xl:bg_red')).toMatchInlineSnapshot(`"\\32xl\\:bg_red"`)
   })
 
   test('decimal', () => {
-    expect(esc('m_0.5')).toMatchInlineSnapshot('"m_0\\\\.5"')
+    expect(esc('m_0.5')).toMatchInlineSnapshot(`"m_0\\.5"`)
   })
 
   test('important', () => {
-    expect(esc('m_0.5!')).toMatchInlineSnapshot('"m_0\\\\.5\\\\!"')
+    expect(esc('m_0.5!')).toMatchInlineSnapshot(`"m_0\\.5\\!"`)
   })
 
   test('invalid characters are escaped', () => {
-    expect(esc('w:_$-1/2')).toMatchInlineSnapshot('"w\\\\:_\\\\$-1\\\\/2"')
-    expect(esc('--a')).toMatchInlineSnapshot('"\\\\--a"')
+    expect(esc('w:_$-1/2')).toMatchInlineSnapshot(`"w\\:_\\$-1\\/2"`)
+    expect(esc('--a')).toMatchInlineSnapshot(`"\\--a"`)
   })
 
   test('edge cases', () => {
     expect(esc('\x80\x2D\x5F\xA9')).toMatchInlineSnapshot('"-_©"')
-    expect(esc('\x20\x21\x78\x79')).toMatchInlineSnapshot('"\\\\ \\\\!xy"')
-    expect(esc('\x01\x02\x1E\x1F')).toMatchInlineSnapshot('"\\\\1\\\\2\\\\1e\\\\1f"')
+    expect(esc('\x20\x21\x78\x79')).toMatchInlineSnapshot(`"\\ \\!xy"`)
+    expect(esc('\x01\x02\x1E\x1F')).toMatchInlineSnapshot(`"\\1\\2\\1e\\1f"`)
   })
 
   test('flametest', () => {
-    expect(esc('decoration-[#ccc]')).toMatchInlineSnapshot('"decoration-\\\\[\\\\#ccc\\\\]"')
-    expect(esc('[@media]:bg_red')).toMatchInlineSnapshot('"\\\\[\\\\@media\\\\]\\\\:bg_red"')
-    expect(esc('bg-red-500/50')).toMatchInlineSnapshot('"bg-red-500\\\\/50"')
-    expect(esc('p-[8px_4px]')).toMatchInlineSnapshot('"p-\\\\[8px_4px\\\\]"')
-    expect(esc('w_1/3')).toMatchInlineSnapshot('"w_1\\\\/3"')
+    expect(esc('decoration-[#ccc]')).toMatchInlineSnapshot(`"decoration-\\[\\#ccc\\]"`)
+    expect(esc('[@media]:bg_red')).toMatchInlineSnapshot(`"\\[\\@media\\]\\:bg_red"`)
+    expect(esc('bg-red-500/50')).toMatchInlineSnapshot(`"bg-red-500\\/50"`)
+    expect(esc('p-[8px_4px]')).toMatchInlineSnapshot(`"p-\\[8px_4px\\]"`)
+    expect(esc('w_1/3')).toMatchInlineSnapshot(`"w_1\\/3"`)
     expect(esc(`hover:bg-[url('https://github.com/img.png')]`)).toMatchInlineSnapshot(
-      '"hover\\\\:bg-\\\\[url\\\\(\\\\\'https\\\\:\\\\/\\\\/github\\\\.com\\\\/img\\\\.png\\\\\'\\\\)\\\\]"',
+      `"hover\\:bg-\\[url\\(\\'https\\:\\/\\/github\\.com\\/img\\.png\\'\\)\\]"`,
     )
   })
 })
