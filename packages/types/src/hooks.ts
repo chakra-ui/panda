@@ -2,6 +2,7 @@ import type { ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
 import type { ParserResultInterface } from './parser'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
 
@@ -11,6 +12,11 @@ export interface PandaHooks {
    * This is the first hook called, you can use it to tweak the config before the context is created.
    */
   'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+  /**
+   * Called when the TokenDictionary has been created
+   * You can use this hook to add your own tokens to the TokenDictionary or to update the way they are computed
+   */
+  'tokens:created': (args: { tokens: TokenDictionary }) => MaybeAsyncReturn
   /**
    * Called when the Panda context has been created and the API is ready to be used.
    */

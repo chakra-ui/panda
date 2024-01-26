@@ -85,7 +85,9 @@ export class Context {
     conf.config = config
 
     this.tokens = this.createTokenDictionary(theme)
+    this.hooks['tokens:created']?.({ tokens: this.tokens })
     this.tokens.init()
+
     this.utility = this.createUtility(config)
     this.conditions = this.createConditions(config)
 

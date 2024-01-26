@@ -25,6 +25,7 @@ test('transform / border', () => {
     },
   })
 
+  dictionary.setTokens()
   dictionary.registerTransform(transformBorders, addCssVariables, addConditionalCssVariables)
 
   dictionary.build()

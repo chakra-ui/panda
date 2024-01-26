@@ -46,12 +46,19 @@ const buttonRecipe = {
 }
 
 describe('rule processor', () => {
-  test('simplest', () => {
-    const result = css({ margin: 2, mx: 'token(spacing.2)' })
+  test('simple', () => {
+    const result = css({
+      margin: 2,
+      mx: 'token(spacing.2)',
+      my: '-2',
+      color: 'blue.300',
+    })
     expect(result.className).toMatchInlineSnapshot(`
       [
         "m_2",
         "mx_token\\(spacing\\.2\\)",
+        "my_-2",
+        "text_blue\\.300",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
@@ -62,6 +69,67 @@ describe('rule processor', () => {
 
         .mx_token\\(spacing\\.2\\) {
           margin-inline: var(--spacing-2);
+      }
+
+        .my_-2 {
+          margin-block: calc(var(--spacing-2) * -1);
+      }
+
+        .text_blue\\.300 {
+          color: var(--colors-blue-300);
+      }
+      }"
+    `)
+  })
+
+  test.only('simple with formatTokenName', () => {
+    const css = (styles: any) => {
+      const result = createRuleProcessor({
+        hooks: {
+          'tokens:created': (ctx) => {
+            ctx.tokens.formatTokenName = (path: string[]) => '$' + path.join('-')
+          },
+        },
+      }).css(styles)
+      return { className: result.getClassNames(), css: result.toCss() }
+    }
+
+    const result = css({
+      margin: '$2',
+      p: '{spacing.$2}',
+      mx: 'token(spacing.$2)',
+      my: '-$2',
+      color: '$blue-300',
+    })
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "m_\\$2",
+        "p_\\{spacing\\.\\$2\\}",
+        "mx_token\\(spacing\\.\\$2\\)",
+        "my_-\\$2",
+        "text_\\$blue-300",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_\\$2 {
+          margin: var(--spacing-2);
+      }
+
+        .p_\\{spacing\\.\\$2\\} {
+          padding: var(--spacing-2);
+      }
+
+        .mx_token\\(spacing\\.\\$2\\) {
+          margin-inline: var(--spacing-2);
+      }
+
+        .my_-\\$2 {
+          margin-block: calc(var(--spacing-2) * -1);
+      }
+
+        .text_\\$blue-300 {
+          color: var(--colors-blue-300);
       }
       }"
     `)

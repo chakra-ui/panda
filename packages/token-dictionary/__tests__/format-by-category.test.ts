@@ -13,6 +13,7 @@ test('format / by category', () => {
     },
   })
 
+  dictionary.setTokens()
   dictionary.registerTransform(...transforms)
   dictionary.build()
 
@@ -25,10 +26,14 @@ test('format / by category', () => {
             "category": "colors",
             "colorPalette": "red",
             "colorPaletteRoots": [
-              "red",
+              [
+                "red",
+              ],
             ],
             "colorPaletteTokenKeys": [
-              "",
+              [
+                "",
+              ],
             ],
             "condition": "base",
             "prop": "red",
@@ -50,10 +55,14 @@ test('format / by category', () => {
             "category": "colors",
             "colorPalette": "blue",
             "colorPaletteRoots": [
-              "blue",
+              [
+                "blue",
+              ],
             ],
             "colorPaletteTokenKeys": [
-              "",
+              [
+                "",
+              ],
             ],
             "condition": "base",
             "prop": "blue",
@@ -75,10 +84,14 @@ test('format / by category', () => {
             "category": "colors",
             "colorPalette": "green",
             "colorPaletteRoots": [
-              "green",
+              [
+                "green",
+              ],
             ],
             "colorPaletteTokenKeys": [
-              "",
+              [
+                "",
+              ],
             ],
             "condition": "base",
             "prop": "green",

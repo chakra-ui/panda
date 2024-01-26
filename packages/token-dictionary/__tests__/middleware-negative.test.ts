@@ -12,6 +12,7 @@ test('middleware / add negative', () => {
     },
   })
 
+  dictionary.setTokens()
   dictionary.registerMiddleware(addNegativeTokens)
   dictionary.build()
 

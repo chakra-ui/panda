@@ -32,9 +32,9 @@ interface TokenReferences {
   [key: string]: Token
 }
 
-type TokenExtensions = ExtensionData & {
+export type TokenExtensions<T = {}> = ExtensionData & {
   [key: string]: any
-}
+} & T
 
 interface ExtendedToken {
   name: string

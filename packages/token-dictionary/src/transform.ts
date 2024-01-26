@@ -14,13 +14,13 @@ import { getReferences } from './utils'
 export const transformShadow: TokenTransformer = {
   name: 'tokens/shadow',
   match: (token) => token.extensions.category === 'shadows',
-  transform(token, opts) {
+  transform(token, dict) {
     if (isString(token.value)) {
       return token.value
     }
 
     if (Array.isArray(token.value)) {
-      return token.value.map((value) => this.transform({ value } as Token, opts)).join(', ')
+      return token.value.map((value) => this.transform({ value } as Token, dict)).join(', ')
     }
 
     if (isCompositeShadow(token.value)) {
@@ -170,7 +170,7 @@ export const addColorPalette: TokenTransformer = {
   match(token) {
     return token.extensions.category === 'colors' && !token.extensions.isVirtual
   },
-  transform(token) {
+  transform(token, dict) {
     let tokenPathClone = [...token.path]
     tokenPathClone.pop()
     tokenPathClone.shift()
@@ -207,14 +207,14 @@ export const addColorPalette: TokenTransformer = {
      * It holds all the possible values you can pass to the css `colorPalette` property.
      * It's used by the `addVirtualPalette` middleware to build the virtual `colorPalette` token for each color pattern root.
      */
-    const colorPaletteRoots = tokenPathClone.reduce((acc: string[], _: any, i: number, arr: string[]) => {
-      const next = arr.slice(0, i + 1).join('.')
+    const colorPaletteRoots = tokenPathClone.reduce((acc, _, i, arr) => {
+      const next = arr.slice(0, i + 1)
       acc.push(next)
       return acc
-    }, [] as string[])
+    }, [] as Array<string[]>)
 
     const colorPaletteRoot = tokenPathClone[0]
-    const colorPalette = tokenPathClone.join('.')
+    const colorPalette = dict.formatTokenName(tokenPathClone)
 
     /**
      * If this is the nested color palette:
@@ -271,14 +271,14 @@ export const addColorPalette: TokenTransformer = {
     const colorPaletteTokenKeys = token.path
       // Remove everything before colorPalette root and the root itself
       .slice(token.path.indexOf(colorPaletteRoot) + 1)
-      .reduce((acc: string[], _: any, i: number, arr: string[]) => {
-        acc.push(arr.slice(i).join('.'))
+      .reduce((acc, _, i, arr) => {
+        acc.push(arr.slice(i))
         return acc
-      }, [] as string[])
+      }, [] as Array<string[]>)
 
     // https://github.com/chakra-ui/panda/issues/1421
     if (colorPaletteTokenKeys.length === 0) {
-      colorPaletteTokenKeys.push('')
+      colorPaletteTokenKeys.push([''])
     }
 
     return {
@@ -300,3 +300,9 @@ export const transforms = [
   addConditionalCssVariables,
   addColorPalette,
 ]
+
+export interface ColorPaletteExtensions {
+  colorPalette: string
+  colorPaletteRoots: Array<string[]>
+  colorPaletteTokenKeys: Array<string[]>
+}

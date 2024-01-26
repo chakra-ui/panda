@@ -84,10 +84,14 @@ describe('DiffEngine affecteds', () => {
           "category": "colors",
           "colorPalette": "newColor123",
           "colorPaletteRoots": [
-            "newColor123",
+            [
+              "newColor123",
+            ],
           ],
           "colorPaletteTokenKeys": [
-            "",
+            [
+              "",
+            ],
           ],
           "condition": "base",
           "prop": "newColor123",
@@ -141,10 +145,14 @@ describe('DiffEngine affecteds', () => {
           "category": "colors",
           "colorPalette": "newColor123",
           "colorPaletteRoots": [
-            "newColor123",
+            [
+              "newColor123",
+            ],
           ],
           "colorPaletteTokenKeys": [
-            "",
+            [
+              "",
+            ],
           ],
           "condition": "base",
           "prop": "newColor123",
@@ -193,10 +201,14 @@ describe('DiffEngine affecteds', () => {
           "category": "colors",
           "colorPalette": "blue",
           "colorPaletteRoots": [
-            "blue",
+            [
+              "blue",
+            ],
           ],
           "colorPaletteTokenKeys": [
-            "100",
+            [
+              "100",
+            ],
           ],
           "condition": "base",
           "prop": "blue.100",
@@ -250,10 +262,14 @@ describe('DiffEngine affecteds', () => {
           "category": "colors",
           "colorPalette": "blue",
           "colorPaletteRoots": [
-            "blue",
+            [
+              "blue",
+            ],
           ],
           "colorPaletteTokenKeys": [
-            "100",
+            [
+              "100",
+            ],
           ],
           "condition": "base",
           "prop": "blue.100",

@@ -3,23 +3,18 @@ import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { isCompositeTokenValue } from './is-composite'
 import { middlewares } from './middleware'
-import { Token } from './token'
-import { transforms } from './transform'
+import { Token, type TokenExtensions } from './token'
+import { transforms, type ColorPaletteExtensions } from './transform'
 import { assertTokenFormat, expandReferences, getReferences, isToken, mapToJson } from './utils'
 
 type EnforcePhase = 'pre' | 'post'
-
-interface Options {
-  prefix?: string
-  hash?: boolean
-}
 
 export interface TokenTransformer {
   name: string
   enforce?: EnforcePhase
   type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
-  transform: (token: Token, options: Options) => any
+  transform: (token: Token, dictionary: TokenDictionary) => any
 }
 
 export interface TokenDictionaryOptions {
@@ -32,7 +27,7 @@ export interface TokenDictionaryOptions {
 
 export interface TokenMiddleware {
   enforce?: EnforcePhase
-  transform: (dict: TokenDictionary, options: Options) => void
+  transform: (dict: TokenDictionary) => void
 }
 
 function expandBreakpoints(breakpoints?: Record<string, string>) {
@@ -52,11 +47,10 @@ export class TokenDictionary {
   allTokens: Token[] = []
   byName: Map<string, Token> = new Map()
 
-  constructor(private options: TokenDictionaryOptions) {
-    this.setTokens()
-  }
+  constructor(private options: TokenDictionaryOptions) {}
 
   init() {
+    this.setTokens()
     this.registerTransform(...transforms)
     this.registerMiddleware(...middlewares)
     this.build()
@@ -72,7 +66,14 @@ export class TokenDictionary {
     return this.options.hash
   }
 
-  getByName = (path: string) => this.byName.get(path)
+  getByName = (path: string) => {
+    return this.byName.get(path)
+  }
+
+  formatTokenName = (path: string[]) => {
+    return path.join('.')
+    // return '$' + path.join('-')
+  }
 
   setTokens() {
     const { tokens = {}, semanticTokens = {}, breakpoints } = this.options
@@ -95,13 +96,13 @@ export class TokenDictionary {
         assertTokenFormat(token)
 
         const category = path[0]
-        const name = path.join('.')
+        const name = this.formatTokenName(path)
 
         const node = new Token({ ...token, name, path })
 
         node.setExtensions({
           category,
-          prop: path.slice(1).join('.'),
+          prop: this.formatTokenName(path.slice(1)),
         })
 
         this.registerToken(node)
@@ -116,7 +117,7 @@ export class TokenDictionary {
         assertTokenFormat(token)
 
         const category = path[0]
-        const name = path.join('.')
+        const name = this.formatTokenName(path)
 
         const normalizedToken =
           isString(token.value) || isCompositeTokenValue(token.value) ? { value: { base: token.value } } : token
@@ -133,13 +134,15 @@ export class TokenDictionary {
         node.setExtensions({
           category,
           conditions: value,
-          prop: path.slice(1).join('.'),
+          prop: this.formatTokenName(path.slice(1)),
         })
 
         this.registerToken(node)
       },
       { stop: isToken },
     )
+
+    return this
   }
 
   registerToken = (token: Token, transformPhase?: 'pre' | 'post') => {
@@ -179,7 +182,7 @@ export class TokenDictionary {
     if (token.extensions.hasReference) return
     if (typeof transform.match === 'function' && !transform.match(token)) return
 
-    const exec = (v: Token) => transform.transform(v, { prefix: this.prefix, hash: this.hash })
+    const exec = (v: Token) => transform.transform(v, this)
 
     const transformed = exec(token)
 
@@ -231,7 +234,7 @@ export class TokenDictionary {
   applyMiddlewares(enforce: EnforcePhase) {
     this.middlewares.forEach((middleware) => {
       if (middleware.enforce === enforce) {
-        middleware.transform(this, { prefix: this.prefix, hash: this.hash })
+        middleware.transform(this)
       }
     })
   }
@@ -377,20 +380,21 @@ export class TokenDictionaryView {
   }
 
   private processColorPalette(token: Token, group: Map<string, Map<string, string>>, byName: Map<string, Token>) {
-    const { colorPalette, colorPaletteRoots, isVirtual } = token.extensions
+    const { colorPalette, colorPaletteRoots, isVirtual } = token.extensions as TokenExtensions<ColorPaletteExtensions>
     if (!colorPalette || isVirtual) return
 
-    colorPaletteRoots.forEach((colorPaletteRoot: string) => {
-      if (!group.has(colorPaletteRoot)) {
-        group.set(colorPaletteRoot, new Map())
+    colorPaletteRoots.forEach((colorPaletteRoot) => {
+      const formated = this.dictionary.formatTokenName(colorPaletteRoot)
+      if (!group.has(formated)) {
+        group.set(formated, new Map())
       }
-
-      const virtualName = token.name.replace(colorPaletteRoot, 'colorPalette')
+      const virtualPath = replaceRootWithColorPalette([...token.path], [...colorPaletteRoot])
+      const virtualName = this.dictionary.formatTokenName(virtualPath)
       const virtualToken = byName.get(virtualName)
       if (!virtualToken) return
 
       const virtualVar = virtualToken.extensions.var
-      group.get(colorPaletteRoot)!.set(virtualVar, token.extensions.varRef)
+      group.get(formated)!.set(virtualVar, token.extensions.varRef)
     })
   }
 
@@ -409,7 +413,9 @@ export class TokenDictionaryView {
     if (!byCategory.has(category)) byCategory.set(category, new Map())
     const value = isNegative ? (token.isConditional ? token.originalValue : token.value) : varRef
     byCategory.get(category)!.set(prop, value)
-    flat.set(`${category}.${prop}`, value)
+    // TODO
+    // flat.set(this.dictionary.formatTokenName([category, prop]), value)
+    flat.set([category, prop].join('.'), value)
   }
 
   private processVars(token: Token, group: Map<string, Map<string, string>>) {
@@ -419,4 +425,29 @@ export class TokenDictionaryView {
     if (!group.has(condition)) group.set(condition, new Map())
     group.get(condition)!.set(varName, token.value)
   }
+}
+
+/**
+ * Replaces the colorPaletteRoot in token.path with 'colorPalette'
+ * @example replaceRootWithColorPalette(['colors', 'button', 'red', '500'], ['button', 'red'])
+ * // => ["colors", "colorPalette", "500"]
+ */
+function replaceRootWithColorPalette(path: string[], colorPaletteRoot: string[]) {
+  // Find the starting index of colorPaletteRoot in path
+  const startIndex = path.findIndex((element, index) =>
+    colorPaletteRoot.every((rootElement, rootIndex) => path[index + rootIndex] === rootElement),
+  )
+
+  if (startIndex === -1) {
+    // colorPaletteRoot not found in path, return original path
+    return path
+  }
+
+  // Remove the elements of colorPaletteRoot from path
+  path.splice(startIndex, colorPaletteRoot.length)
+
+  // Insert 'colorPalette' at the startIndex
+  path.splice(startIndex, 0, 'colorPalette')
+
+  return path
 }
