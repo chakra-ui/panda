@@ -1,13 +1,12 @@
 import { fixturePreset } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src'
-import { formats } from '../src/format'
 
 test('should work with default fixture', () => {
   const dictionary = new TokenDictionary({
     tokens: fixturePreset.theme.tokens,
     semanticTokens: fixturePreset.theme.semanticTokens,
-  })
+  }).init()
 
   const allSpacings = dictionary.filter({ extensions: { category: 'spacing' } })
   expect(allSpacings).toMatchInlineSnapshot(`
@@ -680,29 +679,6 @@ test('should work with default fixture', () => {
         ],
         "type": "dimension",
         "value": "var(--spacing-4)",
-      },
-      Token {
-        "description": undefined,
-        "extensions": {
-          "category": "spacing",
-          "condition": "lg",
-          "conditions": {
-            "base": "var(--spacing-4)",
-            "lg": "var(--spacing-5)",
-          },
-          "pixelValue": "var(--spacing-5)",
-          "prop": "gutter",
-          "var": "--spacing-gutter",
-          "varRef": "var(--spacing-gutter)",
-        },
-        "name": "spacing.gutter",
-        "originalValue": "{spacing.4}",
-        "path": [
-          "spacing",
-          "gutter",
-        ],
-        "type": "dimension",
-        "value": "var(--spacing-5)",
       },
       Token {
         "description": undefined,
@@ -1499,6 +1475,29 @@ test('should work with default fixture', () => {
             "base": "var(--spacing-4)",
             "lg": "var(--spacing-5)",
           },
+          "pixelValue": "var(--spacing-5)",
+          "prop": "gutter",
+          "var": "--spacing-gutter",
+          "varRef": "var(--spacing-gutter)",
+        },
+        "name": "spacing.gutter",
+        "originalValue": "{spacing.4}",
+        "path": [
+          "spacing",
+          "gutter",
+        ],
+        "type": "dimension",
+        "value": "var(--spacing-5)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "lg",
+          "conditions": {
+            "base": "var(--spacing-4)",
+            "lg": "var(--spacing-5)",
+          },
           "isNegative": true,
           "originalPath": [
             "spacing",
@@ -1520,7 +1519,7 @@ test('should work with default fixture', () => {
     ]
   `)
 
-  expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
+  expect(dictionary.view.values).toMatchInlineSnapshot(`
     Map {
       "aspectRatios" => Map {
         "square" => "var(--aspect-ratios-square)",
@@ -1869,10 +1868,10 @@ test('should work with default fixture', () => {
         "primary" => "var(--colors-primary)",
         "secondary" => "var(--colors-secondary)",
         "complex" => "var(--colors-complex)",
-        "surface" => "var(--colors-surface)",
         "button.thick" => "var(--colors-button-thick)",
         "button.card.body" => "var(--colors-button-card-body)",
         "button.card.heading" => "var(--colors-button-card-heading)",
+        "surface" => "var(--colors-surface)",
         "colorPalette" => "var(--colors-color-palette)",
         "colorPalette.50" => "var(--colors-color-palette-50)",
         "colorPalette.100" => "var(--colors-color-palette-100)",

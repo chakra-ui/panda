@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { addVirtualPalette } from '../src/middleware'
 import { transforms } from '../src/transform'
-import { formats } from '../src/format'
 import { TokenDictionary } from '../src/dictionary'
 
 test('should generate virtual palette', () => {
@@ -240,7 +239,7 @@ test('should generate virtual palette', () => {
     ]
   `)
 
-  expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
+  expect(dictionary.view.colorPalettes).toMatchInlineSnapshot(`
     Map {
       "primary" => Map {
         "--colors-color-palette" => "var(--colors-primary)",
@@ -256,31 +255,29 @@ test('should generate virtual palette', () => {
     }
   `)
 
-  expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
+  expect(dictionary.view.values).toMatchInlineSnapshot(`
     Map {
-      "colors" => Map {
-        "primary" => "var(--colors-primary)",
-        "red.300" => "var(--colors-red-300)",
-        "red.500" => "var(--colors-red-500)",
-        "blue.500" => "var(--colors-blue-500)",
-        "blue.700" => "var(--colors-blue-700)",
-        "colorPalette" => "var(--colors-color-palette)",
-        "colorPalette.300" => "var(--colors-color-palette-300)",
-        "colorPalette.500" => "var(--colors-color-palette-500)",
-        "colorPalette.700" => "var(--colors-color-palette-700)",
-      },
+      "colors.primary" => "var(--colors-primary)",
+      "colors.red.300" => "var(--colors-red-300)",
+      "colors.red.500" => "var(--colors-red-500)",
+      "colors.blue.500" => "var(--colors-blue-500)",
+      "colors.blue.700" => "var(--colors-blue-700)",
+      "colors.colorPalette" => "var(--colors-color-palette)",
+      "colors.colorPalette.300" => "var(--colors-color-palette-300)",
+      "colors.colorPalette.500" => "var(--colors-color-palette-500)",
+      "colors.colorPalette.700" => "var(--colors-color-palette-700)",
     }
   `)
 
-  const getVar = formats.createVarGetter(dictionary)
-  expect(getVar('colors.colorPalette.300')).toMatchInlineSnapshot('"var(--colors-color-palette-300)"')
+  const getVar = dictionary.view.get
+  expect(getVar('colors.colorPalette.300')).toMatchInlineSnapshot(`"var(--colors-color-palette-300)"`)
 
-  expect(formats.getColorPaletteValues(dictionary)).toMatchInlineSnapshot(`
-    Set {
+  expect(Array.from(dictionary.view.colorPalettes.keys())).toMatchInlineSnapshot(`
+    [
       "primary",
       "red",
       "blue",
-    }
+    ]
   `)
 })
 
@@ -589,7 +586,7 @@ test('should generate nested object virtual palette', () => {
     ]
   `)
 
-  expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
+  expect(dictionary.view.colorPalettes).toMatchInlineSnapshot(`
     Map {
       "button" => Map {
         "--colors-color-palette-dark" => "var(--colors-button-dark)",
@@ -607,35 +604,33 @@ test('should generate nested object virtual palette', () => {
     }
   `)
 
-  expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
+  expect(dictionary.view.values).toMatchInlineSnapshot(`
     Map {
-      "colors" => Map {
-        "button.dark" => "var(--colors-button-dark)",
-        "button.light" => "var(--colors-button-light)",
-        "button.light.accent" => "var(--colors-button-light-accent)",
-        "button.light.accent.secondary" => "var(--colors-button-light-accent-secondary)",
-        "colorPalette.dark" => "var(--colors-color-palette-dark)",
-        "colorPalette.light" => "var(--colors-color-palette-light)",
-        "colorPalette.light.accent" => "var(--colors-color-palette-light-accent)",
-        "colorPalette.accent" => "var(--colors-color-palette-accent)",
-        "colorPalette.light.accent.secondary" => "var(--colors-color-palette-light-accent-secondary)",
-        "colorPalette.accent.secondary" => "var(--colors-color-palette-accent-secondary)",
-        "colorPalette.secondary" => "var(--colors-color-palette-secondary)",
-      },
+      "colors.button.dark" => "var(--colors-button-dark)",
+      "colors.button.light" => "var(--colors-button-light)",
+      "colors.button.light.accent" => "var(--colors-button-light-accent)",
+      "colors.button.light.accent.secondary" => "var(--colors-button-light-accent-secondary)",
+      "colors.colorPalette.dark" => "var(--colors-color-palette-dark)",
+      "colors.colorPalette.light" => "var(--colors-color-palette-light)",
+      "colors.colorPalette.light.accent" => "var(--colors-color-palette-light-accent)",
+      "colors.colorPalette.accent" => "var(--colors-color-palette-accent)",
+      "colors.colorPalette.light.accent.secondary" => "var(--colors-color-palette-light-accent-secondary)",
+      "colors.colorPalette.accent.secondary" => "var(--colors-color-palette-accent-secondary)",
+      "colors.colorPalette.secondary" => "var(--colors-color-palette-secondary)",
     }
   `)
 
-  const getVar = formats.createVarGetter(dictionary)
+  const getVar = dictionary.view.get
   expect(getVar('colors.colorPalette.light.accent.secondary')).toMatchInlineSnapshot(
     '"var(--colors-color-palette-light-accent-secondary)"',
   )
 
-  expect(formats.getColorPaletteValues(dictionary)).toMatchInlineSnapshot(`
-    Set {
+  expect(Array.from(dictionary.view.colorPalettes.keys())).toMatchInlineSnapshot(`
+    [
       "button",
       "button.light",
       "button.light.accent",
-    }
+    ]
   `)
 })
 
@@ -659,7 +654,7 @@ test('should work with DEFAULT keyword', () => {
     .registerMiddleware(addVirtualPalette)
     .build()
 
-  expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
+  expect(dictionary.view.colorPalettes).toMatchInlineSnapshot(`
     Map {
       "brand" => Map {
         "--colors-color-palette" => "var(--colors-brand)",

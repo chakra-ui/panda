@@ -13,7 +13,7 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
 
   const results: string[] = []
 
-  for (const [key, values] of tokens.vars.entries()) {
+  for (const [key, values] of tokens.view.vars.entries()) {
     const varsObj = Object.fromEntries(values)
     if (Object.keys(varsObj).length === 0) continue
 

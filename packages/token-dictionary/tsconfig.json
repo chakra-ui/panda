@@ -3,7 +3,8 @@
   "include": ["src", "__tests__"],
   "compilerOptions": {
     "paths": {
-      "@pandacss/fixture": ["../fixture/src/index.ts"]
+      "@pandacss/fixture": ["../fixture/src/index.ts"],
+      "@pandacss/types": ["../types/src/index.ts"]
     }
   }
 }

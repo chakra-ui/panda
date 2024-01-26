@@ -7,7 +7,7 @@ import { Select } from './input'
 import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
 
-const tokens = Object.fromEntries<Map<string, Token> | undefined>(context.tokens.categoryMap)
+const tokens = Object.fromEntries<Map<string, Token> | undefined>(context.tokens.view.categoryMap)
 
 const defaultConfig = {
   fontSize: '',
@@ -39,7 +39,7 @@ export default function TypographyPlayground() {
     updateConfig(key, event.currentTarget.value)
   }
 
-  const renderTokenSwitch = (token: any) => {
+  const renderTokenSwitch = (token: keyof typeof defaultConfig) => {
     const currentTokens = tokens[`${token}s`]
     if (!currentTokens) return
     const values = Array.from(currentTokens.values())

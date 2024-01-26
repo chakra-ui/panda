@@ -111,6 +111,27 @@ test('transform / border', () => {
         "description": undefined,
         "extensions": {
           "category": "borders",
+          "condition": "base",
+          "conditions": {
+            "base": "var(--borders-control-border)",
+          },
+          "prop": "dividerBorder",
+          "var": "--borders-divider-border",
+          "varRef": "var(--borders-divider-border)",
+        },
+        "name": "borders.dividerBorder",
+        "originalValue": "{borders.controlBorder}",
+        "path": [
+          "borders",
+          "dividerBorder",
+        ],
+        "type": "border",
+        "value": "var(--borders-control-border)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "borders",
           "condition": "@hover",
           "conditions": {
             "@hover": "var(--borders-md)",
@@ -128,27 +149,6 @@ test('transform / border', () => {
         ],
         "type": "border",
         "value": "var(--borders-md)",
-      },
-      Token {
-        "description": undefined,
-        "extensions": {
-          "category": "borders",
-          "condition": "base",
-          "conditions": {
-            "base": "var(--borders-control-border)",
-          },
-          "prop": "dividerBorder",
-          "var": "--borders-divider-border",
-          "varRef": "var(--borders-divider-border)",
-        },
-        "name": "borders.dividerBorder",
-        "originalValue": "{borders.controlBorder}",
-        "path": [
-          "borders",
-          "dividerBorder",
-        ],
-        "type": "border",
-        "value": "var(--borders-control-border)",
       },
     ]
   `)

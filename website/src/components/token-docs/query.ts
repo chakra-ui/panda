@@ -3,7 +3,7 @@ import { TokenDictionary } from '@pandacss/token-dictionary'
 
 const dictionary = new TokenDictionary({
   tokens: preset.theme.tokens
-})
+}).init()
 
 const omit = new Set(['black', 'white', 'transparent', 'current'])
 

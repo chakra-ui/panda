@@ -46,6 +46,27 @@ const buttonRecipe = {
 }
 
 describe('rule processor', () => {
+  test('simplest', () => {
+    const result = css({ margin: 2, mx: 'token(spacing.2)' })
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "m_2",
+        "mx_token\\(spacing\\.2\\)",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_2 {
+          margin: var(--spacing-2);
+      }
+
+        .mx_token\\(spacing\\.2\\) {
+          margin-inline: var(--spacing-2);
+      }
+      }"
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',
@@ -84,6 +105,7 @@ describe('rule processor', () => {
         },
       },
     })
+    console.timeEnd('css')
 
     expect(result.className).toMatchInlineSnapshot(
       `

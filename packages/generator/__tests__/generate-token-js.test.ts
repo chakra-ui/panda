@@ -1733,10 +1733,6 @@ test('[dts] should generate package', () => {
         "value": "var(--colors-complex)",
         "variable": "var(--colors-complex)"
       },
-      "colors.surface": {
-        "value": "var(--colors-surface)",
-        "variable": "var(--colors-surface)"
-      },
       "colors.button.thick": {
         "value": "var(--colors-button-thick)",
         "variable": "var(--colors-button-thick)"
@@ -1888,6 +1884,10 @@ test('[dts] should generate package', () => {
       "spacing.-gutter": {
         "value": "var(--spacing-gutter)",
         "variable": "var(--spacing-gutter)"
+      },
+      "colors.surface": {
+        "value": "var(--colors-surface)",
+        "variable": "var(--colors-surface)"
       },
       "colors.colorPalette": {
         "value": "var(--colors-color-palette)",

@@ -4,6 +4,7 @@ import {
   hypenateProperty,
   isFunction,
   isString,
+  mapToJson,
   memo,
   withoutSpace,
 } from '@pandacss/shared'
@@ -133,7 +134,7 @@ export class Utility {
   }
 
   private assignColorPaletteProperty = () => {
-    const values = this.tokens.colorPalettes as Record<string, any>
+    const values = mapToJson(this.tokens.view.colorPalettes) as Record<string, any>
     this.config.colorPalette = {
       values: Object.keys(values),
       transform(value) {
@@ -184,7 +185,7 @@ export class Utility {
     }
 
     if (isString(values)) {
-      return fn?.(values) ?? this.tokens.getValue(values) ?? {}
+      return fn?.(values) ?? this.tokens.view.getCategoryValues(values) ?? {}
     }
 
     if (Array.isArray(values)) {
@@ -195,14 +196,18 @@ export class Utility {
     }
 
     if (isFunction(values)) {
-      return values(resolveFn ? fn : this.getToken.bind(this))
+      return values(resolveFn ? fn : this.getTokenCategoryValues.bind(this))
     }
 
     return values
   }
 
   getToken = (path: string) => {
-    return this.tokens.get(path)
+    return this.tokens.view.get(path)
+  }
+
+  getTokenCategoryValues = (category: string) => {
+    return this.tokens.view.getCategoryValues(category)
   }
 
   /**
@@ -317,7 +322,7 @@ export class Utility {
     const isCssVar = prop.startsWith('--')
 
     if (isCssVar) {
-      const tokenValue = this.tokens.getTokenVar(value)
+      const tokenValue = this.tokens.view.get(value)
       value = typeof tokenValue === 'string' ? tokenValue : value
     }
 
@@ -420,7 +425,7 @@ export class Utility {
 
     let styleValue = getArbitraryValue(value)
     if (isString(styleValue)) {
-      styleValue = this.tokens.expandReference(styleValue)
+      styleValue = this.tokens.expandReferenceInValue(styleValue)
     }
 
     return compact({

@@ -1,6 +1,6 @@
 import { logger } from '@pandacss/logger'
 import { esc, isObject } from '@pandacss/shared'
-import type { Token } from '@pandacss/types'
+import type { Token } from './token'
 
 /* -----------------------------------------------------------------------------
  * Token references

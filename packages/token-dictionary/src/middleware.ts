@@ -36,7 +36,7 @@ export const addNegativeTokens: TokenMiddleware = {
         node.name = node.path.join('.')
       }
 
-      dictionary.allTokens.push(node)
+      dictionary.registerToken(node)
     })
   },
 }
@@ -125,10 +125,8 @@ export const addVirtualPalette: TokenMiddleware = {
         isVirtual: true,
       })
 
-      dictionary.allTokens.push(node)
+      dictionary.registerToken(node, 'pre')
     })
-
-    dictionary.transformTokens('pre')
   },
 }
 
