@@ -120,15 +120,15 @@
   will now correctly generate again:
 
   ```css
-  .aaa html {
+  html .aaa {
     color: var(--colors-red-100);
   }
 
-  .aaa html .bbb {
+  html .aaa .bbb {
     color: var(--colors-red-200);
   }
 
-  .aaa html .bbb .ccc {
+  html .aaa .bbb .ccc {
     color: var(--colors-red-300);
   }
   ```
