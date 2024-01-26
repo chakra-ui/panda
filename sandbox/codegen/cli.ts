@@ -60,11 +60,13 @@ cli
       env: { MODE: fw },
     }))
 
-    try {
-      await Promise.all(commands.map(({ cmd, env }) => runCommand(cmd, env)))
-    } catch (error) {
-      console.error('Some commands failed:')
-      process.exit(1)
+    for (const command of commands) {
+      try {
+        await runCommand(command.cmd, command.env)
+      } catch (error) {
+        console.error('Some commands failed:')
+        process.exit(1)
+      }
     }
 
     console.log('All commands succeeded 🎉')
