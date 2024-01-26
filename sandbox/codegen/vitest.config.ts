@@ -76,9 +76,10 @@ const options: TestUserConfig = {
       include: ['**/__tests__/**/frameworks/solid.*.{test,spec}.{j,t}s?(x)'],
       environment: 'happy-dom',
       globals: true,
-      deps: {
-        inline: [/solid-js/, /@solidjs\/router/],
-        registerNodeLoader: false,
+      server: {
+        deps: {
+          inline: [/solid-js/],
+        },
       },
     },
   },

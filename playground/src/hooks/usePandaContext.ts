@@ -1,8 +1,20 @@
-import { Config, StaticCssOptions } from '@pandacss/types'
+import { Config, StaticCssOptions, UserConfig } from '@pandacss/types'
 import { useRef } from 'react'
 import { Generator } from '@pandacss/generator'
 import { merge } from 'merge-anything'
 import { getResolvedConfig, resolveConfig } from '@/src/lib/config/resolve-config'
+
+const defaultConfig = getResolvedConfig(
+  resolveConfig({
+    cwd: '',
+    include: [],
+    outdir: 'styled-system',
+    preflight: true,
+    optimize: true,
+    staticCss: { recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'] },
+    jsxFramework: undefined,
+  }),
+)!
 
 export const usePandaContext = (userConfig: Config | null) => {
   const previousContext = useRef<Generator | null>(null)
@@ -26,6 +38,7 @@ export const usePandaContext = (userConfig: Config | null) => {
       }),
     )
   } catch (error) {
+    config = defaultConfig
     console.log(error)
   }
 
@@ -42,6 +55,21 @@ export const usePandaContext = (userConfig: Config | null) => {
     previousContext.current = context
     return context
   } catch {
-    return previousContext.current!
+    if (previousContext.current) {
+      return previousContext.current!
+    }
+
+    // or use default config cause we always need a context
+
+    const context = new Generator({
+      dependencies: [],
+      serialized: '',
+      deserialize: () => defaultConfig,
+      path: '',
+      hooks: {},
+      config: defaultConfig as UserConfig,
+    })
+    previousContext.current = context
+    return context
   }
 }
