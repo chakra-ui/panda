@@ -1,12 +1,13 @@
+import * as React from 'react'
 import { toPx } from '@pandacss/shared'
 import { Grid, panda, Stack } from '../../styled-system/jsx'
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
 import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
 
-const radii = context.getCategory('radii')
+const radii = context.getTokens('radii')
 
-export function Radii() {
+export default function Radii() {
   return (
     <TokenGroup>
       {radii && (
@@ -14,14 +15,14 @@ export function Radii() {
           {getSortedSizes([...radii.values()])
             .sort((a, b) => parseFloat(toPx(a.value)!) - parseFloat(toPx(b.value)!))
             .map((size, index) => (
-              <Stack direction="column" align="center" key={index}>
+              <Stack direction="column" key={index}>
                 <panda.div
                   width="80px"
                   height="80px"
                   background="rgba(255, 192, 203, 0.5)"
                   style={{ borderRadius: size.value }}
                 />
-                <Stack gap="1" align="center">
+                <Stack gap="1">
                   <b>{size.extensions.prop}</b>
                   <panda.span opacity="0.7">{size.value}</panda.span>
                 </Stack>

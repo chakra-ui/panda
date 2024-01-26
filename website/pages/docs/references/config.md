@@ -50,15 +50,42 @@ Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@p
 
 ### preflight
 
-**Type**: `boolean`
+**Type**: `boolean` | `{ scope: string; }`
 
 **Default**: `true`
 
 Whether to enable css reset styles.
 
+Disable preflight:
+
 ```json
 {
-  "preflight": true
+  "preflight": false
+}
+```
+
+You can also scope the preflight; Especially useful for being able to scope the CSS reset to only a part of the app for some reason.
+
+Enable preflight and customize the scope:
+
+```json
+{
+  "preflight": { "scope": ".extension" }
+}
+```
+
+The resulting `reset` css would look like this:
+
+```css
+.extension button,
+.extension select {
+  text-transform: none;
+}
+
+.extension table {
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
 }
 ```
 
@@ -713,11 +740,26 @@ Used to generate css utility classes for your project.
 
 **Default**: `false`
 
-Only allow token values and prevent custom or raw CSS values.
+Only allow token values and prevent custom or raw CSS values. Will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
 
 ```json
 {
   "strictTokens": false
+}
+```
+
+### strictPropertyValues
+
+**Type**: `boolean`
+
+**Default**: `false`
+
+Only use valid CSS values for properties that do have a predefined list of values. Will throw for properties that do not have config tokens, such as
+`display`, `content`, `willChange`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
+
+```json
+{
+  "strictPropertyValues": false
 }
 ```
 
@@ -816,4 +858,8 @@ The log level for the built-in logger.
 {
   "logLevel": "info"
 }
+```
+
+```
+
 ```

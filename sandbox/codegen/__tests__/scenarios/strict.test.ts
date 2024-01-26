@@ -5,8 +5,17 @@ describe('css', () => {
   test('native CSS prop and value', () => {
     assertType(css({ display: 'flex' }))
 
-    // @ts-expect-error expected from strictTokens: true
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ display: 'abc' }))
+    assertType(css({ content: 'abc' }))
+    assertType(css({ willChange: 'abc' }))
+
+    assertType(css({ pos: 'absolute' }))
+
+    // @ts-expect-error always expected
+    assertType(css({ pos: 'absolute123' }))
+    // @ts-expect-error expected from strictTokens: true
+    assertType(css({ flex: '0 1' }))
   })
 
   test('token value', () => {
@@ -16,7 +25,6 @@ describe('css', () => {
   test('utility prop', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictTokens: true
         srOnly: true,
       }),
     )
@@ -25,6 +33,8 @@ describe('css', () => {
   test('shorthand prop', () => {
     assertType(
       css({
+        // @ts-expect-error expected from strictTokens: true
+        backgroundColor: 'red',
         // @ts-expect-error expected from strictTokens: true
         bg: 'red',
       }),
@@ -70,8 +80,63 @@ describe('css', () => {
     )
   })
 
+  test('arbitrary value escape hatch with conditionals', () => {
+    assertType(
+      css({
+        color: '[#fff]',
+        fontSize: '[123px]',
+        bgColor: '[#fff!]',
+        borderColor: '[#fff !important]',
+        _hover: {
+          color: '[#fff]',
+          fontSize: '[123px]',
+          bgColor: '[#fff!]',
+          borderColor: '[#fff !important]',
+        },
+        backgroundColor: {
+          _dark: '[#3B00B9]',
+          _hover: '[#3B00B9!]',
+          _focus: '[#3B00B9 !important]',
+        },
+      }),
+    )
+  })
+
   test('arbitrary selector', () => {
     assertType(css({ ['&:data-panda']: { display: 'flex' } }))
+  })
+
+  test('important', () => {
+    assertType(
+      css({
+        // @ts-expect-error expected from strictTokens: true
+        fontSize: '2xl!',
+        // @ts-expect-error expected from strictTokens: true
+        p: '4 !important',
+        // @ts-expect-error expected from strictTokens: true
+        bgColor: '#fff!',
+        // @ts-expect-error expected from strictTokens: true
+        borderColor: '#fff !important',
+        _hover: {
+          // @ts-expect-error expected from strictTokens: true
+          fontSize: '2xl!',
+          // @ts-expect-error expected from strictTokens: true
+          p: '4 !important',
+          // @ts-expect-error expected from strictTokens: true
+
+          bgColor: '#fff!',
+          // @ts-expect-error expected from strictTokens: true
+          borderColor: '#fff !important',
+        },
+        // @ts-expect-error expected from strictTokens: true
+        backgroundColor: {
+          _disabled: '2xl!',
+          _active: '4 !important',
+          _hover: '#3B00B9!',
+          _focus: '#3B00B9 !important',
+        },
+      }),
+    )
   })
 
   test('responsive condition', () => {

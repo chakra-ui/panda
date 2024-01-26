@@ -1,12 +1,18 @@
 {
   "name": "@pandacss/error",
-  "version": "0.22.0",
+  "version": "0.28.0",
   "description": "Common error messages for css panda",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/error"
+  },
   "publishConfig": {
     "access": "public"
   },

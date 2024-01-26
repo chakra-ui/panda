@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { sortAtRules } from '../src/plugins/sort-at-rules'
+import { sortAtRules } from '../src/sort-at-rules'
 
 describe('sort-at-rules', () => {
   test(`should sort mobile first`, () => {

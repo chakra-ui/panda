@@ -1,14 +1,15 @@
 import { isObject } from '@pandacss/shared'
-import type { Context } from '../../engines'
+import type { Context } from '@pandacss/core'
+import type { Stylesheet } from '@pandacss/core'
 
 const css = String.raw
 
-export function generateResetCss(ctx: Context) {
+export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   const { preflight } = ctx.config
   const scope = isObject(preflight) ? preflight.scope : undefined
   const selector = scope ? `${scope} ` : ''
   // prettier-ignore
-  const output = css`
+  let output = css`
   ${selector}* {
     margin: 0;
     padding: 0;
@@ -187,7 +188,7 @@ export function generateResetCss(ctx: Context) {
   ${selector}input[type="search"],
   ${selector}input[type="password"] {
     -webkit-appearance: none;
-    -moz-appearance: none; 
+    -moz-appearance: none;
   }
 
   ${selector}input[type='search'] {
@@ -227,6 +228,8 @@ export function generateResetCss(ctx: Context) {
   }
 `
 
-  ctx.layers.reset.append(output)
-  void ctx.hooks.callHook('generator:css', 'reset.css', '')
+  if (ctx.hooks['cssgen:done']) {
+    output = ctx.hooks['cssgen:done']({ artifact: 'reset', content: output }) ?? output
+  }
+  sheet.layers.reset.append(output)
 }

@@ -4,7 +4,18 @@ import cac from 'cac'
 import { spawn } from 'child_process'
 
 const cli = cac('sct')
-const scenarioList = ['preact', 'qwik', 'react', 'solid', 'vue', 'strict']
+const scenarioList = [
+  'preact',
+  'qwik',
+  'react',
+  'solid',
+  'vue',
+  'strict-tokens',
+  'strict-property-values',
+  'strict',
+  'jsx-minimal',
+  'jsx-none',
+]
 
 const isValidScenario = (scenario) => {
   if (!scenarioList.includes(scenario)) {
@@ -49,13 +60,16 @@ cli
       env: { MODE: fw },
     }))
 
-    const results = await Promise.allSettled(commands.map(({ cmd, env }) => runCommand(cmd, env)))
-    const failed = results.filter((result) => result.status === 'rejected')
-
-    if (failed.length > 0) {
-      console.error('Some commands failed:')
-      process.exit(1)
+    for (const command of commands) {
+      try {
+        await runCommand(command.cmd, command.env)
+      } catch (error) {
+        console.error('Some commands failed:')
+        process.exit(1)
+      }
     }
+
+    console.log('All commands succeeded 🎉')
   })
 
 cli.command('codegen [scenario]', 'Generate code').action(async (scenario) => {

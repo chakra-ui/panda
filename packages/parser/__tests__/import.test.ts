@@ -9,11 +9,10 @@ describe('extract imports', () => {
     css({ bg: "red" })
     `
 
-    expect(importParser(code, { name: 'css', module: '@panda/css' })).toMatchInlineSnapshot(`
+    expect(importParser(code, { importMap: '@panda' })).toMatchInlineSnapshot(`
       [
         {
           "alias": "nCss",
-          "importMapValue": true,
           "mod": "@panda/css",
           "name": "css",
         },

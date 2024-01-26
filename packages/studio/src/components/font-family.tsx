@@ -1,17 +1,17 @@
+import * as React from 'react'
 import { Flex, HStack, Square, Stack, panda } from '../../styled-system/jsx'
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
 
-const fonts = context.getCategory('fonts')
+const fonts = context.getTokens('fonts')
 
 const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))
 const symbols = Array.from({ length: 10 }, (_, i) => String.fromCharCode(48 + i))
 const specials = ['@', '#', '$', '%', '&', '!', '?', '+', '-']
 
 export const FontFamily = () => {
-  const values = Array.from(fonts.values())
   return (
     <Stack gap="10">
-      {values.map((font) => (
+      {fonts.map((font) => (
         <Stack key={font.name} gap="8">
           <HStack gap="10" style={{ fontFamily: font.value }}>
             <panda.p fontSize="100px" fontWeight="bold" lineHeight="1">

@@ -1,3 +1,4 @@
+import * as React from 'react'
 import type { ComponentProps } from 'react'
 
 export const MoonIcon = (props: ComponentProps<'svg'>) => (

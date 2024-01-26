@@ -1,5 +1,476 @@
 # @pandacss/parser
 
+## 0.28.0
+
+### Minor Changes
+
+- f58f6df2: Refactor `config.hooks` to be much more powerful, you can now:
+
+  - Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
+    load all `recipes` from a folder
+  - Transform a source file's content before parsing it, this could be used to transform the file content to a
+    `tsx`-friendly syntax so that Panda's parser can parse it.
+  - Implement your own parser logic and add the extracted results to the classic Panda pipeline, this could be used to
+    parse style usage from any template language
+  - Tweak the CSS content for any `@layer` or even right before it's written to disk (if using the CLI) or injected
+    through the postcss plugin, allowing all kinds of customizations like removing the unused CSS variables, etc.
+  - React to any config change or after the codegen step (your outdir, the `styled-system` folder) have been generated
+
+  See the list of available `config.hooks` here:
+
+  ```ts
+  export interface PandaHooks {
+    /**
+     * Called when the config is resolved, after all the presets are loaded and merged.
+     * This is the first hook called, you can use it to tweak the config before the context is created.
+     */
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    /**
+     * Called when the Panda context has been created and the API is ready to be used.
+     */
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    /**
+     * Called when the config file or one of its dependencies (imports) has changed.
+     */
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    /**
+     * Called after reading the file content but before parsing it.
+     * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
+     * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
+     */
+    'parser:before': (args: { filePath: string; content: string }) => string | void
+    /**
+     * Called after the file styles are extracted and processed into the resulting ParserResult object.
+     * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
+     */
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    /**
+     * Called after the codegen is completed
+     */
+    'codegen:done': () => MaybeAsyncReturn
+    /**
+     * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
+     * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
+     * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
+     */
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
+  }
+  ```
+
+### Patch Changes
+
+- Updated dependencies [f58f6df2]
+- Updated dependencies [e463ce0e]
+- Updated dependencies [77cab9fe]
+- Updated dependencies [770c7aa4]
+- Updated dependencies [9d000dcd]
+- Updated dependencies [6d7e7b07]
+  - @pandacss/config@0.28.0
+  - @pandacss/types@0.28.0
+  - @pandacss/core@0.28.0
+  - @pandacss/shared@0.28.0
+  - @pandacss/extractor@0.28.0
+  - @pandacss/logger@0.28.0
+
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/core@0.27.3
+  - @pandacss/config@0.27.3
+  - @pandacss/extractor@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/config@0.27.2
+- @pandacss/core@0.27.2
+- @pandacss/extractor@0.27.2
+- @pandacss/logger@0.27.2
+- @pandacss/shared@0.27.2
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+  - @pandacss/config@0.27.1
+  - @pandacss/core@0.27.1
+  - @pandacss/extractor@0.27.1
+  - @pandacss/logger@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- Updated dependencies [84304901]
+- Updated dependencies [74ac0d9d]
+- Updated dependencies [c9195a4e]
+  - @pandacss/extractor@0.27.0
+  - @pandacss/config@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/types@0.27.0
+  - @pandacss/core@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- @pandacss/config@0.26.2
+- @pandacss/core@0.26.2
+- @pandacss/extractor@0.26.2
+- @pandacss/logger@0.26.2
+- @pandacss/shared@0.26.2
+- @pandacss/types@0.26.2
+
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/config@0.26.1
+- @pandacss/core@0.26.1
+- @pandacss/extractor@0.26.1
+- @pandacss/logger@0.26.1
+- @pandacss/shared@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- d420c676: Refactors the parser and import analysis logic. The goal is to ensure we can re-use the import logic in
+  ESLint Plugin and Node.js.
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+- Updated dependencies [14033e00]
+- Updated dependencies [1bd7fbb7]
+- Updated dependencies [d420c676]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/core@0.26.0
+  - @pandacss/config@0.26.0
+  - @pandacss/extractor@0.26.0
+  - @pandacss/logger@0.26.0
+
+## 0.25.0
+
+### Patch Changes
+
+- de282f60: Fix issue where `base` doesn't work within css function
+
+  ```jsx
+  css({
+    // This didn't work, but now it does
+    base: { color: 'blue' },
+  })
+  ```
+
+- Updated dependencies [59fd291c]
+  - @pandacss/types@0.25.0
+  - @pandacss/config@0.25.0
+  - @pandacss/extractor@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/config@0.24.2
+  - @pandacss/extractor@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- @pandacss/config@0.24.1
+- @pandacss/extractor@0.24.1
+- @pandacss/logger@0.24.1
+- @pandacss/shared@0.24.1
+- @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- f6881022: Add `patterns` to `config.staticCss`
+
+  ***
+
+  Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+  need (it's still possible by explicitly using `responsive: true`).
+
+  ```ts
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+      visual: {
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
+      },
+    },
+  })
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: ['*'], // this
+
+        // was equivalent to:
+        card: [
+          // notice how `responsive: true` was implicitly added
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
+        ],
+
+        //   will now correctly be equivalent to:
+        card: [{ size: ['*'] }, { visual: ['*'] }],
+      },
+    },
+  })
+  ```
+
+  Here's the diff in the generated CSS:
+
+  ```diff
+  @layer recipes {
+    .card--size_small {
+      font-size: 14px;
+    }
+
+    .card--size_large {
+      font-size: 18px;
+    }
+
+    .card--visual_primary {
+      background-color: blue;
+    }
+
+    .card--visual_secondary {
+      background-color: gray;
+    }
+
+    @layer _base {
+      .card {
+        color: var(--colors-white);
+      }
+    }
+
+  -  @media screen and (min-width: 40em) {
+  -    -.sm\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.sm\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.sm\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.sm\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 48em) {
+  -    -.md\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.md\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.md\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.md\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 64em) {
+  -    -.lg\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.lg\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.lg\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.lg\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 80em) {
+  -    -.xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 96em) {
+  -    -.\32xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.\32xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.\32xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.\32xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+  }
+  ```
+
+- Updated dependencies [f6881022]
+  - @pandacss/types@0.24.0
+  - @pandacss/config@0.24.0
+  - @pandacss/extractor@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- 80ada336: Automatically extract/generate CSS for `sva` even if `slots` are not statically extractable, since it will
+  only produce atomic styles, we don't care much about slots for `sva` specifically
+
+  Currently the CSS won't be generated if the `slots` are missing which can be problematic when getting them from
+  another file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
+
+  ```ts
+  import { sva } from '../styled-system/css'
+  import { slots } from './slots'
+
+  const card = sva({
+    slots, // ❌ did NOT work -> ✅ will now work as expected
+    base: {
+      root: {
+        p: '6',
+        m: '4',
+        w: 'md',
+        boxShadow: 'md',
+        borderRadius: 'md',
+        _dark: { bg: '#262626', color: 'white' },
+      },
+      content: {
+        textStyle: 'lg',
+      },
+      title: {
+        textStyle: 'xl',
+        fontWeight: 'semibold',
+        pb: '2',
+      },
+    },
+  })
+  ```
+
+- b01eb049: Fix a parser issue where we didn't handle import aliases when using a {xxx}.raw() function.
+
+  ex:
+
+  ```ts
+  // button.stories.ts
+  import { button as buttonRecipe } from '@ui/styled-system/recipes'
+
+  export const Primary: Story = {
+    // ❌ this wouldn't be parsed as a recipe because of the alias + .raw()
+    //  -> ✅ it's now fixed
+    args: buttonRecipe.raw({
+      color: 'primary',
+    }),
+  }
+  ```
+
+- a3b6ed5f: Fix & perf improvement: skip JSX parsing when not using `config.jsxFramework` / skip tagged template literal
+  parsing when not using `config.syntax` set to "template-literal"
+- Updated dependencies [bd552b1f]
+  - @pandacss/logger@0.23.0
+  - @pandacss/config@0.23.0
+  - @pandacss/extractor@0.23.0
+  - @pandacss/is-valid-prop@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/types@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
+  `!important`
+
+  ```ts
+  css({
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
+  ```
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/shared@0.22.1
+  - @pandacss/config@0.22.1
+  - @pandacss/extractor@0.22.1
+  - @pandacss/is-valid-prop@0.22.1
+  - @pandacss/logger@0.22.1
+
 ## 0.22.0
 
 ### Patch Changes

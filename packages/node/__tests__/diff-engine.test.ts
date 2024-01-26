@@ -1,35 +1,29 @@
 import { mergeConfigs } from '@pandacss/config'
-import { config as fixtureConfig } from '@pandacss/fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 import { Generator } from '@pandacss/generator'
 import { parseJson, stringifyJson } from '@pandacss/shared'
-import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
-import { createHooks } from 'hookable'
+import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { DiffEngine } from '../src/diff-engine'
 
-const common: Partial<ConfigResultWithHooks> = {
+const common: Partial<LoadConfigResult> = {
   dependencies: [],
   path: '',
-  hooks: createHooks(),
+  hooks: {},
 }
 
 const createConfigResult = (config: UserConfig) => {
-  const conf = { ...common, config }
+  const conf = { ...common, config: { ...config, include: [] } }
 
   const serialized = stringifyJson(conf.config)
   const deserialize = () => parseJson(serialized)
 
-  return { ...conf, serialized, deserialize } as ConfigResultWithHooks
+  return { ...conf, serialized, deserialize } as LoadConfigResult
 }
 
 describe('DiffEngine affecteds', () => {
   test('add theme.tokens', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
 
@@ -68,84 +62,6 @@ describe('DiffEngine affecteds', () => {
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
       [
-        {
-          "path": [
-            "utilities",
-            "colorPalette",
-          ],
-          "type": "CREATE",
-          "value": {
-            "transform": "transform(value) {
-              return values[value];
-            }",
-            "values": [
-              "current",
-              "black",
-              "white",
-              "transparent",
-              "rose",
-              "pink",
-              "fuchsia",
-              "purple",
-              "violet",
-              "indigo",
-              "blue",
-              "sky",
-              "cyan",
-              "teal",
-              "emerald",
-              "green",
-              "lime",
-              "yellow",
-              "amber",
-              "orange",
-              "red",
-              "neutral",
-              "stone",
-              "zinc",
-              "gray",
-              "slate",
-              "deep",
-              "deep.test",
-              "deep.test.pool",
-              "primary",
-              "secondary",
-              "complex",
-              "surface",
-              "button",
-              "button.card",
-            ],
-          },
-        },
-        {
-          "path": [
-            "utilities",
-            "textStyle",
-          ],
-          "type": "CREATE",
-          "value": {
-            "className": "textStyle",
-            "layer": "compositions",
-            "transform": "(value) => {
-              return __vite_ssr_import_1__.serializeStyle(flatValues[value], ctx);
-            }",
-            "values": [
-              "xs",
-              "sm",
-              "md",
-              "lg",
-              "xl",
-              "2xl",
-              "3xl",
-              "4xl",
-              "5xl",
-              "6xl",
-              "7xl",
-              "8xl",
-              "9xl",
-            ],
-          },
-        },
         {
           "path": [
             "theme",
@@ -248,12 +164,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.tokens', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -363,12 +274,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('add theme.recipes', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const config = defaultConfig() as UserConfig
     const generator = new Generator(createConfigResult(config))
@@ -455,12 +361,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.recipes', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -518,12 +419,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('add theme.patterns', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -563,7 +459,7 @@ describe('DiffEngine affecteds', () => {
           "type": "CREATE",
           "value": {
             "transform": "transform() {
-                      return { color: \\"blue.400\\" };
+                      return { color: "blue.400" };
                     }",
           },
         },
@@ -600,7 +496,7 @@ describe('DiffEngine affecteds', () => {
       [
         {
           "oldValue": "transform() {
-                      return { color: \\"blue.400\\" };
+                      return { color: "blue.400" };
                     }",
           "path": [
             "patterns",
@@ -609,7 +505,7 @@ describe('DiffEngine affecteds', () => {
           ],
           "type": "CHANGE",
           "value": "transform() {
-                      return { color: \\"blue.500\\" };
+                      return { color: "blue.500" };
                     }",
         },
       ]
@@ -632,7 +528,7 @@ describe('DiffEngine affecteds', () => {
         {
           "oldValue": {
             "transform": "transform() {
-                      return { color: \\"blue.500\\" };
+                      return { color: "blue.500" };
                     }",
           },
           "path": [
@@ -646,13 +542,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.patterns', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
-
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
     const nextConfig = mergeConfigs([
@@ -695,12 +585,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update separator', () => {
-    const defaultConfig = (): Config => ({
-      outdir: '',
-      cwd: '',
-      cssVarRoot: ':where(html)',
-      ...fixtureConfig,
-    })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -742,5 +627,23 @@ describe('DiffEngine affecteds', () => {
         },
       ]
     `)
+  })
+
+  test('nothing changes', () => {
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+
+    const config = defaultConfig() as UserConfig
+    const generator = new Generator(createConfigResult(config))
+    const diffEngine = new DiffEngine(generator)
+    const nextConfig = mergeConfigs([{}, config, {}])
+
+    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(affecteds.artifacts).toMatchInlineSnapshot('Set {}')
+    expect(affecteds.diffs).toMatchInlineSnapshot('[]')
+
+    const resetConfig = mergeConfigs([defaultConfig()])
+    const affectedsAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
+    expect(affectedsAfterReset.artifacts).toMatchInlineSnapshot('Set {}')
+    expect(affecteds.diffs).toMatchInlineSnapshot('[]')
   })
 })

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/logger",
-  "version": "0.22.0",
+  "version": "0.28.0",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -24,6 +24,12 @@
     "dev": "pnpm build-fast --watch"
   },
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/logger"
+  },
   "publishConfig": {
     "access": "public"
   },

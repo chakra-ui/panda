@@ -1,50 +1,56 @@
-import { getDotPath, mapToJson } from '@pandacss/shared'
+import { getDotPath, mapToJson, memo } from '@pandacss/shared'
 import { TokenDictionary as BaseDictionary, type TokenDictionaryOptions } from './dictionary'
 import { formats } from './format'
 import { middlewares } from './middleware'
 import { transforms } from './transform'
+import { expandReferences } from './utils'
 
 export class TokenDictionary extends BaseDictionary {
+  get: ReturnType<typeof formats.createVarGetter>
+  conditionMap: ReturnType<typeof formats.groupByCondition>
+  categoryMap: ReturnType<typeof formats.groupByCategory>
+  values: ReturnType<typeof formats.getFlattenedValues>
+  colorPalettes: ReturnType<typeof formats.groupByColorPalette>
+  vars: ReturnType<typeof formats.getVars>
+  json: ReturnType<typeof mapToJson>
+
   constructor(options: TokenDictionaryOptions) {
     super(options)
     this.registerTransform(...transforms)
     this.registerMiddleware(...middlewares)
     this.build()
+
+    this.get = formats.createVarGetter(this)
+    this.conditionMap = formats.groupByCondition(this)
+    this.categoryMap = formats.groupByCategory(this)
+    this.values = formats.getFlattenedValues(this)
+    this.colorPalettes = mapToJson(formats.groupByColorPalette(this))
+    this.vars = formats.getVars(this)
+    this.json = mapToJson(this.values)
   }
 
-  get get() {
-    return formats.createVarGetter(this)
-  }
-
-  get conditionMap() {
-    return formats.groupByCondition(this)
-  }
-
-  get categoryMap() {
-    return formats.groupByCategory(this)
-  }
-
-  get values() {
-    return formats.getFlattenedValues(this)
-  }
-
-  get colorPalettes() {
-    return mapToJson(formats.groupByColorPalette(this))
-  }
-
-  get vars() {
-    return formats.getVars(this)
-  }
-
-  getValue(path: string) {
+  getValue = memo((path: string) => {
     const result = this.values.get(path)
     if (result != null) {
       return Object.fromEntries(result)
     }
+  })
+
+  getTokenVar = memo((path: string) => {
+    return getDotPath(this.json, path)
+  })
+
+  /**
+   * Expand token references to their CSS variable
+   */
+  expandReference(value: string) {
+    return expandReferences(value, (key) => this.get(key))
   }
 
-  getTokenVar(path: string) {
-    const json = mapToJson(this.values)
-    return getDotPath(json, path)
+  /**
+   * Resolve token references to their actual raw value
+   */
+  resolveReference(value: string) {
+    return expandReferences(value, (key) => this.getByName(key)?.value)
   }
 }

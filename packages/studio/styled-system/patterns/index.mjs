@@ -18,4 +18,3 @@ export * from './divider.mjs';
 export * from './float.mjs';
 export * from './bleed.mjs';
 export * from './visually-hidden.mjs';
-export * from './styled-link.mjs';

@@ -18,6 +18,37 @@ This error seems to be caused by process timing issues between file writes. This
 
 ---
 
+### HMR does not work when I use `tsconfig` paths?
+
+Panda tries to automatically infer and read the custom paths defined in `tsconfig.json` file. However, there might be scenarios where the hot module replacement doesn't work.
+
+To fix this add the `importMap` option to your `panda.config.js` file, setting it's value to the specified `paths` in your `tsconfig.json` file.
+
+```json
+// tsconfig.json
+
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@my-path/*": ["./styled-system/*"]
+    }
+  }
+}
+```
+
+```js
+// panda.config.js
+
+module.exports = {
+  importMap: '@my-path'
+}
+```
+
+This will ensure that the paths are resolved correctly, and HMR works as expected.
+
+---
+
 ### Why are my styles not applied?
 
 Check that the [`@layer` rules](/docs/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported and that the `panda` command has been run (or is running with `--watch`).
@@ -196,7 +227,7 @@ When dealing with simple use cases, or if you need code colocation, or even avoi
 
 ---
 
-### Why does the panda codegen command fails ?
+### Why does the panda codegen command fail ?
 
 If you run into any error related to "Transforming const to the configured target environment ("es5") is not supported yet", update your tsconfig to use es6 or higher:
 
@@ -244,4 +275,26 @@ css({
     color: 'red.300'
   }
 })
+```
+
+---
+
+### How can I prevent other libraries from overriding my styles?
+
+You can use [Layer Imports](<https://developer.mozilla.org/en-US/docs/Web/CSS/@import#layer-name:~:text=%40import%20url%20layer(layer%2Dname)%3B>) to prevent other libraries from overriding your styles.
+
+First of all you cast the css from the other library(s) to a css layer:
+
+```css
+@import url('bootstrap.css') layer(bootstrap);
+
+@import url('ionic.css') layer(ionic);
+```
+
+Then update the default layer list to deprioritize the styles from the other library(s):
+
+```css
+@layer bootstrap, reset, base, token, recipes, utilities;
+
+@layer ionic, reset, base, token, recipes, utilities;
 ```

@@ -49,7 +49,7 @@ export class Utility {
   /**
    * The map of the property keys
    */
-  propertyKeys: Map<string, Set<string>> = new Map()
+  propertyTypeKeys: Map<string, Set<string>> = new Map()
 
   /**
    * The utility config
@@ -81,7 +81,7 @@ export class Utility {
     const { tokens, config = {}, separator, prefix, shorthands, strictTokens } = options
 
     this.tokens = tokens
-    this.config = config
+    this.config = this.normalizeConfig(config)
 
     if (separator) {
       this.separator = separator
@@ -105,15 +105,23 @@ export class Utility {
     this.assignPropertyTypes()
   }
 
+  private normalizeConfig(config: UtilityConfig) {
+    return Object.fromEntries(
+      Object.entries(config).map(([property, propertyConfig]) => {
+        return [property, this.normalize(propertyConfig)]
+      }),
+    )
+  }
+
   register = (property: string, config: PropertyConfig) => {
+    this.config[property] = this.normalize(config)
     this.assignProperty(property, config)
     this.assignPropertyType(property, config)
-    this.config[property] = config
   }
 
   private assignShorthands = () => {
     for (const [property, config] of Object.entries(this.config)) {
-      const { shorthand } = this.normalize(config) ?? {}
+      const { shorthand } = config ?? {}
 
       if (!shorthand) continue
 
@@ -201,11 +209,17 @@ export class Utility {
    * Normalize the property config
    */
   normalize = (value: PropertyConfig | undefined): PropertyConfig | undefined => {
-    return value
+    const config = { ...value }
+
+    // set graceful defaults for className
+    if (config.shorthand && !config.className) {
+      config.className = Array.isArray(config.shorthand) ? config.shorthand[0] : config.shorthand
+    }
+
+    return config
   }
 
-  private assignProperty = (property: string, propertyConfig: PropertyConfig) => {
-    const config = this.normalize(propertyConfig)
+  private assignProperty = (property: string, config: PropertyConfig) => {
     this.setTransform(property, config?.transform)
 
     if (!config) return
@@ -229,14 +243,22 @@ export class Utility {
     }
   }
 
-  getPropertyKeys = (property: string) => {
-    const keys = this.propertyKeys.get(property)
+  getPropertyKeys = (prop: string) => {
+    const propConfig = this.config[prop]
+    if (!propConfig) return []
+
+    const values = this.getPropertyValues(propConfig)
+    if (!values) return []
+
+    return Object.keys(values)
+  }
+
+  getPropertyTypeKeys = (property: string) => {
+    const keys = this.propertyTypeKeys.get(property)
     return keys ? Array.from(keys) : []
   }
 
-  private assignPropertyType = (property: string, propertyConfig: PropertyConfig) => {
-    const config = this.normalize(propertyConfig)
-
+  private assignPropertyType = (property: string, config: PropertyConfig | undefined) => {
     if (!config) return
 
     const values = this.getPropertyValues(config, (key) => `type:Tokens["${key}"]`)
@@ -249,7 +271,7 @@ export class Utility {
     if (values) {
       const keys = new Set(Object.keys(values))
       this.types.set(property, keys)
-      this.propertyKeys.set(property, keys)
+      this.propertyTypeKeys.set(property, keys)
     }
 
     const set = this.types.get(property) ?? new Set()
@@ -393,12 +415,18 @@ export class Utility {
     if (value == null) {
       return { className: '', styles: {} }
     }
+
     const key = this.resolveShorthand(prop)
+
+    let styleValue = getArbitraryValue(value)
+    if (isString(styleValue)) {
+      styleValue = this.tokens.expandReference(styleValue)
+    }
 
     return compact({
       layer: this.configs.get(key)?.layer,
       className: this.getOrCreateClassName(key, withoutSpace(value)),
-      styles: this.getOrCreateStyle(key, getArbitraryValue(value)),
+      styles: this.getOrCreateStyle(key, styleValue),
     })
   }
 

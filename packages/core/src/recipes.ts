@@ -1,10 +1,16 @@
-import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
-import type { ArtifactFilters, Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
+import { capitalize, createRegex, dashCase, getSlotRecipes, isObject, memo, splitProps } from '@pandacss/shared'
+import type {
+  ArtifactFilters,
+  Dict,
+  PartialBy,
+  RecipeConfig,
+  SlotRecipeConfig,
+  SlotRecipeDefinition,
+  SystemStyleObject,
+} from '@pandacss/types'
 import merge from 'lodash.merge'
-import { AtomicRule, createRecipeAtomicRule, type ProcessOptions } from './atomic-rule'
-import { isSlotRecipe } from './is-slot-recipe'
-import { serializeStyle } from './serialize'
-import type { RecipeContext, RecipeNode } from './types'
+import type { RecipeNode } from './types'
+import { transformStyles, type SerializeContext } from './serialize'
 
 interface RecipeRecord {
   [key: string]: RecipeConfig | SlotRecipeConfig
@@ -30,18 +36,14 @@ const sharedState = {
 }
 
 export class Recipes {
-  /**
-   * The map of the recipes to their atomic rules
-   */
-  rules: Map<string, AtomicRule> = new Map()
+  slotSeparator = '__'
 
-  get keys() {
-    return Object.keys(this.recipes)
-  }
+  keys: string[] = []
 
-  constructor(private recipes: RecipeRecord = {}, private context: RecipeContext) {
+  private context!: SerializeContext
+
+  constructor(private recipes: RecipeRecord = {}) {
     this.prune()
-    this.save()
   }
 
   private getPropKey = (recipe: string, variant: string, value: any) => {
@@ -67,14 +69,16 @@ export class Recipes {
     })
   }
 
-  save = () => {
+  save = (context: SerializeContext) => {
+    this.context = context
     for (const [name, recipe] of Object.entries(this.recipes)) {
       this.saveOne(name, recipe)
     }
+    this.keys = Object.keys(this.recipes)
   }
 
   saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
-    if (isSlotRecipe(recipe)) {
+    if (Recipes.isSlotRecipeConfig(recipe)) {
       // extract recipes for each slot
       const slots = getSlotRecipes(recipe)
 
@@ -85,7 +89,6 @@ export class Recipes {
         const slotName = this.getSlotKey(name, slot)
         this.normalize(slotName, slotRecipe)
         slotsMap.set(slotName, slotRecipe)
-        this.rules.set(slotName, this.createRule(slotName, true))
       })
 
       // save the root recipe
@@ -94,12 +97,10 @@ export class Recipes {
       //
     } else {
       this.assignRecipe(name, this.normalize(name, recipe))
-      this.rules.set(name, this.createRule(name))
     }
   }
 
   remove(name: string) {
-    this.rules.delete(name)
     sharedState.nodes.delete(name)
     sharedState.classNames.delete(name)
     sharedState.styles.delete(name)
@@ -108,7 +109,7 @@ export class Recipes {
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
     const variantKeys = Object.keys(recipe.variants ?? {})
     const capitalized = capitalize(name)
-    const jsx = recipe.jsx ?? [capitalized]
+    const jsx = Array.from(recipe.jsx ?? [capitalized])
     if ('slots' in recipe) {
       jsx.push(...recipe.slots.map((slot) => capitalized + '.' + capitalize(slot)))
     }
@@ -135,7 +136,7 @@ export class Recipes {
   }
 
   getSlotKey = (name: string, slot: string) => {
-    return `${name}__${slot}`
+    return `${name}${this.slotSeparator}${slot}`
   }
 
   isEmpty = () => {
@@ -159,6 +160,12 @@ export class Recipes {
     return this.recipes[name]
   })
 
+  getConfigOrThrow = memo((name: string) => {
+    const config = this.getConfig(name)
+    if (!config) throw new Error(`Recipe "${name}" not found`)
+    return config
+  })
+
   find = memo((jsxName: string) => {
     return this.details.find((node) => node.match.test(jsxName))
   })
@@ -175,6 +182,14 @@ export class Recipes {
     const recipe = this.details.find((node) => node.baseName === recipeName)
     if (!recipe) return [{}, props]
     return recipe.splitProps(props)
+  }
+
+  isSlotRecipe = (name: string) => {
+    return sharedState.slots.has(name)
+  }
+
+  static isSlotRecipeConfig = (config: RecipeConfig | SlotRecipeConfig): config is SlotRecipeConfig => {
+    return 'slots' in config && Array.isArray(config.slots) && config.slots.length > 0
   }
 
   normalize = (name: string, config: RecipeConfig) => {
@@ -201,7 +216,7 @@ export class Recipes {
       staticCss,
     }
 
-    recipe.base = this.serialize(base)
+    recipe.base = transformStyles(this.context, base, name)
 
     sharedState.styles.set(name, recipe.base)
     sharedState.classNames.set(name, className)
@@ -211,7 +226,7 @@ export class Recipes {
         const propKey = this.getPropKey(name, key, variantKey)
         const className = this.getClassName(config.className, key, variantKey)
 
-        const styleObject = this.serialize(styles)
+        const styleObject = transformStyles(this.context, styles, className)
 
         sharedState.styles.set(propKey, styleObject)
         sharedState.classNames.set(propKey, className)
@@ -225,16 +240,11 @@ export class Recipes {
     return recipe
   }
 
-  private serialize = (styleObject: Dict) => {
-    if (!this.context) return styleObject
-    return serializeStyle(styleObject, this.context)
-  }
-
-  private getTransform = (name: string) => {
+  getTransform = (name: string, slot?: boolean) => {
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
-          layer: '_base',
+          layer: slot ? 'recipes_slots_base' : 'recipes_base',
           className: sharedState.classNames.get(name)!,
           styles: sharedState.styles.get(name) ?? {},
         }
@@ -249,67 +259,27 @@ export class Recipes {
     }
   }
 
-  private createRule = (name: string, slot?: boolean) => {
-    if (!this.context) {
-      throw new Error("Can't create a rule without a context")
-    }
-
-    const context = {
-      ...this.context,
-      transform: this.getTransform(name),
-    }
-
-    const rule = createRecipeAtomicRule(context, slot)
-
-    return rule
-  }
-
-  private check = (config: RecipeConfig, className: string, variants: Dict) => {
-    const { defaultVariants = {}, base = {} } = config
-
-    const styles = Object.assign({ [className]: '__ignore__' }, defaultVariants, variants)
-    const keys = Object.keys(styles)
-
-    return { styles, isEmpty: keys.length === 1 && Object.keys(base).length === 0 }
-  }
-
-  process = (recipeName: string, options: ProcessOptions) => {
-    const { styles: variants } = options
-
-    const recipe = this.getRecipe(recipeName)
-    if (!recipe) return
-
-    const slots = sharedState.slots.get(recipeName)
-
-    if (slots) {
-      //
-      slots.forEach((slotRecipe, slotKey) => {
-        const { isEmpty, styles } = this.check(slotRecipe, slotKey, variants)
-        if (isEmpty) return
-
-        const rule = this.rules.get(slotKey)
-        if (!rule) return
-
-        const normalizedStyles = rule?.normalize(styles, false)
-        rule.process({ styles: normalizedStyles })
-      })
-      //
-    } else {
-      //
-      const { isEmpty, styles } = this.check(recipe.config, recipe.config.className, variants)
-      if (isEmpty) return
-
-      const rule = this.rules.get(recipeName)
-      if (!rule) return
-
-      const normalizedStyles = rule.normalize(styles, false)
-      rule.process({ styles: normalizedStyles })
-      //
-    }
-  }
-
   filterDetails = (filters?: ArtifactFilters) => {
     const recipeDiffs = filters?.affecteds?.recipes
     return recipeDiffs ? this.details.filter((recipe) => recipeDiffs.includes(recipe.dashName)) : this.details
+  }
+
+  static inferSlots = (recipe: PartialBy<SlotRecipeDefinition, 'slots'>) => {
+    const slots = new Set<string>()
+    Object.keys(recipe.base ?? {}).forEach((name) => {
+      slots.add(name)
+    })
+
+    Object.values(recipe.variants ?? {}).forEach((variants) => {
+      Object.keys(variants).forEach((name) => {
+        slots.add(name)
+      })
+    })
+
+    return Array.from(slots)
+  }
+
+  static isValidNode = (node: unknown): node is RecipeNode => {
+    return isObject(node) && 'type' in node && node.type === 'recipe'
   }
 }

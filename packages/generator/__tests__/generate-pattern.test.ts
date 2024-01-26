@@ -1,16 +1,16 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
-const patterns = (config: ConfigResultWithHooks) => {
+const patterns = (config: LoadConfigResult) => {
   const generator = new Generator(config)
   return generatePattern(generator)
 }
 
 test('should generate pattern', () => {
-  expect(patterns(generatorConfig)).toMatchInlineSnapshot(`
+  expect(patterns(fixtureDefaults)).toMatchInlineSnapshot(`
     [
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
@@ -83,7 +83,7 @@ test('should generate pattern', () => {
     transform(props) {
       const { direction, align, justify, wrap: wrap2, basis, grow, shrink, ...rest } = props;
       return {
-        display: \\"flex\\",
+        display: "flex",
         flexDirection: direction,
         alignItems: align,
         justifyContent: justify,
@@ -131,9 +131,9 @@ test('should generate pattern', () => {
 
     const stackConfig = {
     transform(props) {
-      const { align, justify, direction = \\"column\\", gap = \\"10px\\", ...rest } = props;
+      const { align, justify, direction = "column", gap = "10px", ...rest } = props;
       return {
-        display: \\"flex\\",
+        display: "flex",
         flexDirection: direction,
         alignItems: align,
         justifyContent: justify,
@@ -176,13 +176,13 @@ test('should generate pattern', () => {
 
     const vstackConfig = {
     transform(props) {
-      const { justify, gap = \\"10px\\", ...rest } = props;
+      const { justify, gap = "10px", ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
+        display: "flex",
+        alignItems: "center",
         justifyContent: justify,
         gap,
-        flexDirection: \\"column\\",
+        flexDirection: "column",
         ...rest
       };
     }}
@@ -221,13 +221,13 @@ test('should generate pattern', () => {
 
     const hstackConfig = {
     transform(props) {
-      const { justify, gap = \\"10px\\", ...rest } = props;
+      const { justify, gap = "10px", ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
+        display: "flex",
+        alignItems: "center",
         justifyContent: justify,
         gap,
-        flexDirection: \\"row\\",
+        flexDirection: "row",
         ...rest
       };
     }}
@@ -246,7 +246,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface SpacerProperties {
-       size?: ConditionalValue<Tokens[\\"spacing\\"]>
+       size?: ConditionalValue<Tokens["spacing"]>
     }
 
 
@@ -267,9 +267,9 @@ test('should generate pattern', () => {
     transform(props, { map }) {
       const { size, ...rest } = props;
       return {
-        alignSelf: \\"stretch\\",
-        justifySelf: \\"stretch\\",
-        flex: map(size, (v) => v == null ? \\"1\\" : \`0 0 \${v}\`),
+        alignSelf: "stretch",
+        justifySelf: "stretch",
+        flex: map(size, (v) => v == null ? "1" : \`0 0 \${v}\`),
         ...rest
       };
     }}
@@ -309,10 +309,10 @@ test('should generate pattern', () => {
     transform(props) {
       const { size, ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
-        justifyContent: \\"center\\",
-        flex: \\"0 0 auto\\",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flex: "0 0 auto",
         width: size,
         height: size,
         ...rest
@@ -354,13 +354,13 @@ test('should generate pattern', () => {
     transform(props) {
       const { size, ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
-        justifyContent: \\"center\\",
-        flex: \\"0 0 auto\\",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flex: "0 0 auto",
         width: size,
         height: size,
-        borderRadius: \\"9999px\\",
+        borderRadius: "9999px",
         ...rest
       };
     }}
@@ -400,9 +400,9 @@ test('should generate pattern', () => {
     transform(props) {
       const { inline, ...rest } = props;
       return {
-        display: inline ? \\"inline-flex\\" : \\"flex\\",
-        alignItems: \\"center\\",
-        justifyContent: \\"center\\",
+        display: inline ? "inline-flex" : "flex",
+        alignItems: "center",
+        justifyContent: "center",
         ...rest
       };
     }}
@@ -441,10 +441,10 @@ test('should generate pattern', () => {
     const linkBoxConfig = {
     transform(props) {
       return {
-        position: \\"relative\\",
-        \\"& :where(a, abbr)\\": {
-          position: \\"relative\\",
-          zIndex: \\"1\\"
+        position: "relative",
+        "& :where(a, abbr)": {
+          position: "relative",
+          zIndex: "1"
         },
         ...props
       };
@@ -484,15 +484,15 @@ test('should generate pattern', () => {
     const linkOverlayConfig = {
     transform(props) {
       return {
-        position: \\"static\\",
+        position: "static",
         _before: {
-          content: '\\"\\"',
-          display: \\"block\\",
-          position: \\"absolute\\",
-          cursor: \\"inherit\\",
-          inset: \\"0\\",
-          zIndex: \\"0\\",
-          ...props[\\"_before\\"]
+          content: '""',
+          display: "block",
+          position: "absolute",
+          cursor: "inherit",
+          inset: "0",
+          zIndex: "0",
+          ...props["_before"]
         },
         ...props
       };
@@ -533,25 +533,25 @@ test('should generate pattern', () => {
     transform(props, { map }) {
       const { ratio = 4 / 3, ...rest } = props;
       return {
-        position: \\"relative\\",
+        position: "relative",
         _before: {
-          content: \`\\"\\"\`,
-          display: \\"block\\",
-          height: \\"0\\",
+          content: \`""\`,
+          display: "block",
+          height: "0",
           paddingBottom: map(ratio, (r) => \`\${1 / r * 100}%\`)
         },
-        \\"&>*\\": {
-          display: \\"flex\\",
-          justifyContent: \\"center\\",
-          alignItems: \\"center\\",
-          overflow: \\"hidden\\",
-          position: \\"absolute\\",
-          inset: \\"0\\",
-          width: \\"100%\\",
-          height: \\"100%\\"
+        "&>*": {
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+          position: "absolute",
+          inset: "0",
+          width: "100%",
+          height: "100%"
         },
-        \\"&>img, &>video\\": {
-          objectFit: \\"cover\\"
+        "&>img, &>video": {
+          objectFit: "cover"
         },
         ...rest
       };
@@ -575,7 +575,7 @@ test('should generate pattern', () => {
     	columnGap?: PropertyValue<'gap'>
     	rowGap?: PropertyValue<'gap'>
     	columns?: ConditionalValue<number>
-    	minChildWidth?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"width\\"]>
+    	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
     }
 
 
@@ -594,11 +594,11 @@ test('should generate pattern', () => {
 
     const gridConfig = {
     transform(props, { map }) {
-      const regex = /\\\\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/;
-      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", columns, minChildWidth, ...rest } = props;
+      const regex = /\\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/;
+      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "10px", columns, minChildWidth, ...rest } = props;
       const getValue = (v) => regex.test(v) ? v : \`token(sizes.\${v}, \${v})\`;
       return {
-        display: \\"grid\\",
+        display: "grid",
         gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${v}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${getValue(v)}, 1fr))\`) : void 0,
         gap,
         columnGap,
@@ -646,7 +646,7 @@ test('should generate pattern', () => {
     const gridItemConfig = {
     transform(props, { map }) {
       const { colSpan, rowSpan, colStart, rowStart, colEnd, rowEnd, ...rest } = props;
-      const spanFn = (v) => v === \\"auto\\" ? v : \`span \${v}\`;
+      const spanFn = (v) => v === "auto" ? v : \`span \${v}\`;
       return {
         gridColumn: colSpan != null ? map(colSpan, spanFn) : void 0,
         gridRow: rowSpan != null ? map(rowSpan, spanFn) : void 0,
@@ -695,10 +695,10 @@ test('should generate pattern', () => {
 
     const wrapConfig = {
     transform(props) {
-      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", align, justify, ...rest } = props;
+      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "10px", align, justify, ...rest } = props;
       return {
-        display: \\"flex\\",
-        flexWrap: \\"wrap\\",
+        display: "flex",
+        flexWrap: "wrap",
         alignItems: align,
         justifyContent: justify,
         gap,
@@ -742,10 +742,10 @@ test('should generate pattern', () => {
     const containerConfig = {
     transform(props) {
       return {
-        position: \\"relative\\",
-        maxWidth: \\"8xl\\",
-        mx: \\"auto\\",
-        px: { base: \\"4\\", md: \\"6\\", lg: \\"8\\" },
+        position: "relative",
+        maxWidth: "8xl",
+        mx: "auto",
+        px: { base: "4", md: "6", lg: "8" },
         ...props
       };
     }}
@@ -764,9 +764,9 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface DividerProperties {
-       orientation?: ConditionalValue<\\"horizontal\\" | \\"vertical\\">
-    	thickness?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"borderWidth\\"]>
-    	color?: ConditionalValue<Tokens[\\"colors\\"] | Properties[\\"borderColor\\"]>
+       orientation?: ConditionalValue<"horizontal" | "vertical">
+    	thickness?: ConditionalValue<Tokens["sizes"] | Properties["borderWidth"]>
+    	color?: ConditionalValue<Tokens["colors"] | Properties["borderColor"]>
     }
 
 
@@ -785,13 +785,13 @@ test('should generate pattern', () => {
 
     const dividerConfig = {
     transform(props, { map }) {
-      const { orientation = \\"horizontal\\", thickness = \\"1px\\", color, ...rest } = props;
+      const { orientation = "horizontal", thickness = "1px", color, ...rest } = props;
       return {
-        \\"--thickness\\": thickness,
-        width: map(orientation, (v) => v === \\"vertical\\" ? void 0 : \\"100%\\"),
-        height: map(orientation, (v) => v === \\"horizontal\\" ? void 0 : \\"100%\\"),
-        borderBlockEndWidth: map(orientation, (v) => v === \\"horizontal\\" ? \\"var(--thickness)\\" : void 0),
-        borderInlineEndWidth: map(orientation, (v) => v === \\"vertical\\" ? \\"var(--thickness)\\" : void 0),
+        "--thickness": thickness,
+        width: map(orientation, (v) => v === "vertical" ? void 0 : "100%"),
+        height: map(orientation, (v) => v === "horizontal" ? void 0 : "100%"),
+        borderBlockEndWidth: map(orientation, (v) => v === "horizontal" ? "var(--thickness)" : void 0),
+        borderInlineEndWidth: map(orientation, (v) => v === "vertical" ? "var(--thickness)" : void 0),
         borderColor: color,
         ...rest
       };
@@ -811,10 +811,10 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface FloatProperties {
-       offsetX?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"left\\"]>
-    	offsetY?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
-    	offset?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
-    	placement?: ConditionalValue<\\"bottom-end\\" | \\"bottom-start\\" | \\"top-end\\" | \\"top-start\\" | \\"bottom-center\\" | \\"top-center\\" | \\"middle-center\\" | \\"middle-end\\" | \\"middle-start\\">
+       offsetX?: ConditionalValue<Tokens["spacing"] | Properties["left"]>
+    	offsetY?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
+    	offset?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
+    	placement?: ConditionalValue<"bottom-end" | "bottom-start" | "top-end" | "top-start" | "bottom-center" | "top-center" | "middle-center" | "middle-end" | "middle-start">
     }
 
 
@@ -833,36 +833,36 @@ test('should generate pattern', () => {
 
     const floatConfig = {
     transform(props, { map }) {
-      const { offset = \\"0\\", offsetX = offset, offsetY = offset, placement = \\"top-end\\", ...rest } = props;
+      const { offset = "0", offsetX = offset, offsetY = offset, placement = "top-end", ...rest } = props;
       return {
-        display: \\"inline-flex\\",
-        justifyContent: \\"center\\",
-        alignItems: \\"center\\",
-        position: \\"absolute\\",
+        display: "inline-flex",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "absolute",
         insetBlockStart: map(placement, (v) => {
-          const [side] = v.split(\\"-\\");
-          const map2 = { top: offsetY, middle: \\"50%\\", bottom: \\"auto\\" };
+          const [side] = v.split("-");
+          const map2 = { top: offsetY, middle: "50%", bottom: "auto" };
           return map2[side];
         }),
         insetBlockEnd: map(placement, (v) => {
-          const [side] = v.split(\\"-\\");
-          const map2 = { top: \\"auto\\", middle: \\"50%\\", bottom: offsetY };
+          const [side] = v.split("-");
+          const map2 = { top: "auto", middle: "50%", bottom: offsetY };
           return map2[side];
         }),
         insetInlineStart: map(placement, (v) => {
-          const [, align] = v.split(\\"-\\");
-          const map2 = { start: offsetX, center: \\"50%\\", end: \\"auto\\" };
+          const [, align] = v.split("-");
+          const map2 = { start: offsetX, center: "50%", end: "auto" };
           return map2[align];
         }),
         insetInlineEnd: map(placement, (v) => {
-          const [, align] = v.split(\\"-\\");
-          const map2 = { start: \\"auto\\", center: \\"50%\\", end: offsetX };
+          const [, align] = v.split("-");
+          const map2 = { start: "auto", center: "50%", end: offsetX };
           return map2[align];
         }),
         translate: map(placement, (v) => {
-          const [side, align] = v.split(\\"-\\");
-          const mapX = { start: \\"-50%\\", center: \\"-50%\\", end: \\"50%\\" };
-          const mapY = { top: \\"-50%\\", middle: \\"-50%\\", bottom: \\"50%\\" };
+          const [side, align] = v.split("-");
+          const mapX = { start: "-50%", center: "-50%", end: "50%" };
+          const mapY = { top: "-50%", middle: "-50%", bottom: "50%" };
           return \`\${mapX[align]} \${mapY[side]}\`;
         }),
         ...rest
@@ -903,12 +903,12 @@ test('should generate pattern', () => {
 
     const bleedConfig = {
     transform(props) {
-      const { inline = \\"0\\", block = \\"0\\", ...rest } = props;
+      const { inline = "0", block = "0", ...rest } = props;
       return {
-        \\"--bleed-x\\": \`spacing.\${inline}\`,
-        \\"--bleed-y\\": \`spacing.\${block}\`,
-        marginInline: \\"calc(var(--bleed-x, 0) * -1)\\",
-        marginBlock: \\"calc(var(--bleed-y, 0) * -1)\\",
+        "--bleed-x": \`spacing.\${inline}\`,
+        "--bleed-y": \`spacing.\${block}\`,
+        marginInline: "calc(var(--bleed-x, 0) * -1)",
+        marginBlock: "calc(var(--bleed-y, 0) * -1)",
         ...rest
       };
     }}

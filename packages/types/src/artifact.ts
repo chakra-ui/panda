@@ -1,3 +1,4 @@
+import { type Difference } from 'microdiff'
 import type { Nullable } from './shared'
 
 export interface ArtifactContent {
@@ -32,6 +33,8 @@ export type ArtifactId =
   | 'styles.css'
   | (string & {})
 
+export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
+
 export type Artifact = Nullable<{
   id: ArtifactId
   dir?: string[]
@@ -46,4 +49,10 @@ export interface AffectedArtifacts {
 export interface ArtifactFilters {
   ids?: ArtifactId[]
   affecteds?: AffectedArtifacts
+}
+
+export interface DiffConfigResult {
+  hasConfigChanged: boolean
+  artifacts: Set<ArtifactId>
+  diffs: Difference[]
 }

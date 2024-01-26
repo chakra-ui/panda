@@ -1,5 +1,5 @@
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
-import type { Context } from '../../engines'
 
 export function generatePreactJsxStringLiteralFactory(ctx: Context) {
   const { factoryName, componentName } = ctx.jsx

@@ -15,7 +15,9 @@ const nextConfig = {
       path: 'path-browserify',
       util: 'util',
       module: path.join(__dirname, './module.shim.ts'),
+      fs: path.join(__dirname, './fs.shim.ts'),
       '@vue/compiler-sfc': '@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js',
+      lightningcss: 'lightningcss-wasm',
     }
 
     if (!isServer) {

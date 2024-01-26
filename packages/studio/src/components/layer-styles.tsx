@@ -1,11 +1,12 @@
+import * as React from 'react'
 import { panda } from '../../styled-system/jsx'
-import context from '../lib/panda.context'
+import * as context from '../lib/panda-context'
 import { EmptyState } from './empty-state'
 import { LayerStylesIcon } from './icons'
 import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
 
-export function LayerStyles() {
+export default function LayerStyles() {
   const values = Object.entries(context.layerStyles)
 
   return (
@@ -29,7 +30,7 @@ export function LayerStyles() {
           ))
         ) : (
           <EmptyState title="No Layer Styles" icon={<LayerStylesIcon />}>
-            The config does not contain any Layer Styles
+            The panda config does not contain any layer styles
           </EmptyState>
         )}
       </TokenContent>

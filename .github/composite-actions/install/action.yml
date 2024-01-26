@@ -6,12 +6,12 @@ runs:
   steps:
     - uses: pnpm/action-setup@v2.2.4
       with:
-        version: 7
+        version: 8
 
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 18
         registry-url: 'https://registry.npmjs.org'
         cache: 'pnpm'
 

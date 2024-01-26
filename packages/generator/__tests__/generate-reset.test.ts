@@ -1,20 +1,21 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
-import { generatorConfig } from './fixture'
+import { fixtureDefaults } from '@pandacss/fixture'
 
-const resetCss = (config: ConfigResultWithHooks) => {
+const resetCss = (config: LoadConfigResult) => {
   const ctx = new Generator(config)
-  ctx.appendCss('preflight')
-  return ctx.stylesheet.toCss({ optimize: true })
+  const sheet = ctx.createSheet()
+  ctx.appendCssOfType('preflight', sheet)
+  return sheet.toCss({ optimize: true })
 }
 
 describe('generate reset', () => {
   test('should work', () => {
     const css = resetCss({
-      ...generatorConfig,
+      ...fixtureDefaults,
       config: {
-        ...generatorConfig.config,
+        ...fixtureDefaults.config,
         preflight: { scope: '.pd-reset' },
       },
     })
@@ -193,12 +194,12 @@ describe('generate reset', () => {
           font-family: var(--global-font-mono, var(--font-mono-fallback));
         }
 
-        .pd-reset input[type=\\"text\\"],
-        .pd-reset input[type=\\"email\\"],
-        .pd-reset input[type=\\"search\\"],
-        .pd-reset input[type=\\"password\\"] {
+        .pd-reset input[type="text"],
+        .pd-reset input[type="email"],
+        .pd-reset input[type="search"],
+        .pd-reset input[type="password"] {
           -webkit-appearance: none;
-          -moz-appearance: none; 
+          -moz-appearance: none;
         }
 
         .pd-reset input[type='search'] {
@@ -216,8 +217,8 @@ describe('generate reset', () => {
           font: inherit;
         }
 
-        .pd-reset input[type=\\"number\\"]::-webkit-inner-spin-button,
-        .pd-reset input[type=\\"number\\"]::-webkit-outer-spin-button {
+        .pd-reset input[type="number"]::-webkit-inner-spin-button,
+        .pd-reset input[type="number"]::-webkit-outer-spin-button {
           height: auto;
         }
 

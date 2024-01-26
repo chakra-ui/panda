@@ -4,7 +4,7 @@ import type { CssProperties } from './system-types';
 import type { Tokens } from '../tokens/index';
 
 interface PropertyValueTypes {
-	aspectRatio: "auto" | "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";
+	aspectRatio: Tokens["aspectRatios"];
 	zIndex: Tokens["zIndex"];
 	top: Tokens["spacing"];
 	left: Tokens["spacing"];
@@ -209,7 +209,7 @@ interface PropertyValueTypes {
 	strokeWidth: Tokens["borderWidths"];
 	srOnly: boolean;
 	debug: boolean;
-	colorPalette: "current" | "black" | "white" | "transparent" | "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "stone" | "zinc" | "gray" | "slate" | "neutral" | "text" | "bg" | "card" | "border";
+	colorPalette: "current" | "black" | "white" | "transparent" | "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "stone" | "zinc" | "gray" | "slate" | "neutral" | "text" | "bg" | "card" | "border" | "accent";
 	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl";
 }
 
@@ -309,19 +309,101 @@ interface PropertyValueTypes {
 	y: Shorthand<"translateY">;
 }
 
+type StrictableProps =
+  | 'alignContent'
+  | 'alignItems'
+  | 'alignSelf'
+  | 'all'
+  | 'animationComposition'
+  | 'animationDirection'
+  | 'animationFillMode'
+  | 'appearance'
+  | 'backfaceVisibility'
+  | 'backgroundAttachment'
+  | 'backgroundClip'
+  | 'borderCollapse'
+  | 'border'
+  | 'borderBlock'
+  | 'borderBlockEnd'
+  | 'borderBlockStart'
+  | 'borderBottom'
+  | 'borderInline'
+  | 'borderInlineEnd'
+  | 'borderInlineStart'
+  | 'borderLeft'
+  | 'borderRight'
+  | 'borderTop'
+  | 'borderBlockEndStyle'
+  | 'borderBlockStartStyle'
+  | 'borderBlockStyle'
+  | 'borderBottomStyle'
+  | 'borderInlineEndStyle'
+  | 'borderInlineStartStyle'
+  | 'borderInlineStyle'
+  | 'borderLeftStyle'
+  | 'borderRightStyle'
+  | 'borderTopStyle'
+  | 'boxDecorationBreak'
+  | 'boxSizing'
+  | 'breakAfter'
+  | 'breakBefore'
+  | 'breakInside'
+  | 'captionSide'
+  | 'clear'
+  | 'columnFill'
+  | 'columnRuleStyle'
+  | 'contentVisibility'
+  | 'direction'
+  | 'display'
+  | 'emptyCells'
+  | 'flexDirection'
+  | 'flexWrap'
+  | 'float'
+  | 'fontKerning'
+  | 'forcedColorAdjust'
+  | 'isolation'
+  | 'lineBreak'
+  | 'mixBlendMode'
+  | 'objectFit'
+  | 'outlineStyle'
+  | 'overflow'
+  | 'overflowX'
+  | 'overflowY'
+  | 'overflowBlock'
+  | 'overflowInline'
+  | 'overflowWrap'
+  | 'pointerEvents'
+  | 'position'
+  | 'resize'
+  | 'scrollBehavior'
+  | 'touchAction'
+  | 'transformBox'
+  | 'transformStyle'
+  | 'userSelect'
+  | 'visibility'
+  | 'wordBreak'
+  | 'writingMode'
 
+type WithEscapeHatch<T> = T | `[${string}]`
 
-  type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-    ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
-    : never;
+type FilterVagueString<Key, Value> = Value extends boolean
+  ? Value
+  : Key extends StrictableProps
+    ? Value extends `${infer _}` ? Value : never
+    : Value
 
-  type CssPropertyValue<T extends string> = T extends keyof CssProperties
-    ? ConditionalValue<CssProperties[T] | (string & {})>
-    : never;
+type PropOrCondition<Key, Value> = ConditionalValue<Value | (string & {})>
 
-  export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-    ? PropertyTypeValue<T>
-    : T extends keyof CssProperties
-      ? CssPropertyValue<T>
-      : ConditionalValue<string | number>
-  
+type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+  ? PropOrCondition<T, PropertyTypes[T] | CssValue<T>>
+  : never;
+
+type CssPropertyValue<T extends string> = T extends keyof CssProperties
+  ? PropOrCondition<T, CssProperties[T]>
+  : never;
+
+export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+  ? PropertyTypeValue<T>
+  : T extends keyof CssProperties
+    ? CssPropertyValue<T>
+    : PropOrCondition<T, string | number>

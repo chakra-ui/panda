@@ -1,5 +1,6 @@
+/** @jsxImportSource preact */
 import { describe, expect, test } from 'vitest'
-import { styled } from '../../styled-system-preact/jsx'
+import { Box, Stack, styled } from '../../styled-system-preact/jsx'
 // @ts-expect-error https://github.com/vitest-dev/vitest/issues/747#issuecomment-1140225294
 import tlp = require('@testing-library/preact')
 const render = tlp.render
@@ -46,7 +47,7 @@ describe('styled factory - cva', () => {
     const { container } = render(<Button>Click me</Button>)
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600\\">Click me</button>"',
+      `"<button class="text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600">Click me</button>"`,
     )
   })
 
@@ -54,7 +55,7 @@ describe('styled factory - cva', () => {
     const { container } = render(<Button size="sm">Click me</Button>)
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_sm px_sm py_xs\\">Click me</button>"',
+      `"<button class="text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_sm px_sm py_xs">Click me</button>"`,
     )
   })
 
@@ -66,7 +67,7 @@ describe('styled factory - cva', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_sm px_sm py_xs custom-btn\\">Click me</button>"',
+      `"<button class="text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_sm px_sm py_xs custom-btn">Click me</button>"`,
     )
   })
 
@@ -78,7 +79,7 @@ describe('styled factory - cva', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 mx_2 custom-btn\\">Click me</button>"',
+      `"<button class="text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 mx_2 custom-btn">Click me</button>"`,
     )
   })
 
@@ -90,7 +91,7 @@ describe('styled factory - cva', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_sm px_sm py_xs mx_2 custom-btn\\">Click me</button>"',
+      `"<button class="text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_sm px_sm py_xs mx_2 custom-btn">Click me</button>"`,
     )
   })
 
@@ -102,7 +103,7 @@ describe('styled factory - cva', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.100 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_md custom-btn\\">Click me</button>"',
+      `"<button class="text_red.100 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_md custom-btn">Click me</button>"`,
     )
   })
 
@@ -114,7 +115,7 @@ describe('styled factory - cva', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.100 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_md px_sm py_xs custom-btn\\">Click me</button>"',
+      `"<button class="text_red.100 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_md px_sm py_xs custom-btn">Click me</button>"`,
     )
   })
 
@@ -126,7 +127,7 @@ describe('styled factory - cva', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"text_red.200 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_xl px_123px py_md z_1 mx_2 custom-btn\\">Click me</button>"',
+      `"<button class="text_red.200 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_xl px_123px py_md z_1 mx_2 custom-btn">Click me</button>"`,
     )
   })
 
@@ -137,7 +138,9 @@ describe('styled factory - cva', () => {
       </styled.div>,
     )
 
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot('"<div width=\\"123\\" class=\\"h_123\\">Click me</div>"')
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<div width="123" class="h_123">Click me</div>"`,
+    )
   })
 })
 
@@ -148,7 +151,7 @@ describe('styled factory - button recipe', () => {
     const { container } = render(<Button>Click me</Button>)
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button\\">Click me</button>"',
+      `"<button class="button">Click me</button>"`,
     )
   })
 
@@ -156,7 +159,7 @@ describe('styled factory - button recipe', () => {
     const { container } = render(<Button size="sm">Click me</Button>)
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button button--size_sm\\">Click me</button>"',
+      `"<button class="button button--size_sm">Click me</button>"`,
     )
   })
 
@@ -168,7 +171,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button button--size_sm custom-btn\\">Click me</button>"',
+      `"<button class="button button--size_sm custom-btn">Click me</button>"`,
     )
   })
 
@@ -180,7 +183,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button mx_2 custom-btn\\">Click me</button>"',
+      `"<button class="button mx_2 custom-btn">Click me</button>"`,
     )
   })
 
@@ -192,7 +195,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button button--size_sm mx_2 custom-btn\\">Click me</button>"',
+      `"<button class="button button--size_sm mx_2 custom-btn">Click me</button>"`,
     )
   })
 
@@ -204,7 +207,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button text_red.100 fs_md custom-btn\\">Click me</button>"',
+      `"<button class="button text_red.100 fs_md custom-btn">Click me</button>"`,
     )
   })
 
@@ -216,7 +219,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button button--size_sm text_red.100 fs_md custom-btn\\">Click me</button>"',
+      `"<button class="button button--size_sm text_red.100 fs_md custom-btn">Click me</button>"`,
     )
   })
 
@@ -228,7 +231,27 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      '"<button class=\\"button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn\\">Click me</button>"',
+      `"<button class="button button--visual_outline button--size_md mx_2 text_red.200 fs_xl custom-btn">Click me</button>"`,
+    )
+  })
+
+  test('box pattern', () => {
+    const { container } = render(<Box color="red.300">Click me</Box>)
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<div class="text_red.300">Click me</div>"`,
+    )
+  })
+
+  test('stack pattern', () => {
+    const { container } = render(
+      <Stack direction="column" color="red.400">
+        Click me
+      </Stack>,
+    )
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<div class="d_flex flex_column gap_10px text_red.400">Click me</div>"`,
     )
   })
 })

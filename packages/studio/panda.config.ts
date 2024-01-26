@@ -55,41 +55,19 @@ export default {
           border: {
             value: { base: '{colors.neutral.300}', _dark: '{colors.neutral.700}' },
           },
+          accent: {
+            value: { base: '{colors.yellow.600}', _dark: '{colors.yellow.300}' },
+          },
         },
       },
     },
-  },
-  patterns: {
-    extend: {
-      styledLink: {
-        properties: {},
-        transform: (props: any) => ({
-          display: 'inline-flex',
-          alignItems: 'center',
-          opacity: '0.5',
-          borderBottom: '1px solid transparent',
-          cursor: 'pointer',
-          _hover: { opacity: 1, borderBottomColor: 'black' },
-          ...props,
-        }),
-      },
-    },
-  },
-  staticCss: {
-    css: [
-      {
-        properties: {
-          color: ['red.400'],
-        },
-      },
-    ],
   },
   globalCss: {
     ':root': {
       '--global-color-border': 'colors.border',
       '--global-color-placeholder': 'colors.neutral.500',
       fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
-      fontSize: 'md',
+      fontSize: '0.84em',
       lineHeight: 'normal',
       fontWeight: 'normal',
       colorScheme: 'light dark',
@@ -104,7 +82,7 @@ export default {
 
     body: {
       margin: 0,
-      minHeight: '100vh',
+      minHeight: '100dvh',
     },
   },
 } satisfies Config

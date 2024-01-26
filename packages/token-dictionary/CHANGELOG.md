@@ -1,5 +1,222 @@
 # @pandacss/token-dictionary
 
+## 0.28.0
+
+### Patch Changes
+
+- d4fa5de9: Fix a typing issue where the `borderWidths` wasn't specified in the generated `TokenCategory` type
+- Updated dependencies [f58f6df2]
+- Updated dependencies [770c7aa4]
+  - @pandacss/types@0.28.0
+  - @pandacss/shared@0.28.0
+
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/shared@0.27.2
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+- bee3ec85: Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define
+  the aspect ratio of an element.
+
+  ```js
+  export default defineConfig({
+    // ...
+    theme: {
+      extend: {
+        // add aspect ratio tokens
+        tokens: {
+          aspectRatios: {
+            '1:1': '1',
+            '16:9': '16/9',
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  Here's what the default aspect ratio tokens in the base preset looks like:
+
+  ```json
+  {
+    "square": { "value": "1 / 1" },
+    "landscape": { "value": "4 / 3" },
+    "portrait": { "value": "3 / 4" },
+    "wide": { "value": "16 / 9" },
+    "ultrawide": { "value": "18 / 5" },
+    "golden": { "value": "1.618 / 1" }
+  }
+  ```
+
+  **Breaking Change**
+
+  The built-in token values has been removed from the `aspectRatio` utility to the `@pandacss/preset-base` as a token.
+
+  For most users, this change should be a drop-in replacement. However, if you used a custom preset in the config, you
+  might need to update it to include the new aspect ratio tokens.
+
+### Patch Changes
+
+- Updated dependencies [84304901]
+- Updated dependencies [74ac0d9d]
+  - @pandacss/shared@0.27.0
+  - @pandacss/types@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- @pandacss/shared@0.26.2
+- @pandacss/types@0.26.2
+
+## 0.26.1
+
+### Patch Changes
+
+- @pandacss/shared@0.26.1
+- @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+
+## 0.25.0
+
+### Minor Changes
+
+- de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
+
+  ```jsx
+  import { css } from '../styled-system/css'
+
+  const styles = css({
+    border: '2px solid {colors.primary}',
+  })
+  ```
+
+  This will resolve the token reference and convert it to css variables.
+
+  ```css
+  .border_2px_solid_\{colors\.primary\} {
+    border: 2px solid var(--colors-primary);
+  }
+  ```
+
+  The alternative to this was to use the `token(...)` css function which will be resolved.
+
+  ### `token(...)` vs `{...}`
+
+  Both approaches return the css variable
+
+  ```jsx
+  const styles = css({
+    // token reference syntax
+    border: '2px solid {colors.primary}',
+    // token function syntax
+    border: '2px solid token(colors.primary)',
+  })
+  ```
+
+  However, The `token(...)` syntax allows you to set a fallback value.
+
+  ```jsx
+  const styles = css({
+    border: '2px solid token(colors.primary, red)',
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [59fd291c]
+  - @pandacss/types@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- @pandacss/shared@0.24.1
+- @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- Updated dependencies [f6881022]
+  - @pandacss/types@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- @pandacss/shared@0.23.0
+- @pandacss/types@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/shared@0.22.1
+
 ## 0.22.0
 
 ### Patch Changes

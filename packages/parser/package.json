@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/parser",
-  "version": "0.22.0",
+  "version": "0.28.0",
   "description": "The static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -18,6 +18,12 @@
   },
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/parser"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -28,21 +34,19 @@
   },
   "dependencies": {
     "@pandacss/config": "workspace:^",
+    "@pandacss/core": "workspace:^",
     "@pandacss/extractor": "workspace:*",
-    "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@vue/compiler-sfc": "^3.3.4",
-    "lil-fp": "1.4.5",
-    "magic-string": "^0.30.2",
+    "@vue/compiler-sfc": "3.3.4",
+    "magic-string": "0.30.5",
     "ts-morph": "19.0.0",
     "ts-pattern": "5.0.5"
   },
   "devDependencies": {
-    "@pandacss/fixture": "workspace:*",
     "@pandacss/generator": "workspace:*",
-    "hookable": "5.5.3"
+    "@vue/compiler-core": "3.3.4"
   },
   "files": [
     "dist"

@@ -1,5 +1,12 @@
 /* eslint-disable */
+import type { DistributiveOmit, HTMLPandaProps, JsxStyleProps, Pretty } from '../types';
+
 declare const isCssProperty: (value: string) => boolean;
-declare const splitCssProps: <TProps extends Record<string, unknown>>(props: TProps) => [Pick<TProps, CssProperty>, Omit<TProps, CssProperty>]
+
+type CssPropKey = keyof JsxStyleProps
+type PickedCssProps<T> = Pretty<Pick<T, CssPropKey>>
+type OmittedCssProps<T> = Pretty<DistributiveOmit<T, CssPropKey>>
+
+declare const splitCssProps: <T>(props: T) => [PickedCssProps<T>, OmittedCssProps<T>]
 
 export { isCssProperty, splitCssProps };

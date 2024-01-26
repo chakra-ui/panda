@@ -1,4 +1,5 @@
 import type {
+  HooksApiInterface,
   CompositionStyles,
   Config,
   CssKeyframes,
@@ -97,6 +98,7 @@ export function defineStyles(definition: SystemStyleObject) {
 }
 
 export type {
+  HooksApiInterface,
   CompositionStyles,
   Config,
   CssKeyframes,

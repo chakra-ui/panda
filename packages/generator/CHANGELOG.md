@@ -1,5 +1,584 @@
 # @pandacss/generator
 
+## 0.28.0
+
+### Minor Changes
+
+- f58f6df2: Refactor `config.hooks` to be much more powerful, you can now:
+
+  - Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
+    load all `recipes` from a folder
+  - Transform a source file's content before parsing it, this could be used to transform the file content to a
+    `tsx`-friendly syntax so that Panda's parser can parse it.
+  - Implement your own parser logic and add the extracted results to the classic Panda pipeline, this could be used to
+    parse style usage from any template language
+  - Tweak the CSS content for any `@layer` or even right before it's written to disk (if using the CLI) or injected
+    through the postcss plugin, allowing all kinds of customizations like removing the unused CSS variables, etc.
+  - React to any config change or after the codegen step (your outdir, the `styled-system` folder) have been generated
+
+  See the list of available `config.hooks` here:
+
+  ```ts
+  export interface PandaHooks {
+    /**
+     * Called when the config is resolved, after all the presets are loaded and merged.
+     * This is the first hook called, you can use it to tweak the config before the context is created.
+     */
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    /**
+     * Called when the Panda context has been created and the API is ready to be used.
+     */
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    /**
+     * Called when the config file or one of its dependencies (imports) has changed.
+     */
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    /**
+     * Called after reading the file content but before parsing it.
+     * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
+     * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
+     */
+    'parser:before': (args: { filePath: string; content: string }) => string | void
+    /**
+     * Called after the file styles are extracted and processed into the resulting ParserResult object.
+     * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
+     */
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    /**
+     * Called after the codegen is completed
+     */
+    'codegen:done': () => MaybeAsyncReturn
+    /**
+     * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
+     * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
+     * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
+     */
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
+  }
+  ```
+
+### Patch Changes
+
+- 1edadf30: Fix issue where `/* @__PURE__ */` annotation threw a warning in Vite build due to incorrect placement.
+- d4fa5de9: Fix a typing issue where the `borderWidths` wasn't specified in the generated `TokenCategory` type
+- Updated dependencies [f58f6df2]
+- Updated dependencies [e463ce0e]
+- Updated dependencies [77cab9fe]
+- Updated dependencies [770c7aa4]
+- Updated dependencies [d4fa5de9]
+- Updated dependencies [9d000dcd]
+- Updated dependencies [6d7e7b07]
+  - @pandacss/types@0.28.0
+  - @pandacss/core@0.28.0
+  - @pandacss/shared@0.28.0
+  - @pandacss/token-dictionary@0.28.0
+  - @pandacss/is-valid-prop@0.28.0
+  - @pandacss/logger@0.28.0
+
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/core@0.27.3
+  - @pandacss/token-dictionary@0.27.3
+  - @pandacss/is-valid-prop@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/core@0.27.2
+- @pandacss/is-valid-prop@0.27.2
+- @pandacss/logger@0.27.2
+- @pandacss/shared@0.27.2
+- @pandacss/token-dictionary@0.27.2
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+  - @pandacss/core@0.27.1
+  - @pandacss/token-dictionary@0.27.1
+  - @pandacss/is-valid-prop@0.27.1
+  - @pandacss/logger@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- dce0b3b2: Enhance `splitCssProps` typings
+- 74ac0d9d: Improve the performance of the runtime transform functions by caching their results (css, cva, sva,
+  recipe/slot recipe, patterns)
+
+  > See detailed breakdown of the performance improvements
+  > [here](https://github.com/chakra-ui/panda/pull/1986#issuecomment-1887459483) based on the React Profiler.
+
+- Updated dependencies [84304901]
+- Updated dependencies [bee3ec85]
+- Updated dependencies [74ac0d9d]
+  - @pandacss/token-dictionary@0.27.0
+  - @pandacss/is-valid-prop@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/types@0.27.0
+  - @pandacss/core@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- @pandacss/core@0.26.2
+- @pandacss/is-valid-prop@0.26.2
+- @pandacss/logger@0.26.2
+- @pandacss/shared@0.26.2
+- @pandacss/token-dictionary@0.26.2
+- @pandacss/types@0.26.2
+
+## 0.26.1
+
+### Patch Changes
+
+- 6de4c737: Hotfix `strictTokens` after introducing `strictPropertyValues`
+  - @pandacss/core@0.26.1
+  - @pandacss/is-valid-prop@0.26.1
+  - @pandacss/logger@0.26.1
+  - @pandacss/shared@0.26.1
+  - @pandacss/token-dictionary@0.26.1
+  - @pandacss/types@0.26.1
+
+## 0.26.0
+
+### Patch Changes
+
+- a179d74f: tl;dr:
+
+  - `config.strictTokens` will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`,
+    etc.
+  - `config.strictPropertyValues` is added and will throw for properties that do not have config tokens, such as
+    `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
+
+  ***
+
+  In version
+  [0.19.0 we changed `config.strictTokens`](https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md#0190---2023-11-24)
+  typings a bit so that the only property values allowed were the config tokens OR the predefined CSS values, ex: `flex`
+  for the property `display`, which prevented typos such as `display: 'aaa'`.
+
+  The problem with this change is that it means you would have to provide every CSS properties a given set of values so
+  that TS wouldn't throw any error. Thus, we will partly revert this change and make it so that `config.strictTokens`
+  shouldn't affect properties that do not have config tokens, such as `content`, `willChange`, `display`, etc.
+
+  v0.19.0:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+  ```
+
+  now:
+
+  ```ts
+  // config.strictTokens = true
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
+  ```
+
+  Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
+  with `config.strictTokens` if you want to be strict on both properties with config tokens and properties without
+  config tokens.
+
+  The new `config.strictPropertyValues` option will only be applied to this exhaustive list of properties:
+
+  ```ts
+  type StrictableProps =
+    | 'alignContent'
+    | 'alignItems'
+    | 'alignSelf'
+    | 'all'
+    | 'animationComposition'
+    | 'animationDirection'
+    | 'animationFillMode'
+    | 'appearance'
+    | 'backfaceVisibility'
+    | 'backgroundAttachment'
+    | 'backgroundClip'
+    | 'borderCollapse'
+    | 'border'
+    | 'borderBlock'
+    | 'borderBlockEnd'
+    | 'borderBlockStart'
+    | 'borderBottom'
+    | 'borderInline'
+    | 'borderInlineEnd'
+    | 'borderInlineStart'
+    | 'borderLeft'
+    | 'borderRight'
+    | 'borderTop'
+    | 'borderBlockEndStyle'
+    | 'borderBlockStartStyle'
+    | 'borderBlockStyle'
+    | 'borderBottomStyle'
+    | 'borderInlineEndStyle'
+    | 'borderInlineStartStyle'
+    | 'borderInlineStyle'
+    | 'borderLeftStyle'
+    | 'borderRightStyle'
+    | 'borderTopStyle'
+    | 'boxDecorationBreak'
+    | 'boxSizing'
+    | 'breakAfter'
+    | 'breakBefore'
+    | 'breakInside'
+    | 'captionSide'
+    | 'clear'
+    | 'columnFill'
+    | 'columnRuleStyle'
+    | 'contentVisibility'
+    | 'direction'
+    | 'display'
+    | 'emptyCells'
+    | 'flexDirection'
+    | 'flexWrap'
+    | 'float'
+    | 'fontKerning'
+    | 'forcedColorAdjust'
+    | 'isolation'
+    | 'lineBreak'
+    | 'mixBlendMode'
+    | 'objectFit'
+    | 'outlineStyle'
+    | 'overflow'
+    | 'overflowX'
+    | 'overflowY'
+    | 'overflowBlock'
+    | 'overflowInline'
+    | 'overflowWrap'
+    | 'pointerEvents'
+    | 'position'
+    | 'resize'
+    | 'scrollBehavior'
+    | 'touchAction'
+    | 'transformBox'
+    | 'transformStyle'
+    | 'userSelect'
+    | 'visibility'
+    | 'wordBreak'
+    | 'writingMode'
+  ```
+
+- Updated dependencies [657ca5da]
+- Updated dependencies [b5cf6ee6]
+- Updated dependencies [58df7d74]
+- Updated dependencies [14033e00]
+- Updated dependencies [d420c676]
+  - @pandacss/shared@0.26.0
+  - @pandacss/types@0.26.0
+  - @pandacss/core@0.26.0
+  - @pandacss/token-dictionary@0.26.0
+  - @pandacss/is-valid-prop@0.26.0
+  - @pandacss/logger@0.26.0
+
+## 0.25.0
+
+### Patch Changes
+
+- 59fd291c: Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+- Updated dependencies [59fd291c]
+- Updated dependencies [de282f60]
+- Updated dependencies [de282f60]
+  - @pandacss/types@0.25.0
+  - @pandacss/core@0.25.0
+  - @pandacss/token-dictionary@0.25.0
+  - @pandacss/is-valid-prop@0.25.0
+  - @pandacss/logger@0.25.0
+  - @pandacss/shared@0.25.0
+
+## 0.24.2
+
+### Patch Changes
+
+- Updated dependencies [71e82a4e]
+- Updated dependencies [61ebf3d2]
+  - @pandacss/shared@0.24.2
+  - @pandacss/types@0.24.2
+  - @pandacss/core@0.24.2
+  - @pandacss/token-dictionary@0.24.2
+  - @pandacss/is-valid-prop@0.24.2
+  - @pandacss/logger@0.24.2
+
+## 0.24.1
+
+### Patch Changes
+
+- 10e74428: - Fix an issue with the `@pandacss/postcss` (and therefore `@pandacss/astro`) where the initial @layer CSS
+  wasn't applied correctly
+  - Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
+    through the config recipes)
+  - @pandacss/core@0.24.1
+  - @pandacss/is-valid-prop@0.24.1
+  - @pandacss/logger@0.24.1
+  - @pandacss/shared@0.24.1
+  - @pandacss/token-dictionary@0.24.1
+  - @pandacss/types@0.24.1
+
+## 0.24.0
+
+### Patch Changes
+
+- f6881022: Add `patterns` to `config.staticCss`
+
+  ***
+
+  Fix the special `[*]` rule which used to generate the same rule for every breakpoints, which is not what most people
+  need (it's still possible by explicitly using `responsive: true`).
+
+  ```ts
+  const card = defineRecipe({
+    className: 'card',
+    base: { color: 'white' },
+    variants: {
+      size: {
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
+      },
+      visual: {
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
+      },
+    },
+  })
+
+  export default defineConfig({
+    // ...
+    staticCss: {
+      recipes: {
+        card: ['*'], // this
+
+        // was equivalent to:
+        card: [
+          // notice how `responsive: true` was implicitly added
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
+        ],
+
+        //   will now correctly be equivalent to:
+        card: [{ size: ['*'] }, { visual: ['*'] }],
+      },
+    },
+  })
+  ```
+
+  Here's the diff in the generated CSS:
+
+  ```diff
+  @layer recipes {
+    .card--size_small {
+      font-size: 14px;
+    }
+
+    .card--size_large {
+      font-size: 18px;
+    }
+
+    .card--visual_primary {
+      background-color: blue;
+    }
+
+    .card--visual_secondary {
+      background-color: gray;
+    }
+
+    @layer _base {
+      .card {
+        color: var(--colors-white);
+      }
+    }
+
+  -  @media screen and (min-width: 40em) {
+  -    -.sm\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.sm\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.sm\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.sm\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 48em) {
+  -    -.md\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.md\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.md\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.md\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 64em) {
+  -    -.lg\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.lg\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.lg\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.lg\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 80em) {
+  -    -.xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+
+  -  @media screen and (min-width: 96em) {
+  -    -.\32xl\:card--size_small {
+  -      -font-size: 14px;
+  -    -}
+  -    -.\32xl\:card--size_large {
+  -      -font-size: 18px;
+  -    -}
+  -    -.\32xl\:card--visual_primary {
+  -      -background-color: blue;
+  -    -}
+  -    -.\32xl\:card--visual_secondary {
+  -      -background-color: gray;
+  -    -}
+  -  }
+  }
+  ```
+
+- Updated dependencies [63b3f1f2]
+- Updated dependencies [f6881022]
+  - @pandacss/core@0.24.0
+  - @pandacss/types@0.24.0
+  - @pandacss/token-dictionary@0.24.0
+  - @pandacss/is-valid-prop@0.24.0
+  - @pandacss/logger@0.24.0
+  - @pandacss/shared@0.24.0
+
+## 0.23.0
+
+### Patch Changes
+
+- d30b1737: Fix issue where style props wouldn't be properly passed when using `config.jsxStyleProps` set to `minimal`
+  or `none` with JSX patterns (`Box`, `Stack`, `Flex`, etc.)
+- a3b6ed5f: Fix & perf improvement: skip JSX parsing when not using `config.jsxFramework` / skip tagged template literal
+  parsing when not using `config.syntax` set to "template-literal"
+- 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
+- Updated dependencies [1ea7459c]
+- Updated dependencies [80ada336]
+- Updated dependencies [bd552b1f]
+- Updated dependencies [840ed66b]
+  - @pandacss/core@0.23.0
+  - @pandacss/logger@0.23.0
+  - @pandacss/is-valid-prop@0.23.0
+  - @pandacss/shared@0.23.0
+  - @pandacss/token-dictionary@0.23.0
+  - @pandacss/types@0.23.0
+
+## 0.22.1
+
+### Patch Changes
+
+- 8f4ce97c: Fix `slotRecipes` typings,
+  [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
+  weren't added to `config.slotRecipes`
+- 647f05c9: Fix a typing issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with property-based
+  conditionals
+
+  ```ts
+  css({
+    bg: '[#3B00B9]', // ✅ was okay
+    _dark: {
+      // ✅ was okay
+      color: '[#3B00B9]',
+    },
+
+    // ❌ Not okay, will be fixed in this patch
+    color: {
+      _dark: '[#3B00B9]',
+    },
+  })
+  ```
+
+- 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
+  `!important`
+
+  ```ts
+  css({
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
+  ```
+
+- Updated dependencies [8f4ce97c]
+- Updated dependencies [647f05c9]
+  - @pandacss/types@0.22.1
+  - @pandacss/shared@0.22.1
+  - @pandacss/core@0.22.1
+  - @pandacss/token-dictionary@0.22.1
+  - @pandacss/is-valid-prop@0.22.1
+  - @pandacss/logger@0.22.1
+
 ## 0.22.0
 
 ### Minor Changes

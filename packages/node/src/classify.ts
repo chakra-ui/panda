@@ -1,4 +1,4 @@
-import type { ParserResultType, ReportInstanceItem, ReportItem } from '@pandacss/types'
+import type { ParserResultInterface, ReportInstanceItem, ReportItem } from '@pandacss/types'
 import { box } from '@pandacss/extractor'
 import type { PandaContext } from './create-context'
 import type { ResultItem } from '@pandacss/types'
@@ -37,7 +37,7 @@ const colorPropNames = new Set(['background', 'outline', 'border'])
 
 type ReportMaps = ReturnType<typeof createReportMaps>
 
-export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<string, ParserResultType>) => {
+export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<string, ParserResultInterface>) => {
   const byId = new Map<ReportItem['id'], ReportItem>()
   const byInstanceId = new Map<ReportInstanceItem['instanceId'], ReportInstanceItem>()
 

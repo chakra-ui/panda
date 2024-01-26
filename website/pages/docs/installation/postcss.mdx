@@ -53,7 +53,7 @@ module.exports = {
 
 ### Configure the content
 
-Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
+Add your panda config to your `panda.config.js` file, or wherever panda is configured in your project.
 
 ```js {5}
 import { defineConfig } from '@pandacss/dev'
@@ -78,7 +78,7 @@ export default defineConfig({
   }
   ```
 
-  The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+  The `prepare` script will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
   > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
 

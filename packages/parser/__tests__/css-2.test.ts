@@ -49,7 +49,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -125,7 +125,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -134,7 +134,7 @@ describe('ast parser', () => {
 
   test('[with import] should parse static property', () => {
     const code = `
-    import {css} from ".panda/css";
+    import {css} from "styled-system/css";
         const baseStyle = css({
             color: 'red',
             fontSize: '12px',
@@ -180,7 +180,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -256,7 +256,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -265,7 +265,7 @@ describe('ast parser', () => {
 
   test('[with import alias] should parse static property', () => {
     const code = `
-    import {css as nCss} from ".panda/css";
+    import {css as nCss} from "styled-system/css";
         const baseStyle = nCss({
             color: 'red',
             fontSize: '12px',
@@ -311,7 +311,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
           {
             "box": {
@@ -387,7 +387,7 @@ describe('ast parser', () => {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -396,7 +396,7 @@ describe('ast parser', () => {
 
   test('should extract nested css', () => {
     const code = `
-      import { css } from '.panda/css'
+      import { css } from 'styled-system/css'
 
 console.log(
   console.log(
@@ -456,7 +456,7 @@ console.log(
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -465,7 +465,7 @@ console.log(
 
   test('should extract complex setup', () => {
     const code = `
-      import { css, cx } from '.panda/css'
+      import { css, cx } from 'styled-system/css'
 import React from 'react'
 
 export function Card({ className }) {
@@ -502,7 +502,7 @@ export function Card({ className }) {
               },
             ],
             "name": "css",
-            "type": "object",
+            "type": "css",
           },
         },
       }
@@ -540,15 +540,15 @@ export function Card({ className }) {
     )
 
     expect(result.css).toMatchInlineSnapshot(`
-    "@layer utilities {
-      .text_red\\\\.400 {
-        color: var(--colors-red-400)
-        }
+      "@layer utilities {
+        .text_red\\.400 {
+          color: var(--colors-red-400);
+      }
 
-      .max-w_1000px {
-        max-width: 1000px
-        }
-    }"
+        .max-w_1000px {
+          max-width: 1000px;
+      }
+      }"
     `)
   })
 })

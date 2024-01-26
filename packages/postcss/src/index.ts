@@ -20,6 +20,12 @@ function isValidCss(file: string) {
   return path.extname(filePath) === '.css'
 }
 
+const shouldSkip = (fileName: string | undefined) => {
+  if (!fileName) return true
+  if (!isValidCss(fileName)) return true
+  return nodeModulesRegex.test(fileName)
+}
+
 export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (options = {}) => {
   const { configPath, cwd } = options
 
@@ -29,7 +35,7 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
       async function (root, result) {
         const fileName = result.opts.from
 
-        const skip = fileName ? !isValidCss(fileName) || nodeModulesRegex.test(fileName) : true
+        const skip = shouldSkip(fileName)
         if (skip) return
 
         await builder.setup({ configPath, cwd })
@@ -39,7 +45,7 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
 
         await builder.emit()
 
-        await builder.extract()
+        builder.extract()
 
         builder.registerDependency((dep) => {
           result.messages.push({

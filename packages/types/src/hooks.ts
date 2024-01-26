@@ -1,44 +1,61 @@
-import type { HookKeys, Hookable } from 'hookable'
+import type { ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
-import type { ParserResultType } from './parser'
+import type { HooksApiInterface } from './hooks-api'
+import type { ParserResultInterface } from './parser'
 
-type MaybeAsyncReturn = Promise<void> | void
+type MaybeAsyncReturn<T = void> = Promise<T> | T
 
 export interface PandaHooks {
   /**
    * Called when the config is resolved, after all the presets are loaded and merged.
+   * This is the first hook called, you can use it to tweak the config before the context is created.
    */
-  'config:resolved': (conf: LoadConfigResult) => MaybeAsyncReturn
+  'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+  /**
+   * Called when the Panda context has been created and the API is ready to be used.
+   */
+  'context:created': (args: { ctx: HooksApiInterface; logger: LoggerInterface }) => void
   /**
    * Called when the config file or one of its dependencies (imports) has changed.
    */
-  'config:change': (ctx: UserConfig) => MaybeAsyncReturn
+  'config:change': (args: { config: UserConfig; changes: DiffConfigResult }) => MaybeAsyncReturn
   /**
    * Called after reading the file content but before parsing it.
+   * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
+   * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
    */
-  'parser:before': (file: string, content: string) => void
+  'parser:before': (args: { filePath: string; content: string }) => string | void
   /**
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
+   * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
    */
-  'parser:after': (file: string, result: ParserResultType | undefined) => void
-  /**
-   * Called after the extracted ParserResult has been transformed to a CSS string
-   */
-  'parser:css': (file: string, css: string | undefined) => void
-  /**
-   * Called before generating the design-system CSS files (global, static, preflight, tokens, keyframes)
-   */
-  'generator:css': (
-    file: 'global.css' | 'static.css' | 'reset.css' | 'tokens.css' | 'keyframes.css' | 'styles.css',
-    css: string,
-  ) => void
+  'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
   /**
    * Called after the codegen is completed
    */
-  'generator:done': () => void | Promise<void>
+  'codegen:done': (args: { changed: ArtifactId[] | undefined }) => MaybeAsyncReturn
+  /**
+   * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
+   * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
+   * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
+   */
+  'cssgen:done': (args: {
+    artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+    content: string
+  }) => string | void
 }
 
-export type PandaHookable = Hookable<PandaHooks, HookKeys<PandaHooks>>
-export interface ConfigResultWithHooks extends LoadConfigResult {
-  hooks: PandaHookable
+export interface LoggerInterface {
+  level: 'debug' | 'info' | 'warn' | 'error' | 'silent'
+  print(data: any): void
+  warn: (type: string, data: any) => void
+  info: (type: string, data: any) => void
+  debug: (type: string, data: any) => void
+  error: (type: string, data: any) => void
+  log: (data: string) => void
+  time: {
+    info: (msg: string) => (_msg?: string) => void
+    debug: (msg: string) => (_msg?: string) => void
+  }
+  isDebug: boolean
 }
