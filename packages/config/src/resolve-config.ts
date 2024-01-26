@@ -1,8 +1,9 @@
 import { parseJson, stringifyJson } from '@pandacss/shared'
-import type { LoadConfigResult } from '@pandacss/types'
+import type { LoadConfigResult, UserConfig } from '@pandacss/types'
 import { type BundleConfigResult } from './bundle-config'
 import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { getResolvedConfig } from './get-resolved-config'
+import { checkConfig, validateConfig } from './validate-config'
 
 /**
  * Resolve the final config (including presets)
@@ -28,7 +29,11 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
 
   result.config.presets = Array.from(presets)
 
+  checkConfig(result.config)
+
   const mergedConfig = await getResolvedConfig(result.config, cwd)
+  validateConfig(mergedConfig as UserConfig)
+
   const hooks = result.config.hooks ?? {}
 
   // This allows editing the config before the context is created
