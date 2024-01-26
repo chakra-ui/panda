@@ -60,7 +60,7 @@ describe('recipe ruleset', () => {
       }
 
         @media screen and (min-width: 48em) {
-          .md\\:textStyle--size_h2 {
+          .md\\\\:textStyle--size_h2 {
             font-size: 3rem;
             line-height: 1.2em;
             font-weight: 700;
@@ -259,19 +259,19 @@ describe('recipe ruleset', () => {
       }
 
         @media screen and (min-width: 64em) {
-          .lg\\:buttonStyle--variant_outline {
+          .lg\\\\:buttonStyle--variant_outline {
             background-color: var(--colors-transparent);
             border: 1px solid blue;
             color: blue;
       }
 
-          .lg\\:buttonStyle--variant_outline[data-disabled] {
+          .lg\\\\:buttonStyle--variant_outline[data-disabled] {
             background-color: var(--colors-transparent);
             border: 1px solid gray;
             color: gray;
       }
 
-          .lg\\:buttonStyle--variant_outline:is(:hover, [data-hover]) {
+          .lg\\\\:buttonStyle--variant_outline:is(:hover, [data-hover]) {
             background-color: blue;
             color: var(--colors-white);
       }

@@ -135,14 +135,14 @@ describe('Utility', () => {
     expect(utility.types).toMatchInlineSnapshot(`
       Map {
         "backgroundColor" => Set {
-          "type:Tokens["colors"]",
+          "type:Tokens[\\"colors\\"]",
         },
         "display" => Set {
           "flex",
           "inline-flex",
         },
         "margin" => Set {
-          "type:Tokens["spacing"]",
+          "type:Tokens[\\"spacing\\"]",
         },
         "marginX" => Set {
           "sm",
@@ -1524,16 +1524,16 @@ describe('Utility', () => {
           "margin": "var(--spacing-96)",
         },
         "(margin = 0.5)" => {
-          "margin": "var(--spacing-0\\.5)",
+          "margin": "var(--spacing-0\\\\.5)",
         },
         "(margin = 1.5)" => {
-          "margin": "var(--spacing-1\\.5)",
+          "margin": "var(--spacing-1\\\\.5)",
         },
         "(margin = 2.5)" => {
-          "margin": "var(--spacing-2\\.5)",
+          "margin": "var(--spacing-2\\\\.5)",
         },
         "(margin = 3.5)" => {
-          "margin": "var(--spacing-3\\.5)",
+          "margin": "var(--spacing-3\\\\.5)",
         },
         "(margin = gutter)" => {
           "margin": "var(--spacing-gutter)",
@@ -1626,16 +1626,16 @@ describe('Utility', () => {
           "margin": "calc(var(--spacing-96) * -1)",
         },
         "(margin = -0.5)" => {
-          "margin": "calc(var(--spacing-0\\.5) * -1)",
+          "margin": "calc(var(--spacing-0\\\\.5) * -1)",
         },
         "(margin = -1.5)" => {
-          "margin": "calc(var(--spacing-1\\.5) * -1)",
+          "margin": "calc(var(--spacing-1\\\\.5) * -1)",
         },
         "(margin = -2.5)" => {
-          "margin": "calc(var(--spacing-2\\.5) * -1)",
+          "margin": "calc(var(--spacing-2\\\\.5) * -1)",
         },
         "(margin = -3.5)" => {
-          "margin": "calc(var(--spacing-3\\.5) * -1)",
+          "margin": "calc(var(--spacing-3\\\\.5) * -1)",
         },
         "(margin = -gutter)" => {
           "margin": "calc(var(--spacing-gutter) * -1)",

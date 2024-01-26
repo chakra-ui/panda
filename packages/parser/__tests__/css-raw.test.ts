@@ -165,7 +165,7 @@ describe('{fn}.raw', () => {
           padding-top: var(--spacing-4);
       }
 
-        .text_amber\\.100 {
+        .text_amber\\\\.100 {
           color: var(--colors-amber-100);
       }
 
@@ -177,11 +177,11 @@ describe('{fn}.raw', () => {
           padding-top: var(--spacing-6);
       }
 
-        .text_blue\\.950 {
+        .text_blue\\\\.950 {
           color: var(--colors-blue-950);
       }
 
-        .bg_red\\.400 {
+        .bg_red\\\\.400 {
           background: var(--colors-red-400);
       }
 

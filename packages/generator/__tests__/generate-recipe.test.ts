@@ -51,7 +51,7 @@ describe('generate recipes', () => {
            conditions: {
              shift: sortConditions,
              finalize: finalizeConditions,
-             breakpoints: { keys: ["base","sm","md","lg","xl","2xl"] }
+             breakpoints: { keys: [\\"base\\",\\"sm\\",\\"md\\",\\"lg\\",\\"xl\\",\\"2xl\\"] }
            },
            utility: {
              
@@ -110,7 +110,7 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface TextStyleVariant {
-        size: "h1" | "h2"
+        size: \\"h1\\" | \\"h2\\"
       }
 
       type TextStyleVariantMap = {
@@ -138,9 +138,9 @@ describe('generate recipes', () => {
       const textStyleFn = /* @__PURE__ */ createRecipe('textStyle', {}, [])
 
       const textStyleVariantMap = {
-        "size": [
-          "h1",
-          "h2"
+        \\"size\\": [
+          \\"h1\\",
+          \\"h2\\"
         ]
       }
 
@@ -245,8 +245,8 @@ describe('generate recipes', () => {
       const cardStyleFn = /* @__PURE__ */ createRecipe('card', {}, [])
 
       const cardStyleVariantMap = {
-        "rounded": [
-          "true"
+        \\"rounded\\": [
+          \\"true\\"
         ]
       }
 
@@ -272,8 +272,8 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface ButtonStyleVariant {
-        size: "sm" | "md"
-      variant: "solid" | "outline"
+        size: \\"sm\\" | \\"md\\"
+      variant: \\"solid\\" | \\"outline\\"
       }
 
       type ButtonStyleVariantMap = {
@@ -299,18 +299,18 @@ describe('generate recipes', () => {
       import { createRecipe, mergeRecipes } from './create-recipe.mjs';
 
       const buttonStyleFn = /* @__PURE__ */ createRecipe('buttonStyle', {
-        "size": "md",
-        "variant": "solid"
+        \\"size\\": \\"md\\",
+        \\"variant\\": \\"solid\\"
       }, [])
 
       const buttonStyleVariantMap = {
-        "size": [
-          "sm",
-          "md"
+        \\"size\\": [
+          \\"sm\\",
+          \\"md\\"
         ],
-        "variant": [
-          "solid",
-          "outline"
+        \\"variant\\": [
+          \\"solid\\",
+          \\"outline\\"
         ]
       }
 
@@ -336,7 +336,7 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface CheckboxVariant {
-        size: "sm" | "md" | "lg"
+        size: \\"sm\\" | \\"md\\" | \\"lg\\"
       }
 
       type CheckboxVariantMap = {
@@ -349,7 +349,7 @@ describe('generate recipes', () => {
 
       export interface CheckboxRecipe {
         __type: CheckboxVariantProps
-        (props?: CheckboxVariantProps): Pretty<Record<"root" | "control" | "label", string>>
+        (props?: CheckboxVariantProps): Pretty<Record<\\"root\\" | \\"control\\" | \\"label\\", string>>
         raw: (props?: CheckboxVariantProps) => CheckboxVariantProps
         variantMap: CheckboxVariantMap
         variantKeys: Array<keyof CheckboxVariant>
@@ -362,22 +362,22 @@ describe('generate recipes', () => {
       import { createRecipe } from './create-recipe.mjs';
 
       const checkboxDefaultVariants = {
-        "size": "sm"
+        \\"size\\": \\"sm\\"
       }
       const checkboxCompoundVariants = []
 
       const checkboxSlotNames = [
         [
-          "root",
-          "checkbox__root"
+          \\"root\\",
+          \\"checkbox__root\\"
         ],
         [
-          "control",
-          "checkbox__control"
+          \\"control\\",
+          \\"checkbox__control\\"
         ],
         [
-          "label",
-          "checkbox__label"
+          \\"label\\",
+          \\"checkbox__label\\"
         ]
       ]
       const checkboxSlotFns = /* @__PURE__ */ checkboxSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, checkboxDefaultVariants, getSlotCompoundVariant(checkboxCompoundVariants, slotName))])
@@ -387,7 +387,7 @@ describe('generate recipes', () => {
       })
 
       const checkboxVariantKeys = [
-        "size"
+        \\"size\\"
       ]
 
       export const checkbox = /* @__PURE__ */ Object.assign(checkboxFn, {
@@ -396,10 +396,10 @@ describe('generate recipes', () => {
         raw: (props) => props,
         variantKeys: checkboxVariantKeys,
         variantMap: {
-        "size": [
-          "sm",
-          "md",
-          "lg"
+        \\"size\\": [
+          \\"sm\\",
+          \\"md\\",
+          \\"lg\\"
         ]
       },
         splitVariantProps(props) {
@@ -413,7 +413,7 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface BadgeVariant {
-        size: "sm"
+        size: \\"sm\\"
       raised: boolean
       }
 
@@ -427,7 +427,7 @@ describe('generate recipes', () => {
 
       export interface BadgeRecipe {
         __type: BadgeVariantProps
-        (props?: BadgeVariantProps): Pretty<Record<"title" | "body", string>>
+        (props?: BadgeVariantProps): Pretty<Record<\\"title\\" | \\"body\\", string>>
         raw: (props?: BadgeVariantProps) => BadgeVariantProps
         variantMap: BadgeVariantMap
         variantKeys: Array<keyof BadgeVariant>
@@ -442,11 +442,11 @@ describe('generate recipes', () => {
       const badgeDefaultVariants = {}
       const badgeCompoundVariants = [
         {
-          "raised": true,
-          "size": "sm",
-          "css": {
-            "title": {
-              "color": "ButtonHighlight"
+          \\"raised\\": true,
+          \\"size\\": \\"sm\\",
+          \\"css\\": {
+            \\"title\\": {
+              \\"color\\": \\"ButtonHighlight\\"
             }
           }
         }
@@ -454,12 +454,12 @@ describe('generate recipes', () => {
 
       const badgeSlotNames = [
         [
-          "title",
-          "badge__title"
+          \\"title\\",
+          \\"badge__title\\"
         ],
         [
-          "body",
-          "badge__body"
+          \\"body\\",
+          \\"badge__body\\"
         ]
       ]
       const badgeSlotFns = /* @__PURE__ */ badgeSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, badgeDefaultVariants, getSlotCompoundVariant(badgeCompoundVariants, slotName))])
@@ -469,8 +469,8 @@ describe('generate recipes', () => {
       })
 
       const badgeVariantKeys = [
-        "size",
-        "raised"
+        \\"size\\",
+        \\"raised\\"
       ]
 
       export const badge = /* @__PURE__ */ Object.assign(badgeFn, {
@@ -479,11 +479,11 @@ describe('generate recipes', () => {
         raw: (props) => props,
         variantKeys: badgeVariantKeys,
         variantMap: {
-        "size": [
-          "sm"
+        \\"size\\": [
+          \\"sm\\"
         ],
-        "raised": [
-          "true"
+        \\"raised\\": [
+          \\"true\\"
         ]
       },
         splitVariantProps(props) {

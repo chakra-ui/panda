@@ -89,26 +89,26 @@ describe('rule processor', () => {
       `
       [
         "text_red",
-        "border_1px_solid_token\\(colors\\.red\\.100\\)",
-        "bg_blue\\.300",
-        "textStyle_headline\\.h1",
+        "border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\)",
+        "bg_blue\\\\.300",
+        "textStyle_headline\\\\.h1",
         "w_1",
         "fs_xs",
-        "dark\\:fs_2xl",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green",
-        "hover\\:fs_md",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple",
-        "hover\\:focus\\:fs_xl",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange",
-        "sm\\:w_2",
-        "sm\\:fs_sm",
-        "sm\\:text_yellow",
-        "sm\\:bg_red",
-        "xl\\:w_3",
-        "sm\\:hover\\:bg_green",
-        "hover\\:md\\:fs_lg",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
+        "dark\\\\:fs_2xl",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green",
+        "hover\\\\:fs_md",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple",
+        "hover\\\\:focus\\\\:fs_xl",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange",
+        "sm\\\\:w_2",
+        "sm\\\\:fs_sm",
+        "sm\\\\:text_yellow",
+        "sm\\\\:bg_red",
+        "xl\\\\:w_3",
+        "sm\\\\:hover\\\\:bg_green",
+        "hover\\\\:md\\\\:fs_lg",
+        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink",
       ]
     `,
     )
@@ -116,21 +116,21 @@ describe('rule processor', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @layer compositions {
-          .textStyle_headline\\.h1 {
+          .textStyle_headline\\\\.h1 {
             font-size: 2rem;
             font-weight: var(--font-weights-bold);
       }
       }
 
-        .text_red\\! {
+        .text_red\\\\! {
           color: red !important;
       }
 
-        .border_1px_solid_token\\(colors\\.red\\.100\\) {
+        .border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\) {
           border: 1px solid var(--colors-red-100);
       }
 
-        .bg_blue\\.300 {
+        .bg_blue\\\\.300 {
           background: var(--colors-blue-300);
       }
 
@@ -142,69 +142,69 @@ describe('rule processor', () => {
           font-size: var(--font-sizes-xs);
       }
 
-        [data-theme=dark] .dark\\:fs_2xl,.dark .dark\\:fs_2xl,.dark\\:fs_2xl.dark,.dark\\:fs_2xl[data-theme=dark] {
+        [data-theme=dark] .dark\\\\:fs_2xl,.dark .dark\\\\:fs_2xl,.dark\\\\:fs_2xl.dark,.dark\\\\:fs_2xl[data-theme=dark] {
           font-size: var(--font-sizes-2xl);
       }
 
-        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green[data-attr='test'] {
+        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green[data-attr='test'] {
           color: green;
       }
 
-        .hover\\:fs_md:is(:hover, [data-hover]) {
+        .hover\\\\:fs_md:is(:hover, [data-hover]) {
           font-size: var(--font-sizes-md);
       }
 
-        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
           color: purple;
       }
 
-        .hover\\:focus\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
           font-size: var(--font-sizes-xl);
       }
 
-        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
           color: cyan;
       }
 
-        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]):is([open], [data-open], [data-state="open"]) {
+        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]):is([open], [data-open], [data-state=\\"open\\"]) {
           color: orange;
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\:w_2 {
+          .sm\\\\:w_2 {
             width: var(--sizes-2);
       }
-          .sm\\:fs_sm {
+          .sm\\\\:fs_sm {
             font-size: var(--font-sizes-sm);
       }
-          .sm\\:text_yellow {
+          .sm\\\\:text_yellow {
             color: yellow;
       }
-          .sm\\:bg_red {
+          .sm\\\\:bg_red {
             background-color: red;
       }
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
+          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
 
         @media screen and (min-width: 48em) {
-          .hover\\:md\\:fs_lg:is(:hover, [data-hover]) {
+          .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
             font-size: var(--font-sizes-lg);
       }
       }
 
         @media screen and (min-width: 80em) {
-          .xl\\:w_3 {
+          .xl\\\\:w_3 {
             width: var(--sizes-3);
       }
       }
 
         @media screen and (min-width: 80em) {
-          .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+          .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
             color: pink;
       }
       }
@@ -218,7 +218,7 @@ describe('rule processor', () => {
     expect(result.className).toMatchInlineSnapshot(`
       [
         "buttonStyle--size_sm",
-        "md\\:buttonStyle--size_md",
+        "md\\\\:buttonStyle--size_md",
         "buttonStyle--variant_solid",
         "buttonStyle",
       ]
@@ -261,7 +261,7 @@ describe('rule processor', () => {
       }
 
         @media screen and (min-width: 48em) {
-          .md\\:buttonStyle--size_md {
+          .md\\\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
             padding: 0 0.75rem;
@@ -332,32 +332,32 @@ describe('rule processor', () => {
         "d_inline-flex",
         "items_center",
         "justify_center",
-        "textStyle_headline\\.h1",
-        "h_2\\.5rem",
-        "min-w_2\\.5rem",
-        "p_0_0\\.5rem",
+        "textStyle_headline\\\\.h1",
+        "h_2\\\\.5rem",
+        "min-w_2\\\\.5rem",
+        "p_0_0\\\\.5rem",
         "h_3rem",
         "min-w_3rem",
-        "p_0_0\\.75rem",
+        "p_0_0\\\\.75rem",
         "bg_blue",
         "text_white",
         "bg_transparent",
         "border_1px_solid_blue",
         "text_blue",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
-        "\\[\\&\\[data-disabled\\]\\]\\:text_black",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
-        "\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray",
-        "\\[\\&\\[data-disabled\\]\\]\\:text_gray",
-        "hover\\:bg_darkblue",
-        "hover\\:bg_blue",
-        "hover\\:text_white",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray",
+        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray",
+        "hover\\\\:bg_darkblue",
+        "hover\\\\:bg_blue",
+        "hover\\\\:text_white",
       ]
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @layer compositions {
-          .textStyle_headline\\.h1 {
+          .textStyle_headline\\\\.h1 {
             font-size: 2rem;
             font-weight: var(--font-weights-bold);
       }
@@ -375,15 +375,15 @@ describe('rule processor', () => {
           justify-content: center;
       }
 
-        .h_2\\.5rem {
+        .h_2\\\\.5rem {
           height: 2.5rem;
       }
 
-        .min-w_2\\.5rem {
+        .min-w_2\\\\.5rem {
           min-width: 2.5rem;
       }
 
-        .p_0_0\\.5rem {
+        .p_0_0\\\\.5rem {
           padding: 0 0.5rem;
       }
 
@@ -395,7 +395,7 @@ describe('rule processor', () => {
           min-width: 3rem;
       }
 
-        .p_0_0\\.75rem {
+        .p_0_0\\\\.75rem {
           padding: 0 0.75rem;
       }
 
@@ -419,35 +419,35 @@ describe('rule processor', () => {
           color: blue;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:bg_gray[data-disabled] {
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
           background-color: gray;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:text_black[data-disabled] {
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
           color: var(--colors-black);
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:bg_transparent[data-disabled] {
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
           background-color: var(--colors-transparent);
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray[data-disabled] {
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray[data-disabled] {
           border: 1px solid gray;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:text_gray[data-disabled] {
+        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray[data-disabled] {
           color: gray;
       }
 
-        .hover\\:bg_darkblue:is(:hover, [data-hover]) {
+        .hover\\\\:bg_darkblue:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        .hover\\:bg_blue:is(:hover, [data-hover]) {
+        .hover\\\\:bg_blue:is(:hover, [data-hover]) {
           background-color: blue;
       }
 
-        .hover\\:text_white:is(:hover, [data-hover]) {
+        .hover\\\\:text_white:is(:hover, [data-hover]) {
           color: var(--colors-white);
       }
       }"
@@ -462,9 +462,9 @@ describe('rule processor', () => {
         "checkbox__root--size_sm",
         "checkbox__control--size_sm",
         "checkbox__label--size_sm",
-        "md\\:checkbox__root--size_md",
-        "md\\:checkbox__control--size_md",
-        "md\\:checkbox__label--size_md",
+        "md\\\\:checkbox__root--size_md",
+        "md\\\\:checkbox__control--size_md",
+        "md\\\\:checkbox__label--size_md",
         "checkbox__root",
         "checkbox__control",
         "checkbox__label",
@@ -501,11 +501,11 @@ describe('rule processor', () => {
       }
 
         @media screen and (min-width: 48em) {
-          .md\\:checkbox__control--size_md {
+          .md\\\\:checkbox__control--size_md {
             width: var(--sizes-10);
             height: var(--sizes-10);
       }
-          .md\\:checkbox__label--size_md {
+          .md\\\\:checkbox__label--size_md {
             font-size: var(--font-sizes-md);
       }
       }
@@ -752,7 +752,7 @@ describe('rule processor', () => {
       }
 
       @layer utilities {
-        .text_blue\\.300 {
+        .text_blue\\\\.300 {
           color: var(--colors-blue-300);
       }
 
@@ -768,11 +768,11 @@ describe('rule processor', () => {
           font-size: 16px;
       }
 
-        .border_2px_solid_token\\(colors\\.green\\.100\\) {
+        .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
           border: 2px solid var(--colors-green-100);
       }
 
-        .hover\\:text_red\\.400:is(:hover, [data-hover]) {
+        .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
           color: var(--colors-red-400);
       }
       }"
@@ -895,15 +895,15 @@ describe('rule processor', () => {
           display: none;
       }
 
-        .h_100\\% {
+        .h_100\\\\% {
           height: 100%;
       }
 
-        .transition_all_\\.3s_ease-in-out {
+        .transition_all_\\\\.3s_ease-in-out {
           transition: all .3s ease-in-out;
       }
 
-        .opacity_0\\! {
+        .opacity_0\\\\! {
           opacity: 0 !important;
       }
 
@@ -921,7 +921,7 @@ describe('rule processor', () => {
           background-image: linear-gradient(to bottom, var(--gradient));
       }
 
-        .from_rgb\\(200_200_200_\\/_\\.4\\) {
+        .from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\) {
           --gradient-from: rgb(200 200 200 / .4);
       }
       }"
@@ -976,12 +976,12 @@ describe('rule processor', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "className": [
-          "text_\\#fff",
+          "text_\\\\#fff",
           "d_block",
           "d_none",
         ],
         "css": "@layer utilities {
-        .text_\\#fff {
+        .text_\\\\#fff {
           color: #fff;
       }
 
@@ -1019,7 +1019,7 @@ describe('js to css', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .\\--foo_42 {
+        .\\\\--foo_42 {
           --foo: 42;
       }
 
@@ -1047,15 +1047,15 @@ describe('js to css', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .\\--testVariable0_0 {
+        .\\\\--testVariable0_0 {
           --testVariable0: 0;
       }
 
-        .\\--test-Variable-1_1 {
+        .\\\\--test-Variable-1_1 {
           --test-Variable-1: 1;
       }
 
-        .\\--test-variable-2_2 {
+        .\\\\--test-variable-2_2 {
           --test-variable-2: 2;
       }
       }"
@@ -1072,15 +1072,15 @@ describe('js to css', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .border_red\\! {
+        .border_red\\\\! {
           border-color: red !important;
       }
 
-        .text_pink\\! {
+        .text_pink\\\\! {
           color: pink !important;
       }
 
-        .bg_white\\! {
+        .bg_white\\\\! {
           background: var(--colors-white) !important;
       }
 

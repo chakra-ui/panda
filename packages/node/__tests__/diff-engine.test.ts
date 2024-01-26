@@ -459,7 +459,7 @@ describe('DiffEngine affecteds', () => {
           "type": "CREATE",
           "value": {
             "transform": "transform() {
-                      return { color: "blue.400" };
+                      return { color: \\"blue.400\\" };
                     }",
           },
         },
@@ -496,7 +496,7 @@ describe('DiffEngine affecteds', () => {
       [
         {
           "oldValue": "transform() {
-                      return { color: "blue.400" };
+                      return { color: \\"blue.400\\" };
                     }",
           "path": [
             "patterns",
@@ -505,7 +505,7 @@ describe('DiffEngine affecteds', () => {
           ],
           "type": "CHANGE",
           "value": "transform() {
-                      return { color: "blue.500" };
+                      return { color: \\"blue.500\\" };
                     }",
         },
       ]
@@ -528,7 +528,7 @@ describe('DiffEngine affecteds', () => {
         {
           "oldValue": {
             "transform": "transform() {
-                      return { color: "blue.500" };
+                      return { color: \\"blue.500\\" };
                     }",
           },
           "path": [

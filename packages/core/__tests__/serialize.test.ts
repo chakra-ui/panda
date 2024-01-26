@@ -37,8 +37,8 @@ describe('serialize', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "html": {
-          "background": "colors\\.xxx",
-          "border": "2px solid colors\\.red\\.xxx",
+          "background": "colors\\\\.xxx",
+          "border": "2px solid colors\\\\.red\\\\.xxx",
         },
       }
     `)
@@ -137,8 +137,8 @@ describe('serialize - with token()', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "html": {
-          "background": "colors\\.xxx",
-          "border": "2px solid colors\\.red\\.xxx",
+          "background": "colors\\\\.xxx",
+          "border": "2px solid colors\\\\.red\\\\.xxx",
         },
       }
     `)

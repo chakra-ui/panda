@@ -5,8 +5,8 @@ describe('css var', () => {
   test('with negative', () => {
     expect(cssVar('-2.4', { prefix: 'vc-spacing' })).toMatchInlineSnapshot(`
       {
-        "ref": "var(--vc-spacing--2\\.4)",
-        "var": "--vc-spacing--2\\.4",
+        "ref": "var(--vc-spacing--2\\\\.4)",
+        "var": "--vc-spacing--2\\\\.4",
       }
     `)
   })
@@ -32,8 +32,8 @@ describe('css var', () => {
   test('with special characters', () => {
     expect(cssVar('.*+?^${}()|[]\\/', { prefix: 'special' })).toMatchInlineSnapshot(`
       {
-        "ref": "var(--special-\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\\\/)",
-        "var": "--special-\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\\\/",
+        "ref": "var(--special-\\\\.\\\\*\\\\+\\\\?\\\\^\\\\$\\\\{\\\\}\\\\(\\\\)\\\\|\\\\[\\\\]\\\\\\\\\\\\/)",
+        "var": "--special-\\\\.\\\\*\\\\+\\\\?\\\\^\\\\$\\\\{\\\\}\\\\(\\\\)\\\\|\\\\[\\\\]\\\\\\\\\\\\/",
       }
     `)
   })
@@ -41,8 +41,8 @@ describe('css var', () => {
   test('with percentage', () => {
     expect(cssVar('100%', { prefix: 'sizes' })).toMatchInlineSnapshot(`
       {
-        "ref": "var(--sizes-100\\%)",
-        "var": "--sizes-100\\%",
+        "ref": "var(--sizes-100\\\\%)",
+        "var": "--sizes-100\\\\%",
       }
     `)
   })

@@ -30,7 +30,7 @@ describe('css template literal', () => {
       }
 
         @media (min-width: 700px) {
-          .\\[\\@media_\\(min-width\\:_700px\\)\\]\\:background_blue {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_700px\\\\)\\\\]\\\\:background_blue {
             background: blue;
       }
       }

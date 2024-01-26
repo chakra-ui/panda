@@ -38,7 +38,7 @@ describe('compositions', () => {
     expect(css({ textStyle: 'headline.h1' })).toMatchInlineSnapshot(`
       "@layer utilities {
         @layer compositions {
-          .textStyle_headline\\.h1 {
+          .textStyle_headline\\\\.h1 {
             font-size: 2rem;
             font-weight: var(--font-weights-bold);
       }
@@ -49,13 +49,13 @@ describe('compositions', () => {
     expect(css({ textStyle: 'headline.h2' })).toMatchInlineSnapshot(`
       "@layer utilities {
         @layer compositions {
-          .textStyle_headline\\.h2 {
+          .textStyle_headline\\\\.h2 {
             font-size: 1.5rem;
             font-weight: var(--font-weights-bold);
       }
 
           @media screen and (min-width: 64em) {
-            .textStyle_headline\\.h2 {
+            .textStyle_headline\\\\.h2 {
               font-size: 2rem;
       }
       }
