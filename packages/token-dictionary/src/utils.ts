@@ -1,4 +1,5 @@
-import { isObject } from '@pandacss/shared'
+import { logger } from '@pandacss/logger'
+import { esc, isObject } from '@pandacss/shared'
 import type { Token } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
@@ -29,13 +30,49 @@ export function hasReference(value: string) {
   return REFERENCE_REGEX.test(value)
 }
 
+const tokenFunctionRegex = /token\(([^)]+)\)/g
+const closingParenthesisRegex = /\)$/g
+const hasTokenReference = (str: string) => str.includes('token(')
+
+const tokenReplacer = (a: string, b?: string) =>
+  b ? (a.endsWith(')') ? a.replace(closingParenthesisRegex, `, ${b})`) : `var(${a}, ${b})`) : a
+
+const notFoundMessage = (key: string, value: string) => `Reference not found: \`${key}\` in "${value}"`
+
 export function expandReferences(value: string, fn: (key: string) => string) {
-  if (!hasReference(value)) return value
+  if (!hasReference(value) && !hasTokenReference(value)) return value
+
   const references = getReferences(value)
-  return references.reduce((valueStr, key) => {
-    const value = fn(key) ?? key
-    return valueStr.replace(`{${key}}`, value)
+  const expanded = references.reduce((valueStr, key) => {
+    const resolved = fn(key)
+    if (!resolved) {
+      logger.warn('token', notFoundMessage(key, value))
+    }
+    const expandedValue = resolved ?? esc(key)
+
+    return valueStr.replace(`{${key}}`, expandedValue)
   }, value)
+
+  if (!expanded.includes(`token(`)) return expanded
+
+  return expanded.replace(tokenFunctionRegex, (_, token) => {
+    const [tokenValue, tokenFallback] = token.split(',').map((s: string) => s.trim())
+    const result = [tokenValue, tokenFallback].filter(Boolean).map((key) => {
+      const resolved = fn(key)
+      if (!resolved) {
+        logger.warn('token', notFoundMessage(key, value))
+      }
+
+      return resolved ?? esc(key)
+    })
+
+    if (result.length > 1) {
+      const [a, b] = result
+      return tokenReplacer(a, b)
+    }
+
+    return tokenReplacer(result[0])
+  })
 }
 
 /* -----------------------------------------------------------------------------

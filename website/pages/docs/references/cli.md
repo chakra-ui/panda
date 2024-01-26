@@ -71,6 +71,17 @@ Set strictTokens to true
 
 Related: [`config.strictTokens`](/docs/references/config#strictTokens)
 
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
+
 ---
 
 ## `panda`
@@ -151,6 +162,17 @@ Whether to only emit the `tokens` directory
 
 Related: [`config.emitTokensOnly`](/docs/references/config#emitTokensOnly)
 
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
+
 ---
 
 ## `panda codegen`
@@ -194,6 +216,17 @@ Related: [`config.poll`](/docs/references/config#poll)
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
+
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
 
 ## `panda cssgen`
 
@@ -251,7 +284,7 @@ Whether to watch for changes in the project
 
 Related: [`config.watch`](/docs/references/config#watch)
 
-## `--minimal`
+#### `--minimal`
 
 Skip generating CSS for theme tokens, preflight, keyframes, static and global css.
 
@@ -279,6 +312,17 @@ Related: [`config.poll`](/docs/references/config#poll)
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
+
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
 
 ## `panda studio`
 

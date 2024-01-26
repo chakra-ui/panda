@@ -37,6 +37,7 @@
     "dist"
   ],
   "dependencies": {
+    "@pandacss/logger": "workspace:^",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "ts-pattern": "5.0.5"

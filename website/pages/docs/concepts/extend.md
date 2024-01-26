@@ -17,7 +17,7 @@ The `extend` keyword allows you to extend the following parts of Panda:
 - [globalCss](/docs/concepts/writing-styles#global-styles)
 - [staticCss](/docs/guides/static)
 
-> These are the same keys allowed in a [preset](/docs/customization/presets).
+> These keys are all allowed in [presets](/docs/customization/presets).
 
 ## Example
 

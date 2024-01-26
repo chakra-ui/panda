@@ -2840,7 +2840,7 @@ describe('extract to css output pipeline', () => {
       '@media (min-width: token(sizes.2xl))': {
         color: 'red.300',
       },
-      "@container (min-width: token(sizes.4xl, 1280px))": {
+      "@container (min-width: {sizes.4xl})": {
         display: "flex"
       }
     })
@@ -2851,11 +2851,11 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "@container (min-width: token(sizes.4xl, 1280px))": {
-                "display": "flex",
-              },
               "@container (min-width: token(sizes.xl))": {
                 "color": "green.300",
+              },
+              "@container (min-width: {sizes.4xl})": {
+                "display": "flex",
               },
               "@media (min-width: token(sizes.2xl))": {
                 "color": "red.300",
@@ -2871,7 +2871,7 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @container (min-width: 56rem) {
-          .\\[\\@container_\\(min-width\\:_token\\(sizes\\.4xl\\,_1280px\\)\\)\\]\\:d_flex {
+          .\\[\\@container_\\(min-width\\:_\\{sizes\\.4xl\\}\\)\\]\\:d_flex {
             display: flex;
       }
       }
