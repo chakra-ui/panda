@@ -223,7 +223,7 @@ export function generateResetCss(ctx: Context) {
   }
 
   ${selector}[hidden] {
-    display: none;
+    display: none !important;
   }
 `
 
