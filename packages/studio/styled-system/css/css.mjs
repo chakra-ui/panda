@@ -33,6 +33,7 @@ const context = {
               return { className: `${propKey}_${withoutSpace(value)}` }
             },
     hasShorthand: true,
+    toHash: (path, hashFn) => hashFn(path.join(":")),
     resolveShorthand: resolveShorthand,
   }
 }

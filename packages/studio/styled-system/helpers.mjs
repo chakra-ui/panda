@@ -26,27 +26,6 @@ function withoutSpace(str) {
   return typeof str === "string" ? str.replaceAll(" ", "_") : str;
 }
 
-// src/hash.ts
-function toChar(code) {
-  return String.fromCharCode(code + (code > 25 ? 39 : 97));
-}
-function toName(code) {
-  let name = "";
-  let x;
-  for (x = Math.abs(code); x > 52; x = x / 52 | 0)
-    name = toChar(x % 52) + name;
-  return toChar(x % 52) + name;
-}
-function toPhash(h, x) {
-  let i = x.length;
-  while (i)
-    h = h * 33 ^ x.charCodeAt(--i);
-  return h;
-}
-function toHash(value) {
-  return toName(toPhash(5381, value) >>> 0);
-}
-
 // src/merge-props.ts
 function mergeProps(...sources) {
   const objects = sources.filter(Boolean);
@@ -144,6 +123,27 @@ function normalizeStyleObject(styles, context, shorthand = true) {
   );
 }
 
+// src/hash.ts
+function toChar(code) {
+  return String.fromCharCode(code + (code > 25 ? 39 : 97));
+}
+function toName(code) {
+  let name = "";
+  let x;
+  for (x = Math.abs(code); x > 52; x = x / 52 | 0)
+    name = toChar(x % 52) + name;
+  return toChar(x % 52) + name;
+}
+function toPhash(h, x) {
+  let i = x.length;
+  while (i)
+    h = h * 33 ^ x.charCodeAt(--i);
+  return h;
+}
+function toHash(value) {
+  return toName(toPhash(5381, value) >>> 0);
+}
+
 // src/classname.ts
 var fallbackCondition = {
   shift: (v) => v,
@@ -158,7 +158,7 @@ function createCss(context) {
     let result;
     if (hash) {
       const baseArray = [...conds.finalize(conditions), className];
-      result = formatClassName(toHash(baseArray.join(":")));
+      result = formatClassName(utility.toHash(baseArray, toHash));
     } else {
       const baseArray = [...conds.finalize(conditions), formatClassName(className)];
       result = baseArray.join(":");

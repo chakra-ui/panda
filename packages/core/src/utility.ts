@@ -6,6 +6,7 @@ import {
   isString,
   mapToJson,
   memo,
+  toHash,
   withoutSpace,
 } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
@@ -105,6 +106,10 @@ export class Utility {
     this.assignProperties()
     this.assignPropertyTypes()
   }
+
+  defaultHashFn = toHash
+
+  toHash = (path: string[], hashFn: (str: string) => string): string => hashFn(path.join(':'))
 
   private normalizeConfig(config: UtilityConfig) {
     return Object.fromEntries(

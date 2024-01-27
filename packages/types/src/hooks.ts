@@ -14,9 +14,17 @@ export interface PandaHooks {
   'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
   /**
    * Called when the TokenDictionary has been created
-   * You can use this hook to add your own tokens to the TokenDictionary or to update the way they are computed
+   * You can use this hook to add your own tokens to the TokenDictionary
+   * You can also override the default `formatTokenName` and `formatCssVar` methods
    */
   'tokens:created': (args: { tokens: TokenDictionary }) => MaybeAsyncReturn
+  /**
+   * Called when the Utility has been created
+   * You can override the default `formatTokenName` and `formatCssVar` methods
+   */
+  'utility:created': (args: {
+    setToHashFn: (fn: (path: string[], toHash: (str: string) => string) => string) => void
+  }) => MaybeAsyncReturn
   /**
    * Called when the Panda context has been created and the API is ready to be used.
    */

@@ -1,4 +1,4 @@
-import { deepSet, esc, getOrCreateSet, isImportant, markImportant, toHash, withoutImportant } from '@pandacss/shared'
+import { deepSet, esc, getOrCreateSet, isImportant, markImportant, withoutImportant } from '@pandacss/shared'
 import type {
   AtomicStyleResult,
   Dict,
@@ -52,7 +52,7 @@ export class StyleDecoder {
 
     if (hash.className) {
       conds.push(className)
-      result = utility.formatClassName(toHash(conds.join(':')))
+      result = utility.formatClassName(utility.toHash(conds, utility.defaultHashFn))
     } else {
       conds.push(utility.formatClassName(className))
       result = conds.join(':')

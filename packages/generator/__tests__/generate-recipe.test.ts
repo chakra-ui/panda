@@ -55,6 +55,7 @@ describe('generate recipes', () => {
            },
            utility: {
              
+             toHash: (path, hashFn) => hashFn(path.join(":")),
              transform,
            }
          })

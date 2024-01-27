@@ -89,6 +89,12 @@ export class Context {
     this.tokens.init()
 
     this.utility = this.createUtility(config)
+    this.hooks['utility:created']?.({
+      setToHashFn: (fn) => {
+        this.utility.toHash = fn
+      },
+    })
+
     this.conditions = this.createConditions(config)
 
     this.patterns = new Patterns({

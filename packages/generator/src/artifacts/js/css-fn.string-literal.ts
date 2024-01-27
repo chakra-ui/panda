@@ -30,6 +30,7 @@ export function generateStringLiteralCssFn(ctx: Context) {
         prefix: ${prefix.className ? JSON.stringify(prefix.className) : undefined},
         transform,
         hasShorthand: false,
+        toHash: ${utility.toHash},
         resolveShorthand(prop) {
           return prop
         },

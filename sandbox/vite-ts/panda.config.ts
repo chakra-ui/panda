@@ -12,6 +12,15 @@ export default defineConfig({
         recipes['someRecipe'] = someRecipe
       }
     },
+    // Change the hash function
+    'utility:created': (args) => {
+      args.setToHashFn((conds, hashFn) => {
+        const stringConds = conds.join(':')
+        const splitConds = stringConds.split('_')
+        const hashConds = splitConds.map(hashFn)
+        return hashConds.join('_')
+      })
+    },
     // Dynamically create a CSS rule
     'context:created': ({ ctx }) => {
       ctx.processor.css({ color: 'lime.300' })

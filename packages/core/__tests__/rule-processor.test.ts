@@ -1,11 +1,12 @@
 import { createGeneratorContext } from '@pandacss/fixture'
-import type { Dict, RecipeDefinition, SlotRecipeDefinition } from '@pandacss/types'
+import type { Config, Dict, RecipeDefinition, SlotRecipeDefinition } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { RuleProcessor } from '../src/rule-processor'
 import { createRuleProcessor } from './fixture'
+import { toHash } from '@pandacss/shared'
 
-const css = (styles: Dict) => {
-  const result = createRuleProcessor().css(styles)
+const css = (styles: Dict, config?: Config) => {
+  const result = createRuleProcessor(config).css(styles)
   return { className: result.getClassNames(), css: result.toCss() }
 }
 
@@ -83,24 +84,22 @@ describe('rule processor', () => {
   })
 
   test('simple with formatTokenName', () => {
-    const css = (styles: any) => {
-      const result = createRuleProcessor({
+    const result = css(
+      {
+        margin: '$2',
+        p: '{spacing.$2}',
+        mx: 'token(spacing.$2)',
+        my: '-$2',
+        color: '$blue-300',
+      },
+      {
         hooks: {
           'tokens:created': (ctx) => {
             ctx.tokens.formatTokenName = (path: string[]) => '$' + path.join('-')
           },
         },
-      }).css(styles)
-      return { className: result.getClassNames(), css: result.toCss() }
-    }
-
-    const result = css({
-      margin: '$2',
-      p: '{spacing.$2}',
-      mx: 'token(spacing.$2)',
-      my: '-$2',
-      color: '$blue-300',
-    })
+      },
+    )
     expect(result.className).toMatchInlineSnapshot(`
       [
         "m_\\$2",
@@ -130,6 +129,96 @@ describe('rule processor', () => {
 
         .text_\\$blue-300 {
           color: var(--colors-blue-300);
+      }
+      }"
+    `)
+  })
+
+  test('simple - hash: true', () => {
+    const result = css(
+      {
+        margin: 2,
+        mx: 'token(spacing.2)',
+        my: '-2',
+        color: 'blue.300',
+      },
+      { hash: true },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "AxiDH",
+        "hHAKfe",
+        "pWVwj",
+        "cXgKQC",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .AxiDH {
+          margin: var(--ebuyxV);
+      }
+
+        .hHAKfe {
+          margin-inline: var(--ebuyxV);
+      }
+
+        .pWVwj {
+          margin-block: calc(var(--ebuyxV) * -1);
+      }
+
+        .cXgKQC {
+          color: var(--bMEoOM);
+      }
+      }"
+    `)
+  })
+
+  test('simple - hash: true + custom toHash', () => {
+    const result = css(
+      {
+        margin: 2,
+        mx: 'token(spacing.2)',
+        my: '-2',
+        color: 'blue.300',
+      },
+      {
+        hash: true,
+        hooks: {
+          'utility:created': (args) => {
+            args.setToHashFn((conds) => {
+              const stringConds = conds.join(':')
+              const splitConds = stringConds.split('_')
+              const hashConds = splitConds.map(toHash)
+              return hashConds.join('_')
+            })
+          },
+        },
+      },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "bnJC_bnIF",
+        "PJOa_hhWZwA",
+        "PJOH_PIXg",
+        "fzDuiy_bNBgpA",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bnJC_bnIF {
+          margin: var(--ebuyxV);
+      }
+
+        .PJOa_hhWZwA {
+          margin-inline: var(--ebuyxV);
+      }
+
+        .PJOH_PIXg {
+          margin-block: calc(var(--ebuyxV) * -1);
+      }
+
+        .fzDuiy_bNBgpA {
+          color: var(--bMEoOM);
       }
       }"
     `)
