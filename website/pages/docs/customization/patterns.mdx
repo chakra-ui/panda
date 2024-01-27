@@ -10,9 +10,11 @@ useful to create your own layout pattern abstractions that can be used in your a
 
 A pattern accepts the following parameters:
 
-- `description` - The description of the pattern
+- `description` - The description of the pattern.
 - `properties` - The list of properties that the pattern accepts.
-- `transform` - The function that accepts the properties and returns a css object
+- `defaultValues` - The default values for the properties. This is useful when you want to provide a default value for
+  a property.
+- `transform` - The function that accepts the properties and returns a css object.
 - `jsx` - The name of the JSX component that will be generated (when `jsxFramework` is set). Defaults to the pascal-case version of
   the pattern name.
 - `jsxElement` - The actual JSX element that will be rendered (when `jsxFramework` is set). Defaults to `div`.
@@ -31,6 +33,10 @@ const config = {
     extend: {
       scrollable: {
         description: 'A container that allows for scrolling',
+        defaultValues: {
+          direction: 'vertical',
+          hideScrollbar: true
+        },
         properties: {
           // The direction of the scroll
           direction: { type: 'enum', value: ['horizontal', 'vertical'] },
