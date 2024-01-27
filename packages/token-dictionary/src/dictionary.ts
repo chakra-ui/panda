@@ -24,6 +24,8 @@ export interface TokenDictionaryOptions {
   tokens?: Tokens
   semanticTokens?: SemanticTokens
   breakpoints?: Record<string, string>
+  containerNames?: string[]
+  containerSizes?: Record<string, string>
   prefix?: string
   hash?: boolean
 }
@@ -39,6 +41,11 @@ function expandBreakpoints(breakpoints?: Record<string, string>) {
     breakpoints: mapObject(breakpoints, (value) => ({ value })),
     sizes: Object.fromEntries(Object.entries(breakpoints).map(([key, value]) => [`breakpoint-${key}`, { value }])),
   }
+}
+
+function expandContainerSizes(containerSizes?: Record<string, string>) {
+  if (!containerSizes) return {}
+  return Object.fromEntries(Object.entries(containerSizes).map(([key, value]) => [`container-${key}`, { value }]))
 }
 
 function filterDefault(path: string[]) {
@@ -59,13 +66,17 @@ export class TokenDictionary {
     const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash } = options
 
     const breakpointTokens = expandBreakpoints(breakpoints)
+    const containerSizesTokens = expandContainerSizes(options.containerSizes)
+    const containerNames = Object.fromEntries((options.containerNames ?? []).map((name) => [name, { value: name }]))
 
     const computedTokens = compact({
       ...tokens,
       breakpoints: breakpointTokens.breakpoints,
+      containerNames,
       sizes: {
         ...tokens.sizes,
         ...breakpointTokens.sizes,
+        ...containerSizesTokens,
       },
     })
 

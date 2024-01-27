@@ -9,10 +9,14 @@ const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-ne
 interface Options {
   conditions?: Dict<string>
   breakpoints?: Record<string, string>
+  containerNames?: string[]
+  containerSizes?: Record<string, string>
 }
 
 const underscoreRegex = /^_/
 const selectorRegex = /&|@/
+
+type Cond = RawCondition & { params: string }
 
 export class Conditions {
   values: Record<string, RawCondition>
@@ -20,15 +24,35 @@ export class Conditions {
   breakpoints: Breakpoints
 
   constructor(private options: Options) {
-    const { breakpoints: breakpointValues = {}, conditions = {} } = this.options
+    const {
+      breakpoints: breakpointValues = {},
+      conditions = {},
+      containerNames = [],
+      containerSizes = {},
+    } = this.options
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
 
     const entries = Object.entries(conditions).map(([key, value]) => [`_${key}`, parseCondition(value)])
 
+    const containers: Record<string, Cond> = {}
+    containerNames.forEach((name) => {
+      Object.entries(containerSizes).forEach(([size, value]) => {
+        containers[`@${name}/${size}`] = {
+          type: 'at-rule',
+          name: 'container',
+          raw: name,
+          value,
+          rawValue: `@container ${name} (min-width: ${value})`,
+          params: `${name} ${value}`,
+        }
+      })
+    })
+
     this.values = {
       ...Object.fromEntries(entries),
       ...breakpoints.conditions,
+      ...containers,
     }
   }
 

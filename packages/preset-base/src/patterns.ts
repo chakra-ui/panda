@@ -419,6 +419,21 @@ const visuallyHidden = definePattern({
   },
 })
 
+const cq = definePattern({
+  properties: {
+    name: { type: 'token', value: 'containerNames' },
+    type: { type: 'property', value: 'containerType' },
+  },
+  transform(props) {
+    const { name, ...rest } = props
+    return {
+      ...rest,
+      containerType: 'inline-size',
+      containerName: name,
+    }
+  },
+})
+
 export const patterns = {
   box,
   flex,
@@ -440,4 +455,5 @@ export const patterns = {
   float,
   bleed,
   visuallyHidden,
+  cq,
 }

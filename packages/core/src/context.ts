@@ -210,6 +210,8 @@ export class Context {
       breakpoints: theme.breakpoints,
       tokens: theme.tokens,
       semanticTokens: theme.semanticTokens,
+      containerNames: theme.containerNames,
+      containerSizes: theme.containerSizes,
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
     })
@@ -229,6 +231,8 @@ export class Context {
   createConditions = (config: UserConfig): Conditions => {
     return new Conditions({
       conditions: config.conditions,
+      containerNames: config.theme?.containerNames,
+      containerSizes: config.theme?.containerSizes,
       breakpoints: config.theme?.breakpoints,
     })
   }
@@ -265,6 +269,39 @@ export class Context {
       this.utility.register(key, config)
     }
   }
+
+  // setupContainers = (theme: Theme) => {
+  //   const containers = theme.containerSizes ?? {}
+  //   const containerNames = theme.containerNames ?? []
+
+  //   for (const [name, value] of Object.entries(containers)) {
+  //     const key = `@${name}`
+  //     const config: PropertyConfig = {
+  //       layer: 'containers',
+  //       className: key,
+  //       values: [value],
+  //       transform: (value) => {
+  //         return transformStyles(this.baseSheetContext, value, key + '.' + value)
+  //       },
+  //     }
+
+  //     this.utility.register(key, config)
+  //   }
+
+  //   for (const name of containerNames) {
+  //     const key = `@${name}`
+  //     const config: PropertyConfig = {
+  //       layer: 'containers',
+  //       className: key,
+  //       values: Object.keys(containers),
+  //       transform: (value) => {
+  //         return transformStyles(this.baseSheetContext, containers[value], key + '.' + value)
+  //       },
+  //     }
+
+  //     this.utility.register(key, config)
+  //   }
+  // }
 
   setupProperties = (): void => {
     this.properties = new Set(['css', ...this.utility.keys(), ...this.conditions.keys()])

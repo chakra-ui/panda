@@ -21,4 +21,5 @@ export * from './divider';
 export * from './float';
 export * from './bleed';
 export * from './visually-hidden';
+export * from './cq';
 export type { HTMLPandaProps, PandaComponent } from '../types/jsx';
