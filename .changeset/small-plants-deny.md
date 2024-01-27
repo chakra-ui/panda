@@ -23,7 +23,7 @@ export interface PandaHooks {
   'tokens:created': (args: { tokens: TokenDictionary }) => MaybeAsyncReturn
   /**
    * Called when the Utility has been created
-   * You can override the default `formatTokenName` and `formatCssVar` methods
+   * You can override the default `toHash` function used when `config.hash` is set to `true`
    */
   'utility:created': (args: {
     setToHashFn: (fn: (path: string[], toHash: (str: string) => string) => string) => void

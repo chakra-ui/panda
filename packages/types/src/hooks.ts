@@ -15,7 +15,7 @@ export interface PandaHooks {
   /**
    * Called when the TokenDictionary has been created
    * You can use this hook to add your own tokens to the TokenDictionary
-   * You can also override the default `formatTokenName` and `formatCssVar` methods
+   * You can override the default `toHash` function used when `config.hash` is set to `true`
    */
   'tokens:created': (args: { tokens: TokenDictionary }) => MaybeAsyncReturn
   /**
