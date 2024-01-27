@@ -157,7 +157,7 @@ interface FileSystemOptions {
   exclude?: string[]
   /**
    * List of files that will trigger a config reload when changed.
-   * We automatically track the config file and (transitive) files imported by the config file as much as possible, but sometimes you might miss some.
+   * We automatically track the config file and (transitive) files imported by the config file as much as possible, but sometimes we might miss some.
    * You can use this option as a workaround for those edge cases.
    */
   configDependencies?: string[]
