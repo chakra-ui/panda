@@ -210,4 +210,5 @@ The object literal syntax is the recommended way of writing styles. But, if you 
 
 - Patterns are not generated
 - Dynamic interpolations are not supported
-- Lack of autocompletion for tokens within the template literal
+- Lack of autocompletion for tokens within the template literal. 
+  Our [Eslint plugin](https://github.com/chakra-ui/eslint-plugin-panda/blob/main/docs/rules/no-invalid-token-paths.md) can help you overcome this by detecting invalid tokens
