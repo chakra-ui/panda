@@ -1,7 +1,7 @@
 import { isObject } from './assert'
 import { compact } from './compact'
 import { filterBaseConditions } from './condition'
-import { isImportant, withoutImportant } from './css-important'
+import { isImportant, withoutImportant } from './important'
 import { toHash } from './hash'
 import { mergeProps } from './merge-props'
 import { memo } from './memo'
