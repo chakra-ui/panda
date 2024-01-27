@@ -1,4 +1,4 @@
-import { calc, cssVar, toPx } from '@pandacss/shared'
+import { calc, toPx } from '@pandacss/shared'
 import type { TokenDictionary, TokenMiddleware } from './dictionary'
 import { Token, type TokenExtensions } from './token'
 import type { ColorPaletteExtensions } from './transform'
@@ -15,7 +15,7 @@ export const addNegativeTokens: TokenMiddleware = {
     tokens.forEach((token) => {
       //
       const originalPath = [...token.path]
-      const originalVar = cssVar(originalPath.join('-'), { prefix, hash })
+      const originalVar = dictionary.formatCssVar(originalPath, { prefix, hash })
 
       if (token.value === '0rem') {
         return

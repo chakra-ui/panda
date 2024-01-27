@@ -9,7 +9,7 @@ import type { Token } from './token'
 /**
  * Regex for matching a tokenized reference.
  */
-const REFERENCE_REGEX = /(\$[^\s,]+\w)|({([^}]*)})/g
+const REFERENCE_REGEX = /({([^}]*)})/g
 const curlyBracketRegex = /[{}]/g
 
 /**

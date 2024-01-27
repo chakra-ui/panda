@@ -1,4 +1,13 @@
-import { compact, isString, mapObject, memo, walkObject } from '@pandacss/shared'
+import {
+  compact,
+  cssVar,
+  isString,
+  mapObject,
+  memo,
+  walkObject,
+  type CssVar,
+  type CssVarOptions,
+} from '@pandacss/shared'
 import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { isCompositeTokenValue } from './is-composite'
@@ -70,10 +79,8 @@ export class TokenDictionary {
     return this.byName.get(path)
   }
 
-  formatTokenName = (path: string[]) => {
-    return path.join('.')
-    // return '$' + path.join('-')
-  }
+  formatTokenName = (path: string[]): string => path.join('.')
+  formatCssVar = (path: string[], options: CssVarOptions): CssVar => cssVar(path.join('-'), options)
 
   setTokens() {
     const { tokens = {}, semanticTokens = {}, breakpoints } = this.options

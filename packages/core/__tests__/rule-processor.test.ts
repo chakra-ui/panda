@@ -82,7 +82,7 @@ describe('rule processor', () => {
     `)
   })
 
-  test.only('simple with formatTokenName', () => {
+  test('simple with formatTokenName', () => {
     const css = (styles: any) => {
       const result = createRuleProcessor({
         hooks: {

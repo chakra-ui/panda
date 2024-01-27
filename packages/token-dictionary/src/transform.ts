@@ -1,4 +1,4 @@
-import { cssVar, isString } from '@pandacss/shared'
+import { isString } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
 import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
@@ -135,10 +135,11 @@ export const transformAssets: TokenTransformer = {
 export const addCssVariables: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/css-var',
-  transform(token, { prefix, hash }) {
+  transform(token, dictionary) {
+    const { prefix, hash } = dictionary
     const { isNegative, originalPath } = token.extensions
     const pathValue = isNegative ? originalPath : token.path
-    const variable = cssVar(pathValue.filter(Boolean).join('-'), { prefix, hash })
+    const variable = dictionary.formatCssVar(pathValue.filter(Boolean), { prefix, hash })
     return {
       var: variable.var,
       varRef: variable.ref,
@@ -153,11 +154,12 @@ export const addCssVariables: TokenTransformer = {
 export const addConditionalCssVariables: TokenTransformer = {
   enforce: 'post',
   name: 'tokens/conditionals',
-  transform(token, { prefix, hash }) {
+  transform(token, dictionary) {
+    const { prefix, hash } = dictionary
     const refs = getReferences(token.value)
     if (!refs.length) return token.value
     refs.forEach((ref) => {
-      const variable = cssVar(ref.split('.').join('-'), { prefix, hash }).ref
+      const variable = dictionary.formatCssVar(ref.split('.'), { prefix, hash }).ref
       token.value = token.value.replace(`{${ref}}`, variable)
     })
     return token.value

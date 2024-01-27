@@ -3,6 +3,12 @@ import { addVirtualPalette } from '../src/middleware'
 import { transforms } from '../src/transform'
 import { TokenDictionary } from '../src/dictionary'
 
+const dasherize = (token: string) =>
+  token
+    .toString()
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
 test('should generate virtual palette', () => {
   const dictionary = new TokenDictionary({
     tokens: {
@@ -745,6 +751,13 @@ test('should generate virtual palette', () => {
   })
 
   dictionary.formatTokenName = (path: string[]) => '$' + path.join('-')
+  dictionary.formatCssVar = (path, _options) => {
+    const variable = dasherize(path.join('-'))
+    return {
+      var: `--${variable}`,
+      ref: `var(--${variable})`,
+    }
+  }
 
   dictionary
     .setTokens()
@@ -910,8 +923,8 @@ test('should generate virtual palette', () => {
           "condition": "base",
           "isVirtual": true,
           "prop": "$colorPalette",
-          "var": "--colors-color-palette",
-          "varRef": "var(--colors-color-palette)",
+          "var": "--colors-colorPalette",
+          "varRef": "var(--colors-colorPalette)",
         },
         "name": "$colors-colorPalette",
         "originalValue": "$colors-colorPalette",
@@ -930,8 +943,8 @@ test('should generate virtual palette', () => {
           "condition": "base",
           "isVirtual": true,
           "prop": "$colorPalette-300",
-          "var": "--colors-color-palette-300",
-          "varRef": "var(--colors-color-palette-300)",
+          "var": "--colors-colorPalette-300",
+          "varRef": "var(--colors-colorPalette-300)",
         },
         "name": "$colors-colorPalette-300",
         "originalValue": "$colors-colorPalette-300",
@@ -950,8 +963,8 @@ test('should generate virtual palette', () => {
           "condition": "base",
           "isVirtual": true,
           "prop": "$colorPalette-500",
-          "var": "--colors-color-palette-500",
-          "varRef": "var(--colors-color-palette-500)",
+          "var": "--colors-colorPalette-500",
+          "varRef": "var(--colors-colorPalette-500)",
         },
         "name": "$colors-colorPalette-500",
         "originalValue": "$colors-colorPalette-500",
@@ -970,8 +983,8 @@ test('should generate virtual palette', () => {
           "condition": "base",
           "isVirtual": true,
           "prop": "$colorPalette-700",
-          "var": "--colors-color-palette-700",
-          "varRef": "var(--colors-color-palette-700)",
+          "var": "--colors-colorPalette-700",
+          "varRef": "var(--colors-colorPalette-700)",
         },
         "name": "$colors-colorPalette-700",
         "originalValue": "$colors-colorPalette-700",
@@ -989,15 +1002,15 @@ test('should generate virtual palette', () => {
   expect(dictionary.view.colorPalettes).toMatchInlineSnapshot(`
     Map {
       "$primary" => Map {
-        "--colors-color-palette" => "var(--colors-primary)",
+        "--colors-colorPalette" => "var(--colors-primary)",
       },
       "$red" => Map {
-        "--colors-color-palette-300" => "var(--colors-red-300)",
-        "--colors-color-palette-500" => "var(--colors-red-500)",
+        "--colors-colorPalette-300" => "var(--colors-red-300)",
+        "--colors-colorPalette-500" => "var(--colors-red-500)",
       },
       "$blue" => Map {
-        "--colors-color-palette-500" => "var(--colors-blue-500)",
-        "--colors-color-palette-700" => "var(--colors-blue-700)",
+        "--colors-colorPalette-500" => "var(--colors-blue-500)",
+        "--colors-colorPalette-700" => "var(--colors-blue-700)",
       },
     }
   `)
@@ -1009,10 +1022,10 @@ test('should generate virtual palette', () => {
       "colors.$red-500" => "var(--colors-red-500)",
       "colors.$blue-500" => "var(--colors-blue-500)",
       "colors.$blue-700" => "var(--colors-blue-700)",
-      "colors.$colorPalette" => "var(--colors-color-palette)",
-      "colors.$colorPalette-300" => "var(--colors-color-palette-300)",
-      "colors.$colorPalette-500" => "var(--colors-color-palette-500)",
-      "colors.$colorPalette-700" => "var(--colors-color-palette-700)",
+      "colors.$colorPalette" => "var(--colors-colorPalette)",
+      "colors.$colorPalette-300" => "var(--colors-colorPalette-300)",
+      "colors.$colorPalette-500" => "var(--colors-colorPalette-500)",
+      "colors.$colorPalette-700" => "var(--colors-colorPalette-700)",
     }
   `)
 
