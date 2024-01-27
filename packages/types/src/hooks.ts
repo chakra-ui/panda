@@ -1,4 +1,4 @@
-import type { ArtifactId, DiffConfigResult } from './artifact'
+import type { Artifact, ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
 import type { ParserResultInterface } from './parser'
@@ -44,6 +44,11 @@ export interface PandaHooks {
    * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
    */
   'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+  /**
+   * Called right before writing the codegen files to disk.
+   * You can use this hook to tweak the codegen files before they are written to disk.
+   */
+  'codegen:prepare': (args: { artifacts: Artifact[]; changed: ArtifactId[] | undefined }) => MaybeAsyncReturn
   /**
    * Called after the codegen is completed
    */

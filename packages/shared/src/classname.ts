@@ -18,7 +18,7 @@ export interface CreateCssContext {
     hasShorthand: boolean
     resolveShorthand: (prop: string) => string
     transform: (prop: string, value: any) => { className: string }
-    toHash: (path: string[], toHash: (str: string) => void) => string
+    toHash: (path: string[], toHash: (str: string) => string) => string
   }
   /**
    * Partial properties from the Condition class

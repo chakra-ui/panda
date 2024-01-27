@@ -36,6 +36,9 @@ const css_obj = createCss({
     transform(prop, value) {
       return { className: `${prop}_${withoutSpace(value)}` }
     },
+    toHash(path, toHash) {
+      return toHash(path.join(':'))
+    },
   },
 })
 
