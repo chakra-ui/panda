@@ -1,6 +1,8 @@
 import { logger } from '@pandacss/logger'
 import { traverse } from '@pandacss/shared'
-import type { Config, UserConfig } from '@pandacss/types'
+import type { Config, Tokens, UserConfig } from '@pandacss/types'
+
+type AddError = (scope: string, message: string) => void
 
 /**
  * Validate the config
@@ -12,113 +14,83 @@ import type { Config, UserConfig } from '@pandacss/types'
  * - Check for conditions selectors (must contain '&')
  * - Check for breakpoints units (must be the same)
  */
-export const validateConfig = (config: UserConfig) => {
-  const tokenNames = new Set<string>()
-  const semanticTokenNames = new Set<string>()
+export const validateConfig = (config: Partial<UserConfig>) => {
+  if (config.validation === 'none') return
 
-  const validateTokenName = (name: string) => {
-    if (semanticTokenNames.has(name)) {
-      throw new Error(`This token name is already used in config.theme.semanticToken: ${name}`)
+  const errors = new Set<string>()
+  const addError = (scope: string, message: string) => {
+    if (config.validation === 'warn') {
+      errors.add(`[${scope}]: ` + message)
+    } else {
+      throw new Error(`[${scope}]: ` + message)
     }
-
-    tokenNames.add(name)
-  }
-
-  const validateSemanticTokenName = (name: string) => {
-    if (semanticTokenNames.has(name)) {
-      throw new Error(`This token name is already used in config.theme.token: ${name}`)
-    }
-
-    semanticTokenNames.add(name)
-  }
-
-  const recipeNames = new Set<string>()
-  const slotRecipeNames = new Set<string>()
-  const patternRecipeNames = new Set<string>()
-
-  const validateRecipeName = (name: string) => {
-    if (slotRecipeNames.has(name)) {
-      throw new Error(`This recipe name is already used in config.theme.slotRecipes: ${name}`)
-    }
-
-    if (patternRecipeNames.has(name)) {
-      throw new Error(`This recipe name is already used in config.patterns: ${name}`)
-    }
-
-    recipeNames.add(name)
-  }
-
-  const validateSlotRecipeName = (name: string) => {
-    if (recipeNames.has(name)) {
-      throw new Error(`This recipe name is already used in config.theme.recipes: ${name}`)
-    }
-
-    if (patternRecipeNames.has(name)) {
-      throw new Error(`This recipe name is already used in config.patterns: ${name}`)
-    }
-
-    slotRecipeNames.add(name)
-  }
-
-  const validatePatternRecipeName = (name: string) => {
-    if (recipeNames.has(name)) {
-      throw new Error(`This recipe name is already used in config.theme.recipes: ${name}`)
-    }
-
-    if (slotRecipeNames.has(name)) {
-      throw new Error(`This recipe name is already used in config.theme.slotRecipes: ${name}`)
-    }
-
-    patternRecipeNames.add(name)
   }
 
   if (config.theme?.breakpoints) {
-    validateBreakpoints(Object.values(config.theme.breakpoints))
+    validateBreakpoints(Object.values(config.theme.breakpoints), addError)
   }
 
   if (config.conditions) {
     Object.values(config.conditions).forEach((condition) => {
-      validateCondition(condition)
+      validateCondition(condition, addError)
     })
   }
 
-  if (config.theme?.recipes) {
-    Object.keys(config.theme.recipes).forEach((recipeName) => {
-      validateRecipeName(recipeName)
-    })
+  const artifacts: ArtifactNames = { recipes: new Set(), slotRecipes: new Set(), patterns: new Set() }
+  const tokens: TokensData = {
+    tokenNames: new Set(),
+    semanticTokenNames: new Set(),
+    valueAtPath: new Map(),
+    refsByPath: new Map(),
   }
 
-  if (config.theme?.slotRecipes) {
-    Object.keys(config.theme.slotRecipes).forEach((recipeName) => {
-      validateSlotRecipeName(recipeName)
-    })
+  if (config.theme) {
+    validateTokens({ config, tokens, addError })
+    validateRecipes({ config, tokens, artifacts, addError })
   }
 
   if (config.patterns) {
-    Object.keys(config.patterns).forEach((patternName) => {
-      validatePatternRecipeName(patternName)
-    })
+    validatePatterns(config.patterns, artifacts)
   }
 
-  const tokens = config.theme?.tokens
-  const valueAtPath = new Map<string, any>()
-  const refsByPath = new Map<string, Set<string>>()
+  validateArtifactNames(artifacts, addError)
 
-  if (tokens) {
-    const paths = new Set<string>()
-    traverse(tokens, (node) => {
+  if (errors.size) {
+    logger.warn(
+      'config',
+      `⚠️ Invalid config:\n${Array.from(errors)
+        .map((err) => '- ' + err)
+        .join('\n')}\n`,
+    )
+    return errors
+  }
+}
+
+interface TokensData {
+  tokenNames: Set<string>
+  semanticTokenNames: Set<string>
+  valueAtPath: Map<string, any>
+  refsByPath: Map<string, Set<string>>
+}
+
+const validateTokens = ({ config, tokens, addError }: { config: Config; tokens: TokensData; addError: AddError }) => {
+  const theme = config.theme
+  if (!theme) return
+
+  const { tokenNames, semanticTokenNames, valueAtPath, refsByPath } = tokens
+
+  if (theme.tokens) {
+    traverse(theme.tokens, (node) => {
       if (node.depth >= 1) {
-        validateTokenName(node.path)
-
-        paths.add(node.path)
+        tokenNames.add(node.path)
         valueAtPath.set(node.path, node.value)
       }
     })
 
-    const finalPaths = getFinalPaths(paths)
+    const finalPaths = getFinalPaths(tokenNames)
     finalPaths.forEach((path) => {
       if (!path.includes('value')) {
-        throw new Error(`Token paths must end with 'value': ${path}`)
+        addError('tokens', `Token paths must end with 'value': \`theme.tokens.${path}\``)
       }
 
       const atPath = valueAtPath.get(path)
@@ -128,14 +100,10 @@ export const validateConfig = (config: UserConfig) => {
     })
   }
 
-  if (config.theme?.semanticTokens) {
-    const paths = new Set<string>()
-
-    traverse(config.theme?.semanticTokens, (node) => {
+  if (theme.semanticTokens) {
+    traverse(theme.semanticTokens, (node) => {
       if (node.depth >= 1) {
-        validateSemanticTokenName(node.path)
-
-        paths.add(node.path)
+        semanticTokenNames.add(node.path)
         valueAtPath.set(node.path, node.value)
 
         // Keep track of all token references
@@ -152,49 +120,121 @@ export const validateConfig = (config: UserConfig) => {
       }
     })
 
-    const finalPaths = getFinalPaths(paths)
+    const finalPaths = getFinalPaths(semanticTokenNames)
     finalPaths.forEach((path) => {
       if (!path.includes('value')) {
-        throw new Error(`Semantic token paths must contain with 'value': ${path}`)
+        addError('tokens', `Semantic token paths must contain 'value': \`theme.semanticTokens.${path}\``)
       }
     })
 
-    refsByPath.forEach((refs, path) => {
-      if (refs.has(path)) {
-        throw new Error(`Self token reference: ${path}`)
+    validateTokenReferences(valueAtPath, refsByPath, addError)
+  }
+
+  semanticTokenNames.forEach((semanticTokenName) => {
+    if (tokenNames.has(semanticTokenName)) {
+      addError('tokens', `This token name is already used in \`config.theme.token\`: \`${semanticTokenName}\``)
+    }
+  })
+}
+
+const validateTokenReferences = (
+  valueAtPath: Map<string, any>,
+  refsByPath: Map<string, Set<string>>,
+  addError: AddError,
+) => {
+  refsByPath.forEach((refs, path) => {
+    if (refs.has(path)) {
+      addError('tokens', `Self token reference: \`${path}\``)
+    }
+
+    const stack = [path]
+    while (stack.length > 0) {
+      const current = stack.pop()!
+      const value = valueAtPath.get(current)
+
+      if (!value) {
+        addError('tokens', `Missing token: \`${current}\` used in \`config.semanticTokens.${path}\``)
       }
 
-      const stack = [path]
-      while (stack.length > 0) {
-        const current = stack.pop()!
-        const value = valueAtPath.get(current)
+      const deps = refsByPath.get(current)
+      if (!deps) continue
 
-        if (!value) {
-          throw new Error(`Missing token: ${current}`)
+      for (const transitiveDep of deps) {
+        if (path === transitiveDep) {
+          addError('tokens', `Circular token reference: \`${transitiveDep}\` -> \`${current}\` -> ... -> \`${path}\``)
+          break
         }
 
-        const deps = refsByPath.get(current)
-        if (!deps) continue
-
-        deps.forEach((transitiveDep) => {
-          if (path === transitiveDep) {
-            throw new Error(`Circular token reference: ${transitiveDep} -> ${current} -> ... -> ${path}`)
-          }
-
-          stack.push(transitiveDep)
-        })
+        stack.push(transitiveDep)
       }
+    }
+  })
+}
+
+const validateRecipes = ({
+  config,
+  artifacts,
+}: {
+  config: Config
+  tokens: TokensData
+  artifacts: ArtifactNames
+  addError: AddError
+}) => {
+  const theme = config.theme
+  if (!theme) return
+
+  if (theme.recipes) {
+    Object.keys(theme.recipes).forEach((recipeName) => {
+      artifacts.recipes.add(recipeName)
     })
   }
+
+  if (theme.slotRecipes) {
+    Object.keys(theme.slotRecipes).forEach((recipeName) => {
+      artifacts.slotRecipes.add(recipeName)
+    })
+  }
+
+  return artifacts
 }
 
-const validateCondition = (condition: string) => {
+const validatePatterns = (patterns: Tokens, names: ArtifactNames) => {
+  Object.keys(patterns).forEach((patternName) => {
+    names.patterns.add(patternName)
+  })
+}
+
+interface ArtifactNames {
+  recipes: Set<string>
+  slotRecipes: Set<string>
+  patterns: Set<string>
+}
+
+const validateArtifactNames = (names: ArtifactNames, addError: AddError) => {
+  names.recipes.forEach((recipeName) => {
+    if (names.slotRecipes.has(recipeName)) {
+      addError('recipes', `This recipe name is already used in \`config.theme.slotRecipes\`: ${recipeName}`)
+    }
+
+    if (names.patterns.has(recipeName)) {
+      addError('recipes', `This recipe name is already used in \`config.patterns\`: \`${recipeName}\``)
+    }
+  })
+
+  names.slotRecipes.forEach((recipeName) => {
+    if (names.patterns.has(recipeName)) {
+      addError('recipes', `This recipe name is already used in \`config.patterns\`: ${recipeName}`)
+    }
+  })
+}
+
+const validateCondition = (condition: string, addError: AddError) => {
   if (!condition.startsWith('@') && !condition.includes('&')) {
-    throw new Error(`Selectors should contain the \`&\` character: ${condition}`)
+    addError('conditions', `Selectors should contain the \`&\` character: \`${condition}\``)
   }
 }
 
-const validateBreakpoints = (breakpoints: string[]) => {
+const validateBreakpoints = (breakpoints: string[], addError: AddError) => {
   const units = new Set<string>()
   breakpoints.forEach((bp) => {
     const unit = bp.replace(/[0-9]/g, '')
@@ -202,7 +242,7 @@ const validateBreakpoints = (breakpoints: string[]) => {
   })
 
   if (units.size > 1) {
-    throw new Error(`All breakpoints must use the same unit: ${breakpoints.join(', ')}`)
+    addError('breakpoints', `All breakpoints must use the same unit: \`${breakpoints.join(', ')}\``)
   }
 }
 
@@ -224,6 +264,7 @@ const getFinalPaths = (paths: Set<string>) => {
 export const checkConfig = (config: Config) => {
   if (config.presets?.length === 0) return
   if (config.eject) return
+  if (config.validation === 'none') return
 
   const warnings = new Set<string>()
 
@@ -246,5 +287,7 @@ export const checkConfig = (config: Config) => {
         ' / ',
       )}. Is this intentional? \n> See: https://panda-css.com/docs/concepts/extend`,
     )
+
+    return warnings
   }
 }

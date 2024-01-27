@@ -41,6 +41,7 @@ export async function bundleConfig(options: ConfigFileOptions): Promise<BundleCo
   }
 
   result.config.outdir ??= 'styled-system'
+  result.config.validation ??= 'error'
 
   return {
     ...result,
