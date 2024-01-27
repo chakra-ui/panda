@@ -42,6 +42,21 @@ export class Stylesheet {
     return serializeStyles(this.context, styles)
   }
 
+  processResetCss = (styles: Dict) => {
+    if (this.context.hooks['cssgen:prepare:reset']) {
+      styles = this.context.hooks['cssgen:prepare:reset']({ styles }) ?? styles
+    }
+
+    const result = this.serialize(styles)
+    let css = stringify(result)
+
+    if (this.context.hooks['cssgen:done']) {
+      css = this.context.hooks['cssgen:done']({ artifact: 'reset', content: css }) ?? css
+    }
+
+    this.context.layers.reset.append(css)
+  }
+
   processGlobalCss = (styles: Dict) => {
     const result = this.serialize(styles)
     let css = stringify(result)

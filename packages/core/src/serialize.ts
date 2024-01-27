@@ -31,11 +31,11 @@ export function serializeStyles(context: SerializeContext, groupedObject: Dict) 
     result[scope] ||= {}
 
     const styleObject = walkObject(styles, (value) => value, {
-      getKey: (prop) => {
+      getKey: (prop, value) => {
         // Rewrite html selectors to include the parent selector so that it can be parsed later on
         // ASSUMPTION: an object that has a key that is not a valid property/condition is a html selector
         // ex: 'body, :root' => '& body, & :root'
-        if (!context.conditions.isCondition(prop) && !context.isValidProperty(prop)) {
+        if (typeof value == 'object' && !context.conditions.isCondition(prop) && !context.isValidProperty(prop)) {
           const selectors = parseSelectors(prop)
           return selectors.map((s) => '& ' + s).join(', ')
         }

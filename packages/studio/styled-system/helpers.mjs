@@ -87,7 +87,7 @@ function walkObject(target, predicate, options = {}) {
     if (isObject(value) || Array.isArray(value)) {
       const result = {};
       for (const [prop, child] of Object.entries(value)) {
-        const key = getKey?.(prop) ?? prop;
+        const key = getKey?.(prop, child) ?? prop;
         const childPath = [...path, key];
         if (stop?.(value, childPath)) {
           return predicate(value, path);
