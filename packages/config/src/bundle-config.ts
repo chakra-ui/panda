@@ -4,21 +4,32 @@ import type { Config } from '@pandacss/types'
 import { bundleNRequire } from 'bundle-n-require'
 import { findConfig } from './find-config'
 import type { ConfigFileOptions } from './types'
+import { resolve } from 'node:path'
 
 export interface BundleConfigResult<T = Config> {
   config: T
+  /**
+   * List of all the file dependencies (transitive imports) of the config
+   */
   dependencies: string[]
+  /**
+   * Explicitly declared config dependencies (e.g. configDependencies: ['path/to/other/config']) that should trigger a rebuild
+   */
+  configDependencies: string[]
   path: string
 }
 
-export async function bundle<T = Config>(filepath: string, cwd: string) {
-  const { mod: config, dependencies } = await bundleNRequire(filepath, {
+export async function bundle<T extends Config = Config>(filepath: string, cwd: string) {
+  const { mod, dependencies } = await bundleNRequire(filepath, {
     cwd,
     interopDefault: true,
   })
+  const config = (mod?.default ?? mod) as T
+  const deps = (config.configDependencies ?? []).map((file) => resolve(cwd, file))
   return {
-    config: (config?.default ?? config) as T,
-    dependencies,
+    config,
+    dependencies: dependencies.concat(deps),
+    configDependencies: deps,
   }
 }
 

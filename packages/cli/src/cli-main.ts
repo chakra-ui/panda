@@ -124,10 +124,16 @@ export async function main() {
 
       if (watch) {
         ctx.watchConfig(
-          async () => {
+          async (file) => {
             const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
+
+            if (!affecteds.hasConfigChanged && ctx.diff.shouldSkipRebuild(affecteds, ctx.runtime.path.abs(cwd, file))) {
+              return
+            }
+
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await codegen(ctx, Array.from(affecteds.artifacts))
             logger.info('ctx:updated', 'config rebuilt ✅')
           },
@@ -200,10 +206,16 @@ export async function main() {
       if (watch) {
         //
         ctx.watchConfig(
-          async () => {
-            await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+          async (file) => {
+            const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
+
+            if (!affecteds.hasConfigChanged && ctx.diff.shouldSkipRebuild(affecteds, ctx.runtime.path.abs(cwd, file))) {
+              return
+            }
+
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await cssgen(ctx, options)
             logger.info('ctx:updated', 'config rebuilt ✅')
           },
@@ -419,10 +431,16 @@ export async function main() {
 
       if (watch) {
         ctx.watchConfig(
-          async () => {
-            await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+          async (file) => {
+            const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
+
+            if (!affecteds.hasConfigChanged && ctx.diff.shouldSkipRebuild(affecteds, ctx.runtime.path.abs(cwd, file))) {
+              return
+            }
+
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await buildInfo(ctx, outfile)
             logger.info('ctx:updated', 'config rebuilt ✅')
           },

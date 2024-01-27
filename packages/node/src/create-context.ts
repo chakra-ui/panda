@@ -99,7 +99,7 @@ export class PandaContext extends Generator {
     })
   }
 
-  watchConfig = (cb: () => void | Promise<void>, opts?: Omit<WatchOptions, 'include'>) => {
+  watchConfig = (cb: (file: string) => void | Promise<void>, opts?: Omit<WatchOptions, 'include'>) => {
     const { cwd, poll, exclude } = opts ?? {}
     logger.info('ctx:watch', this.messages.configWatch())
 
@@ -112,9 +112,9 @@ export class PandaContext extends Generator {
 
     watcher.on(
       'change',
-      debounce(async () => {
+      debounce(async (file) => {
         logger.info('ctx:change', 'config changed, rebuilding...')
-        await cb()
+        await cb(file)
       }),
     )
   }

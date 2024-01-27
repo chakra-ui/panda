@@ -11,6 +11,10 @@ import { PandaContext } from './create-context'
 import { parseDependency } from './parse-dependency'
 
 const fileModifiedMap = new Map<string, number>()
+interface FileChanges {
+  changes: Map<string, FileMeta>
+  hasFilesChanged: boolean
+}
 
 export class Builder {
   /**
@@ -19,7 +23,8 @@ export class Builder {
   context: PandaContext | undefined
 
   private hasEmitted = false
-  private filesMeta: { changes: Map<string, FileMeta>; hasFilesChanged: boolean } | undefined
+  private filesMeta: FileChanges | undefined
+  private explicitDepsMeta: FileChanges | undefined
   private affecteds: DiffConfigResult | undefined
   private configDependencies: Set<string> = new Set()
 
@@ -67,6 +72,17 @@ export class Builder {
 
     logger.debug('builder', this.affecteds)
 
+    // explicit config dependencies change
+    this.explicitDepsMeta = this.checkFilesChanged(Array.from(ctx.conf.configDependencies ?? []))
+    if (this.explicitDepsMeta.hasFilesChanged) {
+      this.explicitDepsMeta.changes.forEach((meta, file) => {
+        fileModifiedMap.set(file, meta.mtime)
+      })
+
+      logger.debug('builder', '⚙️ Explicit config dependencies changed')
+      this.affecteds.hasConfigChanged = true
+    }
+
     // config change
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
@@ -86,7 +102,11 @@ export class Builder {
     // ensure emit is only called when the config is changed
     if (this.hasEmitted && this.affecteds?.hasConfigChanged) {
       logger.debug('builder', 'Emit artifacts after config change')
-      await codegen(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
+
+      // Passing undefined will emit all artifacts again
+      // this can happen when an explicit config dependency changes (since we can't know which artifact is affected in that case)
+      const ids = this.affecteds.artifacts.size ? Array.from(this.affecteds.artifacts) : undefined
+      await codegen(this.getContextOrThrow(), ids)
     }
 
     this.hasEmitted = true
@@ -97,6 +117,8 @@ export class Builder {
 
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
     this.context = ctx
+
+    ctx.conf.dependencies?.forEach((file) => this.configDependencies.add(resolve(cwd || ctx.conf.config.cwd, file)))
 
     return ctx
   }

@@ -1,6 +1,7 @@
 import { diffConfigs, loadConfig } from '@pandacss/config'
 import { Generator } from '@pandacss/generator'
-import type { Config, LoadConfigResult } from '@pandacss/types'
+import { logger } from '@pandacss/logger'
+import type { Config, DiffConfigResult, LoadConfigResult } from '@pandacss/types'
 
 export class DiffEngine {
   private prevConfig: Config | undefined
@@ -20,6 +21,14 @@ export class DiffEngine {
     Object.assign(conf, { tsconfig, tsconfigFile, tsOptions })
 
     return this.refresh(conf, fn)
+  }
+
+  shouldSkipRebuild(affecteds: DiffConfigResult, filePath: string) {
+    // Explicit config dependencies should always trigger a rebuild
+    if (!affecteds.hasConfigChanged && !this.ctx.conf.configDependencies?.includes(filePath)) {
+      logger.debug('diff', 'Config didnt change, skipping rebuild')
+      return true
+    }
   }
 
   /**
