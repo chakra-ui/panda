@@ -1549,6 +1549,158 @@ describe('preset patterns', () => {
     `)
   })
 
+  test('cq', () => {
+    const code = `
+      import { cq } from "styled-system/patterns"
+      import { css } from "styled-system/css"
+
+      function Nav() {
+        return (
+          <nav className={cq({ name: 'sidebar' })}>
+            <div
+              className={css({
+                fontSize: { base: 'lg', '@sidebar/sm': 'md' },
+              })}
+            />
+          </nav>
+        )
+      }
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        containerNames: ['sidebar', 'content'],
+        containerSizes: {
+          xs: '40em',
+          sm: '60em',
+          md: '80em',
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "name": "sidebar",
+            },
+          ],
+          "name": "cq",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "fontSize": {
+                "@sidebar/sm": "md",
+                "base": "lg",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .container-type_inline-size {
+          container-type: inline-size;
+      }
+
+        .container-name_sidebar {
+          container-name: sidebar;
+      }
+
+        .fs_lg {
+          font-size: var(--font-sizes-lg);
+      }
+
+        @container sidebar (min-width: 60em) {
+          .\\@sidebar\\/sm\\:fs_md {
+            font-size: var(--font-sizes-md);
+      }
+      }
+      }"
+    `)
+  })
+
+  test('jsx cq', () => {
+    const code = `
+      import { Cq } from "styled-system/jsx"
+      import { css } from "styled-system/css"
+
+      function Nav() {
+        return (
+          <Cq name="sidebar">
+            <div
+              className={css({
+                fontSize: { base: 'lg', '@sidebar/sm': 'md' },
+              })}
+            />
+          </Cq>
+        )
+      }
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        containerNames: ['sidebar', 'content'],
+        containerSizes: {
+          xs: '40em',
+          sm: '60em',
+          md: '80em',
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "name": "sidebar",
+            },
+          ],
+          "name": "Cq",
+          "type": "jsx-pattern",
+        },
+        {
+          "data": [
+            {
+              "fontSize": {
+                "@sidebar/sm": "md",
+                "base": "lg",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .container-type_inline-size {
+          container-type: inline-size;
+      }
+
+        .container-name_sidebar {
+          container-name: sidebar;
+      }
+
+        .fs_lg {
+          font-size: var(--font-sizes-lg);
+      }
+
+        @container sidebar (min-width: 60em) {
+          .\\@sidebar\\/sm\\:fs_md {
+            font-size: var(--font-sizes-md);
+      }
+      }
+      }"
+    `)
+  })
+
   test('responsive array syntax', () => {
     const code = `
       import { grid, gridItem } from "styled-system/patterns"

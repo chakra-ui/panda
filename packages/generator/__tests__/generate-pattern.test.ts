@@ -958,6 +958,48 @@ test('should generate pattern', () => {
     visuallyHidden.raw = getVisuallyHiddenStyle",
         "name": "visually-hidden",
       },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
+
+    export interface CqProperties {
+       name?: ConditionalValue<Tokens["containerNames"]>
+    	type?: PropertyValue<'containerType'>
+    }
+
+
+    interface CqStyles extends CqProperties, DistributiveOmit<SystemStyleObject, keyof CqProperties > {}
+
+    interface CqPatternFn {
+      (styles?: CqStyles): string
+      raw: (styles?: CqStyles) => SystemStyleObject
+    }
+
+
+    export declare const cq: CqPatternFn;
+    ",
+        "js": "import { mapObject } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const cqConfig = {
+    transform(props) {
+      const { name, ...rest } = props;
+      return {
+        ...rest,
+        containerType: "inline-size",
+        containerName: name
+      };
+    }}
+
+    export const getCqStyle = (styles = {}) => cqConfig.transform(styles, { map: mapObject })
+
+    export const cq = (styles) => css(getCqStyle(styles))
+    cq.raw = getCqStyle",
+        "name": "cq",
+      },
     ]
   `)
 })
