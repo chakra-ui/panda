@@ -497,6 +497,7 @@ describe('generator', () => {
     test('should not extract nested tokens as `color-palette` css variables', () => {
       const css = tokenCss({
         dependencies: [],
+        configDependencies: [],
         config: {
           cwd: '',
           include: [],
@@ -574,6 +575,7 @@ describe('generator', () => {
     test('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
       const css = tokenCss({
         dependencies: [],
+        configDependencies: [],
         config: {
           cwd: '',
           include: [],
@@ -617,6 +619,7 @@ describe('generator', () => {
   test('should reuse css variable in semantic token alias', () => {
     const css = tokenCss({
       dependencies: [],
+      configDependencies: [],
       config: {
         cwd: '',
         include: [],

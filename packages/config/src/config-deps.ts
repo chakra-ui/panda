@@ -45,7 +45,7 @@ const common = tokens.concat(jsx, format)
 const artifactConfigDeps: Record<ArtifactId, ConfigPath[]> = {
   helpers: ['syntax', 'jsxFramework'],
   keyframes: ['theme.keyframes', 'layers'],
-  'design-tokens': ['layers', '!utilities.*.className'].concat(tokens, format),
+  'design-tokens': ['layers', '!utilities.*.className', 'separator'].concat(tokens),
   types: ['!utilities.*.className'].concat(common),
   'css-fn': common,
   cva: ['syntax'],
