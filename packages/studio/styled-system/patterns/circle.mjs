@@ -1,4 +1,4 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const circleConfig = {
@@ -16,7 +16,10 @@ transform(props) {
   };
 }}
 
-export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
+export const getCircleStyle = (styles = {}) => {
+  const _styles = getPatternStyles(circleConfig, styles)
+  return circleConfig.transform(_styles, patternFns)
+}
 
 export const circle = (styles) => css(getCircleStyle(styles))
 circle.raw = getCircleStyle
