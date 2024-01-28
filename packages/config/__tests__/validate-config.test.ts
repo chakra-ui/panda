@@ -1,6 +1,6 @@
 import type { UserConfig } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { validateConfig } from './validate-config'
+import { validateConfig } from '../src/validate-config'
 
 describe('validateConfig', () => {
   test('should not throw when no errors', () => {
