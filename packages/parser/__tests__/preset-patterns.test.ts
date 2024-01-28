@@ -1625,20 +1625,20 @@ describe('preset patterns', () => {
     `)
   })
 
-  test('jsx cq', () => {
+  test('jsx ContainerQuery', () => {
     const code = `
-      import { Cq } from "styled-system/jsx"
+      import { ContainerQuery } from "styled-system/jsx"
       import { css } from "styled-system/css"
 
       function Nav() {
         return (
-          <Cq name="sidebar">
+          <ContainerQuery name="sidebar">
             <div
               className={css({
                 fontSize: { base: 'lg', '@sidebar/sm': 'md' },
               })}
             />
-          </Cq>
+          </ContainerQuery>
         )
       }
      `

@@ -48,6 +48,11 @@ function expandContainerSizes(containerSizes?: Record<string, string>) {
   return Object.fromEntries(Object.entries(containerSizes).map(([key, value]) => [`container-${key}`, { value }]))
 }
 
+function expandContainerNames(containerNames?: string[]) {
+  if (!containerNames) return {}
+  return Object.fromEntries(containerNames.map((name) => [name, { value: name }]))
+}
+
 function filterDefault(path: string[]) {
   if (path[0] === 'DEFAULT') return path
   return path.filter((item) => item !== 'DEFAULT')
@@ -63,11 +68,19 @@ export class TokenDictionary {
   }
 
   constructor(options: TokenDictionaryOptions) {
-    const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash } = options
+    const {
+      tokens = {},
+      semanticTokens = {},
+      breakpoints,
+      containerSizes,
+      containerNames: _containerNames,
+      prefix,
+      hash,
+    } = options
 
     const breakpointTokens = expandBreakpoints(breakpoints)
-    const containerSizesTokens = expandContainerSizes(options.containerSizes)
-    const containerNames = Object.fromEntries((options.containerNames ?? []).map((name) => [name, { value: name }]))
+    const containerSizesTokens = expandContainerSizes(containerSizes)
+    const containerNames = expandContainerNames(_containerNames)
 
     const computedTokens = compact({
       ...tokens,

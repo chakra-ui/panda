@@ -24,18 +24,28 @@ export class Conditions {
   breakpoints: Breakpoints
 
   constructor(private options: Options) {
-    const {
-      breakpoints: breakpointValues = {},
-      conditions = {},
-      containerNames = [],
-      containerSizes = {},
-    } = this.options
+    const { breakpoints: breakpointValues = {}, conditions = {} } = options
+
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
 
     const entries = Object.entries(conditions).map(([key, value]) => [`_${key}`, parseCondition(value)])
 
+    const containers = this.setupContainers()
+
+    this.values = {
+      ...Object.fromEntries(entries),
+      ...breakpoints.conditions,
+      ...containers,
+    }
+  }
+
+  private setupContainers = () => {
+    const { containerNames = [], containerSizes = {} } = this.options
+
     const containers: Record<string, Cond> = {}
+    containerNames.unshift('') // add empty container name for @/sm, @/md, etc.
+
     containerNames.forEach((name) => {
       Object.entries(containerSizes).forEach(([size, value]) => {
         containers[`@${name}/${size}`] = {
@@ -49,11 +59,7 @@ export class Conditions {
       })
     })
 
-    this.values = {
-      ...Object.fromEntries(entries),
-      ...breakpoints.conditions,
-      ...containers,
-    }
+    return containers
   }
 
   finalize = (paths: string[]) => {
