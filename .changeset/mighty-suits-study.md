@@ -26,7 +26,7 @@ export default defineConfig({
 })
 ```
 
-The default container sizes in the Panda preset are shown below:
+The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
 ```ts
 export const containerSizes = {
