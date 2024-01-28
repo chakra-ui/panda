@@ -1,5 +1,5 @@
 import { css } from '../styled-system/css'
-import { bleed, stack } from '../styled-system/patterns'
+import { bleed, cq, stack } from '../styled-system/patterns'
 
 export const App = () => {
   return (
@@ -13,6 +13,10 @@ export const App = () => {
         <div className={stack({ debug: true, mt: '3', gap: '4' })}>
           <p>Welcome home</p>
           <p>Welcome home</p>
+        </div>
+
+        <div className={cq()}>
+          <a className={css({ bg: { '@/sm': 'red.300' } })}>Click me</a>
         </div>
       </div>
     </div>
