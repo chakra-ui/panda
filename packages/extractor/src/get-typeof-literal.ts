@@ -1,3 +1,4 @@
+import { PandaError } from '@pandacss/shared'
 import type { LiteralKind } from './box-factory'
 import type { PrimitiveType } from './types'
 
@@ -8,5 +9,5 @@ export const getTypeOfLiteral = (value: PrimitiveType | PrimitiveType[]): Litera
   if (typeof value === 'boolean') return 'boolean'
   if (value === null) return 'null'
   if (value === undefined) return 'undefined'
-  throw new Error(`Unexpected literal type: ${value as any}`)
+  throw new PandaError('UNKNOWN_TYPE', `Unexpected literal type: ${value as any}`)
 }

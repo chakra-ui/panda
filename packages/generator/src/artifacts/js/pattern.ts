@@ -1,5 +1,5 @@
 import type { Context } from '@pandacss/core'
-import { unionType } from '@pandacss/shared'
+import { compact, unionType } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { outdent } from 'outdent'
@@ -12,14 +12,16 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
 
   return details.map((pattern) => {
     const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern
-    const { properties, transform, strict, description } = config
+    const { properties, transform, strict, description, defaultValues } = config
 
-    const transformFn = stringify({ transform }) ?? ''
-    const helperImports = ['mapObject']
-    if (transformFn.includes('__spreadValues')) {
+    const patternConfigFn = stringify(compact({ transform, defaultValues })) ?? ''
+
+    const helperImports = ['getPatternStyles, patternFns']
+    // depending on the esbuild result, sometimes the transform function couldi include polyfills (e.g. __spreadValues)
+    if (patternConfigFn.includes('__spreadValues')) {
       helperImports.push('__spreadValues')
     }
-    if (transformFn.includes('__objRest')) {
+    if (patternConfigFn.includes('__objRest')) {
       helperImports.push('__objRest')
     }
 
@@ -78,9 +80,14 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
     ${ctx.file.import(helperImports.join(', '), '../helpers')}
     ${ctx.file.import('css', '../css/index')}
 
-    const ${baseName}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}
+    const ${baseName}Config = ${patternConfigFn
+        .replace(`{transform`, `{\ntransform`)
+        .replace(`,defaultValues`, `,\ndefaultValues`)}
 
-    export const ${styleFnName} = (styles = {}) => ${baseName}Config.transform(styles, { map: mapObject })
+    export const ${styleFnName} = (styles = {}) => {
+      const _styles = getPatternStyles(${baseName}Config, styles)
+      return ${baseName}Config.transform(_styles, patternFns)
+    }
 
     export const ${baseName} = (styles) => css(${styleFnName}(styles))
     ${baseName}.raw = ${styleFnName}

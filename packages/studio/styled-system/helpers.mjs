@@ -14,7 +14,7 @@ function filterBaseConditions(c) {
   return c.slice().filter((v) => !isBaseCondition(v));
 }
 
-// src/css-important.ts
+// src/important.ts
 var importantRegex = /\s*!(important)?/i;
 function isImportant(value) {
   return typeof value === "string" ? importantRegex.test(value) : false;
@@ -211,6 +211,34 @@ var hypenateProperty = memo((property) => {
   return property.replace(wordRegex, "-$1").replace(msRegex, "-ms-").toLowerCase();
 });
 
+// src/is-css-function.ts
+var fns = ["min", "max", "clamp", "calc"];
+var fnRegExp = new RegExp(`^(${fns.join("|")})\\(.*\\)`);
+var isCssFunction = (v) => typeof v === "string" && fnRegExp.test(v);
+
+// src/is-css-unit.ts
+var lengthUnits = "cm,mm,Q,in,pc,pt,px,em,ex,ch,rem,lh,rlh,vw,vh,vmin,vmax,vb,vi,svw,svh,lvw,lvh,dvw,dvh,cqw,cqh,cqi,cqb,cqmin,cqmax,%";
+var lengthUnitsPattern = `(?:${lengthUnits.split(",").join("|")})`;
+var lengthRegExp = new RegExp(`^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?${lengthUnitsPattern}$`);
+var isCssUnit = (v) => typeof v === "string" && lengthRegExp.test(v);
+
+// src/is-css-var.ts
+var isCssVar = (v) => typeof v === "string" && /^var\(--.+\)$/.test(v);
+
+// src/pattern-fns.ts
+var patternFns = {
+  map: mapObject,
+  isCssFunction,
+  isCssVar,
+  isCssUnit
+};
+var getPatternStyles = (pattern, styles) => {
+  if (!pattern.defaultValues)
+    return styles;
+  const defaults = typeof pattern.defaultValues === "function" ? pattern.defaultValues(styles) : pattern.defaultValues;
+  return Object.assign({}, defaults, compact(styles));
+};
+
 // src/slot.ts
 var getSlotRecipes = (recipe = {}) => {
   const init = (slot) => ({
@@ -260,6 +288,7 @@ export {
   createCss,
   createMergeCss,
   filterBaseConditions,
+  getPatternStyles,
   getSlotCompoundVariant,
   getSlotRecipes,
   hypenateProperty,
@@ -268,6 +297,7 @@ export {
   mapObject,
   memo,
   mergeProps,
+  patternFns,
   splitProps,
   toHash,
   uniq,

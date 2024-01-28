@@ -473,13 +473,15 @@ const getMatchingArtifacts = (ctx: Context, filters: ArtifactFilters | undefined
 }
 
 const transformArtifact = (ctx: Context, artifact: Artifact): Artifact => {
-  const files = (artifact?.files ?? []).filter(Boolean).map((item) => {
-    if (ctx.file.isTypeFile(item.file)) {
-      return { ...item, code: `/* eslint-disable */\n${item.code}` }
-    }
+  const files = (artifact?.files ?? [])
+    .filter((item) => !!item?.code)
+    .map((item) => {
+      if (ctx.file.isTypeFile(item.file)) {
+        return { ...item, code: `/* eslint-disable */\n${item.code}` }
+      }
 
-    return item
-  })
+      return item
+    })
 
   return { ...artifact, files } as Artifact
 }

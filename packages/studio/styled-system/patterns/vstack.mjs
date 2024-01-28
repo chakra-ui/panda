@@ -1,9 +1,9 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const vstackConfig = {
 transform(props) {
-  const { justify, gap = "10px", ...rest } = props;
+  const { justify, gap, ...rest } = props;
   return {
     display: "flex",
     alignItems: "center",
@@ -12,9 +12,13 @@ transform(props) {
     flexDirection: "column",
     ...rest
   };
-}}
+},
+defaultValues:{gap:'10px'}}
 
-export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
+export const getVstackStyle = (styles = {}) => {
+  const _styles = getPatternStyles(vstackConfig, styles)
+  return vstackConfig.transform(_styles, patternFns)
+}
 
 export const vstack = (styles) => css(getVstackStyle(styles))
 vstack.raw = getVstackStyle

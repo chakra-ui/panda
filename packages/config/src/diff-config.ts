@@ -4,9 +4,8 @@ import microdiff from 'microdiff'
 import { artifactMatchers } from './config-deps'
 
 type ConfigOrFn = Config | (() => Config)
-const runIfFn = (fn: ConfigOrFn): Config => (typeof fn === 'function' ? fn() : fn)
 
-export { type DiffConfigResult }
+const runIfFn = (fn: ConfigOrFn): Config => (typeof fn === 'function' ? fn() : fn)
 
 /**
  * Diff the two config objects and return the list of affected properties

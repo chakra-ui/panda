@@ -1,7 +1,7 @@
-import { describe, expect, test } from 'vitest'
-import { Generator } from '../src'
 import { fixtureDefaults } from '@pandacss/fixture'
 import { type Artifact } from '@pandacss/types'
+import { describe, expect, test } from 'vitest'
+import { Generator } from '../src'
 
 const formatArtifact = (artifact: Artifact) => {
   if (!artifact) return
@@ -16,7 +16,6 @@ describe('setup-artifacts', () => {
       [
         [
           "recipes/create-recipe.mjs",
-          "recipes/create-recipe.d.ts",
         ],
       ]
     `)
@@ -29,7 +28,6 @@ describe('setup-artifacts', () => {
         ],
         [
           "recipes/create-recipe.mjs",
-          "recipes/create-recipe.d.ts",
         ],
       ]
     `)
@@ -187,7 +185,6 @@ describe('setup-artifacts', () => {
         ],
         [
           "recipes/create-recipe.mjs",
-          "recipes/create-recipe.d.ts",
         ],
         [
           "recipes/index.mjs",

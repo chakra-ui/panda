@@ -1,4 +1,4 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const flexConfig = {
@@ -17,7 +17,10 @@ transform(props) {
   };
 }}
 
-export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
+export const getFlexStyle = (styles = {}) => {
+  const _styles = getPatternStyles(flexConfig, styles)
+  return flexConfig.transform(_styles, patternFns)
+}
 
 export const flex = (styles) => css(getFlexStyle(styles))
 flex.raw = getFlexStyle

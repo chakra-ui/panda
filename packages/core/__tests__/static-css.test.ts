@@ -905,12 +905,12 @@ describe('static-css', () => {
           height: lg;
       }
 
-        .\\--bleed-x_spacing\\.20 {
-          --bleed-x: var(--spacing-20);
+        .\\--bleed-x_token\\(spacing\\.20\\,_20\\) {
+          --bleed-x: var(--spacing-20, \\320);
       }
 
-        .\\--bleed-y_spacing\\.0 {
-          --bleed-y: spacing.0;
+        .\\--bleed-y_token\\(spacing\\.0\\,_0\\) {
+          --bleed-y: var(spacing\\.0, \\30);
       }
 
         .mx_calc\\(var\\(--bleed-x\\,_0\\)_\\*_-1\\) {
@@ -921,28 +921,28 @@ describe('static-css', () => {
           margin-block: calc(var(--bleed-y, 0) * -1);
       }
 
-        .\\--bleed-x_spacing\\.40 {
-          --bleed-x: var(--spacing-40);
+        .\\--bleed-x_token\\(spacing\\.40\\,_40\\) {
+          --bleed-x: var(--spacing-40, \\340);
       }
 
-        .\\--bleed-x_spacing\\.60 {
-          --bleed-x: var(--spacing-60);
+        .\\--bleed-x_token\\(spacing\\.60\\,_60\\) {
+          --bleed-x: var(--spacing-60, \\360);
       }
 
-        .\\--bleed-x_spacing\\.auto {
-          --bleed-x: spacing.auto;
+        .\\--bleed-x_token\\(spacing\\.auto\\,_auto\\) {
+          --bleed-x: var(spacing\\.auto, auto);
       }
 
-        .\\--bleed-x_spacing\\.-20 {
-          --bleed-x: calc(var(--spacing-20) * -1);
+        .\\--bleed-x_token\\(spacing\\.-20\\,_-20\\) {
+          --bleed-x: calc(var(--spacing-20) * -1, -\\320);
       }
 
-        .\\--bleed-x_spacing\\.-40 {
-          --bleed-x: calc(var(--spacing-40) * -1);
+        .\\--bleed-x_token\\(spacing\\.-40\\,_-40\\) {
+          --bleed-x: calc(var(--spacing-40) * -1, -\\340);
       }
 
-        .\\--bleed-x_spacing\\.-60 {
-          --bleed-x: calc(var(--spacing-60) * -1);
+        .\\--bleed-x_token\\(spacing\\.-60\\,_-60\\) {
+          --bleed-x: calc(var(--spacing-60) * -1, -\\360);
       }
 
         .\\--thickness_1px {
@@ -1372,44 +1372,44 @@ describe('static-css', () => {
               "width": "lg",
             },
             {
-              "--bleed-x": "spacing.20",
-              "--bleed-y": "spacing.0",
+              "--bleed-x": "token(spacing.20, 20)",
+              "--bleed-y": "token(spacing.0, 0)",
               "marginBlock": "calc(var(--bleed-y, 0) * -1)",
               "marginInline": "calc(var(--bleed-x, 0) * -1)",
             },
             {
-              "--bleed-x": "spacing.40",
-              "--bleed-y": "spacing.0",
+              "--bleed-x": "token(spacing.40, 40)",
+              "--bleed-y": "token(spacing.0, 0)",
               "marginBlock": "calc(var(--bleed-y, 0) * -1)",
               "marginInline": "calc(var(--bleed-x, 0) * -1)",
             },
             {
-              "--bleed-x": "spacing.60",
-              "--bleed-y": "spacing.0",
+              "--bleed-x": "token(spacing.60, 60)",
+              "--bleed-y": "token(spacing.0, 0)",
               "marginBlock": "calc(var(--bleed-y, 0) * -1)",
               "marginInline": "calc(var(--bleed-x, 0) * -1)",
             },
             {
-              "--bleed-x": "spacing.auto",
-              "--bleed-y": "spacing.0",
+              "--bleed-x": "token(spacing.auto, auto)",
+              "--bleed-y": "token(spacing.0, 0)",
               "marginBlock": "calc(var(--bleed-y, 0) * -1)",
               "marginInline": "calc(var(--bleed-x, 0) * -1)",
             },
             {
-              "--bleed-x": "spacing.-20",
-              "--bleed-y": "spacing.0",
+              "--bleed-x": "token(spacing.-20, -20)",
+              "--bleed-y": "token(spacing.0, 0)",
               "marginBlock": "calc(var(--bleed-y, 0) * -1)",
               "marginInline": "calc(var(--bleed-x, 0) * -1)",
             },
             {
-              "--bleed-x": "spacing.-40",
-              "--bleed-y": "spacing.0",
+              "--bleed-x": "token(spacing.-40, -40)",
+              "--bleed-y": "token(spacing.0, 0)",
               "marginBlock": "calc(var(--bleed-y, 0) * -1)",
               "marginInline": "calc(var(--bleed-x, 0) * -1)",
             },
             {
-              "--bleed-x": "spacing.-60",
-              "--bleed-y": "spacing.0",
+              "--bleed-x": "token(spacing.-60, -60)",
+              "--bleed-y": "token(spacing.0, 0)",
               "marginBlock": "calc(var(--bleed-y, 0) * -1)",
               "marginInline": "calc(var(--bleed-x, 0) * -1)",
             },
