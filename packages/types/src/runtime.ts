@@ -17,6 +17,7 @@ export type WatcherEventType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkD
 export interface WatchOptions extends InputOptions {
   poll?: boolean
   logger: LoggerInterface
+  onClose?: () => void
 }
 
 interface FileSystem {

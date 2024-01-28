@@ -1,5 +1,5 @@
 import { createLogger } from '@pandacss/logger'
-import { Builder } from '@pandacss/node'
+import { Builder, createLogStream } from '@pandacss/node'
 import { createRequire } from 'module'
 import path from 'path'
 import type { PluginCreator } from 'postcss'
@@ -16,12 +16,19 @@ const builder = new Builder({ logger })
 interface PluginOptions {
   configPath?: string
   cwd?: string
+  logfile?: string
 }
 
 const PLUGIN_NAME = 'pandacss'
 
+let stream: ReturnType<typeof createLogStream> | undefined
+
 export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
-  const { configPath, cwd } = options
+  const { configPath, cwd, logfile } = options
+
+  if (!stream && logfile) {
+    stream = createLogStream({ cwd: cwd ?? process.cwd(), logfile })
+  }
 
   return {
     postcssPlugin: PLUGIN_NAME,
@@ -77,3 +84,7 @@ const shouldSkip = (fileName: string | undefined) => {
   if (!isValidCss(fileName)) return true
   return nodeModulesRegex.test(fileName)
 }
+
+process.once('SIGINT', () => {
+  stream?.onClean()
+})

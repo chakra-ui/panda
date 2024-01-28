@@ -21,6 +21,7 @@ export interface CssGenCommandFlags {
   minify?: boolean
   lightningcss?: boolean
   cpuProf?: boolean
+  logfile?: string
 }
 
 export interface StudioCommandFlags extends Pick<Config, 'cwd'> {
@@ -47,6 +48,7 @@ export interface DebugCommandFlags {
   config?: string
   onlyConfig?: boolean
   cpuProf?: boolean
+  logfile?: string
 }
 
 export interface ShipCommandFlags {
@@ -64,6 +66,7 @@ export interface CodegenCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watc
   silent?: boolean
   config?: string
   cpuProf?: boolean
+  logfile?: string
 }
 
 export interface MainCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'> {
@@ -78,6 +81,7 @@ export interface MainCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'>
   emitTokensOnly?: boolean
   lightningcss?: boolean
   cpuProf?: boolean
+  logfile?: string
 }
 
 export interface EmitPackageCommandFlags {

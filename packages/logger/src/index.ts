@@ -1,6 +1,6 @@
 import colors from 'kleur'
-import { createLogger } from './create-logger'
+import { createLogger, type LoggerConfig } from './create-logger'
 
 export const quote = (...str: string[]) => colors.cyan(`\`${str.join('')}\``)
 
-export { createLogger, colors }
+export { createLogger, colors, type LoggerConfig }

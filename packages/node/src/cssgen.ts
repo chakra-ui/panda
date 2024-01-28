@@ -12,7 +12,7 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
   const { outfile, type, minimal } = options
 
   const sheet = ctx.createSheet()
-  //
+
   if (type) {
     const done = ctx.logger.time.info(ctx.messages.cssArtifactComplete(type))
 

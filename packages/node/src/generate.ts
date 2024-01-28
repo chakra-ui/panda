@@ -23,7 +23,8 @@ async function build(ctx: PandaContext, artifactIds?: ArtifactId[]) {
   done(ctx.messages.buildComplete(parsed.files.length))
 }
 
-export async function generate(options: LoadConfigOptions) {
+export async function generate(options: LoadConfigOptions & { onClose?: () => void }) {
+  const { onClose } = options
   let ctx = await loadConfigAndCreateContext(options)
   await build(ctx)
 
@@ -49,7 +50,7 @@ export async function generate(options: LoadConfigOptions) {
       return build(ctx, Array.from(affecteds.artifacts))
     })
 
-    const contentWatcher = fs.watch({ ...ctx.config, logger: ctx.logger })
+    const contentWatcher = fs.watch({ ...ctx.config, logger: ctx.logger, onClose })
 
     const bundleStyles = async (ctx: PandaContext, changedFilePath: string) => {
       const outfile = ctx.runtime.path.join(...ctx.paths.root, 'styles.css')
@@ -89,5 +90,7 @@ export async function generate(options: LoadConfigOptions) {
     })
 
     ctx.logger.info('ctx:watch', ctx.messages.watch())
+  } else {
+    onClose?.()
   }
 }

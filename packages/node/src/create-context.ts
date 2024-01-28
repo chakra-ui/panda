@@ -22,7 +22,6 @@ export class PandaContext extends Generator {
     config.cwd ||= this.runtime.cwd()
 
     if (config.logLevel) {
-      console.log(1111, this.logger.level, config.logLevel)
       this.logger.level = config.logLevel
     }
 
@@ -120,11 +119,15 @@ export class PandaContext extends Generator {
     )
   }
 
-  watchFiles = (cb: (event: WatcherEventType, file: string) => void | Promise<void>) => {
+  watchFiles = (
+    cb: (event: WatcherEventType, file: string) => void | Promise<void>,
+    opts?: Omit<WatchOptions, 'include' | 'exclude' | 'poll' | 'cwd' | 'logger'>,
+  ) => {
     const { include, exclude, poll, cwd } = this.config
     this.logger.info('ctx:watch', this.messages.watch())
 
     const watcher = this.runtime.fs.watch({
+      ...opts,
       include,
       exclude,
       poll,

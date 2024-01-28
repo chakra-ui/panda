@@ -1,7 +1,6 @@
 import { findConfig } from '@pandacss/config'
 import { colors, createLogger } from '@pandacss/logger'
 import {
-  PandaContext,
   analyzeTokens,
   buildInfo,
   codegen,
@@ -9,12 +8,14 @@ import {
   debug,
   generate,
   loadConfigAndCreateContext,
+  PandaContext,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
   startProfiling,
   writeAnalyzeJSON,
   type CssGenOptions,
+  createLogStream,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import type { CssArtifactType } from '@pandacss/types'
@@ -103,11 +104,13 @@ export async function main() {
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (flags: CodegenCommandFlags) => {
       const { silent, clean, config: configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd ?? '')
-      const logger = createLogger({ filter: debugVar, isDebug })
+      const stream = createLogStream({ cwd, logfile: flags.logfile })
+      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
@@ -142,6 +145,7 @@ export async function main() {
       }
 
       stopProfiling()
+      stream.onClean()
     })
 
   cli
@@ -160,11 +164,13 @@ export async function main() {
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
       const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal, lightningcss } = flags
 
       const cwd = resolve(flags.cwd ?? '')
-      const logger = createLogger({ filter: debugVar, isDebug })
+      const stream = createLogStream({ cwd, logfile: flags.logfile })
+      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
@@ -218,17 +224,26 @@ export async function main() {
           { cwd, poll },
         )
 
-        ctx.watchFiles(async (event, file) => {
-          if (event === 'unlink') {
-            ctx.project.removeSourceFile(ctx.runtime.path.abs(cwd, file))
-          } else if (event === 'change') {
-            ctx.project.reloadSourceFile(file)
-            await cssgen(ctx, options)
-          } else if (event === 'add') {
-            ctx.project.createSourceFile(file)
-            await cssgen(ctx, options)
-          }
-        })
+        ctx.watchFiles(
+          async (event, file) => {
+            if (event === 'unlink') {
+              ctx.project.removeSourceFile(ctx.runtime.path.abs(cwd, file))
+            } else if (event === 'change') {
+              ctx.project.reloadSourceFile(file)
+              await cssgen(ctx, options)
+            } else if (event === 'add') {
+              ctx.project.createSourceFile(file)
+              await cssgen(ctx, options)
+            }
+          },
+          {
+            onClose() {
+              stream.onClean()
+            },
+          },
+        )
+      } else {
+        stream.onClean()
       }
 
       stopProfiling()
@@ -250,11 +265,13 @@ export async function main() {
     .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
     .option('--emitTokensOnly', 'Whether to only emit the `tokens` directory')
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (files: string[], flags: MainCommandFlags) => {
       const { config: configPath, silent, ...rest } = flags
 
       const cwd = resolve(flags.cwd ?? '')
-      const logger = createLogger({ filter: debugVar, isDebug })
+      const stream = createLogStream({ cwd, logfile: flags.logfile })
+      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
@@ -266,7 +283,7 @@ export async function main() {
       }
 
       const config = compact({ include: files, ...rest, cwd })
-      await generate({ cwd, config, configPath, logger })
+      await generate({ cwd, config, configPath, logger, onClose: stream.onClean })
       stopProfiling()
     })
 
@@ -369,11 +386,13 @@ export async function main() {
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (maybeGlob?: string, flags: DebugCommandFlags = {}) => {
       const { silent, dry = false, outdir: outdirFlag, config: configPath } = flags ?? {}
 
       const cwd = resolve(flags.cwd!)
-      const logger = createLogger({ filter: debugVar, isDebug })
+      const stream = createLogStream({ cwd, logfile: flags.logfile })
+      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
@@ -395,6 +414,7 @@ export async function main() {
 
       await debug(ctx, { outdir, dry, onlyConfig: flags.onlyConfig })
       stopProfiling()
+      stream.onClean()
     })
 
   cli

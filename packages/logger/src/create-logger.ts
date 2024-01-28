@@ -1,14 +1,15 @@
 import colors from 'kleur'
 import { isMatch } from 'matcher'
 
-export interface Config {
+export interface LoggerConfig {
   level?: LogLevel
   filter?: string
   isDebug?: boolean
   onLog?: (entry: LogEntry) => void
 }
 
-export const createLogger = (conf: Config = {}) => {
+export const createLogger = (conf: LoggerConfig = {}) => {
+  let onLog = conf.onLog
   let level: LogLevel = conf.isDebug ? 'debug' : conf.level ?? 'info'
   const filter = conf.filter !== '*' ? conf.filter?.split(/[\s,]+/) ?? [] : []
 
@@ -29,15 +30,22 @@ export const createLogger = (conf: Config = {}) => {
       console.log(...[type, data].filter(Boolean))
     }
 
-    conf.onLog?.(entry)
+    onLog?.(entry)
   }
 
-  const timing = (level: LogLevel) => (msg: string) => {
+  const logFns = {
+    debug: stdout('debug'),
+    info: stdout('info'),
+    warn: stdout('warn'),
+    error: stdout('error'),
+  } as const
+
+  const timing = (level: 'info' | 'debug') => (msg: string) => {
     const start = performance.now()
     return (_msg = msg) => {
       const end = performance.now()
       const ms = end - start
-      stdout(level)('hrtime', `${_msg} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
+      logFns[level]('hrtime', `${_msg} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
     }
   }
 
@@ -48,13 +56,13 @@ export const createLogger = (conf: Config = {}) => {
     set level(newLevel: LogLevel) {
       level = newLevel
     },
+    set onLog(fn: (entry: LogEntry) => void) {
+      onLog = fn
+    },
+    ...logFns,
     print(data: any) {
       console.dir(data, { depth: null, colors: true })
     },
-    warn: stdout('warn'),
-    info: stdout('info'),
-    debug: stdout('debug'),
-    error: stdout('error'),
     log: (data: string) => stdout(null)('', data),
     time: {
       info: timing('info'),
@@ -65,7 +73,7 @@ export const createLogger = (conf: Config = {}) => {
 }
 
 type LogLevel = keyof typeof logLevels
-type LogEntry = {
+export type LogEntry = {
   level: LogLevel | null
   msg: string
 } & Record<string, any>
