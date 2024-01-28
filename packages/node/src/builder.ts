@@ -1,7 +1,8 @@
-import { findConfig, getConfigDependencies, type DiffConfigResult } from '@pandacss/config'
+import { findConfig, getConfigDependencies } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
-import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import { PandaError } from '@pandacss/shared'
+import type { DiffConfigResult } from '@pandacss/types'
 import { existsSync, statSync } from 'fs'
 import { normalize, resolve } from 'path'
 import type { Message, Root } from 'postcss'
@@ -23,16 +24,6 @@ export class Builder {
   private affecteds: DiffConfigResult | undefined
   private configDependencies: Set<string> = new Set()
 
-  getConfigPath = (cwd?: string) => {
-    const configPath = findConfig({ cwd })
-
-    if (!configPath) {
-      throw new ConfigNotFoundError()
-    }
-
-    return configPath
-  }
-
   setConfigDependencies(options: SetupContextOptions) {
     const tsOptions = this.context?.conf.tsOptions ?? { baseUrl: undefined, pathMappings: [] }
     const compilerOptions = this.context?.conf.tsconfig?.compilerOptions ?? {}
@@ -52,7 +43,7 @@ export class Builder {
   setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
-    const configPath = options.configPath ?? this.getConfigPath(options.cwd)
+    const configPath = options.configPath ?? findConfig({ cwd: options.cwd })
     this.setConfigDependencies({ configPath, cwd: options.cwd })
 
     if (!this.context) {
@@ -103,7 +94,7 @@ export class Builder {
 
   getContextOrThrow = (): PandaContext => {
     if (!this.context) {
-      throw new Error('context not loaded')
+      throw new PandaError('NO_CONTEXT', 'context not loaded')
     }
     return this.context
   }

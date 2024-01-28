@@ -37,7 +37,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@pandacss/error": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:^",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",

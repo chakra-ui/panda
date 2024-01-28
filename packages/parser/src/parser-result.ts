@@ -1,5 +1,5 @@
 import type { ParserOptions } from '@pandacss/core'
-import { getOrCreateSet } from '@pandacss/shared'
+import { PandaError, getOrCreateSet } from '@pandacss/shared'
 import type { ParserResultInterface, ResultItem } from '@pandacss/types'
 
 export class ParserResult implements ParserResultInterface {
@@ -37,7 +37,7 @@ export class ParserResult implements ParserResultInterface {
         this.setSva(result)
         break
       default:
-        throw new Error(`Unknown result type ${name}`)
+        throw new PandaError('UNKNOWN_TYPE', `Unknown result type ${name}`)
     }
   }
 
