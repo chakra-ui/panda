@@ -6,7 +6,7 @@ import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
 export interface CqProperties {
-   name?: ConditionalValue<Tokens["containerNames"]>
+   name?: ConditionalValue<Tokens["containerNames"] | Properties["containerName"]>
 	type?: PropertyValue<'containerType'>
 }
 
