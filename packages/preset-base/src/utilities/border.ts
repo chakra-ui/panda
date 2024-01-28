@@ -1,4 +1,5 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from './color-mix-transform'
 
 export const border: UtilityConfig = {
   borderRadius: {
@@ -145,6 +146,7 @@ export const border: UtilityConfig = {
   borderColor: {
     className: 'border',
     values: 'colors',
+    transform: createColorMixTransform('borderColor'),
   },
   borderInline: {
     className: 'border-x',
@@ -160,6 +162,7 @@ export const border: UtilityConfig = {
     className: 'border-x',
     values: 'colors',
     shorthand: 'borderXColor',
+    transform: createColorMixTransform('borderInlineColor'),
   },
   borderBlock: {
     className: 'border-y',
@@ -175,6 +178,7 @@ export const border: UtilityConfig = {
     className: 'border-y',
     values: 'colors',
     shorthand: 'borderYColor',
+    transform: createColorMixTransform('borderBlockColor'),
   },
   borderLeft: {
     className: 'border-l',
@@ -183,6 +187,7 @@ export const border: UtilityConfig = {
   borderLeftColor: {
     className: 'border-l',
     values: 'colors',
+    transform: createColorMixTransform('borderLeftColor'),
   },
   borderInlineStart: {
     className: 'border-s',
@@ -198,6 +203,7 @@ export const border: UtilityConfig = {
     className: 'border-s',
     values: 'colors',
     shorthand: 'borderStartColor',
+    transform: createColorMixTransform('borderInlineStartColor'),
   },
   borderRight: {
     className: 'border-r',
@@ -206,6 +212,7 @@ export const border: UtilityConfig = {
   borderRightColor: {
     className: 'border-r',
     values: 'colors',
+    transform: createColorMixTransform('borderRightColor'),
   },
   borderInlineEnd: {
     className: 'border-e',
@@ -221,6 +228,7 @@ export const border: UtilityConfig = {
     className: 'border-e',
     values: 'colors',
     shorthand: 'borderEndColor',
+    transform: createColorMixTransform('borderInlineEndColor'),
   },
   borderTop: {
     className: 'border-t',
@@ -229,6 +237,7 @@ export const border: UtilityConfig = {
   borderTopColor: {
     className: 'border-t',
     values: 'colors',
+    transform: createColorMixTransform('borderTopColor'),
   },
   borderBottom: {
     className: 'border-b',
@@ -237,6 +246,7 @@ export const border: UtilityConfig = {
   borderBottomColor: {
     className: 'border-b',
     values: 'colors',
+    transform: createColorMixTransform('borderBottomColor'),
   },
   borderBlockEnd: {
     className: 'border-be',
@@ -245,6 +255,7 @@ export const border: UtilityConfig = {
   borderBlockEndColor: {
     className: 'border-be',
     values: 'colors',
+    transform: createColorMixTransform('borderBlockEndColor'),
   },
   borderBlockStart: {
     className: 'border-bs',
@@ -253,5 +264,6 @@ export const border: UtilityConfig = {
   borderBlockStartColor: {
     className: 'border-bs',
     values: 'colors',
+    transform: createColorMixTransform('borderBlockStartColor'),
   },
 }

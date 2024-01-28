@@ -1090,4 +1090,25 @@ describe('js to css', () => {
       }"
     `)
   })
+
+  test('color mix', () => {
+    expect(css({ bg: 'red.300/40', color: 'white' })).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "bg_red\\.300\\/40",
+          "text_white",
+        ],
+        "css": "@layer utilities {
+        .bg_red\\.300\\/40 {
+          --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+          background: var(--mix-background, var(--colors-red-300));
+      }
+
+        .text_white {
+          color: var(--colors-white);
+      }
+      }",
+      }
+    `)
+  })
 })
