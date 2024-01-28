@@ -1,3 +1,5 @@
+import type { LoggerInterface } from '.'
+
 interface Watcher {
   on(event: 'add' | 'addDir' | 'change', listener: (path: string) => void): this
   on(event: 'all', listener: (evt: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', path: string) => void): this
@@ -14,6 +16,7 @@ export type WatcherEventType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkD
 
 export interface WatchOptions extends InputOptions {
   poll?: boolean
+  logger: LoggerInterface
 }
 
 interface FileSystem {

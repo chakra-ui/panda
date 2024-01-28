@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 test('semantic tokens / deeply nested', () => {
   const dictionary = new TokenDictionary({
@@ -8,6 +9,7 @@ test('semantic tokens / deeply nested', () => {
         pink: { value: { base: '#fff', osDark: { highCon: 'sdfdfsd' } } },
       },
     },
+    logger: fixtureDefaults.logger,
   })
 
   dictionary.build()

@@ -1,10 +1,14 @@
-import { fixturePreset } from '@pandacss/fixture'
+import { fixtureDefaults, fixturePreset } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 import { Conditions } from '../src/conditions'
 
 describe('Conditions', () => {
   test('condition transformation', () => {
-    const css = new Conditions({ conditions: fixturePreset.conditions!, breakpoints: fixturePreset.theme.breakpoints })
+    const css = new Conditions({
+      conditions: fixturePreset.conditions!,
+      breakpoints: fixturePreset.theme.breakpoints,
+      logger: fixtureDefaults.logger,
+    })
     expect(css.normalize('@media (min-width: 768px)')).toMatchInlineSnapshot(`
       {
         "name": "media",

@@ -1,14 +1,14 @@
 import { findConfig, getConfigDependencies, type DiffConfigResult } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
-import { logger } from '@pandacss/logger'
 import { existsSync, statSync } from 'fs'
 import { normalize, resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { codegen } from './codegen'
-import { loadConfigAndCreateContext } from './config'
+import { loadConfigAndCreateContext, type LoadConfigOptions } from './config'
 import { PandaContext } from './create-context'
 import { parseDependency } from './parse-dependency'
+import type { LoggerInterface } from '@pandacss/types'
 
 const fileModifiedMap = new Map<string, number>()
 
@@ -22,6 +22,11 @@ export class Builder {
   private filesMeta: { changes: Map<string, FileMeta>; hasFilesChanged: boolean } | undefined
   private affecteds: DiffConfigResult | undefined
   private configDependencies: Set<string> = new Set()
+  private logger: LoggerInterface
+
+  constructor(args: { logger: LoggerInterface }) {
+    this.logger = args.logger
+  }
 
   getConfigPath = (cwd?: string) => {
     const configPath = findConfig({ cwd })
@@ -45,12 +50,12 @@ export class Builder {
       ...(this.context?.conf.dependencies ?? []).map((file) => resolve(cwd, file)),
     ])
     this.configDependencies = configDeps
-    logger.debug('builder', 'Config dependencies')
-    logger.debug('builder', configDeps)
+    this.logger.debug('builder', 'Config dependencies')
+    this.logger.debug('builder', configDeps)
   }
 
-  setup = async (options: { configPath?: string; cwd?: string } = {}) => {
-    logger.debug('builder', '🚧 Setup')
+  setup = async (options: Omit<LoadConfigOptions, 'logger'> = {}) => {
+    this.logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath(options.cwd)
     this.setConfigDependencies({ configPath, cwd: options.cwd })
@@ -65,11 +70,11 @@ export class Builder {
       this.context = new PandaContext(conf)
     })
 
-    logger.debug('builder', this.affecteds)
+    this.logger.debug('builder', this.affecteds)
 
     // config change
     if (this.affecteds.hasConfigChanged) {
-      logger.debug('builder', '⚙️ Config changed, reloading')
+      this.logger.debug('builder', '⚙️ Config changed, reloading')
       await ctx.hooks['config:change']?.({ config: ctx.config, changes: this.affecteds })
       return
     }
@@ -77,7 +82,7 @@ export class Builder {
     // file changes
     this.filesMeta = this.checkFilesChanged(ctx.getFiles())
     if (this.filesMeta.hasFilesChanged) {
-      logger.debug('builder', 'Files changed, invalidating them')
+      this.logger.debug('builder', 'Files changed, invalidating them')
       ctx.project.reloadSourceFiles()
     }
   }
@@ -85,7 +90,7 @@ export class Builder {
   async emit() {
     // ensure emit is only called when the config is changed
     if (this.hasEmitted && this.affecteds?.hasConfigChanged) {
-      logger.debug('builder', 'Emit artifacts after config change')
+      this.logger.debug('builder', 'Emit artifacts after config change')
       await codegen(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
     }
 
@@ -95,7 +100,7 @@ export class Builder {
   setupContext = async (options: SetupContextOptions) => {
     const { configPath, cwd } = options
 
-    const ctx = await loadConfigAndCreateContext({ configPath, cwd })
+    const ctx = await loadConfigAndCreateContext({ configPath, cwd, logger: this.logger })
     this.context = ctx
 
     return ctx
@@ -145,14 +150,14 @@ export class Builder {
   extract = () => {
     const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : true
     if (!this.filesMeta && !hasConfigChanged) {
-      logger.debug('builder', 'No files or config changed, skipping extract')
+      this.logger.debug('builder', 'No files or config changed, skipping extract')
       return
     }
 
     const ctx = this.getContextOrThrow()
     const files = ctx.getFiles()
 
-    const done = logger.time.info('Extracted in')
+    const done = this.logger.time.info('Extracted in')
 
     files.map((file) => this.extractFile(ctx, file))
 
@@ -183,6 +188,7 @@ export class Builder {
         browserslist: ctx.config.browserslist,
         minify: ctx.config.minify,
         lightningcss: ctx.config.lightningcss,
+        logger: this.logger,
       }),
     )
   }

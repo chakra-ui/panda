@@ -1,6 +1,5 @@
 import type { StyleEncoder, Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
-import { logger } from '@pandacss/logger'
 import { ParserResult, Project } from '@pandacss/parser'
 import type { LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
 import { debounce } from 'perfect-debounce'
@@ -23,7 +22,8 @@ export class PandaContext extends Generator {
     config.cwd ||= this.runtime.cwd()
 
     if (config.logLevel) {
-      logger.level = config.logLevel
+      console.log(1111, this.logger.level, config.logLevel)
+      this.logger.level = config.logLevel
     }
 
     this.project = new Project({
@@ -48,9 +48,9 @@ export class PandaContext extends Generator {
 
   parseFile = (filePath: string, styleEncoder?: StyleEncoder) => {
     const file = this.runtime.path.abs(this.config.cwd, filePath)
-    logger.debug('file:extract', file)
+    this.logger.debug('file:extract', file)
 
-    const measure = logger.time.debug(`Parsed ${file}`)
+    const measure = this.logger.time.debug(`Parsed ${file}`)
 
     let result: ParserResult | undefined
 
@@ -58,7 +58,7 @@ export class PandaContext extends Generator {
       const encoder = styleEncoder || this.parserOptions.encoder
       result = this.project.parseSourceFile(file, encoder)
     } catch (error) {
-      logger.error('file:extract', error)
+      this.logger.error('file:extract', error)
     }
 
     measure()
@@ -73,7 +73,7 @@ export class PandaContext extends Generator {
     const results = [] as ParserResult[]
 
     files.forEach((file) => {
-      const measure = logger.time.debug(`Parsed ${file}`)
+      const measure = this.logger.time.debug(`Parsed ${file}`)
       const result = this.project.parseSourceFile(file, encoder)
 
       measure()
@@ -91,7 +91,7 @@ export class PandaContext extends Generator {
   }
 
   writeCss = (sheet?: Stylesheet) => {
-    logger.info('css', this.runtime.path.join(...this.paths.root, 'styles.css'))
+    this.logger.info('css', this.runtime.path.join(...this.paths.root, 'styles.css'))
     return this.output.write({
       id: 'styles.css',
       dir: this.paths.root,
@@ -99,21 +99,22 @@ export class PandaContext extends Generator {
     })
   }
 
-  watchConfig = (cb: () => void | Promise<void>, opts?: Omit<WatchOptions, 'include'>) => {
+  watchConfig = (cb: () => void | Promise<void>, opts?: Omit<WatchOptions, 'include' | 'logger'>) => {
     const { cwd, poll, exclude } = opts ?? {}
-    logger.info('ctx:watch', this.messages.configWatch())
+    this.logger.info('ctx:watch', this.messages.configWatch())
 
     const watcher = this.runtime.fs.watch({
       include: this.conf.dependencies,
       exclude,
       cwd,
       poll,
+      logger: this.logger,
     })
 
     watcher.on(
       'change',
       debounce(async () => {
-        logger.info('ctx:change', 'config changed, rebuilding...')
+        this.logger.info('ctx:change', 'config changed, rebuilding...')
         await cb()
       }),
     )
@@ -121,19 +122,20 @@ export class PandaContext extends Generator {
 
   watchFiles = (cb: (event: WatcherEventType, file: string) => void | Promise<void>) => {
     const { include, exclude, poll, cwd } = this.config
-    logger.info('ctx:watch', this.messages.watch())
+    this.logger.info('ctx:watch', this.messages.watch())
 
     const watcher = this.runtime.fs.watch({
       include,
       exclude,
       poll,
       cwd,
+      logger: this.logger,
     })
 
     watcher.on(
       'all',
       debounce(async (event, file) => {
-        logger.info(`file:${event}`, file)
+        this.logger.info(`file:${event}`, file)
         await cb(event, file)
       }),
     )

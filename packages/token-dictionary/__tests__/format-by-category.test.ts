@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { formats } from '../src/format'
 import { transforms } from '../src/transform'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 test('format / by category', () => {
   const dictionary = new TokenDictionary({
@@ -12,6 +13,7 @@ test('format / by category', () => {
         green: { value: '#00ff00' },
       },
     },
+    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerTransform(...transforms)

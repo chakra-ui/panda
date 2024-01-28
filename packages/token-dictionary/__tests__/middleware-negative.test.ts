@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { addNegativeTokens } from '../src/middleware'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 test('middleware / add negative', () => {
   const dictionary = new TokenDictionary({
@@ -10,6 +11,7 @@ test('middleware / add negative', () => {
         sm: { value: '4px' },
       },
     },
+    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerMiddleware(addNegativeTokens)

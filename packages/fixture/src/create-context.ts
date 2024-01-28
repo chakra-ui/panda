@@ -4,6 +4,7 @@ import { PandaContext } from '@pandacss/node'
 import { stringifyJson, parseJson } from '@pandacss/shared'
 import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { fixturePreset } from './config'
+import { createLogger } from '../../logger/src/create-logger'
 
 const config: UserConfig = {
   ...fixturePreset,
@@ -23,6 +24,7 @@ export const fixtureDefaults = {
   hooks: {},
   serialized: stringifyJson(config),
   deserialize: () => parseJson(stringifyJson(config)),
+  logger: createLogger(),
 } as LoadConfigResult
 
 export const createGeneratorContext = (userConfig?: Config) => {

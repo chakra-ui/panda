@@ -3,14 +3,16 @@ import nested from 'postcss-nested'
 import { optimizePostCss } from './plugins/optimize-postcss'
 import prettify from './plugins/prettify'
 import sortMediaQueries from './plugins/sort-mq'
+import type { LoggerInterface } from '@pandacss/types'
 
-interface OptimizeOptions {
+export interface OptimizeOptions {
   minify?: boolean
   lightningcss?: boolean
   browserslist?: string[]
+  logger: LoggerInterface
 }
 
-export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
+export function optimizeCss(code: string | Root, options: OptimizeOptions) {
   const { lightningcss } = options
 
   if (lightningcss) {

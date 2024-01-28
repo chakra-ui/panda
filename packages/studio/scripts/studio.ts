@@ -1,4 +1,4 @@
-import { colors, logger } from '@pandacss/logger'
+import { colors } from '@pandacss/logger'
 import { join } from 'node:path'
 
 export interface BuildOpts {
@@ -67,5 +67,5 @@ export async function previewStudio({ outDir }: BuildOpts) {
 export function printUrls(options: { host: string; port: number; https: boolean }) {
   const protocol = options.https ? 'https' : 'http'
   const localUrl = `${protocol}://${options.host}:${options.port}`
-  logger.log(`  ${colors.cyan('➜')}  ${colors.bold('Previewed at')}: ${colors.reset(colors.green(localUrl))} `)
+  console.log(`  ${colors.cyan('➜')}  ${colors.bold('Previewed at')}: ${colors.reset(colors.green(localUrl))} `)
 }

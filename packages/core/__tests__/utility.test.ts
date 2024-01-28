@@ -1,4 +1,4 @@
-import { fixturePreset } from '@pandacss/fixture'
+import { fixtureDefaults, fixturePreset } from '@pandacss/fixture'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { describe, expect, test } from 'vitest'
 import { Utility } from '../src/utility'
@@ -10,6 +10,7 @@ describe('Utility', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({
         breakpoints: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px' },
+        logger: fixtureDefaults.logger,
       }),
       config: {
         hideFrom: {
@@ -99,7 +100,7 @@ describe('Utility', () => {
 
   test('should prime cache for faster lookup', () => {
     const utility = new Utility({
-      tokens: new TokenDictionary({ tokens, semanticTokens }),
+      tokens: new TokenDictionary({ tokens, semanticTokens, logger: fixtureDefaults.logger }),
       config: {
         backgroundColor: {
           className: 'bg',
@@ -1999,7 +2000,7 @@ describe('Utility', () => {
   test('should resolve arbitrary property', () => {
     const values = { auto: 'auto', sm: '20px', md: '40px' }
     const utility = new Utility({
-      tokens: new TokenDictionary({ tokens, semanticTokens }),
+      tokens: new TokenDictionary({ tokens, semanticTokens, logger: fixtureDefaults.logger }),
       config: {
         marginLeft: {
           className: 'ml',
@@ -2449,6 +2450,7 @@ describe('Utility', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({
         tokens: { colors: { someColor: { value: '#aabbcc' } } },
+        logger: fixtureDefaults.logger,
       }),
       config: {
         backgroundColor: {

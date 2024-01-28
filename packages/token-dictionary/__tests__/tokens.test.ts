@@ -1,4 +1,4 @@
-import { fixturePreset } from '@pandacss/fixture'
+import { fixtureDefaults, fixturePreset } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src'
 import { formats } from '../src/format'
@@ -7,6 +7,7 @@ test('should work with default fixture', () => {
   const dictionary = new TokenDictionary({
     tokens: fixturePreset.theme.tokens,
     semanticTokens: fixturePreset.theme.semanticTokens,
+    logger: fixtureDefaults.logger,
   })
 
   const allSpacings = dictionary.filter({ extensions: { category: 'spacing' } })

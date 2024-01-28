@@ -1,7 +1,7 @@
 import { findConfig } from '@pandacss/config'
 import { messages } from '@pandacss/core'
-import { logger, quote } from '@pandacss/logger'
-import type { Config } from '@pandacss/types'
+import { quote } from '@pandacss/logger'
+import type { Config, LoggerInterface } from '@pandacss/types'
 import fsExtra from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
@@ -13,7 +13,7 @@ type SetupOptions = Partial<Config> & {
   force?: boolean
 }
 
-export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
+export async function setupConfig(cwd: string, logger: LoggerInterface, opts: SetupOptions = {}) {
   const { force, outExtension, jsxFramework, syntax } = opts
 
   const configFile = findConfig({ cwd })
@@ -60,7 +60,7 @@ export default defineConfig({
   }
 }
 
-export async function setupPostcss(cwd: string) {
+export async function setupPostcss(cwd: string, logger: LoggerInterface) {
   logger.info('init:postcss', `creating postcss config file: ${quote('postcss.config.cjs')}`)
 
   const content = outdent`

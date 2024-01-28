@@ -44,13 +44,13 @@ export class TokenDictionary extends BaseDictionary {
    * Expand token references to their CSS variable
    */
   expandReference(value: string) {
-    return expandReferences(value, (key) => this.get(key))
+    return expandReferences(value, (key) => this.get(key), this.logger)
   }
 
   /**
    * Resolve token references to their actual raw value
    */
   resolveReference(value: string) {
-    return expandReferences(value, (key) => this.getByName(key)?.value)
+    return expandReferences(value, (key) => this.getByName(key)?.value, this.logger)
   }
 }

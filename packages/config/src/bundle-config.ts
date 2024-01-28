@@ -1,5 +1,4 @@
 import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
-import { logger } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import { bundleNRequire } from 'bundle-n-require'
 import { findConfig } from './find-config'
@@ -9,6 +8,7 @@ export interface BundleConfigResult<T = Config> {
   config: T
   dependencies: string[]
   path: string
+  logger: ConfigFileOptions['logger']
 }
 
 export async function bundle<T = Config>(filepath: string, cwd: string) {
@@ -23,7 +23,7 @@ export async function bundle<T = Config>(filepath: string, cwd: string) {
 }
 
 export async function bundleConfig(options: ConfigFileOptions): Promise<BundleConfigResult> {
-  const { cwd, file } = options
+  const { cwd, file, logger } = options
 
   const filePath = findConfig({ cwd, file })
 
@@ -46,5 +46,6 @@ export async function bundleConfig(options: ConfigFileOptions): Promise<BundleCo
     ...result,
     config: result.config,
     path: filePath,
+    logger,
   }
 }

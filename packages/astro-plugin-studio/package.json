@@ -37,6 +37,7 @@
     "dist"
   ],
   "dependencies": {
+    "@pandacss/logger": "workspace:^",
     "@pandacss/node": "workspace:*",
     "javascript-stringify": "2.1.0"
   },

@@ -1,8 +1,8 @@
-import { logger } from '@pandacss/logger'
+import type { LoggerInterface } from '@pandacss/types'
 import fs from 'fs'
 import path from 'path'
 
-export const startProfiling = async (cwd: string, prefix: string) => {
+export const startProfiling = async (cwd: string, prefix: string, logger: LoggerInterface) => {
   const v8Profiler = (await import('v8-profiler-next')).default
   const date = new Date()
   const timestamp = date.toISOString().replace(/[-:.]/g, '')

@@ -1,17 +1,12 @@
-import { logger } from '@pandacss/logger'
-import { Features, transform, browserslistToTargets } from 'lightningcss'
-import { Root } from 'postcss'
 import browserslist from 'browserslist'
-
-interface OptimizeOptions {
-  minify?: boolean
-  browserslist?: string[]
-}
+import { Features, browserslistToTargets, transform } from 'lightningcss'
+import { Root } from 'postcss'
+import type { OptimizeOptions } from '../optimize'
 
 const decoder = new TextDecoder()
 
-export default function optimizeLightCss(code: string | Root, options: OptimizeOptions = {}) {
-  const { minify = false, browserslist: targets } = options
+export default function optimizeLightCss(code: string | Root, options: OptimizeOptions) {
+  const { minify = false, browserslist: targets, logger } = options
 
   const codeStr = typeof code === 'string' ? code : code.toString()
   const result = transform({

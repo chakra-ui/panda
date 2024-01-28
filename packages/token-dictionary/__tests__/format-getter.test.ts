@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { formats } from '../src/format'
 import { transforms } from '../src/transform'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 test('format / getter', () => {
   const dictionary = new TokenDictionary({
@@ -23,6 +24,7 @@ test('format / getter', () => {
         },
       },
     },
+    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerTransform(...transforms)

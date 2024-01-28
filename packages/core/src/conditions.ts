@@ -1,6 +1,5 @@
-import { logger } from '@pandacss/logger'
 import { isBaseCondition, withoutSpace } from '@pandacss/shared'
-import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
+import type { ConditionType, Dict, LoggerInterface, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 
@@ -9,6 +8,7 @@ const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-ne
 interface Options {
   conditions?: Dict<string>
   breakpoints?: Record<string, string>
+  logger: LoggerInterface
 }
 
 const underscoreRegex = /^_/
@@ -18,8 +18,11 @@ export class Conditions {
   values: Record<string, RawCondition>
 
   breakpoints: Breakpoints
+  private logger: LoggerInterface
 
   constructor(private options: Options) {
+    this.logger = options.logger
+
     const { breakpoints: breakpointValues = {}, conditions = {} } = this.options
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
@@ -95,7 +98,7 @@ export class Conditions {
     try {
       return this.values[condition] ?? parseCondition(condition)
     } catch (error) {
-      logger.error('core:condition', error)
+      this.logger.error('core:condition', error)
     }
   }
 

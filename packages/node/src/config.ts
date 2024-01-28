@@ -1,14 +1,21 @@
 import { loadConfig } from '@pandacss/config'
-import type { Config } from '@pandacss/types'
+import type { Config, LoggerInterface } from '@pandacss/types'
 import browserslist from 'browserslist'
 import { PandaContext } from './create-context'
 import { loadTsConfig } from './load-tsconfig'
 
-export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
-  const { config, configPath } = options
+export interface LoadConfigOptions {
+  cwd?: string
+  config?: Config
+  configPath?: string
+  logger: LoggerInterface
+}
+
+export async function loadConfigAndCreateContext(options: LoadConfigOptions) {
+  const { config, configPath, logger } = options
 
   const cwd = options.cwd ?? options?.config?.cwd ?? process.cwd()
-  const conf = await loadConfig({ cwd, file: configPath })
+  const conf = await loadConfig({ cwd, file: configPath, logger })
 
   if (config) {
     Object.assign(conf.config, config)

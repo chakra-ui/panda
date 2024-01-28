@@ -1,5 +1,5 @@
 import { findConfig } from '@pandacss/config'
-import { colors, logger } from '@pandacss/logger'
+import { colors, createLogger } from '@pandacss/logger'
 import {
   PandaContext,
   analyzeTokens,
@@ -39,6 +39,9 @@ export async function main() {
 
   const cwd = process.cwd()
 
+  const debugVar = process.env.PANDA_DEBUG || process.env.DEBUG
+  const isDebug = Boolean(debugVar)
+
   cli
     .command('init', "Initialize the panda's config file")
     .option('-i, --interactive', 'Run in interactive mode', { default: false })
@@ -64,6 +67,7 @@ export async function main() {
 
       const cwd = resolve(flags.cwd ?? '')
 
+      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -73,12 +77,12 @@ export async function main() {
       const done = logger.time.info('✨ Panda initialized')
 
       if (postcss) {
-        await setupPostcss(cwd)
+        await setupPostcss(cwd, logger)
       }
 
-      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
+      await setupConfig(cwd, logger, { force, outExtension, jsxFramework, syntax })
 
-      const ctx = await loadConfigAndCreateContext({ cwd, configPath, config: { gitignore } })
+      const ctx = await loadConfigAndCreateContext({ cwd, configPath, config: { gitignore }, logger })
       const { msg, box } = await codegen(ctx)
 
       if (gitignore) {
@@ -103,10 +107,11 @@ export async function main() {
       const { silent, clean, config: configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+      const logger = createLogger({ filter: debugVar, isDebug })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'codegen')
+        stopProfiling = await startProfiling(cwd, 'codegen', logger)
       }
 
       if (silent) {
@@ -117,6 +122,7 @@ export async function main() {
         cwd,
         config: { clean },
         configPath,
+        logger,
       })
 
       const { msg } = await codegen(ctx)
@@ -158,10 +164,11 @@ export async function main() {
       const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal, lightningcss } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+      const logger = createLogger({ filter: debugVar, isDebug })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'cssgen')
+        stopProfiling = await startProfiling(cwd, 'cssgen', logger)
       }
 
       const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
@@ -186,6 +193,7 @@ export async function main() {
         cwd,
         config: overrideConfig,
         configPath,
+        logger,
       })
 
       const options: CssGenOptions = {
@@ -246,10 +254,11 @@ export async function main() {
       const { config: configPath, silent, ...rest } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+      const logger = createLogger({ filter: debugVar, isDebug })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'cli')
+        stopProfiling = await startProfiling(cwd, 'cli', logger)
       }
 
       if (silent) {
@@ -257,7 +266,7 @@ export async function main() {
       }
 
       const config = compact({ include: files, ...rest, cwd })
-      await generate(config, configPath)
+      await generate({ cwd, config, configPath, logger })
       stopProfiling()
     })
 
@@ -274,10 +283,12 @@ export async function main() {
       const { build, preview, port, host, outdir, config } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+      const logger = createLogger({ filter: debugVar, isDebug })
 
       const ctx = await loadConfigAndCreateContext({
         cwd,
         configPath: config,
+        logger,
       })
 
       const buildOpts = {
@@ -322,6 +333,7 @@ export async function main() {
 
       const cwd = resolve(flags.cwd!)
 
+      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -330,6 +342,7 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : undefined,
         configPath,
+        logger,
       })
 
       const result = analyzeTokens(ctx, {
@@ -360,10 +373,11 @@ export async function main() {
       const { silent, dry = false, outdir: outdirFlag, config: configPath } = flags ?? {}
 
       const cwd = resolve(flags.cwd!)
+      const logger = createLogger({ filter: debugVar, isDebug })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'debug')
+        stopProfiling = await startProfiling(cwd, 'debug', logger)
       }
 
       if (silent) {
@@ -374,6 +388,7 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : undefined,
         configPath,
+        logger,
       })
 
       const outdir = outdirFlag ?? join(...ctx.paths.root, 'debug')
@@ -399,6 +414,7 @@ export async function main() {
 
       const cwd = resolve(flags.cwd!)
 
+      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -407,6 +423,7 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : undefined,
         configPath,
+        logger,
       })
 
       const outfile = outfileFlag ?? join(...ctx.paths.root, 'panda.buildinfo.json')
@@ -450,6 +467,7 @@ export async function main() {
     .action(async (flags: EmitPackageCommandFlags) => {
       const { outdir, silent } = flags
 
+      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -457,6 +475,7 @@ export async function main() {
       const ctx = await loadConfigAndCreateContext({
         cwd,
         config: { cwd },
+        logger,
       })
 
       const pkgPath = resolve(cwd, outdir, 'package.json')
@@ -529,15 +548,5 @@ export async function main() {
 
   cli.parse(process.argv, { run: false })
 
-  try {
-    await cli.runMatchedCommand()
-  } catch (error) {
-    logger.error('cli', error)
-
-    if (logger.isDebug) {
-      console.error(error)
-    }
-
-    process.exit(1)
-  }
+  await cli.runMatchedCommand()
 }

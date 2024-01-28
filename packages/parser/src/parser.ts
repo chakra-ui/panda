@@ -1,7 +1,6 @@
 import type { ImportResult, ParserOptions } from '@pandacss/core'
 import { BoxNodeMap, box, extract, unbox, type EvaluateOptions, type Unboxed } from '@pandacss/extractor'
 import type { Generator } from '@pandacss/generator'
-import { logger } from '@pandacss/logger'
 import { astish } from '@pandacss/shared'
 import type { ResultItem } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
@@ -23,7 +22,7 @@ const evaluateOptions: EvaluateOptions = {
 }
 
 export function createParser(context: ParserOptions) {
-  const { jsx, imports, recipes, syntax } = context
+  const { jsx, imports, recipes, syntax, logger } = context
 
   return function parse(sourceFile: SourceFile | undefined, encoder?: Generator['encoder']) {
     if (!sourceFile) return
@@ -95,8 +94,6 @@ export function createParser(context: ParserOptions) {
     extractResultByName.forEach((result, alias) => {
       //
       const name = file.getName(file.normalizeFnName(alias))
-
-      logger.debug(`ast:${name}`, name !== alias ? { kind: result.kind, alias } : { kind: result.kind })
 
       if (result.kind === 'function') {
         match(name)

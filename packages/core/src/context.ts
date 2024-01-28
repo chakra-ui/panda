@@ -12,6 +12,7 @@ import type {
   StudioOptions,
   Theme,
   UserConfig,
+  LoggerInterface,
 } from '@pandacss/types'
 import { Conditions } from './conditions'
 import { FileEngine } from './file'
@@ -30,7 +31,6 @@ import { Stylesheet } from './stylesheet'
 import type { ParserOptions } from './types'
 import { Utility } from './utility'
 import { HooksApi } from './hooks-api'
-import { logger } from '@pandacss/logger'
 
 const helpers = {
   map: mapObject,
@@ -56,6 +56,7 @@ const defaults = (config: UserConfig): UserConfig => ({
 
 export class Context {
   studio: RequiredBy<NonNullable<StudioOptions['studio']>, 'outdir'>
+  logger: LoggerInterface
 
   // Engines
   tokens: TokenDictionary
@@ -80,6 +81,8 @@ export class Context {
   parserOptions: ParserOptions
 
   constructor(public conf: LoadConfigResult) {
+    this.logger = conf.logger
+
     const config = defaults(conf.config)
     const theme = config.theme ?? {}
     conf.config = config
@@ -173,10 +176,11 @@ export class Context {
       tsOptions: this.conf.tsOptions,
       join: (...paths: string[]) => paths.join('/'),
       imports: this.imports,
+      logger: this.logger,
     }
 
     this.hooksApi = new HooksApi(this)
-    this.hooks['context:created']?.({ ctx: this.hooksApi, logger: logger })
+    this.hooks['context:created']?.({ ctx: this.hooksApi, logger: this.logger })
   }
 
   get config() {
@@ -212,6 +216,7 @@ export class Context {
       semanticTokens: theme.semanticTokens,
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
+      logger: this.logger,
     })
   }
 
@@ -230,6 +235,7 @@ export class Context {
     return new Conditions({
       conditions: config.conditions,
       breakpoints: config.theme?.breakpoints,
+      logger: this.logger,
     })
   }
 
@@ -282,6 +288,7 @@ export class Context {
       isValidProperty: this.isValidProperty,
       browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,
+      logger: this.logger,
       helpers,
     }
   }

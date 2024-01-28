@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
+import { fixtureDefaults } from '@pandacss/fixture'
 
 test('tokens / basic', () => {
   const dictionary = new TokenDictionary({
@@ -9,6 +10,7 @@ test('tokens / basic', () => {
         red: { 300: { value: '#ff0000' } },
       },
     },
+    logger: fixtureDefaults.logger,
   })
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
@@ -61,6 +63,7 @@ test('semantic tokens / nested', () => {
         },
       },
     },
+    logger: fixtureDefaults.logger,
   })
 
   dictionary.build()

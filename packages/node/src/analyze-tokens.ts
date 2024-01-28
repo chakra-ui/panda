@@ -1,4 +1,3 @@
-import { logger } from '@pandacss/logger'
 import type { ParserResultInterface } from '@pandacss/types'
 import { filesize } from 'filesize'
 import { writeFile } from 'fs/promises'
@@ -23,7 +22,7 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
 
     const extractMs = performance.now() - start
     timesMap.set(file, extractMs)
-    logger.debug('analyze', `Parsed ${file} in ${extractMs}ms`)
+    ctx.logger.debug('analyze', `Parsed ${file} in ${extractMs}ms`)
 
     if (result) {
       filesMap.set(file, result)
@@ -32,7 +31,7 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
   })
 
   const totalMs = Array.from(timesMap.values()).reduce((a, b) => a + b, 0)
-  logger.debug('analyze', `Analyzed ${files.length} files in ${totalMs.toFixed(2)}ms`)
+  ctx.logger.debug('analyze', `Analyzed ${files.length} files in ${totalMs.toFixed(2)}ms`)
 
   const minify = ctx.config.minify
 
