@@ -1,5 +1,6 @@
 import type { Preset } from '@pandacss/types'
 import { breakpoints } from './breakpoints'
+import { containerSizes } from './containers'
 import { keyframes } from './keyframes'
 import { tokens } from './tokens'
 import { textStyles } from './typography'
@@ -12,6 +13,7 @@ export const preset = definePreset({
     breakpoints,
     tokens,
     textStyles,
+    containerSizes,
   },
 })
 

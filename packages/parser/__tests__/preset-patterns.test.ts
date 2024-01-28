@@ -1568,11 +1568,8 @@ describe('preset patterns', () => {
      `
     const result = parseAndExtract(code, {
       theme: {
-        containerNames: ['sidebar', 'content'],
-        containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+        extend: {
+          containerNames: ['sidebar', 'content'],
         },
       },
     })
@@ -1604,11 +1601,11 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .container-type_inline-size {
+        .cq-type_inline-size {
           container-type: inline-size;
       }
 
-        .container-name_sidebar {
+        .cq-name_sidebar {
           container-name: sidebar;
       }
 
@@ -1616,7 +1613,7 @@ describe('preset patterns', () => {
           font-size: var(--font-sizes-lg);
       }
 
-        @container sidebar (min-width: 60em) {
+        @container sidebar (min-width: 24em) {
           .\\@sidebar\\/sm\\:fs_md {
             font-size: var(--font-sizes-md);
       }
@@ -1625,30 +1622,27 @@ describe('preset patterns', () => {
     `)
   })
 
-  test('jsx ContainerQuery', () => {
+  test('jsx Cq', () => {
     const code = `
-      import { ContainerQuery } from "styled-system/jsx"
+      import { Cq } from "styled-system/jsx"
       import { css } from "styled-system/css"
 
       function Nav() {
         return (
-          <ContainerQuery name="sidebar">
+          <Cq name="sidebar">
             <div
               className={css({
                 fontSize: { base: 'lg', '@sidebar/sm': 'md' },
               })}
             />
-          </ContainerQuery>
+          </Cq>
         )
       }
      `
     const result = parseAndExtract(code, {
       theme: {
-        containerNames: ['sidebar', 'content'],
-        containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+        extend: {
+          containerNames: ['sidebar', 'content'],
         },
       },
     })
@@ -1680,11 +1674,11 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .container-type_inline-size {
+        .cq-type_inline-size {
           container-type: inline-size;
       }
 
-        .container-name_sidebar {
+        .cq-name_sidebar {
           container-name: sidebar;
       }
 
@@ -1692,7 +1686,7 @@ describe('preset patterns', () => {
           font-size: var(--font-sizes-lg);
       }
 
-        @container sidebar (min-width: 60em) {
+        @container sidebar (min-width: 24em) {
           .\\@sidebar\\/sm\\:fs_md {
             font-size: var(--font-sizes-md);
       }

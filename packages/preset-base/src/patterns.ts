@@ -445,15 +445,17 @@ const visuallyHidden = definePattern({
 })
 
 const cq = definePattern({
-  jsxName: 'ContainerQuery',
   properties: {
-    name: { type: 'token', value: 'containerNames' },
+    name: { type: 'token', value: 'containerNames', property: 'containerName' },
     type: { type: 'property', value: 'containerType' },
   },
+  defaultValues: {
+    type: 'inline-size',
+  },
   transform(props) {
-    const { name, ...rest } = props
+    const { name, type, ...rest } = props
     return {
-      containerType: 'inline-size',
+      containerType: type,
       containerName: name,
       ...rest,
     }

@@ -1038,7 +1038,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface CqProperties {
-       name?: ConditionalValue<Tokens["containerNames"]>
+       name?: ConditionalValue<Tokens["containerNames"] | Properties["containerName"]>
     	type?: PropertyValue<'containerType'>
     }
 
@@ -1053,20 +1053,24 @@ test('should generate pattern', () => {
 
     export declare const cq: CqPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const cqConfig = {
     transform(props) {
-      const { name, ...rest } = props;
+      const { name, type, ...rest } = props;
       return {
-        ...rest,
-        containerType: "inline-size",
-        containerName: name
+        containerType: type,
+        containerName: name,
+        ...rest
       };
-    }}
+    },
+    defaultValues:{type:'inline-size'}}
 
-    export const getCqStyle = (styles = {}) => cqConfig.transform(styles, { map: mapObject })
+    export const getCqStyle = (styles = {}) => {
+      const _styles = getPatternStyles(cqConfig, styles)
+      return cqConfig.transform(_styles, patternFns)
+    }
 
     export const cq = (styles) => css(getCqStyle(styles))
     cq.raw = getCqStyle",

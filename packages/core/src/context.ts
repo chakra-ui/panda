@@ -207,8 +207,6 @@ export class Context {
       breakpoints: theme.breakpoints,
       tokens: theme.tokens,
       semanticTokens: theme.semanticTokens,
-      containerNames: theme.containerNames,
-      containerSizes: theme.containerSizes,
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
     })
