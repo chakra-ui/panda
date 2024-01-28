@@ -32,13 +32,9 @@ export default defineConfig({
   conditions: {},
   validation: 'warn',
   theme: {
-    // tokens: {},
     semanticTokens: {
       colors: {
         text: { value: { base: '{colors.gray.600}', _osDark: '{colors.gray.400}' } },
-        // text: { value: { base: '{colors.aagray.600}', _osDark: '{colors.gray.400}', _osLight: '{colors.aaa}' } },
-        // middle: { value: { base: '{colors.text}', _osDark: '{colors.gray.500}' } },
-        // end: { value: { base: '{colors.aaa}', _osDark: '{colors.middle}' } },
       },
     },
     recipes: {
