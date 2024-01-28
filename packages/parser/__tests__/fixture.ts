@@ -1,5 +1,7 @@
+import type { StyleDecoder, StyleEncoder } from '@pandacss/core'
 import { createContext } from '@pandacss/fixture'
 import type { Config, TSConfig } from '@pandacss/types'
+import type { PandaContext } from '../../node/src/create-context'
 import { getImportDeclarations } from '../src/get-import-declarations'
 
 const filePath = 'app/src/test.tsx'
@@ -132,7 +134,15 @@ export function jsxRecipeParser(code: string) {
   return data.recipe
 }
 
-export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
+interface ParseAndExtractReturn {
+  ctx: PandaContext
+  encoder: StyleEncoder
+  styles: StyleDecoder
+  json: any[]
+  css: string
+}
+
+export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig): ParseAndExtractReturn => {
   const ctx = getFixtureProject(code, userConfig, tsconfig)
   const encoder = ctx.encoder.clone()
   const result = ctx.project.parseSourceFile(filePath, encoder)!

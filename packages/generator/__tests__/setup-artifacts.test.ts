@@ -111,6 +111,8 @@ describe('setup-artifacts', () => {
           "patterns/bleed.d.ts",
           "patterns/visually-hidden.mjs",
           "patterns/visually-hidden.d.ts",
+          "patterns/cq.mjs",
+          "patterns/cq.d.ts",
         ],
       ]
     `)
@@ -247,6 +249,8 @@ describe('setup-artifacts', () => {
           "patterns/bleed.d.ts",
           "patterns/visually-hidden.mjs",
           "patterns/visually-hidden.d.ts",
+          "patterns/cq.mjs",
+          "patterns/cq.d.ts",
         ],
         [
           "jsx/is-valid-prop.mjs",
@@ -300,6 +304,8 @@ describe('setup-artifacts', () => {
           "jsx/bleed.d.ts",
           "jsx/visually-hidden.mjs",
           "jsx/visually-hidden.d.ts",
+          "jsx/cq.mjs",
+          "jsx/cq.d.ts",
         ],
         [
           "jsx/index.mjs",

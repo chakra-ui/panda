@@ -226,6 +226,8 @@ export class Context {
   createConditions = (config: UserConfig): Conditions => {
     return new Conditions({
       conditions: config.conditions,
+      containerNames: config.theme?.containerNames,
+      containerSizes: config.theme?.containerSizes,
       breakpoints: config.theme?.breakpoints,
     })
   }

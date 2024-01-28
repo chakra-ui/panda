@@ -9,7 +9,15 @@ const all: ConfigPath[] = ['outdir', 'forceConsistentTypeExtension', 'outExtensi
 
 const format: ConfigPath[] = ['syntax', 'hash', 'prefix', 'separator']
 
-const tokens: ConfigPath[] = ['utilities', 'conditions', 'theme.tokens', 'theme.semanticTokens', 'theme.breakpoints']
+const tokens: ConfigPath[] = [
+  'utilities',
+  'conditions',
+  'theme.tokens',
+  'theme.semanticTokens',
+  'theme.breakpoints',
+  'theme.containerNames',
+  'theme.containerSizes',
+]
 
 const jsx: ConfigPath[] = ['jsxFramework', 'jsxFactory', 'jsxStyleProps', 'syntax']
 
