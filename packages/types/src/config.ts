@@ -38,7 +38,7 @@ export interface StudioOptions {
   }
 }
 
-interface Patterns {
+export interface Patterns {
   [pattern: string]: PatternConfig
 }
 
@@ -347,14 +347,12 @@ export interface Config
    */
   eject?: boolean
   /**
-   * Whether to validate the config before doing anything.
-   * - Check for duplicate between token & semanticTokens names
-   * - Check for duplicate between recipes/patterns/slots names
-   * - Check for token / semanticTokens paths (must end/contain 'value')
-   * - Check for self/circular token references
-   * - Check for missing tokens references
-   * - Check for conditions selectors (must contain '&')
-   * - Check for breakpoints units (must be the same)
+   * The validation strcictnesss to use when validating the config.
+   * - When set to 'none', no validation will be performed.
+   * - When set to 'warn', warnings will be logged when validation fails.
+   * - When set to 'error', errors will be thrown when validation fails.
+   *
+   * @default 'error'
    */
   validation?: 'none' | 'warn' | 'error'
 }

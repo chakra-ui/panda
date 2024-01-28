@@ -1,6 +1,6 @@
 import type { UserConfig } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { checkConfig, validateConfig } from './validate-config'
+import { validateConfig } from './validate-config'
 
 describe('validateConfig', () => {
   test('should not throw when no errors', () => {
@@ -394,49 +394,4 @@ describe('validateConfig', () => {
       `[Error: [recipes]: This recipe name is already used in \`config.patterns\`: \`stack\`]`,
     )
   })
-})
-
-test('checkConfig for extends', () => {
-  const config = {
-    theme: {
-      tokens: {
-        colors: {
-          primary: { value: '#000' },
-        },
-      },
-      recipes: {
-        aaa: {
-          className: 'aaa',
-        },
-      },
-    },
-    conditions: {
-      dark: '@media (prefers-color-scheme: dark)',
-    },
-    patterns: {
-      stack: {},
-    },
-  }
-
-  expect(checkConfig(config)).toMatchInlineSnapshot(`
-    Set {
-      "theme",
-      "conditions",
-      "patterns",
-    }
-  `)
-
-  expect(
-    checkConfig({
-      theme: {
-        extend: config.theme,
-      },
-      conditions: {
-        extend: config.conditions,
-      },
-      patterns: {
-        extend: config.patterns,
-      },
-    }),
-  ).toMatchInlineSnapshot(`undefined`)
 })

@@ -1,4 +1,4 @@
-import { isObject } from '@pandacss/shared'
+import { PandaError, isObject } from '@pandacss/shared'
 import type { Token } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
@@ -67,6 +67,6 @@ export const isToken = (value: any): value is Token => {
 
 export function assertTokenFormat(token: any): asserts token is Token {
   if (!isToken(token)) {
-    throw new Error(`Invalid token format: ${JSON.stringify(token)}`)
+    throw new PandaError('INVALID_TOKEN', `Invalid token format: ${JSON.stringify(token)}`)
   }
 }

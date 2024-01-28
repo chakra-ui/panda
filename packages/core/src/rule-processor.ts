@@ -1,4 +1,5 @@
 import type { CssOptions, Stylesheet } from '@pandacss/core'
+import { PandaError } from '@pandacss/shared'
 import type {
   AtomicRecipeRule,
   AtomicRule,
@@ -25,7 +26,7 @@ export class RuleProcessor {
   getParamsOrThrow() {
     const isReady = Boolean(this.encoder && this.decoder && this.sheet)
     if (!isReady) {
-      throw new Error('RuleProcessor is missing params, please call `clone` first')
+      throw new PandaError('MISSING_PARAMS', 'RuleProcessor is missing params, please call `clone` first')
     }
 
     return {

@@ -1,9 +1,9 @@
 import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { LoadConfigResult, UserConfig } from '@pandacss/types'
-import { type BundleConfigResult } from './bundle-config'
 import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { getResolvedConfig } from './get-resolved-config'
-import { checkConfig, validateConfig } from './validate-config'
+import type { BundleConfigResult } from './types'
+import { validateConfig } from './validate-config'
 
 /**
  * Resolve the final config (including presets)
@@ -29,15 +29,18 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
 
   result.config.presets = Array.from(presets)
 
-  checkConfig(result.config)
+  const config = await getResolvedConfig(result.config, cwd)
 
-  const mergedConfig = await getResolvedConfig(result.config, cwd)
-  validateConfig(mergedConfig as UserConfig)
+  validateConfig(config as UserConfig)
 
-  const hooks = result.config.hooks ?? {}
+  const { hooks = {} } = result.config
+
+  const loadConfigResult = {
+    ...result,
+    config: config as any,
+  } as LoadConfigResult
 
   // This allows editing the config before the context is created
-  const loadConfigResult = { ...result, config: mergedConfig as any } as LoadConfigResult
   await hooks['config:resolved']?.({ conf: loadConfigResult })
 
   const serialized = stringifyJson(loadConfigResult.config)

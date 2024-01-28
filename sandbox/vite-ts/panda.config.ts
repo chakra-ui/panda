@@ -29,8 +29,6 @@ export default defineConfig({
   outdir: 'styled-system',
   jsxFactory: 'panda',
   jsxFramework: 'react',
-  conditions: {},
-  validation: 'warn',
   theme: {
     semanticTokens: {
       colors: {

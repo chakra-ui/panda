@@ -16,7 +16,7 @@ import {
   writeAnalyzeJSON,
   type CssGenOptions,
 } from '@pandacss/node'
-import { compact } from '@pandacss/shared'
+import { PandaError, compact } from '@pandacss/shared'
 import type { CssArtifactType } from '@pandacss/types'
 import { cac } from 'cac'
 import { join, resolve } from 'path'
@@ -294,7 +294,7 @@ export async function main() {
         studio = require(studioPath)
       } catch (error) {
         logger.error('studio', error)
-        throw new Error("You need to install '@pandacss/studio' to use this command")
+        throw new PandaError('MISSING_STUDIO', "You need to install '@pandacss/studio' to use this command")
       }
 
       if (preview) {
