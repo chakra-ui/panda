@@ -12,7 +12,8 @@ transform(props) {
     gap,
     ...rest
   };
-},defaultValues:{direction:'column',gap:'10px'}}
+},
+defaultValues:{direction:'column',gap:'10px'}}
 
 export const getStackStyle = (styles = {}) => {
   const _styles = getPatternStyles(stackConfig, styles)

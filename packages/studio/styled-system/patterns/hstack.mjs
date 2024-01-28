@@ -12,7 +12,8 @@ transform(props) {
     flexDirection: "row",
     ...rest
   };
-},defaultValues:{gap:'10px'}}
+},
+defaultValues:{gap:'10px'}}
 
 export const getHstackStyle = (styles = {}) => {
   const _styles = getPatternStyles(hstackConfig, styles)

@@ -82,7 +82,7 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
 
     const ${baseName}Config = ${patternConfigFn
         .replace(`{transform`, `{\ntransform`)
-        .replace(`,defaultValueFn`, `,\ndefaultValueFn`)}
+        .replace(`,defaultValues`, `,\ndefaultValues`)}
 
     export const ${styleFnName} = (styles = {}) => {
       const _styles = getPatternStyles(${baseName}Config, styles)

@@ -146,7 +146,8 @@ test('should generate pattern', () => {
         gap,
         ...rest
       };
-    },defaultValues:{direction:'column',gap:'10px'}}
+    },
+    defaultValues:{direction:'column',gap:'10px'}}
 
     export const getStackStyle = (styles = {}) => {
       const _styles = getPatternStyles(stackConfig, styles)
@@ -194,7 +195,8 @@ test('should generate pattern', () => {
         flexDirection: "column",
         ...rest
       };
-    },defaultValues:{gap:'10px'}}
+    },
+    defaultValues:{gap:'10px'}}
 
     export const getVstackStyle = (styles = {}) => {
       const _styles = getPatternStyles(vstackConfig, styles)
@@ -242,7 +244,8 @@ test('should generate pattern', () => {
         flexDirection: "row",
         ...rest
       };
-    },defaultValues:{gap:'10px'}}
+    },
+    defaultValues:{gap:'10px'}}
 
     export const getHstackStyle = (styles = {}) => {
       const _styles = getPatternStyles(hstackConfig, styles)
@@ -640,7 +643,8 @@ test('should generate pattern', () => {
         rowGap,
         ...rest
       };
-    },defaultValues(props) {
+    },
+    defaultValues(props) {
       return { gap: props.columnGap || props.rowGap ? void 0 : "10px" };
     }}
 
@@ -844,7 +848,8 @@ test('should generate pattern', () => {
         borderColor: color,
         ...rest
       };
-    },defaultValues:{orientation:'horizontal',thickness:'1px'}}
+    },
+    defaultValues:{orientation:'horizontal',thickness:'1px'}}
 
     export const getDividerStyle = (styles = {}) => {
       const _styles = getPatternStyles(dividerConfig, styles)
@@ -919,7 +924,8 @@ test('should generate pattern', () => {
         }),
         ...rest
       };
-    },defaultValues(props) {
+    },
+    defaultValues(props) {
       const offset = props.offset || "0";
       return { offset, offsetX: offset, offsetY: offset, placement: "top-end" };
     }}
@@ -970,7 +976,8 @@ test('should generate pattern', () => {
         marginBlock: "calc(var(--bleed-y, 0) * -1)",
         ...rest
       };
-    },defaultValues:{inline:'0',block:'0'}}
+    },
+    defaultValues:{inline:'0',block:'0'}}
 
     export const getBleedStyle = (styles = {}) => {
       const _styles = getPatternStyles(bleedConfig, styles)

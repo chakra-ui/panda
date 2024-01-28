@@ -37,7 +37,8 @@ transform(props, { map }) {
     }),
     ...rest
   };
-},defaultValues(props) {
+},
+defaultValues(props) {
   const offset = props.offset || "0";
   return { offset, offsetX: offset, offsetY: offset, placement: "top-end" };
 }}

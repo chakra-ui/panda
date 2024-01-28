@@ -12,7 +12,8 @@ transform(props) {
     flexDirection: "column",
     ...rest
   };
-},defaultValues:{gap:'10px'}}
+},
+defaultValues:{gap:'10px'}}
 
 export const getVstackStyle = (styles = {}) => {
   const _styles = getPatternStyles(vstackConfig, styles)

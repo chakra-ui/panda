@@ -12,7 +12,8 @@ transform(props, { map, isCssUnit, isCssVar }) {
     marginBlock: "calc(var(--bleed-y, 0) * -1)",
     ...rest
   };
-},defaultValues:{inline:'0',block:'0'}}
+},
+defaultValues:{inline:'0',block:'0'}}
 
 export const getBleedStyle = (styles = {}) => {
   const _styles = getPatternStyles(bleedConfig, styles)

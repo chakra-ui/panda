@@ -13,7 +13,8 @@ transform(props, { map }) {
     borderColor: color,
     ...rest
   };
-},defaultValues:{orientation:'horizontal',thickness:'1px'}}
+},
+defaultValues:{orientation:'horizontal',thickness:'1px'}}
 
 export const getDividerStyle = (styles = {}) => {
   const _styles = getPatternStyles(dividerConfig, styles)

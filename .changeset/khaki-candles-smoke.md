@@ -15,6 +15,7 @@ defineConfig({
         justify: { type: 'property', value: 'justifyContent' },
         gap: { type: 'property', value: 'gap' },
       },
+      // you can also use a token like '10'
       defaultValues: { gap: '40px' },
       transform(props) {
         const { justify, gap, ...rest } = props

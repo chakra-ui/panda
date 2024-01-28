@@ -13,7 +13,8 @@ transform(props, { map, isCssUnit }) {
     rowGap,
     ...rest
   };
-},defaultValues(props) {
+},
+defaultValues(props) {
   return { gap: props.columnGap || props.rowGap ? void 0 : "10px" };
 }}
 
