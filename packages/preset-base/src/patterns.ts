@@ -43,8 +43,12 @@ const stack = definePattern({
     direction: { type: 'property', value: 'flexDirection' },
     gap: { type: 'property', value: 'gap' },
   },
+  defaultValues: {
+    direction: 'column',
+    gap: '10px',
+  },
   transform(props) {
-    const { align, justify, direction = 'column', gap = '10px', ...rest } = props
+    const { align, justify, direction, gap, ...rest } = props
     return {
       display: 'flex',
       flexDirection: direction,
@@ -62,8 +66,11 @@ const vstack = definePattern({
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
+  defaultValues: {
+    gap: '10px',
+  },
   transform(props) {
-    const { justify, gap = '10px', ...rest } = props
+    const { justify, gap, ...rest } = props
     return {
       display: 'flex',
       alignItems: 'center',
@@ -81,8 +88,11 @@ const hstack = definePattern({
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
+  defaultValues: {
+    gap: '10px',
+  },
   transform(props) {
-    const { justify, gap = '10px', ...rest } = props
+    const { justify, gap, ...rest } = props
     return {
       display: 'flex',
       alignItems: 'center',
@@ -154,10 +164,12 @@ const grid = definePattern({
     columns: { type: 'number' },
     minChildWidth: { type: 'token', value: 'sizes', property: 'width' },
   },
-  transform(props, { map }) {
-    const regex = /\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/
-    const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '10px', columns, minChildWidth, ...rest } = props
-    const getValue = (v: string) => (regex.test(v) ? v : `token(sizes.${v}, ${v})`)
+  defaultValues(props) {
+    return { gap: props.columnGap || props.rowGap ? undefined : '10px' }
+  },
+  transform(props, { map, isCssUnit }) {
+    const { columnGap, rowGap, gap, columns, minChildWidth, ...rest } = props
+    const getValue = (v: string) => (isCssUnit(v) ? v : `token(sizes.${v}, ${v})`)
     return {
       display: 'grid',
       gridTemplateColumns:
@@ -287,8 +299,12 @@ const divider = definePattern({
     thickness: { type: 'token', value: 'sizes', property: 'borderWidth' },
     color: { type: 'token', value: 'colors', property: 'borderColor' },
   },
+  defaultValues: {
+    orientation: 'horizontal',
+    thickness: '1px',
+  },
   transform(props, { map }) {
-    const { orientation = 'horizontal', thickness = '1px', color, ...rest } = props
+    const { orientation, thickness, color, ...rest } = props
     return {
       '--thickness': thickness,
       width: map(orientation, (v) => (v === 'vertical' ? undefined : '100%')),
@@ -355,8 +371,12 @@ const float = definePattern({
       ],
     },
   },
+  defaultValues(props) {
+    const offset = props.offset || '0'
+    return { offset, offsetX: offset, offsetY: offset, placement: 'top-end' }
+  },
   transform(props, { map }) {
-    const { offset = '0', offsetX = offset, offsetY = offset, placement = 'top-end', ...rest } = props
+    const { offset, offsetX, offsetY, placement, ...rest } = props
     return {
       display: 'inline-flex',
       justifyContent: 'center',
@@ -398,11 +418,16 @@ const bleed = definePattern({
     inline: { type: 'property', value: 'marginInline' },
     block: { type: 'property', value: 'marginBlock' },
   },
-  transform(props) {
-    const { inline = '0', block = '0', ...rest } = props
+  defaultValues: {
+    inline: '0',
+    block: '0',
+  },
+  transform(props, { map, isCssUnit, isCssVar }) {
+    const { inline, block, ...rest } = props
+    const valueFn = (v: string) => (isCssUnit(v) || isCssVar(v) ? v : `token(spacing.${v}, ${v})`)
     return {
-      '--bleed-x': `spacing.${inline}`,
-      '--bleed-y': `spacing.${block}`,
+      '--bleed-x': map(inline, valueFn),
+      '--bleed-y': map(block, valueFn),
       marginInline: 'calc(var(--bleed-x, 0) * -1)',
       marginBlock: 'calc(var(--bleed-y, 0) * -1)',
       ...rest,

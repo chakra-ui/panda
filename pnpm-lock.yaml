@@ -668,6 +668,9 @@ importers:
 
   packages/token-dictionary:
     dependencies:
+      '@pandacss/logger':
+        specifier: workspace:^
+        version: link:../logger
       '@pandacss/shared':
         specifier: workspace:*
         version: link:../shared

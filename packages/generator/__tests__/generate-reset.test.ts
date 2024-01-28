@@ -233,6 +233,10 @@ describe('generate reset', () => {
         .pd-reset :-moz-focusring {
           outline: auto;
         }
+
+        .pd-reset [hidden] {
+          display: none !important;
+        }
       }"
     `)
   })

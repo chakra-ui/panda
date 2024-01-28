@@ -1,4 +1,4 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const linkBoxConfig = {
@@ -13,7 +13,10 @@ transform(props) {
   };
 }}
 
-export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
+export const getLinkBoxStyle = (styles = {}) => {
+  const _styles = getPatternStyles(linkBoxConfig, styles)
+  return linkBoxConfig.transform(_styles, patternFns)
+}
 
 export const linkBox = (styles) => css(getLinkBoxStyle(styles))
 linkBox.raw = getLinkBoxStyle

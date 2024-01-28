@@ -222,6 +222,10 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   ${selector}:-moz-focusring {
     outline: auto;
   }
+
+  ${selector}[hidden] {
+    display: none !important;
+  }
 `
 
   if (ctx.hooks['cssgen:done']) {

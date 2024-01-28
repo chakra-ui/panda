@@ -1,7 +1,7 @@
 import { logger } from '@pandacss/logger'
 import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
-import { expandCssFunctions, optimizeCss } from './optimize'
+import { sortCssMediaQueries, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
 import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
@@ -93,15 +93,11 @@ export class Stylesheet {
 
   toCss = ({ optimize = false, minify }: CssOptions = {}) => {
     try {
-      const { utility } = this.context
       const breakpoints = this.context.conditions.breakpoints
-
       const root = this.context.layers.insert()
 
       breakpoints.expandScreenAtRule(root)
-      expandCssFunctions(root, { token: utility.getToken, raw: this.context.utility.tokens.getByName })
-
-      const css = root.toString()
+      const css = sortCssMediaQueries(root)
 
       return optimize
         ? optimizeCss(css, {

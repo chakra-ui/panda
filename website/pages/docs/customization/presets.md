@@ -54,6 +54,15 @@ export default defineConfig({
 })
 ```
 
+The available keys for a preset are:
+
+- [`conditions`](/docs/concepts/conditional-styles)
+- [`globalCss`](/docs/concepts/writing-styles#global-styles)
+- [`patterns`](/docs/concepts/patterns)
+- [`staticCss`](/docs/guides/static)
+- [`theme`](/docs/customization/theme)
+- [`utilities`](/docs/customization/utilities)
+
 ### Asynchronous presets
 
 There are cases where you need to perform logic to determine the content of your preset, you'd call functions to do this. In cases where they're asynchronous; panda allows promises, given that they resolve to a valid preset object.
