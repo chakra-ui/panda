@@ -1,69 +1,45 @@
 import colors from 'kleur'
-import { match, Obj, pipe, when } from 'lil-fp'
 import { isMatch } from 'matcher'
-import { createEntry, formatEntry } from './format-entry'
-import { logLevels } from './levels'
-import { type Config, type LogLevel } from './utils'
 
-const matches = (filters: string[], value: string) => filters.some((search) => isMatch(value, search))
+export interface Config {
+  level?: LogLevel
+  filter?: string
+  isDebug?: boolean
+  onLog?: (entry: LogEntry) => void
+}
 
 export const createLogger = (conf: Config = {}) => {
-  let level: LogLevel = conf.level ?? 'info'
+  let level: LogLevel = conf.isDebug ? 'debug' : conf.level ?? 'info'
+  const filter = conf.filter !== '*' ? conf.filter?.split(/[\s,]+/) ?? [] : []
 
-  const { stdout, timing } = pipe(
-    conf,
+  const getLevel = () => (filter.length ? 'debug' : level)
+  const isValid = (level: LogLevel, type: string) => {
+    const badLevel = logLevels[getLevel()].weight > logLevels[level].weight
+    const badType = filter.length > 0 && !matches(filter, type)
+    return !(badType || badLevel)
+  }
 
-    ({ filter }) => ({
-      getLevel: () => (filter ? 'debug' : level),
-      filter: filter !== '*' ? filter?.split(/[\s,]+/) ?? [] : [],
-    }),
+  const stdout = (level: LogLevel | null) => (type: string, data: any) => {
+    const entry = createEntry(level, type, data)
 
-    Obj.assignTo('config'),
+    if (level != null && isValid(level, type)) {
+      const logEntry = formatEntry(entry) ?? {}
+      console.log(logEntry.label, logEntry.msg)
+    } else if (getLevel() !== 'silent' && level == null) {
+      console.log(...[type, data].filter(Boolean))
+    }
 
-    Obj.assign(({ config }) => ({
-      isValid(level: LogLevel, type: string) {
-        const badLevel = logLevels[config.getLevel()].weight > logLevels[level].weight
-        const badType = config.filter.length > 0 && !matches(config.filter, type)
-        return !(badType || badLevel)
-      },
-    })),
+    conf.onLog?.(entry)
+  }
 
-    Obj.assign(({ isValid, config }) => ({
-      stdout(level: LogLevel | null) {
-        return (type: string, data: any) => {
-          pipe(
-            createEntry(level, type, data),
-            match(
-              when(
-                ({ level, type }) => level != null && isValid(level, type),
-                (entry) => {
-                  const { msg, label } = formatEntry(entry) ?? {}
-                  console.log(label, msg)
-                },
-              ),
-              when(
-                ({ level }) => config.getLevel() !== 'silent' && level == null,
-                () => {
-                  console.log(...[type, data].filter(Boolean))
-                },
-              ),
-            ),
-          )
-        }
-      },
-    })),
-
-    Obj.assign(({ stdout }) => ({
-      timing: (level: LogLevel) => (msg: string) => {
-        const start = performance.now()
-        return (_msg = msg) => {
-          const end = performance.now()
-          const ms = end - start
-          stdout(level)('hrtime', `${_msg} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
-        }
-      },
-    })),
-  )
+  const timing = (level: LogLevel) => (msg: string) => {
+    const start = performance.now()
+    return (_msg = msg) => {
+      const end = performance.now()
+      const ms = end - start
+      stdout(level)('hrtime', `${_msg} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
+    }
+  }
 
   return {
     get level() {
@@ -86,4 +62,48 @@ export const createLogger = (conf: Config = {}) => {
     },
     isDebug: Boolean(conf.isDebug),
   }
+}
+
+type LogLevel = keyof typeof logLevels
+type LogEntry = {
+  level: LogLevel | null
+  msg: string
+} & Record<string, any>
+
+const matches = (filters: string[], value: string) => filters.some((search) => isMatch(value, search))
+const createEntry = (level: LogLevel | null, type: string, data: any) => {
+  const msg = data instanceof Error ? colors.red(data.stack ?? data.message) : data
+  return { type, level, msg }
+}
+
+interface FormatedEntry {
+  label: string
+  msg: string
+}
+
+const formatEntry = (entry: LogEntry): FormatedEntry => {
+  const uword = entry.type ? colors.gray(`[${entry.type}]`) : ''
+  let label = ''
+  let msg = ''
+
+  if (entry.level != null) {
+    const { msg: message, level } = entry
+    const color = logLevels[level!].color
+    const levelLabel = colors.bold(color(`${level}`))
+    label = [`🐼`, levelLabel, uword].filter(Boolean).join(' ')
+    msg = message
+  } else {
+    label = uword ?? ''
+    msg = entry.msg
+  }
+
+  return { label, msg }
+}
+
+const logLevels = {
+  debug: { weight: 0, color: colors.magenta },
+  info: { weight: 1, color: colors.blue },
+  warn: { weight: 2, color: colors.yellow },
+  error: { weight: 3, color: colors.red },
+  silent: { weight: 4, color: colors.white },
 }

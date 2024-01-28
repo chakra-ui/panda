@@ -9,5 +9,4 @@ export const logger = createLogger({
   isDebug: Boolean(debug),
 })
 
-export { createLogScope } from './scope'
 export { colors }
