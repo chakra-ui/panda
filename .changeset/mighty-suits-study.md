@@ -1,31 +1,88 @@
 ---
-'@pandacss/token-dictionary': patch
-'@pandacss/preset-base': patch
-'@pandacss/types': patch
-'@pandacss/core': patch
+'@pandacss/preset-base': minor
+'@pandacss/types': minor
+'@pandacss/core': minor
 ---
 
-Add new `cq` pattern in `@pandacss/preset-base` (included by default)
+### Container Query Theme
+
+Improve support for CSS container queries by adding a new `containerNames` and `containerSizes` theme options.
+
+You can new define container names and sizes in your theme configuration and use them in your styles.
 
 ```ts
-// 1 - Define container conditions
-
 export default defineConfig({
   // ...
   theme: {
-    containerNames: ['sidebar', 'content'],
-    containerSizes: {
-      xs: '40em',
-      sm: '60em',
-      md: '80em',
+    extend: {
+      containerNames: ['sidebar', 'content'],
+      containerSizes: {
+        xs: '40em',
+        sm: '60em',
+        md: '80em',
+      },
     },
   },
 })
 ```
 
-```ts
-// 2 - Automatically generate container query pattern
+Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
 
+> The default container syntax is `@/<container-size>`.
+
+```ts
+import { css } from '/styled-system/css'
+
+function Demo() {
+  return (
+    <nav className={css({ containerType: 'inline-size' })}>
+      <div
+        className={css({
+          fontSize: { '@/sm': 'md' },
+        })}
+      />
+    </nav>
+  )
+}
+```
+
+This will generate the following CSS:
+
+```css
+.cq-type_inline-size {
+  container-type: inline-size;
+}
+
+@container (min-width: 60em) {
+  .@\/sm:fs_md {
+    container-type: inline-size;
+  }
+}
+```
+
+### Container Query Pattern
+
+To make it easier to use container queries, we've added a new `cq` pattern to `@pandacss/preset-base`.
+
+```ts
+import { cq } from 'styled-system/patterns'
+
+function Demo() {
+  return (
+    <nav className={cq()}>
+      <div
+        className={css({
+          fontSize: { base: 'lg', '@/sm': 'md' },
+        })}
+      />
+    </nav>
+  )
+}
+```
+
+You can also named container queries:
+
+```ts
 import { cq } from 'styled-system/patterns'
 
 function Demo() {
@@ -33,8 +90,6 @@ function Demo() {
     <nav className={cq({ name: 'sidebar' })}>
       <div
         className={css({
-          // When the sidebar container reaches the `sm` size
-          // change font size to `md`
           fontSize: { base: 'lg', '@sidebar/sm': 'md' },
         })}
       />
