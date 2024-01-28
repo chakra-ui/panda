@@ -1,3 +1,4 @@
+import { getUnit } from '@pandacss/shared'
 import type { Theme } from '@pandacss/types'
 import type { AddError } from '../types'
 
@@ -9,7 +10,7 @@ export const validateBreakpoints = (breakpoints: Theme['breakpoints'], addError:
   const values = Object.values(breakpoints)
 
   for (const value of values) {
-    const unit = value.replace(/[0-9]/g, '')
+    const unit = getUnit(value) ?? 'px'
     units.add(unit)
   }
 
