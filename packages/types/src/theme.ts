@@ -38,11 +38,11 @@ export interface Theme {
    */
   slotRecipes?: Record<string, SlotRecipeConfig>
   /**
-   * The predefined containers names for your project.
+   * The predefined container names for your project.
    */
   containerNames?: string[]
   /**
-   * The predefined containers sizes for your project.
+   * The predefined container sizes for your project.
    */
   containerSizes?: Record<string, string>
 }

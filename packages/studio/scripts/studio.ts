@@ -21,6 +21,7 @@ export async function buildStudio({ outDir, configPath }: BuildOpts) {
       outDir,
       root: appPath,
       integrations: [react(), studio()],
+      devToolbar: { enabled: false },
     })
   } catch (error) {
     console.log(error)
@@ -42,6 +43,7 @@ export async function serveStudio({ configPath, port, host, outDir }: BuildOpts)
         port: port ? Number(port) : undefined,
         host,
       },
+      devToolbar: { enabled: false },
     })
   } catch (error) {
     console.log(error)
@@ -58,6 +60,7 @@ export async function previewStudio({ outDir }: BuildOpts) {
       outDir,
       root: appPath,
       integrations: [react(), studio()],
+      devToolbar: { enabled: false },
     })
   } catch (error) {
     console.log(error)
