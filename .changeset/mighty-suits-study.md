@@ -54,7 +54,7 @@ This will generate the following CSS:
 }
 
 @container (min-width: 60em) {
-  .@\/sm:fs_md {
+  .\@\/sm:fs_md {
     container-type: inline-size;
   }
 }
