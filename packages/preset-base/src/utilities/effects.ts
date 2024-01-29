@@ -1,4 +1,5 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from '../color-mix-transform'
 
 export const effects: UtilityConfig = {
   opacity: {
@@ -13,11 +14,7 @@ export const effects: UtilityConfig = {
     shorthand: 'shadowColor',
     className: 'shadow',
     values: 'colors',
-    transform(value) {
-      return {
-        '--shadow-color': value,
-      }
-    },
+    transform: createColorMixTransform('--shadow-color'),
   },
   mixBlendMode: {
     className: 'mix-blend',

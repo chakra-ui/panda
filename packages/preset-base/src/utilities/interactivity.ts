@@ -1,13 +1,16 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from '../color-mix-transform'
 
 export const interactivity: UtilityConfig = {
   accentColor: {
     className: 'accent',
     values: 'colors',
+    transform: createColorMixTransform('accentColor'),
   },
   caretColor: {
     className: 'caret',
     values: 'colors',
+    transform: createColorMixTransform('caretColor'),
   },
   scrollBehavior: {
     className: 'scroll',

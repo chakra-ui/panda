@@ -1,4 +1,5 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from '../color-mix-transform'
 
 export const divide: UtilityConfig = {
   divideX: {
@@ -28,11 +29,9 @@ export const divide: UtilityConfig = {
   divideColor: {
     className: 'divide',
     values: 'colors',
-    transform(value) {
+    transform(value, args) {
       return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          borderColor: value,
-        },
+        '& > :not([hidden]) ~ :not([hidden])': divideColor(value, args),
       }
     },
   },
@@ -48,3 +47,5 @@ export const divide: UtilityConfig = {
     },
   },
 }
+
+const divideColor = createColorMixTransform('borderColor')
