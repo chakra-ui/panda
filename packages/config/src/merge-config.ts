@@ -1,6 +1,7 @@
 import type { Config } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { assign, mergeWith } from './utils'
+import { traverse } from '@pandacss/shared'
 
 type Extendable<T> = T & { extend?: T }
 interface Dict {
@@ -48,6 +49,8 @@ function mergeRecords(records: ExtendableRecord[]) {
  * Merge all `extend` properties into the rest of the object
  */
 function mergeExtensions(records: ExtendableRecord[]) {
+  omitKeysWithNullValue(records)
+
   const { extend = [], ...restProps } = mergeRecords(records)
   return mergeWith(restProps, extend, (obj: any, extensions: any[]) => {
     return mergeAndConcat({}, obj, ...extensions)
@@ -63,6 +66,27 @@ const compact = (obj: any) => {
     }
     return acc
   }, {} as any)
+}
+
+function omitKeysWithNullValue(configs: ExtendableConfig[]) {
+  const omitPaths = new Set<string>()
+
+  // First iteration to collect all paths with `null` values
+  traverse(configs[0], (args) => {
+    if (args.value === null && args.parent && args.key) {
+      omitPaths.add(args.path)
+      delete args.parent[args.key as keyof typeof args.parent]
+    }
+  })
+
+  // Second iteration to remove all paths with `null` values in every config/presets
+  configs.slice(1).forEach((config) => {
+    traverse(config, (args) => {
+      if (omitPaths.has(args.path)) {
+        delete args.parent[args.key as keyof typeof args.parent]
+      }
+    })
+  })
 }
 
 /**
