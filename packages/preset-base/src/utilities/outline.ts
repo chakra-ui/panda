@@ -1,5 +1,5 @@
 import type { UtilityConfig } from '@pandacss/types'
-import { createColorMixTransform } from './color-mix-transform'
+import { createColorMixTransform } from '../color-mix-transform'
 
 export const outline: UtilityConfig = {
   outlineWidth: {

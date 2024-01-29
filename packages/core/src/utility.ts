@@ -346,9 +346,13 @@ export class Utility {
       raw: (path: string) => this.tokens.getByName(path),
     })
 
-    const utils = { colorMix }
+    const _colorMix = (value: string) => colorMix(value, token)
 
-    return { token, raw, utils }
+    return {
+      token,
+      raw,
+      utils: { colorMix: _colorMix },
+    }
   }
 
   private setStyles = (property: string, raw: string, alias: string, propKey?: string) => {

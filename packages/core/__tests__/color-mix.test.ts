@@ -1,7 +1,6 @@
-import { createRuleProcessor } from '@pandacss/fixture'
+import { createRuleProcessor, createColorMixTransform } from '@pandacss/fixture'
 import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { createColorMixTransform } from '../../preset-base/src/utilities/color-mix-transform'
 
 describe('color-mix', () => {
   const api = createRuleProcessor({
@@ -15,14 +14,7 @@ describe('color-mix', () => {
       gradientFrom: {
         className: 'from',
         values: 'colors',
-        transform(value, args) {
-          const mix = args.utils.colorMix(value, args)
-          return {
-            '--gradient-from': mix.value,
-          }
-        },
-        // could have been
-        // transform: createColorMixTransform('--gradient-from'),
+        transform: createColorMixTransform('--gradient-from'),
       },
     },
     theme: {
@@ -130,7 +122,8 @@ describe('color-mix', () => {
         ],
         "css": "@layer utilities {
         .from_red\\/33 {
-          --gradient-from: color-mix(in srgb, red 33%, transparent);
+          --mix---gradient-from: color-mix(in srgb, red 33%, transparent);
+          --gradient-from: var(--mix---gradient-from, red);
       }
       }",
       }

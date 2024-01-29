@@ -6,7 +6,7 @@
 ---
 
 Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default) to use the
-new [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
+[`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
 
 This function allows you to mix two colors together, and we use it to change the opacity of a color using the
 `{color}/{opacity}` syntax.
@@ -53,7 +53,7 @@ export default defineConfig({
       className: 'bg',
       values: 'colors',
       transform(value, args) {
-        const mix = args.utils.colorMix(value, args)
+        const mix = args.utils.colorMix(value)
         // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
         if (mix.invalid) return { background: value }
 
@@ -72,22 +72,20 @@ Here's a cool snippet (that we use internally !) that makes it easier to create 
 property:
 
 ```ts
-import type { NestedCssProperties, PropertyTransform } from '@pandacss/types'
+import type { PropertyTransform } from '@pandacss/types'
 
 export const createColorMixTransform =
-  (prop: string, fallback = true): PropertyTransform =>
+  (prop: string): PropertyTransform =>
   (value, args) => {
-    const mix = args.utils.colorMix(value, args)
+    const mix = args.utils.colorMix(value)
     if (mix.invalid) return { [prop]: value }
 
     const cssVar = '--mix-' + prop
 
     return {
-      ...(fallback && {
-        [cssVar]: mix.value,
-      }),
-      [prop]: fallback ? `var(${cssVar}, ${mix.color})` : mix.value,
-    } as any as NestedCssProperties
+      [cssVar]: mix.value,
+      [prop]: `var(${cssVar}, ${mix.color})`,
+    }
   }
 ```
 

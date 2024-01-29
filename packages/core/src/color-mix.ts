@@ -1,6 +1,6 @@
 import type { TransformArgs } from '@pandacss/types'
 
-export const colorMix = (value: string, { token }: TransformArgs) => {
+export const colorMix = (value: string, token: TransformArgs['token']) => {
   if (!value) return { invalid: true, value }
 
   const [rawColor, rawOpacity] = value.split('/')
