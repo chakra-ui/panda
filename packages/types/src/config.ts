@@ -156,6 +156,13 @@ interface FileSystemOptions {
    */
   exclude?: string[]
   /**
+   * List of globs or files that will trigger a config reload when changed.
+   *
+   * We automatically track the config file and (transitive) files imported by the config file as much as possible, but sometimes we might miss some.
+   * Use this option as a workaround.
+   */
+  dependencies?: string[]
+  /**
    * Whether to watch for changes and regenerate the css.
    * @default false
    */

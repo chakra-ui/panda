@@ -1,7 +1,7 @@
 import { findConfig, getConfigDependencies } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
-import { PandaError } from '@pandacss/shared'
+import { PandaError, uniq } from '@pandacss/shared'
 import type { DiffConfigResult } from '@pandacss/types'
 import { existsSync, statSync } from 'fs'
 import { normalize, resolve } from 'path'
@@ -12,6 +12,10 @@ import { PandaContext } from './create-context'
 import { parseDependency } from './parse-dependency'
 
 const fileModifiedMap = new Map<string, number>()
+interface FileChanges {
+  changes: Map<string, FileMeta>
+  hasFilesChanged: boolean
+}
 
 export class Builder {
   /**
@@ -20,7 +24,8 @@ export class Builder {
   context: PandaContext | undefined
 
   private hasEmitted = false
-  private filesMeta: { changes: Map<string, FileMeta>; hasFilesChanged: boolean } | undefined
+  private filesMeta: FileChanges | undefined
+  private explicitDepsMeta: FileChanges | undefined
   private affecteds: DiffConfigResult | undefined
   private configDependencies: Set<string> = new Set()
 
@@ -35,7 +40,11 @@ export class Builder {
       ...foundDeps,
       ...(this.context?.conf.dependencies ?? []).map((file) => resolve(cwd, file)),
     ])
-    this.configDependencies = configDeps
+
+    configDeps.forEach((file) => {
+      this.configDependencies.add(file)
+    })
+
     logger.debug('builder', 'Config dependencies')
     logger.debug('builder', configDeps)
   }
@@ -57,6 +66,18 @@ export class Builder {
     })
 
     logger.debug('builder', this.affecteds)
+
+    // explicit config dependencies change
+    this.explicitDepsMeta = this.checkFilesChanged(this.context.explicitDeps)
+
+    if (this.explicitDepsMeta.hasFilesChanged) {
+      this.explicitDepsMeta.changes.forEach((meta, file) => {
+        fileModifiedMap.set(file, meta.mtime)
+      })
+
+      logger.debug('builder', '⚙️ Explicit config dependencies changed')
+      this.affecteds.hasConfigChanged = true
+    }
 
     // config change
     if (this.affecteds.hasConfigChanged) {
@@ -87,8 +108,14 @@ export class Builder {
     const { configPath, cwd } = options
 
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
-    this.context = ctx
 
+    const configDeps = uniq([...ctx.conf.dependencies, ...ctx.explicitDeps])
+
+    configDeps.forEach((file) => {
+      this.configDependencies.add(resolve(cwd || ctx.conf.config.cwd, file))
+    })
+
+    this.context = ctx
     return ctx
   }
 

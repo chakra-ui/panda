@@ -5,9 +5,28 @@ import { createMatcher } from './create-matcher'
 // For some, such as recipes/patterns/jsx-patterns we'll specify which item was specifically affected (e.g. recipes.xxx-yyy)
 // so we can avoid generating/re-writing all the other artifacts of the same kind (e.g. recipes.aaa, recipes.bbb, etc.) that didn't change
 
-const all: ConfigPath[] = ['outdir', 'forceConsistentTypeExtension', 'outExtension']
+const all: ConfigPath[] = [
+  'clean',
+  'cwd',
+  'eject',
+  'outdir',
+  'forceConsistentTypeExtension',
+  'outExtension',
+  'emitPackage',
+  'emitTokensOnly',
+  'presets',
+  'hooks',
+]
 
-const format: ConfigPath[] = ['syntax', 'hash', 'prefix', 'separator']
+const format: ConfigPath[] = [
+  'syntax',
+  'hash',
+  'prefix',
+  'separator',
+  'strictTokens',
+  'strictPropertyValues',
+  'shorthands',
+]
 
 const tokens: ConfigPath[] = [
   'utilities',
@@ -20,8 +39,6 @@ const tokens: ConfigPath[] = [
 ]
 
 const jsx: ConfigPath[] = ['jsxFramework', 'jsxFactory', 'jsxStyleProps', 'syntax']
-
-const css: ConfigPath[] = ['layers', 'optimize', 'minify']
 
 const common = tokens.concat(jsx, format)
 
@@ -45,11 +62,7 @@ const artifactConfigDeps: Record<ArtifactId, ConfigPath[]> = {
   'jsx-patterns': jsx.concat('patterns'),
   'jsx-patterns-index': jsx.concat('patterns'),
   'css-index': ['syntax'],
-  'reset.css': ['preflight', 'layers'],
-  'global.css': ['globalCss'].concat(css),
-  'static.css': ['staticCss', 'theme.breakpoints'].concat(css),
-  'styles.css': tokens.concat(format),
-  'package.json': ['emitPackage'],
+  'package.json': ['emitPackage', 'forceConsistentTypeExtension', 'outExtension'],
 }
 
 // Prepare a list of regex that resolves to an artifact id from a list of config paths
