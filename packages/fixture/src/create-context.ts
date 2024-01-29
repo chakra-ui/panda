@@ -19,7 +19,6 @@ const config: UserConfig = {
 
 export const fixtureDefaults = {
   dependencies: [],
-  configDependencies: [],
   config,
   path: '',
   hooks: {},
