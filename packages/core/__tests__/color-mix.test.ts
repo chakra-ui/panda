@@ -113,7 +113,6 @@ describe('color-mix', () => {
     `)
   })
 
-  // console.log(api['context'].utility.transform('gradientFrom', 'red/33'))
   test('inside var', () => {
     expect(css({ gradientFrom: 'red/33' })).toMatchInlineSnapshot(`
       {
@@ -200,7 +199,8 @@ describe('color-mix', () => {
         ],
         "css": "@layer utilities {
         .bg_red\\/half {
-          background: red/half;
+          --mix-background: color-mix(in srgb, red 50%, transparent);
+          background: var(--mix-background, red);
       }
       }",
       }
