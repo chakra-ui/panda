@@ -1,7 +1,7 @@
 import { findConfig, getConfigDependencies } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
-import { PandaError } from '@pandacss/shared'
+import { PandaError, uniq } from '@pandacss/shared'
 import type { DiffConfigResult } from '@pandacss/types'
 import { existsSync, statSync } from 'fs'
 import { normalize, resolve } from 'path'
@@ -40,7 +40,11 @@ export class Builder {
       ...foundDeps,
       ...(this.context?.conf.dependencies ?? []).map((file) => resolve(cwd, file)),
     ])
-    this.configDependencies = configDeps
+
+    configDeps.forEach((file) => {
+      this.configDependencies.add(file)
+    })
+
     logger.debug('builder', 'Config dependencies')
     logger.debug('builder', configDeps)
   }
@@ -64,7 +68,8 @@ export class Builder {
     logger.debug('builder', this.affecteds)
 
     // explicit config dependencies change
-    this.explicitDepsMeta = this.checkFilesChanged(Array.from(ctx.conf.configDependencies ?? []))
+    this.explicitDepsMeta = this.checkFilesChanged(this.context.explicitDeps)
+
     if (this.explicitDepsMeta.hasFilesChanged) {
       this.explicitDepsMeta.changes.forEach((meta, file) => {
         fileModifiedMap.set(file, meta.mtime)
@@ -107,10 +112,14 @@ export class Builder {
     const { configPath, cwd } = options
 
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
+
+    const configDeps = uniq([...ctx.conf.dependencies, ...ctx.explicitDeps])
+
+    configDeps.forEach((file) => {
+      this.configDependencies.add(resolve(cwd || ctx.conf.config.cwd, file))
+    })
+
     this.context = ctx
-
-    ctx.conf.dependencies?.forEach((file) => this.configDependencies.add(resolve(cwd || ctx.conf.config.cwd, file)))
-
     return ctx
   }
 

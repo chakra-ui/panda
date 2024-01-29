@@ -23,14 +23,6 @@ export class DiffEngine {
     return this.refresh(conf, fn)
   }
 
-  shouldSkipRebuild(affecteds: DiffConfigResult, filePath: string) {
-    // Explicit config dependencies should always trigger a rebuild
-    if (!affecteds.hasConfigChanged && !this.ctx.conf.configDependencies?.includes(filePath)) {
-      logger.debug('diff', 'Config didnt change, skipping rebuild')
-      return true
-    }
-  }
-
   /**
    * Update the context from the refreshed config
    * then persist the changes on each affected engines

@@ -124,14 +124,10 @@ export async function main() {
 
       if (watch) {
         ctx.watchConfig(
-          async (file) => {
+          async () => {
             const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
-
-            if (!affecteds.hasConfigChanged && ctx.diff.shouldSkipRebuild(affecteds, ctx.runtime.path.abs(cwd, file))) {
-              return
-            }
 
             await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await codegen(ctx, Array.from(affecteds.artifacts))
@@ -206,14 +202,10 @@ export async function main() {
       if (watch) {
         //
         ctx.watchConfig(
-          async (file) => {
+          async () => {
             const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
-
-            if (!affecteds.hasConfigChanged && ctx.diff.shouldSkipRebuild(affecteds, ctx.runtime.path.abs(cwd, file))) {
-              return
-            }
 
             await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await cssgen(ctx, options)
@@ -431,14 +423,10 @@ export async function main() {
 
       if (watch) {
         ctx.watchConfig(
-          async (file) => {
+          async () => {
             const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
-
-            if (!affecteds.hasConfigChanged && ctx.diff.shouldSkipRebuild(affecteds, ctx.runtime.path.abs(cwd, file))) {
-              return
-            }
 
             await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await buildInfo(ctx, outfile)

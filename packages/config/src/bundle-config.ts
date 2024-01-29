@@ -2,7 +2,6 @@ import { logger } from '@pandacss/logger'
 import { PandaError } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import { bundleNRequire } from 'bundle-n-require'
-import { resolve } from 'path'
 import { findConfig } from './find-config'
 import type { BundleConfigResult, ConfigFileOptions } from './types'
 
@@ -11,12 +10,12 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
     cwd,
     interopDefault: true,
   })
+
   const config = (mod?.default ?? mod) as T
-  const deps = (config.configDependencies ?? []).map((file) => resolve(cwd, file))
+
   return {
     config,
-    dependencies: dependencies.concat(deps),
-    configDependencies: deps,
+    dependencies,
   }
 }
 

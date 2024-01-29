@@ -2,6 +2,7 @@ import type { StyleEncoder, Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { ParserResult, Project } from '@pandacss/parser'
+import { uniq } from '@pandacss/shared'
 import type { LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
 import { debounce } from 'perfect-debounce'
 import { DiffEngine } from './diff-engine'
@@ -13,6 +14,7 @@ export class PandaContext extends Generator {
   project: Project
   output: OutputEngine
   diff: DiffEngine
+  explicitDeps: string[] = []
 
   constructor(conf: LoadConfigResult) {
     super(conf)
@@ -39,6 +41,13 @@ export class PandaContext extends Generator {
 
     this.output = new OutputEngine(this)
     this.diff = new DiffEngine(this)
+    this.explicitDeps = this.getExplicitDependencies()
+  }
+
+  private getExplicitDependencies = () => {
+    const { cwd, dependencies } = this.config
+    if (!dependencies) return []
+    return this.runtime.fs.glob({ include: dependencies, cwd })
   }
 
   getFiles = () => {
@@ -104,7 +113,7 @@ export class PandaContext extends Generator {
     logger.info('ctx:watch', this.messages.configWatch())
 
     const watcher = this.runtime.fs.watch({
-      include: this.conf.dependencies,
+      include: uniq([...this.explicitDeps, ...this.conf.dependencies]),
       exclude,
       cwd,
       poll,

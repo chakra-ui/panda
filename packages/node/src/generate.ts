@@ -32,14 +32,10 @@ export async function generate(config: Config, configPath?: string) {
   if (watch) {
     //
     ctx.watchConfig(
-      async (file) => {
+      async () => {
         const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
           ctx = new PandaContext(conf)
         })
-
-        if (!affecteds.hasConfigChanged && ctx.diff.shouldSkipRebuild(affecteds, ctx.runtime.path.abs(cwd, file))) {
-          return
-        }
 
         logger.info('ctx:updated', 'config rebuilt ✅')
         await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
