@@ -1,5 +1,14 @@
 # @pandacss/preset-atlaskit
 
+## 0.29.0
+
+### Patch Changes
+
+- Updated dependencies [5fcdeb75]
+- Updated dependencies [250b4d11]
+- Updated dependencies [a2fb5cc6]
+  - @pandacss/types@0.29.0
+
 ## 0.28.0
 
 ### Patch Changes
