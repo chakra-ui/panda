@@ -1,7 +1,6 @@
 import { diffConfigs, loadConfig } from '@pandacss/config'
 import { Generator } from '@pandacss/generator'
-import { logger } from '@pandacss/logger'
-import type { Config, DiffConfigResult, LoadConfigResult } from '@pandacss/types'
+import type { Config, LoadConfigResult } from '@pandacss/types'
 
 export class DiffEngine {
   private prevConfig: Config | undefined
