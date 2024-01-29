@@ -128,5 +128,12 @@ export default {
       },
     },
   },
+  patterns: {
+    box: {
+      transform(props) {
+        return props
+      },
+    },
+  },
 }
 ```
