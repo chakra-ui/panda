@@ -98,11 +98,7 @@ export class Builder {
     // ensure emit is only called when the config is changed
     if (this.hasEmitted && this.affecteds?.hasConfigChanged) {
       logger.debug('builder', 'Emit artifacts after config change')
-
-      // Passing undefined will emit all artifacts again
-      // this can happen when an explicit config dependency changes (since we can't know which artifact is affected in that case)
-      const ids = this.affecteds.artifacts.size ? Array.from(this.affecteds.artifacts) : undefined
-      await codegen(this.getContextOrThrow(), ids)
+      await codegen(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
     }
 
     this.hasEmitted = true
