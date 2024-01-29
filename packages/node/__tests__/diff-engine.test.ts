@@ -606,7 +606,6 @@ describe('DiffEngine affecteds', () => {
 
     expect(affecteds.artifacts).toMatchInlineSnapshot(`
       Set {
-        "design-tokens",
         "types",
         "css-fn",
         "create-recipe",
