@@ -1,9 +1,11 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from '../color-mix-transform'
 
 export const typography: UtilityConfig = {
   color: {
     className: 'text',
     values: 'colors',
+    transform: createColorMixTransform('color'),
   },
   fontFamily: {
     className: 'font',
@@ -49,10 +51,12 @@ export const typography: UtilityConfig = {
   textDecorationColor: {
     className: 'text-decor',
     values: 'colors',
+    transform: createColorMixTransform('textDecorationColor'),
   },
   textEmphasisColor: {
     className: 'text-emphasis',
     values: 'colors',
+    transform: createColorMixTransform('textEmphasisColor'),
   },
   textDecorationStyle: {
     className: 'decoration',

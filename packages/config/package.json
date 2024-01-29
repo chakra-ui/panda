@@ -64,7 +64,6 @@
     "dist"
   ],
   "dependencies": {
-    "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",

@@ -41,6 +41,7 @@
     "dist"
   ],
   "dependencies": {
+    "@pandacss/shared": "workspace:*",
     "ts-evaluator": "^1.1.0",
     "ts-morph": "19.0.0"
   }

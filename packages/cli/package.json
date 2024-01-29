@@ -58,7 +58,6 @@
   "dependencies": {
     "@clack/prompts": "^0.6.3",
     "@pandacss/config": "workspace:*",
-    "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
     "@pandacss/postcss": "workspace:*",

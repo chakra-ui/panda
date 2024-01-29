@@ -1,9 +1,9 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const floatConfig = {
 transform(props, { map }) {
-  const { offset = "0", offsetX = offset, offsetY = offset, placement = "top-end", ...rest } = props;
+  const { offset, offsetX, offsetY, placement, ...rest } = props;
   return {
     display: "inline-flex",
     justifyContent: "center",
@@ -37,9 +37,16 @@ transform(props, { map }) {
     }),
     ...rest
   };
+},
+defaultValues(props) {
+  const offset = props.offset || "0";
+  return { offset, offsetX: offset, offsetY: offset, placement: "top-end" };
 }}
 
-export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
+export const getFloatStyle = (styles = {}) => {
+  const _styles = getPatternStyles(floatConfig, styles)
+  return floatConfig.transform(_styles, patternFns)
+}
 
 export const float = (styles) => css(getFloatStyle(styles))
 float.raw = getFloatStyle

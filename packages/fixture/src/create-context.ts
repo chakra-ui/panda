@@ -4,6 +4,7 @@ import { PandaContext } from '@pandacss/node'
 import { stringifyJson, parseJson } from '@pandacss/shared'
 import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { fixturePreset } from './config'
+import { RuleProcessor } from '@pandacss/core'
 
 const config: UserConfig = {
   ...fixturePreset,
@@ -36,7 +37,7 @@ export const createGeneratorContext = (userConfig?: Config) => {
 
 export const createContext = (userConfig?: Config) => {
   const resolvedConfig = (
-    userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
+    userConfig ? mergeConfigs([userConfig, fixtureDefaults.config]) : fixtureDefaults.config
   ) as UserConfig
 
   return new PandaContext({
@@ -47,4 +48,9 @@ export const createContext = (userConfig?: Config) => {
       useInMemoryFileSystem: true,
     },
   })
+}
+
+export const createRuleProcessor = (userConfig?: Config) => {
+  const ctx = createContext(userConfig)
+  return new RuleProcessor(ctx)
 }

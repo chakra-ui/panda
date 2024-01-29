@@ -1,6 +1,7 @@
 import type { UtilityConfig } from '@pandacss/types'
 import { background } from './background'
 import { border } from './border'
+import { container } from './container'
 import { display } from './display'
 import { divide } from './divide'
 import { effects } from './effects'
@@ -10,6 +11,7 @@ import { interactivity } from './interactivity'
 import { layout } from './layout'
 import { list } from './list'
 import { outline } from './outline'
+import { polyfill } from './polyfill'
 import { sizing } from './sizing'
 import { spacing } from './spacing'
 import { svg } from './svg'
@@ -17,7 +19,6 @@ import { tables } from './tables'
 import { transforms } from './transforms'
 import { transitions } from './transitions'
 import { typography } from './typography'
-import { polyfill } from './polyfill'
 
 export const utilities: UtilityConfig = Object.assign(
   {},
@@ -40,4 +41,5 @@ export const utilities: UtilityConfig = Object.assign(
   svg,
   helpers,
   polyfill,
+  container,
 )

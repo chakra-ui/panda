@@ -37,7 +37,7 @@ describe('config.importMap', () => {
          `
     const result = parseAndExtract(
       code,
-      { outdir: 'src/styled-system', cwd: 'app' },
+      { outdir: 'src/styled-system', cwd: 'app', importMap: 'styled-system' },
       { compilerOptions: { baseUrl: 'app/src' } },
     )
 

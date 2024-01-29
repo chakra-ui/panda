@@ -39,7 +39,6 @@
   "dependencies": {
     "@pandacss/config": "workspace:*",
     "@pandacss/core": "workspace:*",
-    "@pandacss/error": "workspace:*",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/generator": "workspace:*",
     "@pandacss/logger": "workspace:*",

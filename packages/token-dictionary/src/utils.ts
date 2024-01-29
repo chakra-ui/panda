@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import { esc, isObject } from '@pandacss/shared'
+import { PandaError, esc, isObject } from '@pandacss/shared'
 import type { Token } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
@@ -26,9 +26,7 @@ export function getReferences(value: string) {
   return matches.map((match) => match.replace(curlyBracketRegex, '')).map((value) => value.trim())
 }
 
-export function hasReference(value: string) {
-  return REFERENCE_REGEX.test(value)
-}
+export const hasReference = (value: string) => REFERENCE_REGEX.test(value)
 
 const tokenFunctionRegex = /token\(([^)]+)\)/g
 const closingParenthesisRegex = /\)$/g
@@ -39,10 +37,13 @@ const tokenReplacer = (a: string, b?: string) =>
 
 const notFoundMessage = (key: string, value: string) => `Reference not found: \`${key}\` in "${value}"`
 
+const isTokenReference = (v: string) => hasReference(v) || hasTokenReference(v)
+
 export function expandReferences(value: string, fn: (key: string) => string) {
-  if (!hasReference(value) && !hasTokenReference(value)) return value
+  if (!isTokenReference(value)) return value
 
   const references = getReferences(value)
+
   const expanded = references.reduce((valueStr, key) => {
     const resolved = fn(key)
     if (!resolved) {
@@ -57,9 +58,11 @@ export function expandReferences(value: string, fn: (key: string) => string) {
 
   return expanded.replace(tokenFunctionRegex, (_, token) => {
     const [tokenValue, tokenFallback] = token.split(',').map((s: string) => s.trim())
+
     const result = [tokenValue, tokenFallback].filter(Boolean).map((key) => {
       const resolved = fn(key)
-      if (!resolved) {
+
+      if (!resolved && isTokenReference(key)) {
         logger.warn('token', notFoundMessage(key, value))
       }
 
@@ -104,6 +107,6 @@ export const isToken = (value: any): value is Token => {
 
 export function assertTokenFormat(token: any): asserts token is Token {
   if (!isToken(token)) {
-    throw new Error(`Invalid token format: ${JSON.stringify(token)}`)
+    throw new PandaError('INVALID_TOKEN', `Invalid token format: ${JSON.stringify(token)}`)
   }
 }
