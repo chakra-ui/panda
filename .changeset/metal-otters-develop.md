@@ -39,6 +39,23 @@ const myPreset = {
       },
     },
   },
+  patterns: {
+    extend: {
+      box: {
+        transform(props) {
+          return props
+        },
+      },
+      visuallyHidden: {
+        transform(props) {
+          return {
+            srOnly: true,
+            ...props,
+          }
+        },
+      },
+    },
+  },
 }
 
 export default defineConfig({
@@ -73,6 +90,12 @@ export default defineConfig({
           9: null,
         },
       },
+    },
+  },
+  patterns: {
+    extend: {
+      // @ts-expect-error
+      visuallyHidden: null,
     },
   },
 })

@@ -393,6 +393,12 @@ describe('mergeConfigs / theme', () => {
             },
           },
         },
+        patterns: {
+          extend: {
+            // @ts-expect-error
+            visuallyHidden: null,
+          },
+        },
       }),
       // Preset
       defineConfig({
@@ -428,11 +434,33 @@ describe('mergeConfigs / theme', () => {
             },
           },
         },
+        patterns: {
+          extend: {
+            box: {
+              transform(props) {
+                return props
+              },
+            },
+            visuallyHidden: {
+              transform(props) {
+                return {
+                  srOnly: true,
+                  ...props,
+                }
+              },
+            },
+          },
+        },
       }),
     ])
 
     expect(result).toMatchInlineSnapshot(`
       {
+        "patterns": {
+          "box": {
+            "transform": [Function],
+          },
+        },
         "theme": {
           "tokens": {
             "colors": {
