@@ -1,5 +1,31 @@
 # @pandacss/token-dictionary
 
+## 0.29.0
+
+### Patch Changes
+
+- 7c7340ec: Add support for token references with curly braces like `{path.to.token}` in media queries, just like the
+  `token(path.to.token)` alternative already could.
+
+  ```ts
+  css({
+    // ✅ this is fine now, will resolve to something like
+    // `@container (min-width: 56em)`
+    '@container (min-width: {sizes.4xl})': {
+      color: 'green',
+    },
+  })
+  ```
+
+  Fix an issue where the curly token references would not be escaped if the token path was not found.
+
+- Updated dependencies [5fcdeb75]
+- Updated dependencies [250b4d11]
+- Updated dependencies [a2fb5cc6]
+  - @pandacss/types@0.29.0
+  - @pandacss/logger@0.29.0
+  - @pandacss/shared@0.29.0
+
 ## 0.28.0
 
 ### Patch Changes
