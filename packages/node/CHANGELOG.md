@@ -1,5 +1,22 @@
 # @pandacss/node
 
+## 0.29.1
+
+### Patch Changes
+
+- a5c75607: Fix an issue (introduced in v0.29) with `panda init` and add an assert on the new `colorMix` utility
+  function
+- Updated dependencies [a5c75607]
+  - @pandacss/core@0.29.1
+  - @pandacss/generator@0.29.1
+  - @pandacss/parser@0.29.1
+  - @pandacss/config@0.29.1
+  - @pandacss/extractor@0.29.1
+  - @pandacss/logger@0.29.1
+  - @pandacss/shared@0.29.1
+  - @pandacss/token-dictionary@0.29.1
+  - @pandacss/types@0.29.1
+
 ## 0.29.0
 
 ### Minor Changes
