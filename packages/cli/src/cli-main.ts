@@ -53,6 +53,7 @@ export async function main() {
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
     .option('--strict-tokens', 'Using strictTokens: true')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (initFlags: Partial<InitCommandFlags> = {}) => {
       let options = {}
 
@@ -68,6 +69,8 @@ export async function main() {
       if (silent) {
         logger.level = 'silent'
       }
+
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
 
       logger.info('cli', `Panda v${version}\n`)
 
@@ -89,6 +92,8 @@ export async function main() {
       logger.log(msg + box)
 
       done()
+
+      stream.end()
     })
 
   cli

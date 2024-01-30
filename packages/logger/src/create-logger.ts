@@ -1,4 +1,4 @@
-import type { LoggerInterface } from '@pandacss/types'
+import type { LogEntry, LogLevel, LoggerInterface } from '@pandacss/types'
 import colors from 'kleur'
 import { isMatch } from 'matcher'
 
@@ -12,6 +12,7 @@ export interface LoggerConfig {
 export const createLogger = (conf: LoggerConfig = {}): LoggerInterface => {
   let onLog = conf.onLog
   let level: LogLevel = conf.isDebug ? 'debug' : conf.level ?? 'info'
+
   const filter = conf.filter !== '*' ? conf.filter?.split(/[\s,]+/) ?? [] : []
 
   const getLevel = () => (filter.length ? 'debug' : level)
@@ -74,16 +75,12 @@ export const createLogger = (conf: LoggerConfig = {}): LoggerInterface => {
   }
 }
 
-type LogLevel = keyof typeof logLevels
-export type LogEntry = {
-  level: LogLevel | null
-  msg: string
-} & Record<string, any>
-
 const matches = (filters: string[], value: string) => filters.some((search) => isMatch(value, search))
+
 const createEntry = (level: LogLevel | null, type: string, data: any) => {
   const msg = data instanceof Error ? colors.red(data.stack ?? data.message) : data
-  return { type, level, msg }
+  const timestamp = new Date().toISOString()
+  return { t: timestamp, type, level, msg }
 }
 
 interface FormatedEntry {

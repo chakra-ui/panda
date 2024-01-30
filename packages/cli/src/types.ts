@@ -7,6 +7,7 @@ export interface InitCommandFlags
   silent?: boolean
   interactive?: boolean
   config?: string
+  logfile?: string
 }
 
 export interface CssGenCommandFlags {
