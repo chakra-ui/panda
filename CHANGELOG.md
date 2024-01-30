@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.29.1] - 2024-01-30
+
+### Fixed
+
+Fix an issue (introduced in v0.29) with `panda init` and add an assert on the new `colorMix` utility function
+
 ## [0.29.0] - 2024-01-29
 
 ### Fixed
