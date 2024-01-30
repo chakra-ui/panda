@@ -1,5 +1,17 @@
 # @pandacss/core
 
+## 0.29.1
+
+### Patch Changes
+
+- a5c75607: Fix an issue (introduced in v0.29) with `panda init` and add an assert on the new `colorMix` utility
+  function
+  - @pandacss/is-valid-prop@0.29.1
+  - @pandacss/logger@0.29.1
+  - @pandacss/shared@0.29.1
+  - @pandacss/token-dictionary@0.29.1
+  - @pandacss/types@0.29.1
+
 ## 0.29.0
 
 ### Minor Changes
