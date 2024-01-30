@@ -63,7 +63,6 @@ export const nodeRuntime: Runtime = {
 
       process.once('SIGINT', async () => {
         await watcher.close()
-        options.onClose?.()
       })
 
       return watcher

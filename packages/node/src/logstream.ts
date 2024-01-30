@@ -16,7 +16,7 @@ export const setLogStream = (options: LogstreamOptions) => {
     const outPath = path.resolve(cwd, options.logfile)
 
     ensure(outPath)
-    logger.info('Logfile', outPath)
+    logger.info('logfile', outPath)
 
     stream = fs.createWriteStream(outPath, { flags: 'a' })
 
