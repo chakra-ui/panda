@@ -1,4 +1,4 @@
-import { walkObject } from '@pandacss/shared'
+import { isObject, walkObject } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
 import merge from 'lodash.merge'
 import type { StylesheetContext } from '.'
@@ -35,7 +35,7 @@ export function serializeStyles(context: SerializeContext, groupedObject: Dict) 
         // Rewrite html selectors to include the parent selector so that it can be parsed later on
         // ASSUMPTION: an object that has a key that is not a valid property/condition is a html selector
         // ex: 'body, :root' => '& body, & :root'
-        if (typeof value == 'object' && !context.conditions.isCondition(prop) && !context.isValidProperty(prop)) {
+        if (isObject(value) && !context.conditions.isCondition(prop) && !context.isValidProperty(prop)) {
           const selectors = parseSelectors(prop)
           return selectors.map((s) => '& ' + s).join(', ')
         }
