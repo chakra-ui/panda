@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/extractor",
-  "version": "0.28.0",
+  "version": "0.29.1",
   "description": "The css extractor for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -41,6 +41,7 @@
     "dist"
   ],
   "dependencies": {
+    "@pandacss/shared": "workspace:*",
     "ts-evaluator": "^1.1.0",
     "ts-morph": "19.0.0"
   }

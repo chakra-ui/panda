@@ -60,6 +60,58 @@ test('should sort media queries', () => {
   `)
 })
 
+test('should sort container queries', () => {
+  const result = run(css`
+    @container (min-width: 640px) {
+      .bg {
+        background-color: blue;
+      }
+    }
+
+    .bg {
+      background-color: red;
+    }
+
+    @container (max-width: 1290px) {
+      .bg {
+        background-color: yellow;
+      }
+    }
+
+    @container (min-width: 990px) {
+      .bg {
+        background-color: yellow;
+      }
+    }
+  `)
+
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+
+        .bg {
+          background-color: red;
+        }
+        @container (min-width: 640px) {
+          .bg {
+            background-color: blue;
+          }
+        }
+
+        @container (min-width: 990px) {
+          .bg {
+            background-color: yellow;
+          }
+        }
+
+        @container (max-width: 1290px) {
+          .bg {
+            background-color: yellow;
+          }
+        }
+      "
+  `)
+})
+
 test('should sort within @layer', () => {
   const result = run(css`
     @layer components {

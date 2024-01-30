@@ -1,4 +1,5 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from '../color-mix-transform'
 
 export const outline: UtilityConfig = {
   outlineWidth: {
@@ -10,6 +11,7 @@ export const outline: UtilityConfig = {
     className: 'ring',
     values: 'colors',
     shorthand: 'ringColor',
+    transform: createColorMixTransform('outlineColor'),
   },
   outline: {
     className: 'ring',

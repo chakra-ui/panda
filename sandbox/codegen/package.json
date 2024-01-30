@@ -41,7 +41,7 @@
     "typescript": "^5.3.3",
     "vite": "5.0.12",
     "vite-plugin-solid": "^2.9.1",
-    "vitest": "1.2.1",
+    "vitest": "1.2.2",
     "vue": "^3.3.3"
   }
 }

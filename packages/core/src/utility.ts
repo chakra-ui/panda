@@ -8,8 +8,16 @@ import {
   withoutSpace,
 } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
-import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@pandacss/types'
+import type {
+  AnyFunction,
+  Dict,
+  PropertyConfig,
+  PropertyTransform,
+  TransformArgs,
+  UtilityConfig,
+} from '@pandacss/types'
 import type { TransformResult } from './types'
+import { colorMix } from './color-mix'
 
 export interface UtilityOptions {
   config?: UtilityConfig
@@ -333,16 +341,26 @@ export class Utility {
     return this
   }
 
+  private getTransformArgs = (raw: string): TransformArgs => {
+    const token = Object.assign(this.getToken.bind(this), {
+      raw: (path: string) => this.tokens.getByName(path),
+    })
+
+    const _colorMix = (value: string) => colorMix(value, token)
+
+    return {
+      token,
+      raw,
+      utils: { colorMix: _colorMix },
+    }
+  }
+
   private setStyles = (property: string, raw: string, alias: string, propKey?: string) => {
     propKey = propKey ?? this.getPropKey(property, raw)
 
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transforms.get(property) ?? defaultTransform
-
-    const tokenFn = Object.assign(this.getToken.bind(this), {
-      raw: (path: string) => this.tokens.getByName(path),
-    })
-    const styles = getStyles(raw, { token: tokenFn, raw: alias })
+    const styles = getStyles(raw, this.getTransformArgs(alias))
 
     this.styles.set(propKey, styles ?? {})
 

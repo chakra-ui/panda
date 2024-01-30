@@ -16,9 +16,20 @@ export type PropertyValues =
   | Record<string, string>
   | ThemeFn
 
-interface TransformArgs {
+export interface ColorMixResult {
+  invalid: boolean
+  value: string
+  color?: string
+}
+
+export interface TransformUtils {
+  colorMix(value: string): ColorMixResult
+}
+
+export interface TransformArgs<T = any> {
   token: TokenFn
-  raw: any
+  raw: T
+  utils: TransformUtils
 }
 
 export type PropertyTransform = (value: any, args: TransformArgs) => NestedCssProperties | undefined

@@ -1,5 +1,65 @@
 # @pandacss/generator
 
+## 0.29.1
+
+### Patch Changes
+
+- Updated dependencies [a5c75607]
+  - @pandacss/core@0.29.1
+  - @pandacss/is-valid-prop@0.29.1
+  - @pandacss/logger@0.29.1
+  - @pandacss/shared@0.29.1
+  - @pandacss/token-dictionary@0.29.1
+  - @pandacss/types@0.29.1
+
+## 0.29.0
+
+### Minor Changes
+
+- f778d3e5: You can now set and override `defaultValues` in pattern configurations.
+
+  Here's an example of how to define a new `hstack` pattern with a default `gap` value of `40px`:
+
+  ```js
+  defineConfig({
+    patterns: {
+      hstack: {
+        properties: {
+          justify: { type: 'property', value: 'justifyContent' },
+          gap: { type: 'property', value: 'gap' },
+        },
+        // you can also use a token like '10'
+        defaultValues: { gap: '40px' },
+        transform(props) {
+          const { justify, gap, ...rest } = props
+          return {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: justify,
+            gap,
+            ...rest,
+          }
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- 2e32794d: Set `display: none` for hidden elements in `reset` css
+- Updated dependencies [5fcdeb75]
+- Updated dependencies [7c7340ec]
+- Updated dependencies [f778d3e5]
+- Updated dependencies [250b4d11]
+- Updated dependencies [a2fb5cc6]
+  - @pandacss/types@0.29.0
+  - @pandacss/core@0.29.0
+  - @pandacss/token-dictionary@0.29.0
+  - @pandacss/is-valid-prop@0.29.0
+  - @pandacss/logger@0.29.0
+  - @pandacss/shared@0.29.0
+
 ## 0.28.0
 
 ### Minor Changes

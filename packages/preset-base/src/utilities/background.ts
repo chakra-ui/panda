@@ -1,4 +1,5 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from '../color-mix-transform'
 
 export const background: UtilityConfig = {
   backgroundPosition: {
@@ -32,11 +33,13 @@ export const background: UtilityConfig = {
     shorthand: 'bg',
     className: 'bg',
     values: 'colors',
+    transform: createColorMixTransform('background'),
   },
   backgroundColor: {
     shorthand: 'bgColor',
     className: 'bg',
     values: 'colors',
+    transform: createColorMixTransform('backgroundColor'),
   },
 
   backgroundOrigin: {
@@ -112,29 +115,24 @@ export const background: UtilityConfig = {
   gradientFrom: {
     className: 'from',
     values: 'colors',
-    transform(value) {
-      return {
-        '--gradient-from': value,
-      }
-    },
+    transform: createColorMixTransform('--gradient-from'),
   },
   gradientTo: {
     className: 'to',
     values: 'colors',
-    transform(value) {
-      return {
-        '--gradient-to': value,
-      }
-    },
+    transform: createColorMixTransform('--gradient-to'),
   },
   gradientVia: {
     className: 'via',
     values: 'colors',
-    transform(value) {
+    transform(value, args) {
+      const transformed = gradientVia(value, args)
       return {
+        ...transformed,
         '--gradient-via-stops': 'var(--gradient-from), var(--gradient-via), var(--gradient-to)',
-        '--gradient-via': value,
       }
     },
   },
 }
+
+const gradientVia = createColorMixTransform('--gradient-via')

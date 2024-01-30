@@ -1,3 +1,4 @@
+export { createColorMixTransform } from '../../preset-base/src/color-mix-transform'
 export * from './config'
 export * from './create-context'
 export * from './layers'
