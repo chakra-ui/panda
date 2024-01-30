@@ -3,7 +3,6 @@ import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
 import type { LoggerInterface } from './logger'
 import type { ParserResultInterface } from './parser'
-import type { GlobalStyleObject } from './system-types'
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
 
@@ -83,10 +82,6 @@ export interface PandaHooks {
    * Called after the codegen is completed
    */
   'codegen:done': (args: { changed: ArtifactId[] | undefined }) => MaybeAsyncReturn
-  /**
-   * Called right before serializing the CSS reset to string, givig you a chance to tweak the raw style object
-   */
-  'cssgen:prepare:reset': (args: { styles: GlobalStyleObject }) => GlobalStyleObject
   /**
    * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
    * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
