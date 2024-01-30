@@ -24,7 +24,7 @@ export interface TransformResult {
 }
 
 export interface StylesheetContext
-  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks' | 'logger'> {
+  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks'> {
   layers: Layers
   helpers: PatternHelpers
   hash?: boolean
@@ -112,5 +112,4 @@ export interface ParserOptions {
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
   tsOptions: LoadConfigResult['tsOptions']
-  logger: Context['logger']
 }

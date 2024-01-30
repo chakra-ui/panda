@@ -37,7 +37,6 @@
     "dist"
   ],
   "dependencies": {
-    "@pandacss/logger": "workspace:^",
     "@pandacss/node": "workspace:*",
     "postcss": "^8.4.31"
   }

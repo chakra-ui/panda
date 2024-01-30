@@ -1,6 +1,6 @@
 import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
-import type { LoggerInterface, PandaHooks } from './hooks'
+import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
 import type { Keys, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
@@ -378,7 +378,6 @@ export interface LoadConfigResult extends LoadTsConfigResult {
   deserialize: () => Config
   dependencies: string[]
   hooks: Partial<PandaHooks>
-  logger: LoggerInterface
 }
 
 export interface HashOptions {

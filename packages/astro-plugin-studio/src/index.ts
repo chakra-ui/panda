@@ -1,4 +1,3 @@
-import { createLogger } from '@pandacss/logger'
 import { loadConfigAndCreateContext, type PandaContext } from '@pandacss/node'
 import type { AstroIntegration } from 'astro'
 import { stringify } from 'javascript-stringify'
@@ -7,15 +6,11 @@ import type { PluginOption } from 'vite'
 const virtualModuleId = 'virtual:panda'
 const resolvedVirtualModuleId = '\0' + virtualModuleId
 
-const debugVar = process.env.PANDA_DEBUG || process.env.DEBUG
-const isDebug = Boolean(debugVar)
-const logger = createLogger({ filter: debugVar, isDebug })
-
 function vitePlugin(configPath: string): PluginOption {
   let config: PandaContext['config']
 
   async function loadPandaConfig() {
-    const ctx = await loadConfigAndCreateContext({ configPath, logger })
+    const ctx = await loadConfigAndCreateContext({ configPath })
     config = ctx.config
   }
 

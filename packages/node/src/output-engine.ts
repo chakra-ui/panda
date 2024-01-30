@@ -1,4 +1,5 @@
 import type { Generator } from '@pandacss/generator'
+import { logger } from '@pandacss/logger'
 import type { Artifact, PandaHooks, Runtime } from '@pandacss/types'
 
 interface OutputEngineOptions extends Generator {
@@ -10,7 +11,6 @@ export class OutputEngine {
   private paths: Generator['paths']
   private fs: Runtime['fs']
   private path: Runtime['path']
-  private logger: Generator['logger']
 
   constructor(options: OutputEngineOptions) {
     const { paths, runtime } = options
@@ -18,7 +18,6 @@ export class OutputEngine {
     this.paths = paths
     this.fs = runtime.fs
     this.path = runtime.path
-    this.logger = options.logger
   }
 
   empty = () => {
@@ -45,7 +44,7 @@ export class OutputEngine {
         const { file, code } = artifact
         const absPath = this.path.join(...dir, file)
 
-        this.logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
+        logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
         return this.fs.writeFile(absPath, code)
       }),
     )

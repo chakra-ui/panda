@@ -1,17 +1,11 @@
-import { createLogger } from '@pandacss/logger'
-import { Builder, createLogStream } from '@pandacss/node'
+import { Builder, setLogStream } from '@pandacss/node'
 import { createRequire } from 'module'
 import path from 'path'
 import type { PluginCreator } from 'postcss'
 
 const customRequire = createRequire(__dirname)
-const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
-export const loadConfig = () => interopDefault(customRequire('@pandacss/postcss'))
 
-const debugVar = process.env.PANDA_DEBUG || process.env.DEBUG
-const isDebug = Boolean(debugVar)
-const logger = createLogger({ filter: debugVar, isDebug })
-const builder = new Builder({ logger })
+const PLUGIN_NAME = 'pandacss'
 
 interface PluginOptions {
   configPath?: string
@@ -19,15 +13,19 @@ interface PluginOptions {
   logfile?: string
 }
 
-const PLUGIN_NAME = 'pandacss'
+const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
 
-let stream: ReturnType<typeof createLogStream> | undefined
+export const loadConfig = () => interopDefault(customRequire('@pandacss/postcss'))
+
+let stream: ReturnType<typeof setLogStream> | undefined
+
+const builder = new Builder()
 
 export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
   const { configPath, cwd, logfile } = options
 
   if (!stream && logfile) {
-    stream = createLogStream({ cwd: cwd ?? process.cwd(), logfile })
+    stream = setLogStream({ cwd, logfile })
   }
 
   return {
@@ -84,7 +82,3 @@ const shouldSkip = (fileName: string | undefined) => {
   if (!isValidCss(fileName)) return true
   return nodeModulesRegex.test(fileName)
 }
-
-process.once('SIGINT', () => {
-  stream?.onClean()
-})

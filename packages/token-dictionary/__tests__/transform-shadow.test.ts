@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { transformShadow } from '../src/transform'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 test('transform / shadow', () => {
   const dictionary = new TokenDictionary({
@@ -14,7 +13,6 @@ test('transform / shadow', () => {
         md: { value: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerTransform(transformShadow)

@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { addConditionalCssVariables, addCssVariables, transformBorders } from '../src/transform'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 test('transform / border', () => {
   const dictionary = new TokenDictionary({
@@ -24,7 +23,6 @@ test('transform / border', () => {
         },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerTransform(transformBorders, addCssVariables, addConditionalCssVariables)

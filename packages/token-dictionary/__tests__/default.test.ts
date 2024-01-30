@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 test('tokens / with default', () => {
   const dictionary = new TokenDictionary({
@@ -17,7 +16,6 @@ test('tokens / with default', () => {
         error: { value: '{colors.red}' },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.build()

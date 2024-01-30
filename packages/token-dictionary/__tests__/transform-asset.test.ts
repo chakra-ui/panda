@@ -2,7 +2,6 @@ import { readFileSync } from 'fs'
 import { describe, expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { transformAssets } from '../src/transform'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 describe('transform / assets', () => {
   test('with raw svg', () => {
@@ -17,7 +16,6 @@ describe('transform / assets', () => {
           },
         },
       },
-      logger: fixtureDefaults.logger,
     })
 
     dictionary.registerTransform(transformAssets)
@@ -57,7 +55,6 @@ describe('transform / assets', () => {
           },
         },
       },
-      logger: fixtureDefaults.logger,
     })
 
     dictionary.registerTransform(transformAssets)
@@ -94,7 +91,6 @@ describe('transform / assets', () => {
           },
         },
       },
-      logger: fixtureDefaults.logger,
     })
 
     dictionary.registerTransform(transformAssets)

@@ -3,7 +3,6 @@ import { addVirtualPalette } from '../src/middleware'
 import { transforms } from '../src/transform'
 import { formats } from '../src/format'
 import { TokenDictionary } from '../src/dictionary'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 test('should generate virtual palette', () => {
   const dictionary = new TokenDictionary({
@@ -20,7 +19,6 @@ test('should generate virtual palette', () => {
         },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary
@@ -310,7 +308,6 @@ test('should generate nested object virtual palette', () => {
         },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary
@@ -655,7 +652,6 @@ test('should work with DEFAULT keyword', () => {
         },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary

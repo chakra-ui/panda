@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { addNegativeTokens } from '../src/middleware'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 test('should add negative spacing', () => {
   const dictionary = new TokenDictionary({
@@ -10,7 +9,6 @@ test('should add negative spacing', () => {
         sm: { value: '40px' },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerMiddleware(addNegativeTokens).build()
@@ -72,7 +70,6 @@ test('with semantic spacing', () => {
         },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerMiddleware(addNegativeTokens)
@@ -223,7 +220,6 @@ test('with semantic spacing', () => {
         nested: { value: { base: '{spacing.sm}', sm: '50px' } },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerMiddleware(addNegativeTokens)

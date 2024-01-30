@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { transformGradient } from '../src/transform'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 test('transform / gradient', () => {
   const dictionary = new TokenDictionary({
@@ -22,7 +21,6 @@ test('transform / gradient', () => {
         },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.registerTransform(transformGradient)

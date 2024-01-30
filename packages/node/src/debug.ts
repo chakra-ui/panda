@@ -1,4 +1,4 @@
-import { colors } from '@pandacss/logger'
+import { colors, logger } from '@pandacss/logger'
 import { parse } from 'path'
 import type { PandaContext } from './create-context'
 
@@ -10,7 +10,7 @@ export interface DebugOptions {
 
 export async function debug(ctx: PandaContext, options: DebugOptions) {
   const files = ctx.getFiles()
-  const measureTotal = ctx.logger.time.debug(`Done parsing ${files.length} files`)
+  const measureTotal = logger.time.debug(`Done parsing ${files.length} files`)
 
   // easier to debug
   ctx.config.minify = false
@@ -21,7 +21,7 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
 
   if (!options.dry && outdir) {
     fs.ensureDirSync(outdir)
-    ctx.logger.info('cli', `Writing ${colors.bold(`${outdir}/config.json`)}`)
+    logger.info('cli', `Writing ${colors.bold(`${outdir}/config.json`)}`)
     await fs.writeFile(`${outdir}/config.json`, JSON.stringify(ctx.config, null, 2))
   }
 
@@ -33,7 +33,7 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
   const filesWithCss = []
 
   files.map((file) => {
-    const measure = ctx.logger.time.debug(`Parsed ${file}`)
+    const measure = logger.time.debug(`Parsed ${file}`)
     const encoder = ctx.encoder.clone()
     const result = ctx.project.parseSourceFile(file, encoder)
 
@@ -57,8 +57,8 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
       const astJsonPath = `${relative}/${parsedPath.name}.ast.json`.replaceAll(path.sep, '__')
       const cssPath = `${relative}/${parsedPath.name}.css`.replaceAll(path.sep, '__')
 
-      ctx.logger.info('cli', `Writing ${colors.bold(`${outdir}/${astJsonPath}`)}`)
-      ctx.logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
+      logger.info('cli', `Writing ${colors.bold(`${outdir}/${astJsonPath}`)}`)
+      logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
 
       return Promise.allSettled([
         fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result.toJSON(), null, 2)),
@@ -67,6 +67,6 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
     }
   })
 
-  ctx.logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
+  logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
   measureTotal()
 }

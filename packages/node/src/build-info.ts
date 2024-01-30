@@ -1,18 +1,18 @@
-import { colors } from '@pandacss/logger'
+import { colors, logger } from '@pandacss/logger'
 import type { PandaContext } from './create-context'
 
 export async function buildInfo(ctx: PandaContext, outfile: string) {
   const { filesWithCss, files } = ctx.parseFiles()
 
-  ctx.logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
+  logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
 
   const minify = ctx.config.minify
-  ctx.logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
+  logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
   const output = JSON.stringify(ctx.encoder.toJSON(), null, minify ? 0 : 2)
 
   ctx.output.ensure(outfile, process.cwd())
 
   await ctx.runtime.fs.writeFile(outfile, output)
-  ctx.logger.info('cli', 'Done!')
+  logger.info('cli', 'Done!')
 }

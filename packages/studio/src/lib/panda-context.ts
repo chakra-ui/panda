@@ -1,12 +1,11 @@
 import { flatten } from '@pandacss/shared'
 import { Token, TokenDictionary } from '@pandacss/token-dictionary'
 import type { TokenDataTypes } from '@pandacss/types'
-import { createLogger } from '@pandacss/logger'
 import { config } from 'virtual:panda'
 
 export const theme = config.theme ?? {}
 
-export const tokens = new TokenDictionary({ ...theme, logger: createLogger() })
+export const tokens = new TokenDictionary(theme)
 
 export const getTokens = (category: keyof TokenDataTypes): Token[] => {
   const map = tokens.categoryMap.get(category) ?? new Map()

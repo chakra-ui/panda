@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { fixtureDefaults } from '@pandacss/fixture'
 
 test('resolve aliases', () => {
   const dictionary = new TokenDictionary({
@@ -11,7 +10,6 @@ test('resolve aliases', () => {
         disabled: { value: '{colors.border}' },
       },
     },
-    logger: fixtureDefaults.logger,
   })
 
   dictionary.build()

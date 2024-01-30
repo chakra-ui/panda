@@ -1,3 +1,4 @@
+import type { LoggerInterface } from '@pandacss/types'
 import colors from 'kleur'
 import { isMatch } from 'matcher'
 
@@ -8,12 +9,13 @@ export interface LoggerConfig {
   onLog?: (entry: LogEntry) => void
 }
 
-export const createLogger = (conf: LoggerConfig = {}) => {
+export const createLogger = (conf: LoggerConfig = {}): LoggerInterface => {
   let onLog = conf.onLog
   let level: LogLevel = conf.isDebug ? 'debug' : conf.level ?? 'info'
   const filter = conf.filter !== '*' ? conf.filter?.split(/[\s,]+/) ?? [] : []
 
   const getLevel = () => (filter.length ? 'debug' : level)
+
   const isValid = (level: LogLevel, type: string) => {
     const badLevel = logLevels[getLevel()].weight > logLevels[level].weight
     const badType = filter.length > 0 && !matches(filter, type)

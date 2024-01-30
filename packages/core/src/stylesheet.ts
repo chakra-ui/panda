@@ -1,3 +1,4 @@
+import { logger } from '@pandacss/logger'
 import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { sortCssMediaQueries, optimizeCss } from './optimize'
@@ -31,7 +32,7 @@ export class Stylesheet {
       layer.append(stringify(styles))
     } catch (error) {
       if (error instanceof CssSyntaxError) {
-        this.context.logger.error('sheet:process', error.showSourceCode(true))
+        logger.error('sheet:process', error.showSourceCode(true))
       }
     }
     return
@@ -86,7 +87,6 @@ export class Stylesheet {
         minify: false,
         lightningcss: this.context.lightningcss,
         browserslist: this.context.browserslist,
-        logger: this.context.logger,
       },
     )
   }
@@ -104,12 +104,11 @@ export class Stylesheet {
             minify,
             lightningcss: this.context.lightningcss,
             browserslist: this.context.browserslist,
-            logger: this.context.logger,
           })
         : css
     } catch (error) {
       if (error instanceof CssSyntaxError) {
-        this.context.logger.error('sheet:toCss', error.showSourceCode(true))
+        logger.error('sheet:toCss', error.showSourceCode(true))
       }
 
       throw error

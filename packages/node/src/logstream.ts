@@ -1,39 +1,41 @@
-import { type LoggerConfig } from '@pandacss/logger'
+import { logger } from '@pandacss/logger'
 import fs from 'node:fs'
 import path from 'node:path'
 
 interface LogstreamOptions {
-  cwd: string
+  cwd?: string
   logfile?: string
 }
 
-export const createLogStream = (options: LogstreamOptions) => {
-  const { cwd } = options
+export const setLogStream = (options: LogstreamOptions) => {
+  const { cwd = process.cwd() } = options
 
   let stream: fs.WriteStream | undefined
-  let onLog: LoggerConfig['onLog']
 
   if (options.logfile) {
     const outPath = path.resolve(cwd, options.logfile)
+
     ensure(outPath)
-    console.log('Logfile', outPath)
+    logger.info('Logfile', outPath)
+
     stream = fs.createWriteStream(outPath, { flags: 'a' })
-    onLog = (entry) => {
-      stream!.write(JSON.stringify(entry) + '\n')
+
+    logger.onLog = (entry) => {
+      stream?.write(JSON.stringify(entry) + '\n')
     }
   }
 
+  process.once('SIGINT', () => {
+    stream?.end()
+  })
+
   return {
-    onLog,
-    onClean: () => {
+    end() {
       stream?.end()
     },
     [Symbol.dispose]: () => {
       stream?.end()
     },
-  } as {
-    onLog?: LoggerConfig['onLog']
-    onClean: () => void
   }
 }
 

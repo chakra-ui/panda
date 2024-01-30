@@ -1,6 +1,7 @@
 import { findConfig } from '@pandacss/config'
-import { colors, createLogger } from '@pandacss/logger'
+import { colors, logger } from '@pandacss/logger'
 import {
+  PandaContext,
   analyzeTokens,
   buildInfo,
   codegen,
@@ -8,14 +9,13 @@ import {
   debug,
   generate,
   loadConfigAndCreateContext,
-  PandaContext,
+  setLogStream,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
   startProfiling,
   writeAnalyzeJSON,
   type CssGenOptions,
-  createLogStream,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import type { CssArtifactType } from '@pandacss/types'
@@ -39,9 +39,6 @@ export async function main() {
   const cli = cac('panda')
 
   const cwd = process.cwd()
-
-  const debugVar = process.env.PANDA_DEBUG || process.env.DEBUG
-  const isDebug = Boolean(debugVar)
 
   cli
     .command('init', "Initialize the panda's config file")
@@ -68,7 +65,6 @@ export async function main() {
 
       const cwd = resolve(flags.cwd ?? '')
 
-      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -78,12 +74,12 @@ export async function main() {
       const done = logger.time.info('✨ Panda initialized')
 
       if (postcss) {
-        await setupPostcss(cwd, logger)
+        await setupPostcss(cwd)
       }
 
-      await setupConfig(cwd, logger, { force, outExtension, jsxFramework, syntax })
+      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
-      const ctx = await loadConfigAndCreateContext({ cwd, configPath, config: { gitignore }, logger })
+      const ctx = await loadConfigAndCreateContext({ cwd, configPath, config: { gitignore } })
       const { msg, box } = await codegen(ctx)
 
       if (gitignore) {
@@ -109,12 +105,12 @@ export async function main() {
       const { silent, clean, config: configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd ?? '')
-      const stream = createLogStream({ cwd, logfile: flags.logfile })
-      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
+
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'codegen', logger)
+        stopProfiling = await startProfiling(cwd, 'codegen')
       }
 
       if (silent) {
@@ -125,7 +121,6 @@ export async function main() {
         cwd,
         config: { clean },
         configPath,
-        logger,
       })
 
       const { msg } = await codegen(ctx)
@@ -142,10 +137,11 @@ export async function main() {
           },
           { cwd, poll },
         )
+      } else {
+        stream.end()
       }
 
       stopProfiling()
-      stream.onClean()
     })
 
   cli
@@ -169,12 +165,11 @@ export async function main() {
       const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal, lightningcss } = flags
 
       const cwd = resolve(flags.cwd ?? '')
-      const stream = createLogStream({ cwd, logfile: flags.logfile })
-      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'cssgen', logger)
+        stopProfiling = await startProfiling(cwd, 'cssgen')
       }
 
       const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
@@ -199,7 +194,6 @@ export async function main() {
         cwd,
         config: overrideConfig,
         configPath,
-        logger,
       })
 
       const options: CssGenOptions = {
@@ -224,26 +218,19 @@ export async function main() {
           { cwd, poll },
         )
 
-        ctx.watchFiles(
-          async (event, file) => {
-            if (event === 'unlink') {
-              ctx.project.removeSourceFile(ctx.runtime.path.abs(cwd, file))
-            } else if (event === 'change') {
-              ctx.project.reloadSourceFile(file)
-              await cssgen(ctx, options)
-            } else if (event === 'add') {
-              ctx.project.createSourceFile(file)
-              await cssgen(ctx, options)
-            }
-          },
-          {
-            onClose() {
-              stream.onClean()
-            },
-          },
-        )
+        ctx.watchFiles(async (event, file) => {
+          if (event === 'unlink') {
+            ctx.project.removeSourceFile(ctx.runtime.path.abs(cwd, file))
+          } else if (event === 'change') {
+            ctx.project.reloadSourceFile(file)
+            await cssgen(ctx, options)
+          } else if (event === 'add') {
+            ctx.project.createSourceFile(file)
+            await cssgen(ctx, options)
+          }
+        })
       } else {
-        stream.onClean()
+        stream.end()
       }
 
       stopProfiling()
@@ -270,12 +257,11 @@ export async function main() {
       const { config: configPath, silent, ...rest } = flags
 
       const cwd = resolve(flags.cwd ?? '')
-      const stream = createLogStream({ cwd, logfile: flags.logfile })
-      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'cli', logger)
+        stopProfiling = await startProfiling(cwd, 'cli')
       }
 
       if (silent) {
@@ -283,8 +269,13 @@ export async function main() {
       }
 
       const config = compact({ include: files, ...rest, cwd })
-      await generate({ cwd, config, configPath, logger, onClose: stream.onClean })
+      await generate(config, configPath)
+
       stopProfiling()
+
+      if (!flags.watch) {
+        stream.end()
+      }
     })
 
   cli
@@ -300,12 +291,10 @@ export async function main() {
       const { build, preview, port, host, outdir, config } = flags
 
       const cwd = resolve(flags.cwd ?? '')
-      const logger = createLogger({ filter: debugVar, isDebug })
 
       const ctx = await loadConfigAndCreateContext({
         cwd,
         configPath: config,
-        logger,
       })
 
       const buildOpts = {
@@ -350,7 +339,6 @@ export async function main() {
 
       const cwd = resolve(flags.cwd!)
 
-      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -359,7 +347,6 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : undefined,
         configPath,
-        logger,
       })
 
       const result = analyzeTokens(ctx, {
@@ -391,12 +378,11 @@ export async function main() {
       const { silent, dry = false, outdir: outdirFlag, config: configPath } = flags ?? {}
 
       const cwd = resolve(flags.cwd!)
-      const stream = createLogStream({ cwd, logfile: flags.logfile })
-      const logger = createLogger({ filter: debugVar, isDebug, onLog: stream.onLog })
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
 
       let stopProfiling: Function = () => void 0
       if (flags.cpuProf) {
-        stopProfiling = await startProfiling(cwd, 'debug', logger)
+        stopProfiling = await startProfiling(cwd, 'debug')
       }
 
       if (silent) {
@@ -407,14 +393,14 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : undefined,
         configPath,
-        logger,
       })
 
       const outdir = outdirFlag ?? join(...ctx.paths.root, 'debug')
 
       await debug(ctx, { outdir, dry, onlyConfig: flags.onlyConfig })
+
       stopProfiling()
-      stream.onClean()
+      stream.end()
     })
 
   cli
@@ -434,7 +420,6 @@ export async function main() {
 
       const cwd = resolve(flags.cwd!)
 
-      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -443,7 +428,6 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : undefined,
         configPath,
-        logger,
       })
 
       const outfile = outfileFlag ?? join(...ctx.paths.root, 'panda.buildinfo.json')
@@ -487,7 +471,6 @@ export async function main() {
     .action(async (flags: EmitPackageCommandFlags) => {
       const { outdir, silent } = flags
 
-      const logger = createLogger({ filter: debugVar, isDebug })
       if (silent) {
         logger.level = 'silent'
       }
@@ -495,7 +478,6 @@ export async function main() {
       const ctx = await loadConfigAndCreateContext({
         cwd,
         config: { cwd },
-        logger,
       })
 
       const pkgPath = resolve(cwd, outdir, 'package.json')
@@ -568,5 +550,15 @@ export async function main() {
 
   cli.parse(process.argv, { run: false })
 
-  await cli.runMatchedCommand()
+  try {
+    await cli.runMatchedCommand()
+  } catch (error) {
+    logger.error('cli', error)
+
+    if (logger.isDebug) {
+      console.error(error)
+    }
+
+    process.exit(1)
+  }
 }

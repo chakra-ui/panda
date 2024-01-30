@@ -1,3 +1,4 @@
+import { logger } from '@pandacss/logger'
 import type { Runtime } from '@pandacss/types'
 import chokidar from 'chokidar'
 import glob from 'fast-glob'
@@ -58,7 +59,7 @@ export const nodeRuntime: Runtime = {
         awaitWriteFinish: coalesce ? { stabilityThreshold: 50, pollInterval: 10 } : false,
       })
 
-      options.logger.debug('watch:file', `watching [${include}]`)
+      logger.debug('watch:file', `watching [${include}]`)
 
       process.once('SIGINT', async () => {
         await watcher.close()
@@ -73,9 +74,9 @@ export const nodeRuntime: Runtime = {
 process.setMaxListeners(Infinity)
 
 process.on('unhandledRejection', (reason) => {
-  console.error('❌', reason)
+  logger.error('❌', reason)
 })
 
 process.on('uncaughtException', (reason) => {
-  console.error('❌', reason)
+  logger.error('❌', reason)
 })

@@ -1,5 +1,5 @@
 import { compact, isString, mapObject, memo, walkObject } from '@pandacss/shared'
-import type { LoggerInterface, SemanticTokens, Tokens } from '@pandacss/types'
+import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { isCompositeTokenValue } from './is-composite'
 import { Token } from './token'
@@ -26,7 +26,6 @@ export interface TokenDictionaryOptions {
   breakpoints?: Record<string, string>
   prefix?: string
   hash?: boolean
-  logger: LoggerInterface
 }
 
 export interface TokenMiddleware {
@@ -51,15 +50,12 @@ export class TokenDictionary {
   allTokens: Token[] = []
   prefix: string | undefined
   hash: boolean | undefined
-  protected logger: LoggerInterface
 
   get allNames() {
     return Array.from(new Set(this.allTokens.map((token) => token.name)))
   }
 
   constructor(options: TokenDictionaryOptions) {
-    this.logger = options.logger
-
     const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash } = options
 
     const breakpointTokens = expandBreakpoints(breakpoints)

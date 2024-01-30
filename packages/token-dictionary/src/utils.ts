@@ -1,5 +1,6 @@
+import { logger } from '@pandacss/logger'
 import { esc, isObject } from '@pandacss/shared'
-import type { LoggerInterface, Token } from '@pandacss/types'
+import type { Token } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
  * Token references
@@ -38,7 +39,7 @@ const tokenReplacer = (a: string, b?: string) =>
 
 const notFoundMessage = (key: string, value: string) => `Reference not found: \`${key}\` in "${value}"`
 
-export function expandReferences(value: string, fn: (key: string) => string, logger: LoggerInterface) {
+export function expandReferences(value: string, fn: (key: string) => string) {
   if (!hasReference(value) && !hasTokenReference(value)) return value
 
   const references = getReferences(value)
