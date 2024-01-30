@@ -2,6 +2,7 @@ import type { TransformArgs } from '@pandacss/types'
 
 export const colorMix = (value: string, token: TransformArgs['token']) => {
   if (!value) return { invalid: true, value }
+  if (typeof value !== 'string') return { invalid: true, value }
 
   const [rawColor, rawOpacity] = value.split('/')
 
