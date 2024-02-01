@@ -582,6 +582,13 @@ importers:
       postcss:
         specifier: ^8.4.31
         version: 8.4.31
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../cli
+      '@pandacss/logger':
+        specifier: workspace:*
+        version: link:../logger
 
   packages/preset-atlaskit:
     dependencies:
@@ -4182,7 +4189,7 @@ packages:
       '@babel/helper-module-imports': 7.22.15
       '@babel/helper-plugin-utils': 7.22.5
       '@babel/plugin-syntax-jsx': 7.23.3(@babel/core@7.23.2)
-      '@babel/types': 7.23.5
+      '@babel/types': 7.23.9
     dev: false
 
   /@babel/plugin-transform-react-jsx@7.22.5(@babel/core@7.23.5):
