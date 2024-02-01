@@ -265,7 +265,6 @@ describe('rule processor', () => {
         },
       },
     })
-    console.timeEnd('css')
 
     expect(result.className).toMatchInlineSnapshot(
       `
