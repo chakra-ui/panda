@@ -1,12 +1,12 @@
 import { logger } from '@pandacss/logger'
 import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
-import { sortCssMediaQueries, optimizeCss } from './optimize'
+import { optimizeCss, sortCssMediaQueries } from './optimize'
 import { serializeStyles } from './serialize'
+import { sortStyleRules } from './sort-style-rules'
 import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
-import { sortStyleRules } from './sort-style-rules'
 
 export class Stylesheet {
   constructor(private context: StylesheetContext) {}
@@ -40,6 +40,18 @@ export class Stylesheet {
 
   serialize = (styles: Dict) => {
     return serializeStyles(this.context, styles)
+  }
+
+  processResetCss = (styles: Dict) => {
+    const result = this.serialize(styles)
+
+    let css = stringify(result)
+
+    if (this.context.hooks['cssgen:done']) {
+      css = this.context.hooks['cssgen:done']({ artifact: 'reset', content: css }) ?? css
+    }
+
+    this.context.layers.reset.append(css)
   }
 
   processGlobalCss = (styles: Dict) => {

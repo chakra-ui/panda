@@ -87,7 +87,7 @@ function walkObject(target, predicate, options = {}) {
     if (isObject(value) || Array.isArray(value)) {
       const result = {};
       for (const [prop, child] of Object.entries(value)) {
-        const key = getKey?.(prop) ?? prop;
+        const key = getKey?.(prop, child) ?? prop;
         const childPath = [...path, key];
         if (stop?.(value, childPath)) {
           return predicate(value, path);
@@ -120,6 +120,14 @@ function toResponsiveObject(values, breakpoints) {
     }
     return acc;
   }, {});
+}
+function normalizeShorthand(styles, context) {
+  const { hasShorthand, resolveShorthand } = context.utility;
+  return walkObject(styles, (v) => v, {
+    getKey: (prop) => {
+      return hasShorthand ? resolveShorthand(prop) : prop;
+    }
+  });
 }
 function normalizeStyleObject(styles, context, shorthand = true) {
   const { utility, conditions } = context;
@@ -183,7 +191,7 @@ function createMergeCss(context) {
     const allStyles = compactStyles(...styles);
     if (allStyles.length === 1)
       return allStyles;
-    return allStyles.map((style) => normalizeStyleObject(style, context));
+    return allStyles.map((style) => normalizeShorthand(style, context));
   }
   function mergeCss(...styles) {
     return mergeProps(...resolve(styles));
