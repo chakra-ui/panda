@@ -5,7 +5,7 @@ import { toHash } from './hash'
 import { isImportant, withoutImportant } from './important'
 import { memo } from './memo'
 import { mergeProps } from './merge-props'
-import { normalizeShorthand, normalizeStyleObject } from './normalize-style-object'
+import { normalizeStyleObject } from './normalize-style-object'
 import { walkObject } from './walk-object'
 
 export interface CreateCssContext {
@@ -91,7 +91,7 @@ export function createMergeCss(context: CreateCssContext) {
   function resolve(styles: StyleObject[]) {
     const allStyles = compactStyles(...styles)
     if (allStyles.length === 1) return allStyles
-    return allStyles.map((style) => normalizeShorthand(style, context))
+    return allStyles.map((style) => normalizeStyleObject(style, context))
   }
 
   function mergeCss(...styles: StyleObject[]) {
