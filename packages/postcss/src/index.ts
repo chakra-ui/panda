@@ -1,4 +1,4 @@
-import { Builder } from '@pandacss/node'
+import { Builder, setLogStream } from '@pandacss/node'
 import { createRequire } from 'module'
 import path from 'path'
 import type { PluginCreator } from 'postcss'
@@ -7,27 +7,26 @@ const customRequire = createRequire(__dirname)
 
 const PLUGIN_NAME = 'pandacss'
 
+interface PluginOptions {
+  configPath?: string
+  cwd?: string
+  logfile?: string
+}
+
 const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
 
 export const loadConfig = () => interopDefault(customRequire('@pandacss/postcss'))
 
+let stream: ReturnType<typeof setLogStream> | undefined
+
 const builder = new Builder()
 
-const nodeModulesRegex = /node_modules/
+export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
+  const { configPath, cwd, logfile } = options
 
-function isValidCss(file: string) {
-  const [filePath] = file.split('?')
-  return path.extname(filePath) === '.css'
-}
-
-const shouldSkip = (fileName: string | undefined) => {
-  if (!fileName) return true
-  if (!isValidCss(fileName)) return true
-  return nodeModulesRegex.test(fileName)
-}
-
-export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (options = {}) => {
-  const { configPath, cwd } = options
+  if (!stream && logfile) {
+    stream = setLogStream({ cwd, logfile })
+  }
 
   return {
     postcssPlugin: PLUGIN_NAME,
@@ -70,3 +69,16 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
 pandacss.postcss = true
 
 export default pandacss
+
+const nodeModulesRegex = /node_modules/
+
+function isValidCss(file: string) {
+  const [filePath] = file.split('?')
+  return path.extname(filePath) === '.css'
+}
+
+const shouldSkip = (fileName: string | undefined) => {
+  if (!fileName) return true
+  if (!isValidCss(fileName)) return true
+  return nodeModulesRegex.test(fileName)
+}

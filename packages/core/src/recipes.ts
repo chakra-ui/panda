@@ -1,4 +1,13 @@
-import { capitalize, createRegex, dashCase, getSlotRecipes, isObject, memo, splitProps } from '@pandacss/shared'
+import {
+  PandaError,
+  capitalize,
+  createRegex,
+  dashCase,
+  getSlotRecipes,
+  isObject,
+  memo,
+  splitProps,
+} from '@pandacss/shared'
 import type {
   ArtifactFilters,
   Dict,
@@ -162,7 +171,7 @@ export class Recipes {
 
   getConfigOrThrow = memo((name: string) => {
     const config = this.getConfig(name)
-    if (!config) throw new Error(`Recipe "${name}" not found`)
+    if (!config) throw new PandaError('UNKNOWN_RECIPE', `Recipe "${name}" not found`)
     return config
   })
 

@@ -1,12 +1,12 @@
 import { isObject } from './assert'
 import { compact } from './compact'
 import { filterBaseConditions } from './condition'
-import { isImportant, withoutImportant } from './css-important'
-import { mergeProps } from './merge-props'
+import { toHash } from './hash'
+import { isImportant, withoutImportant } from './important'
 import { memo } from './memo'
+import { mergeProps } from './merge-props'
 import { normalizeShorthand, normalizeStyleObject } from './normalize-style-object'
 import { walkObject } from './walk-object'
-import { toHash } from './hash'
 
 export interface CreateCssContext {
   hash?: boolean

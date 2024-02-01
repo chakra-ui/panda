@@ -1,4 +1,4 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const spacerConfig = {
@@ -12,7 +12,10 @@ transform(props, { map }) {
   };
 }}
 
-export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
+export const getSpacerStyle = (styles = {}) => {
+  const _styles = getPatternStyles(spacerConfig, styles)
+  return spacerConfig.transform(_styles, patternFns)
+}
 
 export const spacer = (styles) => css(getSpacerStyle(styles))
 spacer.raw = getSpacerStyle

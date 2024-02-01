@@ -2870,12 +2870,6 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        @container (min-width: 56rem) {
-          .\\[\\@container_\\(min-width\\:_\\{sizes\\.4xl\\}\\)\\]\\:d_flex {
-            display: flex;
-      }
-      }
-
         @container (min-width: 36rem) {
           .\\[\\@container_\\(min-width\\:_token\\(sizes\\.xl\\)\\)\\]\\:text_green\\.300 {
             color: var(--colors-green-300);
@@ -2885,6 +2879,12 @@ describe('extract to css output pipeline', () => {
         @media (min-width: 42rem) {
           .\\[\\@media_\\(min-width\\:_token\\(sizes\\.2xl\\)\\)\\]\\:text_red\\.300 {
             color: var(--colors-red-300);
+      }
+      }
+
+        @container (min-width: 56rem) {
+          .\\[\\@container_\\(min-width\\:_\\{sizes\\.4xl\\}\\)\\]\\:d_flex {
+            display: flex;
       }
       }
       }"

@@ -1,6 +1,6 @@
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
-import { compact, flatten, isBoolean, isString, mapObject, memo } from '@pandacss/shared'
+import { compact, flatten, isBoolean, isString, memo, patternFns } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
@@ -31,10 +31,6 @@ import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
 import type { ParserOptions } from './types'
 import { Utility } from './utility'
-
-const helpers = {
-  map: mapObject,
-}
 
 const defaults = (config: UserConfig): UserConfig => ({
   cssVarRoot: ':where(:root, :host)',
@@ -112,6 +108,7 @@ export class Context {
       config,
       tokens: this.tokens,
       utility: this.utility,
+      helpers: patternFns,
     })
 
     this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
@@ -249,6 +246,8 @@ export class Context {
   createConditions = (config: UserConfig): Conditions => {
     return new Conditions({
       conditions: config.conditions,
+      containerNames: config.theme?.containerNames,
+      containerSizes: config.theme?.containerSizes,
       breakpoints: config.theme?.breakpoints,
     })
   }
@@ -302,7 +301,7 @@ export class Context {
       isValidProperty: this.isValidProperty,
       browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,
-      helpers,
+      helpers: patternFns,
     }
   }
 

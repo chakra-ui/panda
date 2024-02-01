@@ -1,6 +1,7 @@
 import { findConfig } from '@pandacss/config'
 import { messages } from '@pandacss/core'
 import { logger, quote } from '@pandacss/logger'
+import { PandaError } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import fsExtra from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
@@ -16,7 +17,15 @@ type SetupOptions = Partial<Config> & {
 export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
   const { force, outExtension, jsxFramework, syntax } = opts
 
-  const configFile = findConfig({ cwd })
+  let configFile: string | undefined
+  try {
+    configFile = findConfig({ cwd })
+  } catch (err) {
+    // ignore config not found error
+    if (!(err instanceof PandaError)) {
+      throw err
+    }
+  }
 
   const pmResult = await getPackageManager(cwd)
   const pm = pmResult?.name ?? 'npm'

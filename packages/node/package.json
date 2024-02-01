@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/node",
-  "version": "0.28.0",
+  "version": "0.29.1",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -39,7 +39,6 @@
   "dependencies": {
     "@pandacss/config": "workspace:*",
     "@pandacss/core": "workspace:*",
-    "@pandacss/error": "workspace:*",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/generator": "workspace:*",
     "@pandacss/logger": "workspace:*",

@@ -1,4 +1,12 @@
-import { deepSet, esc, getOrCreateSet, isImportant, markImportant, withoutImportant } from '@pandacss/shared'
+import {
+  PandaError,
+  deepSet,
+  esc,
+  getOrCreateSet,
+  isImportant,
+  markImportant,
+  withoutImportant,
+} from '@pandacss/shared'
 import type {
   AtomicStyleResult,
   Dict,
@@ -300,7 +308,7 @@ export class StyleDecoder {
     const recipeConfig = this.context.recipes.getConfigOrThrow(recipeName)
 
     if (!Recipes.isSlotRecipeConfig(recipeConfig)) {
-      throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
+      throw new PandaError('UNKNOWN_RECIPE', `Recipe "${recipeName}" is not a slot recipe`)
     }
 
     const base: Dict = {}

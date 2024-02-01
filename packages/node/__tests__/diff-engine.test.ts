@@ -57,7 +57,6 @@ describe('DiffEngine affecteds', () => {
         "types",
         "css-fn",
         "jsx-is-valid-prop",
-        "styles.css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -118,7 +117,6 @@ describe('DiffEngine affecteds', () => {
         "types",
         "css-fn",
         "jsx-is-valid-prop",
-        "styles.css",
       }
     `)
     expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
@@ -234,7 +232,6 @@ describe('DiffEngine affecteds', () => {
         "types",
         "css-fn",
         "jsx-is-valid-prop",
-        "styles.css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -629,7 +626,6 @@ describe('DiffEngine affecteds', () => {
         "css-fn",
         "create-recipe",
         "jsx-is-valid-prop",
-        "styles.css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`

@@ -1,4 +1,5 @@
 import {
+  PandaError,
   getOrCreateSet,
   getSlotRecipes,
   isObjectOrArray,
@@ -280,7 +281,7 @@ export class StyleEncoder {
     const recipeConfig = this.context.recipes.getConfigOrThrow(recipeName)
 
     if (!Recipes.isSlotRecipeConfig(recipeConfig)) {
-      throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
+      throw new PandaError('INVALID_RECIPE', `Recipe "${recipeName}" is not a slot recipe`)
     }
 
     const base: Dict = {}

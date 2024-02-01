@@ -1,5 +1,288 @@
 # @pandacss/core
 
+## 0.29.1
+
+### Patch Changes
+
+- a5c75607: Fix an issue (introduced in v0.29) with `panda init` and add an assert on the new `colorMix` utility
+  function
+  - @pandacss/is-valid-prop@0.29.1
+  - @pandacss/logger@0.29.1
+  - @pandacss/shared@0.29.1
+  - @pandacss/token-dictionary@0.29.1
+  - @pandacss/types@0.29.1
+
+## 0.29.0
+
+### Minor Changes
+
+- 5fcdeb75: Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
+  to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
+
+  This function allows you to mix two colors together, and we use it to change the opacity of a color using the
+  `{color}/{opacity}` syntax.
+
+  You can use it like this:
+
+  ```ts
+  css({
+    bg: 'red.300/40',
+    color: 'white',
+  })
+  ```
+
+  This will generate:
+
+  ```css
+  @layer utilities {
+    .bg_red\.300\/40 {
+      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      background: var(--mix-background, var(--colors-red-300));
+    }
+
+    .text_white {
+      color: var(--colors-white);
+    }
+  }
+  ```
+
+  - If you're not using any opacity, the utility will not use `color-mix`
+  - The utility will automatically fallback to the original color if the `color-mix` function is not supported by the
+    browser.
+  - You can use any of the color tokens, and any of the opacity tokens.
+
+  ***
+
+  The `utilities` transform function also receives a new `utils` object that contains the `colorMix` function, so you
+  can also use it on your own utilities:
+
+  ```ts
+  export default defineConfig({
+    utilities: {
+      background: {
+        shorthand: 'bg',
+        className: 'bg',
+        values: 'colors',
+        transform(value, args) {
+          const mix = args.utils.colorMix(value)
+          // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
+          if (mix.invalid) return { background: value }
+
+          return {
+            background: mix.value,
+          }
+        },
+      },
+    },
+  })
+  ```
+
+  ***
+
+  Here's a cool snippet (that we use internally !) that makes it easier to create a utility transform for a given
+  property:
+
+  ```ts
+  import type { PropertyTransform } from '@pandacss/types'
+
+  export const createColorMixTransform =
+    (prop: string): PropertyTransform =>
+    (value, args) => {
+      const mix = args.utils.colorMix(value)
+      if (mix.invalid) return { [prop]: value }
+
+      const cssVar = '--mix-' + prop
+
+      return {
+        [cssVar]: mix.value,
+        [prop]: `var(${cssVar}, ${mix.color})`,
+      }
+    }
+  ```
+
+  then the same utility transform as above can be written like this:
+
+  ```ts
+  export default defineConfig({
+    utilities: {
+      background: {
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
+        transform: createColorMixTransform("background"),
+    },
+  });
+  ```
+
+- f778d3e5: You can now set and override `defaultValues` in pattern configurations.
+
+  Here's an example of how to define a new `hstack` pattern with a default `gap` value of `40px`:
+
+  ```js
+  defineConfig({
+    patterns: {
+      hstack: {
+        properties: {
+          justify: { type: 'property', value: 'justifyContent' },
+          gap: { type: 'property', value: 'gap' },
+        },
+        // you can also use a token like '10'
+        defaultValues: { gap: '40px' },
+        transform(props) {
+          const { justify, gap, ...rest } = props
+          return {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: justify,
+            gap,
+            ...rest,
+          }
+        },
+      },
+    },
+  })
+  ```
+
+- 250b4d11: ### Container Query Theme
+
+  Improve support for CSS container queries by adding a new `containerNames` and `containerSizes` theme options.
+
+  You can new define container names and sizes in your theme configuration and use them in your styles.
+
+  ```ts
+  export default defineConfig({
+    // ...
+    theme: {
+      extend: {
+        containerNames: ['sidebar', 'content'],
+        containerSizes: {
+          xs: '40em',
+          sm: '60em',
+          md: '80em',
+        },
+      },
+    },
+  })
+  ```
+
+  The default container sizes in the `@pandacss/preset-panda` preset are shown below:
+
+  ```ts
+  export const containerSizes = {
+    xs: '320px',
+    sm: '384px',
+    md: '448px',
+    lg: '512px',
+    xl: '576px',
+    '2xl': '672px',
+    '3xl': '768px',
+    '4xl': '896px',
+    '5xl': '1024px',
+    '6xl': '1152px',
+    '7xl': '1280px',
+    '8xl': '1440px',
+  }
+  ```
+
+  Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
+
+  > The default container syntax is `@/<container-size>`.
+
+  ```ts
+  import { css } from '/styled-system/css'
+
+  function Demo() {
+    return (
+      <nav className={css({ containerType: 'inline-size' })}>
+        <div
+          className={css({
+            fontSize: { '@/sm': 'md' },
+          })}
+        />
+      </nav>
+    )
+  }
+  ```
+
+  This will generate the following CSS:
+
+  ```css
+  .cq-type_inline-size {
+    container-type: inline-size;
+  }
+
+  @container (min-width: 60em) {
+    .\@\/sm:fs_md {
+      container-type: inline-size;
+    }
+  }
+  ```
+
+  ### Container Query Pattern
+
+  To make it easier to use container queries, we've added a new `cq` pattern to `@pandacss/preset-base`.
+
+  ```ts
+  import { cq } from 'styled-system/patterns'
+
+  function Demo() {
+    return (
+      <nav className={cq()}>
+        <div
+          className={css({
+            fontSize: { base: 'lg', '@/sm': 'md' },
+          })}
+        />
+      </nav>
+    )
+  }
+  ```
+
+  You can also named container queries:
+
+  ```ts
+  import { cq } from 'styled-system/patterns'
+
+  function Demo() {
+    return (
+      <nav className={cq({ name: 'sidebar' })}>
+        <div
+          className={css({
+            fontSize: { base: 'lg', '@sidebar/sm': 'md' },
+          })}
+        />
+      </nav>
+    )
+  }
+  ```
+
+### Patch Changes
+
+- 7c7340ec: Add support for token references with curly braces like `{path.to.token}` in media queries, just like the
+  `token(path.to.token)` alternative already could.
+
+  ```ts
+  css({
+    // ✅ this is fine now, will resolve to something like
+    // `@container (min-width: 56em)`
+    '@container (min-width: {sizes.4xl})': {
+      color: 'green',
+    },
+  })
+  ```
+
+  Fix an issue where the curly token references would not be escaped if the token path was not found.
+
+- Updated dependencies [5fcdeb75]
+- Updated dependencies [7c7340ec]
+- Updated dependencies [250b4d11]
+- Updated dependencies [a2fb5cc6]
+  - @pandacss/types@0.29.0
+  - @pandacss/token-dictionary@0.29.0
+  - @pandacss/is-valid-prop@0.29.0
+  - @pandacss/logger@0.29.0
+  - @pandacss/shared@0.29.0
+
 ## 0.28.0
 
 ### Minor Changes

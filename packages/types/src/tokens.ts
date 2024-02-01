@@ -90,6 +90,7 @@ export interface TokenDataTypes {
   assets: string | Asset
   borderWidths: string
   aspectRatios: string
+  containerNames: string
 }
 
 export type Tokens = {

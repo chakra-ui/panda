@@ -1,4 +1,4 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const squareConfig = {
@@ -15,7 +15,10 @@ transform(props) {
   };
 }}
 
-export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
+export const getSquareStyle = (styles = {}) => {
+  const _styles = getPatternStyles(squareConfig, styles)
+  return squareConfig.transform(_styles, patternFns)
+}
 
 export const square = (styles) => css(getSquareStyle(styles))
 square.raw = getSquareStyle

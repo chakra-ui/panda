@@ -1,6 +1,8 @@
 module.exports = {
   plugins: {
-    '@pandacss/dev/postcss': {},
+    '@pandacss/dev/postcss': {
+      logfile: './some-file.log',
+    },
     autoprefixer: {},
   },
 }

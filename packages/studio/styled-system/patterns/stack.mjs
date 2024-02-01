@@ -1,9 +1,9 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const stackConfig = {
 transform(props) {
-  const { align, justify, direction = "column", gap = "10px", ...rest } = props;
+  const { align, justify, direction, gap, ...rest } = props;
   return {
     display: "flex",
     flexDirection: direction,
@@ -12,9 +12,13 @@ transform(props) {
     gap,
     ...rest
   };
-}}
+},
+defaultValues:{direction:'column',gap:'10px'}}
 
-export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
+export const getStackStyle = (styles = {}) => {
+  const _styles = getPatternStyles(stackConfig, styles)
+  return stackConfig.transform(_styles, patternFns)
+}
 
 export const stack = (styles) => css(getStackStyle(styles))
 stack.raw = getStackStyle

@@ -37,6 +37,14 @@ export interface Theme {
    * Multi-variant style definitions for component slots.
    */
   slotRecipes?: Record<string, SlotRecipeConfig>
+  /**
+   * The predefined container names for your project.
+   */
+  containerNames?: string[]
+  /**
+   * The predefined container sizes for your project.
+   */
+  containerSizes?: Record<string, string>
 }
 
 interface PartialTheme extends Omit<Theme, 'recipes' | 'slotRecipes'> {

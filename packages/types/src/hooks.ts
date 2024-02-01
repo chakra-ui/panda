@@ -1,6 +1,7 @@
 import type { Artifact, ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
+import type { LoggerInterface } from './logger'
 import type { ParserResultInterface } from './parser'
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
@@ -84,19 +85,4 @@ export interface PandaHooks {
     artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
     content: string
   }) => string | void
-}
-
-export interface LoggerInterface {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'silent'
-  print(data: any): void
-  warn: (type: string, data: any) => void
-  info: (type: string, data: any) => void
-  debug: (type: string, data: any) => void
-  error: (type: string, data: any) => void
-  log: (data: string) => void
-  time: {
-    info: (msg: string) => (_msg?: string) => void
-    debug: (msg: string) => (_msg?: string) => void
-  }
-  isDebug: boolean
 }

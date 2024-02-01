@@ -59,7 +59,6 @@ export class Breakpoints {
 
   private getConditions = () => {
     const values = Object.entries(this.ranges).map(([key, value]) => {
-      // console.log(key, value)
       return [key, toCondition(key, value)]
     })
 

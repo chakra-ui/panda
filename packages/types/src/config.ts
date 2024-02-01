@@ -38,7 +38,7 @@ export interface StudioOptions {
   }
 }
 
-interface Patterns {
+export interface Patterns {
   [pattern: string]: PatternConfig
 }
 
@@ -155,6 +155,13 @@ interface FileSystemOptions {
    * @default []
    */
   exclude?: string[]
+  /**
+   * List of globs or files that will trigger a config reload when changed.
+   *
+   * We automatically track the config file and (transitive) files imported by the config file as much as possible, but sometimes we might miss some.
+   * Use this option as a workaround.
+   */
+  dependencies?: string[]
   /**
    * Whether to watch for changes and regenerate the css.
    * @default false
@@ -346,6 +353,15 @@ export interface Config
    * @default 'false'
    */
   eject?: boolean
+  /**
+   * The validation strcictnesss to use when validating the config.
+   * - When set to 'none', no validation will be performed.
+   * - When set to 'warn', warnings will be logged when validation fails.
+   * - When set to 'error', errors will be thrown when validation fails.
+   *
+   * @default 'error'
+   */
+  validation?: 'none' | 'warn' | 'error'
 }
 
 export interface Preset extends ExtendableOptions, PresetOptions {}
