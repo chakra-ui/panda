@@ -1,10 +1,11 @@
-import { describe, expect, test } from 'vitest'
-import postcss from 'postcss'
-import pandacss, { PluginOptions } from '../src/index'
 import { join } from 'path'
-import { logger } from '@pandacss/logger'
-import { rm } from 'fs/promises'
+import postcss from 'postcss'
 import { existsSync } from 'fs'
+import { rm } from 'fs/promises'
+import { logger } from '@pandacss/logger'
+import { describe, expect, test } from 'vitest'
+
+import pandacss, { type PluginOptions } from '../src/index'
 
 async function run(input: string, options: PluginOptions, from?: string) {
   const result = await postcss([pandacss(options)]).process(input, { from: from || '/foo.css' })
