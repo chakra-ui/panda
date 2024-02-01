@@ -3,7 +3,7 @@ import type { BoxNodeArray, BoxNodeLiteral, BoxNodeMap, Unboxed } from '@pandacs
 export interface ResultItem {
   name?: string
   data: Array<Unboxed['raw']>
-  type?: 'object' | 'cva' | 'sva' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
+  type?: 'css' | 'cva' | 'sva' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
   box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray
 }
 
