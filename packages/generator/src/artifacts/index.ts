@@ -8,7 +8,7 @@ import { setupArtifacts, setupDesignTokens } from './setup-artifacts'
  */
 export const generateArtifacts = (ctx: Context, ids?: ArtifactId[]): Artifact[] => {
   if (ctx.config.emitTokensOnly) {
-    return [setupDesignTokens(ctx)]
+    return [setupDesignTokens(ctx)].filter(Boolean) as Artifact[]
   }
 
   return setupArtifacts(ctx, ids)

@@ -89,4 +89,63 @@ describe('generate classnames', () => {
       }),
     ).toMatchInlineSnapshot('"[&_span]:fs_20px [.bold_&]:font_bold sm:fs_50px [@media_print]:fs_40px"')
   })
+
+  test('should use dash for negative tokens', () => {
+    const css = createCss(createGeneratorContext().baseSheetContext)
+    expect(css({ mx: '-2' })).toMatchInlineSnapshot('"mx_-2"')
+  })
+
+  test('should not format the class name', () => {
+    const css = createCss(
+      createGeneratorContext({
+        hooks: {
+          'tokens:created': ({ configure }) => {
+            configure({
+              formatTokenName: (path) => '$' + path.join('-'),
+              formatCssVar: (path) => {
+                const variable = path.join('-').replace('$', '').replace('.', '')
+                return {
+                  var: variable as any,
+                  ref: `var(--${variable})`,
+                }
+              },
+            })
+          },
+        },
+      }).baseSheetContext,
+    )
+    expect(
+      css({
+        background: '$pink.400',
+        mx: '-$2',
+      }),
+    ).toMatchInlineSnapshot(`"bg_$pink.400 mx_-$2"`)
+  })
+
+  test('should format the non-string values', () => {
+    const css = createCss(
+      createGeneratorContext({
+        hooks: {
+          'tokens:created': ({ configure }) => {
+            configure({
+              formatTokenName: (path) => '$' + path.join('-'),
+              formatCssVar: (path) => {
+                const variable = path.join('-').replace('$', '').replace('.', '')
+                return {
+                  var: variable as any,
+                  ref: `var(--${variable})`,
+                }
+              },
+            })
+          },
+        },
+      }).baseSheetContext,
+    )
+    expect(
+      css({
+        debug: true,
+        padding: 40,
+      }),
+    ).toMatchInlineSnapshot('"debug_true p_40"')
+  })
 })

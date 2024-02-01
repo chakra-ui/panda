@@ -1,5 +1,4 @@
 import { type Difference } from 'microdiff'
-import type { Nullable } from './shared'
 
 export interface ArtifactContent {
   file: string
@@ -31,11 +30,11 @@ export type ArtifactId =
 
 export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 
-export type Artifact = Nullable<{
+export type Artifact = {
   id: ArtifactId
   dir?: string[]
   files: ArtifactContent[]
-}>
+}
 
 export interface AffectedArtifacts {
   recipes: string[]

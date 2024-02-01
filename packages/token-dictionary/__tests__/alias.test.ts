@@ -12,6 +12,7 @@ test('resolve aliases', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`

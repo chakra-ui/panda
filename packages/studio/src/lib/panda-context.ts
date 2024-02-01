@@ -5,10 +5,10 @@ import { config } from 'virtual:panda'
 
 export const theme = config.theme ?? {}
 
-export const tokens = new TokenDictionary(theme)
+export const tokens = new TokenDictionary(theme).init()
 
 export const getTokens = (category: keyof TokenDataTypes): Token[] => {
-  const map = tokens.categoryMap.get(category) ?? new Map()
+  const map = tokens.view.categoryMap.get(category) ?? new Map()
   return Array.from(map.values())
 }
 

@@ -81,7 +81,27 @@ export class Context {
     conf.config = config
 
     this.tokens = this.createTokenDictionary(theme)
+    this.hooks['tokens:created']?.({
+      configure: (opts) => {
+        if (opts.formatTokenName) {
+          this.tokens.formatTokenName = opts.formatTokenName
+        }
+        if (opts.formatCssVar) {
+          this.tokens.formatCssVar = opts.formatCssVar
+        }
+      },
+    })
+    this.tokens.init()
+
     this.utility = this.createUtility(config)
+    this.hooks['utility:created']?.({
+      configure: (opts) => {
+        if (opts.toHash) {
+          this.utility.toHash = opts.toHash
+        }
+      },
+    })
+
     this.conditions = this.createConditions(config)
 
     this.patterns = new Patterns({

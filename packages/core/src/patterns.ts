@@ -120,7 +120,7 @@ export class Patterns {
     }
 
     if (propType.type === 'token') {
-      const values = this.tokens.getValue(propType.value)
+      const values = this.tokens.view.getCategoryValues(propType.value)
       return Object.keys(values ?? {})
     }
   }

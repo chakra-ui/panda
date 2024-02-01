@@ -1,8 +1,7 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { transforms } from '../src/transform'
 
-test('format / json flat', () => {
+test('format / token name', () => {
   const dictionary = new TokenDictionary({
     tokens: {
       colors: {
@@ -23,24 +22,19 @@ test('format / json flat', () => {
       },
     },
   })
+  dictionary.formatTokenName = (path) => {
+    return `$${path.join('-')}`
+  }
 
   dictionary.registerTokens()
-  dictionary.registerTransform(...transforms)
   dictionary.build()
 
-  expect(dictionary.view.vars).toMatchInlineSnapshot(`
-    Map {
-      "base" => Map {
-        "--colors-red" => "#ff0000",
-        "--colors-blue" => "#0000ff",
-        "--colors-green" => "#00ff00",
-        "--colors-pink-50" => "#ff0000",
-        "--colors-pink-100" => "#0000ff",
-        "--colors-brand" => "var(--colors-red)",
-      },
-      "dark" => Map {
-        "--colors-brand" => "var(--colors-blue)",
-      },
-    }
-  `)
+  expect(Array.from(dictionary.byName.keys())).toEqual([
+    '$colors-red',
+    '$colors-blue',
+    '$colors-green',
+    '$colors-pink-50',
+    '$colors-pink-100',
+    '$colors-brand',
+  ])
 })

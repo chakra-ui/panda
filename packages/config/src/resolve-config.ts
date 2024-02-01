@@ -41,7 +41,11 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
   } as LoadConfigResult
 
   // This allows editing the config before the context is created
-  await hooks['config:resolved']?.({ conf: loadConfigResult })
+  await hooks['config:resolved']?.({
+    config: loadConfigResult.config,
+    path: loadConfigResult.path,
+    dependencies: loadConfigResult.dependencies,
+  })
 
   const serialized = stringifyJson(loadConfigResult.config)
   const deserialize = () => parseJson(serialized)

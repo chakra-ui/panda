@@ -315,7 +315,6 @@ describe('setup-artifacts', () => {
           "css/index.mjs",
           "css/index.d.ts",
         ],
-        [],
       ]
     `)
   })

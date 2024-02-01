@@ -15,6 +15,7 @@ const scenarioList = [
   'strict',
   'jsx-minimal',
   'jsx-none',
+  'format-names',
 ]
 
 const isValidScenario = (scenario) => {

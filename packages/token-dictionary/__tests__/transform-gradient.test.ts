@@ -23,6 +23,7 @@ test('transform / gradient', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.registerTransform(transformGradient)
 
   dictionary.build()

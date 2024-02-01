@@ -9,13 +9,7 @@ const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'
 
 export function generateCreateRecipe(ctx: Context) {
-  const {
-    conditions,
-    recipes,
-    prefix,
-    hash,
-    utility: { separator },
-  } = ctx
+  const { conditions, recipes, prefix, hash, utility } = ctx
 
   if (recipes.isEmpty()) return
 
@@ -47,7 +41,7 @@ export function generateCreateRecipe(ctx: Context) {
          }
 
          value = withoutSpace(value)
-         return { className: \`\${name}--\${prop}${separator}\${value}\` }
+         return { className: \`\${name}--\${prop}${utility.separator}\${value}\` }
       }
 
       const recipeCss = createCss({
@@ -59,6 +53,7 @@ export function generateCreateRecipe(ctx: Context) {
         },
         utility: {
           ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
+          toHash: ${utility.toHash},
           transform,
         }
       })

@@ -102,6 +102,7 @@ export function generateCssFn(ctx: Context) {
             : `(key, value) => ({ className: \`$\{classNameByProp.get(key) || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
         },
         ${utility.hasShorthand ? 'hasShorthand: true,' : ''}
+        toHash: ${utility.toHash},
         resolveShorthand: ${utility.hasShorthand ? 'resolveShorthand' : 'prop => prop'},
       }
     }

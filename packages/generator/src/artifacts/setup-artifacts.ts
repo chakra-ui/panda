@@ -30,7 +30,7 @@ function setupHelpers(ctx: Context): Artifact {
   }
 }
 
-export function setupDesignTokens(ctx: Context): Artifact {
+export function setupDesignTokens(ctx: Context): Artifact | undefined {
   if (ctx.tokens.isEmpty) return
 
   const code = generateTokenJs(ctx)
@@ -45,7 +45,7 @@ export function setupDesignTokens(ctx: Context): Artifact {
     ],
   }
 }
-function setupJsxTypes(ctx: Context): Artifact {
+function setupJsxTypes(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
   const jsx = generateJsxTypes(ctx)!
@@ -57,7 +57,7 @@ function setupJsxTypes(ctx: Context): Artifact {
   }
 }
 
-function setupEntryTypes(ctx: Context): Artifact {
+function setupEntryTypes(ctx: Context): Artifact | undefined {
   const entry = generateTypesEntry(ctx, Boolean(ctx.jsx.framework))
 
   return {
@@ -133,7 +133,7 @@ function setupCss(ctx: Context): Artifact {
   }
 }
 
-function setupCva(ctx: Context): Artifact {
+function setupCva(ctx: Context): Artifact | undefined {
   if (ctx.isTemplateLiteralSyntax) return
 
   const code = generateCvaFn(ctx)
@@ -147,7 +147,7 @@ function setupCva(ctx: Context): Artifact {
   }
 }
 
-function setupSva(ctx: Context): Artifact {
+function setupSva(ctx: Context): Artifact | undefined {
   if (ctx.isTemplateLiteralSyntax) return
 
   const code = generateSvaFn(ctx)
@@ -173,7 +173,7 @@ function setupCx(ctx: Context): Artifact {
   }
 }
 
-function setupCreateRecipe(ctx: Context): Artifact {
+function setupCreateRecipe(ctx: Context): Artifact | undefined {
   if (ctx.recipes.isEmpty()) return
 
   const createRecipe = generateCreateRecipe(ctx)!
@@ -188,7 +188,7 @@ function setupCreateRecipe(ctx: Context): Artifact {
   }
 }
 
-function setupRecipesIndex(ctx: Context): Artifact {
+function setupRecipesIndex(ctx: Context): Artifact | undefined {
   if (ctx.recipes.isEmpty()) return
 
   const fileNames = ctx.recipes.details.map((recipe) => recipe.dashName)
@@ -207,7 +207,7 @@ function setupRecipesIndex(ctx: Context): Artifact {
   }
 }
 
-function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact {
+function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact | undefined {
   if (ctx.recipes.isEmpty()) return
 
   const files = generateRecipes(ctx, filters)
@@ -223,7 +223,7 @@ function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact {
   }
 }
 
-function setupPatternsIndex(ctx: Context): Artifact {
+function setupPatternsIndex(ctx: Context): Artifact | undefined {
   if (ctx.isTemplateLiteralSyntax) return
 
   const fileNames = ctx.patterns.details.map((pattern) => pattern.dashName)
@@ -242,7 +242,7 @@ function setupPatternsIndex(ctx: Context): Artifact {
   }
 }
 
-function setupPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
+function setupPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | undefined {
   if (ctx.isTemplateLiteralSyntax) return
 
   const files = generatePattern(ctx, filters)
@@ -258,7 +258,7 @@ function setupPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
   }
 }
 
-function setupJsxIsValidProp(ctx: Context): Artifact {
+function setupJsxIsValidProp(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
 
   const isValidProp = generateIsValidProp(ctx)
@@ -273,7 +273,7 @@ function setupJsxIsValidProp(ctx: Context): Artifact {
   }
 }
 
-function setupJsxFactory(ctx: Context): Artifact {
+function setupJsxFactory(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
   const types = generateJsxTypes(ctx)!
@@ -289,7 +289,7 @@ function setupJsxFactory(ctx: Context): Artifact {
   }
 }
 
-function setupJsxHelpers(ctx: Context): Artifact {
+function setupJsxHelpers(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
   const helpers = generatedJsxHelpers(ctx)
@@ -301,7 +301,7 @@ function setupJsxHelpers(ctx: Context): Artifact {
   }
 }
 
-function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
+function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | undefined {
   if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
 
   const patterns = generateJsxPatterns(ctx, filters)
@@ -318,7 +318,7 @@ function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact {
   }
 }
 
-function setupJsxPatternsIndex(ctx: Context): Artifact {
+function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
   const isStyleProp = !ctx.isTemplateLiteralSyntax
@@ -374,7 +374,7 @@ function setupCssIndex(ctx: Context): Artifact {
   }
 }
 
-function setupPackageJson(ctx: Context): Artifact {
+function setupPackageJson(ctx: Context): Artifact | undefined {
   if (!ctx.config.emitPackage) return
   return {
     id: 'package.json',
@@ -467,9 +467,12 @@ const entries: ArtifactEntry[] = [
 
 const getMatchingArtifacts = (ctx: Context, filters: ArtifactFilters | undefined): Artifact[] => {
   const ids = filters?.ids
-  if (!ids) return entries.map(([_artifactId, fn]) => fn(ctx))
+  if (!ids) return entries.map(([_artifactId, fn]) => fn(ctx)).filter(Boolean) as Artifact[]
 
-  return entries.filter(([artifactId]) => ids.includes(artifactId)).map(([_artifactId, fn]) => fn(ctx, filters))
+  return entries
+    .filter(([artifactId]) => ids.includes(artifactId))
+    .map(([_artifactId, fn]) => fn(ctx, filters))
+    .filter(Boolean) as Artifact[]
 }
 
 const transformArtifact = (ctx: Context, artifact: Artifact): Artifact => {

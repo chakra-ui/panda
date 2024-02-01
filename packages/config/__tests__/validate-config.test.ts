@@ -232,7 +232,6 @@ describe('validateConfig', () => {
         "[tokens]: Circular token reference: \`colors.another.self\` -> \`colors.another.self\` -> ... -> \`colors.another.self\`",
         "[tokens]: Circular token reference: \`colors.another.circular\` -> \`colors.another.group.recursive\` -> ... -> \`colors.another.circular\`",
         "[tokens]: Missing token: \`fontSizes.md2\` used in \`config.semanticTokens.fontSizes.main\`",
-        "[tokens]: This token name is already used in \`config.theme.token\`: \`colors.primary.value\`",
         "[recipes]: This recipe name is already used in \`config.patterns\`: btn-primary",
       }
     `)

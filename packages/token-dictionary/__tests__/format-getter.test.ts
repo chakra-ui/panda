@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { formats } from '../src/format'
 import { transforms } from '../src/transform'
 
 test('format / getter', () => {
@@ -25,12 +24,11 @@ test('format / getter', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.registerTransform(...transforms)
   dictionary.build()
 
-  const get = formats.createVarGetter(dictionary)
-
-  expect(get('colors')).toMatchInlineSnapshot(`
+  expect(dictionary.view.getCategoryValues('colors')).toMatchInlineSnapshot(`
     {
       "blue": "var(--colors-blue)",
       "brand": "var(--colors-brand)",
@@ -41,6 +39,6 @@ test('format / getter', () => {
     }
   `)
 
-  expect(get('colors.blue')).toMatchInlineSnapshot('"var(--colors-blue)"')
-  expect(get('colors.brand')).toMatchInlineSnapshot('"var(--colors-brand)"')
+  expect(dictionary.view.get('colors.blue')).toMatchInlineSnapshot('"var(--colors-blue)"')
+  expect(dictionary.view.get('colors.brand')).toMatchInlineSnapshot('"var(--colors-brand)"')
 })

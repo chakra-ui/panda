@@ -1,4 +1,4 @@
-import type { ArtifactId, DiffConfigResult } from './artifact'
+import type { Artifact, ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
 import type { LoggerInterface } from './logger'
@@ -6,12 +6,54 @@ import type { ParserResultInterface } from './parser'
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
 
+interface TokenCssVarOptions {
+  fallback?: string
+  prefix?: string
+  hash?: boolean
+}
+
+interface TokenCssVar {
+  var: `--${string}`
+  ref: string
+}
+
+export interface TokenConfigureOptions {
+  formatTokenName?: (path: string[]) => string
+  formatCssVar?: (path: string[], options: TokenCssVarOptions) => TokenCssVar
+}
+
+export interface TokenCreatedHookArgs {
+  configure(opts: TokenConfigureOptions): void
+}
+
+export interface UtilityConfigureOptions {
+  toHash?(path: string[], toHash: (str: string) => string): string
+}
+
+export interface UtilityCreatedHookArgs {
+  configure(opts: UtilityConfigureOptions): void
+}
+
+export interface ConfigResolvedHookArgs {
+  config: LoadConfigResult['config']
+  path: string
+  dependencies: string[]
+}
+
 export interface PandaHooks {
   /**
    * Called when the config is resolved, after all the presets are loaded and merged.
    * This is the first hook called, you can use it to tweak the config before the context is created.
    */
-  'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn
+  /**
+   * Called when the token engine has been created
+   */
+  'tokens:created': (args: TokenCreatedHookArgs) => MaybeAsyncReturn
+  /**
+   * Called when the classname engine has been created
+   */
+  'utility:created': (args: UtilityCreatedHookArgs) => MaybeAsyncReturn
   /**
    * Called when the Panda context has been created and the API is ready to be used.
    */
@@ -31,6 +73,11 @@ export interface PandaHooks {
    * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
    */
   'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+  /**
+   * Called right before writing the codegen files to disk.
+   * You can use this hook to tweak the codegen files before they are written to disk.
+   */
+  'codegen:prepare': (args: { artifacts: Artifact[]; changed: ArtifactId[] | undefined }) => MaybeAsyncReturn
   /**
    * Called after the codegen is completed
    */

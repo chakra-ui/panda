@@ -1,2 +1,2 @@
-export { TokenDictionary } from './create-dictionary'
+export { TokenDictionary } from './dictionary'
 export { Token } from './token'

@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { createRuleProcessor } from './fixture'
-import type { SystemStyleObject } from '@pandacss/types'
+import type { Config, SystemStyleObject } from '@pandacss/types'
 
-const css = (styles: SystemStyleObject) => {
-  return createRuleProcessor().css(styles).toCss()
+const css = (styles: SystemStyleObject, config?: Config) => {
+  return createRuleProcessor(config).css(styles).toCss()
 }
 
 describe('atomic / with basic style object', () => {
@@ -49,6 +49,16 @@ describe('atomic / with basic style object', () => {
       "@layer utilities {
         .w_70px {
           width: 70px;
+      }
+      }"
+    `)
+  })
+
+  test('should work with negative tokens', () => {
+    expect(css({ mx: -2 })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .mx_-2 {
+          margin-inline: calc(var(--spacing-2) * -1);
       }
       }"
     `)
@@ -626,6 +636,36 @@ describe('atomic / with direct nesting', () => {
           .\\[\\@media_screen_and_\\(max-width\\:_640px\\)\\]\\:m_8 {
             margin: var(--spacing-8);
       }
+      }
+      }"
+    `)
+  })
+
+  test('with custom formatTokenName and formatCssVar', () => {
+    expect(
+      css(
+        { bg: '$blue-400' },
+        {
+          hooks: {
+            'tokens:created': ({ configure }) => {
+              configure({
+                formatTokenName: (path) => '$' + path.join('-'),
+                formatCssVar: (path) => {
+                  const variable = path.join('---')
+                  return {
+                    var: variable as any,
+                    ref: `var(--${variable})`,
+                  }
+                },
+              })
+            },
+          },
+        },
+      ),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg_\\$blue-400 {
+          background: var(--colors---blue---400);
       }
       }"
     `)

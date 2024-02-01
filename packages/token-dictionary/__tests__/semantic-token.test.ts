@@ -10,6 +10,7 @@ test('semantic tokens / deeply nested', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`

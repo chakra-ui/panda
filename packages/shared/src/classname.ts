@@ -1,10 +1,10 @@
 import { isObject } from './assert'
 import { compact } from './compact'
 import { filterBaseConditions } from './condition'
-import { isImportant, withoutImportant } from './important'
 import { toHash } from './hash'
-import { mergeProps } from './merge-props'
+import { isImportant, withoutImportant } from './important'
 import { memo } from './memo'
+import { mergeProps } from './merge-props'
 import { normalizeShorthand, normalizeStyleObject } from './normalize-style-object'
 import { walkObject } from './walk-object'
 
@@ -18,6 +18,7 @@ export interface CreateCssContext {
     hasShorthand: boolean
     resolveShorthand: (prop: string) => string
     transform: (prop: string, value: any) => { className: string }
+    toHash: (path: string[], toHash: (str: string) => string) => string
   }
   /**
    * Partial properties from the Condition class
@@ -46,7 +47,7 @@ export function createCss(context: CreateCssContext) {
     let result: string
     if (hash) {
       const baseArray = [...conds.finalize(conditions), className]
-      result = formatClassName(toHash(baseArray.join(':')))
+      result = formatClassName(utility.toHash(baseArray, toHash))
     } else {
       const baseArray = [...conds.finalize(conditions), formatClassName(className)]
       result = baseArray.join(':')

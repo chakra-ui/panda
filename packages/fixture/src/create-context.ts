@@ -41,6 +41,7 @@ export const createContext = (userConfig?: Config) => {
 
   return new PandaContext({
     ...fixtureDefaults,
+    hooks: userConfig?.hooks ?? {},
     config: resolvedConfig,
     tsconfig: {
       // @ts-expect-error

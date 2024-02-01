@@ -1567,8 +1567,8 @@ packages:
       - '@internationalized/date'
     dev: false
 
-  /@astrojs/compiler@2.5.1:
-    resolution: {integrity: sha512-o2hKiFJXZOm1Gov+RGXSWnKlnb/UF7KRTx/Y2uazYe3+MrLY+sqLN+yB4EH2bElc0l1K9cDb4mZSejuq563rGQ==}
+  /@astrojs/compiler@2.5.2:
+    resolution: {integrity: sha512-fm9HNYu1tVnJjZYHE+SdDM5k6fZKNPXS9PwT43Mf6l4HVGx8d1jQwhGQqCvLkYJJBwQ9OysiexFMt7wtNuXhmQ==}
 
   /@astrojs/internal-helpers@0.2.1:
     resolution: {integrity: sha512-06DD2ZnItMwUnH81LBLco3tWjcZ1lGU9rLCCBaeUCGYe9cI0wKyY2W3kDyoW1I6GmcWgt1fu+D1CTvz+FIKf8A==}
@@ -1902,7 +1902,7 @@ packages:
     resolution: {integrity: sha512-m1EP3lVOPptR+2DwD125gziZNcmoNSHGmJROKoy87loWUQyJaVXDgpmruWqDARZSmtYQ+Dl25okU8+qhVzuykw==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.23.9
+      '@babel/types': 7.23.5
 
   /@babel/helper-compilation-targets@7.22.15:
     resolution: {integrity: sha512-y6EEzULok0Qvz8yyLkCvVX+02ic+By2UdOhylwUOvOn9dvYc9mKICJuuU1n1XBI02YWsNsnrY1kc6DVbjcXbtw==}
@@ -13870,7 +13870,7 @@ packages:
     engines: {node: '>=18.14.1', npm: '>=6.14.0'}
     hasBin: true
     dependencies:
-      '@astrojs/compiler': 2.5.1
+      '@astrojs/compiler': 2.5.2
       '@astrojs/internal-helpers': 0.2.1
       '@astrojs/markdown-remark': 4.2.0
       '@astrojs/telemetry': 3.0.4
@@ -18203,7 +18203,7 @@ packages:
     engines: {node: '>=8.3.0'}
     dependencies:
       '@babel/traverse': 7.23.5
-      '@babel/types': 7.23.9
+      '@babel/types': 7.23.5
       c8: 7.14.0
     transitivePeerDependencies:
       - supports-color

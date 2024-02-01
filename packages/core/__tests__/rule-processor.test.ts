@@ -1,11 +1,11 @@
 import { createGeneratorContext } from '@pandacss/fixture'
-import type { Dict, RecipeDefinition, SlotRecipeDefinition } from '@pandacss/types'
+import type { Config, Dict, RecipeDefinition, SlotRecipeDefinition } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { RuleProcessor } from '../src/rule-processor'
 import { createRuleProcessor } from './fixture'
 
-const css = (styles: Dict) => {
-  const result = createRuleProcessor().css(styles)
+const css = (styles: Dict, config?: Config) => {
+  const result = createRuleProcessor(config).css(styles)
   return { className: result.getClassNames(), css: result.toCss() }
 }
 
@@ -46,6 +46,187 @@ const buttonRecipe = {
 }
 
 describe('rule processor', () => {
+  test('simple', () => {
+    const result = css({
+      margin: 2,
+      mx: 'token(spacing.2)',
+      my: '-2',
+      color: 'blue.300',
+    })
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "m_2",
+        "mx_token\\(spacing\\.2\\)",
+        "my_-2",
+        "text_blue\\.300",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_2 {
+          margin: var(--spacing-2);
+      }
+
+        .mx_token\\(spacing\\.2\\) {
+          margin-inline: var(--spacing-2);
+      }
+
+        .my_-2 {
+          margin-block: calc(var(--spacing-2) * -1);
+      }
+
+        .text_blue\\.300 {
+          color: var(--colors-blue-300);
+      }
+      }"
+    `)
+  })
+
+  test('simple with formatTokenName', () => {
+    const result = css(
+      {
+        margin: '$2',
+        p: '{spacing.$2}',
+        mx: 'token(spacing.$2)',
+        my: '-$2',
+        color: '$blue-300',
+      },
+      {
+        hooks: {
+          'tokens:created': ({ configure }) => {
+            configure({
+              formatTokenName: (path: string[]) => '$' + path.join('-'),
+            })
+          },
+        },
+      },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "m_\\$2",
+        "p_\\{spacing\\.\\$2\\}",
+        "mx_token\\(spacing\\.\\$2\\)",
+        "my_-\\$2",
+        "text_\\$blue-300",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_\\$2 {
+          margin: var(--spacing-2);
+      }
+
+        .p_\\{spacing\\.\\$2\\} {
+          padding: var(--spacing-2);
+      }
+
+        .mx_token\\(spacing\\.\\$2\\) {
+          margin-inline: var(--spacing-2);
+      }
+
+        .my_-\\$2 {
+          margin-block: calc(var(--spacing-2) * -1);
+      }
+
+        .text_\\$blue-300 {
+          color: var(--colors-blue-300);
+      }
+      }"
+    `)
+  })
+
+  test('simple - hash: true', () => {
+    const result = css(
+      {
+        margin: 2,
+        mx: 'token(spacing.2)',
+        my: '-2',
+        color: 'blue.300',
+      },
+      { hash: true },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "AxiDH",
+        "hHAKfe",
+        "pWVwj",
+        "cXgKQC",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .AxiDH {
+          margin: var(--ebuyxV);
+      }
+
+        .hHAKfe {
+          margin-inline: var(--ebuyxV);
+      }
+
+        .pWVwj {
+          margin-block: calc(var(--ebuyxV) * -1);
+      }
+
+        .cXgKQC {
+          color: var(--bMEoOM);
+      }
+      }"
+    `)
+  })
+
+  test('simple - hash: true + custom toHash', () => {
+    const result = css(
+      {
+        margin: 2,
+        mx: 'token(spacing.2)',
+        my: '-2',
+        color: 'blue.300',
+      },
+      {
+        hash: true,
+        hooks: {
+          'utility:created': ({ configure }) => {
+            configure({
+              toHash(paths, toHash) {
+                const stringConds = paths.join(':')
+                const splitConds = stringConds.split('_')
+                const hashConds = splitConds.map(toHash)
+                return hashConds.join('_')
+              },
+            })
+          },
+        },
+      },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "bnJC_bnIF",
+        "PJOa_hhWZwA",
+        "PJOH_PIXg",
+        "fzDuiy_bNBgpA",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bnJC_bnIF {
+          margin: var(--ebuyxV);
+      }
+
+        .PJOa_hhWZwA {
+          margin-inline: var(--ebuyxV);
+      }
+
+        .PJOH_PIXg {
+          margin-block: calc(var(--ebuyxV) * -1);
+      }
+
+        .fzDuiy_bNBgpA {
+          color: var(--bMEoOM);
+      }
+      }"
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',
