@@ -27,15 +27,17 @@ export default defineConfig({
   // Stitches preset
   separator: '-',
   hooks: {
-    'tokens:created': (ctx) => {
-      ctx.tokens.formatTokenName = (path) => `$${path.join('-')}`
-      ctx.tokens.formatCssVar = (path) => {
-        const variable = dasherize(path.join('-'))
-        return {
-          var: variable,
-          ref: `var(--${variable})`,
-        }
-      }
+    'tokens:created': ({ configure }) => {
+      configure({
+        formatTokenName: (path) => `$${path.join('-')}`,
+        formatCssVar: (path) => {
+          const variable = dasherize(path.join('-'))
+          return {
+            var: variable,
+            ref: `var(--${variable})`,
+          }
+        },
+      })
     },
   },
 })

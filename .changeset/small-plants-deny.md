@@ -11,29 +11,60 @@
 
 Introduce 3 new hooks:
 
+## `tokens:created`
+
+This hook is called when the token engine has been created. You can use this hook to add your format token names and
+variables.
+
+> This is especially useful when migrating from other css-in-js libraries, like Stitches.
+
 ```ts
-export interface PandaHooks {
-  // ..
+export default defineConfig({
+  // ...
+  hooks: {
+    'tokens:created': ({ configure }) => {
+      configure({
+        formatTokenName: (path) => '$' + path.join('-'),
+      })
+    },
+  },
+})
+```
 
-  /**
-   * Called when the TokenDictionary has been created
-   * You can use this hook to add your own tokens to the TokenDictionary
-   * You can also override the default `formatTokenName` and `formatCssVar` methods
-   */
-  'tokens:created': (args: { tokens: TokenDictionary }) => MaybeAsyncReturn
-  /**
-   * Called when the Utility has been created
-   * You can override the default `toHash` function used when `config.hash` is set to `true`
-   */
-  'utility:created': (args: {
-    setToHashFn: (fn: (path: string[], toHash: (str: string) => string) => string) => void
-  }) => MaybeAsyncReturn
-  /**
-   * Called right before writing the codegen files to disk.
-   * You can use this hook to tweak the codegen files before they are written to disk.
-   */
-  'codegen:prepare': (args: { artifacts: Artifact[]; changed: ArtifactId[] | undefined }) => MaybeAsyncReturn
+## `utility:created`
 
-  // ..
-}
+This hook is called when the internal classname engine has been created. You can override the default `toHash` function
+used when `config.hash` is set to `true`
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'utility:created': ({ configure }) => {
+      configure({
+        toHash(paths, toHash) {
+          const stringConds = paths.join(':')
+          const splitConds = stringConds.split('_')
+          const hashConds = splitConds.map(toHash)
+          return hashConds.join('_')
+        },
+      })
+    },
+  },
+})
+```
+
+## `codegen:prepare`
+
+This hook is called right before writing the codegen files to disk. You can use this hook to tweak the codegen files
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'codegen:prepare': ({ artifacts, changed }) => {
+      // do something with the emitted js/d.ts files
+    },
+  },
+})
 ```

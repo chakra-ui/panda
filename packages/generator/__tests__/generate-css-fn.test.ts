@@ -68,12 +68,14 @@ describe('generate css-fn', () => {
       generateCssFn(
         createContext({
           hooks: {
-            'utility:created': (args) => {
-              args.setToHashFn((conds, hashFn) => {
-                const stringConds = conds.join(':')
-                const splitConds = stringConds.split('_')
-                const hashConds = splitConds.map(hashFn)
-                return hashConds.join('_')
+            'utility:created': ({ configure }) => {
+              configure({
+                toHash(paths, toHash) {
+                  const stringConds = paths.join(':')
+                  const splitConds = stringConds.split('_')
+                  const hashConds = splitConds.map(toHash)
+                  return hashConds.join('_')
+                },
               })
             },
           },
@@ -124,12 +126,12 @@ describe('generate css-fn', () => {
                     return { className: \`\${propKey}_\${withoutSpace(value)}\` }
                   },
           hasShorthand: true,
-          toHash: (conds, hashFn) => {
-                      const stringConds = conds.join(":");
-                      const splitConds = stringConds.split("_");
-                      const hashConds = splitConds.map(hashFn);
-                      return hashConds.join("_");
-                    },
+          toHash: toHash(paths, toHash) {
+                        const stringConds = paths.join(":");
+                        const splitConds = stringConds.split("_");
+                        const hashConds = splitConds.map(toHash);
+                        return hashConds.join("_");
+                      },
           resolveShorthand: resolveShorthand,
         }
       }

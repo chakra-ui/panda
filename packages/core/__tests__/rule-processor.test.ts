@@ -3,7 +3,6 @@ import type { Config, Dict, RecipeDefinition, SlotRecipeDefinition } from '@pand
 import { describe, expect, test } from 'vitest'
 import { RuleProcessor } from '../src/rule-processor'
 import { createRuleProcessor } from './fixture'
-import { toHash } from '@pandacss/shared'
 
 const css = (styles: Dict, config?: Config) => {
   const result = createRuleProcessor(config).css(styles)
@@ -94,8 +93,10 @@ describe('rule processor', () => {
       },
       {
         hooks: {
-          'tokens:created': (ctx) => {
-            ctx.tokens.formatTokenName = (path: string[]) => '$' + path.join('-')
+          'tokens:created': ({ configure }) => {
+            configure({
+              formatTokenName: (path: string[]) => '$' + path.join('-'),
+            })
           },
         },
       },
@@ -184,12 +185,14 @@ describe('rule processor', () => {
       {
         hash: true,
         hooks: {
-          'utility:created': (args) => {
-            args.setToHashFn((conds) => {
-              const stringConds = conds.join(':')
-              const splitConds = stringConds.split('_')
-              const hashConds = splitConds.map(toHash)
-              return hashConds.join('_')
+          'utility:created': ({ configure }) => {
+            configure({
+              toHash(paths, toHash) {
+                const stringConds = paths.join(':')
+                const splitConds = stringConds.split('_')
+                const hashConds = splitConds.map(toHash)
+                return hashConds.join('_')
+              },
             })
           },
         },

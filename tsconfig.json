@@ -8,7 +8,7 @@
       "@pandacss/types": ["./packages/types/src/index.ts"]
     }
   },
-  "include": ["packages/**/*.ts"],
+  "include": ["packages/**/*.ts", "sandbox/**/*.ts"],
   "types": ["vitest/globals"],
   "exclude": [
     "node_modules",

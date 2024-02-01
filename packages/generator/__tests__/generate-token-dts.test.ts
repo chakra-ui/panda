@@ -74,8 +74,10 @@ test('[dts] should generate package - custom formatTokenName', () => {
     generateTokenTypes(
       createContext({
         hooks: {
-          'tokens:created': (ctx) => {
-            ctx.tokens.formatTokenName = (path: string[]) => '$' + path.join('-')
+          'tokens:created': ({ configure }) => {
+            configure({
+              formatTokenName: (path) => '$' + path.join('-'),
+            })
           },
         },
       }),

@@ -80,6 +80,7 @@ export class TokenDictionary {
   }
 
   formatTokenName = (path: string[]): string => path.join('.')
+
   formatCssVar = (path: string[], options: CssVarOptions): CssVar => cssVar(path.join('-'), options)
 
   setTokens() {

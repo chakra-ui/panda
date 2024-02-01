@@ -1,10 +1,11 @@
 import { isCssProperty } from '@pandacss/is-valid-prop'
+import { logger } from '@pandacss/logger'
 import { compact, flatten, isBoolean, isString, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
-  LoadConfigResult,
   HashOptions,
+  LoadConfigResult,
   PandaHooks,
   PrefixOptions,
   PropertyConfig,
@@ -15,6 +16,7 @@ import type {
 } from '@pandacss/types'
 import { Conditions } from './conditions'
 import { FileEngine } from './file'
+import { HooksApi } from './hooks-api'
 import { ImportMap } from './import-map'
 import { JsxEngine } from './jsx'
 import { Layers } from './layers'
@@ -29,8 +31,6 @@ import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
 import type { ParserOptions } from './types'
 import { Utility } from './utility'
-import { HooksApi } from './hooks-api'
-import { logger } from '@pandacss/logger'
 
 const helpers = {
   map: mapObject,
@@ -85,13 +85,24 @@ export class Context {
     conf.config = config
 
     this.tokens = this.createTokenDictionary(theme)
-    this.hooks['tokens:created']?.({ tokens: this.tokens })
+    this.hooks['tokens:created']?.({
+      configure: (opts) => {
+        if (opts.formatTokenName) {
+          this.tokens.formatTokenName = opts.formatTokenName
+        }
+        if (opts.formatCssVar) {
+          this.tokens.formatCssVar = opts.formatCssVar
+        }
+      },
+    })
     this.tokens.init()
 
     this.utility = this.createUtility(config)
     this.hooks['utility:created']?.({
-      setToHashFn: (fn) => {
-        this.utility.toHash = fn
+      configure: (opts) => {
+        if (opts.toHash) {
+          this.utility.toHash = opts.toHash
+        }
       },
     })
 

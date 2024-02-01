@@ -647,15 +647,17 @@ describe('atomic / with direct nesting', () => {
         { bg: '$blue-400' },
         {
           hooks: {
-            'tokens:created': (ctx) => {
-              ctx.tokens.formatTokenName = (path: string[]) => '$' + path.join('-')
-              ctx.tokens.formatCssVar = (path) => {
-                const variable = path.join('---')
-                return {
-                  var: variable as any,
-                  ref: `var(--${variable})`,
-                }
-              }
+            'tokens:created': ({ configure }) => {
+              configure({
+                formatTokenName: (path) => '$' + path.join('-'),
+                formatCssVar: (path) => {
+                  const variable = path.join('---')
+                  return {
+                    var: variable as any,
+                    ref: `var(--${variable})`,
+                  }
+                },
+              })
             },
           },
         },

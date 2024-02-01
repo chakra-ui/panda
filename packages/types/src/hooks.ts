@@ -2,9 +2,36 @@ import type { Artifact, ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
 import type { ParserResultInterface } from './parser'
-import { TokenDictionary } from '@pandacss/token-dictionary'
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
+
+interface TokenCssVarOptions {
+  fallback?: string
+  prefix?: string
+  hash?: boolean
+}
+
+interface TokenCssVar {
+  var: `--${string}`
+  ref: string
+}
+
+export interface TokenConfigureOptions {
+  formatTokenName?: (path: string[]) => string
+  formatCssVar?: (path: string[], options: TokenCssVarOptions) => TokenCssVar
+}
+
+export interface TokenCreatedHookArgs {
+  configure(opts: TokenConfigureOptions): void
+}
+
+export interface UtilityConfigureOptions {
+  toHash?(path: string[], toHash: (str: string) => string): string
+}
+
+export interface UtilityCreatedHookArgs {
+  configure(opts: UtilityConfigureOptions): void
+}
 
 export interface PandaHooks {
   /**
@@ -13,18 +40,13 @@ export interface PandaHooks {
    */
   'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
   /**
-   * Called when the TokenDictionary has been created
-   * You can use this hook to add your own tokens to the TokenDictionary
-   * You can override the default `toHash` function used when `config.hash` is set to `true`
+   * Called when the token engine has been created
    */
-  'tokens:created': (args: { tokens: TokenDictionary }) => MaybeAsyncReturn
+  'tokens:created': (args: TokenCreatedHookArgs) => MaybeAsyncReturn
   /**
-   * Called when the Utility has been created
-   * You can override the default `formatTokenName` and `formatCssVar` methods
+   * Called when the classname engine has been created
    */
-  'utility:created': (args: {
-    setToHashFn: (fn: (path: string[], toHash: (str: string) => string) => string) => void
-  }) => MaybeAsyncReturn
+  'utility:created': (args: UtilityCreatedHookArgs) => MaybeAsyncReturn
   /**
    * Called when the Panda context has been created and the API is ready to be used.
    */
