@@ -5,9 +5,9 @@ import { removeUnusedKeyframes } from './remove-unused-keyframes'
 export default defineConfig({
   hooks: {
     // Dynamically add a recipe
-    'config:resolved': async ({ conf }) => {
+    'config:resolved': async ({ config }) => {
       const { someRecipe } = await import('./some-recipe')
-      const recipes = conf.config.theme?.recipes
+      const recipes = config.theme?.recipes
       if (recipes) {
         recipes['someRecipe'] = someRecipe
       }

@@ -34,12 +34,18 @@ export interface UtilityCreatedHookArgs {
   configure(opts: UtilityConfigureOptions): void
 }
 
+export interface ConfigResolvedHookArgs {
+  config: LoadConfigResult['config']
+  path: string
+  dependencies: string[]
+}
+
 export interface PandaHooks {
   /**
    * Called when the config is resolved, after all the presets are loaded and merged.
    * This is the first hook called, you can use it to tweak the config before the context is created.
    */
-  'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn
   /**
    * Called when the token engine has been created
    */
