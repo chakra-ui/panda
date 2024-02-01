@@ -73,10 +73,4 @@ export const validateTokens = (options: Options) => {
 
     validateTokenReferences(valueAtPath, refsByPath, addError)
   }
-
-  semanticTokenNames.forEach((semanticTokenName) => {
-    if (tokenNames.has(semanticTokenName)) {
-      addError('tokens', `This token name is already used in \`config.theme.token\`: \`${semanticTokenName}\``)
-    }
-  })
 }
