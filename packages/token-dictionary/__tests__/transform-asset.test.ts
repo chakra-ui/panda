@@ -18,7 +18,7 @@ describe('transform / assets', () => {
       },
     })
 
-    dictionary.setTokens()
+    dictionary.registerTokens()
     dictionary.registerTransform(transformAssets)
     dictionary.build()
 
@@ -58,7 +58,7 @@ describe('transform / assets', () => {
       },
     })
 
-    dictionary.setTokens()
+    dictionary.registerTokens()
     dictionary.registerTransform(transformAssets)
     dictionary.build()
 
@@ -95,7 +95,7 @@ describe('transform / assets', () => {
       },
     })
 
-    dictionary.setTokens()
+    dictionary.registerTokens()
     dictionary.registerTransform(transformAssets)
     dictionary.build()
 

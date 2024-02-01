@@ -24,7 +24,7 @@ test('format / getter', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerTransform(...transforms)
   dictionary.build()
 

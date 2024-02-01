@@ -24,7 +24,7 @@ test('format / json flat', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerTransform(...transforms)
   dictionary.build()
 

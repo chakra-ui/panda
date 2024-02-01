@@ -26,7 +26,7 @@ test('format / token name', () => {
     return `$${path.join('-')}`
   }
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.build()
 
   expect(Array.from(dictionary.byName.keys())).toEqual([

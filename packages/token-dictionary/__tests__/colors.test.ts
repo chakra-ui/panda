@@ -11,7 +11,7 @@ test('tokens / basic', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
@@ -65,7 +65,7 @@ test('semantic tokens / nested', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`

@@ -11,7 +11,7 @@ test('should add negative spacing', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addNegativeTokens).build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
@@ -73,7 +73,7 @@ test('with semantic spacing', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addNegativeTokens)
   dictionary.build()
 
@@ -224,7 +224,7 @@ test('with semantic spacing', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addNegativeTokens)
   dictionary.build()
 

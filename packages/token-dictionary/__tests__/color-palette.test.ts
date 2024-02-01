@@ -27,7 +27,7 @@ test('should generate virtual palette', () => {
   })
 
   dictionary
-    .setTokens()
+    .registerTokens()
     .registerTransform(...transforms)
     .registerMiddleware(addVirtualPalette)
     .build()
@@ -335,7 +335,7 @@ test('should generate nested object virtual palette', () => {
   })
 
   dictionary
-    .setTokens()
+    .registerTokens()
     .registerTransform(...transforms)
     .registerMiddleware(addVirtualPalette)
     .build()
@@ -714,7 +714,7 @@ test('should work with DEFAULT keyword', () => {
   })
 
   dictionary
-    .setTokens()
+    .registerTokens()
     .registerTransform(...transforms)
     .registerMiddleware(addVirtualPalette)
     .build()
@@ -760,7 +760,7 @@ test('should generate virtual palette', () => {
   }
 
   dictionary
-    .setTokens()
+    .registerTokens()
     .registerTransform(...transforms)
     .registerMiddleware(addVirtualPalette)
     .build()
@@ -1069,7 +1069,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
 
   dictionary.formatTokenName = (path: string[]) => '$' + path.join('-')
   dictionary
-    .setTokens()
+    .registerTokens()
     .registerTransform(...transforms)
     .registerMiddleware(addVirtualPalette)
     .build()

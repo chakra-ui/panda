@@ -13,7 +13,7 @@ test('format / by category', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerTransform(...transforms)
   dictionary.build()
 

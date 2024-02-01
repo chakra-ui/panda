@@ -59,7 +59,7 @@ export class TokenDictionary {
   constructor(private options: TokenDictionaryOptions) {}
 
   init() {
-    this.setTokens()
+    this.registerTokens()
     this.registerTransform(...transforms)
     this.registerMiddleware(...middlewares)
     this.build()
@@ -83,7 +83,7 @@ export class TokenDictionary {
 
   formatCssVar = (path: string[], options: CssVarOptions): CssVar => cssVar(path.join('-'), options)
 
-  setTokens() {
+  registerTokens() {
     const { tokens = {}, semanticTokens = {}, breakpoints } = this.options
 
     const breakpointTokens = expandBreakpoints(breakpoints)
@@ -338,6 +338,10 @@ export class TokenDictionary {
   }
 }
 
+/* -----------------------------------------------------------------------------
+ * Computed token views
+ * -----------------------------------------------------------------------------*/
+
 export class TokenDictionaryView {
   constructor(private dictionary: TokenDictionary) {
     this.dictionary = dictionary
@@ -421,8 +425,6 @@ export class TokenDictionaryView {
     if (!byCategory.has(category)) byCategory.set(category, new Map())
     const value = isNegative ? (token.isConditional ? token.originalValue : token.value) : varRef
     byCategory.get(category)!.set(prop, value)
-    // TODO
-    // flat.set(this.dictionary.formatTokenName([category, prop]), value)
     flat.set([category, prop].join('.'), value)
   }
 

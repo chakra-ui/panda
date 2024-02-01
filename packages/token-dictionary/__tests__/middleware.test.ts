@@ -12,7 +12,7 @@ test('middleware / add negative', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addNegativeTokens)
   dictionary.build()
 
@@ -72,7 +72,7 @@ test('middleware / formatTokenName', () => {
 
   dictionary.formatTokenName = (path) => `$${path.join('-')}`
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addVirtualPalette)
   dictionary.build()
 

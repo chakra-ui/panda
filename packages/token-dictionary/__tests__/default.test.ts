@@ -18,7 +18,7 @@ test('tokens / with default', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.build()
 
   expect(dictionary.allTokens.map(({ name, value }) => ({ name, value }))).toMatchInlineSnapshot(`

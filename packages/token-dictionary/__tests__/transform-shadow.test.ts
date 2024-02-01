@@ -15,7 +15,7 @@ test('transform / shadow', () => {
     },
   })
 
-  dictionary.setTokens()
+  dictionary.registerTokens()
   dictionary.registerTransform(transformShadow)
 
   dictionary.build()
