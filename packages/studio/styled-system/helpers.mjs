@@ -121,14 +121,6 @@ function toResponsiveObject(values, breakpoints) {
     return acc;
   }, {});
 }
-function normalizeShorthand(styles, context) {
-  const { hasShorthand, resolveShorthand } = context.utility;
-  return walkObject(styles, (v) => v, {
-    getKey: (prop) => {
-      return hasShorthand ? resolveShorthand(prop) : prop;
-    }
-  });
-}
 function normalizeStyleObject(styles, context, shorthand = true) {
   const { utility, conditions } = context;
   const { hasShorthand, resolveShorthand } = utility;
@@ -191,7 +183,7 @@ function createMergeCss(context) {
     const allStyles = compactStyles(...styles);
     if (allStyles.length === 1)
       return allStyles;
-    return allStyles.map((style) => normalizeShorthand(style, context));
+    return allStyles.map((style) => normalizeStyleObject(style, context));
   }
   function mergeCss(...styles) {
     return mergeProps(...resolve(styles));
