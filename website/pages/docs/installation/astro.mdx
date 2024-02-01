@@ -49,9 +49,9 @@ Open your `package.json` file and update the `scripts` section as follows:
 ```diff {3}
 {
   "scripts": {
-+    "prepare": "panda codegen",
++   "prepare": "panda codegen",
     "dev": "astro dev",
-      "start": "astro start",
+    "start": "astro start",
     "build": "astro build",
     "preview": "astro preview"
   }
@@ -71,10 +71,10 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   preflight: true,
-// define the content to scan 👇🏻
- include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
- exclude: [],
-outdir: 'styled-system'
+  // define the content to scan 👇🏻
+  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
+  exclude: [],
+  outdir: 'styled-system'
 })
 ```
 
@@ -135,8 +135,8 @@ Use the generated style utilities in your code, and panda will extract them to t
 ---
 import { css } from '../../styled-system/css';
 ---
-    <div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello !</div>
-  ```
+<div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello !</div>
+```
 </Steps>
 
 ## Troubleshooting
