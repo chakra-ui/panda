@@ -583,9 +583,6 @@ importers:
         specifier: ^8.4.31
         version: 8.4.31
     devDependencies:
-      '@pandacss/dev':
-        specifier: workspace:*
-        version: link:../cli
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger
