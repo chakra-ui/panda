@@ -4,6 +4,7 @@ import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { getResolvedConfig } from './get-resolved-config'
 import type { BundleConfigResult } from './types'
 import { validateConfig } from './validate-config'
+import { utils } from './utils'
 
 /**
  * Resolve the final config (including presets)
@@ -41,11 +42,17 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
   } as LoadConfigResult
 
   // This allows editing the config before the context is created
-  await hooks['config:resolved']?.({
-    config: loadConfigResult.config,
-    path: loadConfigResult.path,
-    dependencies: loadConfigResult.dependencies,
-  })
+  if (hooks['config:resolved']) {
+    const result = await hooks['config:resolved']({
+      config: loadConfigResult.config,
+      path: loadConfigResult.path,
+      dependencies: loadConfigResult.dependencies,
+      utils,
+    })
+    if (result) {
+      loadConfigResult.config = result
+    }
+  }
 
   const serialized = stringifyJson(loadConfigResult.config)
   const deserialize = () => parseJson(serialized)
