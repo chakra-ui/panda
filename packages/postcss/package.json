@@ -41,7 +41,6 @@
     "postcss": "^8.4.31"
   },
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
     "@pandacss/logger": "workspace:*"
   }
 }
