@@ -7,7 +7,7 @@ const customRequire = createRequire(__dirname)
 
 const PLUGIN_NAME = 'pandacss'
 
-interface PluginOptions {
+export interface PluginOptions {
   configPath?: string
   cwd?: string
   logfile?: string
