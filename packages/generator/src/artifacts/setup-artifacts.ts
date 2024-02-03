@@ -48,12 +48,24 @@ export function setupDesignTokens(ctx: Context): Artifact | undefined {
 function setupJsxTypes(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
-  const jsx = generateJsxTypes(ctx)!
+  const jsx = generateJsxTypes(ctx, false)!
 
   return {
     id: 'types-jsx',
     dir: ctx.paths.types,
     files: [{ file: ctx.file.extDts('jsx'), code: jsx.jsxType }],
+  }
+}
+
+function setupTemplateLiteralJsxTypes(ctx: Context): Artifact | undefined {
+  if (!ctx.jsx.framework) return
+
+  const jsx = generateJsxTypes(ctx, true)!
+
+  return {
+    id: 'types-jsx-string-literal',
+    dir: ctx.paths.types,
+    files: [{ file: ctx.file.extDts('jsx.string-literal'), code: jsx.jsxType }],
   }
 }
 
@@ -120,8 +132,8 @@ function setupGeneratedSystemTypes(ctx: Context): Artifact {
 }
 
 function setupCss(ctx: Context): Artifact {
-  const code = ctx.isTemplateLiteralSyntax ? generateStringLiteralCssFn(ctx) : generateCssFn(ctx)
-  const conditions = ctx.isTemplateLiteralSyntax ? generateStringLiteralConditions(ctx) : generateConditions(ctx)
+  const code = generateCssFn(ctx)
+  const conditions = generateConditions(ctx)
   return {
     id: 'css-fn',
     dir: ctx.paths.css,
@@ -133,9 +145,21 @@ function setupCss(ctx: Context): Artifact {
   }
 }
 
-function setupCva(ctx: Context): Artifact | undefined {
-  if (ctx.isTemplateLiteralSyntax) return
+function setupXcss(ctx: Context): Artifact {
+  const code = generateStringLiteralCssFn(ctx)
+  const conditions = generateStringLiteralConditions(ctx)
+  return {
+    id: 'css-fn-string-literal',
+    dir: ctx.paths.css,
+    files: [
+      { file: ctx.file.ext('conditions.string-literal'), code: conditions.js },
+      { file: ctx.file.ext('xcss'), code: code.js },
+      { file: ctx.file.extDts('xcss'), code: code.dts },
+    ],
+  }
+}
 
+function setupCva(ctx: Context): Artifact {
   const code = generateCvaFn(ctx)
   return {
     id: 'cva',
@@ -147,9 +171,7 @@ function setupCva(ctx: Context): Artifact | undefined {
   }
 }
 
-function setupSva(ctx: Context): Artifact | undefined {
-  if (ctx.isTemplateLiteralSyntax) return
-
+function setupSva(ctx: Context): Artifact {
   const code = generateSvaFn(ctx)
   return {
     id: 'sva',
@@ -223,9 +245,7 @@ function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact | undef
   }
 }
 
-function setupPatternsIndex(ctx: Context): Artifact | undefined {
-  if (ctx.isTemplateLiteralSyntax) return
-
+function setupPatternsIndex(ctx: Context): Artifact {
   const fileNames = ctx.patterns.details.map((pattern) => pattern.dashName)
   const index = {
     js: outdent.string(fileNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')),
@@ -243,8 +263,6 @@ function setupPatternsIndex(ctx: Context): Artifact | undefined {
 }
 
 function setupPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | undefined {
-  if (ctx.isTemplateLiteralSyntax) return
-
   const files = generatePattern(ctx, filters)
   if (!files) return
 
@@ -259,7 +277,7 @@ function setupPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | unde
 }
 
 function setupJsxIsValidProp(ctx: Context): Artifact | undefined {
-  if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
+  if (!ctx.jsx.framework) return
 
   const isValidProp = generateIsValidProp(ctx)
 
@@ -276,8 +294,8 @@ function setupJsxIsValidProp(ctx: Context): Artifact | undefined {
 function setupJsxFactory(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
-  const types = generateJsxTypes(ctx)!
-  const factory = generateJsxFactory(ctx)
+  const types = generateJsxTypes(ctx, false)!
+  const factory = generateJsxFactory(ctx, false)
 
   return {
     id: 'jsx-factory',
@@ -285,6 +303,22 @@ function setupJsxFactory(ctx: Context): Artifact | undefined {
     files: [
       { file: ctx.file.ext('factory'), code: factory?.js },
       { file: ctx.file.extDts('factory'), code: types.jsxFactory },
+    ],
+  }
+}
+
+function setupTemplateLiteralJsxFactory(ctx: Context): Artifact | undefined {
+  if (!ctx.jsx.framework) return
+
+  const types = generateJsxTypes(ctx, true)!
+  const factory = generateJsxFactory(ctx, true)
+
+  return {
+    id: 'jsx-factory-string-literal',
+    dir: ctx.paths.jsx,
+    files: [
+      { file: ctx.file.ext('factory.string-literal'), code: factory?.js },
+      { file: ctx.file.extDts('factory.string-literal'), code: types.jsxFactory },
     ],
   }
 }
@@ -302,7 +336,7 @@ function setupJsxHelpers(ctx: Context): Artifact | undefined {
 }
 
 function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | undefined {
-  if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
+  if (!ctx.jsx.framework) return
 
   const patterns = generateJsxPatterns(ctx, filters)
 
@@ -318,22 +352,23 @@ function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | u
   }
 }
 
-function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
+function setupJsxIndex(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
-  const isStyleProp = !ctx.isTemplateLiteralSyntax
   const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
 
   const index = {
     js: outdent`
   ${ctx.file.exportStar('./factory')}
-  ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
-  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
+  ${ctx.file.exportStar('./factory.string-literal')}
+  ${ctx.file.exportStar('./is-valid-prop')}
+  ${outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n'))}
   `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./factory')}
-  ${isStyleProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
-  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')) : ''}
+  ${ctx.file.exportTypeStar('./factory.string-literal')}
+  ${ctx.file.exportTypeStar('./is-valid-prop')}
+  ${outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n'))}
   ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
     `,
   }
@@ -353,14 +388,16 @@ function setupCssIndex(ctx: Context): Artifact {
     js: outdent`
   ${ctx.file.exportStar('./css')}
   ${ctx.file.exportStar('./cx')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportStar('./cva')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportStar('./sva')}
+  ${ctx.file.exportStar('./cva')}
+  ${ctx.file.exportStar('./sva')}
+  ${ctx.file.exportStar('./xcss')}
  `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./css')}
   ${ctx.file.exportTypeStar('./cx')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportTypeStar('./cva')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportTypeStar('./sva')}
+  ${ctx.file.exportTypeStar('./cva')}
+  ${ctx.file.exportTypeStar('./sva')}
+  ${ctx.file.exportTypeStar('./xcss')}
   `,
   }
 
@@ -442,12 +479,14 @@ const entries: ArtifactEntry[] = [
   ['helpers', setupHelpers],
   ['design-tokens', setupDesignTokens],
   ['types-jsx', setupJsxTypes],
+  ['types-jsx-string-literal', setupTemplateLiteralJsxTypes],
   ['types-entry', setupEntryTypes],
   ['types-styles', setupStyleTypes],
   ['types-conditions', setupConditionsTypes],
   ['types-gen', setupGeneratedTypes],
   ['types-gen-system', setupGeneratedSystemTypes],
   ['css-fn', setupCss],
+  ['css-fn-string-literal', setupXcss],
   ['cva', setupCva],
   ['sva', setupSva],
   ['cx', setupCx],
@@ -458,9 +497,10 @@ const entries: ArtifactEntry[] = [
   ['patterns', setupPatterns],
   ['jsx-is-valid-prop', setupJsxIsValidProp],
   ['jsx-factory', setupJsxFactory],
+  ['jsx-factory-string-literal', setupTemplateLiteralJsxFactory],
   ['jsx-helpers', setupJsxHelpers],
   ['jsx-patterns', setupJsxPatterns],
-  ['jsx-patterns-index', setupJsxPatternsIndex],
+  ['jsx-index', setupJsxIndex],
   ['css-index', setupCssIndex],
   ['package.json', setupPackageJson],
 ]

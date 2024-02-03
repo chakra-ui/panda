@@ -3,7 +3,7 @@ import { createRuleProcessor } from './fixture'
 import type { SystemStyleObject } from '@pandacss/types'
 
 const css = (styles: SystemStyleObject) => {
-  return createRuleProcessor({ syntax: 'template-literal' }).css(styles).toCss()
+  return createRuleProcessor().css(styles).toCss()
 }
 
 describe('css template literal', () => {

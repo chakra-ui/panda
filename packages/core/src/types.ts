@@ -1,5 +1,4 @@
 import type {
-  Config,
   Dict,
   HashOptions,
   LoadConfigResult,
@@ -105,7 +104,6 @@ export interface ParserOptions {
   hash: HashOptions
   imports: ImportMap
   jsx: JsxEngine
-  syntax: Config['syntax']
   recipes: Recipes
   patterns: Patterns
   encoder: StyleEncoder

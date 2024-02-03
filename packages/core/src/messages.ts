@@ -4,9 +4,7 @@ import type { Context } from './context'
 
 const tick = colors.green().bold('✔️')
 
-export const artifactsGenerated = (
-  ctx: Pick<Context, 'config' | 'recipes' | 'patterns' | 'tokens' | 'jsx' | 'isTemplateLiteralSyntax'>,
-) => {
+export const artifactsGenerated = (ctx: Pick<Context, 'config' | 'recipes' | 'patterns' | 'tokens' | 'jsx'>) => {
   const {
     config: { outdir },
     recipes,
@@ -25,7 +23,6 @@ export const artifactsGenerated = (
     ${tick} ${quote(outdir, '/tokens')}: the css variables and js function to query your tokens
     `,
       !patterns.isEmpty() &&
-        !ctx.isTemplateLiteralSyntax &&
         outdent`
     ${tick} ${quote(outdir, '/patterns')}: functions to implement and apply common layout patterns
     `,
@@ -96,9 +93,7 @@ export const buildComplete = (count: number) =>
 
 export const cssArtifactComplete = (type: string) => `Successfully generated ${type} css artifact ✨`
 
-export const getMessages = (
-  ctx: Pick<Context, 'config' | 'recipes' | 'patterns' | 'tokens' | 'jsx' | 'isTemplateLiteralSyntax'>,
-) => ({
+export const getMessages = (ctx: Pick<Context, 'config' | 'recipes' | 'patterns' | 'tokens' | 'jsx'>) => ({
   artifactsGenerated: artifactsGenerated(ctx),
   configExists,
   thankYou,

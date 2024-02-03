@@ -20,7 +20,7 @@ export class JsxEngine {
 
   constructor(private context: Pick<Context, 'patterns' | 'recipes' | 'config'>) {
     this.nodes = [...context.patterns.details, ...context.recipes.details]
-    this.names = [this.factoryName, ...this.nodes.map((node) => node.jsxName)]
+    this.names = [this.factoryName, 'x' + this.factoryName, ...this.nodes.map((node) => node.jsxName)]
 
     this.assignRecipeMatcher()
     this.assignPatternMatcher()

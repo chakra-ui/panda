@@ -2,7 +2,8 @@ import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generateVueJsxStringLiteralFactory(ctx: Context) {
-  const { componentName, factoryName } = ctx.jsx
+  const factoryName = `x${ctx.jsx.factoryName}`
+  const componentName = `X${ctx.jsx.componentName}`
 
   return {
     js: outdent`
@@ -15,7 +16,7 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
 
     function styledFn(template) {
       const styles = css.raw(template)
-      
+
       const ${componentName} = defineComponent({
         name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
@@ -24,7 +25,7 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
           const classes = computed(() => {
             return cx(css(Dynamic.__styles__, styles), elementProps.className)
           })
-          
+
           return () => {
             return h(
               props.as,

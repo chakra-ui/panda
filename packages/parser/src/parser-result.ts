@@ -25,9 +25,10 @@ export class ParserResult implements ParserResultInterface {
     return result
   }
 
-  set(name: 'cva' | 'css' | 'sva', result: ResultItem) {
+  set(name: 'cva' | 'css' | 'sva' | 'xcss', result: ResultItem) {
     switch (name) {
       case 'css':
+      case 'xcss':
         this.setCss(result)
         break
       case 'cva':

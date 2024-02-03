@@ -21,7 +21,7 @@ export class ImportMap {
 
     const importMap = mapEntries(this.normalize(context.config.importMap), (key, paths) => [key, paths.join('/')])
 
-    this.matchers.css = this.createMatcher(importMap.css, ['css', 'cva', 'sva'])
+    this.matchers.css = this.createMatcher(importMap.css, ['css', 'cva', 'sva', 'xcss'])
     this.matchers.recipe = this.createMatcher(importMap.recipe)
     this.matchers.pattern = this.createMatcher(importMap.pattern)
 

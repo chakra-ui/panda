@@ -1,20 +1,9 @@
 import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
-import { match } from 'ts-pattern'
 
 export function generatedJsxHelpers(ctx: Context) {
   return {
-    js: match(ctx.isTemplateLiteralSyntax)
-      .with(
-        true,
-        () => outdent`
-      export const getDisplayName = (Component) => {
-        if (typeof Component === 'string') return Component
-        return Component?.displayName || Component?.name || 'Component'
-      }`,
-      )
-      .otherwise(
-        () => outdent`
+    js: outdent`
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
     export const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
@@ -38,6 +27,5 @@ export function generatedJsxHelpers(ctx: Context) {
       return Component?.displayName || Component?.name || 'Component'
     }
   `,
-      ),
   }
 }

@@ -2,7 +2,8 @@ import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generateSolidJsxStringLiteralFactory(ctx: Context) {
-  const { componentName, factoryName } = ctx.jsx
+  const factoryName = `x${ctx.jsx.factoryName}`
+  const componentName = `X${ctx.jsx.componentName}`
   return {
     js: outdent`
 import { mergeProps, splitProps } from 'solid-js'
@@ -17,7 +18,7 @@ function createStyled(element) {
     const ${componentName} = (props) => {
       const mergedProps = mergeProps({ as: element.__base__ || element }, props)
       const [localProps, elementProps] = splitProps(mergedProps, ['as', 'class'])
-      
+
       return createComponent(
         Dynamic,
         mergeProps(

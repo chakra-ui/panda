@@ -38,9 +38,9 @@ const typesStringLiteralMap = {
   vue: generateVueJsxStringLiteralTypes,
 }
 
-export function generateJsxTypes(ctx: Context) {
+export function generateJsxTypes(ctx: Context, isTemplateLiteralSyntax: boolean) {
   if (!ctx.jsx.framework) return
-  const type = ctx.isTemplateLiteralSyntax ? typesStringLiteralMap[ctx.jsx.framework] : typesMap[ctx.jsx.framework]
+  const type = isTemplateLiteralSyntax ? typesStringLiteralMap[ctx.jsx.framework] : typesMap[ctx.jsx.framework]
   return type?.(ctx)
 }
 
@@ -64,11 +64,9 @@ const factoryStringLiteralMap = {
   vue: generateVueJsxStringLiteralFactory,
 }
 
-export function generateJsxFactory(ctx: Context) {
+export function generateJsxFactory(ctx: Context, isTemplateLiteralSyntax: boolean) {
   if (!ctx.jsx.framework) return
-  const factory = ctx.isTemplateLiteralSyntax
-    ? factoryStringLiteralMap[ctx.jsx.framework]
-    : factoryMap[ctx.jsx.framework]
+  const factory = isTemplateLiteralSyntax ? factoryStringLiteralMap[ctx.jsx.framework] : factoryMap[ctx.jsx.framework]
   return factory?.(ctx)
 }
 
@@ -85,6 +83,6 @@ const patternMap = {
 }
 
 export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {
-  if (ctx.isTemplateLiteralSyntax || ctx.patterns.isEmpty() || !ctx.jsx.framework) return []
+  if (ctx.patterns.isEmpty() || !ctx.jsx.framework) return []
   return patternMap[ctx.jsx.framework!](ctx, filters)
 }

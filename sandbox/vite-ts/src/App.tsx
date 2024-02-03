@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { css, cx } from '../styled-system/css'
-import { Circle, HStack, Stack, panda } from '../styled-system/jsx'
+import { css, cx, xcss } from '../styled-system/css'
+import { Circle, HStack, Stack, panda, xpanda } from '../styled-system/jsx'
 import { circle as circleLike, stack, vstack } from '../styled-system/patterns'
 import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
@@ -19,6 +19,12 @@ const PrimaryButtonLike = panda('span', button, {
   },
 })
 
+// Create a styled component
+const Heading = xpanda.h1`
+  font-size: 22px;
+  font-weight: bold;
+`
+
 function App() {
   const paddingY = '22px'
   const className = css({ padding: paddingY, fontSize: paddingY ? '2xl' : '4xl' })
@@ -34,6 +40,15 @@ function App() {
             <h1 className={css({ color: color, fontSize: '56px', lineHeight: '1.1em' })}>
               Create accessible React apps <span className={css({ color: 'teal' })}>with speed</span>
             </h1>
+            <h1
+              className={xcss`
+  font-size: 16px;
+  font-weight: bold;
+`}
+            >
+              Create accessible React apps <span className={css({ color: 'teal' })}>with speed</span>
+            </h1>
+            <Heading>Create accessible React apps with speed</Heading>
             <p className={css({ color: 'text', fontSize: '20px', marginTop: '40px' })}>
               Chakra UI is a simple, modular and accessible component library that gives you the building blocks you
               need to build your React applications.

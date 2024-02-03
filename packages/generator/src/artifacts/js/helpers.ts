@@ -8,7 +8,7 @@ export function generateHelpers(ctx: Context) {
   return {
     js: outdent`
   ${helpersMjs.content}
-  ${ctx.isTemplateLiteralSyntax ? astishMjs.content : ''}
+  ${astishMjs.content}
 
   ${ctx.jsx.framework ? `${normalizeHtmlMjs.content}` : ''}
 

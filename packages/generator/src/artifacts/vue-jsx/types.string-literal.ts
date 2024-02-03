@@ -8,7 +8,7 @@ export function generateVueJsxStringLiteralTypes(ctx: Context) {
     jsxFactory: outdent`
 ${ctx.file.importType(upperName, '../types/jsx')}
 
-export declare const ${factoryName}: ${upperName}
+export declare const x${factoryName}: X${upperName}
     `,
     jsxType: outdent`
 import type { Component, FunctionalComponent, NativeElements } from 'vue'
@@ -23,20 +23,20 @@ export type ComponentProps<T extends ElementType> = T extends IntrinsicElement
   ? Props
   : never
 
-export type ${componentName}<T extends ElementType> = FunctionalComponent<ComponentProps<T>>
+export type X${componentName}<T extends ElementType> = FunctionalComponent<ComponentProps<T>>
 >
 
 export interface JsxFactory {
-  <T extends ElementType>(component: T): ${componentName}<T>
+  <T extends ElementType>(component: T): X${componentName}<T>
 }
 
 export type JsxElements = {
-  [K in IntrinsicElement]: ${componentName}<K>
+  [K in IntrinsicElement]: X${componentName}<K>
 }
 
-export type ${upperName} = JsxFactory & JsxElements
+export type X${upperName} = JsxFactory & JsxElements
 
-export type ${typeName}<T extends ElementType> = ComponentProps<T>
+export type X${typeName}<T extends ElementType> = ComponentProps<T>
   `,
   }
 }

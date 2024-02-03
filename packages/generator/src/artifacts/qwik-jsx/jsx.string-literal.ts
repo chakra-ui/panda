@@ -2,7 +2,8 @@ import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generateQwikJsxStringLiteralFactory(ctx: Context) {
-  const { factoryName, componentName } = ctx.jsx
+  const factoryName = `x${ctx.jsx.factoryName}`
+  const componentName = `X${ctx.jsx.componentName}`
 
   return {
     js: outdent`
@@ -13,10 +14,10 @@ export function generateQwikJsxStringLiteralFactory(ctx: Context) {
     function createStyledFn(Dynamic) {
       return function styledFn(template) {
           const styles = css.raw(template)
-          
+
           const ${componentName} = (props) => {
             const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
-            
+
             function classes() {
               return cx(css(Dynamic.__styles__, styles), elementProps.className)
             }
@@ -28,11 +29,11 @@ export function generateQwikJsxStringLiteralFactory(ctx: Context) {
           }
 
           const name = getDisplayName(Dynamic)
-        
+
           ${componentName}.displayName = \`${factoryName}.\${name}\`
           ${componentName}.__styles__ = styles
           ${componentName}.__base__ = Dynamic
-  
+
           return ${componentName}
         }
     }

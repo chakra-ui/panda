@@ -15,7 +15,7 @@ export default defineConfig({
     // Change the hash function
     'utility:created': ({ configure }) => {
       configure({
-        toHash(paths, toHash) {
+        toHash: (paths, toHash) => {
           const stringConds = paths.join(':')
           const splitConds = stringConds.split('_')
           const hashConds = splitConds.map(toHash)

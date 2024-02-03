@@ -16,12 +16,6 @@ export default defineConfig({
     },
   },
   theme: {
-    extend: {
-      tokens: {
-        colors: {
-          aaa: { value: 'azaz23' },
-        },
-      },
-    },
+    extend: {},
   },
 })

@@ -7,7 +7,7 @@ export function generateSolidJsxStringLiteralTypes(ctx: Context) {
   return {
     jsxFactory: outdent`
 ${ctx.file.importType(upperName, '../types/jsx')}
-export declare const ${factoryName}: ${upperName}
+export declare const x${factoryName}: X${upperName}
     `,
     jsxType: outdent`
 import type { Component, ComponentProps, JSX } from 'solid-js'
@@ -18,22 +18,22 @@ interface Dict {
 
 export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
 
-export type ${componentName}<T extends ElementType> = {
+export type X${componentName}<T extends ElementType> = {
     (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
     displayName?: string
 }
 
 export interface JsxFactory {
-    <T extends ElementType>(component: T): ${componentName}<T>
+    <T extends ElementType>(component: T): X${componentName}<T>
 }
 
 export type JsxElements = {
-  [K in keyof JSX.IntrinsicElements]: ${componentName}<K>
+  [K in keyof JSX.IntrinsicElements]: X${componentName}<K>
 }
 
-export type ${upperName} = JsxFactory & JsxElements
+export type X${upperName} = JsxFactory & JsxElements
 
-export type ${typeName}<T extends ElementType> = ComponentProps<T>
+export type X${typeName}<T extends ElementType> = ComponentProps<T>
   `,
   }
 }

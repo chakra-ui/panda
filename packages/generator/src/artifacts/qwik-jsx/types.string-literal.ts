@@ -7,7 +7,7 @@ export function generateQwikJsxStringLiteralTypes(ctx: Context) {
   return {
     jsxFactory: outdent`
 ${ctx.file.importType(upperName, '../types/jsx')}
-export declare const ${factoryName}: ${upperName}
+export declare const x${factoryName}: X${upperName}
     `,
     jsxType: outdent`
 import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
@@ -24,21 +24,21 @@ interface Dict {
   [k: string]: unknown
 }
 
-export type ${componentName}<T extends ElementType> = {
+export type X${componentName}<T extends ElementType> = {
   (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
 }
 
 export interface JsxFactory {
-  <T extends ElementType>(component: T): ${componentName}<T>
+  <T extends ElementType>(component: T): X${componentName}<T>
 }
 
 export type JsxElements = {
-  [K in keyof QwikIntrinsicElements]: ${componentName}<K>
+  [K in keyof QwikIntrinsicElements]: X${componentName}<K>
 }
 
-export type ${upperName} = JsxFactory & JsxElements
+export type X${upperName} = JsxFactory & JsxElements
 
-export type ${typeName}<T extends ElementType> = ComponentProps<T>
+export type X${typeName}<T extends ElementType> = ComponentProps<T>
   `,
   }
 }

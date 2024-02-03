@@ -1,4 +1,5 @@
 export * from './factory.mjs';
+export * from './factory.string-literal.mjs';
 export * from './is-valid-prop.mjs';
 export * from './box.mjs';
 export * from './flex.mjs';

@@ -23,7 +23,7 @@ const evaluateOptions: EvaluateOptions = {
 }
 
 export function createParser(context: ParserOptions) {
-  const { jsx, imports, recipes, syntax } = context
+  const { jsx, imports, recipes } = context
 
   return function parse(sourceFile: SourceFile | undefined, encoder?: Generator['encoder']) {
     if (!sourceFile) return
@@ -62,12 +62,9 @@ export function createParser(context: ParserOptions) {
           return true
         },
       },
-      taggedTemplates:
-        syntax === 'template-literal'
-          ? {
-              matchTaggedTemplate: (tag) => file.matchFn(tag.fnName),
-            }
-          : undefined,
+      taggedTemplates: {
+        matchTaggedTemplate: (tag) => file.matchFn(tag.fnName),
+      },
       getEvaluateOptions: (node) => {
         if (!Node.isCallExpression(node)) return evaluateOptions
         const propAccessExpr = node.getExpression()
@@ -97,6 +94,7 @@ export function createParser(context: ParserOptions) {
       const name = file.getName(file.normalizeFnName(alias))
 
       logger.debug(`ast:${name}`, name !== alias ? { kind: result.kind, alias } : { kind: result.kind })
+      // console.log('ast:', name, name !== alias ? { kind: result.kind, alias } : { kind: result.kind })
 
       if (result.kind === 'function') {
         match(name)

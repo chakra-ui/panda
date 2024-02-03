@@ -7,7 +7,6 @@ const cssPropRegex = /var cssPropertiesStr = ".*?";/
 const memoFnDeclarationRegex = /function memo(.+?)\nvar cssPropertySelectorRegex/s
 
 export function generateIsValidProp(ctx: Context) {
-  if (ctx.isTemplateLiteralSyntax) return
   let content = isValidPropJson.content
 
   // replace user generated props by those from ctx, `css` or nothing
@@ -41,7 +40,7 @@ export function generateIsValidProp(ctx: Context) {
     import type { DistributiveOmit, HTMLPandaProps, JsxStyleProps, Pretty } from '../types';
 
     declare const isCssProperty: (value: string) => boolean;
-    
+
     type CssPropKey = keyof JsxStyleProps
     type PickedCssProps<T> = Pretty<Pick<T, CssPropKey>>
     type OmittedCssProps<T> = Pretty<DistributiveOmit<T, CssPropKey>>

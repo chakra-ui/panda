@@ -2,7 +2,8 @@ import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generatePreactJsxStringLiteralFactory(ctx: Context) {
-  const { factoryName, componentName } = ctx.jsx
+  const factoryName = `x${ctx.jsx.factoryName}`
+  const componentName = `X${ctx.jsx.componentName}`
 
   return {
     js: outdent`
@@ -17,7 +18,7 @@ export function generatePreactJsxStringLiteralFactory(ctx: Context) {
 
         const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
           const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
-         
+
           function classes() {
             return cx(css(Dynamic.__styles__, styles), elementProps.className)
           }
@@ -30,7 +31,7 @@ export function generatePreactJsxStringLiteralFactory(ctx: Context) {
         })
 
         const name = getDisplayName(Dynamic)
-        
+
         ${componentName}.displayName = \`${factoryName}.\${name}\`
         ${componentName}.__styles__ = styles
         ${componentName}.__base__ = Dynamic

@@ -8,11 +8,11 @@ export function generateStringLiteralCssFn(ctx: Context) {
 
   return {
     dts: outdent`
-    export declare function css(template: { raw: readonly string[] | ArrayLike<string> }): string
+    export declare function xcss(template: { raw: readonly string[] | ArrayLike<string> }): string
     `,
     js: outdent`
     ${ctx.file.import('astish, createCss, isObject, mergeProps, withoutSpace', '../helpers')}
-    ${ctx.file.import('finalizeConditions, sortConditions', './conditions')}
+    ${ctx.file.import('finalizeConditions, sortConditions', './conditions.string-literal')}
 
     function transform(prop, value) {
       const className = \`$\{prop}${separator}$\{withoutSpace(value)}\`
@@ -40,8 +40,8 @@ export function generateStringLiteralCssFn(ctx: Context) {
     const cssFn = createCss(context)
 
     const fn = (style) => (isObject(style) ? style : astish(style[0]))
-    export const css = (...styles) => cssFn(mergeProps(...styles.filter(Boolean).map(fn)))
-    css.raw = (...styles) => mergeProps(...styles.filter(Boolean).map(fn))
+    export const xcss = (...styles) => cssFn(mergeProps(...styles.filter(Boolean).map(fn)))
+    xcss.raw = (...styles) => mergeProps(...styles.filter(Boolean).map(fn))
     `,
   }
 }

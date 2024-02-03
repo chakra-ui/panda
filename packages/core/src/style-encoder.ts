@@ -34,15 +34,9 @@ export class StyleEncoder {
   recipes = new Map<string, Set<string>>()
   recipes_base = new Map<string, Set<string>>()
 
-  constructor(
-    private context: Pick<
-      Context,
-      'isTemplateLiteralSyntax' | 'isValidProperty' | 'recipes' | 'patterns' | 'conditions' | 'utility'
-    >,
-  ) {}
+  constructor(private context: Pick<Context, 'isValidProperty' | 'recipes' | 'patterns' | 'conditions' | 'utility'>) {}
 
   filterStyleProps = (props: Dict): Dict => {
-    if (this.context.isTemplateLiteralSyntax) return props
     return filterProps(this.context.isValidProperty, props)
   }
 

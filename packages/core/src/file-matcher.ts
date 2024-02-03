@@ -34,6 +34,7 @@ export class FileMatcher {
   cvaAlias = 'cva'
   cssAlias = 'css'
   svaAlias = 'sva'
+  xcssAlias = 'xcss'
   jsxFactoryAlias = 'styled'
 
   constructor(
@@ -76,6 +77,7 @@ export class FileMatcher {
     this.cvaAlias = this.getAlias('cva')
     this.cssAlias = this.getAlias('css')
     this.svaAlias = this.getAlias('sva')
+    this.xcssAlias = this.getAlias('xcss')
     this.jsxFactoryAlias = this.getAlias(this.context.jsx.factoryName)
   }
 
@@ -133,7 +135,13 @@ export class FileMatcher {
   }
 
   isAliasFnName = memo((fnName: string) => {
-    return fnName === this.cvaAlias || fnName === this.cssAlias || fnName === this.svaAlias || this.isJsxFactory(fnName)
+    return (
+      fnName === this.cvaAlias ||
+      fnName === this.cssAlias ||
+      fnName === this.svaAlias ||
+      fnName === this.xcssAlias ||
+      this.isJsxFactory(fnName)
+    )
   })
 
   matchFn = memo((fnName: string) => {
@@ -144,7 +152,9 @@ export class FileMatcher {
 
   isJsxFactory = memo((tagName: string) => {
     const { jsx } = this.context
-    return Boolean(jsx.isEnabled && tagName.startsWith(this.jsxFactoryAlias))
+    return Boolean(
+      (jsx.isEnabled && tagName.startsWith(this.jsxFactoryAlias)) || tagName.startsWith('x' + this.jsxFactoryAlias),
+    )
   })
 
   matchTag = memo((tagName: string) => {
