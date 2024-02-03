@@ -187,7 +187,7 @@ const Button = styled('button', buttonStyle)
 In Stitches, you configure breakpoints in the `media` key of the `createStitches` method, and use it via the `@<breakpoint>` syntax.
 
 ```ts
-import { createStitches } from '@stitches/react';
+import { createStitches } from '@stitches/react'
 
 // configure
 const { styled, css } = createStitches({
@@ -292,7 +292,7 @@ const styles = css({
 })
 ```
 
-Notice that in Panda, you don't need to use the `$` prefix to access the tokens. If you really want to use the `$` prefix, update the name of the token.
+Notice that in Panda, you don't need to use the `$` prefix to access the tokens. If you really want to use the `$` prefix, you can either update the name of the token:
 
 ```diff
 export default defineConfig({
@@ -301,6 +301,23 @@ export default defineConfig({
 -      gray100: { value: 'hsl(206,22%,99%)' },
 +      $gray100: { value: 'hsl(206,22%,99%)' },
     },
+  }
+})
+```
+
+Or you can tweak the token engine to format them with the `$` prefix:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'tokens:created': ({ configure }) => {
+      configure({
+        formatTokenName: path => '$' + path.join('-')
+      })
+    }
   }
 })
 ```

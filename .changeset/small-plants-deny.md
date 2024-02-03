@@ -42,7 +42,7 @@ export default defineConfig({
   hooks: {
     'utility:created': ({ configure }) => {
       configure({
-        toHash(paths, toHash) {
+        toHash: (paths, toHash) => {
           const stringConds = paths.join(':')
           const splitConds = stringConds.split('_')
           const hashConds = splitConds.map(toHash)
