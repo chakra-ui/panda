@@ -120,6 +120,7 @@ export default defineConfig({
         properties: {
           // only allow row and column
           direction: { type: "enum", value: ["row", "column"] },
+          jsx: ['Flex', 'CustomFlex'] // 👈 match the `CustomFlex` component to this pattern
         },
       },
     },
