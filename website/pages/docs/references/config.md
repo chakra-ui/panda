@@ -877,6 +877,20 @@ The log level for the built-in logger.
 }
 ```
 
-```
+### validation
 
+**Type**: `'none' | 'warn' | 'error'`
+
+**Default**: `warn`
+
+The validation strictness to use when validating the config.
+
+- When set to 'none', no validation will be performed.
+- When set to 'warn', warnings will be logged when validation fails.
+- When set to 'error', errors will be thrown when validation fails.
+
+```json
+{
+  "validation": "error"
+}
 ```
