@@ -38,6 +38,8 @@ This works great, but might be a bit verbose. You can apply the condition `_hove
 </button>
 ```
 
+> Note: The `base` key is used to define the default value of the property, without any condition.
+
 ### Nested condition
 
 Conditions in Panda can be nested, which means you can apply multiple conditions to a single property or another condition.
