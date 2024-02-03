@@ -411,3 +411,46 @@ type CheckboxProps = CheckboxVariants & {
   onChange?: (value: string) => void
 }
 ```
+
+### `defineParts`
+
+It can be useful when you want to have the equivalent of a slot recipe without needing to split the class names bindings and instead just having a className that handles children on 1 DOM element.
+
+It pairs well with [ZagJs](https://zagjs.com/) and [Ark-UI](https://ark-ui.com/)
+
+Let's refactor the previous example to use parts instead of slots:
+
+```ts
+import { defineParts, definetRecipe } from '@pandacss/dev'
+
+const parts = defineParts({
+  root: { selector: '& [data-part="root"]' },
+  control: { selector: '& [data-part="control"]' },
+  label: { selector: '& [data-part="label"]' }
+})
+
+export const checkboxRecipe = defineRecipe({
+  className: 'checkbox',
+  description: 'A checkbox style',
+  base: parts({
+    root: { display: 'flex', alignItems: 'center', gap: '2' },
+    control: { borderWidth: '1px', borderRadius: 'sm' },
+    label: { marginStart: '2' }
+  }),
+  variants: {
+    size: {
+      sm: parts({
+        control: { width: '8', height: '8' },
+        label: { fontSize: 'sm' }
+      }),
+      md: parts({
+        control: { width: '10', height: '10' },
+        label: { fontSize: 'md' }
+      })
+    }
+  },
+  defaultVariants: {
+    size: 'sm'
+  }
+})
+```
