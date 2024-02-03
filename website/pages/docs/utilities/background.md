@@ -11,6 +11,7 @@ Panda provides the following utilities or style properties for styling backgroun
 
 ```jsx
 <div className={css({ bg: 'red.200' })} />
+<div className={css({ bg: 'blue.200/30' })} /> // with alpha
 ```
 
 | Prop                         | CSS Property       | Token Category |
