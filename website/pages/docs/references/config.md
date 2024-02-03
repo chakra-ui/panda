@@ -454,6 +454,23 @@ List of files glob to ignore.
 }
 ```
 
+### dependencies
+
+**Type**: `string[]`
+
+**Default**: `[]`
+
+Explicit list of config related files that should trigger a context reload on change.
+
+> We automatically track the config file and (transitive) files imported by the config file as much as possible, but
+> sometimes we might miss some. You can use this option as a workaround for those edge cases.
+
+```json
+{
+  "dependencies": ["path/to/files/**.ts"]
+}
+```
+
 ### watch
 
 **Type**: `boolean`
