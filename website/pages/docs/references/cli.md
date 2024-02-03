@@ -82,6 +82,12 @@ pnpm panda --cpu-prof
 
 Related: [Debugging](/docs/guides/debugging)
 
+#### `--logfile`
+
+Outputs logs to a file
+
+Related: [Debugging](/docs/guides/debugging)
+
 ---
 
 ## `panda`
@@ -173,6 +179,10 @@ pnpm panda --cpu-prof
 
 Related: [Debugging](/docs/guides/debugging)
 
+#### `--logfile`
+
+Outputs logs to a file
+
 ---
 
 ## `panda codegen`
@@ -228,6 +238,12 @@ pnpm panda --cpu-prof
 
 Related: [Debugging](/docs/guides/debugging)
 
+#### `--logfile`
+
+Outputs logs to a file
+
+Related: [Debugging](/docs/guides/debugging)
+
 ## `panda cssgen`
 
 Generate the CSS from files.
@@ -253,6 +269,10 @@ panda cssgen "static" --outfile dist/static.css
 ```
 
 ### Flags
+
+#### `--outfile`
+
+Output file for extracted css, default to './styled-system/styles.css'
 
 #### `--silent`
 
@@ -321,6 +341,12 @@ the current working directory, which can be opened in tools like [Speedscope](ht
 ```bash
 pnpm panda --cpu-prof
 ```
+
+Related: [Debugging](/docs/guides/debugging)
+
+#### `--logfile`
+
+Outputs logs to a file
 
 Related: [Debugging](/docs/guides/debugging)
 
@@ -430,6 +456,18 @@ Related: [`config.cwd`](/docs/references/config#cwd)
 
 Emit package.json with entrypoints, can be used to create a workspace package dedicated to the [`config.outdir`](/docs/references/config#outdir), in combination with [`config.importMap`](/docs/references/config#importMap)
 
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+
+#### `--logfile`
+
+Outputs logs to a file
+
 ### Flags
 
 #### `--silent`
@@ -439,3 +477,4 @@ Whether to suppress all output
 #### `--outdir`
 
 Output directory
+```
