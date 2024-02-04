@@ -9,5 +9,7 @@
   "patterns": "Patterns",
   "recipes": "Recipes",
   "slot-recipes": "Slot Recipes",
-  "style-props": "JSX Style Props"
+  "style-props": "JSX Style Props",
+  "color-opacity-modifier": "Color opacity modifier",
+  "hooks": "Hooks"
 }

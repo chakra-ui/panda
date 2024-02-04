@@ -733,6 +733,71 @@ export function Page() {
   </Tab>
 </Tabs>
 
+### cq (Container Query)
+
+To make it easier to use container queries, we've added a new `cq` pattern to `@pandacss/preset-base`. It is used to apply styles based on the width of the container.
+
+The `cq` function accepts the following properties:
+
+- `name`: The name of the container query, Maps to the [`containerName` CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/container-name).
+- `type`: The type of the container query. Maps to the [`containerType` CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/container-type). Defaults to `inline-size`.
+
+```ts
+import { cq } from 'styled-system/patterns'
+
+function Demo() {
+  return (
+    <nav className={cq()}>
+      <div
+        className={css({
+          fontSize: { base: 'lg', '@/sm': 'md' },
+        })}
+      />
+    </nav>
+  )
+}
+```
+
+You can also named container queries:
+
+```tsx
+// 1 - Define container conditions
+
+export default defineConfig({
+  // ...
+  theme: {
+    containerNames: ['sidebar', 'content'],
+    containerSizes: {
+      xs: '40em',
+      sm: '60em',
+      md: '80em',
+    },
+  },
+})
+```
+
+```tsx
+// 2 - Automatically generate container query pattern
+
+import { cq } from 'styled-system/patterns'
+
+function Demo() {
+  return (
+    <nav className={cq({ name: 'sidebar' })}>
+      <div
+        className={css({
+          // When the sidebar container reaches the `sm` size
+          // change font size to `md`
+          fontSize: { base: 'lg', '@sidebar/sm': 'md' },
+        })}
+      />
+    </nav>
+  )
+}
+```
+
+Read more about container queries [here](/docs/concepts/conditional-styles#container-queries).
+
 ## Usage with JSX
 
 To use the pattern in JSX, you need to set the `jsxFramework` property in the config. When this is set, Panda will emit
@@ -754,6 +819,35 @@ function App() {
       <div>Third</div>
       <Center>4</Center>
     </VStack>
+  )
+}
+```
+
+### Advanced JSX Tracking
+
+We recommend that you use the pattern functions in most cases, in design systems there might be a need to compose existing components to create new components.
+
+To track the usage of the patterns in these cases, you'll need to add the `jsx` hint for the pattern config
+
+```js {12} filename="button.pattern.ts"
+import { definePattern } from '@pandacss/dev'
+
+const scrollable = definePattern({
+  // ...
+  // Add the jsx hint to track the usage of the pattern in JSX, you can also use a regex to match multiple components
+  jsx: ['Scrollable', 'PageScrollable']
+})
+```
+
+Then you can create a new component that uses the `PageScrollable` component and Panda will track the usage of the `scrollable` pattern as well.
+
+```tsx
+const PageScrollable = (props: ButtonProps) => {
+  const { children, size } = props
+  return (
+    <Scrollable {...props} size={size}>
+      {children}
+    </Scrollable>
   )
 }
 ```

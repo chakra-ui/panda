@@ -39,6 +39,9 @@ export default defineConfig({
 })
 ```
 
+> ⚠️ Token values need to be nested in an object with a `value` key.
+> This is to allow for additional properties like `description` and more in the future.
+
 After defining tokens, you can use them in authoring components and styles.
 
 ```jsx
@@ -108,6 +111,9 @@ export default defineConfig({
   }
 })
 ```
+
+> ⚠️ Semantic Token values need to be nested in an object with a `value` key.
+> This is to allow for additional properties like `description` and more in the future.
 
 Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles) like light and dark modes.
 

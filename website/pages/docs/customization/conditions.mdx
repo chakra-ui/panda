@@ -23,6 +23,9 @@ export default defineConfig({
 });
 ```
 
+> ⚠️ The `&` character is mandatory, it is a placeholder for the current selector. It will be replaced with the actual selector when the condition is used.
+> It has to be used either at the beginning or at the end of the condition.
+
 
 Then you can run the following command to generate the conditions JS code:
 
@@ -109,6 +112,27 @@ Then you can run the following command to update the conditions JS code:
     ```
   </Tab>
 </Tabs>
+
+## Using tokens
+
+You can also use tokens in your conditions, and they will be resolved to their actual values:
+
+```tsx
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      mq: '@media (min-width: token(sizes.4xl))',
+      size2: '&[data-size=token(spacing.2)]'
+    }
+  }
+})
+```
+
+## Container queries
+
+Read more about how to define type-safe container queries [here](/docs/concepts/conditional-styles#container-queries)
 
 ## Minimal setup
 

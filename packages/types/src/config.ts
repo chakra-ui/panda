@@ -354,12 +354,12 @@ export interface Config
    */
   eject?: boolean
   /**
-   * The validation strcictnesss to use when validating the config.
+   * The validation strictness to use when validating the config.
    * - When set to 'none', no validation will be performed.
    * - When set to 'warn', warnings will be logged when validation fails.
    * - When set to 'error', errors will be thrown when validation fails.
    *
-   * @default 'error'
+   * @default 'warn'
    */
   validation?: 'none' | 'warn' | 'error'
 }
