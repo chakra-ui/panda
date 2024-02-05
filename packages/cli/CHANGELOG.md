@@ -1,5 +1,46 @@
 # @pandacss/dev
 
+## 0.30.0
+
+### Patch Changes
+
+- d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
+
+  - Add a `logfile` option to the postcss plugin
+
+  Logs will be streamed to the file specified by the `--logfile` flag or the `logfile` option. This is useful for
+  debugging issues that occur during the build process.
+
+  ```sh
+  panda --logfile ./logs/panda.log
+  ```
+
+  ```js
+  module.exports = {
+    plugins: {
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
+      },
+    },
+  }
+  ```
+
+- Updated dependencies [0dd45b6a]
+- Updated dependencies [05686b9d]
+- Updated dependencies [74485ef1]
+- Updated dependencies [ab32d1d7]
+- Updated dependencies [ab32d1d7]
+- Updated dependencies [49c760cd]
+- Updated dependencies [d5977c24]
+  - @pandacss/config@0.30.0
+  - @pandacss/node@0.30.0
+  - @pandacss/types@0.30.0
+  - @pandacss/token-dictionary@0.30.0
+  - @pandacss/shared@0.30.0
+  - @pandacss/postcss@0.30.0
+  - @pandacss/logger@0.30.0
+  - @pandacss/preset-panda@0.30.0
+
 ## 0.29.1
 
 ### Patch Changes

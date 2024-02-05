@@ -1,5 +1,65 @@
 # @pandacss/config
 
+## 0.30.0
+
+### Minor Changes
+
+- 0dd45b6a: Fix issue where config changes could not be detected due to config bundling returning stale result
+  sometimes.
+
+### Patch Changes
+
+- 74485ef1: Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all
+  presets have been merged.
+
+  For example, this could be used if you want to use most of a preset but want to completely omit a few things, while
+  keeping the rest. Let's say we want to remove the `stack` pattern from the built-in `@pandacss/preset-base`:
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    hooks: {
+      'config:resolved': ({ config, utils }) => {
+        return utils.omit(config, ['patterns.stack'])
+      },
+    },
+  })
+  ```
+
+- ab32d1d7: Fix issue where errors were thrown when semantic tokens are overriden in tokens.
+- d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
+
+  - Add a `logfile` option to the postcss plugin
+
+  Logs will be streamed to the file specified by the `--logfile` flag or the `logfile` option. This is useful for
+  debugging issues that occur during the build process.
+
+  ```sh
+  panda --logfile ./logs/panda.log
+  ```
+
+  ```js
+  module.exports = {
+    plugins: {
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
+      },
+    },
+  }
+  ```
+
+- Updated dependencies [74485ef1]
+- Updated dependencies [ab32d1d7]
+- Updated dependencies [49c760cd]
+- Updated dependencies [d5977c24]
+  - @pandacss/types@0.30.0
+  - @pandacss/shared@0.30.0
+  - @pandacss/logger@0.30.0
+  - @pandacss/preset-base@0.30.0
+  - @pandacss/preset-panda@0.30.0
+
 ## 0.29.1
 
 ### Patch Changes
