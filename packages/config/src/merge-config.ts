@@ -68,29 +68,26 @@ const compact = (obj: any) => {
 /**
  * Merge all hooks (from config + presets) into a single object
  * The only case where both config+preset hooks are called is when both have an `extend` property
- * Otherwise, the non-extendable hooks will override the extendable ones, with a priority to the config hooks (in case of conflict with those from presets)
+ * Otherwise, the config hooks will override the preset hooks
  *
  * config.extend + preset.extend -> will call [preset.extend, config.extend]
  * config + preset.extend -> will call [config]
  * config + preset -> will call [config]
- * config.extend + preset -> will call [preset]
+ * config.extend + preset -> will call [config]
  */
 export const mergeHooks = (hooksMaps: Array<NonNullable<ExtendableOptions['hooks']>>) => {
-  const [configHooks = {}, ...presetHooks] = hooksMaps
-
+  const configHooks = hooksMaps.at(-1) ?? {}
   const extendableFns: Partial<Record<keyof PandaHooks, Set<AnyFunction>>> = {}
 
   hooksMaps.forEach((hooks) => {
-    const { extend } = hooks
-    if (extend) {
-      Object.entries(extend).forEach(([key, value]) => {
-        if (!extendableFns[key as keyof PandaHooks]) {
-          extendableFns[key as keyof PandaHooks] = new Set()
-        }
+    const { extend, ...callbacks } = hooks
+    Object.entries({ ...extend, ...callbacks }).forEach(([key, value]) => {
+      if (!extendableFns[key as keyof PandaHooks]) {
+        extendableFns[key as keyof PandaHooks] = new Set()
+      }
 
-        extendableFns[key as keyof PandaHooks]!.add(value)
-      })
-    }
+      extendableFns[key as keyof PandaHooks]!.add(value)
+    })
   })
 
   const mergedHooks = Object.fromEntries(
@@ -138,15 +135,6 @@ export const mergeHooks = (hooksMaps: Array<NonNullable<ExtendableOptions['hooks
       return [key, syncHooks.includes(key) ? callAll(...fns) : callAllAsync(...fns)]
     }),
   ) as Partial<PandaHooks>
-
-  // Make the non-extendable hooks from the presets override the extendable ones
-  presetHooks?.forEach((hooks) => {
-    const { extend, ...callbacks } = hooks
-
-    Object.entries(callbacks).forEach(([key, value]) => {
-      mergedHooks[key as keyof PandaHooks] = value as any
-    })
-  })
 
   // Make the non-extendable hooks from the main config override the extendable ones
   Object.entries(configHooks).forEach(([key, value]) => {

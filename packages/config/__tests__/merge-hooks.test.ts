@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { mergeHooks } from '../src/merge-config'
 
 describe('mergeConfigs / theme', () => {
-  test('should merge hooks with extend: config.extend + preset.extend', async () => {
+  test('should merge hooks with extend: preset.extend + config.extend', async () => {
     const order: number[] = []
     let conf
     const hooks = mergeHooks([
@@ -46,7 +46,7 @@ describe('mergeConfigs / theme', () => {
     expect(conf.xxx).toMatchInlineSnapshot(`"bbb"`)
   })
 
-  test('should override merge hooks without extend: config + preset.extend', async () => {
+  test('should extend preset: preset + config.extend', async () => {
     const order: number[] = []
     let conf
     const hooks = mergeHooks([
@@ -80,13 +80,14 @@ describe('mergeConfigs / theme', () => {
     expect(order).toMatchInlineSnapshot(`
       [
         0,
+        1,
       ]
     `)
     // @ts-expect-error
-    expect(conf.xxx).toMatchInlineSnapshot(`"aaa"`)
+    expect(conf.xxx).toMatchInlineSnapshot(`"bbb"`)
   })
 
-  test('config should win when no extend: config + preset', async () => {
+  test('config should override preset: preset + config', async () => {
     const order: number[] = []
     let conf
     const hooks = mergeHooks([
@@ -117,14 +118,14 @@ describe('mergeConfigs / theme', () => {
 
     expect(order).toMatchInlineSnapshot(`
       [
-        0,
+        1,
       ]
     `)
     // @ts-expect-error
-    expect(conf.xxx).toMatchInlineSnapshot(`"aaa"`)
+    expect(conf.xxx).toMatchInlineSnapshot(`"bbb"`)
   })
 
-  test('should be overriden from preset: config.extend + preset', async () => {
+  test('config should overrides preset.extend: preset.extend + config', async () => {
     const order: number[] = []
     let conf
     const hooks = mergeHooks([
