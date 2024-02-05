@@ -159,19 +159,19 @@ importers:
         specifier: workspace:*
         version: link:../types
       bundle-n-require:
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: 1.1.1
+        version: 1.1.1
       escalade:
         specifier: 3.1.1
         version: 3.1.1
       merge-anything:
-        specifier: ^5.1.7
+        specifier: 5.1.7
         version: 5.1.7
       microdiff:
-        specifier: ^1.3.2
+        specifier: 1.3.2
         version: 1.3.2
       typescript:
-        specifier: ^5.3.3
+        specifier: 5.3.3
         version: 5.3.3
     devDependencies:
       pkg-types:
@@ -14869,8 +14869,8 @@ packages:
       semver: 7.5.4
     dev: true
 
-  /bundle-n-require@1.1.0:
-    resolution: {integrity: sha512-MqlhKkkzfGqyLDR1kNBnfMI2HryoBts05NYUlXWI809jc7405WHf/RIxXbVgev1tOR5roo3qWZpyZO5aYWWbZg==}
+  /bundle-n-require@1.1.1:
+    resolution: {integrity: sha512-EB2wFjXF106LQLe/CYnKCMCdLeTW47AtcEtUfiqAOgr2a08k0+YgRklur2aLfEYHlhz6baMskZ8L2U92Hh0vyA==}
     dependencies:
       esbuild: 0.20.0
       node-eval: 2.0.0
