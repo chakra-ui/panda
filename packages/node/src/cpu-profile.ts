@@ -3,29 +3,32 @@ import fs from 'fs'
 import path from 'path'
 
 export const startProfiling = async (cwd: string, prefix: string) => {
-  const v8Profiler = (await import('v8-profiler-next')).default
-  const date = new Date()
-  const timestamp = date.toISOString().replace(/[-:.]/g, '')
-  const title = `panda-${prefix}-${timestamp}`
+  const inspector = await import('node:inspector').then((r) => r.default)
 
-  // set generateType 1 to generate new format for cpuprofile
-  // to be compatible with cpuprofile parsing in vscode.
-  v8Profiler.setGenerateType(1)
-  v8Profiler.startProfiling(title, true)
+  const session = new inspector.Session()
+  session.connect()
+
+  await new Promise<void>((resolve) => {
+    session.post('Profiler.enable', () => {
+      session.post('Profiler.start', resolve)
+    })
+  })
 
   const stopProfiling = () => {
-    const profile = v8Profiler.stopProfiling(title)
-    profile.export(function (error, result) {
-      if (error) {
-        console.error(error)
+    session.post('Profiler.stop', (err, { profile }) => {
+      if (err) {
+        logger.error('cpu-prof', err)
         return
       }
-      if (!result) return
+      if (!profile) return
+
+      const date = new Date()
+      const timestamp = date.toISOString().replace(/[-:.]/g, '')
+      const title = `panda-${prefix}-${timestamp}`
 
       const outfile = path.join(cwd, `${title}.cpuprofile`)
-      fs.writeFileSync(outfile, result)
+      fs.writeFileSync(outfile, JSON.stringify(profile))
       logger.info('cpu-prof', outfile)
-      profile.delete()
     })
   }
 
