@@ -1,4 +1,4 @@
-import type { AnyFunction, Config, PandaHooks } from '@pandacss/types'
+import type { AnyFunction, Config, ExtendableOptions, PandaHooks } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { assign, mergeWith } from './utils'
 
@@ -65,21 +65,38 @@ const compact = (obj: any) => {
   }, {} as any)
 }
 
-export const mergeHooks = (hooksMaps: Array<Partial<PandaHooks>>) => {
-  const hooksFns: Partial<Record<keyof PandaHooks, Set<AnyFunction>>> = {}
+/**
+ * Merge all hooks (from config + presets) into a single object
+ * The only case where both config+preset hooks are called is when both have an `extend` property
+ * Otherwise, the non-extendable hooks will override the extendable ones, with a priority to the config hooks (in case of conflict with those from presets)
+ *
+ * config.extend + preset.extend -> will call [preset.extend, config.extend]
+ * config + preset.extend -> will call [config]
+ * config + preset -> will call [config]
+ * config.extend + preset -> will call [preset]
+ */
+export const mergeHooks = (hooksMaps: Array<NonNullable<ExtendableOptions['hooks']>>) => {
+  const [configHooks = {}, ...presetHooks] = hooksMaps
+
+  const extendableFns: Partial<Record<keyof PandaHooks, Set<AnyFunction>>> = {}
 
   hooksMaps.forEach((hooks) => {
-    Object.entries(hooks).forEach(([key, value]) => {
-      if (!hooksFns[key as keyof PandaHooks]) {
-        hooksFns[key as keyof PandaHooks] = new Set()
-      }
+    const { extend } = hooks
+    if (extend) {
+      Object.entries(extend).forEach(([key, value]) => {
+        if (!extendableFns[key as keyof PandaHooks]) {
+          extendableFns[key as keyof PandaHooks] = new Set()
+        }
 
-      hooksFns[key as keyof PandaHooks]!.add(value)
-    })
+        extendableFns[key as keyof PandaHooks]!.add(value)
+      })
+    }
   })
 
-  return Object.fromEntries(
-    Object.entries(hooksFns).map(([key, fns]) => {
+  const mergedHooks = Object.fromEntries(
+    Object.entries(extendableFns).map(([_key, fns]) => {
+      const key = _key as keyof PandaHooks
+
       // Special case for this hook, the only one that uses its return to update the state
       // Each fn is called sequentially and the result of the previous hook is passed to the next hook
       if (key === 'cssgen:done') {
@@ -99,11 +116,45 @@ export const mergeHooks = (hooksMaps: Array<Partial<PandaHooks>>) => {
         }
 
         return [key, reducer]
+      } else if (key === 'codegen:prepare') {
+        const reducer: PandaHooks['codegen:prepare'] = (args) => {
+          let artifacts = args.artifacts
+
+          for (const hookFn of fns) {
+            const result = hookFn({ ...args, artifacts, original: args.artifacts })
+
+            // it's fine to not return anything, it will just be ignored
+            if (result) {
+              artifacts = result
+            }
+          }
+
+          return artifacts
+        }
+
+        return [key, reducer]
       }
 
       return [key, syncHooks.includes(key) ? callAll(...fns) : callAllAsync(...fns)]
     }),
   ) as Partial<PandaHooks>
+
+  // Make the non-extendable hooks from the presets override the extendable ones
+  presetHooks?.forEach((hooks) => {
+    const { extend, ...callbacks } = hooks
+
+    Object.entries(callbacks).forEach(([key, value]) => {
+      mergedHooks[key as keyof PandaHooks] = value as any
+    })
+  })
+
+  // Make the non-extendable hooks from the main config override the extendable ones
+  Object.entries(configHooks).forEach(([key, value]) => {
+    if (key === 'extend') return
+    mergedHooks[key as keyof PandaHooks] = value as any
+  })
+
+  return mergedHooks
 }
 
 /**
@@ -131,8 +182,7 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
   return compact(mergedResult)
 }
 
-const syncHooks = ['context:created', 'parser:before', 'parser:after']
-// const asyncHooks = ["config:resolved", "config:change", "codegen:done", "cssgen:done"]
+const syncHooks = ['context:created', 'parser:before', 'parser:after', 'cssgen:done']
 
 const callAllAsync =
   <T extends (...a: any[]) => void | Promise<void>>(...fns: (T | undefined)[]) =>

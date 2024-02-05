@@ -79,6 +79,10 @@ interface ExtendableStaticCssOptions extends StaticCssOptions {
   extend?: StaticCssOptions | undefined
 }
 
+type ExtendableHooks = Partial<PandaHooks> & {
+  extend?: Partial<PandaHooks>
+}
+
 export interface ExtendableOptions {
   /**
    * The css selectors or media queries shortcuts.
@@ -105,6 +109,10 @@ export interface ExtendableOptions {
    * Common styling or layout patterns for your project.
    */
   patterns?: ExtendablePatterns
+  /**
+   * A set of callbacks that you can hook into for more advanced customization.
+   */
+  hooks?: ExtendableHooks
 }
 
 export interface ImportMapInput {
@@ -335,10 +343,6 @@ interface PresetOptions {
   presets?: (string | Preset | Promise<Preset>)[]
 }
 
-interface HooksOptions {
-  hooks?: Partial<PandaHooks>
-}
-
 export interface Config
   extends StudioOptions,
     ExtendableOptions,
@@ -346,8 +350,7 @@ export interface Config
     CodegenOptions,
     FileSystemOptions,
     JsxOptions,
-    PresetOptions,
-    HooksOptions {
+    PresetOptions {
   /**
    * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
    * @default 'false'
@@ -364,7 +367,7 @@ export interface Config
   validation?: 'none' | 'warn' | 'error'
 }
 
-export interface Preset extends ExtendableOptions, PresetOptions, HooksOptions {}
+export interface Preset extends ExtendableOptions, PresetOptions {}
 
 export interface UserConfig
   extends Partial<PresetCore>,

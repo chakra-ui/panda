@@ -1,30 +1,35 @@
+import type { Artifact } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { mergeHooks } from '../src/merge-config'
 
 describe('mergeConfigs / theme', () => {
-  test('should merge hooks and call sequentially async', async () => {
+  test('should merge hooks with extend: config.extend + preset.extend', async () => {
     const order: number[] = []
     let conf
     const hooks = mergeHooks([
       {
-        'config:resolved': (args) => {
-          order.push(0)
-          conf = args.conf
+        extend: {
+          'config:resolved': (args) => {
+            order.push(0)
+            conf = args
 
-          // @ts-expect-error
-          args.conf.xxx = 'aaa'
+            // @ts-expect-error
+            args.xxx = 'aaa'
+          },
         },
       },
       {
-        'config:resolved': (args) => {
-          order.push(1)
-          conf = args.conf
+        extend: {
+          'config:resolved': (args) => {
+            order.push(1)
+            conf = args
 
-          // @ts-expect-error
-          expect(args.conf.xxx).toBe('aaa')
+            // @ts-expect-error
+            expect(args.xxx).toBe('aaa')
 
-          // @ts-expect-error
-          args.conf.xxx = 'bbb'
+            // @ts-expect-error
+            args.xxx = 'bbb'
+          },
         },
       },
     ])
@@ -41,25 +46,190 @@ describe('mergeConfigs / theme', () => {
     expect(conf.xxx).toMatchInlineSnapshot(`"bbb"`)
   })
 
-  test('should merge hooks and call sequentially using previous result', async () => {
+  test('should override merge hooks without extend: config + preset.extend', async () => {
+    const order: number[] = []
+    let conf
+    const hooks = mergeHooks([
+      {
+        'config:resolved': (args) => {
+          order.push(0)
+          conf = args
+
+          // @ts-expect-error
+          args.xxx = 'aaa'
+        },
+      },
+      {
+        extend: {
+          'config:resolved': (args) => {
+            order.push(1)
+            conf = args
+
+            // @ts-expect-error
+            expect(args.xxx).toBe('aaa')
+
+            // @ts-expect-error
+            args.xxx = 'bbb'
+          },
+        },
+      },
+    ])
+
+    await hooks['config:resolved']?.({ conf: {} } as any)
+
+    expect(order).toMatchInlineSnapshot(`
+      [
+        0,
+      ]
+    `)
+    // @ts-expect-error
+    expect(conf.xxx).toMatchInlineSnapshot(`"aaa"`)
+  })
+
+  test('config should win when no extend: config + preset', async () => {
+    const order: number[] = []
+    let conf
+    const hooks = mergeHooks([
+      {
+        'config:resolved': (args) => {
+          order.push(0)
+          conf = args
+
+          // @ts-expect-error
+          args.xxx = 'aaa'
+        },
+      },
+      {
+        'config:resolved': (args) => {
+          order.push(1)
+          conf = args
+
+          // @ts-expect-error
+          expect(args.xxx).toMatchInlineSnapshot(`undefined`)
+
+          // @ts-expect-error
+          args.xxx = 'bbb'
+        },
+      },
+    ])
+
+    await hooks['config:resolved']?.({ conf: {} } as any)
+
+    expect(order).toMatchInlineSnapshot(`
+      [
+        0,
+      ]
+    `)
+    // @ts-expect-error
+    expect(conf.xxx).toMatchInlineSnapshot(`"aaa"`)
+  })
+
+  test('should be overriden from preset: config.extend + preset', async () => {
+    const order: number[] = []
+    let conf
+    const hooks = mergeHooks([
+      {
+        extend: {
+          'config:resolved': (args) => {
+            order.push(0)
+            conf = args
+
+            // @ts-expect-error
+            args.xxx = 'aaa'
+          },
+        },
+      },
+      {
+        'config:resolved': (args) => {
+          order.push(1)
+          conf = args
+
+          // @ts-expect-error
+          expect(args.xxx).toMatchInlineSnapshot(`undefined`)
+
+          // @ts-expect-error
+          args.xxx = 'bbb'
+        },
+      },
+    ])
+
+    await hooks['config:resolved']?.({ conf: {} } as any)
+
+    expect(order).toMatchInlineSnapshot(`
+      [
+        1,
+      ]
+    `)
+    // @ts-expect-error
+    expect(conf.xxx).toMatchInlineSnapshot(`"bbb"`)
+  })
+
+  test('should merge hooks and call sequentially async', async () => {
+    const order: number[] = []
+    let conf
+    const hooks = mergeHooks([
+      {
+        extend: {
+          'config:resolved': (args) => {
+            order.push(0)
+            conf = args
+
+            // @ts-expect-error
+            args.xxx = 'aaa'
+          },
+        },
+      },
+      {
+        extend: {
+          'config:resolved': (args) => {
+            order.push(1)
+            conf = args
+
+            // @ts-expect-error
+            expect(args.xxx).toBe('aaa')
+
+            // @ts-expect-error
+            args.xxx = 'bbb'
+          },
+        },
+      },
+    ])
+
+    await hooks['config:resolved']?.({ conf: {} } as any)
+
+    expect(order).toMatchInlineSnapshot(`
+      [
+        0,
+        1,
+      ]
+    `)
+    // @ts-expect-error
+    expect(conf.xxx).toMatchInlineSnapshot(`"bbb"`)
+  })
+
+  test('should merge hooks and call sequentially using previous result: cssgen:done', async () => {
     const order: number[] = []
     let original: string
     const hooks = mergeHooks([
       {
-        'cssgen:done': (args) => {
-          order.push(0)
+        extend: {
+          'cssgen:done': (args) => {
+            order.push(0)
 
-          original = args.original as string
-          return '0' + args.content.replace('aaa', 'bbb')
+            original = args.original as string
+            return '0' + args.content.replace('aaa', 'bbb')
+          },
         },
       },
       {
-        'cssgen:done': (args) => {
-          order.push(1)
+        extend: {
+          'cssgen:done': (args) => {
+            order.push(1)
 
-          expect(args.original).toBe(original)
-          expect(args.original).toMatchInlineSnapshot(`"aaa bbb ccc"`)
-          return args.content.replace('ccc', 'xxx') + '1'
+            expect(args.original).toBe(original)
+            expect(args.original).toMatchInlineSnapshot(`"aaa bbb ccc"`)
+            return args.content.replace('ccc', 'xxx') + '1'
+          },
         },
       },
     ])
@@ -73,5 +243,115 @@ describe('mergeConfigs / theme', () => {
       ]
     `)
     expect(result).toMatchInlineSnapshot(`"0bbb bbb xxx1"`)
+  })
+
+  test('should merge hooks and call sequentially using previous result: codegen:prepare', async () => {
+    const order: number[] = []
+    let original: Artifact[]
+    const hooks = mergeHooks([
+      {
+        extend: {
+          'codegen:prepare': (args) => {
+            order.push(0)
+
+            original = args.original!
+
+            return args.artifacts.map((art) => {
+              return { ...art, files: art.files.map((f) => ({ ...f, code: (f.code || '').replace('aaa', 'xxx') })) }
+            })
+          },
+        },
+      },
+      {
+        extend: {
+          'codegen:prepare': (args) => {
+            order.push(1)
+
+            expect(args.original).toBe(original)
+            expect(args.original).toMatchInlineSnapshot(`
+              [
+                {
+                  "files": [
+                    {
+                      "code": "aaa aaa aaa",
+                      "file": "aaa.js",
+                    },
+                  ],
+                  "id": "1",
+                },
+                {
+                  "files": [
+                    {
+                      "code": "bbb bbb bbb",
+                      "file": "bbb.js",
+                    },
+                  ],
+                  "id": "2",
+                },
+                {
+                  "files": [
+                    {
+                      "code": "ccc ccc ccc",
+                      "file": "ccc.js",
+                    },
+                  ],
+                  "id": "3",
+                },
+              ]
+            `)
+            return args.artifacts.map((art) => {
+              return { ...art, files: art.files.map((f) => ({ ...f, code: (f.code || '').replace('bbb', 'zzz') })) }
+            })
+          },
+        },
+      },
+    ])
+
+    const result = hooks['codegen:prepare']?.({
+      changed: [],
+      artifacts: [
+        { id: '1', files: [{ code: 'aaa aaa aaa', file: 'aaa.js' }] },
+        { id: '2', files: [{ code: 'bbb bbb bbb', file: 'bbb.js' }] },
+        { id: '3', files: [{ code: 'ccc ccc ccc', file: 'ccc.js' }] },
+      ],
+    })
+
+    expect(order).toMatchInlineSnapshot(`
+      [
+        0,
+        1,
+      ]
+    `)
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "files": [
+            {
+              "code": "xxx aaa aaa",
+              "file": "aaa.js",
+            },
+          ],
+          "id": "1",
+        },
+        {
+          "files": [
+            {
+              "code": "zzz bbb bbb",
+              "file": "bbb.js",
+            },
+          ],
+          "id": "2",
+        },
+        {
+          "files": [
+            {
+              "code": "ccc ccc ccc",
+              "file": "ccc.js",
+            },
+          ],
+          "id": "3",
+        },
+      ]
+    `)
   })
 })
