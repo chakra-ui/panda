@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 0.30.1
+
+### Patch Changes
+
+- ffe177fd: Fix the regression caused by the downstream bundle-n-require package, which tries to load custom conditions
+  first. This led to a `could not resolve @pandacss/dev` error
+  - @pandacss/logger@0.30.1
+  - @pandacss/preset-base@0.30.1
+  - @pandacss/preset-panda@0.30.1
+  - @pandacss/shared@0.30.1
+  - @pandacss/types@0.30.1
+
 ## 0.30.0
 
 ### Minor Changes
