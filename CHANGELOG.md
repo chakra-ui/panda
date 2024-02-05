@@ -6,6 +6,13 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.30.01] - 2024-02-05
+
+### Fixed
+
+Fix the regression caused by the downstream bundle-n-require package, which tries to load custom conditions first. This
+led to a `could not resolve @pandacss/dev` error
+
 ## [0.30.0] - 2024-02-05
 
 ### Fixed
