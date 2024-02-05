@@ -31,7 +31,7 @@ export interface PandaHooks {
    * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
    * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
    */
-  'parser:before': (args: { filePath: string; content: string }) => string | void
+  'parser:before': (args: ParserResultBeforeArgs) => string | void
   /**
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
    * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
@@ -97,6 +97,17 @@ export interface ConfigResolvedHookArgs {
   path: string
   dependencies: string[]
   utils: ConfigResolvedHookUtils
+}
+
+export interface ParserResultConfigureOptions {
+  matchTag?: (tag: string, isPandaComponent: boolean) => boolean
+  matchTagProp?: (tag: string, prop: string) => boolean
+}
+
+export interface ParserResultBeforeArgs {
+  filePath: string
+  content: string
+  configure: (opts: ParserResultConfigureOptions) => void
 }
 
 type CallbackFn = (args: CallbackItem) => void

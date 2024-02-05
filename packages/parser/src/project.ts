@@ -1,5 +1,5 @@
 import type { ParserOptions } from '@pandacss/core'
-import type { ConfigTsOptions, PandaHooks, Runtime } from '@pandacss/types'
+import type { ConfigTsOptions, PandaHooks, ParserResultConfigureOptions, Runtime } from '@pandacss/types'
 import {
   FileSystemRefreshResult,
   ScriptKind,
@@ -127,7 +127,20 @@ export class Project {
 
     const original = sourceFile.getText()
 
-    const custom = hooks['parser:before']?.({ filePath, content: original })
+    const options: ParserResultConfigureOptions = {}
+    const custom = hooks['parser:before']?.({
+      filePath,
+      content: original,
+      configure(opts) {
+        const { matchTag, matchTagProp } = opts
+        if (matchTag) {
+          options.matchTag = matchTag
+        }
+        if (matchTagProp) {
+          options.matchTagProp = matchTagProp
+        }
+      },
+    })
     const transformed = custom ?? this.transformFile(filePath, original)
 
     // update SourceFile AST if content is different (.vue, .svelte)
@@ -136,7 +149,7 @@ export class Project {
       sourceFile.replaceWithText(transformed)
     }
 
-    const result = this.parser(sourceFile, encoder)?.setFilePath(filePath)
+    const result = this.parser(sourceFile, encoder, options)?.setFilePath(filePath)
 
     hooks['parser:after']?.({ filePath, result })
 

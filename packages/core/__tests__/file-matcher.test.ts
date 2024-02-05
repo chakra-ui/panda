@@ -19,6 +19,20 @@ describe('file matcher', () => {
     expect(file.getName('xcss')).toMatchInlineSnapshot('"css"')
   })
 
+  test('isPandaComponent', () => {
+    const ctx = createContext()
+
+    const file = ctx.imports.file([
+      { mod: 'styled-system/jsx', name: 'Stack', alias: 'Stack' },
+      { mod: 'styled-system/jsx', name: 'VStack', alias: '__VStack' },
+    ])
+
+    expect(file.isPandaComponent('Stack')).toMatchInlineSnapshot('true')
+    // should match arbitrary tag names (so we can track style props)
+    expect(file.isPandaComponent('RandomJsx')).toMatchInlineSnapshot(`false`)
+    expect(file.isPandaComponent('random')).toMatchInlineSnapshot('false')
+  })
+
   test('match tag', () => {
     const ctx = createContext()
 
