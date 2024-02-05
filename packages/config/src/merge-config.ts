@@ -1,4 +1,4 @@
-import type { Config } from '@pandacss/types'
+import type { AnyFunction, Config, PandaHooks } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { assign, mergeWith } from './utils'
 
@@ -65,6 +65,47 @@ const compact = (obj: any) => {
   }, {} as any)
 }
 
+export const mergeHooks = (hooksMaps: Array<Partial<PandaHooks>>) => {
+  const hooksFns: Partial<Record<keyof PandaHooks, Set<AnyFunction>>> = {}
+
+  hooksMaps.forEach((hooks) => {
+    Object.entries(hooks).forEach(([key, value]) => {
+      if (!hooksFns[key as keyof PandaHooks]) {
+        hooksFns[key as keyof PandaHooks] = new Set()
+      }
+
+      hooksFns[key as keyof PandaHooks]!.add(value)
+    })
+  })
+
+  return Object.fromEntries(
+    Object.entries(hooksFns).map(([key, fns]) => {
+      // Special case for this hook, the only one that uses its return to update the state
+      // Each fn is called sequentially and the result of the previous hook is passed to the next hook
+      if (key === 'cssgen:done') {
+        const reducer: PandaHooks['cssgen:done'] = (args) => {
+          let content = args.content
+
+          for (const hookFn of fns) {
+            const result = hookFn({ ...args, content, original: args.content })
+
+            // it's fine to not return anything, it will just be ignored
+            if (result !== undefined) {
+              content = result
+            }
+          }
+
+          return content
+        }
+
+        return [key, reducer]
+      }
+
+      return [key, syncHooks.includes(key) ? callAll(...fns) : callAllAsync(...fns)]
+    }),
+  ) as Partial<PandaHooks>
+}
+
 /**
  * Merge all configs into a single config
  */
@@ -77,9 +118,32 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
       utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
       globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
       staticCss: mergeExtensions(configs.map((config) => config.staticCss ?? {})),
+      hooks: mergeHooks(
+        configs
+          .filter((config) => config.hooks)
+          .map((config) => config.hooks!)
+          .reverse(),
+      ),
     },
     ...configs,
   )
 
   return compact(mergedResult)
 }
+
+const syncHooks = ['context:created', 'parser:before', 'parser:after']
+// const asyncHooks = ["config:resolved", "config:change", "codegen:done", "cssgen:done"]
+
+const callAllAsync =
+  <T extends (...a: any[]) => void | Promise<void>>(...fns: (T | undefined)[]) =>
+  async (...a: Parameters<T>) => {
+    for (const fn of fns) {
+      await fn?.(...a)
+    }
+  }
+
+const callAll =
+  <T extends (...a: any[]) => void | Promise<void>>(...fns: (T | undefined)[]) =>
+  (...a: Parameters<T>) => {
+    fns.forEach((fn) => fn?.(...a))
+  }
