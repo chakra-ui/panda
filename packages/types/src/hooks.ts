@@ -1,10 +1,8 @@
-import type { WalkObjectStopFn } from '../../shared/src/walk-object'
 import type { Artifact, ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
 import type { LoggerInterface } from './logger'
 import type { ParserResultInterface } from './parser'
-import type { Dict } from './shared'
 
 export interface PandaHooks {
   /**
@@ -90,9 +88,6 @@ export interface UtilityCreatedHookArgs {
 }
 
 interface ConfigResolvedHookUtils {
-  deepSet: <T extends Dict>(target: T, path: string[], value: string | Dict) => T
-  flatten(values: Record<string, any>, stop?: WalkObjectStopFn): Record<string, any>
-  pick: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Pick<T, K extends keyof T ? K : any>
   omit: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Omit<T, K>
   traverse: TraverseFn
 }
