@@ -9,14 +9,15 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    "jsxImportSource": "preact",
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "customConditions": ["source"]
   },
-  "include": ["src"],
+  "include": ["src", "./panda.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

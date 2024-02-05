@@ -4,48 +4,12 @@ import type { HooksApiInterface } from './hooks-api'
 import type { LoggerInterface } from './logger'
 import type { ParserResultInterface } from './parser'
 
-type MaybeAsyncReturn<T = void> = Promise<T> | T
-
-interface TokenCssVarOptions {
-  fallback?: string
-  prefix?: string
-  hash?: boolean
-}
-
-interface TokenCssVar {
-  var: `--${string}`
-  ref: string
-}
-
-export interface TokenConfigureOptions {
-  formatTokenName?: (path: string[]) => string
-  formatCssVar?: (path: string[], options: TokenCssVarOptions) => TokenCssVar
-}
-
-export interface TokenCreatedHookArgs {
-  configure(opts: TokenConfigureOptions): void
-}
-
-export interface UtilityConfigureOptions {
-  toHash?(path: string[], toHash: (str: string) => string): string
-}
-
-export interface UtilityCreatedHookArgs {
-  configure(opts: UtilityConfigureOptions): void
-}
-
-export interface ConfigResolvedHookArgs {
-  config: LoadConfigResult['config']
-  path: string
-  dependencies: string[]
-}
-
 export interface PandaHooks {
   /**
    * Called when the config is resolved, after all the presets are loaded and merged.
    * This is the first hook called, you can use it to tweak the config before the context is created.
    */
-  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn
+  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
   /**
    * Called when the token engine has been created
    */
@@ -91,4 +55,60 @@ export interface PandaHooks {
     artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
     content: string
   }) => string | void
+}
+
+type MaybeAsyncReturn<T = void> = Promise<T> | T
+
+interface TokenCssVarOptions {
+  fallback?: string
+  prefix?: string
+  hash?: boolean
+}
+
+interface TokenCssVar {
+  var: `--${string}`
+  ref: string
+}
+
+export interface TokenConfigureOptions {
+  formatTokenName?: (path: string[]) => string
+  formatCssVar?: (path: string[], options: TokenCssVarOptions) => TokenCssVar
+}
+
+export interface TokenCreatedHookArgs {
+  configure(opts: TokenConfigureOptions): void
+}
+
+export interface UtilityConfigureOptions {
+  toHash?(path: string[], toHash: (str: string) => string): string
+}
+
+export interface UtilityCreatedHookArgs {
+  configure(opts: UtilityConfigureOptions): void
+}
+
+interface ConfigResolvedHookUtils {
+  omit: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Omit<T, K>
+  traverse: TraverseFn
+}
+
+export interface ConfigResolvedHookArgs {
+  config: LoadConfigResult['config']
+  path: string
+  dependencies: string[]
+  utils: ConfigResolvedHookUtils
+}
+
+type CallbackFn = (args: CallbackItem) => void
+type CallbackItem = { value: any; path: string; depth: number; parent: any[] | Record<string, unknown>; key: string }
+
+interface TraverseFn {
+  (
+    obj: any,
+    callback: CallbackFn,
+    options?: {
+      separator: string
+      maxDepth?: number | undefined
+    },
+  ): void
 }
