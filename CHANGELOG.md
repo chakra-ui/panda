@@ -6,6 +6,120 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.30.0] - 2024-02-05
+
+### Fixed
+
+- Fix issue where config changes could not be detected due to config bundling returning stale result sometimes.
+- Fix issue where errors were thrown when semantic tokens are overriden in tokens.
+- Fix issue where responsive array in css and cva doesn't generate the correct classname
+
+### Added
+
+- Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all presets have
+  been merged.
+
+For example, this could be used if you want to use most of a preset but want to completely omit a few things, while
+keeping the rest. Let's say we want to remove the `stack` pattern from the built-in `@pandacss/preset-base`:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'config:resolved': ({ config, utils }) => {
+      return utils.omit(config, ['patterns.stack'])
+    },
+  },
+})
+```
+
+- Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
+- Add a `logfile` option to the postcss plugin
+
+Logs will be streamed to the file specified by the `--logfile` flag or the `logfile` option. This is useful for
+debugging issues that occur during the build process.
+
+```sh
+panda --logfile ./logs/panda.log
+```
+
+```js
+module.exports = {
+  plugins: {
+    '@pandacss/dev/postcss': {
+      logfile: './logs/panda.log',
+    },
+  },
+}
+```
+
+- Introduce 3 new hooks:
+
+## `tokens:created`
+
+This hook is called when the token engine has been created. You can use this hook to add your format token names and
+variables.
+
+> This is especially useful when migrating from other css-in-js libraries, like Stitches.
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'tokens:created': ({ configure }) => {
+      configure({
+        formatTokenName: (path) => '$' + path.join('-'),
+      })
+    },
+  },
+})
+```
+
+## `utility:created`
+
+This hook is called when the internal classname engine has been created. You can override the default `toHash` function
+used when `config.hash` is set to `true`
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'utility:created': ({ configure }) => {
+      configure({
+        toHash: (paths, toHash) => {
+          const stringConds = paths.join(':')
+          const splitConds = stringConds.split('_')
+          const hashConds = splitConds.map(toHash)
+          return hashConds.join('_')
+        },
+      })
+    },
+  },
+})
+```
+
+## `codegen:prepare`
+
+This hook is called right before writing the codegen files to disk. You can use this hook to tweak the codegen files
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'codegen:prepare': ({ artifacts, changed }) => {
+      // do something with the emitted js/d.ts files
+    },
+  },
+})
+```
+
+### Changed
+
+- Refactor the `--cpu-prof` profiler to use the `node:inspector` instead of relying on an external module
+  (`v8-profiler-next`, which required `node-gyp`)
+
 ## [0.29.1] - 2024-01-30
 
 ### Fixed
