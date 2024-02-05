@@ -426,6 +426,8 @@ is the equivalent of:
 }
 ```
 
+Check out the [Component Library](/docs/guides/component-library) guide for more information on how to use the `importMap` option.
+
 ### include
 
 **Type**: `string[]`
@@ -894,3 +896,11 @@ The validation strictness to use when validating the config.
   "validation": "error"
 }
 ```
+
+## Other options
+
+### Hooks
+
+**Type**: `PandaHooks`
+
+Panda provides a set of callbacks that you can hook into for more advanced use cases. Check the [Hooks](/docs/concepts/hooks) docs for more information.
