@@ -1,3 +1,4 @@
+import VModel from '../components/VModel.vue'
 import CompositionApiDemo from '../components/CompositionApiDemo.vue'
 import SetupDemo from '../components/SetupDemo.vue'
 import Styled from '../components/Styled.vue'
@@ -9,6 +10,8 @@ export default defineComponent(() => {
       <CompositionApiDemo />
       <SetupDemo />
       <Styled>styled</Styled>
+      <br />
+      <VModel />
     </>
   )
 })
