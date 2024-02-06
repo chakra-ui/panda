@@ -3327,4 +3327,151 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('default matchTag / matchTagProp', () => {
+    const code = `
+    import { Stack } from "styled-system/jsx"
+
+    const App = () => {
+      return <>
+      <div color="red" />
+      <Stack direction="column" />
+      <Random fontSize="12px" />
+      <OkComponent padding="4" content="this will be extrated" />
+      </>
+    }
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "Stack",
+          "type": "jsx-pattern",
+        },
+        {
+          "data": [
+            {
+              "fontSize": "12px",
+            },
+          ],
+          "name": "Random",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {
+              "content": "this will be extrated",
+              "padding": "4",
+            },
+          ],
+          "name": "OkComponent",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex;
+      }
+
+        .flex_column {
+          flex-direction: column;
+      }
+
+        .gap_10px {
+          gap: 10px;
+      }
+
+        .fs_12px {
+          font-size: 12px;
+      }
+
+        .p_4 {
+          padding: var(--spacing-4);
+      }
+
+        .content_this_will_be_extrated {
+          content: this will be extrated;
+      }
+      }"
+    `)
+  })
+
+  test('custom matchTag', () => {
+    const code = `
+    import { Stack } from "styled-system/jsx"
+
+    const App = () => {
+      return <>
+      <div color="red" />
+      <Stack direction="column" />
+      <Random fontSize="12px" />
+      <OkComponent padding="4" content="this will NOT be extracted" />
+      </>
+    }
+     `
+    const result = parseAndExtract(code, {
+      hooks: {
+        'parser:before': (args) => {
+          args.configure({
+            matchTag(tag) {
+              return tag === 'OkComponent' ? true : false
+            },
+            matchTagProp(tag, prop) {
+              return tag === 'OkComponent' && prop === 'content' ? false : true
+            },
+          })
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "Stack",
+          "type": "jsx-pattern",
+        },
+        {
+          "data": [
+            {
+              "padding": "4",
+            },
+          ],
+          "name": "OkComponent",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex;
+      }
+
+        .flex_column {
+          flex-direction: column;
+      }
+
+        .gap_10px {
+          gap: 10px;
+      }
+
+        .p_4 {
+          padding: var(--spacing-4);
+      }
+      }"
+    `)
+  })
 })
