@@ -88,4 +88,5 @@ export interface MainCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'>
 export interface EmitPackageCommandFlags {
   outdir: string
   silent?: boolean
+  cwd: string
 }

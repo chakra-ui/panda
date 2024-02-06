@@ -479,12 +479,15 @@ export async function main() {
     .command('emit-pkg', 'Emit package.json with entrypoints')
     .option('--outdir <dir>', 'Output directory', { default: '.' })
     .option('--silent', "Don't print any logs")
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags: EmitPackageCommandFlags) => {
       const { outdir, silent } = flags
 
       if (silent) {
         logger.level = 'silent'
       }
+
+      const cwd = resolve(flags.cwd!)
 
       const ctx = await loadConfigAndCreateContext({
         cwd,
