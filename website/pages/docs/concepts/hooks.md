@@ -80,7 +80,7 @@ export default defineConfig({
 })
 ```
 
-### Configuere how Panda extractct JSX
+### Configure how Panda extracts JSX
 
 ```js
 // Here, the `position` property will be extracted because `position` is a valid CSS property
