@@ -64,7 +64,7 @@ export default defineConfig({
 
 ### Remove a pattern
 
-Utils functions in the `config:resolved` hook, making it easy to apply transformations after all presets have been
+Utils functions in the `config:resolved` hook, make it easy to apply transformations after all presets have been
 merged.
 
 ```ts
@@ -104,6 +104,31 @@ export default defineConfig({
   }
 })
 ```
+
+### Remove unused variables from final css
+
+You can transform the final generated css in the `cssgen:done` hook.
+
+```ts file="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { removeUnusedCssVars } from './remove-unused-css-vars'
+import { removeUnusedKeyframes } from './remove-unused-keyframes'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'cssgen:done': ({ artifact, content }) => {
+      if (artifact === 'styles.css') {
+        return removeUnusedCssVars(removeUnusedKeyframes(content))
+      }
+    }
+  }
+})
+```
+
+Get the snippets for the removal logic from our Github Sandbox in the [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) files.
+
+> note that using this means you can't use the JS function token.var (or token(xxx) where xxx is the path to a semanticToken) from styled-system/tokens as the CSS variables will be removed based on the usage found in the generated CSS
 
 ## Reference
 
