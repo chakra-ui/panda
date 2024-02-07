@@ -62,6 +62,74 @@ export default defineConfig({
 })
 ```
 
+### Remove a pattern
+
+Utils functions in the `config:resolved` hook, make it easy to apply transformations after all presets have been
+merged.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'config:resolved': ({ config, utils }) => {
+      return utils.omit(config, ['patterns.stack'])
+    }
+  }
+})
+```
+
+### Configuere how Panda extractct JSX
+
+```js
+// Here, the `position` property will be extracted because `position` is a valid CSS property
+<Select.Content position="popper" sideOffset={5}>
+```
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'parser:before': args => {
+      args.configure({
+        // ignore the Select.Content entirely
+        matchTag: tag => tag !== 'Select.Content',
+
+        // ...or specifically ignore the `position` property
+        matchTagProp: (tag, prop) =>
+          tag === 'Select.Content' && prop !== 'position'
+      })
+    }
+  }
+})
+```
+
+### Remove unused variables from final css
+
+You can transform the final generated css in the `cssgen:done` hook.
+
+```ts file="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { removeUnusedCssVars } from './remove-unused-css-vars'
+import { removeUnusedKeyframes } from './remove-unused-keyframes'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'cssgen:done': ({ artifact, content }) => {
+      if (artifact === 'styles.css') {
+        return removeUnusedCssVars(removeUnusedKeyframes(content))
+      }
+    }
+  }
+})
+```
+
+Get the snippets for the removal logic from our Github Sandbox in the [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) files.
+
+> note that using this means you can't use the JS function token.var (or token(xxx) where xxx is the path to a semanticToken) from styled-system/tokens as the CSS variables will be removed based on the usage found in the generated CSS
+
 ## Reference
 
 ```ts
@@ -98,10 +166,7 @@ export interface PandaHooks {
    * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
    * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
    */
-  'parser:before': (args: {
-    filePath: string
-    content: string
-  }) => string | void
+  'parser:before': (args: ParserResultBeforeHookArgs) => string | void
   /**
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
    * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
@@ -169,6 +234,12 @@ export interface UtilityConfigureOptions {
 
 export interface UtilityCreatedHookArgs {
   configure(opts: UtilityConfigureOptions): void
+}
+
+export interface ParserResultBeforeHookArgs {
+  filePath: string
+  content: string
+  configure: (opts: ParserResultConfigureOptions) => void
 }
 
 export interface ConfigResolvedHookArgs {
