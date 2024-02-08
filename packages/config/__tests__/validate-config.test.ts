@@ -13,8 +13,17 @@ describe('validateConfig', () => {
         },
         tokens: {
           colors: {
-            primary: { value: '#000' },
+            primary: { value: '#000', type: 'color', description: 'The primary color' },
             secondary: { value: '#fff' },
+            tertiary: {
+              value: '#ddd',
+              type: 'color',
+              description: 'gray.100',
+              extensions: {
+                category: 'colors',
+                type: 'primitive',
+              },
+            },
           },
           fontSizes: {
             sm: { value: '12px' },
