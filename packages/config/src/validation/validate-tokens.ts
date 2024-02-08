@@ -3,6 +3,7 @@ import type { Config } from '@pandacss/types'
 import type { AddError, TokensData } from '../types'
 import { getFinalPaths } from './get-final-paths'
 import { validateTokenReferences } from './validate-token-references'
+import { validateTokenPath } from './validate-token-path'
 
 interface Options {
   config: Config
@@ -32,9 +33,7 @@ export const validateTokens = (options: Options) => {
     const finalPaths = getFinalPaths(tokenNames)
 
     finalPaths.forEach((path) => {
-      if (!path.includes('value')) {
-        addError('tokens', `Token paths must end with 'value': \`theme.tokens.${path}\``)
-      }
+      validateTokenPath(path, valueAtPath, addError, 'primitive')
 
       const atPath = valueAtPath.get(path)
       if (typeof atPath === 'string' && atPath.startsWith('{')) {
@@ -66,9 +65,7 @@ export const validateTokens = (options: Options) => {
     const finalPaths = getFinalPaths(semanticTokenNames)
 
     finalPaths.forEach((path) => {
-      if (!path.includes('value')) {
-        addError('tokens', `Semantic token paths must contain 'value': \`theme.semanticTokens.${path}\``)
-      }
+      validateTokenPath(path, valueAtPath, addError, 'semantic')
     })
 
     validateTokenReferences(valueAtPath, refsByPath, addError)

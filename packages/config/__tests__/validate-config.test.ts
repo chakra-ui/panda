@@ -91,7 +91,7 @@ describe('validateConfig', () => {
     }
 
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Token paths must end with 'value': \`theme.tokens.colors.secondary\`]`,
+      `[Error: [tokens]: Token must contain 'value': \`theme.tokens.colors.secondary\`]`,
     )
   })
 
@@ -231,9 +231,9 @@ describe('validateConfig', () => {
       Set {
         "[breakpoints]: All breakpoints must use the same unit: \`640em, 768px, 1024px\`",
         "[conditions]: Selectors should contain the \`&\` character: \`[data-theme="pink"]\`",
-        "[tokens]: Token paths must end with 'value': \`theme.tokens.colors.secondary\`",
-        "[tokens]: Token paths must end with 'value': \`theme.tokens.colors.group.with.invalid\`",
-        "[tokens]: Semantic token paths must contain 'value': \`theme.semanticTokens.colors.another.group.invalid\`",
+        "[tokens]: Token must contain 'value': \`theme.tokens.colors.secondary\`",
+        "[tokens]: Token must contain 'value': \`theme.tokens.colors.group.with.invalid\`",
+        "[tokens]: Token must contain 'value': \`theme.semanticTokens.colors.another.group.invalid\`",
         "[tokens]: Missing token: \`colors.doesntexist\` used in \`config.semanticTokens.colors.another.group.stillok\`",
         "[tokens]: Circular token reference: \`colors.another.group.recursive\` -> \`colors.another.circular\` -> ... -> \`colors.another.group.recursive\`",
         "[tokens]: Missing token: \`colors.missing\` used in \`config.semanticTokens.colors.another.group.missing\`",
@@ -284,7 +284,7 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Token paths must end with 'value': \`theme.tokens.colors.secondary\`]`,
+      `[Error: [tokens]: Token must contain 'value': \`theme.tokens.colors.secondary\`]`,
     )
   })
 
@@ -300,7 +300,7 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Semantic token paths must contain 'value': \`theme.semanticTokens.colors.invalid\`]`,
+      `[Error: [tokens]: Token must contain 'value': \`theme.semanticTokens.colors.invalid\`]`,
     )
   })
 
