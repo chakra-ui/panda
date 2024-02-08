@@ -1,10 +1,10 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import { fixtureDefaults } from '@pandacss/fixture'
+import type { LoadConfigResult } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
-import { fixtureDefaults } from '@pandacss/fixture'
 
-const patterns = (config: ConfigResultWithHooks) => {
+const patterns = (config: LoadConfigResult) => {
   const generator = new Generator(config)
   return generatePattern(generator)
 }
@@ -34,7 +34,7 @@ test('should generate pattern', () => {
 
     export declare const box: BoxPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const boxConfig = {
@@ -42,7 +42,10 @@ test('should generate pattern', () => {
       return props;
     }}
 
-    export const getBoxStyle = (styles = {}) => boxConfig.transform(styles, { map: mapObject })
+    export const getBoxStyle = (styles = {}) => {
+      const _styles = getPatternStyles(boxConfig, styles)
+      return boxConfig.transform(_styles, patternFns)
+    }
 
     export const box = (styles) => css(getBoxStyle(styles))
     box.raw = getBoxStyle",
@@ -76,14 +79,14 @@ test('should generate pattern', () => {
 
     export declare const flex: FlexPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const flexConfig = {
     transform(props) {
       const { direction, align, justify, wrap: wrap2, basis, grow, shrink, ...rest } = props;
       return {
-        display: \\"flex\\",
+        display: "flex",
         flexDirection: direction,
         alignItems: align,
         justifyContent: justify,
@@ -95,7 +98,10 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
+    export const getFlexStyle = (styles = {}) => {
+      const _styles = getPatternStyles(flexConfig, styles)
+      return flexConfig.transform(_styles, patternFns)
+    }
 
     export const flex = (styles) => css(getFlexStyle(styles))
     flex.raw = getFlexStyle",
@@ -126,23 +132,27 @@ test('should generate pattern', () => {
 
     export declare const stack: StackPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const stackConfig = {
     transform(props) {
-      const { align, justify, direction = \\"column\\", gap = \\"10px\\", ...rest } = props;
+      const { align, justify, direction, gap, ...rest } = props;
       return {
-        display: \\"flex\\",
+        display: "flex",
         flexDirection: direction,
         alignItems: align,
         justifyContent: justify,
         gap,
         ...rest
       };
-    }}
+    },
+    defaultValues:{direction:'column',gap:'10px'}}
 
-    export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
+    export const getStackStyle = (styles = {}) => {
+      const _styles = getPatternStyles(stackConfig, styles)
+      return stackConfig.transform(_styles, patternFns)
+    }
 
     export const stack = (styles) => css(getStackStyle(styles))
     stack.raw = getStackStyle",
@@ -171,23 +181,27 @@ test('should generate pattern', () => {
 
     export declare const vstack: VstackPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const vstackConfig = {
     transform(props) {
-      const { justify, gap = \\"10px\\", ...rest } = props;
+      const { justify, gap, ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
+        display: "flex",
+        alignItems: "center",
         justifyContent: justify,
         gap,
-        flexDirection: \\"column\\",
+        flexDirection: "column",
         ...rest
       };
-    }}
+    },
+    defaultValues:{gap:'10px'}}
 
-    export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
+    export const getVstackStyle = (styles = {}) => {
+      const _styles = getPatternStyles(vstackConfig, styles)
+      return vstackConfig.transform(_styles, patternFns)
+    }
 
     export const vstack = (styles) => css(getVstackStyle(styles))
     vstack.raw = getVstackStyle",
@@ -216,23 +230,27 @@ test('should generate pattern', () => {
 
     export declare const hstack: HstackPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const hstackConfig = {
     transform(props) {
-      const { justify, gap = \\"10px\\", ...rest } = props;
+      const { justify, gap, ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
+        display: "flex",
+        alignItems: "center",
         justifyContent: justify,
         gap,
-        flexDirection: \\"row\\",
+        flexDirection: "row",
         ...rest
       };
-    }}
+    },
+    defaultValues:{gap:'10px'}}
 
-    export const getHstackStyle = (styles = {}) => hstackConfig.transform(styles, { map: mapObject })
+    export const getHstackStyle = (styles = {}) => {
+      const _styles = getPatternStyles(hstackConfig, styles)
+      return hstackConfig.transform(_styles, patternFns)
+    }
 
     export const hstack = (styles) => css(getHstackStyle(styles))
     hstack.raw = getHstackStyle",
@@ -246,7 +264,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface SpacerProperties {
-       size?: ConditionalValue<Tokens[\\"spacing\\"]>
+       size?: ConditionalValue<Tokens["spacing"]>
     }
 
 
@@ -260,21 +278,24 @@ test('should generate pattern', () => {
 
     export declare const spacer: SpacerPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const spacerConfig = {
     transform(props, { map }) {
       const { size, ...rest } = props;
       return {
-        alignSelf: \\"stretch\\",
-        justifySelf: \\"stretch\\",
-        flex: map(size, (v) => v == null ? \\"1\\" : \`0 0 \${v}\`),
+        alignSelf: "stretch",
+        justifySelf: "stretch",
+        flex: map(size, (v) => v == null ? "1" : \`0 0 \${v}\`),
         ...rest
       };
     }}
 
-    export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
+    export const getSpacerStyle = (styles = {}) => {
+      const _styles = getPatternStyles(spacerConfig, styles)
+      return spacerConfig.transform(_styles, patternFns)
+    }
 
     export const spacer = (styles) => css(getSpacerStyle(styles))
     spacer.raw = getSpacerStyle",
@@ -302,24 +323,27 @@ test('should generate pattern', () => {
 
     export declare const square: SquarePatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const squareConfig = {
     transform(props) {
       const { size, ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
-        justifyContent: \\"center\\",
-        flex: \\"0 0 auto\\",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flex: "0 0 auto",
         width: size,
         height: size,
         ...rest
       };
     }}
 
-    export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
+    export const getSquareStyle = (styles = {}) => {
+      const _styles = getPatternStyles(squareConfig, styles)
+      return squareConfig.transform(_styles, patternFns)
+    }
 
     export const square = (styles) => css(getSquareStyle(styles))
     square.raw = getSquareStyle",
@@ -347,25 +371,28 @@ test('should generate pattern', () => {
 
     export declare const circle: CirclePatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const circleConfig = {
     transform(props) {
       const { size, ...rest } = props;
       return {
-        display: \\"flex\\",
-        alignItems: \\"center\\",
-        justifyContent: \\"center\\",
-        flex: \\"0 0 auto\\",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flex: "0 0 auto",
         width: size,
         height: size,
-        borderRadius: \\"9999px\\",
+        borderRadius: "9999px",
         ...rest
       };
     }}
 
-    export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
+    export const getCircleStyle = (styles = {}) => {
+      const _styles = getPatternStyles(circleConfig, styles)
+      return circleConfig.transform(_styles, patternFns)
+    }
 
     export const circle = (styles) => css(getCircleStyle(styles))
     circle.raw = getCircleStyle",
@@ -393,21 +420,24 @@ test('should generate pattern', () => {
 
     export declare const center: CenterPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const centerConfig = {
     transform(props) {
       const { inline, ...rest } = props;
       return {
-        display: inline ? \\"inline-flex\\" : \\"flex\\",
-        alignItems: \\"center\\",
-        justifyContent: \\"center\\",
+        display: inline ? "inline-flex" : "flex",
+        alignItems: "center",
+        justifyContent: "center",
         ...rest
       };
     }}
 
-    export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
+    export const getCenterStyle = (styles = {}) => {
+      const _styles = getPatternStyles(centerConfig, styles)
+      return centerConfig.transform(_styles, patternFns)
+    }
 
     export const center = (styles) => css(getCenterStyle(styles))
     center.raw = getCenterStyle",
@@ -435,22 +465,25 @@ test('should generate pattern', () => {
 
     export declare const linkBox: LinkBoxPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const linkBoxConfig = {
     transform(props) {
       return {
-        position: \\"relative\\",
-        \\"& :where(a, abbr)\\": {
-          position: \\"relative\\",
-          zIndex: \\"1\\"
+        position: "relative",
+        "& :where(a, abbr)": {
+          position: "relative",
+          zIndex: "1"
         },
         ...props
       };
     }}
 
-    export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
+    export const getLinkBoxStyle = (styles = {}) => {
+      const _styles = getPatternStyles(linkBoxConfig, styles)
+      return linkBoxConfig.transform(_styles, patternFns)
+    }
 
     export const linkBox = (styles) => css(getLinkBoxStyle(styles))
     linkBox.raw = getLinkBoxStyle",
@@ -478,27 +511,30 @@ test('should generate pattern', () => {
 
     export declare const linkOverlay: LinkOverlayPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const linkOverlayConfig = {
     transform(props) {
       return {
-        position: \\"static\\",
+        position: "static",
         _before: {
-          content: '\\"\\"',
-          display: \\"block\\",
-          position: \\"absolute\\",
-          cursor: \\"inherit\\",
-          inset: \\"0\\",
-          zIndex: \\"0\\",
-          ...props[\\"_before\\"]
+          content: '""',
+          display: "block",
+          position: "absolute",
+          cursor: "inherit",
+          inset: "0",
+          zIndex: "0",
+          ...props["_before"]
         },
         ...props
       };
     }}
 
-    export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
+    export const getLinkOverlayStyle = (styles = {}) => {
+      const _styles = getPatternStyles(linkOverlayConfig, styles)
+      return linkOverlayConfig.transform(_styles, patternFns)
+    }
 
     export const linkOverlay = (styles) => css(getLinkOverlayStyle(styles))
     linkOverlay.raw = getLinkOverlayStyle",
@@ -526,38 +562,41 @@ test('should generate pattern', () => {
 
     export declare const aspectRatio: AspectRatioPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const aspectRatioConfig = {
     transform(props, { map }) {
       const { ratio = 4 / 3, ...rest } = props;
       return {
-        position: \\"relative\\",
+        position: "relative",
         _before: {
-          content: \`\\"\\"\`,
-          display: \\"block\\",
-          height: \\"0\\",
+          content: \`""\`,
+          display: "block",
+          height: "0",
           paddingBottom: map(ratio, (r) => \`\${1 / r * 100}%\`)
         },
-        \\"&>*\\": {
-          display: \\"flex\\",
-          justifyContent: \\"center\\",
-          alignItems: \\"center\\",
-          overflow: \\"hidden\\",
-          position: \\"absolute\\",
-          inset: \\"0\\",
-          width: \\"100%\\",
-          height: \\"100%\\"
+        "&>*": {
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+          position: "absolute",
+          inset: "0",
+          width: "100%",
+          height: "100%"
         },
-        \\"&>img, &>video\\": {
-          objectFit: \\"cover\\"
+        "&>img, &>video": {
+          objectFit: "cover"
         },
         ...rest
       };
     }}
 
-    export const getAspectRatioStyle = (styles = {}) => aspectRatioConfig.transform(styles, { map: mapObject })
+    export const getAspectRatioStyle = (styles = {}) => {
+      const _styles = getPatternStyles(aspectRatioConfig, styles)
+      return aspectRatioConfig.transform(_styles, patternFns)
+    }
 
     export const aspectRatio = (styles) => css(getAspectRatioStyle(styles))
     aspectRatio.raw = getAspectRatioStyle",
@@ -575,7 +614,7 @@ test('should generate pattern', () => {
     	columnGap?: PropertyValue<'gap'>
     	rowGap?: PropertyValue<'gap'>
     	columns?: ConditionalValue<number>
-    	minChildWidth?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"width\\"]>
+    	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
     }
 
 
@@ -589,25 +628,30 @@ test('should generate pattern', () => {
 
     export declare const grid: GridPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const gridConfig = {
-    transform(props, { map }) {
-      const regex = /\\\\d+(cm|in|pt|em|px|rem|vh|vmax|vmin|vw|ch|lh|%)$/;
-      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", columns, minChildWidth, ...rest } = props;
-      const getValue = (v) => regex.test(v) ? v : \`token(sizes.\${v}, \${v})\`;
+    transform(props, { map, isCssUnit }) {
+      const { columnGap, rowGap, gap, columns, minChildWidth, ...rest } = props;
+      const getValue = (v) => isCssUnit(v) ? v : \`token(sizes.\${v}, \${v})\`;
       return {
-        display: \\"grid\\",
+        display: "grid",
         gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${v}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${getValue(v)}, 1fr))\`) : void 0,
         gap,
         columnGap,
         rowGap,
         ...rest
       };
+    },
+    defaultValues(props) {
+      return { gap: props.columnGap || props.rowGap ? void 0 : "10px" };
     }}
 
-    export const getGridStyle = (styles = {}) => gridConfig.transform(styles, { map: mapObject })
+    export const getGridStyle = (styles = {}) => {
+      const _styles = getPatternStyles(gridConfig, styles)
+      return gridConfig.transform(_styles, patternFns)
+    }
 
     export const grid = (styles) => css(getGridStyle(styles))
     grid.raw = getGridStyle",
@@ -640,13 +684,13 @@ test('should generate pattern', () => {
 
     export declare const gridItem: GridItemPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const gridItemConfig = {
     transform(props, { map }) {
       const { colSpan, rowSpan, colStart, rowStart, colEnd, rowEnd, ...rest } = props;
-      const spanFn = (v) => v === \\"auto\\" ? v : \`span \${v}\`;
+      const spanFn = (v) => v === "auto" ? v : \`span \${v}\`;
       return {
         gridColumn: colSpan != null ? map(colSpan, spanFn) : void 0,
         gridRow: rowSpan != null ? map(rowSpan, spanFn) : void 0,
@@ -658,7 +702,10 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
+    export const getGridItemStyle = (styles = {}) => {
+      const _styles = getPatternStyles(gridItemConfig, styles)
+      return gridItemConfig.transform(_styles, patternFns)
+    }
 
     export const gridItem = (styles) => css(getGridItemStyle(styles))
     gridItem.raw = getGridItemStyle",
@@ -690,15 +737,15 @@ test('should generate pattern', () => {
 
     export declare const wrap: WrapPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const wrapConfig = {
     transform(props) {
-      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", align, justify, ...rest } = props;
+      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "10px", align, justify, ...rest } = props;
       return {
-        display: \\"flex\\",
-        flexWrap: \\"wrap\\",
+        display: "flex",
+        flexWrap: "wrap",
         alignItems: align,
         justifyContent: justify,
         gap,
@@ -708,7 +755,10 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getWrapStyle = (styles = {}) => wrapConfig.transform(styles, { map: mapObject })
+    export const getWrapStyle = (styles = {}) => {
+      const _styles = getPatternStyles(wrapConfig, styles)
+      return wrapConfig.transform(_styles, patternFns)
+    }
 
     export const wrap = (styles) => css(getWrapStyle(styles))
     wrap.raw = getWrapStyle",
@@ -736,21 +786,24 @@ test('should generate pattern', () => {
 
     export declare const container: ContainerPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const containerConfig = {
     transform(props) {
       return {
-        position: \\"relative\\",
-        maxWidth: \\"8xl\\",
-        mx: \\"auto\\",
-        px: { base: \\"4\\", md: \\"6\\", lg: \\"8\\" },
+        position: "relative",
+        maxWidth: "8xl",
+        mx: "auto",
+        px: { base: "4", md: "6", lg: "8" },
         ...props
       };
     }}
 
-    export const getContainerStyle = (styles = {}) => containerConfig.transform(styles, { map: mapObject })
+    export const getContainerStyle = (styles = {}) => {
+      const _styles = getPatternStyles(containerConfig, styles)
+      return containerConfig.transform(_styles, patternFns)
+    }
 
     export const container = (styles) => css(getContainerStyle(styles))
     container.raw = getContainerStyle",
@@ -764,9 +817,9 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface DividerProperties {
-       orientation?: ConditionalValue<\\"horizontal\\" | \\"vertical\\">
-    	thickness?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"borderWidth\\"]>
-    	color?: ConditionalValue<Tokens[\\"colors\\"] | Properties[\\"borderColor\\"]>
+       orientation?: ConditionalValue<"horizontal" | "vertical">
+    	thickness?: ConditionalValue<Tokens["sizes"] | Properties["borderWidth"]>
+    	color?: ConditionalValue<Tokens["colors"] | Properties["borderColor"]>
     }
 
 
@@ -780,24 +833,28 @@ test('should generate pattern', () => {
 
     export declare const divider: DividerPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const dividerConfig = {
     transform(props, { map }) {
-      const { orientation = \\"horizontal\\", thickness = \\"1px\\", color, ...rest } = props;
+      const { orientation, thickness, color, ...rest } = props;
       return {
-        \\"--thickness\\": thickness,
-        width: map(orientation, (v) => v === \\"vertical\\" ? void 0 : \\"100%\\"),
-        height: map(orientation, (v) => v === \\"horizontal\\" ? void 0 : \\"100%\\"),
-        borderBlockEndWidth: map(orientation, (v) => v === \\"horizontal\\" ? \\"var(--thickness)\\" : void 0),
-        borderInlineEndWidth: map(orientation, (v) => v === \\"vertical\\" ? \\"var(--thickness)\\" : void 0),
+        "--thickness": thickness,
+        width: map(orientation, (v) => v === "vertical" ? void 0 : "100%"),
+        height: map(orientation, (v) => v === "horizontal" ? void 0 : "100%"),
+        borderBlockEndWidth: map(orientation, (v) => v === "horizontal" ? "var(--thickness)" : void 0),
+        borderInlineEndWidth: map(orientation, (v) => v === "vertical" ? "var(--thickness)" : void 0),
         borderColor: color,
         ...rest
       };
-    }}
+    },
+    defaultValues:{orientation:'horizontal',thickness:'1px'}}
 
-    export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
+    export const getDividerStyle = (styles = {}) => {
+      const _styles = getPatternStyles(dividerConfig, styles)
+      return dividerConfig.transform(_styles, patternFns)
+    }
 
     export const divider = (styles) => css(getDividerStyle(styles))
     divider.raw = getDividerStyle",
@@ -811,10 +868,10 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface FloatProperties {
-       offsetX?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"left\\"]>
-    	offsetY?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
-    	offset?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
-    	placement?: ConditionalValue<\\"bottom-end\\" | \\"bottom-start\\" | \\"top-end\\" | \\"top-start\\" | \\"bottom-center\\" | \\"top-center\\" | \\"middle-center\\" | \\"middle-end\\" | \\"middle-start\\">
+       offsetX?: ConditionalValue<Tokens["spacing"] | Properties["left"]>
+    	offsetY?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
+    	offset?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
+    	placement?: ConditionalValue<"bottom-end" | "bottom-start" | "top-end" | "top-start" | "bottom-center" | "top-center" | "middle-center" | "middle-end" | "middle-start">
     }
 
 
@@ -828,48 +885,55 @@ test('should generate pattern', () => {
 
     export declare const float: FloatPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const floatConfig = {
     transform(props, { map }) {
-      const { offset = \\"0\\", offsetX = offset, offsetY = offset, placement = \\"top-end\\", ...rest } = props;
+      const { offset, offsetX, offsetY, placement, ...rest } = props;
       return {
-        display: \\"inline-flex\\",
-        justifyContent: \\"center\\",
-        alignItems: \\"center\\",
-        position: \\"absolute\\",
+        display: "inline-flex",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "absolute",
         insetBlockStart: map(placement, (v) => {
-          const [side] = v.split(\\"-\\");
-          const map2 = { top: offsetY, middle: \\"50%\\", bottom: \\"auto\\" };
+          const [side] = v.split("-");
+          const map2 = { top: offsetY, middle: "50%", bottom: "auto" };
           return map2[side];
         }),
         insetBlockEnd: map(placement, (v) => {
-          const [side] = v.split(\\"-\\");
-          const map2 = { top: \\"auto\\", middle: \\"50%\\", bottom: offsetY };
+          const [side] = v.split("-");
+          const map2 = { top: "auto", middle: "50%", bottom: offsetY };
           return map2[side];
         }),
         insetInlineStart: map(placement, (v) => {
-          const [, align] = v.split(\\"-\\");
-          const map2 = { start: offsetX, center: \\"50%\\", end: \\"auto\\" };
+          const [, align] = v.split("-");
+          const map2 = { start: offsetX, center: "50%", end: "auto" };
           return map2[align];
         }),
         insetInlineEnd: map(placement, (v) => {
-          const [, align] = v.split(\\"-\\");
-          const map2 = { start: \\"auto\\", center: \\"50%\\", end: offsetX };
+          const [, align] = v.split("-");
+          const map2 = { start: "auto", center: "50%", end: offsetX };
           return map2[align];
         }),
         translate: map(placement, (v) => {
-          const [side, align] = v.split(\\"-\\");
-          const mapX = { start: \\"-50%\\", center: \\"-50%\\", end: \\"50%\\" };
-          const mapY = { top: \\"-50%\\", middle: \\"-50%\\", bottom: \\"50%\\" };
+          const [side, align] = v.split("-");
+          const mapX = { start: "-50%", center: "-50%", end: "50%" };
+          const mapY = { top: "-50%", middle: "-50%", bottom: "50%" };
           return \`\${mapX[align]} \${mapY[side]}\`;
         }),
         ...rest
       };
+    },
+    defaultValues(props) {
+      const offset = props.offset || "0";
+      return { offset, offsetX: offset, offsetY: offset, placement: "top-end" };
     }}
 
-    export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
+    export const getFloatStyle = (styles = {}) => {
+      const _styles = getPatternStyles(floatConfig, styles)
+      return floatConfig.transform(_styles, patternFns)
+    }
 
     export const float = (styles) => css(getFloatStyle(styles))
     float.raw = getFloatStyle",
@@ -898,22 +962,27 @@ test('should generate pattern', () => {
 
     export declare const bleed: BleedPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const bleedConfig = {
-    transform(props) {
-      const { inline = \\"0\\", block = \\"0\\", ...rest } = props;
+    transform(props, { map, isCssUnit, isCssVar }) {
+      const { inline, block, ...rest } = props;
+      const valueFn = (v) => isCssUnit(v) || isCssVar(v) ? v : \`token(spacing.\${v}, \${v})\`;
       return {
-        \\"--bleed-x\\": \`spacing.\${inline}\`,
-        \\"--bleed-y\\": \`spacing.\${block}\`,
-        marginInline: \\"calc(var(--bleed-x, 0) * -1)\\",
-        marginBlock: \\"calc(var(--bleed-y, 0) * -1)\\",
+        "--bleed-x": map(inline, valueFn),
+        "--bleed-y": map(block, valueFn),
+        marginInline: "calc(var(--bleed-x, 0) * -1)",
+        marginBlock: "calc(var(--bleed-y, 0) * -1)",
         ...rest
       };
-    }}
+    },
+    defaultValues:{inline:'0',block:'0'}}
 
-    export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
+    export const getBleedStyle = (styles = {}) => {
+      const _styles = getPatternStyles(bleedConfig, styles)
+      return bleedConfig.transform(_styles, patternFns)
+    }
 
     export const bleed = (styles) => css(getBleedStyle(styles))
     bleed.raw = getBleedStyle",
@@ -941,7 +1010,7 @@ test('should generate pattern', () => {
 
     export declare const visuallyHidden: VisuallyHiddenPatternFn;
     ",
-        "js": "import { mapObject } from '../helpers.mjs';
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
     const visuallyHiddenConfig = {
@@ -952,11 +1021,60 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
+    export const getVisuallyHiddenStyle = (styles = {}) => {
+      const _styles = getPatternStyles(visuallyHiddenConfig, styles)
+      return visuallyHiddenConfig.transform(_styles, patternFns)
+    }
 
     export const visuallyHidden = (styles) => css(getVisuallyHiddenStyle(styles))
     visuallyHidden.raw = getVisuallyHiddenStyle",
         "name": "visually-hidden",
+      },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
+
+    export interface CqProperties {
+       name?: ConditionalValue<Tokens["containerNames"] | Properties["containerName"]>
+    	type?: PropertyValue<'containerType'>
+    }
+
+
+    interface CqStyles extends CqProperties, DistributiveOmit<SystemStyleObject, keyof CqProperties > {}
+
+    interface CqPatternFn {
+      (styles?: CqStyles): string
+      raw: (styles?: CqStyles) => SystemStyleObject
+    }
+
+
+    export declare const cq: CqPatternFn;
+    ",
+        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const cqConfig = {
+    transform(props) {
+      const { name, type, ...rest } = props;
+      return {
+        containerType: type,
+        containerName: name,
+        ...rest
+      };
+    },
+    defaultValues:{type:'inline-size'}}
+
+    export const getCqStyle = (styles = {}) => {
+      const _styles = getPatternStyles(cqConfig, styles)
+      return cqConfig.transform(_styles, patternFns)
+    }
+
+    export const cq = (styles) => css(getCqStyle(styles))
+    cq.raw = getCqStyle",
+        "name": "cq",
       },
     ]
   `)

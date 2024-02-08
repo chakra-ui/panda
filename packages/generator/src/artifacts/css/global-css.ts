@@ -40,5 +40,4 @@ export const generateGlobalCss = (ctx: Context, sheet: Stylesheet) => {
   })
 
   sheet.processGlobalCss(globalCss)
-  void ctx.hooks.callHook('generator:css', 'global.css', '')
 }

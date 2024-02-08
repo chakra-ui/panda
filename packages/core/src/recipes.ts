@@ -1,4 +1,13 @@
-import { capitalize, createRegex, dashCase, getSlotRecipes, isObject, memo, splitProps } from '@pandacss/shared'
+import {
+  PandaError,
+  capitalize,
+  createRegex,
+  dashCase,
+  getSlotRecipes,
+  isObject,
+  memo,
+  splitProps,
+} from '@pandacss/shared'
 import type {
   ArtifactFilters,
   Dict,
@@ -9,8 +18,8 @@ import type {
   SystemStyleObject,
 } from '@pandacss/types'
 import merge from 'lodash.merge'
-import { serializeStyle } from './serialize'
-import type { RecipeContext, RecipeNode } from './types'
+import type { RecipeNode } from './types'
+import { transformStyles, type SerializeContext } from './serialize'
 
 interface RecipeRecord {
   [key: string]: RecipeConfig | SlotRecipeConfig
@@ -38,13 +47,12 @@ const sharedState = {
 export class Recipes {
   slotSeparator = '__'
 
-  get keys() {
-    return Object.keys(this.recipes)
-  }
+  keys: string[] = []
 
-  constructor(private recipes: RecipeRecord = {}, private context: RecipeContext) {
+  private context!: SerializeContext
+
+  constructor(private recipes: RecipeRecord = {}) {
     this.prune()
-    this.save()
   }
 
   private getPropKey = (recipe: string, variant: string, value: any) => {
@@ -70,10 +78,12 @@ export class Recipes {
     })
   }
 
-  save = () => {
+  save = (context: SerializeContext) => {
+    this.context = context
     for (const [name, recipe] of Object.entries(this.recipes)) {
       this.saveOne(name, recipe)
     }
+    this.keys = Object.keys(this.recipes)
   }
 
   saveOne = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
@@ -161,7 +171,7 @@ export class Recipes {
 
   getConfigOrThrow = memo((name: string) => {
     const config = this.getConfig(name)
-    if (!config) throw new Error(`Recipe "${name}" not found`)
+    if (!config) throw new PandaError('UNKNOWN_RECIPE', `Recipe "${name}" not found`)
     return config
   })
 
@@ -215,7 +225,7 @@ export class Recipes {
       staticCss,
     }
 
-    recipe.base = this.serialize(base)
+    recipe.base = transformStyles(this.context, base, name)
 
     sharedState.styles.set(name, recipe.base)
     sharedState.classNames.set(name, className)
@@ -225,7 +235,7 @@ export class Recipes {
         const propKey = this.getPropKey(name, key, variantKey)
         const className = this.getClassName(config.className, key, variantKey)
 
-        const styleObject = this.serialize(styles)
+        const styleObject = transformStyles(this.context, styles, className)
 
         sharedState.styles.set(propKey, styleObject)
         sharedState.classNames.set(propKey, className)
@@ -237,11 +247,6 @@ export class Recipes {
     }
 
     return recipe
-  }
-
-  private serialize = (styleObject: Dict) => {
-    if (!this.context) return styleObject
-    return serializeStyle(styleObject, this.context)
   }
 
   getTransform = (name: string, slot?: boolean) => {

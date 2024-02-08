@@ -1,5 +1,366 @@
 # @pandacss/preset-base
 
+## 0.30.1
+
+### Patch Changes
+
+- @pandacss/types@0.30.1
+
+## 0.30.0
+
+### Patch Changes
+
+- Updated dependencies [74485ef1]
+- Updated dependencies [ab32d1d7]
+- Updated dependencies [d5977c24]
+  - @pandacss/types@0.30.0
+
+## 0.29.1
+
+### Patch Changes
+
+- @pandacss/types@0.29.1
+
+## 0.29.0
+
+### Minor Changes
+
+- 5fcdeb75: Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
+  to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
+
+  This function allows you to mix two colors together, and we use it to change the opacity of a color using the
+  `{color}/{opacity}` syntax.
+
+  You can use it like this:
+
+  ```ts
+  css({
+    bg: 'red.300/40',
+    color: 'white',
+  })
+  ```
+
+  This will generate:
+
+  ```css
+  @layer utilities {
+    .bg_red\.300\/40 {
+      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      background: var(--mix-background, var(--colors-red-300));
+    }
+
+    .text_white {
+      color: var(--colors-white);
+    }
+  }
+  ```
+
+  - If you're not using any opacity, the utility will not use `color-mix`
+  - The utility will automatically fallback to the original color if the `color-mix` function is not supported by the
+    browser.
+  - You can use any of the color tokens, and any of the opacity tokens.
+
+  ***
+
+  The `utilities` transform function also receives a new `utils` object that contains the `colorMix` function, so you
+  can also use it on your own utilities:
+
+  ```ts
+  export default defineConfig({
+    utilities: {
+      background: {
+        shorthand: 'bg',
+        className: 'bg',
+        values: 'colors',
+        transform(value, args) {
+          const mix = args.utils.colorMix(value)
+          // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
+          if (mix.invalid) return { background: value }
+
+          return {
+            background: mix.value,
+          }
+        },
+      },
+    },
+  })
+  ```
+
+  ***
+
+  Here's a cool snippet (that we use internally !) that makes it easier to create a utility transform for a given
+  property:
+
+  ```ts
+  import type { PropertyTransform } from '@pandacss/types'
+
+  export const createColorMixTransform =
+    (prop: string): PropertyTransform =>
+    (value, args) => {
+      const mix = args.utils.colorMix(value)
+      if (mix.invalid) return { [prop]: value }
+
+      const cssVar = '--mix-' + prop
+
+      return {
+        [cssVar]: mix.value,
+        [prop]: `var(${cssVar}, ${mix.color})`,
+      }
+    }
+  ```
+
+  then the same utility transform as above can be written like this:
+
+  ```ts
+  export default defineConfig({
+    utilities: {
+      background: {
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
+        transform: createColorMixTransform("background"),
+    },
+  });
+  ```
+
+- 250b4d11: ### Container Query Theme
+
+  Improve support for CSS container queries by adding a new `containerNames` and `containerSizes` theme options.
+
+  You can new define container names and sizes in your theme configuration and use them in your styles.
+
+  ```ts
+  export default defineConfig({
+    // ...
+    theme: {
+      extend: {
+        containerNames: ['sidebar', 'content'],
+        containerSizes: {
+          xs: '40em',
+          sm: '60em',
+          md: '80em',
+        },
+      },
+    },
+  })
+  ```
+
+  The default container sizes in the `@pandacss/preset-panda` preset are shown below:
+
+  ```ts
+  export const containerSizes = {
+    xs: '320px',
+    sm: '384px',
+    md: '448px',
+    lg: '512px',
+    xl: '576px',
+    '2xl': '672px',
+    '3xl': '768px',
+    '4xl': '896px',
+    '5xl': '1024px',
+    '6xl': '1152px',
+    '7xl': '1280px',
+    '8xl': '1440px',
+  }
+  ```
+
+  Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
+
+  > The default container syntax is `@/<container-size>`.
+
+  ```ts
+  import { css } from '/styled-system/css'
+
+  function Demo() {
+    return (
+      <nav className={css({ containerType: 'inline-size' })}>
+        <div
+          className={css({
+            fontSize: { '@/sm': 'md' },
+          })}
+        />
+      </nav>
+    )
+  }
+  ```
+
+  This will generate the following CSS:
+
+  ```css
+  .cq-type_inline-size {
+    container-type: inline-size;
+  }
+
+  @container (min-width: 60em) {
+    .\@\/sm:fs_md {
+      container-type: inline-size;
+    }
+  }
+  ```
+
+  ### Container Query Pattern
+
+  To make it easier to use container queries, we've added a new `cq` pattern to `@pandacss/preset-base`.
+
+  ```ts
+  import { cq } from 'styled-system/patterns'
+
+  function Demo() {
+    return (
+      <nav className={cq()}>
+        <div
+          className={css({
+            fontSize: { base: 'lg', '@/sm': 'md' },
+          })}
+        />
+      </nav>
+    )
+  }
+  ```
+
+  You can also named container queries:
+
+  ```ts
+  import { cq } from 'styled-system/patterns'
+
+  function Demo() {
+    return (
+      <nav className={cq({ name: 'sidebar' })}>
+        <div
+          className={css({
+            fontSize: { base: 'lg', '@sidebar/sm': 'md' },
+          })}
+        />
+      </nav>
+    )
+  }
+  ```
+
+- f778d3e5: Updated the default preset in Panda to use the new `defaultValues` feature.
+
+  To override the default values, consider using the `extend` pattern.
+
+  ```js
+  defineConfig({
+    patterns: {
+      extend: {
+        stack: {
+          defaultValues: { gap: '20px' },
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [5fcdeb75]
+- Updated dependencies [250b4d11]
+- Updated dependencies [a2fb5cc6]
+  - @pandacss/types@0.29.0
+
+## 0.28.0
+
+### Patch Changes
+
+- Updated dependencies [f58f6df2]
+  - @pandacss/types@0.28.0
+
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+- bee3ec85: Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define
+  the aspect ratio of an element.
+
+  ```js
+  export default defineConfig({
+    // ...
+    theme: {
+      extend: {
+        // add aspect ratio tokens
+        tokens: {
+          aspectRatios: {
+            '1:1': '1',
+            '16:9': '16/9',
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  Here's what the default aspect ratio tokens in the base preset looks like:
+
+  ```json
+  {
+    "square": { "value": "1 / 1" },
+    "landscape": { "value": "4 / 3" },
+    "portrait": { "value": "3 / 4" },
+    "wide": { "value": "16 / 9" },
+    "ultrawide": { "value": "18 / 5" },
+    "golden": { "value": "1.618 / 1" }
+  }
+  ```
+
+  **Breaking Change**
+
+  The built-in token values has been removed from the `aspectRatio` utility to the `@pandacss/preset-base` as a token.
+
+  For most users, this change should be a drop-in replacement. However, if you used a custom preset in the config, you
+  might need to update it to include the new aspect ratio tokens.
+
+### Patch Changes
+
+- Updated dependencies [84304901]
+  - @pandacss/types@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- f823a8c5: Fix `placeholder` condition in `preset-base`
+  - @pandacss/types@0.26.2
+
 ## 0.26.1
 
 ### Patch Changes

@@ -2,9 +2,9 @@ import { mergeConfigs } from '@pandacss/config'
 import { Generator } from '@pandacss/generator'
 import { PandaContext } from '@pandacss/node'
 import { stringifyJson, parseJson } from '@pandacss/shared'
-import type { Config, ConfigResultWithHooks, UserConfig } from '@pandacss/types'
-import { createHooks } from 'hookable'
+import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { fixturePreset } from './config'
+import { RuleProcessor } from '@pandacss/core'
 
 const config: UserConfig = {
   ...fixturePreset,
@@ -21,14 +21,14 @@ export const fixtureDefaults = {
   dependencies: [],
   config,
   path: '',
-  hooks: createHooks(),
+  hooks: {},
   serialized: stringifyJson(config),
   deserialize: () => parseJson(stringifyJson(config)),
-} as ConfigResultWithHooks
+} as LoadConfigResult
 
 export const createGeneratorContext = (userConfig?: Config) => {
   const resolvedConfig = (
-    userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
+    userConfig ? mergeConfigs([userConfig, fixtureDefaults.config]) : fixtureDefaults.config
   ) as UserConfig
 
   return new Generator({ ...fixtureDefaults, config: resolvedConfig })
@@ -36,15 +36,21 @@ export const createGeneratorContext = (userConfig?: Config) => {
 
 export const createContext = (userConfig?: Config) => {
   const resolvedConfig = (
-    userConfig ? mergeConfigs([fixtureDefaults.config, userConfig]) : fixtureDefaults.config
+    userConfig ? mergeConfigs([userConfig, fixtureDefaults.config]) : fixtureDefaults.config
   ) as UserConfig
 
   return new PandaContext({
     ...fixtureDefaults,
+    hooks: userConfig?.hooks ?? {},
     config: resolvedConfig,
     tsconfig: {
       // @ts-expect-error
       useInMemoryFileSystem: true,
     },
   })
+}
+
+export const createRuleProcessor = (userConfig?: Config) => {
+  const ctx = createContext(userConfig)
+  return new RuleProcessor(ctx)
 }

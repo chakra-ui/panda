@@ -1,7 +1,7 @@
-import { describe, expect, test } from 'vitest'
-import { Generator } from '../src'
 import { fixtureDefaults } from '@pandacss/fixture'
 import { type Artifact } from '@pandacss/types'
+import { describe, expect, test } from 'vitest'
+import { Generator } from '../src'
 
 const formatArtifact = (artifact: Artifact) => {
   if (!artifact) return
@@ -16,7 +16,6 @@ describe('setup-artifacts', () => {
       [
         [
           "recipes/create-recipe.mjs",
-          "recipes/create-recipe.d.ts",
         ],
       ]
     `)
@@ -29,7 +28,6 @@ describe('setup-artifacts', () => {
         ],
         [
           "recipes/create-recipe.mjs",
-          "recipes/create-recipe.d.ts",
         ],
       ]
     `)
@@ -113,6 +111,8 @@ describe('setup-artifacts', () => {
           "patterns/bleed.d.ts",
           "patterns/visually-hidden.mjs",
           "patterns/visually-hidden.d.ts",
+          "patterns/cq.mjs",
+          "patterns/cq.d.ts",
         ],
       ]
     `)
@@ -185,7 +185,6 @@ describe('setup-artifacts', () => {
         ],
         [
           "recipes/create-recipe.mjs",
-          "recipes/create-recipe.d.ts",
         ],
         [
           "recipes/index.mjs",
@@ -250,6 +249,8 @@ describe('setup-artifacts', () => {
           "patterns/bleed.d.ts",
           "patterns/visually-hidden.mjs",
           "patterns/visually-hidden.d.ts",
+          "patterns/cq.mjs",
+          "patterns/cq.d.ts",
         ],
         [
           "jsx/is-valid-prop.mjs",
@@ -303,6 +304,8 @@ describe('setup-artifacts', () => {
           "jsx/bleed.d.ts",
           "jsx/visually-hidden.mjs",
           "jsx/visually-hidden.d.ts",
+          "jsx/cq.mjs",
+          "jsx/cq.d.ts",
         ],
         [
           "jsx/index.mjs",
@@ -312,7 +315,6 @@ describe('setup-artifacts', () => {
           "css/index.mjs",
           "css/index.d.ts",
         ],
-        [],
       ]
     `)
   })

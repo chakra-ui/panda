@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/dev",
-  "version": "0.26.1",
+  "version": "0.30.1",
   "description": "The user facing package for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -58,7 +58,6 @@
   "dependencies": {
     "@clack/prompts": "^0.6.3",
     "@pandacss/config": "workspace:*",
-    "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
     "@pandacss/postcss": "workspace:*",
@@ -66,8 +65,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "cac": "6.7.14",
-    "pathe": "1.1.1"
+    "cac": "6.7.14"
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.8",

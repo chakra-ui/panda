@@ -13,15 +13,6 @@ export function toResponsiveObject(values: string[], breakpoints: string[]) {
   }, {} as Record<string, string>)
 }
 
-export function normalizeShorthand(styles: Record<string, any>, context: NormalizeContext) {
-  const { hasShorthand, resolveShorthand } = context.utility
-  return walkObject(styles, (v) => v, {
-    getKey: (prop) => {
-      return hasShorthand ? resolveShorthand(prop) : prop
-    },
-  })
-}
-
 export function normalizeStyleObject(styles: Record<string, any>, context: NormalizeContext, shorthand = true) {
   const { utility, conditions } = context
   const { hasShorthand, resolveShorthand } = utility

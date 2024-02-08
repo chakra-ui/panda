@@ -38,7 +38,7 @@ export interface StudioOptions {
   }
 }
 
-interface Patterns {
+export interface Patterns {
   [pattern: string]: PatternConfig
 }
 
@@ -156,6 +156,13 @@ interface FileSystemOptions {
    */
   exclude?: string[]
   /**
+   * List of globs or files that will trigger a config reload when changed.
+   *
+   * We automatically track the config file and (transitive) files imported by the config file as much as possible, but sometimes we might miss some.
+   * Use this option as a workaround.
+   */
+  dependencies?: string[]
+  /**
    * Whether to watch for changes and regenerate the css.
    * @default false
    */
@@ -256,6 +263,16 @@ interface CssgenOptions {
    * @default 'object-literal'
    */
   syntax?: 'template-literal' | 'object-literal'
+  /**
+   * Whether to use `lightningcss` instead of `postcss` for css optimization.
+   * @default false
+   */
+  lightningcss?: boolean
+  /**
+   * Browserslist query to target specific browsers.
+   * @see https://www.npmjs.com/package/browserslist
+   */
+  browserslist?: string[]
 }
 
 interface CodegenOptions {
@@ -336,6 +353,15 @@ export interface Config
    * @default 'false'
    */
   eject?: boolean
+  /**
+   * The validation strictness to use when validating the config.
+   * - When set to 'none', no validation will be performed.
+   * - When set to 'warn', warnings will be logged when validation fails.
+   * - When set to 'error', errors will be thrown when validation fails.
+   *
+   * @default 'warn'
+   */
+  validation?: 'none' | 'warn' | 'error'
 }
 
 export interface Preset extends ExtendableOptions, PresetOptions {}
@@ -354,16 +380,20 @@ export interface ConfigTsOptions {
   pathMappings: PathMapping[]
 }
 
-export interface LoadConfigResult {
+export interface LoadTsConfigResult {
+  tsconfig?: TSConfig
+  tsOptions?: ConfigTsOptions
+  tsconfigFile?: string
+}
+
+export interface LoadConfigResult extends LoadTsConfigResult {
   /** Config path */
   path: string
   config: UserConfig
   serialized: string
   deserialize: () => Config
-  tsconfig?: TSConfig
-  tsOptions?: ConfigTsOptions
-  tsconfigFile?: string
   dependencies: string[]
+  hooks: Partial<PandaHooks>
 }
 
 export interface HashOptions {

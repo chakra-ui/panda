@@ -1,7 +1,7 @@
 import { usePandaContext } from '@/src/hooks/usePandaContext'
 import { State } from '@/src/hooks/usePlayground'
 import { Project } from '@pandacss/parser'
-import { Config } from '@pandacss/types'
+import type { Config } from '@pandacss/types'
 import { useMemo } from 'react'
 
 export function usePanda(state: State, config: Config | null) {
@@ -21,7 +21,7 @@ export function usePanda(state: State, config: Config | null) {
       { file: 'Tokens', code: sheet.getLayerCss('tokens') },
       { file: 'Reset', code: sheet.getLayerCss('reset') },
       { file: 'Global', code: sheet.getLayerCss('base') },
-      { file: 'Static', code: sheet.getLayerCss('recipes', 'utilities') },
+      { file: 'Static', code: staticSheet.getLayerCss('recipes', 'utilities') },
     ]
 
     return cssArtifacts
@@ -43,7 +43,11 @@ export function usePanda(state: State, config: Config | null) {
     const sheet = context.createSheet()
 
     const decoder = context.decoder.clone().collect(encoder)
-    const parsedCss = sheet.processDecoder(decoder)
+    try {
+      sheet.processDecoder(decoder)
+    } catch (error) {
+      console.log(error)
+    }
 
     const artifacts = context.getArtifacts() ?? []
 
@@ -57,7 +61,7 @@ export function usePanda(state: State, config: Config | null) {
       { file: 'Recipes', code: sheet.getLayerCss('recipes') },
     ].concat(staticArtifacts)
 
-    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? ''), parsedCss].join('\n')
+    const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
 
     const panda = {
       previewCss,

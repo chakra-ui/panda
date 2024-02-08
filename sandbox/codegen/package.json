@@ -39,9 +39,9 @@
     "solid-js": "^1.7.12",
     "tsx": "3.12.10",
     "typescript": "^5.3.3",
-    "vite": "5.0.7",
-    "vite-plugin-solid": "^2.7.0",
-    "vitest": "0.33.0",
+    "vite": "5.0.12",
+    "vite-plugin-solid": "^2.9.1",
+    "vitest": "1.2.2",
     "vue": "^3.3.3"
   }
 }

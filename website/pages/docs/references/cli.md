@@ -67,9 +67,26 @@ Related: [`config.syntax`](/docs/references/config#syntax)
 
 #### `--strict-tokens`
 
-Set strickTokens to true
+Set strictTokens to true
 
 Related: [`config.strictTokens`](/docs/references/config#strictTokens)
+
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
+
+#### `--logfile`
+
+Outputs logs to a file
+
+Related: [Debugging](/docs/guides/debugging)
 
 ---
 
@@ -151,6 +168,21 @@ Whether to only emit the `tokens` directory
 
 Related: [`config.emitTokensOnly`](/docs/references/config#emitTokensOnly)
 
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
+
+#### `--logfile`
+
+Outputs logs to a file
+
 ---
 
 ## `panda codegen`
@@ -195,6 +227,23 @@ Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
 
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
+
+#### `--logfile`
+
+Outputs logs to a file
+
+Related: [Debugging](/docs/guides/debugging)
+
 ## `panda cssgen`
 
 Generate the CSS from files.
@@ -220,6 +269,10 @@ panda cssgen "static" --outfile dist/static.css
 ```
 
 ### Flags
+
+#### `--outfile`
+
+Output file for extracted css, default to './styled-system/styles.css'
 
 #### `--silent`
 
@@ -251,7 +304,7 @@ Whether to watch for changes in the project
 
 Related: [`config.watch`](/docs/references/config#watch)
 
-## `--minimal`
+#### `--minimal`
 
 Skip generating CSS for theme tokens, preflight, keyframes, static and global css.
 
@@ -279,6 +332,23 @@ Related: [`config.poll`](/docs/references/config#poll)
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
+
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+Related: [Debugging](/docs/guides/debugging)
+
+#### `--logfile`
+
+Outputs logs to a file
+
+Related: [Debugging](/docs/guides/debugging)
 
 ## `panda studio`
 
@@ -381,3 +451,30 @@ Related: [`config`](/docs/references/config.md)
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
+
+## `panda emit-pkg`
+
+Emit package.json with entrypoints, can be used to create a workspace package dedicated to the [`config.outdir`](/docs/references/config#outdir), in combination with [`config.importMap`](/docs/references/config#importMap)
+
+#### `--cpu-prof`
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+
+#### `--logfile`
+
+Outputs logs to a file
+
+### Flags
+
+#### `--silent`
+
+Whether to suppress all output
+
+#### `--outdir`
+
+Output directory
+```

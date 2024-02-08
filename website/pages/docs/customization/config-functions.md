@@ -86,9 +86,9 @@ export const checkboxRecipe = defineSlotRecipe({
 
 ### `defineParts`
 
-it can be useful when you want to have the equivalent of a slot recipe without needing to split the class names bindings and instead just having a className that handles children on 1 DOM element.
+It can be useful when you want to have the equivalent of a slot recipe without needing to split the class names bindings and instead just having a className that handles children on 1 DOM element.
 
-it pairs well with [ZagJs](https://zagjs.com/) and [Ark-UI](https://ark-ui.com/)
+It pairs well with [ZagJs](https://zagjs.com/) and [Ark-UI](https://ark-ui.com/)
 
 Let's refactor the previous example to use parts instead of slots:
 
@@ -169,9 +169,11 @@ Function for [keyframes](/docs/customization/theme#keyframes) definitions.
 ```ts
 import { defineKeyframes } from '@pandacss/dev'
 
-export const fadein = defineKeyframes({
-  '0%': { opacity: '0' },
-  '100%': { opacity: '1' }
+export const keyframes = defineKeyframes({
+  fadeIn: {
+    '0%': { opacity: '0' },
+    '100%': { opacity: '1' }
+  }
 })
 ```
 

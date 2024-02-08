@@ -111,7 +111,7 @@ Using these techniques, you can apply them to a component to merge styles togeth
 > Tip: Panda extracts the `css` prop from the JSX component
 
 ```jsx
-const cardStyles = css({
+const cardStyles = css.raw({
   bg: 'red',
   color: 'white'
 })

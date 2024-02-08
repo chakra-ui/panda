@@ -1,17 +1,27 @@
-import { esc, getOrCreateSet, isImportant, markImportant, toHash, withoutImportant } from '@pandacss/shared'
+import {
+  PandaError,
+  deepSet,
+  esc,
+  getOrCreateSet,
+  isImportant,
+  markImportant,
+  withoutImportant,
+} from '@pandacss/shared'
 import type {
   AtomicStyleResult,
   Dict,
   GroupedResult,
   GroupedStyleResultDetails,
+  RawCondition,
   RecipeBaseResult,
   StyleEntry,
   StyleResultObject,
 } from '@pandacss/types'
 import type { Context } from './context'
-import { deepSet } from './deep-set'
-import { Recipes } from './recipes'
+import { sortStyleRules } from './sort-style-rules'
 import { StyleEncoder } from './style-encoder'
+
+import { Recipes } from './recipes'
 
 export class StyleDecoder {
   constructor(private context: Pick<Context, 'conditions' | 'utility' | 'recipes' | 'hash'>) {}
@@ -50,7 +60,7 @@ export class StyleDecoder {
 
     if (hash.className) {
       conds.push(className)
-      result = utility.formatClassName(toHash(conds.join(':')))
+      result = utility.formatClassName(utility.toHash(conds, utility.defaultHashFn))
     } else {
       conds.push(utility.formatClassName(className))
       result = conds.join(':')
@@ -92,6 +102,10 @@ export class StyleDecoder {
     }
   }
 
+  resolveCondition = (condition: RawCondition) => {
+    return this.context.utility.tokens.resolveReference(condition.rawValue ?? condition.raw)
+  }
+
   private getAtomic = (hash: string) => {
     const cached = this.atomic_cache.get(hash)
     if (cached) return cached
@@ -105,13 +119,13 @@ export class StyleDecoder {
 
     const basePath = [classSelector]
 
-    const obj: StyleResultObject = Object.create(null)
+    const obj: StyleResultObject = {}
 
     let conditions
 
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
-      const path = basePath.concat(conditions.map((c) => c.rawValue ?? c.raw))
+      const path = basePath.concat(conditions.map((c) => this.resolveCondition(c)))
       deepSet(obj, path, styles)
     } else {
       deepSet(obj, basePath, styles)
@@ -131,20 +145,19 @@ export class StyleDecoder {
     return styleResult
   }
 
-  private getGroup = (hashSet: Set<string>, className: string) => {
-    const cached = this.group_cache.get(className)
+  getGroup = (hashSet: Set<string>, key: string) => {
+    const cached = this.group_cache.get(key)
     if (cached) return cached
 
     let obj = {}
     const basePath = [] as string[]
     const details = [] as GroupedStyleResultDetails[]
+    const transform = this.context.utility.transform.bind(this.context.utility)
 
     hashSet.forEach((hash) => {
       const entry = getEntryFromHash(hash)
 
-      const transform = this.context.utility.transform
       const transformed = transform(entry.prop, withoutImportant(entry.value) as string)
-
       if (!transformed.className) return
 
       const important = isImportant(entry.value)
@@ -160,24 +173,30 @@ export class StyleDecoder {
       details.push({ hash, entry, conditions, result })
     })
 
-    // TODO sort
-    details.forEach((value) => {
+    // sorting here prevents postcss-nested from creating multiple rules with the same selector
+    // if we have a rule without a condition, then one with a condition, then one without a condition
+    // if not sorted, the object would look like
+    // 1. `{ lineHeight: '1.2', _hover: { boxShadow: 'outline' }, outline: 'none', }`
+    // instead of
+    // 2. `{ lineHeight: '1.2', outline: 'none', _hover: { boxShadow: 'outline' } }`
+    //
+    // which would result in a CSS like
+    // 1. `.class { line-height: 1.2; } .class:hover { box-shadow: outline; } .class { outline: none }`
+    // instead of:
+    // 2. `.class { line-height: 1.2; outline: none; } .class:hover { box-shadow: outline; }`
+    const sorted = sortStyleRules(details)
+    sorted.forEach((value) => {
       if (value.conditions) {
-        const path = basePath.concat(value.conditions.map((c) => c.rawValue ?? c.raw))
+        const path = basePath.concat(value.conditions.map((c) => this.resolveCondition(c)))
         obj = deepSet(obj, path, value.result)
       } else {
         obj = deepSet(obj, basePath, value.result)
       }
     })
 
-    const result: GroupedResult = {
-      result: obj,
-      hashSet,
-      details,
-      className,
-    }
+    const result: GroupedResult = { result: obj, hashSet, details, className: key }
 
-    this.group_cache.set(className, result)
+    this.group_cache.set(key, result)
 
     return result
   }
@@ -203,12 +222,18 @@ export class StyleDecoder {
   }
 
   collectAtomic = (encoder: StyleEncoder) => {
+    const atomic = [] as AtomicStyleResult[]
     encoder.atomic.forEach((item) => {
       const result = this.getAtomic(item)
       if (!result) return
 
-      this.atomic.add(result)
-      this.classNames.set(result.className, result)
+      atomic.push(result)
+    })
+
+    const sorted = sortStyleRules(atomic)
+    sorted.forEach((styleResult) => {
+      this.atomic.add(styleResult)
+      this.classNames.set(styleResult.className, styleResult)
     })
 
     return this
@@ -283,10 +308,10 @@ export class StyleDecoder {
     const recipeConfig = this.context.recipes.getConfigOrThrow(recipeName)
 
     if (!Recipes.isSlotRecipeConfig(recipeConfig)) {
-      throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
+      throw new PandaError('UNKNOWN_RECIPE', `Recipe "${recipeName}" is not a slot recipe`)
     }
 
-    const base: Dict = Object.create(null)
+    const base: Dict = {}
 
     recipeConfig.slots.map((slot) => {
       const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)

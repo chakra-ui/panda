@@ -1,229 +1,112 @@
-import { isObject } from '@pandacss/shared'
-import type { Context } from '@pandacss/core'
 import type { Stylesheet } from '@pandacss/core'
-
-const css = String.raw
+import { type Context } from '@pandacss/core'
+import { isObject } from '@pandacss/shared'
+import type { GlobalStyleObject } from '@pandacss/types'
 
 export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   const { preflight } = ctx.config
   const scope = isObject(preflight) ? preflight.scope : undefined
   const selector = scope ? `${scope} ` : ''
-  // prettier-ignore
-  const output = css`
-  ${selector}* {
-    margin: 0;
-    padding: 0;
-    font: inherit;
+
+  const scoped = {
+    '*': { margin: '0px', padding: '0px', font: 'inherit' },
+    '*, *::before, *::after': {
+      boxSizing: 'border-box',
+      borderWidth: '0px',
+      borderStyle: 'solid',
+      borderColor: 'var(--global-color-border, currentColor)',
+    },
+
+    hr: { height: '0px', color: 'inherit', borderTopWidth: '1px' },
+    body: { height: '100%', lineHeight: 'inherit' },
+    img: { borderStyle: 'none' },
+    'img,  svg,  video,  canvas,  audio,  iframe,  embed,  object': {
+      display: 'block',
+      verticalAlign: 'middle',
+    },
+    'img,  video': { maxWidth: '100%', height: 'auto' },
+    'p,  h1,  h2,  h3,  h4,  h5,  h6': { overflowWrap: 'break-word' },
+    'ol,  ul': { listStyle: 'none' },
+    'code,  kbd,  pre,  samp': { fontSize: '1em' },
+    "button,  [type='button'],  [type='reset'],  [type='submit']": {
+      WebkitAppearance: 'button',
+      backgroundColor: 'transparent',
+      backgroundImage: 'none',
+    },
+    'button,  input,  optgroup,  select,  textarea': { color: 'inherit' },
+    'button,  select': { textTransform: 'none' },
+    table: {
+      textIndent: '0px',
+      borderColor: 'inherit',
+      borderCollapse: 'collapse',
+    },
+    'input::placeholder,  textarea::placeholder': {
+      opacity: 1,
+      color: 'var(--global-color-placeholder, #9ca3af)',
+    },
+    textarea: { resize: 'vertical' },
+    summary: { display: 'list-item' },
+    small: { fontSize: '80%' },
+    'sub,  sup': {
+      fontSize: '75%',
+      lineHeight: 0,
+      position: 'relative',
+      verticalAlign: 'baseline',
+    },
+    sub: { bottom: '-0.25em' },
+    sup: { top: '-0.5em' },
+    dialog: { padding: '0px' },
+    a: { color: 'inherit', textDecoration: 'inherit' },
+    'abbr:where([title])': { textDecoration: 'underline dotted' },
+    'b,  strong': { fontWeight: 'bolder' },
+    'code,  kbd,  samp,  pre': {
+      fontSize: '1em',
+      '--font-mono-fallback': "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New'",
+      fontFamily: 'var(--global-font-mono, var(--font-mono-fallback))',
+    },
+    'input[type="text"],  input[type="email"],  input[type="search"],  input[type="password"]': {
+      WebkitAppearance: 'none',
+      MozAppearance: 'none',
+    },
+    "input[type='search']": {
+      WebkitAppearance: 'textfield',
+      outlineOffset: '-2px',
+    },
+    '::-webkit-search-decoration,  ::-webkit-search-cancel-button': {
+      WebkitAppearance: 'none',
+    },
+    '::-webkit-file-upload-button': {
+      WebkitAppearance: 'button',
+      font: 'inherit',
+    },
+    'input[type="number"]::-webkit-inner-spin-button,  input[type="number"]::-webkit-outer-spin-button': {
+      height: 'auto',
+    },
+    "input[type='number']": { MozAppearance: 'textfield' },
+    ':-moz-ui-invalid': { boxShadow: 'none' },
+    ':-moz-focusring': { outline: 'auto' },
+    '[hidden]': { display: 'none !important' },
   }
 
-  ${selector}*,
-  ${selector}*::before,
-  ${selector}*::after {
-    box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
-    border-color: var(--global-color-border, currentColor);
+  const reset: GlobalStyleObject = {
+    [scope || 'html']: {
+      lineHeight: 1.5,
+      '--font-fallback':
+        "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+      WebkitTextSizeAdjust: '100%',
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
+      MozTabSize: '[4]',
+      tabSize: '[4]',
+      fontFamily: 'var(--global-font-body, var(--font-fallback))',
+    },
   }
 
-  ${scope || 'html'} {
-    line-height: 1.5;
-    --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-      'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-      'Noto Color Emoji';
-    -webkit-text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -moz-tab-size: 4;
-    tab-size: 4;
-    font-family: var(--global-font-body, var(--font-fallback));
+  if (selector) {
+    reset[selector] = scoped
+  } else {
+    Object.assign(reset, scoped)
   }
 
-  ${selector}hr {
-    height: 0;
-    color: inherit;
-    border-top-width: 1px;
-  }
-
-  body {
-    height: 100%;
-    line-height: inherit;
-  }
-
-  ${selector}img {
-    border-style: none;
-  }
-
-  ${selector}img,
-  ${selector}svg,
-  ${selector}video,
-  ${selector}canvas,
-  ${selector}audio,
-  ${selector}iframe,
-  ${selector}embed,
-  ${selector}object {
-    display: block;
-    vertical-align: middle;
-  }
-
-  ${selector}img,
-  ${selector}video {
-    max-width: 100%;
-    height: auto;
-  }
-
-  ${selector}p,
-  ${selector}h1,
-  ${selector}h2,
-  ${selector}h3,
-  ${selector}h4,
-  ${selector}h5,
-  ${selector}h6 {
-    overflow-wrap: break-word;
-  }
-
-  ${selector}ol,
-  ${selector}ul {
-    list-style: none;
-  }
-
-  ${selector}code,
-  ${selector}kbd,
-  ${selector}pre,
-  ${selector}samp {
-    font-size: 1em;
-  }
-
-  ${selector}button,
-  ${selector}[type='button'],
-  ${selector}[type='reset'],
-  ${selector}[type='submit'] {
-    -webkit-appearance: button;
-    background-color: transparent;
-    background-image: none;
-  }
-
-  ${selector}button,
-  ${selector}input,
-  ${selector}optgroup,
-  ${selector}select,
-  ${selector}textarea {
-    color: inherit;
-  }
-
-  ${selector}button,
-  ${selector}select {
-    text-transform: none;
-  }
-
-  ${selector}table {
-    text-indent: 0;
-    border-color: inherit;
-    border-collapse: collapse;
-  }
-
-  ${selector}input::placeholder,
-  ${selector}textarea::placeholder {
-    opacity: 1;
-    color: var(--global-color-placeholder, #9ca3af);
-  }
-
-  ${selector}textarea {
-    resize: vertical;
-  }
-
-  ${selector}summary {
-    display: list-item;
-  }
-
-  ${selector}small {
-    font-size: 80%;
-  }
-
-  ${selector}sub,
-  ${selector}sup {
-    font-size: 75%;
-    line-height: 0;
-    position: relative;
-    vertical-align: baseline;
-  }
-
-  ${selector}sub {
-    bottom: -0.25em;
-  }
-
-  ${selector}sup {
-    top: -0.5em;
-  }
-
-  ${selector}dialog {
-    padding: 0;
-  }
-
-  ${selector}a {
-    color: inherit;
-    text-decoration: inherit;
-  }
-
-  ${selector}abbr:where([title]) {
-    text-decoration: underline dotted;
-  }
-
-  ${selector}b,
-  ${selector}strong {
-    font-weight: bolder;
-  }
-
-  ${selector}code,
-  ${selector}kbd,
-  ${selector}samp,
-  ${selector}pre {
-    font-size: 1em;
-    --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
-    font-family: var(--global-font-mono, var(--font-mono-fallback));
-  }
-
-
-  ${selector}input[type="text"],
-  ${selector}input[type="email"],
-  ${selector}input[type="search"],
-  ${selector}input[type="password"] {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-  }
-
-  ${selector}input[type='search'] {
-    -webkit-appearance: textfield;
-    outline-offset: -2px;
-  }
-
-  ${selector}::-webkit-search-decoration,
-  ${selector}::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-  }
-
-  ${selector}::-webkit-file-upload-button {
-    -webkit-appearance: button;
-    font: inherit;
-  }
-
-  ${selector}input[type="number"]::-webkit-inner-spin-button,
-  ${selector}input[type="number"]::-webkit-outer-spin-button {
-    height: auto;
-  }
-
-  ${selector}input[type='number']{
-    -moz-appearance: textfield;
-  }
-
-  ${selector}:-moz-ui-invalid {
-    box-shadow: none;
-  }
-
-  ${selector}:-moz-focusring {
-    outline: auto;
-  }
-`
-
-  sheet.layers.reset.append(output)
-  void ctx.hooks.callHook('generator:css', 'reset.css', '')
+  sheet.processResetCss(reset)
 }

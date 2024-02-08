@@ -4,12 +4,22 @@ import {
   hypenateProperty,
   isFunction,
   isString,
+  mapToJson,
   memo,
+  toHash,
   withoutSpace,
 } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
-import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@pandacss/types'
+import type {
+  AnyFunction,
+  Dict,
+  PropertyConfig,
+  PropertyTransform,
+  TransformArgs,
+  UtilityConfig,
+} from '@pandacss/types'
 import type { TransformResult } from './types'
+import { colorMix } from './color-mix'
 
 export interface UtilityOptions {
   config?: UtilityConfig
@@ -81,7 +91,7 @@ export class Utility {
     const { tokens, config = {}, separator, prefix, shorthands, strictTokens } = options
 
     this.tokens = tokens
-    this.config = config
+    this.config = this.normalizeConfig(config)
 
     if (separator) {
       this.separator = separator
@@ -105,15 +115,27 @@ export class Utility {
     this.assignPropertyTypes()
   }
 
+  defaultHashFn = toHash
+
+  toHash = (path: string[], hashFn: (str: string) => string): string => hashFn(path.join(':'))
+
+  private normalizeConfig(config: UtilityConfig) {
+    return Object.fromEntries(
+      Object.entries(config).map(([property, propertyConfig]) => {
+        return [property, this.normalize(propertyConfig)]
+      }),
+    )
+  }
+
   register = (property: string, config: PropertyConfig) => {
+    this.config[property] = this.normalize(config)
     this.assignProperty(property, config)
     this.assignPropertyType(property, config)
-    this.config[property] = config
   }
 
   private assignShorthands = () => {
     for (const [property, config] of Object.entries(this.config)) {
-      const { shorthand } = this.normalize(config) ?? {}
+      const { shorthand } = config ?? {}
 
       if (!shorthand) continue
 
@@ -125,7 +147,7 @@ export class Utility {
   }
 
   private assignColorPaletteProperty = () => {
-    const values = this.tokens.colorPalettes as Record<string, any>
+    const values = mapToJson(this.tokens.view.colorPalettes) as Record<string, any>
     this.config.colorPalette = {
       values: Object.keys(values),
       transform(value) {
@@ -176,7 +198,7 @@ export class Utility {
     }
 
     if (isString(values)) {
-      return fn?.(values) ?? this.tokens.getValue(values) ?? {}
+      return fn?.(values) ?? this.tokens.view.getCategoryValues(values) ?? {}
     }
 
     if (Array.isArray(values)) {
@@ -187,25 +209,35 @@ export class Utility {
     }
 
     if (isFunction(values)) {
-      return values(resolveFn ? fn : this.getToken.bind(this))
+      return values(resolveFn ? fn : this.getTokenCategoryValues.bind(this))
     }
 
     return values
   }
 
   getToken = (path: string) => {
-    return this.tokens.get(path)
+    return this.tokens.view.get(path)
+  }
+
+  getTokenCategoryValues = (category: string) => {
+    return this.tokens.view.getCategoryValues(category)
   }
 
   /**
    * Normalize the property config
    */
   normalize = (value: PropertyConfig | undefined): PropertyConfig | undefined => {
-    return value
+    const config = { ...value }
+
+    // set graceful defaults for className
+    if (config.shorthand && !config.className) {
+      config.className = Array.isArray(config.shorthand) ? config.shorthand[0] : config.shorthand
+    }
+
+    return config
   }
 
-  private assignProperty = (property: string, propertyConfig: PropertyConfig) => {
-    const config = this.normalize(propertyConfig)
+  private assignProperty = (property: string, config: PropertyConfig) => {
     this.setTransform(property, config?.transform)
 
     if (!config) return
@@ -244,9 +276,7 @@ export class Utility {
     return keys ? Array.from(keys) : []
   }
 
-  private assignPropertyType = (property: string, propertyConfig: PropertyConfig) => {
-    const config = this.normalize(propertyConfig)
-
+  private assignPropertyType = (property: string, config: PropertyConfig | undefined) => {
     if (!config) return
 
     const values = this.getPropertyValues(config, (key) => `type:Tokens["${key}"]`)
@@ -305,7 +335,7 @@ export class Utility {
     const isCssVar = prop.startsWith('--')
 
     if (isCssVar) {
-      const tokenValue = this.tokens.getTokenVar(value)
+      const tokenValue = this.tokens.view.get(value)
       value = typeof tokenValue === 'string' ? tokenValue : value
     }
 
@@ -321,16 +351,26 @@ export class Utility {
     return this
   }
 
+  private getTransformArgs = (raw: string): TransformArgs => {
+    const token = Object.assign(this.getToken.bind(this), {
+      raw: (path: string) => this.tokens.getByName(path),
+    })
+
+    const _colorMix = (value: string) => colorMix(value, token)
+
+    return {
+      token,
+      raw,
+      utils: { colorMix: _colorMix },
+    }
+  }
+
   private setStyles = (property: string, raw: string, alias: string, propKey?: string) => {
     propKey = propKey ?? this.getPropKey(property, raw)
 
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transforms.get(property) ?? defaultTransform
-
-    const tokenFn = Object.assign(this.getToken.bind(this), {
-      raw: (path: string) => this.tokens.getByName(path),
-    })
-    const styles = getStyles(raw, { token: tokenFn, raw: alias })
+    const styles = getStyles(raw, this.getTransformArgs(alias))
 
     this.styles.set(propKey, styles ?? {})
 
@@ -408,7 +448,7 @@ export class Utility {
 
     let styleValue = getArbitraryValue(value)
     if (isString(styleValue)) {
-      styleValue = this.tokens.expandReference(styleValue)
+      styleValue = this.tokens.expandReferenceInValue(styleValue)
     }
 
     return compact({

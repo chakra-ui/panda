@@ -6,6 +6,740 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.30.01] - 2024-02-05
+
+### Fixed
+
+Fix the regression caused by the downstream bundle-n-require package, which tries to load custom conditions first. This
+led to a `could not resolve @pandacss/dev` error
+
+## [0.30.0] - 2024-02-05
+
+### Fixed
+
+- Fix issue where config changes could not be detected due to config bundling returning stale result sometimes.
+- Fix issue where errors were thrown when semantic tokens are overriden in tokens.
+- Fix issue where responsive array in css and cva doesn't generate the correct classname
+
+### Added
+
+- Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all presets have
+  been merged.
+
+For example, this could be used if you want to use most of a preset but want to completely omit a few things, while
+keeping the rest. Let's say we want to remove the `stack` pattern from the built-in `@pandacss/preset-base`:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'config:resolved': ({ config, utils }) => {
+      return utils.omit(config, ['patterns.stack'])
+    },
+  },
+})
+```
+
+- Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
+- Add a `logfile` option to the postcss plugin
+
+Logs will be streamed to the file specified by the `--logfile` flag or the `logfile` option. This is useful for
+debugging issues that occur during the build process.
+
+```sh
+panda --logfile ./logs/panda.log
+```
+
+```js
+module.exports = {
+  plugins: {
+    '@pandacss/dev/postcss': {
+      logfile: './logs/panda.log',
+    },
+  },
+}
+```
+
+- Introduce 3 new hooks:
+
+## `tokens:created`
+
+This hook is called when the token engine has been created. You can use this hook to add your format token names and
+variables.
+
+> This is especially useful when migrating from other css-in-js libraries, like Stitches.
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'tokens:created': ({ configure }) => {
+      configure({
+        formatTokenName: (path) => '$' + path.join('-'),
+      })
+    },
+  },
+})
+```
+
+## `utility:created`
+
+This hook is called when the internal classname engine has been created. You can override the default `toHash` function
+used when `config.hash` is set to `true`
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'utility:created': ({ configure }) => {
+      configure({
+        toHash: (paths, toHash) => {
+          const stringConds = paths.join(':')
+          const splitConds = stringConds.split('_')
+          const hashConds = splitConds.map(toHash)
+          return hashConds.join('_')
+        },
+      })
+    },
+  },
+})
+```
+
+## `codegen:prepare`
+
+This hook is called right before writing the codegen files to disk. You can use this hook to tweak the codegen files
+
+```ts
+export default defineConfig({
+  // ...
+  hooks: {
+    'codegen:prepare': ({ artifacts, changed }) => {
+      // do something with the emitted js/d.ts files
+    },
+  },
+})
+```
+
+### Changed
+
+- Refactor the `--cpu-prof` profiler to use the `node:inspector` instead of relying on an external module
+  (`v8-profiler-next`, which required `node-gyp`)
+
+## [0.29.1] - 2024-01-30
+
+### Fixed
+
+Fix an issue (introduced in v0.29) with `panda init` and add an assert on the new `colorMix` utility function
+
+## [0.29.0] - 2024-01-29
+
+### Fixed
+
+- Fix an issue where the curly token references would not be escaped if the token path was not found.
+
+### Added
+
+**Add config validation**
+
+- Check for duplicate between token & semanticTokens names
+- Check for duplicate between recipes/patterns/slots names
+- Check for token / semanticTokens paths (must end/contain 'value')
+- Check for self/circular token references
+- Check for missing tokens references
+- Check for conditions selectors (must contain '&')
+- Check for breakpoints units (must be the same)
+
+> You can set `validate: 'warn'` in your config to only warn about errors or set it to `none` to disable validation
+> entirely.
+
+**Default values in patterns**
+
+You can now set and override `defaultValues` in pattern configurations.
+
+Here's an example of how to define a new `hstack` pattern with a default `gap` value of `40px`:
+
+```js
+defineConfig({
+  patterns: {
+    hstack: {
+      properties: {
+        justify: { type: 'property', value: 'justifyContent' },
+        gap: { type: 'property', value: 'gap' },
+      },
+      // you can also use a token like '10'
+      defaultValues: { gap: '40px' },
+      transform(props) {
+        const { justify, gap, ...rest } = props
+        return {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: justify,
+          gap,
+          ...rest,
+        }
+      },
+    },
+  },
+})
+```
+
+**Media query curly braces tokens**
+
+Add support for token references with curly braces like `{path.to.token}` in media queries, just like the
+`token(path.to.token)` alternative already could.
+
+```ts
+css({
+  // ✅ this is fine now, will resolve to something like
+  // `@container (min-width: 56em)`
+  '@container (min-width: {sizes.4xl})': {
+    color: 'green',
+  },
+})
+```
+
+**Color opacifier**
+
+Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default) to use the
+[`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
+
+This function allows you to mix two colors together, and we use it to change the opacity of a color using the
+`{color}/{opacity}` syntax.
+
+You can use it like this:
+
+```ts
+css({
+  bg: 'red.300/40',
+  color: 'white',
+})
+```
+
+This will generate:
+
+```css
+@layer utilities {
+  .bg_red\.300\/40 {
+    --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+    background: var(--mix-background, var(--colors-red-300));
+  }
+
+  .text_white {
+    color: var(--colors-white);
+  }
+}
+```
+
+- If you're not using any opacity, the utility will not use `color-mix`
+- The utility will automatically fallback to the original color if the `color-mix` function is not supported by the
+  browser.
+- You can use any of the color tokens, and any of the opacity tokens.
+
+---
+
+The `utilities` transform function also receives a new `utils` object that contains the `colorMix` function, so you can
+also use it on your own utilities:
+
+```ts
+export default defineConfig({
+  utilities: {
+    background: {
+      shorthand: 'bg',
+      className: 'bg',
+      values: 'colors',
+      transform(value, args) {
+        const mix = args.utils.colorMix(value)
+        // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
+        if (mix.invalid) return { background: value }
+
+        return {
+          background: mix.value,
+        }
+      },
+    },
+  },
+})
+```
+
+---
+
+Here's a cool snippet (that we use internally !) that makes it easier to create a utility transform for a given
+property:
+
+```ts
+import type { PropertyTransform } from '@pandacss/types'
+
+export const createColorMixTransform =
+  (prop: string): PropertyTransform =>
+  (value, args) => {
+    const mix = args.utils.colorMix(value)
+    if (mix.invalid) return { [prop]: value }
+
+    const cssVar = '--mix-' + prop
+
+    return {
+      [cssVar]: mix.value,
+      [prop]: `var(${cssVar}, ${mix.color})`,
+    }
+  }
+```
+
+then the same utility transform as above can be written like this:
+
+```ts
+export default defineConfig({
+  utilities: {
+    background: {
+      shorthand: 'bg',
+      className: 'bg',
+      values: 'colors',
+      transform: createColorMixTransform('background'),
+    },
+  },
+})
+```
+
+**Container queries Theme**
+
+Improve support for CSS container queries by adding a new `containerNames` and `containerSizes` theme options.
+
+You can new define container names and sizes in your theme configuration and use them in your styles.
+
+```ts
+export default defineConfig({
+  // ...
+  theme: {
+    extend: {
+      containerNames: ['sidebar', 'content'],
+      containerSizes: {
+        xs: '40em',
+        sm: '60em',
+        md: '80em',
+      },
+    },
+  },
+})
+```
+
+The default container sizes in the `@pandacss/preset-panda` preset are shown below:
+
+```ts
+export const containerSizes = {
+  xs: '320px',
+  sm: '384px',
+  md: '448px',
+  lg: '512px',
+  xl: '576px',
+  '2xl': '672px',
+  '3xl': '768px',
+  '4xl': '896px',
+  '5xl': '1024px',
+  '6xl': '1152px',
+  '7xl': '1280px',
+  '8xl': '1440px',
+}
+```
+
+Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
+
+> The default container syntax is `@/<container-size>`.
+
+```ts
+import { css } from '/styled-system/css'
+
+function Demo() {
+  return (
+    <nav className={css({ containerType: 'inline-size' })}>
+      <div
+        className={css({
+          fontSize: { '@/sm': 'md' },
+        })}
+      />
+    </nav>
+  )
+}
+```
+
+This will generate the following CSS:
+
+```css
+.cq-type_inline-size {
+  container-type: inline-size;
+}
+
+@container (min-width: 60em) {
+  .\@\/sm:fs_md {
+    container-type: inline-size;
+  }
+}
+```
+
+**Container Query Pattern**
+
+To make it easier to use container queries, we've added a new `cq` pattern to `@pandacss/preset-base`.
+
+```ts
+import { cq } from 'styled-system/patterns'
+
+function Demo() {
+  return (
+    <nav className={cq()}>
+      <div
+        className={css({
+          fontSize: { base: 'lg', '@/sm': 'md' },
+        })}
+      />
+    </nav>
+  )
+}
+```
+
+You can also named container queries:
+
+```ts
+import { cq } from 'styled-system/patterns'
+
+function Demo() {
+  return (
+    <nav className={cq({ name: 'sidebar' })}>
+      <div
+        className={css({
+          fontSize: { base: 'lg', '@sidebar/sm': 'md' },
+        })}
+      />
+    </nav>
+  )
+}
+```
+
+**Config**
+
+- Add support for explicitly specifying config related files that should trigger a context reload on change.
+
+  > We automatically track the config file and (transitive) files imported by the config file as much as possible, but
+  > sometimes we might miss some. You can use this option as a workaround for those edge cases.
+
+  Set the `dependencies` option in `panda.config.ts` to a glob or list of files.
+
+  ```ts
+  export default defineConfig({
+    // ...
+    dependencies: ['path/to/files/**.ts'],
+  })
+  ```
+
+- Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`, `panda cssgen`,
+  `panda ship`)
+
+- Watch for more config options paths changes, so that the related artifacts will be regenerated a bit more reliably
+  (ex: updating the `config.hooks` will now trigger a full regeneration of `styled-system`)
+
+### Changed
+
+- Set `display: none` for hidden elements in `reset` css
+- Updated the default preset in Panda to use the new `defaultValues` feature.
+
+To override the default values, consider using the `extend` pattern.
+
+```js
+defineConfig({
+  patterns: {
+    extend: {
+      stack: {
+        defaultValues: { gap: '20px' },
+      },
+    },
+  },
+})
+```
+
+## [0.28.0] - 2024-01-24
+
+### Fixed
+
+- Allow custom logo in studio
+- Update `getArbitraryValue` so it works for values that start on a new line
+- Fix issue where `/* @__PURE__ */` annotation threw a warning in Vite build due to incorrect placement.
+- Fix a typing issue where the `borderWidths` wasn't specified in the generated `TokenCategory` type
+- Fix issue where throws "React is not defined error"
+- Fix a regression with rule insertion order after triggering HMR that re-uses some CSS already generated in previous
+  triggers, introuced in v0.27.0
+- Fix the issue in the utility configuration where shorthand without `className` returns incorrect CSS when using the
+  shorthand version.
+
+```js
+utilities: {
+  extend: {
+    coloredBorder: {
+      shorthand: 'cb', // no classname, returns incorrect css
+      values: ['red', 'green', 'blue'],
+      transform(value) {
+        return {
+          border: `1px solid ${value}`,
+        };
+      },
+    },
+  },
+},
+```
+
+- Fix a regression with globalCss selector order
+
+```ts
+{
+    globalCss: {
+        html: {
+          ".aaa": {
+            color: "red.100",
+            "& .bbb": {
+              color: "red.200",
+              "& .ccc": {
+                color: "red.300"
+              }
+            }
+          }
+        },
+    }
+}
+```
+
+would incorrectly generate (regression introduced in v0.26.2)
+
+```css
+.aaa html {
+  color: var(--colors-red-100);
+}
+
+.aaa html .bbb {
+  color: var(--colors-red-200);
+}
+
+.aaa html .bbb .ccc {
+  color: var(--colors-red-300);
+}
+```
+
+will now correctly generate again:
+
+```css
+html .aaa {
+  color: var(--colors-red-100);
+}
+
+html .aaa .bbb {
+  color: var(--colors-red-200);
+}
+
+html .aaa .bbb .ccc {
+  color: var(--colors-red-300);
+}
+```
+
+### Added
+
+- Add a `--cpu-prof` flag to `panda`, `panda cssgen`, `panda codegen` and `panda debug` commands This is useful for
+  debugging performance issues in `panda` itself. This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+  the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+- Slight perf improvement by caching a few computed properties that contains a loop
+
+This is mostly intended for maintainers or can be asked by maintainers to help debug issues.
+
+### Changed
+
+Refactor `config.hooks` to be much more powerful, you can now:
+
+- Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
+  load all `recipes` from a folder
+- Transform a source file's content before parsing it, this could be used to transform the file content to a
+  `tsx`-friendly syntax so that Panda's parser can parse it.
+- Implement your own parser logic and add the extracted results to the classic Panda pipeline, this could be used to
+  parse style usage from any template language
+- Tweak the CSS content for any `@layer` or even right before it's written to disk (if using the CLI) or injected
+  through the postcss plugin, allowing all kinds of customizations like removing the unused CSS variables, etc.
+- React to any config change or after the codegen step (your outdir, the `styled-system` folder) have been generated
+
+See the list of available `config.hooks` here:
+
+```ts
+export interface PandaHooks {
+  /**
+   * Called when the config is resolved, after all the presets are loaded and merged.
+   * This is the first hook called, you can use it to tweak the config before the context is created.
+   */
+  'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+  /**
+   * Called when the Panda context has been created and the API is ready to be used.
+   */
+  'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+  /**
+   * Called when the config file or one of its dependencies (imports) has changed.
+   */
+  'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+  /**
+   * Called after reading the file content but before parsing it.
+   * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
+   * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
+   */
+  'parser:before': (args: { filePath: string; content: string }) => string | void
+  /**
+   * Called after the file styles are extracted and processed into the resulting ParserResult object.
+   * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
+   */
+  'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+  /**
+   * Called after the codegen is completed
+   */
+  'codegen:done': () => MaybeAsyncReturn
+  /**
+   * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
+   * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
+   * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
+   */
+  'cssgen:done': (args: {
+    artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+    content: string
+  }) => string | void
+}
+```
+
+## [0.27.3] - 2024-01-18
+
+### Fixed
+
+- Fix issue where HMR doesn't work when tsconfig paths is used.
+- Fix `prettier` parser warning in panda config setup.
+
+## [0.27.2] - 2024-01-17
+
+### Fixed
+
+Switch back to `node:path` from `pathe` to resolve issues with windows path in PostCSS + Webpack set up
+
+## [0.27.1] - 2024-01-15
+
+### Fixed
+
+Fix issue in windows environments where HMR doesn't work in webpack projects.
+
+## [0.27.0] - 2024-01-14
+
+### Added
+
+- Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+  `postcss`.
+- Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+- Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+  this run.
+- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define the aspect
+  ratio of an element.
+
+```js
+export default defineConfig({
+  // ...
+  theme: {
+    extend: {
+      // add aspect ratio tokens
+      tokens: {
+        aspectRatios: {
+          '1:1': '1',
+          '16:9': '16/9',
+        },
+      },
+    },
+  },
+})
+```
+
+Here's what the default aspect ratio tokens in the base preset looks like:
+
+```json
+{
+  "square": { "value": "1 / 1" },
+  "landscape": { "value": "4 / 3" },
+  "portrait": { "value": "3 / 4" },
+  "wide": { "value": "16 / 9" },
+  "ultrawide": { "value": "18 / 5" },
+  "golden": { "value": "1.618 / 1" }
+}
+```
+
+**Breaking Change**
+
+The built-in token values has been removed from the `aspectRatio` utility to the `@pandacss/preset-base` as a token.
+
+For most users, this change should be a drop-in replacement. However, if you used a custom preset in the config, you
+might need to update it to include the new aspect ratio tokens.
+
+### Changed
+
+- Enhance `splitCssProps` typings
+- Improve the performance of the runtime transform functions by caching their results (css, cva, sva, recipe/slot
+  recipe, patterns)
+
+> See detailed breakdown of the performance improvements
+> [here](https://github.com/chakra-ui/panda/pull/1986#issuecomment-1887459483) based on the React Profiler.
+
+- Change the config dependencies (files that are transitively imported) detection a bit more permissive to make it work
+  by default in more scenarios.
+
+**Context**
+
+This helps when you're in a monorepo and you have a workspace package for your preset, and you want to see the HMR
+reflecting changes in your app.
+
+Currently, we only traverse files with the `.ts` extension, this change makes it traverse all files ending with `.ts`,
+meaning that it will also traverse `.d.ts`, `.d.mts`, `.mts`, etc.
+
+**Example**
+
+```ts
+// apps/storybook/panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+import preset from '@acme/preset'
+
+export default defineConfig({
+  // ...
+})
+```
+
+This would not work before, but now it does.
+
+```jsonc
+{
+  "name": "@acme/preset",
+  "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs"
+}
+```
+
+**Notes** This would have been fine before that change.
+
+```jsonc
+// packages/preset/package.json
+{
+  "name": "@acme/preset",
+  "types": "./src/index.ts", // this was fine
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+    // ...
+  }
+}
+```
+
+## [0.26.2] - 2024-01-10
+
+### Fixed
+
+Fix `placeholder` condition in `preset-base`
+
 ## [0.26.1] - 2024-01-09
 
 ### Fixed

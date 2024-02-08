@@ -1,4 +1,4 @@
-import { mapObject } from '../helpers.mjs';
+import { getPatternStyles, patternFns } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const centerConfig = {
@@ -12,7 +12,10 @@ transform(props) {
   };
 }}
 
-export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
+export const getCenterStyle = (styles = {}) => {
+  const _styles = getPatternStyles(centerConfig, styles)
+  return centerConfig.transform(_styles, patternFns)
+}
 
 export const center = (styles) => css(getCenterStyle(styles))
 center.raw = getCenterStyle

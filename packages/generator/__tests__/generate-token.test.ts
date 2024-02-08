@@ -1,10 +1,9 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
-import { createHooks } from 'hookable'
+import type { LoadConfigResult } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
 import { fixtureDefaults } from '@pandacss/fixture'
 
-const tokenCss = (config: ConfigResultWithHooks) => {
+const tokenCss = (config: LoadConfigResult) => {
   const ctx = new Generator(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('tokens', sheet)
@@ -16,6 +15,12 @@ describe('generator', () => {
     expect(tokenCss(fixtureDefaults)).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(html) {
+          --aspect-ratios-square: 1 / 1;
+          --aspect-ratios-landscape: 4 / 3;
+          --aspect-ratios-portrait: 3 / 4;
+          --aspect-ratios-wide: 16 / 9;
+          --aspect-ratios-ultrawide: 18 / 5;
+          --aspect-ratios-golden: 1.618 / 1;
           --borders-none: none;
           --easings-default: cubic-bezier(0.4, 0, 0.2, 1);
           --easings-linear: linear;
@@ -52,9 +57,9 @@ describe('generator', () => {
           --line-heights-normal: 1.5;
           --line-heights-relaxed: 1.625;
           --line-heights-loose: 2;
-          --fonts-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", Roboto, \\"Helvetica Neue\\", Arial, \\"Noto Sans\\", sans-serif, \\"Apple Color Emoji\\", \\"Segoe UI Emoji\\", \\"Segoe UI Symbol\\", \\"Noto Color Emoji\\";
-          --fonts-serif: ui-serif, Georgia, Cambria, \\"Times New Roman\\", Times, serif;
-          --fonts-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \\"Liberation Mono\\", \\"Courier New\\", monospace;
+          --fonts-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+          --fonts-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+          --fonts-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
           --letter-spacings-tighter: -0.05em;
           --letter-spacings-tight: -0.025em;
           --letter-spacings-normal: 0em;
@@ -368,10 +373,10 @@ describe('generator', () => {
           --spacing-72: 18rem;
           --spacing-80: 20rem;
           --spacing-96: 24rem;
-          --spacing-0\\\\.5: 0.125rem;
-          --spacing-1\\\\.5: 0.375rem;
-          --spacing-2\\\\.5: 0.625rem;
-          --spacing-3\\\\.5: 0.875rem;
+          --spacing-0\\.5: 0.125rem;
+          --spacing-1\\.5: 0.375rem;
+          --spacing-2\\.5: 0.625rem;
+          --spacing-3\\.5: 0.875rem;
           --sizes-0: 0rem;
           --sizes-1: 0.25rem;
           --sizes-2: 0.5rem;
@@ -402,10 +407,10 @@ describe('generator', () => {
           --sizes-72: 18rem;
           --sizes-80: 20rem;
           --sizes-96: 24rem;
-          --sizes-0\\\\.5: 0.125rem;
-          --sizes-1\\\\.5: 0.375rem;
-          --sizes-2\\\\.5: 0.625rem;
-          --sizes-3\\\\.5: 0.875rem;
+          --sizes-0\\.5: 0.125rem;
+          --sizes-1\\.5: 0.375rem;
+          --sizes-2\\.5: 0.625rem;
+          --sizes-3\\.5: 0.875rem;
           --sizes-xs: 20rem;
           --sizes-sm: 24rem;
           --sizes-md: 28rem;
@@ -443,7 +448,7 @@ describe('generator', () => {
           --colors-button-thick: #fff;
           --colors-button-card-body: #fff;
           --colors-button-card-heading: #fff;
-          --spacing-gutter: var(--spacing-4)
+          --spacing-gutter: var(--spacing-4);
       }
 
         :where([data-theme=dark], .dark) {
@@ -482,7 +487,8 @@ describe('generator', () => {
           :where([data-theme=dark], .dark) {
             --colors-complex: var(--colors-red-700)
                   }
-              }}"
+              }
+      }"
     `)
   })
 
@@ -543,7 +549,7 @@ describe('generator', () => {
           outdir: '',
         },
         path: '',
-        hooks: createHooks(),
+        hooks: {},
         serialized: '',
         deserialize: () => ({} as any),
       })
@@ -559,8 +565,9 @@ describe('generator', () => {
             --colors-deep-test-pool-tall: $dfdf;
             --colors-deep-test-pool-palette-50: #f9f9f9;
             --colors-deep-test-pool-palette-100: #f2f2f2;
-            --colors-deep-test-pool-palette-200: #ebebeb
-        }}"
+            --colors-deep-test-pool-palette-200: #ebebeb;
+        }
+        }"
       `)
     })
 
@@ -588,7 +595,7 @@ describe('generator', () => {
           outdir: '',
         },
         path: '',
-        hooks: createHooks(),
+        hooks: {},
         serialized: '',
         deserialize: () => ({} as any),
       })
@@ -596,12 +603,13 @@ describe('generator', () => {
       expect(css).toMatchInlineSnapshot(`
         "@layer tokens {
           :where(:root, :host) {
-            --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)
+            --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
 
           .dark {
             --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
-        }}"
+        }
+        }"
       `)
     })
   })
@@ -650,7 +658,7 @@ describe('generator', () => {
         outdir: '',
       },
       path: '',
-      hooks: createHooks(),
+      hooks: {},
       serialized: '',
       deserialize: () => ({} as any),
     })
@@ -663,8 +671,9 @@ describe('generator', () => {
           --borders-red: 1px solid var(--colors-red);
           --borders-semantic-red: var(--borders-danger);
           --colors-danger: var(--colors-red);
-          --borders-danger: var(--borders-red)
-      }}"
+          --borders-danger: var(--borders-red);
+      }
+      }"
     `)
   })
 
@@ -729,7 +738,7 @@ describe('generator', () => {
         outdir: '',
       },
       path: '',
-      hooks: createHooks(),
+      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`
@@ -738,12 +747,13 @@ describe('generator', () => {
           --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
           --colors-test-pink: var(--colors-pink-900);
           --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
-          --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink)
+          --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink);
       }
 
         .dark {
           --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink)
-      }}"
+      }
+      }"
     `)
   })
 })

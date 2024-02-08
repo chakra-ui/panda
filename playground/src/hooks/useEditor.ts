@@ -137,7 +137,6 @@ export function useEditor(props: PandaEditorProps) {
           editor.trigger('editor', 'editor.action.formatDocument', undefined)
         })
         editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, () => {
-          // const wrapState = editor.getOption(monaco.editor.EditorOption.wordWrap)
           onToggleWrap()
         })
       }

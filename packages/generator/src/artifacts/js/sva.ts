@@ -4,7 +4,7 @@ import { outdent } from 'outdent'
 export function generateSvaFn(ctx: Context) {
   return {
     js: outdent`
-    ${ctx.file.import('getSlotRecipes, splitProps', '../helpers')}
+    ${ctx.file.import('getSlotRecipes, memo, splitProps', '../helpers')}
     ${ctx.file.import('cva', './cva')}
 
     export function sva(config) {
@@ -31,7 +31,7 @@ export function generateSvaFn(ctx: Context) {
         Object.entries(variants).map(([key, value]) => [key, Object.keys(value)])
       );
 
-      return Object.assign(svaFn, {
+      return Object.assign(memo(svaFn), {
         __cva__: false,
         raw,
         variantMap,

@@ -1,5 +1,5 @@
 import isGlob from 'is-glob'
-import { resolve } from 'pathe'
+import { normalize, resolve } from 'path'
 import type { Message } from 'postcss'
 import { parseGlob } from './parse-glob'
 
@@ -12,13 +12,13 @@ export function parseDependency(fileOrGlob: string) {
 
   if (isGlob(fileOrGlob)) {
     const { base, glob } = parseGlob(fileOrGlob)
-    message = { type: 'dir-dependency', dir: resolve(base), glob }
+    message = { type: 'dir-dependency', dir: normalize(resolve(base)), glob }
   } else {
-    message = { type: 'dependency', file: resolve(fileOrGlob) }
+    message = { type: 'dependency', file: normalize(resolve(fileOrGlob)) }
   }
 
   if (message.type === 'dir-dependency' && process.env.ROLLUP_WATCH === 'true') {
-    message = { type: 'dependency', file: resolve(message.dir) }
+    message = { type: 'dependency', file: normalize(resolve(message.dir)) }
   }
 
   return message

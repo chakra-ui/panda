@@ -32,9 +32,9 @@ interface TokenReferences {
   [key: string]: Token
 }
 
-type TokenExtensions = ExtensionData & {
+export type TokenExtensions<T = {}> = ExtensionData & {
   [key: string]: any
-}
+} & T
 
 interface ExtendedToken {
   name: string
@@ -233,6 +233,8 @@ const TOKEN_TYPES = {
   gradients: 'gradient',
   easings: 'cubicBezier',
   borders: 'border',
+  borderWidths: 'borderWidth',
   components: 'cti',
   assets: 'asset',
+  aspectRatios: 'aspectRatio',
 }

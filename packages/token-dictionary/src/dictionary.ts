@@ -1,23 +1,29 @@
-import { compact, isString, mapObject, memo, walkObject } from '@pandacss/shared'
+import {
+  compact,
+  cssVar,
+  isString,
+  mapObject,
+  memo,
+  walkObject,
+  type CssVar,
+  type CssVarOptions,
+} from '@pandacss/shared'
 import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { isCompositeTokenValue } from './is-composite'
-import { Token } from './token'
-import { assertTokenFormat, getReferences, isToken } from './utils'
+import { middlewares } from './middleware'
+import { Token, type TokenExtensions } from './token'
+import { transforms, type ColorPaletteExtensions } from './transform'
+import { assertTokenFormat, expandReferences, getReferences, isToken, mapToJson } from './utils'
 
 type EnforcePhase = 'pre' | 'post'
-
-interface Options {
-  prefix?: string
-  hash?: boolean
-}
 
 export interface TokenTransformer {
   name: string
   enforce?: EnforcePhase
   type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
-  transform: (token: Token, options: Options) => any
+  transform: (token: Token, dictionary: TokenDictionary) => any
 }
 
 export interface TokenDictionaryOptions {
@@ -30,7 +36,7 @@ export interface TokenDictionaryOptions {
 
 export interface TokenMiddleware {
   enforce?: EnforcePhase
-  transform: (dict: TokenDictionary, options: Options) => void
+  transform: (dict: TokenDictionary) => void
 }
 
 function expandBreakpoints(breakpoints?: Record<string, string>) {
@@ -48,15 +54,37 @@ function filterDefault(path: string[]) {
 
 export class TokenDictionary {
   allTokens: Token[] = []
-  prefix: string | undefined
-  hash: boolean | undefined
+  byName: Map<string, Token> = new Map()
 
-  get allNames() {
-    return Array.from(new Set(this.allTokens.map((token) => token.name)))
+  constructor(private options: TokenDictionaryOptions) {}
+
+  init() {
+    this.registerTokens()
+    this.registerTransform(...transforms)
+    this.registerMiddleware(...middlewares)
+    this.build()
+
+    return this
   }
 
-  constructor(options: TokenDictionaryOptions) {
-    const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash } = options
+  get prefix() {
+    return this.options.prefix
+  }
+
+  get hash() {
+    return this.options.hash
+  }
+
+  getByName = (path: string) => {
+    return this.byName.get(path)
+  }
+
+  formatTokenName = (path: string[]): string => path.join('.')
+
+  formatCssVar = (path: string[], options: CssVarOptions): CssVar => cssVar(path.join('-'), options)
+
+  registerTokens() {
+    const { tokens = {}, semanticTokens = {}, breakpoints } = this.options
 
     const breakpointTokens = expandBreakpoints(breakpoints)
 
@@ -69,9 +97,6 @@ export class TokenDictionary {
       },
     })
 
-    this.prefix = prefix
-    this.hash = hash
-
     walkObject(
       computedTokens,
       (token, path) => {
@@ -79,16 +104,16 @@ export class TokenDictionary {
         assertTokenFormat(token)
 
         const category = path[0]
-        const name = path.join('.')
+        const name = this.formatTokenName(path)
 
         const node = new Token({ ...token, name, path })
 
         node.setExtensions({
           category,
-          prop: path.slice(1).join('.'),
+          prop: this.formatTokenName(path.slice(1)),
         })
 
-        this.allTokens.push(node)
+        this.registerToken(node)
       },
       { stop: isToken },
     )
@@ -100,7 +125,7 @@ export class TokenDictionary {
         assertTokenFormat(token)
 
         const category = path[0]
-        const name = path.join('.')
+        const name = this.formatTokenName(path)
 
         const normalizedToken =
           isString(token.value) || isCompositeTokenValue(token.value) ? { value: { base: token.value } } : token
@@ -117,20 +142,29 @@ export class TokenDictionary {
         node.setExtensions({
           category,
           conditions: value,
-          prop: path.slice(1).join('.'),
+          prop: this.formatTokenName(path.slice(1)),
         })
 
-        this.allTokens.push(node)
+        this.registerToken(node)
       },
       { stop: isToken },
     )
+
+    return this
   }
 
-  getByName = memo((name: string) => {
-    for (const token of this.allTokens) {
-      if (token.name === name) return token
+  registerToken = (token: Token, transformPhase?: 'pre' | 'post') => {
+    this.allTokens.push(token)
+    this.byName.set(token.name, token)
+
+    if (transformPhase) {
+      this.transforms.forEach((transform) => {
+        if (transform.enforce === transformPhase) {
+          this.execTransformOnToken(transform, token)
+        }
+      })
     }
-  })
+  }
 
   private transforms: Map<string, TokenTransformer> = new Map()
 
@@ -148,38 +182,42 @@ export class TokenDictionary {
     if (!transform) return
 
     this.allTokens.forEach((token) => {
-      if (token.extensions.hasReference) return
-      if (typeof transform.match === 'function' && !transform.match(token)) return
-
-      const exec = (v: Token) => transform.transform(v, { prefix: this.prefix, hash: this.hash })
-
-      const transformed = exec(token)
-
-      match(transform)
-        .with({ type: 'extensions' }, () => {
-          token.setExtensions(transformed)
-        })
-        .with({ type: 'value' }, () => {
-          token.value = transformed
-
-          if (token.isComposite) {
-            token.originalValue = transformed
-          }
-
-          if (token.extensions.conditions) {
-            const conditions = token.extensions.conditions
-            const transformedConditions = walkObject(conditions, (value) => exec({ value } as Token), {
-              stop: isCompositeTokenValue,
-            })
-            token.setExtensions({
-              conditions: transformedConditions,
-            })
-          }
-        })
-        .otherwise(() => {
-          token[transform.type!] = transformed
-        })
+      this.execTransformOnToken(transform, token)
     })
+  }
+
+  execTransformOnToken(transform: TokenTransformer, token: Token) {
+    if (token.extensions.hasReference) return
+    if (typeof transform.match === 'function' && !transform.match(token)) return
+
+    const exec = (v: Token) => transform.transform(v, this)
+
+    const transformed = exec(token)
+
+    match(transform)
+      .with({ type: 'extensions' }, () => {
+        token.setExtensions(transformed)
+      })
+      .with({ type: 'value' }, () => {
+        token.value = transformed
+
+        if (token.isComposite) {
+          token.originalValue = transformed
+        }
+
+        if (token.extensions.conditions) {
+          const conditions = token.extensions.conditions
+          const transformedConditions = walkObject(conditions, (value) => exec({ value } as Token), {
+            stop: isCompositeTokenValue,
+          })
+          token.setExtensions({
+            conditions: transformedConditions,
+          })
+        }
+      })
+      .otherwise(() => {
+        token[transform.type!] = transformed
+      })
   }
 
   transformTokens(enforce: EnforcePhase) {
@@ -204,7 +242,7 @@ export class TokenDictionary {
   applyMiddlewares(enforce: EnforcePhase) {
     this.middlewares.forEach((middleware) => {
       if (middleware.enforce === enforce) {
-        middleware.transform(this, { prefix: this.prefix, hash: this.hash })
+        middleware.transform(this)
       }
     })
   }
@@ -242,23 +280,37 @@ export class TokenDictionary {
   }
 
   addConditionalTokens() {
-    const tokens: Token[] = []
     this.allTokens.forEach((token) => {
-      tokens.push(token)
       const conditionalTokens = token.getConditionTokens()
       if (conditionalTokens && conditionalTokens.length > 0) {
-        tokens.push(...conditionalTokens)
+        conditionalTokens.forEach((token) => {
+          this.registerToken(token)
+        })
       }
     })
-    this.allTokens = tokens
+
     return this
   }
 
-  expandReferences() {
+  expandTokenReferences() {
     this.allTokens.forEach((token) => {
       token.expandReferences()
     })
     return this
+  }
+
+  /**
+   * Expand token references to their CSS variable
+   */
+  expandReferenceInValue(value: string) {
+    return expandReferences(value, (path) => this.view.get(path))
+  }
+
+  /**
+   * Resolve token references to their actual raw value
+   */
+  resolveReference(value: string) {
+    return expandReferences(value, (key) => this.getByName(key)?.value)
   }
 
   build() {
@@ -266,12 +318,146 @@ export class TokenDictionary {
     this.transformTokens('pre')
     this.addConditionalTokens()
     this.addReferences()
-    this.expandReferences()
+    this.expandTokenReferences()
     this.applyMiddlewares('post')
     this.transformTokens('post')
+    this.setComputedView()
+
+    return this
   }
 
   get isEmpty() {
     return this.allTokens.length === 0
   }
+
+  view!: ReturnType<TokenDictionaryView['getTokensView']>
+
+  setComputedView() {
+    this.view = new TokenDictionaryView(this).getTokensView()
+    return this
+  }
+}
+
+/* -----------------------------------------------------------------------------
+ * Computed token views
+ * -----------------------------------------------------------------------------*/
+
+export class TokenDictionaryView {
+  constructor(private dictionary: TokenDictionary) {
+    this.dictionary = dictionary
+  }
+
+  getTokensView() {
+    const conditionMap = new Map<string, Set<Token>>()
+    const categoryMap = new Map<string, Map<string, Token>>()
+    const colorPalettes = new Map<string, Map<string, string>>()
+    const valuesByCategory = new Map<string, Map<string, string>>()
+    const flatValues = new Map<string, string>()
+    const vars = new Map<string, Map<string, string>>()
+
+    this.dictionary.allTokens.forEach((token) => {
+      this.processCondition(token, conditionMap)
+      this.processColorPalette(token, colorPalettes, this.dictionary.byName)
+      this.processCategory(token, categoryMap)
+      this.processValue(token, valuesByCategory, flatValues)
+      this.processVars(token, vars)
+    })
+
+    const json = mapToJson(valuesByCategory) as Record<string, Record<string, string>>
+    return {
+      conditionMap,
+      categoryMap,
+      colorPalettes,
+      vars,
+      values: flatValues,
+      json,
+      get: memo((path: string, fallback?: string | number) => {
+        return (flatValues.get(path) ?? fallback) as string
+      }),
+      getCategoryValues: memo((category: string) => {
+        const result = json[category]
+        if (result != null) {
+          return result
+        }
+      }),
+    }
+  }
+
+  private processCondition(token: Token, group: Map<string, Set<Token>>) {
+    const { condition } = token.extensions
+    if (!condition) return
+
+    if (!group.has(condition)) group.set(condition, new Set())
+    group.get(condition)!.add(token)
+  }
+
+  private processColorPalette(token: Token, group: Map<string, Map<string, string>>, byName: Map<string, Token>) {
+    const { colorPalette, colorPaletteRoots, isVirtual } = token.extensions as TokenExtensions<ColorPaletteExtensions>
+    if (!colorPalette || isVirtual) return
+
+    colorPaletteRoots.forEach((colorPaletteRoot) => {
+      const formated = this.dictionary.formatTokenName(colorPaletteRoot)
+      if (!group.has(formated)) {
+        group.set(formated, new Map())
+      }
+      const virtualPath = replaceRootWithColorPalette([...token.path], [...colorPaletteRoot])
+      const virtualName = this.dictionary.formatTokenName(virtualPath)
+      const virtualToken = byName.get(virtualName)
+      if (!virtualToken) return
+
+      const virtualVar = virtualToken.extensions.var
+      group.get(formated)!.set(virtualVar, token.extensions.varRef)
+    })
+  }
+
+  private processCategory(token: Token, group: Map<string, Map<string, Token>>) {
+    const { category, prop } = token.extensions
+    if (!category) return
+
+    if (!group.has(category)) group.set(category, new Map())
+    group.get(category)!.set(prop, token)
+  }
+
+  private processValue(token: Token, byCategory: Map<string, Map<string, string>>, flat: Map<string, string>) {
+    const { category, prop, varRef, isNegative } = token.extensions
+    if (!category) return
+
+    if (!byCategory.has(category)) byCategory.set(category, new Map())
+    const value = isNegative ? (token.isConditional ? token.originalValue : token.value) : varRef
+    byCategory.get(category)!.set(prop, value)
+    flat.set([category, prop].join('.'), value)
+  }
+
+  private processVars(token: Token, group: Map<string, Map<string, string>>) {
+    const { condition, isNegative, isVirtual, var: varName } = token.extensions
+    if (isNegative || isVirtual || !condition) return
+
+    if (!group.has(condition)) group.set(condition, new Map())
+    group.get(condition)!.set(varName, token.value)
+  }
+}
+
+/**
+ * Replaces the colorPaletteRoot in token.path with 'colorPalette'
+ * @example replaceRootWithColorPalette(['colors', 'button', 'red', '500'], ['button', 'red'])
+ * // => ["colors", "colorPalette", "500"]
+ */
+function replaceRootWithColorPalette(path: string[], colorPaletteRoot: string[]) {
+  // Find the starting index of colorPaletteRoot in path
+  const startIndex = path.findIndex((element, index) =>
+    colorPaletteRoot.every((rootElement, rootIndex) => path[index + rootIndex] === rootElement),
+  )
+
+  if (startIndex === -1) {
+    // colorPaletteRoot not found in path, return original path
+    return path
+  }
+
+  // Remove the elements of colorPaletteRoot from path
+  path.splice(startIndex, colorPaletteRoot.length)
+
+  // Insert 'colorPalette' at the startIndex
+  path.splice(startIndex, 0, 'colorPalette')
+
+  return path
 }

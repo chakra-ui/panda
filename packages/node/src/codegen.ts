@@ -11,11 +11,14 @@ const limit = pLimit(20)
 export async function codegen(ctx: PandaContext, ids?: ArtifactId[]) {
   if (ctx.config.clean) ctx.output.empty()
 
+  const artifacts = ctx.getArtifacts(ids)
+  await ctx.hooks['codegen:prepare']?.({ changed: ids, artifacts })
+
   // limit concurrency since we might output a lot of files
-  const promises = ctx.getArtifacts(ids).map((artifact) => limit(() => ctx.output.write(artifact)))
+  const promises = artifacts.map((artifact) => limit(() => ctx.output.write(artifact)))
   await Promise.allSettled(promises)
 
-  void ctx.hooks.callHook('generator:done')
+  await ctx.hooks['codegen:done']?.({ changed: ids })
 
   return {
     box: createBox({

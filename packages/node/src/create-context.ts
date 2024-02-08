@@ -2,7 +2,8 @@ import type { StyleEncoder, Stylesheet } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { ParserResult, Project } from '@pandacss/parser'
-import type { ConfigResultWithHooks, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
+import { uniq } from '@pandacss/shared'
+import type { LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
 import { debounce } from 'perfect-debounce'
 import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
@@ -13,8 +14,9 @@ export class PandaContext extends Generator {
   project: Project
   output: OutputEngine
   diff: DiffEngine
+  explicitDeps: string[] = []
 
-  constructor(conf: ConfigResultWithHooks) {
+  constructor(conf: LoadConfigResult) {
     super(conf)
 
     const config = conf.config
@@ -39,6 +41,13 @@ export class PandaContext extends Generator {
 
     this.output = new OutputEngine(this)
     this.diff = new DiffEngine(this)
+    this.explicitDeps = this.getExplicitDependencies()
+  }
+
+  private getExplicitDependencies = () => {
+    const { cwd, dependencies } = this.config
+    if (!dependencies) return []
+    return this.runtime.fs.glob({ include: dependencies, cwd })
   }
 
   getFiles = () => {
@@ -91,6 +100,7 @@ export class PandaContext extends Generator {
   }
 
   writeCss = (sheet?: Stylesheet) => {
+    logger.info('css', this.runtime.path.join(...this.paths.root, 'styles.css'))
     return this.output.write({
       id: 'styles.css',
       dir: this.paths.root,
@@ -98,12 +108,12 @@ export class PandaContext extends Generator {
     })
   }
 
-  watchConfig = (cb: () => void | Promise<void>, opts?: Omit<WatchOptions, 'include'>) => {
+  watchConfig = (cb: (file: string) => void | Promise<void>, opts?: Omit<WatchOptions, 'include'>) => {
     const { cwd, poll, exclude } = opts ?? {}
     logger.info('ctx:watch', this.messages.configWatch())
 
     const watcher = this.runtime.fs.watch({
-      include: this.conf.dependencies,
+      include: uniq([...this.explicitDeps, ...this.conf.dependencies]),
       exclude,
       cwd,
       poll,
@@ -111,18 +121,22 @@ export class PandaContext extends Generator {
 
     watcher.on(
       'change',
-      debounce(async () => {
+      debounce(async (file) => {
         logger.info('ctx:change', 'config changed, rebuilding...')
-        await cb()
+        await cb(file)
       }),
     )
   }
 
-  watchFiles = (cb: (event: WatcherEventType, file: string) => void | Promise<void>) => {
+  watchFiles = (
+    cb: (event: WatcherEventType, file: string) => void | Promise<void>,
+    opts?: Omit<WatchOptions, 'include' | 'exclude' | 'poll' | 'cwd' | 'logger'>,
+  ) => {
     const { include, exclude, poll, cwd } = this.config
     logger.info('ctx:watch', this.messages.watch())
 
     const watcher = this.runtime.fs.watch({
+      ...opts,
       include,
       exclude,
       poll,

@@ -10,7 +10,7 @@ describe('Utility', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({
         breakpoints: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px' },
-      }),
+      }).init(),
       config: {
         hideFrom: {
           className: 'hide',
@@ -97,9 +97,301 @@ describe('Utility', () => {
     `)
   })
 
+  test('with values fn', () => {
+    const utility = new Utility({
+      tokens: new TokenDictionary({ tokens: { spacing: tokens?.spacing } }).init(),
+      config: {
+        margin: {
+          className: 'm',
+          values: (tokens) => {
+            return tokens('spacing')
+          },
+        },
+      },
+    })
+
+    expect(utility.styles).toMatchInlineSnapshot(`
+      Map {
+        "(margin = 0)" => {
+          "margin": "var(--spacing-0)",
+        },
+        "(margin = 1)" => {
+          "margin": "var(--spacing-1)",
+        },
+        "(margin = 2)" => {
+          "margin": "var(--spacing-2)",
+        },
+        "(margin = 3)" => {
+          "margin": "var(--spacing-3)",
+        },
+        "(margin = 4)" => {
+          "margin": "var(--spacing-4)",
+        },
+        "(margin = 5)" => {
+          "margin": "var(--spacing-5)",
+        },
+        "(margin = 6)" => {
+          "margin": "var(--spacing-6)",
+        },
+        "(margin = 7)" => {
+          "margin": "var(--spacing-7)",
+        },
+        "(margin = 8)" => {
+          "margin": "var(--spacing-8)",
+        },
+        "(margin = 9)" => {
+          "margin": "var(--spacing-9)",
+        },
+        "(margin = 10)" => {
+          "margin": "var(--spacing-10)",
+        },
+        "(margin = 11)" => {
+          "margin": "var(--spacing-11)",
+        },
+        "(margin = 12)" => {
+          "margin": "var(--spacing-12)",
+        },
+        "(margin = 14)" => {
+          "margin": "var(--spacing-14)",
+        },
+        "(margin = 16)" => {
+          "margin": "var(--spacing-16)",
+        },
+        "(margin = 20)" => {
+          "margin": "var(--spacing-20)",
+        },
+        "(margin = 24)" => {
+          "margin": "var(--spacing-24)",
+        },
+        "(margin = 28)" => {
+          "margin": "var(--spacing-28)",
+        },
+        "(margin = 32)" => {
+          "margin": "var(--spacing-32)",
+        },
+        "(margin = 36)" => {
+          "margin": "var(--spacing-36)",
+        },
+        "(margin = 40)" => {
+          "margin": "var(--spacing-40)",
+        },
+        "(margin = 44)" => {
+          "margin": "var(--spacing-44)",
+        },
+        "(margin = 48)" => {
+          "margin": "var(--spacing-48)",
+        },
+        "(margin = 52)" => {
+          "margin": "var(--spacing-52)",
+        },
+        "(margin = 56)" => {
+          "margin": "var(--spacing-56)",
+        },
+        "(margin = 60)" => {
+          "margin": "var(--spacing-60)",
+        },
+        "(margin = 64)" => {
+          "margin": "var(--spacing-64)",
+        },
+        "(margin = 72)" => {
+          "margin": "var(--spacing-72)",
+        },
+        "(margin = 80)" => {
+          "margin": "var(--spacing-80)",
+        },
+        "(margin = 96)" => {
+          "margin": "var(--spacing-96)",
+        },
+        "(margin = 0.5)" => {
+          "margin": "var(--spacing-0\\.5)",
+        },
+        "(margin = 1.5)" => {
+          "margin": "var(--spacing-1\\.5)",
+        },
+        "(margin = 2.5)" => {
+          "margin": "var(--spacing-2\\.5)",
+        },
+        "(margin = 3.5)" => {
+          "margin": "var(--spacing-3\\.5)",
+        },
+        "(margin = -1)" => {
+          "margin": "calc(var(--spacing-1) * -1)",
+        },
+        "(margin = -2)" => {
+          "margin": "calc(var(--spacing-2) * -1)",
+        },
+        "(margin = -3)" => {
+          "margin": "calc(var(--spacing-3) * -1)",
+        },
+        "(margin = -4)" => {
+          "margin": "calc(var(--spacing-4) * -1)",
+        },
+        "(margin = -5)" => {
+          "margin": "calc(var(--spacing-5) * -1)",
+        },
+        "(margin = -6)" => {
+          "margin": "calc(var(--spacing-6) * -1)",
+        },
+        "(margin = -7)" => {
+          "margin": "calc(var(--spacing-7) * -1)",
+        },
+        "(margin = -8)" => {
+          "margin": "calc(var(--spacing-8) * -1)",
+        },
+        "(margin = -9)" => {
+          "margin": "calc(var(--spacing-9) * -1)",
+        },
+        "(margin = -10)" => {
+          "margin": "calc(var(--spacing-10) * -1)",
+        },
+        "(margin = -11)" => {
+          "margin": "calc(var(--spacing-11) * -1)",
+        },
+        "(margin = -12)" => {
+          "margin": "calc(var(--spacing-12) * -1)",
+        },
+        "(margin = -14)" => {
+          "margin": "calc(var(--spacing-14) * -1)",
+        },
+        "(margin = -16)" => {
+          "margin": "calc(var(--spacing-16) * -1)",
+        },
+        "(margin = -20)" => {
+          "margin": "calc(var(--spacing-20) * -1)",
+        },
+        "(margin = -24)" => {
+          "margin": "calc(var(--spacing-24) * -1)",
+        },
+        "(margin = -28)" => {
+          "margin": "calc(var(--spacing-28) * -1)",
+        },
+        "(margin = -32)" => {
+          "margin": "calc(var(--spacing-32) * -1)",
+        },
+        "(margin = -36)" => {
+          "margin": "calc(var(--spacing-36) * -1)",
+        },
+        "(margin = -40)" => {
+          "margin": "calc(var(--spacing-40) * -1)",
+        },
+        "(margin = -44)" => {
+          "margin": "calc(var(--spacing-44) * -1)",
+        },
+        "(margin = -48)" => {
+          "margin": "calc(var(--spacing-48) * -1)",
+        },
+        "(margin = -52)" => {
+          "margin": "calc(var(--spacing-52) * -1)",
+        },
+        "(margin = -56)" => {
+          "margin": "calc(var(--spacing-56) * -1)",
+        },
+        "(margin = -60)" => {
+          "margin": "calc(var(--spacing-60) * -1)",
+        },
+        "(margin = -64)" => {
+          "margin": "calc(var(--spacing-64) * -1)",
+        },
+        "(margin = -72)" => {
+          "margin": "calc(var(--spacing-72) * -1)",
+        },
+        "(margin = -80)" => {
+          "margin": "calc(var(--spacing-80) * -1)",
+        },
+        "(margin = -96)" => {
+          "margin": "calc(var(--spacing-96) * -1)",
+        },
+        "(margin = -0.5)" => {
+          "margin": "calc(var(--spacing-0\\.5) * -1)",
+        },
+        "(margin = -1.5)" => {
+          "margin": "calc(var(--spacing-1\\.5) * -1)",
+        },
+        "(margin = -2.5)" => {
+          "margin": "calc(var(--spacing-2\\.5) * -1)",
+        },
+        "(margin = -3.5)" => {
+          "margin": "calc(var(--spacing-3\\.5) * -1)",
+        },
+      }
+    `)
+
+    expect(utility.classNames).toMatchInlineSnapshot(`
+      Map {
+        "(margin = 0)" => "m_0",
+        "(margin = 1)" => "m_1",
+        "(margin = 2)" => "m_2",
+        "(margin = 3)" => "m_3",
+        "(margin = 4)" => "m_4",
+        "(margin = 5)" => "m_5",
+        "(margin = 6)" => "m_6",
+        "(margin = 7)" => "m_7",
+        "(margin = 8)" => "m_8",
+        "(margin = 9)" => "m_9",
+        "(margin = 10)" => "m_10",
+        "(margin = 11)" => "m_11",
+        "(margin = 12)" => "m_12",
+        "(margin = 14)" => "m_14",
+        "(margin = 16)" => "m_16",
+        "(margin = 20)" => "m_20",
+        "(margin = 24)" => "m_24",
+        "(margin = 28)" => "m_28",
+        "(margin = 32)" => "m_32",
+        "(margin = 36)" => "m_36",
+        "(margin = 40)" => "m_40",
+        "(margin = 44)" => "m_44",
+        "(margin = 48)" => "m_48",
+        "(margin = 52)" => "m_52",
+        "(margin = 56)" => "m_56",
+        "(margin = 60)" => "m_60",
+        "(margin = 64)" => "m_64",
+        "(margin = 72)" => "m_72",
+        "(margin = 80)" => "m_80",
+        "(margin = 96)" => "m_96",
+        "(margin = 0.5)" => "m_0.5",
+        "(margin = 1.5)" => "m_1.5",
+        "(margin = 2.5)" => "m_2.5",
+        "(margin = 3.5)" => "m_3.5",
+        "(margin = -1)" => "m_-1",
+        "(margin = -2)" => "m_-2",
+        "(margin = -3)" => "m_-3",
+        "(margin = -4)" => "m_-4",
+        "(margin = -5)" => "m_-5",
+        "(margin = -6)" => "m_-6",
+        "(margin = -7)" => "m_-7",
+        "(margin = -8)" => "m_-8",
+        "(margin = -9)" => "m_-9",
+        "(margin = -10)" => "m_-10",
+        "(margin = -11)" => "m_-11",
+        "(margin = -12)" => "m_-12",
+        "(margin = -14)" => "m_-14",
+        "(margin = -16)" => "m_-16",
+        "(margin = -20)" => "m_-20",
+        "(margin = -24)" => "m_-24",
+        "(margin = -28)" => "m_-28",
+        "(margin = -32)" => "m_-32",
+        "(margin = -36)" => "m_-36",
+        "(margin = -40)" => "m_-40",
+        "(margin = -44)" => "m_-44",
+        "(margin = -48)" => "m_-48",
+        "(margin = -52)" => "m_-52",
+        "(margin = -56)" => "m_-56",
+        "(margin = -60)" => "m_-60",
+        "(margin = -64)" => "m_-64",
+        "(margin = -72)" => "m_-72",
+        "(margin = -80)" => "m_-80",
+        "(margin = -96)" => "m_-96",
+        "(margin = -0.5)" => "m_-0.5",
+        "(margin = -1.5)" => "m_-1.5",
+        "(margin = -2.5)" => "m_-2.5",
+        "(margin = -3.5)" => "m_-3.5",
+      }
+    `)
+  })
+
   test('should prime cache for faster lookup', () => {
     const utility = new Utility({
-      tokens: new TokenDictionary({ tokens, semanticTokens }),
+      tokens: new TokenDictionary({ tokens, semanticTokens }).init(),
       config: {
         backgroundColor: {
           className: 'bg',
@@ -135,14 +427,14 @@ describe('Utility', () => {
     expect(utility.types).toMatchInlineSnapshot(`
       Map {
         "backgroundColor" => Set {
-          "type:Tokens[\\"colors\\"]",
+          "type:Tokens["colors"]",
         },
         "display" => Set {
           "flex",
           "inline-flex",
         },
         "margin" => Set {
-          "type:Tokens[\\"spacing\\"]",
+          "type:Tokens["spacing"]",
         },
         "marginX" => Set {
           "sm",
@@ -181,9 +473,9 @@ describe('Utility', () => {
           "primary",
           "secondary",
           "complex",
-          "surface",
           "button",
           "button.card",
+          "surface",
         },
       }
     `)
@@ -442,10 +734,10 @@ describe('Utility', () => {
         "(backgroundColor = primary)" => "bg_primary",
         "(backgroundColor = secondary)" => "bg_secondary",
         "(backgroundColor = complex)" => "bg_complex",
-        "(backgroundColor = surface)" => "bg_surface",
         "(backgroundColor = button.thick)" => "bg_button.thick",
         "(backgroundColor = button.card.body)" => "bg_button.card.body",
         "(backgroundColor = button.card.heading)" => "bg_button.card.heading",
+        "(backgroundColor = surface)" => "bg_surface",
         "(backgroundColor = colorPalette)" => "bg_colorPalette",
         "(backgroundColor = colorPalette.50)" => "bg_colorPalette.50",
         "(backgroundColor = colorPalette.100)" => "bg_colorPalette.100",
@@ -576,9 +868,9 @@ describe('Utility', () => {
         "(colorPalette = primary)" => "color-palette_primary",
         "(colorPalette = secondary)" => "color-palette_secondary",
         "(colorPalette = complex)" => "color-palette_complex",
-        "(colorPalette = surface)" => "color-palette_surface",
         "(colorPalette = button)" => "color-palette_button",
         "(colorPalette = button.card)" => "color-palette_button.card",
+        "(colorPalette = surface)" => "color-palette_surface",
       }
     `)
 
@@ -1340,9 +1632,6 @@ describe('Utility', () => {
         "(backgroundColor = complex)" => {
           "backgroundColor": "var(--colors-complex)",
         },
-        "(backgroundColor = surface)" => {
-          "backgroundColor": "var(--colors-surface)",
-        },
         "(backgroundColor = button.thick)" => {
           "backgroundColor": "var(--colors-button-thick)",
         },
@@ -1351,6 +1640,9 @@ describe('Utility', () => {
         },
         "(backgroundColor = button.card.heading)" => {
           "backgroundColor": "var(--colors-button-card-heading)",
+        },
+        "(backgroundColor = surface)" => {
+          "backgroundColor": "var(--colors-surface)",
         },
         "(backgroundColor = colorPalette)" => {
           "backgroundColor": "var(--colors-color-palette)",
@@ -1524,16 +1816,16 @@ describe('Utility', () => {
           "margin": "var(--spacing-96)",
         },
         "(margin = 0.5)" => {
-          "margin": "var(--spacing-0\\\\.5)",
+          "margin": "var(--spacing-0\\.5)",
         },
         "(margin = 1.5)" => {
-          "margin": "var(--spacing-1\\\\.5)",
+          "margin": "var(--spacing-1\\.5)",
         },
         "(margin = 2.5)" => {
-          "margin": "var(--spacing-2\\\\.5)",
+          "margin": "var(--spacing-2\\.5)",
         },
         "(margin = 3.5)" => {
-          "margin": "var(--spacing-3\\\\.5)",
+          "margin": "var(--spacing-3\\.5)",
         },
         "(margin = gutter)" => {
           "margin": "var(--spacing-gutter)",
@@ -1626,16 +1918,16 @@ describe('Utility', () => {
           "margin": "calc(var(--spacing-96) * -1)",
         },
         "(margin = -0.5)" => {
-          "margin": "calc(var(--spacing-0\\\\.5) * -1)",
+          "margin": "calc(var(--spacing-0\\.5) * -1)",
         },
         "(margin = -1.5)" => {
-          "margin": "calc(var(--spacing-1\\\\.5) * -1)",
+          "margin": "calc(var(--spacing-1\\.5) * -1)",
         },
         "(margin = -2.5)" => {
-          "margin": "calc(var(--spacing-2\\\\.5) * -1)",
+          "margin": "calc(var(--spacing-2\\.5) * -1)",
         },
         "(margin = -3.5)" => {
-          "margin": "calc(var(--spacing-3\\\\.5) * -1)",
+          "margin": "calc(var(--spacing-3\\.5) * -1)",
         },
         "(margin = -gutter)" => {
           "margin": "calc(var(--spacing-gutter) * -1)",
@@ -1969,9 +2261,6 @@ describe('Utility', () => {
         "(colorPalette = complex)" => {
           "--colors-color-palette": "var(--colors-complex)",
         },
-        "(colorPalette = surface)" => {
-          "--colors-color-palette": "var(--colors-surface)",
-        },
         "(colorPalette = button)" => {
           "--colors-color-palette-card-body": "var(--colors-button-card-body)",
           "--colors-color-palette-card-heading": "var(--colors-button-card-heading)",
@@ -1980,6 +2269,9 @@ describe('Utility', () => {
         "(colorPalette = button.card)" => {
           "--colors-color-palette-body": "var(--colors-button-card-body)",
           "--colors-color-palette-heading": "var(--colors-button-card-heading)",
+        },
+        "(colorPalette = surface)" => {
+          "--colors-color-palette": "var(--colors-surface)",
         },
       }
     `)
@@ -1999,7 +2291,7 @@ describe('Utility', () => {
   test('should resolve arbitrary property', () => {
     const values = { auto: 'auto', sm: '20px', md: '40px' }
     const utility = new Utility({
-      tokens: new TokenDictionary({ tokens, semanticTokens }),
+      tokens: new TokenDictionary({ tokens, semanticTokens }).init(),
       config: {
         marginLeft: {
           className: 'ml',
@@ -2359,9 +2651,6 @@ describe('Utility', () => {
         "(colorPalette = complex)" => {
           "--colors-color-palette": "var(--colors-complex)",
         },
-        "(colorPalette = surface)" => {
-          "--colors-color-palette": "var(--colors-surface)",
-        },
         "(colorPalette = button)" => {
           "--colors-color-palette-card-body": "var(--colors-button-card-body)",
           "--colors-color-palette-card-heading": "var(--colors-button-card-heading)",
@@ -2370,6 +2659,9 @@ describe('Utility', () => {
         "(colorPalette = button.card)" => {
           "--colors-color-palette-body": "var(--colors-button-card-body)",
           "--colors-color-palette-heading": "var(--colors-button-card-heading)",
+        },
+        "(colorPalette = surface)" => {
+          "--colors-color-palette": "var(--colors-surface)",
         },
       }
     `)
@@ -2414,9 +2706,9 @@ describe('Utility', () => {
         "(colorPalette = primary)" => "color-palette_primary",
         "(colorPalette = secondary)" => "color-palette_secondary",
         "(colorPalette = complex)" => "color-palette_complex",
-        "(colorPalette = surface)" => "color-palette_surface",
         "(colorPalette = button)" => "color-palette_button",
         "(colorPalette = button.card)" => "color-palette_button.card",
+        "(colorPalette = surface)" => "color-palette_surface",
       }
     `)
 
@@ -2449,7 +2741,7 @@ describe('Utility', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({
         tokens: { colors: { someColor: { value: '#aabbcc' } } },
-      }),
+      }).init(),
       config: {
         backgroundColor: {
           shorthand: 'bgColor',

@@ -116,7 +116,7 @@ export interface Conditions {
 	"_inRange": string
 	/** `&:out-of-range` */
 	"_outOfRange": string
-	/** `&:is(:placeholder, [data-placeholder])` */
+	/** `&::placeholder, &[data-placeholder]` */
 	"_placeholder": string
 	/** `&:is(:placeholder-shown, [data-placeholder-shown])` */
 	"_placeholderShown": string
@@ -228,6 +228,30 @@ export interface Conditions {
 	"lgTo2xl": string
 	/** `@media screen and (min-width: 80em) and (max-width: 95.9975em)` */
 	"xlTo2xl": string
+	/** `@container  (min-width: 20em)` */
+	"@/xs": string
+	/** `@container  (min-width: 24em)` */
+	"@/sm": string
+	/** `@container  (min-width: 28em)` */
+	"@/md": string
+	/** `@container  (min-width: 32em)` */
+	"@/lg": string
+	/** `@container  (min-width: 36em)` */
+	"@/xl": string
+	/** `@container  (min-width: 42em)` */
+	"@/2xl": string
+	/** `@container  (min-width: 48em)` */
+	"@/3xl": string
+	/** `@container  (min-width: 56em)` */
+	"@/4xl": string
+	/** `@container  (min-width: 64em)` */
+	"@/5xl": string
+	/** `@container  (min-width: 72em)` */
+	"@/6xl": string
+	/** `@container  (min-width: 80em)` */
+	"@/7xl": string
+	/** `@container  (min-width: 90em)` */
+	"@/8xl": string
 	/** The base (=no conditions) styles to apply  */
 	"base": string
 }

@@ -1,23 +1,20 @@
-import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import { PandaError } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import { bundleNRequire } from 'bundle-n-require'
 import { findConfig } from './find-config'
-import type { ConfigFileOptions } from './types'
+import type { BundleConfigResult, ConfigFileOptions } from './types'
 
-export interface BundleConfigResult<T = Config> {
-  config: T
-  dependencies: string[]
-  path: string
-}
-
-export async function bundle<T = Config>(filepath: string, cwd: string) {
-  const { mod: config, dependencies } = await bundleNRequire(filepath, {
+export async function bundle<T extends Config = Config>(filepath: string, cwd: string) {
+  const { mod, dependencies } = await bundleNRequire(filepath, {
     cwd,
     interopDefault: true,
   })
+
+  const config = (mod?.default ?? mod) as T
+
   return {
-    config: (config?.default ?? config) as T,
+    config,
     dependencies,
   }
 }
@@ -27,20 +24,16 @@ export async function bundleConfig(options: ConfigFileOptions): Promise<BundleCo
 
   const filePath = findConfig({ cwd, file })
 
-  if (!filePath) {
-    throw new ConfigNotFoundError()
-  }
-
   logger.debug('config:path', filePath)
 
   const result = await bundle(filePath, cwd)
 
-  // TODO: Validate config shape
   if (typeof result.config !== 'object') {
-    throw new ConfigError(`💥 Config must export or return an object.`)
+    throw new PandaError('CONFIG_ERROR', `💥 Config must export or return an object.`)
   }
 
   result.config.outdir ??= 'styled-system'
+  result.config.validation ??= 'warn'
 
   return {
     ...result,

@@ -426,6 +426,8 @@ is the equivalent of:
 }
 ```
 
+Check out the [Component Library](/docs/guides/component-library) guide for more information on how to use the `importMap` option.
+
 ### include
 
 **Type**: `string[]`
@@ -451,6 +453,23 @@ List of files glob to ignore.
 ```json
 {
   "exclude": []
+}
+```
+
+### dependencies
+
+**Type**: `string[]`
+
+**Default**: `[]`
+
+Explicit list of config related files that should trigger a context reload on change.
+
+> We automatically track the config file and (transitive) files imported by the config file as much as possible, but
+> sometimes we might miss some. You can use this option as a workaround for those edge cases.
+
+```json
+{
+  "dependencies": ["path/to/files/**.ts"]
 }
 ```
 
@@ -860,6 +879,28 @@ The log level for the built-in logger.
 }
 ```
 
+### validation
+
+**Type**: `'none' | 'warn' | 'error'`
+
+**Default**: `warn`
+
+The validation strictness to use when validating the config.
+
+- When set to 'none', no validation will be performed.
+- When set to 'warn', warnings will be logged when validation fails.
+- When set to 'error', errors will be thrown when validation fails.
+
+```json
+{
+  "validation": "error"
+}
 ```
 
-```
+## Other options
+
+### Hooks
+
+**Type**: `PandaHooks`
+
+Panda provides a set of callbacks that you can hook into for more advanced use cases. Check the [Hooks](/docs/concepts/hooks) docs for more information.

@@ -4,7 +4,7 @@ import type { CssProperties } from './system-types';
 import type { Tokens } from '../tokens/index';
 
 interface PropertyValueTypes {
-	aspectRatio: "auto" | "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";
+	aspectRatio: Tokens["aspectRatios"];
 	zIndex: Tokens["zIndex"];
 	top: Tokens["spacing"];
 	left: Tokens["spacing"];
@@ -209,7 +209,8 @@ interface PropertyValueTypes {
 	strokeWidth: Tokens["borderWidths"];
 	srOnly: boolean;
 	debug: boolean;
-	colorPalette: "current" | "black" | "white" | "transparent" | "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "stone" | "zinc" | "gray" | "slate" | "neutral" | "text" | "bg" | "card" | "border";
+	containerName: Tokens["containerNames"] | CssProperties["containerName"];
+	colorPalette: "current" | "black" | "white" | "transparent" | "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "stone" | "zinc" | "gray" | "slate" | "neutral" | "text" | "bg" | "card" | "border" | "accent";
 	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl";
 }
 
@@ -383,12 +384,15 @@ type StrictableProps =
   | 'visibility'
   | 'wordBreak'
   | 'writingMode'
+
 type WithEscapeHatch<T> = T | `[${string}]`
+
 type FilterVagueString<Key, Value> = Value extends boolean
   ? Value
   : Key extends StrictableProps
     ? Value extends `${infer _}` ? Value : never
     : Value
+
 type PropOrCondition<Key, Value> = ConditionalValue<Value | (string & {})>
 
 type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes

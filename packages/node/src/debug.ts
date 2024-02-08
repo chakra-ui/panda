@@ -1,5 +1,5 @@
 import { colors, logger } from '@pandacss/logger'
-import { parse } from 'pathe'
+import { parse } from 'path'
 import type { PandaContext } from './create-context'
 
 export interface DebugOptions {
@@ -41,7 +41,7 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
     if (!result || result.isEmpty() || encoder.isEmpty()) return
 
     const styles = ctx.decoder.clone().collect(encoder)
-    const css = ctx.getParserCss(styles, file)
+    const css = ctx.getParserCss(styles)
     if (!css) return
 
     if (options.dry) {

@@ -11,6 +11,7 @@ test('should add negative spacing', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addNegativeTokens).build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
@@ -72,6 +73,7 @@ test('with semantic spacing', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addNegativeTokens)
   dictionary.build()
 
@@ -112,26 +114,6 @@ test('with semantic spacing', () => {
         ],
         "type": "dimension",
         "value": "40px",
-      },
-      Token {
-        "description": undefined,
-        "extensions": {
-          "category": "spacing",
-          "condition": "@small",
-          "conditions": {
-            "@small": "0.5rem",
-            "base": "{spacing.sm}",
-          },
-          "prop": "gutter",
-        },
-        "name": "spacing.gutter",
-        "originalValue": "{spacing.sm}",
-        "path": [
-          "spacing",
-          "gutter",
-        ],
-        "type": "dimension",
-        "value": "0.5rem",
       },
       Token {
         "description": undefined,
@@ -188,6 +170,26 @@ test('with semantic spacing', () => {
             "@small": "0.5rem",
             "base": "{spacing.sm}",
           },
+          "prop": "gutter",
+        },
+        "name": "spacing.gutter",
+        "originalValue": "{spacing.sm}",
+        "path": [
+          "spacing",
+          "gutter",
+        ],
+        "type": "dimension",
+        "value": "0.5rem",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "@small",
+          "conditions": {
+            "@small": "0.5rem",
+            "base": "{spacing.sm}",
+          },
           "isNegative": true,
           "originalPath": [
             "spacing",
@@ -222,6 +224,7 @@ test('with semantic spacing', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.registerMiddleware(addNegativeTokens)
   dictionary.build()
 
@@ -262,26 +265,6 @@ test('with semantic spacing', () => {
         ],
         "type": "dimension",
         "value": "40px",
-      },
-      Token {
-        "description": undefined,
-        "extensions": {
-          "category": "spacing",
-          "condition": "sm",
-          "conditions": {
-            "base": "{spacing.sm}",
-            "sm": "50px",
-          },
-          "prop": "nested",
-        },
-        "name": "spacing.nested",
-        "originalValue": "{spacing.sm}",
-        "path": [
-          "spacing",
-          "nested",
-        ],
-        "type": "dimension",
-        "value": "50px",
       },
       Token {
         "description": undefined,
@@ -328,6 +311,26 @@ test('with semantic spacing', () => {
         ],
         "type": "dimension",
         "value": "calc(var(--spacing-nested) * -1)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "sm",
+          "conditions": {
+            "base": "{spacing.sm}",
+            "sm": "50px",
+          },
+          "prop": "nested",
+        },
+        "name": "spacing.nested",
+        "originalValue": "{spacing.sm}",
+        "path": [
+          "spacing",
+          "nested",
+        ],
+        "type": "dimension",
+        "value": "50px",
       },
       Token {
         "description": undefined,

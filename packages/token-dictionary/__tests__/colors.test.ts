@@ -11,6 +11,8 @@ test('tokens / basic', () => {
     },
   })
 
+  dictionary.registerTokens()
+
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
@@ -63,6 +65,7 @@ test('semantic tokens / nested', () => {
     },
   })
 
+  dictionary.registerTokens()
   dictionary.build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
@@ -110,6 +113,26 @@ test('semantic tokens / nested', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "condition": "base",
+          "conditions": {
+            "base": "red",
+          },
+          "prop": "button.primary",
+        },
+        "name": "colors.button.primary",
+        "originalValue": "red",
+        "path": [
+          "colors",
+          "button",
+          "primary",
+        ],
+        "type": "color",
+        "value": "red",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
           "condition": "@light",
           "conditions": {
             "@dark": "#222",
@@ -145,26 +168,6 @@ test('semantic tokens / nested', () => {
         ],
         "type": "color",
         "value": "#222",
-      },
-      Token {
-        "description": undefined,
-        "extensions": {
-          "category": "colors",
-          "condition": "base",
-          "conditions": {
-            "base": "red",
-          },
-          "prop": "button.primary",
-        },
-        "name": "colors.button.primary",
-        "originalValue": "red",
-        "path": [
-          "colors",
-          "button",
-          "primary",
-        ],
-        "type": "color",
-        "value": "red",
       },
     ]
   `)

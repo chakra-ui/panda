@@ -1,16 +1,21 @@
-import { findConfig, type DiffConfigResult, getConfigDependencies } from '@pandacss/config'
+import { findConfig, getConfigDependencies } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
-import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import { PandaError, uniq } from '@pandacss/shared'
+import type { DiffConfigResult } from '@pandacss/types'
 import { existsSync, statSync } from 'fs'
+import { normalize, resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { codegen } from './codegen'
 import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import { parseDependency } from './parse-dependency'
-import { resolve } from 'pathe'
 
 const fileModifiedMap = new Map<string, number>()
+interface FileChanges {
+  changes: Map<string, FileMeta>
+  hasFilesChanged: boolean
+}
 
 export class Builder {
   /**
@@ -19,19 +24,10 @@ export class Builder {
   context: PandaContext | undefined
 
   private hasEmitted = false
-  private filesMeta: { changes: Map<string, FileMeta>; hasFilesChanged: boolean } | undefined
+  private filesMeta: FileChanges | undefined
+  private explicitDepsMeta: FileChanges | undefined
   private affecteds: DiffConfigResult | undefined
   private configDependencies: Set<string> = new Set()
-
-  getConfigPath = (cwd?: string) => {
-    const configPath = findConfig({ cwd })
-
-    if (!configPath) {
-      throw new ConfigNotFoundError()
-    }
-
-    return configPath
-  }
 
   setConfigDependencies(options: SetupContextOptions) {
     const tsOptions = this.context?.conf.tsOptions ?? { baseUrl: undefined, pathMappings: [] }
@@ -44,7 +40,11 @@ export class Builder {
       ...foundDeps,
       ...(this.context?.conf.dependencies ?? []).map((file) => resolve(cwd, file)),
     ])
-    this.configDependencies = configDeps
+
+    configDeps.forEach((file) => {
+      this.configDependencies.add(file)
+    })
+
     logger.debug('builder', 'Config dependencies')
     logger.debug('builder', configDeps)
   }
@@ -52,7 +52,7 @@ export class Builder {
   setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
-    const configPath = options.configPath ?? this.getConfigPath(options.cwd)
+    const configPath = options.configPath ?? findConfig({ cwd: options.cwd })
     this.setConfigDependencies({ configPath, cwd: options.cwd })
 
     if (!this.context) {
@@ -62,15 +62,27 @@ export class Builder {
     const ctx = this.getContextOrThrow()
 
     this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-      this.context = new PandaContext({ ...conf, hooks: ctx.hooks })
+      this.context = new PandaContext(conf)
     })
 
     logger.debug('builder', this.affecteds)
 
+    // explicit config dependencies change
+    this.explicitDepsMeta = this.checkFilesChanged(this.context.explicitDeps)
+
+    if (this.explicitDepsMeta.hasFilesChanged) {
+      this.explicitDepsMeta.changes.forEach((meta, file) => {
+        fileModifiedMap.set(file, meta.mtime)
+      })
+
+      logger.debug('builder', '⚙️ Explicit config dependencies changed')
+      this.affecteds.hasConfigChanged = true
+    }
+
     // config change
     if (this.affecteds.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
-      await ctx.hooks.callHook('config:change', ctx.config)
+      await ctx.hooks['config:change']?.({ config: ctx.config, changes: this.affecteds })
       return
     }
 
@@ -96,14 +108,20 @@ export class Builder {
     const { configPath, cwd } = options
 
     const ctx = await loadConfigAndCreateContext({ configPath, cwd })
-    this.context = ctx
 
+    const configDeps = uniq([...ctx.conf.dependencies, ...ctx.explicitDeps])
+
+    configDeps.forEach((file) => {
+      this.configDependencies.add(resolve(cwd || ctx.conf.config.cwd, file))
+    })
+
+    this.context = ctx
     return ctx
   }
 
   getContextOrThrow = (): PandaContext => {
     if (!this.context) {
-      throw new Error('context not loaded')
+      throw new PandaError('NO_CONTEXT', 'context not loaded')
     }
     return this.context
   }
@@ -174,13 +192,17 @@ export class Builder {
 
   write = (root: Root) => {
     const ctx = this.getContextOrThrow()
-
     const sheet = ctx.createSheet()
     ctx.appendBaselineCss(sheet)
-    ctx.appendParserCss(sheet)
     const css = ctx.getCss(sheet)
 
-    root.append(optimizeCss(css))
+    root.append(
+      optimizeCss(css, {
+        browserslist: ctx.config.browserslist,
+        minify: ctx.config.minify,
+        lightningcss: ctx.config.lightningcss,
+      }),
+    )
   }
 
   registerDependency = (fn: (dep: Message) => void) => {
@@ -188,13 +210,11 @@ export class Builder {
 
     for (const fileOrGlob of ctx.config.include) {
       const dependency = parseDependency(fileOrGlob)
-      if (dependency) {
-        fn(dependency)
-      }
+      if (dependency) fn(dependency)
     }
 
     for (const file of this.configDependencies) {
-      fn({ type: 'dependency', file: ctx.runtime.path.resolve(file) })
+      fn({ type: 'dependency', file: normalize(resolve(file)) })
     }
   }
 }

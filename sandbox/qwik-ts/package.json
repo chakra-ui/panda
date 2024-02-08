@@ -25,9 +25,9 @@
     "@builder.io/qwik-city": "^1.2.6",
     "@pandacss/dev": "workspace:*",
     "eslint-plugin-qwik": "^1.2.6",
-    "typescript": "5.2.2",
+    "typescript": "5.3.3",
     "undici": "5.22.1",
-    "vite": "5.0.7",
-    "vite-tsconfig-paths": "4.2.3"
+    "vite": "5.0.12",
+    "vite-tsconfig-paths": "4.3.1"
   }
 }

@@ -1,3 +1,5 @@
+import { traverse } from '@pandacss/shared'
+
 const isObject = (v: any) => Object.prototype.toString.call(v) === '[object Object]'
 export const isFunction = (v: any) => typeof v === 'function'
 
@@ -33,4 +35,21 @@ export function assign(target: any, ...sources: any[]) {
   }
 
   return target
+}
+
+const omit = <T, K extends keyof T | (string & {})>(obj: T, paths: K[]): Omit<T, K> => {
+  const result = { ...obj }
+
+  traverse(obj, ({ path, parent, key }) => {
+    if (paths.includes(path as K)) {
+      delete (parent as any)[key]
+    }
+  })
+
+  return result as Omit<T, K>
+}
+
+export const utils = {
+  omit,
+  traverse,
 }

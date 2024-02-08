@@ -49,6 +49,8 @@ export const recipes: Record<string, RecipeConfig> = {
       justifyContent: 'center',
       _hover: {
         backgroundColor: 'red.200',
+        fontSize: '3xl',
+        color: 'white',
       },
     },
     variants: {
@@ -74,6 +76,7 @@ export const recipes: Record<string, RecipeConfig> = {
           '&[data-disabled]': {
             backgroundColor: 'gray',
             color: 'black',
+            fontSize: '2xl',
           },
         },
         outline: {

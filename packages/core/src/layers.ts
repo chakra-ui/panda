@@ -1,3 +1,4 @@
+import { PandaError } from '@pandacss/shared'
 import type { CascadeLayer, CascadeLayers } from '@pandacss/types'
 import postcss, { AtRule, Root } from 'postcss'
 
@@ -66,7 +67,7 @@ export class Layers {
       }
 
       default:
-        throw new Error(`Unknown layer: ${layer}`)
+        throw new PandaError('INVALID_LAYER', `Unknown layer: ${layer}`)
     }
   }
 

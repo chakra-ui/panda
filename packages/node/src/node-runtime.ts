@@ -3,7 +3,7 @@ import type { Runtime } from '@pandacss/types'
 import chokidar from 'chokidar'
 import glob from 'fast-glob'
 import fsExtra from 'fs-extra'
-import { dirname, extname, isAbsolute, join, relative, sep, resolve } from 'pathe'
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'path'
 
 export const nodeRuntime: Runtime = {
   cwd() {

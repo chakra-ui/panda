@@ -48,7 +48,7 @@ describe('style decoder', () => {
     expect(result).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "border_2px_solid_\\\\{colors\\\\.red\\\\.300\\\\}",
+          "className": "border_2px_solid_\\{colors\\.red\\.300\\}",
           "conditions": undefined,
           "entry": {
             "prop": "border",
@@ -57,7 +57,7 @@ describe('style decoder', () => {
           "hash": "border]___[value:2px solid {colors.red.300}",
           "layer": undefined,
           "result": {
-            ".border_2px_solid_\\\\{colors\\\\.red\\\\.300\\\\}": {
+            ".border_2px_solid_\\{colors\\.red\\.300\\}": {
               "border": "2px solid var(--colors-red-300)",
             },
           },
@@ -90,7 +90,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "md\\\\:text_red",
+          "className": "md\\:text_red",
           "conditions": [
             {
               "name": "breakpoint",
@@ -109,7 +109,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:red]___[cond:md",
           "layer": undefined,
           "result": {
-            ".md\\\\:text_red": {
+            ".md\\:text_red": {
               "@media screen and (min-width: 48em)": {
                 "color": "red",
               },
@@ -172,13 +172,13 @@ describe('style decoder', () => {
           "hash": "color]___[value:red !important",
           "layer": undefined,
           "result": {
-            ".text_red\\\\!": {
+            ".text_red\\!": {
               "color": "red !important",
             },
           },
         },
         {
-          "className": "border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\)",
+          "className": "border_1px_solid_token\\(colors\\.red\\.100\\)",
           "conditions": undefined,
           "entry": {
             "prop": "border",
@@ -187,13 +187,13 @@ describe('style decoder', () => {
           "hash": "border]___[value:1px solid token(colors.red.100)",
           "layer": undefined,
           "result": {
-            ".border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\)": {
-              "border": "1px solid token(colors.red.100)",
+            ".border_1px_solid_token\\(colors\\.red\\.100\\)": {
+              "border": "1px solid var(--colors-red-100)",
             },
           },
         },
         {
-          "className": "bg_blue\\\\.300",
+          "className": "bg_blue\\.300",
           "conditions": undefined,
           "entry": {
             "prop": "background",
@@ -202,13 +202,13 @@ describe('style decoder', () => {
           "hash": "background]___[value:blue.300",
           "layer": undefined,
           "result": {
-            ".bg_blue\\\\.300": {
+            ".bg_blue\\.300": {
               "background": "var(--colors-blue-300)",
             },
           },
         },
         {
-          "className": "textStyle_headline\\\\.h1",
+          "className": "textStyle_headline\\.h1",
           "conditions": undefined,
           "entry": {
             "prop": "textStyle",
@@ -217,7 +217,7 @@ describe('style decoder', () => {
           "hash": "textStyle]___[value:headline.h1",
           "layer": "compositions",
           "result": {
-            ".textStyle_headline\\\\.h1": {
+            ".textStyle_headline\\.h1": {
               "fontSize": "2rem",
               "fontWeight": "var(--font-weights-bold)",
             },
@@ -239,60 +239,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\\\:w_2",
-          "conditions": [
-            {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40em)",
-              "type": "at-rule",
-              "value": "sm",
-            },
-          ],
-          "entry": {
-            "cond": "sm",
-            "prop": "width",
-            "value": 2,
-          },
-          "hash": "width]___[value:2]___[cond:sm",
-          "layer": undefined,
-          "result": {
-            ".sm\\\\:w_2": {
-              "@media screen and (min-width: 40em)": {
-                "width": "var(--sizes-2)",
-              },
-            },
-          },
-        },
-        {
-          "className": "xl\\\\:w_3",
-          "conditions": [
-            {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 80em)",
-              "raw": "xl",
-              "rawValue": "@media screen and (min-width: 80em)",
-              "type": "at-rule",
-              "value": "xl",
-            },
-          ],
-          "entry": {
-            "cond": "xl",
-            "prop": "width",
-            "value": 3,
-          },
-          "hash": "width]___[value:3]___[cond:xl",
-          "layer": undefined,
-          "result": {
-            ".xl\\\\:w_3": {
-              "@media screen and (min-width: 80em)": {
-                "width": "var(--sizes-3)",
-              },
-            },
-          },
-        },
-        {
           "className": "fs_xs",
           "conditions": undefined,
           "entry": {
@@ -308,34 +254,55 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\\\:fs_sm",
+          "className": "dark\\:fs_2xl",
           "conditions": [
             {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40em)",
-              "type": "at-rule",
-              "value": "sm",
+              "raw": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
+              "type": "combinator-nesting",
+              "value": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
             },
           ],
           "entry": {
-            "cond": "sm",
+            "cond": "_dark",
             "prop": "fontSize",
-            "value": "sm",
+            "value": "2xl",
           },
-          "hash": "fontSize]___[value:sm]___[cond:sm",
+          "hash": "fontSize]___[value:2xl]___[cond:_dark",
           "layer": undefined,
           "result": {
-            ".sm\\\\:fs_sm": {
-              "@media screen and (min-width: 40em)": {
-                "fontSize": "var(--font-sizes-sm)",
+            ".dark\\:fs_2xl": {
+              "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]": {
+                "fontSize": "var(--font-sizes-2xl)",
               },
             },
           },
         },
         {
-          "className": "hover\\\\:fs_md",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green",
+          "conditions": [
+            {
+              "raw": "&[data-attr='test']",
+              "type": "self-nesting",
+              "value": "&[data-attr='test']",
+            },
+          ],
+          "entry": {
+            "cond": "&[data-attr='test']",
+            "prop": "color",
+            "value": "green",
+          },
+          "hash": "color]___[value:green]___[cond:&[data-attr='test']",
+          "layer": undefined,
+          "result": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green": {
+              "&[data-attr='test']": {
+                "color": "green",
+              },
+            },
+          },
+        },
+        {
+          "className": "hover\\:fs_md",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -351,7 +318,7 @@ describe('style decoder', () => {
           "hash": "fontSize]___[value:md]___[cond:_hover",
           "layer": undefined,
           "result": {
-            ".hover\\\\:fs_md": {
+            ".hover\\:fs_md": {
               "&:is(:hover, [data-hover])": {
                 "fontSize": "var(--font-sizes-md)",
               },
@@ -359,41 +326,38 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\\\:md\\\\:fs_lg",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple",
           "conditions": [
             {
-              "raw": "&:is(:hover, [data-hover])",
+              "raw": "&[data-attr='test']",
               "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
+              "value": "&[data-attr='test']",
             },
             {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 48em)",
-              "raw": "md",
-              "rawValue": "@media screen and (min-width: 48em)",
-              "type": "at-rule",
-              "value": "md",
+              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
+              "type": "self-nesting",
+              "value": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
             },
           ],
           "entry": {
-            "cond": "_hover<___>md",
-            "prop": "fontSize",
-            "value": "lg",
+            "cond": "&[data-attr='test']<___>_expanded",
+            "prop": "color",
+            "value": "purple",
           },
-          "hash": "fontSize]___[value:lg]___[cond:_hover<___>md",
+          "hash": "color]___[value:purple]___[cond:&[data-attr='test']<___>_expanded",
           "layer": undefined,
           "result": {
-            ".hover\\\\:md\\\\:fs_lg": {
-              "&:is(:hover, [data-hover])": {
-                "@media screen and (min-width: 48em)": {
-                  "fontSize": "var(--font-sizes-lg)",
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple": {
+              "&[data-attr='test']": {
+                "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
+                  "color": "purple",
                 },
               },
             },
           },
         },
         {
-          "className": "hover\\\\:focus\\\\:fs_xl",
+          "className": "hover\\:focus\\:fs_xl",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -414,7 +378,7 @@ describe('style decoder', () => {
           "hash": "fontSize]___[value:xl]___[cond:_hover<___>_focus",
           "layer": undefined,
           "result": {
-            ".hover\\\\:focus\\\\:fs_xl": {
+            ".hover\\:focus\\:fs_xl": {
               "&:is(:hover, [data-hover])": {
                 "&:is(:focus, [data-focus])": {
                   "fontSize": "var(--font-sizes-xl)",
@@ -424,31 +388,144 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "dark\\\\:fs_2xl",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan",
           "conditions": [
             {
-              "raw": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
-              "type": "combinator-nesting",
-              "value": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
+              "raw": "&[data-attr='test']",
+              "type": "self-nesting",
+              "value": "&[data-attr='test']",
+            },
+            {
+              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
+              "type": "self-nesting",
+              "value": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
+            },
+            {
+              "raw": ".target &",
+              "type": "parent-nesting",
+              "value": ".target &",
             },
           ],
           "entry": {
-            "cond": "_dark",
-            "prop": "fontSize",
-            "value": "2xl",
+            "cond": "&[data-attr='test']<___>_expanded<___>.target &",
+            "prop": "color",
+            "value": "cyan",
           },
-          "hash": "fontSize]___[value:2xl]___[cond:_dark",
+          "hash": "color]___[value:cyan]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
           "layer": undefined,
           "result": {
-            ".dark\\\\:fs_2xl": {
-              "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]": {
-                "fontSize": "var(--font-sizes-2xl)",
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan": {
+              "&[data-attr='test']": {
+                "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
+                  ".target &": {
+                    "color": "cyan",
+                  },
+                },
               },
             },
           },
         },
         {
-          "className": "sm\\\\:text_yellow",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange",
+          "conditions": [
+            {
+              "raw": "&[data-attr='test']",
+              "type": "self-nesting",
+              "value": "&[data-attr='test']",
+            },
+            {
+              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
+              "type": "self-nesting",
+              "value": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
+            },
+            {
+              "raw": "&:is([open], [data-open], [data-state="open"])",
+              "type": "self-nesting",
+              "value": "&:is([open], [data-open], [data-state="open"])",
+            },
+            {
+              "raw": ".target &",
+              "type": "parent-nesting",
+              "value": ".target &",
+            },
+          ],
+          "entry": {
+            "cond": "&[data-attr='test']<___>_expanded<___>.target &<___>_open",
+            "prop": "color",
+            "value": "orange",
+          },
+          "hash": "color]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>_open",
+          "layer": undefined,
+          "result": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange": {
+              "&[data-attr='test']": {
+                "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
+                  "&:is([open], [data-open], [data-state="open"])": {
+                    ".target &": {
+                      "color": "orange",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          "className": "sm\\:w_2",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 40em)",
+              "raw": "sm",
+              "rawValue": "@media screen and (min-width: 40em)",
+              "type": "at-rule",
+              "value": "sm",
+            },
+          ],
+          "entry": {
+            "cond": "sm",
+            "prop": "width",
+            "value": 2,
+          },
+          "hash": "width]___[value:2]___[cond:sm",
+          "layer": undefined,
+          "result": {
+            ".sm\\:w_2": {
+              "@media screen and (min-width: 40em)": {
+                "width": "var(--sizes-2)",
+              },
+            },
+          },
+        },
+        {
+          "className": "sm\\:fs_sm",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 40em)",
+              "raw": "sm",
+              "rawValue": "@media screen and (min-width: 40em)",
+              "type": "at-rule",
+              "value": "sm",
+            },
+          ],
+          "entry": {
+            "cond": "sm",
+            "prop": "fontSize",
+            "value": "sm",
+          },
+          "hash": "fontSize]___[value:sm]___[cond:sm",
+          "layer": undefined,
+          "result": {
+            ".sm\\:fs_sm": {
+              "@media screen and (min-width: 40em)": {
+                "fontSize": "var(--font-sizes-sm)",
+              },
+            },
+          },
+        },
+        {
+          "className": "sm\\:text_yellow",
           "conditions": [
             {
               "name": "breakpoint",
@@ -467,7 +544,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:yellow]___[cond:sm",
           "layer": undefined,
           "result": {
-            ".sm\\\\:text_yellow": {
+            ".sm\\:text_yellow": {
               "@media screen and (min-width: 40em)": {
                 "color": "yellow",
               },
@@ -475,7 +552,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\\\:bg_red",
+          "className": "sm\\:bg_red",
           "conditions": [
             {
               "name": "breakpoint",
@@ -494,7 +571,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:red]___[cond:sm",
           "layer": undefined,
           "result": {
-            ".sm\\\\:bg_red": {
+            ".sm\\:bg_red": {
               "@media screen and (min-width: 40em)": {
                 "backgroundColor": "red",
               },
@@ -502,7 +579,34 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\\\:hover\\\\:bg_green",
+          "className": "xl\\:w_3",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 80em)",
+              "raw": "xl",
+              "rawValue": "@media screen and (min-width: 80em)",
+              "type": "at-rule",
+              "value": "xl",
+            },
+          ],
+          "entry": {
+            "cond": "xl",
+            "prop": "width",
+            "value": 3,
+          },
+          "hash": "width]___[value:3]___[cond:xl",
+          "layer": undefined,
+          "result": {
+            ".xl\\:w_3": {
+              "@media screen and (min-width: 80em)": {
+                "width": "var(--sizes-3)",
+              },
+            },
+          },
+        },
+        {
+          "className": "sm\\:hover\\:bg_green",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -526,7 +630,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:green]___[cond:sm<___>_hover",
           "layer": undefined,
           "result": {
-            ".sm\\\\:hover\\\\:bg_green": {
+            ".sm\\:hover\\:bg_green": {
               "&:is(:hover, [data-hover])": {
                 "@media screen and (min-width: 40em)": {
                   "backgroundColor": "green",
@@ -536,62 +640,41 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green",
+          "className": "hover\\:md\\:fs_lg",
           "conditions": [
             {
-              "raw": "&[data-attr='test']",
+              "raw": "&:is(:hover, [data-hover])",
               "type": "self-nesting",
-              "value": "&[data-attr='test']",
+              "value": "&:is(:hover, [data-hover])",
+            },
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 48em)",
+              "raw": "md",
+              "rawValue": "@media screen and (min-width: 48em)",
+              "type": "at-rule",
+              "value": "md",
             },
           ],
           "entry": {
-            "cond": "&[data-attr='test']",
-            "prop": "color",
-            "value": "green",
+            "cond": "_hover<___>md",
+            "prop": "fontSize",
+            "value": "lg",
           },
-          "hash": "color]___[value:green]___[cond:&[data-attr='test']",
+          "hash": "fontSize]___[value:lg]___[cond:_hover<___>md",
           "layer": undefined,
           "result": {
-            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green": {
-              "&[data-attr='test']": {
-                "color": "green",
-              },
-            },
-          },
-        },
-        {
-          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple",
-          "conditions": [
-            {
-              "raw": "&[data-attr='test']",
-              "type": "self-nesting",
-              "value": "&[data-attr='test']",
-            },
-            {
-              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
-              "type": "self-nesting",
-              "value": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
-            },
-          ],
-          "entry": {
-            "cond": "&[data-attr='test']<___>_expanded",
-            "prop": "color",
-            "value": "purple",
-          },
-          "hash": "color]___[value:purple]___[cond:&[data-attr='test']<___>_expanded",
-          "layer": undefined,
-          "result": {
-            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple": {
-              "&[data-attr='test']": {
-                "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])": {
-                  "color": "purple",
+            ".hover\\:md\\:fs_lg": {
+              "&:is(:hover, [data-hover])": {
+                "@media screen and (min-width: 48em)": {
+                  "fontSize": "var(--font-sizes-lg)",
                 },
               },
             },
           },
         },
         {
-          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
           "conditions": [
             {
               "raw": "&[data-attr='test']",
@@ -599,92 +682,9 @@ describe('style decoder', () => {
               "value": "&[data-attr='test']",
             },
             {
-              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
+              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
               "type": "self-nesting",
-              "value": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
-            },
-            {
-              "raw": ".target &",
-              "type": "parent-nesting",
-              "value": ".target &",
-            },
-          ],
-          "entry": {
-            "cond": "&[data-attr='test']<___>_expanded<___>.target &",
-            "prop": "color",
-            "value": "cyan",
-          },
-          "hash": "color]___[value:cyan]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
-          "layer": undefined,
-          "result": {
-            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan": {
-              "&[data-attr='test']": {
-                "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])": {
-                  ".target &": {
-                    "color": "cyan",
-                  },
-                },
-              },
-            },
-          },
-        },
-        {
-          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange",
-          "conditions": [
-            {
-              "raw": "&[data-attr='test']",
-              "type": "self-nesting",
-              "value": "&[data-attr='test']",
-            },
-            {
-              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
-              "type": "self-nesting",
-              "value": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
-            },
-            {
-              "raw": "&:is([open], [data-open], [data-state=\\"open\\"])",
-              "type": "self-nesting",
-              "value": "&:is([open], [data-open], [data-state=\\"open\\"])",
-            },
-            {
-              "raw": ".target &",
-              "type": "parent-nesting",
-              "value": ".target &",
-            },
-          ],
-          "entry": {
-            "cond": "&[data-attr='test']<___>_expanded<___>.target &<___>_open",
-            "prop": "color",
-            "value": "orange",
-          },
-          "hash": "color]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>_open",
-          "layer": undefined,
-          "result": {
-            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:open\\\\:text_orange": {
-              "&[data-attr='test']": {
-                "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])": {
-                  "&:is([open], [data-open], [data-state=\\"open\\"])": {
-                    ".target &": {
-                      "color": "orange",
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        {
-          "className": "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink",
-          "conditions": [
-            {
-              "raw": "&[data-attr='test']",
-              "type": "self-nesting",
-              "value": "&[data-attr='test']",
-            },
-            {
-              "raw": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
-              "type": "self-nesting",
-              "value": "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])",
+              "value": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
             },
             {
               "raw": ".target &",
@@ -708,9 +708,9 @@ describe('style decoder', () => {
           "hash": "color]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>xl",
           "layer": undefined,
           "result": {
-            ".\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:xl\\\\:text_pink": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink": {
               "&[data-attr='test']": {
-                "&:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"])": {
+                "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
                   ".target &": {
                     "@media screen and (min-width: 80em)": {
                       "color": "pink",
@@ -789,18 +789,60 @@ describe('style decoder', () => {
                 "backgroundColor": "var(--colors-red-200)",
               },
             },
+            {
+              "conditions": [
+                {
+                  "raw": "&:is(:hover, [data-hover])",
+                  "type": "self-nesting",
+                  "value": "&:is(:hover, [data-hover])",
+                },
+              ],
+              "entry": {
+                "cond": "_hover",
+                "prop": "fontSize",
+                "recipe": "buttonStyle",
+                "value": "3xl",
+              },
+              "hash": "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+              "result": {
+                "fontSize": "var(--font-sizes-3xl)",
+              },
+            },
+            {
+              "conditions": [
+                {
+                  "raw": "&:is(:hover, [data-hover])",
+                  "type": "self-nesting",
+                  "value": "&:is(:hover, [data-hover])",
+                },
+              ],
+              "entry": {
+                "cond": "_hover",
+                "prop": "color",
+                "recipe": "buttonStyle",
+                "value": "white",
+              },
+              "hash": "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
+              "result": {
+                "color": "var(--colors-white)",
+              },
+            },
           ],
           "hashSet": Set {
             "display]___[value:inline-flex]___[recipe:buttonStyle",
             "alignItems]___[value:center]___[recipe:buttonStyle",
             "justifyContent]___[value:center]___[recipe:buttonStyle",
             "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+            "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+            "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
           },
           "recipe": "buttonStyle",
           "result": {
             ".buttonStyle": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "var(--colors-red-200)",
+                "color": "var(--colors-white)",
+                "fontSize": "var(--font-sizes-3xl)",
               },
               "alignItems": "center",
               "display": "inline-flex",
@@ -833,7 +875,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "md\\\\:buttonStyle--size_md",
+          "className": "md\\:buttonStyle--size_md",
           "conditions": [
             {
               "name": "breakpoint",
@@ -853,7 +895,7 @@ describe('style decoder', () => {
           "hash": "size]___[value:md]___[cond:md]___[recipe:buttonStyle",
           "layer": undefined,
           "result": {
-            ".md\\\\:buttonStyle--size_md": {
+            ".md\\:buttonStyle--size_md": {
               "@media screen and (min-width: 48em)": {
                 "height": "3rem",
                 "minWidth": "3rem",
@@ -874,14 +916,13 @@ describe('style decoder', () => {
           "layer": undefined,
           "result": {
             ".buttonStyle--variant_solid": {
-              "&": {
-                "&:is(:hover, [data-hover])": {
-                  "backgroundColor": "darkblue",
-                },
-                "&[data-disabled]": {
-                  "backgroundColor": "gray",
-                  "color": "var(--colors-black)",
-                },
+              "&:is(:hover, [data-hover])": {
+                "backgroundColor": "darkblue",
+              },
+              "&[data-disabled]": {
+                "backgroundColor": "gray",
+                "color": "var(--colors-black)",
+                "fontSize": "var(--font-sizes-2xl)",
               },
               "backgroundColor": "blue",
               "color": "var(--colors-white)",
@@ -996,7 +1037,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "textStyle_headline\\\\.h1",
+          "className": "textStyle_headline\\.h1",
           "conditions": undefined,
           "entry": {
             "prop": "textStyle",
@@ -1005,14 +1046,14 @@ describe('style decoder', () => {
           "hash": "textStyle]___[value:headline.h1",
           "layer": "compositions",
           "result": {
-            ".textStyle_headline\\\\.h1": {
+            ".textStyle_headline\\.h1": {
               "fontSize": "2rem",
               "fontWeight": "var(--font-weights-bold)",
             },
           },
         },
         {
-          "className": "h_2\\\\.5rem",
+          "className": "h_2\\.5rem",
           "conditions": undefined,
           "entry": {
             "prop": "height",
@@ -1021,13 +1062,13 @@ describe('style decoder', () => {
           "hash": "height]___[value:2.5rem",
           "layer": undefined,
           "result": {
-            ".h_2\\\\.5rem": {
+            ".h_2\\.5rem": {
               "height": "2.5rem",
             },
           },
         },
         {
-          "className": "min-w_2\\\\.5rem",
+          "className": "min-w_2\\.5rem",
           "conditions": undefined,
           "entry": {
             "prop": "minWidth",
@@ -1036,13 +1077,13 @@ describe('style decoder', () => {
           "hash": "minWidth]___[value:2.5rem",
           "layer": undefined,
           "result": {
-            ".min-w_2\\\\.5rem": {
+            ".min-w_2\\.5rem": {
               "minWidth": "2.5rem",
             },
           },
         },
         {
-          "className": "p_0_0\\\\.5rem",
+          "className": "p_0_0\\.5rem",
           "conditions": undefined,
           "entry": {
             "prop": "padding",
@@ -1051,7 +1092,7 @@ describe('style decoder', () => {
           "hash": "padding]___[value:0 0.5rem",
           "layer": undefined,
           "result": {
-            ".p_0_0\\\\.5rem": {
+            ".p_0_0\\.5rem": {
               "padding": "0 0.5rem",
             },
           },
@@ -1087,7 +1128,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "p_0_0\\\\.75rem",
+          "className": "p_0_0\\.75rem",
           "conditions": undefined,
           "entry": {
             "prop": "padding",
@@ -1096,7 +1137,7 @@ describe('style decoder', () => {
           "hash": "padding]___[value:0 0.75rem",
           "layer": undefined,
           "result": {
-            ".p_0_0\\\\.75rem": {
+            ".p_0_0\\.75rem": {
               "padding": "0 0.75rem",
             },
           },
@@ -1128,78 +1169,6 @@ describe('style decoder', () => {
           "result": {
             ".text_white": {
               "color": "var(--colors-white)",
-            },
-          },
-        },
-        {
-          "className": "hover\\\\:bg_darkblue",
-          "conditions": [
-            {
-              "raw": "&:is(:hover, [data-hover])",
-              "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
-            },
-          ],
-          "entry": {
-            "cond": "_hover",
-            "prop": "backgroundColor",
-            "value": "darkblue",
-          },
-          "hash": "backgroundColor]___[value:darkblue]___[cond:_hover",
-          "layer": undefined,
-          "result": {
-            ".hover\\\\:bg_darkblue": {
-              "&:is(:hover, [data-hover])": {
-                "backgroundColor": "darkblue",
-              },
-            },
-          },
-        },
-        {
-          "className": "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray",
-          "conditions": [
-            {
-              "raw": "&[data-disabled]",
-              "type": "self-nesting",
-              "value": "&[data-disabled]",
-            },
-          ],
-          "entry": {
-            "cond": "&[data-disabled]",
-            "prop": "backgroundColor",
-            "value": "gray",
-          },
-          "hash": "backgroundColor]___[value:gray]___[cond:&[data-disabled]",
-          "layer": undefined,
-          "result": {
-            ".\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray": {
-              "&[data-disabled]": {
-                "backgroundColor": "gray",
-              },
-            },
-          },
-        },
-        {
-          "className": "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black",
-          "conditions": [
-            {
-              "raw": "&[data-disabled]",
-              "type": "self-nesting",
-              "value": "&[data-disabled]",
-            },
-          ],
-          "entry": {
-            "cond": "&[data-disabled]",
-            "prop": "color",
-            "value": "black",
-          },
-          "hash": "color]___[value:black]___[cond:&[data-disabled]",
-          "layer": undefined,
-          "result": {
-            ".\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black": {
-              "&[data-disabled]": {
-                "color": "var(--colors-black)",
-              },
             },
           },
         },
@@ -1249,55 +1218,55 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\\\:bg_blue",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
           "conditions": [
             {
-              "raw": "&:is(:hover, [data-hover])",
+              "raw": "&[data-disabled]",
               "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
+              "value": "&[data-disabled]",
             },
           ],
           "entry": {
-            "cond": "_hover",
+            "cond": "&[data-disabled]",
             "prop": "backgroundColor",
-            "value": "blue",
+            "value": "gray",
           },
-          "hash": "backgroundColor]___[value:blue]___[cond:_hover",
+          "hash": "backgroundColor]___[value:gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".hover\\\\:bg_blue": {
-              "&:is(:hover, [data-hover])": {
-                "backgroundColor": "blue",
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg_gray": {
+              "&[data-disabled]": {
+                "backgroundColor": "gray",
               },
             },
           },
         },
         {
-          "className": "hover\\\\:text_white",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:text_black",
           "conditions": [
             {
-              "raw": "&:is(:hover, [data-hover])",
+              "raw": "&[data-disabled]",
               "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
+              "value": "&[data-disabled]",
             },
           ],
           "entry": {
-            "cond": "_hover",
+            "cond": "&[data-disabled]",
             "prop": "color",
-            "value": "white",
+            "value": "black",
           },
-          "hash": "color]___[value:white]___[cond:_hover",
+          "hash": "color]___[value:black]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".hover\\\\:text_white": {
-              "&:is(:hover, [data-hover])": {
-                "color": "var(--colors-white)",
+            ".\\[\\&\\[data-disabled\\]\\]\\:text_black": {
+              "&[data-disabled]": {
+                "color": "var(--colors-black)",
               },
             },
           },
         },
         {
-          "className": "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1313,7 +1282,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:transparent]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg_transparent": {
               "&[data-disabled]": {
                 "backgroundColor": "var(--colors-transparent)",
               },
@@ -1321,7 +1290,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1337,7 +1306,7 @@ describe('style decoder', () => {
           "hash": "border]___[value:1px solid gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray": {
               "&[data-disabled]": {
                 "border": "1px solid gray",
               },
@@ -1345,7 +1314,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:text_gray",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1361,9 +1330,81 @@ describe('style decoder', () => {
           "hash": "color]___[value:gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:text_gray": {
               "&[data-disabled]": {
                 "color": "gray",
+              },
+            },
+          },
+        },
+        {
+          "className": "hover\\:bg_darkblue",
+          "conditions": [
+            {
+              "raw": "&:is(:hover, [data-hover])",
+              "type": "self-nesting",
+              "value": "&:is(:hover, [data-hover])",
+            },
+          ],
+          "entry": {
+            "cond": "_hover",
+            "prop": "backgroundColor",
+            "value": "darkblue",
+          },
+          "hash": "backgroundColor]___[value:darkblue]___[cond:_hover",
+          "layer": undefined,
+          "result": {
+            ".hover\\:bg_darkblue": {
+              "&:is(:hover, [data-hover])": {
+                "backgroundColor": "darkblue",
+              },
+            },
+          },
+        },
+        {
+          "className": "hover\\:bg_blue",
+          "conditions": [
+            {
+              "raw": "&:is(:hover, [data-hover])",
+              "type": "self-nesting",
+              "value": "&:is(:hover, [data-hover])",
+            },
+          ],
+          "entry": {
+            "cond": "_hover",
+            "prop": "backgroundColor",
+            "value": "blue",
+          },
+          "hash": "backgroundColor]___[value:blue]___[cond:_hover",
+          "layer": undefined,
+          "result": {
+            ".hover\\:bg_blue": {
+              "&:is(:hover, [data-hover])": {
+                "backgroundColor": "blue",
+              },
+            },
+          },
+        },
+        {
+          "className": "hover\\:text_white",
+          "conditions": [
+            {
+              "raw": "&:is(:hover, [data-hover])",
+              "type": "self-nesting",
+              "value": "&:is(:hover, [data-hover])",
+            },
+          ],
+          "entry": {
+            "cond": "_hover",
+            "prop": "color",
+            "value": "white",
+          },
+          "hash": "color]___[value:white]___[cond:_hover",
+          "layer": undefined,
+          "result": {
+            ".hover\\:text_white": {
+              "&:is(:hover, [data-hover])": {
+                "color": "var(--colors-white)",
               },
             },
           },
@@ -1569,7 +1610,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "md\\\\:checkbox__root--size_md",
+          "className": "md\\:checkbox__root--size_md",
           "conditions": [
             {
               "name": "breakpoint",
@@ -1590,13 +1631,13 @@ describe('style decoder', () => {
           "hash": "size]___[value:md]___[cond:md]___[recipe:checkbox]___[slot:root",
           "layer": undefined,
           "result": {
-            ".md\\\\:checkbox__root--size_md": {
+            ".md\\:checkbox__root--size_md": {
               "@media screen and (min-width: 48em)": {},
             },
           },
         },
         {
-          "className": "md\\\\:checkbox__control--size_md",
+          "className": "md\\:checkbox__control--size_md",
           "conditions": [
             {
               "name": "breakpoint",
@@ -1617,7 +1658,7 @@ describe('style decoder', () => {
           "hash": "size]___[value:md]___[cond:md]___[recipe:checkbox]___[slot:control",
           "layer": undefined,
           "result": {
-            ".md\\\\:checkbox__control--size_md": {
+            ".md\\:checkbox__control--size_md": {
               "@media screen and (min-width: 48em)": {
                 "height": "var(--sizes-10)",
                 "width": "var(--sizes-10)",
@@ -1626,7 +1667,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "md\\\\:checkbox__label--size_md",
+          "className": "md\\:checkbox__label--size_md",
           "conditions": [
             {
               "name": "breakpoint",
@@ -1647,7 +1688,7 @@ describe('style decoder', () => {
           "hash": "size]___[value:md]___[cond:md]___[recipe:checkbox]___[slot:label",
           "layer": undefined,
           "result": {
-            ".md\\\\:checkbox__label--size_md": {
+            ".md\\:checkbox__label--size_md": {
               "@media screen and (min-width: 48em)": {
                 "fontSize": "var(--font-sizes-md)",
               },
@@ -1950,7 +1991,7 @@ describe('style decoder', () => {
     })
 
     const result = processor.recipe('button', {})!
-    expect(result.className).toMatchInlineSnapshot(`
+    expect(result.getClassNames()).toMatchInlineSnapshot(`
       [
         "btn",
       ]
@@ -2090,18 +2131,60 @@ describe('style decoder', () => {
                   "backgroundColor": "var(--colors-red-200)",
                 },
               },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "fontSize",
+                  "recipe": "buttonStyle",
+                  "value": "3xl",
+                },
+                "hash": "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "fontSize": "var(--font-sizes-3xl)",
+                },
+              },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "color",
+                  "recipe": "buttonStyle",
+                  "value": "white",
+                },
+                "hash": "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "color": "var(--colors-white)",
+                },
+              },
             ],
             "hashSet": Set {
               "display]___[value:inline-flex]___[recipe:buttonStyle",
               "alignItems]___[value:center]___[recipe:buttonStyle",
               "justifyContent]___[value:center]___[recipe:buttonStyle",
               "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+              "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+              "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
             },
             "recipe": "buttonStyle",
             "result": {
               ".buttonStyle": {
                 "&:is(:hover, [data-hover])": {
                   "backgroundColor": "var(--colors-red-200)",
+                  "color": "var(--colors-white)",
+                  "fontSize": "var(--font-sizes-3xl)",
                 },
                 "alignItems": "center",
                 "display": "inline-flex",
@@ -2168,18 +2251,60 @@ describe('style decoder', () => {
                   "backgroundColor": "var(--colors-red-200)",
                 },
               },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "fontSize",
+                  "recipe": "buttonStyle",
+                  "value": "3xl",
+                },
+                "hash": "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "fontSize": "var(--font-sizes-3xl)",
+                },
+              },
+              {
+                "conditions": [
+                  {
+                    "raw": "&:is(:hover, [data-hover])",
+                    "type": "self-nesting",
+                    "value": "&:is(:hover, [data-hover])",
+                  },
+                ],
+                "entry": {
+                  "cond": "_hover",
+                  "prop": "color",
+                  "recipe": "buttonStyle",
+                  "value": "white",
+                },
+                "hash": "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
+                "result": {
+                  "color": "var(--colors-white)",
+                },
+              },
             ],
             "hashSet": Set {
               "display]___[value:inline-flex]___[recipe:buttonStyle",
               "alignItems]___[value:center]___[recipe:buttonStyle",
               "justifyContent]___[value:center]___[recipe:buttonStyle",
               "backgroundColor]___[value:red.200]___[cond:_hover]___[recipe:buttonStyle",
+              "fontSize]___[value:3xl]___[cond:_hover]___[recipe:buttonStyle",
+              "color]___[value:white]___[cond:_hover]___[recipe:buttonStyle",
             },
             "recipe": "buttonStyle",
             "result": {
               ".buttonStyle": {
                 "&:is(:hover, [data-hover])": {
                   "backgroundColor": "var(--colors-red-200)",
+                  "color": "var(--colors-white)",
+                  "fontSize": "var(--font-sizes-3xl)",
                 },
                 "alignItems": "center",
                 "display": "inline-flex",
@@ -2235,7 +2360,7 @@ describe('style decoder', () => {
             },
           },
           {
-            "className": "h_100\\\\%",
+            "className": "h_100\\%",
             "conditions": undefined,
             "entry": {
               "prop": "height",
@@ -2244,13 +2369,13 @@ describe('style decoder', () => {
             "hash": "height]___[value:100%",
             "layer": undefined,
             "result": {
-              ".h_100\\\\%": {
+              ".h_100\\%": {
                 "height": "100%",
               },
             },
           },
           {
-            "className": "transition_all_\\\\.3s_ease-in-out",
+            "className": "transition_all_\\.3s_ease-in-out",
             "conditions": undefined,
             "entry": {
               "prop": "transition",
@@ -2259,7 +2384,7 @@ describe('style decoder', () => {
             "hash": "transition]___[value:all .3s ease-in-out",
             "layer": undefined,
             "result": {
-              ".transition_all_\\\\.3s_ease-in-out": {
+              ".transition_all_\\.3s_ease-in-out": {
                 "transition": "all .3s ease-in-out",
               },
             },
@@ -2274,7 +2399,7 @@ describe('style decoder', () => {
             "hash": "opacity]___[value:0 !important",
             "layer": undefined,
             "result": {
-              ".opacity_0\\\\!": {
+              ".opacity_0\\!": {
                 "opacity": "0 !important",
               },
             },
@@ -2327,7 +2452,7 @@ describe('style decoder', () => {
             },
           },
           {
-            "className": "from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\)",
+            "className": "from_rgb\\(200_200_200_\\/_\\.4\\)",
             "conditions": undefined,
             "entry": {
               "prop": "gradientFrom",
@@ -2336,7 +2461,7 @@ describe('style decoder', () => {
             "hash": "gradientFrom]___[value:rgb(200 200 200 / .4)",
             "layer": undefined,
             "result": {
-              ".from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\)": {
+              ".from_rgb\\(200_200_200_\\/_\\.4\\)": {
                 "--gradient-from": "rgb(200 200 200 / .4)",
               },
             },
@@ -2701,7 +2826,7 @@ describe('style decoder', () => {
     expect(result).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "text_\\\\#fff",
+          "className": "text_\\#fff",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -2710,7 +2835,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:#fff",
           "layer": undefined,
           "result": {
-            ".text_\\\\#fff": {
+            ".text_\\#fff": {
               "color": "#fff",
             },
           },

@@ -38,7 +38,7 @@ describe('import map', () => {
     // ts paths
     expect(
       ctx.imports.match({ mod: 'anydir/css', alias: 'css', name: 'css' }, function resolveTsPath(mod) {
-        return { 'anydir/css': 'styled-system/css' }[mod]
+        if (mod === 'anydir/css') return `${ctx.config.cwd}/styled-system/css`
       }),
     ).toBeTruthy()
   })

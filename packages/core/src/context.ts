@@ -1,19 +1,22 @@
 import { isCssProperty } from '@pandacss/is-valid-prop'
-import { compact, isBoolean, isString, mapObject, memo } from '@pandacss/shared'
+import { logger } from '@pandacss/logger'
+import { compact, flatten, isBoolean, isString, memo, patternFns } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
-  ConfigResultWithHooks,
   HashOptions,
+  LoadConfigResult,
+  PandaHooks,
   PrefixOptions,
+  PropertyConfig,
   RequiredBy,
   StudioOptions,
   Theme,
   UserConfig,
 } from '@pandacss/types'
-import { assignCompositions } from './compositions'
 import { Conditions } from './conditions'
 import { FileEngine } from './file'
+import { HooksApi } from './hooks-api'
 import { ImportMap } from './import-map'
 import { JsxEngine } from './jsx'
 import { Layers } from './layers'
@@ -21,16 +24,13 @@ import { getMessages, type Messages } from './messages'
 import { PathEngine } from './path'
 import { Patterns } from './patterns'
 import { Recipes } from './recipes'
+import { transformStyles } from './serialize'
 import { StaticCss } from './static-css'
 import { StyleDecoder } from './style-decoder'
 import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
-import type { ParserOptions, RecipeContext } from './types'
+import type { ParserOptions } from './types'
 import { Utility } from './utility'
-
-const helpers = {
-  map: mapObject,
-}
 
 const defaults = (config: UserConfig): UserConfig => ({
   cssVarRoot: ':where(:root, :host)',
@@ -67,6 +67,7 @@ export class Context {
 
   encoder: StyleEncoder
   decoder: StyleDecoder
+  hooksApi: HooksApi
 
   // Props
   properties!: Set<string>
@@ -74,26 +75,47 @@ export class Context {
   messages: Messages
   parserOptions: ParserOptions
 
-  constructor(public conf: ConfigResultWithHooks) {
+  constructor(public conf: LoadConfigResult) {
     const config = defaults(conf.config)
     const theme = config.theme ?? {}
     conf.config = config
 
     this.tokens = this.createTokenDictionary(theme)
+    this.hooks['tokens:created']?.({
+      configure: (opts) => {
+        if (opts.formatTokenName) {
+          this.tokens.formatTokenName = opts.formatTokenName
+        }
+        if (opts.formatCssVar) {
+          this.tokens.formatCssVar = opts.formatCssVar
+        }
+      },
+    })
+    this.tokens.init()
+
     this.utility = this.createUtility(config)
+    this.hooks['utility:created']?.({
+      configure: (opts) => {
+        if (opts.toHash) {
+          this.utility.toHash = opts.toHash
+        }
+      },
+    })
+
     this.conditions = this.createConditions(config)
+
     this.patterns = new Patterns({
       config,
       tokens: this.tokens,
       utility: this.utility,
+      helpers: patternFns,
     })
 
     this.studio = { outdir: `${config.outdir}-studio`, ...conf.config.studio }
-    this.setupCompositions(theme)
     this.setupProperties()
 
     // Relies on this.conditions, this.utility, this.layers
-    this.recipes = this.createRecipes(theme, this.baseSheetContext)
+    this.recipes = this.createRecipes(theme)
 
     this.encoder = new StyleEncoder({
       utility: this.utility,
@@ -110,6 +132,10 @@ export class Context {
       recipes: this.recipes,
       hash: this.hash,
     })
+
+    // Relies on this.encoder, this.decoder
+    this.setupCompositions(theme)
+    this.recipes.save(this.baseSheetContext)
 
     this.staticCss = new StaticCss({
       config,
@@ -165,6 +191,9 @@ export class Context {
       join: (...paths: string[]) => paths.join('/'),
       imports: this.imports,
     }
+
+    this.hooksApi = new HooksApi(this)
+    this.hooks['context:created']?.({ ctx: this.hooksApi, logger: logger })
   }
 
   get config() {
@@ -172,7 +201,7 @@ export class Context {
   }
 
   get hooks() {
-    return this.conf.hooks
+    return this.conf.hooks ?? ({} as PandaHooks)
   }
 
   get isTemplateLiteralSyntax() {
@@ -217,6 +246,8 @@ export class Context {
   createConditions = (config: UserConfig): Conditions => {
     return new Conditions({
       conditions: config.conditions,
+      containerNames: config.theme?.containerNames,
+      containerSizes: config.theme?.containerSizes,
       breakpoints: config.theme?.breakpoints,
     })
   }
@@ -227,8 +258,31 @@ export class Context {
 
   setupCompositions = (theme: Theme): void => {
     const { textStyles, layerStyles } = theme
+
     const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
-    assignCompositions(compositions, { conditions: this.conditions, utility: this.utility })
+
+    const stylesheetCtx = {
+      ...this.baseSheetContext,
+      layers: this.createLayers(this.config.layers as CascadeLayers),
+    }
+
+    for (const [key, values] of Object.entries(compositions)) {
+      // add the composition to the list of valid properties
+      this.properties.add(key)
+
+      const flatValues = flatten(values ?? {})
+
+      const config: PropertyConfig = {
+        layer: 'compositions',
+        className: key,
+        values: Object.keys(flatValues),
+        transform: (value) => {
+          return transformStyles(stylesheetCtx, flatValues[value], key + '.' + value)
+        },
+      }
+
+      this.utility.register(key, config)
+    }
   }
 
   setupProperties = (): void => {
@@ -240,8 +294,14 @@ export class Context {
     return {
       conditions: this.conditions,
       utility: this.utility,
-      helpers,
       hash: this.hash.className,
+      encoder: this.encoder,
+      decoder: this.decoder,
+      hooks: this.hooks,
+      isValidProperty: this.isValidProperty,
+      browserslist: this.config.browserslist,
+      lightningcss: this.config.lightningcss,
+      helpers: patternFns,
     }
   }
 
@@ -252,9 +312,9 @@ export class Context {
     })
   }
 
-  createRecipes = (theme: Theme, context: RecipeContext): Recipes => {
+  createRecipes = (theme: Theme): Recipes => {
     const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
-    return new Recipes(recipeConfigs, context)
+    return new Recipes(recipeConfigs)
   }
 
   isValidLayerParams = (params: string) => {

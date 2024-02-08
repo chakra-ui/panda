@@ -51,6 +51,12 @@ const options: TestUserConfig = {
       include: ['**/__tests__/scenarios/jsx-none.{test,spec}.{j,t}s?(x)'],
     },
   },
+  'format-names': {
+    test: {
+      environment: 'happy-dom',
+      include: ['**/__tests__/scenarios/format-names.{test,spec}.{j,t}s?(x)'],
+    },
+  },
   //
   preact: {
     plugins: [preact()],
@@ -76,9 +82,10 @@ const options: TestUserConfig = {
       include: ['**/__tests__/**/frameworks/solid.*.{test,spec}.{j,t}s?(x)'],
       environment: 'happy-dom',
       globals: true,
-      deps: {
-        inline: [/solid-js/, /@solidjs\/router/],
-        registerNodeLoader: false,
+      server: {
+        deps: {
+          inline: [/solid-js/],
+        },
       },
     },
   },

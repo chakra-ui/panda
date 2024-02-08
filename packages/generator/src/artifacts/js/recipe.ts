@@ -9,13 +9,7 @@ const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'
 
 export function generateCreateRecipe(ctx: Context) {
-  const {
-    conditions,
-    recipes,
-    prefix,
-    hash,
-    utility: { separator },
-  } = ctx
+  const { conditions, recipes, prefix, hash, utility } = ctx
 
   if (recipes.isEmpty()) return
 
@@ -47,7 +41,7 @@ export function generateCreateRecipe(ctx: Context) {
          }
 
          value = withoutSpace(value)
-         return { className: \`\${name}--\${prop}${separator}\${value}\` }
+         return { className: \`\${name}--\${prop}${utility.separator}\${value}\` }
       }
 
       const recipeCss = createCss({
@@ -59,6 +53,7 @@ export function generateCreateRecipe(ctx: Context) {
         },
         utility: {
           ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
+          toHash: ${utility.toHash},
           transform,
         }
       })
@@ -122,7 +117,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
       .when(
         Recipes.isSlotRecipeConfig,
         (config) => outdent`
-        ${ctx.file.import('splitProps, getSlotCompoundVariant', '../helpers')}
+        ${ctx.file.import('getSlotCompoundVariant, memo, splitProps', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
         const ${baseName}DefaultVariants = ${stringify(defaultVariants ?? {})}
@@ -131,9 +126,9 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         const ${baseName}SlotNames = ${stringify(config.slots.map((slot) => [slot, `${config.className}__${slot}`]))}
         const ${baseName}SlotFns = /* @__PURE__ */ ${baseName}SlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, ${baseName}DefaultVariants, getSlotCompoundVariant(${baseName}CompoundVariants, slotName))])
 
-        const ${baseName}Fn = (props = {}) => {
+        const ${baseName}Fn = memo((props = {}) => {
           return Object.fromEntries(${baseName}SlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
-        }
+        })
 
         const ${baseName}VariantKeys = ${stringify(Object.keys(variantKeyMap))}
 
@@ -151,7 +146,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
       )
       .otherwise(
         (config) => outdent`
-        ${ctx.file.import('splitProps', '../helpers')}
+        ${ctx.file.import('memo, splitProps', '../helpers')}
         ${ctx.file.import('createRecipe, mergeRecipes', './create-recipe')}
 
         const ${baseName}Fn = /* @__PURE__ */ createRecipe('${config.className}', ${stringify(
@@ -162,7 +157,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
 
         const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
 
-        export const ${baseName} = /* @__PURE__ */ Object.assign(${baseName}Fn, {
+        export const ${baseName} = /* @__PURE__ */ Object.assign(memo(${baseName}Fn), {
           __recipe__: true,
           __name__: '${baseName}',
           raw: (props) => props,

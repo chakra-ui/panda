@@ -1,24 +1,21 @@
 import type {
   Config,
-  ConfigResultWithHooks,
   Dict,
   HashOptions,
+  LoadConfigResult,
   PatternHelpers,
   RecipeConfig,
   SlotRecipeConfig,
   TSConfig,
   UserConfig,
 } from '@pandacss/types'
-import type { Conditions } from './conditions'
+import type { ImportMap } from './import-map'
+import type { JsxEngine } from './jsx'
 import type { Layers } from './layers'
-import type { Utility } from './utility'
-import type { StyleEncoder } from './style-encoder'
 import type { Patterns } from './patterns'
 import type { Recipes } from './recipes'
-import type { JsxEngine } from './jsx'
-import type { ImportMap } from './import-map'
-
-export type RecipeContext = Pick<StylesheetContext, 'utility' | 'conditions'>
+import type { StyleEncoder } from './style-encoder'
+import type { Context } from './context'
 
 export interface TransformResult {
   layer?: string
@@ -26,12 +23,13 @@ export interface TransformResult {
   styles: Dict
 }
 
-export interface StylesheetContext {
+export interface StylesheetContext
+  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks'> {
   layers: Layers
-  utility: Utility
-  conditions: Conditions
   helpers: PatternHelpers
   hash?: boolean
+  lightningcss?: boolean
+  browserslist?: string[]
 }
 
 export interface RecipeNode {
@@ -113,5 +111,5 @@ export interface ParserOptions {
   encoder: StyleEncoder
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']
-  tsOptions: ConfigResultWithHooks['tsOptions']
+  tsOptions: LoadConfigResult['tsOptions']
 }

@@ -3,9 +3,9 @@
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
-    "baseUrl": ".",
     "paths": {
-      "@pandacss/fixture": ["./packages/fixture/src/index.ts"]
+      "@pandacss/fixture": ["./packages/fixture/src/index.ts"],
+      "@pandacss/types": ["./packages/types/src/index.ts"]
     }
   },
   "include": ["packages/**/*.ts"],

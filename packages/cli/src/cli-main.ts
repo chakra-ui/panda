@@ -9,16 +9,18 @@ import {
   debug,
   generate,
   loadConfigAndCreateContext,
+  setLogStream,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
+  startProfiling,
   writeAnalyzeJSON,
   type CssGenOptions,
 } from '@pandacss/node'
-import { compact } from '@pandacss/shared'
+import { PandaError, compact } from '@pandacss/shared'
 import type { CssArtifactType } from '@pandacss/types'
 import { cac } from 'cac'
-import { join, resolve } from 'pathe'
+import { join, resolve } from 'path'
 import { version } from '../package.json'
 import { interactive } from './interactive'
 import type {
@@ -26,6 +28,7 @@ import type {
   CodegenCommandFlags,
   CssGenCommandFlags,
   DebugCommandFlags,
+  EmitPackageCommandFlags,
   InitCommandFlags,
   MainCommandFlags,
   ShipCommandFlags,
@@ -50,6 +53,7 @@ export async function main() {
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
     .option('--strict-tokens', 'Using strictTokens: true')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (initFlags: Partial<InitCommandFlags> = {}) => {
       let options = {}
 
@@ -65,6 +69,8 @@ export async function main() {
       if (silent) {
         logger.level = 'silent'
       }
+
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
 
       logger.info('cli', `Panda v${version}\n`)
 
@@ -86,6 +92,8 @@ export async function main() {
       logger.log(msg + box)
 
       done()
+
+      stream.end()
     })
 
   cli
@@ -96,10 +104,19 @@ export async function main() {
     .option('-w, --watch', 'Watch files and rebuild')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (flags: CodegenCommandFlags) => {
       const { silent, clean, config: configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = await startProfiling(cwd, 'codegen')
+      }
 
       if (silent) {
         logger.level = 'silent'
@@ -118,14 +135,20 @@ export async function main() {
         ctx.watchConfig(
           async () => {
             const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+              ctx = new PandaContext(conf)
             })
+
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await codegen(ctx, Array.from(affecteds.artifacts))
             logger.info('ctx:updated', 'config rebuilt ✅')
           },
           { cwd, poll },
         )
+      } else {
+        stream.end()
       }
+
+      stopProfiling()
     })
 
   cli
@@ -139,13 +162,22 @@ export async function main() {
     .option('-c, --config <path>', 'Path to panda config file')
     .option('-w, --watch', 'Watch files and rebuild')
     .option('--minimal', 'Do not include CSS generation for theme tokens, preflight, keyframes, static and global css')
+    .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
-      const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal } = flags
+      const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal, lightningcss } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = await startProfiling(cwd, 'cssgen')
+      }
 
       const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
         (type) => type === maybeGlob,
@@ -160,6 +192,7 @@ export async function main() {
       const overrideConfig = {
         clean,
         minify,
+        lightningcss,
         optimize: true,
         ...(glob ? { include: [glob] } : undefined),
       }
@@ -183,9 +216,11 @@ export async function main() {
         //
         ctx.watchConfig(
           async () => {
-            await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+            const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+              ctx = new PandaContext(conf)
             })
+
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await cssgen(ctx, options)
             logger.info('ctx:updated', 'config rebuilt ✅')
           },
@@ -203,7 +238,11 @@ export async function main() {
             await cssgen(ctx, options)
           }
         })
+      } else {
+        stream.end()
       }
+
+      stopProfiling()
     })
 
   cli
@@ -219,11 +258,20 @@ export async function main() {
     .option('-e, --exclude <files>', 'Exclude files', { default: [] })
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
+    .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
     .option('--emitTokensOnly', 'Whether to only emit the `tokens` directory')
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (files: string[], flags: MainCommandFlags) => {
       const { config: configPath, silent, ...rest } = flags
 
-      const cwd = resolve(flags.cwd)
+      const cwd = resolve(flags.cwd ?? '')
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = await startProfiling(cwd, 'cli')
+      }
 
       if (silent) {
         logger.level = 'silent'
@@ -231,6 +279,12 @@ export async function main() {
 
       const config = compact({ include: files, ...rest, cwd })
       await generate(config, configPath)
+
+      stopProfiling()
+
+      if (!flags.watch) {
+        stream.end()
+      }
     })
 
   cli
@@ -266,7 +320,7 @@ export async function main() {
         studio = require(studioPath)
       } catch (error) {
         logger.error('studio', error)
-        throw new Error("You need to install '@pandacss/studio' to use this command")
+        throw new PandaError('MISSING_STUDIO', "You need to install '@pandacss/studio' to use this command")
       }
 
       if (preview) {
@@ -327,10 +381,18 @@ export async function main() {
     .option('--only-config', "Should only output the config file, default to 'false'")
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
+    .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (maybeGlob?: string, flags: DebugCommandFlags = {}) => {
       const { silent, dry = false, outdir: outdirFlag, config: configPath } = flags ?? {}
 
       const cwd = resolve(flags.cwd!)
+      const stream = setLogStream({ cwd, logfile: flags.logfile })
+
+      let stopProfiling: Function = () => void 0
+      if (flags.cpuProf) {
+        stopProfiling = await startProfiling(cwd, 'debug')
+      }
 
       if (silent) {
         logger.level = 'silent'
@@ -345,6 +407,9 @@ export async function main() {
       const outdir = outdirFlag ?? join(...ctx.paths.root, 'debug')
 
       await debug(ctx, { outdir, dry, onlyConfig: flags.onlyConfig })
+
+      stopProfiling()
+      stream.end()
     })
 
   cli
@@ -385,9 +450,11 @@ export async function main() {
       if (watch) {
         ctx.watchConfig(
           async () => {
-            await ctx.diff.reloadConfigAndRefreshContext((conf) => {
-              ctx = new PandaContext({ ...conf, hooks: ctx.hooks })
+            const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+              ctx = new PandaContext(conf)
             })
+
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
             await buildInfo(ctx, outfile)
             logger.info('ctx:updated', 'config rebuilt ✅')
           },
@@ -412,12 +479,15 @@ export async function main() {
     .command('emit-pkg', 'Emit package.json with entrypoints')
     .option('--outdir <dir>', 'Output directory', { default: '.' })
     .option('--silent', "Don't print any logs")
-    .action(async (flags: { outdir: string; silent: boolean }) => {
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .action(async (flags: EmitPackageCommandFlags) => {
       const { outdir, silent } = flags
 
       if (silent) {
         logger.level = 'silent'
       }
+
+      const cwd = resolve(flags.cwd!)
 
       const ctx = await loadConfigAndCreateContext({
         cwd,

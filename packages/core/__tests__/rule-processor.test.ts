@@ -1,27 +1,27 @@
 import { createGeneratorContext } from '@pandacss/fixture'
-import type { Dict, RecipeDefinition, SlotRecipeDefinition } from '@pandacss/types'
+import type { Config, Dict, RecipeDefinition, SlotRecipeDefinition } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { RuleProcessor } from '../src/rule-processor'
 import { createRuleProcessor } from './fixture'
 
-const css = (styles: Dict) => {
-  const result = createRuleProcessor().css(styles)
-  return { className: result.className, css: result.toCss() }
+const css = (styles: Dict, config?: Config) => {
+  const result = createRuleProcessor(config).css(styles)
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const recipe = (name: string, styles: Dict) => {
   const result = createRuleProcessor().recipe(name, styles)!
-  return { className: result.className, css: result.toCss() }
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const cva = (styles: RecipeDefinition) => {
   const result = createRuleProcessor().cva(styles)!
-  return { className: result.className, css: result.toCss() }
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const sva = (styles: SlotRecipeDefinition) => {
   const result = createRuleProcessor().sva(styles)!
-  return { className: result.className, css: result.toCss() }
+  return { className: result.getClassNames(), css: result.toCss() }
 }
 
 const buttonRecipe = {
@@ -46,6 +46,187 @@ const buttonRecipe = {
 }
 
 describe('rule processor', () => {
+  test('simple', () => {
+    const result = css({
+      margin: 2,
+      mx: 'token(spacing.2)',
+      my: '-2',
+      color: 'blue.300',
+    })
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "m_2",
+        "mx_token\\(spacing\\.2\\)",
+        "my_-2",
+        "text_blue\\.300",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_2 {
+          margin: var(--spacing-2);
+      }
+
+        .mx_token\\(spacing\\.2\\) {
+          margin-inline: var(--spacing-2);
+      }
+
+        .my_-2 {
+          margin-block: calc(var(--spacing-2) * -1);
+      }
+
+        .text_blue\\.300 {
+          color: var(--colors-blue-300);
+      }
+      }"
+    `)
+  })
+
+  test('simple with formatTokenName', () => {
+    const result = css(
+      {
+        margin: '$2',
+        p: '{spacing.$2}',
+        mx: 'token(spacing.$2)',
+        my: '-$2',
+        color: '$blue-300',
+      },
+      {
+        hooks: {
+          'tokens:created': ({ configure }) => {
+            configure({
+              formatTokenName: (path: string[]) => '$' + path.join('-'),
+            })
+          },
+        },
+      },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "m_\\$2",
+        "p_\\{spacing\\.\\$2\\}",
+        "mx_token\\(spacing\\.\\$2\\)",
+        "my_-\\$2",
+        "text_\\$blue-300",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_\\$2 {
+          margin: var(--spacing-2);
+      }
+
+        .p_\\{spacing\\.\\$2\\} {
+          padding: var(--spacing-2);
+      }
+
+        .mx_token\\(spacing\\.\\$2\\) {
+          margin-inline: var(--spacing-2);
+      }
+
+        .my_-\\$2 {
+          margin-block: calc(var(--spacing-2) * -1);
+      }
+
+        .text_\\$blue-300 {
+          color: var(--colors-blue-300);
+      }
+      }"
+    `)
+  })
+
+  test('simple - hash: true', () => {
+    const result = css(
+      {
+        margin: 2,
+        mx: 'token(spacing.2)',
+        my: '-2',
+        color: 'blue.300',
+      },
+      { hash: true },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "AxiDH",
+        "hHAKfe",
+        "pWVwj",
+        "cXgKQC",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .AxiDH {
+          margin: var(--ebuyxV);
+      }
+
+        .hHAKfe {
+          margin-inline: var(--ebuyxV);
+      }
+
+        .pWVwj {
+          margin-block: calc(var(--ebuyxV) * -1);
+      }
+
+        .cXgKQC {
+          color: var(--bMEoOM);
+      }
+      }"
+    `)
+  })
+
+  test('simple - hash: true + custom toHash', () => {
+    const result = css(
+      {
+        margin: 2,
+        mx: 'token(spacing.2)',
+        my: '-2',
+        color: 'blue.300',
+      },
+      {
+        hash: true,
+        hooks: {
+          'utility:created': ({ configure }) => {
+            configure({
+              toHash(paths, toHash) {
+                const stringConds = paths.join(':')
+                const splitConds = stringConds.split('_')
+                const hashConds = splitConds.map(toHash)
+                return hashConds.join('_')
+              },
+            })
+          },
+        },
+      },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "bnJC_bnIF",
+        "PJOa_hhWZwA",
+        "PJOH_PIXg",
+        "fzDuiy_bNBgpA",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bnJC_bnIF {
+          margin: var(--ebuyxV);
+      }
+
+        .PJOa_hhWZwA {
+          margin-inline: var(--ebuyxV);
+      }
+
+        .PJOH_PIXg {
+          margin-block: calc(var(--ebuyxV) * -1);
+      }
+
+        .fzDuiy_bNBgpA {
+          color: var(--bMEoOM);
+      }
+      }"
+    `)
+  })
+
   test('css', () => {
     const result = css({
       color: 'red !important',
@@ -77,8 +258,8 @@ describe('rule processor', () => {
           '.target &': {
             color: {
               base: 'cyan',
-              _opened: 'orange',
-              _xl: 'pink',
+              _open: 'orange',
+              xl: 'pink',
             },
           },
         },
@@ -89,122 +270,124 @@ describe('rule processor', () => {
       `
       [
         "text_red",
-        "border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\)",
-        "bg_blue\\\\.300",
-        "textStyle_headline\\\\.h1",
+        "border_1px_solid_token\\(colors\\.red\\.100\\)",
+        "bg_blue\\.300",
+        "textStyle_headline\\.h1",
         "w_1",
-        "sm\\\\:w_2",
-        "xl\\\\:w_3",
         "fs_xs",
-        "sm\\\\:fs_sm",
-        "hover\\\\:fs_md",
-        "hover\\\\:md\\\\:fs_lg",
-        "hover\\\\:focus\\\\:fs_xl",
-        "dark\\\\:fs_2xl",
-        "sm\\\\:text_yellow",
-        "sm\\\\:bg_red",
-        "sm\\\\:hover\\\\:bg_green",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange",
-        "\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink",
+        "dark\\:fs_2xl",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green",
+        "hover\\:fs_md",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple",
+        "hover\\:focus\\:fs_xl",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange",
+        "sm\\:w_2",
+        "sm\\:fs_sm",
+        "sm\\:text_yellow",
+        "sm\\:bg_red",
+        "xl\\:w_3",
+        "sm\\:hover\\:bg_green",
+        "hover\\:md\\:fs_lg",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
       ]
     `,
     )
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\\\! {
-          color: red !important
+        @layer compositions {
+          .textStyle_headline\\.h1 {
+            font-size: 2rem;
+            font-weight: var(--font-weights-bold);
+      }
       }
 
-        .border_1px_solid_token\\\\(colors\\\\.red\\\\.100\\\\) {
-          border: 1px solid var(--colors-red-100)
+        .text_red\\! {
+          color: red !important;
       }
 
-        .bg_blue\\\\.300 {
-          background: var(--colors-blue-300)
+        .border_1px_solid_token\\(colors\\.red\\.100\\) {
+          border: 1px solid var(--colors-red-100);
+      }
+
+        .bg_blue\\.300 {
+          background: var(--colors-blue-300);
       }
 
         .w_1 {
-          width: var(--sizes-1)
+          width: var(--sizes-1);
       }
 
         .fs_xs {
-          font-size: var(--font-sizes-xs)
+          font-size: var(--font-sizes-xs);
       }
 
-        [data-theme=dark] .dark\\\\:fs_2xl, .dark .dark\\\\:fs_2xl, .dark\\\\:fs_2xl.dark, .dark\\\\:fs_2xl[data-theme=dark] {
-          font-size: var(--font-sizes-2xl)
+        [data-theme=dark] .dark\\:fs_2xl,.dark .dark\\:fs_2xl,.dark\\:fs_2xl.dark,.dark\\:fs_2xl[data-theme=dark] {
+          font-size: var(--font-sizes-2xl);
       }
 
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:text_green[data-attr='test'] {
-          color: green
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green[data-attr='test'] {
+          color: green;
       }
 
-        .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: purple
+        .hover\\:fs_md:is(:hover, [data-hover]) {
+          font-size: var(--font-sizes-md);
       }
 
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          color: cyan
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+          color: purple;
       }
 
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_opened_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          opened: orange
+        .hover\\:focus\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+          font-size: var(--font-sizes-xl);
       }
 
-        .target .\\\\[\\\\&\\\\[data-attr\\\\=\\\\'test\\\\'\\\\]\\\\]\\\\:expanded\\\\:\\\\[\\\\.target_\\\\&\\\\]\\\\:_xl_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state=\\"expanded\\"]) {
-          xl: pink
+        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+          color: cyan;
       }
 
-        .hover\\\\:focus\\\\:fs_xl:is(:hover, [data-hover]):is(:focus, [data-focus]) {
-          font-size: var(--font-sizes-xl)
+        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]):is([open], [data-open], [data-state="open"]) {
+          color: orange;
       }
 
-        .hover\\\\:fs_md:is(:hover, [data-hover]) {
-          font-size: var(--font-sizes-md)
+        @media screen and (min-width: 40em) {
+          .sm\\:w_2 {
+            width: var(--sizes-2);
       }
-
-        @layer compositions {
-          .textStyle_headline\\\\.h1 {
-            font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+          .sm\\:fs_sm {
+            font-size: var(--font-sizes-sm);
+      }
+          .sm\\:text_yellow {
+            color: yellow;
+      }
+          .sm\\:bg_red {
+            background-color: red;
       }
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:w_2 {
-            width: var(--sizes-2)
-          }
-          .sm\\\\:fs_sm {
-            font-size: var(--font-sizes-sm)
-          }
-          .sm\\\\:text_yellow {
-            color: yellow
-          }
-          .sm\\\\:bg_red {
-            background-color: red
-          }
+          .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
+            background-color: green;
       }
-
-        @media screen and (min-width: 40em) {
-          .sm\\\\:hover\\\\:bg_green:is(:hover, [data-hover]) {
-            background-color: green
-          }
       }
 
         @media screen and (min-width: 48em) {
-          .hover\\\\:md\\\\:fs_lg:is(:hover, [data-hover]) {
-            font-size: var(--font-sizes-lg)
-          }
+          .hover\\:md\\:fs_lg:is(:hover, [data-hover]) {
+            font-size: var(--font-sizes-lg);
+      }
       }
 
         @media screen and (min-width: 80em) {
-          .xl\\\\:w_3 {
-            width: var(--sizes-3)
-          }
+          .xl\\:w_3 {
+            width: var(--sizes-3);
+      }
+      }
+
+        @media screen and (min-width: 80em) {
+          .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+            color: pink;
+      }
       }
       }"
     `)
@@ -216,17 +399,31 @@ describe('rule processor', () => {
     expect(result.className).toMatchInlineSnapshot(`
       [
         "buttonStyle--size_sm",
-        "md\\\\:buttonStyle--size_md",
+        "md\\:buttonStyle--size_md",
         "buttonStyle--variant_solid",
         "buttonStyle",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
+      }
+      }
+
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem
+          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_solid {
@@ -237,30 +434,19 @@ describe('rule processor', () => {
         .buttonStyle--variant_solid[data-disabled] {
           background-color: gray;
           color: var(--colors-black);
+          font-size: var(--font-sizes-2xl);
       }
 
         .buttonStyle--variant_solid:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
-      }
-
         @media screen and (min-width: 48em) {
-          .md\\\\:buttonStyle--size_md {
+          .md\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
-            padding: 0 0.75rem
-          }
+            padding: 0 0.75rem;
+      }
       }
       }"
     `)
@@ -327,123 +513,123 @@ describe('rule processor', () => {
         "d_inline-flex",
         "items_center",
         "justify_center",
-        "textStyle_headline\\\\.h1",
-        "h_2\\\\.5rem",
-        "min-w_2\\\\.5rem",
-        "p_0_0\\\\.5rem",
+        "textStyle_headline\\.h1",
+        "h_2\\.5rem",
+        "min-w_2\\.5rem",
+        "p_0_0\\.5rem",
         "h_3rem",
         "min-w_3rem",
-        "p_0_0\\\\.75rem",
+        "p_0_0\\.75rem",
         "bg_blue",
         "text_white",
-        "hover\\\\:bg_darkblue",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black",
         "bg_transparent",
         "border_1px_solid_blue",
         "text_blue",
-        "hover\\\\:bg_blue",
-        "hover\\\\:text_white",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray",
-        "\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:text_black",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
+        "\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:text_gray",
+        "hover\\:bg_darkblue",
+        "hover\\:bg_blue",
+        "hover\\:text_white",
       ]
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        @layer compositions {
+          .textStyle_headline\\.h1 {
+            font-size: 2rem;
+            font-weight: var(--font-weights-bold);
+      }
+      }
+
         .d_inline-flex {
-          display: inline-flex
+          display: inline-flex;
       }
 
         .items_center {
-          align-items: center
+          align-items: center;
       }
 
         .justify_center {
-          justify-content: center
+          justify-content: center;
       }
 
-        .h_2\\\\.5rem {
-          height: 2.5rem
+        .h_2\\.5rem {
+          height: 2.5rem;
       }
 
-        .min-w_2\\\\.5rem {
-          min-width: 2.5rem
+        .min-w_2\\.5rem {
+          min-width: 2.5rem;
       }
 
-        .p_0_0\\\\.5rem {
-          padding: 0 0.5rem
+        .p_0_0\\.5rem {
+          padding: 0 0.5rem;
       }
 
         .h_3rem {
-          height: 3rem
+          height: 3rem;
       }
 
         .min-w_3rem {
-          min-width: 3rem
+          min-width: 3rem;
       }
 
-        .p_0_0\\\\.75rem {
-          padding: 0 0.75rem
+        .p_0_0\\.75rem {
+          padding: 0 0.75rem;
       }
 
         .bg_blue {
-          background-color: blue
+          background-color: blue;
       }
 
         .text_white {
-          color: var(--colors-white)
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_gray[data-disabled] {
-          background-color: gray
-      }
-
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_black[data-disabled] {
-          color: var(--colors-black)
+          color: var(--colors-white);
       }
 
         .bg_transparent {
-          background-color: var(--colors-transparent)
+          background-color: var(--colors-transparent);
       }
 
         .border_1px_solid_blue {
-          border: 1px solid blue
+          border: 1px solid blue;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
 
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:bg_transparent[data-disabled] {
-          background-color: var(--colors-transparent)
+        .\\[\\&\\[data-disabled\\]\\]\\:bg_gray[data-disabled] {
+          background-color: gray;
       }
 
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:border_1px_solid_gray[data-disabled] {
-          border: 1px solid gray
+        .\\[\\&\\[data-disabled\\]\\]\\:text_black[data-disabled] {
+          color: var(--colors-black);
       }
 
-        .\\\\[\\\\&\\\\[data-disabled\\\\]\\\\]\\\\:text_gray[data-disabled] {
-          color: gray
+        .\\[\\&\\[data-disabled\\]\\]\\:bg_transparent[data-disabled] {
+          background-color: var(--colors-transparent);
       }
 
-        .hover\\\\:bg_darkblue:is(:hover, [data-hover]) {
-          background-color: darkblue
+        .\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray[data-disabled] {
+          border: 1px solid gray;
       }
 
-        .hover\\\\:bg_blue:is(:hover, [data-hover]) {
-          background-color: blue
+        .\\[\\&\\[data-disabled\\]\\]\\:text_gray[data-disabled] {
+          color: gray;
       }
 
-        .hover\\\\:text_white:is(:hover, [data-hover]) {
-          color: var(--colors-white)
+        .hover\\:bg_darkblue:is(:hover, [data-hover]) {
+          background-color: darkblue;
       }
 
-        @layer compositions {
-          .textStyle_headline\\\\.h1 {
-            font-size: 2rem;
-            font-weight: var(--font-weights-bold)
+        .hover\\:bg_blue:is(:hover, [data-hover]) {
+          background-color: blue;
       }
+
+        .hover\\:text_white:is(:hover, [data-hover]) {
+          color: var(--colors-white);
       }
       }"
     `)
@@ -457,9 +643,9 @@ describe('rule processor', () => {
         "checkbox__root--size_sm",
         "checkbox__control--size_sm",
         "checkbox__label--size_sm",
-        "md\\\\:checkbox__root--size_md",
-        "md\\\\:checkbox__control--size_md",
-        "md\\\\:checkbox__label--size_md",
+        "md\\:checkbox__root--size_md",
+        "md\\:checkbox__control--size_md",
+        "md\\:checkbox__label--size_md",
         "checkbox__root",
         "checkbox__control",
         "checkbox__label",
@@ -467,43 +653,42 @@ describe('rule processor', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes.slots {
+        @layer _base {
+          .checkbox__root {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+      }
+
+          .checkbox__control {
+            border-width: 1px;
+            border-radius: var(--radii-sm);
+      }
+
+          .checkbox__label {
+            margin-inline-start: var(--spacing-2);
+      }
+      }
 
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
           width: var(--sizes-8);
-          height: var(--sizes-8)
+          height: var(--sizes-8);
       }
 
         .checkbox__label--size_sm {
-          font-size: var(--font-sizes-sm)
-      }
-
-        @layer _base {
-          .checkbox__root {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-2)
-      }
-
-          .checkbox__control {
-            border-width: 1px;
-            border-radius: var(--radii-sm)
-      }
-
-          .checkbox__label {
-            margin-inline-start: var(--spacing-2)
-      }
+          font-size: var(--font-sizes-sm);
       }
 
         @media screen and (min-width: 48em) {
-          .md\\\\:checkbox__control--size_md {
+          .md\\:checkbox__control--size_md {
             width: var(--sizes-10);
-            height: var(--sizes-10)
-          }
-          .md\\\\:checkbox__label--size_md {
-            font-size: var(--font-sizes-md)
-          }
+            height: var(--sizes-10);
+      }
+          .md\\:checkbox__label--size_md {
+            font-size: var(--font-sizes-md);
+      }
       }
       }"
     `)
@@ -561,63 +746,63 @@ describe('rule processor', () => {
     expect(checkbox.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
-          display: flex
+          display: flex;
       }
 
         .items_center {
-          align-items: center
+          align-items: center;
       }
 
         .gap_2 {
-          gap: var(--spacing-2)
+          gap: var(--spacing-2);
       }
 
         .border-w_1px {
-          border-width: 1px
+          border-width: 1px;
       }
 
         .rounded_sm {
-          border-radius: var(--radii-sm)
+          border-radius: var(--radii-sm);
       }
 
         .w_8 {
-          width: var(--sizes-8)
+          width: var(--sizes-8);
       }
 
         .h_8 {
-          height: var(--sizes-8)
+          height: var(--sizes-8);
       }
 
         .w_10 {
-          width: var(--sizes-10)
+          width: var(--sizes-10);
       }
 
         .h_10 {
-          height: var(--sizes-10)
+          height: var(--sizes-10);
       }
 
         .w_12 {
-          width: var(--sizes-12)
+          width: var(--sizes-12);
       }
 
         .h_12 {
-          height: var(--sizes-12)
+          height: var(--sizes-12);
       }
 
         .ms_2 {
-          margin-inline-start: var(--spacing-2)
+          margin-inline-start: var(--spacing-2);
       }
 
         .fs_sm {
-          font-size: var(--font-sizes-sm)
+          font-size: var(--font-sizes-sm);
       }
 
         .fs_md {
-          font-size: var(--font-sizes-md)
+          font-size: var(--font-sizes-md);
       }
 
         .fs_lg {
-          font-size: var(--font-sizes-lg)
+          font-size: var(--font-sizes-lg);
       }
       }"
     `)
@@ -635,7 +820,7 @@ describe('rule processor', () => {
     })
 
     const result = processor.recipe('button', {})!
-    expect(result.className).toMatchInlineSnapshot(`
+    expect(result.getClassNames()).toMatchInlineSnapshot(`
       [
         "btn",
       ]
@@ -645,15 +830,12 @@ describe('rule processor', () => {
         @layer _base {
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -682,7 +864,7 @@ describe('rule processor', () => {
         },
       },
     })
-    processor.prepare()
+    processor.clone()
     processor.css({
       color: 'blue.300',
       _hover: {
@@ -728,15 +910,12 @@ describe('rule processor', () => {
 
           .btn {
             line-height: 1.2;
+            display: inline-flex;
+            outline: var(--borders-none);
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
             opacity: 0.4;
-      }
-
-          .btn {
-            display: inline-flex;
-            outline: var(--borders-none);
       }
 
           .btn:is(:focus-visible, [data-focus-visible]) {
@@ -754,28 +933,28 @@ describe('rule processor', () => {
       }
 
       @layer utilities {
-        .text_blue\\\\.300 {
-          color: var(--colors-blue-300)
+        .text_blue\\.300 {
+          color: var(--colors-blue-300);
       }
 
         .fs_12px {
-          font-size: 12px
+          font-size: 12px;
       }
 
         .fs_14px {
-          font-size: 14px
+          font-size: 14px;
       }
 
         .fs_16px {
-          font-size: 16px
+          font-size: 16px;
       }
 
-        .border_2px_solid_token\\\\(colors\\\\.green\\\\.100\\\\) {
-          border: 2px solid var(--colors-green-100)
+        .border_2px_solid_token\\(colors\\.green\\.100\\) {
+          border: 2px solid var(--colors-green-100);
       }
 
-        .hover\\\\:text_red\\\\.400:is(:hover, [data-hover]) {
-          color: var(--colors-red-400)
+        .hover\\:text_red\\.400:is(:hover, [data-hover]) {
+          color: var(--colors-red-400);
       }
       }"
     `)
@@ -785,7 +964,7 @@ describe('rule processor', () => {
     const ctx = createGeneratorContext()
     const processor = new RuleProcessor(ctx as any)
 
-    const step1 = processor.prepare()
+    const step1 = processor.clone()
 
     step1.encoder.fromJSON({
       schemaVersion: 'x',
@@ -797,16 +976,16 @@ describe('rule processor', () => {
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_red {
-          color: red
+          color: red;
       }
 
         .text_blue {
-          color: blue
+          color: blue;
       }
       }"
     `)
 
-    const step2 = processor.prepare()
+    const step2 = processor.clone()
 
     step2.encoder.fromJSON({
       schemaVersion: 'x',
@@ -817,10 +996,6 @@ describe('rule processor', () => {
 
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
-        .variant_solid {
-          variant: solid
-      }
-
         @layer _base {
           .buttonStyle {
             display: inline-flex;
@@ -830,23 +1005,18 @@ describe('rule processor', () => {
 
           .buttonStyle:is(:hover, [data-hover]) {
             background-color: var(--colors-red-200);
-      }
+            font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
 
-      @layer utilities {
-
-        .text_red {
-          color: red
-      }
-
-        .text_blue {
-          color: blue
+        .variant_solid {
+          variant: solid;
       }
       }"
     `)
 
-    const step3 = processor.prepare()
+    const step3 = processor.clone()
 
     step3.encoder.fromJSON({
       schemaVersion: 'x',
@@ -873,97 +1043,67 @@ describe('rule processor', () => {
 
     step3.decoder.collect(step3.encoder)
     expect(step3.toCss()).toMatchInlineSnapshot(`
-      "@layer recipes {
-
-        .variant_solid {
-          variant: solid
-      }
-
-        @layer _base {
-
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-      }
-
-          .buttonStyle:is(:hover, [data-hover]) {
-            background-color: var(--colors-red-200);
-      }
-      }
-      }
-
-      @layer recipes.slots {
-
-        .checkbox__control--size_md {
-          width: var(--sizes-10);
-          height: var(--sizes-10)
-      }
-
-        .checkbox__label--size_md {
-          font-size: var(--font-sizes-md)
-      }
-
+      "@layer recipes.slots {
         @layer _base {
           .checkbox__root {
             display: flex;
             align-items: center;
-            gap: var(--spacing-2)
+            gap: var(--spacing-2);
       }
 
           .checkbox__control {
             border-width: 1px;
-            border-radius: var(--radii-sm)
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {
-            margin-inline-start: var(--spacing-2)
+            margin-inline-start: var(--spacing-2);
       }
+      }
+
+        .checkbox__control--size_md {
+          width: var(--sizes-10);
+          height: var(--sizes-10);
+      }
+
+        .checkbox__label--size_md {
+          font-size: var(--font-sizes-md);
       }
       }
 
       @layer utilities {
-
-        .text_red {
-          color: red
-      }
-
-        .text_blue {
-          color: blue
-      }
-
         .d_none {
-          display: none
+          display: none;
       }
 
-        .h_100\\\\% {
-          height: 100%
+        .h_100\\% {
+          height: 100%;
       }
 
-        .transition_all_\\\\.3s_ease-in-out {
-          transition: all .3s ease-in-out
+        .transition_all_\\.3s_ease-in-out {
+          transition: all .3s ease-in-out;
       }
 
-        .opacity_0\\\\! {
-          opacity: 0 !important
+        .opacity_0\\! {
+          opacity: 0 !important;
       }
 
         .opacity_1 {
-          opacity: 1
+          opacity: 1;
       }
 
         .h_10px {
-          height: 10px
+          height: 10px;
       }
 
         .bg-gradient_to-b {
           --gradient-stops: var(--gradient-from), var(--gradient-to);
           --gradient: var(--gradient-via-stops, var(--gradient-stops));
-          background-image: linear-gradient(to bottom, var(--gradient))
+          background-image: linear-gradient(to bottom, var(--gradient));
       }
 
-        .from_rgb\\\\(200_200_200_\\\\/_\\\\.4\\\\) {
-          --gradient-from: rgb(200 200 200 / .4)
+        .from_rgb\\(200_200_200_\\/_\\.4\\) {
+          --gradient-from: rgb(200 200 200 / .4);
       }
       }"
     `)
@@ -990,7 +1130,7 @@ describe('rule processor', () => {
         .truncate_true {
           overflow: hidden;
           text-overflow: ellipsis;
-          white-space: nowrap
+          white-space: nowrap;
       }
       }",
       }
@@ -1017,21 +1157,136 @@ describe('rule processor', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "className": [
-          "text_\\\\#fff",
+          "text_\\#fff",
           "d_block",
           "d_none",
         ],
         "css": "@layer utilities {
-        .text_\\\\#fff {
-          color: #fff
+        .text_\\#fff {
+          color: #fff;
       }
 
         .d_block {
-          display: block
+          display: block;
       }
 
         .d_none {
-          display: none
+          display: none;
+      }
+      }",
+      }
+    `)
+  })
+})
+
+describe('js to css', () => {
+  test('ignores declarations with null', () => {
+    const result = css({
+      font: undefined,
+      color: null,
+      background: false,
+    })
+
+    expect(result.css).toMatchInlineSnapshot('""')
+  })
+
+  test('unitless', () => {
+    const result = css({
+      '--foo': 42,
+      width: 42,
+      opacity: 1,
+      zIndex: 0,
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\--foo_42 {
+          --foo: 42;
+      }
+
+        .w_42 {
+          width: 42px;
+      }
+
+        .opacity_1 {
+          opacity: 1;
+      }
+
+        .z_0 {
+          z-index: 0;
+      }
+      }"
+    `)
+  })
+
+  test('preserves casing for css variable', () => {
+    const result = css({
+      '--testVariable0': '0',
+      '--test-Variable-1': '1',
+      '--test-variable-2': '2',
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\--testVariable0_0 {
+          --testVariable0: 0;
+      }
+
+        .\\--test-Variable-1_1 {
+          --test-Variable-1: 1;
+      }
+
+        .\\--test-variable-2_2 {
+          --test-variable-2: 2;
+      }
+      }"
+    `)
+  })
+
+  test('parses declarations with !important', () => {
+    const result = css({
+      borderColor: 'red !important',
+      color: 'pink!',
+      background: 'white!IMPORTANT  ',
+      fontFamily: 'A',
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .border_red\\! {
+          border-color: red !important;
+      }
+
+        .text_pink\\! {
+          color: pink !important;
+      }
+
+        .bg_white\\! {
+          background: var(--colors-white) !important;
+      }
+
+        .font_A {
+          font-family: A;
+      }
+      }"
+    `)
+  })
+
+  test('color mix', () => {
+    expect(css({ bg: 'red.300/40', color: 'white' })).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "bg_red\\.300\\/40",
+          "text_white",
+        ],
+        "css": "@layer utilities {
+        .bg_red\\.300\\/40 {
+          --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+          background: var(--mix-background, var(--colors-red-300));
+      }
+
+        .text_white {
+          color: var(--colors-white);
       }
       }",
       }

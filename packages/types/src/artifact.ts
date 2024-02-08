@@ -1,4 +1,4 @@
-import type { Nullable } from './shared'
+import { type Difference } from 'microdiff'
 
 export interface ArtifactContent {
   file: string
@@ -25,20 +25,16 @@ export type ArtifactId =
   | 'jsx-patterns'
   | 'jsx-patterns-index'
   | 'css-index'
-  | 'reset.css'
-  | 'global.css'
-  | 'static.css'
   | 'package.json'
-  | 'styles.css'
   | (string & {})
 
 export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 
-export type Artifact = Nullable<{
+export type Artifact = {
   id: ArtifactId
   dir?: string[]
   files: ArtifactContent[]
-}>
+}
 
 export interface AffectedArtifacts {
   recipes: string[]
@@ -48,4 +44,10 @@ export interface AffectedArtifacts {
 export interface ArtifactFilters {
   ids?: ArtifactId[]
   affecteds?: AffectedArtifacts
+}
+
+export interface DiffConfigResult {
+  hasConfigChanged: boolean
+  artifacts: Set<ArtifactId>
+  diffs: Difference[]
 }

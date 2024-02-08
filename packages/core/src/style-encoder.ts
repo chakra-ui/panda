@@ -1,4 +1,5 @@
 import {
+  PandaError,
   getOrCreateSet,
   getSlotRecipes,
   isObjectOrArray,
@@ -11,7 +12,6 @@ import type {
   EncoderJson,
   PartialBy,
   RecipeConfig,
-  RecipeVariantRecord,
   ResultItem,
   SlotRecipeDefinition,
   StyleEntry,
@@ -122,7 +122,6 @@ export class StyleEncoder {
           prevProp = prop
           return
         }
-
         const resolvedCondition = getResolvedCondition(path, isCondition)
 
         const hashed = hashStyleEntry(Object.assign(baseEntry ?? {}, { prop, value, cond: resolvedCondition }))
@@ -160,7 +159,7 @@ export class StyleEncoder {
     })
   }
 
-  processConfigSlotRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+  processConfigSlotRecipe = (recipeName: string, variants: Record<string, any>) => {
     const config = this.context.recipes.getConfig(recipeName)
     if (!Recipes.isSlotRecipeConfig(config)) return
 
@@ -190,7 +189,7 @@ export class StyleEncoder {
     this.hashStyleObject(base_set, config.base, { recipe: recipeName })
   }
 
-  processConfigRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+  processConfigRecipe = (recipeName: string, variants: Record<string, any>) => {
     const config = this.context.recipes.getConfig(recipeName)
     if (!config) return
 
@@ -211,7 +210,7 @@ export class StyleEncoder {
     })
   }
 
-  processRecipe = (recipeName: string, variants: RecipeVariantRecord) => {
+  processRecipe = (recipeName: string, variants: Record<string, any>) => {
     if (this.context.recipes.isSlotRecipe(recipeName)) {
       this.processConfigSlotRecipe(recipeName, variants)
     } else {
@@ -282,10 +281,10 @@ export class StyleEncoder {
     const recipeConfig = this.context.recipes.getConfigOrThrow(recipeName)
 
     if (!Recipes.isSlotRecipeConfig(recipeConfig)) {
-      throw new Error(`Recipe "${recipeName}" is not a slot recipe`)
+      throw new PandaError('INVALID_RECIPE', `Recipe "${recipeName}" is not a slot recipe`)
     }
 
-    const base: Dict = Object.create(null)
+    const base: Dict = {}
 
     recipeConfig.slots.map((slot) => {
       const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)

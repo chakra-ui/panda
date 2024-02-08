@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/config",
-  "version": "0.26.1",
+  "version": "0.30.1",
   "description": "Find and load panda config",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -56,26 +56,24 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "pnpm tsup --dts",
-    "build-fast": "pnpm tsup --no-dts",
+    "build": "tsup --tsconfig tsconfig.build.json --dts",
+    "build-fast": "tsup --no-dts",
     "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "bundle-n-require": "^1.0.1",
+    "bundle-n-require": "1.1.1",
     "escalade": "3.1.1",
-    "jiti": "^1.19.1",
-    "merge-anything": "^5.1.7",
-    "microdiff": "^1.3.2",
-    "typescript": "^5.3.3"
+    "merge-anything": "5.1.7",
+    "microdiff": "1.3.2",
+    "typescript": "5.3.3"
   },
   "devDependencies": {
     "pkg-types": "1.0.3"

@@ -18,6 +18,52 @@ This error seems to be caused by process timing issues between file writes. This
 
 ---
 
+### HMR does not work when I use `tsconfig` paths?
+
+Panda tries to automatically infer and read the custom paths defined in `tsconfig.json` file. However, there might be scenarios where the hot module replacement doesn't work.
+
+To fix this add the `importMap` option to your `panda.config.js` file, setting it's value to the specified `paths` in your `tsconfig.json` file.
+
+```json
+// tsconfig.json
+
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@my-path/*": ["./styled-system/*"]
+    }
+  }
+}
+```
+
+```js
+// panda.config.js
+
+module.exports = {
+  importMap: '@my-path'
+}
+```
+
+This will ensure that the paths are resolved correctly, and HMR works as expected.
+
+---
+
+#### HMR not triggered
+
+If you are having issues with HMR not being triggered after a `panda.config.ts` change (or one of its [dependencies](/docs/references/config#dependencies)), you can manually specify the files that should trigger a rebuild by adding the following to your `panda.config.ts`:
+
+```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  dependencies: ['path/to/files/**.ts']
+})
+```
+
+---
+
 ### Why are my styles not applied?
 
 Check that the [`@layer` rules](/docs/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported and that the `panda` command has been run (or is running with `--watch`).

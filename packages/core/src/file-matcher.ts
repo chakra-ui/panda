@@ -93,7 +93,7 @@ export class FileMatcher {
 
   private createMatch = (mod: string, keys: string[]) => {
     const mods = this.imports.filter((o) => {
-      const isFromMod = o.mod.includes(mod) || o.importMapValue === mod
+      const isFromMod = o.mod.includes(mod) || o.importMapValue?.includes(mod)
       const isOneOfKeys = keys.includes(o.name)
       return isFromMod && isOneOfKeys
     })
@@ -147,17 +147,20 @@ export class FileMatcher {
     return Boolean(jsx.isEnabled && tagName.startsWith(this.jsxFactoryAlias))
   })
 
-  matchTag = memo((tagName: string) => {
+  isPandaComponent = memo((tagName: string) => {
     // ignore fragments
     if (!tagName) return false
     const { jsx } = this.context
     return (
       this.components.has(tagName) ||
-      isUpperCase(tagName) ||
       this.isJsxFactory(tagName) ||
       jsx.isJsxTagRecipe(tagName) ||
       jsx.isJsxTagPattern(tagName)
     )
+  })
+
+  matchTag = memo((tagName: string) => {
+    return this.isPandaComponent(tagName) || isUpperCase(tagName)
   })
 
   matchTagProp = memo((tagName: string, propName: string) => {

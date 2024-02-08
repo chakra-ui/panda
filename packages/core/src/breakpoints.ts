@@ -3,18 +3,18 @@ import type { RawCondition } from '@pandacss/types'
 import type { Root } from 'postcss'
 
 export class Breakpoints {
-  constructor(private breakpoints: Record<string, string>) {}
+  sorted: ReturnType<typeof sortBreakpoints>
+  values: Record<string, BreakpointEntry>
+  keys: string[]
+  ranges: Record<string, string>
+  conditions: Record<string, Cond>
 
-  get sorted() {
-    return sortBreakpoints(this.breakpoints)
-  }
-
-  get values() {
-    return Object.fromEntries(this.sorted)
-  }
-
-  get keys() {
-    return ['base', ...Object.keys(this.values)]
+  constructor(private breakpoints: Record<string, string>) {
+    this.sorted = sortBreakpoints(breakpoints)
+    this.values = Object.fromEntries(this.sorted)
+    this.keys = ['base', ...Object.keys(this.values)]
+    this.ranges = this.getRanges()
+    this.conditions = this.getConditions()
   }
 
   get = (name: string) => {
@@ -31,7 +31,7 @@ export class Breakpoints {
     return this.build({ min, max })
   }
 
-  get ranges(): Record<string, string> {
+  private getRanges = () => {
     const breakpoints: string[] = Object.keys(this.values)
     const permuations = getPermutations(breakpoints)
 
@@ -57,7 +57,7 @@ export class Breakpoints {
     return Object.fromEntries(values)
   }
 
-  get conditions(): Record<string, Cond> {
+  private getConditions = () => {
     const values = Object.entries(this.ranges).map(([key, value]) => {
       return [key, toCondition(key, value)]
     })
@@ -81,7 +81,8 @@ export class Breakpoints {
   }
 }
 
-type Entries = [string, { name: string; min?: string | null; max?: string | null }][]
+type BreakpointEntry = { name: string; min?: string | null; max?: string | null }
+type Entries = [string, BreakpointEntry][]
 
 function adjust(value: string | null | undefined) {
   const computedMax = parseFloat(toPx(value!) ?? '') - 0.04

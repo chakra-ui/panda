@@ -13,13 +13,20 @@ export type PatternProperty =
 
 export interface PatternHelpers {
   map: (value: any, fn: (value: string) => string | undefined) => any
+  isCssUnit: (value: any) => boolean
+  isCssVar: (value: any) => boolean
+  isCssFunction: (value: any) => boolean
 }
 
 export interface PatternProperties {
   [key: string]: PatternProperty
 }
 
-type Props<T> = Record<LiteralUnion<keyof T>, any>
+type InferProps<T> = Record<LiteralUnion<keyof T>, any>
+
+export type PatternDefaultValue<T> = Partial<InferProps<T>>
+
+export type PatternDefaultValueFn<T> = (props: InferProps<T>) => PatternDefaultValue<T>
 
 export interface PatternConfig<T extends PatternProperties = PatternProperties> {
   /**
@@ -36,9 +43,13 @@ export interface PatternConfig<T extends PatternProperties = PatternProperties> 
    */
   properties?: T
   /**
+   * The default values of the pattern.
+   */
+  defaultValues?: PatternDefaultValue<T> | PatternDefaultValueFn<T>
+  /**
    * The css object this pattern will generate.
    */
-  transform?: (props: Props<T>, helpers: PatternHelpers) => SystemStyleObject
+  transform?: (props: InferProps<T>, helpers: PatternHelpers) => SystemStyleObject
   /**
    * The jsx element name this pattern will generate.
    */

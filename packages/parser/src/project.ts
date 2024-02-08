@@ -1,5 +1,5 @@
 import type { ParserOptions } from '@pandacss/core'
-import type { ConfigTsOptions, PandaHookable, Runtime } from '@pandacss/types'
+import type { ConfigTsOptions, PandaHooks, ParserResultConfigureOptions, Runtime } from '@pandacss/types'
 import {
   FileSystemRefreshResult,
   ScriptKind,
@@ -29,7 +29,7 @@ const createTsProject = (options: Partial<TsProjectOptions>) =>
 export interface ProjectOptions extends TsProjectOptions {
   readFile: Runtime['fs']['readFileSync']
   getFiles(): string[]
-  hooks: PandaHookable
+  hooks: Partial<PandaHooks>
   parserOptions: ParserOptions
   tsOptions?: ConfigTsOptions
 }
@@ -125,19 +125,33 @@ export class Project {
     const sourceFile = this.project.getSourceFile(filePath)
     if (!sourceFile) return
 
-    const content = sourceFile.getText()
-    const transformed = this.transformFile(filePath, content)
+    const original = sourceFile.getText()
+
+    const options: ParserResultConfigureOptions = {}
+    const custom = hooks['parser:before']?.({
+      filePath,
+      content: original,
+      configure(opts) {
+        const { matchTag, matchTagProp } = opts
+        if (matchTag) {
+          options.matchTag = matchTag
+        }
+        if (matchTagProp) {
+          options.matchTagProp = matchTagProp
+        }
+      },
+    })
+    const transformed = custom ?? this.transformFile(filePath, original)
 
     // update SourceFile AST if content is different (.vue, .svelte)
-    if (content !== transformed) {
+    // or if the hook returned a different content
+    if (original !== transformed) {
       sourceFile.replaceWithText(transformed)
     }
 
-    hooks.callHook('parser:before', filePath, content)
+    const result = this.parser(sourceFile, encoder, options)?.setFilePath(filePath)
 
-    const result = this.parser(sourceFile, encoder)?.setFilePath(filePath)
-
-    hooks.callHook('parser:after', filePath, result)
+    hooks['parser:after']?.({ filePath, result })
 
     return result
   }

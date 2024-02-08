@@ -1,15 +1,10 @@
 import { dashCase } from '@pandacss/shared'
-import type { ArtifactId, Config } from '@pandacss/types'
-import microdiff, { type Difference } from 'microdiff'
+import type { ArtifactId, Config, DiffConfigResult } from '@pandacss/types'
+import microdiff from 'microdiff'
 import { artifactMatchers } from './config-deps'
 
-export interface DiffConfigResult {
-  hasConfigChanged: boolean
-  artifacts: Set<ArtifactId>
-  diffs: Difference[]
-}
-
 type ConfigOrFn = Config | (() => Config)
+
 const runIfFn = (fn: ConfigOrFn): Config => (typeof fn === 'function' ? fn() : fn)
 
 /**

@@ -1,8 +1,7 @@
 import { logger } from '@pandacss/logger'
-import { isBaseCondition, withoutSpace } from '@pandacss/shared'
+import { isBaseCondition, toEm, withoutSpace } from '@pandacss/shared'
 import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
-import { ConditionalRule } from './conditional-rule'
 import { parseCondition } from './parse-condition'
 
 const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
@@ -10,10 +9,14 @@ const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-ne
 interface Options {
   conditions?: Dict<string>
   breakpoints?: Record<string, string>
+  containerNames?: string[]
+  containerSizes?: Record<string, string>
 }
 
 const underscoreRegex = /^_/
 const selectorRegex = /&|@/
+
+type Cond = RawCondition & { params: string }
 
 export class Conditions {
   values: Record<string, RawCondition>
@@ -21,16 +24,43 @@ export class Conditions {
   breakpoints: Breakpoints
 
   constructor(private options: Options) {
-    const { breakpoints: breakpointValues = {}, conditions = {} } = this.options
+    const { breakpoints: breakpointValues = {}, conditions = {} } = options
+
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
 
     const entries = Object.entries(conditions).map(([key, value]) => [`_${key}`, parseCondition(value)])
 
+    const containers = this.setupContainers()
+
     this.values = {
       ...Object.fromEntries(entries),
       ...breakpoints.conditions,
+      ...containers,
     }
+  }
+
+  private setupContainers = () => {
+    const { containerNames = [], containerSizes = {} } = this.options
+
+    const containers: Record<string, Cond> = {}
+    containerNames.unshift('') // add empty container name for @/sm, @/md, etc.
+
+    containerNames.forEach((name) => {
+      Object.entries(containerSizes).forEach(([size, value]) => {
+        const _value = toEm(value) ?? value
+        containers[`@${name}/${size}`] = {
+          type: 'at-rule',
+          name: 'container',
+          raw: name,
+          value: _value,
+          rawValue: `@container ${name} (min-width: ${_value})`,
+          params: `${name} ${value}`,
+        }
+      })
+    })
+
+    return containers
   }
 
   finalize = (paths: string[]) => {
@@ -111,10 +141,6 @@ export class Conditions {
 
   keys = () => {
     return Object.keys(this.values)
-  }
-
-  rule = () => {
-    return new ConditionalRule(this)
   }
 
   saveOne = (key: string, value: string) => {

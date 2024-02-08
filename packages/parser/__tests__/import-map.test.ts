@@ -6,7 +6,7 @@ describe('config.importMap', () => {
     const code = `
         import { css } from "../styled-system/css";
         import { container } from "../styled-system/patterns";
-    
+
         export default function App() {
           return (
             <div
@@ -33,11 +33,11 @@ describe('config.importMap', () => {
             </div>
           );
         }
-    
+
          `
     const result = parseAndExtract(
       code,
-      { outdir: 'src/styled-system', cwd: 'app' },
+      { outdir: 'src/styled-system', cwd: 'app', importMap: 'styled-system' },
       { compilerOptions: { baseUrl: 'app/src' } },
     )
 
@@ -90,77 +90,77 @@ describe('config.importMap', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .pos_relative {
-          position: relative
+          position: relative;
       }
 
         .max-w_8xl {
-          max-width: var(--sizes-8xl)
+          max-width: var(--sizes-8xl);
       }
 
         .mx_auto {
-          margin-inline: auto
+          margin-inline: auto;
       }
 
         .px_4 {
-          padding-inline: var(--spacing-4)
+          padding-inline: var(--spacing-4);
       }
 
         .page_A4 {
-          page: A4
+          page: A4;
       }
 
         .h_600px {
-          height: 600px
+          height: 600px;
       }
 
         .d_flex {
-          display: flex
+          display: flex;
       }
 
         .m_auto {
-          margin: auto
+          margin: auto;
       }
 
         .flex_column {
-          flex-direction: column
+          flex-direction: column;
       }
 
         .flex_2 {
-          flex: 2
+          flex: 2;
       }
 
         .flex_1 {
-          flex: 1 1 0%
+          flex: 1 1 0%;
       }
 
         @media screen and (min-width: 40em) {
-          .sm\\\\:flex_row {
-            flex-direction: row
-          }
+          .sm\\:flex_row {
+            flex-direction: row;
+      }
       }
 
         @media screen and (min-width: 48em) {
-          .md\\\\:px_6 {
-            padding-inline: var(--spacing-6)
-          }
+          .md\\:px_6 {
+            padding-inline: var(--spacing-6);
+      }
       }
 
         @media screen and (min-width: 64em) {
-          .lg\\\\:px_8 {
-            padding-inline: var(--spacing-8)
-          }
+          .lg\\:px_8 {
+            padding-inline: var(--spacing-8);
+      }
       }
 
         @media print {
-          .print\\\\:w_210mm {
-            width: 210mm
-          }
-          .print\\\\:h_297mm {
-            height: 297mm
-          }
-          .print\\\\:flex_row {
-            flex-direction: row
-          }
+          .print\\:w_210mm {
+            width: 210mm;
+      }
+          .print\\:h_297mm {
+            height: 297mm;
+      }
+          .print\\:flex_row {
+            flex-direction: row;
+      }
       }
       }"
     `)

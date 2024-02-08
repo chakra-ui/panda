@@ -42,7 +42,7 @@ describe('extract Vue templates', () => {
     expect(transformed).toMatchInlineSnapshot(`
       "
               import { ref } from 'vue';
-              import { css } from \\"styled-system/css\\";
+              import { css } from "styled-system/css";
 
               export default {
                   setup() {
@@ -57,7 +57,7 @@ describe('extract Vue templates', () => {
       const render = <template>
                 <h1 class={style}>using class binding</h1>
                 <p class={css({ color: 'red.500' })}>using inline styles</p>
-                <span class=\\"style3\\">using actual class</span>
+                <span class="style3">using actual class</span>
                 <div class={css({ color: 'red', fontWeight: 'bold' })}>
                   <p>depth 1 children</p>
                   <div class={css({ color: 'green' })}>
@@ -121,28 +121,28 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_green\\\\.400 {
-          color: var(--colors-green-400)
+        .text_green\\.400 {
+          color: var(--colors-green-400);
       }
 
-        .text_purple\\\\.400 {
-          color: var(--colors-purple-400)
+        .text_purple\\.400 {
+          color: var(--colors-purple-400);
       }
 
-        .text_red\\\\.500 {
-          color: var(--colors-red-500)
+        .text_red\\.500 {
+          color: var(--colors-red-500);
       }
 
         .text_red {
-          color: red
+          color: red;
       }
 
         .font_bold {
-          font-weight: var(--font-weights-bold)
+          font-weight: var(--font-weights-bold);
       }
 
         .text_green {
-          color: green
+          color: green;
       }
       }"
     `)
@@ -183,19 +183,19 @@ describe('extract Vue templates', () => {
     const transformed = vueToTsx(code)
     expect(transformed).toMatchInlineSnapshot(`
       "
-          import { css } from \\"styled-system/css\\";
+          import { css } from "styled-system/css";
         
 
       const render = <template>
           <div>
             <div>
-              <slot name=\\"icon\\"></slot>
+              <slot name="icon"></slot>
               <div class={hstack()}>
                 <p class={css({ textStyle: 'overline' })}>
-                  <slot name=\\"price\\"></slot>
+                  <slot name="price"></slot>
                 </p>
                 <div>
-                  <template v-if=\\"isSelected\\">
+                  <template v-if="isSelected">
                     <IconRadioSelected />
                   </template>
                   <template v-else>
@@ -204,9 +204,9 @@ describe('extract Vue templates', () => {
                 </div>
               </div>
             </div>
-            <h7 class={css({ textStyle: 'h7' })}><slot name=\\"heading\\"></slot></h7>
+            <h7 class={css({ textStyle: 'h7' })}><slot name="heading"></slot></h7>
             <p class={css({ textStyle: 'text', color: 'grey.70' })}>
-              <slot name=\\"description\\"></slot>
+              <slot name="description"></slot>
             </p>
           </div>
         </template>"
@@ -262,8 +262,8 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_grey\\\\.70 {
-          color: grey.70
+        .text_grey\\.70 {
+          color: grey.70;
       }
       }"
     `)
@@ -300,7 +300,7 @@ describe('extract Vue templates', () => {
     const transformed = vueToTsx(code)
     expect(transformed).toMatchInlineSnapshot(`
       "
-              import { css } from \\"styled-system/css\\";
+              import { css } from "styled-system/css";
 
               let style = css({ color: 'green.400' })
               let style2 = css({ color: 'purple.400' })
@@ -309,7 +309,7 @@ describe('extract Vue templates', () => {
       const render = <template>
               <h1 class={style}>using class binding</h1>
               <p class={css({ color: 'red.500' })}>using inline styles</p>
-              <span class=\\"style3\\">using actual class</span>
+              <span class="style3">using actual class</span>
               <div class={css({ color: 'red', fontWeight: 'bold' })}>
                   <p>depth 1 children</p>
                   <div class={css({ color: 'green' })}>
@@ -373,28 +373,28 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_green\\\\.400 {
-          color: var(--colors-green-400)
+        .text_green\\.400 {
+          color: var(--colors-green-400);
       }
 
-        .text_purple\\\\.400 {
-          color: var(--colors-purple-400)
+        .text_purple\\.400 {
+          color: var(--colors-purple-400);
       }
 
-        .text_red\\\\.500 {
-          color: var(--colors-red-500)
+        .text_red\\.500 {
+          color: var(--colors-red-500);
       }
 
         .text_red {
-          color: red
+          color: red;
       }
 
         .font_bold {
-          font-weight: var(--font-weights-bold)
+          font-weight: var(--font-weights-bold);
       }
 
         .text_green {
-          color: green
+          color: green;
       }
       }"
     `)
@@ -450,7 +450,7 @@ describe('extract Vue templates', () => {
       const render = <template>
             <h1 class={style}>using class binding</h1>
             <p class={css({ color: 'red.500' })}>using inline styles</p>
-            <span class=\\"style3\\">using actual class</span>
+            <span class="style3">using actual class</span>
             <div class={css({ color: 'red', fontWeight: 'bold' })}>
               <p>depth 1 children</p>
               <div class={css({ color: 'green' })}>
@@ -514,28 +514,28 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_green\\\\.400 {
-          color: var(--colors-green-400)
+        .text_green\\.400 {
+          color: var(--colors-green-400);
       }
 
-        .text_purple\\\\.400 {
-          color: var(--colors-purple-400)
+        .text_purple\\.400 {
+          color: var(--colors-purple-400);
       }
 
-        .text_red\\\\.500 {
-          color: var(--colors-red-500)
+        .text_red\\.500 {
+          color: var(--colors-red-500);
       }
 
         .text_red {
-          color: red
+          color: red;
       }
 
         .font_bold {
-          font-weight: var(--font-weights-bold)
+          font-weight: var(--font-weights-bold);
       }
 
         .text_green {
-          color: green
+          color: green;
       }
       }"
     `)

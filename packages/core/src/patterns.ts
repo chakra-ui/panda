@@ -1,25 +1,26 @@
-import { capitalize, createRegex, dashCase, isObject, mapObject, memo, uncapitalize } from '@pandacss/shared'
+import { capitalize, createRegex, dashCase, getPatternStyles, isObject, memo, uncapitalize } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
-import type { ArtifactFilters, Dict, PatternConfig, UserConfig } from '@pandacss/types'
+import type { ArtifactFilters, Dict, PatternConfig, PatternHelpers, UserConfig } from '@pandacss/types'
 import type { Utility } from './utility'
-
-const helpers = { map: mapObject }
 
 interface PatternOptions {
   config: UserConfig
   tokens: TokenDictionary
   utility: Utility
+  helpers: PatternHelpers
 }
 
 export class Patterns {
   patterns: Record<string, PatternConfig>
   details: PatternNode[]
+  keys: string[]
   private utility: Utility
   private tokens: TokenDictionary
 
-  constructor(options: PatternOptions) {
+  constructor(private options: PatternOptions) {
     this.patterns = options.config.patterns ?? {}
     this.details = Object.entries(this.patterns).map(([name, pattern]) => this.createDetail(name, pattern))
+    this.keys = Object.keys(this.patterns)
     this.utility = options.utility
     this.tokens = options.tokens
   }
@@ -39,16 +40,14 @@ export class Patterns {
     }
   }
 
-  get keys(): string[] {
-    return Object.keys(this.patterns)
-  }
-
   getConfig(name: string): PatternConfig {
     return this.patterns[name]
   }
 
-  transform(name: string, data: Dict): Dict {
-    return this.patterns[name]?.transform?.(data, helpers) ?? {}
+  transform(name: string, styles: Dict): Dict {
+    const pattern = this.patterns[name]
+    const _styles = getPatternStyles(pattern, styles)
+    return pattern?.transform?.(_styles, this.options.helpers) ?? {}
   }
 
   getNames(name: string): PatternNames {
@@ -121,7 +120,7 @@ export class Patterns {
     }
 
     if (propType.type === 'token') {
-      const values = this.tokens.getValue(propType.value)
+      const values = this.tokens.view.getCategoryValues(propType.value)
       return Object.keys(values ?? {})
     }
   }

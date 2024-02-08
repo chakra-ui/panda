@@ -1,5 +1,346 @@
 # @pandacss/config
 
+## 0.30.1
+
+### Patch Changes
+
+- ffe177fd: Fix the regression caused by the downstream bundle-n-require package, which tries to load custom conditions
+  first. This led to a `could not resolve @pandacss/dev` error
+  - @pandacss/logger@0.30.1
+  - @pandacss/preset-base@0.30.1
+  - @pandacss/preset-panda@0.30.1
+  - @pandacss/shared@0.30.1
+  - @pandacss/types@0.30.1
+
+## 0.30.0
+
+### Minor Changes
+
+- 0dd45b6a: Fix issue where config changes could not be detected due to config bundling returning stale result
+  sometimes.
+
+### Patch Changes
+
+- 74485ef1: Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all
+  presets have been merged.
+
+  For example, this could be used if you want to use most of a preset but want to completely omit a few things, while
+  keeping the rest. Let's say we want to remove the `stack` pattern from the built-in `@pandacss/preset-base`:
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    hooks: {
+      'config:resolved': ({ config, utils }) => {
+        return utils.omit(config, ['patterns.stack'])
+      },
+    },
+  })
+  ```
+
+- ab32d1d7: Fix issue where errors were thrown when semantic tokens are overriden in tokens.
+- d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
+
+  - Add a `logfile` option to the postcss plugin
+
+  Logs will be streamed to the file specified by the `--logfile` flag or the `logfile` option. This is useful for
+  debugging issues that occur during the build process.
+
+  ```sh
+  panda --logfile ./logs/panda.log
+  ```
+
+  ```js
+  module.exports = {
+    plugins: {
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
+      },
+    },
+  }
+  ```
+
+- Updated dependencies [74485ef1]
+- Updated dependencies [ab32d1d7]
+- Updated dependencies [49c760cd]
+- Updated dependencies [d5977c24]
+  - @pandacss/types@0.30.0
+  - @pandacss/shared@0.30.0
+  - @pandacss/logger@0.30.0
+  - @pandacss/preset-base@0.30.0
+  - @pandacss/preset-panda@0.30.0
+
+## 0.29.1
+
+### Patch Changes
+
+- @pandacss/logger@0.29.1
+- @pandacss/preset-base@0.29.1
+- @pandacss/preset-panda@0.29.1
+- @pandacss/shared@0.29.1
+- @pandacss/types@0.29.1
+
+## 0.29.0
+
+### Minor Changes
+
+- a2fb5cc6: - Add support for explicitly specifying config related files that should trigger a context reload on change.
+
+  > We automatically track the config file and (transitive) files imported by the config file as much as possible, but
+  > sometimes we might miss some. You can use this option as a workaround for those edge cases.
+
+  Set the `dependencies` option in `panda.config.ts` to a glob or list of files.
+
+  ```ts
+  export default defineConfig({
+    // ...
+    dependencies: ['path/to/files/**.ts'],
+  })
+  ```
+
+  - Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`,
+    `panda cssgen`, `panda ship`)
+
+  - Watch for more config options paths changes, so that the related artifacts will be regenerated a bit more reliably
+    (ex: updating the `config.hooks` will now trigger a full regeneration of `styled-system`)
+
+### Patch Changes
+
+- ea3f5548: Add config validation:
+
+  - Check for duplicate between token & semanticTokens names
+  - Check for duplicate between recipes/patterns/slots names
+  - Check for token / semanticTokens paths (must end/contain 'value')
+  - Check for self/circular token references
+  - Check for missing tokens references
+  - Check for conditions selectors (must contain '&')
+  - Check for breakpoints units (must be the same)
+
+  > You can set `validate: 'warn'` in your config to only warn about errors or set it to `none` to disable validation
+  > entirely.
+
+- Updated dependencies [5fcdeb75]
+- Updated dependencies [250b4d11]
+- Updated dependencies [f778d3e5]
+- Updated dependencies [a2fb5cc6]
+  - @pandacss/preset-base@0.29.0
+  - @pandacss/types@0.29.0
+  - @pandacss/preset-panda@0.29.0
+  - @pandacss/logger@0.29.0
+  - @pandacss/shared@0.29.0
+
+## 0.28.0
+
+### Minor Changes
+
+- f58f6df2: Refactor `config.hooks` to be much more powerful, you can now:
+
+  - Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
+    load all `recipes` from a folder
+  - Transform a source file's content before parsing it, this could be used to transform the file content to a
+    `tsx`-friendly syntax so that Panda's parser can parse it.
+  - Implement your own parser logic and add the extracted results to the classic Panda pipeline, this could be used to
+    parse style usage from any template language
+  - Tweak the CSS content for any `@layer` or even right before it's written to disk (if using the CLI) or injected
+    through the postcss plugin, allowing all kinds of customizations like removing the unused CSS variables, etc.
+  - React to any config change or after the codegen step (your outdir, the `styled-system` folder) have been generated
+
+  See the list of available `config.hooks` here:
+
+  ```ts
+  export interface PandaHooks {
+    /**
+     * Called when the config is resolved, after all the presets are loaded and merged.
+     * This is the first hook called, you can use it to tweak the config before the context is created.
+     */
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    /**
+     * Called when the Panda context has been created and the API is ready to be used.
+     */
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    /**
+     * Called when the config file or one of its dependencies (imports) has changed.
+     */
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    /**
+     * Called after reading the file content but before parsing it.
+     * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
+     * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
+     */
+    'parser:before': (args: { filePath: string; content: string }) => string | void
+    /**
+     * Called after the file styles are extracted and processed into the resulting ParserResult object.
+     * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
+     */
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    /**
+     * Called after the codegen is completed
+     */
+    'codegen:done': () => MaybeAsyncReturn
+    /**
+     * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
+     * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
+     * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
+     */
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
+  }
+  ```
+
+### Patch Changes
+
+- Updated dependencies [f58f6df2]
+- Updated dependencies [770c7aa4]
+  - @pandacss/types@0.28.0
+  - @pandacss/shared@0.28.0
+  - @pandacss/preset-base@0.28.0
+  - @pandacss/preset-panda@0.28.0
+  - @pandacss/error@0.28.0
+  - @pandacss/logger@0.28.0
+
+## 0.27.3
+
+### Patch Changes
+
+- Updated dependencies [1ed4df77]
+  - @pandacss/types@0.27.3
+  - @pandacss/preset-base@0.27.3
+  - @pandacss/preset-panda@0.27.3
+  - @pandacss/error@0.27.3
+  - @pandacss/logger@0.27.3
+  - @pandacss/shared@0.27.3
+
+## 0.27.2
+
+### Patch Changes
+
+- @pandacss/error@0.27.2
+- @pandacss/logger@0.27.2
+- @pandacss/preset-base@0.27.2
+- @pandacss/preset-panda@0.27.2
+- @pandacss/shared@0.27.2
+- @pandacss/types@0.27.2
+
+## 0.27.1
+
+### Patch Changes
+
+- Updated dependencies [ee9341db]
+  - @pandacss/types@0.27.1
+  - @pandacss/preset-base@0.27.1
+  - @pandacss/preset-panda@0.27.1
+  - @pandacss/error@0.27.1
+  - @pandacss/logger@0.27.1
+  - @pandacss/shared@0.27.1
+
+## 0.27.0
+
+### Minor Changes
+
+- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+
+  ## Public changes:
+
+  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
+    `postcss`.
+  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
+  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
+    this run.
+
+  ## Internal changes:
+
+  - `markImportant` fn from JS instead of walking through postcss AST nodes
+  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
+    object
+  - only compute once `TokenDictionary` properties
+  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
+    and rename it to `transformStyles` to better convey what it does
+
+### Patch Changes
+
+- c9195a4e: ## Change
+
+  Change the config dependencies (files that are transitively imported) detection a bit more permissive to make it work
+  by default in more scenarios.
+
+  ## Context
+
+  This helps when you're in a monorepo and you have a workspace package for your preset, and you want to see the HMR
+  reflecting changes in your app.
+
+  Currently, we only traverse files with the `.ts` extension, this change makes it traverse all files ending with `.ts`,
+  meaning that it will also traverse `.d.ts`, `.d.mts`, `.mts`, etc.
+
+  ## Example
+
+  ```ts
+  // apps/storybook/panda.config.ts
+  import { defineConfig } from '@pandacss/dev'
+  import preset from '@acme/preset'
+
+  export default defineConfig({
+    // ...
+  })
+  ```
+
+  This would not work before, but now it does.
+
+  ```jsonc
+  {
+    "name": "@acme/preset",
+    "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs"
+  }
+  ```
+
+  ## Notes
+
+  This would have been fine before that change.
+
+  ```jsonc
+  // packages/preset/package.json
+  {
+    "name": "@acme/preset",
+    "types": "./src/index.ts", // this was fine
+    "main": "./dist/index.js",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+      }
+      // ...
+    }
+  }
+  ```
+
+- Updated dependencies [84304901]
+- Updated dependencies [bee3ec85]
+- Updated dependencies [74ac0d9d]
+  - @pandacss/preset-panda@0.27.0
+  - @pandacss/preset-base@0.27.0
+  - @pandacss/logger@0.27.0
+  - @pandacss/shared@0.27.0
+  - @pandacss/error@0.27.0
+  - @pandacss/types@0.27.0
+
+## 0.26.2
+
+### Patch Changes
+
+- Updated dependencies [f823a8c5]
+  - @pandacss/preset-base@0.26.2
+  - @pandacss/error@0.26.2
+  - @pandacss/logger@0.26.2
+  - @pandacss/preset-panda@0.26.2
+  - @pandacss/shared@0.26.2
+  - @pandacss/types@0.26.2
+
 ## 0.26.1
 
 ### Patch Changes

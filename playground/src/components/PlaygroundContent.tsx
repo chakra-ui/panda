@@ -7,12 +7,11 @@ import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
 import { UsePlayground } from '@/src/hooks/usePlayground'
-import { ColorModeSwitch } from '@/src/components/ColorModeSwitch'
-import { ArtifactsPanel } from '@/src/components/ArtifactsPanel'
+import { ArtifactsPanel } from './ArtifactsPanel'
 import { button, splitter } from '@/styled-system/recipes'
-import { Examples } from '@/src/components/Examples'
+import { Examples } from './Examples'
 import { useResponsiveView } from '@/src/hooks/useResponsiveView'
-import { GitCompareArrowsIcon } from '@/src/components/icons'
+import { GitCompareArrowsIcon } from './icons'
 import { flex } from '@/styled-system/patterns'
 import { UseConfig } from '@/src/hooks/useConfig'
 
@@ -67,7 +66,14 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
             <GitCompareArrowsIcon />
           </a>
         ) : (
-          <div className={flex({ align: 'center', h: '10', divideX: '1px', divideColor: '#282828' })}>
+          <div
+            className={flex({
+              align: 'center',
+              h: '10',
+              divideX: '1px',
+              divideColor: { base: 'white', _dark: '#282828' },
+            })}
+          >
             <button
               data-saved={state.id ? '' : undefined}
               className={cx(
@@ -105,7 +111,6 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
           breakpoints={responsiveView.breakpoints}
           isResponsive={isResponsive}
         />
-        <ColorModeSwitch />
       </Toolbar>
       <Splitter size={panels} onResize={onResizePanels} orientation={layout} className={splitter()}>
         <SplitterPanel id="left">
@@ -129,7 +134,7 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
           <Preview
-            source={state.code}
+            source={_state.code}
             panda={panda}
             responsiveView={responsiveView}
             isResponsive={isResponsive}

@@ -3,7 +3,7 @@ import { BoxNodeMap, box, extract, unbox, type EvaluateOptions, type Unboxed } f
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { astish } from '@pandacss/shared'
-import type { ResultItem } from '@pandacss/types'
+import type { ParserResultConfigureOptions, ResultItem } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
@@ -25,7 +25,11 @@ const evaluateOptions: EvaluateOptions = {
 export function createParser(context: ParserOptions) {
   const { jsx, imports, recipes, syntax } = context
 
-  return function parse(sourceFile: SourceFile | undefined, encoder?: Generator['encoder']) {
+  return function parse(
+    sourceFile: SourceFile | undefined,
+    encoder?: Generator['encoder'],
+    options?: ParserResultConfigureOptions,
+  ) {
     if (!sourceFile) return
 
     const importDeclarations: ImportResult[] = getImportDeclarations(context, sourceFile)
@@ -45,14 +49,29 @@ export function createParser(context: ParserOptions) {
       return parserResult
     }
 
-    const measure = logger.time.debug(`Extract AST from ${filePath}`)
-
     const extractResultByName = extract({
       ast: sourceFile,
       components: jsx.isEnabled
         ? {
-            matchTag: (prop) => !!file.matchTag(prop.tagName),
-            matchProp: (prop) => !!file.matchTagProp(prop.tagName, prop.propName),
+            matchTag: (prop) => {
+              if (options?.matchTag) {
+                // If the user has a custom matchTag function,
+                // we're not going to match every uppercased tag
+                const isPandaComponent = file.isPandaComponent(prop.tagName)
+                return isPandaComponent || options.matchTag(prop.tagName, isPandaComponent)
+              }
+
+              return !!file.matchTag(prop.tagName)
+            },
+            matchProp: (prop) => {
+              const isPandaProp = file.matchTagProp(prop.tagName, prop.propName)
+
+              if (options?.matchTagProp) {
+                return isPandaProp && options.matchTagProp(prop.tagName, prop.propName)
+              }
+
+              return isPandaProp
+            },
           }
         : undefined,
       functions: {
@@ -93,8 +112,6 @@ export function createParser(context: ParserOptions) {
       },
       flags: { skipTraverseFiles: true },
     })
-
-    measure()
 
     extractResultByName.forEach((result, alias) => {
       //
