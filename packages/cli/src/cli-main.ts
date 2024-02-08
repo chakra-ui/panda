@@ -295,7 +295,7 @@ export async function main() {
     .option('--host', 'Host')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
-    .option('--outdir', 'Output directory for static files')
+    .option('--outdir <dir>', 'Output directory for static files')
     .action(async (flags: StudioCommandFlags) => {
       const { build, preview, port, host, outdir, config } = flags
 
