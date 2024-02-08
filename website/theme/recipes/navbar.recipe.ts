@@ -187,7 +187,7 @@ export const navbarRecipe = defineRecipe({
       borderRadius: 'lg',
       borderWidth: '1px',
       boxShadow: 'lg',
-      maxW: 'lg',
+      maxW: { base: 'calc(100vw - {spacing.4})', md: '3xl' },
       p: '4',
       position: 'relative',
       _open: {

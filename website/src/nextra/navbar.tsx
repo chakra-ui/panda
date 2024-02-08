@@ -340,7 +340,11 @@ export function Navbar({
                         data-part="arrow-tip"
                       />
                     </PopoverArrow>
-                    <Grid columns={{ base: 1, md: 2 }}>
+                    <Grid
+                      columns={{ base: 1, md: 3 }}
+                      maxH="calc(100vh - var(--nextra-navbar-height) - {spacing.10})"
+                      overflow="auto"
+                    >
                       {dir.children?.map(
                         ({
                           route,
