@@ -1,5 +1,20 @@
 # @pandacss/generator
 
+## 0.30.2
+
+### Patch Changes
+
+- 97efdb43: Fix issue where `v-model` does not work in vue styled factory
+- 7233cd2e: Fix issue where styled factory in Solid.js could results in `Maximum call stack exceeded` when composing
+  with another library that uses the `as` prop.
+- Updated dependencies [6b829cab]
+  - @pandacss/types@0.30.2
+  - @pandacss/core@0.30.2
+  - @pandacss/logger@0.30.2
+  - @pandacss/token-dictionary@0.30.2
+  - @pandacss/is-valid-prop@0.30.2
+  - @pandacss/shared@0.30.2
+
 ## 0.30.1
 
 ### Patch Changes
