@@ -82,8 +82,13 @@ export default defineConfig({
 
 ### Configure how Panda extracts JSX
 
+We can configure the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX. This can be especially useful when working with libraries that have properties that look like CSS properties but are not and should
+be ignored.
+
+Let's see a Radix UI example where the `Select.Content` component has a `position` property that should be ignored:
+
 ```js
-// Here, the `position` property will be extracted because `position` is a valid CSS property
+// Here, the `position` property will be extracted because `position` is a valid CSS property, but we don't want that
 <Select.Content position="popper" sideOffset={5}>
 ```
 
