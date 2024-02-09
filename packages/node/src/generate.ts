@@ -49,13 +49,14 @@ export async function generate(config: Config, configPath?: string) {
       const parserResult = ctx.project.parseSourceFile(changedFilePath)
 
       if (parserResult) {
+        const done = logger.time.info(ctx.messages.buildComplete(1))
         const sheet = ctx.createSheet()
         ctx.appendLayerParams(sheet)
         ctx.appendBaselineCss(sheet)
         ctx.appendParserCss(sheet)
         const css = ctx.getCss(sheet)
         await ctx.runtime.fs.writeFile(outfile, css)
-        return { msg: ctx.messages.buildComplete(1) }
+        done()
       }
     }
 
