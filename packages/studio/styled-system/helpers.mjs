@@ -157,7 +157,8 @@ function createCss(context) {
     }
     return result;
   };
-  return memo((styleObject = {}) => {
+  return memo(({ base, ...styles } = {}) => {
+    const styleObject = Object.assign(styles, base);
     const normalizedObject = normalizeStyleObject(styleObject, context);
     const classNames = /* @__PURE__ */ new Set();
     walkObject(normalizedObject, (value, paths) => {

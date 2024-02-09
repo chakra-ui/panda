@@ -254,30 +254,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "dark\\:fs_2xl",
-          "conditions": [
-            {
-              "raw": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
-              "type": "combinator-nesting",
-              "value": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
-            },
-          ],
-          "entry": {
-            "cond": "_dark",
-            "prop": "fontSize",
-            "value": "2xl",
-          },
-          "hash": "fontSize]___[value:2xl]___[cond:_dark",
-          "layer": undefined,
-          "result": {
-            ".dark\\:fs_2xl": {
-              "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]": {
-                "fontSize": "var(--font-sizes-2xl)",
-              },
-            },
-          },
-        },
-        {
           "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green",
           "conditions": [
             {
@@ -297,6 +273,30 @@ describe('style decoder', () => {
             ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green": {
               "&[data-attr='test']": {
                 "color": "green",
+              },
+            },
+          },
+        },
+        {
+          "className": "dark\\:fs_2xl",
+          "conditions": [
+            {
+              "raw": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
+              "type": "combinator-nesting",
+              "value": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
+            },
+          ],
+          "entry": {
+            "cond": "_dark",
+            "prop": "fontSize",
+            "value": "2xl",
+          },
+          "hash": "fontSize]___[value:2xl]___[cond:_dark",
+          "layer": undefined,
+          "result": {
+            ".dark\\:fs_2xl": {
+              "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]": {
+                "fontSize": "var(--font-sizes-2xl)",
               },
             },
           },
@@ -498,33 +498,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:fs_sm",
-          "conditions": [
-            {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40em)",
-              "type": "at-rule",
-              "value": "sm",
-            },
-          ],
-          "entry": {
-            "cond": "sm",
-            "prop": "fontSize",
-            "value": "sm",
-          },
-          "hash": "fontSize]___[value:sm]___[cond:sm",
-          "layer": undefined,
-          "result": {
-            ".sm\\:fs_sm": {
-              "@media screen and (min-width: 40em)": {
-                "fontSize": "var(--font-sizes-sm)",
-              },
-            },
-          },
-        },
-        {
           "className": "sm\\:text_yellow",
           "conditions": [
             {
@@ -547,6 +520,33 @@ describe('style decoder', () => {
             ".sm\\:text_yellow": {
               "@media screen and (min-width: 40em)": {
                 "color": "yellow",
+              },
+            },
+          },
+        },
+        {
+          "className": "sm\\:fs_sm",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 40em)",
+              "raw": "sm",
+              "rawValue": "@media screen and (min-width: 40em)",
+              "type": "at-rule",
+              "value": "sm",
+            },
+          ],
+          "entry": {
+            "cond": "sm",
+            "prop": "fontSize",
+            "value": "sm",
+          },
+          "hash": "fontSize]___[value:sm]___[cond:sm",
+          "layer": undefined,
+          "result": {
+            ".sm\\:fs_sm": {
+              "@media screen and (min-width: 40em)": {
+                "fontSize": "var(--font-sizes-sm)",
               },
             },
           },
@@ -1007,36 +1007,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "items_center",
-          "conditions": undefined,
-          "entry": {
-            "prop": "alignItems",
-            "value": "center",
-          },
-          "hash": "alignItems]___[value:center",
-          "layer": undefined,
-          "result": {
-            ".items_center": {
-              "alignItems": "center",
-            },
-          },
-        },
-        {
-          "className": "justify_center",
-          "conditions": undefined,
-          "entry": {
-            "prop": "justifyContent",
-            "value": "center",
-          },
-          "hash": "justifyContent]___[value:center",
-          "layer": undefined,
-          "result": {
-            ".justify_center": {
-              "justifyContent": "center",
-            },
-          },
-        },
-        {
           "className": "textStyle_headline\\.h1",
           "conditions": undefined,
           "entry": {
@@ -1143,21 +1113,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "bg_blue",
-          "conditions": undefined,
-          "entry": {
-            "prop": "backgroundColor",
-            "value": "blue",
-          },
-          "hash": "backgroundColor]___[value:blue",
-          "layer": undefined,
-          "result": {
-            ".bg_blue": {
-              "backgroundColor": "blue",
-            },
-          },
-        },
-        {
           "className": "text_white",
           "conditions": undefined,
           "entry": {
@@ -1169,21 +1124,6 @@ describe('style decoder', () => {
           "result": {
             ".text_white": {
               "color": "var(--colors-white)",
-            },
-          },
-        },
-        {
-          "className": "bg_transparent",
-          "conditions": undefined,
-          "entry": {
-            "prop": "backgroundColor",
-            "value": "transparent",
-          },
-          "hash": "backgroundColor]___[value:transparent",
-          "layer": undefined,
-          "result": {
-            ".bg_transparent": {
-              "backgroundColor": "var(--colors-transparent)",
             },
           },
         },
@@ -1218,26 +1158,62 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
-          "conditions": [
-            {
-              "raw": "&[data-disabled]",
-              "type": "self-nesting",
-              "value": "&[data-disabled]",
-            },
-          ],
+          "className": "items_center",
+          "conditions": undefined,
           "entry": {
-            "cond": "&[data-disabled]",
-            "prop": "backgroundColor",
-            "value": "gray",
+            "prop": "alignItems",
+            "value": "center",
           },
-          "hash": "backgroundColor]___[value:gray]___[cond:&[data-disabled]",
+          "hash": "alignItems]___[value:center",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:bg_gray": {
-              "&[data-disabled]": {
-                "backgroundColor": "gray",
-              },
+            ".items_center": {
+              "alignItems": "center",
+            },
+          },
+        },
+        {
+          "className": "justify_center",
+          "conditions": undefined,
+          "entry": {
+            "prop": "justifyContent",
+            "value": "center",
+          },
+          "hash": "justifyContent]___[value:center",
+          "layer": undefined,
+          "result": {
+            ".justify_center": {
+              "justifyContent": "center",
+            },
+          },
+        },
+        {
+          "className": "bg_blue",
+          "conditions": undefined,
+          "entry": {
+            "prop": "backgroundColor",
+            "value": "blue",
+          },
+          "hash": "backgroundColor]___[value:blue",
+          "layer": undefined,
+          "result": {
+            ".bg_blue": {
+              "backgroundColor": "blue",
+            },
+          },
+        },
+        {
+          "className": "bg_transparent",
+          "conditions": undefined,
+          "entry": {
+            "prop": "backgroundColor",
+            "value": "transparent",
+          },
+          "hash": "backgroundColor]___[value:transparent",
+          "layer": undefined,
+          "result": {
+            ".bg_transparent": {
+              "backgroundColor": "var(--colors-transparent)",
             },
           },
         },
@@ -1261,30 +1237,6 @@ describe('style decoder', () => {
             ".\\[\\&\\[data-disabled\\]\\]\\:text_black": {
               "&[data-disabled]": {
                 "color": "var(--colors-black)",
-              },
-            },
-          },
-        },
-        {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
-          "conditions": [
-            {
-              "raw": "&[data-disabled]",
-              "type": "self-nesting",
-              "value": "&[data-disabled]",
-            },
-          ],
-          "entry": {
-            "cond": "&[data-disabled]",
-            "prop": "backgroundColor",
-            "value": "transparent",
-          },
-          "hash": "backgroundColor]___[value:transparent]___[cond:&[data-disabled]",
-          "layer": undefined,
-          "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:bg_transparent": {
-              "&[data-disabled]": {
-                "backgroundColor": "var(--colors-transparent)",
               },
             },
           },
@@ -1338,6 +1290,78 @@ describe('style decoder', () => {
           },
         },
         {
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
+          "conditions": [
+            {
+              "raw": "&[data-disabled]",
+              "type": "self-nesting",
+              "value": "&[data-disabled]",
+            },
+          ],
+          "entry": {
+            "cond": "&[data-disabled]",
+            "prop": "backgroundColor",
+            "value": "gray",
+          },
+          "hash": "backgroundColor]___[value:gray]___[cond:&[data-disabled]",
+          "layer": undefined,
+          "result": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg_gray": {
+              "&[data-disabled]": {
+                "backgroundColor": "gray",
+              },
+            },
+          },
+        },
+        {
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
+          "conditions": [
+            {
+              "raw": "&[data-disabled]",
+              "type": "self-nesting",
+              "value": "&[data-disabled]",
+            },
+          ],
+          "entry": {
+            "cond": "&[data-disabled]",
+            "prop": "backgroundColor",
+            "value": "transparent",
+          },
+          "hash": "backgroundColor]___[value:transparent]___[cond:&[data-disabled]",
+          "layer": undefined,
+          "result": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg_transparent": {
+              "&[data-disabled]": {
+                "backgroundColor": "var(--colors-transparent)",
+              },
+            },
+          },
+        },
+        {
+          "className": "hover\\:text_white",
+          "conditions": [
+            {
+              "raw": "&:is(:hover, [data-hover])",
+              "type": "self-nesting",
+              "value": "&:is(:hover, [data-hover])",
+            },
+          ],
+          "entry": {
+            "cond": "_hover",
+            "prop": "color",
+            "value": "white",
+          },
+          "hash": "color]___[value:white]___[cond:_hover",
+          "layer": undefined,
+          "result": {
+            ".hover\\:text_white": {
+              "&:is(:hover, [data-hover])": {
+                "color": "var(--colors-white)",
+              },
+            },
+          },
+        },
+        {
           "className": "hover\\:bg_darkblue",
           "conditions": [
             {
@@ -1381,30 +1405,6 @@ describe('style decoder', () => {
             ".hover\\:bg_blue": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "blue",
-              },
-            },
-          },
-        },
-        {
-          "className": "hover\\:text_white",
-          "conditions": [
-            {
-              "raw": "&:is(:hover, [data-hover])",
-              "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
-            },
-          ],
-          "entry": {
-            "cond": "_hover",
-            "prop": "color",
-            "value": "white",
-          },
-          "hash": "color]___[value:white]___[cond:_hover",
-          "layer": undefined,
-          "result": {
-            ".hover\\:text_white": {
-              "&:is(:hover, [data-hover])": {
-                "color": "var(--colors-white)",
               },
             },
           },
@@ -1747,21 +1747,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "items_center",
-          "conditions": undefined,
-          "entry": {
-            "prop": "alignItems",
-            "value": "center",
-          },
-          "hash": "alignItems]___[value:center",
-          "layer": undefined,
-          "result": {
-            ".items_center": {
-              "alignItems": "center",
-            },
-          },
-        },
-        {
           "className": "gap_2",
           "conditions": undefined,
           "entry": {
@@ -1773,21 +1758,6 @@ describe('style decoder', () => {
           "result": {
             ".gap_2": {
               "gap": "var(--spacing-2)",
-            },
-          },
-        },
-        {
-          "className": "border-w_1px",
-          "conditions": undefined,
-          "entry": {
-            "prop": "borderWidth",
-            "value": "1px",
-          },
-          "hash": "borderWidth]___[value:1px",
-          "layer": undefined,
-          "result": {
-            ".border-w_1px": {
-              "borderWidth": "1px",
             },
           },
         },
@@ -1908,6 +1878,36 @@ describe('style decoder', () => {
           "result": {
             ".ms_2": {
               "marginInlineStart": "var(--spacing-2)",
+            },
+          },
+        },
+        {
+          "className": "items_center",
+          "conditions": undefined,
+          "entry": {
+            "prop": "alignItems",
+            "value": "center",
+          },
+          "hash": "alignItems]___[value:center",
+          "layer": undefined,
+          "result": {
+            ".items_center": {
+              "alignItems": "center",
+            },
+          },
+        },
+        {
+          "className": "border-w_1px",
+          "conditions": undefined,
+          "entry": {
+            "prop": "borderWidth",
+            "value": "1px",
+          },
+          "hash": "borderWidth]___[value:1px",
+          "layer": undefined,
+          "result": {
+            ".border-w_1px": {
+              "borderWidth": "1px",
             },
           },
         },

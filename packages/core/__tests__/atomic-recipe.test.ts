@@ -41,10 +41,6 @@ describe('Atomic recipe', () => {
 
     expect(sheet).toMatchInlineSnapshot(`
       "@layer utilities {
-        .fs_lg {
-          font-size: var(--font-sizes-lg);
-      }
-
         .p_2 {
           padding: var(--spacing-2);
       }
@@ -63,6 +59,10 @@ describe('Atomic recipe', () => {
 
         .text_white {
           color: var(--colors-white);
+      }
+
+        .fs_lg {
+          font-size: var(--font-sizes-lg);
       }
 
         .bg_blue\\.500 {

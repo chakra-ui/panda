@@ -121,16 +121,16 @@ describe('config.importMap', () => {
           margin: auto;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .flex_2 {
           flex: 2;
       }
 
         .flex_1 {
           flex: 1 1 0%;
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
 
         @media screen and (min-width: 40em) {

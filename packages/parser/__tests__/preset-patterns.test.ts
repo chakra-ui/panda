@@ -180,12 +180,12 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
       }"
     `)
@@ -224,16 +224,16 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
         .text_blue\\.100 {
           color: var(--colors-blue-100);
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
       }"
     `)
@@ -270,12 +270,12 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .items_center {
-          align-items: center;
-      }
-
         .gap_10px {
           gap: 10px;
+      }
+
+        .items_center {
+          align-items: center;
       }
 
         .flex_column {
@@ -318,20 +318,20 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .items_center {
-          align-items: center;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .text_blue\\.100 {
           color: var(--colors-blue-100);
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
       }"
     `)
@@ -368,12 +368,12 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .items_center {
-          align-items: center;
-      }
-
         .gap_10px {
           gap: 10px;
+      }
+
+        .items_center {
+          align-items: center;
       }
 
         .flex_row {
@@ -416,20 +416,20 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .items_center {
-          align-items: center;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
-        .flex_row {
-          flex-direction: row;
-      }
-
         .text_blue\\.100 {
           color: var(--colors-blue-100);
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .flex_row {
+          flex-direction: row;
       }
       }"
     `)
@@ -462,16 +462,16 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .flex_1 {
+          flex: 1 1 0%;
+      }
+
         .self_stretch {
           align-self: stretch;
       }
 
         .justify-self_stretch {
           justify-self: stretch;
-      }
-
-        .flex_1 {
-          flex: 1 1 0%;
       }
       }"
     `)
@@ -527,10 +527,6 @@ describe('preset patterns', () => {
           z-index: 1;
       }
 
-        .before\\:content_\\"\\"::before {
-          content: "";
-      }
-
         .before\\:d_block::before {
           display: block;
       }
@@ -549,6 +545,10 @@ describe('preset patterns', () => {
 
         .before\\:z_0::before {
           z-index: 0;
+      }
+
+        .before\\:content_\\"\\"::before {
+          content: "";
       }
       }"
     `)
@@ -604,10 +604,6 @@ describe('preset patterns', () => {
           z-index: 1;
       }
 
-        .before\\:content_\\"\\"::before {
-          content: "";
-      }
-
         .before\\:d_block::before {
           display: block;
       }
@@ -626,6 +622,10 @@ describe('preset patterns', () => {
 
         .before\\:z_0::before {
           z-index: 0;
+      }
+
+        .before\\:content_\\"\\"::before {
+          content: "";
       }
       }"
     `)
@@ -660,20 +660,20 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .self_stretch {
-          align-self: stretch;
-      }
-
-        .justify-self_stretch {
-          justify-self: stretch;
-      }
-
         .flex_1 {
           flex: 1 1 0%;
       }
 
         .text_blue\\.100 {
           color: var(--colors-blue-100);
+      }
+
+        .self_stretch {
+          align-self: stretch;
+      }
+
+        .justify-self_stretch {
+          justify-self: stretch;
       }
       }"
     `)
@@ -710,20 +710,20 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .items_center {
-          align-items: center;
-      }
-
-        .justify_center {
-          justify-content: center;
-      }
-
         .flex_0_0_auto {
           flex: 0 0 auto;
       }
 
         .rounded_9999px {
           border-radius: 9999px;
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .justify_center {
+          justify-content: center;
       }
       }"
     `)
@@ -762,14 +762,6 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .items_center {
-          align-items: center;
-      }
-
-        .justify_center {
-          justify-content: center;
-      }
-
         .flex_0_0_auto {
           flex: 0 0 auto;
       }
@@ -780,6 +772,14 @@ describe('preset patterns', () => {
 
         .text_blue\\.100 {
           color: var(--colors-blue-100);
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .justify_center {
+          justify-content: center;
       }
       }"
     `)
@@ -816,14 +816,6 @@ describe('preset patterns', () => {
           display: inline-flex;
       }
 
-        .justify_center {
-          justify-content: center;
-      }
-
-        .items_center {
-          align-items: center;
-      }
-
         .pos_absolute {
           position: absolute;
       }
@@ -846,6 +838,14 @@ describe('preset patterns', () => {
 
         .translate_50\\%_-50\\% {
           translate: 50% -50%;
+      }
+
+        .justify_center {
+          justify-content: center;
+      }
+
+        .items_center {
+          align-items: center;
       }
       }"
     `)
@@ -884,14 +884,6 @@ describe('preset patterns', () => {
           display: inline-flex;
       }
 
-        .justify_center {
-          justify-content: center;
-      }
-
-        .items_center {
-          align-items: center;
-      }
-
         .pos_absolute {
           position: absolute;
       }
@@ -918,6 +910,14 @@ describe('preset patterns', () => {
 
         .text_blue\\.100 {
           color: var(--colors-blue-100);
+      }
+
+        .justify_center {
+          justify-content: center;
+      }
+
+        .items_center {
+          align-items: center;
       }
       }"
     `)
@@ -1100,12 +1100,12 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .flex-wrap_wrap {
-          flex-wrap: wrap;
-      }
-
         .gap_10px {
           gap: 10px;
+      }
+
+        .flex-wrap_wrap {
+          flex-wrap: wrap;
       }
       }"
     `)
@@ -1144,16 +1144,16 @@ describe('preset patterns', () => {
           display: flex;
       }
 
-        .flex-wrap_wrap {
-          flex-wrap: wrap;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
         .text_blue\\.100 {
           color: var(--colors-blue-100);
+      }
+
+        .flex-wrap_wrap {
+          flex-wrap: wrap;
       }
       }"
     `)
@@ -1356,16 +1356,16 @@ describe('preset patterns', () => {
           display: flex;
       }
 
+        .text_blue\\.100 {
+          color: var(--colors-blue-100);
+      }
+
         .items_center {
           align-items: center;
       }
 
         .justify_center {
           justify-content: center;
-      }
-
-        .text_blue\\.100 {
-          color: var(--colors-blue-100);
       }
       }"
     `)
@@ -1402,10 +1402,6 @@ describe('preset patterns', () => {
           position: relative;
       }
 
-        .before\\:content_\\"\\"::before {
-          content: "";
-      }
-
         .before\\:d_block::before {
           display: block;
       }
@@ -1414,20 +1410,8 @@ describe('preset patterns', () => {
           height: var(--sizes-0);
       }
 
-        .before\\:pb_75\\%::before {
-          padding-bottom: 75%;
-      }
-
         .\\[\\&\\>\\*\\]\\:d_flex>* {
           display: flex;
-      }
-
-        .\\[\\&\\>\\*\\]\\:justify_center>* {
-          justify-content: center;
-      }
-
-        .\\[\\&\\>\\*\\]\\:items_center>* {
-          align-items: center;
       }
 
         .\\[\\&\\>\\*\\]\\:overflow_hidden>* {
@@ -1452,6 +1436,22 @@ describe('preset patterns', () => {
 
         .\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
           object-fit: cover;
+      }
+
+        .before\\:content_\\"\\"::before {
+          content: "";
+      }
+
+        .before\\:pb_75\\%::before {
+          padding-bottom: 75%;
+      }
+
+        .\\[\\&\\>\\*\\]\\:justify_center>* {
+          justify-content: center;
+      }
+
+        .\\[\\&\\>\\*\\]\\:items_center>* {
+          align-items: center;
       }
       }"
     `)
@@ -1494,10 +1494,6 @@ describe('preset patterns', () => {
           color: var(--colors-blue-100);
       }
 
-        .before\\:content_\\"\\"::before {
-          content: "";
-      }
-
         .before\\:d_block::before {
           display: block;
       }
@@ -1506,20 +1502,8 @@ describe('preset patterns', () => {
           height: var(--sizes-0);
       }
 
-        .before\\:pb_75\\%::before {
-          padding-bottom: 75%;
-      }
-
         .\\[\\&\\>\\*\\]\\:d_flex>* {
           display: flex;
-      }
-
-        .\\[\\&\\>\\*\\]\\:justify_center>* {
-          justify-content: center;
-      }
-
-        .\\[\\&\\>\\*\\]\\:items_center>* {
-          align-items: center;
       }
 
         .\\[\\&\\>\\*\\]\\:overflow_hidden>* {
@@ -1544,6 +1528,22 @@ describe('preset patterns', () => {
 
         .\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
           object-fit: cover;
+      }
+
+        .before\\:content_\\"\\"::before {
+          content: "";
+      }
+
+        .before\\:pb_75\\%::before {
+          padding-bottom: 75%;
+      }
+
+        .\\[\\&\\>\\*\\]\\:justify_center>* {
+          justify-content: center;
+      }
+
+        .\\[\\&\\>\\*\\]\\:items_center>* {
+          align-items: center;
       }
       }"
     `)
@@ -1747,10 +1747,6 @@ describe('preset patterns', () => {
           display: grid;
       }
 
-        .grid-cols_repeat\\(2\\,_minmax\\(0\\,_1fr\\)\\) {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
         .gap_10px {
           gap: 10px;
       }
@@ -1759,21 +1755,25 @@ describe('preset patterns', () => {
           grid-column: span 1;
       }
 
-        @media screen and (min-width: 40em) {
-          .sm\\:grid-cols_repeat\\(3\\,_minmax\\(0\\,_1fr\\)\\) {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+        .grid-cols_repeat\\(2\\,_minmax\\(0\\,_1fr\\)\\) {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+
+        @media screen and (min-width: 40em) {
           .sm\\:col-span_span_2 {
             grid-column: span 2;
+      }
+          .sm\\:grid-cols_repeat\\(3\\,_minmax\\(0\\,_1fr\\)\\) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
       }
       }
 
         @media screen and (min-width: 48em) {
-          .md\\:grid-cols_repeat\\(4\\,_minmax\\(0\\,_1fr\\)\\) {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
           .md\\:col-span_span_3 {
             grid-column: span 3;
+      }
+          .md\\:grid-cols_repeat\\(4\\,_minmax\\(0\\,_1fr\\)\\) {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
       }
       }
       }"
@@ -1802,10 +1802,6 @@ describe('staticCss', () => {
           position: relative;
       }
 
-        .before\\:content_\\"\\"::before {
-          content: "";
-      }
-
         .before\\:d_block::before {
           display: block;
       }
@@ -1814,20 +1810,8 @@ describe('staticCss', () => {
           height: var(--sizes-0);
       }
 
-        .before\\:pb_75\\%::before {
-          padding-bottom: 75%;
-      }
-
         .\\[\\&\\>\\*\\]\\:d_flex>* {
           display: flex;
-      }
-
-        .\\[\\&\\>\\*\\]\\:justify_center>* {
-          justify-content: center;
-      }
-
-        .\\[\\&\\>\\*\\]\\:items_center>* {
-          align-items: center;
       }
 
         .\\[\\&\\>\\*\\]\\:overflow_hidden>* {
@@ -1852,6 +1836,22 @@ describe('staticCss', () => {
 
         .\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
           object-fit: cover;
+      }
+
+        .before\\:content_\\"\\"::before {
+          content: "";
+      }
+
+        .before\\:pb_75\\%::before {
+          padding-bottom: 75%;
+      }
+
+        .\\[\\&\\>\\*\\]\\:justify_center>* {
+          justify-content: center;
+      }
+
+        .\\[\\&\\>\\*\\]\\:items_center>* {
+          align-items: center;
       }
 
         .before\\:pb_56\\.25\\%::before {
@@ -1885,10 +1885,6 @@ describe('staticCss', () => {
           position: relative;
       }
 
-        .before\\:content_\\"\\"::before {
-          content: "";
-      }
-
         .before\\:d_block::before {
           display: block;
       }
@@ -1897,20 +1893,8 @@ describe('staticCss', () => {
           height: var(--sizes-0);
       }
 
-        .before\\:pb_400\\%::before {
-          padding-bottom: 400%;
-      }
-
         .\\[\\&\\>\\*\\]\\:d_flex>* {
           display: flex;
-      }
-
-        .\\[\\&\\>\\*\\]\\:justify_center>* {
-          justify-content: center;
-      }
-
-        .\\[\\&\\>\\*\\]\\:items_center>* {
-          align-items: center;
       }
 
         .\\[\\&\\>\\*\\]\\:overflow_hidden>* {
@@ -1937,12 +1921,25 @@ describe('staticCss', () => {
           object-fit: cover;
       }
 
+        .before\\:content_\\"\\"::before {
+          content: "";
+      }
+
+        .before\\:pb_400\\%::before {
+          padding-bottom: 400%;
+      }
+
+        .\\[\\&\\>\\*\\]\\:justify_center>* {
+          justify-content: center;
+      }
+
+        .\\[\\&\\>\\*\\]\\:items_center>* {
+          align-items: center;
+      }
+
         @media screen and (min-width: 48em) {
           .md\\:pos_relative {
             position: relative;
-      }
-          .md\\:before\\:content_\\"\\"::before {
-            content: "";
       }
           .md\\:before\\:d_block::before {
             display: block;
@@ -1950,17 +1947,8 @@ describe('staticCss', () => {
           .md\\:before\\:h_0::before {
             height: var(--sizes-0);
       }
-          .md\\:before\\:pb_400\\%::before {
-            padding-bottom: 400%;
-      }
           .md\\:\\[\\&\\>\\*\\]\\:d_flex>* {
             display: flex;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:justify_center>* {
-            justify-content: center;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:items_center>* {
-            align-items: center;
       }
           .md\\:\\[\\&\\>\\*\\]\\:overflow_hidden>* {
             overflow: hidden;
@@ -1979,6 +1967,18 @@ describe('staticCss', () => {
       }
           .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
             object-fit: cover;
+      }
+          .md\\:before\\:content_\\"\\"::before {
+            content: "";
+      }
+          .md\\:before\\:pb_400\\%::before {
+            padding-bottom: 400%;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:justify_center>* {
+            justify-content: center;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:items_center>* {
+            align-items: center;
       }
       }
       }"
@@ -2001,14 +2001,6 @@ describe('staticCss', () => {
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .self_stretch {
-          align-self: stretch;
-      }
-
-        .justify-self_stretch {
-          justify-self: stretch;
-      }
-
         .flex_0_0_2 {
           flex: 0 0 2;
       }
@@ -2019,6 +2011,14 @@ describe('staticCss', () => {
 
         .flex_0_0_6 {
           flex: 0 0 6;
+      }
+
+        .self_stretch {
+          align-self: stretch;
+      }
+
+        .justify-self_stretch {
+          justify-self: stretch;
       }
       }"
     `)
@@ -2042,14 +2042,6 @@ describe('staticCss', () => {
       "@layer utilities {
         .d_flex {
           display: flex;
-      }
-
-        .items_center {
-          align-items: center;
-      }
-
-        .justify_center {
-          justify-content: center;
       }
 
         .flex_0_0_auto {
@@ -2082,6 +2074,14 @@ describe('staticCss', () => {
 
         .h_lg {
           height: var(--sizes-lg);
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .justify_center {
+          justify-content: center;
       }
       }"
     `)
@@ -2422,16 +2422,8 @@ describe('staticCss', () => {
           width: 100%;
       }
 
-        .border-block-end-width_var\\(--thickness\\) {
-          border-block-end-width: var(--thickness);
-      }
-
         .h_100\\% {
           height: 100%;
-      }
-
-        .border-e_var\\(--thickness\\) {
-          border-inline-end-width: var(--thickness);
       }
 
         .\\--thickness_0 {
@@ -2657,6 +2649,14 @@ describe('staticCss', () => {
         .\\--thickness_breakpoint-2xl {
           --thickness: breakpoint-2xl;
       }
+
+        .border-block-end-width_var\\(--thickness\\) {
+          border-block-end-width: var(--thickness);
+      }
+
+        .border-e_var\\(--thickness\\) {
+          border-inline-end-width: var(--thickness);
+      }
       }"
     `)
   })
@@ -2679,14 +2679,6 @@ describe('staticCss', () => {
       "@layer utilities {
         .d_inline-flex {
           display: inline-flex;
-      }
-
-        .justify_center {
-          justify-content: center;
-      }
-
-        .items_center {
-          align-items: center;
       }
 
         .pos_absolute {
@@ -3299,6 +3291,14 @@ describe('staticCss', () => {
 
         .inset-b_50\\% {
           inset-block-end: 50%;
+      }
+
+        .justify_center {
+          justify-content: center;
+      }
+
+        .items_center {
+          align-items: center;
       }
       }"
     `)

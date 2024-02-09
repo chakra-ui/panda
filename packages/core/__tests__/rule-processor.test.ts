@@ -275,16 +275,16 @@ describe('rule processor', () => {
         "textStyle_headline\\.h1",
         "w_1",
         "fs_xs",
-        "dark\\:fs_2xl",
         "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green",
+        "dark\\:fs_2xl",
         "hover\\:fs_md",
         "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple",
         "hover\\:focus\\:fs_xl",
         "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan",
         "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange",
         "sm\\:w_2",
-        "sm\\:fs_sm",
         "sm\\:text_yellow",
+        "sm\\:fs_sm",
         "sm\\:bg_red",
         "xl\\:w_3",
         "sm\\:hover\\:bg_green",
@@ -323,12 +323,12 @@ describe('rule processor', () => {
           font-size: var(--font-sizes-xs);
       }
 
-        [data-theme=dark] .dark\\:fs_2xl,.dark .dark\\:fs_2xl,.dark\\:fs_2xl.dark,.dark\\:fs_2xl[data-theme=dark] {
-          font-size: var(--font-sizes-2xl);
-      }
-
         .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green[data-attr='test'] {
           color: green;
+      }
+
+        [data-theme=dark] .dark\\:fs_2xl,.dark .dark\\:fs_2xl,.dark\\:fs_2xl.dark,.dark\\:fs_2xl[data-theme=dark] {
+          font-size: var(--font-sizes-2xl);
       }
 
         .hover\\:fs_md:is(:hover, [data-hover]) {
@@ -355,11 +355,11 @@ describe('rule processor', () => {
           .sm\\:w_2 {
             width: var(--sizes-2);
       }
-          .sm\\:fs_sm {
-            font-size: var(--font-sizes-sm);
-      }
           .sm\\:text_yellow {
             color: yellow;
+      }
+          .sm\\:fs_sm {
+            font-size: var(--font-sizes-sm);
       }
           .sm\\:bg_red {
             background-color: red;
@@ -414,9 +414,9 @@ describe('rule processor', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
       }
       }
 
@@ -427,13 +427,13 @@ describe('rule processor', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: var(--colors-white);
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: var(--colors-black);
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -511,8 +511,6 @@ describe('rule processor', () => {
     expect(buttonStyle.className).toMatchInlineSnapshot(`
       [
         "d_inline-flex",
-        "items_center",
-        "justify_center",
         "textStyle_headline\\.h1",
         "h_2\\.5rem",
         "min-w_2\\.5rem",
@@ -520,19 +518,21 @@ describe('rule processor', () => {
         "h_3rem",
         "min-w_3rem",
         "p_0_0\\.75rem",
-        "bg_blue",
         "text_white",
-        "bg_transparent",
         "border_1px_solid_blue",
         "text_blue",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
+        "items_center",
+        "justify_center",
+        "bg_blue",
+        "bg_transparent",
         "\\[\\&\\[data-disabled\\]\\]\\:text_black",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
         "\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray",
         "\\[\\&\\[data-disabled\\]\\]\\:text_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
+        "hover\\:text_white",
         "hover\\:bg_darkblue",
         "hover\\:bg_blue",
-        "hover\\:text_white",
       ]
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
@@ -546,14 +546,6 @@ describe('rule processor', () => {
 
         .d_inline-flex {
           display: inline-flex;
-      }
-
-        .items_center {
-          align-items: center;
-      }
-
-        .justify_center {
-          justify-content: center;
       }
 
         .h_2\\.5rem {
@@ -580,16 +572,8 @@ describe('rule processor', () => {
           padding: 0 0.75rem;
       }
 
-        .bg_blue {
-          background-color: blue;
-      }
-
         .text_white {
           color: var(--colors-white);
-      }
-
-        .bg_transparent {
-          background-color: var(--colors-transparent);
       }
 
         .border_1px_solid_blue {
@@ -600,16 +584,24 @@ describe('rule processor', () => {
           color: blue;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:bg_gray[data-disabled] {
-          background-color: gray;
+        .items_center {
+          align-items: center;
+      }
+
+        .justify_center {
+          justify-content: center;
+      }
+
+        .bg_blue {
+          background-color: blue;
+      }
+
+        .bg_transparent {
+          background-color: var(--colors-transparent);
       }
 
         .\\[\\&\\[data-disabled\\]\\]\\:text_black[data-disabled] {
           color: var(--colors-black);
-      }
-
-        .\\[\\&\\[data-disabled\\]\\]\\:bg_transparent[data-disabled] {
-          background-color: var(--colors-transparent);
       }
 
         .\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray[data-disabled] {
@@ -620,16 +612,24 @@ describe('rule processor', () => {
           color: gray;
       }
 
+        .\\[\\&\\[data-disabled\\]\\]\\:bg_gray[data-disabled] {
+          background-color: gray;
+      }
+
+        .\\[\\&\\[data-disabled\\]\\]\\:bg_transparent[data-disabled] {
+          background-color: var(--colors-transparent);
+      }
+
+        .hover\\:text_white:is(:hover, [data-hover]) {
+          color: var(--colors-white);
+      }
+
         .hover\\:bg_darkblue:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
         .hover\\:bg_blue:is(:hover, [data-hover]) {
           background-color: blue;
-      }
-
-        .hover\\:text_white:is(:hover, [data-hover]) {
-          color: var(--colors-white);
       }
       }"
     `)
@@ -656,13 +656,13 @@ describe('rule processor', () => {
         @layer _base {
           .checkbox__root {
             display: flex;
-            align-items: center;
             gap: var(--spacing-2);
+            align-items: center;
       }
 
           .checkbox__control {
-            border-width: 1px;
             border-radius: var(--radii-sm);
+            border-width: 1px;
       }
 
           .checkbox__label {
@@ -727,9 +727,7 @@ describe('rule processor', () => {
     expect(checkbox.className).toMatchInlineSnapshot(`
       [
         "d_flex",
-        "items_center",
         "gap_2",
-        "border-w_1px",
         "rounded_sm",
         "w_8",
         "h_8",
@@ -738,6 +736,8 @@ describe('rule processor', () => {
         "w_12",
         "h_12",
         "ms_2",
+        "items_center",
+        "border-w_1px",
         "fs_sm",
         "fs_md",
         "fs_lg",
@@ -749,16 +749,8 @@ describe('rule processor', () => {
           display: flex;
       }
 
-        .items_center {
-          align-items: center;
-      }
-
         .gap_2 {
           gap: var(--spacing-2);
-      }
-
-        .border-w_1px {
-          border-width: 1px;
       }
 
         .rounded_sm {
@@ -791,6 +783,14 @@ describe('rule processor', () => {
 
         .ms_2 {
           margin-inline-start: var(--spacing-2);
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .border-w_1px {
+          border-width: 1px;
       }
 
         .fs_sm {
@@ -829,9 +829,9 @@ describe('rule processor', () => {
       "@layer recipes {
         @layer _base {
           .btn {
-            line-height: 1.2;
             display: inline-flex;
             outline: var(--borders-none);
+            line-height: 1.2;
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
@@ -909,9 +909,9 @@ describe('rule processor', () => {
         @layer _base {
 
           .btn {
-            line-height: 1.2;
             display: inline-flex;
             outline: var(--borders-none);
+            line-height: 1.2;
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
@@ -937,6 +937,10 @@ describe('rule processor', () => {
           color: var(--colors-blue-300);
       }
 
+        .border_2px_solid_token\\(colors\\.green\\.100\\) {
+          border: 2px solid var(--colors-green-100);
+      }
+
         .fs_12px {
           font-size: 12px;
       }
@@ -947,10 +951,6 @@ describe('rule processor', () => {
 
         .fs_16px {
           font-size: 16px;
-      }
-
-        .border_2px_solid_token\\(colors\\.green\\.100\\) {
-          border: 2px solid var(--colors-green-100);
       }
 
         .hover\\:text_red\\.400:is(:hover, [data-hover]) {
@@ -1004,9 +1004,9 @@ describe('rule processor', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
       }
       }
 
@@ -1047,13 +1047,13 @@ describe('rule processor', () => {
         @layer _base {
           .checkbox__root {
             display: flex;
-            align-items: center;
             gap: var(--spacing-2);
+            align-items: center;
       }
 
           .checkbox__control {
-            border-width: 1px;
             border-radius: var(--radii-sm);
+            border-width: 1px;
       }
 
           .checkbox__label {
@@ -1253,16 +1253,16 @@ describe('js to css', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .border_red\\! {
-          border-color: red !important;
-      }
-
         .text_pink\\! {
           color: pink !important;
       }
 
         .bg_white\\! {
           background: var(--colors-white) !important;
+      }
+
+        .border_red\\! {
+          border-color: red !important;
       }
 
         .font_A {
@@ -1290,6 +1290,236 @@ describe('js to css', () => {
       }
       }",
       }
+    `)
+  })
+
+  test('resolve property conflicts and order - border example', () => {
+    const result = css({
+      borderWidth: '1px',
+      borderTopRadius: '0px',
+      borderBottomWidth: '3px',
+      overflow: 'hidden',
+      base: {
+        borderWidth: '2px',
+      },
+    })
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "rounded-t_0px",
+        "overflow_hidden",
+        "border-w_1px",
+        "border-bw_3px",
+        "border-w_2px",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .rounded-t_0px {
+          border-top-left-radius: 0px;
+          border-top-right-radius: 0px;
+      }
+
+        .overflow_hidden {
+          overflow: hidden;
+      }
+
+        .border-w_1px {
+          border-width: 1px;
+      }
+
+        .border-bw_3px {
+          border-bottom-width: 3px;
+      }
+
+        .border-w_2px {
+          border-width: 2px;
+      }
+      }"
+    `)
+  })
+
+  test('resolve property conflicts and order - padding example', () => {
+    const result = css({
+      padding: '1px',
+      paddingTop: '3px',
+      paddingBottom: '4px',
+      base: {
+        padding: '2px',
+      },
+    })
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "p_1px",
+        "p_2px",
+        "pt_3px",
+        "pb_4px",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_1px {
+          padding: 1px;
+      }
+
+        .p_2px {
+          padding: 2px;
+      }
+
+        .pt_3px {
+          padding-top: 3px;
+      }
+
+        .pb_4px {
+          padding-bottom: 4px;
+      }
+      }"
+    `)
+  })
+
+  test('more specific should always be last (red then blue)', () => {
+    const result = css({
+      backgroundColor: 'blue',
+      background: 'red',
+      _hover: {
+        background: 'red',
+        backgroundColor: 'blue',
+      },
+      _focus: {
+        background: 'red',
+        backgroundColor: 'blue',
+      },
+      _dark: {
+        backgroundColor: 'blue',
+        background: 'red',
+      },
+      md: {
+        backgroundColor: 'blue',
+        background: 'red',
+        _light: {
+          backgroundColor: 'blue',
+          background: 'red',
+          _hover: {
+            backgroundColor: 'blue',
+            background: 'red',
+          },
+          _focus: {
+            background: 'red',
+            backgroundColor: 'blue',
+          },
+          _active: {
+            bgColor: 'blue',
+            bg: 'red',
+          },
+        },
+      },
+    })
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "bg_red",
+        "bg_blue",
+        "dark\\:bg_red",
+        "dark\\:bg_blue",
+        "focus\\:bg_red",
+        "focus\\:bg_blue",
+        "hover\\:bg_red",
+        "hover\\:bg_blue",
+        "md\\:bg_red",
+        "md\\:bg_blue",
+        "md\\:light\\:bg_red",
+        "md\\:light\\:bg_blue",
+        "md\\:light\\:focus\\:bg_red",
+        "md\\:light\\:focus\\:bg_blue",
+        "md\\:light\\:hover\\:bg_red",
+        "md\\:light\\:hover\\:bg_blue",
+        "md\\:light\\:active\\:bg_red",
+        "md\\:light\\:active\\:bg_blue",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg_red {
+          background: red;
+      }
+
+        .bg_blue {
+          background-color: blue;
+      }
+
+        [data-theme=dark] .dark\\:bg_red,.dark .dark\\:bg_red,.dark\\:bg_red.dark,.dark\\:bg_red[data-theme=dark] {
+          background: red;
+      }
+
+        [data-theme=dark] .dark\\:bg_blue,.dark .dark\\:bg_blue,.dark\\:bg_blue.dark,.dark\\:bg_blue[data-theme=dark] {
+          background-color: blue;
+      }
+
+        .focus\\:bg_red:is(:focus, [data-focus]) {
+          background: red;
+      }
+
+        .focus\\:bg_blue:is(:focus, [data-focus]) {
+          background-color: blue;
+      }
+
+        .hover\\:bg_red:is(:hover, [data-hover]) {
+          background: red;
+      }
+
+        .hover\\:bg_blue:is(:hover, [data-hover]) {
+          background-color: blue;
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\:bg_red {
+            background: red;
+      }
+          .md\\:bg_blue {
+            background-color: blue;
+      }
+          [data-theme=light] .md\\:light\\:bg_red,.light .md\\:light\\:bg_red,.md\\:light\\:bg_red.light,.md\\:light\\:bg_red[data-theme=light] {
+            background: red;
+      }
+          [data-theme=light] .md\\:light\\:bg_blue,.light .md\\:light\\:bg_blue,.md\\:light\\:bg_blue.light,.md\\:light\\:bg_blue[data-theme=light] {
+            background-color: blue;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=light] .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg_red:is(:focus, [data-focus])[data-theme=light] {
+            background: red;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=light] .md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus])[data-theme=light] {
+            background-color: blue;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=light] .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg_red:is(:hover, [data-hover])[data-theme=light] {
+            background: red;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=light] .md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover])[data-theme=light] {
+            background-color: blue;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=light] .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.md\\:light\\:active\\:bg_red:is(:active, [data-active]).light,.md\\:light\\:active\\:bg_red:is(:active, [data-active])[data-theme=light] {
+            background: red;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=light] .md\\:light\\:active\\:bg_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg_blue:is(:active, [data-active]).light,.md\\:light\\:active\\:bg_blue:is(:active, [data-active])[data-theme=light] {
+            background-color: blue;
+      }
+      }
+      }"
     `)
   })
 })

@@ -160,10 +160,6 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-blue-100);
       }
 
-        .bg-img_url\\(\\"https\\:\\/\\/raw\\.githubusercontent\\.com\\/chakra-ui\\/chakra-ui\\/main\\/media\\/logo-colored\\@2x\\.png\\?raw\\=true\\"\\) {
-          background-image: url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true");
-      }
-
         .border_1px_solid_token\\(colors\\.yellow\\.100\\) {
           border: 1px solid var(--colors-yellow-100);
       }
@@ -176,10 +172,6 @@ describe('extract to css output pipeline', () => {
           box-shadow: 0 0 0 4px var(--shadow);
       }
 
-        .ring_var\\(--colors-pink-200\\) {
-          outline-color: var(--colors-pink-200);
-      }
-
         .debug_true {
           outline: 1px solid blue !important;
       }
@@ -190,6 +182,14 @@ describe('extract to css output pipeline', () => {
 
         .p_2 {
           padding: var(--spacing-2);
+      }
+
+        .bg-img_url\\(\\"https\\:\\/\\/raw\\.githubusercontent\\.com\\/chakra-ui\\/chakra-ui\\/main\\/media\\/logo-colored\\@2x\\.png\\?raw\\=true\\"\\) {
+          background-image: url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true");
+      }
+
+        .ring_var\\(--colors-pink-200\\) {
+          outline-color: var(--colors-pink-200);
       }
 
         [data-theme=dark] .dark\\:--shadow_colors\\.gray\\.800,.dark .dark\\:--shadow_colors\\.gray\\.800,.dark\\:--shadow_colors\\.gray\\.800.dark,.dark\\:--shadow_colors\\.gray\\.800[data-theme=dark] {
@@ -265,12 +265,12 @@ describe('extract to css output pipeline', () => {
           margin-inline: var(--spacing-3);
       }
 
-        .pt_4 {
-          padding-top: var(--spacing-4);
-      }
-
         .mx_10 {
           margin-inline: var(--spacing-10);
+      }
+
+        .pt_4 {
+          padding-top: var(--spacing-4);
       }
 
         .pt_6 {
@@ -1195,10 +1195,6 @@ describe('extract to css output pipeline', () => {
             color: var(--colors-color-palette-light);
         }
 
-          .bg_colorPalette\\.dark {
-            background-color: var(--colors-color-palette-dark);
-        }
-
           .color-palette_button\\.light {
             --colors-color-palette-accent: var(--colors-button-light-accent);
             --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
@@ -1218,6 +1214,10 @@ describe('extract to css output pipeline', () => {
 
           .text_colorPalette\\.secondary {
             color: var(--colors-color-palette-secondary);
+        }
+
+          .bg_colorPalette\\.dark {
+            background-color: var(--colors-color-palette-dark);
         }
 
           .hover\\:text_colorPalette\\.light\\.accent:is(:hover, [data-hover]) {
@@ -1275,16 +1275,16 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
+        .gap_10px {
+          gap: 10px;
+      }
+
         .flex_column {
           flex-direction: column;
       }
 
         .items_center {
           align-items: center;
-      }
-
-        .gap_10px {
-          gap: 10px;
       }
 
         .justify_flex-end {
@@ -1352,16 +1352,16 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
+        .gap_10px {
+          gap: 10px;
+      }
+
         .flex_column {
           flex-direction: column;
       }
 
         .items_center {
           align-items: center;
-      }
-
-        .gap_10px {
-          gap: 10px;
       }
 
         .items_flex-end {
@@ -1801,12 +1801,16 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
+      }
+
+        .bg_red\\.200 {
+          background: var(--colors-red-200);
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
 
         .mt_40px {
@@ -1815,10 +1819,6 @@ describe('extract to css output pipeline', () => {
 
         .mb_42px {
           margin-bottom: 42px;
-      }
-
-        .bg_red\\.200 {
-          background: var(--colors-red-200);
       }
       }"
     `)
@@ -1932,20 +1932,20 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-10);
       }
 
-        .bg_tomato {
-          background-color: tomato;
-      }
-
-        .bg_yellow {
-          background-color: yellow;
-      }
-
         .text_pink {
           color: pink;
       }
 
         .text_purple {
           color: purple;
+      }
+
+        .bg_tomato {
+          background-color: tomato;
+      }
+
+        .bg_yellow {
+          background-color: yellow;
       }
       }"
     `)
@@ -2208,9 +2208,9 @@ describe('extract to css output pipeline', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
       }
       }
 
@@ -2221,13 +2221,13 @@ describe('extract to css output pipeline', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: var(--colors-white);
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: var(--colors-black);
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -2245,16 +2245,16 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
         .text_red {
           color: red;
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
       }"
     `)
@@ -2334,9 +2334,9 @@ describe('extract to css output pipeline', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
       }
       }
 
@@ -2347,13 +2347,13 @@ describe('extract to css output pipeline', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: var(--colors-white);
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: var(--colors-black);
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -2371,16 +2371,16 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
         .text_red {
           color: red;
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
       }"
     `)
@@ -2814,12 +2814,12 @@ describe('extract to css output pipeline', () => {
           display: grid;
       }
 
-        .grid-cols_repeat\\(auto-fit\\,_minmax\\(80px\\,_1fr\\)\\) {
-          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-      }
-
         .gap_8 {
           gap: var(--spacing-8);
+      }
+
+        .grid-cols_repeat\\(auto-fit\\,_minmax\\(80px\\,_1fr\\)\\) {
+          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
       }
 
         .grid-cols_repeat\\(auto-fit\\,_minmax\\(token\\(sizes\\.20\\,_20\\)\\,_1fr\\)\\) {
@@ -2991,13 +2991,13 @@ describe('extract to css output pipeline', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-          .textStyle {
-            font-family: var(--fonts-mono);
-      }
-
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
+      }
+
+          .textStyle {
+            font-family: var(--fonts-mono);
       }
       }
 
@@ -3381,20 +3381,20 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
-        .fs_12px {
-          font-size: 12px;
-      }
-
         .p_4 {
           padding: var(--spacing-4);
+      }
+
+        .flex_column {
+          flex-direction: column;
+      }
+
+        .fs_12px {
+          font-size: 12px;
       }
 
         .content_this_will_be_extrated {
@@ -3460,16 +3460,16 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
         .p_4 {
           padding: var(--spacing-4);
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
       }"
     `)

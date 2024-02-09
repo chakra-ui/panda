@@ -193,9 +193,9 @@ describe('sort style rules', () => {
       "@layer recipes {
         @layer _base {
           .btn {
-            line-height: 1.2;
             display: inline-flex;
             outline: var(--borders-none);
+            line-height: 1.2;
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {
@@ -242,9 +242,9 @@ describe('sort style rules', () => {
         @layer _base {
 
           .btn {
-            line-height: 1.2;
             display: inline-flex;
             outline: var(--borders-none);
+            line-height: 1.2;
       }
 
           .btn:is(:disabled, [disabled], [data-disabled]) {

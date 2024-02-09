@@ -122,9 +122,9 @@ describe('{fn}.raw', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: var(--colors-white);
       }
       }
 
@@ -135,13 +135,13 @@ describe('{fn}.raw', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: var(--colors-white);
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: var(--colors-black);
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -161,20 +161,12 @@ describe('{fn}.raw', () => {
           margin-inline: var(--spacing-3);
       }
 
-        .pt_4 {
-          padding-top: var(--spacing-4);
-      }
-
         .text_amber\\.100 {
           color: var(--colors-amber-100);
       }
 
         .mx_10 {
           margin-inline: var(--spacing-10);
-      }
-
-        .pt_6 {
-          padding-top: var(--spacing-6);
       }
 
         .text_blue\\.950 {
@@ -189,12 +181,20 @@ describe('{fn}.raw', () => {
           display: flex;
       }
 
-        .flex_column {
-          flex-direction: column;
-      }
-
         .gap_10px {
           gap: 10px;
+      }
+
+        .pt_4 {
+          padding-top: var(--spacing-4);
+      }
+
+        .pt_6 {
+          padding-top: var(--spacing-6);
+      }
+
+        .flex_column {
+          flex-direction: column;
       }
 
         .flex_row {
