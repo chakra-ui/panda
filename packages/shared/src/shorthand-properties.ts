@@ -126,14 +126,7 @@ const longhands = Object.values(shorthandProperties).reduce((a, b) => [...a, ...
  *
  * ```
  *
- * we would produce:
- *
- * ```css
- * .atm_a.atm_a { background-color: blue }
- * .atm_b { background: red }
- * ```
- *
- * and so the more specific selector (.atm_a.atm_a) would win
+ * and so the more specific selector would win
  *
  * Taken from
  * @see https://github.com/callstack/linaria/blob/049a4ccb77e29f3628353352db21bd446fa04a2e/packages/atomic/src/processors/helpers/propertyPriority.ts

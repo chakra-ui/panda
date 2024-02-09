@@ -1,6 +1,6 @@
 import type { AtomicStyleResult, ConditionDetails } from '@pandacss/types'
 import { sortAtRules } from './sort-at-rules'
-import { getPropertyPriority } from './shorthand-properties'
+import { getPropertyPriority } from '@pandacss/shared'
 
 const hasAtRule = (conditions: ConditionDetails[]) => conditions.some((details) => details.type === 'at-rule')
 const styleOrder = [':link', ':visited', ':focus-within', ':focus', ':focus-visible', ':hover', ':active']
