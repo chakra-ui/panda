@@ -18,9 +18,6 @@ css({
   padding: '1px',
   paddingTop: '3px',
   paddingBottom: '4px',
-  base: {
-    padding: '2px',
-  },
 })
 ```
 
@@ -30,10 +27,6 @@ Will now always generate the following css:
 @layer utilities {
   .p_1px {
     padding: 1px;
-  }
-
-  .p_2px {
-    padding: 2px;
   }
 
   .pt_3px {
