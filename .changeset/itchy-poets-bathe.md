@@ -9,6 +9,7 @@
 
 - Sort the longhand/shorthand atomic rules in a deterministic order to prevent property conflicts
 - Automatically merge the `base` object in the `css` root styles in the runtime
+- This may be a breaking change depending on how your styles are created
 
 Ex:
 
