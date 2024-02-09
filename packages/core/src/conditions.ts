@@ -1,13 +1,13 @@
 import { logger } from '@pandacss/logger'
 import { isBaseCondition, toRem, withoutSpace } from '@pandacss/shared'
-import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
+import type { ConditionDetails, ConditionType, Conditions as ConditionsConfig } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 
 const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
 
 interface Options {
-  conditions?: Dict<string>
+  conditions?: ConditionsConfig
   breakpoints?: Record<string, string>
   containerNames?: string[]
   containerSizes?: Record<string, string>
@@ -16,10 +16,8 @@ interface Options {
 const underscoreRegex = /^_/
 const selectorRegex = /&|@/
 
-type Cond = RawCondition & { params: string }
-
 export class Conditions {
-  values: Record<string, RawCondition>
+  values: Record<string, ConditionDetails>
 
   breakpoints: Breakpoints
 
@@ -43,7 +41,7 @@ export class Conditions {
   private setupContainers = () => {
     const { containerNames = [], containerSizes = {} } = this.options
 
-    const containers: Record<string, Cond> = {}
+    const containers: Record<string, ConditionDetails> = {}
     containerNames.unshift('') // add empty container name for @/sm, @/md, etc.
 
     containerNames.forEach((name) => {
@@ -52,9 +50,8 @@ export class Conditions {
         containers[`@${name}/${size}`] = {
           type: 'at-rule',
           name: 'container',
-          raw: name,
           value: _value,
-          rawValue: `@container ${name} (min-width: ${_value})`,
+          raw: `@container ${name} (min-width: ${_value})`,
           params: `${name} ${value}`,
         }
       })
@@ -118,24 +115,24 @@ export class Conditions {
   }
 
   get = (key: string) => {
-    const result = this.values[key]
-    return result?.rawValue ?? result?.value
+    const details = this.values[key]
+    return details.raw
   }
 
-  getRaw = (condition: string): RawCondition | undefined => {
+  getRaw = (conditionName: string): ConditionDetails | undefined => {
     try {
-      return this.values[condition] ?? parseCondition(condition)
+      return this.values[conditionName] ?? parseCondition(conditionName)
     } catch (error) {
       logger.error('core:condition', error)
     }
   }
 
-  sort = (conditions: string[]): RawCondition[] => {
-    const rawConditions = conditions.map(this.getRaw).filter(Boolean) as RawCondition[]
+  sort = (conditions: string[]): ConditionDetails[] => {
+    const rawConditions = conditions.map(this.getRaw).filter(Boolean) as ConditionDetails[]
     return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
   }
 
-  normalize = (condition: string | RawCondition): RawCondition | undefined => {
+  normalize = (condition: string | ConditionDetails): ConditionDetails | undefined => {
     return typeof condition === 'string' ? this.getRaw(condition) : condition
   }
 

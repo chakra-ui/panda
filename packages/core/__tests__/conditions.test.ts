@@ -8,8 +8,8 @@ describe('Conditions', () => {
     expect(css.normalize('@media (min-width: 768px)')).toMatchInlineSnapshot(`
       {
         "name": "media",
+        "params": "(min-width: 768px)",
         "raw": "@media (min-width: 768px)",
-        "rawValue": "@media (min-width: 768px)",
         "type": "at-rule",
         "value": "(min-width: 768px)",
       }
@@ -18,9 +18,8 @@ describe('Conditions', () => {
     expect(css.getRaw('sm')).toMatchInlineSnapshot(`
       {
         "name": "breakpoint",
-        "params": "screen and (min-width: 40rem)",
-        "raw": "sm",
-        "rawValue": "@media screen and (min-width: 40rem)",
+        "params": "screen and (min-width: 40em)",
+        "raw": "@media screen and (min-width: 40em)",
         "type": "at-rule",
         "value": "sm",
       }

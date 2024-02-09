@@ -1,4 +1,4 @@
-import type { RawCondition } from './conditions'
+import type { ConditionDetails } from './conditions'
 
 export interface StyleResultObject {
   [key: string]: any
@@ -17,16 +17,12 @@ export interface StyleEntry {
   variants?: boolean
 }
 
-interface ExpandedCondition extends RawCondition {
-  params?: string
-}
-
 export interface AtomicStyleResult {
   result: StyleResultObject
   entry: StyleEntry
   hash: string
   className: string
-  conditions?: ExpandedCondition[]
+  conditions?: ConditionDetails[]
   layer?: string
 }
 

@@ -1522,4 +1522,132 @@ describe('js to css', () => {
       }"
     `)
   })
+
+  test('mixed conditions sorting', () => {
+    const result = css(
+      {
+        width: {
+          _supportHover: '6px',
+          base: '0px',
+          _mdHover: '8px',
+          sm: '4px',
+          md: '4.5px',
+          _smHover: '7px',
+          _hover: {
+            base: '2px',
+            md: '5px',
+            _focus: '3px',
+          },
+          _dark: '1px',
+        },
+        _suppportHover: {
+          _custom: {
+            color: 'red',
+          },
+        },
+        _hover: {
+          _custom: {
+            color: 'blue',
+          },
+        },
+      },
+      {
+        conditions: {
+          custom: ['&[data-attr="custom"]'],
+          supportHover: ['@media (hover: hover) and (pointer: fine)', '@supports (display: table-cell)', '&:hover'],
+          smHover: ['@media screen and (min-width: 40em)', '@supports (display: grid)', '&:hover'],
+          mdHover: ['@media screen and (min-width: 48em)', '@supports (display: flex)', '&:hover'],
+        },
+      },
+    )
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "w_0px",
+        "dark\\:w_1px",
+        "hover\\:w_2px",
+        "hover\\:focus\\:w_3px",
+        "sm\\:w_4px",
+        "md\\:w_4\\.5px",
+        "custom\\:text_red",
+        "hover\\:md\\:w_5px",
+        "hover\\:custom\\:text_blue",
+        "smHover\\:w_7px",
+        "mdHover\\:w_8px",
+        "supportHover\\:w_6px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .w_0px {
+          width: 0px;
+      }
+
+        [data-theme=dark] .dark\\:w_1px,.dark .dark\\:w_1px,.dark\\:w_1px.dark,.dark\\:w_1px[data-theme=dark] {
+          width: 1px;
+      }
+
+        .hover\\:w_2px:is(:hover, [data-hover]) {
+          width: 2px;
+      }
+
+        .hover\\:focus\\:w_3px:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+          width: 3px;
+      }
+
+        .custom\\:text_red[data-attr="custom"] {
+          color: red;
+      }
+
+        .hover\\:custom\\:text_blue[data-attr="custom"]:is(:hover, [data-hover]) {
+          color: blue;
+      }
+
+        @media screen and (min-width: 40em) {
+          .sm\\:w_4px {
+            width: 4px;
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          @supports (display: grid) {
+            .smHover\\:w_7px:hover {
+              width: 7px;
+      }
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\:w_4\\.5px {
+            width: 4.5px;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .hover\\:md\\:w_5px:is(:hover, [data-hover]) {
+            width: 5px;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          @supports (display: flex) {
+            .mdHover\\:w_8px:hover {
+              width: 8px;
+      }
+      }
+      }
+
+        @media (hover: hover) and (pointer: fine) {
+          @supports (display: table-cell) {
+            .supportHover\\:w_6px:hover {
+              width: 6px;
+      }
+      }
+      }
+      }"
+    `)
+  })
 })
