@@ -18,7 +18,7 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
     },
 
     hr: { height: '0px', color: 'inherit', borderTopWidth: '1px' },
-    body: { height: '100%', lineHeight: 'inherit' },
+    body: { height: '100%' },
     img: { borderStyle: 'none' },
     'img,  svg,  video,  canvas,  audio,  iframe,  embed,  object': {
       display: 'block',
