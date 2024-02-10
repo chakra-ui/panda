@@ -19,13 +19,5 @@ export const validateConditions = (conditions: Conditions | undefined, addError:
         addError('conditions', `Selectors should contain the \`&\` character: \`${c}\``)
       }
     })
-
-    const hasAtLeastOneAmperand = condition.some((c) => c.includes('&'))
-    if (!hasAtLeastOneAmperand) {
-      addError(
-        'conditions',
-        `Mixed selectors should contain the \`&\` character in at least one segment: \`${condition.join(', ')}\``,
-      )
-    }
   })
 }

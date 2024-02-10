@@ -1,6 +1,7 @@
 import { fixturePreset } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 import { Conditions } from '../src/conditions'
+import { compareAtRuleOrMixed } from '../src/sort-style-rules'
 
 describe('Conditions', () => {
   test('condition transformation', () => {
@@ -40,5 +41,165 @@ describe('Conditions', () => {
         "value": "&::after",
       }
     `)
+    expect(css.normalize(['@media (hover: hover) and (pointer: fine)', '@supports (display: grid)', '&:hover']))
+      .toMatchInlineSnapshot(`
+        {
+          "raw": [
+            "@media (hover: hover) and (pointer: fine)",
+            "@supports (display: grid)",
+            "&:hover",
+          ],
+          "type": "mixed",
+          "value": [
+            {
+              "name": "media",
+              "params": "(hover: hover) and (pointer: fine)",
+              "raw": "@media (hover: hover) and (pointer: fine)",
+              "type": "at-rule",
+              "value": "(hover: hover) and (pointer: fine)",
+            },
+            {
+              "name": "supports",
+              "params": "(display: grid)",
+              "raw": "@supports (display: grid)",
+              "type": "at-rule",
+              "value": "(display: grid)",
+            },
+            {
+              "raw": "&:hover",
+              "type": "self-nesting",
+              "value": "&:hover",
+            },
+          ],
+        }
+      `)
+  })
+
+  test('conditions sorting', () => {
+    const css = new Conditions({ conditions: fixturePreset.conditions!, breakpoints: fixturePreset.theme.breakpoints })
+    const conditions = ['sm', 'md', 'lg', '_hover', '_focus', '_focus-visible', '_focus-within', '_active']
+    expect(css.sort(conditions).map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "&:is(:hover, [data-hover])",
+        "&:is(:focus, [data-focus])",
+        "&:is(:active, [data-active])",
+        "@media screen and (min-width: 40em)",
+        "@media screen and (min-width: 48em)",
+        "@media screen and (min-width: 64em)",
+      ]
+    `)
+  })
+
+  test('compare at-rule or mixed', () => {
+    const conds = new Conditions({})
+    const a = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+        conds.normalize('&:hover')!,
+      ],
+    }
+    const b = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+        conds.normalize('&:hover')!,
+      ],
+    }
+
+    const b2 = {
+      conditions: [
+        conds.normalize(['@media (hover: hover) and (pointer: fine)', '@supports (display: grid)', '&:hover'])!,
+      ],
+    }
+
+    expect(compareAtRuleOrMixed(a, b)).toBe(0)
+    expect(compareAtRuleOrMixed(a, b2)).toBe(0)
+
+    const c = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+        conds.normalize('&:hover')!,
+      ],
+    }
+
+    const d = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+      ],
+    }
+
+    expect(compareAtRuleOrMixed(c, d)).toBe(1)
+
+    const e = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+      ],
+    }
+
+    const f = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+        conds.normalize('&:hover')!,
+      ],
+    }
+
+    expect(compareAtRuleOrMixed(e, f)).toBe(-1)
+
+    const g = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+      ],
+    }
+
+    const h = {
+      conditions: [conds.normalize('@media (hover: hover) and (pointer: fine)')!],
+    }
+
+    expect(compareAtRuleOrMixed(g, h)).toBe(1)
+
+    const i = {
+      conditions: [conds.normalize('@media (hover: hover) and (pointer: fine)')!],
+    }
+
+    const j = {
+      conditions: [conds.normalize('@media (hover: hover) and (pointer: fine)')!],
+    }
+
+    expect(compareAtRuleOrMixed(i, j)).toBe(0)
+
+    const k = {
+      conditions: [conds.normalize('@media (hover: hover) and (pointer: fine)')!],
+    }
+
+    const l = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+      ],
+    }
+
+    expect(compareAtRuleOrMixed(k, l)).toBe(-1)
+
+    const m = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+      ],
+    }
+
+    const n = {
+      conditions: [
+        conds.normalize('@media (hover: hover) and (pointer: fine)')!,
+        conds.normalize('@supports (display: grid)')!,
+      ],
+    }
+
+    expect(compareAtRuleOrMixed(m, n)).toBe(0)
   })
 })

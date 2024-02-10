@@ -1,6 +1,6 @@
 import { logger } from '@pandacss/logger'
-import { isBaseCondition, toRem, withoutSpace } from '@pandacss/shared'
-import type { ConditionDetails, ConditionType, Conditions as ConditionsConfig } from '@pandacss/types'
+import { isBaseCondition, isObject, toRem, withoutSpace } from '@pandacss/shared'
+import type { ConditionDetails, ConditionQuery, ConditionType, Conditions as ConditionsConfig } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 
@@ -119,9 +119,11 @@ export class Conditions {
     return details.raw
   }
 
-  getRaw = (conditionName: string): ConditionDetails | undefined => {
+  getRaw = (condNameOrQuery: ConditionQuery): ConditionDetails | undefined => {
+    if (typeof condNameOrQuery === 'string' && this.values[condNameOrQuery]) return this.values[condNameOrQuery]
+
     try {
-      return this.values[conditionName] ?? parseCondition(conditionName)
+      return parseCondition(condNameOrQuery)
     } catch (error) {
       logger.error('core:condition', error)
     }
@@ -132,8 +134,8 @@ export class Conditions {
     return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
   }
 
-  normalize = (condition: string | ConditionDetails): ConditionDetails | undefined => {
-    return typeof condition === 'string' ? this.getRaw(condition) : condition
+  normalize = (condition: ConditionQuery | ConditionDetails): ConditionDetails | undefined => {
+    return isObject(condition) ? (condition as ConditionDetails) : this.getRaw(condition)
   }
 
   keys = () => {

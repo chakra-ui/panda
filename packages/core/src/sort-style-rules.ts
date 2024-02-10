@@ -26,7 +26,18 @@ const compareSelectors = (a: WithConditions, b: WithConditions) => {
 
 const flatten = (conds: ConditionDetails[]) => conds.flatMap((cond) => (cond.type === 'mixed' ? cond.value : cond))
 
-const compareAtRuleOrMixed = (a: WithConditions, b: WithConditions) => {
+/**
+ * Compare 2 Array<AtRuleCondition | MixedCondition>
+ * - sort by condition length (shorter first)
+ * - sort at-rules by predefined order (sort-mq postcss plugin order)
+ * - sort selectors by predefined pseudo selector order
+ * - return 0 if equal
+ *
+ * do this for item in the array against the same index in the other array
+ * -> exit early if not equal
+ * -> if all comparisons result in a score of 0, return 0
+ */
+export const compareAtRuleOrMixed = (a: WithConditions, b: WithConditions) => {
   const aConds = flatten(a.conditions!) as Array<AtRuleCondition>
   const bConds = flatten(b.conditions!) as Array<AtRuleCondition>
 
@@ -92,7 +103,7 @@ const sortByPropertyPriority = (a: WithConditions, b: WithConditions) => {
  * - with at-rules last
  *
  * for each of them:
- * - sort by condition length (shorter first)
+ * - sort by condition length (shorter first, the more you nest the more specific it is)
  * - sort selectors by predefined pseudo selector order
  * - sort at-rules by predefined order (sort-mq postcss plugin order)
  * - sort by property priority (longhands first)
