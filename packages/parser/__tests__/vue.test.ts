@@ -137,12 +137,12 @@ describe('extract Vue templates', () => {
           color: red;
       }
 
-        .font_bold {
-          font-weight: var(--font-weights-bold);
-      }
-
         .text_green {
           color: green;
+      }
+
+        .font_bold {
+          font-weight: var(--font-weights-bold);
       }
       }"
     `)
@@ -389,12 +389,12 @@ describe('extract Vue templates', () => {
           color: red;
       }
 
-        .font_bold {
-          font-weight: var(--font-weights-bold);
-      }
-
         .text_green {
           color: green;
+      }
+
+        .font_bold {
+          font-weight: var(--font-weights-bold);
       }
       }"
     `)
@@ -530,12 +530,12 @@ describe('extract Vue templates', () => {
           color: red;
       }
 
-        .font_bold {
-          font-weight: var(--font-weights-bold);
-      }
-
         .text_green {
           color: green;
+      }
+
+        .font_bold {
+          font-weight: var(--font-weights-bold);
       }
       }"
     `)

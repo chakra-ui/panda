@@ -55,7 +55,8 @@ export function createCss(context: CreateCssContext) {
     return result
   }
 
-  return memo((styleObject: Record<string, any> = {}) => {
+  return memo(({ base, ...styles }: Record<string, any> = {}) => {
+    const styleObject = Object.assign(styles, base)
     const normalizedObject = normalizeStyleObject(styleObject, context)
     const classNames = new Set<string>()
 

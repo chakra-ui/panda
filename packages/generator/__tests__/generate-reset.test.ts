@@ -16,13 +16,13 @@ describe('generate reset', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer reset {
         html {
-          line-height: 1.5;
           --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
           -webkit-text-size-adjust: 100%;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           -moz-tab-size: 4;
           tab-size: 4;
+          line-height: 1.5;
           font-family: var(--global-font-body, var(--font-fallback));
       }
 
@@ -92,8 +92,8 @@ describe('generate reset', () => {
 
         table {
           text-indent: 0px;
-          border-color: inherit;
           border-collapse: collapse;
+          border-color: inherit;
       }
 
         input::placeholder,textarea::placeholder {
@@ -114,10 +114,10 @@ describe('generate reset', () => {
       }
 
         sub,sup {
-          font-size: 75%;
-          line-height: 0;
           position: relative;
           vertical-align: baseline;
+          font-size: 75%;
+          line-height: 0;
       }
 
         sub {
@@ -146,8 +146,8 @@ describe('generate reset', () => {
       }
 
         code,kbd,samp,pre {
-          font-size: 1em;
           --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
+          font-size: 1em;
           font-family: var(--global-font-mono, var(--font-mono-fallback));
       }
 
@@ -201,13 +201,13 @@ describe('generate reset', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer reset {
         .pd-reset {
-          line-height: 1.5;
           --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
           -webkit-text-size-adjust: 100%;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           -moz-tab-size: 4;
           tab-size: 4;
+          line-height: 1.5;
           font-family: var(--global-font-body, var(--font-fallback));
       }
 
@@ -235,10 +235,6 @@ describe('generate reset', () => {
           line-height: inherit;
       }
 
-        .pd-reset img {
-          border-style: none;
-      }
-
         .pd-reset img,.pd-reset svg,.pd-reset video,.pd-reset canvas,.pd-reset audio,.pd-reset iframe,.pd-reset embed,.pd-reset object {
           display: block;
           vertical-align: middle;
@@ -257,10 +253,6 @@ describe('generate reset', () => {
           list-style: none;
       }
 
-        .pd-reset code,.pd-reset kbd,.pd-reset pre,.pd-reset samp {
-          font-size: 1em;
-      }
-
         .pd-reset button,.pd-reset [type='button'],.pd-reset [type='reset'],.pd-reset [type='submit'] {
           -webkit-appearance: button;
           background-color: var(--colors-transparent);
@@ -277,8 +269,8 @@ describe('generate reset', () => {
 
         .pd-reset table {
           text-indent: 0px;
-          border-color: inherit;
           border-collapse: collapse;
+          border-color: inherit;
       }
 
         .pd-reset input::placeholder,.pd-reset textarea::placeholder {
@@ -294,23 +286,11 @@ describe('generate reset', () => {
           display: list-item;
       }
 
-        .pd-reset small {
-          font-size: 80%;
-      }
-
         .pd-reset sub,.pd-reset sup {
-          font-size: 75%;
-          line-height: 0;
           position: relative;
           vertical-align: baseline;
-      }
-
-        .pd-reset sub {
-          bottom: -0.25em;
-      }
-
-        .pd-reset sup {
-          top: -0.5em;
+          font-size: 75%;
+          line-height: 0;
       }
 
         .pd-reset dialog {
@@ -326,13 +306,9 @@ describe('generate reset', () => {
           text-decoration: underline dotted;
       }
 
-        .pd-reset b,.pd-reset strong {
-          font-weight: bolder;
-      }
-
         .pd-reset code,.pd-reset kbd,.pd-reset samp,.pd-reset pre {
-          font-size: 1em;
           --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
+          font-size: 1em;
           font-family: var(--global-font-mono, var(--font-mono-fallback));
       }
 
@@ -373,6 +349,30 @@ describe('generate reset', () => {
 
         .pd-reset [hidden] {
           display: none !important;
+      }
+
+        .pd-reset img {
+          border-style: none;
+      }
+
+        .pd-reset code,.pd-reset kbd,.pd-reset pre,.pd-reset samp {
+          font-size: 1em;
+      }
+
+        .pd-reset small {
+          font-size: 80%;
+      }
+
+        .pd-reset sub {
+          bottom: -0.25em;
+      }
+
+        .pd-reset sup {
+          top: -0.5em;
+      }
+
+        .pd-reset b,.pd-reset strong {
+          font-weight: bolder;
       }
       }"
     `)

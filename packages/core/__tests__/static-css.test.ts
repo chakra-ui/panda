@@ -79,9 +79,9 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: white;
       }
 
           [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
@@ -96,13 +96,13 @@ describe('static-css', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: white;
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: black;
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -359,9 +359,9 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: white;
       }
       }
 
@@ -372,13 +372,13 @@ describe('static-css', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: white;
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: black;
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -393,20 +393,20 @@ describe('static-css', () => {
       }
 
         .buttonStyle--variant_outline {
-          background-color: transparent;
           border: 1px solid blue;
           color: blue;
+          background-color: transparent;
       }
 
         .buttonStyle--variant_outline[data-disabled] {
-          background-color: transparent;
           border: 1px solid gray;
           color: gray;
+          background-color: transparent;
       }
 
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
-          background-color: blue;
           color: white;
+          background-color: blue;
       }
       }",
         "results": {
@@ -681,9 +681,9 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: white;
       }
       }
 
@@ -694,13 +694,13 @@ describe('static-css', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: white;
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: black;
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -750,13 +750,13 @@ describe('static-css', () => {
         @layer _base {
           .checkbox__root {
             display: flex;
-            align-items: center;
             gap: 2px;
+            align-items: center;
       }
 
           .checkbox__control {
-            border-width: 1px;
             border-radius: var(--radii-sm);
+            border-width: 1px;
       }
 
           .checkbox__label {
@@ -841,14 +841,6 @@ describe('static-css', () => {
           position: relative;
       }
 
-        .self_stretch {
-          align-self: stretch;
-      }
-
-        .justify-self_stretch {
-          justify-self: stretch;
-      }
-
         .flex_0_0_sm {
           flex: 0 0 sm;
       }
@@ -863,14 +855,6 @@ describe('static-css', () => {
 
         .d_flex {
           display: flex;
-      }
-
-        .items_center {
-          align-items: center;
-      }
-
-        .justify_center {
-          justify-content: center;
       }
 
         .flex_0_0_auto {
@@ -953,16 +937,8 @@ describe('static-css', () => {
           width: 100%;
       }
 
-        .border-block-end-width_var\\(--thickness\\) {
-          border-block-end-width: var(--thickness);
-      }
-
         .h_100\\% {
           height: 100%;
-      }
-
-        .border-e_var\\(--thickness\\) {
-          border-inline-end-width: var(--thickness);
       }
 
         .\\--thickness_20 {
@@ -1117,8 +1093,28 @@ describe('static-css', () => {
           inset-block-end: 50%;
       }
 
-        .before\\:content_\\"\\"::before {
-          content: "";
+        .self_stretch {
+          align-self: stretch;
+      }
+
+        .justify-self_stretch {
+          justify-self: stretch;
+      }
+
+        .items_center {
+          align-items: center;
+      }
+
+        .justify_center {
+          justify-content: center;
+      }
+
+        .border-block-end-width_var\\(--thickness\\) {
+          border-block-end-width: var(--thickness);
+      }
+
+        .border-e_var\\(--thickness\\) {
+          border-inline-end-width: var(--thickness);
       }
 
         .before\\:d_block::before {
@@ -1129,20 +1125,8 @@ describe('static-css', () => {
           height: 0;
       }
 
-        .before\\:pb_NaN\\%::before {
-          padding-bottom: NaN%;
-      }
-
         .\\[\\&\\>\\*\\]\\:d_flex>* {
           display: flex;
-      }
-
-        .\\[\\&\\>\\*\\]\\:justify_center>* {
-          justify-content: center;
-      }
-
-        .\\[\\&\\>\\*\\]\\:items_center>* {
-          align-items: center;
       }
 
         .\\[\\&\\>\\*\\]\\:overflow_hidden>* {
@@ -1169,12 +1153,25 @@ describe('static-css', () => {
           object-fit: cover;
       }
 
+        .before\\:content_\\"\\"::before {
+          content: "";
+      }
+
+        .before\\:pb_NaN\\%::before {
+          padding-bottom: NaN%;
+      }
+
+        .\\[\\&\\>\\*\\]\\:justify_center>* {
+          justify-content: center;
+      }
+
+        .\\[\\&\\>\\*\\]\\:items_center>* {
+          align-items: center;
+      }
+
         @media screen and (min-width: 48em) {
           .md\\:pos_relative {
             position: relative;
-      }
-          .md\\:before\\:content_\\"\\"::before {
-            content: "";
       }
           .md\\:before\\:d_block::before {
             display: block;
@@ -1182,17 +1179,8 @@ describe('static-css', () => {
           .md\\:before\\:h_0::before {
             height: 0;
       }
-          .md\\:before\\:pb_NaN\\%::before {
-            padding-bottom: NaN%;
-      }
           .md\\:\\[\\&\\>\\*\\]\\:d_flex>* {
             display: flex;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:justify_center>* {
-            justify-content: center;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:items_center>* {
-            align-items: center;
       }
           .md\\:\\[\\&\\>\\*\\]\\:overflow_hidden>* {
             overflow: hidden;
@@ -1211,6 +1199,18 @@ describe('static-css', () => {
       }
           .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
             object-fit: cover;
+      }
+          .md\\:before\\:content_\\"\\"::before {
+            content: "";
+      }
+          .md\\:before\\:pb_NaN\\%::before {
+            padding-bottom: NaN%;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:justify_center>* {
+            justify-content: center;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:items_center>* {
+            align-items: center;
       }
       }
       }",
@@ -1802,13 +1802,13 @@ describe('static-css', () => {
       {
         "css": "@layer recipes {
         @layer _base {
-          .textStyle {
-            font-family: var(--fonts-mono);
-      }
-
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
+      }
+
+          .textStyle {
+            font-family: var(--fonts-mono);
       }
 
           [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
@@ -1822,9 +1822,9 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
+            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
-            color: white;
       }
       }
 
@@ -1835,10 +1835,10 @@ describe('static-css', () => {
       }
 
         .textStyle--size_h2 {
+          letter-spacing: -0.03em;
           font-size: 3rem;
           line-height: 1.2em;
           font-weight: 700;
-          letter-spacing: -0.03em;
       }
 
         .card--rounded_true {
@@ -1852,13 +1852,13 @@ describe('static-css', () => {
       }
 
         .buttonStyle--variant_solid {
-          background-color: blue;
           color: white;
+          background-color: blue;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
           color: black;
+          background-color: gray;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -1873,20 +1873,20 @@ describe('static-css', () => {
       }
 
         .buttonStyle--variant_outline {
-          background-color: transparent;
           border: 1px solid blue;
           color: blue;
+          background-color: transparent;
       }
 
         .buttonStyle--variant_outline[data-disabled] {
-          background-color: transparent;
           border: 1px solid gray;
           color: gray;
+          background-color: transparent;
       }
 
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
-          background-color: blue;
           color: white;
+          background-color: blue;
       }
       }
 
@@ -1894,13 +1894,13 @@ describe('static-css', () => {
         @layer _base {
           .checkbox__root {
             display: flex;
-            align-items: center;
             gap: 2px;
+            align-items: center;
       }
 
           .checkbox__control {
-            border-width: 1px;
             border-radius: var(--radii-sm);
+            border-width: 1px;
       }
 
           .checkbox__label {

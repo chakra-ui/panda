@@ -1,12 +1,15 @@
 import type { AtomicStyleResult, ConditionDetails } from '@pandacss/types'
 import { sortAtRules } from './sort-at-rules'
+import { getPropertyPriority } from '@pandacss/shared'
 
 const hasAtRule = (conditions: ConditionDetails[]) => conditions.some((details) => details.type === 'at-rule')
 const styleOrder = [':link', ':visited', ':focus-within', ':focus', ':focus-visible', ':hover', ':active']
+
 const pseudoSelectorScore = (selector: string) => {
   const index = styleOrder.findIndex((pseudoClass) => selector.includes(pseudoClass))
   return index + 1
 }
+
 const compareConditions = (a: WithConditions, b: WithConditions) => {
   if (a.conditions!.length === b.conditions!.length) {
     const selector1 = a.conditions![0].value
@@ -16,6 +19,7 @@ const compareConditions = (a: WithConditions, b: WithConditions) => {
 
   return a.conditions!.length - b.conditions!.length
 }
+
 const compareAtRuleConditions = (a: WithConditions, b: WithConditions) => {
   if (a.conditions!.length === b.conditions!.length) {
     const lastA = a.conditions![a.conditions!.length - 1]
@@ -37,7 +41,11 @@ const compareAtRuleConditions = (a: WithConditions, b: WithConditions) => {
   return a.conditions!.length - b.conditions!.length
 }
 
-export interface WithConditions extends Pick<AtomicStyleResult, 'conditions'> {}
+export interface WithConditions extends Pick<AtomicStyleResult, 'conditions' | 'entry'> {}
+
+const sortByPropertyPriority = (a: WithConditions, b: WithConditions) => {
+  return getPropertyPriority(a.entry.prop) - getPropertyPriority(b.entry.prop)
+}
 
 /**
  * Sort style rules by conditions
@@ -49,16 +57,17 @@ export interface WithConditions extends Pick<AtomicStyleResult, 'conditions'> {}
  * - sort by condition length (shorter first)
  * - sort selectors by predefined pseudo selector order
  * - sort at-rules by predefined order (sort-mq postcss plugin order)
+ * - sort by property priority (longhands first)
  */
 
 export const sortStyleRules = <T extends WithConditions>(styleRules: Array<T>): T[] => {
-  const sorted: T[] = []
+  const declarations: T[] = []
   const withSelectorsOnly: T[] = []
   const withAtRules: T[] = []
 
   for (const styleRule of styleRules) {
     if (!styleRule.conditions?.length) {
-      sorted.push(styleRule)
+      declarations.push(styleRule)
     } else if (!hasAtRule(styleRule.conditions)) {
       withSelectorsOnly.push(styleRule)
     } else {
@@ -66,8 +75,20 @@ export const sortStyleRules = <T extends WithConditions>(styleRules: Array<T>): 
     }
   }
 
-  withSelectorsOnly.sort(compareConditions)
-  withAtRules.sort(compareAtRuleConditions)
+  withSelectorsOnly.sort((a, b) => {
+    const conditionDiff = compareConditions(a, b)
+    if (conditionDiff !== 0) return conditionDiff
+
+    return sortByPropertyPriority(a, b)
+  })
+  withAtRules.sort((a, b) => {
+    const conditionDiff = compareAtRuleConditions(a, b)
+    if (conditionDiff !== 0) return conditionDiff
+
+    return sortByPropertyPriority(a, b)
+  })
+
+  const sorted = declarations.sort(sortByPropertyPriority)
 
   sorted.push(...withSelectorsOnly, ...withAtRules)
 

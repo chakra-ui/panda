@@ -271,12 +271,12 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        .\\[\\&\\:\\:placeholder\\]\\:left_40px::placeholder {
-          left: 40px;
-      }
-
         .\\[\\&\\:\\:placeholder\\]\\:bg_red400::placeholder {
           background: red400;
+      }
+
+        .\\[\\&\\:\\:placeholder\\]\\:left_40px::placeholder {
+          left: 40px;
       }
 
         @media screen and (min-width: 40em) {
@@ -458,10 +458,6 @@ describe('atomic / with direct nesting', () => {
           all: unset;
       }
 
-        .bg_red {
-          background-color: red;
-      }
-
         .border_none {
           border: var(--borders-none);
       }
@@ -474,12 +470,20 @@ describe('atomic / with direct nesting', () => {
           border-radius: $button;
       }
 
+        .cursor_pointer {
+          cursor: pointer;
+      }
+
+        .bg_red {
+          background-color: red;
+      }
+
         .fs_\\$xsmall {
           font-size: $xsmall;
       }
 
-        .cursor_pointer {
-          cursor: pointer;
+        .\\[\\&_\\.my-class\\]\\:text_red .my-class,.\\[\\&_span\\]\\:text_red span {
+          color: red;
       }
 
         .\\[\\&_\\+_span\\]\\:ml_\\$2 + span {
@@ -488,10 +492,6 @@ describe('atomic / with direct nesting', () => {
 
         .test .\\[\\.test_\\&\\]\\:bg_blue {
           background-color: blue;
-      }
-
-        .\\[\\&_\\.my-class\\]\\:text_red .my-class,.\\[\\&_span\\]\\:text_red span {
-          color: red;
       }
 
         .\\[\\&\\:focus\\,_\\&\\:hover\\]\\:shadow_none:focus,.\\[\\&\\:focus\\,_\\&\\:hover\\]\\:shadow_none:hover {

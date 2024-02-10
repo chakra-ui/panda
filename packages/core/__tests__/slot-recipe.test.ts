@@ -9,13 +9,13 @@ describe('slot recipe ruleset', () => {
         @layer _base {
           .checkbox__root {
             display: flex;
-            align-items: center;
             gap: var(--spacing-2);
+            align-items: center;
       }
 
           .checkbox__control {
-            border-width: 1px;
             border-radius: var(--radii-sm);
+            border-width: 1px;
       }
 
           .checkbox__label {

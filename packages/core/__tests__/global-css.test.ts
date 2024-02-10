@@ -163,17 +163,17 @@ describe('Global css', () => {
       }
 
         .content-dark::-webkit-scrollbar-thumb {
-          background-color: var(--colors-bg, #000) !important;
-          border-color: var(--colors-fg, #333) !important;
           border-radius: 9px;
           border: 2px solid;
+          background-color: var(--colors-bg, #000) !important;
+          border-color: var(--colors-fg, #333) !important;
       }
 
         #corner {
           position: fixed;
+          cursor: nwse-resize;
           right: var(--spacing-0);
           bottom: var(--spacing-0);
-          cursor: nwse-resize;
       }
 
         .color-picker .react-colorful {
