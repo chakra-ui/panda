@@ -47,7 +47,6 @@ describe('generate reset', () => {
 
         body {
           height: 100%;
-          line-height: inherit;
       }
 
         img {
@@ -232,7 +231,6 @@ describe('generate reset', () => {
 
         .pd-reset body {
           height: 100%;
-          line-height: inherit;
       }
 
         .pd-reset img,.pd-reset svg,.pd-reset video,.pd-reset canvas,.pd-reset audio,.pd-reset iframe,.pd-reset embed,.pd-reset object {
