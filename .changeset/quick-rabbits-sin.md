@@ -1,7 +1,7 @@
 ---
-'@pandacss/types': patch
-'@pandacss/core': patch
-'@pandacss/dev': patch
+'@pandacss/types': minor
+'@pandacss/core': minor
+'@pandacss/dev': minor
 ---
 
 - Add a `config.polyfill` option that will polyfill the CSS @layer at-rules using a
