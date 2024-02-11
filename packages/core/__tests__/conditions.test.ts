@@ -1,7 +1,7 @@
 import { fixturePreset } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 import { Conditions } from '../src/conditions'
-import { compareAtRuleOrMixed } from '../src/sort-style-rules'
+import { compareAtRuleOrMixed as _compareAtRuleOrMixed } from '../src/sort-style-rules'
 
 describe('Conditions', () => {
   test('condition transformation', () => {
@@ -91,6 +91,7 @@ describe('Conditions', () => {
   })
 
   test('compare at-rule or mixed', () => {
+    const compareAtRuleOrMixed = _compareAtRuleOrMixed as (a: any, b: any) => number
     const conds = new Conditions({})
     const a = {
       conditions: [
