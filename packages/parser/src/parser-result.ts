@@ -1,5 +1,5 @@
 import type { ParserOptions } from '@pandacss/core'
-import { PandaError, getOrCreateSet } from '@pandacss/shared'
+import { getOrCreateSet } from '@pandacss/shared'
 import type { ParserResultInterface, ResultItem } from '@pandacss/types'
 
 export class ParserResult implements ParserResultInterface {
