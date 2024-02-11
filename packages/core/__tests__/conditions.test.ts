@@ -80,12 +80,12 @@ describe('Conditions', () => {
     const conditions = ['sm', 'md', 'lg', '_hover', '_focus', '_focus-visible', '_focus-within', '_active']
     expect(css.sort(conditions).map((c) => c.raw)).toMatchInlineSnapshot(`
       [
-        "&:is(:hover, [data-hover])",
-        "&:is(:focus, [data-focus])",
-        "&:is(:active, [data-active])",
         "@media screen and (min-width: 40em)",
         "@media screen and (min-width: 48em)",
         "@media screen and (min-width: 64em)",
+        "&:is(:hover, [data-hover])",
+        "&:is(:focus, [data-focus])",
+        "&:is(:active, [data-active])",
       ]
     `)
   })

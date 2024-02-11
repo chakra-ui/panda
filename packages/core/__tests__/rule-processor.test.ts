@@ -286,9 +286,9 @@ describe('rule processor', () => {
         "sm\\:text_yellow",
         "sm\\:fs_sm",
         "sm\\:bg_red",
-        "xl\\:w_3",
         "sm\\:hover\\:bg_green",
         "hover\\:md\\:fs_lg",
+        "xl\\:w_3",
         "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
       ]
     `,
@@ -1523,6 +1523,463 @@ describe('js to css', () => {
     `)
   })
 
+  test('pseudo conditions sorting', () => {
+    const result = css(
+      {
+        _focus: {
+          width: '2px',
+        },
+        _custom: {
+          width: '3px',
+        },
+        _active: {
+          width: '3px',
+        },
+        _hover: {
+          width: '1px',
+        },
+      },
+      {
+        conditions: {
+          custom: '&[data-attr="custom"]',
+        },
+      },
+    )
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "custom\\:w_3px",
+        "focus\\:w_2px",
+        "hover\\:w_1px",
+        "active\\:w_3px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .custom\\:w_3px[data-attr="custom"] {
+          width: 3px;
+      }
+
+        .focus\\:w_2px:is(:focus, [data-focus]) {
+          width: 2px;
+      }
+
+        .hover\\:w_1px:is(:hover, [data-hover]) {
+          width: 1px;
+      }
+
+        .active\\:w_3px:is(:active, [data-active]) {
+          width: 3px;
+      }
+      }"
+    `)
+  })
+
+  test('at-rules pseudo conditions sorting', () => {
+    const result = css(
+      {
+        sm: {
+          _focus: {
+            width: '22px',
+          },
+          _custom: {
+            width: '33px',
+          },
+          _active: {
+            width: '44px',
+          },
+          _hover: {
+            width: '11px',
+          },
+        },
+      },
+      {
+        conditions: {
+          custom: '&[data-attr="custom"]',
+        },
+      },
+    )
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "sm\\:custom\\:w_33px",
+        "sm\\:focus\\:w_22px",
+        "sm\\:hover\\:w_11px",
+        "sm\\:active\\:w_44px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 40em) {
+          .sm\\:custom\\:w_33px[data-attr="custom"] {
+            width: 33px;
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          .sm\\:focus\\:w_22px:is(:focus, [data-focus]) {
+            width: 22px;
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          .sm\\:hover\\:w_11px:is(:hover, [data-hover]) {
+            width: 11px;
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          .sm\\:active\\:w_44px:is(:active, [data-active]) {
+            width: 44px;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('nested conditions sorting', () => {
+    const result = css(
+      {
+        md: {
+          width: '3px',
+        },
+        _hover: {
+          md: {
+            width: '5px',
+          },
+          _focus: {
+            width: '2px',
+          },
+          _custom: {
+            color: 'blue',
+          },
+        },
+      },
+      {
+        conditions: {
+          custom: '&[data-attr="custom"]',
+        },
+      },
+    )
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "hover\\:focus\\:w_2px",
+        "hover\\:custom\\:text_blue",
+        "md\\:w_3px",
+        "hover\\:md\\:w_5px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .hover\\:focus\\:w_2px:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+          width: 2px;
+      }
+
+        .hover\\:custom\\:text_blue:is(:hover, [data-hover])[data-attr="custom"] {
+          color: blue;
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\:w_3px {
+            width: 3px;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .hover\\:md\\:w_5px:is(:hover, [data-hover]) {
+            width: 5px;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('nested mixed conditions sorting', () => {
+    const result = css(
+      {
+        _hover: {
+          md: {
+            width: '5px',
+          },
+          _mixed: {
+            color: 'green',
+          },
+          _mixedMd: {
+            color: '6px',
+          },
+          _custom: {
+            color: 'blue',
+          },
+        },
+      },
+      {
+        conditions: {
+          custom: '&[data-attr="custom"]',
+          mixed: ['&[data-attr="custom"]'],
+          mixedMd: ['@media screen and (min-width: 48em)', '&[data-attr="custom"]'],
+        },
+      },
+    )
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "hover\\:custom\\:text_blue",
+        "hover\\:mixed\\:text_green",
+        "hover\\:md\\:w_5px",
+        "hover\\:mixedMd\\:text_6px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .hover\\:custom\\:text_blue:is(:hover, [data-hover])[data-attr="custom"] {
+          color: blue;
+      }
+
+        .hover\\:mixed\\:text_green[data-attr="custom"]:is(:hover, [data-hover]) {
+          color: green;
+      }
+
+        @media screen and (min-width: 48em) {
+          .hover\\:md\\:w_5px:is(:hover, [data-hover]) {
+            width: 5px;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .hover\\:mixedMd\\:text_6px[data-attr="custom"]:is(:hover, [data-hover]) {
+            color: 6px;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('at-rules conditions sorting', () => {
+    const result = css({
+      md: {
+        color: '3px',
+      },
+      sm: {
+        width: '1px',
+      },
+      xl: {
+        width: '4px',
+      },
+      lg: {
+        color: '2px',
+      },
+    })
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "sm\\:w_1px",
+        "md\\:text_3px",
+        "lg\\:text_2px",
+        "xl\\:w_4px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 40em) {
+          .sm\\:w_1px {
+            width: 1px;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\:text_3px {
+            color: 3px;
+      }
+      }
+
+        @media screen and (min-width: 64em) {
+          .lg\\:text_2px {
+            color: 2px;
+      }
+      }
+
+        @media screen and (min-width: 80em) {
+          .xl\\:w_4px {
+            width: 4px;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('at-rules + mixed conditions sorting', () => {
+    const result = css(
+      {
+        md: {
+          color: '3px',
+        },
+        _mixedSupportMd: {
+          color: 'yellow',
+        },
+        sm: {
+          width: '1px',
+        },
+        _mixedMd: {
+          color: 'blue',
+        },
+        xl: {
+          width: '4px',
+        },
+        _mixedSupportSm: {
+          color: 'green',
+        },
+        lg: {
+          color: '2px',
+        },
+        _mixedSm: {
+          color: 'red',
+        },
+      },
+      {
+        conditions: {
+          mixedSm: ['@media screen and (min-width: 40em)', '&[data-attr="custom"]'],
+          mixedSupportSm: ['@media screen and (min-width: 40em)', '@support (display: flex)', '&[data-attr="custom"]'],
+          mixedMd: ['@media screen and (min-width: 48em)', '&[data-attr="custom"]'],
+          mixedSupportMd: ['@media screen and (min-width: 48em)', '@support (display: flex)', '&[data-attr="custom"]'],
+        },
+      },
+    )
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "sm\\:w_1px",
+        "mixedSm\\:text_red",
+        "mixedSupportSm\\:text_green",
+        "md\\:text_3px",
+        "mixedMd\\:text_blue",
+        "mixedSupportMd\\:text_yellow",
+        "lg\\:text_2px",
+        "xl\\:w_4px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 40em) {
+          .sm\\:w_1px {
+            width: 1px;
+      }
+          .mixedSm\\:text_red[data-attr="custom"] {
+            color: red;
+      }
+      }
+
+        @media screen and (min-width: 40em) {
+          @support (display: flex) {
+            .mixedSupportSm\\:text_green[data-attr="custom"] {
+              color: green;
+      }
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .md\\:text_3px {
+            color: 3px;
+      }
+          .mixedMd\\:text_blue[data-attr="custom"] {
+            color: blue;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          @support (display: flex) {
+            .mixedSupportMd\\:text_yellow[data-attr="custom"] {
+              color: yellow;
+      }
+      }
+      }
+
+        @media screen and (min-width: 64em) {
+          .lg\\:text_2px {
+            color: 2px;
+      }
+      }
+
+        @media screen and (min-width: 80em) {
+          .xl\\:w_4px {
+            width: 4px;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('mixed vs at-rule sorting', () => {
+    const result = css(
+      {
+        width: {
+          _mdHover: '6px',
+          md: '4.5px',
+          _hover: {
+            md: '5px',
+          },
+        },
+      },
+      {
+        conditions: {
+          mdHover: ['@media screen and (min-width: 48em)', '@supports (display: flex)', '&:hover'],
+        },
+      },
+    )
+
+    expect(result.className).toMatchInlineSnapshot(
+      `
+      [
+        "md\\:w_4\\.5px",
+        "hover\\:md\\:w_5px",
+        "mdHover\\:w_6px",
+      ]
+    `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 48em) {
+          .md\\:w_4\\.5px {
+            width: 4.5px;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          .hover\\:md\\:w_5px:is(:hover, [data-hover]) {
+            width: 5px;
+      }
+      }
+
+        @media screen and (min-width: 48em) {
+          @supports (display: flex) {
+            .mdHover\\:w_6px:hover {
+              width: 6px;
+      }
+      }
+      }
+      }"
+    `)
+  })
+
   test('mixed conditions sorting', () => {
     const result = css(
       {
@@ -1568,12 +2025,12 @@ describe('js to css', () => {
         "dark\\:w_1px",
         "hover\\:w_2px",
         "hover\\:focus\\:w_3px",
-        "sm\\:w_4px",
-        "md\\:w_4\\.5px",
         "custom\\:text_red",
-        "hover\\:md\\:w_5px",
         "hover\\:custom\\:text_blue",
+        "sm\\:w_4px",
         "smHover\\:w_7px",
+        "md\\:w_4\\.5px",
+        "hover\\:md\\:w_5px",
         "mdHover\\:w_8px",
         "supportHover\\:w_6px",
       ]

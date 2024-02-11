@@ -1,4 +1,4 @@
-import type { AtRuleCondition, AtomicStyleResult, ConditionDetails, SelectorCondition } from '@pandacss/types'
+import type { AtomicStyleResult, ConditionDetails, SelectorCondition } from '@pandacss/types'
 import { sortAtRules } from './sort-at-rules'
 import { getPropertyPriority } from '@pandacss/shared'
 
@@ -24,10 +24,13 @@ const compareSelectors = (a: WithConditions, b: WithConditions) => {
   return aConds.length - bConds.length
 }
 
+/**
+ * Flatten mixed conditions to Array<AtRuleCondition | SelectorCondition>
+ */
 const flatten = (conds: ConditionDetails[]) => conds.flatMap((cond) => (cond.type === 'mixed' ? cond.value : cond))
 
 /**
- * Compare 2 Array<AtRuleCondition | MixedCondition>
+ * Compare 2 Array<AtRuleCondition | SelectorCondition>
  * - sort by condition length (shorter first)
  * - sort at-rules by predefined order (sort-mq postcss plugin order)
  * - sort selectors by predefined pseudo selector order
@@ -38,52 +41,72 @@ const flatten = (conds: ConditionDetails[]) => conds.flatMap((cond) => (cond.typ
  * -> if all comparisons result in a score of 0, return 0
  */
 export const compareAtRuleOrMixed = (a: WithConditions, b: WithConditions) => {
-  const aConds = flatten(a.conditions!) as Array<AtRuleCondition>
-  const bConds = flatten(b.conditions!) as Array<AtRuleCondition>
+  const aConds = flatten(a.conditions!) as Array<ConditionDetails>
+  const bConds = flatten(b.conditions!) as Array<ConditionDetails>
 
-  // Compare lengths first, return difference if not equal
-  if (aConds.length !== bConds.length) {
-    return aConds.length - bConds.length
-  }
+  let aCond, bCond
+  const max = Math.max(aConds.length, bConds.length)
 
-  let score = 0,
-    aCond,
-    bCond
-
-  // Compare each AtRuleCondition
-  for (let i = 0; i < aConds.length; i++) {
+  for (let i = 0; i < max; i++) {
     aCond = aConds[i]
     bCond = bConds[i]
 
-    if (!aCond || !bCond) {
+    // More nesting should be ranked higher
+    // a: [':hover', ':focus'] / b: [':hover'] => a is ranked higher
+    if (!aCond) return -1
+    if (!bCond) return 1
+
+    // a is at-rule and b is not, a is ranked higher
+    // a: ['@media (min-width: 768px)'] b: [':hover', ':focus'] => a is ranked higher
+    if (aCond.type === 'at-rule' && bCond.type.includes('nesting')) {
+      return 1
+    }
+
+    // a is not at-rule and b is, a is ranked lower
+    // a: [':hover', ':focus'] b: ['@media (min-width: 768px)'] => a is ranked lower
+    if (aCond.type.includes('nesting') && bCond.type === 'at-rule') {
+      return -1
+    }
+
+    // a & b are at-rules
+    // sort by predefined order, return difference if not equal
+    // otherwise, keep comparing
+    // a: ['@media (min-width: 1024px)'] b: ['@media (min-width: 768px)'] => a is ranked higher
+    if (aCond.type === 'at-rule' && bCond.type === 'at-rule') {
+      const atRule1 = aCond.params ?? aCond.raw
+      const atRule2 = bCond.params ?? bCond.raw
+
+      if (!atRule1) return -1
+      if (!atRule2) return 1
+
+      const score = sortAtRules(atRule1, atRule2)
+
+      if (score !== 0) {
+        return score
+      }
+
       continue
     }
 
-    const atRule1 = aConds[i].params ?? aConds[i].raw
-    const atRule2 = bConds[i].params ?? bConds[i].raw
+    // a & b are selectors
+    // sort by pseudo selector order, return difference if not equal
+    // otherwise, keep comparing
+    if (aCond.type.includes('nesting') && bCond.type.includes('nesting')) {
+      const nextACond = aConds[i + 1]
+      const nextBCond = bConds[i + 1]
 
-    if (!atRule1 || !atRule2) {
-      continue
-    }
-
-    score = sortAtRules(atRule1, atRule2)
-    if (score !== 0) {
-      return score
-    }
-  }
-
-  // If score is still 0, compare pseudo-selectors
-  for (let i = 0; i < aConds.length; i++) {
-    aCond = aConds[i]
-    bCond = bConds[i]
-
-    if (!aCond || !bCond) {
-      continue
-    }
-
-    score = pseudoSelectorScore(aConds[i].value) - pseudoSelectorScore(bConds[i].value)
-    if (score !== 0) {
-      return score
+      // if a has a next condition and b doesn't, a is ranked higher
+      // we will compare the next condition in the next iteration
+      // only bother comparing if both have a next condition/neither does = have the same nesting level
+      // a: ['@media (min-width: 1024px)', ':hover', ':focus'] b: ['@media (min-width: 1024px)', ':hover'] => a is ranked higher
+      if (Boolean(nextACond) === Boolean(nextBCond)) {
+        const score =
+          pseudoSelectorScore((aCond as SelectorCondition).value) -
+          pseudoSelectorScore((bCond as SelectorCondition).value)
+        if (score !== 0) {
+          return score
+        }
+      }
     }
   }
 
@@ -93,6 +116,7 @@ export const compareAtRuleOrMixed = (a: WithConditions, b: WithConditions) => {
 export interface WithConditions extends Pick<AtomicStyleResult, 'conditions' | 'entry'> {}
 
 const sortByPropertyPriority = (a: WithConditions, b: WithConditions) => {
+  if (a.entry.prop === b.entry.prop) return 0
   return getPropertyPriority(a.entry.prop) - getPropertyPriority(b.entry.prop)
 }
 
@@ -125,8 +149,8 @@ export const sortStyleRules = <T extends WithConditions>(styleRules: Array<T>): 
   }
 
   withSelectorsOnly.sort((a, b) => {
-    const conditionDiff = compareSelectors(a, b)
-    if (conditionDiff !== 0) return conditionDiff
+    const selectorDiff = compareSelectors(a, b)
+    if (selectorDiff !== 0) return selectorDiff
 
     return sortByPropertyPriority(a, b)
   })

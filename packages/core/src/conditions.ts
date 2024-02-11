@@ -4,7 +4,7 @@ import type { ConditionDetails, ConditionQuery, ConditionType, Conditions as Con
 import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 
-const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
+const order: ConditionType[] = ['at-rule', 'self-nesting', 'combinator-nesting', 'parent-nesting']
 
 interface Options {
   conditions?: ConditionsConfig
