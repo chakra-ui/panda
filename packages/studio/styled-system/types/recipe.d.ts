@@ -14,9 +14,20 @@ export type RecipeSelection<T extends RecipeVariantRecord> = keyof any extends k
 
 export type RecipeVariantFn<T extends RecipeVariantRecord> = (props?: RecipeSelection<T>) => string
 
+/**
+ * Extract the variant as optional props from a `cva` function.
+ * Intended to be used with a JSX component, prefer `RecipeVariant` for a more strict type.
+ */
 export type RecipeVariantProps<
   T extends RecipeVariantFn<RecipeVariantRecord> | SlotRecipeVariantFn<string, SlotRecipeVariantRecord<string>>,
 > = Pretty<Parameters<T>[0]>
+
+/**
+ * Extract the variants from a `cva` function.
+ */
+export type RecipeVariant<
+  T extends RecipeVariantFn<RecipeVariantRecord> | SlotRecipeVariantFn<string, SlotRecipeVariantRecord<string>>,
+> = Exclude<Pretty<Required<RecipeVariantProps<T>>>, undefined>
 
 type RecipeVariantMap<T extends RecipeVariantRecord> = {
   [K in keyof T]: Array<keyof T[K]>
