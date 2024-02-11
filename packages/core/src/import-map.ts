@@ -1,32 +1,38 @@
 import { isString, mapEntries } from '@pandacss/shared'
 import type { ImportMapInput, ImportMapOutput } from '@pandacss/types'
 import type { Context } from './context'
-import { FileMatcher, type ImportResult } from './file-matcher'
+import { FileMatcher, type FileMatcherOptions, type ImportResult } from './file-matcher'
 
 interface ImportMatcher {
   mod: string
   regex: RegExp
   match(value: string): boolean
+  values: Set<string>
 }
 
 export class ImportMap {
-  value: ImportMapOutput<string>
+  value!: ImportMapOutput<string>
   matchers = {} as Record<keyof ImportMapOutput, ImportMatcher>
   outdir: string
+  /**
+   * User defined aliases from the config
+   */
+  aliases: FileMatcherOptions['userAliases']
 
   constructor(private context: Pick<Context, 'jsx' | 'config' | 'conf' | 'isValidProperty' | 'recipes' | 'patterns'>) {
-    const { jsx } = this.context
-
     this.outdir = this.getOutdir()
+  }
 
-    const importMap = mapEntries(this.normalize(context.config.importMap), (key, paths) => [key, paths.join('/')])
+  setup() {
+    const { jsx } = this.context
+    const importMap = mapEntries(this.normalize(this.context.config.importMap), (key, paths) => [key, paths.join('/')])
 
-    this.matchers.css = this.createMatcher(importMap.css, ['css', 'cva', 'sva'])
+    this.matchers.css = this.createMatcher(importMap.css, ['css', 'cva', 'sva'].concat(this.aliases?.css ?? []))
     this.matchers.recipe = this.createMatcher(importMap.recipe)
     this.matchers.pattern = this.createMatcher(importMap.pattern)
 
     if (jsx.isEnabled) {
-      this.matchers.jsx = this.createMatcher(importMap.jsx, jsx.names)
+      this.matchers.jsx = this.createMatcher(importMap.jsx, jsx.names.concat(this.aliases?.jsxFactory ?? []))
     }
 
     this.value = importMap
@@ -69,7 +75,7 @@ export class ImportMap {
   private createMatcher = (mod: string, values?: string[]): ImportMatcher => {
     const regex = values ? new RegExp(`^(${values.join('|')})$`) : /.*/
     const match = (value: string) => regex.test(value)
-    return { mod, regex, match }
+    return { mod, regex, match, values: new Set(values ?? []) }
   }
 
   match = (result: ImportResult | undefined, resolveTsPath?: (mod: string) => string | undefined): boolean => {
@@ -98,6 +104,10 @@ export class ImportMap {
   }
 
   file = (results: ImportResult[]) => {
-    return new FileMatcher(this.context, { importMap: this.value, value: results })
+    return new FileMatcher(this.context, {
+      importMap: this.value,
+      userAliases: this.aliases,
+      value: results,
+    })
   }
 }

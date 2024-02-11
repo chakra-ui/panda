@@ -14,9 +14,18 @@ describe('file matcher', () => {
 
     expect(file.cvaAlias).toMatchInlineSnapshot('"cva"')
 
-    expect(file.cssAlias).toMatchInlineSnapshot('"xcss"')
     expect(file.getAlias('css')).toMatchInlineSnapshot('"xcss"')
     expect(file.getName('xcss')).toMatchInlineSnapshot('"css"')
+
+    expect(file.aliases).toMatchInlineSnapshot(`
+      {
+        "css": [
+          "css",
+          "xcss",
+        ],
+        "jsxFactory": [],
+      }
+    `)
   })
 
   test('isPandaComponent', () => {
@@ -51,12 +60,13 @@ describe('file matcher', () => {
     const ctx = createContext()
 
     const file = ctx.imports.file([
+      { mod: 'styled-system/jsx', name: 'styled', alias: 'styled' },
       { mod: 'styled-system/jsx', name: 'Stack', alias: 'Stack' },
       { mod: 'styled-system/jsx', name: 'VStack', alias: '__VStack' },
     ])
 
-    expect(file.isJsxFactory('styled')).toMatchInlineSnapshot('true')
-    expect(file.isJsxFactory('styled.div')).toMatchInlineSnapshot('true')
+    expect(file.isJsxFactory('styled')).toMatchInlineSnapshot(`true`)
+    expect(file.isJsxFactory('styled.div')).toMatchInlineSnapshot(`true`)
     expect(file.isJsxFactory('Comp')).toMatchInlineSnapshot('false')
   })
 

@@ -19,6 +19,10 @@ export interface PandaHooks {
    */
   'utility:created': (args: UtilityCreatedHookArgs) => MaybeAsyncReturn
   /**
+   * Called when the imports engine has been created
+   */
+  'imports:created': (args: ImportMapCreatedHookArgs) => MaybeAsyncReturn
+  /**
    * Called when the Panda context has been created and the API is ready to be used.
    */
   'context:created': (args: ContextCreatedHookArgs) => void
@@ -90,6 +94,50 @@ export interface UtilityConfigureOptions {
 
 export interface UtilityCreatedHookArgs {
   configure(opts: UtilityConfigureOptions): void
+}
+
+/* -----------------------------------------------------------------------------
+ * Import map hooks
+ * -----------------------------------------------------------------------------*/
+
+export interface ImportMapConfigureOptions {
+  /**
+   * Custom additional aliases for the `css` or `styled` factory functions.
+   * They must mirror the same function signature as the default functions and still need to contain static arguments.
+   * The default functions are `css` and `config.factoryName` (`styled` by default) and are always provided.
+   *
+   * @example
+   * ```ts
+   * // panda.config.ts
+   * configure({
+   *   matchers: {
+   *     css: ['xcss'], // match `xcss` as a `css` fn
+   *     jsxFactory: ['xstyled'], // match `xstyled` as a `styled` fn
+   *   }
+   * })
+   * ```
+   *
+   * ```ts
+   * // file.tsx usage example
+   * const className = xcss({ color: 'red' })
+   * // this will be extracted just like the default `css` function
+   *
+   * const className = xstyled('div', { base: { color: 'red' } })
+   * // this will be extracted just like the default `styled` function
+   *
+   * // or if using the template-literal syntax
+   * const className = xcss`color: red;`
+   * const className2 = xstyled.div`color: red;`
+   * ```
+   */
+  aliases?: {
+    css?: string[]
+    jsxFactory?: string[]
+  }
+}
+
+export interface ImportMapCreatedHookArgs {
+  configure(opts: ImportMapConfigureOptions): void
 }
 
 /* -----------------------------------------------------------------------------

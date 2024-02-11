@@ -37,7 +37,8 @@ export class ParserResult implements ParserResultInterface {
         this.setSva(result)
         break
       default:
-        throw new PandaError('UNKNOWN_TYPE', `Unknown result type ${name}`)
+        this.setCss(result)
+        break
     }
   }
 

@@ -15,13 +15,14 @@ export interface ImportResult {
   importMapValue?: string
 }
 
-interface FileMatcherOptions {
+export interface FileMatcherOptions {
   importMap: ImportMapOutput<string>
   value: ImportResult[]
+  userAliases: Partial<ImportAliases> | undefined
 }
 
 export class FileMatcher {
-  imports: ImportResult[]
+  // Context dependents
   private importMap: ImportMapOutput<string>
 
   private recipeAliases = new Set<string>()
@@ -31,33 +32,61 @@ export class FileMatcher {
   private functions = new Map<string, Map<string, boolean>>()
   private components = new Map<string, Map<string, boolean>>()
 
+  // File dependents
+  fileImports: ImportResult[]
   cvaAlias = 'cva'
-  cssAlias = 'css'
   svaAlias = 'sva'
-  jsxFactoryAlias = 'styled'
+  aliases: ImportAliases = {
+    css: ['css'],
+    jsxFactory: [],
+  }
 
   constructor(
     private context: Pick<Context, 'jsx' | 'patterns' | 'recipes' | 'isValidProperty'>,
     opts: FileMatcherOptions,
   ) {
-    const { value, importMap } = opts
+    const { value, importMap, userAliases } = opts
 
     this.importMap = importMap
-    this.imports = value
+    this.fileImports = value
 
-    this.assignAliases()
+    this.assignAliases(userAliases)
     this.assignProperties()
-    this.assignImportAliases()
   }
 
-  private assignAliases() {
-    this.imports.forEach((result) => {
-      if (this.isValidRecipe(result.alias)) {
-        this.recipeAliases.add(result.alias)
+  private assignAliases(userAliases: FileMatcherOptions['userAliases'] = {}) {
+    this.fileImports.forEach((result) => {
+      const alias = result.alias
+
+      if (this.isValidRecipe(alias)) {
+        this.recipeAliases.add(alias)
+        return
       }
 
-      if (this.isValidPattern(result.alias)) {
-        this.patternAliases.add(result.alias)
+      if (this.isValidPattern(alias)) {
+        this.patternAliases.add(alias)
+        return
+      }
+
+      const name = result.name
+      if (name === 'css' || userAliases.css?.includes(name)) {
+        this.aliases.css.push(alias)
+        return
+      }
+
+      if (name === this.context.jsx.factoryName || userAliases.jsxFactory?.includes(name)) {
+        this.aliases.jsxFactory.push(alias)
+        return
+      }
+
+      if (name === 'cva') {
+        this.cvaAlias = alias
+        return
+      }
+
+      if (name === 'sva') {
+        this.svaAlias = alias
+        return
       }
     })
   }
@@ -72,27 +101,20 @@ export class FileMatcher {
     })
   }
 
-  private assignImportAliases() {
-    this.cvaAlias = this.getAlias('cva')
-    this.cssAlias = this.getAlias('css')
-    this.svaAlias = this.getAlias('sva')
-    this.jsxFactoryAlias = this.getAlias(this.context.jsx.factoryName)
-  }
-
   isEmpty = () => {
-    return this.imports.length === 0
+    return this.fileImports.length === 0
   }
 
   toString = () => {
-    return this.imports.map((item) => item.alias).join(', ')
+    return this.fileImports.map((item) => item.alias).join(', ')
   }
 
   find = (id: string) => {
-    return this.imports.find((o) => o.alias === id)
+    return this.fileImports.find((o) => o.alias === id)
   }
 
   private createMatch = (mod: string, keys: string[]) => {
-    const mods = this.imports.filter((o) => {
+    const mods = this.fileImports.filter((o) => {
       const isFromMod = o.mod.includes(mod) || o.importMapValue?.includes(mod)
       const isOneOfKeys = keys.includes(o.name)
       return isFromMod && isOneOfKeys
@@ -110,7 +132,7 @@ export class FileMatcher {
   }
 
   getAlias = (id: string) => {
-    return this.imports.find((o) => o.name === id)?.alias || id
+    return this.fileImports.find((o) => o.name === id)?.alias || id
   }
 
   isValidPattern = (id: string) => {
@@ -133,7 +155,12 @@ export class FileMatcher {
   }
 
   isAliasFnName = memo((fnName: string) => {
-    return fnName === this.cvaAlias || fnName === this.cssAlias || fnName === this.svaAlias || this.isJsxFactory(fnName)
+    return (
+      this.aliases.css.includes(fnName) ||
+      fnName === this.cvaAlias ||
+      fnName === this.svaAlias ||
+      this.isJsxFactory(fnName)
+    )
   })
 
   matchFn = memo((fnName: string) => {
@@ -142,9 +169,23 @@ export class FileMatcher {
     return this.functions.has(fnName)
   })
 
+  /**
+   * Check if a tag is a jsx factory
+   * `styled.div` or `styled.span`
+   */
   isJsxFactory = memo((tagName: string) => {
     const { jsx } = this.context
-    return Boolean(jsx.isEnabled && tagName.startsWith(this.jsxFactoryAlias))
+
+    return Boolean(jsx.isEnabled && this.aliases.jsxFactory.some((alias) => tagName.startsWith(alias)))
+  })
+
+  /**
+   * Check if a fn is a jsx factory
+   * `styled("span", { ... }) or styled("div", badge)`
+   */
+  isJsxFactoryFn = memo((tagName: string) => {
+    const { jsx } = this.context
+    return Boolean(jsx.isEnabled && this.aliases.jsxFactory.includes(tagName))
   })
 
   isPandaComponent = memo((tagName: string) => {
@@ -184,3 +225,8 @@ export class FileMatcher {
 }
 
 const isUpperCase = (value: string) => value[0] === value[0]?.toUpperCase()
+
+export interface ImportAliases {
+  css: string[]
+  jsxFactory: string[]
+}

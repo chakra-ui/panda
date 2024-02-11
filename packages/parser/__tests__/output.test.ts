@@ -1601,7 +1601,7 @@ describe('extract to css output pipeline', () => {
 
   test('should extract config recipes', () => {
     const code = `
-       import { panda, Stack } from "styled-system/jsx"
+       import { styled, Stack } from "styled-system/jsx"
       import { button, anotherButton, complexButton } from "styled-system/recipes"
 
       function AnotherButtonWithRegex({ children, variant, size, css: cssProp }: ButtonProps) {
@@ -3470,6 +3470,160 @@ describe('extract to css output pipeline', () => {
 
         .flex_column {
           flex-direction: column;
+      }
+      }"
+    `)
+  })
+
+  test('custom imports matchers', () => {
+    const code = `
+    import { xstyled } from "styled-system/jsx"
+    import { xcss } from "styled-system/css"
+
+    const Button = xstyled('button', {
+      base: { color: 'red' }
+    })
+
+    const className = xcss({ color: 'blue' })
+    const App = () => {
+      return (
+        <>
+          <Button />
+        </>
+      );
+    }
+
+     `
+    const result = parseAndExtract(code, {
+      hooks: {
+        'imports:created': (args) => {
+          args.configure({
+            aliases: {
+              css: ['xcss'],
+              jsxFactory: ['xstyled'],
+            },
+          })
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "color": "red",
+              },
+            },
+          ],
+          "name": "xstyled",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {
+              "color": "blue",
+            },
+          ],
+          "name": "xcss",
+          "type": "css",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Button",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_red {
+          color: red;
+      }
+
+        .text_blue {
+          color: blue;
+      }
+      }"
+    `)
+  })
+
+  test('custom imports matchers - template-literal', () => {
+    const code = `
+    import { xstyled } from "styled-system/jsx"
+    import { xcss } from "styled-system/css"
+
+    const Button = xstyled.button\`
+      color: red;
+    \`
+
+    const className = xcss\`
+      color: blue;
+    \`
+
+    const App = () => {
+      return (
+        <>
+          <Button />
+        </>
+      );
+    }
+
+     `
+    const result = parseAndExtract(code, {
+      syntax: 'template-literal',
+      hooks: {
+        'imports:created': (args) => {
+          args.configure({
+            aliases: {
+              css: ['xcss'],
+              jsxFactory: ['xstyled'],
+            },
+          })
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "red",
+            },
+          ],
+          "name": "xstyled.button",
+          "type": "css",
+        },
+        {
+          "data": [
+            {
+              "color": "blue",
+            },
+          ],
+          "name": "xcss",
+          "type": "css",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Button",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .color_red {
+          color: red;
+      }
+
+        .color_blue {
+          color: blue;
       }
       }"
     `)

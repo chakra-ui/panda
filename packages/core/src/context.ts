@@ -161,6 +161,14 @@ export class Context {
       recipes: this.recipes,
       isValidProperty: this.isValidProperty,
     })
+    this.hooks['imports:created']?.({
+      configure: (opts) => {
+        if (opts.aliases) {
+          this.imports.aliases = opts.aliases
+        }
+      },
+    })
+    this.imports.setup()
 
     this.paths = new PathEngine({
       config: this.config,

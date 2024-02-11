@@ -79,7 +79,7 @@ export function createParser(context: ParserOptions) {
         matchProp: () => true,
         matchArg: (prop) => {
           // skip resolving `badge` here: `panda("span", badge)`
-          if (prop.fnName === file.jsxFactoryAlias && prop.index === 1 && Node.isIdentifier(prop.argNode)) return false
+          if (file.isJsxFactory(prop.fnName) && prop.index === 1 && Node.isIdentifier(prop.argNode)) return false
           return true
         },
       },
@@ -182,7 +182,7 @@ export function createParser(context: ParserOptions) {
           // panda("span", { ... }) or panda("div", badge)
           // or panda("span", { color: "red.100", ... })
           // or panda('span')` color: red; `
-          .when(jsx.isJsxFactory, () => {
+          .when(file.isJsxFactoryFn, () => {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression' && query.box.value[1]) {
                 const map = query.box.value[1]
