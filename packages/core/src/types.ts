@@ -30,6 +30,7 @@ export interface StylesheetContext
   hash?: boolean
   lightningcss?: boolean
   browserslist?: string[]
+  polyfill?: boolean
 }
 
 export interface RecipeNode {

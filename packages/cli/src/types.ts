@@ -21,6 +21,7 @@ export interface CssGenCommandFlags {
   config?: string
   minify?: boolean
   lightningcss?: boolean
+  polyfill?: boolean
   cpuProf?: boolean
   logfile?: string
 }
@@ -81,6 +82,7 @@ export interface MainCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'>
   hash?: boolean
   emitTokensOnly?: boolean
   lightningcss?: boolean
+  polyfill?: boolean
   cpuProf?: boolean
   logfile?: string
 }

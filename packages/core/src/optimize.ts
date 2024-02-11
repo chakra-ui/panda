@@ -2,7 +2,6 @@ import postcss, { Root } from 'postcss'
 import nested from 'postcss-nested'
 import { optimizePostCss } from './plugins/optimize-postcss'
 import prettify from './plugins/prettify'
-import sortMediaQueries from './plugins/sort-mq'
 
 interface OptimizeOptions {
   minify?: boolean
@@ -19,11 +18,6 @@ export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) 
   }
 
   return optimizePostCss(code, options)
-}
-
-export function sortCssMediaQueries(code: string | Root) {
-  const { css } = postcss([sortMediaQueries()]).process(code)
-  return css
 }
 
 export function expandNestedCss(code: string) {

@@ -273,6 +273,17 @@ interface CssgenOptions {
    * @see https://www.npmjs.com/package/browserslist
    */
   browserslist?: string[]
+  /**
+   * Layer mappings used in the generated css.
+   * @default 'true'
+   */
+  layers?: Partial<CascadeLayers>
+  /**
+   * Polyfill CSS @layers at-rules for older browsers.
+   * @default 'false'
+   * @see https://www.npmjs.com/package/@csstools/postcss-cascade-layers
+   */
+  polyfill?: boolean
 }
 
 interface CodegenOptions {
@@ -310,11 +321,6 @@ interface CodegenOptions {
    * @default 'true'
    */
   shorthands?: boolean
-  /**
-   * Layer mappings used in the generated css.
-   * @default 'true'
-   */
-  layers?: Partial<CascadeLayers>
   /**
    * File extension for generated javascript files.
    * @default 'mjs'
