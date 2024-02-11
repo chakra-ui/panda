@@ -78,6 +78,12 @@ export const typography: UtilityConfig = {
     className: 'text-shadow',
     values: 'shadows',
   },
+  textShadowColor: {
+    shorthand: 'textShadowColor',
+    className: 'text-shadow',
+    values: 'colors',
+    transform: createColorMixTransform('--text-shadow-color'),
+  },
   textOverflow: {
     className: 'text',
   },

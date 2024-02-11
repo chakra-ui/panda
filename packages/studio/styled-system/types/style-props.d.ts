@@ -544,6 +544,7 @@ export interface SystemProperties {
 	h?: PropertyValue<'h'>
 	minH?: PropertyValue<'minH'>
 	maxH?: PropertyValue<'maxH'>
+	textShadowColor?: PropertyValue<'textShadowColor'>
 	bgPosition?: PropertyValue<'bgPosition'>
 	bgPositionX?: PropertyValue<'bgPositionX'>
 	bgPositionY?: PropertyValue<'bgPositionY'>

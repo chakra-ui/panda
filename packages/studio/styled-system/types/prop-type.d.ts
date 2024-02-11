@@ -89,6 +89,7 @@ interface PropertyValueTypes {
 	textEmphasisColor: Tokens["colors"];
 	textIndent: Tokens["spacing"];
 	textShadow: Tokens["shadows"];
+	textShadowColor: Tokens["colors"];
 	textWrap: "wrap" | "balance" | "nowrap";
 	truncate: boolean;
 	listStyleImage: Tokens["assets"];
@@ -264,6 +265,7 @@ interface PropertyValueTypes {
 	h: Shorthand<"height">;
 	minH: Shorthand<"minHeight">;
 	maxH: Shorthand<"maxHeight">;
+	textShadowColor: Shorthand<"textShadowColor">;
 	bgPosition: Shorthand<"backgroundPosition">;
 	bgPositionX: Shorthand<"backgroundPositionX">;
 	bgPositionY: Shorthand<"backgroundPositionY">;
