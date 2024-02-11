@@ -12,10 +12,18 @@ They must mirror the same function signature as the default functions and still 
 
 ```ts
 // panda.config.ts
-configure({
-  matchers: {
-    css: ['xcss'], // match `xcss` as a `css` fn
-    jsxFactory: ['xstyled'], // match `xstyled` as a `styled` fn
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  hooks: {
+    'imports:created': ({ configure }) => {
+      configure({
+        aliases: {
+          css: ['xcss'],
+          jsxFactory: ['xstyled'],
+        },
+      })
+    },
   },
 })
 ```
