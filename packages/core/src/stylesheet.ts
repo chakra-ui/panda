@@ -1,12 +1,14 @@
 import { logger } from '@pandacss/logger'
 import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
+import layersPolyfill from '@csstools/postcss-cascade-layers'
 import postcss, { CssSyntaxError } from 'postcss'
-import { optimizeCss, sortCssMediaQueries } from './optimize'
+import { optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
 import { sortStyleRules } from './sort-style-rules'
 import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
+import sortMediaQueries from './plugins/sort-mq'
 
 export class Stylesheet {
   constructor(private context: StylesheetContext) {}
@@ -109,15 +111,21 @@ export class Stylesheet {
       const root = this.context.layers.insert()
 
       breakpoints.expandScreenAtRule(root)
-      const css = sortCssMediaQueries(root)
 
-      return optimize
-        ? optimizeCss(css, {
-            minify,
-            lightningcss: this.context.lightningcss,
-            browserslist: this.context.browserslist,
-          })
-        : css
+      const plugins: postcss.AcceptedPlugin[] = [sortMediaQueries()]
+      if (this.context.polyfill) {
+        plugins.push(layersPolyfill())
+      }
+
+      const result = postcss(plugins).process(root)
+      const css = result.toString()
+      if (!optimize) return css
+
+      return optimizeCss(css, {
+        minify,
+        lightningcss: this.context.lightningcss,
+        browserslist: this.context.browserslist,
+      })
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet:toCss', error.showSourceCode(true))

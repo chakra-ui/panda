@@ -163,13 +163,14 @@ export async function main() {
     .option('-w, --watch', 'Watch files and rebuild')
     .option('--minimal', 'Do not include CSS generation for theme tokens, preflight, keyframes, static and global css')
     .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
+    .option('--polyfill', 'Polyfill CSS @layers at-rules for older browsers.')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
-      const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal, lightningcss } = flags
+      const { silent, config: configPath, outfile, watch, poll, minimal, ...rest } = flags
 
       const cwd = resolve(flags.cwd ?? '')
       const stream = setLogStream({ cwd, logfile: flags.logfile })
@@ -190,10 +191,8 @@ export async function main() {
       }
 
       const overrideConfig = {
-        clean,
-        minify,
-        lightningcss,
         optimize: true,
+        ...rest,
         ...(glob ? { include: [glob] } : undefined),
       }
 
@@ -259,6 +258,7 @@ export async function main() {
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
     .option('--lightningcss', 'Use `lightningcss` instead of `postcss` for css optimization.')
+    .option('--polyfill', 'Polyfill CSS @layers at-rules for older browsers.')
     .option('--emitTokensOnly', 'Whether to only emit the `tokens` directory')
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .option('--logfile <file>', 'Outputs logs to a file')
