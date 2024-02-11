@@ -102,9 +102,10 @@ describe('generate property types', () => {
       	textEmphasisColor: Tokens["colors"];
       	textIndent: Tokens["spacing"];
       	textShadow: Tokens["shadows"];
+      	textShadowColor: Tokens["colors"];
       	textWrap: "wrap" | "balance" | "nowrap";
       	truncate: boolean;
-      	listStyleImage: Tokens["assets"];
+	listStyleImage: Tokens["assets"];
       	background: Tokens["colors"];
       	backgroundColor: Tokens["colors"];
       	backgroundImage: Tokens["assets"];
@@ -277,6 +278,7 @@ describe('generate property types', () => {
       	h: Shorthand<"height">;
       	minH: Shorthand<"minHeight">;
       	maxH: Shorthand<"maxHeight">;
+      	textShadowColor: Shorthand<"textShadowColor">;
       	bgPosition: Shorthand<"backgroundPosition">;
       	bgPositionX: Shorthand<"backgroundPositionX">;
       	bgPositionY: Shorthand<"backgroundPositionY">;
@@ -518,6 +520,7 @@ describe('generate property types', () => {
       	textEmphasisColor: Tokens["colors"];
       	textIndent: Tokens["spacing"];
       	textShadow: Tokens["shadows"];
+      	textShadowColor: Tokens["colors"];
       	textWrap: "wrap" | "balance" | "nowrap";
       	truncate: boolean;
       	listStyleImage: Tokens["assets"];
@@ -693,6 +696,7 @@ describe('generate property types', () => {
       	h: Shorthand<"height">;
       	minH: Shorthand<"minHeight">;
       	maxH: Shorthand<"maxHeight">;
+      	textShadowColor: Shorthand<"textShadowColor">;
       	bgPosition: Shorthand<"backgroundPosition">;
       	bgPositionX: Shorthand<"backgroundPositionX">;
       	bgPositionY: Shorthand<"backgroundPositionY">;
