@@ -341,8 +341,16 @@ interface PresetOptions {
   presets?: (string | Preset | Promise<Preset>)[]
 }
 
-interface HooksOptions {
+export interface HooksOptions {
   hooks?: Partial<PandaHooks>
+}
+
+export interface PandaPlugin extends HooksOptions {
+  name: string
+}
+
+export interface PluginsOptions {
+  plugins?: PandaPlugin[]
 }
 
 export interface Config
@@ -353,7 +361,8 @@ export interface Config
     FileSystemOptions,
     JsxOptions,
     PresetOptions,
-    HooksOptions {
+    HooksOptions,
+    PluginsOptions {
   /**
    * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
    * @default 'false'
