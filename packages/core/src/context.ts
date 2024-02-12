@@ -301,6 +301,7 @@ export class Context {
       isValidProperty: this.isValidProperty,
       browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,
+      polyfill: this.config.polyfill,
       helpers: patternFns,
     }
   }
