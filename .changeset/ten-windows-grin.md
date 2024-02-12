@@ -1,10 +1,8 @@
 ---
-'@pandacss/preset-base': patch
+'@pandacss/preset-base': minor
 ---
 
 Add `textShadowColor` utility
-
-Ex:
 
 ```ts
 css({
