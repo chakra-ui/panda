@@ -5,6 +5,7 @@ import { getResolvedConfig } from './get-resolved-config'
 import type { BundleConfigResult } from './types'
 import { validateConfig } from './validate-config'
 import { utils } from './utils'
+import { logger } from '@pandacss/logger'
 
 /**
  * Resolve the final config (including presets)
@@ -31,6 +32,10 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
   result.config.presets = Array.from(presets)
 
   const config = await getResolvedConfig(result.config, cwd)
+
+  if (config.logLevel) {
+    logger.level = config.logLevel
+  }
 
   validateConfig(config as UserConfig)
 

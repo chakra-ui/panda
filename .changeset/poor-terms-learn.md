@@ -2,4 +2,4 @@
 '@pandacss/config': patch
 ---
 
-fix token validation logic
+Fix issue in token validation logic where token with additional properties like `description` is considered invalid.

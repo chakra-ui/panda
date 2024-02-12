@@ -54,6 +54,7 @@ describe('validateConfig', () => {
 
   test('should throw with validation: error', () => {
     const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         breakpoints: {
           sm: '640px',
@@ -91,7 +92,11 @@ describe('validateConfig', () => {
     }
 
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Token must contain 'value': \`theme.tokens.colors.secondary\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Token must contain 'value': \`theme.tokens.colors.secondary\`
+      ]
+    `,
     )
   })
 
@@ -229,25 +234,26 @@ describe('validateConfig', () => {
 
     expect(validateConfig(config)).toMatchInlineSnapshot(`
       Set {
-        "[breakpoints]: All breakpoints must use the same unit: \`640em, 768px, 1024px\`",
-        "[conditions]: Selectors should contain the \`&\` character: \`[data-theme="pink"]\`",
-        "[tokens]: Token must contain 'value': \`theme.tokens.colors.secondary\`",
-        "[tokens]: Token must contain 'value': \`theme.tokens.colors.group.with.invalid\`",
-        "[tokens]: Token must contain 'value': \`theme.semanticTokens.colors.another.group.invalid\`",
-        "[tokens]: Missing token: \`colors.doesntexist\` used in \`config.semanticTokens.colors.another.group.stillok\`",
-        "[tokens]: Circular token reference: \`colors.another.group.recursive\` -> \`colors.another.circular\` -> ... -> \`colors.another.group.recursive\`",
-        "[tokens]: Missing token: \`colors.missing\` used in \`config.semanticTokens.colors.another.group.missing\`",
-        "[tokens]: Self token reference: \`colors.another.self\`",
-        "[tokens]: Circular token reference: \`colors.another.self\` -> \`colors.another.self\` -> ... -> \`colors.another.self\`",
-        "[tokens]: Circular token reference: \`colors.another.circular\` -> \`colors.another.group.recursive\` -> ... -> \`colors.another.circular\`",
-        "[tokens]: Missing token: \`fontSizes.md2\` used in \`config.semanticTokens.fontSizes.main\`",
-        "[recipes]: This recipe name is already used in \`config.patterns\`: btn-primary",
+        "[breakpoints] All breakpoints must use the same unit: \`640em, 768px, 1024px\`",
+        "[conditions] Selectors should contain the \`&\` character: \`[data-theme="pink"]\`",
+        "[tokens] Token must contain 'value': \`theme.tokens.colors.secondary\`",
+        "[tokens] Token must contain 'value': \`theme.tokens.colors.group.with.invalid\`",
+        "[tokens] Token must contain 'value': \`theme.semanticTokens.colors.another.group.invalid\`",
+        "[tokens] Missing token: \`colors.doesntexist\` used in \`config.semanticTokens.colors.another.group.stillok\`",
+        "[tokens] Circular token reference: \`colors.another.group.recursive\` -> \`colors.another.circular\` -> ... -> \`colors.another.group.recursive\`",
+        "[tokens] Missing token: \`colors.missing\` used in \`config.semanticTokens.colors.another.group.missing\`",
+        "[tokens] Self token reference: \`colors.another.self\`",
+        "[tokens] Circular token reference: \`colors.another.self\` -> \`colors.another.self\` -> ... -> \`colors.another.self\`",
+        "[tokens] Circular token reference: \`colors.another.circular\` -> \`colors.another.group.recursive\` -> ... -> \`colors.another.circular\`",
+        "[tokens] Missing token: \`fontSizes.md2\` used in \`config.semanticTokens.fontSizes.main\`",
+        "[recipes] This recipe name is already used in \`config.patterns\`: btn-primary",
       }
     `)
   })
 
   test('should report error if breakpoints use different units', () => {
-    const config = {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         breakpoints: {
           sm: '640em', // invalid unit
@@ -257,23 +263,33 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [breakpoints]: All breakpoints must use the same unit: \`640em, 768px, 1024px\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [breakpoints] All breakpoints must use the same unit: \`640em, 768px, 1024px\`
+      ]
+    `,
     )
   })
 
   test('should report error for condition selectors without & character', () => {
-    const config = {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
       conditions: {
         pinkTheme: '[data-theme="pink"]', // invalid selector
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [conditions]: Selectors should contain the \`&\` character: \`[data-theme="pink"]\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [conditions] Selectors should contain the \`&\` character: \`[data-theme="pink"]\`
+      ]
+    `,
     )
   })
 
   test('should report error for token paths not ending with value', () => {
     const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         tokens: {
           colors: {
@@ -284,12 +300,17 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Token must contain 'value': \`theme.tokens.colors.secondary\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Token must contain 'value': \`theme.tokens.colors.secondary\`
+      ]
+    `,
     )
   })
 
   test('should report error for semantic token paths not containing value', () => {
     const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         semanticTokens: {
           colors: {
@@ -300,12 +321,17 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Token must contain 'value': \`theme.semanticTokens.colors.invalid\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Token must contain 'value': \`theme.semanticTokens.colors.invalid\`
+      ]
+    `,
     )
   })
 
   test('should report error for missing token references', () => {
-    const config = {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         semanticTokens: {
           colors: {
@@ -323,18 +349,28 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Missing token: \`colors.doesntexist\` used in \`config.semanticTokens.colors.another.group.stillok\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Missing token: \`colors.doesntexist\` used in \`config.semanticTokens.colors.another.group.stillok\`
+      ]
+    `,
     )
   })
 
   test('should report error for circular token references', () => {
-    const config = {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         semanticTokens: {
           colors: {
             another: {
               circular: {
-                value: '{colors.another.group.recursive}', // invalid circular reference
+                value: '{colors.another.group.recursive}',
+              },
+              group: {
+                recursive: {
+                  value: '{colors.another.circular}',
+                },
               },
             },
           },
@@ -342,12 +378,18 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Missing token: \`colors.another.group.recursive\` used in \`config.semanticTokens.colors.another.circular\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Circular token reference: \`colors.another.circular\` -> \`colors.another.group.recursive\` -> ... -> \`colors.another.circular\`
+      - [tokens] Circular token reference: \`colors.another.group.recursive\` -> \`colors.another.circular\` -> ... -> \`colors.another.group.recursive\`
+      ]
+    `,
     )
   })
 
   test('should report error for self token references', () => {
-    const config = {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         semanticTokens: {
           colors: {
@@ -361,12 +403,18 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Self token reference: \`colors.another.self\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Self token reference: \`colors.another.self\`
+      - [tokens] Circular token reference: \`colors.another.self\` -> \`colors.another.self\` -> ... -> \`colors.another.self\`
+      ]
+    `,
     )
   })
 
   test('should report error for clashing token names', () => {
-    const config = {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         tokens: {
           colors: {
@@ -381,12 +429,17 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [tokens]: Missing token: \`colors.bg\` used in \`config.semanticTokens.colors.primary\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Missing token: \`colors.bg\` used in \`config.semanticTokens.colors.primary\`
+      ]
+    `,
     )
   })
 
   test('should report error for clashing recipe names', () => {
-    const config = {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
       theme: {
         recipes: {
           stack: {
@@ -399,7 +452,68 @@ describe('validateConfig', () => {
       },
     }
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: [recipes]: This recipe name is already used in \`config.patterns\`: \`stack\`]`,
+      `
+      [Error: ⚠️ Invalid config:
+      - [recipes] This recipe name is already used in \`config.patterns\`: \`stack\`
+      ]
+    `,
+    )
+  })
+
+  test('simple token example', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
+      theme: {
+        tokens: {
+          colors: {
+            //@ts-expect-error
+            primary: 'red',
+            secondary: { value: '#fff', description: 'welcome', extensions: { something: 'Alex' } },
+            bbb: { value: 'blue' },
+          },
+        },
+      },
+    }
+    expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Token must contain 'value': \`theme.tokens.colors.primary\`
+      ]
+    `,
+    )
+  })
+
+  test('simple semantic token example', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
+      theme: {
+        semanticTokens: {
+          colors: {
+            // @ts-expect-error
+            primary: '{colors.bbb}',
+            secondary: { value: '#fff', description: 'welcome', extensions: { something: 'Alex' } },
+            bbb: { value: '{colors.primary}' },
+            // valid: { value: { base: 'red', _dark: 'blue' }, extensions: { something: 'Alex' } },
+            group: {
+              nested: {
+                something: {
+                  value: { base: '{colors.red}', _dark: 'blue' },
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+
+    expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: ⚠️ Invalid config:
+      - [tokens] Token must contain 'value': \`theme.semanticTokens.colors.primary\`
+      - [tokens] Unknown token reference: \`colors.primary\` used in \`{colors.bbb}\`
+      - [tokens] Missing token: \`colors.red\` used in \`config.semanticTokens.colors.group.nested.something\`
+      ]
+    `,
     )
   })
 })
