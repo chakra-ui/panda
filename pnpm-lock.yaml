@@ -631,7 +631,7 @@ importers:
     dependencies:
       '@astrojs/react':
         specifier: 2.3.2
-        version: 2.3.2(@types/react-dom@18.2.17)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)
+        version: 2.3.2(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
       '@pandacss/astro-plugin-studio':
         specifier: workspace:*
         version: link:../astro-plugin-studio
@@ -664,11 +664,11 @@ importers:
         version: 5.0.12(@types/node@20.4.5)
     devDependencies:
       '@types/react':
-        specifier: 18.2.42
-        version: 18.2.42
+        specifier: 18.2.55
+        version: 18.2.55
       '@types/react-dom':
-        specifier: 18.2.17
-        version: 18.2.17
+        specifier: 18.2.19
+        version: 18.2.19
 
   packages/token-dictionary:
     dependencies:
@@ -731,7 +731,7 @@ importers:
         version: 5.1.0(prisma@5.1.0)
       '@textea/json-viewer':
         specifier: 3.2.3
-        version: 3.2.3(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)
+        version: 3.2.3(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
       lightningcss-wasm:
         specifier: ^1.22.1
         version: 1.22.1
@@ -812,11 +812,11 @@ importers:
         specifier: 2.7.3
         version: 2.7.3
       '@types/react':
-        specifier: 18.2.42
-        version: 18.2.42
+        specifier: 18.2.55
+        version: 18.2.55
       '@types/react-dom':
-        specifier: 18.2.17
-        version: 18.2.17
+        specifier: 18.2.19
+        version: 18.2.19
       dts-bundle-generator:
         specifier: ^8.1.2
         version: 8.1.2
@@ -994,11 +994,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/cli
       '@types/react':
-        specifier: 18.2.37
-        version: 18.2.37
+        specifier: 18.2.55
+        version: 18.2.55
       '@types/react-dom':
-        specifier: 18.2.15
-        version: 18.2.15
+        specifier: 18.2.19
+        version: 18.2.19
       eslint-config-next:
         specifier: 13.5.6
         version: 13.5.6(eslint@8.56.0)(typescript@5.3.3)
@@ -1021,11 +1021,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/cli
       '@types/react':
-        specifier: 18.2.37
-        version: 18.2.37
+        specifier: 18.2.55
+        version: 18.2.55
       '@types/react-dom':
-        specifier: 18.2.15
-        version: 18.2.15
+        specifier: 18.2.19
+        version: 18.2.19
       eslint-config-next:
         specifier: 13.5.6
         version: 13.5.6(eslint@8.56.0)(typescript@5.3.3)
@@ -1183,11 +1183,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/studio
       '@types/react':
-        specifier: 18.2.42
-        version: 18.2.42
+        specifier: 18.2.55
+        version: 18.2.55
       '@types/react-dom':
-        specifier: 18.2.17
-        version: 18.2.17
+        specifier: 18.2.19
+        version: 18.2.19
       '@vitejs/plugin-react':
         specifier: 4.2.1
         version: 4.2.1(vite@5.0.12)
@@ -1333,11 +1333,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/studio
       '@types/react':
-        specifier: 18.2.42
-        version: 18.2.42
+        specifier: 18.2.55
+        version: 18.2.55
       '@types/react-dom':
-        specifier: 18.2.17
-        version: 18.2.17
+        specifier: 18.2.19
+        version: 18.2.19
       '@vitejs/plugin-react':
         specifier: 4.2.1
         version: 4.2.1(vite@5.0.12)
@@ -1606,7 +1606,7 @@ packages:
     dependencies:
       prismjs: 1.29.0
 
-  /@astrojs/react@2.3.2(@types/react-dom@18.2.17)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0):
+  /@astrojs/react@2.3.2(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-hGOnvLA7xA0rry0tr0g0LiO7bsYK9yyrs0k+OVakVkXsWgBVgqXI2a2KBVc/W+vOBB9mFXMG4EnrqdMPcttT5Q==}
     engines: {node: '>=16.12.0'}
     peerDependencies:
@@ -1617,8 +1617,8 @@ packages:
     dependencies:
       '@babel/core': 7.23.2
       '@babel/plugin-transform-react-jsx': 7.22.5(@babel/core@7.23.2)
-      '@types/react': 18.2.42
-      '@types/react-dom': 18.2.17
+      '@types/react': 18.2.55
+      '@types/react-dom': 18.2.19
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       ultrahtml: 1.2.0
@@ -5380,7 +5380,7 @@ packages:
     resolution: {integrity: sha512-W2P2c/VRW1/1tLox0mVUalvnWXxavmv/Oum2aPsRcoDJuob75FC3Y8FbpfLwUegRcxINtGUMPq0tFCvYNTBXNA==}
     dev: false
 
-  /@emotion/react@11.11.1(@types/react@18.2.42)(react@18.2.0):
+  /@emotion/react@11.11.1(@types/react@18.2.55)(react@18.2.0):
     resolution: {integrity: sha512-5mlW1DquU5HaxjLkfkGN1GA/fvVGdyHURRiX/0FHl2cfIfRxSOfmxEH5YS43edp0OldZrZ+dkBKbngxcNCdZvA==}
     peerDependencies:
       '@types/react': '*'
@@ -5396,7 +5396,7 @@ packages:
       '@emotion/use-insertion-effect-with-fallbacks': 1.0.1(react@18.2.0)
       '@emotion/utils': 1.2.1
       '@emotion/weak-memoize': 0.3.1
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
       hoist-non-react-statics: 3.3.2
       react: 18.2.0
     dev: false
@@ -5415,7 +5415,7 @@ packages:
     resolution: {integrity: sha512-0QBtGvaqtWi+nx6doRwDdBIzhNdZrXUppvTM4dtZZWEGTXL/XE/yJxLMGlDT1Gt+UHH5IX1n+jkXyytE/av7OA==}
     dev: false
 
-  /@emotion/styled@11.11.0(@emotion/react@11.11.1)(@types/react@18.2.42)(react@18.2.0):
+  /@emotion/styled@11.11.0(@emotion/react@11.11.1)(@types/react@18.2.55)(react@18.2.0):
     resolution: {integrity: sha512-hM5Nnvu9P3midq5aaXj4I+lnSfNi7Pmd4EWk1fOZ3pxookaQTNew6bp4JaCBYM4HVFZF9g7UjJmsUmC2JlxOng==}
     peerDependencies:
       '@emotion/react': ^11.0.0-rc.0
@@ -5428,11 +5428,11 @@ packages:
       '@babel/runtime': 7.23.8
       '@emotion/babel-plugin': 11.11.0
       '@emotion/is-prop-valid': 1.2.1
-      '@emotion/react': 11.11.1(@types/react@18.2.42)(react@18.2.0)
+      '@emotion/react': 11.11.1(@types/react@18.2.55)(react@18.2.0)
       '@emotion/serialize': 1.1.2
       '@emotion/use-insertion-effect-with-fallbacks': 1.0.1(react@18.2.0)
       '@emotion/utils': 1.2.1
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
       react: 18.2.0
     dev: false
 
@@ -7227,7 +7227,7 @@ packages:
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.5
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
       react: 18.2.0
 
   /@mdx-js/util@1.6.22:
@@ -7313,7 +7313,7 @@ packages:
     dev: false
     optional: true
 
-  /@mui/base@5.0.0-beta.22(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0):
+  /@mui/base@5.0.0-beta.22(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-l4asGID5tmyerx9emJfXOKLyXzaBtdXNIFE3M+IrSZaFtGFvaQKHhc3+nxxSxPf1+G44psjczM0ekRQCdXx9HA==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -7326,10 +7326,10 @@ packages:
     dependencies:
       '@babel/runtime': 7.23.8
       '@floating-ui/react-dom': 2.0.2(react-dom@18.2.0)(react@18.2.0)
-      '@mui/types': 7.2.8(@types/react@18.2.42)
-      '@mui/utils': 5.14.16(@types/react@18.2.42)(react@18.2.0)
+      '@mui/types': 7.2.8(@types/react@18.2.55)
+      '@mui/utils': 5.14.16(@types/react@18.2.55)(react@18.2.0)
       '@popperjs/core': 2.11.8
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
       clsx: 2.0.0
       prop-types: 15.8.1
       react: 18.2.0
@@ -7340,7 +7340,7 @@ packages:
     resolution: {integrity: sha512-97isBjzH2v1K7oB4UH2f4NOkBShOynY6dhnoR2XlUk/g6bb7ZBv2I3D1hvvqPtpEigKu93e7f/jAYr5d9LOc5w==}
     dev: false
 
-  /@mui/material@5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0):
+  /@mui/material@5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-W4zZ4vnxgGk6/HqBwgsDHKU7x2l2NhX+r8gAwfg58Rhu3ikfY7NkIS6y8Gl3NkATc4GG1FNaGjjpQKfJx3U6Jw==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -7358,14 +7358,14 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.23.8
-      '@emotion/react': 11.11.1(@types/react@18.2.42)(react@18.2.0)
-      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.42)(react@18.2.0)
-      '@mui/base': 5.0.0-beta.22(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)
+      '@emotion/react': 11.11.1(@types/react@18.2.55)(react@18.2.0)
+      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.55)(react@18.2.0)
+      '@mui/base': 5.0.0-beta.22(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
       '@mui/core-downloads-tracker': 5.14.16
-      '@mui/system': 5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.42)(react@18.2.0)
-      '@mui/types': 7.2.8(@types/react@18.2.42)
-      '@mui/utils': 5.14.16(@types/react@18.2.42)(react@18.2.0)
-      '@types/react': 18.2.42
+      '@mui/system': 5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.55)(react@18.2.0)
+      '@mui/types': 7.2.8(@types/react@18.2.55)
+      '@mui/utils': 5.14.16(@types/react@18.2.55)(react@18.2.0)
+      '@types/react': 18.2.55
       '@types/react-transition-group': 4.4.8
       clsx: 2.0.0
       csstype: 3.1.3
@@ -7376,7 +7376,7 @@ packages:
       react-transition-group: 4.4.5(react-dom@18.2.0)(react@18.2.0)
     dev: false
 
-  /@mui/private-theming@5.14.16(@types/react@18.2.42)(react@18.2.0):
+  /@mui/private-theming@5.14.16(@types/react@18.2.55)(react@18.2.0):
     resolution: {integrity: sha512-FNlL0pTSEBh8nXsVWreCHDSHk+jG8cBx1sxRbT8JVtL+PYbYPi802zfV4B00Kkf0LNRVRvAVQwojMWSR/MYGng==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -7387,8 +7387,8 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.23.8
-      '@mui/utils': 5.14.16(@types/react@18.2.42)(react@18.2.0)
-      '@types/react': 18.2.42
+      '@mui/utils': 5.14.16(@types/react@18.2.55)(react@18.2.0)
+      '@types/react': 18.2.55
       prop-types: 15.8.1
       react: 18.2.0
     dev: false
@@ -7408,14 +7408,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.23.8
       '@emotion/cache': 11.11.0
-      '@emotion/react': 11.11.1(@types/react@18.2.42)(react@18.2.0)
-      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.42)(react@18.2.0)
+      '@emotion/react': 11.11.1(@types/react@18.2.55)(react@18.2.0)
+      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.55)(react@18.2.0)
       csstype: 3.1.3
       prop-types: 15.8.1
       react: 18.2.0
     dev: false
 
-  /@mui/system@5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.42)(react@18.2.0):
+  /@mui/system@5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.55)(react@18.2.0):
     resolution: {integrity: sha512-uKnPfsDqDs8bbN54TviAuoGWOmFiQLwNZ3Wvj+OBkJCzwA6QnLb/sSeCB7Pk3ilH4h4jQ0BHtbR+Xpjy9wlOuA==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -7432,20 +7432,20 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.23.8
-      '@emotion/react': 11.11.1(@types/react@18.2.42)(react@18.2.0)
-      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.42)(react@18.2.0)
-      '@mui/private-theming': 5.14.16(@types/react@18.2.42)(react@18.2.0)
+      '@emotion/react': 11.11.1(@types/react@18.2.55)(react@18.2.0)
+      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.55)(react@18.2.0)
+      '@mui/private-theming': 5.14.16(@types/react@18.2.55)(react@18.2.0)
       '@mui/styled-engine': 5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(react@18.2.0)
-      '@mui/types': 7.2.8(@types/react@18.2.42)
-      '@mui/utils': 5.14.16(@types/react@18.2.42)(react@18.2.0)
-      '@types/react': 18.2.42
+      '@mui/types': 7.2.8(@types/react@18.2.55)
+      '@mui/utils': 5.14.16(@types/react@18.2.55)(react@18.2.0)
+      '@types/react': 18.2.55
       clsx: 2.0.0
       csstype: 3.1.3
       prop-types: 15.8.1
       react: 18.2.0
     dev: false
 
-  /@mui/types@7.2.8(@types/react@18.2.42):
+  /@mui/types@7.2.8(@types/react@18.2.55):
     resolution: {integrity: sha512-9u0ji+xspl96WPqvrYJF/iO+1tQ1L5GTaDOeG3vCR893yy7VcWwRNiVMmPdPNpMDqx0WV1wtEW9OMwK9acWJzQ==}
     peerDependencies:
       '@types/react': ^17.0.0 || ^18.0.0
@@ -7453,10 +7453,10 @@ packages:
       '@types/react':
         optional: true
     dependencies:
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
     dev: false
 
-  /@mui/utils@5.14.16(@types/react@18.2.42)(react@18.2.0):
+  /@mui/utils@5.14.16(@types/react@18.2.55)(react@18.2.0):
     resolution: {integrity: sha512-3xV31GposHkwRbQzwJJuooWpK2ybWdEdeUPtRjv/6vjomyi97F3+68l+QVj9tPTvmfSbr2sx5c/NuvDulrdRmA==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -7468,7 +7468,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.23.8
       '@types/prop-types': 15.7.9
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
       prop-types: 15.8.1
       react: 18.2.0
       react-is: 18.2.0
@@ -10966,7 +10966,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.22.15
       '@testing-library/dom': 9.3.3
-      '@types/react-dom': 18.2.17
+      '@types/react-dom': 18.2.19
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: true
@@ -10987,7 +10987,7 @@ packages:
       - '@vue/server-renderer'
     dev: true
 
-  /@textea/json-viewer@3.2.3(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0):
+  /@textea/json-viewer@3.2.3(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.14.16)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-9fG/JU/wSzib2Naxna+J1PktIKG+9TWOB5ycphKwSSUwrid/d6wAMQYGCCAKmYt0qQq+EQ1jDuFjx7qzfm+cmg==}
     peerDependencies:
       '@emotion/react': ^11
@@ -10996,14 +10996,14 @@ packages:
       react: ^17 || ^18
       react-dom: ^17 || ^18
     dependencies:
-      '@emotion/react': 11.11.1(@types/react@18.2.42)(react@18.2.0)
-      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.42)(react@18.2.0)
-      '@mui/material': 5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)
+      '@emotion/react': 11.11.1(@types/react@18.2.55)(react@18.2.0)
+      '@emotion/styled': 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.55)(react@18.2.0)
+      '@mui/material': 5.14.16(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
       clsx: 2.0.0
       copy-to-clipboard: 3.3.3
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      zustand: 4.4.5(@types/react@18.2.42)(react@18.2.0)
+      zustand: 4.4.5(@types/react@18.2.55)(react@18.2.0)
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -11481,36 +11481,36 @@ packages:
   /@types/reach__router@1.3.11:
     resolution: {integrity: sha512-j23ChnIEiW8aAP4KT8OVyTXOFr+Ri65BDnwzmfHFO9WHypXYevHFjeil1Cj7YH3emfCE924BwAmgW4hOv7Wg3g==}
     dependencies:
-      '@types/react': 18.2.42
-    dev: false
-
-  /@types/react-dom@18.2.15:
-    resolution: {integrity: sha512-HWMdW+7r7MR5+PZqJF6YFNSCtjz1T0dsvo/f1BV6HkV+6erD/nA7wd9NM00KVG83zf2nJ7uATPO9ttdIPvi3gg==}
-    dependencies:
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
     dev: false
 
   /@types/react-dom@18.2.17:
     resolution: {integrity: sha512-rvrT/M7Df5eykWFxn6MYt5Pem/Dbyc1N8Y0S9Mrkw2WFCRiqUgw9P7ul2NpwsXCSM1DVdENzdG9J5SreqfAIWg==}
     dependencies:
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
+    dev: true
+
+  /@types/react-dom@18.2.19:
+    resolution: {integrity: sha512-aZvQL6uUbIJpjZk4U8JZGbau9KDeAwMfmhyWorxgBkqDIEf6ROjRozcmPIicqsUwPUjbkDfHKgGee1Lq65APcA==}
+    dependencies:
+      '@types/react': 18.2.55
 
   /@types/react-transition-group@4.4.8:
     resolution: {integrity: sha512-QmQ22q+Pb+HQSn04NL3HtrqHwYMf4h3QKArOy5F8U5nEVMaihBs3SR10WiOM1iwPz5jIo8x/u11al+iEGZZrvg==}
     dependencies:
-      '@types/react': 18.2.42
-    dev: false
-
-  /@types/react@18.2.37:
-    resolution: {integrity: sha512-RGAYMi2bhRgEXT3f4B92WTohopH6bIXw05FuGlmJEnv/omEn190+QYEIYxIAuIBdKgboYYdVved2p1AxZVQnaw==}
-    dependencies:
-      '@types/prop-types': 15.7.9
-      '@types/scheduler': 0.16.3
-      csstype: 3.1.3
+      '@types/react': 18.2.55
     dev: false
 
   /@types/react@18.2.42:
     resolution: {integrity: sha512-c1zEr96MjakLYus/wPnuWDo1/zErfdU9rNsIGmE+NV71nx88FG9Ttgo5dqorXTu/LImX2f63WBP986gJkMPNbA==}
+    dependencies:
+      '@types/prop-types': 15.7.9
+      '@types/scheduler': 0.16.3
+      csstype: 3.1.3
+    dev: true
+
+  /@types/react@18.2.55:
+    resolution: {integrity: sha512-Y2Tz5P4yz23brwm2d7jNon39qoAtMMmalOQv6+fEFt1mT+FcM3D841wDpoUvFXhaYenuROCy3FZYqdTjM7qVyA==}
     dependencies:
       '@types/prop-types': 15.7.9
       '@types/scheduler': 0.16.3
@@ -31571,7 +31571,7 @@ packages:
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
-  /zustand@4.4.5(@types/react@18.2.42)(react@18.2.0):
+  /zustand@4.4.5(@types/react@18.2.55)(react@18.2.0):
     resolution: {integrity: sha512-jgIrBBLKncQW74PA2Lclct3gwD4aPughwGE4FqlXrv3rDqQox7JCn8rwUiFK6ygJcbBAvfTf8fF+ICg7HLD2FQ==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
@@ -31586,7 +31586,7 @@ packages:
       react:
         optional: true
     dependencies:
-      '@types/react': 18.2.42
+      '@types/react': 18.2.55
       react: 18.2.0
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: false
