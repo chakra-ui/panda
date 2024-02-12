@@ -31,18 +31,17 @@ export function generateSolidJsxFactory(ctx: Context) {
         options.defaultProps
       )
 
+      const __cvaFn__ = composeCvaFn(element.__cva__, cvaFn)
+      const __shouldForwardProps__ = composeShouldForwardProps(
+        element,
+        shouldForwardProp
+      )
+
       const ${componentName} = (props) => {
         const mergedProps = mergeProps(
           { as: element.__base__ || element },
           defaultProps,
           props
-        )
-
-        const __cvaFn__ = composeCvaFn(element.__cva__, cvaFn)
-        
-        const __shouldForwardProps__ = composeShouldForwardProps(
-          element,
-          shouldForwardProp
         )
 
         const [localProps, restProps] = splitProps(mergedProps, [
@@ -78,7 +77,7 @@ export function generateSolidJsxFactory(ctx: Context) {
             localProps.className
           )
         }
-    
+
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = __cvaFn__.raw(variantProps)
@@ -111,7 +110,7 @@ export function generateSolidJsxFactory(ctx: Context) {
       const name = getDisplayName(element)
 
       ${componentName}.displayName = \`${factoryName}.\${name}\`
-      ${componentName}.__cva__ = cvaFn
+      ${componentName}.__cva__ = __cvaFn__
       ${componentName}.__base__ = element
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
 

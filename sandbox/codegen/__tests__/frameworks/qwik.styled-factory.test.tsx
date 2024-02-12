@@ -144,6 +144,73 @@ describe('styled factory - cva', async () => {
     )
   })
 
+  test('nested composition', async () => {
+    const StyledButton = styled('button', {
+      base: {
+        fontWeight: 'semibold',
+        h: '10',
+      },
+      variants: {
+        visual: {
+          solid: {
+            color: 'white',
+          },
+          outline: {
+            borderColor: 'currentColor',
+          },
+        },
+      },
+    })
+    const WithSize = styled(StyledButton, {
+      base: {
+        colorPalette: 'blue', // adding new key
+      },
+      variants: {
+        size: {
+          // new variant
+          sm: { px: '2', fontSize: '12px' },
+          lg: { px: '8', fontSize: '24px' },
+        },
+      },
+    })
+    const WithOverrides = styled(WithSize, {
+      base: {
+        borderWidth: '4px', // adding new key
+        h: '20', // overriding 1st cva
+      },
+      variants: {
+        visual: {
+          outline: {
+            // extend 1st cva
+            colorPalette: 'red',
+          },
+        },
+        size: {
+          lg: { px: '12', fontSize: '32px' }, // override 2nd cva
+          '2xl': { px: '20', fontSize: '40px' }, // add new one
+        },
+      },
+    })
+
+    const { render, screen } = await createDOM()
+    await render(
+      <WithOverrides visual="outline" size="lg">
+        Click me
+      </WithOverrides>,
+    )
+    const container = screen.querySelector('button')!
+    expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="font_semibold h_10 font_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px">Click me</button>"`)
+
+    const second = await createDOM()
+    await second.render(
+      <WithOverrides visual="solid" size="2xl">
+        Click me
+      </WithOverrides>,
+    )
+    const container2 = second.screen.querySelector('button')!
+    expect(container2.outerHTML).toMatchInlineSnapshot(`"<button class="font_semibold h_10 font_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px">Click me</button>"`)
+  })
+
   test('html props', async () => {
     const { render, screen } = await createDOM()
     await render(
