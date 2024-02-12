@@ -1,5 +1,25 @@
 # @pandacss/preset-base
 
+## 0.31.0
+
+### Minor Changes
+
+- 40cb30b9: Add `textShadowColor` utility
+
+  ```ts
+  css({
+    textShadow: '1px 1px 1px var(--text-shadow-color)',
+    textShadowColor: 'black',
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [8f36f9af]
+- Updated dependencies [a17fe387]
+- Updated dependencies [2d69b340]
+  - @pandacss/types@0.31.0
+
 ## 0.30.2
 
 ### Patch Changes

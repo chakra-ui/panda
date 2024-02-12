@@ -1,5 +1,30 @@
 # @pandacss/dev
 
+## 0.31.0
+
+### Minor Changes
+
+- a17fe387: - Add a `config.polyfill` option that will polyfill the CSS @layer at-rules using a
+  [postcss plugin](https://www.npmjs.com/package/@csstools/postcss-cascade-layers)
+  - And `--polyfill` flag to `panda` and `panda cssgen` commands
+
+### Patch Changes
+
+- Updated dependencies [8f36f9af]
+- Updated dependencies [f0296249]
+- Updated dependencies [e2ad0eed]
+- Updated dependencies [a17fe387]
+- Updated dependencies [2d69b340]
+- Updated dependencies [ddeda8ac]
+  - @pandacss/types@0.31.0
+  - @pandacss/config@0.31.0
+  - @pandacss/shared@0.31.0
+  - @pandacss/node@0.31.0
+  - @pandacss/logger@0.31.0
+  - @pandacss/preset-panda@0.31.0
+  - @pandacss/token-dictionary@0.31.0
+  - @pandacss/postcss@0.31.0
+
 ## 0.30.2
 
 ### Patch Changes
