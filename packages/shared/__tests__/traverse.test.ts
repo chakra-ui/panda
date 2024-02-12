@@ -64,6 +64,9 @@ describe('traverse', () => {
             },
           },
           "path": "a",
+          "paths": [
+            "a",
+          ],
           "value": 1,
         },
         {
@@ -90,6 +93,9 @@ describe('traverse', () => {
             },
           },
           "path": "b",
+          "paths": [
+            "b",
+          ],
           "value": {
             "c": 2,
             "d": {
@@ -129,6 +135,10 @@ describe('traverse', () => {
             "j": 6,
           },
           "path": "b.c",
+          "paths": [
+            "b",
+            "c",
+          ],
           "value": 2,
         },
         {
@@ -152,6 +162,10 @@ describe('traverse', () => {
             "j": 6,
           },
           "path": "b.d",
+          "paths": [
+            "b",
+            "d",
+          ],
           "value": {
             "arr": [
               4,
@@ -175,6 +189,11 @@ describe('traverse', () => {
             "e": 3,
           },
           "path": "b.d.e",
+          "paths": [
+            "b",
+            "d",
+            "e",
+          ],
           "value": 3,
         },
         {
@@ -190,6 +209,11 @@ describe('traverse', () => {
             "e": 3,
           },
           "path": "b.d.arr",
+          "paths": [
+            "b",
+            "d",
+            "arr",
+          ],
           "value": [
             4,
             {
@@ -207,6 +231,12 @@ describe('traverse', () => {
             },
           ],
           "path": "b.d.arr.0",
+          "paths": [
+            "b",
+            "d",
+            "arr",
+            "0",
+          ],
           "value": 4,
         },
         {
@@ -219,6 +249,12 @@ describe('traverse', () => {
             },
           ],
           "path": "b.d.arr.1",
+          "paths": [
+            "b",
+            "d",
+            "arr",
+            "1",
+          ],
           "value": {
             "prop": "5",
           },
@@ -230,6 +266,13 @@ describe('traverse', () => {
             "prop": "5",
           },
           "path": "b.d.arr.1.prop",
+          "paths": [
+            "b",
+            "d",
+            "arr",
+            "1",
+            "prop",
+          ],
           "value": "5",
         },
         {
@@ -253,6 +296,10 @@ describe('traverse', () => {
             "j": 6,
           },
           "path": "b.f",
+          "paths": [
+            "b",
+            "f",
+          ],
           "value": null,
         },
         {
@@ -276,6 +323,10 @@ describe('traverse', () => {
             "j": 6,
           },
           "path": "b.g",
+          "paths": [
+            "b",
+            "g",
+          ],
           "value": undefined,
         },
         {
@@ -299,6 +350,10 @@ describe('traverse', () => {
             "j": 6,
           },
           "path": "b.h",
+          "paths": [
+            "b",
+            "h",
+          ],
           "value": false,
         },
         {
@@ -322,6 +377,10 @@ describe('traverse', () => {
             "j": 6,
           },
           "path": "b.i",
+          "paths": [
+            "b",
+            "i",
+          ],
           "value": "",
         },
         {
@@ -345,6 +404,10 @@ describe('traverse', () => {
             "j": 6,
           },
           "path": "b.j",
+          "paths": [
+            "b",
+            "j",
+          ],
           "value": 6,
         },
       ]
@@ -373,6 +436,9 @@ describe('traverse', () => {
             ],
           ],
           "path": "0",
+          "paths": [
+            "0",
+          ],
           "value": 1,
         },
         {
@@ -388,6 +454,9 @@ describe('traverse', () => {
             ],
           ],
           "path": "1",
+          "paths": [
+            "1",
+          ],
           "value": [
             2,
             [
@@ -405,6 +474,10 @@ describe('traverse', () => {
             ],
           ],
           "path": "1.0",
+          "paths": [
+            "1",
+            "0",
+          ],
           "value": 2,
         },
         {
@@ -417,6 +490,10 @@ describe('traverse', () => {
             ],
           ],
           "path": "1.1",
+          "paths": [
+            "1",
+            "1",
+          ],
           "value": [
             3,
           ],
@@ -428,6 +505,11 @@ describe('traverse', () => {
             3,
           ],
           "path": "1.1.0",
+          "paths": [
+            "1",
+            "1",
+            "0",
+          ],
           "value": 3,
         },
       ]
@@ -479,6 +561,9 @@ describe('traverse', () => {
             },
           },
           "path": "blur",
+          "paths": [
+            "blur",
+          ],
           "value": {
             "_dark": {
               "bg": "dark",
@@ -512,6 +597,10 @@ describe('traverse', () => {
             "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
           },
           "path": "blur._dark",
+          "paths": [
+            "blur",
+            "_dark",
+          ],
           "value": {
             "bg": "dark",
             "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
@@ -525,6 +614,11 @@ describe('traverse', () => {
             "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
           },
           "path": "blur._dark.bg",
+          "paths": [
+            "blur",
+            "_dark",
+            "bg",
+          ],
           "value": "dark",
         },
         {
@@ -535,6 +629,11 @@ describe('traverse', () => {
             "shadow": "0 -1px 0 rgba(255,255,255,.1) inset",
           },
           "path": "blur._dark.shadow",
+          "paths": [
+            "blur",
+            "_dark",
+            "shadow",
+          ],
           "value": "0 -1px 0 rgba(255,255,255,.1) inset",
         },
         {
@@ -555,6 +654,10 @@ describe('traverse', () => {
             "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
           },
           "path": "blur.shadow",
+          "paths": [
+            "blur",
+            "shadow",
+          ],
           "value": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
         },
         {
@@ -575,6 +678,10 @@ describe('traverse', () => {
             "shadow": "0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)",
           },
           "path": "blur._supportsBackdrop",
+          "paths": [
+            "blur",
+            "_supportsBackdrop",
+          ],
           "value": {
             "_dark": {
               "backgroundColor": "hsla(0,0%,7%,.8) !important",
@@ -594,6 +701,11 @@ describe('traverse', () => {
             "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
           },
           "path": "blur._supportsBackdrop.backdropFilter",
+          "paths": [
+            "blur",
+            "_supportsBackdrop",
+            "backdropFilter",
+          ],
           "value": "blur(8px)",
         },
         {
@@ -607,6 +719,11 @@ describe('traverse', () => {
             "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
           },
           "path": "blur._supportsBackdrop.backgroundColor",
+          "paths": [
+            "blur",
+            "_supportsBackdrop",
+            "backgroundColor",
+          ],
           "value": "rgba(255, 255, 255, 0.85) !important",
         },
         {
@@ -620,6 +737,11 @@ describe('traverse', () => {
             "backgroundColor": "rgba(255, 255, 255, 0.85) !important",
           },
           "path": "blur._supportsBackdrop._dark",
+          "paths": [
+            "blur",
+            "_supportsBackdrop",
+            "_dark",
+          ],
           "value": {
             "backgroundColor": "hsla(0,0%,7%,.8) !important",
           },
@@ -631,6 +753,12 @@ describe('traverse', () => {
             "backgroundColor": "hsla(0,0%,7%,.8) !important",
           },
           "path": "blur._supportsBackdrop._dark.backgroundColor",
+          "paths": [
+            "blur",
+            "_supportsBackdrop",
+            "_dark",
+            "backgroundColor",
+          ],
           "value": "hsla(0,0%,7%,.8) !important",
         },
       ]
@@ -667,6 +795,9 @@ describe('traverse', () => {
             },
           },
           "path": "a",
+          "paths": [
+            "a",
+          ],
           "value": {
             "b": {
               "c": {
@@ -686,10 +817,32 @@ describe('traverse', () => {
             },
           },
           "path": "a.b",
+          "paths": [
+            "a",
+            "b",
+          ],
           "value": {
             "c": {
               "value": "<xxx>",
             },
+          },
+        },
+        {
+          "depth": 2,
+          "key": "c",
+          "parent": {
+            "c": {
+              "value": "<xxx>",
+            },
+          },
+          "path": "a.b.c",
+          "paths": [
+            "a",
+            "b",
+            "c",
+          ],
+          "value": {
+            "value": "<xxx>",
           },
         },
       ]
