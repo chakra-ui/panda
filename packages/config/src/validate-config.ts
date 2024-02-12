@@ -25,11 +25,7 @@ export const validateConfig = (config: Partial<UserConfig>) => {
   const warnings = new Set<string>()
 
   const addError = (scope: string, message: string) => {
-    if (config.validation === 'warn') {
-      warnings.add(`[${scope}]: ` + message)
-    } else {
-      throw new PandaError('CONFIG_ERROR', `[${scope}]: ` + message)
-    }
+    warnings.add(`[${scope}] ` + message)
   }
 
   validateBreakpoints(config.theme?.breakpoints, addError)
@@ -59,12 +55,15 @@ export const validateConfig = (config: Partial<UserConfig>) => {
   validateArtifactNames(artifacts, addError)
 
   if (warnings.size) {
-    logger.warn(
-      'config',
-      `⚠️ Invalid config:\n${Array.from(warnings)
-        .map((err) => '- ' + err)
-        .join('\n')}\n`,
-    )
+    const errors = `⚠️ Invalid config:\n${Array.from(warnings)
+      .map((err) => '- ' + err)
+      .join('\n')}\n`
+
+    if (config.validation === 'error') {
+      throw new PandaError('CONFIG_ERROR', errors)
+    }
+
+    logger.warn('config', errors)
 
     return warnings
   }

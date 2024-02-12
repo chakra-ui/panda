@@ -1,7 +1,7 @@
-import { traverse } from '@pandacss/shared'
+import { isObject, walkObject } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import type { AddError, TokensData } from '../types'
-import { getFinalPaths } from './get-final-paths'
+import { SEP, formatPath, isTokenReference, isValidToken } from './utils'
 import { validateTokenReferences } from './validate-token-references'
 
 interface Options {
@@ -22,52 +22,76 @@ export const validateTokens = (options: Options) => {
   const { tokenNames, semanticTokenNames, valueAtPath, refsByPath } = tokens
 
   if (theme.tokens) {
-    traverse(theme.tokens, (node) => {
-      if (node.depth >= 1) {
-        tokenNames.add(node.path)
-        valueAtPath.set(node.path, node.value)
+    const tokenPaths = new Set<string>()
+
+    walkObject(
+      theme.tokens,
+      (value, paths) => {
+        const path = paths.join(SEP)
+
+        tokenNames.add(path)
+        tokenPaths.add(path)
+
+        valueAtPath.set(path, value)
+      },
+      {
+        stop: isValidToken,
+      },
+    )
+
+    tokenPaths.forEach((path) => {
+      const value = valueAtPath.get(path)
+      const formattedPath = formatPath(path)
+
+      if (!isValidToken(value)) {
+        addError('tokens', `Token must contain 'value': \`theme.tokens.${formattedPath}\``)
+        return
       }
-    })
 
-    const finalPaths = getFinalPaths(tokenNames)
-
-    finalPaths.forEach((path) => {
-      if (!path.includes('value')) {
-        addError('tokens', `Token paths must end with 'value': \`theme.tokens.${path}\``)
-      }
-
-      const atPath = valueAtPath.get(path)
-      if (typeof atPath === 'string' && atPath.startsWith('{')) {
-        refsByPath.set(path, new Set([]))
+      if (isTokenReference(value)) {
+        refsByPath.set(formattedPath, new Set([]))
       }
     })
   }
 
   if (theme.semanticTokens) {
-    traverse(theme.semanticTokens, (node) => {
-      if (node.depth >= 1) {
-        semanticTokenNames.add(node.path)
-        valueAtPath.set(node.path, node.value)
+    const tokenPaths = new Set<string>()
 
-        // Keep track of all token references
-        if (typeof node.value === 'string' && node.value.startsWith('{') && node.path.includes('value')) {
-          const tokenPath = node.path.split('.value')[0]
-          if (!refsByPath.has(tokenPath)) {
-            refsByPath.set(tokenPath, new Set())
+    walkObject(
+      theme.semanticTokens,
+      (value, paths) => {
+        const path = paths.join(SEP)
+
+        semanticTokenNames.add(path)
+        valueAtPath.set(path, value)
+        tokenPaths.add(path)
+
+        if (!isValidToken(value)) return
+
+        walkObject(value, (itemValue) => {
+          if (isTokenReference(itemValue)) {
+            const formattedPath = formatPath(path)
+            if (!refsByPath.has(formattedPath)) {
+              refsByPath.set(formattedPath, new Set())
+            }
+            const references = refsByPath.get(formattedPath)
+            if (!references) return
+            const reference = itemValue.slice(1, -1)
+            references.add(reference)
           }
+        })
+      },
+      {
+        stop: isValidToken,
+      },
+    )
 
-          const values = refsByPath.get(tokenPath)!
-          const tokenRef = node.value.slice(1, -1)
-          values.add(tokenRef)
-        }
-      }
-    })
+    tokenPaths.forEach((path) => {
+      const formattedPath = formatPath(path)
+      const value = valueAtPath.get(path)
 
-    const finalPaths = getFinalPaths(semanticTokenNames)
-
-    finalPaths.forEach((path) => {
-      if (!path.includes('value')) {
-        addError('tokens', `Semantic token paths must contain 'value': \`theme.semanticTokens.${path}\``)
+      if (!isObject(value) && !path.includes('value')) {
+        addError('tokens', `Token must contain 'value': \`theme.semanticTokens.${formattedPath}\``)
       }
     })
 
