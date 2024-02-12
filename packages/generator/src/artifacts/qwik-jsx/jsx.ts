@@ -26,11 +26,11 @@ export function generateQwikJsxFactory(ctx: Context) {
         options.defaultProps,
       )
 
+      const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+      const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
+
       const ${componentName} = function ${componentName}(props) {
         const { as: Element = Dynamic.__base__ || Dynamic, children, className, ...restProps } = props
-
-        const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
-        const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
         const combinedProps = Object.assign({}, defaultProps, restProps)
 
@@ -64,7 +64,7 @@ export function generateQwikJsxFactory(ctx: Context) {
       const name = getDisplayName(Dynamic)
 
       ${componentName}.displayName = \`${factoryName}.\${name}\`
-      ${componentName}.__cva__ = cvaFn
+      ${componentName}.__cva__ = __cvaFn__
       ${componentName}.__base__ = Dynamic
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
 

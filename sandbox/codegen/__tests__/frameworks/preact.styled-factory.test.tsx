@@ -131,6 +131,83 @@ describe('styled factory - cva', () => {
     )
   })
 
+  test('nested composition', () => {
+    const StyledButton = styled('button', {
+      base: {
+        fontWeight: 'semibold',
+        h: '10',
+      },
+      variants: {
+        visual: {
+          solid: {
+            color: 'white',
+          },
+          outline: {
+            borderColor: 'currentColor',
+          },
+        },
+      },
+    })
+    const WithSize = styled(StyledButton, {
+      base: {
+        colorPalette: 'blue', // adding new key
+      },
+      variants: {
+        size: {
+          // new variant
+          sm: { px: '2', fontSize: '12px' },
+          lg: { px: '8', fontSize: '24px' },
+        },
+      },
+    })
+    const WithOverrides = styled(WithSize, {
+      base: {
+        borderWidth: '4px', // adding new key
+        h: '20', // overriding 1st cva
+      },
+      variants: {
+        visual: {
+          outline: {
+            // extend 1st cva
+            colorPalette: 'red',
+          },
+        },
+        size: {
+          lg: { px: '12', fontSize: '32px' }, // override 2nd cva
+          '2xl': { px: '20', fontSize: '40px' }, // add new one
+        },
+      },
+    })
+
+    const { container } = render(
+      <WithOverrides visual="outline" size="lg">
+        Click me
+      </WithOverrides>,
+    )
+    const { firstChild } = container as HTMLElement
+    expect(firstChild).toMatchInlineSnapshot(`
+      <button
+        class="font_semibold h_10 font_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px"
+      >
+        Click me
+      </button>
+    `)
+
+    expect(
+      render(
+        <WithOverrides visual="solid" size="2xl">
+          Click me
+        </WithOverrides>,
+      ).container.firstChild,
+    ).toMatchInlineSnapshot(`
+      <button
+        class="font_semibold h_10 font_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px"
+      >
+        Click me
+      </button>
+    `)
+  })
+
   test('html props', () => {
     const { container } = render(
       <styled.div htmlWidth={123} height="123">
@@ -150,9 +227,7 @@ describe('styled factory - button recipe', () => {
   test('base styles', () => {
     const { container } = render(<Button>Click me</Button>)
 
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button">Click me</button>"`,
-    )
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(`"<button class="button">Click me</button>"`)
   })
 
   test('variant styles', () => {
@@ -238,9 +313,7 @@ describe('styled factory - button recipe', () => {
   test('box pattern', () => {
     const { container } = render(<Box color="red.300">Click me</Box>)
 
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<div class="text_red.300">Click me</div>"`,
-    )
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(`"<div class="text_red.300">Click me</div>"`)
   })
 
   test('stack pattern', () => {

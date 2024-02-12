@@ -26,11 +26,11 @@ export function generateReactJsxFactory(ctx: Context) {
         options.defaultProps,
       )
 
+      const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+      const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
+
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
         const { as: Element = Dynamic.__base__ || Dynamic, children, ...restProps } = props
-
-        const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
-        const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
         const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
 
@@ -64,7 +64,7 @@ export function generateReactJsxFactory(ctx: Context) {
       const name = getDisplayName(Dynamic)
 
       ${componentName}.displayName = \`${factoryName}.\${name}\`
-      ${componentName}.__cva__ = cvaFn
+      ${componentName}.__cva__ = __cvaFn__
       ${componentName}.__base__ = Dynamic
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
 

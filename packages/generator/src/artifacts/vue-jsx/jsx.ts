@@ -27,6 +27,8 @@ export function generateVueJsxFactory(ctx: Context) {
       )
 
       const name = getDisplayName(Dynamic)
+      const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+      const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
 
       const ${componentName} = defineComponent({
         name: \`${factoryName}.\${name}\`,
@@ -36,9 +38,6 @@ export function generateVueJsxFactory(ctx: Context) {
           as: { type: [String, Object], default: Dynamic.__base__ || Dynamic }
         },
         setup(props, { slots, attrs, emit }) {
-          const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
-          const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
-
           const combinedProps = computed(() => Object.assign({}, defaultProps, attrs))
 
           const splittedProps = computed(() => {
@@ -63,7 +62,7 @@ export function generateVueJsxFactory(ctx: Context) {
 
           const vModelProps = computed(() => {
             const result = {};
-    
+
             if (
               props.as === 'input' &&
               (props.type === 'checkbox' || props.type === 'radio')
@@ -86,13 +85,13 @@ export function generateVueJsxFactory(ctx: Context) {
                 emit('update:modelValue', value, event);
               };
             }
-    
+
             return result;
           });
 
           return () => {
             const [htmlProps, forwardedProps, _variantProps, _styleProps, elementProps] = splittedProps.value
-            
+
             return h(
               props.as,
               {
@@ -109,7 +108,7 @@ export function generateVueJsxFactory(ctx: Context) {
       })
 
       ${componentName}.displayName = \`${factoryName}.\${name}\`
-      ${componentName}.__cva__ = cvaFn
+      ${componentName}.__cva__ = __cvaFn__
       ${componentName}.__base__ = Dynamic
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
 
