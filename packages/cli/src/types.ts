@@ -33,6 +33,7 @@ export interface StudioCommandFlags extends Pick<Config, 'cwd'> {
   outdir?: string
   port?: string
   host?: boolean
+  base?: string
 }
 
 export interface AnalyzeCommandFlags {

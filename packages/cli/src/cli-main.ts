@@ -296,8 +296,9 @@ export async function main() {
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--outdir <dir>', 'Output directory for static files')
+    .option('--base <path>', 'Base path of project')
     .action(async (flags: StudioCommandFlags) => {
-      const { build, preview, port, host, outdir, config } = flags
+      const { build, preview, port, host, outdir, config, base } = flags
 
       const cwd = resolve(flags.cwd ?? '')
 
@@ -311,6 +312,7 @@ export async function main() {
         outDir: resolve(outdir || ctx.studio.outdir),
         port,
         host,
+        base,
       }
 
       let studio: any
