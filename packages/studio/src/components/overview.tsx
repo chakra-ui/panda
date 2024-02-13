@@ -49,7 +49,7 @@ export default function Overview() {
         </div>
 
         <div className={hstack({ gap: '6' })}>
-          <a href="/colors" className={buttonRecipe({ variant: 'solid' })}>
+          <a href={`${import.meta.env.BASE_URL}colors`} className={buttonRecipe({ variant: 'solid' })}>
             Get Started
           </a>
           <a href="https://panda-css.com?ref=studio" target="_blank" className={buttonRecipe({ variant: 'outline' })}>
@@ -64,7 +64,7 @@ export default function Overview() {
               <div key={index}>
                 <a
                   title={item.label}
-                  href={`/${item.id}`}
+                  href={`${import.meta.env.BASE_URL}${item.id}`}
                   className={square({
                     size: '20',
                     fontSize: '2xl',

@@ -12,7 +12,7 @@ import SideNavItem from './side-nav-item.astro'
         {
           navItems
             .filter((item) => item.type === 'token')
-            .map((item) => <SideNavItem href={`/${item.id}`}>{item.label}</SideNavItem>)
+            .map((item) => <SideNavItem href={`${import.meta.env.BASE_URL}${item.id}`}>{item.label}</SideNavItem>)
         }
       </panda.ul>
     </div>
@@ -22,7 +22,7 @@ import SideNavItem from './side-nav-item.astro'
         {
           navItems
             .filter((item) => item.type === 'playground')
-            .map((item) => <SideNavItem href={`/${item.id}`}>{item.label}</SideNavItem>)
+            .map((item) => <SideNavItem href={`/${import.meta.env.BASE_URL}${item.id}`}>{item.label}</SideNavItem>)
         }
       </panda.ul>
     </div>
