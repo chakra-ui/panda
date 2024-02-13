@@ -18,11 +18,11 @@ See the [Changesets](./.changeset) for the latest changes.
 
 - Add a `RecipeVariant` type to get the variants in a strict object from `cva` function. This complements the
   `RecipeVariantprops` type that extracts the variant as optional props, mostly intended for JSX components.
-- Add `textShadowColor` utility
 - Add missing log with the `panda -w` CLI, expose `resolveConfig` from `@pandacss/config`
 - Add a `config.polyfill` option that will polyfill the CSS @layer at-rules using a
   [postcss plugin](https://www.npmjs.com/package/@csstools/postcss-cascade-layers)
 - And `--polyfill` flag to `panda` and `panda cssgen` commands
+- Add `textShadowColor` utility
 
 ```ts
 css({
@@ -33,9 +33,10 @@ css({
 
 ### Changed
 
-- Sort the longhand/shorthand atomic rules in a deterministic order to prevent property conflicts
 - Automatically merge the `base` object in the `css` root styles in the runtime
-- This may be a breaking change depending on how your styles are created
+- Sort the longhand/shorthand atomic rules in a deterministic order to prevent property conflicts
+
+This may be a breaking change depending on how your styles are created
 
 Ex:
 
