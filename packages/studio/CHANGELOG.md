@@ -1,5 +1,24 @@
 # @pandacss/studio
 
+## 0.31.0
+
+### Patch Changes
+
+- 8f36f9af: Add a `RecipeVariant` type to get the variants in a strict object from `cva` function. This complements the
+  `RecipeVariantprops` type that extracts the variant as optional props, mostly intended for JSX components.
+- Updated dependencies [8f36f9af]
+- Updated dependencies [f0296249]
+- Updated dependencies [e2ad0eed]
+- Updated dependencies [a17fe387]
+- Updated dependencies [2d69b340]
+- Updated dependencies [ddeda8ac]
+  - @pandacss/types@0.31.0
+  - @pandacss/config@0.31.0
+  - @pandacss/shared@0.31.0
+  - @pandacss/logger@0.31.0
+  - @pandacss/token-dictionary@0.31.0
+  - @pandacss/astro-plugin-studio@0.31.0
+
 ## 0.30.2
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @pandacss/types
 
+## 0.31.0
+
+### Minor Changes
+
+- a17fe387: - Add a `config.polyfill` option that will polyfill the CSS @layer at-rules using a
+  [postcss plugin](https://www.npmjs.com/package/@csstools/postcss-cascade-layers)
+  - And `--polyfill` flag to `panda` and `panda cssgen` commands
+
+### Patch Changes
+
+- 8f36f9af: Add a `RecipeVariant` type to get the variants in a strict object from `cva` function. This complements the
+  `RecipeVariantprops` type that extracts the variant as optional props, mostly intended for JSX components.
+- 2d69b340: Fix `styled` factory nested composition with `cva`
+
 ## 0.30.2
 
 ### Patch Changes

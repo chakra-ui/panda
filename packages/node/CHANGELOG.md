@@ -1,5 +1,62 @@
 # @pandacss/node
 
+## 0.31.0
+
+### Minor Changes
+
+- f0296249: - Sort the longhand/shorthand atomic rules in a deterministic order to prevent property conflicts
+
+  - Automatically merge the `base` object in the `css` root styles in the runtime
+  - This may be a breaking change depending on how your styles are created
+
+  Ex:
+
+  ```ts
+  css({
+    padding: '1px',
+    paddingTop: '3px',
+    paddingBottom: '4px',
+  })
+  ```
+
+  Will now always generate the following css:
+
+  ```css
+  @layer utilities {
+    .p_1px {
+      padding: 1px;
+    }
+
+    .pt_3px {
+      padding-top: 3px;
+    }
+
+    .pb_4px {
+      padding-bottom: 4px;
+    }
+  }
+  ```
+
+### Patch Changes
+
+- 2d69b340: Fix `styled` factory nested composition with `cva`
+- ddeda8ac: Add missing log with the `panda -w` CLI, expose `resolveConfig` from `@pandacss/config`
+- Updated dependencies [8f36f9af]
+- Updated dependencies [f0296249]
+- Updated dependencies [e2ad0eed]
+- Updated dependencies [a17fe387]
+- Updated dependencies [2d69b340]
+- Updated dependencies [ddeda8ac]
+  - @pandacss/generator@0.31.0
+  - @pandacss/types@0.31.0
+  - @pandacss/config@0.31.0
+  - @pandacss/parser@0.31.0
+  - @pandacss/shared@0.31.0
+  - @pandacss/core@0.31.0
+  - @pandacss/logger@0.31.0
+  - @pandacss/token-dictionary@0.31.0
+  - @pandacss/extractor@0.31.0
+
 ## 0.30.2
 
 ### Patch Changes
