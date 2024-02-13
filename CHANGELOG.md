@@ -6,6 +6,65 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.31.0] - 2024-02-13
+
+### Fixed
+
+- Fix `styled` factory nested composition with `cva`
+- Fix issue in token validation logic where token with additional properties like `description` is considered invalid.
+- When `validation` is set to `error`, show all config errors at once instead of stopping at the first error.
+
+### Added
+
+- Add a `RecipeVariant` type to get the variants in a strict object from `cva` function. This complements the
+  `RecipeVariantprops` type that extracts the variant as optional props, mostly intended for JSX components.
+- Add `textShadowColor` utility
+- Add missing log with the `panda -w` CLI, expose `resolveConfig` from `@pandacss/config`
+- Add a `config.polyfill` option that will polyfill the CSS @layer at-rules using a
+  [postcss plugin](https://www.npmjs.com/package/@csstools/postcss-cascade-layers)
+- And `--polyfill` flag to `panda` and `panda cssgen` commands
+
+```ts
+css({
+  textShadow: '1px 1px 1px var(--text-shadow-color)',
+  textShadowColor: 'black',
+})
+```
+
+### Changed
+
+- Sort the longhand/shorthand atomic rules in a deterministic order to prevent property conflicts
+- Automatically merge the `base` object in the `css` root styles in the runtime
+- This may be a breaking change depending on how your styles are created
+
+Ex:
+
+```ts
+css({
+  padding: '1px',
+  paddingTop: '3px',
+  paddingBottom: '4px',
+})
+```
+
+Will now always generate the following css:
+
+```css
+@layer utilities {
+  .p_1px {
+    padding: 1px;
+  }
+
+  .pt_3px {
+    padding-top: 3px;
+  }
+
+  .pb_4px {
+    padding-bottom: 4px;
+  }
+}
+```
+
 ## [0.30.02] - 2024-02-08
 
 ### Fixed
