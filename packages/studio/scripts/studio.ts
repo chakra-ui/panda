@@ -24,7 +24,6 @@ export async function buildStudio({ outDir, configPath, base }: BuildOpts) {
       integrations: [react(), studio()],
       devToolbar: { enabled: false },
       base,
-      trailingSlash: 'always',
     })
   } catch (error) {
     console.log(error)
@@ -47,7 +46,6 @@ export async function serveStudio({ configPath, port, host, outDir, base }: Buil
         host,
       },
       base,
-      trailingSlash: 'always',
       devToolbar: { enabled: false },
     })
   } catch (error) {
@@ -66,7 +64,6 @@ export async function previewStudio({ outDir, base }: BuildOpts) {
       root: appPath,
       integrations: [react(), studio()],
       devToolbar: { enabled: false },
-      trailingSlash: 'always',
       base,
     })
   } catch (error) {

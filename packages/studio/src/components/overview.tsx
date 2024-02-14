@@ -5,6 +5,7 @@ import { Yums } from '../icons/yums'
 import { Logo } from '../icons/logo'
 import { Wrap } from '../../styled-system/jsx'
 import { navItems } from '../lib/constants'
+import { getUrl } from '../lib/url'
 
 const buttonRecipe = cva({
   base: {
@@ -49,7 +50,7 @@ export default function Overview() {
         </div>
 
         <div className={hstack({ gap: '6' })}>
-          <a href={`${import.meta.env.BASE_URL}colors`} className={buttonRecipe({ variant: 'solid' })}>
+          <a href={getUrl('colors')} className={buttonRecipe({ variant: 'solid' })}>
             Get Started
           </a>
           <a href="https://panda-css.com?ref=studio" target="_blank" className={buttonRecipe({ variant: 'outline' })}>
@@ -64,7 +65,7 @@ export default function Overview() {
               <div key={index}>
                 <a
                   title={item.label}
-                  href={`${import.meta.env.BASE_URL}${item.id}`}
+                  href={getUrl(item.id)}
                   className={square({
                     size: '20',
                     fontSize: '2xl',

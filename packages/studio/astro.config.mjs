@@ -1,8 +1,9 @@
 import react from '@astrojs/react'
-import panda from '@pandacss/astro-plugin-studio'
+import studio from '@pandacss/astro-plugin-studio'
 import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [react(), panda()],
+  devToolbar: { enabled: true },
+  integrations: [react(), studio()],
 })
