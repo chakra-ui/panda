@@ -60,7 +60,7 @@
     "perfect-debounce": "^1.0.0",
     "pkg-types": "1.0.3",
     "pluralize": "8.0.0",
-    "postcss": "^8.4.31",
+    "postcss": "^8.4.35",
     "preferred-pm": "^3.0.3",
     "prettier": "^2.8.8",
     "ts-morph": "19.0.0",
