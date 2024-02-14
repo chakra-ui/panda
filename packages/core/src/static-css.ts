@@ -51,9 +51,9 @@ export class StaticCss {
     const { config, utility, patterns: _patterns } = this.context
     const breakpoints = Object.keys(config.theme?.breakpoints ?? {})
 
-    const getRecipeKeys = (recipeName: string) => {
-      const recipeConfig = this.context.recipes.details.find((detail) => detail.baseName === recipeName)
-      return recipeConfig?.variantKeyMap
+    const getRecipe = (recipeName: string) => {
+      const node = this.context.recipes.details.find((detail) => detail.baseName === recipeName)
+      return node
     }
 
     const { css = [], patterns = {} } = options
@@ -88,11 +88,33 @@ export class StaticCss {
     })
 
     Object.entries(recipes).forEach(([recipe, rules]) => {
+      const recipeNode = getRecipe(recipe)
+      if (!recipeNode) return
+
       // adds the recipe.base to the results
       results.recipes.push({ [recipe]: {} })
 
+      if (recipeNode.config.compoundVariants) {
+        recipeNode.config.compoundVariants.forEach((compoundRule) => {
+          const css = compoundRule.css
+          const isSlot = 'slots' in recipeNode.config && recipeNode.config.slots.length
+
+          if (isSlot) {
+            Object.entries(css).forEach(([_slot, styles]) => {
+              Object.entries(styles).forEach(([prop, value]) => {
+                results.css.push({ [prop]: value })
+              })
+            })
+          } else {
+            Object.entries(css).forEach(([prop, value]) => {
+              results.css.push({ [prop]: value })
+            })
+          }
+        })
+      }
+
       rules.forEach((rule) => {
-        const recipeKeys = getRecipeKeys(recipe)
+        const recipeKeys = recipeNode?.variantKeyMap
         if (!recipeKeys) return
 
         const useAllKeys = rule === '*'

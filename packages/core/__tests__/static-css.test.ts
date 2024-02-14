@@ -1961,7 +1961,11 @@ describe('static-css', () => {
       }
       }",
         "results": {
-          "css": [],
+          "css": [
+            {
+              "color": "ButtonHighlight",
+            },
+          ],
           "patterns": [],
           "recipes": [
             {
@@ -2040,6 +2044,113 @@ describe('static-css', () => {
             {
               "badge": {
                 "raised": "true",
+              },
+            },
+          ],
+        },
+      }
+    `)
+  })
+
+  test('recipe + compoundVariants', () => {
+    const ctx = new Context({
+      ...conf,
+      config: {
+        ...conf.config,
+        theme: {
+          recipes: {
+            ...conf.config?.theme?.recipes,
+            withCompound: {
+              className: 'withCompound',
+              base: {
+                fontSize: '1px',
+              },
+              variants: {
+                size: {
+                  sm: {
+                    fontSize: '2px',
+                  },
+                },
+              },
+              compoundVariants: [
+                {
+                  size: ['sm'],
+                  css: {
+                    fontSize: '3px',
+                    _hover: {
+                      fontSize: '4px',
+                      _dark: {
+                        fontSize: '5px',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    })
+    const getStaticCss = (options: StaticCssOptions) => {
+      const engine = ctx.staticCss.clone().process(options)
+      return { results: engine.results, css: engine.sheet.toCss({ optimize: true }) }
+    }
+
+    expect(
+      getStaticCss({
+        recipes: {
+          withCompound: ['*'],
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "css": "@layer recipes {
+        @layer _base {
+          .withCompound {
+            font-size: 1px;
+      }
+      }
+
+        .withCompound--size_sm {
+          font-size: 2px;
+      }
+      }
+
+      @layer utilities {
+        .fs_3px {
+          font-size: 3px;
+      }
+
+        .hover\\:fs_4px:is(:hover, [data-hover]) {
+          font-size: 4px;
+      }
+
+        [data-theme=dark] .hover\\:dark\\:fs_5px:is(:hover, [data-hover]),.dark .hover\\:dark\\:fs_5px:is(:hover, [data-hover]),.hover\\:dark\\:fs_5px:is(:hover, [data-hover]).dark,.hover\\:dark\\:fs_5px:is(:hover, [data-hover])[data-theme=dark] {
+          font-size: 5px;
+      }
+      }",
+        "results": {
+          "css": [
+            {
+              "fontSize": "3px",
+            },
+            {
+              "_hover": {
+                "_dark": {
+                  "fontSize": "5px",
+                },
+                "fontSize": "4px",
+              },
+            },
+          ],
+          "patterns": [],
+          "recipes": [
+            {
+              "withCompound": {},
+            },
+            {
+              "withCompound": {
+                "size": "sm",
               },
             },
           ],
