@@ -50,19 +50,22 @@ export class Layers {
       case 'recipes': {
         const recipeRoot = postcss.root()
 
-        if (recipes_base.nodes.length) recipes.prepend(recipes_base)
-        if (recipes_slots_base.nodes.length) recipes_slots.prepend(recipes_slots_base)
+        if (recipes_base.nodes?.length) recipes.prepend(recipes_base)
+        if (recipes_slots_base.nodes?.length) recipes_slots.prepend(recipes_slots_base)
 
-        if (recipes.nodes.length) recipeRoot.append(recipes)
-        if (recipes_slots.nodes.length) recipeRoot.append(recipes_slots)
+        if (recipes.nodes?.length) recipeRoot.append(recipes)
+        if (recipes_slots.nodes?.length) recipeRoot.append(recipes_slots)
+
         return recipeRoot
       }
 
       case 'utilities': {
-        if (compositions.nodes.length) utilities.prepend(compositions)
+        if (compositions.nodes?.length) utilities.prepend(compositions)
+
         this.utilityRuleMap.forEach((rules) => {
-          if (rules.nodes.length) utilities.append(rules)
+          if (rules.nodes?.length) utilities.append(rules)
         })
+
         return utilities
       }
 
@@ -75,19 +78,19 @@ export class Layers {
     const { root } = this
 
     const reset = this.getLayerRoot('reset')
-    if (reset.nodes.length) root.append(reset)
+    if (reset.nodes?.length) root.append(reset)
 
     const base = this.getLayerRoot('base')
-    if (base.nodes.length) root.append(base)
+    if (base.nodes?.length) root.append(base)
 
     const tokens = this.getLayerRoot('tokens')
-    if (tokens.nodes.length) root.append(tokens)
+    if (tokens.nodes?.length) root.append(tokens)
 
     const recipes = this.getLayerRoot('recipes')
-    if (recipes.nodes.length) root.append(recipes)
+    if (recipes.nodes?.length) root.append(recipes)
 
     const utilities = this.getLayerRoot('utilities')
-    if (utilities.nodes.length) root.append(utilities)
+    if (utilities.nodes?.length) root.append(utilities)
 
     return root
   }

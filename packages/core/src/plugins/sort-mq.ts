@@ -6,7 +6,7 @@ const atRuleName = P.union('media', 'container')
 
 export default function sortMediaQueries(): TransformCallback {
   const inner = (root: Container) => {
-    root.nodes.sort((a, b) => {
+    root.nodes?.sort((a, b) => {
       return match({ a, b })
         .with(
           {
@@ -29,7 +29,7 @@ export default function sortMediaQueries(): TransformCallback {
     })
 
     // recursive sort
-    root.nodes.forEach((node) => {
+    root.nodes?.forEach((node) => {
       if ('nodes' in node) {
         inner(node)
       }
