@@ -6,11 +6,12 @@ export interface BuildOpts {
   configPath: string
   port?: string
   host?: boolean
+  base?: string
 }
 
 const appPath = join(__dirname, '..')
 
-export async function buildStudio({ outDir, configPath }: BuildOpts) {
+export async function buildStudio({ outDir, configPath, base }: BuildOpts) {
   const astro = await import('astro')
   const { default: react } = await import('@astrojs/react')
   const { default: studio } = await import('@pandacss/astro-plugin-studio')
@@ -22,13 +23,14 @@ export async function buildStudio({ outDir, configPath }: BuildOpts) {
       root: appPath,
       integrations: [react(), studio()],
       devToolbar: { enabled: false },
+      base,
     })
   } catch (error) {
     console.log(error)
   }
 }
 
-export async function serveStudio({ configPath, port, host, outDir }: BuildOpts) {
+export async function serveStudio({ configPath, port, host, outDir, base }: BuildOpts) {
   const astro = await import('astro')
   const { default: react } = await import('@astrojs/react')
   const { default: studio } = await import('@pandacss/astro-plugin-studio')
@@ -43,6 +45,7 @@ export async function serveStudio({ configPath, port, host, outDir }: BuildOpts)
         port: port ? Number(port) : undefined,
         host,
       },
+      base,
       devToolbar: { enabled: false },
     })
   } catch (error) {
@@ -50,7 +53,7 @@ export async function serveStudio({ configPath, port, host, outDir }: BuildOpts)
   }
 }
 
-export async function previewStudio({ outDir }: BuildOpts) {
+export async function previewStudio({ outDir, base }: BuildOpts) {
   const astro = await import('astro')
   const { default: react } = await import('@astrojs/react')
   const { default: studio } = await import('@pandacss/astro-plugin-studio')
@@ -61,6 +64,7 @@ export async function previewStudio({ outDir }: BuildOpts) {
       root: appPath,
       integrations: [react(), studio()],
       devToolbar: { enabled: false },
+      base,
     })
   } catch (error) {
     console.log(error)
