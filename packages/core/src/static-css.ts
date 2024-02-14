@@ -100,7 +100,7 @@ export class StaticCss {
           const isSlot = 'slots' in recipeNode.config && recipeNode.config.slots.length
 
           if (isSlot) {
-            Object.entries(css).forEach(([slot, styles]) => {
+            Object.entries(css).forEach(([_slot, styles]) => {
               Object.entries(styles).forEach(([prop, value]) => {
                 results.css.push({ [prop]: value })
               })
