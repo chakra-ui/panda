@@ -1,7 +1,7 @@
 import { box } from './box'
 import type { BoxNode } from './box-factory'
 import type { LiteralObject, LiteralValue } from './types'
-import { isNotNullish } from './utils'
+import { isNotNullish, isTruthyOrZero } from './utils'
 import { Node } from 'ts-morph'
 
 const makeObjAt = (path: string[], value: unknown) => {
@@ -52,10 +52,10 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
       return undefined
     }
 
-    if (whenTrue) {
+    if (isTruthyOrZero(whenTrue)) {
       ctx.conditions.push(makeObjAt(path, whenTrue))
     }
-    if (whenFalse) {
+    if (isTruthyOrZero(whenFalse)) {
       ctx.conditions.push(makeObjAt(path, whenFalse))
     }
     return undefined

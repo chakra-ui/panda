@@ -1759,6 +1759,78 @@ it('extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Val
   `)
 })
 
+it('extract JsxAttribute > JsxExpression > ConditionalExpression > when true is a 0', () => {
+  expect(
+    extractFromCode(
+      `
+          <div className={css({ opacity: isHovered ? 1 : 0 })}></div>
+      `,
+      {
+        functionNameList: ['css'],
+      },
+    ),
+  ).toMatchInlineSnapshot(`
+      {
+        "css": [
+          {
+            "conditions": [
+              {
+                "0": {
+                  "opacity": 1,
+                },
+              },
+              {
+                "0": {
+                  "opacity": 0,
+                },
+              },
+            ],
+            "raw": [
+              {},
+            ],
+            "spreadConditions": [],
+          },
+        ],
+      }
+    `)
+})
+
+it('extract JsxAttribute > JsxExpression > ConditionalExpression > when false is a 0', () => {
+  expect(
+    extractFromCode(
+      `
+          <div className={css({ opacity: isHovered ? 1 : 0 })}></div>
+      `,
+      {
+        functionNameList: ['css'],
+      },
+    ),
+  ).toMatchInlineSnapshot(`
+      {
+        "css": [
+          {
+            "conditions": [
+              {
+                "0": {
+                  "opacity": 1,
+                },
+              },
+              {
+                "0": {
+                  "opacity": 0,
+                },
+              },
+            ],
+            "raw": [
+              {},
+            ],
+            "spreadConditions": [],
+          },
+        ],
+      }
+    `)
+})
+
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression', () => {
   expect(
     extractFromCode(`

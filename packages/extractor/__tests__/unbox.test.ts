@@ -4350,6 +4350,7 @@ test('unbox with conditions', () => {
     const className = css({
       px: 4,
       color: isDark ? 'blue.100' : 'blue.200',
+      opacity: isHovered ? 1 : 0,
       ...(isKnown && {
         backgroundColor: 'red.100',
         padding: false ? 2 : 8,
@@ -4385,6 +4386,12 @@ test('unbox with conditions', () => {
         },
         {
           "color": "blue.200",
+        },
+        {
+          "opacity": 1,
+        },
+        {
+          "opacity": 0,
         },
         {
           "fontSize": "2xl",
