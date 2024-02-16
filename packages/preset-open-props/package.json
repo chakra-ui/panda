@@ -38,10 +38,10 @@
   ],
   "dependencies": {
     "@pandacss/types": "workspace:*",
-    "css": "^3.0.0",
-    "open-props": "^1.6.18"
+    "css": "3.0.0",
+    "open-props": "1.6.18"
   },
   "devDependencies": {
-    "@types/css": "^0.0.37"
+    "@types/css": "0.0.37"
   }
 }

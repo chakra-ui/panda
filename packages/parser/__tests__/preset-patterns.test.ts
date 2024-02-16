@@ -1941,81 +1941,42 @@ describe('staticCss', () => {
           .md\\:pos_relative {
             position: relative;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:before\\:d_block::before {
             display: block;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:before\\:h_0::before {
             height: var(--sizes-0);
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:d_flex>* {
             display: flex;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:overflow_hidden>* {
             overflow: hidden;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:pos_absolute>* {
             position: absolute;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:inset_0>* {
             inset: var(--spacing-0);
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:w_100\\%>* {
             width: 100%;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:h_100\\%>* {
             height: 100%;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
             object-fit: cover;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:before\\:content_\\"\\"::before {
             content: "";
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:before\\:pb_400\\%::before {
             padding-bottom: 400%;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:justify_center>* {
             justify-content: center;
       }
-      }
-
-        @media screen and (min-width: 48em) {
           .md\\:\\[\\&\\>\\*\\]\\:items_center>* {
             align-items: center;
       }

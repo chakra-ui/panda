@@ -509,9 +509,6 @@ describe('atomic / with direct nesting', () => {
           .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:fs_\\$small {
             font-size: $small;
       }
-      }
-
-        @media (min-width: 768px) {
           .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:\\[\\&\\:hover\\]\\:bg_yellow:hover {
             background-color: yellow;
       }
