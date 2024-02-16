@@ -12,7 +12,7 @@ export const nextraTabsRecipe = defineRecipe({
       overflowY: 'hidden',
       overscrollBehaviorX: 'contain'
     },
-    tablist: {
+    list: {
       position: 'relative',
       mt: '4',
       display: 'flex',
