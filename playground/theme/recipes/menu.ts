@@ -1,5 +1,5 @@
 import { defineParts, defineRecipe } from '@pandacss/dev'
-import { menuAnatomy } from '@ark-ui/react'
+import { menuAnatomy } from '@ark-ui/anatomy'
 
 const parts = defineParts(menuAnatomy.build())
 

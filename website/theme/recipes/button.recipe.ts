@@ -1,4 +1,4 @@
-import { createAnatomy } from '@ark-ui/react'
+import { createAnatomy } from '@ark-ui/anatomy'
 import { defineParts, defineRecipe } from '@pandacss/dev'
 
 const anatomy = createAnatomy('button', ['leftIcon', 'rightIcon'])

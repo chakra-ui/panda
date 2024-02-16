@@ -1,8 +1,6 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "incremental": true,
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "paths": {
       "@pandacss/fixture": ["./packages/fixture/src/index.ts"],
       "@pandacss/types": ["./packages/types/src/index.ts"]

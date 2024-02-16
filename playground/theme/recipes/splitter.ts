@@ -1,5 +1,5 @@
 import { defineParts, defineRecipe } from '@pandacss/dev'
-import { splitterAnatomy } from '@ark-ui/react'
+import { splitterAnatomy } from '@ark-ui/anatomy'
 
 const parts = defineParts(splitterAnatomy.build())
 

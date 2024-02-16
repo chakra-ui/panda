@@ -10,6 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ark-ui/anatomy": "2.2.0",
     "@ark-ui/react": "2.1.1",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
