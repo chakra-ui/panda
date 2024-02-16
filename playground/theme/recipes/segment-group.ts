@@ -20,21 +20,21 @@ export const segmentGroup = defineRecipe({
       boxShadow: 'xs',
       borderRadius: 'md',
     },
-    radio: {
+    item: {
       zIndex: '1',
       position: 'relative',
       fontWeight: 'semibold',
       color: { base: '#778597', _dark: '#FFFFFF4D' },
       py: '1',
-
       cursor: 'pointer',
       display: 'flex',
     },
-    radioLabel: {
+    itemText: {
       color: { base: 'text.default', _checked: 'black' },
       transition: 'color 170ms ease-in-out',
-
-      '&:not([data-state="checked"]):hover': { color: { base: 'gray.700', _dark: 'gray.300' } },
+      '&:not([data-state="checked"]):hover': {
+        color: { base: 'gray.700', _dark: 'gray.300' },
+      },
     },
   }),
 })
