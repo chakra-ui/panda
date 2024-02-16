@@ -1,5 +1,6 @@
 import type { Config } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
+import { mergeHooks } from './merge-hooks'
 import { assign, mergeWith } from './utils'
 
 type Extendable<T> = T & { extend?: T }
@@ -69,6 +70,12 @@ const compact = (obj: any) => {
  * Merge all configs into a single config
  */
 export function mergeConfigs(configs: ExtendableConfig[]) {
+  const [userConfig] = configs
+  const pluginHooks = userConfig.plugins ?? []
+  if (userConfig.hooks) {
+    pluginHooks.push({ name: '__panda.config__', hooks: userConfig.hooks })
+  }
+
   const mergedResult = assign(
     {
       conditions: mergeExtensions(configs.map((config) => config.conditions ?? {})),
@@ -77,6 +84,7 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
       utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
       globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
       staticCss: mergeExtensions(configs.map((config) => config.staticCss ?? {})),
+      hooks: mergeHooks(pluginHooks),
     },
     ...configs,
   )

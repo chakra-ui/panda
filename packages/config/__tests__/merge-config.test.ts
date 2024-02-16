@@ -151,6 +151,86 @@ describe('mergeConfigs / theme', () => {
     `)
   })
 
+  test('config + preset.extend', () => {
+    const userConfig = defineConfig({
+      theme: {
+        tokens: {
+          colors: {
+            pink: { value: 'from-config' },
+          },
+        },
+      },
+    })
+
+    const defaultConfig = defineConfig({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              pink: { value: 'from-preset' },
+            },
+          },
+        },
+      },
+    })
+
+    const result = mergeConfigs([userConfig, defaultConfig])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "pink": {
+                "value": "from-preset",
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  test('config.extend + preset', () => {
+    const userConfig = defineConfig({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              pink: { value: 'from-config' },
+            },
+          },
+        },
+      },
+    })
+
+    const defaultConfig = defineConfig({
+      theme: {
+        tokens: {
+          colors: {
+            pink: { value: 'from-preset' },
+          },
+        },
+      },
+    })
+
+    const result = mergeConfigs([userConfig, defaultConfig])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "pink": {
+                "value": "from-config",
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
+
   test('should getResolvedConfig, merge and override', async () => {
     const defaultConfig = defineConfig({
       presets: [

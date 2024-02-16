@@ -31,19 +31,18 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
 
   result.config.presets = Array.from(presets)
 
-  const config = await getResolvedConfig(result.config, cwd)
+  const mergedConfig = await getResolvedConfig(result.config, cwd)
+  const hooks = mergedConfig.hooks ?? {}
 
-  if (config.logLevel) {
-    logger.level = config.logLevel
+  if (mergedConfig.logLevel) {
+    logger.level = mergedConfig.logLevel
   }
 
-  validateConfig(config as UserConfig)
-
-  const { hooks = {} } = result.config
+  validateConfig(mergedConfig as UserConfig)
 
   const loadConfigResult = {
     ...result,
-    config: config as any,
+    config: mergedConfig as any,
   } as LoadConfigResult
 
   // This allows editing the config before the context is created
