@@ -1476,9 +1476,15 @@ describe('js to css', () => {
           .md\\:bg_blue {
             background-color: blue;
       }
+      }
+
+        @media screen and (min-width: 48em) {
           [data-theme=light] .md\\:light\\:bg_red,.light .md\\:light\\:bg_red,.md\\:light\\:bg_red.light,.md\\:light\\:bg_red[data-theme=light] {
             background: red;
       }
+      }
+
+        @media screen and (min-width: 48em) {
           [data-theme=light] .md\\:light\\:bg_blue,.light .md\\:light\\:bg_blue,.md\\:light\\:bg_blue.light,.md\\:light\\:bg_blue[data-theme=light] {
             background-color: blue;
       }

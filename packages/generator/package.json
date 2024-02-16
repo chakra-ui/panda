@@ -47,7 +47,7 @@
     "outdent": " ^0.8.0",
     "pluralize": "8.0.0",
     "postcss": "^8.4.35",
-    "ts-pattern": "5.0.5"
+    "ts-pattern": "5.0.8"
   },
   "devDependencies": {
     "@types/pluralize": "0.0.33"

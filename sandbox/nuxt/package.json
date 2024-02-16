@@ -13,8 +13,8 @@
   },
   "devDependencies": {
     "postcss": "^8.4.35",
-    "nuxt": "^3.6.5",
-    "vue": "^3.3.3",
+    "nuxt": "^3.10.2",
+    "vue": "^3.4.19",
     "@pandacss/dev": "workspace:*"
   }
 }

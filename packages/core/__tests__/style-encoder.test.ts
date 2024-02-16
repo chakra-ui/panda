@@ -588,6 +588,9 @@ describe('style encoder', () => {
             [data-theme=dark] .navbar[data-part="blur"],.dark .navbar[data-part="blur"],.navbar[data-part="blur"].dark,.navbar[data-part="blur"][data-theme=dark] {
               background-color: hsla(0,0%,7%,.8) !important;
       }
+      }
+
+          @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
             .navbar[data-part="blur"] {
               backdrop-filter: blur(8px);
               -webkit-backdrop-filter: blur(8px);

@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "postcss": "^8.4.35",
-    "nuxt": "^3.6.5",
+    "nuxt": "^3.10.2",
     "@sandbox-nuxt-lib-source/css-lib": "workspace:*",
     "@pandacss/dev": "workspace:*"
   }
