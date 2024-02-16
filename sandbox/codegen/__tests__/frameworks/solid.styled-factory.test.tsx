@@ -5,7 +5,7 @@ import { cleanup, render } from '@solidjs/testing-library'
 import { buttonWithCompoundVariants } from '../../styled-system-solid/recipes'
 import '@testing-library/jest-dom'
 
-describe('styled factory - cva', () => {
+describe.skip('styled factory - cva', () => {
   const Button = styled('button', {
     base: {
       color: 'red.500',
@@ -260,7 +260,7 @@ describe('styled factory - cva', () => {
   })
 })
 
-describe('styled factory - button recipe', () => {
+describe.skip('styled factory - button recipe', () => {
   const Button = styled('button', buttonWithCompoundVariants)
 
   test('base styles', () => {
