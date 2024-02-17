@@ -77,7 +77,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
         color: var(--colors-red-200);
     }
 
-      @media screen and (min-width: 48em) {
+      @media screen and (min-width: 48rem) {
         .text--variant_sm:first-child:hover {
           color: var(--colors-gray-300);
     }

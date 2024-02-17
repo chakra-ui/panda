@@ -19,32 +19,32 @@ describe('Breakpoints', () => {
         [
           "sm",
           {
-            "max": "47.9975em",
-            "min": "40em",
+            "max": "47.9975rem",
+            "min": "40rem",
             "name": "sm",
           },
         ],
         [
           "md",
           {
-            "max": "63.9975em",
-            "min": "48em",
+            "max": "63.9975rem",
+            "min": "48rem",
             "name": "md",
           },
         ],
         [
           "lg",
           {
-            "max": "79.9975em",
-            "min": "64em",
+            "max": "79.9975rem",
+            "min": "64rem",
             "name": "lg",
           },
         ],
         [
           "xl",
           {
-            "max": "95.9975em",
-            "min": "80em",
+            "max": "95.9975rem",
+            "min": "80rem",
             "name": "xl",
           },
         ],
@@ -52,7 +52,7 @@ describe('Breakpoints', () => {
           "2xl",
           {
             "max": undefined,
-            "min": "96em",
+            "min": "96rem",
             "name": "2xl",
           },
         ],
@@ -63,27 +63,27 @@ describe('Breakpoints', () => {
       {
         "2xl": {
           "max": undefined,
-          "min": "96em",
+          "min": "96rem",
           "name": "2xl",
         },
         "lg": {
-          "max": "79.9975em",
-          "min": "64em",
+          "max": "79.9975rem",
+          "min": "64rem",
           "name": "lg",
         },
         "md": {
-          "max": "63.9975em",
-          "min": "48em",
+          "max": "63.9975rem",
+          "min": "48rem",
           "name": "md",
         },
         "sm": {
-          "max": "47.9975em",
-          "min": "40em",
+          "max": "47.9975rem",
+          "min": "40rem",
           "name": "sm",
         },
         "xl": {
-          "max": "95.9975em",
-          "min": "80em",
+          "max": "95.9975rem",
+          "min": "80rem",
           "name": "xl",
         },
       }
@@ -91,31 +91,31 @@ describe('Breakpoints', () => {
 
     expect(bp.ranges).toMatchInlineSnapshot(`
       {
-        "2xl": "screen and (min-width: 96em)",
-        "2xlDown": "screen and (max-width: 95.9975em)",
-        "2xlOnly": "screen and (min-width: 96em)",
-        "lg": "screen and (min-width: 64em)",
-        "lgDown": "screen and (max-width: 63.9975em)",
-        "lgOnly": "screen and (min-width: 64em) and (max-width: 79.9975em)",
-        "lgTo2xl": "screen and (min-width: 64em) and (max-width: 95.9975em)",
-        "lgToXl": "screen and (min-width: 64em) and (max-width: 79.9975em)",
-        "md": "screen and (min-width: 48em)",
-        "mdDown": "screen and (max-width: 47.9975em)",
-        "mdOnly": "screen and (min-width: 48em) and (max-width: 63.9975em)",
-        "mdTo2xl": "screen and (min-width: 48em) and (max-width: 95.9975em)",
-        "mdToLg": "screen and (min-width: 48em) and (max-width: 63.9975em)",
-        "mdToXl": "screen and (min-width: 48em) and (max-width: 79.9975em)",
-        "sm": "screen and (min-width: 40em)",
-        "smDown": "screen and (max-width: 39.9975em)",
-        "smOnly": "screen and (min-width: 40em) and (max-width: 47.9975em)",
-        "smTo2xl": "screen and (min-width: 40em) and (max-width: 95.9975em)",
-        "smToLg": "screen and (min-width: 40em) and (max-width: 63.9975em)",
-        "smToMd": "screen and (min-width: 40em) and (max-width: 47.9975em)",
-        "smToXl": "screen and (min-width: 40em) and (max-width: 79.9975em)",
-        "xl": "screen and (min-width: 80em)",
-        "xlDown": "screen and (max-width: 79.9975em)",
-        "xlOnly": "screen and (min-width: 80em) and (max-width: 95.9975em)",
-        "xlTo2xl": "screen and (min-width: 80em) and (max-width: 95.9975em)",
+        "2xl": "screen and (min-width: 96rem)",
+        "2xlDown": "screen and (max-width: 95.9975rem)",
+        "2xlOnly": "screen and (min-width: 96rem)",
+        "lg": "screen and (min-width: 64rem)",
+        "lgDown": "screen and (max-width: 63.9975rem)",
+        "lgOnly": "screen and (min-width: 64rem) and (max-width: 79.9975rem)",
+        "lgTo2xl": "screen and (min-width: 64rem) and (max-width: 95.9975rem)",
+        "lgToXl": "screen and (min-width: 64rem) and (max-width: 79.9975rem)",
+        "md": "screen and (min-width: 48rem)",
+        "mdDown": "screen and (max-width: 47.9975rem)",
+        "mdOnly": "screen and (min-width: 48rem) and (max-width: 63.9975rem)",
+        "mdTo2xl": "screen and (min-width: 48rem) and (max-width: 95.9975rem)",
+        "mdToLg": "screen and (min-width: 48rem) and (max-width: 63.9975rem)",
+        "mdToXl": "screen and (min-width: 48rem) and (max-width: 79.9975rem)",
+        "sm": "screen and (min-width: 40rem)",
+        "smDown": "screen and (max-width: 39.9975rem)",
+        "smOnly": "screen and (min-width: 40rem) and (max-width: 47.9975rem)",
+        "smTo2xl": "screen and (min-width: 40rem) and (max-width: 95.9975rem)",
+        "smToLg": "screen and (min-width: 40rem) and (max-width: 63.9975rem)",
+        "smToMd": "screen and (min-width: 40rem) and (max-width: 47.9975rem)",
+        "smToXl": "screen and (min-width: 40rem) and (max-width: 79.9975rem)",
+        "xl": "screen and (min-width: 80rem)",
+        "xlDown": "screen and (max-width: 79.9975rem)",
+        "xlOnly": "screen and (min-width: 80rem) and (max-width: 95.9975rem)",
+        "xlTo2xl": "screen and (min-width: 80rem) and (max-width: 95.9975rem)",
       }
     `)
   })
@@ -131,7 +131,7 @@ describe('Breakpoints', () => {
 
     expect(css).toMatchInlineSnapshot(`
       "
-          @media screen and (min-width: 48em){
+          @media screen and (min-width: 48rem){
               .foo{
                   color: red;
               }
@@ -151,7 +151,7 @@ describe('Breakpoints', () => {
 
     expect(css).toMatchInlineSnapshot(`
       "
-          @media screen and (max-width: 47.9975em){
+          @media screen and (max-width: 47.9975rem){
               .foo{
                   color: red;
               }

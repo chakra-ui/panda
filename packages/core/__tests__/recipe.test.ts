@@ -59,7 +59,7 @@ describe('recipe ruleset', () => {
           font-weight: 800;
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:textStyle--size_h2 {
             letter-spacing: -0.03em;
             font-size: 3rem;
@@ -258,7 +258,7 @@ describe('recipe ruleset', () => {
           background-color: darkblue;
       }
 
-        @media screen and (min-width: 64em) {
+        @media screen and (min-width: 64rem) {
           .lg\\:buttonStyle--variant_outline {
             border: 1px solid blue;
             color: blue;

@@ -39,7 +39,7 @@ describe('extract to css output pipeline', () => {
           color: blue;
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:text_red {
             color: red;
       }
@@ -204,7 +204,7 @@ describe('extract to css output pipeline', () => {
           background-color: var(--some-bg);
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:p_4 {
             padding: var(--spacing-4);
       }
@@ -216,15 +216,15 @@ describe('extract to css output pipeline', () => {
       }
       }
 
-        @media screen and (min-width: 48em) {
-          @media screen and (min-width: 40em) {
+        @media screen and (min-width: 48rem) {
+          @media screen and (min-width: 40rem) {
             .md\\:sm\\:m_4px {
               margin: 4px;
       }
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]).dark,.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
             margin: calc(var(--spacing-2) * -1);
       }
@@ -2518,7 +2518,7 @@ describe('extract to css output pipeline', () => {
           padding-block: var(--spacing-2);
       }
 
-        @media screen and (min-width: 40em) {
+        @media screen and (min-width: 40rem) {
           .sm\\:py_2 {
             padding-block: var(--spacing-2);
       }
@@ -2527,7 +2527,7 @@ describe('extract to css output pipeline', () => {
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:py_4 {
             padding-block: var(--spacing-4);
       }
@@ -2741,7 +2741,7 @@ describe('extract to css output pipeline', () => {
             color: blue;
       }
 
-          @media screen and (min-width: 40em) {
+          @media screen and (min-width: 40rem) {
             .card {
               color: red;
       }
@@ -2760,7 +2760,7 @@ describe('extract to css output pipeline', () => {
           font-size: 2px;
       }
 
-        @media screen and (min-width: 40em) {
+        @media screen and (min-width: 40rem) {
           .sm\\:fs_5 {
             font-size: 5px;
       }

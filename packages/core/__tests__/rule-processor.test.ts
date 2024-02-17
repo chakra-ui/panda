@@ -351,7 +351,7 @@ describe('rule processor', () => {
           color: orange;
       }
 
-        @media screen and (min-width: 40em) {
+        @media screen and (min-width: 40rem) {
           .sm\\:w_2 {
             width: var(--sizes-2);
       }
@@ -366,25 +366,25 @@ describe('rule processor', () => {
       }
       }
 
-        @media screen and (min-width: 40em) {
+        @media screen and (min-width: 40rem) {
           .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .hover\\:md\\:fs_lg:is(:hover, [data-hover]) {
             font-size: var(--font-sizes-lg);
       }
       }
 
-        @media screen and (min-width: 80em) {
+        @media screen and (min-width: 80rem) {
           .xl\\:w_3 {
             width: var(--sizes-3);
       }
       }
 
-        @media screen and (min-width: 80em) {
+        @media screen and (min-width: 80rem) {
           .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
             color: pink;
       }
@@ -441,7 +441,7 @@ describe('rule processor', () => {
           background-color: darkblue;
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
@@ -681,7 +681,7 @@ describe('rule processor', () => {
           font-size: var(--font-sizes-sm);
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:checkbox__control--size_md {
             width: var(--sizes-10);
             height: var(--sizes-10);
@@ -1469,7 +1469,7 @@ describe('js to css', () => {
           background-color: blue;
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:bg_red {
             background: red;
       }
@@ -1484,37 +1484,37 @@ describe('js to css', () => {
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg_red:is(:focus, [data-focus])[data-theme=light] {
             background: red;
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus])[data-theme=light] {
             background-color: blue;
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg_red:is(:hover, [data-hover])[data-theme=light] {
             background: red;
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover])[data-theme=light] {
             background-color: blue;
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.md\\:light\\:active\\:bg_red:is(:active, [data-active]).light,.md\\:light\\:active\\:bg_red:is(:active, [data-active])[data-theme=light] {
             background: red;
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:active\\:bg_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg_blue:is(:active, [data-active]).light,.md\\:light\\:active\\:bg_blue:is(:active, [data-active])[data-theme=light] {
             background-color: blue;
       }

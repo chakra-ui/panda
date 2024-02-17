@@ -1202,13 +1202,13 @@ describe('preset patterns', () => {
           padding-inline: var(--spacing-4);
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:px_6 {
             padding-inline: var(--spacing-6);
       }
       }
 
-        @media screen and (min-width: 64em) {
+        @media screen and (min-width: 64rem) {
           .lg\\:px_8 {
             padding-inline: var(--spacing-8);
       }
@@ -1266,13 +1266,13 @@ describe('preset patterns', () => {
           color: var(--colors-blue-100);
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:px_6 {
             padding-inline: var(--spacing-6);
       }
       }
 
-        @media screen and (min-width: 64em) {
+        @media screen and (min-width: 64rem) {
           .lg\\:px_8 {
             padding-inline: var(--spacing-8);
       }
@@ -1613,7 +1613,7 @@ describe('preset patterns', () => {
           font-size: var(--font-sizes-lg);
       }
 
-        @container sidebar (min-width: 24em) {
+        @container sidebar (min-width: 24rem) {
           .\\@sidebar\\/sm\\:fs_md {
             font-size: var(--font-sizes-md);
       }
@@ -1686,7 +1686,7 @@ describe('preset patterns', () => {
           font-size: var(--font-sizes-lg);
       }
 
-        @container sidebar (min-width: 24em) {
+        @container sidebar (min-width: 24rem) {
           .\\@sidebar\\/sm\\:fs_md {
             font-size: var(--font-sizes-md);
       }
@@ -1759,7 +1759,7 @@ describe('preset patterns', () => {
           grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-        @media screen and (min-width: 40em) {
+        @media screen and (min-width: 40rem) {
           .sm\\:col-span_span_2 {
             grid-column: span 2;
       }
@@ -1768,7 +1768,7 @@ describe('preset patterns', () => {
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:col-span_span_3 {
             grid-column: span 3;
       }
@@ -1937,7 +1937,7 @@ describe('staticCss', () => {
           align-items: center;
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:pos_relative {
             position: relative;
       }
