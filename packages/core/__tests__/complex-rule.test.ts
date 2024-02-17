@@ -19,8 +19,8 @@ describe('complex-rule', () => {
           color: green500;
       }
 
-        @media screen and (min-width: 40em) {
-          @media screen and (min-width: 48em) {
+        @media screen and (min-width: 40rem) {
+          @media screen and (min-width: 48rem) {
             [data-theme=dark] .dark\\:sm\\:md\\:text_red200,.dark .dark\\:sm\\:md\\:text_red200,.dark\\:sm\\:md\\:text_red200.dark,.dark\\:sm\\:md\\:text_red200[data-theme=dark] {
               color: red200;
       }

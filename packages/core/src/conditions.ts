@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import { isBaseCondition, toEm, withoutSpace } from '@pandacss/shared'
+import { isBaseCondition, toRem, withoutSpace } from '@pandacss/shared'
 import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
@@ -48,7 +48,7 @@ export class Conditions {
 
     containerNames.forEach((name) => {
       Object.entries(containerSizes).forEach(([size, value]) => {
-        const _value = toEm(value) ?? value
+        const _value = toRem(value) ?? value
         containers[`@${name}/${size}`] = {
           type: 'at-rule',
           name: 'container',

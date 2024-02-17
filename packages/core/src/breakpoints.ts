@@ -1,4 +1,4 @@
-import { capitalize, toEm, toPx } from '@pandacss/shared'
+import { capitalize, toRem, toPx } from '@pandacss/shared'
 import type { RawCondition } from '@pandacss/types'
 import type { Root } from 'postcss'
 
@@ -86,7 +86,7 @@ type Entries = [string, BreakpointEntry][]
 
 function adjust(value: string | null | undefined) {
   const computedMax = parseFloat(toPx(value!) ?? '') - 0.04
-  return toEm(`${computedMax}px`) as string
+  return toRem(`${computedMax}px`) as string
 }
 
 function sortBreakpoints(breakpoints: Record<string, string>): Entries {
@@ -105,7 +105,7 @@ function sortBreakpoints(breakpoints: Record<string, string>): Entries {
         max = adjust(max)
       }
 
-      return [name, { name, min: toEm(min), max }]
+      return [name, { name, min: toRem(min), max }]
     })
 }
 

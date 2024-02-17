@@ -116,7 +116,7 @@ describe('static-css', () => {
           padding: 0 0.5rem;
       }
 
-        @media screen and (min-width: 40em) {
+        @media screen and (min-width: 40rem) {
           .sm\\:buttonStyle--size_sm {
             height: 2.5rem;
             min-width: 2.5rem;
@@ -129,7 +129,7 @@ describe('static-css', () => {
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:buttonStyle--size_sm {
             height: 2.5rem;
             min-width: 2.5rem;
@@ -196,7 +196,7 @@ describe('static-css', () => {
           color: var(--colors-color-palette-200);
       }
 
-        @media screen and (min-width: 40em) {
+        @media screen and (min-width: 40rem) {
           .sm\\:m_20px {
             margin: 20px;
       }
@@ -214,7 +214,7 @@ describe('static-css', () => {
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:m_20px {
             margin: 20px;
       }
@@ -708,7 +708,7 @@ describe('static-css', () => {
           background-color: darkblue;
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:buttonStyle--size_md {
             height: 3rem;
             min-width: 3rem;
@@ -784,7 +784,7 @@ describe('static-css', () => {
           font-size: var(--font-sizes-lg);
       }
 
-        @media screen and (min-width: 64em) {
+        @media screen and (min-width: 64rem) {
           .lg\\:checkbox__control--size_lg {
             width: 12px;
             height: 12px;
@@ -1169,7 +1169,7 @@ describe('static-css', () => {
           align-items: center;
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           .md\\:pos_relative {
             position: relative;
       }
