@@ -28,7 +28,6 @@ export const codeTabsRecipe = defineRecipe({
       w: '100%',
       rounded: '10px',
       py: '3',
-      transition: 'colors',
       userSelect: 'none',
       color: 'white',
       bg: 'rgba(246, 228, 88, 0.09)',

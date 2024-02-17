@@ -9,7 +9,7 @@ import { Item, PageItem } from 'nextra/normalize-pages'
 import { Anchor } from '@/nextra'
 import { renderComponent } from '@/nextra/lib'
 import { TreeViewList } from './treeview-list'
-import { TreeViewLink, threeViewLinkStyle } from './treeview-link'
+import { TreeViewLink, treeviewRecipe } from './treeview-link'
 
 /* -----------------------------------------------------------------------------
  * TreeView Heading Anchor
@@ -80,7 +80,7 @@ export const TreeViewFile: FC<TreeViewFileProps> = ({ item, anchors }) => {
       <Anchor
         href={(item as PageItem).href || item.route}
         newWindow={(item as PageItem).newWindow}
-        className={threeViewLinkStyle({ active })}
+        className={treeviewRecipe({ active })}
         onClick={() => {
           setMenu(false)
         }}

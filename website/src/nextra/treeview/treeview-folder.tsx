@@ -1,7 +1,7 @@
 import { Anchor, Collapse } from '@/nextra'
 import { TreeViewMenu } from './treeview-menu'
 import { FocusedItemContext, FolderLevelContext } from './treeview-context'
-import { threeViewLinkStyle } from './treeview-link'
+import { treeviewRecipe } from './treeview-link'
 import { useConfig, useMenu } from '@/nextra/contexts'
 import { ArrowRightIcon } from '@/icons'
 import { css, cx } from '@/styled-system/css'
@@ -110,7 +110,7 @@ const TreeViewFolderImpl: FC<TreeViewFolderImplProps> = ({ item, anchors }) => {
             gap: 2
           }),
           !isLink && css({ textAlign: 'left', width: '100%' }),
-          threeViewLinkStyle({ active })
+          treeviewRecipe({ active })
         )}
         onClick={e => {
           const clickedToggleIcon = ['svg', 'path'].includes(

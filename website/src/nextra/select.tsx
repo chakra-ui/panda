@@ -18,6 +18,7 @@ interface Props {
 function _Select({ options, selected, onChange, title, className }: Props) {
   return (
     <Select.Root
+      lazyMount
       items={options}
       onValueChange={details => onChange(details.items[0] ?? null)}
     >
@@ -58,7 +59,6 @@ function _Select({ options, selected, onChange, title, className }: Props) {
       <Portal>
         <Select.Positioner
           className={css({
-            zIndex: 20,
             maxHeight: 64,
             overflow: 'auto',
             borderRadius: 'md',
@@ -74,7 +74,11 @@ function _Select({ options, selected, onChange, title, className }: Props) {
             }
           })}
         >
-          <Select.Content>
+          <Select.Content
+            className={css({
+              zIndex: 20
+            })}
+          >
             {options.map(option => (
               <Select.Item
                 item={option}

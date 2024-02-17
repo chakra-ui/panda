@@ -1,7 +1,7 @@
 import { panda } from '@/styled-system/jsx'
 import { RecipeVariantProps, cva } from '@/styled-system/css'
 
-export const threeViewLinkStyle = cva({
+export const treeviewRecipe = cva({
   base: {
     display: 'flex',
     rounded: 'md',
@@ -31,7 +31,7 @@ export const threeViewLinkStyle = cva({
           color: 'gray.900'
         },
         _dark: {
-          color: 'neutral.500',
+          color: 'neutral.300',
           _hover: {
             bg: 'whiteAlpha.200',
             color: 'gray.50'
@@ -42,6 +42,6 @@ export const threeViewLinkStyle = cva({
   }
 })
 
-export type TreeViewLinkVariants = RecipeVariantProps<typeof threeViewLinkStyle>
+export type TreeViewLinkVariants = RecipeVariantProps<typeof treeviewRecipe>
 
-export const TreeViewLink = panda('a', threeViewLinkStyle)
+export const TreeViewLink = panda('a', treeviewRecipe)
