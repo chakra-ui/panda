@@ -1,6 +1,6 @@
 ---
 title: Sizing
-description: Style properties for controlling the size of an element.
+description: Controlling element sizing.
 ---
 
 # Sizing

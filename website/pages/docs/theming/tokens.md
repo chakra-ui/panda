@@ -1,6 +1,6 @@
 ---
 title: Tokens
-description: Design tokens are the platform-agnostic way to manage design decisions in your application or website.
+description: A platform-agnostic method for handling design decisions in your system.
 ---
 
 # Design Tokens

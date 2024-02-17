@@ -1,6 +1,6 @@
 ---
 title: Divide
-description: Panda provides style properties for for dividing elements
+description: Style properties for dividing elements
 ---
 
 # Divide

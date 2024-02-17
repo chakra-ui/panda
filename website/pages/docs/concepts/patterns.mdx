@@ -1,6 +1,6 @@
 ---
 title: Patterns
-description: Patterns are layout primitives that can be used to create robust and responsive layouts with ease. Panda comes with predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be used as functions or JSX elements.
+description: Patterns are layout primitives for creating flexible layouts effortlessly
 ---
 
 # Patterns

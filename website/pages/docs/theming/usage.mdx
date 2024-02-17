@@ -1,6 +1,6 @@
 ---
 title: Using Tokens
-description: There are various ways to consume Panda tokens depending on your need at that point in time.
+description: Consume Panda tokens based on your specific needs.
 ---
 
 # Using Tokens

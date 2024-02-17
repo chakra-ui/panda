@@ -1,6 +1,6 @@
 ---
 title: Helpers
-description: Panda CSS offers utility classes to enhance accessibility and aid in debugging.
+description: Enhance accessibility and aid in debugging.
 ---
 
 # Helpers

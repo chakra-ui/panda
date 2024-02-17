@@ -1,6 +1,6 @@
 ---
 title: Effects
-description: Panda provides utilities or style properties for applying various visual effects to elements.
+description: Applying various visual effects to elements.
 ---
 
 # Background

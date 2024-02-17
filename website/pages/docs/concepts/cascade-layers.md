@@ -1,6 +1,6 @@
 ---
 title: Cascade Layers
-description: CSS cascade layers refer to the order in which CSS rules are applied to an HTML element.
+description: CSS cascade layers dictate the sequence of applying rules to an HTML element.
 ---
 
 # Cascade Layers

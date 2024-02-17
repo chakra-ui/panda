@@ -1,6 +1,6 @@
 ---
 title: Flex and Grid
-description: Panda provides a set of utilities and style properties for flexible box layout (Flex) and grid layout (Grid). These utilities are designed to make it easy to create responsive and dynamic layouts in your application.
+description: Responsive styles with flex and grid.
 ---
 
 # Flex and Grid

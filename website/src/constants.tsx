@@ -186,3 +186,10 @@ export const DEEP_OBJECT_KEYS = Object.entries(DEFAULT_THEME)
     }
   })
   .filter(Boolean)
+
+export const SIDEBAR_FOLDERS = [
+  'overview',
+  'installation',
+  'utilities',
+  'references'
+]

@@ -1,6 +1,6 @@
 ---
 title: Outline
-description: Panda provides utilities for customizing outlines.
+description: Customizing outlines.
 ---
 
 # Outline

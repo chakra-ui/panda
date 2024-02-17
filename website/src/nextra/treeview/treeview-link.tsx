@@ -17,25 +17,19 @@ export const threeViewLinkStyle = cva({
   variants: {
     active: {
       true: {
-        bg: 'yellow.200',
-        fontWeight: 'semibold',
         color: 'black',
-        _dark: {
-          bg: 'yellow.300'
-        }
+        bg: { base: 'yellow.200', _dark: 'yellow.300' },
+        fontWeight: 'semibold'
       },
       false: {
-        color: 'gray.500',
-        _hover: {
-          bg: 'gray.100',
-          color: 'gray.900'
+        color: {
+          base: 'gray.500',
+          _hover: 'gray.900',
+          _dark: { base: 'gray.400', _hover: 'gray.50' }
         },
-        _dark: {
-          color: 'neutral.500',
-          _hover: {
-            bg: 'whiteAlpha.200',
-            color: 'gray.50'
-          }
+
+        _hover: {
+          bg: { base: 'gray.100', _dark: 'whiteAlpha.200' }
         }
       }
     }

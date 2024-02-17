@@ -1,6 +1,6 @@
 ---
 title: Background
-description: Panda provides the following utilities or style properties for styling background colors, gradients, and images.
+description: Styling background colors, gradients, and images.
 ---
 
 # Background

@@ -1,6 +1,6 @@
 ---
 title: Layer Styles
-description: Layer styles provide a way to create consistent and visually appealing elements. By defining a set of properties and effects, you can easily apply them to various design elements, ensuring visual coherence throughout your design system.
+description: Guarantee visual consistency by defining properties and effects for conformity.
 ---
 
 # Layer Styles

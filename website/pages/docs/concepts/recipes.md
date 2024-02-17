@@ -1,6 +1,6 @@
 ---
 title: Recipes
-description: Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability.
+description: Recipes enable the creation of type-safe multi-variant styles with a runtime API.
 ---
 
 # Recipes
