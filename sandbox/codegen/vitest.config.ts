@@ -78,15 +78,15 @@ const options: TestUserConfig = {
   },
   solid: {
     plugins: [solid()],
+    resolve: {
+      conditions: ['development', 'browser'],
+    },
     test: {
       include: ['**/__tests__/**/frameworks/solid.*.{test,spec}.{j,t}s?(x)'],
-      environment: 'happy-dom',
+      environment: 'jsdom',
+      setupFiles: ['node_modules/@testing-library/jest-dom/vitest'],
+      isolate: false,
       globals: true,
-      server: {
-        deps: {
-          inline: [/solid-js/],
-        },
-      },
     },
   },
   qwik: {

@@ -1,21 +1,12 @@
-import React from 'react'
-import { css, cva, cx } from '@/styled-system/css'
-import { panda, Flex } from '@/styled-system/jsx'
-import {
-  Segment,
-  SegmentControl,
-  SegmentGroup,
-  SegmentGroupIndicator,
-  SegmentLabel,
-  SplitterResizeTrigger,
-  SplitterPanel,
-} from '@ark-ui/react'
-import { segmentGroup } from '@/styled-system/recipes'
-
-import { ChevronUpIcon } from './icons'
 import { ASTViewer } from '@/src/components/ASTViewer'
-import { usePanda } from '@/src/hooks/usePanda'
 import { GeneratedCss } from '@/src/components/GeneratedCss'
+import { usePanda } from '@/src/hooks/usePanda'
+import { css, cva, cx } from '@/styled-system/css'
+import { Flex, panda } from '@/styled-system/jsx'
+import { segmentGroup } from '@/styled-system/recipes'
+import { SegmentGroup, Splitter } from '@ark-ui/react'
+import React from 'react'
+import { ChevronUpIcon } from './icons'
 
 type ArtifactsPanelType = {
   panda: ReturnType<typeof usePanda>
@@ -42,10 +33,10 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
 
   return (
     <>
-      <SplitterResizeTrigger id="editor:artifacts" asChild hidden={!open}>
+      <Splitter.ResizeTrigger id="editor:artifacts" asChild hidden={!open}>
         <div />
-      </SplitterResizeTrigger>
-      <SplitterPanel id="artifacts" className={artifactsPanel({ open })}>
+      </Splitter.ResizeTrigger>
+      <Splitter.Panel id="artifacts" className={artifactsPanel({ open })}>
         <Flex
           w="full"
           h="12"
@@ -58,22 +49,26 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
           onClick={handleClick}
           zIndex={2}
         >
-          <SegmentGroup
+          <SegmentGroup.Root
             data-expanded={open ? '' : undefined}
             className={cx(segmentGroup(), 'group')}
             value={activeTab}
             onClick={(e) => {
               if (open) e.stopPropagation()
             }}
-            onChange={(e) => setActiveTab(e.value as any)}
+            onValueChange={(e) => setActiveTab(e.value as any)}
           >
-            <SegmentGroupIndicator
+            <SegmentGroup.Indicator
               className={css({
                 background: { base: 'transparent', _groupExpanded: 'primary' },
+                width: 'var(--width)',
+                height: 'var(--height)',
+                top: 'var(--top)',
+                left: 'var(--left)',
               })}
             />
             {tabs.map((option, id) => (
-              <Segment
+              <SegmentGroup.Item
                 key={id}
                 value={option.id}
                 data-expanded={open ? '' : undefined}
@@ -85,7 +80,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
                   },
                 })}
               >
-                <SegmentLabel
+                <SegmentGroup.ItemText
                   className={css({
                     px: '2',
                     _checked: {
@@ -97,11 +92,11 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
                   })}
                 >
                   {option.label}
-                </SegmentLabel>
-                <SegmentControl />
-              </Segment>
+                </SegmentGroup.ItemText>
+                <SegmentGroup.ItemControl />
+              </SegmentGroup.Item>
             ))}
-          </SegmentGroup>
+          </SegmentGroup.Root>
           <panda.span
             data-expanded={open ? '' : undefined}
             transform={{ _expanded: 'rotate(180deg)' }}
@@ -114,7 +109,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
         {activeTab === 'ast' && <ASTViewer parserResult={props.panda.parserResult} />}
         {/* Using visible cause it's better to let the monaco editor be loader with the others */}
         <GeneratedCss cssArtifacts={props.panda.cssArtifacts} visible={activeTab === 'generated' && open} />
-      </SplitterPanel>
+      </Splitter.Panel>
     </>
   )
 }

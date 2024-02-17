@@ -1,25 +1,25 @@
 'use client'
+import { UseConfig } from '@/src/hooks/useConfig'
 import { usePanda } from '@/src/hooks/usePanda'
+import { UsePlayground } from '@/src/hooks/usePlayground'
+import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 import { css, cx } from '@/styled-system/css'
-import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
+import { flex } from '@/styled-system/patterns'
+import { button, splitter } from '@/styled-system/recipes'
+import { Splitter } from '@ark-ui/react'
+import { ArtifactsPanel } from './ArtifactsPanel'
 import { Editor } from './Editor'
+import { Examples } from './Examples'
 import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
-import { UsePlayground } from '@/src/hooks/usePlayground'
-import { ArtifactsPanel } from './ArtifactsPanel'
-import { button, splitter } from '@/styled-system/recipes'
-import { Examples } from './Examples'
-import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 import { GitCompareArrowsIcon } from './icons'
-import { flex } from '@/styled-system/patterns'
-import { UseConfig } from '@/src/hooks/useConfig'
 
-type PlaygroundContentProps = {
+interface Props {
   playground: UsePlayground
   config: UseConfig
 }
-export const PlaygroundContent = (props: PlaygroundContentProps) => {
+export const PlaygroundContent = (props: Props) => {
   const { playground, config: _config } = props
 
   const {
@@ -112,9 +112,9 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
           isResponsive={isResponsive}
         />
       </Toolbar>
-      <Splitter size={panels} onResize={onResizePanels} orientation={layout} className={splitter()}>
-        <SplitterPanel id="left">
-          <Splitter
+      <Splitter.Root size={panels} onSizeChange={onResizePanels} orientation={layout} className={splitter()}>
+        <Splitter.Panel id="left">
+          <Splitter.Root
             size={[
               { id: 'editor', size: 50, minSize: 5 },
               { id: 'artifacts', size: 50 },
@@ -122,17 +122,17 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
             orientation="vertical"
             className={splitter()}
           >
-            <SplitterPanel id="editor">
+            <Splitter.Panel id="editor">
               <Editor value={state} onChange={setState} panda={panda} diffState={diffState} isLoading={isLoading} />
-            </SplitterPanel>
+            </Splitter.Panel>
 
             <ArtifactsPanel panda={panda} />
-          </Splitter>
-        </SplitterPanel>
-        <SplitterResizeTrigger id="left:preview" asChild disabled={isPreviewMode}>
+          </Splitter.Root>
+        </Splitter.Panel>
+        <Splitter.ResizeTrigger id="left:preview" asChild disabled={isPreviewMode}>
           <div />
-        </SplitterResizeTrigger>
-        <SplitterPanel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
+        </Splitter.ResizeTrigger>
+        <Splitter.Panel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
           <Preview
             source={_state.code}
             panda={panda}
@@ -140,8 +140,8 @@ export const PlaygroundContent = (props: PlaygroundContentProps) => {
             isResponsive={isResponsive}
             error={error}
           />
-        </SplitterPanel>
-      </Splitter>
+        </Splitter.Panel>
+      </Splitter.Root>
     </>
   )
 }

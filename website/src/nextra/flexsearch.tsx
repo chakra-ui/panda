@@ -7,7 +7,6 @@ import type { SearchResult } from '../types'
 import { HighlightMatches } from './highlight-matches'
 import { Search } from './search'
 
-// @ts-expect-error
 type SectionIndex = FlexSearch.Document<
   {
     id: string
@@ -20,7 +19,6 @@ type SectionIndex = FlexSearch.Document<
   ['title', 'content', 'url', 'display']
 >
 
-// @ts-expect-error
 type PageIndex = FlexSearch.Document<
   {
     id: number
@@ -71,7 +69,6 @@ const loadIndexesImpl = async (
   )
   const data = (await response.json()) as NextraData
 
-  // @ts-expect-error
   const pageIndex: PageIndex = new FlexSearch.Document({
     cache: 100,
     tokenize: 'full',
@@ -87,7 +84,6 @@ const loadIndexesImpl = async (
     }
   })
 
-  // @ts-expect-error
   const sectionIndex: SectionIndex = new FlexSearch.Document({
     cache: 100,
     tokenize: 'full',

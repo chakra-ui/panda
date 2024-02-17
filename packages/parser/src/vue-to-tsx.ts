@@ -52,7 +52,8 @@ export const vueToTsx = (code: string) => {
       }
     }
 
-    const stack = [...parsed.descriptor.template!.ast.children]
+    const stack = Array.from(parsed.descriptor.template?.ast?.children ?? [])
+
     // recursion-free traversal
     while (stack.length) {
       const node = stack.pop()

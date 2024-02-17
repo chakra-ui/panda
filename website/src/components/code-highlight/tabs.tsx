@@ -1,18 +1,19 @@
 'use client'
 
 import { css } from '@/styled-system/css'
-import { TabContent, TabList, Tabs, TabTrigger } from '@ark-ui/react'
+import { Tabs } from '@ark-ui/react'
 
 export function TabsList({ titles }: { titles: string[] }) {
   return (
-    <TabList className={css({ display: 'flex', fontWeight: 'medium' })}>
+    <Tabs.List className={css({ display: 'flex', fontWeight: 'medium' })}>
       {titles.map(title => (
-        <TabTrigger key={title} value={title}>
+        <Tabs.Trigger key={title} value={title}>
           {title}
-        </TabTrigger>
+        </Tabs.Trigger>
       ))}
-    </TabList>
+    </Tabs.List>
   )
 }
 
-export { Tabs as CodeTabs, TabContent as TabsContent }
+export const TabContent = Tabs.Content
+export const CodeTabs = Tabs.Root

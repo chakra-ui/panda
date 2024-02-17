@@ -39,7 +39,17 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
 
 export function defineParts<T extends Parts>(parts: T) {
   return function (config: Partial<Record<keyof T, SystemStyleObject>>): Partial<Record<keyof T, SystemStyleObject>> {
-    return Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value])) as any
+    return Object.fromEntries(
+      Object.entries(config).map(([key, value]) => {
+        const part = parts[key]
+        if (part == null) {
+          throw new Error(
+            `Part "${key}" does not exist in the anatomy. Available parts: ${Object.keys(parts).join(', ')}`,
+          )
+        }
+        return [part.selector, value]
+      }),
+    ) as any
   }
 }
 

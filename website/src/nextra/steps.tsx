@@ -1,10 +1,7 @@
 import { css, cx } from '@/styled-system/css'
 
-export function Steps({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+export function Steps(props: React.ComponentProps<'div'>) {
+  const { children, className, ...rest } = props
   return (
     <div
       className={cx(
@@ -21,7 +18,7 @@ export function Steps({
         }),
         className
       )}
-      {...props}
+      {...rest}
     >
       {children}
     </div>

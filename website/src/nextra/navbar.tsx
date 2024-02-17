@@ -1,13 +1,6 @@
 import { css, cx } from '@/styled-system/css'
 import { navbar } from '@/styled-system/recipes'
-import {
-  Menu,
-  MenuContent,
-  MenuItem,
-  MenuPositioner,
-  MenuTrigger,
-  Portal
-} from '@ark-ui/react'
+import { Menu, Portal } from '@ark-ui/react'
 import { useFSRoute } from 'nextra/hooks'
 import { ArrowRightIcon, MenuIcon } from 'nextra/icons'
 import type {
@@ -19,7 +12,7 @@ import { renderComponent } from './lib'
 import { Anchor } from './anchor'
 import { useConfig, useMenu } from './contexts'
 
-export type NavBarProps = {
+export interface NavBarProps {
   flatDirectories: Item[]
   items: (PageItem | MenuItemData)[]
 }
@@ -36,7 +29,7 @@ const classes = {
   })
 }
 
-type NavMenuProps = {
+interface NavMenuProps {
   className?: string
   menu: MenuItemData
   children: React.ReactNode
@@ -51,8 +44,8 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
 
   return (
     <div className={css({ position: 'relative', display: 'inline-block' })}>
-      <Menu>
-        <MenuTrigger asChild>
+      <Menu.Root>
+        <Menu.Trigger asChild>
           <button
             className={cx(
               className,
@@ -69,10 +62,10 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
           >
             {children}
           </button>
-        </MenuTrigger>
+        </Menu.Trigger>
         <Portal>
-          <MenuPositioner className={css({ zIndex: 20 })}>
-            <MenuContent
+          <Menu.Positioner className={css({ zIndex: 20 })}>
+            <Menu.Content
               className={css({
                 mt: '1',
                 maxHeight: '64',
@@ -92,7 +85,7 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
               tabIndex={0}
             >
               {Object.entries(items || {}).map(([key, item]) => (
-                <MenuItem id={key} key={key}>
+                <Menu.Item id={key} key={key}>
                   <Anchor
                     href={
                       item.href || routes[key]?.route || menu.route + '/' + key
@@ -120,12 +113,12 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
                   >
                     {item.title || key}
                   </Anchor>
-                </MenuItem>
+                </Menu.Item>
               ))}
-            </MenuContent>
-          </MenuPositioner>
+            </Menu.Content>
+          </Menu.Positioner>
         </Portal>
-      </Menu>
+      </Menu.Root>
     </div>
   )
 }

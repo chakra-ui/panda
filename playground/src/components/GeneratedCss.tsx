@@ -1,15 +1,15 @@
 import { defaultEditorOptions } from '@/src/hooks/useEditor'
 import { css } from '@/styled-system/css'
 import { Stack } from '@/styled-system/jsx'
-import { Segment, SegmentControl, SegmentGroup, SegmentGroupIndicator, SegmentLabel } from '@ark-ui/react'
+import { SegmentGroup } from '@ark-ui/react'
 import MonacoEditor from '@monaco-editor/react'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import parserHtml from 'prettier/parser-html'
 import parserPostCSS from 'prettier/parser-postcss'
 import { useState } from 'react'
-import { CssFileArtifact } from '../hooks/usePanda'
 import { useReadLocalStorage } from 'usehooks-ts'
+import { CssFileArtifact } from '../hooks/usePanda'
 
 export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileArtifact[]; visible: boolean }) => {
   const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')
@@ -39,7 +39,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
         '&[hidden]': { display: 'none ' },
       }}
     >
-      <SegmentGroup
+      <SegmentGroup.Root
         className={css({
           display: 'flex',
           alignItems: 'center',
@@ -50,19 +50,23 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
           borderBottomWidth: '1px',
         })}
         value={activeTab}
-        onChange={(e) => setActiveTab(e.value as any)}
+        onValueChange={(e) => setActiveTab(e.value as any)}
       >
-        <SegmentGroupIndicator
+        <SegmentGroup.Indicator
           data-expanded={visible ? '' : undefined}
           className={css({
             background: { base: 'transparent', _expanded: 'primary' },
             zIndex: '1',
             boxShadow: 'xs',
             borderRadius: 'xl',
+            width: 'var(--width)',
+            height: 'var(--height)',
+            top: 'var(--top)',
+            left: 'var(--left)',
           })}
         />
         {cssArtifacts.map((artifact) => (
-          <Segment
+          <SegmentGroup.Item
             className={css({
               zIndex: '2',
               position: 'relative',
@@ -79,7 +83,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
             key={artifact.file}
             value={artifact.file}
           >
-            <SegmentLabel
+            <SegmentGroup.ItemText
               className={css({
                 alignSelf: 'center',
                 textStyle: 'sm',
@@ -89,11 +93,11 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
               })}
             >
               {artifact.file === 'index.css' ? artifact.dir?.slice(1).concat(artifact.file)?.join('/') : artifact.file}
-            </SegmentLabel>
-            <SegmentControl />
-          </Segment>
+            </SegmentGroup.ItemText>
+            <SegmentGroup.ItemControl />
+          </SegmentGroup.Item>
         ))}
-      </SegmentGroup>
+      </SegmentGroup.Root>
 
       <MonacoEditor
         value={formatCode(content)}

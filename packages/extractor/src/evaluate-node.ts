@@ -1,6 +1,6 @@
 import { evaluate } from 'ts-evaluator'
-import type { Expression } from 'ts-morph'
-import { Node, ts } from 'ts-morph'
+import type { Expression, Node } from 'ts-morph'
+import { ts } from 'ts-morph'
 import type { BoxContext } from './types'
 
 const TsEvalError = Symbol('EvalError')

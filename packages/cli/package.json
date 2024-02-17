@@ -56,7 +56,7 @@
     "postcss.js"
   ],
   "dependencies": {
-    "@clack/prompts": "^0.6.3",
+    "@clack/prompts": "0.7.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
@@ -70,6 +70,6 @@
   "devDependencies": {
     "@types/update-notifier": "6.0.8",
     "kleur": "4.1.5",
-    "update-notifier": "6.0.2"
+    "update-notifier": "7.0.0"
   }
 }

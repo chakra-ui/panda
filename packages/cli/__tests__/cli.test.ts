@@ -57,7 +57,7 @@ describe('CLI', () => {
 
     // init with --force
     const output3 = execSync(cmd + ' --force --postcss --logfile="./panda.log"', { cwd: testsCwd }).toString()
-    expect(output3.includes('Thanks for choosing Panda to write your css.')).toBe(true)
+    expect(output3.includes('Panda initialized')).toBe(true)
 
     // Check if the postcss config file was created
     const postcssConfigFileExists = await fs.access(paths.postcssConfig)

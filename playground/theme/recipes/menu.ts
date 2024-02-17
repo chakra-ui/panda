@@ -1,5 +1,5 @@
 import { defineParts, defineRecipe } from '@pandacss/dev'
-import { menuAnatomy } from '@ark-ui/react'
+import { menuAnatomy } from '@ark-ui/anatomy'
 
 const parts = defineParts(menuAnatomy.build())
 
@@ -30,6 +30,7 @@ export const menu = defineRecipe({
   description: 'The styles for the menu component',
   base: parts({
     content: {
+      zIndex: '100',
       bg: { base: 'white', _dark: '#262626' },
       backdropFilter: 'blur(10px)',
       borderRadius: 'md',
@@ -54,9 +55,6 @@ export const menu = defineRecipe({
     itemGroupLabel: {
       fontWeight: 'semibold',
       textStyle: 'sm',
-    },
-    positioner: {
-      zIndex: '100',
     },
     itemGroup: {
       display: 'flex',

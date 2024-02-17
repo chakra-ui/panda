@@ -1,9 +1,8 @@
 /** @jsxImportSource solid-js */
-import { afterEach, describe, expect, test } from 'vitest'
+import { render } from '@solidjs/testing-library'
+import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-solid/jsx'
-import { cleanup, render } from '@solidjs/testing-library'
 import { buttonWithCompoundVariants } from '../../styled-system-solid/recipes'
-import '@testing-library/jest-dom'
 
 describe('styled factory - cva', () => {
   const Button = styled('button', {
@@ -41,8 +40,6 @@ describe('styled factory - cva', () => {
       },
     ],
   })
-
-  afterEach(cleanup)
 
   test('base styles', () => {
     const { container } = render(() => <Button>Click me</Button>)
@@ -407,7 +404,7 @@ describe('styled factory - button recipe', () => {
     expect(container.firstChild).toMatchInlineSnapshot(
       `
       <div
-        class="text_red.400 d_flex flex_column gap_10px"
+        class="d_flex flex_column gap_10px text_red.400"
       >
         Click me
       </div>

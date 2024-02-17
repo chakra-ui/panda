@@ -1,6 +1,6 @@
 import { codeTabs } from '@/styled-system/recipes'
 import { BrightProps, Code } from 'bright'
-import { CodeTabs, TabsContent, TabsList } from './tabs'
+import { CodeTabs, TabContent, TabsList } from './tabs'
 
 function TitleBarContent(brightProps: BrightProps) {
   const { subProps, title } = brightProps
@@ -33,10 +33,10 @@ function Content(brightProps: BrightProps) {
   return (
     <>
       {propsList.map(props => (
-        <TabsContent key={props.title} value={props.title!}>
+        <TabContent key={props.title} value={props.title!}>
           {/* @ts-expect-error Server Component */}
           <Code.Pre {...props} />
-        </TabsContent>
+        </TabContent>
       ))}
     </>
   )

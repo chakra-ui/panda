@@ -1,8 +1,9 @@
 import { convertTsPathsToRegexes } from '@pandacss/config'
 import type { LoadConfigResult, LoadTsConfigResult } from '@pandacss/types'
-import { parse } from 'tsconfck'
 
 export async function loadTsConfig(conf: LoadConfigResult, cwd: string): Promise<LoadTsConfigResult | undefined> {
+  const { parse } = await import('tsconfck')
+
   const tsconfigResult = await parse(conf.path, {
     root: cwd,
     //@ts-ignore
