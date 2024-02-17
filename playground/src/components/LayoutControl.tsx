@@ -35,7 +35,14 @@ export const LayoutControl = (props: LayoutControlProps) => {
       value={value}
       onValueChange={(e) => onChange(e.value as any)}
     >
-      <SegmentGroup.Indicator />
+      <SegmentGroup.Indicator
+        className={css({
+          width: 'var(--width)',
+          height: 'var(--height)',
+          top: 'var(--top)',
+          left: 'var(--left)',
+        })}
+      />
       {options.map((option, id) => (
         <SegmentGroup.Item
           className={css({

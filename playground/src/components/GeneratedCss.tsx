@@ -59,6 +59,10 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
             zIndex: '1',
             boxShadow: 'xs',
             borderRadius: 'xl',
+            width: 'var(--width)',
+            height: 'var(--height)',
+            top: 'var(--top)',
+            left: 'var(--left)',
           })}
         />
         {cssArtifacts.map((artifact) => (

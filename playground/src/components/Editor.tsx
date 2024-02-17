@@ -45,11 +45,18 @@ export const Editor = (props: PandaEditorProps) => {
           value={activeTab}
           onValueChange={(e) => setActiveTab(e.value as any)}
         >
-          <SegmentGroup.Indicator />
+          <SegmentGroup.Indicator
+            className={css({
+              width: 'var(--width)',
+              height: 'var(--height)',
+              top: 'var(--top)',
+              left: 'var(--left)',
+            })}
+          />
           {tabs.map((option, id) => (
             <SegmentGroup.Item key={id} value={option.id} aria-label={option.label}>
+              <SegmentGroup.ItemControl />
               <SegmentGroup.ItemText className={css({ px: 2 })}>{option.label}</SegmentGroup.ItemText>
-              <SegmentGroup.Indicator />
             </SegmentGroup.Item>
           ))}
 

@@ -61,6 +61,10 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
             <SegmentGroup.Indicator
               className={css({
                 background: { base: 'transparent', _groupExpanded: 'primary' },
+                width: 'var(--width)',
+                height: 'var(--height)',
+                top: 'var(--top)',
+                left: 'var(--left)',
               })}
             />
             {tabs.map((option, id) => (
