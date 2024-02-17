@@ -3,14 +3,7 @@ import { css } from '@/styled-system/css'
 import { Center, HStack, Stack } from '@/styled-system/jsx'
 import { center } from '@/styled-system/patterns'
 import { ButtonIcon, Icon } from '@/theme/icons'
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogCloseTrigger,
-  DialogContainer,
-  DialogContent,
-  DialogTrigger
-} from '@ark-ui/react'
+import { Dialog } from '@ark-ui/react'
 import Link from 'next/link'
 import { MenuIcon } from 'nextra/icons'
 import { NavLink } from './nav-link'
@@ -35,8 +28,8 @@ export const MobileNavBar = () => {
 
       <HStack gap="4">
         <ThemeSwitchIconButton />
-        <Dialog>
-          <DialogTrigger asChild>
+        <Dialog.Root>
+          <Dialog.Trigger asChild>
             <button
               type="button"
               className={css({
@@ -49,8 +42,8 @@ export const MobileNavBar = () => {
             >
               <MenuIcon />
             </button>
-          </DialogTrigger>
-          <DialogBackdrop
+          </Dialog.Trigger>
+          <Dialog.Backdrop
             className={css({
               position: 'fixed',
               inset: '0',
@@ -59,7 +52,7 @@ export const MobileNavBar = () => {
               backdropBlur: 'sm'
             })}
           />
-          <DialogContainer
+          <Dialog.Positioner
             className={css({
               position: 'absolute',
               zIndex: '10',
@@ -68,7 +61,7 @@ export const MobileNavBar = () => {
               right: '6'
             })}
           >
-            <DialogContent
+            <Dialog.Content
               className={css({
                 padding: '6',
                 bg: 'bg.inverted',
@@ -88,7 +81,7 @@ export const MobileNavBar = () => {
                 </NavLink>
               </Stack>
 
-              <DialogCloseTrigger
+              <Dialog.CloseTrigger
                 className={css({ position: 'absolute', top: '4', right: '4' })}
               >
                 <Center width="5" height="5" color="text.main">
@@ -97,10 +90,10 @@ export const MobileNavBar = () => {
                     className={css({ width: '1em', height: 'auto' })}
                   />
                 </Center>
-              </DialogCloseTrigger>
-            </DialogContent>
-          </DialogContainer>
-        </Dialog>
+              </Dialog.CloseTrigger>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Dialog.Root>
       </HStack>
     </HStack>
   )

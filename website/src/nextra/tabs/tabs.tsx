@@ -1,12 +1,6 @@
 import { cx } from '@/styled-system/css'
 import { nextraTabs } from '@/styled-system/recipes'
-import {
-  Tabs as ArkTabs,
-  TabContent,
-  TabIndicator,
-  TabList,
-  TabTrigger
-} from '@ark-ui/react'
+import { Tabs } from '@ark-ui/react'
 import { Children, cloneElement } from 'react'
 import { IUseTabsProps, useTabs } from './use-tabs'
 
@@ -14,26 +8,26 @@ export interface ITabProps extends IUseTabsProps {
   children: React.ReactElement[]
 }
 
-export function Tabs(props: ITabProps) {
+function _Tabs(props: ITabProps) {
   const { items, children } = props
   const { value, onChange } = useTabs(props)
 
   return (
-    <ArkTabs
+    <Tabs.Root
       value={value}
       onChange={onChange}
       className={cx('nextra-scrollbar', nextraTabs())}
     >
-      <TabList>
+      <Tabs.List>
         {items.map((item, index) => {
           return (
-            <TabTrigger value={item} key={index}>
+            <Tabs.Trigger value={item} key={index}>
               {item}
-            </TabTrigger>
+            </Tabs.Trigger>
           )
         })}
-        <TabIndicator />
-      </TabList>
+        <Tabs.Indicator />
+      </Tabs.List>
       {Children.map(children, (child, index) =>
         cloneElement(child as any, {
           ...child.props,
@@ -41,14 +35,16 @@ export function Tabs(props: ITabProps) {
           value: items[index]
         })
       )}
-    </ArkTabs>
+    </Tabs.Root>
   )
 }
 
-export interface ITabProps extends React.ComponentProps<'div'> {
+export interface ITabProps extends React.ComponentPropsWithRef<'div'> {
   value: string
 }
 
-export function Tab({ children, ...props }: ITabProps) {
-  return <TabContent {...props}>{children}</TabContent>
+export function _Tab({ children, ...props }: ITabProps) {
+  return <Tabs.Content {...props}>{children}</Tabs.Content>
 }
+
+export { _Tabs as Tabs, _Tab as Tab }

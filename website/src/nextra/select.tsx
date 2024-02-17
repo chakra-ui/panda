@@ -1,37 +1,27 @@
 import { css, cx } from '@/styled-system/css'
-import {
-  Select as ArkSelect,
-  Portal,
-  SelectContent,
-  SelectOption,
-  SelectPositioner,
-  SelectTrigger
-} from '@ark-ui/react'
+import { Portal, Select } from '@ark-ui/react'
 import { CheckIcon } from 'nextra/icons'
 
-type MenuOption = {
+interface Item {
   value: string
   label: React.ReactNode
 }
 
-interface MenuProps {
-  selected: MenuOption
-  onChange: (option: MenuOption | null) => void
-  options: MenuOption[]
+interface Props {
+  selected: Item
+  onChange(item: Item | null): void
+  options: Item[]
   title?: string
   className?: string
 }
 
-export function Select({
-  options,
-  selected,
-  onChange,
-  title,
-  className
-}: MenuProps) {
+function _Select({ options, selected, onChange, title, className }: Props) {
   return (
-    <ArkSelect onChange={onChange}>
-      <SelectTrigger
+    <Select.Root
+      items={options}
+      onValueChange={details => onChange(details.items[0] ?? null)}
+    >
+      <Select.Trigger
         className={cx(
           css({
             height: 7,
@@ -64,9 +54,9 @@ export function Select({
         )}
       >
         {(selected?.label as any) ?? title}
-      </SelectTrigger>
+      </Select.Trigger>
       <Portal>
-        <SelectPositioner
+        <Select.Positioner
           className={css({
             zIndex: 20,
             maxHeight: 64,
@@ -84,12 +74,11 @@ export function Select({
             }
           })}
         >
-          <SelectContent>
+          <Select.Content>
             {options.map(option => (
-              <SelectOption
+              <Select.Item
+                item={option}
                 key={option.value}
-                value={option.value}
-                label={option.label as any}
                 className={css({
                   color: 'gray.800',
                   _dark: {
@@ -112,8 +101,8 @@ export function Select({
                   pe: '9'
                 })}
               >
-                {option.label}
-                {option.value === selected.value && (
+                <Select.ItemText>{option.label}</Select.ItemText>
+                <Select.ItemIndicator>
                   <CheckIcon
                     className={css({
                       position: 'absolute',
@@ -122,12 +111,14 @@ export function Select({
                       insetEnd: '3'
                     })}
                   />
-                )}
-              </SelectOption>
+                </Select.ItemIndicator>
+              </Select.Item>
             ))}
-          </SelectContent>
-        </SelectPositioner>
+          </Select.Content>
+        </Select.Positioner>
       </Portal>
-    </ArkSelect>
+    </Select.Root>
   )
 }
+
+export { _Select as Select }

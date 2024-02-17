@@ -9,7 +9,7 @@ function useIndent() {
 
 interface FolderProps {
   name: string
-  label?
+  label?: any
   open?: boolean
   defaultOpen?: boolean
   onToggle?: (open: boolean) => void
