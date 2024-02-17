@@ -1,6 +1,6 @@
 import * as _pandacss_types from '@pandacss/types';
 import { Config, RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig, Parts, SystemStyleObject, PatternConfig, Preset, CssKeyframes, GlobalStyleObject, PropertyConfig, Tokens, SemanticTokens, CompositionStyles, TextStyles, LayerStyles } from '@pandacss/types';
-export { CompositionStyles, Config, CssKeyframes, GlobalStyleObject, LayerStyles, PatternConfig, Preset, PropertyConfig, RecipeConfig, RecipeVariantRecord, SemanticTokens, SlotRecipeConfig, SlotRecipeVariantRecord, SystemStyleObject, TextStyles, Tokens } from '@pandacss/types';
+export { CompositionStyles, Config, CssKeyframes, GlobalStyleObject, HooksApiInterface, LayerStyles, PatternConfig, Preset, PropertyConfig, RecipeConfig, RecipeVariantRecord, SemanticTokens, SlotRecipeConfig, SlotRecipeVariantRecord, SystemStyleObject, TextStyles, Tokens } from '@pandacss/types';
 
 declare function defineConfig(config: Config): Config;
 declare function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeConfig;

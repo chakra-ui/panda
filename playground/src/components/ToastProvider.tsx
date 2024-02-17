@@ -1,40 +1,35 @@
 import { ErrorIcon, SuccessIcon } from '@/src/components/icons'
 import { toast as toastStyles } from '@/styled-system/recipes'
-import { Toast, ToastDescription, ToastGroup, ToastPlacements, ToastProvider, ToastTitle, Portal } from '@ark-ui/react'
+import { Portal, Toast, createToaster } from '@ark-ui/react'
 
 export type AppToastProviderProps = {
   children: React.ReactNode
 }
 
+export const [Toaster, toast] = createToaster({
+  placement: 'top',
+  render(toast) {
+    return (
+      <Toast.Root>
+        <div data-part="icon" data-type={toast.type}>
+          {icon[toast.type as 'success' | 'error']}
+        </div>
+        <div data-part="content">
+          <Toast.Title>{toast.title}</Toast.Title>
+          <Toast.Description>{toast.description}</Toast.Description>
+        </div>
+      </Toast.Root>
+    )
+  },
+})
+
 export const AppToastProvider = (props: AppToastProviderProps) => (
-  <ToastProvider>
+  <>
     <Portal>
-      <ToastPlacements>
-        {(placements) =>
-          placements.map((placement) => (
-            <ToastGroup key={placement} placement={placement} className={toastStyles()}>
-              {(toasts) =>
-                toasts.map((toast) => {
-                  return (
-                    <Toast key={toast.id} toast={toast}>
-                      <div data-part="icon" data-type={toast.state.context.type}>
-                        {icon[toast.state.context.type as 'success' | 'error']}
-                      </div>
-                      <div data-part="content">
-                        <ToastTitle />
-                        <ToastDescription />
-                      </div>
-                    </Toast>
-                  )
-                })
-              }
-            </ToastGroup>
-          ))
-        }
-      </ToastPlacements>
+      <Toaster className={toastStyles()} />
     </Portal>
     {props.children}
-  </ToastProvider>
+  </>
 )
 
 const icon = {

@@ -1,9 +1,9 @@
-import { HorizontalSplit, PreviewLayout, ResponsiveLayout, VerticalSplit } from '@/src/components/icons'
-import { css, cx } from '@/styled-system/css'
-import { Segment, SegmentControl, SegmentGroup, SegmentLabel, SegmentGroupIndicator } from '@ark-ui/react'
-import { button, segmentGroup } from '@/styled-system/recipes'
-import { UseResponsiveView } from '@/src/hooks/useResponsiveView'
 import { BreakpointControl } from '@/src/components/Preview/BreakpointControl'
+import { HorizontalSplit, PreviewLayout, ResponsiveLayout, VerticalSplit } from '@/src/components/icons'
+import { UseResponsiveView } from '@/src/hooks/useResponsiveView'
+import { css, cx } from '@/styled-system/css'
+import { button, segmentGroup } from '@/styled-system/recipes'
+import { SegmentGroup } from '@ark-ui/react'
 
 export type Layout = 'horizontal' | 'vertical' | 'preview' | 'responsive'
 export type LayoutControlProps = {
@@ -22,7 +22,7 @@ export const LayoutControl = (props: LayoutControlProps) => {
     { id: 'preview', label: 'Preview', icon: <PreviewLayout /> },
   ]
   return (
-    <SegmentGroup
+    <SegmentGroup.Root
       className={cx(
         segmentGroup(),
         css({
@@ -33,11 +33,11 @@ export const LayoutControl = (props: LayoutControlProps) => {
         }),
       )}
       value={value}
-      onChange={(e) => onChange(e.value as any)}
+      onValueChange={(e) => onChange(e.value as any)}
     >
-      <SegmentGroupIndicator />
+      <SegmentGroup.Indicator />
       {options.map((option, id) => (
-        <Segment
+        <SegmentGroup.Item
           className={css({
             p: '1',
           })}
@@ -46,9 +46,9 @@ export const LayoutControl = (props: LayoutControlProps) => {
           aria-label={option.label}
           title={option.label}
         >
-          <SegmentLabel>{option.icon}</SegmentLabel>
-          <SegmentControl />
-        </Segment>
+          <SegmentGroup.ItemText>{option.icon}</SegmentGroup.ItemText>
+          <SegmentGroup.ItemControl />
+        </SegmentGroup.Item>
       ))}
       <div
         data-selected={isResponsive ? '' : undefined}
@@ -80,6 +80,6 @@ export const LayoutControl = (props: LayoutControlProps) => {
           breakpoints={breakpoints}
         />
       </div>
-    </SegmentGroup>
+    </SegmentGroup.Root>
   )
 }

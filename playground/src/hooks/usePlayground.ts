@@ -1,17 +1,18 @@
-import { startTransition, useDeferredValue, useRef, useState } from 'react'
-import { Layout } from '../components/LayoutControl'
-import { SplitterProps, useToast } from '@ark-ui/react'
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
 import { parseState } from '@/src/lib/parse-state'
+import { SplitterRootProps } from '@ark-ui/react'
+import { startTransition, useDeferredValue, useRef, useState } from 'react'
+import { Layout } from '../components/LayoutControl'
+import { toast } from '../components/ToastProvider'
 
-export type State = {
+export interface State {
   code: string
   config: string
   css: string
   id?: string | null
 }
 
-export type UsePlayGroundProps = {
+export interface UsePlayGroundProps {
   initialState?: State | null
   diffState?: State | null
 }
@@ -21,7 +22,6 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   const [isPristine, setIsPristine] = useState(true)
   const [isSharing, setIsSharing] = useState(false)
   const [isResponsive, setIsResponsive] = useState(false)
-  const toast = useToast()
 
   const [panels, setPanels] = useState([
     { id: 'left', size: 50, minSize: 15 },
@@ -32,7 +32,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   const layoutValue = isPreviewMode ? ('preview' as const) : layout
 
-  const onResizePanels: SplitterProps['onResize'] = (e) => setPanels(e.size as any)
+  const onResizePanels: SplitterRootProps['onSizeChange'] = (e) => setPanels(e.size as any)
 
   function setPanelSize(id: string, size: number) {
     setPanels((prevPanels) => {
@@ -97,7 +97,6 @@ export const usePlayground = (props: UsePlayGroundProps) => {
         toast.success({
           title: 'Playground saved.',
           description: 'Link copied to clipboard.',
-          placement: 'top',
           duration: 3000,
         })
         setIsPristine(true)
@@ -107,7 +106,6 @@ export const usePlayground = (props: UsePlayGroundProps) => {
         toast.error({
           title: 'Could not save playground.',
           description: 'Please try again.',
-          placement: 'top',
           duration: 3000,
         })
         setIsSharing(false)

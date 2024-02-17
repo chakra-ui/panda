@@ -42,8 +42,8 @@ importers:
         specifier: 5.0.5
         version: 5.0.5
       ts-morph:
-        specifier: 21.0.1
-        version: 21.0.1
+        specifier: 20.0.0
+        version: 20.0.0
       tsup:
         specifier: 8.0.2
         version: 8.0.2(typescript@5.3.3)
@@ -327,8 +327,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0(typescript@5.3.3)
       ts-morph:
-        specifier: 21.0.1
-        version: 21.0.1
+        specifier: 20.0.0
+        version: 20.0.0
 
   packages/fixture:
     devDependencies:
@@ -503,8 +503,8 @@ importers:
         specifier: 2.8.8
         version: 2.8.8
       ts-morph:
-        specifier: 21.0.1
-        version: 21.0.1
+        specifier: 20.0.0
+        version: 20.0.0
       ts-pattern:
         specifier: 5.0.8
         version: 5.0.8
@@ -561,8 +561,8 @@ importers:
         specifier: 0.30.7
         version: 0.30.7
       ts-morph:
-        specifier: 21.0.1
-        version: 21.0.1
+        specifier: 20.0.0
+        version: 20.0.0
       ts-pattern:
         specifier: 5.0.8
         version: 5.0.8
@@ -9569,12 +9569,12 @@ packages:
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
 
-  /@ts-morph/common@0.22.0:
-    resolution: {integrity: sha512-HqNBuV/oIlMKdkLshXd1zKBqNQCsuPEsgQOkfFQ/eUKjRlwndXW1AjN9LVkBEIukm00gGXSRmfkl0Wv5VXLnlw==}
+  /@ts-morph/common@0.21.0:
+    resolution: {integrity: sha512-ES110Mmne5Vi4ypUKrtVQfXFDtCsDXiUiGxF6ILVlE90dDD4fdpC1LSjydl/ml7xJWKSDZwUYD2zkOePMSrPBA==}
     dependencies:
       fast-glob: 3.3.2
-      minimatch: 9.0.3
-      mkdirp: 3.0.1
+      minimatch: 7.4.6
+      mkdirp: 2.1.6
       path-browserify: 1.0.1
     dev: false
 
@@ -21705,6 +21705,13 @@ packages:
       brace-expansion: 2.0.1
     dev: true
 
+  /minimatch@7.4.6:
+    resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
+    engines: {node: '>=10'}
+    dependencies:
+      brace-expansion: 2.0.1
+    dev: false
+
   /minimatch@9.0.1:
     resolution: {integrity: sha512-0jWhJpD/MdhPXwPuiRkCbfYfSKp2qnn2eOc279qI7f+osl/l+prKSrvhg157zSYvx/1nmgn2NqdT6k2Z7zSH9w==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -21831,8 +21838,8 @@ packages:
     hasBin: true
     dev: true
 
-  /mkdirp@3.0.1:
-    resolution: {integrity: sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==}
+  /mkdirp@2.1.6:
+    resolution: {integrity: sha512-+hEnITedc8LAtIP9u3HJDFIdcLV2vXP33sqLLIzkv1Db1zO/1OxbvYf0Y1OC/S/Qo5dxHXepofhmxL02PsKe+A==}
     engines: {node: '>=10'}
     hasBin: true
     dev: false
@@ -27350,10 +27357,10 @@ packages:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
     dev: false
 
-  /ts-morph@21.0.1:
-    resolution: {integrity: sha512-dbDtVdEAncKctzrVZ+Nr7kHpHkv+0JDJb2MjjpBaj8bFeCkePU9rHfMklmhuLFnpeq/EJZk2IhStY6NzqgjOkg==}
+  /ts-morph@20.0.0:
+    resolution: {integrity: sha512-JVmEJy2Wow5n/84I3igthL9sudQ8qzjh/6i4tmYCm6IqYyKFlNbJZi7oBdjyqcWSWYRu3CtL0xbT6fS03ESZIg==}
     dependencies:
-      '@ts-morph/common': 0.22.0
+      '@ts-morph/common': 0.21.0
       code-block-writer: 12.0.0
     dev: false
 

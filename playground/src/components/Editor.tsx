@@ -2,23 +2,14 @@ import { FormatCode, LoaderIcon, WrapText } from '@/src/components/icons'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
-import { Segment, SegmentControl, SegmentGroup, SegmentGroupIndicator, SegmentLabel } from '@ark-ui/react'
+import { SegmentGroup } from '@ark-ui/react'
 import MonacoEditor, { DiffEditor } from '@monaco-editor/react'
 import { PandaEditorProps, defaultEditorOptions, useEditor } from '../hooks/useEditor'
 
 const tabs = [
-  {
-    id: 'code',
-    label: 'Code',
-  },
-  {
-    id: 'css',
-    label: 'CSS',
-  },
-  {
-    id: 'config',
-    label: 'Config',
-  },
+  { id: 'code', label: 'Code' },
+  { id: 'css', label: 'CSS' },
+  { id: 'config', label: 'Config' },
 ]
 
 export const Editor = (props: PandaEditorProps) => {
@@ -42,7 +33,7 @@ export const Editor = (props: PandaEditorProps) => {
   return (
     <Flex flex="1" direction="column" align="flex-start" minW="0">
       <div className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}>
-        <SegmentGroup
+        <SegmentGroup.Root
           className={cx(
             segmentGroup(),
             css({
@@ -52,20 +43,14 @@ export const Editor = (props: PandaEditorProps) => {
             }),
           )}
           value={activeTab}
-          onChange={(e) => setActiveTab(e.value as any)}
+          onValueChange={(e) => setActiveTab(e.value as any)}
         >
-          <SegmentGroupIndicator />
+          <SegmentGroup.Indicator />
           {tabs.map((option, id) => (
-            <Segment key={id} value={option.id} aria-label={option.label}>
-              <SegmentLabel
-                className={css({
-                  px: 2,
-                })}
-              >
-                {option.label}
-              </SegmentLabel>
-              <SegmentControl />
-            </Segment>
+            <SegmentGroup.Item key={id} value={option.id} aria-label={option.label}>
+              <SegmentGroup.ItemText className={css({ px: 2 })}>{option.label}</SegmentGroup.ItemText>
+              <SegmentGroup.Indicator />
+            </SegmentGroup.Item>
           ))}
 
           <div className={css({ ml: 'auto', display: 'flex', gap: '0.5' })}>
@@ -96,7 +81,7 @@ export const Editor = (props: PandaEditorProps) => {
               <FormatCode />
             </button>
           </div>
-        </SegmentGroup>
+        </SegmentGroup.Root>
         <div className={cx(css({ flex: '1', pt: '2' }), editorTokenizer())}>
           {props.diffState ? (
             <DiffEditor

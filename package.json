@@ -44,7 +44,7 @@
     "lint-staged": "15.2.2",
     "mdx-local-link-checker": "2.1.1",
     "rimraf": "5.0.5",
-    "ts-morph": "21.0.1",
+    "ts-morph": "20.0.0",
     "tsup": "8.0.2",
     "tsx": "4.7.1",
     "typescript": "5.3.3",
