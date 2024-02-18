@@ -132,5 +132,6 @@ const longhands = Object.values(shorthandProperties).reduce((a, b) => [...a, ...
  * @see https://github.com/callstack/linaria/blob/049a4ccb77e29f3628353352db21bd446fa04a2e/packages/atomic/src/processors/helpers/propertyPriority.ts
  */
 export function getPropertyPriority(property: string) {
+  if (property === 'all') return 0
   return longhands.includes(property) ? 2 : 1
 }
