@@ -75,10 +75,6 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
    * The styles to apply when a combination of variants is selected.
    */
   compoundVariants?: Pretty<RecipeCompoundVariant<RecipeCompoundSelection<T>>>[]
-  /**
-   * Variants to pre-generate, will be include in the final `config.staticCss`
-   */
-  staticCss?: RecipeRule[]
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
@@ -99,6 +95,10 @@ interface RecipeConfigMeta {
    * @example ['Button', 'Link', /Button$/]
    */
   jsx?: Array<string | RegExp>
+  /**
+   * Variants to pre-generate, will be include in the final `config.staticCss`
+   */
+  staticCss?: RecipeRule[]
 }
 
 export interface RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord>
@@ -153,10 +153,6 @@ export interface SlotRecipeDefinition<
    * The styles to apply when a combination of variants is selected.
    */
   compoundVariants?: Pretty<SlotRecipeCompoundVariant<S, RecipeCompoundSelection<T>>>[]
-  /**
-   * Variants to pre-generate, will be include in the final `config.staticCss`
-   */
-  staticCss?: RecipeRule[]
 }
 
 export type SlotRecipeCreatorFn = <S extends string, T extends SlotRecipeVariantRecord<S>>(
