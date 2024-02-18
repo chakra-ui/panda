@@ -41,7 +41,7 @@
     "@pandacss/types": "workspace:*",
     "@vue/compiler-sfc": "3.4.19",
     "magic-string": "0.30.7",
-    "ts-morph": "20.0.0",
+    "ts-morph": "21.0.1",
     "ts-pattern": "5.0.8"
   },
   "devDependencies": {
