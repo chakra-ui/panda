@@ -48,7 +48,8 @@ export function setupDesignTokens(ctx: Context): Artifact | undefined {
 function setupJsxTypes(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
-  const jsx = generateJsxTypes(ctx)!
+  const jsx = generateJsxTypes(ctx)
+  if (!jsx) return
 
   return {
     id: 'types-jsx',
@@ -110,7 +111,7 @@ function setupGeneratedTypes(ctx: Context): Artifact {
 }
 
 function setupGeneratedSystemTypes(ctx: Context): Artifact {
-  const gen = getGeneratedSystemTypes(ctx)!
+  const gen = getGeneratedSystemTypes(ctx)
 
   return {
     id: 'types-gen-system',
@@ -176,7 +177,8 @@ function setupCx(ctx: Context): Artifact {
 function setupCreateRecipe(ctx: Context): Artifact | undefined {
   if (ctx.recipes.isEmpty()) return
 
-  const createRecipe = generateCreateRecipe(ctx)!
+  const createRecipe = generateCreateRecipe(ctx)
+  if (!createRecipe) return
 
   return {
     id: 'create-recipe',
@@ -276,8 +278,11 @@ function setupJsxIsValidProp(ctx: Context): Artifact | undefined {
 function setupJsxFactory(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
-  const types = generateJsxTypes(ctx)!
+  const types = generateJsxTypes(ctx)
+  if (!types) return
+
   const factory = generateJsxFactory(ctx)
+  if (!factory) return
 
   return {
     id: 'jsx-factory',
@@ -305,6 +310,7 @@ function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | u
   if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
 
   const patterns = generateJsxPatterns(ctx, filters)
+  if (!patterns) return
 
   return {
     id: 'jsx-patterns',

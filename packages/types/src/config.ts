@@ -184,13 +184,13 @@ interface FileSystemOptions {
   logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'silent'
 }
 
-type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik'
+export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik'
 
 interface JsxOptions {
   /**
    * The framework to use for generating supercharged elements.
    */
-  jsxFramework?: JsxFramework
+  jsxFramework?: JsxFramework | (string & {})
   /**
    * The factory name of the element
    * @default 'styled'

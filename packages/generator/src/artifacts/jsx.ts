@@ -1,5 +1,5 @@
 import type { Context } from '@pandacss/core'
-import type { ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFilters, JsxFramework } from '@pandacss/types'
 import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
 import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
 import { generatePreactJsxStringLiteralTypes } from './preact-jsx/types.string-literal'
@@ -38,8 +38,11 @@ const typesStringLiteralMap = {
   vue: generateVueJsxStringLiteralTypes,
 }
 
+const isKnownFramework = (framework: string): framework is JsxFramework => Boolean((typesMap as any)[framework])
+
 export function generateJsxTypes(ctx: Context) {
   if (!ctx.jsx.framework) return
+  if (!isKnownFramework(ctx.jsx.framework)) return
   const type = ctx.isTemplateLiteralSyntax ? typesStringLiteralMap[ctx.jsx.framework] : typesMap[ctx.jsx.framework]
   return type?.(ctx)
 }
@@ -66,6 +69,7 @@ const factoryStringLiteralMap = {
 
 export function generateJsxFactory(ctx: Context) {
   if (!ctx.jsx.framework) return
+  if (!isKnownFramework(ctx.jsx.framework)) return
   const factory = ctx.isTemplateLiteralSyntax
     ? factoryStringLiteralMap[ctx.jsx.framework]
     : factoryMap[ctx.jsx.framework]
@@ -86,5 +90,6 @@ const patternMap = {
 
 export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {
   if (ctx.isTemplateLiteralSyntax || ctx.patterns.isEmpty() || !ctx.jsx.framework) return []
+  if (!isKnownFramework(ctx.jsx.framework)) return
   return patternMap[ctx.jsx.framework!](ctx, filters)
 }
