@@ -3,7 +3,7 @@ import { createLogger } from './create-logger'
 
 export const quote = (...str: string[]) => colors.cyan(`\`${str.join('')}\``)
 
-const debug = process.env.PANDA_DEBUG
+const debug = typeof process !== 'undefined' ? process.env.PANDA_DEBUG : undefined
 
 export const logger = createLogger({
   filter: typeof process !== 'undefined' ? debug : undefined,
