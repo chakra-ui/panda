@@ -29,6 +29,15 @@
         "default": "./dist/presets.mjs"
       }
     },
+    "./utils": {
+      "source": "./src/utils.ts",
+      "types": "./dist/utils.d.ts",
+      "require": "./dist/utils.js",
+      "import": {
+        "types": "./dist/utils.d.mts",
+        "default": "./dist/utils.mjs"
+      }
+    },
     "./postcss": "./postcss.js",
     "./package.json": "./package.json"
   },
