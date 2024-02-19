@@ -1,5 +1,11 @@
 # @pandacss/shared
 
+## 0.32.0
+
+### Patch Changes
+
+- 8cd8c19: Always sort `all` to be first, so that other properties can easily override it
+
 ## 0.31.0
 
 ### Minor Changes

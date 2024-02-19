@@ -1,5 +1,29 @@
 # @pandacss/types
 
+## 0.32.0
+
+### Minor Changes
+
+- de4d9ef: Allow `config.hooks` to be shared in `plugins`
+
+  For hooks that can transform Panda's internal state by returning something (like `cssgen:done` and `codegen:prepare`),
+  each hook instance will be called sequentially and the return result (if any) of the previous hook call is passed to
+  the next hook so that they can be chained together.
+
+### Patch Changes
+
+- 60cace3: This change allows the user to set `jsxFramework` to any string to enable extracting JSX components.
+
+  ***
+
+  Context: In a previous version, Panda's extractor used to always extract JSX style props even when not specifying a
+  `jsxFramework`. This was considered a bug and has been fixed, which reduced the amount of work panda does and
+  artifacts generated if the user doesn't need jsx.
+
+  Now, in some cases like when using Svelte or Astro, the user might still to use & extract JSX style props, but the
+  `jsxFramework` didn't have a way to specify that. This change allows the user to set `jsxFramework` to any string to
+  enable extracting JSX components without generating any artifacts.
+
 ## 0.31.0
 
 ### Minor Changes

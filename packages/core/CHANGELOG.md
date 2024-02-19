@@ -1,5 +1,23 @@
 # @pandacss/core
 
+## 0.32.0
+
+### Minor Changes
+
+- b32d817: Switch from `em` to `rem` for breakpoints and container queries to prevent side effects.
+
+### Patch Changes
+
+- 433a364: Automatically generate a recipe `compoundVariants` when using `staticCss`
+- Updated dependencies [8cd8c19]
+- Updated dependencies [60cace3]
+- Updated dependencies [de4d9ef]
+  - @pandacss/shared@0.32.0
+  - @pandacss/types@0.32.0
+  - @pandacss/token-dictionary@0.32.0
+  - @pandacss/logger@0.32.0
+  - @pandacss/is-valid-prop@0.32.0
+
 ## 0.31.0
 
 ### Minor Changes

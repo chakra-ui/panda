@@ -1,5 +1,13 @@
 # @pandacss/extractor
 
+## 0.32.0
+
+### Patch Changes
+
+- 7e70b6b: Fix issue where `0` values doesn't get extracted when used in a condition
+- Updated dependencies [8cd8c19]
+  - @pandacss/shared@0.32.0
+
 ## 0.31.0
 
 ### Patch Changes

@@ -1,5 +1,37 @@
 # @pandacss/generator
 
+## 0.32.0
+
+### Minor Changes
+
+- b32d817: Switch from `em` to `rem` for breakpoints and container queries to prevent side effects.
+
+### Patch Changes
+
+- 60cace3: This change allows the user to set `jsxFramework` to any string to enable extracting JSX components.
+
+  ***
+
+  Context: In a previous version, Panda's extractor used to always extract JSX style props even when not specifying a
+  `jsxFramework`. This was considered a bug and has been fixed, which reduced the amount of work panda does and
+  artifacts generated if the user doesn't need jsx.
+
+  Now, in some cases like when using Svelte or Astro, the user might still to use & extract JSX style props, but the
+  `jsxFramework` didn't have a way to specify that. This change allows the user to set `jsxFramework` to any string to
+  enable extracting JSX components without generating any artifacts.
+
+- Updated dependencies [433a364]
+- Updated dependencies [8cd8c19]
+- Updated dependencies [60cace3]
+- Updated dependencies [de4d9ef]
+- Updated dependencies [b32d817]
+  - @pandacss/core@0.32.0
+  - @pandacss/shared@0.32.0
+  - @pandacss/types@0.32.0
+  - @pandacss/token-dictionary@0.32.0
+  - @pandacss/logger@0.32.0
+  - @pandacss/is-valid-prop@0.32.0
+
 ## 0.31.0
 
 ### Minor Changes
