@@ -786,7 +786,7 @@ Only use valid CSS values for properties that do have a predefined list of value
 
 ### jsxFramework
 
-**Type**: `'react' | 'solid' | 'preact' | 'vue' | 'qwik'`
+**Type**: `'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})`
 
 JS Framework for generated JSX elements.
 
