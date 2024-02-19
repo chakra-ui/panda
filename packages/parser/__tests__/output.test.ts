@@ -1196,6 +1196,7 @@ describe('extract to css output pipeline', () => {
         }
 
           .color-palette_button\\.light {
+            --colors-color-palette: var(--colors-button-light);
             --colors-color-palette-accent: var(--colors-button-light-accent);
             --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
         }
@@ -1209,6 +1210,7 @@ describe('extract to css output pipeline', () => {
         }
 
           .color-palette_button\\.light\\.accent {
+            --colors-color-palette: var(--colors-button-light-accent);
             --colors-color-palette-secondary: var(--colors-button-light-accent-secondary);
         }
 
@@ -3529,6 +3531,66 @@ describe('extract to css output pipeline', () => {
           :is(span .weirdCondition\\:text_red:hover > div) ~ :is(span .weirdCondition\\:text_red:hover > div) {
             color: red;
       }
+      }
+      }"
+    `)
+  })
+
+  test('colorPalette with DEFAULT', () => {
+    const code = `
+    import { css } from "styled-system/css"
+    css({
+      colorPalette: 'bg.primary',
+      backgroundColor: 'colorPalette'
+    })
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        extend: {
+          semanticTokens: {
+            colors: {
+              bg: {
+                primary: {
+                  DEFAULT: {
+                    value: '{colors.yellow.500}',
+                  },
+                  base: {
+                    value: '{colors.yellow.500}',
+                  },
+                  hover: {
+                    value: '{colors.yellow.300}',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "backgroundColor": "colorPalette",
+              "colorPalette": "bg.primary",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .color-palette_bg\\.primary {
+          --colors-color-palette: var(--colors-bg-primary);
+          --colors-color-palette-base: var(--colors-bg-primary-base);
+          --colors-color-palette-hover: var(--colors-bg-primary-hover);
+      }
+        .bg_colorPalette {
+          background-color: var(--colors-color-palette);
       }
       }"
     `)
