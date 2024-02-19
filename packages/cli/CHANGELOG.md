@@ -1,5 +1,23 @@
 # @pandacss/dev
 
+## 0.32.0
+
+### Patch Changes
+
+- ba67381: Fix issue in `defineParts` where it silently fails if a part not defined is used. It now errors with a
+  helpful message
+- Updated dependencies [8cd8c19]
+- Updated dependencies [60cace3]
+- Updated dependencies [de4d9ef]
+  - @pandacss/shared@0.32.0
+  - @pandacss/types@0.32.0
+  - @pandacss/config@0.32.0
+  - @pandacss/node@0.32.0
+  - @pandacss/token-dictionary@0.32.0
+  - @pandacss/logger@0.32.0
+  - @pandacss/preset-panda@0.32.0
+  - @pandacss/postcss@0.32.0
+
 ## 0.31.0
 
 ### Minor Changes

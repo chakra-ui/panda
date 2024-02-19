@@ -1,5 +1,26 @@
 # @pandacss/parser
 
+## 0.32.0
+
+### Minor Changes
+
+- b32d817: Switch from `em` to `rem` for breakpoints and container queries to prevent side effects.
+
+### Patch Changes
+
+- Updated dependencies [433a364]
+- Updated dependencies [7e70b6b]
+- Updated dependencies [8cd8c19]
+- Updated dependencies [60cace3]
+- Updated dependencies [de4d9ef]
+- Updated dependencies [b32d817]
+  - @pandacss/core@0.32.0
+  - @pandacss/extractor@0.32.0
+  - @pandacss/shared@0.32.0
+  - @pandacss/types@0.32.0
+  - @pandacss/config@0.32.0
+  - @pandacss/logger@0.32.0
+
 ## 0.31.0
 
 ### Minor Changes

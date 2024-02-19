@@ -1,5 +1,33 @@
 # @pandacss/node
 
+## 0.32.0
+
+### Minor Changes
+
+- de4d9ef: Allow `config.hooks` to be shared in `plugins`
+
+  For hooks that can transform Panda's internal state by returning something (like `cssgen:done` and `codegen:prepare`),
+  each hook instance will be called sequentially and the return result (if any) of the previous hook call is passed to
+  the next hook so that they can be chained together.
+
+### Patch Changes
+
+- Updated dependencies [433a364]
+- Updated dependencies [7e70b6b]
+- Updated dependencies [8cd8c19]
+- Updated dependencies [60cace3]
+- Updated dependencies [de4d9ef]
+- Updated dependencies [b32d817]
+  - @pandacss/core@0.32.0
+  - @pandacss/extractor@0.32.0
+  - @pandacss/shared@0.32.0
+  - @pandacss/generator@0.32.0
+  - @pandacss/types@0.32.0
+  - @pandacss/config@0.32.0
+  - @pandacss/parser@0.32.0
+  - @pandacss/token-dictionary@0.32.0
+  - @pandacss/logger@0.32.0
+
 ## 0.31.0
 
 ### Minor Changes
