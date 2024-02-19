@@ -296,8 +296,8 @@ importers:
         specifier: 6.0.1
         version: 6.0.1(postcss@8.4.35)
       postcss-merge-rules:
-        specifier: 6.0.1
-        version: 6.0.1(postcss@8.4.35)
+        specifier: 6.0.3
+        version: 6.0.3(postcss@8.4.35)
       postcss-minify-selectors:
         specifier: 6.0.2
         version: 6.0.2(postcss@8.4.35)
@@ -23665,19 +23665,6 @@ packages:
       postcss-selector-parser: 6.0.15
     dev: false
 
-  /postcss-merge-rules@6.0.1(postcss@8.4.35):
-    resolution: {integrity: sha512-a4tlmJIQo9SCjcfiCcCMg/ZCEe0XTkl/xK0XHBs955GWg9xDX3NwP9pwZ78QUOWB8/0XCjZeJn98Dae0zg6AAw==}
-    engines: {node: ^14 || ^16 || >=18.0}
-    peerDependencies:
-      postcss: ^8.2.15
-    dependencies:
-      browserslist: 4.23.0
-      caniuse-api: 3.0.0
-      cssnano-utils: 4.0.1(postcss@8.4.35)
-      postcss: 8.4.35
-      postcss-selector-parser: 6.0.15
-    dev: false
-
   /postcss-merge-rules@6.0.3(postcss@8.4.35):
     resolution: {integrity: sha512-yfkDqSHGohy8sGYIJwBmIGDv4K4/WrJPX355XrxQb/CSsT4Kc/RxDi6akqn5s9bap85AWgv21ArcUWwWdGNSHA==}
     engines: {node: ^14 || ^16 || >=18.0}
@@ -23689,7 +23676,6 @@ packages:
       cssnano-utils: 4.0.1(postcss@8.4.35)
       postcss: 8.4.35
       postcss-selector-parser: 6.0.15
-    dev: true
 
   /postcss-minify-font-values@5.1.0(postcss@8.4.35):
     resolution: {integrity: sha512-el3mYTgx13ZAPPirSVsHqFzl+BBBDrXvbySvPGFnQcTI4iNslrPaFq4muTkLZmKlGk4gyFAYUBMH30+HurREyA==}
