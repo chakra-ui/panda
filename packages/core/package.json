@@ -52,7 +52,7 @@
     "postcss": "8.4.35",
     "postcss-discard-duplicates": "6.0.1",
     "postcss-discard-empty": "6.0.1",
-    "postcss-merge-rules": "6.0.1",
+    "postcss-merge-rules": "6.0.3",
     "postcss-minify-selectors": "6.0.2",
     "postcss-nested": "6.0.1",
     "postcss-normalize-whitespace": "6.0.1",
