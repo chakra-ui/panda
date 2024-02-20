@@ -946,3 +946,31 @@ The validation strictness to use when validating the config.
 **Type**: `PandaHooks`
 
 Panda provides a set of callbacks that you can hook into for more advanced use cases. Check the [Hooks](/docs/concepts/hooks) docs for more information.
+
+### Plugins
+
+**Type**: `PandaPlugin[]`
+
+Plugins are currently simple objects that contain a `name` and a `hooks` object with the same structure as the `hooks` object in the config.
+
+They will be called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  plugins: [
+    {
+      name: 'token-format',
+      hooks: {
+        'tokens:created': ({ configure }) => {
+          configure({
+            formatTokenName: path => '$' + path.join('-')
+          })
+        }
+      }
+    }
+  ]
+})
+```
