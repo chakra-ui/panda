@@ -563,6 +563,48 @@ const Container = styled.div`
 `
 ```
 
+### lightningcss
+
+**Type**: `boolean`
+
+**Default**: `false`
+
+Whether to use `lightningcss` instead of `postcss` for css optimization.
+
+```json
+{
+  "lightningcss": true
+}
+```
+
+### browserslist
+
+**Type**: `string[]`
+
+**Default**: `[]`
+
+Browserslist query to target specific browsers. Only used when `lightningcss` is set to `true`.
+
+```json
+{
+  "browserslist": ["last 2 versions", "not dead", "not < 2%"]
+}
+```
+
+### polyfill
+
+**Type**: `boolean`
+
+**Default**: `false`
+
+Polyfill CSS @layers at-rules for older browsers.
+
+```json
+{
+  "polyfill": true
+}
+```
+
 ## Design token options
 
 ### shorthands
