@@ -6,16 +6,24 @@ describe('file matcher', () => {
     const ctx = createContext()
 
     const file = ctx.imports.file([
+      { mod: 'styled-system/css', name: 'css', alias: 'css' },
       // import { css as xcss } from 'styled-system/css'
       { mod: 'styled-system/css', name: 'css', alias: 'xcss' },
       // import { cva } from 'styled-system/css'
       { mod: 'styled-system/css', name: 'cva', alias: 'cva' },
     ])
 
-    expect(file.cvaAlias).toMatchInlineSnapshot('"cva"')
-
-    expect(file.cssAlias).toMatchInlineSnapshot('"xcss"')
-    expect(file.getAlias('css')).toMatchInlineSnapshot('"xcss"')
+    expect(file.getAliases('cva')).toMatchInlineSnapshot(`
+      [
+        "cva",
+      ]
+    `)
+    expect(file.getAliases('css')).toMatchInlineSnapshot(`
+      [
+        "css",
+        "xcss",
+      ]
+    `)
     expect(file.getName('xcss')).toMatchInlineSnapshot('"css"')
   })
 
@@ -51,13 +59,14 @@ describe('file matcher', () => {
     const ctx = createContext()
 
     const file = ctx.imports.file([
+      { mod: 'styled-system/jsx', name: 'styled', alias: 'styled' },
       { mod: 'styled-system/jsx', name: 'Stack', alias: 'Stack' },
       { mod: 'styled-system/jsx', name: 'VStack', alias: '__VStack' },
     ])
 
-    expect(file.isJsxFactory('styled')).toMatchInlineSnapshot('true')
-    expect(file.isJsxFactory('styled.div')).toMatchInlineSnapshot('true')
-    expect(file.isJsxFactory('Comp')).toMatchInlineSnapshot('false')
+    expect(file.isJsxFactory('styled')).toMatchInlineSnapshot(`true`)
+    expect(file.isJsxFactory('styled.div')).toMatchInlineSnapshot(`true`)
+    expect(file.isJsxFactory('Comp')).toMatchInlineSnapshot(`undefined`)
   })
 
   test('is valid pattern', () => {

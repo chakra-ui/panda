@@ -79,7 +79,7 @@ export function createParser(context: ParserOptions) {
         matchProp: () => true,
         matchArg: (prop) => {
           // skip resolving `badge` here: `panda("span", badge)`
-          if (prop.fnName === file.jsxFactoryAlias && prop.index === 1 && Node.isIdentifier(prop.argNode)) return false
+          if (file.isJsxFactory(prop.fnName) && prop.index === 1 && Node.isIdentifier(prop.argNode)) return false
           return true
         },
       },
