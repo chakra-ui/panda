@@ -57,6 +57,7 @@ describe('DiffEngine affecteds', () => {
         "types",
         "css-fn",
         "jsx-is-valid-prop",
+        "themes",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -117,6 +118,7 @@ describe('DiffEngine affecteds', () => {
         "types",
         "css-fn",
         "jsx-is-valid-prop",
+        "themes",
       }
     `)
     expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
@@ -232,6 +234,7 @@ describe('DiffEngine affecteds', () => {
         "types",
         "css-fn",
         "jsx-is-valid-prop",
+        "themes",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
