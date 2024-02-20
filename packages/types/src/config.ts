@@ -69,9 +69,9 @@ export interface PresetCore {
    */
   patterns: Record<string, PatternConfig>
   /**
-   * The css variables for your project.
+   * Multiple themes for your project.
    */
-  globalVars: GlobalVarsDefinition
+  themes?: ThemeVariantsMap
 }
 
 interface ExtendablePatterns {
@@ -125,6 +125,19 @@ interface ExtendableGlobalVars {
   extend?: ExtendableGlobalVars
 }
 
+export interface ThemeVariant extends Pick<Theme, 'tokens' | 'semanticTokens'> {
+  selector: string
+}
+
+export interface ThemeVariantsMap {
+  [name: string]: ThemeVariant
+}
+
+interface ExtendableThemeVariantsMap {
+  [name: string]: ThemeVariantsMap | ThemeVariant | undefined
+  extend?: ThemeVariantsMap | undefined
+}
+
 export interface ExtendableOptions {
   /**
    * The css selectors or media queries shortcuts.
@@ -155,6 +168,10 @@ export interface ExtendableOptions {
    * The css variables for your project.
    */
   globalVars?: ExtendableGlobalVars
+  /**
+   * The theme variants for your project.
+   */
+  themes?: ExtendableThemeVariantsMap
 }
 
 export interface ImportMapInput {

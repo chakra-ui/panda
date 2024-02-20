@@ -21,6 +21,7 @@ import { generateTypesEntry } from './types/main'
 import { generatePropTypes } from './types/prop-types'
 import { generateStyleProps } from './types/style-props'
 import { generateTokenTypes } from './types/token-types'
+import { generateThemes, generateThemesIndex } from './js/themes'
 
 function setupHelpers(ctx: Context): Artifact {
   const code = generateHelpers(ctx)
@@ -386,6 +387,22 @@ function setupPackageJson(ctx: Context): Artifact | undefined {
   }
 }
 
+function setupThemes(ctx: Context): Artifact | undefined {
+  const { themes } = ctx.config
+  if (!themes) return
+
+  const files = generateThemes(ctx)
+  if (!files) return
+
+  return {
+    id: 'themes',
+    dir: ctx.paths.themes,
+    files: files
+      .flatMap((file) => [{ file: [file.name, 'json'].join('.'), code: file.json }])
+      .concat(generateThemesIndex(ctx, files) ?? []),
+  }
+}
+
 const getAffectedArtifacts = (ids?: string[]): AffectedArtifacts | undefined => {
   if (!ids) return
 
@@ -467,6 +484,7 @@ const entries: ArtifactEntry[] = [
   ['jsx-patterns-index', setupJsxPatternsIndex],
   ['css-index', setupCssIndex],
   ['package.json', setupPackageJson],
+  ['themes', setupThemes],
 ]
 
 const getMatchingArtifacts = (ctx: Context, filters: ArtifactFilters | undefined): Artifact[] => {

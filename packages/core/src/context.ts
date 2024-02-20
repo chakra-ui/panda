@@ -12,6 +12,7 @@ import type {
   RequiredBy,
   StudioOptions,
   Theme,
+  ThemeVariantsMap,
   UserConfig,
 } from '@pandacss/types'
 import { Conditions } from './conditions'
@@ -82,7 +83,7 @@ export class Context {
     const theme = config.theme ?? {}
     conf.config = config
 
-    this.tokens = this.createTokenDictionary(theme)
+    this.tokens = this.createTokenDictionary(theme, config.themes)
     this.hooks['tokens:created']?.({
       configure: (opts) => {
         if (opts.formatTokenName) {
@@ -229,11 +230,12 @@ export class Context {
     }
   }
 
-  createTokenDictionary = (theme: Theme): TokenDictionary => {
+  createTokenDictionary = (theme: Theme, themeVariants?: ThemeVariantsMap): TokenDictionary => {
     return new TokenDictionary({
       breakpoints: theme.breakpoints,
       tokens: theme.tokens,
       semanticTokens: theme.semanticTokens,
+      themes: themeVariants,
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
     })
@@ -251,11 +253,21 @@ export class Context {
   }
 
   createConditions = (config: UserConfig): Conditions => {
+    const allowed = config.staticCss?.themes
+    let themeVariants
+
+    if (allowed) {
+      themeVariants = allowed.includes('*')
+        ? config.themes
+        : Object.fromEntries(Object.entries(config.themes ?? {}).filter(([key]) => allowed.includes(key)))
+    }
+
     return new Conditions({
       conditions: config.conditions,
       containerNames: config.theme?.containerNames,
       containerSizes: config.theme?.containerSizes,
       breakpoints: config.theme?.breakpoints,
+      themes: themeVariants,
     })
   }
 

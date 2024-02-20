@@ -25,6 +25,7 @@ export type ArtifactId =
   | 'jsx-patterns'
   | 'jsx-patterns-index'
   | 'css-index'
+  | 'themes'
   | 'package.json'
   | 'types-jsx'
   | 'types-entry'
