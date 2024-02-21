@@ -24,17 +24,17 @@ export class FileMatcher {
   imports: ImportResult[]
   private importMap: ImportMapOutput<string>
 
+  private cssAliases = new Set<string>()
+  private cvaAliases = new Set<string>()
+  private svaAliases = new Set<string>()
+  private jsxFactoryAliases = new Set<string>()
+
   private recipeAliases = new Set<string>()
   private patternAliases = new Set<string>()
 
   private propertiesMap = new Map<string, boolean>()
   private functions = new Map<string, Map<string, boolean>>()
   private components = new Map<string, Map<string, boolean>>()
-
-  cvaAlias = 'cva'
-  cssAlias = 'css'
-  svaAlias = 'sva'
-  jsxFactoryAlias = 'styled'
 
   constructor(
     private context: Pick<Context, 'jsx' | 'patterns' | 'recipes' | 'isValidProperty'>,
@@ -47,7 +47,6 @@ export class FileMatcher {
 
     this.assignAliases()
     this.assignProperties()
-    this.assignImportAliases()
   }
 
   private assignAliases() {
@@ -59,24 +58,35 @@ export class FileMatcher {
       if (this.isValidPattern(result.alias)) {
         this.patternAliases.add(result.alias)
       }
+
+      if (result.name === 'css') {
+        this.cssAliases.add(result.alias)
+      }
+
+      if (result.name === 'cva') {
+        this.cvaAliases.add(result.alias)
+      }
+
+      if (result.name === 'sva') {
+        this.svaAliases.add(result.alias)
+      }
+
+      if (result.name === this.context.jsx.factoryName) {
+        this.jsxFactoryAliases.add(result.alias)
+      }
     })
   }
 
   private assignProperties() {
     this.context.jsx.nodes.forEach((node) => {
-      const alias = this.getAlias(node.jsxName)
-      node.props?.forEach((prop) => this.propertiesMap.set(prop, true))
-      this.functions.set(node.baseName, this.propertiesMap)
-      this.functions.set(alias, this.propertiesMap)
-      this.components.set(alias, this.propertiesMap)
+      const aliases = this.getAliases(node.jsxName)
+      aliases.forEach((alias) => {
+        node.props?.forEach((prop) => this.propertiesMap.set(prop, true))
+        this.functions.set(node.baseName, this.propertiesMap)
+        this.functions.set(alias, this.propertiesMap)
+        this.components.set(alias, this.propertiesMap)
+      })
     })
-  }
-
-  private assignImportAliases() {
-    this.cvaAlias = this.getAlias('cva')
-    this.cssAlias = this.getAlias('css')
-    this.svaAlias = this.getAlias('sva')
-    this.jsxFactoryAlias = this.getAlias(this.context.jsx.factoryName)
   }
 
   isEmpty = () => {
@@ -109,8 +119,8 @@ export class FileMatcher {
     return this.find(id)?.name || id
   }
 
-  getAlias = (id: string) => {
-    return this.imports.find((o) => o.name === id)?.alias || id
+  getAliases = (id: string) => {
+    return this.imports.filter((o) => o.name === id).map((o) => o.alias || id)
   }
 
   isValidPattern = (id: string) => {
@@ -133,7 +143,12 @@ export class FileMatcher {
   }
 
   isAliasFnName = memo((fnName: string) => {
-    return fnName === this.cvaAlias || fnName === this.cssAlias || fnName === this.svaAlias || this.isJsxFactory(fnName)
+    return (
+      this.cvaAliases.has(fnName) ||
+      this.cssAliases.has(fnName) ||
+      this.svaAliases.has(fnName) ||
+      this.isJsxFactory(fnName)
+    )
   })
 
   matchFn = memo((fnName: string) => {
@@ -144,7 +159,11 @@ export class FileMatcher {
 
   isJsxFactory = memo((tagName: string) => {
     const { jsx } = this.context
-    return Boolean(jsx.isEnabled && tagName.startsWith(this.jsxFactoryAlias))
+    if (!jsx.isEnabled) return false
+
+    for (const alias of this.jsxFactoryAliases) {
+      if (tagName.startsWith(alias)) return true
+    }
   })
 
   isPandaComponent = memo((tagName: string) => {

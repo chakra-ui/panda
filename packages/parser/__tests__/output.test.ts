@@ -1717,25 +1717,6 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "marginBottom": "42px",
-              "marginTop": "40px",
-            },
-          ],
-          "name": "styled.button",
-          "type": "jsx-factory",
-        },
-        {
-          "data": [
-            {
-              "bg": "red.200",
-            },
-          ],
-          "name": "styled.div",
-          "type": "jsx-factory",
-        },
-        {
-          "data": [
-            {
               "size": "md",
               "variant": "danger",
             },
@@ -1805,20 +1786,8 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .bg_red\\.200 {
-          background: var(--colors-red-200);
-      }
-
         .flex_column {
           flex-direction: column;
-      }
-
-        .mt_40px {
-          margin-top: 40px;
-      }
-
-        .mb_42px {
-          margin-bottom: 42px;
       }
       }"
     `)
@@ -3466,6 +3435,51 @@ describe('extract to css output pipeline', () => {
 
         .p_4 {
           padding: var(--spacing-4);
+      }
+
+        .flex_column {
+          flex-direction: column;
+      }
+      }"
+    `)
+  })
+
+  test('multiple css alias', () => {
+    const code = `
+    import { css } from '../styled-system/css'
+    import { css as css2 } from '../styled-system/css'
+
+    css({ display: 'flex' });
+    css2({ flexDirection: 'column' });
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "display": "flex",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+        {
+          "data": [
+            {
+              "flexDirection": "column",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex;
       }
 
         .flex_column {
