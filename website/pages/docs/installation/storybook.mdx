@@ -271,3 +271,10 @@ export default defineConfig({
   dependencies: ['path/to/files/**.ts'],
 })
 ```
+
+#### styles in `args` is not generated
+
+If you are having issues with your `args` not generating the expected CSS, it's probably because of:
+
+- you didn't add a file glob for the Storybook files in your [`config.include`]((/docs/references/config#include)) like `"./stories/**/*.{js,jsx,ts,tsx}"`
+- you didn't wrap your `args` object (or some part of it) with the [`.raw()` marker that helps Panda find style usage](https://panda-css.com/docs/guides/dynamic-styling#alternative)

@@ -17,6 +17,7 @@ With hooks you can:
 - or create your own styles parser (`parser:before`, `parser:after`) using the file's content so that Panda could be used with any templating language
 - alter the generated `outdir` (styled-system) files (`codegen:prepare`)
 - tweak the final CSS generation (`cssgen:done`), allowing all kinds of customizations like removing the unused CSS variables, etc.
+- restrict `strictTokens` to a specific set of token categories, ex: only affect `colors` and `spacing` tokens and therefore allow any value for `fontSizes` and `lineHeights`
 
 ## Usage example
 
@@ -62,10 +63,12 @@ export default defineConfig({
 })
 ```
 
-### Remove a pattern
+### Tweak the config
 
 Utils functions in the `config:resolved` hook, make it easy to apply transformations after all presets have been
 merged.
+
+In the example below, we remove the `stack` pattern from the final config.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -133,7 +136,35 @@ export default defineConfig({
 
 Get the snippets for the removal logic from our Github Sandbox in the [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) files.
 
-> note that using this means you can't use the JS function token.var (or token(xxx) where xxx is the path to a semanticToken) from styled-system/tokens as the CSS variables will be removed based on the usage found in the generated CSS
+> note that using this means you can't use the JS function [`token.var`](/docs/guides/dynamic-styling#using-tokenvar) (or [token(xxx)](/docs/guides/dynamic-styling#using-token) where `xxx` is the path to a [semanticToken](/docs/theming/tokens#semantic-tokens)) from `styled-system/tokens` as the CSS variables will be removed based on the usage found in the generated CSS
+
+## Sharing hooks
+
+Hooks are a great way to create custom functionality. You can share hooks as a snippet or as a `plugin`:
+
+Plugins are currently simple objects that contain a `name` associated with a `hooks` object with the same structure as the `hooks` object in the config.
+
+> Plugins differ from `presets` as they can't be extended, but they will be called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  plugins: [
+    {
+      name: 'token-format',
+      hooks: {
+        'tokens:created': ({ configure }) => {
+          configure({
+            formatTokenName: path => '$' + path.join('-')
+          })
+        }
+      }
+    }
+  ]
+})
+```
 
 ## Reference
 
@@ -143,7 +174,9 @@ export interface PandaHooks {
    * Called when the config is resolved, after all the presets are loaded and merged.
    * This is the first hook called, you can use it to tweak the config before the context is created.
    */
-  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn
+  'config:resolved': (
+    args: ConfigResolvedHookArgs
+  ) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
   /**
    * Called when the token engine has been created
    */
@@ -155,17 +188,11 @@ export interface PandaHooks {
   /**
    * Called when the Panda context has been created and the API is ready to be used.
    */
-  'context:created': (args: {
-    ctx: HooksApiInterface
-    logger: LoggerInterface
-  }) => void
+  'context:created': (args: ContextCreatedHookArgs) => void
   /**
    * Called when the config file or one of its dependencies (imports) has changed.
    */
-  'config:change': (args: {
-    config: UserConfig
-    changes: DiffConfigResult
-  }) => MaybeAsyncReturn
+  'config:change': (args: ConfigChangeHookArgs) => MaybeAsyncReturn
   /**
    * Called after reading the file content but before parsing it.
    * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
@@ -176,80 +203,23 @@ export interface PandaHooks {
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
    * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
    */
-  'parser:after': (args: {
-    filePath: string
-    result: ParserResultInterface | undefined
-  }) => void
+  'parser:after': (args: ParserResultAfterHookArgs) => void
   /**
    * Called right before writing the codegen files to disk.
    * You can use this hook to tweak the codegen files before they are written to disk.
    */
-  'codegen:prepare': (args: {
-    artifacts: Artifact[]
-    changed: ArtifactId[] | undefined
-  }) => MaybeAsyncReturn
+  'codegen:prepare': (
+    args: CodegenPrepareHookArgs
+  ) => MaybeAsyncReturn<Artifact[]>
   /**
    * Called after the codegen is completed
    */
-  'codegen:done': (args: {
-    changed: ArtifactId[] | undefined
-  }) => MaybeAsyncReturn
+  'codegen:done': (args: CodegenDoneHookArgs) => MaybeAsyncReturn
   /**
    * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
    * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
    * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
    */
-  'cssgen:done': (args: {
-    artifact:
-      | 'global'
-      | 'static'
-      | 'reset'
-      | 'tokens'
-      | 'keyframes'
-      | 'styles.css'
-    content: string
-  }) => string | void
-}
-
-type MaybeAsyncReturn<T = void> = Promise<T> | T
-
-interface TokenCssVarOptions {
-  fallback?: string
-  prefix?: string
-  hash?: boolean
-}
-
-interface TokenCssVar {
-  var: `--${string}`
-  ref: string
-}
-
-export interface TokenConfigureOptions {
-  formatTokenName?: (path: string[]) => string
-  formatCssVar?: (path: string[], options: TokenCssVarOptions) => TokenCssVar
-}
-
-export interface TokenCreatedHookArgs {
-  configure(opts: TokenConfigureOptions): void
-}
-
-export interface UtilityConfigureOptions {
-  toHash?(path: string[], toHash: (str: string) => string): string
-}
-
-export interface UtilityCreatedHookArgs {
-  configure(opts: UtilityConfigureOptions): void
-}
-
-export interface ParserResultBeforeHookArgs {
-  filePath: string
-  content: string
-  configure: (opts: ParserResultConfigureOptions) => void
-}
-
-export interface ConfigResolvedHookArgs {
-  config: LoadConfigResult['config']
-  path: string
-  dependencies: string[]
+  'cssgen:done': (args: CssgenDoneHookArgs) => string | void
 }
 ```

@@ -162,6 +162,18 @@ Whether to hash the output classnames
 
 Related: [`config.hash`](/docs/references/config#hash)
 
+#### `--lightningcss`
+
+Use `lightningcss` instead of `postcss` for css optimization.
+
+Related: [`config.lightningcss`](/docs/references/config#lightningcss)
+
+#### `--polyfill`
+
+Polyfill CSS @layers at-rules for older browsers.
+
+Related: [`config.polyfill`](/docs/references/config#polyfill)
+
 #### `--emitTokensOnly`
 
 Whether to only emit the `tokens` directory
@@ -332,6 +344,18 @@ Related: [`config.poll`](/docs/references/config#poll)
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
+
+#### `--lightningcss`
+
+Use `lightningcss` instead of `postcss` for css optimization.
+
+Related: [`config.lightningcss`](/docs/references/config#lightningcss)
+
+#### `--polyfill`
+
+Polyfill CSS @layers at-rules for older browsers.
+
+Related: [`config.polyfill`](/docs/references/config#polyfill)
 
 #### `--cpu-prof`
 
