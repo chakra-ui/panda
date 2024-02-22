@@ -26,7 +26,14 @@ export type ArtifactId =
   | 'jsx-patterns-index'
   | 'css-index'
   | 'package.json'
-  | (string & {})
+  | 'types-jsx'
+  | 'types-entry'
+  | 'types-styles'
+  | 'types-conditions'
+  | 'types-gen'
+  | 'types-gen-system'
+  | `recipes.${string}`
+  | `patterns.${string}`
 
 export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 

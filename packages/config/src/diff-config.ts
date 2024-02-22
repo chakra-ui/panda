@@ -43,13 +43,13 @@ export function diffConfigs(config: ConfigOrFn, prevConfig: Config | undefined):
       // same for recipes, use dashCase since those will be used as filenames
       if (id === 'recipes') {
         // ['theme', 'recipes', 'xxx'] => recipes.xxx
-        const name = dashCase(change.path.slice(1, 3).join('.') as ArtifactId)
+        const name = dashCase(change.path.slice(1, 3).join('.')) as ArtifactId
         affected.artifacts.add(name)
       }
 
       if (id === 'patterns') {
         // ['patterns', 'xxx'] => patterns.xxx
-        const name = dashCase(change.path.slice(0, 2).join('.') as ArtifactId)
+        const name = dashCase(change.path.slice(0, 2).join('.')) as ArtifactId
         affected.artifacts.add(name)
       }
 

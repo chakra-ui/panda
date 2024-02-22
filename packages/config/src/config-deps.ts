@@ -63,6 +63,12 @@ const artifactConfigDeps: Record<ArtifactId, ConfigPath[]> = {
   'jsx-patterns-index': jsx.concat('patterns'),
   'css-index': ['syntax'],
   'package.json': ['emitPackage', 'forceConsistentTypeExtension', 'outExtension'],
+  'types-styles': ['shorthands'],
+  'types-conditions': ['conditions'],
+  'types-jsx': jsx,
+  'types-entry': [],
+  'types-gen': [],
+  'types-gen-system': [],
 }
 
 // Prepare a list of regex that resolves to an artifact id from a list of config paths

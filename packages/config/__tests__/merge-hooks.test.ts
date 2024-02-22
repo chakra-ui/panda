@@ -114,36 +114,36 @@ describe('mergeConfigs / theme', () => {
 
             expect(args.original).toBe(original)
             expect(args.original).toMatchInlineSnapshot(`
-                [
-                  {
-                    "files": [
-                      {
-                        "code": "aaa aaa aaa",
-                        "file": "aaa.js",
-                      },
-                    ],
-                    "id": "1",
-                  },
-                  {
-                    "files": [
-                      {
-                        "code": "bbb bbb bbb",
-                        "file": "bbb.js",
-                      },
-                    ],
-                    "id": "2",
-                  },
-                  {
-                    "files": [
-                      {
-                        "code": "ccc ccc ccc",
-                        "file": "ccc.js",
-                      },
-                    ],
-                    "id": "3",
-                  },
-                ]
-              `)
+              [
+                {
+                  "files": [
+                    {
+                      "code": "aaa aaa aaa",
+                      "file": "aaa.js",
+                    },
+                  ],
+                  "id": "recipes.1",
+                },
+                {
+                  "files": [
+                    {
+                      "code": "bbb bbb bbb",
+                      "file": "bbb.js",
+                    },
+                  ],
+                  "id": "recipes.2",
+                },
+                {
+                  "files": [
+                    {
+                      "code": "ccc ccc ccc",
+                      "file": "ccc.js",
+                    },
+                  ],
+                  "id": "recipes.3",
+                },
+              ]
+            `)
             return args.artifacts.map((art) => {
               return { ...art, files: art.files.map((f) => ({ ...f, code: (f.code || '').replace('bbb', 'zzz') })) }
             })
@@ -155,9 +155,9 @@ describe('mergeConfigs / theme', () => {
     const result = hooks['codegen:prepare']?.({
       changed: [],
       artifacts: [
-        { id: '1', files: [{ code: 'aaa aaa aaa', file: 'aaa.js' }] },
-        { id: '2', files: [{ code: 'bbb bbb bbb', file: 'bbb.js' }] },
-        { id: '3', files: [{ code: 'ccc ccc ccc', file: 'ccc.js' }] },
+        { id: 'recipes.1', files: [{ code: 'aaa aaa aaa', file: 'aaa.js' }] },
+        { id: 'recipes.2', files: [{ code: 'bbb bbb bbb', file: 'bbb.js' }] },
+        { id: 'recipes.3', files: [{ code: 'ccc ccc ccc', file: 'ccc.js' }] },
       ],
     })
 
@@ -176,7 +176,7 @@ describe('mergeConfigs / theme', () => {
               "file": "aaa.js",
             },
           ],
-          "id": "1",
+          "id": "recipes.1",
         },
         {
           "files": [
@@ -185,7 +185,7 @@ describe('mergeConfigs / theme', () => {
               "file": "bbb.js",
             },
           ],
-          "id": "2",
+          "id": "recipes.2",
         },
         {
           "files": [
@@ -194,7 +194,7 @@ describe('mergeConfigs / theme', () => {
               "file": "ccc.js",
             },
           ],
-          "id": "3",
+          "id": "recipes.3",
         },
       ]
     `)
