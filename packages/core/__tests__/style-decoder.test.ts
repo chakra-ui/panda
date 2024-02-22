@@ -94,8 +94,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 48em)",
-              "raw": "@media screen and (min-width: 48em)",
+              "params": "screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -474,8 +474,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "@media screen and (min-width: 40em)",
+              "params": "screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -500,8 +500,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "@media screen and (min-width: 40em)",
+              "params": "screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -526,8 +526,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "@media screen and (min-width: 40em)",
+              "params": "screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -552,8 +552,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "@media screen and (min-width: 40em)",
+              "params": "screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -578,8 +578,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 40em)",
-              "raw": "@media screen and (min-width: 40em)",
+              "params": "screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -598,7 +598,7 @@ describe('style decoder', () => {
           "layer": undefined,
           "result": {
             ".sm\\:hover\\:bg_green": {
-              "@media screen and (min-width: 40em)": {
+              "@media screen and (min-width: 40rem)": {
                 "&:is(:hover, [data-hover])": {
                   "backgroundColor": "green",
                 },
@@ -611,8 +611,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 48em)",
-              "raw": "@media screen and (min-width: 48em)",
+              "params": "screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -631,7 +631,7 @@ describe('style decoder', () => {
           "layer": undefined,
           "result": {
             ".hover\\:md\\:fs_lg": {
-              "@media screen and (min-width: 48em)": {
+              "@media screen and (min-width: 48rem)": {
                 "&:is(:hover, [data-hover])": {
                   "fontSize": "var(--font-sizes-lg)",
                 },
@@ -644,8 +644,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 80em)",
-              "raw": "@media screen and (min-width: 80em)",
+              "params": "screen and (min-width: 80rem)",
+              "raw": "@media screen and (min-width: 80rem)",
               "type": "at-rule",
               "value": "xl",
             },
@@ -670,8 +670,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 80em)",
-              "raw": "@media screen and (min-width: 80em)",
+              "params": "screen and (min-width: 80rem)",
+              "raw": "@media screen and (min-width: 80rem)",
               "type": "at-rule",
               "value": "xl",
             },
@@ -700,7 +700,7 @@ describe('style decoder', () => {
           "layer": undefined,
           "result": {
             ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink": {
-              "@media screen and (min-width: 80em)": {
+              "@media screen and (min-width: 80rem)": {
                 "&[data-attr='test']": {
                   "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
                     ".target &": {
@@ -870,8 +870,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 48em)",
-              "raw": "@media screen and (min-width: 48em)",
+              "params": "screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -1604,8 +1604,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 48em)",
-              "raw": "@media screen and (min-width: 48em)",
+              "params": "screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -1630,8 +1630,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 48em)",
-              "raw": "@media screen and (min-width: 48em)",
+              "params": "screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -1659,8 +1659,8 @@ describe('style decoder', () => {
           "conditions": [
             {
               "name": "breakpoint",
-              "params": "screen and (min-width: 48em)",
-              "raw": "@media screen and (min-width: 48em)",
+              "params": "screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },

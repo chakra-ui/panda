@@ -216,14 +216,14 @@ describe('extract to css output pipeline', () => {
       }
       }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 48rem) {
           [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]).dark,.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
             margin: calc(var(--spacing-2) * -1);
       }
       }
 
-        @media screen and (min-width: 48em) {
-          @media screen and (min-width: 40em) {
+        @media screen and (min-width: 48rem) {
+          @media screen and (min-width: 40rem) {
             .md\\:sm\\:m_4px {
               margin: 4px;
       }
