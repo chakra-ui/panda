@@ -1,5 +1,5 @@
-import { capitalize, toRem, toPx } from '@pandacss/shared'
-import type { RawCondition } from '@pandacss/types'
+import { capitalize, toPx, toRem } from '@pandacss/shared'
+import type { AtRuleCondition, ConditionDetails } from '@pandacss/types'
 import type { Root } from 'postcss'
 
 export class Breakpoints {
@@ -7,7 +7,7 @@ export class Breakpoints {
   values: Record<string, BreakpointEntry>
   keys: string[]
   ranges: Record<string, string>
-  conditions: Record<string, Cond>
+  conditions: Record<string, AtRuleCondition>
 
   constructor(private breakpoints: Record<string, string>) {
     this.sorted = sortBreakpoints(breakpoints)
@@ -65,7 +65,7 @@ export class Breakpoints {
     return Object.fromEntries(values)
   }
 
-  getCondition = (key: string): Cond | undefined => {
+  getCondition = (key: string): ConditionDetails | undefined => {
     return this.conditions[key]
   }
 
@@ -75,6 +75,10 @@ export class Breakpoints {
       if (!value) {
         throw rule.error(`No \`${rule.params}\` screen found.`)
       }
+      if (value.type !== 'at-rule') {
+        throw rule.error(`\`${rule.params}\` is not a valid screen.`)
+      }
+
       rule.name = 'media'
       rule.params = value.params
     })
@@ -109,14 +113,11 @@ function sortBreakpoints(breakpoints: Record<string, string>): Entries {
     })
 }
 
-type Cond = RawCondition & { params: string }
-
-const toCondition = (key: string, value: string): Cond => ({
+const toCondition = (key: string, value: string): AtRuleCondition => ({
   type: 'at-rule',
   name: 'breakpoint',
   value: key,
-  raw: key,
-  rawValue: `@media ${value}`,
+  raw: `@media ${value}`,
   params: value,
 })
 

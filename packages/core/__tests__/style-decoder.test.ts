@@ -95,8 +95,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 48rem)",
-              "raw": "md",
-              "rawValue": "@media screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -476,8 +475,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 40rem)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -503,8 +501,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 40rem)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -530,8 +527,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 40rem)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -557,8 +553,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 40rem)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
               "type": "at-rule",
               "value": "sm",
             },
@@ -579,13 +574,78 @@ describe('style decoder', () => {
           },
         },
         {
+          "className": "sm\\:hover\\:bg_green",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
+              "type": "at-rule",
+              "value": "sm",
+            },
+            {
+              "raw": "&:is(:hover, [data-hover])",
+              "type": "self-nesting",
+              "value": "&:is(:hover, [data-hover])",
+            },
+          ],
+          "entry": {
+            "cond": "sm<___>_hover",
+            "prop": "backgroundColor",
+            "value": "green",
+          },
+          "hash": "backgroundColor]___[value:green]___[cond:sm<___>_hover",
+          "layer": undefined,
+          "result": {
+            ".sm\\:hover\\:bg_green": {
+              "@media screen and (min-width: 40rem)": {
+                "&:is(:hover, [data-hover])": {
+                  "backgroundColor": "green",
+                },
+              },
+            },
+          },
+        },
+        {
+          "className": "hover\\:md\\:fs_lg",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
+              "type": "at-rule",
+              "value": "md",
+            },
+            {
+              "raw": "&:is(:hover, [data-hover])",
+              "type": "self-nesting",
+              "value": "&:is(:hover, [data-hover])",
+            },
+          ],
+          "entry": {
+            "cond": "_hover<___>md",
+            "prop": "fontSize",
+            "value": "lg",
+          },
+          "hash": "fontSize]___[value:lg]___[cond:_hover<___>md",
+          "layer": undefined,
+          "result": {
+            ".hover\\:md\\:fs_lg": {
+              "@media screen and (min-width: 48rem)": {
+                "&:is(:hover, [data-hover])": {
+                  "fontSize": "var(--font-sizes-lg)",
+                },
+              },
+            },
+          },
+        },
+        {
           "className": "xl\\:w_3",
           "conditions": [
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 80rem)",
-              "raw": "xl",
-              "rawValue": "@media screen and (min-width: 80rem)",
+              "raw": "@media screen and (min-width: 80rem)",
               "type": "at-rule",
               "value": "xl",
             },
@@ -606,76 +666,15 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:hover\\:bg_green",
-          "conditions": [
-            {
-              "raw": "&:is(:hover, [data-hover])",
-              "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
-            },
-            {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 40rem)",
-              "raw": "sm",
-              "rawValue": "@media screen and (min-width: 40rem)",
-              "type": "at-rule",
-              "value": "sm",
-            },
-          ],
-          "entry": {
-            "cond": "sm<___>_hover",
-            "prop": "backgroundColor",
-            "value": "green",
-          },
-          "hash": "backgroundColor]___[value:green]___[cond:sm<___>_hover",
-          "layer": undefined,
-          "result": {
-            ".sm\\:hover\\:bg_green": {
-              "&:is(:hover, [data-hover])": {
-                "@media screen and (min-width: 40rem)": {
-                  "backgroundColor": "green",
-                },
-              },
-            },
-          },
-        },
-        {
-          "className": "hover\\:md\\:fs_lg",
-          "conditions": [
-            {
-              "raw": "&:is(:hover, [data-hover])",
-              "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
-            },
-            {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 48rem)",
-              "raw": "md",
-              "rawValue": "@media screen and (min-width: 48rem)",
-              "type": "at-rule",
-              "value": "md",
-            },
-          ],
-          "entry": {
-            "cond": "_hover<___>md",
-            "prop": "fontSize",
-            "value": "lg",
-          },
-          "hash": "fontSize]___[value:lg]___[cond:_hover<___>md",
-          "layer": undefined,
-          "result": {
-            ".hover\\:md\\:fs_lg": {
-              "&:is(:hover, [data-hover])": {
-                "@media screen and (min-width: 48rem)": {
-                  "fontSize": "var(--font-sizes-lg)",
-                },
-              },
-            },
-          },
-        },
-        {
           "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
           "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 80rem)",
+              "raw": "@media screen and (min-width: 80rem)",
+              "type": "at-rule",
+              "value": "xl",
+            },
             {
               "raw": "&[data-attr='test']",
               "type": "self-nesting",
@@ -691,14 +690,6 @@ describe('style decoder', () => {
               "type": "parent-nesting",
               "value": ".target &",
             },
-            {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 80rem)",
-              "raw": "xl",
-              "rawValue": "@media screen and (min-width: 80rem)",
-              "type": "at-rule",
-              "value": "xl",
-            },
           ],
           "entry": {
             "cond": "&[data-attr='test']<___>_expanded<___>.target &<___>xl",
@@ -709,10 +700,10 @@ describe('style decoder', () => {
           "layer": undefined,
           "result": {
             ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink": {
-              "&[data-attr='test']": {
-                "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
-                  ".target &": {
-                    "@media screen and (min-width: 80rem)": {
+              "@media screen and (min-width: 80rem)": {
+                "&[data-attr='test']": {
+                  "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
+                    ".target &": {
                       "color": "pink",
                     },
                   },
@@ -880,8 +871,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 48rem)",
-              "raw": "md",
-              "rawValue": "@media screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -1615,8 +1605,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 48rem)",
-              "raw": "md",
-              "rawValue": "@media screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -1642,8 +1631,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 48rem)",
-              "raw": "md",
-              "rawValue": "@media screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },
@@ -1672,8 +1660,7 @@ describe('style decoder', () => {
             {
               "name": "breakpoint",
               "params": "screen and (min-width: 48rem)",
-              "raw": "md",
-              "rawValue": "@media screen and (min-width: 48rem)",
+              "raw": "@media screen and (min-width: 48rem)",
               "type": "at-rule",
               "value": "md",
             },

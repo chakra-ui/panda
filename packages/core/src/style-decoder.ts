@@ -9,10 +9,10 @@ import {
 } from '@pandacss/shared'
 import type {
   AtomicStyleResult,
+  ConditionDetails,
   Dict,
   GroupedResult,
   GroupedStyleResultDetails,
-  RawCondition,
   RecipeBaseResult,
   StyleEntry,
   StyleResultObject,
@@ -102,8 +102,10 @@ export class StyleDecoder {
     }
   }
 
-  resolveCondition = (condition: RawCondition) => {
-    return this.context.utility.tokens.resolveReference(condition.rawValue ?? condition.raw)
+  resolveCondition = (condition: ConditionDetails) => {
+    return Array.isArray(condition.raw)
+      ? condition.raw.map((c) => this.context.utility.tokens.resolveReference(c))
+      : this.context.utility.tokens.resolveReference(condition.raw)
   }
 
   private getAtomic = (hash: string) => {
@@ -125,7 +127,7 @@ export class StyleDecoder {
 
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
-      const path = basePath.concat(conditions.map((c) => this.resolveCondition(c)))
+      const path = basePath.concat(conditions.flatMap((c) => this.resolveCondition(c)))
       deepSet(obj, path, styles)
     } else {
       deepSet(obj, basePath, styles)
@@ -187,7 +189,7 @@ export class StyleDecoder {
     const sorted = sortStyleRules(details)
     sorted.forEach((value) => {
       if (value.conditions) {
-        const path = basePath.concat(value.conditions.map((c) => this.resolveCondition(c)))
+        const path = basePath.concat(value.conditions.flatMap((c) => this.resolveCondition(c)))
         obj = deepSet(obj, path, value.result)
       } else {
         obj = deepSet(obj, basePath, value.result)

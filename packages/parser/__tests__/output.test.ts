@@ -217,16 +217,16 @@ describe('extract to css output pipeline', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          @media screen and (min-width: 40rem) {
-            .md\\:sm\\:m_4px {
-              margin: 4px;
-      }
+          [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]).dark,.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
+            margin: calc(var(--spacing-2) * -1);
       }
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]).dark,.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
-            margin: calc(var(--spacing-2) * -1);
+          @media screen and (min-width: 40rem) {
+            .md\\:sm\\:m_4px {
+              margin: 4px;
+      }
       }
       }
       }"
@@ -3484,6 +3484,51 @@ describe('extract to css output pipeline', () => {
 
         .flex_column {
           flex-direction: column;
+      }
+      }"
+    `)
+  })
+
+  test('weird conditions mixing', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const App = () => {
+      return (
+        <div className={css({
+          _weirdCondition: {
+            color: "red"
+          }
+        })} />
+      )
+     `
+    const result = parseAndExtract(code, {
+      conditions: {
+        weirdCondition: ['@media (hover: hover) and (pointer: fine)', '&:hover', '& > div', 'span &', '& ~ &'],
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "_weirdCondition": {
+                "color": "red",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) and (pointer: fine) {
+          :is(span .weirdCondition\\:text_red:hover > div) ~ :is(span .weirdCondition\\:text_red:hover > div) {
+            color: red;
+      }
       }
       }"
     `)

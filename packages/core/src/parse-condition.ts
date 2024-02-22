@@ -1,8 +1,14 @@
-import type { RawCondition } from '@pandacss/types'
+import type {
+  AtRuleCondition,
+  ConditionDetails,
+  ConditionQuery,
+  MixedCondition,
+  SelectorCondition,
+} from '@pandacss/types'
 import { AtRule } from 'postcss'
 import { safeParse } from './safe-parse'
 
-function parseAtRule(value: string): RawCondition {
+function parseAtRule(value: string): AtRuleCondition {
   // TODO this creates a new postcss.root for each media query !
   const result = safeParse(value)
   const rule = result.nodes[0] as AtRule
@@ -11,16 +17,24 @@ function parseAtRule(value: string): RawCondition {
     name: rule.name,
     value: rule.params,
     raw: value,
-    rawValue: value,
+    params: rule.params,
   }
 }
 
-export function parseCondition(condition: string): RawCondition | undefined {
+export function parseCondition(condition: ConditionQuery): ConditionDetails | undefined {
+  if (Array.isArray(condition)) {
+    return {
+      type: 'mixed',
+      raw: condition,
+      value: condition.map(parseCondition),
+    } as MixedCondition
+  }
+
   if (condition.startsWith('@')) {
     return parseAtRule(condition)
   }
 
-  let type: RawCondition['type'] | undefined
+  let type: ConditionDetails['type'] | undefined
 
   if (condition.startsWith('&')) {
     type = 'self-nesting'
@@ -31,6 +45,6 @@ export function parseCondition(condition: string): RawCondition | undefined {
   }
 
   if (type) {
-    return { type, value: condition, raw: condition }
+    return { type, value: condition, raw: condition } as SelectorCondition
   }
 }

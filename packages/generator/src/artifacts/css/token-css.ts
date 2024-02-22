@@ -29,11 +29,12 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
         .map((key) => conditions.get(key))
         .filter(Boolean)
         .map((condition) => {
-          const parent = extractParentSelectors(condition)
+          const lastSegment = Array.isArray(condition) ? condition.at(-1)! : condition
+          const parent = extractParentSelectors(lastSegment)
           // ASSUMPTION: the nature of parent selectors with tokens is that they're merged
           // [data-color-mode=dark][data-theme=pastel]
           // If we really want it nested, we remove the `&`
-          return parent ? `&${parent}` : condition
+          return parent ? `&${parent}` : lastSegment
         })
 
       const rule = getDeepestRule(root, mapped)
