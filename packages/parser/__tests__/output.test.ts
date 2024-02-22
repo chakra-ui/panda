@@ -3589,6 +3589,7 @@ describe('extract to css output pipeline', () => {
           --colors-color-palette-base: var(--colors-bg-primary-base);
           --colors-color-palette-hover: var(--colors-bg-primary-hover);
       }
+
         .bg_colorPalette {
           background-color: var(--colors-color-palette);
       }
