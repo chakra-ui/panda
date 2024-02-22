@@ -24,8 +24,8 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     // 👇🏻 Define your tokens here
-    tokens: {
-      extend: {
+    extend: {
+      tokens: {
         colors: {
           primary: { value: '#0FEE0F' },
           secondary: { value: '#EE0F0F' }
