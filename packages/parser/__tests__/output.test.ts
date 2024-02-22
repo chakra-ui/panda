@@ -3488,4 +3488,49 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('weird conditions mixing', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const App = () => {
+      return (
+        <div className={css({
+          _weirdCondition: {
+            color: "red"
+          }
+        })} />
+      )
+     `
+    const result = parseAndExtract(code, {
+      conditions: {
+        weirdCondition: ['@media (hover: hover) and (pointer: fine)', '&:hover', '& > div', 'span &', '& ~ &'],
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "_weirdCondition": {
+                "color": "red",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) and (pointer: fine) {
+          :is(span .weirdCondition\\:text_red:hover > div) ~ :is(span .weirdCondition\\:text_red:hover > div) {
+            color: red;
+      }
+      }
+      }"
+    `)
+  })
 })
