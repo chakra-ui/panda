@@ -394,6 +394,7 @@ test('should generate nested object virtual palette', () => {
           "conditions": {
             "base": "skyblue",
           },
+          "isDefault": true,
           "prop": "button.light",
           "var": "--colors-button-light",
           "varRef": "var(--colors-button-light)",
@@ -435,6 +436,7 @@ test('should generate nested object virtual palette', () => {
           "conditions": {
             "base": "cyan",
           },
+          "isDefault": true,
           "prop": "button.light.accent",
           "var": "--colors-button-light-accent",
           "varRef": "var(--colors-button-light-accent)",
@@ -549,6 +551,25 @@ test('should generate nested object virtual palette', () => {
           "category": "colors",
           "condition": "base",
           "isVirtual": true,
+          "prop": "colorPalette",
+          "var": "--colors-color-palette",
+          "varRef": "var(--colors-color-palette)",
+        },
+        "name": "colors.colorPalette",
+        "originalValue": "colors.colorPalette",
+        "path": [
+          "colors",
+          "colorPalette",
+        ],
+        "type": "color",
+        "value": "colors.colorPalette",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "condition": "base",
+          "isVirtual": true,
           "prop": "colorPalette.light.accent",
           "var": "--colors-color-palette-light-accent",
           "varRef": "var(--colors-color-palette-light-accent)",
@@ -583,6 +604,25 @@ test('should generate nested object virtual palette', () => {
         ],
         "type": "color",
         "value": "colors.colorPalette.accent",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette",
+          "var": "--colors-color-palette",
+          "varRef": "var(--colors-color-palette)",
+        },
+        "name": "colors.colorPalette",
+        "originalValue": "colors.colorPalette",
+        "path": [
+          "colors",
+          "colorPalette",
+        ],
+        "type": "color",
+        "value": "colors.colorPalette",
       },
       Token {
         "description": undefined,
@@ -659,10 +699,12 @@ test('should generate nested object virtual palette', () => {
         "--colors-color-palette-light-accent-secondary" => "var(--colors-button-light-accent-secondary)",
       },
       "button.light" => Map {
+        "--colors-color-palette" => "var(--colors-button-light)",
         "--colors-color-palette-accent" => "var(--colors-button-light-accent)",
         "--colors-color-palette-accent-secondary" => "var(--colors-button-light-accent-secondary)",
       },
       "button.light.accent" => Map {
+        "--colors-color-palette" => "var(--colors-button-light-accent)",
         "--colors-color-palette-secondary" => "var(--colors-button-light-accent-secondary)",
       },
     }
@@ -676,6 +718,7 @@ test('should generate nested object virtual palette', () => {
       "colors.button.light.accent.secondary" => "var(--colors-button-light-accent-secondary)",
       "colors.colorPalette.dark" => "var(--colors-color-palette-dark)",
       "colors.colorPalette.light" => "var(--colors-color-palette-light)",
+      "colors.colorPalette" => "var(--colors-color-palette)",
       "colors.colorPalette.light.accent" => "var(--colors-color-palette-light-accent)",
       "colors.colorPalette.accent" => "var(--colors-color-palette-accent)",
       "colors.colorPalette.light.accent.secondary" => "var(--colors-color-palette-light-accent-secondary)",
@@ -727,6 +770,7 @@ test('should work with DEFAULT keyword', () => {
         "--colors-color-palette-hot-er" => "var(--colors-brand-hot-er)",
       },
       "brand.hot" => Map {
+        "--colors-color-palette" => "var(--colors-brand-hot)",
         "--colors-color-palette-er" => "var(--colors-brand-hot-er)",
       },
     }
@@ -1128,6 +1172,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
           "conditions": {
             "base": "skyblue",
           },
+          "isDefault": true,
           "prop": "$button-light",
           "var": "--colors-button-light",
           "varRef": "var(--colors-button-light)",
@@ -1169,6 +1214,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
           "conditions": {
             "base": "cyan",
           },
+          "isDefault": true,
           "prop": "$button-light-accent",
           "var": "--colors-button-light-accent",
           "varRef": "var(--colors-button-light-accent)",
@@ -1283,6 +1329,25 @@ test('should generate nested object virtual palette + custom formatTokenName', (
           "category": "colors",
           "condition": "base",
           "isVirtual": true,
+          "prop": "$colorPalette",
+          "var": "--colors-color-palette",
+          "varRef": "var(--colors-color-palette)",
+        },
+        "name": "$colors-colorPalette",
+        "originalValue": "$colors-colorPalette",
+        "path": [
+          "colors",
+          "colorPalette",
+        ],
+        "type": "color",
+        "value": "$colors-colorPalette",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "condition": "base",
+          "isVirtual": true,
           "prop": "$colorPalette-light-accent",
           "var": "--colors-color-palette-light-accent",
           "varRef": "var(--colors-color-palette-light-accent)",
@@ -1317,6 +1382,25 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         ],
         "type": "color",
         "value": "$colors-colorPalette-accent",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "$colorPalette",
+          "var": "--colors-color-palette",
+          "varRef": "var(--colors-color-palette)",
+        },
+        "name": "$colors-colorPalette",
+        "originalValue": "$colors-colorPalette",
+        "path": [
+          "colors",
+          "colorPalette",
+        ],
+        "type": "color",
+        "value": "$colors-colorPalette",
       },
       Token {
         "description": undefined,
@@ -1393,10 +1477,12 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "--colors-color-palette-light-accent-secondary" => "var(--colors-button-light-accent-secondary)",
       },
       "$button-light" => Map {
+        "--colors-color-palette" => "var(--colors-button-light)",
         "--colors-color-palette-accent" => "var(--colors-button-light-accent)",
         "--colors-color-palette-accent-secondary" => "var(--colors-button-light-accent-secondary)",
       },
       "$button-light-accent" => Map {
+        "--colors-color-palette" => "var(--colors-button-light-accent)",
         "--colors-color-palette-secondary" => "var(--colors-button-light-accent-secondary)",
       },
     }
@@ -1410,6 +1496,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
       "colors.$button-light-accent-secondary" => "var(--colors-button-light-accent-secondary)",
       "colors.$colorPalette-dark" => "var(--colors-color-palette-dark)",
       "colors.$colorPalette-light" => "var(--colors-color-palette-light)",
+      "colors.$colorPalette" => "var(--colors-color-palette)",
       "colors.$colorPalette-light-accent" => "var(--colors-color-palette-light-accent)",
       "colors.$colorPalette-accent" => "var(--colors-color-palette-accent)",
       "colors.$colorPalette-light-accent-secondary" => "var(--colors-color-palette-light-accent-secondary)",
@@ -1429,5 +1516,77 @@ test('should generate nested object virtual palette + custom formatTokenName', (
       "$button-light",
       "$button-light-accent",
     ]
+  `)
+})
+
+test('should generate virtual palette with DEFAULT value', () => {
+  const dictionary = new TokenDictionary({
+    tokens: {
+      colors: {
+        bg: {
+          primary: {
+            DEFAULT: {
+              value: '{colors.red.500}',
+            },
+            base: {
+              value: '{colors.green.500}',
+            },
+            hover: {
+              value: '{colors.yellow.300}',
+            },
+          },
+        },
+      },
+    },
+  })
+
+  dictionary
+    .registerTokens()
+    .registerTransform(...transforms)
+    .registerMiddleware(addVirtualPalette)
+    .build()
+
+  // expect(dictionary.allTokens.map((t) => [t.path.join('.'), t.value])).toMatchInlineSnapshot(`
+  expect(dictionary.allTokens.map((t) => t.path.join('.'))).toMatchInlineSnapshot(`
+    [
+      "colors.bg.primary",
+      "colors.bg.primary.base",
+      "colors.bg.primary.hover",
+      "colors.colorPalette.primary",
+      "colors.colorPalette",
+      "colors.colorPalette.primary.base",
+      "colors.colorPalette.base",
+      "colors.colorPalette.primary.hover",
+      "colors.colorPalette.hover",
+    ]
+  `)
+
+  expect(dictionary.view.colorPalettes).toMatchInlineSnapshot(`
+    Map {
+      "bg" => Map {
+        "--colors-color-palette-primary" => "var(--colors-bg-primary)",
+        "--colors-color-palette-primary-base" => "var(--colors-bg-primary-base)",
+        "--colors-color-palette-primary-hover" => "var(--colors-bg-primary-hover)",
+      },
+      "bg.primary" => Map {
+        "--colors-color-palette" => "var(--colors-bg-primary)",
+        "--colors-color-palette-base" => "var(--colors-bg-primary-base)",
+        "--colors-color-palette-hover" => "var(--colors-bg-primary-hover)",
+      },
+    }
+  `)
+
+  expect(dictionary.view.values).toMatchInlineSnapshot(`
+    Map {
+      "colors.bg.primary" => "var(--colors-bg-primary)",
+      "colors.bg.primary.base" => "var(--colors-bg-primary-base)",
+      "colors.bg.primary.hover" => "var(--colors-bg-primary-hover)",
+      "colors.colorPalette.primary" => "var(--colors-color-palette-primary)",
+      "colors.colorPalette" => "var(--colors-color-palette)",
+      "colors.colorPalette.primary.base" => "var(--colors-color-palette-primary-base)",
+      "colors.colorPalette.base" => "var(--colors-color-palette-base)",
+      "colors.colorPalette.primary.hover" => "var(--colors-color-palette-primary-hover)",
+      "colors.colorPalette.hover" => "var(--colors-color-palette-hover)",
+    }
   `)
 })

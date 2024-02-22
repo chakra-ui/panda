@@ -114,6 +114,13 @@ export const addVirtualPalette: TokenMiddleware = {
         const colorPaletteList = colorPalettes.get(formated) || []
         colorPaletteList.push(token)
         colorPalettes.set(formated, colorPaletteList)
+        if (token.extensions.isDefault && colorPaletteRoot.length === 1) {
+          const keyPath = colorPaletteTokenKeys[0]?.filter(Boolean)
+          if (!keyPath.length) return
+
+          const path = colorPaletteRoot.concat(keyPath)
+          keys.set(dictionary.formatTokenName(path), [])
+        }
       })
     })
 

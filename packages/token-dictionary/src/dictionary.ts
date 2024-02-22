@@ -100,6 +100,7 @@ export class TokenDictionary {
     walkObject(
       computedTokens,
       (token, path) => {
+        const isDefault = path.includes('DEFAULT')
         path = filterDefault(path)
         assertTokenFormat(token)
 
@@ -113,6 +114,10 @@ export class TokenDictionary {
           prop: this.formatTokenName(path.slice(1)),
         })
 
+        if (isDefault) {
+          node.setExtensions({ isDefault })
+        }
+
         this.registerToken(node)
       },
       { stop: isToken },
@@ -121,6 +126,7 @@ export class TokenDictionary {
     walkObject(
       semanticTokens,
       (token, path) => {
+        const isDefault = path.includes('DEFAULT')
         path = filterDefault(path)
         assertTokenFormat(token)
 
@@ -144,6 +150,10 @@ export class TokenDictionary {
           conditions: value,
           prop: this.formatTokenName(path.slice(1)),
         })
+
+        if (isDefault) {
+          node.setExtensions({ isDefault })
+        }
 
         this.registerToken(node)
       },
@@ -392,7 +402,8 @@ export class TokenDictionaryView {
   }
 
   private processColorPalette(token: Token, group: Map<string, Map<string, string>>, byName: Map<string, Token>) {
-    const { colorPalette, colorPaletteRoots, isVirtual } = token.extensions as TokenExtensions<ColorPaletteExtensions>
+    const extensions = token.extensions as TokenExtensions<ColorPaletteExtensions>
+    const { colorPalette, colorPaletteRoots, isVirtual } = extensions
     if (!colorPalette || isVirtual) return
 
     colorPaletteRoots.forEach((colorPaletteRoot) => {
@@ -400,6 +411,7 @@ export class TokenDictionaryView {
       if (!group.has(formated)) {
         group.set(formated, new Map())
       }
+
       const virtualPath = replaceRootWithColorPalette([...token.path], [...colorPaletteRoot])
       const virtualName = this.dictionary.formatTokenName(virtualPath)
       const virtualToken = byName.get(virtualName)
@@ -407,6 +419,26 @@ export class TokenDictionaryView {
 
       const virtualVar = virtualToken.extensions.var
       group.get(formated)!.set(virtualVar, token.extensions.varRef)
+
+      if (extensions.isDefault && colorPaletteRoot.length === 1) {
+        const colorPaletteName = this.dictionary.formatTokenName(['colors', 'colorPalette'])
+        const colorPaletteToken = byName.get(colorPaletteName)
+        if (!colorPaletteToken) return
+
+        const name = this.dictionary.formatTokenName(token.path)
+        const virtualToken = byName.get(name)
+        if (!virtualToken) return
+
+        const keyPath = extensions.colorPaletteTokenKeys[0]?.filter(Boolean)
+        if (!keyPath.length) return
+
+        const formated = this.dictionary.formatTokenName(colorPaletteRoot.concat(keyPath))
+        if (!group.has(formated)) {
+          group.set(formated, new Map())
+        }
+
+        group.get(formated)!.set(colorPaletteToken.extensions.var, virtualToken.extensions.varRef)
+      }
     })
   }
 
