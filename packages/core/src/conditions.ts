@@ -5,6 +5,7 @@ import type {
   ConditionQuery,
   ConditionType,
   Conditions as ConditionsConfig,
+  ThemeVariant,
   ThemeVariantsMap,
 } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
@@ -75,14 +76,25 @@ export class Conditions {
 
     const themeVariants: Record<string, ConditionDetails> = {}
     Object.entries(themes).forEach(([theme, themeVariant]) => {
-      const condName = '_theme' + capitalize(theme)
-      const cond = parseCondition('& ' + themeVariant.selector)
+      const condName = this.getThemeName(theme)
+      const cond = parseCondition('& ' + this.getThemeSelector(theme, themeVariant))
       if (!cond) return
 
       themeVariants[condName] = cond
     })
 
     return themeVariants
+  }
+
+  getThemeSelector = (name: string, themeVariant: ThemeVariant) => {
+    if (themeVariant.attribute === 'class') {
+      return '.' + themeVariant.attribute
+    }
+    return `[data-${themeVariant.attribute || 'theme'}=${name}]`
+  }
+
+  getThemeName = (theme: string) => {
+    return '_theme' + capitalize(theme)
   }
 
   finalize = (paths: string[]) => {

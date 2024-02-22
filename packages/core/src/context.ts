@@ -253,21 +253,12 @@ export class Context {
   }
 
   createConditions = (config: UserConfig): Conditions => {
-    const allowed = config.staticCss?.themes
-    let themeVariants
-
-    if (allowed) {
-      themeVariants = allowed.includes('*')
-        ? config.themes
-        : Object.fromEntries(Object.entries(config.themes ?? {}).filter(([key]) => allowed.includes(key)))
-    }
-
     return new Conditions({
       conditions: config.conditions,
       containerNames: config.theme?.containerNames,
       containerSizes: config.theme?.containerSizes,
       breakpoints: config.theme?.breakpoints,
-      themes: themeVariants,
+      themes: config.themes,
     })
   }
 

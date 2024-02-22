@@ -7,7 +7,11 @@
 '@pandacss/dev': minor
 ---
 
-Add `config.themes` to easily define and apply a theme on multiple tokens at once
+Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes (or className)
+and CSS variables.
+
+Can pre-generate multiple themes with token overrides as static CSS, but also dynamically import and inject a theme
+stylesheet at runtime (browser or server).
 
 Example:
 
@@ -22,7 +26,7 @@ export default defineConfig({
     extend: {
       tokens: {
         colors: {
-          blue: { value: 'blue' },
+          text: { value: 'blue' },
         },
       },
       semanticTokens: {
@@ -39,15 +43,15 @@ export default defineConfig({
   },
   // alternative theme variants
   themes: {
-    red: {
-      selector: '.theme-red',
+    primary: {
       tokens: {
         colors: {
-          red: { value: 'red' },
+          text: { value: 'red' },
         },
       },
       semanticTokens: {
         colors: {
+          muted: { value: '{colors.red.200}' },
           body: {
             value: {
               base: '{colors.red.600}',
@@ -66,20 +70,21 @@ export default defineConfig({
 })
 ```
 
-> ℹ️ By default, no additional theme variant is generated, you need to specify the themes you want to generate in
-> `staticCss.themes`
+> ℹ️ By default, no additional theme variant is generated, you need to specify the specific themes you want to generate
+> in `staticCss.themes` to include them in the CSS output.
 
 This will generate the following CSS:
 
 ```css
 @layer tokens {
   :where(:root, :host) {
-    --colors-blue: blue;
+    --colors-text: blue;
     --colors-body: var(--colors-blue-600);
   }
 
-  .theme-red {
-    --colors-red: red;
+  [data-theme='primary'] {
+    --colors-text: red;
+    --colors-muted: var(--colors-red-200);
     --colors-body: var(--colors-red-600);
   }
 
@@ -88,7 +93,7 @@ This will generate the following CSS:
       --colors-body: var(--colors-blue-400);
     }
 
-    .theme-red {
+    [data-theme='primary'] {
       --colors-body: var(--colors-red-400);
     }
   }
@@ -100,23 +105,32 @@ This will generate the following CSS:
 An alternative way of applying a theme is by using the new `styled-system/themes` entrypoint where you can import the
 themes CSS variables and use them in your app.
 
-Each theme is a JSON file with the following structure:
+> ℹ️ The `styled-system/themes` will always contain every themes (tree-shaken if not used), `staticCss.themes` only
+> applies to the CSS output.
+
+Each theme has a corresponding JSON file with a similar structure:
 
 ```json
 {
-  "name": "red",
-  "selector": ".theme-red",
+  "name": "primary",
+  "id": "panda-themes-primary",
+  "dataAttr": "primary",
   "vars": {
-    "--colors-primary": "var(--colors-primary)",
-    "--colors-text": "var(--colors-text)"
-  }
+    "--colors-text": "red",
+    "--colors-muted": "var(--colors-red-200)",
+    "--colors-body": "var(--colors-body)"
+  },
+  "css": " [data-theme=primary] {\n    --colors-text: red;\n    --colors-muted: var(--colors-red-200);\n    --colors-body: var(--colors-red-600)\n}\n\n@media (prefers-color-scheme: dark) {\n      [data-theme=primary] {\n        --colors-body: var(--colors-red-400)\n            }\n        }"
 }
 ```
 
-> ℹ️ Note that this will only allow overriding the `tokens` values, not the `semanticTokens` as their values depend on
-> the current applied conditions at runtime.
+The `vars` object contains the CSS variable names with their values, resolved to their final value if they are direct
+references to other tokens.
 
-You can synchronously import a theme and use its vars:
+> ⚠️ Conditional references are not resolved in `vars`, as they depend on the runtime environment The `css` string
+> contains the CSS rules to apply the theme, including the rules related to conditional references for `semanticTokens`
+
+You can synchronously import a theme and use its `vars`:
 
 ```ts
 import redTheme from '../styled-system/themes/red.json'
@@ -126,19 +140,62 @@ redTheme.vars
 //     "--colors-blue": string;
 //     "--colors-body": string;
 // }
+
+// later in your app
+const container = document.getElementById('container')
+Object.entries(redTheme.vars).forEach(([key, value]) => {
+  container.style.setProperty(key, value)
+})
 ```
 
-Or dynamically import a theme using its name:
+> ℹ️ Note that for semantic tokens, you need to use inject the theme styles, see below
+
+Dynamically import a theme using its name:
 
 ```ts
-import { getThemeVars } from '../styled-system/themes'
+import { getTheme } from '../styled-system/themes'
 
-const theme = await getThemeVars('red')
+const theme = await getTheme('red')
 //    ^? {
 //     name: "red";
 //     selector: string;
 //     vars: Record<"--colors-blue" | "--colors-body", string>;
 // }
+```
+
+Inject the theme styles into the DOM:
+
+```ts
+import { injectTheme } from '../styled-system/themes'
+
+const theme = await getTheme('red')
+injectTheme(theme) // this returns the injected style element
+```
+
+---
+
+SSR example with NextJS:
+
+```tsx
+// app/layout.tsx
+import { Inter } from 'next/font/google'
+import { cookies } from 'next/headers'
+import { ThemeName, getTheme } from '../../styled-system/themes'
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const store = cookies()
+  const themeName = (store.get('theme')?.value as ThemeName) || 'default'
+  const theme = await getTheme(themeName)
+
+  return (
+    <html lang="en" data-theme={themeName}>
+      <head>
+        <style id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />
+      </head>
+      <body>{children}</body>
+    </html>
+  )
+}
 ```
 
 ---
