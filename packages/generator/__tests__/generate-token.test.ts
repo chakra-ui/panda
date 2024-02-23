@@ -837,4 +837,245 @@ describe('generator', () => {
       }"
     `)
   })
+
+  test('themes - no staticCss', () => {
+    const css = tokenCss(<any>{
+      dependencies: [],
+      config: {
+        cwd: '',
+        include: [],
+        conditions: {
+          osDark: '@media (prefers-color-scheme: dark)',
+        },
+        theme: {
+          tokens: {
+            colors: {
+              text: { value: 'blue' },
+            },
+          },
+          semanticTokens: {
+            colors: {
+              body: {
+                value: {
+                  base: '{colors.blue.600}',
+                  _osDark: '{colors.blue.400}',
+                },
+              },
+            },
+          },
+        },
+        // alternative theme variants
+        themes: {
+          primary: {
+            tokens: {
+              colors: {
+                text: { value: 'red' },
+              },
+            },
+            semanticTokens: {
+              colors: {
+                muted: { value: '{colors.red.200}' },
+                body: {
+                  value: {
+                    base: '{colors.red.600}',
+                    _osDark: '{colors.red.400}',
+                  },
+                },
+              },
+            },
+          },
+        },
+        outdir: '',
+      },
+      path: '',
+      hooks: {},
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --colors-text: blue;
+          --colors-body: var(--colors-blue-600);
+      }
+
+        @media (prefers-color-scheme: dark) {
+          :where(:root, :host) {
+            --colors-body: var(--colors-blue-400)
+              }
+          }
+      }"
+    `)
+  })
+
+  test('themes - staticCss with name', () => {
+    const css = tokenCss(<any>{
+      dependencies: [],
+      config: {
+        cwd: '',
+        include: [],
+        conditions: {
+          osDark: '@media (prefers-color-scheme: dark)',
+        },
+        theme: {
+          tokens: {
+            colors: {
+              text: { value: 'blue' },
+            },
+          },
+          semanticTokens: {
+            colors: {
+              body: {
+                value: {
+                  base: '{colors.blue.600}',
+                  _osDark: '{colors.blue.400}',
+                },
+              },
+            },
+          },
+        },
+        // alternative theme variants
+        themes: {
+          primary: {
+            tokens: {
+              colors: {
+                text: { value: 'red' },
+              },
+            },
+            semanticTokens: {
+              colors: {
+                muted: { value: '{colors.red.200}' },
+                body: {
+                  value: {
+                    base: '{colors.red.600}',
+                    _osDark: '{colors.red.400}',
+                  },
+                },
+              },
+            },
+          },
+        },
+        staticCss: {
+          // only generate the red in addition to the main one
+          themes: ['primary'],
+          // use  ['*'] to generate all themes
+        },
+        outdir: '',
+      },
+      path: '',
+      hooks: {},
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --colors-text: blue;
+          --colors-body: var(--colors-blue-600);
+      }
+
+        [data-theme=primary] {
+          --colors-text: red;
+          --colors-muted: var(--colors-red-200);
+          --colors-body: var(--colors-red-600)
+      }
+
+        @media (prefers-color-scheme: dark) {
+          :where(:root, :host) {
+            --colors-body: var(--colors-blue-400)
+              }
+          }
+
+        @media (prefers-color-scheme: dark) {
+          [data-theme=primary] {
+            --colors-body: var(--colors-red-400)
+                  }
+              }
+      }"
+    `)
+  })
+
+  test('themes - staticCss with *', () => {
+    const css = tokenCss(<any>{
+      dependencies: [],
+      config: {
+        cwd: '',
+        include: [],
+        conditions: {
+          osDark: '@media (prefers-color-scheme: dark)',
+        },
+        theme: {
+          tokens: {
+            colors: {
+              text: { value: 'blue' },
+            },
+          },
+          semanticTokens: {
+            colors: {
+              body: {
+                value: {
+                  base: '{colors.blue.600}',
+                  _osDark: '{colors.blue.400}',
+                },
+              },
+            },
+          },
+        },
+        // alternative theme variants
+        themes: {
+          primary: {
+            tokens: {
+              colors: {
+                text: { value: 'red' },
+              },
+            },
+            semanticTokens: {
+              colors: {
+                muted: { value: '{colors.red.200}' },
+                body: {
+                  value: {
+                    base: '{colors.red.600}',
+                    _osDark: '{colors.red.400}',
+                  },
+                },
+              },
+            },
+          },
+        },
+        staticCss: {
+          // only generate the red in addition to the main one
+          themes: ['*'],
+          // use  ['*'] to generate all themes
+        },
+        outdir: '',
+      },
+      path: '',
+      hooks: {},
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --colors-text: blue;
+          --colors-body: var(--colors-blue-600);
+      }
+
+        [data-theme=primary] {
+          --colors-text: red;
+          --colors-muted: var(--colors-red-200);
+          --colors-body: var(--colors-red-600)
+      }
+
+        @media (prefers-color-scheme: dark) {
+          :where(:root, :host) {
+            --colors-body: var(--colors-blue-400)
+              }
+          }
+
+        @media (prefers-color-scheme: dark) {
+          [data-theme=primary] {
+            --colors-body: var(--colors-red-400)
+                  }
+              }
+      }"
+    `)
+  })
 })
