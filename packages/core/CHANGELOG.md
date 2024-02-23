@@ -1,5 +1,90 @@
 # @pandacss/core
 
+## 0.32.1
+
+### Patch Changes
+
+- a032375: Add a way to create config conditions with nested at-rules/selectors
+
+  ```ts
+  export default defaultConfig({
+    conditions: {
+      extend: {
+        supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
+      },
+    },
+  })
+  ```
+
+  ```ts
+  import { css } from '../styled-system/css'
+
+  css({
+    _supportHover: {
+      color: 'red',
+    },
+  })
+  ```
+
+  will generate the following CSS:
+
+  ```css
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: red;
+    }
+  }
+  ```
+
+- 31071ba: Fix an issue for token names starting with '0'
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    theme: {
+      tokens: {
+        spacing: {
+          '025': {
+            value: '0.125rem',
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  and then using it like
+
+  ```ts
+  css({ margin: '025' })
+  ```
+
+  This would not generate the expected CSS because the parser would try to parse `025` as a number (`25`) instead of
+  keeping it as a string.
+
+- f419993: - Prevent extracting style props of `styled` when not explicitly imported
+
+  - Allow using multiple aliases for the same identifier for the `/css` entrypoints just like `/patterns` and `/recipes`
+
+  ```ts
+  import { css } from '../styled-system/css'
+  import { css as css2 } from '../styled-system/css'
+
+  css({ display: 'flex' })
+  css2({ flexDirection: 'column' }) // this wasn't working before, now it does
+  ```
+
+- Updated dependencies [a032375]
+- Updated dependencies [5184771]
+- Updated dependencies [6d8c884]
+- Updated dependencies [89ffb6b]
+  - @pandacss/types@0.32.1
+  - @pandacss/token-dictionary@0.32.1
+  - @pandacss/logger@0.32.1
+  - @pandacss/is-valid-prop@0.32.1
+  - @pandacss/shared@0.32.1
+
 ## 0.32.0
 
 ### Minor Changes

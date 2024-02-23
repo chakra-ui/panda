@@ -1,5 +1,82 @@
 # @pandacss/token-dictionary
 
+## 0.32.1
+
+### Patch Changes
+
+- 5184771: Using colorPalette with DEFAULT values will now also override the current token path
+
+  Given this config:
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    theme: {
+      extend: {
+        semanticTokens: {
+          colors: {
+            bg: {
+              primary: {
+                DEFAULT: {
+                  value: '{colors.red.500}',
+                },
+                base: {
+                  value: '{colors.green.500}',
+                },
+                hover: {
+                  value: '{colors.yellow.300}',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  And this style usage:
+
+  ```ts
+  import { css } from 'styled-system/css'
+
+  css({
+    colorPalette: 'bg.primary',
+  })
+  ```
+
+  This is the difference in the generated css
+
+  ```diff
+  @layer utilities {
+    .color-palette_bg\\.primary {
+  +    --colors-color-palette: var(--colors-bg-primary);
+      --colors-color-palette-base: var(--colors-bg-primary-base);
+      --colors-color-palette-hover: var(--colors-bg-primary-hover);
+    }
+  }
+  ```
+
+  Which means you can now directly reference the current `colorPalette` like:
+
+  ```diff
+  import { css } from 'styled-system/css'
+
+  css({
+    colorPalette: 'bg.primary',
+  +  backgroundColor: 'colorPalette',
+  })
+  ```
+
+- 6d8c884: Fix issue where svg asset tokens doesn't work as expected due to unbalanced quotes.
+- Updated dependencies [a032375]
+- Updated dependencies [89ffb6b]
+  - @pandacss/types@0.32.1
+  - @pandacss/logger@0.32.1
+  - @pandacss/shared@0.32.1
+
 ## 0.32.0
 
 ### Patch Changes

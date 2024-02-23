@@ -1,5 +1,50 @@
 # @pandacss/config
 
+## 0.32.1
+
+### Patch Changes
+
+- a032375: Add a way to create config conditions with nested at-rules/selectors
+
+  ```ts
+  export default defaultConfig({
+    conditions: {
+      extend: {
+        supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
+      },
+    },
+  })
+  ```
+
+  ```ts
+  import { css } from '../styled-system/css'
+
+  css({
+    _supportHover: {
+      color: 'red',
+    },
+  })
+  ```
+
+  will generate the following CSS:
+
+  ```css
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: red;
+    }
+  }
+  ```
+
+- 89ffb6b: Add missing config dependencies for some `styled-system/types` files
+- Updated dependencies [a032375]
+- Updated dependencies [89ffb6b]
+  - @pandacss/types@0.32.1
+  - @pandacss/logger@0.32.1
+  - @pandacss/preset-base@0.32.1
+  - @pandacss/preset-panda@0.32.1
+  - @pandacss/shared@0.32.1
+
 ## 0.32.0
 
 ### Minor Changes

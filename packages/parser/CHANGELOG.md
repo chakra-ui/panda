@@ -1,5 +1,125 @@
 # @pandacss/parser
 
+## 0.32.1
+
+### Patch Changes
+
+- 31071ba: Fix an issue for token names starting with '0'
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    theme: {
+      tokens: {
+        spacing: {
+          '025': {
+            value: '0.125rem',
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  and then using it like
+
+  ```ts
+  css({ margin: '025' })
+  ```
+
+  This would not generate the expected CSS because the parser would try to parse `025` as a number (`25`) instead of
+  keeping it as a string.
+
+- 5184771: Using colorPalette with DEFAULT values will now also override the current token path
+
+  Given this config:
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    theme: {
+      extend: {
+        semanticTokens: {
+          colors: {
+            bg: {
+              primary: {
+                DEFAULT: {
+                  value: '{colors.red.500}',
+                },
+                base: {
+                  value: '{colors.green.500}',
+                },
+                hover: {
+                  value: '{colors.yellow.300}',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  And this style usage:
+
+  ```ts
+  import { css } from 'styled-system/css'
+
+  css({
+    colorPalette: 'bg.primary',
+  })
+  ```
+
+  This is the difference in the generated css
+
+  ```diff
+  @layer utilities {
+    .color-palette_bg\\.primary {
+  +    --colors-color-palette: var(--colors-bg-primary);
+      --colors-color-palette-base: var(--colors-bg-primary-base);
+      --colors-color-palette-hover: var(--colors-bg-primary-hover);
+    }
+  }
+  ```
+
+  Which means you can now directly reference the current `colorPalette` like:
+
+  ```diff
+  import { css } from 'styled-system/css'
+
+  css({
+    colorPalette: 'bg.primary',
+  +  backgroundColor: 'colorPalette',
+  })
+  ```
+
+- f419993: - Prevent extracting style props of `styled` when not explicitly imported
+
+  - Allow using multiple aliases for the same identifier for the `/css` entrypoints just like `/patterns` and `/recipes`
+
+  ```ts
+  import { css } from '../styled-system/css'
+  import { css as css2 } from '../styled-system/css'
+
+  css({ display: 'flex' })
+  css2({ flexDirection: 'column' }) // this wasn't working before, now it does
+  ```
+
+- Updated dependencies [a032375]
+- Updated dependencies [31071ba]
+- Updated dependencies [f419993]
+- Updated dependencies [89ffb6b]
+  - @pandacss/config@0.32.1
+  - @pandacss/types@0.32.1
+  - @pandacss/core@0.32.1
+  - @pandacss/logger@0.32.1
+  - @pandacss/extractor@0.32.1
+  - @pandacss/shared@0.32.1
+
 ## 0.32.0
 
 ### Minor Changes
