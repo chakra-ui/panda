@@ -1,5 +1,26 @@
 # @pandacss/node
 
+## 0.32.1
+
+### Patch Changes
+
+- 89ffb6b: Add missing config dependencies for some `styled-system/types` files
+- Updated dependencies [a032375]
+- Updated dependencies [31071ba]
+- Updated dependencies [5184771]
+- Updated dependencies [f419993]
+- Updated dependencies [6d8c884]
+- Updated dependencies [89ffb6b]
+  - @pandacss/generator@0.32.1
+  - @pandacss/config@0.32.1
+  - @pandacss/types@0.32.1
+  - @pandacss/core@0.32.1
+  - @pandacss/parser@0.32.1
+  - @pandacss/token-dictionary@0.32.1
+  - @pandacss/logger@0.32.1
+  - @pandacss/extractor@0.32.1
+  - @pandacss/shared@0.32.1
+
 ## 0.32.0
 
 ### Minor Changes
