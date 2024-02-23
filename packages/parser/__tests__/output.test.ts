@@ -3596,4 +3596,44 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('tokens starting with 0', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({ margin: "025" })
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        tokens: {
+          spacing: {
+            '025': {
+              value: '0.125rem',
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "margin": "025",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_025 {
+          margin: var(--spacing-025);
+      }
+      }"
+    `)
+  })
 })
