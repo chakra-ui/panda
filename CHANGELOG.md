@@ -6,6 +6,126 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.32.1] - 2024-02-23
+
+### Fixed
+
+- Fix issue where svg asset tokens doesn't work as expected due to unbalanced quotes.
+- Prevent extracting style props of `styled` when not explicitly imported
+
+- Allow using multiple aliases for the same identifier for the `/css` entrypoints just like `/patterns` and `/recipes`
+
+```ts
+import { css } from '../styled-system/css'
+import { css as css2 } from '../styled-system/css'
+
+css({ display: 'flex' })
+css2({ flexDirection: 'column' }) // this wasn't working before, now it does
+```
+
+### Added
+
+- Add missing config dependencies for some `styled-system/types` files
+- Add a way to create config conditions with nested at-rules/selectors
+
+```ts
+export default defaultConfig({
+  conditions: {
+    extend: {
+      supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
+    },
+  },
+})
+```
+
+```ts
+import { css } from '../styled-system/css'
+
+css({
+  _supportHover: {
+    color: 'red',
+  },
+})
+```
+
+will generate the following CSS:
+
+```css
+@media (hover: hover) and (pointer: fine) {
+  &:hover {
+    color: red;
+  }
+}
+```
+
+### Changed
+
+Using colorPalette with DEFAULT values will now also override the current token path
+
+Given this config:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  theme: {
+    extend: {
+      semanticTokens: {
+        colors: {
+          bg: {
+            primary: {
+              DEFAULT: {
+                value: '{colors.red.500}',
+              },
+              base: {
+                value: '{colors.green.500}',
+              },
+              hover: {
+                value: '{colors.yellow.300}',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+And this style usage:
+
+```ts
+import { css } from 'styled-system/css'
+
+css({
+  colorPalette: 'bg.primary',
+})
+```
+
+This is the difference in the generated css
+
+```diff
+@layer utilities {
+  .color-palette_bg\\.primary {
++    --colors-color-palette: var(--colors-bg-primary);
+    --colors-color-palette-base: var(--colors-bg-primary-base);
+    --colors-color-palette-hover: var(--colors-bg-primary-hover);
+  }
+}
+```
+
+Which means you can now directly reference the current `colorPalette` like:
+
+```diff
+import { css } from 'styled-system/css'
+
+css({
+  colorPalette: 'bg.primary',
++  backgroundColor: 'colorPalette',
+})
+```
+
 ## [0.32.0] - 2024-02-19
 
 ### Fixed
