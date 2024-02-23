@@ -357,7 +357,14 @@ const getEntryFromHash = (hash: string) => {
   return entry
 }
 
+const startsWithZero = /^0\d+$/
 const parseValue = (value: string) => {
+  // Check if value starts with '0' and is followed by a number
+  // like '01', '02', etc. If so, return the value as is, it's meant to be a string
+  if (startsWithZero.test(value)) {
+    return value
+  }
+
   const asNumber = Number(value)
   if (!Number.isNaN(asNumber)) return asNumber
   return castBoolean(value)
