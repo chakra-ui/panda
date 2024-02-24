@@ -240,7 +240,6 @@ describe('sort style rules', () => {
     expect(sheet2.toCss({ optimize: true })).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-
           .btn {
             display: inline-flex;
             outline: var(--borders-none);

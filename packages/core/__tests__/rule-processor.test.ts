@@ -907,7 +907,6 @@ describe('rule processor', () => {
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
-
           .btn {
             display: inline-flex;
             outline: var(--borders-none);
