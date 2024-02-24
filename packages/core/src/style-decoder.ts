@@ -30,6 +30,7 @@ export class StyleDecoder {
   //
   atomic_cache = new Map<string, AtomicStyleResult>()
   group_cache = new Map<string, GroupedResult>()
+  recipe_base_cache = new Map<string, RecipeBaseResult>()
   //
   atomic = new Set<AtomicStyleResult>()
   //
@@ -212,15 +213,22 @@ export class StyleDecoder {
         ? this.context.recipes.getSlotKey(recipeConfig.className, slot)
         : recipeConfig.className
 
+    const cached = this.recipe_base_cache.get(className)
+    if (cached) return cached
+
     const selector = this.formatSelector([], className)
     const style = this.getGroup(hashSet, className)
 
-    return Object.assign({}, style, {
+    const result = Object.assign({}, style, {
       result: { ['.' + selector]: style.result },
       recipe: recipeName,
       className,
       slot,
     })
+
+    this.recipe_base_cache.set(className, result)
+
+    return result
   }
 
   collectAtomic = (encoder: StyleEncoder) => {
