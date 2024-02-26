@@ -43,3 +43,26 @@ export const utilities: UtilityConfig = Object.assign(
   polyfill,
   container,
 )
+
+export const utilitiesGroups = {
+  layout,
+  display,
+  flexGrid,
+  spacing,
+  outline,
+  divide,
+  sizing,
+  typography,
+  list,
+  background,
+  border,
+  effects,
+  tables,
+  transitions,
+  transforms,
+  interactivity,
+  svg,
+  helpers,
+  polyfill,
+  container,
+}
