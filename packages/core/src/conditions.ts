@@ -132,7 +132,25 @@ export class Conditions {
 
   sort = (conditions: string[]): ConditionDetails[] => {
     const rawConditions = conditions.map(this.getRaw).filter(Boolean) as ConditionDetails[]
-    return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
+    return rawConditions.sort((a, b) => {
+      const score = order.indexOf(a.type) - order.indexOf(b.type)
+      if (score !== 0) return score
+
+      if (a.type !== 'at-rule' && a.type !== 'mixed' && b.type !== 'at-rule' && b.type !== 'mixed') {
+        const aIsPseudo = this.isPseudo(a.raw)
+        const bIsPseudo = this.isPseudo(b.raw)
+
+        if (aIsPseudo && !bIsPseudo) return 1
+        if (!aIsPseudo && bIsPseudo) return -1
+        return 0
+      }
+
+      return 0
+    })
+  }
+
+  isPseudo = (selector: string) => {
+    return selector.startsWith('&::') && !selector.startsWith('&::part(') && !selector.startsWith('&::slotted(')
   }
 
   normalize = (condition: ConditionQuery | ConditionDetails): ConditionDetails | undefined => {

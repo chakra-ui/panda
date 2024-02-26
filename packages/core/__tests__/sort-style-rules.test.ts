@@ -291,7 +291,7 @@ describe('sort style rules', () => {
     `)
   })
 
-  test.only('css', () => {
+  test('css pseudo sorting', () => {
     const ctx = createContext()
 
     ctx.encoder.processAtomic({
@@ -312,16 +312,52 @@ describe('sort style rules', () => {
           color: green;
       }
 
+        .\\[\\&\\:\\:hover\\]\\:\\[\\&\\.light\\]\\:text_yellow.light::hover {
+          color: yellow;
+      }
+
         .\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:\\[\\&\\:\\:backdrop\\]\\:text_red.dark::backdrop,.dark .\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:\\[\\&\\:\\:backdrop\\]\\:text_red::backdrop {
           color: red;
       }
 
-        .\\[\\&\\:\\:backdrop\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue::backdrop.dark,.dark .\\[\\&\\:\\:backdrop\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue::backdrop {
+        .\\[\\&\\:\\:backdrop\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue.dark::backdrop,.dark .\\[\\&\\:\\:backdrop\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue::backdrop {
           color: blue;
       }
+      }"
+    `)
+  })
 
-        .\\[\\&\\:\\:hover\\]\\:\\[\\&\\.light\\]\\:text_yellow::hover.light {
+  test('css pseudo sorting 2', () => {
+    const ctx = createContext()
+
+    ctx.encoder.processAtomic({
+      '&.light': { '&::backdrop, &.backdrop': { color: 'green' } },
+      '&::backdrop, &.backdrop': { '&.light': { color: 'yellow' } },
+      //
+      '&.dark, .dark &': { '&::part(card)': { color: 'red' } },
+      '&::part(card)': { '&.dark, .dark &': { color: 'blue' } },
+    })
+
+    ctx.decoder.collect(ctx.encoder)
+    const sheet = ctx.createSheet()
+    sheet.processDecoder(ctx.decoder)
+
+    expect(sheet.toCss({ optimize: true })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\[\\&\\.light\\]\\:\\[\\&\\:\\:backdrop\\,_\\&\\.backdrop\\]\\:text_green.light::backdrop,.\\[\\&\\.light\\]\\:\\[\\&\\:\\:backdrop\\,_\\&\\.backdrop\\]\\:text_green.light.backdrop {
+          color: green;
+      }
+
+        .\\[\\&\\:\\:backdrop\\,_\\&\\.backdrop\\]\\:\\[\\&\\.light\\]\\:text_yellow.light::backdrop,.\\[\\&\\:\\:backdrop\\,_\\&\\.backdrop\\]\\:\\[\\&\\.light\\]\\:text_yellow.light.backdrop {
           color: yellow;
+      }
+
+        .\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:\\[\\&\\:\\:part\\(card\\)\\]\\:text_red.dark::part(card),.dark .\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:\\[\\&\\:\\:part\\(card\\)\\]\\:text_red::part(card) {
+          color: red;
+      }
+
+        .\\[\\&\\:\\:part\\(card\\)\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue::part(card).dark,.dark .\\[\\&\\:\\:part\\(card\\)\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue::part(card) {
+          color: blue;
       }
       }"
     `)
