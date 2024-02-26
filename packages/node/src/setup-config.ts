@@ -64,7 +64,7 @@ export default defineConfig({
 })
     `
 
-    await fsExtra.writeFile(join(cwd, file), prettier.format(content, { parser: 'babel' }))
+    await fsExtra.writeFile(join(cwd, file), await prettier.format(content, { parser: 'babel' }))
     logger.log(messages.thankYou())
   }
 }
