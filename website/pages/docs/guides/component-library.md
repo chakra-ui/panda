@@ -14,6 +14,15 @@ When creating a component library that uses Panda which can be used in a variety
 
 > In the examples below, we use `tsup` as the build tool. You can use any other build tool.
 
+## Recommendations
+
+- Library Code shouldn't be published on npm and App code uses Panda, use [ship build info](#ship-the-build-info-file) approach
+- App code might not use Panda, use the [static css](#ship-a-static-css-file) file approach
+- App code lives in an internal monorepo, use the [include src files](#include-the-src-files) approach
+- Library code doesn't ship components but only ships tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
+
+> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your library code has any custom tokens, patterns or recipes.
+
 ## Ship a Panda Preset
 
 This is the simplest approach. You can include the token, semantic tokens, text styles, etc. within a preset and consume them in your projects.
@@ -122,6 +131,14 @@ This approach comes with a few downsides:
 
 ## Use Panda as external package
 
+### Summary
+
+- create a Panda [preset](docs/customization/presets) so that you (and your users) can share the same design system tokens
+- create a workspace package for your outdir (`@acme-org/styled-system`) and use that package name as the `importMap` in your app code
+- have your component library (`@acme-org/components`) use the `@acme-org/styled-system` package as external
+
+---
+
 Let's make a dedicated workspace package for your `outdir`:
 
 1. Create a new directory `packages/styled-system` (or any other name)
@@ -215,6 +232,8 @@ Mark the `@acme-org/styled-system` as an external package in your library build 
 tsup src/index.tsx --external @acme-org/styled-system
 ```
 
+### Include the src files
+
 Include the `src` directory from the library code in the panda config.
 
 ```tsx {6} filename="panda.config.ts"
@@ -227,13 +246,6 @@ export default defineConfig({
   outdir: 'styled-system'
 })
 ```
-
-### Summary:
-
-- create a Panda [preset](docs/customization/presets) so that you (and your users) can share the same design system tokens
-- create a workspace package for your outdir (`@acme-org/styled-system`)
-- always keep the `importMap` and the name of the `outdir` `package.json` in sync
-- have your component library (`@acme-org/components`) use the `@acme-org/styled-system` package as external (so your users can override or extend your design system tokens)
 
 ### Ship the build info file
 
@@ -267,6 +279,13 @@ export default defineConfig({
 })
 ```
 
+Will allow imports like:
+
+```tsx
+import { css } from '@acme-org/styled-system/css'
+import { button } from '@acme-org/styled-system/recipes'
+```
+
 Next, you need to include the build info file from the library code in the panda config.
 
 ```tsx {6} filename="panda.config.ts"
@@ -283,14 +302,92 @@ export default defineConfig({
 })
 ```
 
-## Recommendations
+## FAQ
 
-- Library Code shouldn't be published on npm and App code uses Panda, use [ship build info](#ship-the-build-info-file) approach
-- App code might not use Panda, use the [static css](#ship-a-static-css-file) file approach
-- App code lives in an internal monorepo, use the [include src files](#include-the-src-files) approach
-- Library code doesn't ship components but only ships tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
+### Why should my component library use an external package `styled-system`?
 
-> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your library code has any custom tokens, patterns or recipes.
+By de-coupling the component library from the `styled-system`, your users can share the same runtime code between your library and their app code.
+
+```tsx filename="component-lib/src/button.tsx"
+import { css } from '@acme-org/styled-system/css'
+
+export function Button({ children, css: cssProp }) {
+  return (
+    <button
+      type="button"
+      className={css({ bg: 'red.300', px: '2', py: '3' }, cssProp)}
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+```tsx filename="app/src/App.tsx"
+import { Button } from '@acme-org/design-system'
+import { css } from '@acme-org/styled-system/css'
+
+export function App() {
+  return <Button css={{ color: 'white' }}>Click me</Button>
+}
+```
+
+Marking the `styled-system` as an external package in your build tool means that the generated JS runtime code (the `css` function is the example above) is imported only once, avoiding duplication.
+
+````
+
+### How do I use the `@acme-org/styled-system` package ?
+
+You can use your monorepo workspace package `@acme-org/styled-system` just like any other dependency in your app or component library code.
+
+```bash
+pnpm add @acme-org/styled-system
+````
+
+Set the `importMap` in your `panda.config.ts` to that same package name. This will inform Panda which imports belong to the `styled-system`.
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  importMap: '@acme-org/styled-system'
+})
+```
+
+Then you can import the functions from the `@acme-org/styled-system` monorepo package.
+
+```tsx
+import { css } from '@acme-org/styled-system/css'
+
+export function Button({ children }) {
+  return (
+    <button type="button" className={css({ bg: 'red.300', px: '2', py: '3' })}>
+      {children}
+    </button>
+  )
+}
+```
+
+### How to override tokens used by the `@acme-org/styled-system` package?
+
+You can override the tokens used by the `@acme-org/styled-system` package by extending the `theme` in your `panda.config.ts` file.
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  presets: ['@acme-org/preset']
+  theme: {
+    extend: {
+      tokens: {
+        colors: { primary: { value: 'blue.500' } }
+      }
+    }
+  }
+})
+```
 
 ## Troubleshooting
 
