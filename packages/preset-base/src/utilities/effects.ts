@@ -4,23 +4,28 @@ import { createColorMixTransform } from '../color-mix-transform'
 export const effects: UtilityConfig = {
   opacity: {
     values: 'opacity',
+    group: 'Background',
   },
   boxShadow: {
     shorthand: 'shadow',
     className: 'shadow',
     values: 'shadows',
+    group: 'Shadow',
   },
   boxShadowColor: {
     shorthand: 'shadowColor',
     className: 'shadow',
     values: 'colors',
     transform: createColorMixTransform('--shadow-color'),
+    group: 'Color',
   },
   mixBlendMode: {
     className: 'mix-blend',
+    group: 'Effects',
   },
   filter: {
     className: 'filter',
+    group: 'Effects',
     values: {
       auto: [
         'var(--blur)',
@@ -37,6 +42,7 @@ export const effects: UtilityConfig = {
   },
   brightness: {
     className: 'brightness',
+    group: 'Effects',
     transform(value) {
       return {
         '--brightness': `brightness(${value})`,
@@ -45,6 +51,7 @@ export const effects: UtilityConfig = {
   },
   contrast: {
     className: 'contrast',
+    group: 'Effects',
     transform(value) {
       return {
         '--contrast': `contrast(${value})`,
@@ -53,6 +60,7 @@ export const effects: UtilityConfig = {
   },
   grayscale: {
     className: 'grayscale',
+    group: 'Effects',
     transform(value) {
       return {
         '--grayscale': `grayscale(${value})`,
@@ -61,6 +69,7 @@ export const effects: UtilityConfig = {
   },
   hueRotate: {
     className: 'hue-rotate',
+    group: 'Effects',
     transform(value) {
       return {
         '--hue-rotate': `hue-rotate(${value})`,
@@ -69,6 +78,7 @@ export const effects: UtilityConfig = {
   },
   invert: {
     className: 'invert',
+    group: 'Effects',
     transform(value) {
       return {
         '--invert': `invert(${value})`,
@@ -77,6 +87,7 @@ export const effects: UtilityConfig = {
   },
   saturate: {
     className: 'saturate',
+    group: 'Effects',
     transform(value) {
       return {
         '--saturate': `saturate(${value})`,
@@ -85,6 +96,7 @@ export const effects: UtilityConfig = {
   },
   sepia: {
     className: 'sepia',
+    group: 'Effects',
     transform(value) {
       return {
         '--sepia': `sepia(${value})`,
@@ -93,6 +105,7 @@ export const effects: UtilityConfig = {
   },
   dropShadow: {
     className: 'drop-shadow',
+    group: 'Effects',
     values: 'dropShadows',
     transform(value) {
       return {
@@ -102,6 +115,7 @@ export const effects: UtilityConfig = {
   },
   blur: {
     className: 'blur',
+    group: 'Effects',
     values: 'blurs',
     transform(value) {
       return {
@@ -112,6 +126,7 @@ export const effects: UtilityConfig = {
 
   backdropFilter: {
     className: 'backdrop',
+    group: 'Effects',
     values: {
       auto: [
         'var(--backdrop-blur)',
@@ -133,6 +148,7 @@ export const effects: UtilityConfig = {
   },
   backdropBlur: {
     className: 'backdrop-blur',
+    group: 'Effects',
     values: 'blurs',
     transform(value) {
       return {
@@ -142,6 +158,7 @@ export const effects: UtilityConfig = {
   },
   backdropBrightness: {
     className: 'backdrop-brightness',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-brightness': `brightness(${value})`,
@@ -150,6 +167,7 @@ export const effects: UtilityConfig = {
   },
   backdropContrast: {
     className: 'backdrop-contrast',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-contrast': `contrast(${value})`,
@@ -158,6 +176,7 @@ export const effects: UtilityConfig = {
   },
   backdropGrayscale: {
     className: 'backdrop-grayscale',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-grayscale': `grayscale(${value})`,
@@ -166,6 +185,7 @@ export const effects: UtilityConfig = {
   },
   backdropHueRotate: {
     className: 'backdrop-hue-rotate',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-hue-rotate': `hue-rotate(${value})`,
@@ -174,6 +194,7 @@ export const effects: UtilityConfig = {
   },
   backdropInvert: {
     className: 'backdrop-invert',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-invert': `invert(${value})`,
@@ -182,6 +203,7 @@ export const effects: UtilityConfig = {
   },
   backdropOpacity: {
     className: 'backdrop-opacity',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-opacity': value,
@@ -190,6 +212,7 @@ export const effects: UtilityConfig = {
   },
   backdropSaturate: {
     className: 'backdrop-saturate',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-saturate': `saturate(${value})`,
@@ -198,6 +221,7 @@ export const effects: UtilityConfig = {
   },
   backdropSepia: {
     className: 'backdrop-sepia',
+    group: 'Effects',
     transform(value) {
       return {
         '--backdrop-sepia': `sepia(${value})`,

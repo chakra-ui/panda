@@ -30,8 +30,6 @@ describe('generate property types', () => {
       	insetInlineStart: Tokens["spacing"];
       	right: Tokens["spacing"];
       	bottom: Tokens["spacing"];
-      	insetX: Tokens["spacing"] | CssProperties["insetInline"];
-      	insetY: Tokens["spacing"] | CssProperties["insetBlock"];
       	float: "left" | "right" | "start" | "end";
       	hideFrom: Tokens["breakpoints"];
       	hideBelow: Tokens["breakpoints"];
@@ -105,7 +103,7 @@ describe('generate property types', () => {
       	textShadowColor: Tokens["colors"];
       	textWrap: "wrap" | "balance" | "nowrap";
       	truncate: boolean;
-	listStyleImage: Tokens["assets"];
+      	listStyleImage: Tokens["assets"];
       	background: Tokens["colors"];
       	backgroundColor: Tokens["colors"];
       	backgroundImage: Tokens["assets"];
@@ -186,8 +184,6 @@ describe('generate property types', () => {
       	caretColor: Tokens["colors"];
       	scrollbar: "visible" | "hidden";
       	scrollMargin: Tokens["spacing"];
-      	scrollMarginX: Tokens["spacing"] | CssProperties["scrollMarginInline"];
-      	scrollMarginY: Tokens["spacing"] | CssProperties["scrollMarginBlock"];
       	scrollMarginLeft: Tokens["spacing"];
       	scrollMarginRight: Tokens["spacing"];
       	scrollMarginTop: Tokens["spacing"];
@@ -205,8 +201,6 @@ describe('generate property types', () => {
       	scrollPaddingInline: Tokens["spacing"];
       	scrollPaddingInlineEnd: Tokens["spacing"];
       	scrollPaddingInlineStart: Tokens["spacing"];
-      	scrollPaddingX: Tokens["spacing"] | CssProperties["scrollPaddingInline"];
-      	scrollPaddingY: Tokens["spacing"] | CssProperties["scrollPaddingBlock"];
       	scrollPaddingLeft: Tokens["spacing"];
       	scrollPaddingRight: Tokens["spacing"];
       	scrollPaddingTop: Tokens["spacing"];
@@ -237,6 +231,8 @@ describe('generate property types', () => {
         export interface PropertyTypes extends PropertyValueTypes {
         
       	pos: Shorthand<"position">;
+      	insetX: Shorthand<"insetInline">;
+      	insetY: Shorthand<"insetBlock">;
       	insetEnd: Shorthand<"insetInlineEnd">;
       	end: Shorthand<"insetInlineEnd">;
       	insetStart: Shorthand<"insetInlineStart">;
@@ -323,6 +319,10 @@ describe('generate property types', () => {
       	shadowColor: Shorthand<"boxShadowColor">;
       	x: Shorthand<"translateX">;
       	y: Shorthand<"translateY">;
+      	scrollMarginY: Shorthand<"scrollMarginBlock">;
+      	scrollMarginX: Shorthand<"scrollMarginInline">;
+      	scrollPaddingY: Shorthand<"scrollPaddingBlock">;
+      	scrollPaddingX: Shorthand<"scrollPaddingInline">;
       }
 
       type StrictableProps =
@@ -449,8 +449,6 @@ describe('generate property types', () => {
       	insetInlineStart: Tokens["spacing"];
       	right: Tokens["spacing"];
       	bottom: Tokens["spacing"];
-      	insetX: Tokens["spacing"];
-      	insetY: Tokens["spacing"];
       	float: "left" | "right" | "start" | "end";
       	hideFrom: Tokens["breakpoints"];
       	hideBelow: Tokens["breakpoints"];
@@ -604,8 +602,6 @@ describe('generate property types', () => {
       	caretColor: Tokens["colors"];
       	scrollbar: "visible" | "hidden";
       	scrollMargin: Tokens["spacing"];
-      	scrollMarginX: Tokens["spacing"];
-      	scrollMarginY: Tokens["spacing"];
       	scrollMarginLeft: Tokens["spacing"];
       	scrollMarginRight: Tokens["spacing"];
       	scrollMarginTop: Tokens["spacing"];
@@ -623,8 +619,6 @@ describe('generate property types', () => {
       	scrollPaddingInline: Tokens["spacing"];
       	scrollPaddingInlineEnd: Tokens["spacing"];
       	scrollPaddingInlineStart: Tokens["spacing"];
-      	scrollPaddingX: Tokens["spacing"];
-      	scrollPaddingY: Tokens["spacing"];
       	scrollPaddingLeft: Tokens["spacing"];
       	scrollPaddingRight: Tokens["spacing"];
       	scrollPaddingTop: Tokens["spacing"];
@@ -655,6 +649,8 @@ describe('generate property types', () => {
         export interface PropertyTypes extends PropertyValueTypes {
         
       	pos: Shorthand<"position">;
+      	insetX: Shorthand<"insetInline">;
+      	insetY: Shorthand<"insetBlock">;
       	insetEnd: Shorthand<"insetInlineEnd">;
       	end: Shorthand<"insetInlineEnd">;
       	insetStart: Shorthand<"insetInlineStart">;
@@ -741,6 +737,10 @@ describe('generate property types', () => {
       	shadowColor: Shorthand<"boxShadowColor">;
       	x: Shorthand<"translateX">;
       	y: Shorthand<"translateY">;
+      	scrollMarginY: Shorthand<"scrollMarginBlock">;
+      	scrollMarginX: Shorthand<"scrollMarginInline">;
+      	scrollPaddingY: Shorthand<"scrollPaddingBlock">;
+      	scrollPaddingX: Shorthand<"scrollPaddingInline">;
       }
 
       type StrictableProps =

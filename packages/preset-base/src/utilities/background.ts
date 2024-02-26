@@ -5,23 +5,28 @@ export const background: UtilityConfig = {
   backgroundPosition: {
     shorthand: 'bgPosition',
     className: 'bg',
+    group: 'Background',
   },
   backgroundPositionX: {
     shorthand: 'bgPositionX',
     className: 'bg-x',
+    group: 'Background',
   },
   backgroundPositionY: {
     shorthand: 'bgPositionY',
     className: 'bg-y',
+    group: 'Background',
   },
 
   backgroundAttachment: {
     shorthand: 'bgAttachment',
     className: 'bg',
+    group: 'Background',
   },
   backgroundClip: {
     shorthand: 'bgClip',
     className: 'bg-clip',
+    group: 'Background',
     transform(value) {
       return {
         backgroundClip: value,
@@ -33,39 +38,47 @@ export const background: UtilityConfig = {
     shorthand: 'bg',
     className: 'bg',
     values: 'colors',
+    group: 'Background',
     transform: createColorMixTransform('background'),
   },
   backgroundColor: {
     shorthand: 'bgColor',
     className: 'bg',
     values: 'colors',
+    group: 'Background',
     transform: createColorMixTransform('backgroundColor'),
   },
 
   backgroundOrigin: {
     shorthand: 'bgOrigin',
     className: 'bg-origin',
+    group: 'Background',
   },
   backgroundImage: {
     shorthand: 'bgImage',
     className: 'bg-img',
     values: 'assets',
+    group: 'Background',
   },
   backgroundRepeat: {
     shorthand: 'bgRepeat',
     className: 'bg-repeat',
+    group: 'Background',
   },
   backgroundBlendMode: {
     shorthand: 'bgBlendMode',
     className: 'bg-blend',
+    group: 'Background',
   },
   backgroundSize: {
     shorthand: 'bgSize',
     className: 'bg',
+    group: 'Background',
   },
   backgroundGradient: {
     shorthand: 'bgGradient',
     className: 'bg-gradient',
+    group: 'Background',
     values(theme) {
       return {
         ...theme('gradients'),
@@ -89,6 +102,7 @@ export const background: UtilityConfig = {
   },
   textGradient: {
     className: 'text-gradient',
+    group: 'Background',
     values(theme) {
       return {
         ...theme('gradients'),
@@ -115,16 +129,19 @@ export const background: UtilityConfig = {
   gradientFrom: {
     className: 'from',
     values: 'colors',
+    group: 'Background',
     transform: createColorMixTransform('--gradient-from'),
   },
   gradientTo: {
     className: 'to',
     values: 'colors',
+    group: 'Background',
     transform: createColorMixTransform('--gradient-to'),
   },
   gradientVia: {
     className: 'via',
     values: 'colors',
+    group: 'Background',
     transform(value, args) {
       const transformed = gradientVia(value, args)
       return {

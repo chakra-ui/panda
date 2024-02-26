@@ -3,6 +3,7 @@ import type { UtilityConfig } from '@pandacss/types'
 export const flexGrid: UtilityConfig = {
   flexBasis: {
     className: 'basis',
+    group: 'Flexbox',
     values(theme) {
       return {
         ...theme('spacing'),
@@ -38,6 +39,7 @@ export const flexGrid: UtilityConfig = {
   },
   flex: {
     className: 'flex',
+    group: 'Flexbox',
     values: {
       '1': '1 1 0%',
       auto: '1 1 auto',
@@ -47,17 +49,21 @@ export const flexGrid: UtilityConfig = {
   },
   flexDirection: {
     className: 'flex',
+    group: 'Flexbox',
     shorthand: 'flexDir',
   },
   flexGrow: {
     className: 'grow',
+    group: 'Flexbox',
   },
   flexShrink: {
     className: 'shrink',
+    group: 'Flexbox',
   },
 
   gridTemplateColumns: {
     className: 'grid-cols',
+    group: 'Grid Layout',
     values: {
       '1': 'repeat(1, minmax(0, 1fr))',
       '2': 'repeat(2, minmax(0, 1fr))',
@@ -75,6 +81,7 @@ export const flexGrid: UtilityConfig = {
   },
   gridTemplateRows: {
     className: 'grid-rows',
+    group: 'Grid Layout',
     values: {
       '1': 'repeat(1, minmax(0, 1fr))',
       '2': 'repeat(2, minmax(0, 1fr))',
@@ -92,6 +99,7 @@ export const flexGrid: UtilityConfig = {
   },
   gridColumn: {
     className: 'col-span',
+    group: 'Grid Layout',
     values: {
       full: '1 / -1',
       '1': 'span 1 / span 1',
@@ -110,6 +118,7 @@ export const flexGrid: UtilityConfig = {
   },
   gridRow: {
     className: 'row-span',
+    group: 'Grid Layout',
     values: {
       full: '1 / -1',
       '1': 'span 1 / span 1',
@@ -128,15 +137,19 @@ export const flexGrid: UtilityConfig = {
   },
   gridColumnStart: {
     className: 'col-start',
+    group: 'Grid Layout',
   },
   gridColumnEnd: {
     className: 'col-end',
+    group: 'Grid Layout',
   },
   gridAutoFlow: {
     className: 'grid-flow',
+    group: 'Grid Layout',
   },
   gridAutoColumns: {
     className: 'auto-cols',
+    group: 'Grid Layout',
     values: {
       min: 'min-content',
       max: 'max-content',
@@ -145,6 +158,7 @@ export const flexGrid: UtilityConfig = {
   },
   gridAutoRows: {
     className: 'auto-rows',
+    group: 'Grid Layout',
     values: {
       min: 'min-content',
       max: 'max-content',
@@ -153,38 +167,48 @@ export const flexGrid: UtilityConfig = {
   },
   gap: {
     className: 'gap',
+    group: 'Flexbox',
     values: 'spacing',
   },
   gridGap: {
     className: 'gap',
+    group: 'Grid Layout',
     values: 'spacing',
   },
   gridRowGap: {
     className: 'gap-x',
+    group: 'Grid Layout',
     values: 'spacing',
   },
   gridColumnGap: {
     className: 'gap-y',
+    group: 'Grid Layout',
     values: 'spacing',
   },
   rowGap: {
     className: 'gap-x',
+    group: 'Grid Layout',
     values: 'spacing',
   },
   columnGap: {
     className: 'gap-y',
+    group: 'Grid Layout',
     values: 'spacing',
   },
   justifyContent: {
     className: 'justify',
+    group: 'Flexbox',
   },
   alignContent: {
     className: 'content',
+    group: 'Flexbox',
   },
   alignItems: {
     className: 'items',
+    group: 'Flexbox',
   },
   alignSelf: {
     className: 'self',
+    group: 'Flexbox',
   },
 }
