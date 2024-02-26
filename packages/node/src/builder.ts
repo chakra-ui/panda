@@ -30,6 +30,8 @@ export class Builder {
   private configDependencies: Set<string> = new Set()
 
   setConfigDependencies(options: SetupContextOptions) {
+    if (!options.configPath) return
+
     const tsOptions = this.context?.conf.tsOptions ?? { baseUrl: undefined, pathMappings: [] }
     const compilerOptions = this.context?.conf.tsconfig?.compilerOptions ?? {}
 
@@ -52,8 +54,18 @@ export class Builder {
   setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
-    const configPath = options.configPath ?? findConfig({ cwd: options.cwd })
-    this.setConfigDependencies({ configPath, cwd: options.cwd })
+    let configPath = options.configPath
+    if (!configPath) {
+      try {
+        configPath = findConfig({ cwd: options.cwd })
+        this.setConfigDependencies({ configPath, cwd: options.cwd })
+      } catch (err) {
+        const isConfigNotFound = err instanceof PandaError && err.message.includes('Cannot find config file')
+        if (!isConfigNotFound) {
+          throw err
+        }
+      }
+    }
 
     if (!this.context) {
       return this.setupContext({ configPath, cwd: options.cwd })
@@ -225,6 +237,6 @@ interface FileMeta {
 }
 
 interface SetupContextOptions {
-  configPath: string
+  configPath?: string
   cwd?: string
 }

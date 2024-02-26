@@ -1,14 +1,36 @@
 import { loadConfig } from '@pandacss/config'
-import type { Config } from '@pandacss/types'
+import type { Config, LoadConfigResult } from '@pandacss/types'
 import browserslist from 'browserslist'
 import { PandaContext } from './create-context'
 import { loadTsConfig } from './load-tsconfig'
+import { loadInMemoryConfig } from '../../config/src/load-config'
+import { PandaError } from '@pandacss/shared'
+import { logger } from '@pandacss/logger'
 
-export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
+interface LoadConfigAndCreateContextOptions {
+  cwd?: string
+  config?: Config
+  configPath?: string
+}
+
+export async function loadConfigAndCreateContext(options: LoadConfigAndCreateContextOptions = {}) {
   const { config, configPath } = options
 
   const cwd = options.cwd ?? options?.config?.cwd ?? process.cwd()
-  const conf = await loadConfig({ cwd, file: configPath })
+  let conf: LoadConfigResult
+
+  try {
+    conf = await loadConfig({ cwd, file: configPath })
+  } catch (error) {
+    const isConfigNotFound = error instanceof PandaError && error.message.includes('Cannot find config file')
+    if (isConfigNotFound) {
+      logger.info('config:path', `Using in-memory config`)
+
+      conf = await loadInMemoryConfig()
+    } else {
+      throw error
+    }
+  }
 
   if (config) {
     Object.assign(conf.config, config)
