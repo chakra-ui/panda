@@ -30,14 +30,18 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
         .filter(Boolean)
         .map((condition) => {
           const lastSegment = Array.isArray(condition) ? condition.at(-1)! : condition
+          if (!lastSegment) return
           const parent = extractParentSelectors(lastSegment)
           // ASSUMPTION: the nature of parent selectors with tokens is that they're merged
           // [data-color-mode=dark][data-theme=pastel]
           // If we really want it nested, we remove the `&`
           return parent ? `&${parent}` : lastSegment
         })
+        .filter(Boolean)
 
-      const rule = getDeepestRule(root, mapped)
+      if (!mapped.length) return
+
+      const rule = getDeepestRule(root, mapped as string[])
       if (!rule) continue
 
       getDeepestNode(rule)?.append(css)
