@@ -114,9 +114,9 @@ export class Conditions {
     return Object.keys(this.values).length === 0
   }
 
-  get = (key: string) => {
+  get = (key: string): undefined | string | string[] => {
     const details = this.values[key]
-    return details.raw
+    return details?.raw
   }
 
   getRaw = (condNameOrQuery: ConditionQuery): ConditionDetails | undefined => {
