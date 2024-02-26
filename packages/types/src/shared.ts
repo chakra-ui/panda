@@ -26,12 +26,12 @@ type Paths<T, Prefix extends string = '', Depth extends number = 0> = {
   [K in keyof T]: Depth extends 0
     ? never
     : T[K] extends object
-    ? K extends string
-      ? `${Prefix}${K}` | Paths<T[K], `${Prefix}${K}.`, Depth extends 1 ? 0 : Subtract<Depth, 1>>
-      : never
-    : K extends string | number
-    ? `${Prefix}${K}`
-    : never
+      ? K extends string
+        ? `${Prefix}${K}` | Paths<T[K], `${Prefix}${K}.`, Depth extends 1 ? 0 : Subtract<Depth, 1>>
+        : never
+      : K extends string | number
+        ? `${Prefix}${K}`
+        : never
 }[keyof T]
 
 export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never
