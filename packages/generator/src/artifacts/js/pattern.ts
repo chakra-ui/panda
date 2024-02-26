@@ -81,8 +81,8 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
     ${ctx.file.import('css', '../css/index')}
 
     const ${baseName}Config = ${patternConfigFn
-        .replace(`{transform`, `{\ntransform`)
-        .replace(`,defaultValues`, `,\ndefaultValues`)}
+      .replace(`{transform`, `{\ntransform`)
+      .replace(`,defaultValues`, `,\ndefaultValues`)}
 
     export const ${styleFnName} = (styles = {}) => {
       const _styles = getPatternStyles(${baseName}Config, styles)

@@ -4,13 +4,16 @@ import { walkObject } from './walk-object'
 type NormalizeContext = Pick<CreateCssContext, 'utility' | 'conditions'>
 
 export function toResponsiveObject(values: string[], breakpoints: string[]) {
-  return values.reduce((acc, current, index) => {
-    const key = breakpoints[index]
-    if (current != null) {
-      acc[key] = current
-    }
-    return acc
-  }, {} as Record<string, string>)
+  return values.reduce(
+    (acc, current, index) => {
+      const key = breakpoints[index]
+      if (current != null) {
+        acc[key] = current
+      }
+      return acc
+    },
+    {} as Record<string, string>,
+  )
 }
 
 export function normalizeStyleObject(styles: Record<string, any>, context: NormalizeContext, shorthand = true) {

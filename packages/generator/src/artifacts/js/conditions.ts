@@ -51,8 +51,8 @@ export function generateConditions(ctx: Context) {
             key === 'base'
               ? `/** The base (=no conditions) styles to apply  */\n`
               : ctx.conditions.get(key)
-              ? `/** \`${([] as string[]).concat(ctx.conditions.get(key)).join(' ')}\` */\n`
-              : ''
+                ? `/** \`${([] as string[]).concat(ctx.conditions.get(key)).join(' ')}\` */\n`
+                : ''
           }\t${JSON.stringify(key)}: string`,
       )
       .join('\n')}

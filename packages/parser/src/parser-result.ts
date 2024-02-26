@@ -16,7 +16,10 @@ export class ParserResult implements ParserResultInterface {
   filePath: string | undefined
   encoder: ParserOptions['encoder']
 
-  constructor(private context: ParserOptions, encoder?: ParserOptions['encoder']) {
+  constructor(
+    private context: ParserOptions,
+    encoder?: ParserOptions['encoder'],
+  ) {
     this.encoder = encoder ?? context.encoder
   }
 
