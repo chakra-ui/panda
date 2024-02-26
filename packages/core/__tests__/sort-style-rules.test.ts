@@ -290,4 +290,40 @@ describe('sort style rules', () => {
       }"
     `)
   })
+
+  test.only('css', () => {
+    const ctx = createContext()
+
+    ctx.encoder.processAtomic({
+      '&.light': { '&::hover': { color: 'green' } },
+      '&::hover': { '&.light': { color: 'yellow' } },
+      //
+      '&.dark, .dark &': { '&::backdrop': { color: 'red' } },
+      '&::backdrop': { '&.dark, .dark &': { color: 'blue' } },
+    })
+
+    ctx.decoder.collect(ctx.encoder)
+    const sheet = ctx.createSheet()
+    sheet.processDecoder(ctx.decoder)
+
+    expect(sheet.toCss({ optimize: true })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\[\\&\\.light\\]\\:\\[\\&\\:\\:hover\\]\\:text_green.light::hover {
+          color: green;
+      }
+
+        .\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:\\[\\&\\:\\:backdrop\\]\\:text_red.dark::backdrop,.dark .\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:\\[\\&\\:\\:backdrop\\]\\:text_red::backdrop {
+          color: red;
+      }
+
+        .\\[\\&\\:\\:backdrop\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue::backdrop.dark,.dark .\\[\\&\\:\\:backdrop\\]\\:\\[\\&\\.dark\\,_\\.dark_\\&\\]\\:text_blue::backdrop {
+          color: blue;
+      }
+
+        .\\[\\&\\:\\:hover\\]\\:\\[\\&\\.light\\]\\:text_yellow::hover.light {
+          color: yellow;
+      }
+      }"
+    `)
+  })
 })
