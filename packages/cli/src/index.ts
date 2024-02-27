@@ -17,6 +17,7 @@ import type {
   SystemStyleObject,
   TextStyles,
   Tokens,
+  PandaPlugin,
 } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
@@ -71,6 +72,10 @@ export function defineGlobalStyles(definition: GlobalStyleObject) {
 
 export function defineUtility(utility: PropertyConfig) {
   return utility
+}
+
+export function definePlugin(plugin: PandaPlugin) {
+  return plugin
 }
 
 /* -----------------------------------------------------------------------------

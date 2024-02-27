@@ -15,6 +15,7 @@ const all: ConfigPath[] = [
   'emitPackage',
   'emitTokensOnly',
   'presets',
+  'plugins',
   'hooks',
 ]
 
