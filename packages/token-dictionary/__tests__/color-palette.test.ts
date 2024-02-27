@@ -1061,15 +1061,15 @@ test('should generate virtual palette', () => {
 
   expect(dictionary.view.values).toMatchInlineSnapshot(`
     Map {
-      "colors.$primary" => "var(--colors-primary)",
-      "colors.$red-300" => "var(--colors-red-300)",
-      "colors.$red-500" => "var(--colors-red-500)",
-      "colors.$blue-500" => "var(--colors-blue-500)",
-      "colors.$blue-700" => "var(--colors-blue-700)",
-      "colors.$colorPalette" => "var(--colors-colorPalette)",
-      "colors.$colorPalette-300" => "var(--colors-colorPalette-300)",
-      "colors.$colorPalette-500" => "var(--colors-colorPalette-500)",
-      "colors.$colorPalette-700" => "var(--colors-colorPalette-700)",
+      "$colors-primary" => "var(--colors-primary)",
+      "$colors-red-300" => "var(--colors-red-300)",
+      "$colors-red-500" => "var(--colors-red-500)",
+      "$colors-blue-500" => "var(--colors-blue-500)",
+      "$colors-blue-700" => "var(--colors-blue-700)",
+      "$colors-colorPalette" => "var(--colors-colorPalette)",
+      "$colors-colorPalette-300" => "var(--colors-colorPalette-300)",
+      "$colors-colorPalette-500" => "var(--colors-colorPalette-500)",
+      "$colors-colorPalette-700" => "var(--colors-colorPalette-700)",
     }
   `)
 
@@ -1490,23 +1490,23 @@ test('should generate nested object virtual palette + custom formatTokenName', (
 
   expect(dictionary.view.values).toMatchInlineSnapshot(`
     Map {
-      "colors.$button-dark" => "var(--colors-button-dark)",
-      "colors.$button-light" => "var(--colors-button-light)",
-      "colors.$button-light-accent" => "var(--colors-button-light-accent)",
-      "colors.$button-light-accent-secondary" => "var(--colors-button-light-accent-secondary)",
-      "colors.$colorPalette-dark" => "var(--colors-color-palette-dark)",
-      "colors.$colorPalette-light" => "var(--colors-color-palette-light)",
-      "colors.$colorPalette" => "var(--colors-color-palette)",
-      "colors.$colorPalette-light-accent" => "var(--colors-color-palette-light-accent)",
-      "colors.$colorPalette-accent" => "var(--colors-color-palette-accent)",
-      "colors.$colorPalette-light-accent-secondary" => "var(--colors-color-palette-light-accent-secondary)",
-      "colors.$colorPalette-accent-secondary" => "var(--colors-color-palette-accent-secondary)",
-      "colors.$colorPalette-secondary" => "var(--colors-color-palette-secondary)",
+      "$colors-button-dark" => "var(--colors-button-dark)",
+      "$colors-button-light" => "var(--colors-button-light)",
+      "$colors-button-light-accent" => "var(--colors-button-light-accent)",
+      "$colors-button-light-accent-secondary" => "var(--colors-button-light-accent-secondary)",
+      "$colors-colorPalette-dark" => "var(--colors-color-palette-dark)",
+      "$colors-colorPalette-light" => "var(--colors-color-palette-light)",
+      "$colors-colorPalette" => "var(--colors-color-palette)",
+      "$colors-colorPalette-light-accent" => "var(--colors-color-palette-light-accent)",
+      "$colors-colorPalette-accent" => "var(--colors-color-palette-accent)",
+      "$colors-colorPalette-light-accent-secondary" => "var(--colors-color-palette-light-accent-secondary)",
+      "$colors-colorPalette-accent-secondary" => "var(--colors-color-palette-accent-secondary)",
+      "$colors-colorPalette-secondary" => "var(--colors-color-palette-secondary)",
     }
   `)
 
   const getVar = dictionary.view.get
-  expect(getVar('colors.$colorPalette-light-accent-secondary')).toMatchInlineSnapshot(
+  expect(getVar('$colors-colorPalette-light-accent-secondary')).toMatchInlineSnapshot(
     `"var(--colors-color-palette-light-accent-secondary)"`,
   )
 

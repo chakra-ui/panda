@@ -457,7 +457,7 @@ export class TokenDictionaryView {
     if (!byCategory.has(category)) byCategory.set(category, new Map())
     const value = isNegative ? (token.isConditional ? token.originalValue : token.value) : varRef
     byCategory.get(category)!.set(prop, value)
-    flat.set([category, prop].join('.'), value)
+    flat.set(token.name, value)
   }
 
   private processVars(token: Token, group: Map<string, Map<string, string>>) {
