@@ -6,10 +6,12 @@ export const outline: UtilityConfig = {
     className: 'ring',
     shorthand: 'ringWidth',
     values: 'borderWidths',
+    group: 'Border',
   },
   outlineColor: {
     className: 'ring',
     values: 'colors',
+    group: 'Color',
     shorthand: 'ringColor',
     transform: createColorMixTransform('outlineColor'),
   },
@@ -17,6 +19,7 @@ export const outline: UtilityConfig = {
     className: 'ring',
     shorthand: 'ring',
     values: 'borders',
+    group: 'Border',
     transform(value) {
       if (value === 'none') {
         return { outline: '2px solid transparent', outlineOffset: '2px' }
@@ -28,5 +31,6 @@ export const outline: UtilityConfig = {
     className: 'ring',
     shorthand: 'ringOffset',
     values: 'spacing',
+    group: 'Border',
   },
 }

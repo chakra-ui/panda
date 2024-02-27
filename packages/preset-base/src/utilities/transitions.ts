@@ -22,6 +22,7 @@ export const transitions: UtilityConfig = {
   transitionTimingFunction: {
     className: 'ease',
     values: 'easings',
+    group: 'Transition',
     transform(value: string) {
       return {
         '--transition-easing': value,
@@ -32,10 +33,12 @@ export const transitions: UtilityConfig = {
   transitionDelay: {
     className: 'delay',
     values: 'durations',
+    group: 'Transition',
   },
   transitionDuration: {
     className: 'duration',
     values: 'durations',
+    group: 'Transition',
     transform(value: string) {
       return {
         '--transition-duration': value,
@@ -45,6 +48,7 @@ export const transitions: UtilityConfig = {
   },
   transitionProperty: {
     className: 'transition-prop',
+    group: 'Transition',
     transform(value) {
       return {
         '--transition-prop': value,
@@ -55,6 +59,7 @@ export const transitions: UtilityConfig = {
   transition: {
     className: 'transition',
     values: Object.keys(transitionMap),
+    group: 'Transition',
     transform(value: string) {
       return transitionMap[value] ?? { transition: value }
     },
@@ -62,13 +67,16 @@ export const transitions: UtilityConfig = {
   animation: {
     className: 'animation',
     values: 'animations',
+    group: 'Transition',
   },
   animationName: {
     className: 'animation-name',
     values: 'animationName',
+    group: 'Transition',
   },
   animationDelay: {
     className: 'animation-delay',
     values: 'durations',
+    group: 'Transition',
   },
 }

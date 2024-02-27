@@ -60,60 +60,72 @@ export const sizing: UtilityConfig = {
   width: {
     shorthand: 'w',
     className: 'w',
+    group: 'Width',
     values: widthValues,
   },
   inlineSize: {
     className: 'w',
+    group: 'Width',
     values: widthValues,
   },
 
   minWidth: {
     shorthand: 'minW',
     className: 'min-w',
+    group: 'Width',
     values: widthValues,
   },
   minInlineSize: {
     className: 'min-w',
+    group: 'Width',
     values: widthValues,
   },
 
   maxWidth: {
     shorthand: 'maxW',
     className: 'max-w',
+    group: 'Width',
     values: widthValues,
   },
   maxInlineSize: {
     className: 'max-w',
+    group: 'Width',
     values: widthValues,
   },
 
   height: {
     shorthand: 'h',
     className: 'h',
+    group: 'Height',
     values: heightValues,
   },
   blockSize: {
     className: 'h',
+    group: 'Height',
     values: heightValues,
   },
 
   minHeight: {
     shorthand: 'minH',
     className: 'min-h',
+    group: 'Height',
     values: heightValues,
   },
   minBlockSize: {
     className: 'min-h',
+    group: 'Height',
     values: heightValues,
   },
 
   maxHeight: {
     shorthand: 'maxH',
     className: 'max-h',
+    group: 'Height',
     values: heightValues,
   },
   maxBlockSize: {
     className: 'max-b',
+    group: 'Height',
     values: heightValues,
   },
 }

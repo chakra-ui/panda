@@ -60,7 +60,39 @@ export interface PropertyConfig {
    * The shorthand of the property.
    */
   shorthand?: string | string[]
+  /**
+   * The CSS semantic group this property belongs
+   */
+  group?: CssSemanticGroup
 }
+
+export type CssSemanticGroup =
+  | 'System'
+  | 'Container'
+  | 'Display'
+  | 'Visibility'
+  | 'Position'
+  | 'Transform'
+  | 'Flex Layout'
+  | 'Grid Layout'
+  | 'Layout'
+  | 'Border'
+  | 'Border Radius'
+  | 'Width'
+  | 'Height'
+  | 'Margin'
+  | 'Padding'
+  | 'Color'
+  | 'Typography'
+  | 'Background'
+  | 'Shadow'
+  | 'Table'
+  | 'List'
+  | 'Scroll'
+  | 'Interactivity'
+  | 'Transition'
+  | 'Effect'
+  | 'Other'
 
 export type UtilityConfig = {
   [property in LiteralUnion<CssProperty>]?: PropertyConfig
