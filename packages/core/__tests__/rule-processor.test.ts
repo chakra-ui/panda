@@ -86,8 +86,8 @@ describe('rule processor', () => {
     const result = css(
       {
         margin: '$2',
-        p: '{spacing.$2}',
-        mx: 'token(spacing.$2)',
+        p: '{$spacing-2}',
+        mx: 'token($spacing-2)',
         my: '-$2',
         color: '$blue-300',
       },
@@ -104,8 +104,8 @@ describe('rule processor', () => {
     expect(result.className).toMatchInlineSnapshot(`
       [
         "m_\\$2",
-        "p_\\{spacing\\.\\$2\\}",
-        "mx_token\\(spacing\\.\\$2\\)",
+        "p_\\{\\$spacing-2\\}",
+        "mx_token\\(\\$spacing-2\\)",
         "my_-\\$2",
         "text_\\$blue-300",
       ]
@@ -116,11 +116,11 @@ describe('rule processor', () => {
           margin: var(--spacing-2);
       }
 
-        .p_\\{spacing\\.\\$2\\} {
+        .p_\\{\\$spacing-2\\} {
           padding: var(--spacing-2);
       }
 
-        .mx_token\\(spacing\\.\\$2\\) {
+        .mx_token\\(\\$spacing-2\\) {
           margin-inline: var(--spacing-2);
       }
 
@@ -130,6 +130,35 @@ describe('rule processor', () => {
 
         .text_\\$blue-300 {
           color: var(--colors-blue-300);
+      }
+      }"
+    `)
+  })
+
+  test('token() with formatTokenName', () => {
+    const result = css(
+      {
+        mx: 'token($spacing-2)',
+      },
+      {
+        hooks: {
+          'tokens:created': ({ configure }) => {
+            configure({
+              formatTokenName: (path: string[]) => '$' + path.join('-'),
+            })
+          },
+        },
+      },
+    )
+    expect(result.className).toMatchInlineSnapshot(`
+      [
+        "mx_token\\(\\$spacing-2\\)",
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .mx_token\\(\\$spacing-2\\) {
+          margin-inline: var(--spacing-2);
       }
       }"
     `)
