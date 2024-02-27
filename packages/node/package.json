@@ -62,7 +62,7 @@
     "pluralize": "8.0.0",
     "postcss": "8.4.35",
     "preferred-pm": "3.1.2",
-    "prettier": "2.8.8",
+    "prettier": "3.2.5",
     "ts-morph": "21.0.1",
     "ts-pattern": "5.0.8",
     "tsconfck": "3.0.2"

@@ -37,6 +37,6 @@
     "@types/react": "18.2.55",
     "autoprefixer": "10.4.17",
     "postcss": "8.4.35",
-    "prettier": "2.8.8"
+    "prettier": "3.2.5"
   }
 }

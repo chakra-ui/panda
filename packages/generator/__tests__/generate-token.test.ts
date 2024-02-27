@@ -551,7 +551,7 @@ describe('generator', () => {
         path: '',
         hooks: {},
         serialized: '',
-        deserialize: () => ({} as any),
+        deserialize: () => ({}) as any,
       })
 
       expect(css).toMatchInlineSnapshot(`
@@ -597,7 +597,7 @@ describe('generator', () => {
         path: '',
         hooks: {},
         serialized: '',
-        deserialize: () => ({} as any),
+        deserialize: () => ({}) as any,
       })
 
       expect(css).toMatchInlineSnapshot(`
@@ -660,7 +660,7 @@ describe('generator', () => {
       path: '',
       hooks: {},
       serialized: '',
-      deserialize: () => ({} as any),
+      deserialize: () => ({}) as any,
     })
 
     expect(css).toMatchInlineSnapshot(`

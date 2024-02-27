@@ -426,7 +426,7 @@
     "name": "@acme/preset",
     "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
     "main": "./dist/index.js",
-    "module": "./dist/index.mjs"
+    "module": "./dist/index.mjs",
   }
   ```
 
@@ -444,10 +444,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "import": "./dist/index.mjs",
-        "require": "./dist/index.js"
-      }
+        "require": "./dist/index.js",
+      },
       // ...
-    }
+    },
   }
   ```
 

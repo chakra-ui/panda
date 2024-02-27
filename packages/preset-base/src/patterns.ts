@@ -176,8 +176,8 @@ const grid = definePattern({
         columns != null
           ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`)
           : minChildWidth != null
-          ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${getValue(v)}, 1fr))`)
-          : undefined,
+            ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${getValue(v)}, 1fr))`)
+            : undefined,
       gap,
       columnGap,
       rowGap,

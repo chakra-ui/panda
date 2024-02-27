@@ -3,6 +3,7 @@ import { isBaseCondition, isObject, toRem, withoutSpace } from '@pandacss/shared
 import type { ConditionDetails, ConditionQuery, ConditionType, Conditions as ConditionsConfig } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
+import { compareAtRuleOrMixed } from './sort-style-rules'
 
 const order: ConditionType[] = ['at-rule', 'self-nesting', 'combinator-nesting', 'parent-nesting']
 
@@ -151,5 +152,18 @@ export class Conditions {
 
   remove(key: string) {
     delete this.values[`_${key}`]
+  }
+
+  getSortedKeys = () => {
+    return Object.keys(this.values).sort((a, b) => {
+      const aCondition = this.values[a]
+      const bCondition = this.values[b]
+
+      const score = compareAtRuleOrMixed(
+        { entry: {} as any, conditions: [aCondition] },
+        { entry: {} as any, conditions: [bCondition] },
+      )
+      return score
+    })
   }
 }

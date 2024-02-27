@@ -209,11 +209,14 @@ export const addColorPalette: TokenTransformer = {
      * It holds all the possible values you can pass to the css `colorPalette` property.
      * It's used by the `addVirtualPalette` middleware to build the virtual `colorPalette` token for each color pattern root.
      */
-    const colorPaletteRoots = tokenPathClone.reduce((acc, _, i, arr) => {
-      const next = arr.slice(0, i + 1)
-      acc.push(next)
-      return acc
-    }, [] as Array<string[]>)
+    const colorPaletteRoots = tokenPathClone.reduce(
+      (acc, _, i, arr) => {
+        const next = arr.slice(0, i + 1)
+        acc.push(next)
+        return acc
+      },
+      [] as Array<string[]>,
+    )
 
     const colorPaletteRoot = tokenPathClone[0]
     const colorPalette = dict.formatTokenName(tokenPathClone)
@@ -273,10 +276,13 @@ export const addColorPalette: TokenTransformer = {
     const colorPaletteTokenKeys = token.path
       // Remove everything before colorPalette root and the root itself
       .slice(token.path.indexOf(colorPaletteRoot) + 1)
-      .reduce((acc, _, i, arr) => {
-        acc.push(arr.slice(i))
-        return acc
-      }, [] as Array<string[]>)
+      .reduce(
+        (acc, _, i, arr) => {
+          acc.push(arr.slice(i))
+          return acc
+        },
+        [] as Array<string[]>,
+      )
 
     // https://github.com/chakra-ui/panda/issues/1421
     if (colorPaletteTokenKeys.length === 0) {
