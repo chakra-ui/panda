@@ -17,11 +17,11 @@ const fractions = { ...positiveFractions, ...negativeFractions }
 export const transforms: UtilityConfig = {
   transformOrigin: {
     className: 'origin',
-    group: 'Transforms',
+    group: 'Transform',
   },
   scale: {
     className: 'scale',
-    group: 'Transforms',
+    group: 'Transform',
     property: 'scale',
     values: {
       auto: 'var(--scale-x) var(--scale-y)',
@@ -29,7 +29,7 @@ export const transforms: UtilityConfig = {
   },
   scaleX: {
     className: 'scale-x',
-    group: 'Transforms',
+    group: 'Transform',
     transform(value) {
       return {
         '--scale-x': value,
@@ -38,7 +38,7 @@ export const transforms: UtilityConfig = {
   },
   scaleY: {
     className: 'scale-y',
-    group: 'Transforms',
+    group: 'Transform',
     transform(value) {
       return {
         '--scale-y': value,
@@ -47,7 +47,7 @@ export const transforms: UtilityConfig = {
   },
   translate: {
     className: 'translate',
-    group: 'Transforms',
+    group: 'Transform',
     property: 'translate',
     values: {
       auto: 'var(--translate-x) var(--translate-y)',
@@ -56,7 +56,7 @@ export const transforms: UtilityConfig = {
   translateX: {
     shorthand: 'x',
     className: 'translate-x',
-    group: 'Transforms',
+    group: 'Transform',
     values(theme) {
       return {
         ...theme('spacing'),
@@ -72,7 +72,7 @@ export const transforms: UtilityConfig = {
   translateY: {
     shorthand: 'y',
     className: 'translate-y',
-    group: 'Transforms',
+    group: 'Transform',
     values(theme) {
       return {
         ...theme('spacing'),

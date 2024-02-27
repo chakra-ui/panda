@@ -16,12 +16,12 @@ export const interactivity: UtilityConfig = {
   },
   scrollBehavior: {
     className: 'scroll',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollbar: {
     className: 'scrollbar',
     values: ['visible', 'hidden'],
-    group: 'Scrollbar',
+    group: 'Scroll',
     transform(value) {
       if (value === 'visible') {
         return {
@@ -46,128 +46,128 @@ export const interactivity: UtilityConfig = {
   scrollMargin: {
     className: 'scroll-m',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginLeft: {
     className: 'scroll-ml',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginRight: {
     className: 'scroll-mr',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginTop: {
     className: 'scroll-mt',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginBottom: {
     className: 'scroll-mb',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginBlock: {
     className: 'scroll-my',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
     shorthand: ['scrollMarginY'],
   },
   scrollMarginBlockEnd: {
     className: 'scroll-mb',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginBlockStart: {
     className: 'scroll-mt',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginInline: {
     className: 'scroll-mx',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
     shorthand: ['scrollMarginX'],
   },
   scrollMarginInlineEnd: {
     className: 'scroll-me',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollMarginInlineStart: {
     className: 'scroll-ms',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPadding: {
     className: 'scroll-p',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingBlock: {
     className: 'scroll-pb',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
     shorthand: ['scrollPaddingY'],
   },
   scrollPaddingBlockStart: {
     className: 'scroll-pt',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingBlockEnd: {
     className: 'scroll-pb',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingInline: {
     className: 'scroll-px',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
     shorthand: ['scrollPaddingX'],
   },
   scrollPaddingInlineEnd: {
     className: 'scroll-pe',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingInlineStart: {
     className: 'scroll-ps',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingLeft: {
     className: 'scroll-pl',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingRight: {
     className: 'scroll-pr',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingTop: {
     className: 'scroll-pt',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollPaddingBottom: {
     className: 'scroll-pb',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollSnapAlign: {
     className: 'snap',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollSnapStop: {
     className: 'snap',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollSnapType: {
     className: 'snap',
-    group: 'Scrollbar',
+    group: 'Scroll',
     values: {
       none: 'none',
       x: 'x var(--scroll-snap-strictness)',
@@ -178,7 +178,7 @@ export const interactivity: UtilityConfig = {
   scrollSnapStrictness: {
     className: 'strictness',
     values: ['mandatory', 'proximity'],
-    group: 'Scrollbar',
+    group: 'Scroll',
     transform(value) {
       return {
         '--scroll-snap-strictness': value,
@@ -188,35 +188,35 @@ export const interactivity: UtilityConfig = {
   scrollSnapMargin: {
     className: 'snap-m',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollSnapMarginTop: {
     className: 'snap-mt',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollSnapMarginBottom: {
     className: 'snap-mb',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollSnapMarginLeft: {
     className: 'snap-ml',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   scrollSnapMarginRight: {
     className: 'snap-mr',
     values: 'spacing',
-    group: 'Scrollbar',
+    group: 'Scroll',
   },
   touchAction: {
     className: 'touch',
-    group: 'Other Style Props',
+    group: 'Interactivity',
   },
   userSelect: {
     className: 'select',
-    group: 'Other Style Props',
+    group: 'Interactivity',
     transform(value) {
       return {
         WebkitUserSelect: value,

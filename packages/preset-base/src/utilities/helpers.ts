@@ -28,7 +28,7 @@ export const helpers: UtilityConfig = {
   srOnly: {
     className: 'sr',
     values: { type: 'boolean' },
-    group: 'Other Style Props',
+    group: 'Other',
     transform(value) {
       return srMapping[value] || {}
     },
@@ -36,7 +36,7 @@ export const helpers: UtilityConfig = {
   debug: {
     className: 'debug',
     values: { type: 'boolean' },
-    group: 'Other Style Props',
+    group: 'Other',
     transform(value) {
       if (!value) return {}
       return {

@@ -5,7 +5,7 @@ export const divide: UtilityConfig = {
   divideX: {
     className: 'divide-x',
     values: { type: 'string' },
-    group: 'Other Style Props',
+    group: 'Border',
     transform(value) {
       return {
         '& > :not([hidden]) ~ :not([hidden])': {
@@ -18,7 +18,7 @@ export const divide: UtilityConfig = {
   divideY: {
     className: 'divide-y',
     values: { type: 'string' },
-    group: 'Other Style Props',
+    group: 'Border',
     transform(value) {
       return {
         '& > :not([hidden]) ~ :not([hidden])': {
@@ -31,7 +31,7 @@ export const divide: UtilityConfig = {
   divideColor: {
     className: 'divide',
     values: 'colors',
-    group: 'Other Style Props',
+    group: 'Border',
     transform(value, args) {
       return {
         '& > :not([hidden]) ~ :not([hidden])': divideColor(value, args),
@@ -41,7 +41,7 @@ export const divide: UtilityConfig = {
   divideStyle: {
     className: 'divide',
     property: 'borderStyle',
-    group: 'Other Style Props',
+    group: 'Border',
     transform(value) {
       return {
         '& > :not([hidden]) ~ :not([hidden])': {

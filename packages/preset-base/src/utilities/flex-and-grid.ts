@@ -3,7 +3,7 @@ import type { UtilityConfig } from '@pandacss/types'
 export const flexGrid: UtilityConfig = {
   flexBasis: {
     className: 'basis',
-    group: 'Flexbox',
+    group: 'Flex Layout',
     values(theme) {
       return {
         ...theme('spacing'),
@@ -39,7 +39,7 @@ export const flexGrid: UtilityConfig = {
   },
   flex: {
     className: 'flex',
-    group: 'Flexbox',
+    group: 'Flex Layout',
     values: {
       '1': '1 1 0%',
       auto: '1 1 auto',
@@ -49,16 +49,16 @@ export const flexGrid: UtilityConfig = {
   },
   flexDirection: {
     className: 'flex',
-    group: 'Flexbox',
+    group: 'Flex Layout',
     shorthand: 'flexDir',
   },
   flexGrow: {
     className: 'grow',
-    group: 'Flexbox',
+    group: 'Flex Layout',
   },
   flexShrink: {
     className: 'shrink',
-    group: 'Flexbox',
+    group: 'Flex Layout',
   },
 
   gridTemplateColumns: {
@@ -167,7 +167,7 @@ export const flexGrid: UtilityConfig = {
   },
   gap: {
     className: 'gap',
-    group: 'Flexbox',
+    group: 'Flex Layout',
     values: 'spacing',
   },
   gridGap: {
@@ -197,18 +197,18 @@ export const flexGrid: UtilityConfig = {
   },
   justifyContent: {
     className: 'justify',
-    group: 'Flexbox',
+    group: 'Flex Layout',
   },
   alignContent: {
     className: 'content',
-    group: 'Flexbox',
+    group: 'Flex Layout',
   },
   alignItems: {
     className: 'items',
-    group: 'Flexbox',
+    group: 'Flex Layout',
   },
   alignSelf: {
     className: 'self',
-    group: 'Flexbox',
+    group: 'Flex Layout',
   },
 }

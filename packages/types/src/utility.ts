@@ -72,8 +72,8 @@ export type CssSemanticGroup =
   | 'Display'
   | 'Visibility'
   | 'Position'
-  | 'Transforms'
-  | 'Flexbox'
+  | 'Transform'
+  | 'Flex Layout'
   | 'Grid Layout'
   | 'Layout'
   | 'Border'
@@ -87,10 +87,12 @@ export type CssSemanticGroup =
   | 'Background'
   | 'Shadow'
   | 'Table'
-  | 'Scrollbar'
-  | 'Transitions'
-  | 'Effects'
-  | 'Other Style Props'
+  | 'List'
+  | 'Scroll'
+  | 'Interactivity'
+  | 'Transition'
+  | 'Effect'
+  | 'Other'
 
 export type UtilityConfig = {
   [property in LiteralUnion<CssProperty>]?: PropertyConfig

@@ -37,15 +37,15 @@ export const layout: UtilityConfig = {
 
   overscrollBehavior: {
     className: 'overscroll',
-    group: 'Layout',
+    group: 'Scroll',
   },
   overscrollBehaviorX: {
     className: 'overscroll-x',
-    group: 'Layout',
+    group: 'Scroll',
   },
   overscrollBehaviorY: {
     className: 'overscroll-y',
-    group: 'Layout',
+    group: 'Scroll',
   },
 
   position: {
