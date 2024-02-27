@@ -162,6 +162,25 @@ export const pandaPreset = definePreset({
 })
 ```
 
+### `definePlugin`
+
+Function for [plugin](/docs/references/config#plugins) definitions.
+
+```ts
+import { definePlugin } from '@pandacss/dev'
+
+export const plugin = definePlugin({
+  name: 'token-format',
+  hooks: {
+    'tokens:created': ({ configure }) => {
+      configure({
+        formatTokenName: path => '$' + path.join('-')
+      })
+    }
+  }
+})
+```
+
 ### `defineKeyframes`
 
 Function for [keyframes](/docs/customization/theme#keyframes) definitions.
