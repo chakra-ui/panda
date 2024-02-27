@@ -18,7 +18,7 @@ export function generatePropTypes(ctx: Context) {
   ]
 
   const types = utility.getTypes()
-  const cssVars = new Set(Object.keys(ctx.config.cssVars ?? {}))
+  const cssVars = new Set(Object.keys(ctx.config.globalVars ?? {}))
   const withCssVars = cssVars.size ? ' | CssVars' : ''
 
   for (const [prop, values] of types.entries()) {

@@ -5,7 +5,7 @@ import outdent from 'outdent'
 export function generateStyleProps(ctx: Context) {
   const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
 
-  const varNames = Object.keys(ctx.config.cssVars ?? {})
+  const varNames = Object.keys(ctx.config.globalVars ?? {})
 
   return outdent`
     ${ctx.file.importType('ConditionalValue', './conditions')}

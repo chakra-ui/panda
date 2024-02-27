@@ -5,7 +5,7 @@
 '@pandacss/types': patch
 ---
 
-Introduce a new `cssVars` config option to define type-safe
+Introduce a new `globalVars` config option to define type-safe
 [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) and custom
 [CSS @property](https://developer.mozilla.org/en-US/docs/Web/CSS/@property).
 
@@ -16,7 +16,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   // ...
-  cssVars: {
+  globalVars: {
     '--some-color': 'red',
     '--button-color': {
       syntax: '<color>',
@@ -27,11 +27,11 @@ export default defineConfig({
 })
 ```
 
-> Note: Keys defined in `cssVars` will be available as a value for _every_ utilities, as they're not bound to token
+> Note: Keys defined in `globalVars` will be available as a value for _every_ utilities, as they're not bound to token
 > categories.
 
 ```ts
-import { css } from '@pandacss/react'
+import { css } from '../styled-system/css'
 
 const className = css({
   '--button-color': 'colors.red.300',

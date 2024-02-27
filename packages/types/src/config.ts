@@ -71,7 +71,7 @@ export interface PresetCore {
   /**
    * The css variables for your project.
    */
-  cssVars: CssVars
+  globalVars: GlobalVars
 }
 
 interface ExtendablePatterns {
@@ -89,13 +89,13 @@ interface CssProperty {
   syntax: string
 }
 
-interface CssVars {
+interface GlobalVars {
   [key: string]: string | CssProperty
 }
 
-interface ExtendableCssVars {
-  [key: string]: string | CssProperty | ExtendableCssVars | undefined
-  extend?: ExtendableCssVars
+interface ExtendableGlobalVars {
+  [key: string]: string | CssProperty | ExtendableGlobalVars | undefined
+  extend?: ExtendableGlobalVars
 }
 
 export interface ExtendableOptions {
@@ -127,7 +127,7 @@ export interface ExtendableOptions {
   /**
    * The css variables for your project.
    */
-  cssVars?: ExtendableCssVars
+  globalVars?: ExtendableGlobalVars
 }
 
 export interface ImportMapInput {

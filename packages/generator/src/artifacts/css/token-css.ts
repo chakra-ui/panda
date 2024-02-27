@@ -15,7 +15,7 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   const results: string[] = []
   const vars = new Map(tokens.view.vars.entries())
 
-  const cssVars = ctx.config.cssVars ?? {}
+  const cssVars = ctx.config.globalVars ?? {}
   const cssCustomProps = [] as string[]
   if (!vars.has('base')) {
     vars.set('base', new Map())
