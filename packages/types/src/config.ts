@@ -232,7 +232,7 @@ interface CssgenOptions {
    * Whether to include css reset styles in the generated css.
    * @default true
    */
-  preflight?: boolean | { scope: string }
+  preflight?: boolean | { scope: string; level?: 'element' | 'parent' }
   /**
    * The namespace prefix for the generated css classes and css variables.
    * @default ''

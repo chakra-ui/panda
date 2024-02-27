@@ -1,12 +1,20 @@
 import type { Stylesheet } from '@pandacss/core'
 import { type Context } from '@pandacss/core'
-import { isObject } from '@pandacss/shared'
+import { isObject, mapEntries } from '@pandacss/shared'
 import type { GlobalStyleObject } from '@pandacss/types'
 
 export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   const { preflight } = ctx.config
-  const scope = isObject(preflight) ? preflight.scope : undefined
-  const selector = scope ? `${scope} ` : ''
+
+  const { scope = '', level = 'parent' } = isObject(preflight) ? preflight : {}
+
+  let selector = ''
+
+  if (scope && level === 'parent') {
+    selector = `${scope} `
+  } else if (scope && level === 'element') {
+    selector = `&${scope}`
+  }
 
   const scoped = {
     '*': { margin: '0px', padding: '0px', font: 'inherit' },
@@ -102,7 +110,10 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
     },
   }
 
-  if (selector) {
+  if (level === 'element') {
+    const modified = mapEntries(scoped, (k, v) => [k, { [selector]: v }])
+    Object.assign(reset, modified)
+  } else if (selector) {
     reset[selector] = scoped
   } else {
     Object.assign(reset, scoped)
