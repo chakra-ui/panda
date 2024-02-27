@@ -6,6 +6,83 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.33.0] - 2024-02-27
+
+### Fixed
+
+- Fix an issue with recipes that lead to in-memory duplication the resulting CSS, which would increase the time taken to
+  output the CSS after each extraction in the same HMR session (by a few ms).
+- Fix svg token asset quotes
+- Fix conditions accessing `Cannot read properties of undefined (reading 'raw')`
+
+### Added
+
+- Allow dynamically recording profiling session by pressing the `p` key in your terminal when using the `--cpu-prof`
+  flag for long-running sessions (with `-w` or `--watch` for `panda` / `panda cssgen` / `panda codegen`).
+- Add `definePlugin` config functions for type-safety around plugins, add missing `plugins` in config dependencies to
+  trigger a config reload on `plugins` change
+- Add a `group` to every utility in the `@pandacss/preset-base`, this helps Panda tooling organize utilities.
+- Add support for element level css reset via `preflight.level`. Learn more
+  [here](https://github.com/chakra-ui/panda/discussions/1992).
+
+Setting `preflight.level` to `'element'` applies the reset directly to the individual elements that have the scope class
+assigned.
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: {
+    scope: '.my-scope',
+    level: 'element', // 'element' | 'parent (default)'
+  },
+  // ...
+})
+```
+
+This will generate CSS that looks like:
+
+```css
+button.my-scope {
+}
+
+img.my-scope {
+}
+```
+
+This approach allows for more flexibility, enabling selective application of CSS resets either to an entire parent
+container or to specific elements within a container.
+
+### Changed
+
+- Unify the token path syntax when using `formatTokenName`
+
+Example with the following config:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  hooks: {
+    'tokens:created': ({ configure }) => {
+      configure({
+        formatTokenName: (path: string[]) => '$' + path.join('-'),
+      })
+    },
+  },
+})
+```
+
+Will now allow you to use the following syntax for token path:
+
+```diff
+- css({ boxShadow: '10px 10px 10px {colors.$primary}' })
++ css({ boxShadow: '10px 10px 10px {$colors-primary}' })
+
+- token.var('colors.$primary')
++ token.var('$colors-black')
+```
+
 ## [0.32.1] - 2024-02-23
 
 ### Fixed
