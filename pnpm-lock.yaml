@@ -811,9 +811,6 @@ importers:
       '@pandacss/types':
         specifier: workspace:*
         version: link:../packages/types
-      '@types/prettier':
-        specifier: 2.7.3
-        version: 2.7.3
       '@types/react':
         specifier: 18.2.55
         version: 18.2.55
@@ -10033,10 +10030,6 @@ packages:
 
   /@types/pluralize@0.0.33:
     resolution: {integrity: sha512-JOqsl+ZoCpP4e8TDke9W79FDcSgPAR0l6pixx2JHkhnRjvShyYiAYw2LVsnA7K08Y6DeOnaU6ujmENO4os/cYg==}
-    dev: true
-
-  /@types/prettier@2.7.3:
-    resolution: {integrity: sha512-+68kP9yzs4LMp7VNh8gdzMSPZFL44MLGqiHWvttYJe+6qnuVr4Ek9wSBQoveqY/r+LwjCcU29kNVkidwim+kYA==}
     dev: true
 
   /@types/pretty-hrtime@1.0.1:

@@ -1,23 +1,12 @@
-import prettier from 'prettier'
-import typescript from 'prettier/parser-typescript'
-
-const formatText = (text: string) => {
-  return prettier.format(text, {
-    parser: 'typescript',
-    plugins: [typescript],
-    singleQuote: true,
-  })
-}
-
 export const getConfig = (
   config?: string,
   otherCode?: string,
   imports = 'import { defineConfig } from "@pandacss/dev";',
 ) => {
-  return formatText(`${imports ?? ''}
+  return `${imports ?? ''}
 
   ${otherCode ?? ''}
-  
+
   export const config = defineConfig({
       ${config ?? ''}${config?.endsWith(',') ? '' : ','}
       globalCss: {
@@ -29,5 +18,5 @@ export const getConfig = (
         },
       },
       jsxFramework: 'react',
-  });`)
+  });`
 }
