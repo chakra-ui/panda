@@ -4,10 +4,10 @@ import { Stack } from '@/styled-system/jsx'
 import { SegmentGroup } from '@ark-ui/react'
 import MonacoEditor from '@monaco-editor/react'
 import prettier from 'prettier'
-import parserBabel from 'prettier/parser-babel'
-import parserHtml from 'prettier/parser-html'
-import parserPostCSS from 'prettier/parser-postcss'
-import { useState } from 'react'
+import prettierPluginBabel from 'prettier/plugins/babel'
+import prettierPluginHtml from 'prettier/plugins/html'
+import prettierPluginPostcss from 'prettier/plugins/postcss'
+import { useEffect, useState } from 'react'
 import { useReadLocalStorage } from 'usehooks-ts'
 import { CssFileArtifact } from '../hooks/usePanda'
 
@@ -18,17 +18,27 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
 
   const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
 
+  const [pretty, setPretty] = useState(content)
   const formatCode = (code: string) => {
     try {
       return prettier.format(code, {
         parser: 'css',
-        plugins: [parserHtml, parserBabel, parserPostCSS],
+        plugins: [prettierPluginHtml, prettierPluginBabel, prettierPluginPostcss],
       })
     } catch (e) {
       console.log('e', e)
       return code
     }
   }
+
+  useEffect(() => {
+    const run = async () => {
+      const code = await formatCode(content)
+      setPretty(code)
+    }
+
+    run()
+  }, [content])
 
   return (
     <Stack
@@ -100,7 +110,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
       </SegmentGroup.Root>
 
       <MonacoEditor
-        value={formatCode(content)}
+        value={pretty}
         language="css"
         path={activeTab}
         options={{ ...defaultEditorOptions, readOnly: true, wordWrap }}
