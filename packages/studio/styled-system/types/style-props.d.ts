@@ -518,6 +518,8 @@ export interface SystemProperties {
 	textAnchor?: PropertyValue<'textAnchor'>
 	vectorEffect?: PropertyValue<'vectorEffect'>
 	pos?: PropertyValue<'pos'>
+	insetX?: PropertyValue<'insetX'>
+	insetY?: PropertyValue<'insetY'>
 	insetEnd?: PropertyValue<'insetEnd'>
 	end?: PropertyValue<'end'>
 	insetStart?: PropertyValue<'insetStart'>
@@ -604,8 +606,10 @@ export interface SystemProperties {
 	shadowColor?: PropertyValue<'shadowColor'>
 	x?: PropertyValue<'x'>
 	y?: PropertyValue<'y'>
-	insetX?: PropertyValue<'insetX'>
-	insetY?: PropertyValue<'insetY'>
+	scrollMarginY?: PropertyValue<'scrollMarginY'>
+	scrollMarginX?: PropertyValue<'scrollMarginX'>
+	scrollPaddingY?: PropertyValue<'scrollPaddingY'>
+	scrollPaddingX?: PropertyValue<'scrollPaddingX'>
 	hideFrom?: PropertyValue<'hideFrom'>
 	hideBelow?: PropertyValue<'hideBelow'>
 	divideX?: PropertyValue<'divideX'>
@@ -651,10 +655,6 @@ export interface SystemProperties {
 	translateX?: PropertyValue<'translateX'>
 	translateY?: PropertyValue<'translateY'>
 	scrollbar?: PropertyValue<'scrollbar'>
-	scrollMarginX?: PropertyValue<'scrollMarginX'>
-	scrollMarginY?: PropertyValue<'scrollMarginY'>
-	scrollPaddingX?: PropertyValue<'scrollPaddingX'>
-	scrollPaddingY?: PropertyValue<'scrollPaddingY'>
 	scrollSnapStrictness?: PropertyValue<'scrollSnapStrictness'>
 	scrollSnapMargin?: PropertyValue<'scrollSnapMargin'>
 	scrollSnapMarginTop?: PropertyValue<'scrollSnapMarginTop'>

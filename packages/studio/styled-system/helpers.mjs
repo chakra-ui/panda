@@ -113,13 +113,16 @@ function mapObject(obj, fn) {
 
 // src/normalize-style-object.ts
 function toResponsiveObject(values, breakpoints) {
-  return values.reduce((acc, current, index) => {
-    const key = breakpoints[index];
-    if (current != null) {
-      acc[key] = current;
-    }
-    return acc;
-  }, {});
+  return values.reduce(
+    (acc, current, index) => {
+      const key = breakpoints[index];
+      if (current != null) {
+        acc[key] = current;
+      }
+      return acc;
+    },
+    {}
+  );
 }
 function normalizeStyleObject(styles, context, shorthand = true) {
   const { utility, conditions } = context;

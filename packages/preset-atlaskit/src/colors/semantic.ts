@@ -7,42 +7,40 @@ export const semanticColors: SemanticTokens['colors'] = {
     DEFAULT: { value: '{colors.Neutral1000}' },
     accent: {
       blue: {
-        DEFAULT: {
-          value: { base: '{colors.Blue800}', _dark: '{colors.Blue300}' },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Blue200}' } },
-        },
-        red: {
-          DEFAULT: { value: { base: '{colors.Red800}', _dark: '{colors.Red300}' } },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Red200}' } },
-        },
-        orange: {
-          DEFAULT: { value: { base: '{colors.Orange800}', _dark: '{colors.Orange300}' } },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Orange200}' } },
-        },
-        yellow: {
-          DEFAULT: { value: { base: '{colors.Yellow800}', _dark: '{colors.Yellow300}' } },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Yellow200}' } },
-        },
-        green: {
-          DEFAULT: { value: { base: '{colors.Green800}', _dark: '{colors.Green300}' } },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Green200}' } },
-        },
-        purple: {
-          DEFAULT: { value: { base: '{colors.Purple800}', _dark: '{colors.Purple300}' } },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Purple200}' } },
-        },
-        teal: {
-          DEFAULT: { value: { base: '{colors.Teal800}', _dark: '{colors.Teal300}' } },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Teal200}' } },
-        },
-        magenta: {
-          DEFAULT: { value: { base: '{colors.Magenta800}', _dark: '{colors.Magenta300}' } },
-          bolder: { value: { base: '{colors.900}', _dark: '{colors.Magenta200}' } },
-        },
-        gray: {
-          DEFAULT: { value: '{colors.Neutral800}' },
-          bolder: { value: '{colors.Neutral1100}' },
-        },
+        DEFAULT: { value: { base: '{colors.Blue800}', _dark: '{colors.Blue300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Blue200}' } },
+      },
+      red: {
+        DEFAULT: { value: { base: '{colors.Red800}', _dark: '{colors.Red300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Red200}' } },
+      },
+      orange: {
+        DEFAULT: { value: { base: '{colors.Orange800}', _dark: '{colors.Orange300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Orange200}' } },
+      },
+      yellow: {
+        DEFAULT: { value: { base: '{colors.Yellow800}', _dark: '{colors.Yellow300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Yellow200}' } },
+      },
+      green: {
+        DEFAULT: { value: { base: '{colors.Green800}', _dark: '{colors.Green300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Green200}' } },
+      },
+      purple: {
+        DEFAULT: { value: { base: '{colors.Purple800}', _dark: '{colors.Purple300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Purple200}' } },
+      },
+      teal: {
+        DEFAULT: { value: { base: '{colors.Teal800}', _dark: '{colors.Teal300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Teal200}' } },
+      },
+      magenta: {
+        DEFAULT: { value: { base: '{colors.Magenta800}', _dark: '{colors.Magenta300}' } },
+        bolder: { value: { base: '{colors.900}', _dark: '{colors.Magenta200}' } },
+      },
+      gray: {
+        DEFAULT: { value: '{colors.Neutral800}' },
+        bolder: { value: '{colors.Neutral1100}' },
       },
     },
     disabled: {
