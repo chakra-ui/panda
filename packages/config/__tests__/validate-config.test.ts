@@ -516,4 +516,25 @@ describe('validateConfig', () => {
     `,
     )
   })
+
+  // https://github.com/chakra-ui/panda/issues/2283
+  test('"missing token" warning when using nested tokens', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
+      theme: {
+        semanticTokens: {
+          colors: {
+            primary: {
+              DEFAULT: { value: '#ff3333' },
+              lighter: { value: '#ff6666' },
+            },
+            background: { value: '{colors.primary}' }, // <-- ⚠️ wrong warning
+            background2: { value: '{colors.primary.lighter}' }, // <-- no warning, correct
+          },
+        },
+      },
+    }
+
+    expect(() => validateConfig(config)).not.toThrow()
+  })
 })

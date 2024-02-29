@@ -33,6 +33,10 @@ export const validateTokens = (options: Options) => {
         tokenPaths.add(path)
 
         valueAtPath.set(path, value)
+
+        if (path.includes('DEFAULT')) {
+          valueAtPath.set(path.replace('DEFAULT', ''), value)
+        }
       },
       {
         stop: isValidToken,
@@ -65,6 +69,10 @@ export const validateTokens = (options: Options) => {
         semanticTokenNames.add(path)
         valueAtPath.set(path, value)
         tokenPaths.add(path)
+
+        if (path.includes('DEFAULT')) {
+          valueAtPath.set(path.replace(SEP + 'DEFAULT', ''), value)
+        }
 
         if (!isValidToken(value)) return
 
