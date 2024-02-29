@@ -537,4 +537,34 @@ describe('validateConfig', () => {
 
     expect(() => validateConfig(config)).not.toThrow()
   })
+
+  // https://github.com/chakra-ui/panda/issues/2284
+  test('warn about nesting in "value" twice', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      theme: {
+        tokens: {
+          colors: {
+            red: {
+              300: { value: 'red' },
+            },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            primary: {
+              // should probably not wrap twice in value
+              value: { value: '{colors.red.300}' },
+            },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`
+      Set {
+        "[tokens] You used \`value\` twice resulting in an invalid token \`theme.tokens.colors.primary.value.value\`",
+      }
+    `)
+  })
 })

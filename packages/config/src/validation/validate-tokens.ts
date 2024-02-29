@@ -76,9 +76,16 @@ export const validateTokens = (options: Options) => {
 
         if (!isValidToken(value)) return
 
-        walkObject(value, (itemValue) => {
+        walkObject(value, (itemValue, paths) => {
+          const valuePath = paths.join(SEP)
+          const formattedPath = formatPath(path)
+          const fullPath = formattedPath + '.' + paths.join(SEP)
+
+          if (valuePath.includes('value' + SEP + 'value')) {
+            addError('tokens', `You used \`value\` twice resulting in an invalid token \`theme.tokens.${fullPath}\``)
+          }
+
           if (isTokenReference(itemValue)) {
-            const formattedPath = formatPath(path)
             if (!refsByPath.has(formattedPath)) {
               refsByPath.set(formattedPath, new Set())
             }
