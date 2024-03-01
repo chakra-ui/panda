@@ -52,15 +52,15 @@ Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@p
 
 **Type**: `boolean` | `{ scope: string; }`
 
-**Default**: `true`
+**Default**: `false`
 
 Whether to enable css reset styles.
 
-Disable preflight:
+Enable preflight:
 
 ```json
 {
-  "preflight": false
+  "preflight": true
 }
 ```
 

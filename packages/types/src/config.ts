@@ -230,7 +230,7 @@ interface JsxOptions {
 interface CssgenOptions {
   /**
    * Whether to include css reset styles in the generated css.
-   * @default true
+   * @default false
    */
   preflight?: boolean | { scope: string; level?: 'element' | 'parent' }
   /**
