@@ -33,6 +33,10 @@ export const validateTokens = (options: Options) => {
         tokenPaths.add(path)
 
         valueAtPath.set(path, value)
+
+        if (path.includes('DEFAULT')) {
+          valueAtPath.set(path.replace('DEFAULT', ''), value)
+        }
       },
       {
         stop: isValidToken,
@@ -66,11 +70,22 @@ export const validateTokens = (options: Options) => {
         valueAtPath.set(path, value)
         tokenPaths.add(path)
 
+        if (path.includes('DEFAULT')) {
+          valueAtPath.set(path.replace(SEP + 'DEFAULT', ''), value)
+        }
+
         if (!isValidToken(value)) return
 
-        walkObject(value, (itemValue) => {
+        walkObject(value, (itemValue, paths) => {
+          const valuePath = paths.join(SEP)
+          const formattedPath = formatPath(path)
+          const fullPath = formattedPath + '.' + paths.join(SEP)
+
+          if (valuePath.includes('value' + SEP + 'value')) {
+            addError('tokens', `You used \`value\` twice resulting in an invalid token \`theme.tokens.${fullPath}\``)
+          }
+
           if (isTokenReference(itemValue)) {
-            const formattedPath = formatPath(path)
             if (!refsByPath.has(formattedPath)) {
               refsByPath.set(formattedPath, new Set())
             }
