@@ -2,19 +2,17 @@ import { Config, StaticCssOptions, UserConfig } from '@pandacss/types'
 import { useRef } from 'react'
 import { Generator } from '@pandacss/generator'
 import { merge } from 'merge-anything'
-import { getResolvedConfig, resolveConfig } from '@/src/lib/config/resolve-config'
+import { resolveConfig } from '@/src/lib/config/resolve-config'
 
-const defaultConfig = getResolvedConfig(
-  resolveConfig({
-    cwd: '',
-    include: [],
-    outdir: 'styled-system',
-    preflight: true,
-    optimize: true,
-    staticCss: { recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'] },
-    jsxFramework: undefined,
-  }),
-)!
+const defaultConfig = resolveConfig({
+  cwd: '',
+  include: [],
+  outdir: 'styled-system',
+  preflight: true,
+  optimize: true,
+  staticCss: { recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'] },
+  jsxFramework: undefined,
+})!
 
 export const usePandaContext = (userConfig: Config | null) => {
   const previousContext = useRef<Generator | null>(null)
@@ -22,21 +20,19 @@ export const usePandaContext = (userConfig: Config | null) => {
   let config
 
   try {
-    config = getResolvedConfig(
-      resolveConfig({
-        cwd: '',
-        include: [],
-        outdir: 'styled-system',
-        preflight: true,
-        optimize: true,
-        ...userConfig,
-        staticCss: merge(userConfig?.staticCss, {
-          recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
-        }),
-
-        jsxFramework: userConfig?.jsxFramework ? 'react' : undefined,
+    config = resolveConfig({
+      cwd: '',
+      include: [],
+      outdir: 'styled-system',
+      preflight: true,
+      optimize: true,
+      ...userConfig,
+      staticCss: merge(userConfig?.staticCss, {
+        recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
       }),
-    )
+
+      jsxFramework: userConfig?.jsxFramework ? 'react' : undefined,
+    })
   } catch (error) {
     config = defaultConfig
     console.log(error)
@@ -49,7 +45,7 @@ export const usePandaContext = (userConfig: Config | null) => {
       serialized: '',
       deserialize: () => config!,
       path: '',
-      hooks: {},
+      hooks: config?.hooks ?? {},
       config: config as any,
     })
     previousContext.current = context
