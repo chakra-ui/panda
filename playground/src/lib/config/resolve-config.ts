@@ -16,6 +16,7 @@ export function resolveConfig(config?: Config) {
   }
 
   if (config.presets) {
+    //
     config.presets.forEach((preset: any) => {
       presets.add(preset)
     })
@@ -27,15 +28,20 @@ export function resolveConfig(config?: Config) {
 
   config.presets = Array.from(presets)
 
-  return config
+  const mergedConfig = getResolvedConfig(config)
+
+  if (!mergedConfig) return
+
+  // No config:resolved hook, cause we can't resolve async here
+
+  return mergedConfig
 }
 
 /**
  * Recursively merge all presets into a single config
  * PLayground won't be able to handle bundling presets
  */
-export function getResolvedConfig(config?: ExtendableConfig) {
-  if (!config) return
+function getResolvedConfig(config: ExtendableConfig) {
   const presets = config.presets ?? []
 
   const configs: ExtendableConfig[] = []
