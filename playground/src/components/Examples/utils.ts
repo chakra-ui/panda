@@ -3,20 +3,20 @@ export const getConfig = (
   otherCode?: string,
   imports = 'import { defineConfig } from "@pandacss/dev";',
 ) => {
-  return `${imports ?? ''}
+  const conf = `${imports ?? ''}${otherCode ? `\n\n${otherCode}` : ''}
 
-  ${otherCode ?? ''}
+export const config = defineConfig({
+  ${config ?? ''}${config?.endsWith(',') ? '' : ','}
+  globalCss: {
+    html: {
+      h: 'full',
+    },
+    body: {
+      bg: { base: 'white', _dark: '#2C2C2C' },
+    },
+  },
+  jsxFramework: 'react',
+});`
 
-  export const config = defineConfig({
-      ${config ?? ''}${config?.endsWith(',') ? '' : ','}
-      globalCss: {
-        html: {
-          h: 'full',
-        },
-        body: {
-          bg: { base: 'white', _dark: '#2C2C2C' },
-        },
-      },
-      jsxFramework: 'react',
-  });`
+  return conf
 }

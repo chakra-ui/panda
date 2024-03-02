@@ -21,6 +21,7 @@ import { useSearchParams } from 'next/navigation'
 import { configureAutoImports } from '../lib/auto-import'
 import { UsePanda } from '@/src/hooks/usePanda'
 import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
+import { formatTS } from '@/src/lib/format'
 
 export interface PandaEditorProps {
   value: State
@@ -225,6 +226,8 @@ export function useEditor(props: PandaEditorProps) {
       typeSources.map((src) => {
         monaco.languages.typescript.typescriptDefaults.addExtraLib(src.content, src.filePath)
       })
+
+      editor.setValue(await formatTS(value[activeTab]))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [configureEditor, setupLibs, getPandaTypes],
