@@ -756,4 +756,37 @@ describe('generator', () => {
       }"
     `)
   })
+
+  test('assets svg', () => {
+    const css = tokenCss(<any>{
+      dependencies: [],
+      config: {
+        cwd: '',
+        include: [],
+        theme: {
+          tokens: {
+            assets: {
+              checkbox: {
+                value: {
+                  type: 'svg',
+                  value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
+                },
+              },
+            },
+          },
+        },
+        outdir: '',
+      },
+      path: '',
+      hooks: {},
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --assets-checkbox: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");
+      }
+      }"
+    `)
+  })
 })
