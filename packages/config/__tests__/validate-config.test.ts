@@ -567,4 +567,31 @@ describe('validateConfig', () => {
       }
     `)
   })
+
+  test('prevent space in token keys', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      theme: {
+        tokens: {
+          fonts: {
+            'Press Start 1P': { value: 'Press Start 1P' },
+            PressStart2P: { value: 'Press Start 2P' },
+          },
+        },
+        semanticTokens: {
+          fonts: {
+            'Press Start 3P': { value: 'Press Start 3P' },
+            PressStart4P: { value: 'Press Start 4P' },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`
+      Set {
+        "[tokens] Token key must not contain spaces: \`theme.tokens.fonts.Press Start 1P\`",
+        "[tokens] Token key must not contain spaces: \`theme.tokens.fonts.Press Start 3P\`",
+      }
+    `)
+  })
 })

@@ -52,6 +52,11 @@ export const validateTokens = (options: Options) => {
         return
       }
 
+      if (path.includes(' ')) {
+        addError('tokens', `Token key must not contain spaces: \`theme.tokens.${formattedPath}\``)
+        return
+      }
+
       if (isTokenReference(value)) {
         refsByPath.set(formattedPath, new Set([]))
       }
@@ -104,6 +109,11 @@ export const validateTokens = (options: Options) => {
     tokenPaths.forEach((path) => {
       const formattedPath = formatPath(path)
       const value = valueAtPath.get(path)
+
+      if (path.includes(' ')) {
+        addError('tokens', `Token key must not contain spaces: \`theme.tokens.${formattedPath}\``)
+        return
+      }
 
       if (!isObject(value) && !path.includes('value')) {
         addError('tokens', `Token must contain 'value': \`theme.semanticTokens.${formattedPath}\``)
