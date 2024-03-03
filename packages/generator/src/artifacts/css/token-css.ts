@@ -1,6 +1,7 @@
 import { Stylesheet, expandNestedCss, extractParentSelectors, stringify } from '@pandacss/core'
-import postcss, { AtRule, Rule } from 'postcss'
+import postcss, { AtRule, CssSyntaxError, Rule } from 'postcss'
 import type { Context } from '@pandacss/core'
+import { logger } from '@pandacss/logger'
 
 export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   const {
@@ -86,8 +87,19 @@ function getDeepestNode(node: AtRule | Rule): Rule | AtRule | undefined {
   return node
 }
 
+const parse = (str: string) => {
+  try {
+    return postcss.parse(str)
+  } catch (error) {
+    if (error instanceof CssSyntaxError) {
+      logger.error('tokens:process', error.showSourceCode(true))
+    }
+  }
+}
+
 export function cleanupSelectors(css: string, varSelector: string) {
-  const root = postcss.parse(css)
+  // Ignore if invalid CSS
+  const root = parse(css) ?? postcss.root()
 
   root.walkRules((rule) => {
     // [':root', ' :host,', '  ::backdrop ']
