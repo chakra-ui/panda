@@ -3636,4 +3636,47 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('assets', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({ backgroundImage: "checkbox" })
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        tokens: {
+          assets: {
+            checkbox: {
+              value: {
+                type: 'svg',
+                value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "backgroundImage": "checkbox",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg-img_checkbox {
+          background-image: var(--assets-checkbox);
+      }
+      }"
+    `)
+  })
 })
