@@ -8,14 +8,6 @@ layout: none
 
 Here's a list of frequently asked questions (FAQ) and how to resolve common issues in Panda.
 
-### Why do I get a "Cannot find X module from 'styled-system'" error?
-
-This error seems to be caused by process timing issues between file writes. This has been fixed recently but if you experience this persistently, consider the following workarounds:
-
-- Check the code to git: Remove the `styled-system` folder from the `.gitignore` file to enable git tracking. Technically, the files emitted will remain the same if the Panda config does not change.
-
-- Use the `emitPackage: true` option and write the files to the `node_modules` directory.
-
 ---
 
 ### How does Panda manage style conflicts ?
@@ -203,12 +195,6 @@ When running `pnpm panda`, here's what's happening under the hood:
 ### I'm seeing a "Could not resolve xxx" error with esbuild/tsup. What should I do?
 
 In such a case, check the [`outExtension`](/docs/references/config#outextension) in your `panda.config` and set it to "js". This will ensure your modules are resolved correctly.
-
----
-
-### How should I use emitPackage with yarn PnP?
-
-When using `emitPackage: true` with yarn PnP, set the `nodeLinker` to 'node-modules' in your `.yarnrc.yml`. This tells Yarn to use the traditional way of linking dependencies, which can solve compatibility issues.
 
 ---
 
