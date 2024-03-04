@@ -299,29 +299,6 @@ Then the result looks like this:
 
 ## File system options
 
-### emitPackage
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to emit the artifacts to `node_modules` as a package. Will generate a `package.json` file that contains exports
-for each of the the generated `outdir` entrypoints:
-
-- `styled-system/css`
-- `styled-system/jsx`
-- `styled-system/patterns`
-- `styled-system/recipes`
-- `styled-system/tokens`
-- `styled-system/types`
-- `styled-system/styles.css`
-
-```json
-{
-  "emitPackage": true
-}
-```
-
 ### gitignore
 
 **Type**: `boolean`
