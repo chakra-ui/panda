@@ -129,6 +129,36 @@ describe('color-mix', () => {
     `)
   })
 
+  test('in token fn', () => {
+    expect(css({ bg: 'token(colors.pink.400/30)' })).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "bg_token\\(colors\\.pink\\.400\\/30\\)",
+        ],
+        "css": "@layer utilities {
+        .bg_token\\(colors\\.pink\\.400\\/30\\) {
+          background: color-mix(in srgb, var(--colors-pink-400) 30%, transparent);
+      }
+      }",
+      }
+    `)
+  })
+
+  test('in token reference with curly brackets', () => {
+    expect(css({ color: '{colors.pink.400/30}' })).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "text_\\{colors\\.pink\\.400\\/30\\}",
+        ],
+        "css": "@layer utilities {
+        .text_\\{colors\\.pink\\.400\\/30\\} {
+          color: color-mix(in srgb, var(--colors-pink-400) 30%, transparent);
+      }
+      }",
+      }
+    `)
+  })
+
   // below are invalid cases
 
   test('wrong format', () => {

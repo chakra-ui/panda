@@ -789,4 +789,48 @@ describe('generator', () => {
       }"
     `)
   })
+
+  test('color-mix', () => {
+    const css = tokenCss(<any>{
+      dependencies: [],
+      config: {
+        cwd: '',
+        include: [],
+        theme: {
+          tokens: {
+            colors: {
+              pink: { value: '#ff00ff' },
+              border: { value: '{colors.pink/30}' },
+              ref: { value: '{colors.border/40}' },
+            },
+            opacity: {
+              half: { value: 0.5 },
+            },
+          },
+          semanticTokens: {
+            colors: {
+              primary: {
+                value: '{colors.blue.300/70}',
+              },
+            },
+          },
+        },
+        outdir: '',
+      },
+      path: '',
+      hooks: {},
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --colors-pink: #ff00ff;
+          --colors-border: color-mix(in srgb, var(--colors-pink) 30%, transparent);
+          --colors-ref: color-mix(in srgb, var(--colors-border) 40%, transparent);
+          --opacity-half: 0.5;
+          --colors-primary: color-mix(in srgb, colors.blue.300 70%, transparent);
+      }
+      }"
+    `)
+  })
 })

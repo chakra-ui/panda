@@ -5,7 +5,7 @@ import type { TokenTransformer } from './dictionary'
 import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-composite'
 import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
-import { getReferences } from './utils'
+import { expandReferences, getReferences } from './utils'
 
 /* -----------------------------------------------------------------------------
  * Shadow token transform
@@ -125,6 +125,32 @@ export const transformAssets: TokenTransformer = {
       .with({ type: 'url' }, ({ value }) => `url("${value}")`)
       .with({ type: 'svg' }, ({ value }) => `url("${svgToDataUri(value)}")`)
       .exhaustive()
+  },
+}
+
+/* -----------------------------------------------------------------------------
+ * Color mix token transform
+ * -----------------------------------------------------------------------------*/
+
+export const transformColorMix: TokenTransformer = {
+  name: 'tokens/color-mix',
+  match: (token) => {
+    return token.extensions.category === 'colors' && token.value.includes('/')
+  },
+  transform(token, dict) {
+    return expandReferences(token.value, (path) => {
+      const tokenFn = (tokenPath: string) => {
+        const token = dict.getByName(tokenPath)
+        return token?.extensions.varRef
+      }
+
+      const mix = dict.colorMix(path, tokenFn)
+      if (mix.invalid) {
+        throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+      }
+
+      return mix.value
+    })
   },
 }
 
@@ -305,6 +331,7 @@ export const transforms = [
   transformBorders,
   transformAssets,
   addCssVariables,
+  transformColorMix, // depends on `addCssVariables`
   addConditionalCssVariables,
   addColorPalette,
 ]
