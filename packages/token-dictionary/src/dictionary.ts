@@ -312,11 +312,48 @@ export class TokenDictionary {
     return this
   }
 
+  colorMix = (value: string, tokenFn: (path: string) => string) => {
+    if (!value || typeof value !== 'string') return { invalid: true, value }
+
+    const [colorPath, rawOpacity] = value.split('/')
+
+    if (!colorPath || !rawOpacity) {
+      return { invalid: true, value: colorPath }
+    }
+
+    const colorToken = tokenFn(colorPath)
+    const opacityToken = this.getByName(`opacity.${rawOpacity}`)?.value
+
+    if (!opacityToken && isNaN(Number(rawOpacity))) {
+      return { invalid: true, value: colorPath }
+    }
+
+    const percent = opacityToken ? Number(opacityToken) * 100 + '%' : `${rawOpacity}%`
+    const color = colorToken ?? colorPath
+
+    return {
+      invalid: false,
+      color,
+      value: `color-mix(in srgb, ${color} ${percent}, transparent)`,
+    }
+  }
+
   /**
    * Expand token references to their CSS variable
    */
   expandReferenceInValue(value: string) {
-    return expandReferences(value, (path) => this.view.get(path))
+    return expandReferences(value, (path) => {
+      if (path.includes('/')) {
+        const mix = this.colorMix(path, this.view.get.bind(this.view))
+        if (mix.invalid) {
+          throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+        }
+
+        return mix.value
+      }
+
+      return this.view.get(path)
+    })
   }
 
   /**
