@@ -1,5 +1,12 @@
 # @pandacss/preset-panda
 
+## 0.34.0
+
+### Patch Changes
+
+- Updated dependencies [d1516c8]
+  - @pandacss/types@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes
@@ -131,13 +138,13 @@
         // add aspect ratio tokens
         tokens: {
           aspectRatios: {
-            '1:1': '1',
-            '16:9': '16/9',
+            "1:1": "1",
+            "16:9": "16/9",
           },
         },
       },
     },
-  })
+  });
   ```
 
   Here's what the default aspect ratio tokens in the base preset looks like:

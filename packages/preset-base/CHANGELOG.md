@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.34.0
+
+### Patch Changes
+
+- Updated dependencies [d1516c8]
+  - @pandacss/types@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes
@@ -33,9 +40,9 @@
 
   ```ts
   css({
-    textShadow: '1px 1px 1px var(--text-shadow-color)',
-    textShadowColor: 'black',
-  })
+    textShadow: "1px 1px 1px var(--text-shadow-color)",
+    textShadowColor: "black",
+  });
   ```
 
 ### Patch Changes
@@ -87,9 +94,9 @@
 
   ```ts
   css({
-    bg: 'red.300/40',
-    color: 'white',
-  })
+    bg: "red.300/40",
+    color: "white",
+  });
   ```
 
   This will generate:
@@ -97,7 +104,11 @@
   ```css
   @layer utilities {
     .bg_red\.300\/40 {
-      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      --mix-background: color-mix(
+        in srgb,
+        var(--colors-red-300) 40%,
+        transparent
+      );
       background: var(--mix-background, var(--colors-red-300));
     }
 
@@ -121,21 +132,21 @@
   export default defineConfig({
     utilities: {
       background: {
-        shorthand: 'bg',
-        className: 'bg',
-        values: 'colors',
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
         transform(value, args) {
-          const mix = args.utils.colorMix(value)
+          const mix = args.utils.colorMix(value);
           // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
-          if (mix.invalid) return { background: value }
+          if (mix.invalid) return { background: value };
 
           return {
             background: mix.value,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
   ***
@@ -144,21 +155,21 @@
   property:
 
   ```ts
-  import type { PropertyTransform } from '@pandacss/types'
+  import type { PropertyTransform } from "@pandacss/types";
 
   export const createColorMixTransform =
     (prop: string): PropertyTransform =>
     (value, args) => {
-      const mix = args.utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
+      const mix = args.utils.colorMix(value);
+      if (mix.invalid) return { [prop]: value };
 
-      const cssVar = '--mix-' + prop
+      const cssVar = "--mix-" + prop;
 
       return {
         [cssVar]: mix.value,
         [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    }
+      };
+    };
   ```
 
   then the same utility transform as above can be written like this:
@@ -186,34 +197,34 @@
     // ...
     theme: {
       extend: {
-        containerNames: ['sidebar', 'content'],
+        containerNames: ["sidebar", "content"],
         containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+          xs: "40em",
+          sm: "60em",
+          md: "80em",
         },
       },
     },
-  })
+  });
   ```
 
   The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
   ```ts
   export const containerSizes = {
-    xs: '320px',
-    sm: '384px',
-    md: '448px',
-    lg: '512px',
-    xl: '576px',
-    '2xl': '672px',
-    '3xl': '768px',
-    '4xl': '896px',
-    '5xl': '1024px',
-    '6xl': '1152px',
-    '7xl': '1280px',
-    '8xl': '1440px',
-  }
+    xs: "320px",
+    sm: "384px",
+    md: "448px",
+    lg: "512px",
+    xl: "576px",
+    "2xl": "672px",
+    "3xl": "768px",
+    "4xl": "896px",
+    "5xl": "1024px",
+    "6xl": "1152px",
+    "7xl": "1280px",
+    "8xl": "1440px",
+  };
   ```
 
   Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
@@ -297,11 +308,11 @@
     patterns: {
       extend: {
         stack: {
-          defaultValues: { gap: '20px' },
+          defaultValues: { gap: "20px" },
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -372,13 +383,13 @@
         // add aspect ratio tokens
         tokens: {
           aspectRatios: {
-            '1:1': '1',
-            '16:9': '16/9',
+            "1:1": "1",
+            "16:9": "16/9",
           },
         },
       },
     },
-  })
+  });
   ```
 
   Here's what the default aspect ratio tokens in the base preset looks like:
@@ -706,15 +717,15 @@
   `block` bleed to a child element, setting its value to match the parent's padding.
 
   ```tsx
-  import { css } from '../styled-system/css'
-  import { bleed } from '../styled-system/patterns'
+  import { css } from "../styled-system/css";
+  import { bleed } from "../styled-system/patterns";
 
   export function Page() {
     return (
-      <div class={css({ px: '6' })}>
-        <div class={bleed({ inline: '6' })}>Welcome</div>
+      <div class={css({ px: "6" })}>
+        <div class={bleed({ inline: "6" })}>Welcome</div>
       </div>
-    )
+    );
   }
   ```
 
@@ -723,8 +734,8 @@
   Visually hidden is a layout pattern used to hide content visually, but still make it available to screen readers.
 
   ```tsx
-  import { css } from '../styled-system/css'
-  import { visuallyHidden } from '../styled-system/patterns'
+  import { css } from "../styled-system/css";
+  import { visuallyHidden } from "../styled-system/patterns";
 
   export function Checkbox() {
     return (
@@ -734,7 +745,7 @@
         </input>
         <span>Checkbox</span>
       </label>
-    )
+    );
   }
   ```
 
@@ -786,26 +797,26 @@
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from 'styled-system/jsx'
+  import { Circle } from "styled-system/jsx";
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>
-  }
+    return <Circle {...props}>{children}</Circle>;
+  };
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ['CustomCircle'],
+          jsx: ["CustomCircle"],
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -829,7 +840,7 @@
   transition property, timing function and duration. This allows you to add transitions with a single property.
 
   ```jsx
-  <div className={css({ transition: 'background' })}>Content</div>
+  <div className={css({ transition: "background" })}>Content</div>
   ```
 
   This will generate the following css:
