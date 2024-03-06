@@ -4,7 +4,7 @@ export const conditions = {
   focusWithin: '&:focus-within',
   focusVisible: '&:is(:focus-visible, [data-focus-visible])',
   disabled: '&:is(:disabled, [disabled], [data-disabled])',
-  active: '&:is(:active, [data-active])',
+  active: '&:is(:active, [data-active]):not([data-active=false])',
   visited: '&:visited',
   target: '&:target',
   readOnly: '&:is(:read-only, [data-read-only])',
