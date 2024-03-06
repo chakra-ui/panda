@@ -6,6 +6,146 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.34.0] - 2024-03-06
+
+### Fixed
+
+- Fix issue where text accent color token was nested incorrectly.
+- Fix `splitCssProps` typings, it would sometimes throw
+  `Expression produces a union type that is too complex to represent"`
+- Fix "missing token" warning when using DEFAULT in tokens path
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  validation: 'error',
+  theme: {
+    semanticTokens: {
+      colors: {
+        primary: {
+          DEFAULT: { value: '#ff3333' },
+          lighter: { value: '#ff6666' },
+        },
+        background: { value: '{colors.primary}' }, // <-- ⚠️ wrong warning
+        background2: { value: '{colors.primary.lighter}' }, // <-- no warning, correct
+      },
+    },
+  },
+})
+```
+
+### Added
+
+- Add a config validation check to prevent using spaces in token keys, show better error logs when there's a CSS parsing
+  error
+- Add a warning when using `value` twice in config
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  validation: 'error',
+  theme: {
+    tokens: {
+      colors: {
+        primary: { value: '#ff3333' },
+      },
+    },
+    semanticTokens: {
+      colors: {
+        primary: {
+          value: { value: '{colors.primary}' }, // <-- ⚠️ new warning for this
+        },
+      },
+    },
+  },
+})
+```
+
+- Allow using the color opacity modifier syntax (`blue.300/70`) in token references:
+
+1. `{colors.blue.300/70}`
+2. `token(colors.blue.300/70)`
+
+Note that this works both in style usage and in build-time config.
+
+```ts
+// runtime usage
+
+import { css } from '../styled-system/css'
+
+css({ bg: '{colors.blue.300/70}' })
+// => @layer utilities {
+//    .bg_token\(colors\.blue\.300\/70\) {
+//      background: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
+//    }
+//  }
+
+css({ bg: 'token(colors.blue.300/70)' })
+// => @layer utilities {
+//    .bg_token\(colors\.blue\.300\/70\) {
+//      background: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
+//    }
+//  }
+```
+
+```ts
+// build-time usage
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        blue: {
+          300: { value: '#00f' },
+        },
+      },
+    },
+    semanticTokens: {
+      colors: {
+        primary: {
+          value: '{colors.blue.300/70}',
+        },
+      },
+    },
+  },
+})
+```
+
+```css
+@layer tokens {
+  :where(:root, :host) {
+    --colors-blue-300: #00f;
+    --colors-primary: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
+  }
+}
+```
+
+### Changed
+
+Deprecates `emitPackage`, it will be removed in the next major version.
+
+## Why?
+
+It's known for causing several issues:
+
+- bundlers sometimes eagerly cache the `node_modules`, leading to `panda codegen` updates to the `styled-system` not
+  visible in the browser
+- auto-imports are not suggested in your IDE.
+- in some IDE the typings are not always reflected properly
+
+## As alternatives, you can use:
+
+- relative paths instead of absolute paths (e.g. `../styled-system/css` instead of `styled-system/css`)
+- use [package.json #imports](https://nodejs.org/api/packages.html#subpath-imports) and/or tsconfig path aliases (prefer
+  package.json#imports when possible, TS 5.4 supports them by default) like `#styled-system/css` instead of
+  `styled-system/css`
+- for a [component library](https://panda-css.com/docs/guides/component-library), use a dedicated workspace package
+  (e.g. `@acme/styled-system`) and use `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to
+  extract, e.g. `import { css } from '@acme/styled-system/css'`
+
 ## [0.33.0] - 2024-02-27
 
 ### Fixed
@@ -1039,7 +1179,7 @@ This would not work before, but now it does.
   "name": "@acme/preset",
   "types": "./dist/index.d.mts", // we only looked into `.ts` files, so we didnt check this
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs"
+  "module": "./dist/index.mjs",
 }
 ```
 
@@ -1055,10 +1195,10 @@ This would not work before, but now it does.
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+      "require": "./dist/index.js",
+    },
     // ...
-  }
+  },
 }
 ```
 
