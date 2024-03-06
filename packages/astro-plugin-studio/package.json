@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/astro-plugin-studio",
-  "version": "0.33.0",
+  "version": "0.34.0",
   "description": "Vite plugin for Pandacss Studio",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "main": "dist/index.js",
