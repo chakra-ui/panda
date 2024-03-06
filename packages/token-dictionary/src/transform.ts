@@ -184,10 +184,31 @@ export const addConditionalCssVariables: TokenTransformer = {
     const { prefix, hash } = dictionary
     const refs = getReferences(token.value)
     if (!refs.length) return token.value
+
     refs.forEach((ref) => {
-      const variable = dictionary.formatCssVar(ref.split('.'), { prefix, hash }).ref
-      token.value = token.value.replace(`{${ref}}`, variable)
+      if (!ref.includes('/')) {
+        const variable = dictionary.formatCssVar(ref.split('.'), { prefix, hash }).ref
+        token.value = token.value.replace(`{${ref}}`, variable)
+        return
+      }
+
+      const expanded = expandReferences(token.value, (path) => {
+        const tokenFn = (tokenPath: string) => {
+          const token = dictionary.getByName(tokenPath)
+          return token?.extensions.varRef
+        }
+
+        const mix = dictionary.colorMix(path, tokenFn)
+        if (mix.invalid) {
+          throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+        }
+
+        return mix.value
+      })
+
+      token.value = token.value.replace(`{${ref}}`, expanded)
     })
+
     return token.value
   },
 }
