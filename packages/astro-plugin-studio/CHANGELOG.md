@@ -72,11 +72,11 @@
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [05686b9d]

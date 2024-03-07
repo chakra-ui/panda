@@ -142,8 +142,8 @@
         {/* ✅ this was fine */}
         <Stack ml="4" icon={<div className="icon" />} />
       </>
-    );
-  };
+    )
+  }
   ```
 
   Now both will be fine again.
@@ -184,11 +184,11 @@
 
   ```ts
   enum Color {
-    Red = "red.400",
-    Blue = "blue.400",
+    Red = 'red.400',
+    Blue = 'blue.400',
   }
 
-  const className = css({ color: Color.Red, backgroundColor: Color["Blue"] });
+  const className = css({ color: Color.Red, backgroundColor: Color['Blue'] })
   ```
 
 ## 0.17.0
@@ -290,20 +290,20 @@
   so this will now work:
 
   ```ts
-  import { css } from "styled-system/css";
+  import { css } from 'styled-system/css'
 
   const paragraphSpacingStyle = css.raw({
-    "&:not(:first-child)": { marginBlockEnd: "1em" },
-  });
+    '&:not(:first-child)': { marginBlockEnd: '1em' },
+  })
 
   export const proseCss = css.raw({
-    maxWidth: "800px",
-    "& p": {
-      "&:not(:first-child)": { marginBlockStart: "1em" },
+    maxWidth: '800px',
+    '& p': {
+      '&:not(:first-child)': { marginBlockStart: '1em' },
     },
-    "& h1": paragraphSpacingStyle,
-    "& h2": paragraphSpacingStyle,
-  });
+    '& h1': paragraphSpacingStyle,
+    '& h2': paragraphSpacingStyle,
+  })
   ```
 
   & use ECMA preset for ts-evaluator: This means that no other globals than those that are defined in the ECMAScript
@@ -311,35 +311,35 @@
   this:
 
   ```ts
-  import { cva } from ".panda/css";
+  import { cva } from '.panda/css'
 
   const variants = () => {
     const spacingTokens = Object.entries({
-      s: "token(spacing.1)",
-      m: "token(spacing.2)",
-      l: "token(spacing.3)",
-    });
+      s: 'token(spacing.1)',
+      m: 'token(spacing.2)',
+      l: 'token(spacing.3)',
+    })
 
     const spacingProps = {
-      px: "paddingX",
-      py: "paddingY",
-    };
+      px: 'paddingX',
+      py: 'paddingY',
+    }
 
     // Generate variants programmatically
     return Object.entries(spacingProps)
       .map(([name, styleProp]) => {
         const variants = spacingTokens
           .map(([variant, token]) => ({ [variant]: { [styleProp]: token } }))
-          .reduce((_agg, kv) => ({ ..._agg, ...kv }));
+          .reduce((_agg, kv) => ({ ..._agg, ...kv }))
 
-        return { [name]: variants };
+        return { [name]: variants }
       })
-      .reduce((_agg, kv) => ({ ..._agg, ...kv }));
-  };
+      .reduce((_agg, kv) => ({ ..._agg, ...kv }))
+  }
 
   const baseStyle = cva({
     variants: variants(),
-  });
+  })
   ```
 
 ## 0.15.0
@@ -351,8 +351,8 @@
 
   ```ts
   const className = css({
-    color: ["black", undefined, "orange", "red"],
-  });
+    color: ['black', undefined, 'orange', 'red'],
+  })
   ```
 
 - 7c1ab170: Fix issue where the `satisfies` would prevent an object from being extracted
@@ -387,12 +387,8 @@
 
   ```tsx
   const CompB = ({ disabled = false }: { disabled: boolean }) => {
-    return (
-      <div className={css({ color: disabled ? "blue" : "yellow" })}>
-        Component B is disabled
-      </div>
-    );
-  };
+    return <div className={css({ color: disabled ? 'blue' : 'yellow' })}>Component B is disabled</div>
+  }
   ```
 
 ## 0.8.0
@@ -464,16 +460,11 @@
 - 21295f2e: Resolve identifier default value from parameter, code like `position` and `inset` here:
 
   ```tsx
-  export const Positioned: React.FC<PositionedProps> = ({
-    children,
-    position = "absolute",
-    inset = 0,
-    ...rest
-  }) => (
+  export const Positioned: React.FC<PositionedProps> = ({ children, position = 'absolute', inset = 0, ...rest }) => (
     <styled.div position={position} inset={inset} {...rest}>
       {children}
     </styled.div>
-  );
+  )
   ```
 
   - @pandacss/logger@0.6.0
@@ -593,16 +584,16 @@
   this was fine:
 
   ```ts
-  const aliased = "green.600";
-  const colorMap = { aliased };
-  const className = css({ color: colorMap["aliased"] });
+  const aliased = 'green.600'
+  const colorMap = { aliased }
+  const className = css({ color: colorMap['aliased'] })
   ```
 
   this was not (weirdly):
 
   ```ts
-  const color = "green.600";
-  const className = css({ color });
+  const color = 'green.600'
+  const className = css({ color })
   ```
 
 - Updated dependencies [f9247e52]
@@ -623,8 +614,8 @@
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: "template-literal",
-  });
+    syntax: 'template-literal',
+  })
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
