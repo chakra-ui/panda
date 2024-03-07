@@ -594,4 +594,38 @@ describe('validateConfig', () => {
       }
     `)
   })
+
+  test('referencing a token with DEFAULT from a DEFAULT', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      theme: {
+        tokens: {
+          colors: {
+            primary: {
+              DEFAULT: { value: 'blue' },
+              300: { value: 'red' },
+            },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            button: {
+              primary: {
+                bg: {
+                  DEFAULT: {
+                    value: {
+                      base: '{colors.primary}',
+                      _dark: 'white',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`undefined`)
+  })
 })
