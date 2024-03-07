@@ -1,5 +1,11 @@
 # @pandacss/logger
 
+## 0.34.1
+
+### Patch Changes
+
+- @pandacss/types@0.34.1
+
 ## 0.34.0
 
 ### Patch Changes
@@ -71,11 +77,11 @@
   ```js
   module.exports = {
     plugins: {
-      '@pandacss/dev/postcss': {
-        logfile: './logs/panda.log',
+      "@pandacss/dev/postcss": {
+        logfile: "./logs/panda.log",
       },
     },
-  }
+  };
   ```
 
 - Updated dependencies [74485ef1]
