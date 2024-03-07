@@ -35,7 +35,7 @@ export const validateTokens = (options: Options) => {
         valueAtPath.set(path, value)
 
         if (path.includes('DEFAULT')) {
-          valueAtPath.set(path.replace('DEFAULT', ''), value)
+          valueAtPath.set(path.replace(SEP + 'DEFAULT', ''), value)
         }
       },
       {
