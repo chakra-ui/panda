@@ -14,7 +14,11 @@ export const validateTokenReferences = (
     const stack = [path]
 
     while (stack.length > 0) {
-      const currentPath = stack.pop()!
+      let currentPath = stack.pop()!
+      if (currentPath.includes('/')) {
+        const [tokenPath] = currentPath.split('/')
+        currentPath = tokenPath
+      }
 
       const value = valueAtPath.get(currentPath)
 
