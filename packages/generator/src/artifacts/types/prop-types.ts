@@ -57,17 +57,6 @@ export function generatePropTypes(ctx: Context) {
     | 'backgroundAttachment'
     | 'backgroundClip'
     | 'borderCollapse'
-    | 'border'
-    | 'borderBlock'
-    | 'borderBlockEnd'
-    | 'borderBlockStart'
-    | 'borderBottom'
-    | 'borderInline'
-    | 'borderInlineEnd'
-    | 'borderInlineStart'
-    | 'borderLeft'
-    | 'borderRight'
-    | 'borderTop'
     | 'borderBlockEndStyle'
     | 'borderBlockStartStyle'
     | 'borderBlockStyle'
@@ -118,15 +107,15 @@ export function generatePropTypes(ctx: Context) {
     | 'visibility'
     | 'wordBreak'
     | 'writingMode'
-  
+
   type WithEscapeHatch<T> = T | \`[\${string}]\`
-  
+
   type FilterVagueString<Key, Value> = Value extends boolean
     ? Value
     : Key extends StrictableProps
       ? Value extends \`\${infer _}\` ? Value : never
       : Value
-  
+
   type PropOrCondition<Key, Value> = ${match(ctx.config)
     .with(
       { strictTokens: true, strictPropertyValues: true },
