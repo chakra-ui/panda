@@ -6018,3 +6018,37 @@ it('handles TS enum', () => {
     }
   `)
 })
+
+it('can handle TS namespaces', () => {
+  const code = `
+import * as p from "styled-system/patterns"
+
+p.stack({ mt: "40px" })`
+
+  expect(
+    extractFromCode(code, {
+      functions: {
+        matchFn: ({ fnName }) => {
+          const identifier = fnName.split('.')[1]
+          return identifier === 'stack'
+        },
+        matchProp: () => true,
+        matchArg: () => true,
+      },
+    }),
+  ).toMatchInlineSnapshot(`
+    {
+      "p.stack": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "mt": "40px",
+            },
+          ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
