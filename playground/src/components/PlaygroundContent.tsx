@@ -138,7 +138,7 @@ export const PlaygroundContent = (props: Props) => {
             panda={panda}
             responsiveView={responsiveView}
             isResponsive={isResponsive}
-            error={error}
+            error={error ?? (panda.context.error as Error)}
           />
         </Splitter.Panel>
       </Splitter.Root>

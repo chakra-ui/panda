@@ -25,6 +25,7 @@
     "@monaco-editor/react": "4.6.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/generator": "workspace:*",
+    "@pandacss/logger": "workspace:*",
     "@pandacss/parser": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",

@@ -16,6 +16,7 @@ export const config = defineConfig({
     },
   },
   jsxFramework: 'react',
+  validation: 'error',
 });`
 
   return conf

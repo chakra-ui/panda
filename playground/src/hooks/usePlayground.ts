@@ -75,10 +75,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
   function copyCurrentURI() {
     const currentURI = window.location.href
-    navigator.clipboard.writeText(currentURI).then(() => {
-      // Current URI successfully copied to clipboard
-      console.log('Current URI copied to clipboard:', currentURI)
-    })
+    navigator.clipboard.writeText(currentURI)
   }
 
   const share = async ({ onDone }: { onDone: (id: string) => void }) => {
@@ -128,7 +125,6 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     share({
       onDone(id) {
         history.pushState({ id }, '', `${state.id}/${id}`)
-        console.log('pristineState', pristineState)
         if (!pristineState.current) return
         setDiffState(Object.assign({}, state, { id }))
         setState(pristineState.current)
