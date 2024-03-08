@@ -14,10 +14,21 @@ const defaultConfig = resolveConfig({
   jsxFramework: undefined,
 })!
 
-export const usePandaContext = (userConfig: Config | null) => {
+export const usePandaContext = (userConfig: Config | null): Generator & { error?: unknown } => {
   const previousContext = useRef<Generator | null>(null)
 
+  const getDefaultContext = () =>
+    new Generator({
+      dependencies: [],
+      serialized: '',
+      deserialize: () => defaultConfig,
+      path: '',
+      hooks: {},
+      config: defaultConfig as UserConfig,
+    })
+
   let config
+  let error: unknown
 
   try {
     config = resolveConfig({
@@ -33,10 +44,12 @@ export const usePandaContext = (userConfig: Config | null) => {
 
       jsxFramework: userConfig?.jsxFramework ? 'react' : undefined,
     })
-  } catch (error) {
+  } catch (e) {
     config = defaultConfig
-    console.log(error)
+    error = e
   }
+
+  if (error) return Object.assign(previousContext.current ?? getDefaultContext(), { error })
 
   try {
     // in event of error (invalid token format), use previous generator
@@ -56,16 +69,8 @@ export const usePandaContext = (userConfig: Config | null) => {
     }
 
     // or use default config cause we always need a context
+    previousContext.current = getDefaultContext()
 
-    const context = new Generator({
-      dependencies: [],
-      serialized: '',
-      deserialize: () => defaultConfig,
-      path: '',
-      hooks: {},
-      config: defaultConfig as UserConfig,
-    })
-    previousContext.current = context
-    return context
+    return getDefaultContext()
   }
 }

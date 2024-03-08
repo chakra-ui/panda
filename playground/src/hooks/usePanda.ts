@@ -71,7 +71,6 @@ export function usePanda(state: State, config: Config | null) {
       cssArtifacts,
       context,
     }
-    console.log(panda) // <-- useful for debugging purposes, don't remove
     return panda
   }, [source, css, context, staticArtifacts])
 }

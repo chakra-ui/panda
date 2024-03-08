@@ -210,7 +210,7 @@ function LiveError(props: { error: Error | null }) {
         <span>
           <ErrorIcon />
         </span>
-        <pre>{error ?? props.error?.stack?.split('\n')?.[0]}</pre>
+        <pre>{error ?? props.error?.name + ': ' + props.error?.message}</pre>
       </div>
     )
   }
