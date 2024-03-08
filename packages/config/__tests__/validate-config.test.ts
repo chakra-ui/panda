@@ -628,4 +628,38 @@ describe('validateConfig', () => {
 
     expect(validateConfig(config)).toMatchInlineSnapshot(`undefined`)
   })
+
+  test('using color opacity modifier on known color shouldnt throw', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      conditions: {
+        light: '.light &',
+        dark: '.dark &',
+      },
+      theme: {
+        tokens: {
+          colors: {
+            blue: { 500: { value: 'blue' } },
+            green: { 500: { value: 'green' } },
+          },
+          opacity: {
+            half: { value: 0.5 },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            secondary: {
+              value: {
+                base: 'red',
+                _light: '{colors.blue.500/32}', // <-- wasn't working as expected
+                _dark: '{colors.green.500/half}',
+              },
+            },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`undefined`)
+  })
 })
