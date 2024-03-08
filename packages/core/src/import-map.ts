@@ -77,7 +77,7 @@ export class ImportMap {
 
     for (const { regex, mod } of Object.values(this.matchers)) {
       // if none of the imported values match the regex, skip
-      if (!regex.test(result.name)) continue
+      if (result.kind !== 'namespace' && !regex.test(result.name)) continue
 
       // this checks that `yyy` contains {outdir}/{folder} in `import xxx from yyy`
       if (result.mod.includes(mod)) {
