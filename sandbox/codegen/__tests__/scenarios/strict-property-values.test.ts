@@ -16,6 +16,10 @@ describe('css', () => {
     // @ts-expect-error always expected
     assertType(css({ pos: 'absolute123' }))
     assertType(css({ flex: '0 1' }))
+
+    assertType(css({ borderTop: '1px solid red' }))
+    // @ts-expect-error expected
+    assertType(css({ borderTopStyle: 'aaa' }))
   })
 
   test('token value', () => {
@@ -147,7 +151,6 @@ describe('css', () => {
   test('using inline token helper - in value', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictPropertyValues: true
         border: '1px solid token(colors.blue.400)',
       }),
     )
