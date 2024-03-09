@@ -11,14 +11,15 @@ export function generateQwikJsxStringLiteralFactory(ctx: Context) {
     ${ctx.file.import('css, cx', '../css/index')}
 
     function createStyledFn(Dynamic) {
+      const __base__ = Dynamic.__base__ || Dynamic
       return function styledFn(template) {
           const styles = css.raw(template)
-          
+
           const ${componentName} = (props) => {
-            const { as: Element = Dynamic.__base__ || Dynamic, ...elementProps } = props
-            
+            const { as: Element = __base__, ...elementProps } = props
+
             function classes() {
-              return cx(css(Dynamic.__styles__, styles), elementProps.className)
+              return cx(css(__base__.__styles__, styles), elementProps.className)
             }
 
             return h(Element, {
@@ -27,12 +28,12 @@ export function generateQwikJsxStringLiteralFactory(ctx: Context) {
             })
           }
 
-          const name = getDisplayName(Dynamic)
-        
+          const name = getDisplayName(__base__)
+
           ${componentName}.displayName = \`${factoryName}.\${name}\`
           ${componentName}.__styles__ = styles
-          ${componentName}.__base__ = Dynamic
-  
+          ${componentName}.__base__ = __base__
+
           return ${componentName}
         }
     }
