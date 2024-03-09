@@ -20,6 +20,13 @@ describe('css', () => {
     assertType(css({ color: 'blue.300' }))
   })
 
+  test('color opacity modifier', () => {
+    assertType(css({ color: 'blue.300/40' }))
+
+    // TODO shouldnt be allowed
+    assertType(css({ fontSize: '2xl/2' }))
+  })
+
   test('utility prop', () => {
     assertType(
       css({
