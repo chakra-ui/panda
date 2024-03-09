@@ -31,8 +31,6 @@ function setupHelpers(ctx: Context): Artifact {
 }
 
 export function setupDesignTokens(ctx: Context): Artifact | undefined {
-  if (ctx.tokens.isEmpty) return
-
   const code = generateTokenJs(ctx)
 
   return {
