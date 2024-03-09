@@ -147,6 +147,8 @@ export class Utility {
   }
 
   private assignColorPaletteProperty = () => {
+    if (!this.tokens.view.colorPalettes.size) return
+
     const values = mapToJson(this.tokens.view.colorPalettes) as Record<string, any>
     this.config.colorPalette = {
       values: Object.keys(values),
