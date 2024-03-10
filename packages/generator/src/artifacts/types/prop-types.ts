@@ -24,8 +24,6 @@ export function generatePropTypes(ctx: Context) {
   return outdent`
   ${result.join('\n')}
 
-  export type WithEscapeHatch<T> = T | \`[\${string}]\`
-
   type WithColorOpacityModifier<T> = T extends string ? \`$\{T}/\${string}\` : T
 
   type ImportantMark = "!" | "!important"
@@ -33,7 +31,7 @@ export function generatePropTypes(ctx: Context) {
   type Important = ImportantMark | WhitespaceImportant
   type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
 
-  type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
+  exprot type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
 
   export type OnlyKnown<Key, Value> = Value extends boolean
     ? Value

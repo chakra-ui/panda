@@ -196,7 +196,7 @@ interface UtilityValues {
 
 
 
-export type WithEscapeHatch<T> = T | `[${string}]`
+export type WithEscapeHatch<T> = T | `[${string}]` | `${T}/${string}`
 
 export type OnlyKnown<Key, Value> = Value extends boolean
   ? Value

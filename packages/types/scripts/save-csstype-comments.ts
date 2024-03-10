@@ -31,7 +31,7 @@ export const getCssTypesComments = () => {
   const content = readFileSync(inputPath, 'utf8')
   const sourceFile = project.createSourceFile(inputPath, content)
 
-  const propsComment = {}
+  const propsComment = {} as Record<string, string>
   interfaces.forEach((interfaceName) => {
     const interfaceDeclaration = sourceFile.getInterface(interfaceName)
     if (!interfaceDeclaration) return
