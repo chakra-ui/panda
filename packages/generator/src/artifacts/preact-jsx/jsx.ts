@@ -30,9 +30,10 @@ export function generatePreactJsxFactory(ctx: Context) {
 
       const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
       const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
+      const __base__ = Dynamic.__base__ || Dynamic
 
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
-        const { as: Element = Dynamic.__base__ || Dynamic, children, ...restProps } = props
+        const { as: Element = __base__, children, ...restProps } = props
 
 
         const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
@@ -64,11 +65,11 @@ export function generatePreactJsxFactory(ctx: Context) {
         }, combinedProps.children ?? children)
       })
 
-      const name = getDisplayName(Dynamic)
+      const name = getDisplayName(__base__)
 
       ${componentName}.displayName = \`${factoryName}.\${name}\`
       ${componentName}.__cva__ = __cvaFn__
-      ${componentName}.__base__ = Dynamic
+      ${componentName}.__base__ = __base__
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
 
       return ${componentName}
