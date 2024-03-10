@@ -7,7 +7,7 @@ export function generateTokenJs(ctx: Context) {
 
   tokens.allTokens.forEach((token) => {
     const { varRef, isVirtual } = token.extensions
-    const value = token.isConditional || isVirtual ? varRef : token.value
+    const value = isVirtual || token.extensions.condition !== 'base' ? varRef : token.value
     map.set(token.name, { value, variable: varRef })
   })
 
