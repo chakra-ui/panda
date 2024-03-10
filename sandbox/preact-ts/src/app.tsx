@@ -1,7 +1,23 @@
-import { css } from '../styled-system/css'
-import { bleed, cq, stack } from '../styled-system/patterns'
+import { css, sva } from '../styled-system/css'
+import { cq } from '../styled-system/patterns'
+
+const button = sva({
+  className: 'button',
+  slots: ['root', 'text'],
+  base: {
+    root: {
+      bg: 'blue.500',
+      _hover: {
+        '& .button__text': {
+          color: 'white',
+        },
+      },
+    },
+  },
+})
 
 export const App = () => {
+  const classes = button({ size: 'sm' })
   return (
     <>
       <div className={cq()}>
@@ -15,11 +31,11 @@ export const App = () => {
           _focus: {
             color: 'blue',
           },
-          _supportHover: {
-            color: 'red.200',
-          },
         })}
       ></div>
+      <div className={classes.root}>
+        <div className={classes.text}>Click me</div>
+      </div>
     </>
   )
 }
