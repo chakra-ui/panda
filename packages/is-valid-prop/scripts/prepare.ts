@@ -1,6 +1,7 @@
 import { writeFileSync } from 'fs'
 import json from 'mdn-data/css/properties.json'
 import { properties as svgProperties } from './svg'
+import prettier from 'prettier'
 
 const dashRegex = /-+(.)/g
 function camelCaseProperty(str: string): string {
@@ -15,7 +16,6 @@ const properties = Object.keys(json)
   .map((v) => camelCaseProperty(v))
 
 const format = (code: string) => {
-  const prettier = require('prettier')
   return prettier.format(code, {
     parser: 'typescript',
     singleQuote: true,
@@ -23,9 +23,10 @@ const format = (code: string) => {
   })
 }
 
-writeFileSync(
-  './src/index.ts',
-  format(`
+const run = async () => {
+  writeFileSync(
+    './src/index.ts',
+    await format(`
   const userGeneratedStr = "";
   const userGenerated = userGeneratedStr.split(',');
   const cssPropertiesStr = "${Array.from(new Set(properties)).join(',')}";
@@ -50,4 +51,7 @@ writeFileSync(
 
   export { isCssProperty, allCssProperties }
 `),
-)
+  )
+}
+
+run()

@@ -256,16 +256,12 @@ export interface Conditions {
 	"base": string
 }
 
-export type Condition = keyof Conditions
-
-export type Conditional<V> =
+export type ConditionalValue<V> =
   | V
   | Array<V | null>
   | {
-      [K in keyof Conditions]?: Conditional<V>
+      [K in keyof Conditions]?: ConditionalValue<V>
     }
-
-export type ConditionalValue<T> = Conditional<T>
 
 export type Nested<P> = P & {
   [K in Selectors]?: Nested<P>

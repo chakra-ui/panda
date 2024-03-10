@@ -2778,4 +2778,93 @@ describe('Utility', () => {
       }
     `)
   })
+
+  test('skip generating colorPalette when no colors', () => {
+    const utility = new Utility({
+      tokens: new TokenDictionary({}).init(),
+    })
+
+    expect(utility.types).toMatchInlineSnapshot(`Map {}`)
+
+    expect(utility.classNames).toMatchInlineSnapshot(`Map {}`)
+
+    expect(utility.styles).toMatchInlineSnapshot(`Map {}`)
+
+    expect(utility.getTypes()).toMatchInlineSnapshot(`Map {}`)
+  })
+
+  test('skip type:Token[category] when category values is empty', () => {
+    const utility = new Utility({
+      tokens: new TokenDictionary({}).init(),
+      config: {
+        margin: {
+          className: 'm',
+          values: (tokens) => ({ ...tokens('spacing'), '2': '2px' }),
+        },
+      },
+    })
+
+    expect(utility.types).toMatchInlineSnapshot(`
+      Map {
+        "margin" => Set {
+          "2",
+        },
+      }
+    `)
+
+    expect(utility.classNames).toMatchInlineSnapshot(`
+      Map {
+        "(margin = 2)" => "m_2",
+      }
+    `)
+
+    expect(utility.styles).toMatchInlineSnapshot(`
+      Map {
+        "(margin = 2)" => {
+          "margin": "2px",
+        },
+      }
+    `)
+
+    expect(utility.transform('margin', '4')).toMatchInlineSnapshot(`
+      {
+        "className": "m_4",
+        "styles": {
+          "margin": "4",
+        },
+      }
+    `)
+
+    expect(utility.getTypes()).toMatchInlineSnapshot(`
+      Map {
+        "margin" => [
+          ""2"",
+        ],
+      }
+    `)
+  })
+
+  test('skip utility key when category values is empty', () => {
+    const utility = new Utility({
+      tokens: new TokenDictionary({}).init(),
+      config: {
+        zIndex: {
+          className: 'z',
+          values: 'zIndex',
+        },
+      },
+    })
+
+    expect(utility.types).toMatchInlineSnapshot(`
+      Map {
+        "zIndex" => Set {},
+      }
+    `)
+
+    expect(utility.classNames).toMatchInlineSnapshot(`Map {}`)
+
+    expect(utility.styles).toMatchInlineSnapshot(`Map {}`)
+
+    expect(utility.getTypes()).toMatchInlineSnapshot(`Map {}`)
+  })
 })

@@ -195,8 +195,14 @@ export class Utility {
 
     // convert `theme('spacing') => Tokens["spacing"]` to avoid too much type values
     const fn = (key: string) => {
-      const value = resolveFn?.(key)
-      return value ? { [value]: value } : undefined
+      // skip empty values
+      const categoryValues = this.getTokenCategoryValues(key)
+      if (!categoryValues) return
+
+      const prop = resolveFn?.(key)
+      if (!prop) return
+
+      return { [prop]: categoryValues }
     }
 
     if (isString(values)) {
@@ -317,7 +323,6 @@ export class Utility {
     for (const [prop, tokens] of this.types.entries()) {
       // When tokens does not exist in the config
       if (tokens.size === 0) {
-        map.set(prop, ['string'])
         continue
       }
 
