@@ -6,6 +6,38 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.34.3] - 2024-03-09
+
+### Fixed
+
+Fix nested `styled` factory composition
+
+```tsx
+import { styled } from '../styled-system/jsx'
+
+const BasicBox = styled('div', { base: { fontSize: '10px' } })
+const ExtendedBox1 = styled(BasicBox, { base: { fontSize: '20px' } })
+const ExtendedBox2 = styled(ExtendedBox1, { base: { fontSize: '30px' } })
+
+export const App = () => {
+  return (
+    <>
+      {/* ✅ fs_10px */}
+      <BasicBox>text1</BasicBox>
+      {/* ✅ fs_20px */}
+      <ExtendedBox1>text2</ExtendedBox1>
+      {/* BEFORE: ❌ fs_10px fs_30px */}
+      {/* NOW: ✅ fs_30px */}
+      <ExtendedBox2>text3</ExtendedBox2>
+    </>
+  )
+}
+```
+
+### Added
+
+Allow color opacity modifier when using `strictTokens`, e.g `color: "blue.200/50"` will not throw a TS error anymore
+
 ## [0.34.2] - 2024-03-08
 
 ### Fixed
