@@ -4007,3 +4007,83 @@ test('with formatTokenName', () => {
   `,
   )
 })
+
+test('use raw value when possible for semanticTokens', () => {
+  expect(
+    generateTokenJs(
+      createContext({
+        eject: true,
+        theme: {
+          tokens: {},
+          semanticTokens: {
+            colors: {
+              blue: { value: 'blue' },
+              green: {
+                value: {
+                  base: 'green',
+                  _dark: 'white',
+                },
+              },
+              red: {
+                value: {
+                  base: 'red',
+                },
+              },
+              blueRef: { value: '{colors.blue}' },
+              redRef: { value: '{colors.red}' },
+            },
+          },
+        },
+      }),
+    ),
+  ).toMatchInlineSnapshot(
+    `
+    {
+      "dts": "import type { Token } from './tokens';
+
+    export declare const token: {
+      (path: Token, fallback?: string): string
+      var: (path: Token, fallback?: string) => string
+    }
+
+    export * from './tokens';",
+      "js": "const tokens = {
+      "colors.blue": {
+        "value": "blue",
+        "variable": "var(--colors-blue)"
+      },
+      "colors.green": {
+        "value": "var(--colors-green)",
+        "variable": "var(--colors-green)"
+      },
+      "colors.red": {
+        "value": "red",
+        "variable": "var(--colors-red)"
+      },
+      "colors.blueRef": {
+        "value": "var(--colors-blue)",
+        "variable": "var(--colors-blue-ref)"
+      },
+      "colors.redRef": {
+        "value": "var(--colors-red)",
+        "variable": "var(--colors-red-ref)"
+      },
+      "colors.colorPalette": {
+        "value": "var(--colors-color-palette)",
+        "variable": "var(--colors-color-palette)"
+      }
+    }
+
+    export function token(path, fallback) {
+      return tokens[path]?.value || fallback
+    }
+
+    function tokenVar(path, fallback) {
+      return tokens[path]?.variable || fallback
+    }
+
+    token.var = tokenVar",
+    }
+  `,
+  )
+})

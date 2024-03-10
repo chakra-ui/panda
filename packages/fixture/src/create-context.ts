@@ -36,13 +36,16 @@ export const createGeneratorContext = (userConfig?: Config) => {
 
 export const createContext = (userConfig?: Config) => {
   const resolvedConfig = (
-    userConfig ? mergeConfigs([userConfig, fixtureDefaults.config]) : fixtureDefaults.config
+    userConfig ? mergeConfigs([userConfig, userConfig.eject ? {} : fixtureDefaults.config]) : fixtureDefaults.config
   ) as UserConfig
 
   return new PandaContext({
     ...fixtureDefaults,
     hooks: userConfig?.hooks ?? {},
-    config: resolvedConfig,
+    config: {
+      ...fixtureDefaults.config,
+      ...resolvedConfig,
+    },
     tsconfig: {
       // @ts-expect-error
       useInMemoryFileSystem: true,
