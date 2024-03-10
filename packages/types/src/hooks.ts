@@ -125,6 +125,7 @@ export interface ConfigResolvedHookArgs {
   path: string
   dependencies: string[]
   utils: ConfigResolvedHookUtils
+  original?: LoadConfigResult['config']
 }
 
 export interface ConfigChangeHookArgs {
@@ -145,6 +146,7 @@ export interface ParserResultBeforeHookArgs {
   filePath: string
   content: string
   configure: (opts: ParserResultConfigureOptions) => void
+  original?: string
 }
 
 export interface ParserResultAfterHookArgs {
