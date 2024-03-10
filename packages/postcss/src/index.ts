@@ -11,6 +11,7 @@ export interface PluginOptions {
   configPath?: string
   cwd?: string
   logfile?: string
+  allow?: RegExp[]
 }
 
 const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
@@ -22,7 +23,7 @@ let stream: ReturnType<typeof setLogStream> | undefined
 const builder = new Builder()
 
 export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
-  const { configPath, cwd, logfile } = options
+  const { configPath, cwd, logfile, allow } = options
 
   if (!stream && logfile) {
     stream = setLogStream({ cwd, logfile })
@@ -34,7 +35,7 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
       async function (root, result) {
         const fileName = result.opts.from
 
-        const skip = shouldSkip(fileName)
+        const skip = shouldSkip(fileName, allow)
         if (skip) return
 
         await builder.setup({ configPath, cwd })
@@ -77,8 +78,9 @@ function isValidCss(file: string) {
   return path.extname(filePath) === '.css'
 }
 
-const shouldSkip = (fileName: string | undefined) => {
+const shouldSkip = (fileName: string | undefined, allow: PluginOptions['allow']) => {
   if (!fileName) return true
   if (!isValidCss(fileName)) return true
+  if (allow?.some((p) => p.test(fileName))) return false
   return nodeModulesRegex.test(fileName)
 }

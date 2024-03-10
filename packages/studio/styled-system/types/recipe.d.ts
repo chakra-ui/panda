@@ -81,7 +81,7 @@ export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefi
 
 interface RecipeConfigMeta {
   /**
-   * The class name of the recipe.
+   * The name of the recipe.
    */
   className: string
   /**
@@ -133,10 +133,6 @@ export interface SlotRecipeDefinition<
   S extends string = string,
   T extends SlotRecipeVariantRecord<S> = SlotRecipeVariantRecord<S>,
 > {
-  /**
-   * An optional class name that can be used to target slots in the DOM.
-   */
-  className?: string
   /**
    * The parts/slots of the recipe.
    */

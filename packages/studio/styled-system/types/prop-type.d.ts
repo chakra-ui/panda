@@ -325,6 +325,17 @@ type StrictableProps =
   | 'backgroundAttachment'
   | 'backgroundClip'
   | 'borderCollapse'
+  | 'border'
+  | 'borderBlock'
+  | 'borderBlockEnd'
+  | 'borderBlockStart'
+  | 'borderBottom'
+  | 'borderInline'
+  | 'borderInlineEnd'
+  | 'borderInlineStart'
+  | 'borderLeft'
+  | 'borderRight'
+  | 'borderTop'
   | 'borderBlockEndStyle'
   | 'borderBlockStartStyle'
   | 'borderBlockStyle'
@@ -376,8 +387,7 @@ type StrictableProps =
   | 'wordBreak'
   | 'writingMode'
 
-type WithColorOpacityModifier<T> = T extends string ? `${T}/${string}` : T
-type WithEscapeHatch<T> = T | `[${string}]` | `${T}/{string}` | WithColorOpacityModifier<T>
+type WithEscapeHatch<T> = T | `[${string}]`
 
 type FilterVagueString<Key, Value> = Value extends boolean
   ? Value
