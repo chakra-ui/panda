@@ -71,6 +71,8 @@ pandacss.postcss = true
 export default pandacss
 
 const nodeModulesRegex = /node_modules/
+// Embroider virtualizes files inside of `/node_modules/.embroider/rewritten-app`
+const nodeModulesEmbroiderRegex = /node_modules\/.embroider/
 
 function isValidCss(file: string) {
   const [filePath] = file.split('?')
@@ -80,5 +82,5 @@ function isValidCss(file: string) {
 const shouldSkip = (fileName: string | undefined) => {
   if (!fileName) return true
   if (!isValidCss(fileName)) return true
-  return nodeModulesRegex.test(fileName)
+  return nodeModulesRegex.test(fileName) && !nodeModulesEmbroiderRegex.test(fileName)
 }
