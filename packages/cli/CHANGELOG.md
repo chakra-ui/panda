@@ -1,5 +1,18 @@
 # @pandacss/dev
 
+## 0.34.3
+
+### Patch Changes
+
+- @pandacss/node@0.34.3
+- @pandacss/postcss@0.34.3
+- @pandacss/config@0.34.3
+- @pandacss/logger@0.34.3
+- @pandacss/preset-panda@0.34.3
+- @pandacss/shared@0.34.3
+- @pandacss/token-dictionary@0.34.3
+- @pandacss/types@0.34.3
+
 ## 0.34.2
 
 ### Patch Changes
@@ -175,11 +188,11 @@
   ```js
   module.exports = {
     plugins: {
-      '@pandacss/dev/postcss': {
-        logfile: './logs/panda.log',
+      "@pandacss/dev/postcss": {
+        logfile: "./logs/panda.log",
       },
     },
-  }
+  };
   ```
 
 - Updated dependencies [0dd45b6a]
@@ -226,8 +239,8 @@
   ```ts
   export default defineConfig({
     // ...
-    dependencies: ['path/to/files/**.ts'],
-  })
+    dependencies: ["path/to/files/**.ts"],
+  });
   ```
 
   - Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`,
@@ -276,39 +289,54 @@
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -1206,12 +1234,12 @@
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -1219,33 +1247,33 @@
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 
