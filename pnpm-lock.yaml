@@ -403,8 +403,8 @@ importers:
   packages/is-valid-prop:
     devDependencies:
       mdn-data:
-        specifier: 2.4.0
-        version: 2.4.0
+        specifier: 2.4.2
+        version: 2.4.2
 
   packages/logger:
     dependencies:
@@ -20949,8 +20949,8 @@ packages:
     resolution: {integrity: sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==}
     dev: true
 
-  /mdn-data@2.4.0:
-    resolution: {integrity: sha512-AB4NUFtlTkd4rhr73ocuerhDkpe71kr0VpFLwoYuALjYo8XBrGcBJFgqHADjPHj7Ux50bg+SyLEt6mcodrafzw==}
+  /mdn-data@2.4.2:
+    resolution: {integrity: sha512-idPW/pIOG+kFB36OahZHGCXZaaKIp5aYbbgRS/NACMbCpSJTTbW+T9XmMLMzvs27vnRhUO1xrd++gAGv7lm1gA==}
     dev: true
 
   /mdurl@1.0.1:
