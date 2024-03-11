@@ -13,6 +13,9 @@
   "dependencies": {
     "preact": "10.19.5"
   },
+  "imports": {
+    "#styles/*": "./styled-system/*"
+  },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@preact/preset-vite": "2.8.2",

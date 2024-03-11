@@ -59,6 +59,8 @@ export class FileMatcher {
   }
 
   private assignAliases() {
+    const isCssEntrypoint = this.createMatch(this.importMap.css, Array.from(cssEntrypointFns))
+
     this.imports.forEach((result) => {
       if (this.isValidRecipe(result.alias)) {
         this.recipeAliases.add(result.alias)
@@ -68,16 +70,18 @@ export class FileMatcher {
         this.patternAliases.add(result.alias)
       }
 
-      if (result.name === 'css') {
-        this.cssAliases.add(result.alias)
-      }
+      if (isCssEntrypoint(result.alias)) {
+        if (result.name === 'css') {
+          this.cssAliases.add(result.alias)
+        }
 
-      if (result.name === 'cva') {
-        this.cvaAliases.add(result.alias)
-      }
+        if (result.name === 'cva') {
+          this.cvaAliases.add(result.alias)
+        }
 
-      if (result.name === 'sva') {
-        this.svaAliases.add(result.alias)
+        if (result.name === 'sva') {
+          this.svaAliases.add(result.alias)
+        }
       }
 
       if (result.name === this.context.jsx.factoryName) {
@@ -87,7 +91,7 @@ export class FileMatcher {
       if (result.kind === 'namespace') {
         // Add all patterns when using a namespace import
         // e.g. import * as p from '../styled-system/patterns'
-        if (result.mod.includes(this.importMap.pattern)) {
+        if (this.importMap.pattern.some((m) => result.mod.includes(m))) {
           this.context.patterns.keys.forEach((pattern) => {
             this.patternAliases.add(pattern)
           })
@@ -95,7 +99,7 @@ export class FileMatcher {
 
         // Add all recipes when using a namespace import
         // e.g. import * as r from '../styled-system/recipes'
-        if (result.mod.includes(this.importMap.recipe)) {
+        if (this.importMap.recipe.some((m) => result.mod.includes(m))) {
           this.context.recipes.keys.forEach((recipe) => {
             this.recipeAliases.add(recipe)
           })
@@ -128,15 +132,15 @@ export class FileMatcher {
     return this.imports.find((o) => o.alias === id)
   }
 
-  private createMatch = (mod: string, keys: string[]) => {
-    const mods = this.imports.filter((o) => {
-      const isFromMod = o.mod.includes(mod) || o.importMapValue?.includes(mod)
+  private createMatch = (mods: string[], keys: string[]) => {
+    const matchingImports = this.imports.filter((o) => {
+      const isFromMod = mods.some((m) => o.mod.includes(m) || o.importMapValue?.includes(m))
       const isOneOfKeys = o.kind === 'namespace' ? true : keys.includes(o.name)
       return isFromMod && isOneOfKeys
     })
 
     return memo((id: string) => {
-      return !!mods.find((mod) => {
+      return !!matchingImports.find((mod) => {
         // Match patterns/recipes when using a namespace import
         if (mod.kind === 'namespace') {
           return keys.includes(id)
@@ -212,9 +216,9 @@ export class FileMatcher {
     const [namespace, identifier] = fnName.split('.')
     const ns = this.namespaces.get(namespace)
     if (ns) {
-      if (ns.mod.includes(this.importMap.css) && cssEntrypointFns.has(identifier)) return true
-      if (ns.mod.includes(this.importMap.recipe) && this.recipeAliases.has(identifier)) return true
-      if (ns.mod.includes(this.importMap.pattern) && this.patternAliases.has(identifier)) return true
+      if (this.importMap.css.some((m) => ns.mod.includes(m)) && cssEntrypointFns.has(identifier)) return true
+      if (this.importMap.recipe.some((m) => ns.mod.includes(m)) && this.recipeAliases.has(identifier)) return true
+      if (this.importMap.pattern.some((m) => ns.mod.includes(m)) && this.patternAliases.has(identifier)) return true
 
       return this.functions.has(identifier)
     }

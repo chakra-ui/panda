@@ -27,6 +27,29 @@ describe('file matcher', () => {
     expect(file.getName('xcss')).toMatchInlineSnapshot('"css"')
   })
 
+  test('imports - multiple sources', () => {
+    const ctx = createContext({ importMap: ['styled-system', '@acme/org'] })
+
+    const file = ctx.imports.file([
+      { mod: 'styled-system/css', name: 'cva', alias: 'cva' },
+      { mod: 'styled-system/patterns', name: 'stack', alias: 'stack' },
+      { mod: '@acme/org/css', name: 'cva', alias: 'cvaAcme' },
+      { mod: '@acme/org/patterns', name: 'stack', alias: 'stackAcme' },
+
+      { mod: '@wrong/org/css', name: 'cva', alias: 'cvaWrong' },
+      { mod: '@wrong/org/patterns', name: 'stack', alias: 'stackWrong' },
+    ])
+
+    expect(file.matchFn('cva')).toMatchInlineSnapshot('true')
+    expect(file.matchFn('cvaAcme')).toMatchInlineSnapshot('true')
+    expect(file.isValidPattern('stack')).toMatchInlineSnapshot('true')
+    expect(file.isValidPattern('stackAcme')).toMatchInlineSnapshot('true')
+
+    expect(file.isValidPattern('randxxx')).toMatchInlineSnapshot('false')
+    expect(file.matchFn('cvaWrong')).toMatchInlineSnapshot(`false`)
+    expect(file.matchFn('stackWrong')).toMatchInlineSnapshot(`false`)
+  })
+
   test('isPandaComponent', () => {
     const ctx = createContext()
 

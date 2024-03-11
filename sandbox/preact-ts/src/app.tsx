@@ -1,5 +1,7 @@
 import { css, sva } from '../styled-system/css'
 import { cq } from '../styled-system/patterns'
+// @ts-expect-error ts 5.4 will fix it
+import { btn } from '#styles/recipes'
 
 const button = sva({
   className: 'button',
@@ -36,6 +38,7 @@ export const App = () => {
       <div className={classes.root}>
         <div className={classes.text}>Click me</div>
       </div>
+      <div className={btn()}>aaaa Click me</div>
     </>
   )
 }

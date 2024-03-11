@@ -173,18 +173,20 @@ export interface ExtendableOptions {
 }
 
 export interface ImportMapInput {
-  css: string
-  recipes: string
-  patterns: string
-  jsx?: string
+  css: string | string[]
+  recipes: string | string[]
+  patterns: string | string[]
+  jsx?: string | string[]
 }
 
-export interface ImportMapOutput<T = string[]> {
-  css: T
-  recipe: T
-  pattern: T
-  jsx: T
+export interface ImportMapOutput<T = string> {
+  css: T[]
+  recipe: T[]
+  pattern: T[]
+  jsx: T[]
 }
+
+type ImportMapOption = string | ImportMapInput
 
 interface FileSystemOptions {
   /**
@@ -209,7 +211,7 @@ interface FileSystemOptions {
    * }
    * ```
    */
-  importMap?: string | ImportMapInput
+  importMap?: ImportMapOption | Array<ImportMapOption>
   /**
    * List of files glob to watch for changes.
    * @default []
