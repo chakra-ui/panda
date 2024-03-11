@@ -18,6 +18,13 @@ export interface ParserResultInterface {
   filePath: string | undefined
   isEmpty: () => boolean
   toArray: () => Array<ResultItem>
+  set: (name: 'cva' | 'css' | 'sva', result: ResultItem) => void
+  setCss: (result: ResultItem) => void
+  setCva: (result: ResultItem) => void
+  setSva: (result: ResultItem) => void
+  setJsx: (result: ResultItem) => void
+  setPattern: (name: string, result: ResultItem) => void
+  setRecipe: (name: string, result: ResultItem) => void
 }
 
 export interface EncoderJson {
