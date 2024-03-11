@@ -165,4 +165,99 @@ describe('config.importMap', () => {
       }"
     `)
   })
+
+  test('multiple importMap', () => {
+    const code = `
+    import { cardStyle } from "@acme/org/recipes"
+    import { buttonStyle } from "@bar/org/recipes"
+    import { css } from "@foo/org/css"
+    import { tooltipStyle } from "styled-system/recipes"
+    import { flex } from "@bar/org/patterns"
+    cardStyle()
+    buttonStyle()
+    css({ color: "red" })
+    // won't be extracted
+    tooltipStyle()
+    flex()
+     `
+    const result = parseAndExtract(code, {
+      importMap: {
+        css: ['@acme/org/css', '@foo/org/css'],
+        recipes: ['@acme/org/recipes', '@bar/org/recipes'],
+        patterns: '@acme/org/patterns',
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "cardStyle",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "buttonStyle",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "red",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+      }
+
+          .buttonStyle:is(:hover, [data-hover]) {
+            color: var(--colors-white);
+            background-color: var(--colors-red-200);
+            font-size: var(--font-sizes-3xl);
+      }
+      }
+
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem;
+      }
+
+        .buttonStyle--variant_solid {
+          color: var(--colors-white);
+          background-color: blue;
+      }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          color: var(--colors-black);
+          background-color: gray;
+          font-size: var(--font-sizes-2xl);
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
+      }
+      }
+
+      @layer utilities {
+        .text_red {
+          color: red;
+      }
+      }"
+    `)
+  })
 })

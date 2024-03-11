@@ -23,6 +23,31 @@ describe('import map', () => {
     `)
   })
 
+  test('partial value - has fallbacks', () => {
+    const ctx = createContext({
+      importMap: {
+        jsx: ['styled-system/jsx', 'custom-entrypoint'],
+      },
+    })
+    expect(ctx.imports.value).toMatchInlineSnapshot(`
+      {
+        "css": [
+          "styled-system/css",
+        ],
+        "jsx": [
+          "styled-system/jsx",
+          "custom-entrypoint",
+        ],
+        "pattern": [
+          "styled-system/patterns",
+        ],
+        "recipe": [
+          "styled-system/recipes",
+        ],
+      }
+    `)
+  })
+
   test('normalize', () => {
     const ctx = createContext({ importMap: '@acme/org' })
     expect(ctx.imports.value).toMatchInlineSnapshot(`
