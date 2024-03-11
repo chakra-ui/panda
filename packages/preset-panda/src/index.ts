@@ -8,6 +8,7 @@ import { textStyles } from './typography'
 const definePreset = <T extends Preset>(config: T) => config
 
 export const preset = definePreset({
+  name: '@pandacss/preset-panda',
   theme: {
     keyframes,
     breakpoints,
