@@ -152,7 +152,7 @@ describe('mergeConfigs / theme', () => {
       },
     ])
 
-    const result = hooks['codegen:prepare']?.({
+    const result = await hooks['codegen:prepare']?.({
       changed: [],
       artifacts: [
         { id: 'recipes.1', files: [{ code: 'aaa aaa aaa', file: 'aaa.js' }] },
