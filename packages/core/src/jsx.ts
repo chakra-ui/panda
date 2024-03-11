@@ -93,7 +93,13 @@ export class JsxEngine {
   }
 
   isJsxFactory = (name: string) => {
-    return name === this.factoryName
+    // `styled` -> true
+    const isFactory = name === this.factoryName
+    if (isFactory) return true
+
+    // `pandaJsx.styled` -> true
+    const [_namespace, identifier] = name.split('.')
+    return identifier === this.factoryName
   }
 
   isJsxTagRecipe = memo((tagName: string) => {
