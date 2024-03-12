@@ -129,7 +129,7 @@ Open the `package.json` file and update the `scripts` section as follows:
 ```diff {3} filename="package.json"
 {
   "scripts": {
-+    "prepare": "panda codegen"
++    "prepare": "panda codegen",
     // ...
   }
 }
@@ -226,11 +226,11 @@ Run the following command to start your development server.
 
 Now you can start using Panda CSS in your project.
 
-```ts filename="app/components/hello-panda.js"
-import { component } from '@glimmer/component';
+```ts filename="app/components/hello-panda.ts"
+import Component from '@glimmer/component';
 import { css } from 'test-app/styled-system/css';
 
-export default class HelloPanda extends component {
+export default class HelloPanda extends Component {
   style = css({ fontSize: '5xl', fontWeight: 'bold' });
 }
 ```
