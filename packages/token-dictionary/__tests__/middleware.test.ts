@@ -59,6 +59,118 @@ test('middleware / add negative', () => {
   `)
 })
 
+test('negative tokens', () => {
+  const dictionary = new TokenDictionary({
+    tokens: {
+      spacing: {
+        1: { value: '1rem' },
+      },
+    },
+    semanticTokens: {
+      spacing: {
+        lg: { value: '{spacing.1}' },
+      },
+    },
+  })
+
+  dictionary.registerTokens()
+  dictionary.registerMiddleware(addNegativeTokens)
+  dictionary.build()
+
+  expect(dictionary.allTokens).toMatchInlineSnapshot(`
+    [
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
+          "prop": "1",
+        },
+        "name": "spacing.1",
+        "originalValue": "1rem",
+        "path": [
+          "spacing",
+          "1",
+        ],
+        "type": "dimension",
+        "value": "1rem",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
+          "conditions": {
+            "base": "{spacing.1}",
+          },
+          "prop": "lg",
+        },
+        "name": "spacing.lg",
+        "originalValue": "{spacing.1}",
+        "path": [
+          "spacing",
+          "lg",
+        ],
+        "type": "dimension",
+        "value": "1rem",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
+          "isNegative": true,
+          "originalPath": [
+            "spacing",
+            "1",
+          ],
+          "prop": "-1",
+        },
+        "name": "spacing.-1",
+        "originalValue": "1rem",
+        "path": [
+          "spacing",
+          "-1",
+        ],
+        "type": "dimension",
+        "value": "calc(var(--spacing-1) * -1)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
+          "conditions": {
+            "base": "{spacing.1}",
+          },
+          "isNegative": true,
+          "originalPath": [
+            "spacing",
+            "lg",
+          ],
+          "prop": "-lg",
+        },
+        "name": "spacing.-lg",
+        "originalValue": "{spacing.1}",
+        "path": [
+          "spacing",
+          "-lg",
+        ],
+        "type": "dimension",
+        "value": "calc(var(--spacing-lg) * -1)",
+      },
+    ]
+  `)
+  expect(dictionary.view.values).toMatchInlineSnapshot(`
+    Map {
+      "spacing.1" => undefined,
+      "spacing.lg" => undefined,
+      "spacing.-1" => "calc(var(--spacing-1) * -1)",
+      "spacing.-lg" => "{spacing.1}",
+    }
+  `)
+})
+
 test('middleware / formatTokenName', () => {
   const dictionary = new TokenDictionary({
     tokens: {
