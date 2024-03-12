@@ -1,4 +1,5 @@
 import { AstroLogo } from '@/icons/astro'
+import { EmberLogo } from '@/icons/ember'
 import { GatsbyLogo } from '@/icons/gatsby'
 import { NextjsLogo } from '@/icons/nextjs'
 import { PreactLogo } from '@/icons/preact'
@@ -74,6 +75,11 @@ const logoMap = {
     name: 'Storybook',
     logo: StorybookLogo,
     href: '/docs/installation/storybook'
+  },
+  ember: {
+    name: 'Ember',
+    logo: EmberLogo,
+    href: '/docs/installation/ember'
   }
 }
 
