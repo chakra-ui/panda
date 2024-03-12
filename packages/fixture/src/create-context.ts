@@ -7,8 +7,7 @@ import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { fixturePreset } from './config'
 import { RuleProcessor } from '@pandacss/core'
 
-const config: UserConfig = {
-  ...fixturePreset,
+const defaults: UserConfig = {
   optimize: true,
   cwd: '',
   outdir: 'styled-system',
@@ -17,6 +16,7 @@ const config: UserConfig = {
   cssVarRoot: ':where(html)',
   jsxFramework: 'react',
 }
+const config = Object.assign({}, fixturePreset, defaults)
 
 export const fixtureDefaults = {
   dependencies: [],
@@ -60,10 +60,7 @@ export const createContext = (userConfig?: Config) => {
   return new PandaContext({
     ...fixtureDefaults,
     hooks: userConfig?.hooks ?? {},
-    config: {
-      ...fixtureDefaults.config,
-      ...resolvedConfig,
-    },
+    config: Object.assign({}, defaults, resolvedConfig),
     tsconfig: {
       // @ts-expect-error
       useInMemoryFileSystem: true,

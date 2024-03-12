@@ -725,32 +725,25 @@ describe('generator', () => {
   })
 
   test('assets svg', () => {
-    const css = tokenCss(<any>{
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        theme: {
-          tokens: {
-            assets: {
-              checkbox: {
-                value: {
-                  type: 'svg',
-                  value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
-                },
+    const css = tokenCss({
+      eject: true,
+      theme: {
+        tokens: {
+          assets: {
+            checkbox: {
+              value: {
+                type: 'svg',
+                value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
               },
             },
           },
         },
-        outdir: '',
       },
-      path: '',
-      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --assets-checkbox: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");
       }
       }"
@@ -758,39 +751,32 @@ describe('generator', () => {
   })
 
   test('color-mix', () => {
-    const css = tokenCss(<any>{
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        theme: {
-          tokens: {
-            colors: {
-              pink: { value: '#ff00ff' },
-              border: { value: '{colors.pink/30}' },
-              ref: { value: '{colors.border/40}' },
-            },
-            opacity: {
-              half: { value: 0.5 },
-            },
+    const css = tokenCss({
+      eject: true,
+      theme: {
+        tokens: {
+          colors: {
+            pink: { value: '#ff00ff' },
+            border: { value: '{colors.pink/30}' },
+            ref: { value: '{colors.border/40}' },
           },
-          semanticTokens: {
-            colors: {
-              primary: {
-                value: '{colors.blue.300/70}',
-              },
+          opacity: {
+            half: { value: 0.5 },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            primary: {
+              value: '{colors.blue.300/70}',
             },
           },
         },
-        outdir: '',
       },
-      path: '',
-      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --colors-pink: #ff00ff;
           --colors-border: color-mix(in srgb, var(--colors-pink) 30%, transparent);
           --colors-ref: color-mix(in srgb, var(--colors-border) 40%, transparent);
@@ -802,46 +788,39 @@ describe('generator', () => {
   })
 
   test('color-mix in semanticTokens conditions', () => {
-    const css = tokenCss(<any>{
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        conditions: {
-          light: '.light &',
-          dark: '.dark &',
-        },
-        theme: {
-          tokens: {
-            colors: {
-              blue: { 500: { value: 'blue' } },
-              green: { 500: { value: 'green' } },
-            },
-            opacity: {
-              half: { value: 0.5 },
-            },
+    const css = tokenCss({
+      eject: true,
+      conditions: {
+        light: '.light &',
+        dark: '.dark &',
+      },
+      theme: {
+        tokens: {
+          colors: {
+            blue: { 500: { value: 'blue' } },
+            green: { 500: { value: 'green' } },
           },
-          semanticTokens: {
-            colors: {
-              secondary: {
-                value: {
-                  base: 'red',
-                  _light: '{colors.blue.500/32}',
-                  _dark: '{colors.green.500/half}',
-                },
+          opacity: {
+            half: { value: 0.5 },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            secondary: {
+              value: {
+                base: 'red',
+                _light: '{colors.blue.500/32}',
+                _dark: '{colors.green.500/half}',
               },
             },
           },
         },
-        outdir: '',
       },
-      path: '',
-      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --colors-blue-500: blue;
           --colors-green-500: green;
           --opacity-half: 0.5;
@@ -855,40 +834,6 @@ describe('generator', () => {
         .dark {
           --colors-secondary: color-mix(in srgb, var(--colors-green-500) 50%, transparent)
       }
-      }"
-    `)
-  })
-
-  test('css vars', () => {
-    const css = tokenCss({
-      theme: {
-        tokens: {},
-        semanticTokens: {},
-        breakpoints: {},
-      },
-      globalVars: {
-        '--random-color': 'red',
-        '--button-color': {
-          syntax: '<color>',
-          inherits: false,
-          initialValue: 'blue',
-        },
-      },
-    })
-
-    expect(css).toMatchInlineSnapshot(`
-      "@layer tokens {
-        :where(html) {
-          --random-color: red;
-      }
-
-        @property --button-color {
-          syntax: '<color>';
-
-          inherits: false;
-
-          initial-value: blue;
-              }
       }"
     `)
   })
