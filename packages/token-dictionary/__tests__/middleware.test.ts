@@ -166,7 +166,7 @@ test('negative tokens', () => {
       "spacing.1" => undefined,
       "spacing.lg" => undefined,
       "spacing.-1" => "calc(var(--spacing-1) * -1)",
-      "spacing.-lg" => "{spacing.1}",
+      "spacing.-lg" => "calc(var(--spacing-lg) * -1)",
     }
   `)
 })
