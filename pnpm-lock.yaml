@@ -1284,8 +1284,8 @@ importers:
         specifier: 2.5.3
         version: 2.5.3(@sveltejs/vite-plugin-svelte@3.0.2)(svelte@4.2.11)(vite@5.1.3)
       autoprefixer:
-        specifier: 10.4.17
-        version: 10.4.17(postcss@8.4.35)
+        specifier: 10.4.18
+        version: 10.4.18(postcss@8.4.35)
       eslint-plugin-svelte3:
         specifier: 4.0.0
         version: 4.0.0(eslint@8.56.0)(svelte@4.2.11)
@@ -1458,8 +1458,8 @@ importers:
         specifier: 18.2.55
         version: 18.2.55
       autoprefixer:
-        specifier: 10.4.17
-        version: 10.4.17(postcss@8.4.35)
+        specifier: 10.4.18
+        version: 10.4.18(postcss@8.4.35)
       postcss:
         specifier: 8.4.35
         version: 8.4.35
@@ -6478,7 +6478,7 @@ packages:
       '@rollup/plugin-replace': 5.0.5(rollup@4.7.0)
       '@vitejs/plugin-vue': 5.0.4(vite@5.1.1)(vue@3.4.19)
       '@vitejs/plugin-vue-jsx': 3.1.0(vite@5.1.1)(vue@3.4.19)
-      autoprefixer: 10.4.17(postcss@8.4.35)
+      autoprefixer: 10.4.18(postcss@8.4.35)
       clear: 0.1.0
       consola: 3.2.3
       cssnano: 6.0.3(postcss@8.4.35)
@@ -12766,12 +12766,29 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.23.0
-      caniuse-lite: 1.0.30001579
+      caniuse-lite: 1.0.30001597
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.0
       postcss: 8.4.35
       postcss-value-parser: 4.2.0
+    dev: false
+
+  /autoprefixer@10.4.18(postcss@8.4.35):
+    resolution: {integrity: sha512-1DKbDfsr6KUElM6wg+0zRNkB/Q7WcKYAaK+pzXn+Xqmszm/5Xa9coeNdtP88Vi+dPzZnMjhge8GIV49ZQkDa+g==}
+    engines: {node: ^10 || ^12 || >=14}
+    hasBin: true
+    peerDependencies:
+      postcss: ^8.1.0
+    dependencies:
+      browserslist: 4.23.0
+      caniuse-lite: 1.0.30001597
+      fraction.js: 4.3.7
+      normalize-range: 0.1.2
+      picocolors: 1.0.0
+      postcss: 8.4.35
+      postcss-value-parser: 4.2.0
+    dev: true
 
   /available-typed-arrays@1.0.5:
     resolution: {integrity: sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==}
@@ -13286,7 +13303,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001587
+      caniuse-lite: 1.0.30001597
       electron-to-chromium: 1.4.673
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.23.0)
@@ -13525,9 +13542,13 @@ packages:
 
   /caniuse-lite@1.0.30001579:
     resolution: {integrity: sha512-u5AUVkixruKHJjw/pj9wISlcMpgFWzSrczLZbrqBSxukQixmg0SJ5sZTpvaFvxU0HoQKd4yoyAogyrAz9pzJnA==}
+    dev: false
 
   /caniuse-lite@1.0.30001587:
     resolution: {integrity: sha512-HMFNotUmLXn71BQxg8cijvqxnIAofforZOwGsxyXJ0qugTdspUF4sPSJ2vhgprHCB996tIDzEq1ubumPDV8ULA==}
+
+  /caniuse-lite@1.0.30001597:
+    resolution: {integrity: sha512-7LjJvmQU6Sj7bL0j5b5WY/3n7utXUJvAe1lxhsHDbLmwX9mdL86Yjtr+5SRCyf8qME4M7pU2hswj0FpyBVCv9w==}
 
   /capital-case@1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
