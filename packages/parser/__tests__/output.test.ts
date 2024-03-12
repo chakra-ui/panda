@@ -3840,8 +3840,8 @@ describe('extract to css output pipeline', () => {
               "color": "red",
             },
           ],
-          "name": "styled",
-          "type": "jsx",
+          "name": "JSX.styled.div",
+          "type": "jsx-factory",
         },
         {
           "data": [
@@ -3909,5 +3909,51 @@ describe('extract to css output pipeline', () => {
     expect(result.json).toMatchInlineSnapshot(`[]`)
 
     expect(result.css).toMatchInlineSnapshot(`""`)
+  })
+
+  test('TS namespaces - JSX factory', () => {
+    const code = `
+    import * as pandaJsx from '../styled-system/jsx';
+
+    pandaJsx.styled('div', { base: { color: 'red' } })
+    const App = () => <pandaJsx.styled.span color="blue">Hello</pandaJsx.styled.span>
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "color": "red",
+              },
+            },
+          ],
+          "name": "pandaJsx.styled",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {
+              "color": "blue",
+            },
+          ],
+          "name": "pandaJsx.styled.span",
+          "type": "jsx-factory",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_red {
+          color: red;
+      }
+
+        .text_blue {
+          color: blue;
+      }
+      }"
+    `)
   })
 })

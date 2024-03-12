@@ -229,6 +229,12 @@ export class FileMatcher {
     for (const alias of this.jsxFactoryAliases) {
       if (tagName.startsWith(alias)) return true
     }
+
+    const [namespace, identifier] = tagName.split('.')
+    const ns = this.namespaces.get(namespace)
+    if (ns && ns.mod.includes(this.importMap.jsx) && identifier === this.context.jsx.factoryName) {
+      return true
+    }
   })
 
   isPandaComponent = memo((tagName: string) => {
