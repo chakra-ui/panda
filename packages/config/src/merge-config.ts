@@ -1,4 +1,4 @@
-import { assign, mergeWith, walkObject } from '@pandacss/shared'
+import { PANDA_CONFIG_NAME, assign, mergeWith, walkObject } from '@pandacss/shared'
 import type { Config, UserConfig } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
@@ -76,7 +76,7 @@ export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
   const [userConfig] = configs
   const pluginHooks = userConfig.plugins ?? []
   if (userConfig.hooks) {
-    pluginHooks.push({ name: '__panda.config__', hooks: userConfig.hooks })
+    pluginHooks.push({ name: PANDA_CONFIG_NAME, hooks: userConfig.hooks })
   }
 
   const mergedResult = assign(

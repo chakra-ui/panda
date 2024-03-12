@@ -1,8 +1,9 @@
 import type { Config } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { getResolvedConfig } from '../src'
+import { PANDA_CONFIG_NAME } from '@pandacss/shared'
 
-const defineConfig = <T extends Config>(config: T) => config
+const defineConfig = <T extends Config>(config: T) => Object.assign(config, { name: PANDA_CONFIG_NAME })
 
 describe('mergeConfigs / presets', () => {
   test('Recursively merge all presets into a single config', async () => {
@@ -135,6 +136,7 @@ describe('mergeConfigs / presets', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
+        "name": "__panda.config__",
         "theme": {
           "recipes": {
             "box": {
