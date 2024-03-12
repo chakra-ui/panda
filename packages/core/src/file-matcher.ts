@@ -236,7 +236,7 @@ export class FileMatcher {
 
     const [namespace, identifier] = tagName.split('.')
     const ns = this.namespaces.get(namespace)
-    if (ns && ns.mod.includes(this.importMap.jsx) && identifier === this.context.jsx.factoryName) {
+    if (ns && this.importMap.jsx.some((m) => ns.mod.includes(m)) && identifier === this.context.jsx.factoryName) {
       return true
     }
   })
