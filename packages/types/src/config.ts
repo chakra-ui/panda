@@ -83,18 +83,18 @@ interface ExtendableStaticCssOptions extends StaticCssOptions {
   extend?: StaticCssOptions | undefined
 }
 
-interface CssProperty {
+export interface CssAtProperty {
   inherits: boolean
   initialValue: string
   syntax: string
 }
 
-interface GlobalVars {
-  [key: string]: string | CssProperty
+export interface GlobalVars {
+  [key: string]: string | CssAtProperty
 }
 
 interface ExtendableGlobalVars {
-  [key: string]: string | CssProperty | ExtendableGlobalVars | undefined
+  [key: string]: string | CssAtProperty | ExtendableGlobalVars | undefined
   extend?: ExtendableGlobalVars
 }
 

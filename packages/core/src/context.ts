@@ -29,7 +29,7 @@ import { StaticCss } from './static-css'
 import { StyleDecoder } from './style-decoder'
 import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
-import type { ParserOptions } from './types'
+import type { ParserOptions, StylesheetContext } from './types'
 import { Utility } from './utility'
 
 const defaults = (config: UserConfig): UserConfig => ({
@@ -302,8 +302,9 @@ export class Context {
       browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,
       polyfill: this.config.polyfill,
+      cssVarRoot: this.config.cssVarRoot!,
       helpers: patternFns,
-    }
+    } satisfies Omit<StylesheetContext, 'layers'>
   }
 
   createSheet = (): Stylesheet => {

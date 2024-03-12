@@ -4,7 +4,7 @@ import merge from 'lodash.merge'
 import type { StylesheetContext } from '.'
 import { parseSelectors } from './stringify'
 
-export interface SerializeContext extends Omit<StylesheetContext, 'layers' | 'helpers' | 'hash'> {}
+export interface SerializeContext extends Omit<StylesheetContext, 'layers' | 'helpers' | 'hash' | 'cssVarRoot'> {}
 
 /**
  * Transform the style object (with conditions, shorthands, tokens) into a valid CSS (in JS) object

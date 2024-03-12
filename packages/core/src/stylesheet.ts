@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
+import type { CascadeLayer, Dict, GlobalVars, SystemStyleObject } from '@pandacss/types'
 import layersPolyfill from '@csstools/postcss-cascade-layers'
 import postcss, { CssSyntaxError } from 'postcss'
 import { optimizeCss } from './optimize'
@@ -9,6 +9,7 @@ import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
 import sortMediaQueries from './plugins/sort-mq'
+import { stringifyGlobalVars } from './global-vars'
 
 export class Stylesheet {
   constructor(private context: StylesheetContext) {}
@@ -56,9 +57,13 @@ export class Stylesheet {
     this.context.layers.reset.append(css)
   }
 
-  processGlobalCss = (styles: Dict) => {
+  processGlobalCss = (styles: Dict, vars?: GlobalVars) => {
     const result = this.serialize(styles)
     let css = stringify(result)
+
+    if (vars) {
+      css += stringifyGlobalVars(vars, this.context.cssVarRoot)
+    }
 
     if (this.context.hooks['cssgen:done']) {
       css = this.context.hooks['cssgen:done']({ artifact: 'global', content: css }) ?? css

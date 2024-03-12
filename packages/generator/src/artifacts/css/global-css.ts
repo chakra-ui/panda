@@ -1,7 +1,7 @@
 import type { Context, Stylesheet } from '@pandacss/core'
 
 export const generateGlobalCss = (ctx: Context, sheet: Stylesheet) => {
-  const { globalCss = {} } = ctx.config
+  const { globalCss = {}, globalVars } = ctx.config
 
   sheet.processGlobalCss({
     ':root': {
@@ -39,5 +39,5 @@ export const generateGlobalCss = (ctx: Context, sheet: Stylesheet) => {
     },
   })
 
-  sheet.processGlobalCss(globalCss)
+  sheet.processGlobalCss(globalCss, globalVars)
 }
