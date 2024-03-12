@@ -18,6 +18,8 @@ export function generatePropTypes(ctx: Context) {
   ]
 
   const types = utility.getTypes()
+  const cssVars = new Set(Object.keys(ctx.config.cssVars ?? {}))
+  const withCssVars = cssVars.size ? ' | CssVars' : ''
 
   for (const [prop, values] of types.entries()) {
     result.push(`\t${prop}: ${values.join(' | ')};`)
@@ -43,6 +45,16 @@ export function generatePropTypes(ctx: Context) {
 
   return outdent`
   ${result.join('\n')}
+
+  ${
+    cssVars.size
+      ? outdent`
+  type CssVars = ${Array.from(cssVars)
+    .map((v) => `"var(${v})"`)
+    .join(' | ')}
+  `
+      : ''
+  }
 
   type StrictableProps =
     | 'alignContent'
@@ -120,11 +132,14 @@ export function generatePropTypes(ctx: Context) {
   type PropOrCondition<Key, Value> = ${match(ctx.config)
     .with(
       { strictTokens: true, strictPropertyValues: true },
-      () => 'ConditionalValue<WithEscapeHatch<FilterVagueString<Key, Value>>>',
+      () => `ConditionalValue<WithEscapeHatch<FilterVagueString<Key, Value>>${withCssVars}>`,
     )
-    .with({ strictTokens: true }, () => 'ConditionalValue<WithEscapeHatch<Value>>')
-    .with({ strictPropertyValues: true }, () => 'ConditionalValue<WithEscapeHatch<FilterVagueString<Key, Value>>>')
-    .otherwise(() => 'ConditionalValue<Value | (string & {})>')}
+    .with({ strictTokens: true }, () => `ConditionalValue<WithEscapeHatch<Value>${withCssVars}>`)
+    .with(
+      { strictPropertyValues: true },
+      () => `ConditionalValue<WithEscapeHatch<FilterVagueString<Key, Value>>${withCssVars}>`,
+    )
+    .otherwise(() => `ConditionalValue<Value | (string & {})${withCssVars}>`)}
 
   type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
     ? PropOrCondition<T, ${match(ctx.config)

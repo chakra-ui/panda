@@ -3,8 +3,11 @@ import type { ConditionalValue } from './conditions';
 import type { PropertyValue } from './prop-type';
 import type { Token } from '../tokens/index';
 
+type VarNames =  | (string & {})
+type CssVars = `--${VarNames}`
+
 export type CssVarProperties = {
-  [key in `--${string}`]?: ConditionalValue<Token | (string & {}) | (number & {})>
+  [key in CssVars]?: ConditionalValue<Token | (string & {}) | (number & {})>
 }
 
 export interface SystemProperties {

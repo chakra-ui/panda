@@ -54,7 +54,7 @@ const textStyles = {
   },
 }
 
-export const fixturePreset: Omit<PresetCore, 'globalCss' | 'staticCss'> = {
+export const fixturePreset: Omit<PresetCore, 'globalCss' | 'staticCss' | 'cssVars'> = {
   ...presetBase,
   conditions,
   theme: {

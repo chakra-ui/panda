@@ -68,6 +68,10 @@ export interface PresetCore {
    * Common styling or layout patterns for your project.
    */
   patterns: Record<string, PatternConfig>
+  /**
+   * The css variables for your project.
+   */
+  cssVars: CssVars
 }
 
 interface ExtendablePatterns {
@@ -77,6 +81,21 @@ interface ExtendablePatterns {
 
 interface ExtendableStaticCssOptions extends StaticCssOptions {
   extend?: StaticCssOptions | undefined
+}
+
+interface CssProperty {
+  inherits: boolean
+  initialValue: string
+  syntax: string
+}
+
+interface CssVars {
+  [key: string]: string | CssProperty
+}
+
+interface ExtendableCssVars {
+  [key: string]: string | CssProperty | ExtendableCssVars | undefined
+  extend?: ExtendableCssVars
 }
 
 export interface ExtendableOptions {
@@ -105,6 +124,10 @@ export interface ExtendableOptions {
    * Common styling or layout patterns for your project.
    */
   patterns?: ExtendablePatterns
+  /**
+   * The css variables for your project.
+   */
+  cssVars?: ExtendableCssVars
 }
 
 export interface ImportMapInput {

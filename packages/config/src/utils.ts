@@ -40,7 +40,7 @@ export function assign(target: any, ...sources: any[]) {
 const omit = <T, K extends keyof T | (string & {})>(obj: T, paths: K[]): Omit<T, K> => {
   const result = { ...obj }
 
-  traverse(obj, ({ path, parent, key }) => {
+  traverse(result, ({ path, parent, key }) => {
     if (paths.includes(path as K)) {
       delete (parent as any)[key]
     }

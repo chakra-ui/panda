@@ -13,14 +13,39 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   const root = cssVarRoot!
 
   const results: string[] = []
+  const vars = new Map(tokens.view.vars.entries())
 
-  for (const [key, values] of tokens.view.vars.entries()) {
+  const cssVars = ctx.config.cssVars ?? {}
+  const cssCustomProps = [] as string[]
+  if (!vars.has('base')) {
+    vars.set('base', new Map())
+  }
+  const base = vars.get('base')!
+
+  Object.entries(cssVars).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      base.set(key, value)
+      return
+    }
+
+    const css = `@property ${key} {
+          syntax: '${value.syntax}';
+          inherits: ${value.inherits};
+          initial-value: ${value.initialValue};
+        }`
+    cssCustomProps.push(css)
+  })
+
+  for (const [key, values] of vars.entries()) {
     const varsObj = Object.fromEntries(values)
     if (Object.keys(varsObj).length === 0) continue
 
     if (key === 'base') {
       const css = stringify({ [root]: varsObj })
       results.push(css)
+
+      // Append CSS properties right after the root
+      results.push(cssCustomProps.join('\n'))
     } else {
       // nested conditionals in semantic tokens are joined by ":", so let's split it
       const keys = key.split(':')

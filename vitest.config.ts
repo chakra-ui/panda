@@ -27,6 +27,10 @@ export default defineConfig({
         replacement: resolve('./packages/config/src/resolve-ts-path-pattern.ts'),
       },
       {
+        find: '@pandacss/config/utils',
+        replacement: resolve('./packages/config/src/utils.ts'),
+      },
+      {
         find: '@pandacss/dev',
         replacement: resolve('./packages/cli/src'),
       },

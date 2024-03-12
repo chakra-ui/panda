@@ -4,13 +4,19 @@ import outdent from 'outdent'
 
 export function generateStyleProps(ctx: Context) {
   const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
+
+  const varNames = Object.keys(ctx.config.cssVars ?? {})
+
   return outdent`
     ${ctx.file.importType('ConditionalValue', './conditions')}
     ${ctx.file.importType('PropertyValue', './prop-type')}
     ${ctx.file.importType('Token', '../tokens/index')}
 
+    type VarNames = ${varNames.map((v) => `'${v.slice(2)}'`).join(' | ')} | (string & {})
+    type CssVars = \`--\${VarNames}\`
+
     export type CssVarProperties = {
-      [key in \`--\${string}\`]?: ConditionalValue<Token | (string & {}) | (number & {})>
+      [key in CssVars]?: ConditionalValue<Token | (string & {}) | (number & {})>
     }
 
     export interface SystemProperties {
