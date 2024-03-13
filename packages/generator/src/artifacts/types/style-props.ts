@@ -65,7 +65,7 @@ export function generateStyleProps(ctx: Context) {
             filtered.push('string | number')
           }
 
-          const comment = (csstype.comments as Record<string, string>)[prop] || ''
+          const comment = (csstype.comments as Record<string, string>)?.[prop] || ''
           const line = `${key}?: ${restrict(prop, filtered.filter(Boolean).join(' | '), ctx.config)}`
 
           return ' ' + [comment, line].filter(Boolean).join('\n')

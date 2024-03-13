@@ -31,7 +31,7 @@ export function generatePropTypes(ctx: Context) {
   type Important = ImportantMark | WhitespaceImportant
   type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
 
-  exprot type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
+  export type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
 
   export type OnlyKnown<Key, Value> = Value extends boolean
     ? Value

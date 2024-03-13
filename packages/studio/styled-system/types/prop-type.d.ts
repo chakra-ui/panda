@@ -196,7 +196,14 @@ interface UtilityValues {
 
 
 
-export type WithEscapeHatch<T> = T | `[${string}]` | `${T}/${string}`
+type WithColorOpacityModifier<T> = T extends string ? `${T}/${string}` : T
+
+type ImportantMark = "!" | "!important"
+type WhitespaceImportant = ` ${ImportantMark}`
+type Important = ImportantMark | WhitespaceImportant
+type WithImportant<T> = T extends string ? `${T}${Important}${string}` : T
+
+export type WithEscapeHatch<T> = T | `[${string}]` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
 
 export type OnlyKnown<Key, Value> = Value extends boolean
   ? Value
