@@ -3,7 +3,7 @@ import type { Conditional } from './conditions';
 import type { CssProperties } from './system-types';
 import type { Tokens } from '../tokens/index';
 
-interface UtilityValues {
+export interface UtilityValues {
 	aspectRatio: Tokens["aspectRatios"];
 	top: Tokens["spacing"];
 	left: Tokens["spacing"];

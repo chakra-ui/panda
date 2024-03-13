@@ -1,14 +1,14 @@
 /* eslint-disable */
 import type { SystemStyleObject, ConditionalValue } from '../types/index';
 import type { Properties } from '../types/csstype';
-import type { PropertyValue } from '../types/prop-type';
+import type { SystemProperties } from '../types/style-props';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
 export interface GridProperties {
-   gap?: PropertyValue<'gap'>
-	columnGap?: PropertyValue<'gap'>
-	rowGap?: PropertyValue<'gap'>
+   gap?: SystemProperties["gap"]
+	columnGap?: SystemProperties["gap"]
+	rowGap?: SystemProperties["gap"]
 	columns?: ConditionalValue<number>
 	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
 }

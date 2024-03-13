@@ -9,7 +9,7 @@ describe('generate property types', () => {
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 
-      interface UtilityValues {
+      export interface UtilityValues {
       	aspectRatio: Tokens["aspectRatios"];
       	top: Tokens["spacing"];
       	left: Tokens["spacing"];

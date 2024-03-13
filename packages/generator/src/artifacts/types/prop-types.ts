@@ -10,7 +10,7 @@ export function generatePropTypes(ctx: Context) {
     ${ctx.file.importType('CssProperties', './system-types')}
     ${ctx.file.importType('Tokens', '../tokens/index')}
 
-    interface UtilityValues {`,
+    export interface UtilityValues {`,
   ]
 
   const types = utility.getTypes()
