@@ -1,5 +1,31 @@
 # @pandacss/core
 
+## 0.35.0
+
+### Patch Changes
+
+- c459b43: Fix extraction of JSX `styled` factory when using namespace imports
+
+  ```tsx
+  import * as pandaJsx from "../styled-system/jsx";
+
+  // ✅ this will work now
+  pandaJsx.styled("div", { base: { color: "red" } });
+  const App = () => (
+    <pandaJsx.styled.span color="blue">Hello</pandaJsx.styled.span>
+  );
+  ```
+
+- Updated dependencies [f2fdc48]
+- Updated dependencies [50db354]
+- Updated dependencies [f6befbf]
+- Updated dependencies [a0c4d27]
+  - @pandacss/token-dictionary@0.35.0
+  - @pandacss/types@0.35.0
+  - @pandacss/logger@0.35.0
+  - @pandacss/is-valid-prop@0.35.0
+  - @pandacss/shared@0.35.0
+
 ## 0.34.3
 
 ### Patch Changes
@@ -17,18 +43,18 @@
 - 0bf09f2: Allow using namespaced imports
 
   ```ts
-  import * as p from 'styled-system/patterns'
-  import * as recipes from 'styled-system/recipes'
-  import * as panda from 'styled-system/css'
+  import * as p from "styled-system/patterns";
+  import * as recipes from "styled-system/recipes";
+  import * as panda from "styled-system/css";
 
   // this will now be extracted
-  p.stack({ mt: '40px' })
+  p.stack({ mt: "40px" });
 
-  recipes.cardStyle({ rounded: true })
+  recipes.cardStyle({ rounded: true });
 
-  panda.css({ color: 'red' })
-  panda.cva({ base: { color: 'blue' } })
-  panda.sva({ base: { root: { color: 'green' } } })
+  panda.css({ color: "red" });
+  panda.cva({ base: { color: "blue" } });
+  panda.sva({ base: { root: { color: "green" } } });
   ```
 
   - @pandacss/types@0.34.2
@@ -62,16 +88,16 @@
   ```ts
   // runtime usage
 
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
-  css({ bg: '{colors.blue.300/70}' })
+  css({ bg: "{colors.blue.300/70}" });
   // => @layer utilities {
   //    .bg_token\(colors\.blue\.300\/70\) {
   //      background: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
   //    }
   //  }
 
-  css({ bg: 'token(colors.blue.300/70)' })
+  css({ bg: "token(colors.blue.300/70)" });
   // => @layer utilities {
   //    .bg_token\(colors\.blue\.300\/70\) {
   //      background: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
@@ -81,33 +107,37 @@
 
   ```ts
   // build-time usage
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     theme: {
       tokens: {
         colors: {
           blue: {
-            300: { value: '#00f' },
+            300: { value: "#00f" },
           },
         },
       },
       semanticTokens: {
         colors: {
           primary: {
-            value: '{colors.blue.300/70}',
+            value: "{colors.blue.300/70}",
           },
         },
       },
     },
-  })
+  });
   ```
 
   ```css
   @layer tokens {
     :where(:root, :host) {
       --colors-blue-300: #00f;
-      --colors-primary: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
+      --colors-primary: color-mix(
+        in srgb,
+        var(--colors-blue-300) 70%,
+        transparent
+      );
     }
   }
   ```
@@ -148,20 +178,20 @@
   export default defaultConfig({
     conditions: {
       extend: {
-        supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
+        supportHover: ["@media (hover: hover) and (pointer: fine)", "&:hover"],
       },
     },
-  })
+  });
   ```
 
   ```ts
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   css({
     _supportHover: {
-      color: 'red',
+      color: "red",
     },
-  })
+  });
   ```
 
   will generate the following CSS:
@@ -177,25 +207,25 @@
 - 31071ba: Fix an issue for token names starting with '0'
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     theme: {
       tokens: {
         spacing: {
-          '025': {
-            value: '0.125rem',
+          "025": {
+            value: "0.125rem",
           },
         },
       },
     },
-  })
+  });
   ```
 
   and then using it like
 
   ```ts
-  css({ margin: '025' })
+  css({ margin: "025" });
   ```
 
   This would not generate the expected CSS because the parser would try to parse `025` as a number (`25`) instead of
@@ -206,11 +236,11 @@
   - Allow using multiple aliases for the same identifier for the `/css` entrypoints just like `/patterns` and `/recipes`
 
   ```ts
-  import { css } from '../styled-system/css'
-  import { css as css2 } from '../styled-system/css'
+  import { css } from "../styled-system/css";
+  import { css as css2 } from "../styled-system/css";
 
-  css({ display: 'flex' })
-  css2({ flexDirection: 'column' }) // this wasn't working before, now it does
+  css({ display: "flex" });
+  css2({ flexDirection: "column" }); // this wasn't working before, now it does
   ```
 
 - Updated dependencies [a032375]
@@ -254,10 +284,10 @@
 
   ```ts
   css({
-    padding: '1px',
-    paddingTop: '3px',
-    paddingBottom: '4px',
-  })
+    padding: "1px",
+    paddingTop: "3px",
+    paddingBottom: "4px",
+  });
   ```
 
   Will now always generate the following css:
@@ -318,16 +348,17 @@
   export default defineConfig({
     // ...
     hooks: {
-      'parser:before': ({ configure }) => {
+      "parser:before": ({ configure }) => {
         configure({
           // ignore the Select.Content entirely
-          matchTag: (tag) => tag !== 'Select.Content',
+          matchTag: (tag) => tag !== "Select.Content",
           // ...or specifically ignore the `position` property
-          matchTagProp: (tag, prop) => tag === 'Select.Content' && prop !== 'position',
-        })
+          matchTagProp: (tag, prop) =>
+            tag === "Select.Content" && prop !== "position",
+        });
       },
     },
-  })
+  });
   ```
 
 - Updated dependencies [6b829cab]
@@ -395,9 +426,9 @@
 
   ```ts
   css({
-    bg: 'red.300/40',
-    color: 'white',
-  })
+    bg: "red.300/40",
+    color: "white",
+  });
   ```
 
   This will generate:
@@ -405,7 +436,11 @@
   ```css
   @layer utilities {
     .bg_red\.300\/40 {
-      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      --mix-background: color-mix(
+        in srgb,
+        var(--colors-red-300) 40%,
+        transparent
+      );
       background: var(--mix-background, var(--colors-red-300));
     }
 
@@ -429,21 +464,21 @@
   export default defineConfig({
     utilities: {
       background: {
-        shorthand: 'bg',
-        className: 'bg',
-        values: 'colors',
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
         transform(value, args) {
-          const mix = args.utils.colorMix(value)
+          const mix = args.utils.colorMix(value);
           // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
-          if (mix.invalid) return { background: value }
+          if (mix.invalid) return { background: value };
 
           return {
             background: mix.value,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
   ***
@@ -452,21 +487,21 @@
   property:
 
   ```ts
-  import type { PropertyTransform } from '@pandacss/types'
+  import type { PropertyTransform } from "@pandacss/types";
 
   export const createColorMixTransform =
     (prop: string): PropertyTransform =>
     (value, args) => {
-      const mix = args.utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
+      const mix = args.utils.colorMix(value);
+      if (mix.invalid) return { [prop]: value };
 
-      const cssVar = '--mix-' + prop
+      const cssVar = "--mix-" + prop;
 
       return {
         [cssVar]: mix.value,
         [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    }
+      };
+    };
   ```
 
   then the same utility transform as above can be written like this:
@@ -492,24 +527,24 @@
     patterns: {
       hstack: {
         properties: {
-          justify: { type: 'property', value: 'justifyContent' },
-          gap: { type: 'property', value: 'gap' },
+          justify: { type: "property", value: "justifyContent" },
+          gap: { type: "property", value: "gap" },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: '40px' },
+        defaultValues: { gap: "40px" },
         transform(props) {
-          const { justify, gap, ...rest } = props
+          const { justify, gap, ...rest } = props;
           return {
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             justifyContent: justify,
             gap,
             ...rest,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
 - 250b4d11: ### Container Query Theme
@@ -523,34 +558,34 @@
     // ...
     theme: {
       extend: {
-        containerNames: ['sidebar', 'content'],
+        containerNames: ["sidebar", "content"],
         containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+          xs: "40em",
+          sm: "60em",
+          md: "80em",
         },
       },
     },
-  })
+  });
   ```
 
   The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
   ```ts
   export const containerSizes = {
-    xs: '320px',
-    sm: '384px',
-    md: '448px',
-    lg: '512px',
-    xl: '576px',
-    '2xl': '672px',
-    '3xl': '768px',
-    '4xl': '896px',
-    '5xl': '1024px',
-    '6xl': '1152px',
-    '7xl': '1280px',
-    '8xl': '1440px',
-  }
+    xs: "320px",
+    sm: "384px",
+    md: "448px",
+    lg: "512px",
+    xl: "576px",
+    "2xl": "672px",
+    "3xl": "768px",
+    "4xl": "896px",
+    "5xl": "1024px",
+    "6xl": "1152px",
+    "7xl": "1280px",
+    "8xl": "1440px",
+  };
   ```
 
   Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
@@ -634,10 +669,10 @@
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    '@container (min-width: {sizes.4xl})': {
-      color: 'green',
+    "@container (min-width: {sizes.4xl})": {
+      color: "green",
     },
-  })
+  });
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -676,39 +711,54 @@
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -915,11 +965,11 @@
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const styles = css({
-    border: '2px solid {colors.primary}',
-  })
+    border: "2px solid {colors.primary}",
+  });
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -939,18 +989,18 @@
   ```jsx
   const styles = css({
     // token reference syntax
-    border: '2px solid {colors.primary}',
+    border: "2px solid {colors.primary}",
     // token function syntax
-    border: '2px solid token(colors.primary)',
-  })
+    border: "2px solid token(colors.primary)",
+  });
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: '2px solid token(colors.primary, red)',
-  })
+    border: "2px solid token(colors.primary, red)",
+  });
   ```
 
 ### Patch Changes
@@ -961,8 +1011,8 @@
   ```jsx
   css({
     // This didn't work, but now it does
-    base: { color: 'blue' },
-  })
+    base: { color: "blue" },
+  });
   ```
 
 - Updated dependencies [59fd291c]
@@ -1021,38 +1071,38 @@
 
   ```ts
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
       visual: {
-        primary: { backgroundColor: 'blue' },
-        secondary: { backgroundColor: 'gray' },
+        primary: { backgroundColor: "blue" },
+        secondary: { backgroundColor: "gray" },
       },
     },
-  })
+  });
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ['*'], // this
+        card: ["*"], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ['*'], responsive: true },
-          { visual: ['*'], responsive: true },
+          { size: ["*"], responsive: true },
+          { visual: ["*"], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ['*'] }, { visual: ['*'] }],
+        card: [{ size: ["*"] }, { visual: ["*"] }],
       },
     },
-  })
+  });
   ```
 
   Here's the diff in the generated CSS:
@@ -1178,30 +1228,30 @@
   another file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
 
   ```ts
-  import { sva } from '../styled-system/css'
-  import { slots } from './slots'
+  import { sva } from "../styled-system/css";
+  import { slots } from "./slots";
 
   const card = sva({
     slots, // ❌ did NOT work -> ✅ will now work as expected
     base: {
       root: {
-        p: '6',
-        m: '4',
-        w: 'md',
-        boxShadow: 'md',
-        borderRadius: 'md',
-        _dark: { bg: '#262626', color: 'white' },
+        p: "6",
+        m: "4",
+        w: "md",
+        boxShadow: "md",
+        borderRadius: "md",
+        _dark: { bg: "#262626", color: "white" },
       },
       content: {
-        textStyle: 'lg',
+        textStyle: "lg",
       },
       title: {
-        textStyle: 'xl',
-        fontWeight: 'semibold',
-        pb: '2',
+        textStyle: "xl",
+        fontWeight: "semibold",
+        pb: "2",
       },
     },
-  })
+  });
   ```
 
 - 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
@@ -1258,18 +1308,18 @@
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: '#fff',
+    color: "#fff",
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: '100px',
+    width: "100px",
 
     // ✅ but this is now allowed:
-    bgColor: '[rgb(51 155 240)]',
-    fontSize: '[12px]',
-  })
+    bgColor: "[rgb(51 155 240)]",
+    fontSize: "[12px]",
+  });
   ```
 
 ### Patch Changes
@@ -1282,8 +1332,8 @@
     // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
     // but since it's an URL, it would produce invalid CSS
     // we now check if the property value is an URL and skip it if needed
-    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
-  }
+    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />;
+  };
   ```
 
 - d81dcbe6: - Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the
@@ -1292,36 +1342,36 @@
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from '@pandacss/dev'
+  import { defineRecipe } from "@pandacss/dev";
 
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
     },
-    staticCss: [{ size: ['*'] }],
-  })
+    staticCss: [{ size: ["*"] }],
+  });
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ['*'],
+          size: ["*"],
         },
       },
     },
-  })
+  });
   ```
 
 - Updated dependencies [26e6051a]
@@ -1353,13 +1403,13 @@
 
   ```ts
   css({
-    '@container (min-width: token(sizes.xl))': {
-      color: 'green.300',
+    "@container (min-width: token(sizes.xl))": {
+      color: "green.300",
     },
-    '@media (min-width: token(sizes.2xl))': {
-      color: 'red.300',
+    "@media (min-width: token(sizes.2xl))": {
+      color: "red.300",
     },
-  })
+  });
   ```
 
 - Updated dependencies [24ee49a5]
@@ -1411,14 +1461,14 @@
 - 8c76cd0f: - Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
 
   ```jsx
-  css({ hideBelow: 'lg' })
+  css({ hideBelow: "lg" });
   // => @media screen and (max-width: 63.9975em) { background: red; }
   ```
 
   - Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
 
   ```jsx
-  css({ hideFrom: '800px' })
+  css({ hideFrom: "800px" });
   // => @media screen and (min-width: 800px) { background: red; }
   ```
 
@@ -1504,10 +1554,10 @@
 
   ```ts
   const button = defineSlotRecipe({
-    className: 'button',
-    slots: ['root', 'icon', 'label'],
+    className: "button",
+    slots: ["root", "icon", "label"],
     // ...
-  })
+  });
   ```
 
   will have a default `jsx` property of: `[Button, Button.Root, Button.Icon, Button.Label]`
@@ -1564,42 +1614,42 @@
 
   ```ts
   export default defineConfig({
-    outdir: './outdir',
+    outdir: "./outdir",
     importMap: {
-      css: '#panda/styled-system/css',
-      recipes: '#panda/styled-system/recipes',
-      patterns: '#panda/styled-system/patterns',
-      jsx: '#panda/styled-system/jsx',
+      css: "#panda/styled-system/css",
+      recipes: "#panda/styled-system/recipes",
+      patterns: "#panda/styled-system/patterns",
+      jsx: "#panda/styled-system/jsx",
     },
-  })
+  });
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: '../packages/styled-system',
+    outdir: "../packages/styled-system",
     importMap: {
-      css: '@monorepo/styled-system',
-      recipes: '@monorepo/styled-system',
-      patterns: '@monorepo/styled-system',
-      jsx: '@monorepo/styled-system',
+      css: "@monorepo/styled-system",
+      recipes: "@monorepo/styled-system",
+      patterns: "@monorepo/styled-system",
+      jsx: "@monorepo/styled-system",
     },
-  })
+  });
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: 'styled-system',
+    outdir: "styled-system",
     importMap: {
-      css: 'styled-system/css',
-      recipes: 'styled-system/recipes',
-      patterns: 'styled-system/patterns',
-      jsx: 'styled-system/jsx',
+      css: "styled-system/css",
+      recipes: "styled-system/recipes",
+      patterns: "styled-system/patterns",
+      jsx: "styled-system/jsx",
     },
-  })
+  });
   ```
 
 - Updated dependencies [95b06bb1]
@@ -1629,13 +1679,13 @@
 - 848936e0: Allow referencing tokens with the `token()` function in media queries or any other CSS at-rule.
 
   ```js
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const className = css({
-    '@media screen and (min-width: token(sizes.4xl))': {
-      color: 'green.400',
+    "@media screen and (min-width: token(sizes.4xl))": {
+      color: "green.400",
     },
-  })
+  });
   ```
 
 - Updated dependencies [26f6982c]
@@ -1688,7 +1738,7 @@
 
   ```css
   * {
-    color: token('colors.magenta', pink);
+    color: token("colors.magenta", pink);
   }
   ```
 
@@ -1797,12 +1847,12 @@
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -1810,33 +1860,33 @@
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 
@@ -1885,26 +1935,26 @@
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from 'styled-system/jsx'
+  import { Circle } from "styled-system/jsx";
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>
-  }
+    return <Circle {...props}>{children}</Circle>;
+  };
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ['CustomCircle'],
+          jsx: ["CustomCircle"],
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -1968,9 +2018,17 @@
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
-    )
-  }
+      <button
+        className={cx(
+          pinkRecipe({ variant }),
+          greenRecipe({ variant }),
+          blueRecipe({ variant }),
+        )}
+      >
+        Hello
+      </button>
+    );
+  };
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -2037,7 +2095,7 @@
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ['*'], shape: ['*'] }]
+      button: [{ size: ["*"], shape: ["*"] }];
     }
   }
   ```
@@ -2047,7 +2105,7 @@
   ```ts
   staticCss: {
     recipes: {
-      button: ['*']
+      button: ["*"];
     }
   }
   ```
@@ -2083,12 +2141,12 @@
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     shorthands: false,
-  })
+  });
   ```
 
 ### Patch Changes
@@ -2190,11 +2248,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    'codegen:prepare': ({ artifacts, changed }) => {
+    "codegen:prepare": ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-})
+});
 ```
 
 - d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
@@ -2211,11 +2269,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      '@pandacss/dev/postcss': {
-        logfile: './logs/panda.log',
+      "@pandacss/dev/postcss": {
+        logfile: "./logs/panda.log",
       },
     },
-  }
+  };
   ```
 
 - Updated dependencies [74485ef1]
@@ -2254,9 +2312,9 @@ export default defineConfig({
 
   ```ts
   css({
-    bg: 'red.300/40',
-    color: 'white',
-  })
+    bg: "red.300/40",
+    color: "white",
+  });
   ```
 
   This will generate:
@@ -2264,7 +2322,11 @@ export default defineConfig({
   ```css
   @layer utilities {
     .bg_red\.300\/40 {
-      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      --mix-background: color-mix(
+        in srgb,
+        var(--colors-red-300) 40%,
+        transparent
+      );
       background: var(--mix-background, var(--colors-red-300));
     }
 
@@ -2288,21 +2350,21 @@ export default defineConfig({
   export default defineConfig({
     utilities: {
       background: {
-        shorthand: 'bg',
-        className: 'bg',
-        values: 'colors',
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
         transform(value, args) {
-          const mix = args.utils.colorMix(value)
+          const mix = args.utils.colorMix(value);
           // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
-          if (mix.invalid) return { background: value }
+          if (mix.invalid) return { background: value };
 
           return {
             background: mix.value,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
   ***
@@ -2311,21 +2373,21 @@ export default defineConfig({
   property:
 
   ```ts
-  import type { PropertyTransform } from '@pandacss/types'
+  import type { PropertyTransform } from "@pandacss/types";
 
   export const createColorMixTransform =
     (prop: string): PropertyTransform =>
     (value, args) => {
-      const mix = args.utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
+      const mix = args.utils.colorMix(value);
+      if (mix.invalid) return { [prop]: value };
 
-      const cssVar = '--mix-' + prop
+      const cssVar = "--mix-" + prop;
 
       return {
         [cssVar]: mix.value,
         [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    }
+      };
+    };
   ```
 
   then the same utility transform as above can be written like this:
@@ -2351,24 +2413,24 @@ export default defineConfig({
     patterns: {
       hstack: {
         properties: {
-          justify: { type: 'property', value: 'justifyContent' },
-          gap: { type: 'property', value: 'gap' },
+          justify: { type: "property", value: "justifyContent" },
+          gap: { type: "property", value: "gap" },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: '40px' },
+        defaultValues: { gap: "40px" },
         transform(props) {
-          const { justify, gap, ...rest } = props
+          const { justify, gap, ...rest } = props;
           return {
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             justifyContent: justify,
             gap,
             ...rest,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
 - 250b4d11: ### Container Query Theme
@@ -2382,34 +2444,34 @@ export default defineConfig({
     // ...
     theme: {
       extend: {
-        containerNames: ['sidebar', 'content'],
+        containerNames: ["sidebar", "content"],
         containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+          xs: "40em",
+          sm: "60em",
+          md: "80em",
         },
       },
     },
-  })
+  });
   ```
 
   The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
   ```ts
   export const containerSizes = {
-    xs: '320px',
-    sm: '384px',
-    md: '448px',
-    lg: '512px',
-    xl: '576px',
-    '2xl': '672px',
-    '3xl': '768px',
-    '4xl': '896px',
-    '5xl': '1024px',
-    '6xl': '1152px',
-    '7xl': '1280px',
-    '8xl': '1440px',
-  }
+    xs: "320px",
+    sm: "384px",
+    md: "448px",
+    lg: "512px",
+    xl: "576px",
+    "2xl": "672px",
+    "3xl": "768px",
+    "4xl": "896px",
+    "5xl": "1024px",
+    "6xl": "1152px",
+    "7xl": "1280px",
+    "8xl": "1440px",
+  };
   ```
 
   Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
@@ -2493,10 +2555,10 @@ export default defineConfig({
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    '@container (min-width: {sizes.4xl})': {
-      color: 'green',
+    "@container (min-width: {sizes.4xl})": {
+      color: "green",
     },
-  })
+  });
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -2535,39 +2597,54 @@ export default defineConfig({
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -2774,11 +2851,11 @@ export default defineConfig({
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const styles = css({
-    border: '2px solid {colors.primary}',
-  })
+    border: "2px solid {colors.primary}",
+  });
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -2798,18 +2875,18 @@ export default defineConfig({
   ```jsx
   const styles = css({
     // token reference syntax
-    border: '2px solid {colors.primary}',
+    border: "2px solid {colors.primary}",
     // token function syntax
-    border: '2px solid token(colors.primary)',
-  })
+    border: "2px solid token(colors.primary)",
+  });
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: '2px solid token(colors.primary, red)',
-  })
+    border: "2px solid token(colors.primary, red)",
+  });
   ```
 
 ### Patch Changes
@@ -2820,8 +2897,8 @@ export default defineConfig({
   ```jsx
   css({
     // This didn't work, but now it does
-    base: { color: 'blue' },
-  })
+    base: { color: "blue" },
+  });
   ```
 
 - Updated dependencies [59fd291c]
@@ -2880,38 +2957,38 @@ export default defineConfig({
 
   ```ts
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
       visual: {
-        primary: { backgroundColor: 'blue' },
-        secondary: { backgroundColor: 'gray' },
+        primary: { backgroundColor: "blue" },
+        secondary: { backgroundColor: "gray" },
       },
     },
-  })
+  });
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ['*'], // this
+        card: ["*"], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ['*'], responsive: true },
-          { visual: ['*'], responsive: true },
+          { size: ["*"], responsive: true },
+          { visual: ["*"], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ['*'] }, { visual: ['*'] }],
+        card: [{ size: ["*"] }, { visual: ["*"] }],
       },
     },
-  })
+  });
   ```
 
   Here's the diff in the generated CSS:
@@ -3037,30 +3114,30 @@ export default defineConfig({
   another file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
 
   ```ts
-  import { sva } from '../styled-system/css'
-  import { slots } from './slots'
+  import { sva } from "../styled-system/css";
+  import { slots } from "./slots";
 
   const card = sva({
     slots, // ❌ did NOT work -> ✅ will now work as expected
     base: {
       root: {
-        p: '6',
-        m: '4',
-        w: 'md',
-        boxShadow: 'md',
-        borderRadius: 'md',
-        _dark: { bg: '#262626', color: 'white' },
+        p: "6",
+        m: "4",
+        w: "md",
+        boxShadow: "md",
+        borderRadius: "md",
+        _dark: { bg: "#262626", color: "white" },
       },
       content: {
-        textStyle: 'lg',
+        textStyle: "lg",
       },
       title: {
-        textStyle: 'xl',
-        fontWeight: 'semibold',
-        pb: '2',
+        textStyle: "xl",
+        fontWeight: "semibold",
+        pb: "2",
       },
     },
-  })
+  });
   ```
 
 - 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
@@ -3117,18 +3194,18 @@ export default defineConfig({
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: '#fff',
+    color: "#fff",
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: '100px',
+    width: "100px",
 
     // ✅ but this is now allowed:
-    bgColor: '[rgb(51 155 240)]',
-    fontSize: '[12px]',
-  })
+    bgColor: "[rgb(51 155 240)]",
+    fontSize: "[12px]",
+  });
   ```
 
 ### Patch Changes
@@ -3141,8 +3218,8 @@ export default defineConfig({
     // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
     // but since it's an URL, it would produce invalid CSS
     // we now check if the property value is an URL and skip it if needed
-    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
-  }
+    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />;
+  };
   ```
 
 - d81dcbe6: - Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the
@@ -3151,36 +3228,36 @@ export default defineConfig({
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from '@pandacss/dev'
+  import { defineRecipe } from "@pandacss/dev";
 
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
     },
-    staticCss: [{ size: ['*'] }],
-  })
+    staticCss: [{ size: ["*"] }],
+  });
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ['*'],
+          size: ["*"],
         },
       },
     },
-  })
+  });
   ```
 
 - Updated dependencies [26e6051a]
@@ -3212,13 +3289,13 @@ export default defineConfig({
 
   ```ts
   css({
-    '@container (min-width: token(sizes.xl))': {
-      color: 'green.300',
+    "@container (min-width: token(sizes.xl))": {
+      color: "green.300",
     },
-    '@media (min-width: token(sizes.2xl))': {
-      color: 'red.300',
+    "@media (min-width: token(sizes.2xl))": {
+      color: "red.300",
     },
-  })
+  });
   ```
 
 - Updated dependencies [24ee49a5]
@@ -3270,14 +3347,14 @@ export default defineConfig({
 - 8c76cd0f: - Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
 
   ```jsx
-  css({ hideBelow: 'lg' })
+  css({ hideBelow: "lg" });
   // => @media screen and (max-width: 63.9975em) { background: red; }
   ```
 
   - Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
 
   ```jsx
-  css({ hideFrom: '800px' })
+  css({ hideFrom: "800px" });
   // => @media screen and (min-width: 800px) { background: red; }
   ```
 
@@ -3363,10 +3440,10 @@ export default defineConfig({
 
   ```ts
   const button = defineSlotRecipe({
-    className: 'button',
-    slots: ['root', 'icon', 'label'],
+    className: "button",
+    slots: ["root", "icon", "label"],
     // ...
-  })
+  });
   ```
 
   will have a default `jsx` property of: `[Button, Button.Root, Button.Icon, Button.Label]`
@@ -3423,42 +3500,42 @@ export default defineConfig({
 
   ```ts
   export default defineConfig({
-    outdir: './outdir',
+    outdir: "./outdir",
     importMap: {
-      css: '#panda/styled-system/css',
-      recipes: '#panda/styled-system/recipes',
-      patterns: '#panda/styled-system/patterns',
-      jsx: '#panda/styled-system/jsx',
+      css: "#panda/styled-system/css",
+      recipes: "#panda/styled-system/recipes",
+      patterns: "#panda/styled-system/patterns",
+      jsx: "#panda/styled-system/jsx",
     },
-  })
+  });
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: '../packages/styled-system',
+    outdir: "../packages/styled-system",
     importMap: {
-      css: '@monorepo/styled-system',
-      recipes: '@monorepo/styled-system',
-      patterns: '@monorepo/styled-system',
-      jsx: '@monorepo/styled-system',
+      css: "@monorepo/styled-system",
+      recipes: "@monorepo/styled-system",
+      patterns: "@monorepo/styled-system",
+      jsx: "@monorepo/styled-system",
     },
-  })
+  });
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: 'styled-system',
+    outdir: "styled-system",
     importMap: {
-      css: 'styled-system/css',
-      recipes: 'styled-system/recipes',
-      patterns: 'styled-system/patterns',
-      jsx: 'styled-system/jsx',
+      css: "styled-system/css",
+      recipes: "styled-system/recipes",
+      patterns: "styled-system/patterns",
+      jsx: "styled-system/jsx",
     },
-  })
+  });
   ```
 
 - Updated dependencies [95b06bb1]
@@ -3488,13 +3565,13 @@ export default defineConfig({
 - 848936e0: Allow referencing tokens with the `token()` function in media queries or any other CSS at-rule.
 
   ```js
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const className = css({
-    '@media screen and (min-width: token(sizes.4xl))': {
-      color: 'green.400',
+    "@media screen and (min-width: token(sizes.4xl))": {
+      color: "green.400",
     },
-  })
+  });
   ```
 
 - Updated dependencies [26f6982c]
@@ -3547,7 +3624,7 @@ export default defineConfig({
 
   ```css
   * {
-    color: token('colors.magenta', pink);
+    color: token("colors.magenta", pink);
   }
   ```
 
@@ -3656,12 +3733,12 @@ export default defineConfig({
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -3669,33 +3746,33 @@ export default defineConfig({
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 
@@ -3744,26 +3821,26 @@ export default defineConfig({
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from 'styled-system/jsx'
+  import { Circle } from "styled-system/jsx";
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>
-  }
+    return <Circle {...props}>{children}</Circle>;
+  };
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ['CustomCircle'],
+          jsx: ["CustomCircle"],
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -3827,9 +3904,17 @@ export default defineConfig({
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
-    )
-  }
+      <button
+        className={cx(
+          pinkRecipe({ variant }),
+          greenRecipe({ variant }),
+          blueRecipe({ variant }),
+        )}
+      >
+        Hello
+      </button>
+    );
+  };
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -3896,7 +3981,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ['*'], shape: ['*'] }]
+      button: [{ size: ["*"], shape: ["*"] }];
     }
   }
   ```
@@ -3906,7 +3991,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: ['*']
+      button: ["*"];
     }
   }
   ```
@@ -3942,12 +4027,12 @@ export default defineConfig({
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     shorthands: false,
-  })
+  });
   ```
 
 ### Patch Changes
@@ -4051,20 +4136,20 @@ Will now allow you to use the following syntax for token path:
   export default defaultConfig({
     conditions: {
       extend: {
-        supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
+        supportHover: ["@media (hover: hover) and (pointer: fine)", "&:hover"],
       },
     },
-  })
+  });
   ```
 
   ```ts
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   css({
     _supportHover: {
-      color: 'red',
+      color: "red",
     },
-  })
+  });
   ```
 
   will generate the following CSS:
@@ -4080,25 +4165,25 @@ Will now allow you to use the following syntax for token path:
 - 31071ba: Fix an issue for token names starting with '0'
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     theme: {
       tokens: {
         spacing: {
-          '025': {
-            value: '0.125rem',
+          "025": {
+            value: "0.125rem",
           },
         },
       },
     },
-  })
+  });
   ```
 
   and then using it like
 
   ```ts
-  css({ margin: '025' })
+  css({ margin: "025" });
   ```
 
   This would not generate the expected CSS because the parser would try to parse `025` as a number (`25`) instead of
@@ -4109,11 +4194,11 @@ Will now allow you to use the following syntax for token path:
   - Allow using multiple aliases for the same identifier for the `/css` entrypoints just like `/patterns` and `/recipes`
 
   ```ts
-  import { css } from '../styled-system/css'
-  import { css as css2 } from '../styled-system/css'
+  import { css } from "../styled-system/css";
+  import { css as css2 } from "../styled-system/css";
 
-  css({ display: 'flex' })
-  css2({ flexDirection: 'column' }) // this wasn't working before, now it does
+  css({ display: "flex" });
+  css2({ flexDirection: "column" }); // this wasn't working before, now it does
   ```
 
 - Updated dependencies [a032375]
@@ -4157,10 +4242,10 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   css({
-    padding: '1px',
-    paddingTop: '3px',
-    paddingBottom: '4px',
-  })
+    padding: "1px",
+    paddingTop: "3px",
+    paddingBottom: "4px",
+  });
   ```
 
   Will now always generate the following css:
@@ -4221,16 +4306,17 @@ Will now allow you to use the following syntax for token path:
   export default defineConfig({
     // ...
     hooks: {
-      'parser:before': ({ configure }) => {
+      "parser:before": ({ configure }) => {
         configure({
           // ignore the Select.Content entirely
-          matchTag: (tag) => tag !== 'Select.Content',
+          matchTag: (tag) => tag !== "Select.Content",
           // ...or specifically ignore the `position` property
-          matchTagProp: (tag, prop) => tag === 'Select.Content' && prop !== 'position',
-        })
+          matchTagProp: (tag, prop) =>
+            tag === "Select.Content" && prop !== "position",
+        });
       },
     },
-  })
+  });
   ```
 
 - Updated dependencies [6b829cab]
@@ -4298,9 +4384,9 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   css({
-    bg: 'red.300/40',
-    color: 'white',
-  })
+    bg: "red.300/40",
+    color: "white",
+  });
   ```
 
   This will generate:
@@ -4308,7 +4394,11 @@ Will now allow you to use the following syntax for token path:
   ```css
   @layer utilities {
     .bg_red\.300\/40 {
-      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      --mix-background: color-mix(
+        in srgb,
+        var(--colors-red-300) 40%,
+        transparent
+      );
       background: var(--mix-background, var(--colors-red-300));
     }
 
@@ -4332,21 +4422,21 @@ Will now allow you to use the following syntax for token path:
   export default defineConfig({
     utilities: {
       background: {
-        shorthand: 'bg',
-        className: 'bg',
-        values: 'colors',
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
         transform(value, args) {
-          const mix = args.utils.colorMix(value)
+          const mix = args.utils.colorMix(value);
           // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
-          if (mix.invalid) return { background: value }
+          if (mix.invalid) return { background: value };
 
           return {
             background: mix.value,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
   ***
@@ -4355,21 +4445,21 @@ Will now allow you to use the following syntax for token path:
   property:
 
   ```ts
-  import type { PropertyTransform } from '@pandacss/types'
+  import type { PropertyTransform } from "@pandacss/types";
 
   export const createColorMixTransform =
     (prop: string): PropertyTransform =>
     (value, args) => {
-      const mix = args.utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
+      const mix = args.utils.colorMix(value);
+      if (mix.invalid) return { [prop]: value };
 
-      const cssVar = '--mix-' + prop
+      const cssVar = "--mix-" + prop;
 
       return {
         [cssVar]: mix.value,
         [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    }
+      };
+    };
   ```
 
   then the same utility transform as above can be written like this:
@@ -4395,24 +4485,24 @@ Will now allow you to use the following syntax for token path:
     patterns: {
       hstack: {
         properties: {
-          justify: { type: 'property', value: 'justifyContent' },
-          gap: { type: 'property', value: 'gap' },
+          justify: { type: "property", value: "justifyContent" },
+          gap: { type: "property", value: "gap" },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: '40px' },
+        defaultValues: { gap: "40px" },
         transform(props) {
-          const { justify, gap, ...rest } = props
+          const { justify, gap, ...rest } = props;
           return {
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             justifyContent: justify,
             gap,
             ...rest,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
 - 250b4d11: ### Container Query Theme
@@ -4426,34 +4516,34 @@ Will now allow you to use the following syntax for token path:
     // ...
     theme: {
       extend: {
-        containerNames: ['sidebar', 'content'],
+        containerNames: ["sidebar", "content"],
         containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+          xs: "40em",
+          sm: "60em",
+          md: "80em",
         },
       },
     },
-  })
+  });
   ```
 
   The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
   ```ts
   export const containerSizes = {
-    xs: '320px',
-    sm: '384px',
-    md: '448px',
-    lg: '512px',
-    xl: '576px',
-    '2xl': '672px',
-    '3xl': '768px',
-    '4xl': '896px',
-    '5xl': '1024px',
-    '6xl': '1152px',
-    '7xl': '1280px',
-    '8xl': '1440px',
-  }
+    xs: "320px",
+    sm: "384px",
+    md: "448px",
+    lg: "512px",
+    xl: "576px",
+    "2xl": "672px",
+    "3xl": "768px",
+    "4xl": "896px",
+    "5xl": "1024px",
+    "6xl": "1152px",
+    "7xl": "1280px",
+    "8xl": "1440px",
+  };
   ```
 
   Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
@@ -4537,10 +4627,10 @@ Will now allow you to use the following syntax for token path:
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    '@container (min-width: {sizes.4xl})': {
-      color: 'green',
+    "@container (min-width: {sizes.4xl})": {
+      color: "green",
     },
-  })
+  });
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -4579,39 +4669,54 @@ Will now allow you to use the following syntax for token path:
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -4818,11 +4923,11 @@ Will now allow you to use the following syntax for token path:
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const styles = css({
-    border: '2px solid {colors.primary}',
-  })
+    border: "2px solid {colors.primary}",
+  });
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -4842,18 +4947,18 @@ Will now allow you to use the following syntax for token path:
   ```jsx
   const styles = css({
     // token reference syntax
-    border: '2px solid {colors.primary}',
+    border: "2px solid {colors.primary}",
     // token function syntax
-    border: '2px solid token(colors.primary)',
-  })
+    border: "2px solid token(colors.primary)",
+  });
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: '2px solid token(colors.primary, red)',
-  })
+    border: "2px solid token(colors.primary, red)",
+  });
   ```
 
 ### Patch Changes
@@ -4864,8 +4969,8 @@ Will now allow you to use the following syntax for token path:
   ```jsx
   css({
     // This didn't work, but now it does
-    base: { color: 'blue' },
-  })
+    base: { color: "blue" },
+  });
   ```
 
 - Updated dependencies [59fd291c]
@@ -4924,38 +5029,38 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
       visual: {
-        primary: { backgroundColor: 'blue' },
-        secondary: { backgroundColor: 'gray' },
+        primary: { backgroundColor: "blue" },
+        secondary: { backgroundColor: "gray" },
       },
     },
-  })
+  });
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ['*'], // this
+        card: ["*"], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ['*'], responsive: true },
-          { visual: ['*'], responsive: true },
+          { size: ["*"], responsive: true },
+          { visual: ["*"], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ['*'] }, { visual: ['*'] }],
+        card: [{ size: ["*"] }, { visual: ["*"] }],
       },
     },
-  })
+  });
   ```
 
   Here's the diff in the generated CSS:
@@ -5081,30 +5186,30 @@ Will now allow you to use the following syntax for token path:
   another file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
 
   ```ts
-  import { sva } from '../styled-system/css'
-  import { slots } from './slots'
+  import { sva } from "../styled-system/css";
+  import { slots } from "./slots";
 
   const card = sva({
     slots, // ❌ did NOT work -> ✅ will now work as expected
     base: {
       root: {
-        p: '6',
-        m: '4',
-        w: 'md',
-        boxShadow: 'md',
-        borderRadius: 'md',
-        _dark: { bg: '#262626', color: 'white' },
+        p: "6",
+        m: "4",
+        w: "md",
+        boxShadow: "md",
+        borderRadius: "md",
+        _dark: { bg: "#262626", color: "white" },
       },
       content: {
-        textStyle: 'lg',
+        textStyle: "lg",
       },
       title: {
-        textStyle: 'xl',
-        fontWeight: 'semibold',
-        pb: '2',
+        textStyle: "xl",
+        fontWeight: "semibold",
+        pb: "2",
       },
     },
-  })
+  });
   ```
 
 - 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
@@ -5161,18 +5266,18 @@ Will now allow you to use the following syntax for token path:
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: '#fff',
+    color: "#fff",
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: '100px',
+    width: "100px",
 
     // ✅ but this is now allowed:
-    bgColor: '[rgb(51 155 240)]',
-    fontSize: '[12px]',
-  })
+    bgColor: "[rgb(51 155 240)]",
+    fontSize: "[12px]",
+  });
   ```
 
 ### Patch Changes
@@ -5185,8 +5290,8 @@ Will now allow you to use the following syntax for token path:
     // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
     // but since it's an URL, it would produce invalid CSS
     // we now check if the property value is an URL and skip it if needed
-    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
-  }
+    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />;
+  };
   ```
 
 - d81dcbe6: - Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the
@@ -5195,36 +5300,36 @@ Will now allow you to use the following syntax for token path:
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from '@pandacss/dev'
+  import { defineRecipe } from "@pandacss/dev";
 
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
     },
-    staticCss: [{ size: ['*'] }],
-  })
+    staticCss: [{ size: ["*"] }],
+  });
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ['*'],
+          size: ["*"],
         },
       },
     },
-  })
+  });
   ```
 
 - Updated dependencies [26e6051a]
@@ -5256,13 +5361,13 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   css({
-    '@container (min-width: token(sizes.xl))': {
-      color: 'green.300',
+    "@container (min-width: token(sizes.xl))": {
+      color: "green.300",
     },
-    '@media (min-width: token(sizes.2xl))': {
-      color: 'red.300',
+    "@media (min-width: token(sizes.2xl))": {
+      color: "red.300",
     },
-  })
+  });
   ```
 
 - Updated dependencies [24ee49a5]
@@ -5314,14 +5419,14 @@ Will now allow you to use the following syntax for token path:
 - 8c76cd0f: - Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
 
   ```jsx
-  css({ hideBelow: 'lg' })
+  css({ hideBelow: "lg" });
   // => @media screen and (max-width: 63.9975em) { background: red; }
   ```
 
   - Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
 
   ```jsx
-  css({ hideFrom: '800px' })
+  css({ hideFrom: "800px" });
   // => @media screen and (min-width: 800px) { background: red; }
   ```
 
@@ -5407,10 +5512,10 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   const button = defineSlotRecipe({
-    className: 'button',
-    slots: ['root', 'icon', 'label'],
+    className: "button",
+    slots: ["root", "icon", "label"],
     // ...
-  })
+  });
   ```
 
   will have a default `jsx` property of: `[Button, Button.Root, Button.Icon, Button.Label]`
@@ -5467,42 +5572,42 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   export default defineConfig({
-    outdir: './outdir',
+    outdir: "./outdir",
     importMap: {
-      css: '#panda/styled-system/css',
-      recipes: '#panda/styled-system/recipes',
-      patterns: '#panda/styled-system/patterns',
-      jsx: '#panda/styled-system/jsx',
+      css: "#panda/styled-system/css",
+      recipes: "#panda/styled-system/recipes",
+      patterns: "#panda/styled-system/patterns",
+      jsx: "#panda/styled-system/jsx",
     },
-  })
+  });
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: '../packages/styled-system',
+    outdir: "../packages/styled-system",
     importMap: {
-      css: '@monorepo/styled-system',
-      recipes: '@monorepo/styled-system',
-      patterns: '@monorepo/styled-system',
-      jsx: '@monorepo/styled-system',
+      css: "@monorepo/styled-system",
+      recipes: "@monorepo/styled-system",
+      patterns: "@monorepo/styled-system",
+      jsx: "@monorepo/styled-system",
     },
-  })
+  });
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: 'styled-system',
+    outdir: "styled-system",
     importMap: {
-      css: 'styled-system/css',
-      recipes: 'styled-system/recipes',
-      patterns: 'styled-system/patterns',
-      jsx: 'styled-system/jsx',
+      css: "styled-system/css",
+      recipes: "styled-system/recipes",
+      patterns: "styled-system/patterns",
+      jsx: "styled-system/jsx",
     },
-  })
+  });
   ```
 
 - Updated dependencies [95b06bb1]
@@ -5532,13 +5637,13 @@ Will now allow you to use the following syntax for token path:
 - 848936e0: Allow referencing tokens with the `token()` function in media queries or any other CSS at-rule.
 
   ```js
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const className = css({
-    '@media screen and (min-width: token(sizes.4xl))': {
-      color: 'green.400',
+    "@media screen and (min-width: token(sizes.4xl))": {
+      color: "green.400",
     },
-  })
+  });
   ```
 
 - Updated dependencies [26f6982c]
@@ -5591,7 +5696,7 @@ Will now allow you to use the following syntax for token path:
 
   ```css
   * {
-    color: token('colors.magenta', pink);
+    color: token("colors.magenta", pink);
   }
   ```
 
@@ -5700,12 +5805,12 @@ Will now allow you to use the following syntax for token path:
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -5713,33 +5818,33 @@ Will now allow you to use the following syntax for token path:
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 
@@ -5788,26 +5893,26 @@ Will now allow you to use the following syntax for token path:
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from 'styled-system/jsx'
+  import { Circle } from "styled-system/jsx";
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>
-  }
+    return <Circle {...props}>{children}</Circle>;
+  };
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ['CustomCircle'],
+          jsx: ["CustomCircle"],
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -5871,9 +5976,17 @@ Will now allow you to use the following syntax for token path:
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
-    )
-  }
+      <button
+        className={cx(
+          pinkRecipe({ variant }),
+          greenRecipe({ variant }),
+          blueRecipe({ variant }),
+        )}
+      >
+        Hello
+      </button>
+    );
+  };
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -5940,7 +6053,7 @@ Will now allow you to use the following syntax for token path:
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ['*'], shape: ['*'] }]
+      button: [{ size: ["*"], shape: ["*"] }];
     }
   }
   ```
@@ -5950,7 +6063,7 @@ Will now allow you to use the following syntax for token path:
   ```ts
   staticCss: {
     recipes: {
-      button: ['*']
+      button: ["*"];
     }
   }
   ```
@@ -5986,12 +6099,12 @@ Will now allow you to use the following syntax for token path:
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     shorthands: false,
-  })
+  });
   ```
 
 ### Patch Changes
@@ -6093,11 +6206,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    'codegen:prepare': ({ artifacts, changed }) => {
+    "codegen:prepare": ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-})
+});
 ```
 
 - d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
@@ -6114,11 +6227,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      '@pandacss/dev/postcss': {
-        logfile: './logs/panda.log',
+      "@pandacss/dev/postcss": {
+        logfile: "./logs/panda.log",
       },
     },
-  }
+  };
   ```
 
 - Updated dependencies [74485ef1]
@@ -6157,9 +6270,9 @@ export default defineConfig({
 
   ```ts
   css({
-    bg: 'red.300/40',
-    color: 'white',
-  })
+    bg: "red.300/40",
+    color: "white",
+  });
   ```
 
   This will generate:
@@ -6167,7 +6280,11 @@ export default defineConfig({
   ```css
   @layer utilities {
     .bg_red\.300\/40 {
-      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      --mix-background: color-mix(
+        in srgb,
+        var(--colors-red-300) 40%,
+        transparent
+      );
       background: var(--mix-background, var(--colors-red-300));
     }
 
@@ -6191,21 +6308,21 @@ export default defineConfig({
   export default defineConfig({
     utilities: {
       background: {
-        shorthand: 'bg',
-        className: 'bg',
-        values: 'colors',
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
         transform(value, args) {
-          const mix = args.utils.colorMix(value)
+          const mix = args.utils.colorMix(value);
           // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
-          if (mix.invalid) return { background: value }
+          if (mix.invalid) return { background: value };
 
           return {
             background: mix.value,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
   ***
@@ -6214,21 +6331,21 @@ export default defineConfig({
   property:
 
   ```ts
-  import type { PropertyTransform } from '@pandacss/types'
+  import type { PropertyTransform } from "@pandacss/types";
 
   export const createColorMixTransform =
     (prop: string): PropertyTransform =>
     (value, args) => {
-      const mix = args.utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
+      const mix = args.utils.colorMix(value);
+      if (mix.invalid) return { [prop]: value };
 
-      const cssVar = '--mix-' + prop
+      const cssVar = "--mix-" + prop;
 
       return {
         [cssVar]: mix.value,
         [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    }
+      };
+    };
   ```
 
   then the same utility transform as above can be written like this:
@@ -6254,24 +6371,24 @@ export default defineConfig({
     patterns: {
       hstack: {
         properties: {
-          justify: { type: 'property', value: 'justifyContent' },
-          gap: { type: 'property', value: 'gap' },
+          justify: { type: "property", value: "justifyContent" },
+          gap: { type: "property", value: "gap" },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: '40px' },
+        defaultValues: { gap: "40px" },
         transform(props) {
-          const { justify, gap, ...rest } = props
+          const { justify, gap, ...rest } = props;
           return {
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             justifyContent: justify,
             gap,
             ...rest,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
 - 250b4d11: ### Container Query Theme
@@ -6285,34 +6402,34 @@ export default defineConfig({
     // ...
     theme: {
       extend: {
-        containerNames: ['sidebar', 'content'],
+        containerNames: ["sidebar", "content"],
         containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+          xs: "40em",
+          sm: "60em",
+          md: "80em",
         },
       },
     },
-  })
+  });
   ```
 
   The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
   ```ts
   export const containerSizes = {
-    xs: '320px',
-    sm: '384px',
-    md: '448px',
-    lg: '512px',
-    xl: '576px',
-    '2xl': '672px',
-    '3xl': '768px',
-    '4xl': '896px',
-    '5xl': '1024px',
-    '6xl': '1152px',
-    '7xl': '1280px',
-    '8xl': '1440px',
-  }
+    xs: "320px",
+    sm: "384px",
+    md: "448px",
+    lg: "512px",
+    xl: "576px",
+    "2xl": "672px",
+    "3xl": "768px",
+    "4xl": "896px",
+    "5xl": "1024px",
+    "6xl": "1152px",
+    "7xl": "1280px",
+    "8xl": "1440px",
+  };
   ```
 
   Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
@@ -6396,10 +6513,10 @@ export default defineConfig({
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    '@container (min-width: {sizes.4xl})': {
-      color: 'green',
+    "@container (min-width: {sizes.4xl})": {
+      color: "green",
     },
-  })
+  });
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -6438,39 +6555,54 @@ export default defineConfig({
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -6677,11 +6809,11 @@ export default defineConfig({
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const styles = css({
-    border: '2px solid {colors.primary}',
-  })
+    border: "2px solid {colors.primary}",
+  });
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -6701,18 +6833,18 @@ export default defineConfig({
   ```jsx
   const styles = css({
     // token reference syntax
-    border: '2px solid {colors.primary}',
+    border: "2px solid {colors.primary}",
     // token function syntax
-    border: '2px solid token(colors.primary)',
-  })
+    border: "2px solid token(colors.primary)",
+  });
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: '2px solid token(colors.primary, red)',
-  })
+    border: "2px solid token(colors.primary, red)",
+  });
   ```
 
 ### Patch Changes
@@ -6723,8 +6855,8 @@ export default defineConfig({
   ```jsx
   css({
     // This didn't work, but now it does
-    base: { color: 'blue' },
-  })
+    base: { color: "blue" },
+  });
   ```
 
 - Updated dependencies [59fd291c]
@@ -6783,38 +6915,38 @@ export default defineConfig({
 
   ```ts
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
       visual: {
-        primary: { backgroundColor: 'blue' },
-        secondary: { backgroundColor: 'gray' },
+        primary: { backgroundColor: "blue" },
+        secondary: { backgroundColor: "gray" },
       },
     },
-  })
+  });
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ['*'], // this
+        card: ["*"], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ['*'], responsive: true },
-          { visual: ['*'], responsive: true },
+          { size: ["*"], responsive: true },
+          { visual: ["*"], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ['*'] }, { visual: ['*'] }],
+        card: [{ size: ["*"] }, { visual: ["*"] }],
       },
     },
-  })
+  });
   ```
 
   Here's the diff in the generated CSS:
@@ -6940,30 +7072,30 @@ export default defineConfig({
   another file, such as when using `Ark-UI` like `import { comboboxAnatomy } from '@ark-ui/anatomy'`
 
   ```ts
-  import { sva } from '../styled-system/css'
-  import { slots } from './slots'
+  import { sva } from "../styled-system/css";
+  import { slots } from "./slots";
 
   const card = sva({
     slots, // ❌ did NOT work -> ✅ will now work as expected
     base: {
       root: {
-        p: '6',
-        m: '4',
-        w: 'md',
-        boxShadow: 'md',
-        borderRadius: 'md',
-        _dark: { bg: '#262626', color: 'white' },
+        p: "6",
+        m: "4",
+        w: "md",
+        boxShadow: "md",
+        borderRadius: "md",
+        _dark: { bg: "#262626", color: "white" },
       },
       content: {
-        textStyle: 'lg',
+        textStyle: "lg",
       },
       title: {
-        textStyle: 'xl',
-        fontWeight: 'semibold',
-        pb: '2',
+        textStyle: "xl",
+        fontWeight: "semibold",
+        pb: "2",
       },
     },
-  })
+  });
   ```
 
 - 840ed66b: Fix an issue with config change detection when using a custom `config.slotRecipes[xxx].jsx` array
@@ -7020,18 +7152,18 @@ export default defineConfig({
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: '#fff',
+    color: "#fff",
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: '100px',
+    width: "100px",
 
     // ✅ but this is now allowed:
-    bgColor: '[rgb(51 155 240)]',
-    fontSize: '[12px]',
-  })
+    bgColor: "[rgb(51 155 240)]",
+    fontSize: "[12px]",
+  });
   ```
 
 ### Patch Changes
@@ -7044,8 +7176,8 @@ export default defineConfig({
     // here the content property is a valid CSS property, so Panda will try to generate the CSS for it
     // but since it's an URL, it would produce invalid CSS
     // we now check if the property value is an URL and skip it if needed
-    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />
-  }
+    return <CopyButton content="https://www.buymeacoffee.com/grizzlycodes" />;
+  };
   ```
 
 - d81dcbe6: - Fix an issue where recipe variants that clash with utility shorthand don't get generated due to the
@@ -7054,36 +7186,36 @@ export default defineConfig({
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from '@pandacss/dev'
+  import { defineRecipe } from "@pandacss/dev";
 
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
     },
-    staticCss: [{ size: ['*'] }],
-  })
+    staticCss: [{ size: ["*"] }],
+  });
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ['*'],
+          size: ["*"],
         },
       },
     },
-  })
+  });
   ```
 
 - Updated dependencies [26e6051a]
@@ -7115,13 +7247,13 @@ export default defineConfig({
 
   ```ts
   css({
-    '@container (min-width: token(sizes.xl))': {
-      color: 'green.300',
+    "@container (min-width: token(sizes.xl))": {
+      color: "green.300",
     },
-    '@media (min-width: token(sizes.2xl))': {
-      color: 'red.300',
+    "@media (min-width: token(sizes.2xl))": {
+      color: "red.300",
     },
-  })
+  });
   ```
 
 - Updated dependencies [24ee49a5]
@@ -7173,14 +7305,14 @@ export default defineConfig({
 - 8c76cd0f: - Fix issue where `hideBelow` breakpoints are inclusive of the specified breakpoints
 
   ```jsx
-  css({ hideBelow: 'lg' })
+  css({ hideBelow: "lg" });
   // => @media screen and (max-width: 63.9975em) { background: red; }
   ```
 
   - Support arbitrary breakpoints in `hideBelow` and `hideFrom` utilities
 
   ```jsx
-  css({ hideFrom: '800px' })
+  css({ hideFrom: "800px" });
   // => @media screen and (min-width: 800px) { background: red; }
   ```
 
@@ -7266,10 +7398,10 @@ export default defineConfig({
 
   ```ts
   const button = defineSlotRecipe({
-    className: 'button',
-    slots: ['root', 'icon', 'label'],
+    className: "button",
+    slots: ["root", "icon", "label"],
     // ...
-  })
+  });
   ```
 
   will have a default `jsx` property of: `[Button, Button.Root, Button.Icon, Button.Label]`
@@ -7326,42 +7458,42 @@ export default defineConfig({
 
   ```ts
   export default defineConfig({
-    outdir: './outdir',
+    outdir: "./outdir",
     importMap: {
-      css: '#panda/styled-system/css',
-      recipes: '#panda/styled-system/recipes',
-      patterns: '#panda/styled-system/patterns',
-      jsx: '#panda/styled-system/jsx',
+      css: "#panda/styled-system/css",
+      recipes: "#panda/styled-system/recipes",
+      patterns: "#panda/styled-system/patterns",
+      jsx: "#panda/styled-system/jsx",
     },
-  })
+  });
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: '../packages/styled-system',
+    outdir: "../packages/styled-system",
     importMap: {
-      css: '@monorepo/styled-system',
-      recipes: '@monorepo/styled-system',
-      patterns: '@monorepo/styled-system',
-      jsx: '@monorepo/styled-system',
+      css: "@monorepo/styled-system",
+      recipes: "@monorepo/styled-system",
+      patterns: "@monorepo/styled-system",
+      jsx: "@monorepo/styled-system",
     },
-  })
+  });
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: 'styled-system',
+    outdir: "styled-system",
     importMap: {
-      css: 'styled-system/css',
-      recipes: 'styled-system/recipes',
-      patterns: 'styled-system/patterns',
-      jsx: 'styled-system/jsx',
+      css: "styled-system/css",
+      recipes: "styled-system/recipes",
+      patterns: "styled-system/patterns",
+      jsx: "styled-system/jsx",
     },
-  })
+  });
   ```
 
 - Updated dependencies [95b06bb1]
@@ -7391,13 +7523,13 @@ export default defineConfig({
 - 848936e0: Allow referencing tokens with the `token()` function in media queries or any other CSS at-rule.
 
   ```js
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   const className = css({
-    '@media screen and (min-width: token(sizes.4xl))': {
-      color: 'green.400',
+    "@media screen and (min-width: token(sizes.4xl))": {
+      color: "green.400",
     },
-  })
+  });
   ```
 
 - Updated dependencies [26f6982c]
@@ -7450,7 +7582,7 @@ export default defineConfig({
 
   ```css
   * {
-    color: token('colors.magenta', pink);
+    color: token("colors.magenta", pink);
   }
   ```
 
@@ -7559,12 +7691,12 @@ export default defineConfig({
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -7572,33 +7704,33 @@ export default defineConfig({
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 
@@ -7647,26 +7779,26 @@ export default defineConfig({
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from 'styled-system/jsx'
+  import { Circle } from "styled-system/jsx";
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>
-  }
+    return <Circle {...props}>{children}</Circle>;
+  };
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ['CustomCircle'],
+          jsx: ["CustomCircle"],
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -7730,9 +7862,17 @@ export default defineConfig({
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
-    )
-  }
+      <button
+        className={cx(
+          pinkRecipe({ variant }),
+          greenRecipe({ variant }),
+          blueRecipe({ variant }),
+        )}
+      >
+        Hello
+      </button>
+    );
+  };
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -7799,7 +7939,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ['*'], shape: ['*'] }]
+      button: [{ size: ["*"], shape: ["*"] }];
     }
   }
   ```
@@ -7809,7 +7949,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: ['*']
+      button: ["*"];
     }
   }
   ```
@@ -7845,12 +7985,12 @@ export default defineConfig({
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     shorthands: false,
-  })
+  });
   ```
 
 ### Patch Changes
