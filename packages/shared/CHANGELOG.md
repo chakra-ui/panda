@@ -33,10 +33,10 @@
 
   ```ts
   css({
-    padding: "1px",
-    paddingTop: "3px",
-    paddingBottom: "4px",
-  });
+    padding: '1px',
+    paddingTop: '3px',
+    paddingBottom: '4px',
+  })
   ```
 
   Will now always generate the following css:
@@ -164,9 +164,9 @@
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 ## 0.22.0
@@ -183,18 +183,18 @@
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: "#fff",
+    color: '#fff',
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: "100px",
+    width: '100px',
 
     // ✅ but this is now allowed:
-    bgColor: "[rgb(51 155 240)]",
-    fontSize: "[12px]",
-  });
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
   ```
 
 ## 0.20.1
@@ -237,16 +237,16 @@
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -259,14 +259,14 @@
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 ## 0.16.0
@@ -320,14 +320,7 @@
   Example:
 
   ```tsx
-  <h1
-    className={cx(
-      css({ mx: "3", paddingTop: "4" }),
-      css({ mx: "10", pt: "6" }),
-    )}
-  >
-    Will result in "mx_10 pt_6"
-  </h1>
+  <h1 className={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</h1>
   ```
 
 ## 0.11.0
@@ -346,12 +339,12 @@
   **Definition**
 
   ```jsx
-  import { sva } from "styled-system/css";
+  import { sva } from 'styled-system/css'
 
   const button = sva({
-    slots: ["label", "icon"],
+    slots: ['label', 'icon'],
     base: {
-      label: { color: "red", textDecoration: "underline" },
+      label: { color: 'red', textDecoration: 'underline' },
     },
     variants: {
       rounded: {
@@ -359,33 +352,33 @@
       },
       size: {
         sm: {
-          label: { fontSize: "sm" },
-          icon: { fontSize: "sm" },
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
         },
         lg: {
-          label: { fontSize: "lg" },
-          icon: { fontSize: "lg", color: "pink" },
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
         },
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
     },
-  });
+  })
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: "lg", rounded: true });
+    const btnClass = button({ size: 'lg', rounded: true })
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    );
+    )
   }
   ```
 
@@ -433,19 +426,19 @@
 
   ```ts
   const shorthands = {
-    flexDir: "flexDirection",
-  };
+    flexDir: 'flexDirection',
+  }
 
   const obj = {
-    flexDir: "row",
+    flexDir: 'row',
     flexDirection: undefined,
-  };
+  }
 
   const result = walkObject(obj, (value) => value, {
     getKey(prop) {
-      return shorthands[prop] ?? prop;
+      return shorthands[prop] ?? prop
     },
-  });
+  })
   ```
 
   This would set the `flexDirection` to `row` (using `getKey`) and then set the `flexDirection` property again, this
@@ -466,8 +459,8 @@
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: "template-literal",
-  });
+    syntax: 'template-literal',
+  })
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
@@ -544,11 +537,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    "codegen:prepare": ({ artifacts, changed }) => {
+    'codegen:prepare': ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-});
+})
 ```
 
 - 49c760cd: Fix issue where responsive array in css and cva doesn't generate the correct classname
@@ -634,9 +627,9 @@ export default defineConfig({
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 ## 0.22.0
@@ -653,18 +646,18 @@ export default defineConfig({
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: "#fff",
+    color: '#fff',
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: "100px",
+    width: '100px',
 
     // ✅ but this is now allowed:
-    bgColor: "[rgb(51 155 240)]",
-    fontSize: "[12px]",
-  });
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
   ```
 
 ## 0.20.1
@@ -707,16 +700,16 @@ export default defineConfig({
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -729,14 +722,14 @@ export default defineConfig({
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 ## 0.16.0
@@ -790,14 +783,7 @@ export default defineConfig({
   Example:
 
   ```tsx
-  <h1
-    className={cx(
-      css({ mx: "3", paddingTop: "4" }),
-      css({ mx: "10", pt: "6" }),
-    )}
-  >
-    Will result in "mx_10 pt_6"
-  </h1>
+  <h1 className={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</h1>
   ```
 
 ## 0.11.0
@@ -816,12 +802,12 @@ export default defineConfig({
   **Definition**
 
   ```jsx
-  import { sva } from "styled-system/css";
+  import { sva } from 'styled-system/css'
 
   const button = sva({
-    slots: ["label", "icon"],
+    slots: ['label', 'icon'],
     base: {
-      label: { color: "red", textDecoration: "underline" },
+      label: { color: 'red', textDecoration: 'underline' },
     },
     variants: {
       rounded: {
@@ -829,33 +815,33 @@ export default defineConfig({
       },
       size: {
         sm: {
-          label: { fontSize: "sm" },
-          icon: { fontSize: "sm" },
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
         },
         lg: {
-          label: { fontSize: "lg" },
-          icon: { fontSize: "lg", color: "pink" },
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
         },
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
     },
-  });
+  })
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: "lg", rounded: true });
+    const btnClass = button({ size: 'lg', rounded: true })
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    );
+    )
   }
   ```
 
@@ -903,19 +889,19 @@ export default defineConfig({
 
   ```ts
   const shorthands = {
-    flexDir: "flexDirection",
-  };
+    flexDir: 'flexDirection',
+  }
 
   const obj = {
-    flexDir: "row",
+    flexDir: 'row',
     flexDirection: undefined,
-  };
+  }
 
   const result = walkObject(obj, (value) => value, {
     getKey(prop) {
-      return shorthands[prop] ?? prop;
+      return shorthands[prop] ?? prop
     },
-  });
+  })
   ```
 
   This would set the `flexDirection` to `row` (using `getKey`) and then set the `flexDirection` property again, this
@@ -936,8 +922,8 @@ export default defineConfig({
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: "template-literal",
-  });
+    syntax: 'template-literal',
+  })
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
