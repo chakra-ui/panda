@@ -486,7 +486,9 @@ describe('mergeConfigs / theme', () => {
                 "30": {
                   "value": "black/30",
                 },
-                "value": "black",
+                "DEFAULT": {
+                  "value": "black",
+                },
               },
             },
           },

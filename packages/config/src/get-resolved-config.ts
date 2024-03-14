@@ -25,5 +25,5 @@ export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
   }
 
   configs.unshift(config)
-  return mergeConfigs(configs) as Config
+  return mergeConfigs(configs)
 }
