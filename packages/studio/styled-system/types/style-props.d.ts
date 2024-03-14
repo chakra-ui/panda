@@ -3,12 +3,13 @@ import type { ConditionalValue } from './conditions';
 import type { PropertyValue } from './prop-type';
 import type { Token } from '../tokens/index';
 
-type CssVarNames =  | (string & {})
-type CssVars = `--${CssVarNames}`
+type CssVarValue = ConditionalValue<Token | (string & {}) | (number & {})>
 
-export type CssVarProperties = {
-  [key in CssVars]?: ConditionalValue<Token | (string & {}) | (number & {})>
+type GenericCssVarProperties = {
+  [key in `--${string & {}}`]?: CssVarValue
 }
+
+export type CssVarProperties = GenericCssVarProperties
 
 export interface SystemProperties {
   	WebkitAppearance?: PropertyValue<'WebkitAppearance'>
