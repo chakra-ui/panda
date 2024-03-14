@@ -120,7 +120,7 @@ export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
    * // color: "black.20"
    * ```
    */
-  if (false && withoutEmpty.theme?.tokens) {
+  if (withoutEmpty.theme?.tokens) {
     traverse(withoutEmpty.theme.tokens, (args) => args, {
       stop(args) {
         if (isObject(args.value) && 'value' in args.value) {

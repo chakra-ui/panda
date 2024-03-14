@@ -3971,7 +3971,7 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot(`""`)
   })
 
-  test.only('flat and nested object on same key', () => {
+  test('flat and nested object on same key', () => {
     const code = `
     const className = css({
       color: "black",
@@ -4031,11 +4031,11 @@ describe('extract to css output pipeline', () => {
       }
 
         .bg_black\\.10 {
-          background-color: black.10;
+          background-color: var(--colors-black-10);
       }
 
         .border_black\\.20 {
-          border-color: black.20;
+          border-color: var(--colors-black-20);
       }
       }"
     `)
