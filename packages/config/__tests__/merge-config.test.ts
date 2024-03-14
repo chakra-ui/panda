@@ -444,12 +444,7 @@ describe('mergeConfigs / theme', () => {
         extend: {
           tokens: {
             colors: {
-              black: {
-                0: { value: 'black' },
-                10: { value: 'black/10' },
-                20: { value: 'black/20' },
-                30: { value: 'black/30' },
-              },
+              black: { value: 'black' },
             },
           },
         },
@@ -460,7 +455,12 @@ describe('mergeConfigs / theme', () => {
       theme: {
         tokens: {
           colors: {
-            black: { value: 'black' },
+            black: {
+              0: { value: 'black' },
+              10: { value: 'black/10' },
+              20: { value: 'black/20' },
+              30: { value: 'black/30' },
+            },
           },
         },
       },
@@ -532,13 +532,7 @@ describe('mergeConfigs / theme', () => {
         extend: {
           tokens: {
             colors: {
-              black: {
-                DEFAULT: { value: 'white' },
-                0: { value: 'black' },
-                10: { value: 'black/10' },
-                20: { value: 'black/20' },
-                30: { value: 'black/30' },
-              },
+              black: { value: 'black' },
             },
           },
         },
@@ -549,7 +543,13 @@ describe('mergeConfigs / theme', () => {
       theme: {
         tokens: {
           colors: {
-            black: { value: 'black' },
+            black: {
+              DEFAULT: { value: 'white' },
+              0: { value: 'black' },
+              10: { value: 'black/10' },
+              20: { value: 'black/20' },
+              30: { value: 'black/30' },
+            },
           },
         },
       },
