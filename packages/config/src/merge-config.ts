@@ -1,7 +1,7 @@
+import { assign, mergeWith } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
-import { assign, mergeWith } from './utils'
 
 type Extendable<T> = T & { extend?: T }
 interface Dict {
