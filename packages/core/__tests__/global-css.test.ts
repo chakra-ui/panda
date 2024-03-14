@@ -1,11 +1,11 @@
-import type { Dict, GlobalVarsDefinition } from '@pandacss/types'
-import { describe, expect, test } from 'vitest'
 import { createGeneratorContext } from '@pandacss/fixture'
+import type { Dict } from '@pandacss/types'
+import { describe, expect, test } from 'vitest'
 
-function globalCss(values: Dict, vars?: GlobalVarsDefinition) {
+function globalCss(values: Dict) {
   const ctx = createGeneratorContext()
   const sheet = ctx.createSheet()
-  sheet.processGlobalCss(values, vars)
+  sheet.processGlobalCss(values)
   return sheet.toCss({ optimize: true })
 }
 

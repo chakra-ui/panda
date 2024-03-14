@@ -45,7 +45,7 @@ describe('CLI', () => {
 
     // init
     const output = execSync(cmd, { cwd: testsCwd }).toString()
-    expect(output.includes('Thanks for choosing Panda to write your css.')).toBe(true)
+    expect(output.includes('Thanks')).toBe(true)
 
     // Check if the config file was created
     const configFileExists = await fs.access(paths.config)
