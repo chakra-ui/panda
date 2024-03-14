@@ -438,8 +438,8 @@ describe('mergeConfigs / theme', () => {
     `)
   })
 
-  test.only('flat and nested object on same key', () => {
-    const userConfig = defineConfig({
+  test('flat and nested object on same key', () => {
+    const preset = definePreset({
       theme: {
         extend: {
           tokens: {
@@ -456,7 +456,7 @@ describe('mergeConfigs / theme', () => {
       },
     })
 
-    const preset = definePreset({
+    const userConfig = defineConfig({
       theme: {
         tokens: {
           colors: {
@@ -488,6 +488,124 @@ describe('mergeConfigs / theme', () => {
                 },
                 "DEFAULT": {
                   "value": "black",
+                },
+              },
+            },
+          },
+        },
+      }
+    `)
+
+    // opposite order
+    expect(mergeConfigs([preset, userConfig])).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "black": {
+                "0": {
+                  "value": "black",
+                },
+                "10": {
+                  "value": "black/10",
+                },
+                "20": {
+                  "value": "black/20",
+                },
+                "30": {
+                  "value": "black/30",
+                },
+                "DEFAULT": {
+                  "value": "black",
+                },
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  test('flat and nested object with existing DEFAULT', () => {
+    const preset = definePreset({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              black: {
+                DEFAULT: { value: 'white' },
+                0: { value: 'black' },
+                10: { value: 'black/10' },
+                20: { value: 'black/20' },
+                30: { value: 'black/30' },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const userConfig = defineConfig({
+      theme: {
+        tokens: {
+          colors: {
+            black: { value: 'black' },
+          },
+        },
+      },
+    })
+
+    const result = mergeConfigs([userConfig, preset])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "black": {
+                "0": {
+                  "value": "black",
+                },
+                "10": {
+                  "value": "black/10",
+                },
+                "20": {
+                  "value": "black/20",
+                },
+                "30": {
+                  "value": "black/30",
+                },
+                "DEFAULT": {
+                  "value": "white",
+                },
+              },
+            },
+          },
+        },
+      }
+    `)
+
+    // opposite order
+    expect(mergeConfigs([preset, userConfig])).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "black": {
+                "0": {
+                  "value": "black",
+                },
+                "10": {
+                  "value": "black/10",
+                },
+                "20": {
+                  "value": "black/20",
+                },
+                "30": {
+                  "value": "black/30",
+                },
+                "DEFAULT": {
+                  "value": "white",
                 },
               },
             },

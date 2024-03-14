@@ -126,8 +126,8 @@ export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
         if (isObject(args.value) && 'value' in args.value) {
           const keys = Object.keys(args.value)
           if (keys.filter((k) => !tokenKeys.includes(k)).length) {
-            const { type: _type, description: _description, extensions: _extensions, value } = args.value
-            args.value.DEFAULT = { value }
+            const { type: _type, description: _description, extensions: _extensions, value, DEFAULT } = args.value
+            args.value.DEFAULT = { value: DEFAULT?.value ?? value }
             delete args.value.value
           }
 
