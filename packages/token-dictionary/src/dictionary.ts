@@ -8,7 +8,7 @@ import {
   type CssVar,
   type CssVarOptions,
 } from '@pandacss/shared'
-import type { SemanticTokens, Tokens } from '@pandacss/types'
+import type { SemanticTokens, TokenCategory, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { isCompositeTokenValue } from './is-composite'
 import { middlewares } from './middleware'
@@ -392,18 +392,25 @@ export class TokenDictionary {
  * Computed token views
  * -----------------------------------------------------------------------------*/
 
+type ConditionName = string
+type TokenName = string
+type VarName = string
+type VarRef = string
+type TokenValue = string
+type ColorPalette = string
+
 export class TokenDictionaryView {
   constructor(private dictionary: TokenDictionary) {
     this.dictionary = dictionary
   }
 
   getTokensView() {
-    const conditionMap = new Map<string, Set<Token>>()
-    const categoryMap = new Map<string, Map<string, Token>>()
-    const colorPalettes = new Map<string, Map<string, string>>()
-    const valuesByCategory = new Map<string, Map<string, string>>()
-    const flatValues = new Map<string, string>()
-    const vars = new Map<string, Map<string, string>>()
+    const conditionMap = new Map<ConditionName, Set<Token>>()
+    const categoryMap = new Map<TokenCategory, Map<TokenName, Token>>()
+    const colorPalettes = new Map<ColorPalette, Map<VarName, VarRef>>()
+    const valuesByCategory = new Map<TokenCategory, Map<VarName, TokenValue>>()
+    const flatValues = new Map<TokenName, VarRef>()
+    const vars = new Map<ConditionName, Map<VarName, TokenValue>>()
 
     this.dictionary.allTokens.forEach((token) => {
       this.processCondition(token, conditionMap)
@@ -495,7 +502,7 @@ export class TokenDictionaryView {
     if (!category) return
 
     if (!byCategory.has(category)) byCategory.set(category, new Map())
-    const value = isNegative ? (token.isConditional ? token.originalValue : token.value) : varRef
+    const value = isNegative ? (token.extensions.condition !== 'base' ? token.originalValue : token.value) : varRef
     byCategory.get(category)!.set(prop, value)
     flat.set(token.name, value)
   }

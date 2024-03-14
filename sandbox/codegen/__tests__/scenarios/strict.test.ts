@@ -12,7 +12,9 @@ describe('css', () => {
 
     assertType(css({ pos: 'absolute' }))
 
-    // @ts-expect-error always expected
+    // @ts-expect-error expected from strictPropertyValues: true
+    assertType(css({ position: 'absolute123' }))
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ pos: 'absolute123' }))
     // @ts-expect-error expected from strictTokens: true
     assertType(css({ flex: '0 1' }))
@@ -109,18 +111,14 @@ describe('css', () => {
   test('important', () => {
     assertType(
       css({
-        // @ts-expect-error expected from strictTokens: true
-        fontSize: '2xl!',
-        // @ts-expect-error expected from strictTokens: true
+        fontSize: '2xl !important',
         p: '4 !important',
         // @ts-expect-error expected from strictTokens: true
         bgColor: '#fff!',
         // @ts-expect-error expected from strictTokens: true
         borderColor: '#fff !important',
         _hover: {
-          // @ts-expect-error expected from strictTokens: true
-          fontSize: '2xl!',
-          // @ts-expect-error expected from strictTokens: true
+          fontSize: '2xl !important',
           p: '4 !important',
           // @ts-expect-error expected from strictTokens: true
 

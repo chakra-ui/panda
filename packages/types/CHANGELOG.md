@@ -1,5 +1,44 @@
 # @pandacss/types
 
+## 0.35.0
+
+### Patch Changes
+
+- 50db354: Add missing reducers to properly return the results of hooks for `config:resolved` and `parser:before`
+- f6befbf: Add missing methods for ParserResultInterface (which can be used in the `parser:after` hook to dynamically add extraction results from your own logic, like using a custom parser)
+- a0c4d27: Add an optional `className` key in `sva` config which will can be used to target slots in the DOM.
+
+  Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
+
+  ```tsx
+  import { sva } from "../styled-system/css";
+
+  const button = sva({
+    className: "btn",
+    slots: ["root", "text"],
+    base: {
+      root: {
+        bg: "blue.500",
+        _hover: {
+          // v--- 🎯 this will target the `text` slot
+          "& .btn__text": {
+            color: "white",
+          },
+        },
+      },
+    },
+  });
+
+  export const App = () => {
+    const classes = button();
+    return (
+      <div className={classes.root}>
+        <div className={classes.text}>Click me</div>
+      </div>
+    );
+  };
+  ```
+
 ## 0.34.3
 
 ## 0.34.2
@@ -42,15 +81,15 @@
   class assigned.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     preflight: {
-      scope: '.my-scope',
-      level: 'element', // 'element' | 'parent (default)'
+      scope: ".my-scope",
+      level: "element", // 'element' | 'parent (default)'
     },
     // ...
-  })
+  });
   ```
 
   This will generate CSS that looks like:
@@ -80,20 +119,20 @@
   export default defaultConfig({
     conditions: {
       extend: {
-        supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
+        supportHover: ["@media (hover: hover) and (pointer: fine)", "&:hover"],
       },
     },
-  })
+  });
   ```
 
   ```ts
-  import { css } from '../styled-system/css'
+  import { css } from "../styled-system/css";
 
   css({
     _supportHover: {
-      color: 'red',
+      color: "red",
     },
-  })
+  });
   ```
 
   will generate the following CSS:
@@ -170,16 +209,17 @@
   export default defineConfig({
     // ...
     hooks: {
-      'parser:before': ({ configure }) => {
+      "parser:before": ({ configure }) => {
         configure({
           // ignore the Select.Content entirely
-          matchTag: (tag) => tag !== 'Select.Content',
+          matchTag: (tag) => tag !== "Select.Content",
           // ...or specifically ignore the `position` property
-          matchTagProp: (tag, prop) => tag === 'Select.Content' && prop !== 'position',
-        })
+          matchTagProp: (tag, prop) =>
+            tag === "Select.Content" && prop !== "position",
+        });
       },
     },
-  })
+  });
   ```
 
 ## 0.30.1
@@ -195,16 +235,16 @@
   keeping the rest. Let's say we want to remove the `stack` pattern from the built-in `@pandacss/preset-base`:
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     hooks: {
-      'config:resolved': ({ config, utils }) => {
-        return utils.omit(config, ['patterns.stack'])
+      "config:resolved": ({ config, utils }) => {
+        return utils.omit(config, ["patterns.stack"]);
       },
     },
-  })
+  });
   ```
 
 - ab32d1d7: Introduce 3 new hooks:
@@ -241,9 +281,9 @@
 
   ```ts
   css({
-    bg: 'red.300/40',
-    color: 'white',
-  })
+    bg: "red.300/40",
+    color: "white",
+  });
   ```
 
   This will generate:
@@ -251,7 +291,11 @@
   ```css
   @layer utilities {
     .bg_red\.300\/40 {
-      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      --mix-background: color-mix(
+        in srgb,
+        var(--colors-red-300) 40%,
+        transparent
+      );
       background: var(--mix-background, var(--colors-red-300));
     }
 
@@ -275,21 +319,21 @@
   export default defineConfig({
     utilities: {
       background: {
-        shorthand: 'bg',
-        className: 'bg',
-        values: 'colors',
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
         transform(value, args) {
-          const mix = args.utils.colorMix(value)
+          const mix = args.utils.colorMix(value);
           // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
-          if (mix.invalid) return { background: value }
+          if (mix.invalid) return { background: value };
 
           return {
             background: mix.value,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
   ***
@@ -298,21 +342,21 @@
   property:
 
   ```ts
-  import type { PropertyTransform } from '@pandacss/types'
+  import type { PropertyTransform } from "@pandacss/types";
 
   export const createColorMixTransform =
     (prop: string): PropertyTransform =>
     (value, args) => {
-      const mix = args.utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
+      const mix = args.utils.colorMix(value);
+      if (mix.invalid) return { [prop]: value };
 
-      const cssVar = '--mix-' + prop
+      const cssVar = "--mix-" + prop;
 
       return {
         [cssVar]: mix.value,
         [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    }
+      };
+    };
   ```
 
   then the same utility transform as above can be written like this:
@@ -340,34 +384,34 @@
     // ...
     theme: {
       extend: {
-        containerNames: ['sidebar', 'content'],
+        containerNames: ["sidebar", "content"],
         containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+          xs: "40em",
+          sm: "60em",
+          md: "80em",
         },
       },
     },
-  })
+  });
   ```
 
   The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
   ```ts
   export const containerSizes = {
-    xs: '320px',
-    sm: '384px',
-    md: '448px',
-    lg: '512px',
-    xl: '576px',
-    '2xl': '672px',
-    '3xl': '768px',
-    '4xl': '896px',
-    '5xl': '1024px',
-    '6xl': '1152px',
-    '7xl': '1280px',
-    '8xl': '1440px',
-  }
+    xs: "320px",
+    sm: "384px",
+    md: "448px",
+    lg: "512px",
+    xl: "576px",
+    "2xl": "672px",
+    "3xl": "768px",
+    "4xl": "896px",
+    "5xl": "1024px",
+    "6xl": "1152px",
+    "7xl": "1280px",
+    "8xl": "1440px",
+  };
   ```
 
   Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
@@ -452,8 +496,8 @@
   ```ts
   export default defineConfig({
     // ...
-    dependencies: ['path/to/files/**.ts'],
-  })
+    dependencies: ["path/to/files/**.ts"],
+  });
   ```
 
   - Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`,
@@ -486,39 +530,54 @@
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -598,38 +657,38 @@
 
   ```ts
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
       visual: {
-        primary: { backgroundColor: 'blue' },
-        secondary: { backgroundColor: 'gray' },
+        primary: { backgroundColor: "blue" },
+        secondary: { backgroundColor: "gray" },
       },
     },
-  })
+  });
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ['*'], // this
+        card: ["*"], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ['*'], responsive: true },
-          { visual: ['*'], responsive: true },
+          { size: ["*"], responsive: true },
+          { visual: ["*"], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ['*'] }, { visual: ['*'] }],
+        card: [{ size: ["*"] }, { visual: ["*"] }],
       },
     },
-  })
+  });
   ```
 
   Here's the diff in the generated CSS:
@@ -781,36 +840,36 @@
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from '@pandacss/dev'
+  import { defineRecipe } from "@pandacss/dev";
 
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
     },
-    staticCss: [{ size: ['*'] }],
-  })
+    staticCss: [{ size: ["*"] }],
+  });
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ['*'],
+          size: ["*"],
         },
       },
     },
-  })
+  });
   ```
 
 ## 0.20.1
@@ -828,10 +887,10 @@
     staticCss: {
       recipes: {
         // generate all button styles and variants
-        button: ['*'],
+        button: ["*"],
       },
     },
-  })
+  });
 
   export default defineConfig({
     presets: [presetWithStaticCss],
@@ -839,11 +898,11 @@
       extend: {
         recipes: {
           // extend and pre-generate all sizes for card
-          card: [{ size: ['small', 'medium', 'large'] }],
+          card: [{ size: ["small", "medium", "large"] }],
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -913,42 +972,42 @@
 
   ```ts
   export default defineConfig({
-    outdir: './outdir',
+    outdir: "./outdir",
     importMap: {
-      css: '#panda/styled-system/css',
-      recipes: '#panda/styled-system/recipes',
-      patterns: '#panda/styled-system/patterns',
-      jsx: '#panda/styled-system/jsx',
+      css: "#panda/styled-system/css",
+      recipes: "#panda/styled-system/recipes",
+      patterns: "#panda/styled-system/patterns",
+      jsx: "#panda/styled-system/jsx",
     },
-  })
+  });
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: '../packages/styled-system',
+    outdir: "../packages/styled-system",
     importMap: {
-      css: '@monorepo/styled-system',
-      recipes: '@monorepo/styled-system',
-      patterns: '@monorepo/styled-system',
-      jsx: '@monorepo/styled-system',
+      css: "@monorepo/styled-system",
+      recipes: "@monorepo/styled-system",
+      patterns: "@monorepo/styled-system",
+      jsx: "@monorepo/styled-system",
     },
-  })
+  });
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: 'styled-system',
+    outdir: "styled-system",
     importMap: {
-      css: 'styled-system/css',
-      recipes: 'styled-system/recipes',
-      patterns: 'styled-system/patterns',
-      jsx: 'styled-system/jsx',
+      css: "styled-system/css",
+      recipes: "styled-system/recipes",
+      patterns: "styled-system/patterns",
+      jsx: "styled-system/jsx",
     },
-  })
+  });
   ```
 
 - 58743bc4: - Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
@@ -1022,12 +1081,12 @@
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -1035,33 +1094,33 @@
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 
@@ -1112,26 +1171,26 @@
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from 'styled-system/jsx'
+  import { Circle } from "styled-system/jsx";
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>
-  }
+    return <Circle {...props}>{children}</Circle>;
+  };
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ['CustomCircle'],
+          jsx: ["CustomCircle"],
         },
       },
     },
-  })
+  });
   ```
 
 ## 0.8.0
@@ -1160,7 +1219,7 @@
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ['*'], shape: ['*'] }]
+      button: [{ size: ["*"], shape: ["*"] }];
     }
   }
   ```
@@ -1170,7 +1229,7 @@
   ```ts
   staticCss: {
     recipes: {
-      button: ['*']
+      button: ["*"];
     }
   }
   ```
@@ -1194,8 +1253,8 @@
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: 'template-literal',
-  })
+    syntax: "template-literal",
+  });
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
@@ -1216,12 +1275,12 @@
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     shorthands: false,
-  })
+  });
   ```
 
 ### Patch Changes
@@ -1294,11 +1353,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    'codegen:prepare': ({ artifacts, changed }) => {
+    "codegen:prepare": ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-})
+});
 ```
 
 - d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
@@ -1315,11 +1374,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      '@pandacss/dev/postcss': {
-        logfile: './logs/panda.log',
+      "@pandacss/dev/postcss": {
+        logfile: "./logs/panda.log",
       },
     },
-  }
+  };
   ```
 
 ## 0.29.1
@@ -1338,9 +1397,9 @@ export default defineConfig({
 
   ```ts
   css({
-    bg: 'red.300/40',
-    color: 'white',
-  })
+    bg: "red.300/40",
+    color: "white",
+  });
   ```
 
   This will generate:
@@ -1348,7 +1407,11 @@ export default defineConfig({
   ```css
   @layer utilities {
     .bg_red\.300\/40 {
-      --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+      --mix-background: color-mix(
+        in srgb,
+        var(--colors-red-300) 40%,
+        transparent
+      );
       background: var(--mix-background, var(--colors-red-300));
     }
 
@@ -1372,21 +1435,21 @@ export default defineConfig({
   export default defineConfig({
     utilities: {
       background: {
-        shorthand: 'bg',
-        className: 'bg',
-        values: 'colors',
+        shorthand: "bg",
+        className: "bg",
+        values: "colors",
         transform(value, args) {
-          const mix = args.utils.colorMix(value)
+          const mix = args.utils.colorMix(value);
           // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
-          if (mix.invalid) return { background: value }
+          if (mix.invalid) return { background: value };
 
           return {
             background: mix.value,
-          }
+          };
         },
       },
     },
-  })
+  });
   ```
 
   ***
@@ -1395,21 +1458,21 @@ export default defineConfig({
   property:
 
   ```ts
-  import type { PropertyTransform } from '@pandacss/types'
+  import type { PropertyTransform } from "@pandacss/types";
 
   export const createColorMixTransform =
     (prop: string): PropertyTransform =>
     (value, args) => {
-      const mix = args.utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
+      const mix = args.utils.colorMix(value);
+      if (mix.invalid) return { [prop]: value };
 
-      const cssVar = '--mix-' + prop
+      const cssVar = "--mix-" + prop;
 
       return {
         [cssVar]: mix.value,
         [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    }
+      };
+    };
   ```
 
   then the same utility transform as above can be written like this:
@@ -1437,34 +1500,34 @@ export default defineConfig({
     // ...
     theme: {
       extend: {
-        containerNames: ['sidebar', 'content'],
+        containerNames: ["sidebar", "content"],
         containerSizes: {
-          xs: '40em',
-          sm: '60em',
-          md: '80em',
+          xs: "40em",
+          sm: "60em",
+          md: "80em",
         },
       },
     },
-  })
+  });
   ```
 
   The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
   ```ts
   export const containerSizes = {
-    xs: '320px',
-    sm: '384px',
-    md: '448px',
-    lg: '512px',
-    xl: '576px',
-    '2xl': '672px',
-    '3xl': '768px',
-    '4xl': '896px',
-    '5xl': '1024px',
-    '6xl': '1152px',
-    '7xl': '1280px',
-    '8xl': '1440px',
-  }
+    xs: "320px",
+    sm: "384px",
+    md: "448px",
+    lg: "512px",
+    xl: "576px",
+    "2xl": "672px",
+    "3xl": "768px",
+    "4xl": "896px",
+    "5xl": "1024px",
+    "6xl": "1152px",
+    "7xl": "1280px",
+    "8xl": "1440px",
+  };
   ```
 
   Then use them in your styles by referencing using `@<container-name>/<container-size>` syntax:
@@ -1549,8 +1612,8 @@ export default defineConfig({
   ```ts
   export default defineConfig({
     // ...
-    dependencies: ['path/to/files/**.ts'],
-  })
+    dependencies: ["path/to/files/**.ts"],
+  });
   ```
 
   - Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`,
@@ -1583,39 +1646,54 @@ export default defineConfig({
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -1695,38 +1773,38 @@ export default defineConfig({
 
   ```ts
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
       visual: {
-        primary: { backgroundColor: 'blue' },
-        secondary: { backgroundColor: 'gray' },
+        primary: { backgroundColor: "blue" },
+        secondary: { backgroundColor: "gray" },
       },
     },
-  })
+  });
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ['*'], // this
+        card: ["*"], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ['*'], responsive: true },
-          { visual: ['*'], responsive: true },
+          { size: ["*"], responsive: true },
+          { visual: ["*"], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ['*'] }, { visual: ['*'] }],
+        card: [{ size: ["*"] }, { visual: ["*"] }],
       },
     },
-  })
+  });
   ```
 
   Here's the diff in the generated CSS:
@@ -1878,36 +1956,36 @@ export default defineConfig({
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from '@pandacss/dev'
+  import { defineRecipe } from "@pandacss/dev";
 
   const card = defineRecipe({
-    className: 'card',
-    base: { color: 'white' },
+    className: "card",
+    base: { color: "white" },
     variants: {
       size: {
-        small: { fontSize: '14px' },
-        large: { fontSize: '18px' },
+        small: { fontSize: "14px" },
+        large: { fontSize: "18px" },
       },
     },
-    staticCss: [{ size: ['*'] }],
-  })
+    staticCss: [{ size: ["*"] }],
+  });
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ['*'],
+          size: ["*"],
         },
       },
     },
-  })
+  });
   ```
 
 ## 0.20.1
@@ -1925,10 +2003,10 @@ export default defineConfig({
     staticCss: {
       recipes: {
         // generate all button styles and variants
-        button: ['*'],
+        button: ["*"],
       },
     },
-  })
+  });
 
   export default defineConfig({
     presets: [presetWithStaticCss],
@@ -1936,11 +2014,11 @@ export default defineConfig({
       extend: {
         recipes: {
           // extend and pre-generate all sizes for card
-          card: [{ size: ['small', 'medium', 'large'] }],
+          card: [{ size: ["small", "medium", "large"] }],
         },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -2010,42 +2088,42 @@ export default defineConfig({
 
   ```ts
   export default defineConfig({
-    outdir: './outdir',
+    outdir: "./outdir",
     importMap: {
-      css: '#panda/styled-system/css',
-      recipes: '#panda/styled-system/recipes',
-      patterns: '#panda/styled-system/patterns',
-      jsx: '#panda/styled-system/jsx',
+      css: "#panda/styled-system/css",
+      recipes: "#panda/styled-system/recipes",
+      patterns: "#panda/styled-system/patterns",
+      jsx: "#panda/styled-system/jsx",
     },
-  })
+  });
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: '../packages/styled-system',
+    outdir: "../packages/styled-system",
     importMap: {
-      css: '@monorepo/styled-system',
-      recipes: '@monorepo/styled-system',
-      patterns: '@monorepo/styled-system',
-      jsx: '@monorepo/styled-system',
+      css: "@monorepo/styled-system",
+      recipes: "@monorepo/styled-system",
+      patterns: "@monorepo/styled-system",
+      jsx: "@monorepo/styled-system",
     },
-  })
+  });
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: 'styled-system',
+    outdir: "styled-system",
     importMap: {
-      css: 'styled-system/css',
-      recipes: 'styled-system/recipes',
-      patterns: 'styled-system/patterns',
-      jsx: 'styled-system/jsx',
+      css: "styled-system/css",
+      recipes: "styled-system/recipes",
+      patterns: "styled-system/patterns",
+      jsx: "styled-system/jsx",
     },
-  })
+  });
   ```
 
 - 58743bc4: - Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
@@ -2119,12 +2197,12 @@ export default defineConfig({
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -2132,33 +2210,33 @@ export default defineConfig({
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 
@@ -2209,26 +2287,26 @@ export default defineConfig({
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from 'styled-system/jsx'
+  import { Circle } from "styled-system/jsx";
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>
-  }
+    return <Circle {...props}>{children}</Circle>;
+  };
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ['CustomCircle'],
+          jsx: ["CustomCircle"],
         },
       },
     },
-  })
+  });
   ```
 
 ## 0.8.0
@@ -2257,7 +2335,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ['*'], shape: ['*'] }]
+      button: [{ size: ["*"], shape: ["*"] }];
     }
   }
   ```
@@ -2267,7 +2345,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: ['*']
+      button: ["*"];
     }
   }
   ```
@@ -2291,8 +2369,8 @@ export default defineConfig({
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: 'template-literal',
-  })
+    syntax: "template-literal",
+  });
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
@@ -2313,12 +2391,12 @@ export default defineConfig({
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     shorthands: false,
-  })
+  });
   ```
 
 ### Patch Changes

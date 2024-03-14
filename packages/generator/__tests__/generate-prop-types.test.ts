@@ -390,7 +390,13 @@ describe('generate property types', () => {
         | 'writingMode'
 
       type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
-      type WithEscapeHatch<T> = T | \`[\${string}]\` | \`\${T}/{string}\` | WithColorOpacityModifier<T>
+
+      type ImportantMark = "!" | "!important"
+      type WhitespaceImportant = \` \${ImportantMark}\`
+      type Important = ImportantMark | WhitespaceImportant
+      type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
+
+      type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
 
       type FilterVagueString<Key, Value> = Value extends boolean
         ? Value
@@ -798,7 +804,13 @@ describe('generate property types', () => {
         | 'writingMode'
 
       type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
-      type WithEscapeHatch<T> = T | \`[\${string}]\` | \`\${T}/{string}\` | WithColorOpacityModifier<T>
+
+      type ImportantMark = "!" | "!important"
+      type WhitespaceImportant = \` \${ImportantMark}\`
+      type Important = ImportantMark | WhitespaceImportant
+      type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
+
+      type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
 
       type FilterVagueString<Key, Value> = Value extends boolean
         ? Value
