@@ -3,8 +3,8 @@ import type { ConditionalValue } from './conditions';
 import type { PropertyValue } from './prop-type';
 import type { Token } from '../tokens/index';
 
-type VarNames =  | (string & {})
-type CssVars = `--${VarNames}`
+type CssVarNames =  | (string & {})
+type CssVars = `--${CssVarNames}`
 
 export type CssVarProperties = {
   [key in CssVars]?: ConditionalValue<Token | (string & {}) | (number & {})>

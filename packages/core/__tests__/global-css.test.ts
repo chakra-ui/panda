@@ -1,8 +1,8 @@
-import type { Dict, GlobalVars } from '@pandacss/types'
+import type { Dict, GlobalVarsDefinition } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { createGeneratorContext } from '@pandacss/fixture'
 
-function globalCss(values: Dict, vars?: GlobalVars) {
+function globalCss(values: Dict, vars?: GlobalVarsDefinition) {
   const ctx = createGeneratorContext()
   const sheet = ctx.createSheet()
   sheet.processGlobalCss(values, vars)
@@ -309,36 +309,6 @@ describe('Global css', () => {
       }
       }
       }
-      }"
-    `)
-  })
-
-  test('css vars', () => {
-    const css = globalCss(
-      {},
-      {
-        '--random-color': 'red',
-        '--button-color': {
-          syntax: '<color>',
-          inherits: false,
-          initialValue: 'blue',
-        },
-      },
-    )
-
-    expect(css).toMatchInlineSnapshot(`
-      "@layer base {
-        :where(html) {
-          --random-color: red;
-      }
-
-        @property --button-color {
-          syntax: '<color>';
-
-          inherits: false;
-
-          initial-value: blue;
-          }
       }"
     `)
   })

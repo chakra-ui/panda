@@ -1,4 +1,5 @@
 import type { Context } from '@pandacss/core'
+import { unionType } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 
@@ -18,8 +19,9 @@ export function generatePropTypes(ctx: Context) {
   ]
 
   const types = utility.getTypes()
-  const cssVars = new Set(Object.keys(ctx.config.globalVars ?? {}))
-  const withCssVars = cssVars.size ? ' | CssVars' : ''
+
+  const cssVars = ctx.globalVars
+  const withCssVars = !cssVars.isEmpty() ? ' | CssVars' : ''
 
   for (const [prop, values] of types.entries()) {
     result.push(`\t${prop}: ${values.join(' | ')};`)
@@ -47,11 +49,9 @@ export function generatePropTypes(ctx: Context) {
   ${result.join('\n')}
 
   ${
-    cssVars.size
+    !cssVars.isEmpty()
       ? outdent`
-  type CssVars = ${Array.from(cssVars)
-    .map((v) => `"var(${v})"`)
-    .join(' | ')}
+  type CssVars = ${unionType(cssVars.vars)}
   `
       : ''
   }

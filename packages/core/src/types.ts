@@ -24,7 +24,7 @@ export interface TransformResult {
 }
 
 export interface StylesheetContext
-  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks'> {
+  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks' | 'globalVars'> {
   layers: Layers
   helpers: PatternHelpers
   hash?: boolean

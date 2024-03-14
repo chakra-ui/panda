@@ -71,7 +71,7 @@ export interface PresetCore {
   /**
    * The css variables for your project.
    */
-  globalVars: GlobalVars
+  globalVars: GlobalVarsDefinition
 }
 
 interface ExtendablePatterns {
@@ -116,7 +116,7 @@ export interface CssPropertyDefinition {
   syntax: LiteralUnion<CssPropertySyntax>
 }
 
-export interface GlobalVars {
+export interface GlobalVarsDefinition {
   [key: string]: string | CssPropertyDefinition
 }
 

@@ -16,6 +16,7 @@ import type {
 } from '@pandacss/types'
 import { Conditions } from './conditions'
 import { FileEngine } from './file'
+import { GlobalVars } from './global-vars'
 import { HooksApi } from './hooks-api'
 import { ImportMap } from './import-map'
 import { JsxEngine } from './jsx'
@@ -64,6 +65,7 @@ export class Context {
   imports: ImportMap
   paths: PathEngine
   file: FileEngine
+  globalVars: GlobalVars
 
   encoder: StyleEncoder
   decoder: StyleDecoder
@@ -168,6 +170,11 @@ export class Context {
 
     this.file = new FileEngine({
       config: this.config,
+    })
+
+    this.globalVars = new GlobalVars({
+      globalVars: this.config.globalVars,
+      cssVarRoot: this.config.cssVarRoot!,
     })
 
     this.messages = getMessages({
@@ -304,6 +311,7 @@ export class Context {
       polyfill: this.config.polyfill,
       cssVarRoot: this.config.cssVarRoot!,
       helpers: patternFns,
+      globalVars: this.globalVars,
     } satisfies Omit<StylesheetContext, 'layers'>
   }
 
