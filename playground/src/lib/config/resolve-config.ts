@@ -81,6 +81,7 @@ function isPlaygroundPreset(preset: string | Preset | Promise<Preset>): preset i
 }
 
 const playgroundPreset: Preset = {
+  name: 'playground-preset',
   theme: {
     recipes: {
       playgroundError: {
