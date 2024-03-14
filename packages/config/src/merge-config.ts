@@ -72,13 +72,14 @@ const tokenKeys = ['description', 'extensions', 'type', 'value', 'deprecated']
 /**
  * Merge all configs into a single config
  */
-export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
-  const [userConfig] = configs
+export function mergeConfigs(configs: ExtendableConfig[]) {
+  const userConfig = configs.at(-1)!
   const pluginHooks = userConfig.plugins ?? []
   if (userConfig.hooks) {
     pluginHooks.push({ name: PANDA_CONFIG_NAME, hooks: userConfig.hooks })
   }
 
+  const reversed = Array.from(configs).reverse()
   const mergedResult = assign(
     {
       conditions: mergeExtensions(configs.map((config) => config.conditions ?? {})),
@@ -92,7 +93,7 @@ export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
       themes: mergeExtensions(configs.map((config) => config.themes ?? {})),
       hooks: mergeHooks(pluginHooks),
     },
-    ...configs,
+    ...reversed,
   )
 
   const withoutEmpty = compact(mergedResult)
