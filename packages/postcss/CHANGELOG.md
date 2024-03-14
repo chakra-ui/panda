@@ -13,11 +13,11 @@
 
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
+      '@pandacss/dev/postcss': {
         allow: [/node_modules\/.embroider/],
       },
     },
-  };
+  }
   ```
 
 ### Patch Changes
@@ -108,11 +108,11 @@
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [05686b9d]
@@ -549,11 +549,11 @@
   ```js
   module.exports = {
     plugins: [
-      require("@pandacss/postcss")({
-        configPath: "./path/to/panda.config.js",
+      require('@pandacss/postcss')({
+        configPath: './path/to/panda.config.js',
       }),
     ],
-  };
+  }
   ```
 
   - @pandacss/node@0.3.2
