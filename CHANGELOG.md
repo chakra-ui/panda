@@ -6,6 +6,148 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.35.0] - 2024-03-14
+
+### Fixed
+
+- Fix negative `semanticTokens` generation
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  tokens: {
+    spacing: {
+      1: { value: '1rem' },
+    },
+  },
+  semanticTokens: {
+    spacing: {
+      lg: { value: '{spacing.1}' },
+    },
+  },
+})
+```
+
+Will now correctly generate the negative value:
+
+```diff
+"spacing.-1" => "calc(var(--spacing-1) * -1)",
+- "spacing.-lg" => "{spacing.1}",
++ "spacing.-lg" => "calc(var(--spacing-lg) * -1)",
+```
+
+- Fix extraction of JSX `styled` factory when using namespace imports
+
+```tsx
+import * as pandaJsx from '../styled-system/jsx'
+
+// ✅ this will work now
+pandaJsx.styled('div', { base: { color: 'red' } })
+const App = () => <pandaJsx.styled.span color="blue">Hello</pandaJsx.styled.span>
+```
+
+### Added
+
+- Allow using `!` or `!important` when using `strictTokens: true` (without TS throwing an error)
+- Add missing reducers to properly return the results of hooks for `config:resolved` and `parser:before`
+- Add missing methods for ParserResultInterface (which can be used in the `parser:after` hook to dynamically add
+  extraction results from your own logic, like using a custom parser)
+- Add `allow` config option in postcss plugin.
+- Add an optional `className` key in `sva` config which will can be used to target slots in the DOM.
+
+Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
+
+```tsx
+import { sva } from '../styled-system/css'
+
+const button = sva({
+  className: 'btn',
+  slots: ['root', 'text'],
+  base: {
+    root: {
+      bg: 'blue.500',
+      _hover: {
+        // v--- 🎯 this will target the `text` slot
+        '& .btn__text': {
+          color: 'white',
+        },
+      },
+    },
+  },
+})
+
+export const App = () => {
+  const classes = button()
+  return (
+    <div className={classes.root}>
+      <div className={classes.text}>Click me</div>
+    </div>
+  )
+}
+```
+
+The plugin won't parse css files in node modules. This config option lets you opt out of that for some paths.
+
+```js
+//postcss.config.cjs
+
+module.exports = {
+  plugins: {
+    '@pandacss/dev/postcss': {
+      allow: [/node_modules\/.embroider/],
+    },
+  },
+}
+```
+
+### Changed
+
+- Change the `styled-system/token` JS token function to use raw value for semanticToken that do not have conditions
+  other than `base`
+
+```ts
+export default defineConfig({
+  semanticTokens: {
+    colors: {
+      blue: { value: 'blue' },
+      green: {
+        value: {
+          base: 'green',
+          _dark: 'white',
+        },
+      },
+      red: {
+        value: {
+          base: 'red',
+        },
+      },
+    },
+  },
+})
+```
+
+This is the output of the `styled-system/token` JS token function:
+
+```diff
+const tokens = {
+    "colors.blue": {
+-     "value": "var(--colors-blue)",
++     "value": "blue",
+      "variable": "var(--colors-blue)"
+    },
+    "colors.green": {
+      "value": "var(--colors-green)",
+      "variable": "var(--colors-green)"
+    },
+    "colors.red": {
+-     "value": "var(--colors-red)",
++     "value": "red",
+      "variable": "var(--colors-red)"
+    },
+}
+```
+
 ## [0.34.3] - 2024-03-09
 
 ### Fixed
