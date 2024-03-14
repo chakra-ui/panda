@@ -179,7 +179,30 @@ You can style the `::before` and `::after` pseudo elements of an element using t
 </div>
 ```
 
-> Note: Ensure you wrap the content value in double quotes.
+#### Notes
+
+- **Before and After**: Ensure you wrap the content value in double quotes.
+- **Mixing with Conditions**: When using condition and pseudo elements, prefer to place the condition **before** the pseudo element.
+
+```jsx
+css({
+  // This works ✅
+  _dark: { _backdrop: { color: 'red' } }
+  // This doesn't work ❌
+  _backdrop: { _dark: { color: 'red' } }
+})
+```
+
+The reason `_backdrop: { _dark: { color: 'red' } }` doesn't work is because it generated an invalid CSS structure that looks like:
+
+```css
+&::backdrop {
+  &.dark,
+  .dark & {
+    color: red;
+  }
+}
+```
 
 ### Placeholder
 
