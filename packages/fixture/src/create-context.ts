@@ -1,11 +1,15 @@
 import { mergeConfigs } from '@pandacss/config'
-import { utils } from '@pandacss/config/utils'
+import { RuleProcessor } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { PandaContext } from '@pandacss/node'
-import { stringifyJson, parseJson } from '@pandacss/shared'
+import { omit, parseJson, stringifyJson, traverse } from '@pandacss/shared'
 import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { fixturePreset } from './config'
-import { RuleProcessor } from '@pandacss/core'
+
+const hookUtils = {
+  omit: omit,
+  traverse: traverse,
+}
 
 const defaults: UserConfig = {
   optimize: true,
@@ -50,7 +54,7 @@ export const createContext = (userConfig?: Config) => {
       config: resolvedConfig,
       path: fixtureDefaults.path,
       dependencies: fixtureDefaults.dependencies,
-      utils,
+      utils: hookUtils,
     })
     if (result) {
       resolvedConfig = result as UserConfig
