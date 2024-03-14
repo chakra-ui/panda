@@ -1,9 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { mergeConfigs } from '../src/merge-config'
 import { getResolvedConfig } from '../src/get-resolved-config'
-import type { Config } from '@pandacss/types'
+import type { Config, Preset } from '@pandacss/types'
 
 const defineConfig = <T extends Config>(config: T) => config
+const definePreset = <T extends Preset>(preset: T) => preset
 
 describe('mergeConfigs / theme', () => {
   test('should merge configs', () => {
@@ -436,6 +437,63 @@ describe('mergeConfigs / theme', () => {
       }
     `)
   })
+
+  test.only('flat and nested object on same key', () => {
+    const userConfig = defineConfig({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              black: {
+                0: { value: 'black' },
+                10: { value: 'black/10' },
+                20: { value: 'black/20' },
+                30: { value: 'black/30' },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const preset = definePreset({
+      theme: {
+        tokens: {
+          colors: {
+            black: { value: 'black' },
+          },
+        },
+      },
+    })
+
+    const result = mergeConfigs([userConfig, preset])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "black": {
+                "0": {
+                  "value": "black",
+                },
+                "10": {
+                  "value": "black/10",
+                },
+                "20": {
+                  "value": "black/20",
+                },
+                "30": {
+                  "value": "black/30",
+                },
+                "value": "black",
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
 })
 
 describe('mergeConfigs / utilities', () => {
@@ -528,7 +586,7 @@ describe('mergeConfigs / recipes', () => {
 
     const result = mergeConfigs([userConfig, defaultConfig])
 
-    expect(result.theme.recipes).toMatchInlineSnapshot(`
+    expect(result.theme?.recipes).toMatchInlineSnapshot(`
       {
         "button": {
           "className": "button",
