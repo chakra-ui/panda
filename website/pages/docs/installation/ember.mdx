@@ -1,0 +1,265 @@
+---
+title: Using Ember
+description: Easily use Panda with Ember with our dedicated integration.
+---
+
+# Using Panda CSS with Ember
+
+Setting up Panda CSS in a Ember project using PostCSS.
+
+## Start a new project
+
+<Steps>
+
+### Create Ember project
+
+To get started, we will need to create a new Ember project using the `embroider` build system. We will name our project `test-app` but you can name it whatever you want.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']} variant="code">
+  <Tab>
+    ```bash
+    pnpm dlx ember-cli@latest new test-app --embroider --no-welcome --typescript --pnpm
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx ember-cli@latest new test-app --embroider --no-welcome --typescript
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dlx ember-cli@latest new test-app --embroider --no-welcome --typescript --yarn
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bunx ember-cli@latest new test-app --embroider --no-welcome --typescript --skip-install
+    ```
+  </Tab>
+</Tabs>
+
+Enter the newly created directory:
+
+```bash
+cd test-app
+```
+
+### Install Panda
+
+Install panda and its peer dependencies, as well as `postcss-loader`. Run the init command to generate the `panda.config.ts` and `postcss.config.js` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev postcss postcss-loader
+    pnpm panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev postcss postcss-loader
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev postcss postcss-loader
+    yarn panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev postcss postcss-loader
+    bun panda init --postcss
+    ```
+  </Tab>
+</Tabs>
+
+### Enable PostCSS support
+
+In your `ember-cli-build.js` file, configure PostCSS to process your CSS files.
+
+```js {12-23} filename="ember-cli-build.js"
+'use strict';
+
+const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+
+module.exports = function (defaults) {
+  const app = new EmberApp(defaults, {
+    // Add options here
+  });
+
+  const { Webpack } = require('@embroider/webpack');
+  return require('@embroider/compat').compatBuild(app, Webpack, {
+    packagerOptions: {
+      webpackConfig: {
+        module: {
+          rules: [
+            {
+              test: /\.css$/i,
+              use: ['postcss-loader'],
+            },
+          ],
+        },
+      },
+    },
+    // other options...
+  });
+};
+```
+
+### Configure the PostCSS plugin
+
+Add the `.embroider` folder to the allow list so the Panda PostCSS plugin picks up your app CSS files.
+
+```js {4} filename="postcss.config.cjs"
+module.exports = {
+  plugins: {
+    '@pandacss/dev/postcss': {
+      allow: [/node_modules\/.embroider/]
+    }
+  }
+}
+```
+
+### Update package.json scripts
+
+Open the `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    // ...
+  }
+}
+```
+
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
+### Configure the content
+
+Make sure that all of the paths of your Ember components are included in the `include` section of the `panda.config.ts` file. Set the `outdir` to the app folder so the code can be imported in your Ember app. Adjust the `importMap` accordingly to reflect your app name.
+
+```js {8,19-22} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev";
+
+export default defineConfig({
+  // Whether to use css reset
+  preflight: true,
+
+  // Where to look for your css declarations
+  include: ["./app/**/*.{js,ts,gjs,gts}"],
+
+  // Files to exclude
+  exclude: [],
+
+  // Useful for theme customization
+  theme: {
+    extend: {},
+  },
+
+  // The output directory for your css system
+  outdir: "app/styled-system",
+
+  // Configure the import map to use your project name
+  importMap: "test-app/styled-system",
+});
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `app/index.css` file.
+
+```css filename="app/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+Next, import the file in your `app/app.ts` file.
+
+```ts {5} filename="app/app.ts"
+import Application from '@ember/application';
+import Resolver from 'ember-resolver';
+import loadInitializers from 'ember-load-initializers';
+import config from 'test-app/config/environment';
+import 'test-app/index.css';
+
+export default class App extends Application {
+  modulePrefix = config.modulePrefix;
+  podModulePrefix = config.podModulePrefix;
+  Resolver = Resolver;
+}
+
+loadInitializers(App, config.modulePrefix);
+```
+
+### Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  <Tab>
+    ```bash
+    pnpm start
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run start
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn start
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun start
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+
+```ts filename="app/components/hello-panda.ts"
+import Component from '@glimmer/component';
+import { css } from 'test-app/styled-system/css';
+
+export default class HelloPanda extends Component {
+  style = css({ fontSize: '5xl', fontWeight: 'bold' });
+}
+```
+
+```hbs filename="app/components/hello-panda.hbs"
+<div class={{this.style}}>Hello 🐼!</div>
+```
+
+```hbs {5} filename="app/templates/application.hbs"
+{{page-title "TestApp"}}
+
+<h2 id="title">Welcome to Ember</h2>
+
+<HelloPanda />
+
+{{outlet}}
+```
+
+> For the best developer experience, set up [template tag component authoring format](https://guides.emberjs.com/release/components/template-tag-format/) in Ember.
+
+</Steps>
+
+## Troubleshooting
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
+
+```json filename="tsconfig.json"
+{
+  // ...
+  "include":  ["app/styled-system"]
+}
+```
