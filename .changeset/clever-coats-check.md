@@ -23,12 +23,14 @@ const userConfig = defineConfig({
   ],
   theme: {
     tokens: {
-      colors: {
-        black: {
-          0: { value: 'black' },
-          10: { value: 'black/10' },
-          20: { value: 'black/20' },
-          30: { value: 'black/30' },
+      extend: {
+        colors: {
+          black: {
+            0: { value: 'black' },
+            10: { value: 'black/10' },
+            20: { value: 'black/20' },
+            30: { value: 'black/30' },
+          },
         },
       },
     },
