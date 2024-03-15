@@ -1,5 +1,5 @@
-import { assign, mergeWith } from '@pandacss/shared'
-import type { Config } from '@pandacss/types'
+import { assign, isObject, mergeWith, traverse } from '@pandacss/shared'
+import type { Config, UserConfig } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
 
@@ -66,10 +66,12 @@ const compact = (obj: any) => {
   }, {} as any)
 }
 
+const tokenKeys = ['description', 'extensions', 'type', 'value']
+
 /**
  * Merge all configs into a single config
  */
-export function mergeConfigs(configs: ExtendableConfig[]) {
+export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
   const [userConfig] = configs
   const pluginHooks = userConfig.plugins ?? []
   if (userConfig.hooks) {
@@ -91,5 +93,52 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
     ...configs,
   )
 
-  return compact(mergedResult)
+  const withoutEmpty = compact(mergedResult)
+
+  /**
+   * Properly merge tokens between flat/nested forms by setting the flat form as the default
+   * preset:
+   * ```
+   * tokens: {
+   *   black: {
+   *     value: "black"
+   *   }
+   * }
+   * // color: "black"
+   * ```
+   *
+   * config:
+   * ```
+   * tokens: {
+   *   black: {
+   *     0: { value: "black" },
+   *     10: { value: "black/10" },
+   *     20: { value: "black/20" },
+   *     // ...
+   *   }
+   * }
+   *
+   * // color: "black.20"
+   * ```
+   */
+  if (withoutEmpty.theme?.tokens) {
+    traverse(withoutEmpty.theme.tokens, (args) => args, {
+      stop(args) {
+        if (isObject(args.value) && 'value' in args.value) {
+          const keys = Object.keys(args.value)
+          if (keys.filter((k) => !tokenKeys.includes(k)).length) {
+            const { type: _type, description: _description, extensions: _extensions, value, DEFAULT } = args.value
+            args.value.DEFAULT = { value: DEFAULT?.value ?? value }
+            delete args.value.value
+          }
+
+          return true
+        }
+
+        return false
+      },
+    })
+  }
+
+  return withoutEmpty
 }

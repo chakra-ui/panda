@@ -3956,4 +3956,88 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('TS namespaces - ignore not from panda', () => {
+    const code = `
+    import * as panda from "not-panda"
+
+    panda.css({ color: "red" })
+    panda.cva({ base: { color: "blue" } })
+    panda.sva({ base: { root: { color: "green" } } })
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`[]`)
+
+    expect(result.css).toMatchInlineSnapshot(`""`)
+  })
+
+  test('flat and nested object on same key', () => {
+    const code = `
+    const className = css({
+      color: "black",
+      backgroundColor: "black.10",
+      borderColor: "black.20"
+    })
+     `
+    const result = parseAndExtract(code, {
+      presets: [
+        {
+          theme: {
+            extend: {
+              tokens: {
+                colors: {
+                  black: { value: 'black' },
+                },
+              },
+            },
+          },
+        },
+      ],
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              black: {
+                0: { value: 'black' },
+                10: { value: 'black/10' },
+                20: { value: 'black/20' },
+                30: { value: 'black/30' },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "backgroundColor": "black.10",
+              "borderColor": "black.20",
+              "color": "black",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_black {
+          color: var(--colors-black);
+      }
+
+        .bg_black\\.10 {
+          background-color: var(--colors-black-10);
+      }
+
+        .border_black\\.20 {
+          border-color: var(--colors-black-20);
+      }
+      }"
+    `)
+  })
 })
