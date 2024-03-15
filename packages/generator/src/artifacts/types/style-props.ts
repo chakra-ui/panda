@@ -2,7 +2,6 @@ import type { Context } from '@pandacss/core'
 import { allCssProperties } from '@pandacss/is-valid-prop'
 import { unionType } from '@pandacss/shared'
 import outdent from 'outdent'
-import { match } from 'ts-pattern'
 
 import type { UserConfig } from '@pandacss/types'
 import csstype from '../generated/csstype.d.ts.json' assert { type: 'json' }
@@ -11,8 +10,7 @@ export function generateStyleProps(ctx: Context) {
   const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
   const propTypes = ctx.utility.getTypes()
 
-  const cssVars = ctx.globalVars
-  const withCssVars = cssVars.isEmpty() ? '' : 'CssVars'
+  const cssVars = unionType(ctx.globalVars.vars)
 
   return outdent`
     ${ctx.file.importType('ConditionalValue', './conditions')}
@@ -21,26 +19,15 @@ export function generateStyleProps(ctx: Context) {
     ${ctx.file.importType('Token', '../tokens/index')}
 
     type AnyString = (string & {})
-    type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
+    ${cssVars ? `type CssVars = ${cssVars}` : ''}
+    type CssVarValue = ConditionalValue<Token${ctx.globalVars.isEmpty() ? '' : ' | CssVars'} | AnyString | (number & {})>
 
-    type GenericCssVarProperties = {
-      [key in \`--$\{string & {}}\`]?: CssVarValue
+    type CssVarName = ${unionType(ctx.globalVars.names)} | AnyString
+    type CssVarKeys = \`--\${CssVarName}\`
+
+    export type CssVarProperties = {
+      [key in CssVarKeys]?: CssVarValue
     }
-
-
-    ${match(ctx.globalVars.isEmpty())
-      .with(
-        false,
-        () => outdent`
-      type CssVarName = ${unionType(ctx.globalVars.names)}
-      type CssVars = ${unionType(cssVars.vars)}
-
-      type CssVar = \`--\${CssVarName}\`
-
-      export type CssVarProperties = ConfigCssVarProperties & GenericCssVarProperties
-      `,
-      )
-      .otherwise(() => outdent`export type CssVarProperties = GenericCssVarProperties`)}
 
     export interface SystemProperties {
       ${Array.from(props)
@@ -48,7 +35,7 @@ export function generateStyleProps(ctx: Context) {
           // mt -> marginTop
           const prop = ctx.utility.shorthands.get(key) ?? key
 
-          const union = [withCssVars]
+          const union = []
           // `scaleX` isn't a valid css property, will fallback to `string | number`
           const cssFallback = allCssProperties.includes(prop) ? `CssProperties["${prop}"]` : ''
 
@@ -66,7 +53,11 @@ export function generateStyleProps(ctx: Context) {
           }
 
           const comment = (csstype.comments as Record<string, string>)?.[prop] || ''
-          const line = `${key}?: ${restrict(prop, filtered.filter(Boolean).join(' | '), ctx.config)}`
+          const value = filtered
+            .concat(ctx.globalVars.isEmpty() ? '' : 'CssVars')
+            .filter(Boolean)
+            .join(' | ')
+          const line = `${key}?: ${restrict(prop, value, ctx.config)}`
 
           return ' ' + [comment, line].filter(Boolean).join('\n')
         })

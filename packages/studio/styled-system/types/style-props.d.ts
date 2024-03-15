@@ -6,11 +6,14 @@ import type { Token } from '../tokens/index';
 
 type AnyString = (string & {})
 
-export type CssVarProperties = {
-  [key in `--${string}`]?: ConditionalValue<Token | AnyString | (number & {})>
-}
+type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
-export type CssVarProperties = GenericCssVarProperties
+type CssVarName =  | AnyString
+type CssVarKeys = `--${CssVarName}`
+
+export type CssVarProperties = {
+  [key in CssVarKeys]?: CssVarValue
+}
 
 export interface SystemProperties {
    /**

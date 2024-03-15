@@ -1,17 +1,10 @@
-import type { LoadConfigResult } from '@pandacss/types'
+import { createContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { Generator } from '../src'
 import { generateStyleProps } from '../src/artifacts/types/style-props'
-import { fixtureDefaults } from '@pandacss/fixture'
-
-const styleProps = (config: LoadConfigResult) => {
-  const ctx = new Generator(config)
-  return generateStyleProps(ctx)
-}
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(styleProps(fixtureDefaults)).toMatchInlineSnapshot(`
+    expect(generateStyleProps(createContext())).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type';
       import type { CssProperties } from './system-types';
@@ -19,8 +12,13 @@ describe('generate property types', () => {
 
       type AnyString = (string & {})
 
+      type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
+
+      type CssVarName =  | AnyString
+      type CssVarKeys = \`--\${CssVarName}\`
+
       export type CssVarProperties = {
-        [key in \`--\${string}\`]?: ConditionalValue<Token | AnyString | (number & {})>
+        [key in CssVarKeys]?: CssVarValue
       }
 
       export interface SystemProperties {
@@ -7467,10 +7465,7 @@ describe('generate property types', () => {
   })
 
   test('with stricTokens true', () => {
-    const conf = Object.assign({}, fixtureDefaults)
-    conf.config.strictTokens = true
-
-    expect(styleProps(conf)).toMatchInlineSnapshot(`
+    expect(generateStyleProps(createContext({ strictTokens: true }))).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type';
       import type { CssProperties } from './system-types';
@@ -7478,8 +7473,13 @@ describe('generate property types', () => {
 
       type AnyString = (string & {})
 
+      type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
+
+      type CssVarName =  | AnyString
+      type CssVarKeys = \`--\${CssVarName}\`
+
       export type CssVarProperties = {
-        [key in \`--\${string}\`]?: ConditionalValue<Token | AnyString | (number & {})>
+        [key in CssVarKeys]?: CssVarValue
       }
 
       export interface SystemProperties {
@@ -14922,6 +14922,60 @@ describe('generate property types', () => {
        colorPalette?: ConditionalValue<WithEscapeHatch<UtilityValues["colorPalette"]>>
        textStyle?: ConditionalValue<WithEscapeHatch<UtilityValues["textStyle"]>>
       }"
+    `)
+  })
+
+  test('with globalVars', () => {
+    const str = generateStyleProps(
+      createContext({
+        hooks: {
+          'config:resolved': ({ config, utils }) => {
+            return utils.omit(config, ['utilities', 'theme.tokens', 'theme.semanticTokens'])
+          },
+        },
+        globalVars: {
+          '--random-color': 'red',
+          '--button-color': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: 'blue',
+          },
+        },
+      }),
+    )
+
+    expect(str.slice(0, str.indexOf('WebkitBorderBefore'))).toMatchInlineSnapshot(`
+      "import type { ConditionalValue } from './conditions';
+      import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type';
+      import type { CssProperties } from './system-types';
+      import type { Token } from '../tokens/index';
+
+      type AnyString = (string & {})
+      type CssVars = "var(--random-color)" | "var(--button-color)"
+      type CssVarValue = ConditionalValue<Token | CssVars | AnyString | (number & {})>
+
+      type CssVarName = "random-color" | "button-color" | AnyString
+      type CssVarKeys = \`--\${CssVarName}\`
+
+      export type CssVarProperties = {
+        [key in CssVarKeys]?: CssVarValue
+      }
+
+      export interface SystemProperties {
+         /**
+         * The **\`appearance\`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
+         *
+         * **Syntax**: \`none | button | button-bevel | caret | checkbox | default-button | inner-spin-button | listbox | listitem | media-controls-background | media-controls-fullscreen-background | media-current-time-display | media-enter-fullscreen-button | media-exit-fullscreen-button | media-fullscreen-button | media-mute-button | media-overlay-play-button | media-play-button | media-seek-back-button | media-seek-forward-button | media-slider | media-sliderthumb | media-time-remaining-display | media-toggle-closed-captions-button | media-volume-slider | media-volume-slider-container | media-volume-sliderthumb | menulist | menulist-button | menulist-text | menulist-textfield | meter | progress-bar | progress-bar-value | push-button | radio | searchfield | searchfield-cancel-button | searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical | square-button | textarea | textfield | -apple-pay-button\`
+         *
+         * **Initial value**: \`none\` (but this value is overridden in the user agent CSS)
+         */
+      WebkitAppearance?: ConditionalValue<CssProperties["WebkitAppearance"] | CssVars | AnyString>
+       /**
+         * The **\`-webkit-border-before\`** CSS property is a shorthand property for setting the individual logical block start border property values in a single place in the style sheet.
+         *
+         * **Syntax**: \`<'border-width'> || <'border-style'> || <color>\`
+         */
+      "
     `)
   })
 })

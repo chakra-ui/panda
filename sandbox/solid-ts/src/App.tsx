@@ -38,7 +38,17 @@ export function App() {
       >
         {value()} Edit <code>src/App.tsx</code> and save to reload.
       </styled.div>
-      <div class={css({ color: 'fg.default' })}> aaa</div>
+      <div
+        class={css({
+          color: 'fg.default',
+          fontSize: '2xs',
+          '--button-color': 'colors.red.300',
+          '--xxx': 'spacing.10',
+        })}
+      >
+        {' '}
+        aaa
+      </div>
       <Button size="md">button</Button>
     </>
   )

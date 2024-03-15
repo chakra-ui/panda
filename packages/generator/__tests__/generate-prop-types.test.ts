@@ -207,8 +207,34 @@ describe('generate property types', () => {
       type Important = ImportantMark | WhitespaceImportant
       type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
 
+      /**
+       * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
+       * - Allows you to use an escape hatch (e.g. \`[123px]\`) to use any string as a value.
+       * - Allows you to use a color opacity modifier (e.g. \`red/300\`) with known color values.
+       * - Allows you to use an important mark (e.g. \`!\` or \`!important\`) in the value.
+       *
+       * This is useful when you want to use a value that is not defined in the config or want to opt-out of the defaults.
+       *
+       * @example
+       * css({
+       *   fontSize: '[123px]', // ⚠️ will not throw even if you haven't defined 123px as a token
+       * })
+       *
+       * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
+       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+       */
       export type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
 
+      /**
+       * Will restrict the value of properties that have predefined values to those values only.
+       *
+       * @example
+       * css({
+       *   display: 'abc', // ❌ will throw
+       * })
+       *
+       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+       */
       export type OnlyKnown<Key, Value> = Value extends boolean
         ? Value
         : Value extends \`\${infer _}\` ? Value : never"
@@ -235,115 +261,54 @@ describe('generate property types', () => {
         }),
       ),
     ).toMatchInlineSnapshot(`
-      "import type { ConditionalValue } from './conditions';
+      "import type { Conditional } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 
-      interface PropertyValueTypes {
-      	colorPalette: string;
+      export interface UtilityValues {
       	textStyle: "headline.h1" | "headline.h2";
       }
 
 
 
-        type CssValue<T> = T extends keyof CssProperties ? CssProperties[T] : never
-
-        type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | CssValue<T> : CssValue<T>
-
-        export interface PropertyTypes extends PropertyValueTypes {
-
-      }
-
-      type CssVars = "var(--random-color)" | "var(--button-color)"
-
-      type StrictableProps =
-        | 'alignContent'
-        | 'alignItems'
-        | 'alignSelf'
-        | 'all'
-        | 'animationComposition'
-        | 'animationDirection'
-        | 'animationFillMode'
-        | 'appearance'
-        | 'backfaceVisibility'
-        | 'backgroundAttachment'
-        | 'backgroundClip'
-        | 'borderCollapse'
-        | 'borderBlockEndStyle'
-        | 'borderBlockStartStyle'
-        | 'borderBlockStyle'
-        | 'borderBottomStyle'
-        | 'borderInlineEndStyle'
-        | 'borderInlineStartStyle'
-        | 'borderInlineStyle'
-        | 'borderLeftStyle'
-        | 'borderRightStyle'
-        | 'borderTopStyle'
-        | 'boxDecorationBreak'
-        | 'boxSizing'
-        | 'breakAfter'
-        | 'breakBefore'
-        | 'breakInside'
-        | 'captionSide'
-        | 'clear'
-        | 'columnFill'
-        | 'columnRuleStyle'
-        | 'contentVisibility'
-        | 'direction'
-        | 'display'
-        | 'emptyCells'
-        | 'flexDirection'
-        | 'flexWrap'
-        | 'float'
-        | 'fontKerning'
-        | 'forcedColorAdjust'
-        | 'isolation'
-        | 'lineBreak'
-        | 'mixBlendMode'
-        | 'objectFit'
-        | 'outlineStyle'
-        | 'overflow'
-        | 'overflowX'
-        | 'overflowY'
-        | 'overflowBlock'
-        | 'overflowInline'
-        | 'overflowWrap'
-        | 'pointerEvents'
-        | 'position'
-        | 'resize'
-        | 'scrollBehavior'
-        | 'touchAction'
-        | 'transformBox'
-        | 'transformStyle'
-        | 'userSelect'
-        | 'visibility'
-        | 'wordBreak'
-        | 'writingMode'
-
       type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
-      type WithEscapeHatch<T> = T | \`[\${string}]\` | \`\${T}/{string}\` | WithColorOpacityModifier<T>
 
-      type FilterVagueString<Key, Value> = Value extends boolean
+      type ImportantMark = "!" | "!important"
+      type WhitespaceImportant = \` \${ImportantMark}\`
+      type Important = ImportantMark | WhitespaceImportant
+      type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
+
+      /**
+       * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
+       * - Allows you to use an escape hatch (e.g. \`[123px]\`) to use any string as a value.
+       * - Allows you to use a color opacity modifier (e.g. \`red/300\`) with known color values.
+       * - Allows you to use an important mark (e.g. \`!\` or \`!important\`) in the value.
+       *
+       * This is useful when you want to use a value that is not defined in the config or want to opt-out of the defaults.
+       *
+       * @example
+       * css({
+       *   fontSize: '[123px]', // ⚠️ will not throw even if you haven't defined 123px as a token
+       * })
+       *
+       * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
+       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+       */
+      export type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
+
+      /**
+       * Will restrict the value of properties that have predefined values to those values only.
+       *
+       * @example
+       * css({
+       *   display: 'abc', // ❌ will throw
+       * })
+       *
+       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+       */
+      export type OnlyKnown<Key, Value> = Value extends boolean
         ? Value
-        : Key extends StrictableProps
-          ? Value extends \`\${infer _}\` ? Value : never
-          : Value
-
-      type PropOrCondition<Key, Value> = ConditionalValue<Value | (string & {}) | CssVars>
-
-      type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-        ? PropOrCondition<T, PropertyTypes[T] | CssValue<T>>
-        : never;
-
-      type CssPropertyValue<T extends string> = T extends keyof CssProperties
-        ? PropOrCondition<T, CssProperties[T]>
-        : never;
-
-      export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? PropertyTypeValue<T>
-        : T extends keyof CssProperties
-          ? CssPropertyValue<T>
-          : PropOrCondition<T, string | number>"
+        : Value extends \`\${infer _}\` ? Value : never"
     `)
   })
 })
