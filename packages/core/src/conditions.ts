@@ -87,10 +87,7 @@ export class Conditions {
   }
 
   getThemeSelector = (name: string, themeVariant: ThemeVariant) => {
-    if (themeVariant.attribute === 'class') {
-      return '.' + themeVariant.attribute
-    }
-    return `[data-${themeVariant.attribute || 'theme'}=${name}]`
+    return `[data-panda-${themeVariant.attribute || 'theme'}=${name}]`
   }
 
   getThemeName = (theme: string) => {

@@ -127,22 +127,12 @@ interface ExtendableGlobalVars {
 
 export interface ThemeVariant extends Pick<Theme, 'tokens' | 'semanticTokens'> {
   /**
-   * Selector attribute to use for the generated theme, can be any `data-*` attribute or `class`.
-   * @default 'data-theme'
-   *
-   * If set to `class`, the theme will be generated as a class attribute using the key
-   * @example
-   * ```ts
-   * {
-   *  "my-theme": {
-   *   attribute: "class"
-   * }
-   *
-   * // will generate `.my-theme` class
+   * Selector attribute to use for the generated theme, can be any `data-*` attribute
+   * @default 'data-panda-theme'
    * ```
    *
    */
-  attribute?: `data-${string}` | 'class'
+  attribute?: `data-${string}`
 }
 
 export interface ThemeVariantsMap {

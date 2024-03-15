@@ -47,8 +47,7 @@ export function generateThemes(ctx: Context) {
         compact({
           name,
           id: getThemeId(name),
-          className: themeVariant.attribute === 'class' ? name : undefined,
-          dataAttr: themeVariant.attribute === 'class' ? undefined : themeVariant.attribute || name,
+          dataAttr: themeVariant.attribute || name,
           vars: Object.fromEntries(vars),
           css: results.join('\n\n'),
         }),
@@ -87,12 +86,13 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
       throw new Error('No head found in doc')
     }
 
+    doc.documentElement.dataset.pandaTheme = theme.dataAttr
+
     head.appendChild(sheet)
     sheet.innerHTML = theme.css
 
     return sheet
   }
-
   `,
     },
     {
@@ -108,11 +108,7 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
         return `'${f.name}': {
           id: string,
           name: '${f.name}',
-          ${
-            theme.attribute === 'class'
-              ? `className: '${theme.attribute}',`
-              : `dataAttr: '${theme.attribute || f.name}',`
-          }
+          dataAttr: '${theme.attribute || f.name}',
           css: string,
           vars: Record<${vars.map((varName) => `'${varName}'`).join('|')}, string> }`
       })
