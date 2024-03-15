@@ -1,27 +1,19 @@
 import type { Context } from '@pandacss/core'
-import { unionType } from '@pandacss/shared'
 import { outdent } from 'outdent'
-import { match } from 'ts-pattern'
 
 export function generatePropTypes(ctx: Context) {
-  const {
-    config: { strictTokens },
-    utility,
-  } = ctx
+  const { utility } = ctx
 
   const result = [
     outdent`
-    ${ctx.file.importType('ConditionalValue', './conditions')}
+    ${ctx.file.importType('Conditional', './conditions')}
     ${ctx.file.importType('CssProperties', './system-types')}
     ${ctx.file.importType('Tokens', '../tokens/index')}
 
-    interface PropertyValueTypes {`,
+    export interface UtilityValues {`,
   ]
 
   const types = utility.getTypes()
-
-  const cssVars = ctx.globalVars
-  const withCssVars = !cssVars.isEmpty() ? ' | CssVars' : ''
 
   for (const [prop, values] of types.entries()) {
     result.push(`\t${prop}: ${values.join(' | ')};`)
@@ -29,96 +21,8 @@ export function generatePropTypes(ctx: Context) {
 
   result.push('}', '\n')
 
-  result.push(`
-  type CssValue<T> = T extends keyof CssProperties ? CssProperties[T] : never
-
-  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${
-    strictTokens ? '' : ' | CssValue<T>'
-  } : CssValue<T>
-
-  export interface PropertyTypes extends PropertyValueTypes {
-  `)
-
-  utility.shorthands.forEach((value, key) => {
-    result.push(`\t${key}: Shorthand<${JSON.stringify(value)}>;`)
-  })
-
-  result.push('}')
-
   return outdent`
   ${result.join('\n')}
-
-  ${
-    !cssVars.isEmpty()
-      ? outdent`
-  type CssVars = ${unionType(cssVars.vars)}
-  `
-      : ''
-  }
-
-  type StrictableProps =
-    | 'alignContent'
-    | 'alignItems'
-    | 'alignSelf'
-    | 'all'
-    | 'animationComposition'
-    | 'animationDirection'
-    | 'animationFillMode'
-    | 'appearance'
-    | 'backfaceVisibility'
-    | 'backgroundAttachment'
-    | 'backgroundClip'
-    | 'borderCollapse'
-    | 'borderBlockEndStyle'
-    | 'borderBlockStartStyle'
-    | 'borderBlockStyle'
-    | 'borderBottomStyle'
-    | 'borderInlineEndStyle'
-    | 'borderInlineStartStyle'
-    | 'borderInlineStyle'
-    | 'borderLeftStyle'
-    | 'borderRightStyle'
-    | 'borderTopStyle'
-    | 'boxDecorationBreak'
-    | 'boxSizing'
-    | 'breakAfter'
-    | 'breakBefore'
-    | 'breakInside'
-    | 'captionSide'
-    | 'clear'
-    | 'columnFill'
-    | 'columnRuleStyle'
-    | 'contentVisibility'
-    | 'direction'
-    | 'display'
-    | 'emptyCells'
-    | 'flexDirection'
-    | 'flexWrap'
-    | 'float'
-    | 'fontKerning'
-    | 'forcedColorAdjust'
-    | 'isolation'
-    | 'lineBreak'
-    | 'mixBlendMode'
-    | 'objectFit'
-    | 'outlineStyle'
-    | 'overflow'
-    | 'overflowX'
-    | 'overflowY'
-    | 'overflowBlock'
-    | 'overflowInline'
-    | 'overflowWrap'
-    | 'pointerEvents'
-    | 'position'
-    | 'resize'
-    | 'scrollBehavior'
-    | 'touchAction'
-    | 'transformBox'
-    | 'transformStyle'
-    | 'userSelect'
-    | 'visibility'
-    | 'wordBreak'
-    | 'writingMode'
 
   type WithColorOpacityModifier<T> = T extends string ? \`$\{T}/\${string}\` : T
 
@@ -127,49 +31,36 @@ export function generatePropTypes(ctx: Context) {
   type Important = ImportantMark | WhitespaceImportant
   type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
 
-  type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
+  /**
+   * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
+   * - Allows you to use an escape hatch (e.g. \`[123px]\`) to use any string as a value.
+   * - Allows you to use a color opacity modifier (e.g. \`red/300\`) with known color values.
+   * - Allows you to use an important mark (e.g. \`!\` or \`!important\`) in the value.
+   *
+   * This is useful when you want to use a value that is not defined in the config or want to opt-out of the defaults.
+   *
+   * @example
+   * css({
+   *   fontSize: '[123px]', // ⚠️ will not throw even if you haven't defined 123px as a token
+   * })
+   *
+   * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
+   * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+   */
+  export type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
 
-  type FilterVagueString<Key, Value> = Value extends boolean
+  /**
+   * Will restrict the value of properties that have predefined values to those values only.
+   *
+   * @example
+   * css({
+   *   display: 'abc', // ❌ will throw
+   * })
+   *
+   * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+   */
+  export type OnlyKnown<Key, Value> = Value extends boolean
     ? Value
-    : Key extends StrictableProps
-      ? Value extends \`\${infer _}\` ? Value : never
-      : Value
-
-  type PropOrCondition<Key, Value> = ${match(ctx.config)
-    .with(
-      { strictTokens: true, strictPropertyValues: true },
-      () => `ConditionalValue<WithEscapeHatch<FilterVagueString<Key, Value>>${withCssVars}>`,
-    )
-    .with({ strictTokens: true }, () => `ConditionalValue<WithEscapeHatch<Value>${withCssVars}>`)
-    .with(
-      { strictPropertyValues: true },
-      () => `ConditionalValue<WithEscapeHatch<FilterVagueString<Key, Value>>${withCssVars}>`,
-    )
-    .otherwise(() => `ConditionalValue<Value | (string & {})${withCssVars}>`)}
-
-  type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
-    ? PropOrCondition<T, ${match(ctx.config)
-      .with(
-        { strictPropertyValues: true, strictTokens: true },
-        () => 'T extends StrictableProps ? PropertyTypes[T] : PropertyTypes[T]',
-      )
-      .with({ strictTokens: true }, () => 'PropertyTypes[T]')
-      .with(
-        { strictPropertyValues: true },
-        () => 'T extends StrictableProps ? PropertyTypes[T] : PropertyTypes[T] | CssValue<T>',
-      )
-
-      .otherwise(() => 'PropertyTypes[T] | CssValue<T>')}>
-    : never;
-
-  type CssPropertyValue<T extends string> = T extends keyof CssProperties
-    ? PropOrCondition<T, CssProperties[T]>
-    : never;
-
-  export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-    ? PropertyTypeValue<T>
-    : T extends keyof CssProperties
-      ? CssPropertyValue<T>
-      : PropOrCondition<T, string | number>
+    : Value extends \`\${infer _}\` ? Value : never
   `
 }

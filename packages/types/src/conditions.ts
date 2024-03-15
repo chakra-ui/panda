@@ -40,14 +40,12 @@ export interface ExtendableConditions {
 
 export type Condition = string
 
-export type Conditional<V> =
+export type ConditionalValue<V> =
   | V
   | Array<V | null>
   | {
-      [K in keyof Conditions]?: Conditional<V>
+      [K in keyof Conditions]?: ConditionalValue<V>
     }
-
-export type ConditionalValue<T> = Conditional<T>
 
 export type Nested<P> =
   | (P & {

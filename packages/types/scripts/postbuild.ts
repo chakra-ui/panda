@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
+import { getCssTypesComments } from './save-csstype-comments'
 
 const fileMap = [
   'csstype.d.ts',
@@ -30,7 +31,14 @@ export async function main() {
       'generated',
       (input.endsWith('.d.ts') ? input : input.replace('.ts', '.d.ts')) + '.json',
     )
-    writeFileSync(outPath, JSON.stringify({ content }, null, 2), 'utf8')
+
+    const result = { content } as any
+    if (input.includes('csstype.d.ts')) {
+      const comments = getCssTypesComments()
+      result.comments = comments
+    }
+
+    writeFileSync(outPath, JSON.stringify(result, null, 2), 'utf8')
   })
 
   console.log('[postbuild] Copied types to packages/generator/src/artifacts ✅')
