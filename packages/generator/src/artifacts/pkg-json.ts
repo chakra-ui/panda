@@ -31,6 +31,11 @@ export function generatePackageJson(ctx: Context) {
         require: ctx.file.ext(`./recipes/index`),
         import: ctx.file.ext(`./recipes/index`),
       },
+      './themes': {
+        types: ctx.file.extDts('./themes/index'),
+        require: ctx.file.ext(`./themes/index`),
+        import: ctx.file.ext(`./themes/index`),
+      },
       './tokens': {
         types: ctx.file.extDts('./tokens/index'),
         require: ctx.file.ext(`./tokens/index`),

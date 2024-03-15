@@ -50,4 +50,8 @@ export class PathEngine {
   get jsx() {
     return this.getFilePath('jsx')
   }
+
+  get themes() {
+    return this.getFilePath('themes')
+  }
 }

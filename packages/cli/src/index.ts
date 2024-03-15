@@ -1,10 +1,11 @@
 import type {
-  HooksApiInterface,
   CompositionStyles,
   Config,
   CssKeyframes,
   GlobalStyleObject,
+  HooksApiInterface,
   LayerStyles,
+  PandaPlugin,
   Parts,
   PatternConfig,
   Preset,
@@ -16,8 +17,8 @@ import type {
   SlotRecipeVariantRecord,
   SystemStyleObject,
   TextStyles,
+  ThemeVariant,
   Tokens,
-  PandaPlugin,
 } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
@@ -78,6 +79,14 @@ export function definePlugin(plugin: PandaPlugin) {
   return plugin
 }
 
+export function defineThemeVariant<T extends ThemeVariant>(theme: T) {
+  return theme
+}
+
+export function defineThemeContract<C extends Partial<Omit<ThemeVariant, 'selector'>>>(_contract: C) {
+  return <T extends C & ThemeVariant>(theme: T) => defineThemeVariant(theme as T)
+}
+
 /* -----------------------------------------------------------------------------
  * Token creators
  * -----------------------------------------------------------------------------*/
@@ -113,17 +122,17 @@ export function defineStyles(definition: SystemStyleObject) {
 }
 
 export type {
-  HooksApiInterface,
   CompositionStyles,
   Config,
   CssKeyframes,
   GlobalStyleObject,
+  HooksApiInterface,
   LayerStyles,
+  PatternConfig,
   Preset,
   PropertyConfig,
   RecipeConfig,
   RecipeVariantRecord,
-  PatternConfig,
   SemanticTokens,
   SlotRecipeConfig,
   SlotRecipeVariantRecord,

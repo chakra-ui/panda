@@ -69,9 +69,9 @@ export interface PresetCore {
    */
   patterns: Record<string, PatternConfig>
   /**
-   * The css variables for your project.
+   * Multiple themes for your project.
    */
-  globalVars: GlobalVarsDefinition
+  themes?: ThemeVariantsMap
 }
 
 interface ExtendablePatterns {
@@ -121,8 +121,27 @@ export interface GlobalVarsDefinition {
 }
 
 interface ExtendableGlobalVars {
-  [key: string]: string | CssPropertyDefinition | ExtendableGlobalVars | undefined
-  extend?: ExtendableGlobalVars
+  [key: string]: string | CssPropertyDefinition | GlobalVarsDefinition | undefined
+  extend?: GlobalVarsDefinition
+}
+
+export interface ThemeVariant extends Pick<Theme, 'tokens' | 'semanticTokens'> {
+  /**
+   * Selector attribute to use for the generated theme, can be any `data-*` attribute
+   * @default 'data-panda-theme'
+   * ```
+   *
+   */
+  attribute?: `data-${string}`
+}
+
+export interface ThemeVariantsMap {
+  [name: string]: ThemeVariant
+}
+
+interface ExtendableThemeVariantsMap {
+  [name: string]: ThemeVariantsMap | ThemeVariant | undefined
+  extend?: ThemeVariantsMap | undefined
 }
 
 export interface ExtendableOptions {
@@ -155,6 +174,10 @@ export interface ExtendableOptions {
    * The css variables for your project.
    */
   globalVars?: ExtendableGlobalVars
+  /**
+   * The theme variants for your project.
+   */
+  themes?: ExtendableThemeVariantsMap
 }
 
 export interface ImportMapInput {

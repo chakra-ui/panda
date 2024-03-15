@@ -22,6 +22,7 @@ interface ExtensionData {
   references?: TokenReferences
   condition?: string
   conditions?: TokenConditions
+  theme?: string
 }
 
 interface TokenConditions {

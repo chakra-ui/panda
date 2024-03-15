@@ -4,6 +4,7 @@ import { compact, flatten, isBoolean, isString, memo, patternFns } from '@pandac
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
+  GlobalVarsDefinition,
   HashOptions,
   LoadConfigResult,
   PandaHooks,
@@ -12,6 +13,7 @@ import type {
   RequiredBy,
   StudioOptions,
   Theme,
+  ThemeVariantsMap,
   UserConfig,
 } from '@pandacss/types'
 import { Conditions } from './conditions'
@@ -82,7 +84,7 @@ export class Context {
     const theme = config.theme ?? {}
     conf.config = config
 
-    this.tokens = this.createTokenDictionary(theme)
+    this.tokens = this.createTokenDictionary(theme, config.themes)
     this.hooks['tokens:created']?.({
       configure: (opts) => {
         if (opts.formatTokenName) {
@@ -173,7 +175,7 @@ export class Context {
     })
 
     this.globalVars = new GlobalVars({
-      globalVars: this.config.globalVars,
+      globalVars: this.config.globalVars as GlobalVarsDefinition,
       cssVarRoot: this.config.cssVarRoot!,
     })
 
@@ -229,11 +231,12 @@ export class Context {
     }
   }
 
-  createTokenDictionary = (theme: Theme): TokenDictionary => {
+  createTokenDictionary = (theme: Theme, themeVariants?: ThemeVariantsMap): TokenDictionary => {
     return new TokenDictionary({
       breakpoints: theme.breakpoints,
       tokens: theme.tokens,
       semanticTokens: theme.semanticTokens,
+      themes: themeVariants,
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
     })
@@ -256,6 +259,7 @@ export class Context {
       containerNames: config.theme?.containerNames,
       containerSizes: config.theme?.containerSizes,
       breakpoints: config.theme?.breakpoints,
+      themes: config.themes,
     })
   }
 

@@ -8,7 +8,7 @@ export const artifactsGenerated = (
   ctx: Pick<Context, 'config' | 'recipes' | 'patterns' | 'tokens' | 'jsx' | 'isTemplateLiteralSyntax'>,
 ) => {
   const {
-    config: { outdir },
+    config: { outdir, themes },
     recipes,
     patterns,
     tokens,
@@ -37,6 +37,10 @@ export const artifactsGenerated = (
         outdent`
       ${tick} ${quote(outdir, '/jsx')}: styled jsx elements for ${jsx.framework}
       `,
+      themes &&
+        outdent`
+    ${tick} ${quote(outdir, '/themes')}: theme variants for your design system
+    `,
       '\n',
     ]
       .filter(Boolean)
