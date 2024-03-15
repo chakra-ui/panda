@@ -44,8 +44,4 @@ export interface StaticCssOptions {
   patterns?: {
     [pattern: string]: PatternRule[]
   }
-  /**
-   * The CSS themes to generate
-   */
-  themes?: string[]
 }
