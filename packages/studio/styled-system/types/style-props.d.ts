@@ -15,8 +15,6 @@ export type CssVarProperties = {
   [key in CssVarKeys]?: CssVarValue
 }
 
-export type CssVarProperties = GenericCssVarProperties
-
 export interface SystemProperties {
    /**
    * The **`appearance`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.

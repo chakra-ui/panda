@@ -52,27 +52,18 @@ describe('generate themes', () => {
         {
           "json": "{
         "name": "default",
-        "id": "panda-themes-default",
+        "id": "panda-theme-default",
         "dataAttr": "default",
-        "vars": {
-          "--colors-primary": "blue",
-          "--colors-simple": "var(--colors-red-600)",
-          "--colors-text": "var(--colors-text)"
-        },
-        "css": " [data-theme=default] {\\n    --colors-primary: blue;\\n    --colors-simple: var(--colors-red-600);\\n    --colors-text: var(--colors-blue-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-theme=default] {\\n        --colors-text: var(--colors-blue-400)\\n            }\\n        }"
+        "css": " [data-panda-theme=default] {\\n    --colors-primary: blue;\\n    --colors-simple: var(--colors-red-600);\\n    --colors-text: var(--colors-blue-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=default] {\\n        --colors-text: var(--colors-blue-400)\\n            }\\n        }"
       }",
           "name": "default",
         },
         {
           "json": "{
         "name": "pink",
-        "id": "panda-themes-pink",
+        "id": "panda-theme-pink",
         "dataAttr": "pink",
-        "vars": {
-          "--colors-primary": "pink",
-          "--colors-text": "var(--colors-text)"
-        },
-        "css": " [data-theme=pink] {\\n    --colors-primary: pink;\\n    --colors-text: var(--colors-pink-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-theme=pink] {\\n        --colors-text: var(--colors-pink-400)\\n            }\\n        }"
+        "css": " [data-panda-theme=pink] {\\n    --colors-primary: pink;\\n    --colors-text: var(--colors-pink-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=pink] {\\n        --colors-text: var(--colors-pink-400)\\n            }\\n        }"
       }",
           "name": "pink",
         },
@@ -84,8 +75,8 @@ describe('generate themes', () => {
         {
           "code": "export const getTheme = (themeName) => import('./' + themeName + '.json').then((m) => m.default)
 
-      export function injectTheme(theme, _doc) {
-        const doc = _doc || document
+      export function injectTheme(el, theme) {
+        const doc = el.ownerDocument || document
         let sheet = doc.getElementById(theme.id)
 
         if (!sheet) {
@@ -99,12 +90,13 @@ describe('generate themes', () => {
           throw new Error('No head found in doc')
         }
 
+        el.dataset.pandaTheme = theme.dataAttr
+
         head.appendChild(sheet)
         sheet.innerHTML = theme.css
 
         return sheet
-      }
-      ",
+      }",
           "file": "index.mjs",
         },
         {
@@ -114,14 +106,14 @@ describe('generate themes', () => {
                 id: string,
                 name: 'default',
                 dataAttr: 'default',
-                css: string,
-                vars: Record<'--colors-primary'|'--colors-simple'|'--colors-text', string> }
+                css: string
+              }
       'pink': {
                 id: string,
                 name: 'pink',
                 dataAttr: 'pink',
-                css: string,
-                vars: Record<'--colors-primary'|'--colors-text', string> }
+                css: string
+              }
       }
 
       export type Theme<T extends ThemeName> = ThemeByName[T]
@@ -134,7 +126,7 @@ describe('generate themes', () => {
       /**
        * Inject a theme stylesheet into the document
        */
-      export declare function injectTheme(theme: Theme<any>, doc?: Document): HTMLStyleElement",
+      export declare function injectTheme(el: HTMLElement, theme: Theme<any>): HTMLStyleElement",
           "file": "index.d.ts",
         },
       ]

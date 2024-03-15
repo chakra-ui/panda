@@ -4,7 +4,7 @@ import type { ThemeVariant } from '@pandacss/types'
 import outdent from 'outdent'
 import { stringifyVars } from '../css/token-css'
 
-const getThemeId = (themeName: string) => 'panda-themes-' + themeName
+const getThemeId = (themeName: string) => 'panda-theme-' + themeName
 
 export function generateThemes(ctx: Context) {
   const { themes } = ctx.config
@@ -13,23 +13,7 @@ export function generateThemes(ctx: Context) {
   const { tokens, conditions } = ctx
 
   return Object.entries(themes).map(([name, themeVariant]) => {
-    const vars = new Map<string, string>()
     const results = [] as string[]
-
-    tokens
-      .filter((p) => {
-        return p.extensions.theme === name
-      })
-
-      .forEach((token) => {
-        const { varRef, isVirtual, theme } = token.extensions
-        if (!theme && isVirtual) return
-
-        const isConditional = token.extensions.condition?.includes(':')
-        const value = token.extensions.isSemantic && isConditional ? varRef : token.value
-        vars.set(token.extensions.var, value)
-      })
-
     const condName = ctx.conditions.getThemeName(name)
 
     for (const [key, values] of tokens.view.vars.entries()) {
@@ -48,7 +32,6 @@ export function generateThemes(ctx: Context) {
           name,
           id: getThemeId(name),
           dataAttr: themeVariant.attribute || name,
-          vars: Object.fromEntries(vars),
           css: results.join('\n\n'),
         }),
         null,
@@ -71,8 +54,8 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
       code: outdent`
   export const getTheme = (themeName) => import('./' + themeName + '.json').then((m) => m.default)
 
-  export function injectTheme(theme, _doc) {
-    const doc = _doc || document
+  export function injectTheme(el, theme) {
+    const doc = el.ownerDocument || document
     let sheet = doc.getElementById(theme.id)
 
     if (!sheet) {
@@ -86,7 +69,7 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
       throw new Error('No head found in doc')
     }
 
-    doc.documentElement.dataset.pandaTheme = theme.dataAttr
+    el.dataset.pandaTheme = theme.dataAttr
 
     head.appendChild(sheet)
     sheet.innerHTML = theme.css
@@ -103,14 +86,13 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
     ${files
       .map((f) => {
         const theme = JSON.parse(f.json) as GeneratedTheme
-        const vars = Object.keys(theme.vars)
-        if (!vars.length) return ''
+        if (!theme.css) return ''
         return `'${f.name}': {
           id: string,
           name: '${f.name}',
           dataAttr: '${theme.attribute || f.name}',
-          css: string,
-          vars: Record<${vars.map((varName) => `'${varName}'`).join('|')}, string> }`
+          css: string
+        }`
       })
       .join('\n')}
   }
@@ -125,7 +107,7 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
   /**
    * Inject a theme stylesheet into the document
    */
-  export declare function injectTheme(theme: Theme<any>, doc?: Document): HTMLStyleElement
+  export declare function injectTheme(el: HTMLElement, theme: Theme<any>): HTMLStyleElement
   `,
     },
   ]
@@ -133,6 +115,5 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
 
 interface GeneratedTheme extends Omit<ThemeVariant, 'tokens' | 'semanticTokens'> {
   name: string
-  vars: Record<string, string>
   css: string
 }

@@ -7,8 +7,8 @@
 '@pandacss/dev': minor
 ---
 
-Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes (or className)
-and CSS variables.
+Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes and CSS
+variables.
 
 Can pre-generate multiple themes with token overrides as static CSS, but also dynamically import and inject a theme
 stylesheet at runtime (browser or server).
@@ -61,17 +61,44 @@ export default defineConfig({
         },
       },
     },
-  },
-  staticCss: {
-    // only generate the red in addition to the main one
-    themes: ['primary'],
-    // use  ['*'] to generate all themes
+    secondary: {
+      tokens: {
+        colors: {
+          text: { value: 'blue' },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          muted: { value: '{colors.blue.200}' },
+          body: {
+            value: {
+              base: '{colors.blue.600}',
+              _osDark: '{colors.blue.400}',
+            },
+          },
+        },
+      },
+    },
   },
 })
 ```
 
-> ℹ️ By default, no additional theme variant is generated, you need to specify the specific themes you want to generate
-> in `staticCss.themes` to include them in the CSS output.
+### Pregenerating themes
+
+By default, no additional theme variant is generated, you need to specify the specific themes you want to generate in
+`staticCss.themes` to include them in the CSS output.
+
+```ts
+// panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    themes: ['primary', 'secondary'],
+  },
+})
+```
 
 This will generate the following CSS:
 
@@ -82,7 +109,7 @@ This will generate the following CSS:
     --colors-body: var(--colors-blue-600);
   }
 
-  [data-theme='primary'] {
+  [data-panda-theme='primary'] {
     --colors-text: red;
     --colors-muted: var(--colors-red-200);
     --colors-body: var(--colors-red-600);
@@ -93,7 +120,7 @@ This will generate the following CSS:
       --colors-body: var(--colors-blue-400);
     }
 
-    [data-theme='primary'] {
+    [data-panda-theme='primary'] {
       --colors-body: var(--colors-red-400);
     }
   }
@@ -115,37 +142,8 @@ Each theme has a corresponding JSON file with a similar structure:
   "name": "primary",
   "id": "panda-themes-primary",
   "dataAttr": "primary",
-  "vars": {
-    "--colors-text": "red",
-    "--colors-muted": "var(--colors-red-200)",
-    "--colors-body": "var(--colors-body)"
-  },
-  "css": " [data-theme=primary] {\n    --colors-text: red;\n    --colors-muted: var(--colors-red-200);\n    --colors-body: var(--colors-red-600)\n}\n\n@media (prefers-color-scheme: dark) {\n      [data-theme=primary] {\n        --colors-body: var(--colors-red-400)\n            }\n        }"
+  "css": "[data-panda-theme=primary] { ... }"
 }
-```
-
-The `vars` object contains the CSS variable names with their values, resolved to their final value if they are direct
-references to other tokens.
-
-> ⚠️ Conditional references are not resolved in `vars`, as they depend on the runtime environment The `css` string
-> contains the CSS rules to apply the theme, including the rules related to conditional references for `semanticTokens`
-
-You can synchronously import a theme and use its `vars`:
-
-```ts
-import redTheme from '../styled-system/themes/red.json'
-
-redTheme.vars
-//       ^? {
-//     "--colors-blue": string;
-//     "--colors-body": string;
-// }
-
-// later in your app
-const container = document.getElementById('container')
-Object.entries(redTheme.vars).forEach(([key, value]) => {
-  container.style.setProperty(key, value)
-})
 ```
 
 > ℹ️ Note that for semantic tokens, you need to use inject the theme styles, see below
@@ -158,8 +156,8 @@ import { getTheme } from '../styled-system/themes'
 const theme = await getTheme('red')
 //    ^? {
 //     name: "red";
-//     selector: string;
-//     vars: Record<"--colors-blue" | "--colors-body", string>;
+//     id: string;
+//     css: string;
 // }
 ```
 
@@ -169,7 +167,7 @@ Inject the theme styles into the DOM:
 import { injectTheme } from '../styled-system/themes'
 
 const theme = await getTheme('red')
-injectTheme(theme) // this returns the injected style element
+injectTheme(document.documentElement, theme) // this returns the injected style element
 ```
 
 ---
@@ -184,17 +182,48 @@ import { ThemeName, getTheme } from '../../styled-system/themes'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const store = cookies()
-  const themeName = (store.get('theme')?.value as ThemeName) || 'default'
-  const theme = await getTheme(themeName)
+  const themeName = store.get('theme')?.value as ThemeName
+  const theme = themeName && (await getTheme(themeName))
 
   return (
-    <html lang="en" data-theme={themeName}>
-      <head>
-        <style id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />
-      </head>
+    <html lang="en" data-panda-theme={themeName ? themeName : undefined}>
+      {themeName && (
+        <head>
+          <style type="text/css" id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />
+        </head>
+      )}
       <body>{children}</body>
     </html>
   )
+}
+
+// app/page.tsx
+import { getTheme, injectTheme } from '../../styled-system/themes'
+
+export default function Home() {
+  return (
+    <>
+      <button
+        onClick={async () => {
+          const current = document.documentElement.dataset.pandaTheme
+          const next = current === 'primary' ? 'secondary' : 'primary'
+          const theme = await getTheme(next)
+          setCookie('theme', next, 7)
+          injectTheme(document.documentElement, theme)
+        }}
+      >
+        swap theme
+      </button>
+    </>
+  )
+}
+
+// Set a Cookie
+function setCookie(cName: string, cValue: any, expDays: number) {
+  let date = new Date()
+  date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000)
+  const expires = 'expires=' + date.toUTCString()
+  document.cookie = cName + '=' + cValue + '; ' + expires + '; path=/'
 }
 ```
 

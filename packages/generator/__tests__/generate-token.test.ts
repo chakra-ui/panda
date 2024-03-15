@@ -959,7 +959,7 @@ describe('generator', () => {
           --colors-body: var(--colors-blue-600);
       }
 
-        [data-theme=primary] {
+        [data-panda-theme=primary] {
           --colors-text: red;
           --colors-muted: var(--colors-red-200);
           --colors-body: var(--colors-red-600)
@@ -972,7 +972,7 @@ describe('generator', () => {
           }
 
         @media (prefers-color-scheme: dark) {
-          [data-theme=primary] {
+          [data-panda-theme=primary] {
             --colors-body: var(--colors-red-400)
                   }
               }
@@ -1039,7 +1039,7 @@ describe('generator', () => {
           --colors-body: var(--colors-blue-600);
       }
 
-        [data-theme=primary] {
+        [data-panda-theme=primary] {
           --colors-text: red;
           --colors-muted: var(--colors-red-200);
           --colors-body: var(--colors-red-600)
@@ -1052,7 +1052,7 @@ describe('generator', () => {
           }
 
         @media (prefers-color-scheme: dark) {
-          [data-theme=primary] {
+          [data-panda-theme=primary] {
             --colors-body: var(--colors-red-400)
                   }
               }
