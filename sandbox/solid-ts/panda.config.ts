@@ -15,7 +15,7 @@ export default defineConfig({
         colors: {
           fg: {
             default: {
-              value: { base: '{colors.black}', _dark: '{colors.white}' },
+              value: { base: '{colors.black/87}', _dark: '{colors.white}' },
             },
           },
         },

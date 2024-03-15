@@ -138,6 +138,8 @@ export const transformColorMix: TokenTransformer = {
     return token.extensions.category === 'colors' && token.value.includes('/')
   },
   transform(token, dict) {
+    if (!token.value.includes('/')) return token
+
     return expandReferences(token.value, (path) => {
       const tokenFn = (tokenPath: string) => {
         const token = dict.getByName(tokenPath)
