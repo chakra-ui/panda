@@ -4,6 +4,7 @@ import { compact, flatten, isBoolean, isString, memo, patternFns } from '@pandac
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   CascadeLayers,
+  GlobalVarsDefinition,
   HashOptions,
   LoadConfigResult,
   PandaHooks,
@@ -174,7 +175,7 @@ export class Context {
     })
 
     this.globalVars = new GlobalVars({
-      globalVars: this.config.globalVars,
+      globalVars: this.config.globalVars as GlobalVarsDefinition,
       cssVarRoot: this.config.cssVarRoot!,
     })
 

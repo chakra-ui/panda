@@ -121,8 +121,8 @@ export interface GlobalVarsDefinition {
 }
 
 interface ExtendableGlobalVars {
-  [key: string]: string | CssPropertyDefinition | ExtendableGlobalVars | undefined
-  extend?: ExtendableGlobalVars
+  [key: string]: string | CssPropertyDefinition | GlobalVarsDefinition | undefined
+  extend?: GlobalVarsDefinition
 }
 
 export interface ThemeVariant extends Pick<Theme, 'tokens' | 'semanticTokens'> {
