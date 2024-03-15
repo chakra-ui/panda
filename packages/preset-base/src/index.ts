@@ -7,6 +7,7 @@ import { patterns } from './patterns'
 const definePreset = <T extends Preset>(preset: T) => preset
 
 export const preset = definePreset({
+  name: '@pandacss/preset-base',
   conditions,
   utilities,
   patterns,

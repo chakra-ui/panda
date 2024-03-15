@@ -25,7 +25,7 @@ import type {
  * -----------------------------------------------------------------------------*/
 
 export function defineConfig(config: Config) {
-  return config
+  return Object.assign(config, { name: '__panda.config__' })
 }
 
 export function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeConfig {

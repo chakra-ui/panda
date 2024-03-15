@@ -1,6 +1,7 @@
 import { definePreset, defineSemanticTokens } from '@pandacss/dev'
 
 export const tsImportPreset = definePreset({
+  name: 'ts-import-preset',
   theme: {
     extend: {
       semanticTokens: defineSemanticTokens({

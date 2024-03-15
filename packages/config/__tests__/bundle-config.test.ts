@@ -21,6 +21,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
@@ -58,6 +59,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
@@ -98,10 +100,12 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
             {
+              "name": "ts-import-preset",
               "theme": {
                 "extend": {
                   "semanticTokens": {
@@ -127,6 +131,7 @@ describe('bundle config', () => {
             },
             {
               "requiredPreset": {
+                "name": "required-preset",
                 "theme": {
                   "extend": {
                     "semanticTokens": {
@@ -184,6 +189,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
@@ -224,6 +230,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
@@ -264,6 +271,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
@@ -304,6 +312,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
@@ -344,6 +353,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",
@@ -384,6 +394,7 @@ describe('bundle config', () => {
             "./src/**/*.{ts,tsx,jsx}",
           ],
           "jsxFramework": "react",
+          "name": "__panda.config__",
           "preflight": true,
           "presets": [
             "@pandacss/dev/presets",

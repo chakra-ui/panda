@@ -1,4 +1,4 @@
-import { assign, mergeWith } from '@pandacss/shared'
+import { PANDA_CONFIG_NAME, assign, mergeWith } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
@@ -70,24 +70,25 @@ const compact = (obj: any) => {
  * Merge all configs into a single config
  */
 export function mergeConfigs(configs: ExtendableConfig[]) {
-  const [userConfig] = configs
+  const userConfig = configs.at(-1)!
   const pluginHooks = userConfig.plugins ?? []
   if (userConfig.hooks) {
-    pluginHooks.push({ name: '__panda.config__', hooks: userConfig.hooks })
+    pluginHooks.push({ name: PANDA_CONFIG_NAME, hooks: userConfig.hooks })
   }
 
+  const reversed = Array.from(configs).reverse()
   const mergedResult = assign(
     {
-      conditions: mergeExtensions(configs.map((config) => config.conditions ?? {})),
-      theme: mergeExtensions(configs.map((config) => config.theme ?? {})),
-      patterns: mergeExtensions(configs.map((config) => config.patterns ?? {})),
-      utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
-      globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
-      globalVars: mergeExtensions(configs.map((config) => config.globalVars ?? {})),
-      staticCss: mergeExtensions(configs.map((config) => config.staticCss ?? {})),
+      conditions: mergeExtensions(reversed.map((config) => config.conditions ?? {})),
+      theme: mergeExtensions(reversed.map((config) => config.theme ?? {})),
+      patterns: mergeExtensions(reversed.map((config) => config.patterns ?? {})),
+      utilities: mergeExtensions(reversed.map((config) => config.utilities ?? {})),
+      globalCss: mergeExtensions(reversed.map((config) => config.globalCss ?? {})),
+      globalVars: mergeExtensions(reversed.map((config) => config.globalVars ?? {})),
+      staticCss: mergeExtensions(reversed.map((config) => config.staticCss ?? {})),
       hooks: mergeHooks(pluginHooks),
     },
-    ...configs,
+    ...reversed,
   )
 
   return compact(mergedResult)

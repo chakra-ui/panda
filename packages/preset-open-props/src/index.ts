@@ -8,6 +8,7 @@ import { semanticShadows } from './shadows'
 const definePreset = <T extends Preset>(config: T) => config
 
 export const preset = definePreset({
+  name: '@pandacss/open-props',
   theme: {
     keyframes,
     tokens,

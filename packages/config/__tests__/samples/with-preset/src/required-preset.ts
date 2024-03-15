@@ -1,6 +1,7 @@
 import { definePreset, defineSemanticTokens } from '@pandacss/dev'
 
 export const requiredPreset = definePreset({
+  name: 'required-preset',
   theme: {
     extend: {
       semanticTokens: defineSemanticTokens({
