@@ -1,6 +1,6 @@
+import { createGeneratorContext } from '@pandacss/fixture'
 import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { createGeneratorContext } from '@pandacss/fixture'
 
 function globalCss(values: Dict) {
   const ctx = createGeneratorContext()

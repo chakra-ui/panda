@@ -1,11 +1,15 @@
 import { logger } from '@pandacss/logger'
-import { parseJson, stringifyJson } from '@pandacss/shared'
+import { omit, parseJson, stringifyJson, traverse } from '@pandacss/shared'
 import type { LoadConfigResult, UserConfig } from '@pandacss/types'
 import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { getResolvedConfig } from './get-resolved-config'
 import type { BundleConfigResult } from './types'
-import { utils } from './utils'
 import { validateConfig } from './validate-config'
+
+const hookUtils = {
+  omit,
+  traverse,
+}
 
 /**
  * Resolve the final config (including presets)
@@ -51,8 +55,9 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
       config: loadConfigResult.config,
       path: loadConfigResult.path,
       dependencies: loadConfigResult.dependencies,
-      utils,
+      utils: hookUtils,
     })
+
     if (result) {
       loadConfigResult.config = result
     }

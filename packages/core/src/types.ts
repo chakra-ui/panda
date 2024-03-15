@@ -24,13 +24,14 @@ export interface TransformResult {
 }
 
 export interface StylesheetContext
-  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks'> {
+  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks' | 'globalVars'> {
   layers: Layers
   helpers: PatternHelpers
   hash?: boolean
   lightningcss?: boolean
   browserslist?: string[]
   polyfill?: boolean
+  cssVarRoot: string
 }
 
 export interface RecipeNode {

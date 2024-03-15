@@ -16,6 +16,7 @@ import type {
 } from '@pandacss/types'
 import { Conditions } from './conditions'
 import { FileEngine } from './file'
+import { GlobalVars } from './global-vars'
 import { HooksApi } from './hooks-api'
 import { ImportMap } from './import-map'
 import { JsxEngine } from './jsx'
@@ -29,7 +30,7 @@ import { StaticCss } from './static-css'
 import { StyleDecoder } from './style-decoder'
 import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
-import type { ParserOptions } from './types'
+import type { ParserOptions, StylesheetContext } from './types'
 import { Utility } from './utility'
 
 const defaults = (config: UserConfig): UserConfig => ({
@@ -64,6 +65,7 @@ export class Context {
   imports: ImportMap
   paths: PathEngine
   file: FileEngine
+  globalVars: GlobalVars
 
   encoder: StyleEncoder
   decoder: StyleDecoder
@@ -168,6 +170,11 @@ export class Context {
 
     this.file = new FileEngine({
       config: this.config,
+    })
+
+    this.globalVars = new GlobalVars({
+      globalVars: this.config.globalVars,
+      cssVarRoot: this.config.cssVarRoot!,
     })
 
     this.messages = getMessages({
@@ -302,8 +309,10 @@ export class Context {
       browserslist: this.config.browserslist,
       lightningcss: this.config.lightningcss,
       polyfill: this.config.polyfill,
+      cssVarRoot: this.config.cssVarRoot!,
       helpers: patternFns,
-    }
+      globalVars: this.globalVars,
+    } satisfies Omit<StylesheetContext, 'layers'>
   }
 
   createSheet = (): Stylesheet => {

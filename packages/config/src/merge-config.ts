@@ -1,7 +1,7 @@
+import { assign, mergeWith } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
-import { assign, mergeWith } from './utils'
 
 type Extendable<T> = T & { extend?: T }
 interface Dict {
@@ -83,6 +83,7 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
       patterns: mergeExtensions(configs.map((config) => config.patterns ?? {})),
       utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
       globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
+      globalVars: mergeExtensions(configs.map((config) => config.globalVars ?? {})),
       staticCss: mergeExtensions(configs.map((config) => config.staticCss ?? {})),
       hooks: mergeHooks(pluginHooks),
     },

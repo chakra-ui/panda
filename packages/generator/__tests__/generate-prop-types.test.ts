@@ -1,17 +1,10 @@
-import type { LoadConfigResult } from '@pandacss/types'
+import { createContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { Generator } from '../src'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
-import { fixtureDefaults } from '@pandacss/fixture'
-
-const propTypes = (config: LoadConfigResult) => {
-  const ctx = new Generator(config)
-  return generatePropTypes(ctx)
-}
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(propTypes(fixtureDefaults)).toMatchInlineSnapshot(`
+    expect(generatePropTypes(createContext())).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -325,6 +318,8 @@ describe('generate property types', () => {
       	scrollPaddingX: Shorthand<"scrollPaddingInline">;
       }
 
+
+
       type StrictableProps =
         | 'alignContent'
         | 'alignItems'
@@ -423,10 +418,7 @@ describe('generate property types', () => {
   })
 
   test('with stricTokens true', () => {
-    const conf = Object.assign({}, fixtureDefaults)
-    conf.config.strictTokens = true
-
-    expect(propTypes(conf)).toMatchInlineSnapshot(`
+    expect(generatePropTypes(createContext({ strictTokens: true }))).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
@@ -739,6 +731,8 @@ describe('generate property types', () => {
       	scrollPaddingX: Shorthand<"scrollPaddingInline">;
       }
 
+
+
       type StrictableProps =
         | 'alignContent'
         | 'alignItems'
@@ -822,6 +816,138 @@ describe('generate property types', () => {
 
       type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
         ? PropOrCondition<T, PropertyTypes[T]>
+        : never;
+
+      type CssPropertyValue<T extends string> = T extends keyof CssProperties
+        ? PropOrCondition<T, CssProperties[T]>
+        : never;
+
+      export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+        ? PropertyTypeValue<T>
+        : T extends keyof CssProperties
+          ? CssPropertyValue<T>
+          : PropOrCondition<T, string | number>"
+    `)
+  })
+
+  test('with globalVars', () => {
+    expect(
+      generatePropTypes(
+        createContext({
+          hooks: {
+            'config:resolved': ({ config, utils }) => {
+              return utils.omit(config, ['utilities', 'theme.tokens', 'theme.semanticTokens'])
+            },
+          },
+          globalVars: {
+            '--random-color': 'red',
+            '--button-color': {
+              syntax: '<color>',
+              inherits: false,
+              initialValue: 'blue',
+            },
+          },
+        }),
+      ),
+    ).toMatchInlineSnapshot(`
+      "import type { ConditionalValue } from './conditions';
+      import type { CssProperties } from './system-types';
+      import type { Tokens } from '../tokens/index';
+
+      interface PropertyValueTypes {
+      	colorPalette: string;
+      	textStyle: "headline.h1" | "headline.h2";
+      }
+
+
+
+        type CssValue<T> = T extends keyof CssProperties ? CssProperties[T] : never
+
+        type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | CssValue<T> : CssValue<T>
+
+        export interface PropertyTypes extends PropertyValueTypes {
+        
+      }
+
+      type CssVars = "var(--random-color)" | "var(--button-color)"
+
+      type StrictableProps =
+        | 'alignContent'
+        | 'alignItems'
+        | 'alignSelf'
+        | 'all'
+        | 'animationComposition'
+        | 'animationDirection'
+        | 'animationFillMode'
+        | 'appearance'
+        | 'backfaceVisibility'
+        | 'backgroundAttachment'
+        | 'backgroundClip'
+        | 'borderCollapse'
+        | 'borderBlockEndStyle'
+        | 'borderBlockStartStyle'
+        | 'borderBlockStyle'
+        | 'borderBottomStyle'
+        | 'borderInlineEndStyle'
+        | 'borderInlineStartStyle'
+        | 'borderInlineStyle'
+        | 'borderLeftStyle'
+        | 'borderRightStyle'
+        | 'borderTopStyle'
+        | 'boxDecorationBreak'
+        | 'boxSizing'
+        | 'breakAfter'
+        | 'breakBefore'
+        | 'breakInside'
+        | 'captionSide'
+        | 'clear'
+        | 'columnFill'
+        | 'columnRuleStyle'
+        | 'contentVisibility'
+        | 'direction'
+        | 'display'
+        | 'emptyCells'
+        | 'flexDirection'
+        | 'flexWrap'
+        | 'float'
+        | 'fontKerning'
+        | 'forcedColorAdjust'
+        | 'isolation'
+        | 'lineBreak'
+        | 'mixBlendMode'
+        | 'objectFit'
+        | 'outlineStyle'
+        | 'overflow'
+        | 'overflowX'
+        | 'overflowY'
+        | 'overflowBlock'
+        | 'overflowInline'
+        | 'overflowWrap'
+        | 'pointerEvents'
+        | 'position'
+        | 'resize'
+        | 'scrollBehavior'
+        | 'touchAction'
+        | 'transformBox'
+        | 'transformStyle'
+        | 'userSelect'
+        | 'visibility'
+        | 'wordBreak'
+        | 'writingMode'
+
+      type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
+      type WithEscapeHatch<T> = T | \`[\${string}]\` | \`\${T}/{string}\` | WithColorOpacityModifier<T>
+
+      type FilterVagueString<Key, Value> = Value extends boolean
+        ? Value
+        : Key extends StrictableProps
+          ? Value extends \`\${infer _}\` ? Value : never
+          : Value
+
+      type PropOrCondition<Key, Value> = ConditionalValue<Value | (string & {}) | CssVars>
+
+      type PropertyTypeValue<T extends string> = T extends keyof PropertyTypes
+        ? PropOrCondition<T, PropertyTypes[T] | CssValue<T>>
         : never;
 
       type CssPropertyValue<T extends string> = T extends keyof CssProperties

@@ -1,14 +1,14 @@
+import layersPolyfill from '@csstools/postcss-cascade-layers'
 import { logger } from '@pandacss/logger'
 import type { CascadeLayer, Dict, SystemStyleObject } from '@pandacss/types'
-import layersPolyfill from '@csstools/postcss-cascade-layers'
 import postcss, { CssSyntaxError } from 'postcss'
 import { optimizeCss } from './optimize'
+import sortMediaQueries from './plugins/sort-mq'
 import { serializeStyles } from './serialize'
 import { sortStyleRules } from './sort-style-rules'
 import { stringify } from './stringify'
 import type { StyleDecoder } from './style-decoder'
 import type { CssOptions, LayerName, ProcessOptions, StylesheetContext } from './types'
-import sortMediaQueries from './plugins/sort-mq'
 
 export class Stylesheet {
   constructor(private context: StylesheetContext) {}
@@ -58,7 +58,9 @@ export class Stylesheet {
 
   processGlobalCss = (styles: Dict) => {
     const result = this.serialize(styles)
+
     let css = stringify(result)
+    css += this.context.globalVars.toString()
 
     if (this.context.hooks['cssgen:done']) {
       css = this.context.hooks['cssgen:done']({ artifact: 'global', content: css }) ?? css

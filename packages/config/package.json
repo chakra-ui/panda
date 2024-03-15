@@ -53,6 +53,15 @@
         "default": "./dist/resolve-ts-path-pattern.mjs"
       }
     },
+    "./utils": {
+      "source": "./src/utils.ts",
+      "types": "./dist/utils.d.ts",
+      "require": "./dist/utils.js",
+      "import": {
+        "types": "./dist/utils.d.mts",
+        "default": "./dist/utils.mjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

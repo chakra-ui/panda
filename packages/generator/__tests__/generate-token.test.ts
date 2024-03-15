@@ -1,10 +1,9 @@
-import type { LoadConfigResult } from '@pandacss/types'
+import { createContext } from '@pandacss/fixture'
+import type { Config } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { Generator } from '../src'
-import { fixtureDefaults } from '@pandacss/fixture'
 
-const tokenCss = (config: LoadConfigResult) => {
-  const ctx = new Generator(config)
+const tokenCss = (config?: Config) => {
+  const ctx = createContext(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('tokens', sheet)
   return sheet.toCss({ optimize: true })
@@ -12,7 +11,7 @@ const tokenCss = (config: LoadConfigResult) => {
 
 describe('generator', () => {
   test('[css] should generate css', () => {
-    expect(tokenCss(fixtureDefaults)).toMatchInlineSnapshot(`
+    expect(tokenCss()).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(html) {
           --aspect-ratios-square: 1 / 1;
@@ -496,46 +495,41 @@ describe('generator', () => {
   describe('issue 769: Invalid CSS when extending theme with semanticTokens', () => {
     test('should not extract nested tokens as `color-palette` css variables', () => {
       const css = tokenCss({
-        dependencies: [],
-        config: {
-          cwd: '',
-          include: [],
-          theme: {
-            tokens: {
-              colors: {
-                single: {
-                  value: '#ef4444',
+        theme: {
+          tokens: {
+            colors: {
+              single: {
+                value: '#ef4444',
+              },
+              test: {
+                50: {
+                  value: '#f9f9f9',
                 },
+                100: {
+                  value: '#f2f2f2',
+                },
+              },
+              deep: {
                 test: {
-                  50: {
-                    value: '#f9f9f9',
+                  yam: {
+                    value: '%555',
                   },
-                  100: {
-                    value: '#f2f2f2',
-                  },
-                },
-                deep: {
-                  test: {
-                    yam: {
-                      value: '%555',
+                  pool: {
+                    poller: {
+                      value: '#fff',
                     },
-                    pool: {
-                      poller: {
-                        value: '#fff',
+                    tall: {
+                      value: '$dfdf',
+                    },
+                    palette: {
+                      50: {
+                        value: '#f9f9f9',
                       },
-                      tall: {
-                        value: '$dfdf',
+                      100: {
+                        value: '#f2f2f2',
                       },
-                      palette: {
-                        50: {
-                          value: '#f9f9f9',
-                        },
-                        100: {
-                          value: '#f2f2f2',
-                        },
-                        200: {
-                          value: '#ebebeb',
-                        },
+                      200: {
+                        value: '#ebebeb',
                       },
                     },
                   },
@@ -543,20 +537,17 @@ describe('generator', () => {
               },
             },
           },
-          conditions: {
-            dark: '.dark &',
-          },
-          outdir: '',
+          semanticTokens: {},
+          breakpoints: {},
         },
-        path: '',
-        hooks: {},
-        serialized: '',
-        deserialize: () => ({}) as any,
+        conditions: {
+          dark: '.dark &',
+        },
       })
 
       expect(css).toMatchInlineSnapshot(`
         "@layer tokens {
-          :where(:root, :host) {
+          :where(html) {
             --colors-single: #ef4444;
             --colors-test-50: #f9f9f9;
             --colors-test-100: #f2f2f2;
@@ -573,36 +564,28 @@ describe('generator', () => {
 
     test('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
       const css = tokenCss({
-        dependencies: [],
-        config: {
-          cwd: '',
-          include: [],
-          theme: {
-            semanticTokens: {
-              shadows: {
-                e1: {
-                  value: {
-                    base: ['0px 1px 2px rgba(0, 0, 0, 0.3)', '0px 1px 3px 1px rgba(0, 0, 0, 0.15)'],
-                    _dark: ['0px 1px 3px 1px rgba(0, 0, 0, 0.15)', '0px 1px 2px rgba(0, 0, 0, 0.3)'],
-                  },
+        theme: {
+          tokens: {},
+          breakpoints: {},
+          semanticTokens: {
+            shadows: {
+              e1: {
+                value: {
+                  base: ['0px 1px 2px rgba(0, 0, 0, 0.3)', '0px 1px 3px 1px rgba(0, 0, 0, 0.15)'],
+                  _dark: ['0px 1px 3px 1px rgba(0, 0, 0, 0.15)', '0px 1px 2px rgba(0, 0, 0, 0.3)'],
                 },
               },
             },
           },
-          conditions: {
-            dark: '.dark &',
-          },
-          outdir: '',
         },
-        path: '',
-        hooks: {},
-        serialized: '',
-        deserialize: () => ({}) as any,
+        conditions: {
+          dark: '.dark &',
+        },
       })
 
       expect(css).toMatchInlineSnapshot(`
         "@layer tokens {
-          :where(:root, :host) {
+          :where(html) {
             --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
 
@@ -616,56 +599,47 @@ describe('generator', () => {
 
   test('should reuse css variable in semantic token alias', () => {
     const css = tokenCss({
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        theme: {
-          tokens: {
-            colors: {
-              red: {
-                value: '#ef4444',
-              },
-              semanticRed: {
-                value: '{colors.danger}',
-              },
+      theme: {
+        tokens: {
+          colors: {
+            red: {
+              value: '#ef4444',
             },
-            borders: {
-              red: {
-                value: '1px solid {colors.red}',
-              },
-              semanticRed: {
-                value: '{borders.danger}',
-              },
+            semanticRed: {
+              value: '{colors.danger}',
             },
           },
-          semanticTokens: {
-            colors: {
-              danger: {
-                value: '{colors.red}',
-              },
+          borders: {
+            red: {
+              value: '1px solid {colors.red}',
             },
-            borders: {
-              danger: {
-                value: '{borders.red}',
-              },
+            semanticRed: {
+              value: '{borders.danger}',
             },
           },
         },
-        conditions: {
-          dark: '.dark &',
+        semanticTokens: {
+          colors: {
+            danger: {
+              value: '{colors.red}',
+            },
+          },
+          borders: {
+            danger: {
+              value: '{borders.red}',
+            },
+          },
         },
-        outdir: '',
+        breakpoints: {},
       },
-      path: '',
-      hooks: {},
-      serialized: '',
-      deserialize: () => ({}) as any,
+      conditions: {
+        dark: '.dark &',
+      },
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --colors-red: #ef4444;
           --colors-semantic-red: var(--colors-danger);
           --borders-red: 1px solid var(--colors-red);
@@ -678,72 +652,65 @@ describe('generator', () => {
   })
 
   test('shadow semantic tokens', () => {
-    const css = tokenCss(<any>{
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        theme: {
-          tokens: {
-            shadows: {
-              test1: {
-                value: {
+    const css = tokenCss({
+      theme: {
+        tokens: {
+          shadows: {
+            test1: {
+              value: {
+                offsetX: 0,
+                offsetY: 0,
+                blur: 0,
+                spread: 4,
+                color: '{colors.testPink}',
+              },
+            },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            testPink: { value: '{colors.pink.900}' },
+          },
+          shadows: {
+            testBrokenShadow: {
+              value: {
+                offsetX: 0,
+                offsetY: 0,
+                blur: 0,
+                spread: 4,
+                color: '{colors.testPink}',
+              },
+            },
+            complexShadow: {
+              value: {
+                base: {
                   offsetX: 0,
                   offsetY: 0,
                   blur: 0,
                   spread: 4,
                   color: '{colors.testPink}',
                 },
-              },
-            },
-          },
-          semanticTokens: {
-            colors: {
-              testPink: { value: '{colors.pink.900}' },
-            },
-            shadows: {
-              testBrokenShadow: {
-                value: {
-                  offsetX: 0,
-                  offsetY: 0,
-                  blur: 0,
+                _dark: {
+                  offsetX: 2,
+                  offsetY: 8,
+                  blur: 30,
                   spread: 4,
                   color: '{colors.testPink}',
                 },
               },
-              complexShadow: {
-                value: {
-                  base: {
-                    offsetX: 0,
-                    offsetY: 0,
-                    blur: 0,
-                    spread: 4,
-                    color: '{colors.testPink}',
-                  },
-                  _dark: {
-                    offsetX: 2,
-                    offsetY: 8,
-                    blur: 30,
-                    spread: 4,
-                    color: '{colors.testPink}',
-                  },
-                },
-              },
             },
           },
         },
-        conditions: {
-          dark: '.dark &',
-        },
-        outdir: '',
+        breakpoints: {},
       },
-      path: '',
-      hooks: {},
+      conditions: {
+        dark: '.dark &',
+      },
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
           --colors-test-pink: var(--colors-pink-900);
           --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
@@ -758,32 +725,25 @@ describe('generator', () => {
   })
 
   test('assets svg', () => {
-    const css = tokenCss(<any>{
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        theme: {
-          tokens: {
-            assets: {
-              checkbox: {
-                value: {
-                  type: 'svg',
-                  value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
-                },
+    const css = tokenCss({
+      eject: true,
+      theme: {
+        tokens: {
+          assets: {
+            checkbox: {
+              value: {
+                type: 'svg',
+                value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
               },
             },
           },
         },
-        outdir: '',
       },
-      path: '',
-      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --assets-checkbox: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");
       }
       }"
@@ -791,39 +751,32 @@ describe('generator', () => {
   })
 
   test('color-mix', () => {
-    const css = tokenCss(<any>{
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        theme: {
-          tokens: {
-            colors: {
-              pink: { value: '#ff00ff' },
-              border: { value: '{colors.pink/30}' },
-              ref: { value: '{colors.border/40}' },
-            },
-            opacity: {
-              half: { value: 0.5 },
-            },
+    const css = tokenCss({
+      eject: true,
+      theme: {
+        tokens: {
+          colors: {
+            pink: { value: '#ff00ff' },
+            border: { value: '{colors.pink/30}' },
+            ref: { value: '{colors.border/40}' },
           },
-          semanticTokens: {
-            colors: {
-              primary: {
-                value: '{colors.blue.300/70}',
-              },
+          opacity: {
+            half: { value: 0.5 },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            primary: {
+              value: '{colors.blue.300/70}',
             },
           },
         },
-        outdir: '',
       },
-      path: '',
-      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --colors-pink: #ff00ff;
           --colors-border: color-mix(in srgb, var(--colors-pink) 30%, transparent);
           --colors-ref: color-mix(in srgb, var(--colors-border) 40%, transparent);
@@ -835,46 +788,39 @@ describe('generator', () => {
   })
 
   test('color-mix in semanticTokens conditions', () => {
-    const css = tokenCss(<any>{
-      dependencies: [],
-      config: {
-        cwd: '',
-        include: [],
-        conditions: {
-          light: '.light &',
-          dark: '.dark &',
-        },
-        theme: {
-          tokens: {
-            colors: {
-              blue: { 500: { value: 'blue' } },
-              green: { 500: { value: 'green' } },
-            },
-            opacity: {
-              half: { value: 0.5 },
-            },
+    const css = tokenCss({
+      eject: true,
+      conditions: {
+        light: '.light &',
+        dark: '.dark &',
+      },
+      theme: {
+        tokens: {
+          colors: {
+            blue: { 500: { value: 'blue' } },
+            green: { 500: { value: 'green' } },
           },
-          semanticTokens: {
-            colors: {
-              secondary: {
-                value: {
-                  base: 'red',
-                  _light: '{colors.blue.500/32}',
-                  _dark: '{colors.green.500/half}',
-                },
+          opacity: {
+            half: { value: 0.5 },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            secondary: {
+              value: {
+                base: 'red',
+                _light: '{colors.blue.500/32}',
+                _dark: '{colors.green.500/half}',
               },
             },
           },
         },
-        outdir: '',
       },
-      path: '',
-      hooks: {},
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
-        :where(:root, :host) {
+        :where(html) {
           --colors-blue-500: blue;
           --colors-green-500: green;
           --opacity-half: 0.5;
