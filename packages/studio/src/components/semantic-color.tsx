@@ -4,7 +4,7 @@ import { ColorWrapper } from './color-wrapper'
 import * as context from '../lib/panda-context'
 
 const getSemanticColorValue = (variable: string): string => {
-  const _name = variable.match(/var\(\s*--(.*?)\s*\)/)
+  const _name = variable?.match(/var\(\s*--(.*?)\s*\)/)
   if (!_name) return variable
 
   const name = _name[1].replaceAll('-', '.')
