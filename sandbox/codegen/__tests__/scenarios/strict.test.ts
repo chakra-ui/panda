@@ -24,6 +24,12 @@ describe('css', () => {
     assertType(css({ color: 'blue.300' }))
   })
 
+  test('css var', () => {
+    // @ts-expect-error expected from strictTokens: true
+    assertType(css({ color: 'var(--button-color)' }))
+    assertType(css({ display: 'var(--button-color)' }))
+  })
+
   test('utility prop', () => {
     assertType(
       css({

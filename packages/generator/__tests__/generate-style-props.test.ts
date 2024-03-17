@@ -11,7 +11,7 @@ describe('generate property types', () => {
       import type { Token } from '../tokens/index';
 
       type AnyString = (string & {})
-
+      type CssVars = \`var(--\${string})\`
       type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
       type CssVarName =  | AnyString
@@ -260,7 +260,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/align-content
          */
-      alignContent?: ConditionalValue<CssProperties["alignContent"] | AnyString>
+      alignContent?: ConditionalValue<CssVars | CssProperties["alignContent"] | AnyString>
        /**
          * The CSS **\`align-items\`** property sets the \`align-self\` value on all direct children as a group. In Flexbox, it controls the alignment of items on the Cross Axis. In Grid Layout, it controls the alignment of items on the Block Axis within their grid area.
          *
@@ -275,7 +275,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/align-items
          */
-      alignItems?: ConditionalValue<CssProperties["alignItems"] | AnyString>
+      alignItems?: ConditionalValue<CssVars | CssProperties["alignItems"] | AnyString>
        /**
          * The **\`align-self\`** CSS property overrides a grid or flex item's \`align-items\` value. In Grid, it aligns the item inside the grid area. In Flexbox, it aligns the item on the cross axis.
          *
@@ -290,7 +290,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/align-self
          */
-      alignSelf?: ConditionalValue<CssProperties["alignSelf"] | AnyString>
+      alignSelf?: ConditionalValue<CssVars | CssProperties["alignSelf"] | AnyString>
        /**
          * The **\`align-tracks\`** CSS property sets the alignment in the masonry axis for grid containers that have masonry in their block axis.
          *
@@ -318,7 +318,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/all
          */
-      all?: ConditionalValue<CssProperties["all"] | AnyString>
+      all?: ConditionalValue<CssVars | CssProperties["all"] | AnyString>
        /**
          * The **\`animation\`** shorthand CSS property applies an animation between styles. It is a shorthand for \`animation-name\`, \`animation-duration\`, \`animation-timing-function\`, \`animation-delay\`, \`animation-iteration-count\`, \`animation-direction\`, \`animation-fill-mode\`, and \`animation-play-state\`.
          *
@@ -345,7 +345,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-composition
          */
-      animationComposition?: ConditionalValue<CssProperties["animationComposition"] | AnyString>
+      animationComposition?: ConditionalValue<CssVars | CssProperties["animationComposition"] | AnyString>
        /**
          * The **\`animation-delay\`** CSS property specifies the amount of time to wait from applying the animation to an element before beginning to perform the animation. The animation can start later, immediately from its beginning, or immediately and partway through the animation.
          *
@@ -375,7 +375,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-direction
          */
-      animationDirection?: ConditionalValue<CssProperties["animationDirection"] | AnyString>
+      animationDirection?: ConditionalValue<CssVars | CssProperties["animationDirection"] | AnyString>
        /**
          * The **\`animation-duration\`** CSS property sets the length of time that an animation takes to complete one cycle.
          *
@@ -405,7 +405,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-fill-mode
          */
-      animationFillMode?: ConditionalValue<CssProperties["animationFillMode"] | AnyString>
+      animationFillMode?: ConditionalValue<CssVars | CssProperties["animationFillMode"] | AnyString>
        /**
          * The **\`animation-iteration-count\`** CSS property sets the number of times an animation sequence should be played before stopping.
          *
@@ -534,7 +534,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/appearance
          */
-      appearance?: ConditionalValue<CssProperties["appearance"] | AnyString>
+      appearance?: ConditionalValue<CssVars | CssProperties["appearance"] | AnyString>
        /**
          * The **\`aspect-ratio\`** CSS property sets a **preferred aspect ratio** for the box, which will be used in the calculation of auto sizes and some other layout functions.
          *
@@ -578,7 +578,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/backface-visibility
          */
-      backfaceVisibility?: ConditionalValue<CssProperties["backfaceVisibility"] | AnyString>
+      backfaceVisibility?: ConditionalValue<CssVars | CssProperties["backfaceVisibility"] | AnyString>
        /**
          * The **\`background\`** shorthand CSS property sets all background style properties at once, such as color, image, origin and size, or repeat method.
          *
@@ -604,7 +604,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/background-attachment
          */
-      backgroundAttachment?: ConditionalValue<CssProperties["backgroundAttachment"] | AnyString>
+      backgroundAttachment?: ConditionalValue<CssVars | CssProperties["backgroundAttachment"] | AnyString>
        /**
          * The **\`background-blend-mode\`** CSS property sets how an element's background images should blend with each other and with the element's background color.
          *
@@ -633,7 +633,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/background-clip
          */
-      backgroundClip?: ConditionalValue<CssProperties["backgroundClip"] | AnyString>
+      backgroundClip?: ConditionalValue<CssVars | CssProperties["backgroundClip"] | AnyString>
        /**
          * The **\`background-color\`** CSS property sets the background color of an element.
          *
@@ -812,7 +812,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-block-style
          */
-      borderBlockStyle?: ConditionalValue<CssProperties["borderBlockStyle"] | AnyString>
+      borderBlockStyle?: ConditionalValue<CssVars | CssProperties["borderBlockStyle"] | AnyString>
        /**
          * The **\`border-block-width\`** CSS property defines the width of the logical block borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\` and \`border-bottom-width\`, or \`border-left-width\`, and \`border-right-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -866,7 +866,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-style
          */
-      borderBlockEndStyle?: ConditionalValue<CssProperties["borderBlockEndStyle"] | AnyString>
+      borderBlockEndStyle?: ConditionalValue<CssVars | CssProperties["borderBlockEndStyle"] | AnyString>
        /**
          * The **\`border-block-end-width\`** CSS property defines the width of the logical block-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -920,7 +920,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-style
          */
-      borderBlockStartStyle?: ConditionalValue<CssProperties["borderBlockStartStyle"] | AnyString>
+      borderBlockStartStyle?: ConditionalValue<CssVars | CssProperties["borderBlockStartStyle"] | AnyString>
        /**
          * The **\`border-block-start-width\`** CSS property defines the width of the logical block-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -1004,7 +1004,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-style
          */
-      borderBottomStyle?: ConditionalValue<CssProperties["borderBottomStyle"] | AnyString>
+      borderBottomStyle?: ConditionalValue<CssVars | CssProperties["borderBottomStyle"] | AnyString>
        /**
          * The **\`border-bottom-width\`** CSS property sets the width of the bottom border of an element.
          *
@@ -1032,7 +1032,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-collapse
          */
-      borderCollapse?: ConditionalValue<CssProperties["borderCollapse"] | AnyString>
+      borderCollapse?: ConditionalValue<CssVars | CssProperties["borderCollapse"] | AnyString>
        /**
          * The **\`border-color\`** shorthand CSS property sets the color of an element's border.
          *
@@ -1207,7 +1207,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-style
          */
-      borderInlineStyle?: ConditionalValue<CssProperties["borderInlineStyle"] | AnyString>
+      borderInlineStyle?: ConditionalValue<CssVars | CssProperties["borderInlineStyle"] | AnyString>
        /**
          * The **\`border-inline-width\`** CSS property defines the width of the logical inline borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\` and \`border-bottom-width\`, or \`border-left-width\`, and \`border-right-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -1251,7 +1251,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-style
          */
-      borderInlineEndStyle?: ConditionalValue<CssProperties["borderInlineEndStyle"] | AnyString>
+      borderInlineEndStyle?: ConditionalValue<CssVars | CssProperties["borderInlineEndStyle"] | AnyString>
        /**
          * The **\`border-inline-end-width\`** CSS property defines the width of the logical inline-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -1308,7 +1308,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-style
          */
-      borderInlineStartStyle?: ConditionalValue<CssProperties["borderInlineStartStyle"] | AnyString>
+      borderInlineStartStyle?: ConditionalValue<CssVars | CssProperties["borderInlineStartStyle"] | AnyString>
        /**
          * The **\`border-inline-start-width\`** CSS property defines the width of the logical inline-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -1362,7 +1362,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-left-style
          */
-      borderLeftStyle?: ConditionalValue<CssProperties["borderLeftStyle"] | AnyString>
+      borderLeftStyle?: ConditionalValue<CssVars | CssProperties["borderLeftStyle"] | AnyString>
        /**
          * The **\`border-left-width\`** CSS property sets the width of the left border of an element.
          *
@@ -1429,7 +1429,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-right-style
          */
-      borderRightStyle?: ConditionalValue<CssProperties["borderRightStyle"] | AnyString>
+      borderRightStyle?: ConditionalValue<CssVars | CssProperties["borderRightStyle"] | AnyString>
        /**
          * The **\`border-right-width\`** CSS property sets the width of the right border of an element.
          *
@@ -1567,7 +1567,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-top-style
          */
-      borderTopStyle?: ConditionalValue<CssProperties["borderTopStyle"] | AnyString>
+      borderTopStyle?: ConditionalValue<CssVars | CssProperties["borderTopStyle"] | AnyString>
        /**
          * The **\`border-top-width\`** CSS property sets the width of the top border of an element.
          *
@@ -1622,7 +1622,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/box-decoration-break
          */
-      boxDecorationBreak?: ConditionalValue<CssProperties["boxDecorationBreak"] | AnyString>
+      boxDecorationBreak?: ConditionalValue<CssVars | CssProperties["boxDecorationBreak"] | AnyString>
        boxDirection?: ConditionalValue<CssProperties["boxDirection"] | AnyString>
        boxFlex?: ConditionalValue<CssProperties["boxFlex"] | AnyString>
        boxFlexGroup?: ConditionalValue<CssProperties["boxFlexGroup"] | AnyString>
@@ -1659,7 +1659,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/box-sizing
          */
-      boxSizing?: ConditionalValue<CssProperties["boxSizing"] | AnyString>
+      boxSizing?: ConditionalValue<CssVars | CssProperties["boxSizing"] | AnyString>
        /**
          * The **\`break-after\`** CSS property sets how page, column, or region breaks should behave after a generated box. If there is no generated box, the property is ignored.
          *
@@ -1673,7 +1673,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/break-after
          */
-      breakAfter?: ConditionalValue<CssProperties["breakAfter"] | AnyString>
+      breakAfter?: ConditionalValue<CssVars | CssProperties["breakAfter"] | AnyString>
        /**
          * The **\`break-before\`** CSS property sets how page, column, or region breaks should behave before a generated box. If there is no generated box, the property is ignored.
          *
@@ -1687,7 +1687,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/break-before
          */
-      breakBefore?: ConditionalValue<CssProperties["breakBefore"] | AnyString>
+      breakBefore?: ConditionalValue<CssVars | CssProperties["breakBefore"] | AnyString>
        /**
          * The **\`break-inside\`** CSS property sets how page, column, or region breaks should behave inside a generated box. If there is no generated box, the property is ignored.
          *
@@ -1701,7 +1701,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/break-inside
          */
-      breakInside?: ConditionalValue<CssProperties["breakInside"] | AnyString>
+      breakInside?: ConditionalValue<CssVars | CssProperties["breakInside"] | AnyString>
        /**
          * The **\`caption-side\`** CSS property puts the content of a table's \`<caption>\` on the specified side. The values are relative to the \`writing-mode\` of the table.
          *
@@ -1715,7 +1715,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/caption-side
          */
-      captionSide?: ConditionalValue<CssProperties["captionSide"] | AnyString>
+      captionSide?: ConditionalValue<CssVars | CssProperties["captionSide"] | AnyString>
        /** **Syntax**: \`<'caret-color'> || <'caret-shape'>\` */
       caret?: ConditionalValue<CssProperties["caret"] | AnyString>
        /**
@@ -1751,7 +1751,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/clear
          */
-      clear?: ConditionalValue<CssProperties["clear"] | AnyString>
+      clear?: ConditionalValue<CssVars | CssProperties["clear"] | AnyString>
        clip?: ConditionalValue<CssProperties["clip"] | AnyString>
        /**
          * The **\`clip-path\`** CSS property creates a clipping region that sets what part of an element should be shown. Parts that are inside the region are shown, while those outside are hidden.
@@ -1825,7 +1825,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/column-fill
          */
-      columnFill?: ConditionalValue<CssProperties["columnFill"] | AnyString>
+      columnFill?: ConditionalValue<CssVars | CssProperties["columnFill"] | AnyString>
        /**
          * The **\`column-gap\`** CSS property sets the size of the gap (gutter) between an element's columns.
          *
@@ -1882,7 +1882,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-style
          */
-      columnRuleStyle?: ConditionalValue<CssProperties["columnRuleStyle"] | AnyString>
+      columnRuleStyle?: ConditionalValue<CssVars | CssProperties["columnRuleStyle"] | AnyString>
        /**
          * The **\`column-rule-width\`** CSS property sets the width of the line drawn between columns in a multi-column layout.
          *
@@ -2090,7 +2090,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/content-visibility
          */
-      contentVisibility?: ConditionalValue<CssProperties["contentVisibility"] | AnyString>
+      contentVisibility?: ConditionalValue<CssVars | CssProperties["contentVisibility"] | AnyString>
        /**
          * The **\`counter-increment\`** CSS property increases or decreases the value of a CSS counter by a given value.
          *
@@ -2160,7 +2160,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/direction
          */
-      direction?: ConditionalValue<CssProperties["direction"] | AnyString>
+      direction?: ConditionalValue<CssVars | CssProperties["direction"] | AnyString>
        /**
          * The **\`display\`** CSS property sets whether an element is treated as a block or inline element and the layout used for its children, such as flow layout, grid or flex.
          *
@@ -2174,7 +2174,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/display
          */
-      display?: ConditionalValue<CssProperties["display"] | AnyString>
+      display?: ConditionalValue<CssVars | CssProperties["display"] | AnyString>
        /**
          * The **\`empty-cells\`** CSS property sets whether borders and backgrounds appear around \`<table>\` cells that have no visible content.
          *
@@ -2188,7 +2188,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/empty-cells
          */
-      emptyCells?: ConditionalValue<CssProperties["emptyCells"] | AnyString>
+      emptyCells?: ConditionalValue<CssVars | CssProperties["emptyCells"] | AnyString>
        /**
          * The **\`filter\`** CSS property applies graphical effects like blur or color shift to an element. Filters are commonly used to adjust the rendering of images, backgrounds, and borders.
          *
@@ -2246,7 +2246,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/flex-direction
          */
-      flexDirection?: ConditionalValue<CssProperties["flexDirection"] | AnyString>
+      flexDirection?: ConditionalValue<CssVars | CssProperties["flexDirection"] | AnyString>
        /**
          * The **\`flex-flow\`** CSS shorthand property specifies the direction of a flex container, as well as its wrapping behavior.
          *
@@ -2304,7 +2304,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/flex-wrap
          */
-      flexWrap?: ConditionalValue<CssProperties["flexWrap"] | AnyString>
+      flexWrap?: ConditionalValue<CssVars | CssProperties["flexWrap"] | AnyString>
        /**
          * The **\`float\`** CSS property places an element on the left or right side of its container, allowing text and inline elements to wrap around it. The element is removed from the normal flow of the page, though still remaining a part of the flow (in contrast to absolute positioning).
          *
@@ -2318,7 +2318,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/float
          */
-      float?: ConditionalValue<UtilityValues["float"] | AnyString>
+      float?: ConditionalValue<UtilityValues["float"] | CssVars | AnyString>
        /**
          * The **\`font\`** CSS shorthand property sets all the different properties of an element's font. Alternatively, it sets an element's font to a system font.
          *
@@ -2374,7 +2374,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/font-kerning
          */
-      fontKerning?: ConditionalValue<CssProperties["fontKerning"] | AnyString>
+      fontKerning?: ConditionalValue<CssVars | CssProperties["fontKerning"] | AnyString>
        /**
          * The **\`font-language-override\`** CSS property controls the use of language-specific glyphs in a typeface.
          *
@@ -2709,7 +2709,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/forced-color-adjust
          */
-      forcedColorAdjust?: ConditionalValue<CssProperties["forcedColorAdjust"] | AnyString>
+      forcedColorAdjust?: ConditionalValue<CssVars | CssProperties["forcedColorAdjust"] | AnyString>
        /**
          * The **\`gap\`** CSS property sets the gaps (gutters) between rows and columns. It is a shorthand for \`row-gap\` and \`column-gap\`.
          *
@@ -3170,7 +3170,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/isolation
          */
-      isolation?: ConditionalValue<CssProperties["isolation"] | AnyString>
+      isolation?: ConditionalValue<CssVars | CssProperties["isolation"] | AnyString>
        /**
          * The CSS **\`justify-content\`** property defines how the browser distributes space between and around content items along the main-axis of a flex container, and the inline axis of a grid container.
          *
@@ -3270,7 +3270,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/line-break
          */
-      lineBreak?: ConditionalValue<CssProperties["lineBreak"] | AnyString>
+      lineBreak?: ConditionalValue<CssVars | CssProperties["lineBreak"] | AnyString>
        /**
          * **Syntax**: \`none | <integer>\`
          *
@@ -3952,7 +3952,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/mix-blend-mode
          */
-      mixBlendMode?: ConditionalValue<CssProperties["mixBlendMode"] | AnyString>
+      mixBlendMode?: ConditionalValue<CssVars | CssProperties["mixBlendMode"] | AnyString>
        /**
          * The **\`object-fit\`** CSS property sets how the content of a replaced element, such as an \`<img>\` or \`<video>\`, should be resized to fit its container.
          *
@@ -3966,7 +3966,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/object-fit
          */
-      objectFit?: ConditionalValue<CssProperties["objectFit"] | AnyString>
+      objectFit?: ConditionalValue<CssVars | CssProperties["objectFit"] | AnyString>
        /**
          * The **\`object-position\`** CSS property specifies the alignment of the selected replaced element's contents within the element's box. Areas of the box which aren't covered by the replaced element's object will show the element's background.
          *
@@ -4159,7 +4159,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/outline-style
          */
-      outlineStyle?: ConditionalValue<CssProperties["outlineStyle"] | AnyString>
+      outlineStyle?: ConditionalValue<CssVars | CssProperties["outlineStyle"] | AnyString>
        /**
          * The CSS **\`outline-width\`** property sets the thickness of an element's outline. An outline is a line that is drawn around an element, outside the \`border\`.
          *
@@ -4187,7 +4187,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow
          */
-      overflow?: ConditionalValue<CssProperties["overflow"] | AnyString>
+      overflow?: ConditionalValue<CssVars | CssProperties["overflow"] | AnyString>
        /**
          * **Syntax**: \`auto | none\`
          *
@@ -4211,7 +4211,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-block
          */
-      overflowBlock?: ConditionalValue<CssProperties["overflowBlock"] | AnyString>
+      overflowBlock?: ConditionalValue<CssVars | CssProperties["overflowBlock"] | AnyString>
        /**
          * The **\`overflow-clip-box\`** CSS property specifies relative to which box the clipping happens when there is an overflow. It is short hand for the \`overflow-clip-box-inline\` and \`overflow-clip-box-block\` properties.
          *
@@ -4243,7 +4243,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-inline
          */
-      overflowInline?: ConditionalValue<CssProperties["overflowInline"] | AnyString>
+      overflowInline?: ConditionalValue<CssVars | CssProperties["overflowInline"] | AnyString>
        /**
          * The **\`overflow-wrap\`** CSS property applies to inline elements, setting whether the browser should insert line breaks within an otherwise unbreakable string to prevent text from overflowing its line box.
          *
@@ -4258,7 +4258,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-wrap
          */
-      overflowWrap?: ConditionalValue<CssProperties["overflowWrap"] | AnyString>
+      overflowWrap?: ConditionalValue<CssVars | CssProperties["overflowWrap"] | AnyString>
        /**
          * The **\`overflow-x\`** CSS property sets what shows when content overflows a block-level element's left and right edges. This may be nothing, a scroll bar, or the overflow content.
          *
@@ -4272,7 +4272,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-x
          */
-      overflowX?: ConditionalValue<CssProperties["overflowX"] | AnyString>
+      overflowX?: ConditionalValue<CssVars | CssProperties["overflowX"] | AnyString>
        /**
          * The **\`overflow-y\`** CSS property sets what shows when content overflows a block-level element's top and bottom edges. This may be nothing, a scroll bar, or the overflow content.
          *
@@ -4286,7 +4286,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-y
          */
-      overflowY?: ConditionalValue<CssProperties["overflowY"] | AnyString>
+      overflowY?: ConditionalValue<CssVars | CssProperties["overflowY"] | AnyString>
        /**
          * The **\`overlay\`** CSS property specifies whether an element appearing in the top layer (for example, a shown popover or modal \`<dialog>\` element) is actually rendered in the top layer. This property is only relevant within a list of \`transition-property\` values, and only if \`allow-discrete\` is set as the \`transition-behavior\`.
          *
@@ -4670,7 +4670,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/pointer-events
          */
-      pointerEvents?: ConditionalValue<CssProperties["pointerEvents"] | AnyString>
+      pointerEvents?: ConditionalValue<CssVars | CssProperties["pointerEvents"] | AnyString>
        /**
          * The **\`position\`** CSS property sets how an element is positioned in a document. The \`top\`, \`right\`, \`bottom\`, and \`left\` properties determine the final location of positioned elements.
          *
@@ -4684,7 +4684,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/position
          */
-      position?: ConditionalValue<CssProperties["position"] | AnyString>
+      position?: ConditionalValue<CssVars | CssProperties["position"] | AnyString>
        /**
          * The **\`print-color-adjust\`** CSS property sets what, if anything, the user agent may do to optimize the appearance of the element on the output device. By default, the browser is allowed to make any adjustments to the element's appearance it determines to be necessary and prudent given the type and capabilities of the output device.
          *
@@ -4727,7 +4727,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/resize
          */
-      resize?: ConditionalValue<CssProperties["resize"] | AnyString>
+      resize?: ConditionalValue<CssVars | CssProperties["resize"] | AnyString>
        /**
          * The **\`right\`** CSS property participates in specifying the horizontal position of a positioned element. It has no effect on non-positioned elements.
          *
@@ -4874,7 +4874,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scroll-behavior
          */
-      scrollBehavior?: ConditionalValue<CssProperties["scrollBehavior"] | AnyString>
+      scrollBehavior?: ConditionalValue<CssVars | CssProperties["scrollBehavior"] | AnyString>
        /**
          * The **\`scroll-margin\`** shorthand property sets all of the scroll margins of an element at once, assigning values much like the \`margin\` property does for margins of an element.
          *
@@ -5735,7 +5735,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/touch-action
          */
-      touchAction?: ConditionalValue<CssProperties["touchAction"] | AnyString>
+      touchAction?: ConditionalValue<CssVars | CssProperties["touchAction"] | AnyString>
        /**
          * The **\`transform\`** CSS property lets you rotate, scale, skew, or translate an element. It modifies the coordinate space of the CSS visual formatting model.
          *
@@ -5764,7 +5764,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/transform-box
          */
-      transformBox?: ConditionalValue<CssProperties["transformBox"] | AnyString>
+      transformBox?: ConditionalValue<CssVars | CssProperties["transformBox"] | AnyString>
        /**
          * The **\`transform-origin\`** CSS property sets the origin for an element's transformations.
          *
@@ -5794,7 +5794,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/transform-style
          */
-      transformStyle?: ConditionalValue<CssProperties["transformStyle"] | AnyString>
+      transformStyle?: ConditionalValue<CssVars | CssProperties["transformStyle"] | AnyString>
        /**
          * The **\`transition\`** CSS property is a shorthand property for \`transition-property\`, \`transition-duration\`, \`transition-timing-function\`, and \`transition-delay\`.
          *
@@ -5924,7 +5924,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/user-select
          */
-      userSelect?: ConditionalValue<CssProperties["userSelect"] | AnyString>
+      userSelect?: ConditionalValue<CssVars | CssProperties["userSelect"] | AnyString>
        /**
          * The **\`vertical-align\`** CSS property sets vertical alignment of an inline, inline-block or table-cell box.
          *
@@ -6020,7 +6020,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/visibility
          */
-      visibility?: ConditionalValue<CssProperties["visibility"] | AnyString>
+      visibility?: ConditionalValue<CssVars | CssProperties["visibility"] | AnyString>
        /**
          * The **\`white-space\`** CSS property sets how white space inside an element is handled.
          *
@@ -6104,7 +6104,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/word-break
          */
-      wordBreak?: ConditionalValue<CssProperties["wordBreak"] | AnyString>
+      wordBreak?: ConditionalValue<CssVars | CssProperties["wordBreak"] | AnyString>
        /**
          * The **\`word-spacing\`** CSS property sets the length of space between words and between tags.
          *
@@ -6145,7 +6145,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/writing-mode
          */
-      writingMode?: ConditionalValue<CssProperties["writingMode"] | AnyString>
+      writingMode?: ConditionalValue<CssVars | CssProperties["writingMode"] | AnyString>
        /**
          * The **\`z-index\`** CSS property sets the z-order of a positioned element and its descendants or flex items. Overlapping elements with a larger z-index cover those with a smaller one.
          *
@@ -7472,7 +7472,7 @@ describe('generate property types', () => {
       import type { Token } from '../tokens/index';
 
       type AnyString = (string & {})
-
+      type CssVars = \`var(--\${string})\`
       type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
       type CssVarName =  | AnyString
@@ -7721,7 +7721,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/align-content
          */
-      alignContent?: ConditionalValue<WithEscapeHatch<CssProperties["alignContent"]>>
+      alignContent?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["alignContent"]>>
        /**
          * The CSS **\`align-items\`** property sets the \`align-self\` value on all direct children as a group. In Flexbox, it controls the alignment of items on the Cross Axis. In Grid Layout, it controls the alignment of items on the Block Axis within their grid area.
          *
@@ -7736,7 +7736,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/align-items
          */
-      alignItems?: ConditionalValue<WithEscapeHatch<CssProperties["alignItems"]>>
+      alignItems?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["alignItems"]>>
        /**
          * The **\`align-self\`** CSS property overrides a grid or flex item's \`align-items\` value. In Grid, it aligns the item inside the grid area. In Flexbox, it aligns the item on the cross axis.
          *
@@ -7751,7 +7751,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/align-self
          */
-      alignSelf?: ConditionalValue<WithEscapeHatch<CssProperties["alignSelf"]>>
+      alignSelf?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["alignSelf"]>>
        /**
          * The **\`align-tracks\`** CSS property sets the alignment in the masonry axis for grid containers that have masonry in their block axis.
          *
@@ -7779,7 +7779,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/all
          */
-      all?: ConditionalValue<WithEscapeHatch<CssProperties["all"]>>
+      all?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["all"]>>
        /**
          * The **\`animation\`** shorthand CSS property applies an animation between styles. It is a shorthand for \`animation-name\`, \`animation-duration\`, \`animation-timing-function\`, \`animation-delay\`, \`animation-iteration-count\`, \`animation-direction\`, \`animation-fill-mode\`, and \`animation-play-state\`.
          *
@@ -7806,7 +7806,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-composition
          */
-      animationComposition?: ConditionalValue<WithEscapeHatch<CssProperties["animationComposition"]>>
+      animationComposition?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["animationComposition"]>>
        /**
          * The **\`animation-delay\`** CSS property specifies the amount of time to wait from applying the animation to an element before beginning to perform the animation. The animation can start later, immediately from its beginning, or immediately and partway through the animation.
          *
@@ -7836,7 +7836,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-direction
          */
-      animationDirection?: ConditionalValue<WithEscapeHatch<CssProperties["animationDirection"]>>
+      animationDirection?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["animationDirection"]>>
        /**
          * The **\`animation-duration\`** CSS property sets the length of time that an animation takes to complete one cycle.
          *
@@ -7866,7 +7866,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-fill-mode
          */
-      animationFillMode?: ConditionalValue<WithEscapeHatch<CssProperties["animationFillMode"]>>
+      animationFillMode?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["animationFillMode"]>>
        /**
          * The **\`animation-iteration-count\`** CSS property sets the number of times an animation sequence should be played before stopping.
          *
@@ -7995,7 +7995,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/appearance
          */
-      appearance?: ConditionalValue<WithEscapeHatch<CssProperties["appearance"]>>
+      appearance?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["appearance"]>>
        /**
          * The **\`aspect-ratio\`** CSS property sets a **preferred aspect ratio** for the box, which will be used in the calculation of auto sizes and some other layout functions.
          *
@@ -8039,7 +8039,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/backface-visibility
          */
-      backfaceVisibility?: ConditionalValue<WithEscapeHatch<CssProperties["backfaceVisibility"]>>
+      backfaceVisibility?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["backfaceVisibility"]>>
        /**
          * The **\`background\`** shorthand CSS property sets all background style properties at once, such as color, image, origin and size, or repeat method.
          *
@@ -8065,7 +8065,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/background-attachment
          */
-      backgroundAttachment?: ConditionalValue<WithEscapeHatch<CssProperties["backgroundAttachment"]>>
+      backgroundAttachment?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["backgroundAttachment"]>>
        /**
          * The **\`background-blend-mode\`** CSS property sets how an element's background images should blend with each other and with the element's background color.
          *
@@ -8094,7 +8094,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/background-clip
          */
-      backgroundClip?: ConditionalValue<WithEscapeHatch<CssProperties["backgroundClip"]>>
+      backgroundClip?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["backgroundClip"]>>
        /**
          * The **\`background-color\`** CSS property sets the background color of an element.
          *
@@ -8273,7 +8273,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-block-style
          */
-      borderBlockStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderBlockStyle"]>>
+      borderBlockStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderBlockStyle"]>>
        /**
          * The **\`border-block-width\`** CSS property defines the width of the logical block borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\` and \`border-bottom-width\`, or \`border-left-width\`, and \`border-right-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -8327,7 +8327,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-style
          */
-      borderBlockEndStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderBlockEndStyle"]>>
+      borderBlockEndStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderBlockEndStyle"]>>
        /**
          * The **\`border-block-end-width\`** CSS property defines the width of the logical block-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -8381,7 +8381,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-style
          */
-      borderBlockStartStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderBlockStartStyle"]>>
+      borderBlockStartStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderBlockStartStyle"]>>
        /**
          * The **\`border-block-start-width\`** CSS property defines the width of the logical block-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -8465,7 +8465,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-style
          */
-      borderBottomStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderBottomStyle"]>>
+      borderBottomStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderBottomStyle"]>>
        /**
          * The **\`border-bottom-width\`** CSS property sets the width of the bottom border of an element.
          *
@@ -8493,7 +8493,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-collapse
          */
-      borderCollapse?: ConditionalValue<WithEscapeHatch<CssProperties["borderCollapse"]>>
+      borderCollapse?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderCollapse"]>>
        /**
          * The **\`border-color\`** shorthand CSS property sets the color of an element's border.
          *
@@ -8668,7 +8668,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-style
          */
-      borderInlineStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderInlineStyle"]>>
+      borderInlineStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderInlineStyle"]>>
        /**
          * The **\`border-inline-width\`** CSS property defines the width of the logical inline borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\` and \`border-bottom-width\`, or \`border-left-width\`, and \`border-right-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -8712,7 +8712,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-style
          */
-      borderInlineEndStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderInlineEndStyle"]>>
+      borderInlineEndStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderInlineEndStyle"]>>
        /**
          * The **\`border-inline-end-width\`** CSS property defines the width of the logical inline-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -8769,7 +8769,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-style
          */
-      borderInlineStartStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderInlineStartStyle"]>>
+      borderInlineStartStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderInlineStartStyle"]>>
        /**
          * The **\`border-inline-start-width\`** CSS property defines the width of the logical inline-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the \`border-top-width\`, \`border-right-width\`, \`border-bottom-width\`, or \`border-left-width\` property depending on the values defined for \`writing-mode\`, \`direction\`, and \`text-orientation\`.
          *
@@ -8823,7 +8823,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-left-style
          */
-      borderLeftStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderLeftStyle"]>>
+      borderLeftStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderLeftStyle"]>>
        /**
          * The **\`border-left-width\`** CSS property sets the width of the left border of an element.
          *
@@ -8890,7 +8890,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-right-style
          */
-      borderRightStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderRightStyle"]>>
+      borderRightStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderRightStyle"]>>
        /**
          * The **\`border-right-width\`** CSS property sets the width of the right border of an element.
          *
@@ -9028,7 +9028,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/border-top-style
          */
-      borderTopStyle?: ConditionalValue<WithEscapeHatch<CssProperties["borderTopStyle"]>>
+      borderTopStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["borderTopStyle"]>>
        /**
          * The **\`border-top-width\`** CSS property sets the width of the top border of an element.
          *
@@ -9083,7 +9083,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/box-decoration-break
          */
-      boxDecorationBreak?: ConditionalValue<WithEscapeHatch<CssProperties["boxDecorationBreak"]>>
+      boxDecorationBreak?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["boxDecorationBreak"]>>
        boxDirection?: ConditionalValue<WithEscapeHatch<CssProperties["boxDirection"]>>
        boxFlex?: ConditionalValue<WithEscapeHatch<CssProperties["boxFlex"]>>
        boxFlexGroup?: ConditionalValue<WithEscapeHatch<CssProperties["boxFlexGroup"]>>
@@ -9120,7 +9120,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/box-sizing
          */
-      boxSizing?: ConditionalValue<WithEscapeHatch<CssProperties["boxSizing"]>>
+      boxSizing?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["boxSizing"]>>
        /**
          * The **\`break-after\`** CSS property sets how page, column, or region breaks should behave after a generated box. If there is no generated box, the property is ignored.
          *
@@ -9134,7 +9134,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/break-after
          */
-      breakAfter?: ConditionalValue<WithEscapeHatch<CssProperties["breakAfter"]>>
+      breakAfter?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["breakAfter"]>>
        /**
          * The **\`break-before\`** CSS property sets how page, column, or region breaks should behave before a generated box. If there is no generated box, the property is ignored.
          *
@@ -9148,7 +9148,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/break-before
          */
-      breakBefore?: ConditionalValue<WithEscapeHatch<CssProperties["breakBefore"]>>
+      breakBefore?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["breakBefore"]>>
        /**
          * The **\`break-inside\`** CSS property sets how page, column, or region breaks should behave inside a generated box. If there is no generated box, the property is ignored.
          *
@@ -9162,7 +9162,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/break-inside
          */
-      breakInside?: ConditionalValue<WithEscapeHatch<CssProperties["breakInside"]>>
+      breakInside?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["breakInside"]>>
        /**
          * The **\`caption-side\`** CSS property puts the content of a table's \`<caption>\` on the specified side. The values are relative to the \`writing-mode\` of the table.
          *
@@ -9176,7 +9176,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/caption-side
          */
-      captionSide?: ConditionalValue<WithEscapeHatch<CssProperties["captionSide"]>>
+      captionSide?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["captionSide"]>>
        /** **Syntax**: \`<'caret-color'> || <'caret-shape'>\` */
       caret?: ConditionalValue<WithEscapeHatch<CssProperties["caret"]>>
        /**
@@ -9212,7 +9212,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/clear
          */
-      clear?: ConditionalValue<WithEscapeHatch<CssProperties["clear"]>>
+      clear?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["clear"]>>
        clip?: ConditionalValue<WithEscapeHatch<CssProperties["clip"]>>
        /**
          * The **\`clip-path\`** CSS property creates a clipping region that sets what part of an element should be shown. Parts that are inside the region are shown, while those outside are hidden.
@@ -9286,7 +9286,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/column-fill
          */
-      columnFill?: ConditionalValue<WithEscapeHatch<CssProperties["columnFill"]>>
+      columnFill?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["columnFill"]>>
        /**
          * The **\`column-gap\`** CSS property sets the size of the gap (gutter) between an element's columns.
          *
@@ -9343,7 +9343,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-style
          */
-      columnRuleStyle?: ConditionalValue<WithEscapeHatch<CssProperties["columnRuleStyle"]>>
+      columnRuleStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["columnRuleStyle"]>>
        /**
          * The **\`column-rule-width\`** CSS property sets the width of the line drawn between columns in a multi-column layout.
          *
@@ -9551,7 +9551,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/content-visibility
          */
-      contentVisibility?: ConditionalValue<WithEscapeHatch<CssProperties["contentVisibility"]>>
+      contentVisibility?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["contentVisibility"]>>
        /**
          * The **\`counter-increment\`** CSS property increases or decreases the value of a CSS counter by a given value.
          *
@@ -9621,7 +9621,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/direction
          */
-      direction?: ConditionalValue<WithEscapeHatch<CssProperties["direction"]>>
+      direction?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["direction"]>>
        /**
          * The **\`display\`** CSS property sets whether an element is treated as a block or inline element and the layout used for its children, such as flow layout, grid or flex.
          *
@@ -9635,7 +9635,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/display
          */
-      display?: ConditionalValue<WithEscapeHatch<CssProperties["display"]>>
+      display?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["display"]>>
        /**
          * The **\`empty-cells\`** CSS property sets whether borders and backgrounds appear around \`<table>\` cells that have no visible content.
          *
@@ -9649,7 +9649,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/empty-cells
          */
-      emptyCells?: ConditionalValue<WithEscapeHatch<CssProperties["emptyCells"]>>
+      emptyCells?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["emptyCells"]>>
        /**
          * The **\`filter\`** CSS property applies graphical effects like blur or color shift to an element. Filters are commonly used to adjust the rendering of images, backgrounds, and borders.
          *
@@ -9707,7 +9707,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/flex-direction
          */
-      flexDirection?: ConditionalValue<WithEscapeHatch<CssProperties["flexDirection"]>>
+      flexDirection?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["flexDirection"]>>
        /**
          * The **\`flex-flow\`** CSS shorthand property specifies the direction of a flex container, as well as its wrapping behavior.
          *
@@ -9765,7 +9765,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/flex-wrap
          */
-      flexWrap?: ConditionalValue<WithEscapeHatch<CssProperties["flexWrap"]>>
+      flexWrap?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["flexWrap"]>>
        /**
          * The **\`float\`** CSS property places an element on the left or right side of its container, allowing text and inline elements to wrap around it. The element is removed from the normal flow of the page, though still remaining a part of the flow (in contrast to absolute positioning).
          *
@@ -9779,7 +9779,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/float
          */
-      float?: ConditionalValue<WithEscapeHatch<UtilityValues["float"]>>
+      float?: ConditionalValue<WithEscapeHatch<UtilityValues["float"] | CssVars>>
        /**
          * The **\`font\`** CSS shorthand property sets all the different properties of an element's font. Alternatively, it sets an element's font to a system font.
          *
@@ -9835,7 +9835,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/font-kerning
          */
-      fontKerning?: ConditionalValue<WithEscapeHatch<CssProperties["fontKerning"]>>
+      fontKerning?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["fontKerning"]>>
        /**
          * The **\`font-language-override\`** CSS property controls the use of language-specific glyphs in a typeface.
          *
@@ -10170,7 +10170,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/forced-color-adjust
          */
-      forcedColorAdjust?: ConditionalValue<WithEscapeHatch<CssProperties["forcedColorAdjust"]>>
+      forcedColorAdjust?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["forcedColorAdjust"]>>
        /**
          * The **\`gap\`** CSS property sets the gaps (gutters) between rows and columns. It is a shorthand for \`row-gap\` and \`column-gap\`.
          *
@@ -10631,7 +10631,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/isolation
          */
-      isolation?: ConditionalValue<WithEscapeHatch<CssProperties["isolation"]>>
+      isolation?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["isolation"]>>
        /**
          * The CSS **\`justify-content\`** property defines how the browser distributes space between and around content items along the main-axis of a flex container, and the inline axis of a grid container.
          *
@@ -10731,7 +10731,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/line-break
          */
-      lineBreak?: ConditionalValue<WithEscapeHatch<CssProperties["lineBreak"]>>
+      lineBreak?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["lineBreak"]>>
        /**
          * **Syntax**: \`none | <integer>\`
          *
@@ -11413,7 +11413,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/mix-blend-mode
          */
-      mixBlendMode?: ConditionalValue<WithEscapeHatch<CssProperties["mixBlendMode"]>>
+      mixBlendMode?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["mixBlendMode"]>>
        /**
          * The **\`object-fit\`** CSS property sets how the content of a replaced element, such as an \`<img>\` or \`<video>\`, should be resized to fit its container.
          *
@@ -11427,7 +11427,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/object-fit
          */
-      objectFit?: ConditionalValue<WithEscapeHatch<CssProperties["objectFit"]>>
+      objectFit?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["objectFit"]>>
        /**
          * The **\`object-position\`** CSS property specifies the alignment of the selected replaced element's contents within the element's box. Areas of the box which aren't covered by the replaced element's object will show the element's background.
          *
@@ -11620,7 +11620,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/outline-style
          */
-      outlineStyle?: ConditionalValue<WithEscapeHatch<CssProperties["outlineStyle"]>>
+      outlineStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["outlineStyle"]>>
        /**
          * The CSS **\`outline-width\`** property sets the thickness of an element's outline. An outline is a line that is drawn around an element, outside the \`border\`.
          *
@@ -11648,7 +11648,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow
          */
-      overflow?: ConditionalValue<WithEscapeHatch<CssProperties["overflow"]>>
+      overflow?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["overflow"]>>
        /**
          * **Syntax**: \`auto | none\`
          *
@@ -11672,7 +11672,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-block
          */
-      overflowBlock?: ConditionalValue<WithEscapeHatch<CssProperties["overflowBlock"]>>
+      overflowBlock?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["overflowBlock"]>>
        /**
          * The **\`overflow-clip-box\`** CSS property specifies relative to which box the clipping happens when there is an overflow. It is short hand for the \`overflow-clip-box-inline\` and \`overflow-clip-box-block\` properties.
          *
@@ -11704,7 +11704,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-inline
          */
-      overflowInline?: ConditionalValue<WithEscapeHatch<CssProperties["overflowInline"]>>
+      overflowInline?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["overflowInline"]>>
        /**
          * The **\`overflow-wrap\`** CSS property applies to inline elements, setting whether the browser should insert line breaks within an otherwise unbreakable string to prevent text from overflowing its line box.
          *
@@ -11719,7 +11719,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-wrap
          */
-      overflowWrap?: ConditionalValue<WithEscapeHatch<CssProperties["overflowWrap"]>>
+      overflowWrap?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["overflowWrap"]>>
        /**
          * The **\`overflow-x\`** CSS property sets what shows when content overflows a block-level element's left and right edges. This may be nothing, a scroll bar, or the overflow content.
          *
@@ -11733,7 +11733,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-x
          */
-      overflowX?: ConditionalValue<WithEscapeHatch<CssProperties["overflowX"]>>
+      overflowX?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["overflowX"]>>
        /**
          * The **\`overflow-y\`** CSS property sets what shows when content overflows a block-level element's top and bottom edges. This may be nothing, a scroll bar, or the overflow content.
          *
@@ -11747,7 +11747,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/overflow-y
          */
-      overflowY?: ConditionalValue<WithEscapeHatch<CssProperties["overflowY"]>>
+      overflowY?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["overflowY"]>>
        /**
          * The **\`overlay\`** CSS property specifies whether an element appearing in the top layer (for example, a shown popover or modal \`<dialog>\` element) is actually rendered in the top layer. This property is only relevant within a list of \`transition-property\` values, and only if \`allow-discrete\` is set as the \`transition-behavior\`.
          *
@@ -12131,7 +12131,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/pointer-events
          */
-      pointerEvents?: ConditionalValue<WithEscapeHatch<CssProperties["pointerEvents"]>>
+      pointerEvents?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["pointerEvents"]>>
        /**
          * The **\`position\`** CSS property sets how an element is positioned in a document. The \`top\`, \`right\`, \`bottom\`, and \`left\` properties determine the final location of positioned elements.
          *
@@ -12145,7 +12145,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/position
          */
-      position?: ConditionalValue<WithEscapeHatch<CssProperties["position"]>>
+      position?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["position"]>>
        /**
          * The **\`print-color-adjust\`** CSS property sets what, if anything, the user agent may do to optimize the appearance of the element on the output device. By default, the browser is allowed to make any adjustments to the element's appearance it determines to be necessary and prudent given the type and capabilities of the output device.
          *
@@ -12188,7 +12188,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/resize
          */
-      resize?: ConditionalValue<WithEscapeHatch<CssProperties["resize"]>>
+      resize?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["resize"]>>
        /**
          * The **\`right\`** CSS property participates in specifying the horizontal position of a positioned element. It has no effect on non-positioned elements.
          *
@@ -12335,7 +12335,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scroll-behavior
          */
-      scrollBehavior?: ConditionalValue<WithEscapeHatch<CssProperties["scrollBehavior"]>>
+      scrollBehavior?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["scrollBehavior"]>>
        /**
          * The **\`scroll-margin\`** shorthand property sets all of the scroll margins of an element at once, assigning values much like the \`margin\` property does for margins of an element.
          *
@@ -13196,7 +13196,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/touch-action
          */
-      touchAction?: ConditionalValue<WithEscapeHatch<CssProperties["touchAction"]>>
+      touchAction?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["touchAction"]>>
        /**
          * The **\`transform\`** CSS property lets you rotate, scale, skew, or translate an element. It modifies the coordinate space of the CSS visual formatting model.
          *
@@ -13225,7 +13225,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/transform-box
          */
-      transformBox?: ConditionalValue<WithEscapeHatch<CssProperties["transformBox"]>>
+      transformBox?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["transformBox"]>>
        /**
          * The **\`transform-origin\`** CSS property sets the origin for an element's transformations.
          *
@@ -13255,7 +13255,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/transform-style
          */
-      transformStyle?: ConditionalValue<WithEscapeHatch<CssProperties["transformStyle"]>>
+      transformStyle?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["transformStyle"]>>
        /**
          * The **\`transition\`** CSS property is a shorthand property for \`transition-property\`, \`transition-duration\`, \`transition-timing-function\`, and \`transition-delay\`.
          *
@@ -13385,7 +13385,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/user-select
          */
-      userSelect?: ConditionalValue<WithEscapeHatch<CssProperties["userSelect"]>>
+      userSelect?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["userSelect"]>>
        /**
          * The **\`vertical-align\`** CSS property sets vertical alignment of an inline, inline-block or table-cell box.
          *
@@ -13481,7 +13481,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/visibility
          */
-      visibility?: ConditionalValue<WithEscapeHatch<CssProperties["visibility"]>>
+      visibility?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["visibility"]>>
        /**
          * The **\`white-space\`** CSS property sets how white space inside an element is handled.
          *
@@ -13565,7 +13565,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/word-break
          */
-      wordBreak?: ConditionalValue<WithEscapeHatch<CssProperties["wordBreak"]>>
+      wordBreak?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["wordBreak"]>>
        /**
          * The **\`word-spacing\`** CSS property sets the length of space between words and between tags.
          *
@@ -13606,7 +13606,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/writing-mode
          */
-      writingMode?: ConditionalValue<WithEscapeHatch<CssProperties["writingMode"]>>
+      writingMode?: ConditionalValue<WithEscapeHatch<CssVars | CssProperties["writingMode"]>>
        /**
          * The **\`z-index\`** CSS property sets the z-order of a positioned element and its descendants or flex items. Overlapping elements with a larger z-index cover those with a smaller one.
          *
@@ -14969,7 +14969,7 @@ describe('generate property types', () => {
          *
          * **Initial value**: \`none\` (but this value is overridden in the user agent CSS)
          */
-      WebkitAppearance?: ConditionalValue<CssProperties["WebkitAppearance"] | CssVars | AnyString>
+      WebkitAppearance?: ConditionalValue<CssProperties["WebkitAppearance"] | AnyString>
        /**
          * The **\`-webkit-border-before\`** CSS property is a shorthand property for setting the individual logical block start border property values in a single place in the style sheet.
          *
