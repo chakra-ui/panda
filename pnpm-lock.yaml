@@ -1403,8 +1403,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/token-dictionary
       bright:
-        specifier: 0.8.4
-        version: 0.8.4(react@18.2.0)
+        specifier: 0.8.5
+        version: 0.8.5(react@18.2.0)
       flexsearch:
         specifier: 0.7.43
         version: 0.7.43
@@ -13263,8 +13263,8 @@ packages:
       wcwidth: 1.0.1
     dev: false
 
-  /bright@0.8.4(react@18.2.0):
-    resolution: {integrity: sha512-SBlcJje8EDh3lLihqr0W27yHCVpuh3NReziNxZOwUzuaShqq+V/imY+J+AvJdTIOifiCQkyIsgVWKAj5G/eOyg==}
+  /bright@0.8.5(react@18.2.0):
+    resolution: {integrity: sha512-LOhh3jk8KLFMqhX67TSGP1kCb3qGXbiRLbyBToVOfrrrEa3omXHT44r0/L4/OOlKluaFcO7+11KLOM5xI50XvA==}
     peerDependencies:
       react: ^18
     dependencies:
