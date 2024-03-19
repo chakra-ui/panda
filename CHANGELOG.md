@@ -6,6 +6,486 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.36.0] - 2024-03-19
+
+### Fixed
+
+- Fix `Expression produces a union type that is too complex to represent` with `splitCssProps` because of
+  `JsxStyleProps` type
+
+- Fix merging issue when using a preset that has a token with a conflicting value with another (or the user's config)
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+const userConfig = defineConfig({
+  presets: [
+    {
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              black: { value: 'black' },
+            },
+          },
+        },
+      },
+    },
+  ],
+  theme: {
+    tokens: {
+      extend: {
+        colors: {
+          black: {
+            0: { value: 'black' },
+            10: { value: 'black/10' },
+            20: { value: 'black/20' },
+            30: { value: 'black/30' },
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+When merged with the preset, the config would create nested tokens (`black.10`, `black.20`, `black.30`) inside of the
+initially flat `black` token.
+
+This would cause issues as the token engine stops diving deeper after encountering an object with a `value` property.
+
+To fix this, we now automatically replace the flat `black` token using the `DEFAULT` keyword when resolving the config
+so that the token engine can continue to dive deeper into the object:
+
+```diff
+{
+  "theme": {
+    "tokens": {
+      "colors": {
+        "black": {
+          "0": {
+            "value": "black",
+          },
+          "10": {
+            "value": "black/10",
+          },
+          "20": {
+            "value": "black/20",
+          },
+          "30": {
+            "value": "black/30",
+          },
+-          "value": "black",
++          "DEFAULT": {
++            "value": "black",
++          },
+        },
+      },
+    },
+  },
+}
+```
+
+- Fix an issue when using a semantic token with one (but not all) condition using the color opacity modifier
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          black: { value: 'black' },
+          white: { value: 'white' },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          fg: {
+            value: {
+              base: '{colors.black/87}',
+              _dark: '{colors.white}', // <- this was causing a weird issue
+            },
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+- Fix `strictPropertyValues` typings should allow for `CssVars` (either predefined from `globalVars` or any custom CSS
+  variable)
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  strictPropertyValues: true,
+  globalVars: {
+    extend: {
+      '--some-color': 'red',
+      '--button-color': {
+        syntax: '<color>',
+        inherits: false,
+        initialValue: 'blue',
+      },
+    },
+  },
+})
+```
+
+```ts
+css({
+  // ❌ was not allowed before when `strictPropertyValues` was enabled
+  display: 'var(--button-color)', // ✅ will now be allowed/suggested
+})
+```
+
+If no `globalVars` are defined, any `var(--*)` will be allowed
+
+```ts
+css({
+  // ✅ will be allowed
+  display: 'var(--xxx)',
+})
+```
+
+### Added
+
+- Introduce a new `globalVars` config option to define type-safe
+  [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) and custom
+  [CSS @property](https://developer.mozilla.org/en-US/docs/Web/CSS/@property).
+
+Example:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  globalVars: {
+    '--some-color': 'red',
+    '--button-color': {
+      syntax: '<color>',
+      inherits: false,
+      initialValue: 'blue',
+    },
+  },
+})
+```
+
+> Note: Keys defined in `globalVars` will be available as a value for _every_ utilities, as they're not bound to token
+> categories.
+
+```ts
+import { css } from '../styled-system/css'
+
+const className = css({
+  '--button-color': 'colors.red.300',
+  // ^^^^^^^^^^^^  will be suggested
+
+  backgroundColor: 'var(--button-color)',
+  //                ^^^^^^^^^^^^^^^^^^  will be suggested
+})
+```
+
+- Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes and CSS
+  variables.
+
+Can pre-generate multiple themes with token overrides as static CSS, but also dynamically import and inject a theme
+stylesheet at runtime (browser or server).
+
+Example:
+
+```ts
+// panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  // main theme
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          text: { value: 'blue' },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          body: {
+            value: {
+              base: '{colors.blue.600}',
+              _osDark: '{colors.blue.400}',
+            },
+          },
+        },
+      },
+    },
+  },
+  // alternative theme variants
+  themes: {
+    primary: {
+      tokens: {
+        colors: {
+          text: { value: 'red' },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          muted: { value: '{colors.red.200}' },
+          body: {
+            value: {
+              base: '{colors.red.600}',
+              _osDark: '{colors.red.400}',
+            },
+          },
+        },
+      },
+    },
+    secondary: {
+      tokens: {
+        colors: {
+          text: { value: 'blue' },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          muted: { value: '{colors.blue.200}' },
+          body: {
+            value: {
+              base: '{colors.blue.600}',
+              _osDark: '{colors.blue.400}',
+            },
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+#### Pregenerating themes
+
+By default, no additional theme variant is generated, you need to specify the specific themes you want to generate in
+`staticCss.themes` to include them in the CSS output.
+
+```ts
+// panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    themes: ['primary', 'secondary'],
+  },
+})
+```
+
+This will generate the following CSS:
+
+```css
+@layer tokens {
+  :where(:root, :host) {
+    --colors-text: blue;
+    --colors-body: var(--colors-blue-600);
+  }
+
+  [data-panda-theme='primary'] {
+    --colors-text: red;
+    --colors-muted: var(--colors-red-200);
+    --colors-body: var(--colors-red-600);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :where(:root, :host) {
+      --colors-body: var(--colors-blue-400);
+    }
+
+    [data-panda-theme='primary'] {
+      --colors-body: var(--colors-red-400);
+    }
+  }
+}
+```
+
+An alternative way of applying a theme is by using the new `styled-system/themes` entrypoint where you can import the
+themes CSS variables and use them in your app.
+
+> ℹ️ The `styled-system/themes` will always contain every themes (tree-shaken if not used), `staticCss.themes` only
+> applies to the CSS output.
+
+Each theme has a corresponding JSON file with a similar structure:
+
+```json
+{
+  "name": "primary",
+  "id": "panda-themes-primary",
+  "dataAttr": "primary",
+  "css": "[data-panda-theme=primary] { ... }"
+}
+```
+
+> ℹ️ Note that for semantic tokens, you need to use inject the theme styles, see below
+
+Dynamically import a theme using its name:
+
+```ts
+import { getTheme } from '../styled-system/themes'
+
+const theme = await getTheme('red')
+//    ^? {
+//     name: "red";
+//     id: string;
+//     css: string;
+// }
+```
+
+#### Inject the theme styles into the DOM:
+
+```ts
+import { injectTheme } from '../styled-system/themes'
+
+const theme = await getTheme('red')
+injectTheme(document.documentElement, theme) // this returns the injected style element
+```
+
+#### SSR example with NextJS:
+
+```tsx
+// app/layout.tsx
+import { Inter } from 'next/font/google'
+import { cookies } from 'next/headers'
+import { ThemeName, getTheme } from '../../styled-system/themes'
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const store = cookies()
+  const themeName = store.get('theme')?.value as ThemeName
+  const theme = themeName && (await getTheme(themeName))
+
+  return (
+    <html lang="en" data-panda-theme={themeName ? themeName : undefined}>
+      {themeName && (
+        <head>
+          <style type="text/css" id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />
+        </head>
+      )}
+      <body>{children}</body>
+    </html>
+  )
+}
+
+// app/page.tsx
+import { getTheme, injectTheme } from '../../styled-system/themes'
+
+export default function Home() {
+  return (
+    <>
+      <button
+        onClick={async () => {
+          const current = document.documentElement.dataset.pandaTheme
+          const next = current === 'primary' ? 'secondary' : 'primary'
+          const theme = await getTheme(next)
+          setCookie('theme', next, 7)
+          injectTheme(document.documentElement, theme)
+        }}
+      >
+        swap theme
+      </button>
+    </>
+  )
+}
+
+// Set a Cookie
+function setCookie(cName: string, cValue: any, expDays: number) {
+  let date = new Date()
+  date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000)
+  const expires = 'expires=' + date.toUTCString()
+  document.cookie = cName + '=' + cValue + '; ' + expires + '; path=/'
+}
+```
+
+Finally, you can create a theme contract to ensure that all themes have the same structure:
+
+```ts
+import { defineThemeContract } from '@pandacss/dev'
+
+const defineTheme = defineThemeContract({
+  tokens: {
+    colors: {
+      red: { value: '' }, // theme implementations must have a red color
+    },
+  },
+})
+
+defineTheme({
+  selector: '.theme-secondary',
+  tokens: {
+    colors: {
+      // ^^^^   Property 'red' is missing in type '{}' but required in type '{ red: { value: string; }; }'
+      //
+      // fixed with
+      // red: { value: 'red' },
+    },
+  },
+})
+```
+
+### Cbanged
+
+When using `strictTokens: true`, if you didn't have `tokens` (or `semanticTokens`) on a given `Token category`, you'd
+still not be able to use _any_ values in properties bound to that category. Now, `strictTokens` will correctly only
+restrict properties that have values in their token category.
+
+Example:
+
+```ts
+// panda.config.ts
+
+export default defineConfig({
+  // ...
+  strictTokens: true,
+  theme: {
+    extend: {
+      colors: {
+        primary: { value: 'blue' },
+      },
+      // borderWidths: {}, // ⚠️ nothing defined here
+    },
+  },
+})
+```
+
+```ts
+// app.tsx
+css({
+  // ❌ before this PR, TS would throw an error as you are supposed to only use Tokens
+  // even thought you don't have any `borderWidths` tokens defined !
+
+  // ✅ after this PR, TS will not throw an error anymore as you don't have any `borderWidths` tokens
+  // if you add one, this will error again (as it's supposed to)
+  borderWidths: '123px',
+})
+```
+
+#### Description
+
+- Simplify typings for the style properties.
+- Add the `csstype` comments for each property.
+
+You will now be able to see a utility or `csstype` values in 2 clicks !
+
+#### How
+
+Instead of relying on TS to infer the correct type for each properties, we now just generate the appropriate value for
+each property based on the config.
+
+This should make it easier to understand the type of each property and might also speed up the TS suggestions as there's
+less to infer.
+
 ## [0.35.0] - 2024-03-14
 
 ### Fixed
