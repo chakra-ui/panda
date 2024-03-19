@@ -1,5 +1,11 @@
 # @pandacss/astro-plugin-studio
 
+## 0.36.0
+
+### Patch Changes
+
+- @pandacss/node@0.36.0
+
 ## 0.35.0
 
 ### Patch Changes
@@ -90,11 +96,11 @@
   ```js
   module.exports = {
     plugins: {
-      '@pandacss/dev/postcss': {
-        logfile: './logs/panda.log',
+      "@pandacss/dev/postcss": {
+        logfile: "./logs/panda.log",
       },
     },
-  }
+  };
   ```
 
 - Updated dependencies [05686b9d]
