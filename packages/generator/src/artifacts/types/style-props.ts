@@ -19,7 +19,7 @@ export function generateStyleProps(ctx: Context) {
     ${ctx.file.importType('Token', '../tokens/index')}
 
     type AnyString = (string & {})
-    ${cssVars ? `type CssVars = ${cssVars}` : ''}
+    type CssVars = ${[cssVars || '`var(--${string})`'].filter(Boolean).join(' | ')}
     type CssVarValue = ConditionalValue<Token${ctx.globalVars.isEmpty() ? '' : ' | CssVars'} | AnyString | (number & {})>
 
     type CssVarName = ${unionType(ctx.globalVars.names)} | AnyString
@@ -39,11 +39,16 @@ export function generateStyleProps(ctx: Context) {
           // `scaleX` isn't a valid css property, will fallback to `string | number`
           const cssFallback = allCssProperties.includes(prop) ? `CssProperties["${prop}"]` : ''
 
-          if (!propTypes.has(prop)) union.push(cssFallback)
-          else {
-            union.push(
-              strictPropertyValue(prop, `UtilityValues["${prop}"]`, ctx.config.strictTokens ? '' : cssFallback),
-            )
+          // has values (utility or tokens)
+          if (propTypes.has(prop)) {
+            const utilityValue = `UtilityValues["${prop}"]`
+            if (strictPropertyList.has(key)) {
+              union.push([utilityValue, 'CssVars'].join(' | '))
+            } else {
+              union.push([utilityValue, ctx.config.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '))
+            }
+          } else {
+            union.push([strictPropertyList.has(key) ? 'CssVars' : '', cssFallback].filter(Boolean).join(' | '))
           }
 
           const filtered = union.filter(Boolean)
@@ -53,10 +58,7 @@ export function generateStyleProps(ctx: Context) {
           }
 
           const comment = (csstype.comments as Record<string, string>)?.[prop] || ''
-          const value = filtered
-            .concat(ctx.globalVars.isEmpty() ? '' : 'CssVars')
-            .filter(Boolean)
-            .join(' | ')
+          const value = filtered.filter(Boolean).join(' | ')
           const line = `${key}?: ${restrict(prop, value, ctx.config)}`
 
           return ' ' + [comment, line].filter(Boolean).join('\n')
@@ -130,8 +132,6 @@ const strictPropertyList = new Set([
   'wordBreak',
   'writingMode',
 ])
-const strictPropertyValue = (key: string, value: string, fallback: string) =>
-  strictPropertyList.has(key) ? value : [value, fallback].filter(Boolean).join(' | ')
 
 const restrict = (key: string, value: string, config: UserConfig) => {
   if (config.strictPropertyValues && strictPropertyList.has(key)) {
