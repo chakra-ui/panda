@@ -5,8 +5,8 @@ import pluralize from 'pluralize'
 
 const categories = [
   'aspectRatios',
-  'zIndex',
-  'opacity',
+  'zIndices',
+  'opacitiez',
   'colors',
   'fonts',
   'fontSizes',

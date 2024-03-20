@@ -20,7 +20,7 @@ describe('color-mix', () => {
     theme: {
       extend: {
         tokens: {
-          opacity: {
+          opacities: {
             half: { value: 0.5 },
           },
         },
@@ -229,8 +229,7 @@ describe('color-mix', () => {
         ],
         "css": "@layer utilities {
         .bg_red\\/half {
-          --mix-background: color-mix(in srgb, red 50%, transparent);
-          background: var(--mix-background, red);
+          background: red/half;
       }
       }",
       }

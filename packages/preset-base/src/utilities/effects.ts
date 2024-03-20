@@ -3,7 +3,7 @@ import { createColorMixTransform } from '../color-mix-transform'
 
 export const effects: UtilityConfig = {
   opacity: {
-    values: 'opacity',
+    values: 'opacities',
     group: 'Background',
   },
   boxShadow: {

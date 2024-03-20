@@ -363,7 +363,7 @@ export class TokenDictionary {
     }
 
     const colorToken = tokenFn(colorPath)
-    const opacityToken = this.getByName(`opacity.${rawOpacity}`)?.value
+    const opacityToken = this.getByName(`opacities.${rawOpacity}`)?.value
 
     if (!opacityToken && isNaN(Number(rawOpacity))) {
       return { invalid: true, value: colorPath }
