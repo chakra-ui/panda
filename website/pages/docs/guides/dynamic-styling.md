@@ -473,7 +473,7 @@ All of this with complete type-safety and without having to make drastic changes
 <styled.div color="#121qsd" />
 
 // ✅ Good: Arbitrary selector
-<styled.div css={{ ["&[data-thing] > span": { color: "red.100" } }} />
+<styled.div css={{ "&[data-thing] > span": { color: "red.100" } }} />
 
 // ✅ Good: Runtime value (with config.`staticCss`)
 const Button = () => {
