@@ -2850,7 +2850,7 @@ describe('Utility', () => {
       config: {
         zIndex: {
           className: 'z',
-          values: 'zIndex',
+          values: 'zIndices',
         },
       },
     })
