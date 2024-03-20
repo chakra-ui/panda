@@ -4040,4 +4040,85 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test.only('JSX matching with dot component that are not from a namespace', () => {
+    const code = `
+    const App = () => {
+      return (
+        <Tabs.Root defaultValue="button">
+          <Tabs.List>
+            <Tabs.Trigger value="button">Button</Tabs.Trigger>
+            <Tabs.Trigger value="radio">Radio Group</Tabs.Trigger>
+            <Tabs.Trigger value="slider">Slider</Tabs.Trigger>
+            <Tabs.Indicator />
+          </Tabs.List>
+      </Tabs.Root>)
+    }
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        extend: {
+          slotRecipes: {
+            tabs: {
+              className: 'tabs',
+              slots: ['root', 'list', 'trigger', 'content', 'indicator'],
+              base: {
+                root: {
+                  display: 'flex',
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "Root",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "List",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Trigger",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Trigger",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Trigger",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Indicator",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`""`)
+  })
 })
