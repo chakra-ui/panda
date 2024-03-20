@@ -21,12 +21,12 @@
     theme: {
       extend: {
         colors: {
-          primary: { value: "blue" },
+          primary: { value: 'blue' },
         },
         // borderWidths: {}, // ⚠️ nothing defined here
       },
     },
-  });
+  })
   ```
 
   ```ts
@@ -37,8 +37,8 @@
 
     // ✅ after this PR, TS will not throw an error anymore as you don't have any `borderWidths` tokens
     // if you add one, this will error again (as it's supposed to)
-    borderWidths: "123px",
-  });
+    borderWidths: '123px',
+  })
   ```
 
   ## Description
@@ -53,8 +53,8 @@
   Instead of relying on TS to infer the correct type for each properties, we now just generate the appropriate value for
   each property based on the config.
 
-  This should make it easier to understand the type of each property and might also speed up the TS suggestions as there's
-  less to infer.
+  This should make it easier to understand the type of each property and might also speed up the TS suggestions as
+  there's less to infer.
 
 ## 0.35.0
 

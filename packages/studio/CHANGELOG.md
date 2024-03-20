@@ -21,12 +21,12 @@
     theme: {
       extend: {
         colors: {
-          primary: { value: "blue" },
+          primary: { value: 'blue' },
         },
         // borderWidths: {}, // ⚠️ nothing defined here
       },
     },
-  });
+  })
   ```
 
   ```ts
@@ -37,8 +37,8 @@
 
     // ✅ after this PR, TS will not throw an error anymore as you don't have any `borderWidths` tokens
     // if you add one, this will error again (as it's supposed to)
-    borderWidths: "123px",
-  });
+    borderWidths: '123px',
+  })
   ```
 
   ## Description
@@ -53,8 +53,8 @@
   Instead of relying on TS to infer the correct type for each properties, we now just generate the appropriate value for
   each property based on the config.
 
-  This should make it easier to understand the type of each property and might also speed up the TS suggestions as there's
-  less to infer.
+  This should make it easier to understand the type of each property and might also speed up the TS suggestions as
+  there's less to infer.
 
 ### Patch Changes
 
@@ -93,11 +93,11 @@
 - 4576a60: Fix nested `styled` factory composition
 
   ```tsx
-  import { styled } from "../styled-system/jsx";
+  import { styled } from '../styled-system/jsx'
 
-  const BasicBox = styled("div", { base: { fontSize: "10px" } });
-  const ExtendedBox1 = styled(BasicBox, { base: { fontSize: "20px" } });
-  const ExtendedBox2 = styled(ExtendedBox1, { base: { fontSize: "30px" } });
+  const BasicBox = styled('div', { base: { fontSize: '10px' } })
+  const ExtendedBox1 = styled(BasicBox, { base: { fontSize: '20px' } })
+  const ExtendedBox2 = styled(ExtendedBox1, { base: { fontSize: '30px' } })
 
   export const App = () => {
     return (
@@ -110,8 +110,8 @@
         {/* NOW: ✅ fs_30px */}
         <ExtendedBox2>text3</ExtendedBox2>
       </>
-    );
-  };
+    )
+  }
   ```
 
   - @pandacss/astro-plugin-studio@0.34.3
@@ -490,9 +490,9 @@
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 - Updated dependencies [8f4ce97c]
@@ -770,9 +770,9 @@
 
   ```ts
   interface FactoryOptions<TProps extends Dict> {
-    dataAttr?: boolean;
-    defaultProps?: TProps;
-    shouldForwardProp?(prop: string, variantKeys: string[]): boolean;
+    dataAttr?: boolean
+    defaultProps?: TProps
+    shouldForwardProp?(prop: string, variantKeys: string[]): boolean
   }
   ```
 
@@ -780,16 +780,16 @@
     This is useful for testing and debugging.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, { dataAttr: true });
+  const Button = styled('button', button, { dataAttr: true })
 
   const App = () => (
     <Button variant="secondary" mt="10px">
       Button
     </Button>
-  );
+  )
   // Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
   ```
 
@@ -797,17 +797,17 @@
     override the default variants or base styles of a recipe.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, {
+  const Button = styled('button', button, {
     defaultProps: {
-      variant: "secondary",
-      px: "10px",
+      variant: 'secondary',
+      px: '10px',
     },
-  });
+  })
 
-  const App = () => <Button>Button</Button>;
+  const App = () => <Button>Button</Button>
   // Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
   ```
 
@@ -815,20 +815,19 @@
     props except recipe variants and style props are forwarded.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
-  import { isCssProperty } from "../styled-system/jsx";
-  import { motion, isValidMotionProp } from "framer-motion";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
+  import { isCssProperty } from '../styled-system/jsx'
+  import { motion, isValidMotionProp } from 'framer-motion'
 
   const StyledMotion = styled(
     motion.div,
     {},
     {
       shouldForwardProp: (prop, variantKeys) =>
-        isValidMotionProp(prop) ||
-        (!variantKeys.includes(prop) && !isCssProperty(prop)),
+        isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
     },
-  );
+  )
   ```
 
 - Updated dependencies [abd7c47a]
@@ -850,22 +849,22 @@
 
   ```ts file="panda.config.ts"
   const button = defineRecipe({
-    className: "btn",
-    base: { color: "green", fontSize: "16px" },
+    className: 'btn',
+    base: { color: 'green', fontSize: '16px' },
     variants: {
-      size: { small: { fontSize: "14px" } },
+      size: { small: { fontSize: '14px' } },
     },
-    compoundVariants: [{ size: "small", css: { color: "blue" } }],
-  });
+    compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+  })
   ```
 
   This would previously not merge the `color` property overrides, but now it does:
 
   ```tsx file="example.tsx"
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button);
+  const Button = styled('button', button)
 
   function App() {
     return (
@@ -874,7 +873,7 @@
           Click me
         </Button>
       </>
-    );
+    )
   }
   ```
 
@@ -1057,11 +1056,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    "codegen:prepare": ({ artifacts, changed }) => {
+    'codegen:prepare': ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-});
+})
 ```
 
 - d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
@@ -1078,11 +1077,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [0dd45b6a]
@@ -1318,9 +1317,9 @@ export default defineConfig({
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 - Updated dependencies [8f4ce97c]
@@ -1598,9 +1597,9 @@ export default defineConfig({
 
   ```ts
   interface FactoryOptions<TProps extends Dict> {
-    dataAttr?: boolean;
-    defaultProps?: TProps;
-    shouldForwardProp?(prop: string, variantKeys: string[]): boolean;
+    dataAttr?: boolean
+    defaultProps?: TProps
+    shouldForwardProp?(prop: string, variantKeys: string[]): boolean
   }
   ```
 
@@ -1608,16 +1607,16 @@ export default defineConfig({
     This is useful for testing and debugging.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, { dataAttr: true });
+  const Button = styled('button', button, { dataAttr: true })
 
   const App = () => (
     <Button variant="secondary" mt="10px">
       Button
     </Button>
-  );
+  )
   // Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
   ```
 
@@ -1625,17 +1624,17 @@ export default defineConfig({
     override the default variants or base styles of a recipe.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, {
+  const Button = styled('button', button, {
     defaultProps: {
-      variant: "secondary",
-      px: "10px",
+      variant: 'secondary',
+      px: '10px',
     },
-  });
+  })
 
-  const App = () => <Button>Button</Button>;
+  const App = () => <Button>Button</Button>
   // Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
   ```
 
@@ -1643,20 +1642,19 @@ export default defineConfig({
     props except recipe variants and style props are forwarded.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
-  import { isCssProperty } from "../styled-system/jsx";
-  import { motion, isValidMotionProp } from "framer-motion";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
+  import { isCssProperty } from '../styled-system/jsx'
+  import { motion, isValidMotionProp } from 'framer-motion'
 
   const StyledMotion = styled(
     motion.div,
     {},
     {
       shouldForwardProp: (prop, variantKeys) =>
-        isValidMotionProp(prop) ||
-        (!variantKeys.includes(prop) && !isCssProperty(prop)),
+        isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
     },
-  );
+  )
   ```
 
 - Updated dependencies [abd7c47a]
@@ -1678,22 +1676,22 @@ export default defineConfig({
 
   ```ts file="panda.config.ts"
   const button = defineRecipe({
-    className: "btn",
-    base: { color: "green", fontSize: "16px" },
+    className: 'btn',
+    base: { color: 'green', fontSize: '16px' },
     variants: {
-      size: { small: { fontSize: "14px" } },
+      size: { small: { fontSize: '14px' } },
     },
-    compoundVariants: [{ size: "small", css: { color: "blue" } }],
-  });
+    compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+  })
   ```
 
   This would previously not merge the `color` property overrides, but now it does:
 
   ```tsx file="example.tsx"
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button);
+  const Button = styled('button', button)
 
   function App() {
     return (
@@ -1702,7 +1700,7 @@ export default defineConfig({
           Click me
         </Button>
       </>
-    );
+    )
   }
   ```
 
