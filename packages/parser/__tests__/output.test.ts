@@ -4041,7 +4041,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('JSX matching with dot component that are not from a namespace', () => {
+  test('JSX recipes matching with dot component that are not from a namespace', () => {
     const code = `
     const App = () => {
       return (
@@ -4078,47 +4078,55 @@ describe('extract to css output pipeline', () => {
           "data": [
             {},
           ],
-          "name": "Root",
-          "type": "jsx",
+          "name": "Tabs.Root",
+          "type": "jsx-recipe",
         },
         {
           "data": [
             {},
           ],
-          "name": "List",
-          "type": "jsx",
+          "name": "Tabs.List",
+          "type": "jsx-recipe",
         },
         {
           "data": [
             {},
           ],
-          "name": "Trigger",
-          "type": "jsx",
+          "name": "Tabs.Trigger",
+          "type": "jsx-recipe",
         },
         {
           "data": [
             {},
           ],
-          "name": "Trigger",
-          "type": "jsx",
+          "name": "Tabs.Trigger",
+          "type": "jsx-recipe",
         },
         {
           "data": [
             {},
           ],
-          "name": "Trigger",
-          "type": "jsx",
+          "name": "Tabs.Trigger",
+          "type": "jsx-recipe",
         },
         {
           "data": [
             {},
           ],
-          "name": "Indicator",
-          "type": "jsx",
+          "name": "Tabs.Indicator",
+          "type": "jsx-recipe",
         },
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`""`)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        @layer _base {
+          .tabs__root {
+            display: flex;
+      }
+          }
+      }"
+    `)
   })
 })

@@ -269,18 +269,27 @@ export function createParser(context: ParserOptions) {
           const data = combineResult(unbox(query.box))
 
           switch (true) {
-            case file.isJsxFactory(name): {
+            case file.isJsxFactory(name) || file.isJsxFactory(alias): {
               parserResult.setJsx({ type: 'jsx-factory', name: name, box: query.box, data })
               break
             }
-            case jsx.isJsxTagPattern(name): {
+            case jsx.isJsxTagPattern(name) || jsx.isJsxTagPattern(alias): {
               parserResult.setPattern(name, { type: 'jsx-pattern', name: name, box: query.box, data })
               break
             }
+            // name: Trigger
             case jsx.isJsxTagRecipe(name): {
               const matchingRecipes = recipes.filter(name)
               matchingRecipes.map((recipe) => {
                 parserResult.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: name, box: query.box, data })
+              })
+              break
+            }
+            // alias: Tabs.Trigger
+            case jsx.isJsxTagRecipe(alias): {
+              const matchingRecipes = recipes.filter(alias)
+              matchingRecipes.map((recipe) => {
+                parserResult.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: alias, box: query.box, data })
               })
               break
             }
