@@ -4040,4 +4040,93 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('JSX recipes matching with dot component that are not from a namespace', () => {
+    const code = `
+    const App = () => {
+      return (
+        <Tabs.Root defaultValue="button">
+          <Tabs.List>
+            <Tabs.Trigger value="button">Button</Tabs.Trigger>
+            <Tabs.Trigger value="radio">Radio Group</Tabs.Trigger>
+            <Tabs.Trigger value="slider">Slider</Tabs.Trigger>
+            <Tabs.Indicator />
+          </Tabs.List>
+      </Tabs.Root>)
+    }
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        extend: {
+          slotRecipes: {
+            tabs: {
+              className: 'tabs',
+              slots: ['root', 'list', 'trigger', 'content', 'indicator'],
+              base: {
+                root: {
+                  display: 'flex',
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "Tabs.Root",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Tabs.List",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Tabs.Trigger",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Tabs.Trigger",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Tabs.Trigger",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Tabs.Indicator",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        @layer _base {
+          .tabs__root {
+            display: flex;
+      }
+          }
+      }"
+    `)
+  })
 })
