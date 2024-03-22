@@ -75,9 +75,9 @@ export class Conditions {
     const { themes = {} } = this.options
 
     const themeVariants: Record<string, ConditionDetails> = {}
-    Object.entries(themes).forEach(([theme, themeVariant]) => {
+    Object.entries(themes).forEach(([theme, _themeVariant]) => {
       const condName = this.getThemeName(theme)
-      const cond = parseCondition('& ' + this.getThemeSelector(theme, themeVariant))
+      const cond = parseCondition('& ' + this.getThemeSelector(theme))
       if (!cond) return
 
       themeVariants[condName] = cond
@@ -86,8 +86,8 @@ export class Conditions {
     return themeVariants
   }
 
-  getThemeSelector = (name: string, themeVariant: ThemeVariant) => {
-    return `[data-panda-${themeVariant.attribute || 'theme'}=${name}]`
+  getThemeSelector = (name: string) => {
+    return `[data-panda-theme=${name}]`
   }
 
   getThemeName = (theme: string) => {

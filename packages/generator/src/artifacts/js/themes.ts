@@ -31,7 +31,6 @@ export function generateThemes(ctx: Context) {
         compact({
           name,
           id: getThemeId(name),
-          dataAttr: themeVariant.attribute || name,
           css: results.join('\n\n'),
         }),
         null,
@@ -69,7 +68,7 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
       throw new Error('No head found in doc')
     }
 
-    el.dataset.pandaTheme = theme.dataAttr
+    el.dataset.pandaTheme = theme.name
 
     head.appendChild(sheet)
     sheet.innerHTML = theme.css
@@ -90,7 +89,6 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
         return `'${f.name}': {
           id: string,
           name: '${f.name}',
-          dataAttr: '${theme.attribute || f.name}',
           css: string
         }`
       })
@@ -115,5 +113,6 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
 
 interface GeneratedTheme extends Omit<ThemeVariant, 'tokens' | 'semanticTokens'> {
   name: string
+  id: string
   css: string
 }

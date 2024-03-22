@@ -53,7 +53,6 @@ describe('generate themes', () => {
           "json": "{
         "name": "default",
         "id": "panda-theme-default",
-        "dataAttr": "default",
         "css": " [data-panda-theme=default] {\\n    --colors-primary: blue;\\n    --colors-simple: var(--colors-red-600);\\n    --colors-text: var(--colors-blue-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=default] {\\n        --colors-text: var(--colors-blue-400)\\n            }\\n        }"
       }",
           "name": "default",
@@ -62,7 +61,6 @@ describe('generate themes', () => {
           "json": "{
         "name": "pink",
         "id": "panda-theme-pink",
-        "dataAttr": "pink",
         "css": " [data-panda-theme=pink] {\\n    --colors-primary: pink;\\n    --colors-text: var(--colors-pink-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=pink] {\\n        --colors-text: var(--colors-pink-400)\\n            }\\n        }"
       }",
           "name": "pink",
@@ -90,7 +88,7 @@ describe('generate themes', () => {
           throw new Error('No head found in doc')
         }
 
-        el.dataset.pandaTheme = theme.dataAttr
+        el.dataset.pandaTheme = theme.name
 
         head.appendChild(sheet)
         sheet.innerHTML = theme.css
@@ -105,13 +103,11 @@ describe('generate themes', () => {
         'default': {
                 id: string,
                 name: 'default',
-                dataAttr: 'default',
                 css: string
               }
       'pink': {
                 id: string,
                 name: 'pink',
-                dataAttr: 'pink',
                 css: string
               }
       }

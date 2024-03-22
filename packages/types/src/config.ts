@@ -125,15 +125,7 @@ interface ExtendableGlobalVars {
   extend?: GlobalVarsDefinition
 }
 
-export interface ThemeVariant extends Pick<Theme, 'tokens' | 'semanticTokens'> {
-  /**
-   * Selector attribute to use for the generated theme, can be any `data-*` attribute
-   * @default 'data-panda-theme'
-   * ```
-   *
-   */
-  attribute?: `data-${string}`
-}
+export interface ThemeVariant extends Pick<Theme, 'tokens' | 'semanticTokens'> {}
 
 export interface ThemeVariantsMap {
   [name: string]: ThemeVariant
