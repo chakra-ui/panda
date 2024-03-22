@@ -17,6 +17,9 @@ A slot recipe consists of these properties:
 
 > **Credit:** This API was inspired by multipart components in [Chakra UI](https://chakra-ui.com/docs/styled-system/component-style) and slot variants in [Tailwind Variants](https://tailwind-variants.org)
 
+[See the comparison table between atomic recipes (`cva`) and `config recipes` here.](/docs/concepts/recipes#should-i-use-atomic-or-config-recipes-)
+The same comparison applies to `sva` and `slot recipes`.
+
 ## Atomic Slot Recipe (or sva)
 
 The `sva` function is a shorthand for creating a slot recipe with atomic variants. It takes the same arguments as `cva` but returns a slot recipe instead.
