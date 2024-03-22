@@ -37,6 +37,6 @@
     "dist"
   ],
   "devDependencies": {
-    "@pandacss/types": "workspace:^"
+    "@pandacss/types": "workspace:*"
   }
 }

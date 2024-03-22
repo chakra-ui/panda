@@ -625,7 +625,7 @@ importers:
   packages/shared:
     devDependencies:
       '@pandacss/types':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../types
 
   packages/studio:
