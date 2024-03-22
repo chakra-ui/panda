@@ -89,6 +89,29 @@ The resulting `reset` css would look like this:
 }
 ```
 
+You can also set the level to `element` (defaults to `parent`) to only reset the elements that have the scope class assigned.
+
+```json
+{
+  "preflight": { "scope": ".extension", "level": "element" }
+}
+```
+
+The resulting `reset` css would look like this:
+
+```css
+button.extension,
+select.extension {
+  text-transform: none;
+}
+
+table.extension {
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
+}
+```
+
 ### emitTokensOnly
 
 **Type**: `boolean`
