@@ -42,6 +42,8 @@ const Button = ({ children }) => (
 
 Using JSX style props is turned off by default in Panda, but you can opt-in to this feature by using the `jsxFramework` property in the panda config.
 
+> ⚠️ Panda will not extract style props from JSX elements if you don't set the `jsxFramework` property. This is to avoid unnecessary work for projects that don't use JSX.
+
 ### Choose Framework
 
 JSX is a JavaScript syntax extension that allows you to write HTML-like code directly within your JavaScript code and is supported by most popular frameworks. Panda supports JSX style props in React, Preact, Vue 3, Qwik and Solid.js.

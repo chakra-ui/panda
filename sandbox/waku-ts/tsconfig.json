@@ -10,10 +10,6 @@
     "exactOptionalPropertyTypes": true,
     "types": ["react/experimental"],
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "customConditions": ["source"],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "customConditions": ["source"]
   }
 }

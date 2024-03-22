@@ -20,7 +20,6 @@ export const RootLayout = async ({ children }: RootLayoutProps) => {
         className={hstack({
           minH: 'svh',
           justify: 'center',
-          '& *': { minH: '64', minW: '64' },
         })}
       >
         {children}

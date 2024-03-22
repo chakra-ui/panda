@@ -2,6 +2,7 @@ import { Link } from 'waku'
 
 import { Counter } from '../components/counter.js'
 import { css } from '../../styled-system/css/index.js'
+import { MultiThemes } from '../components/multi-themes.js'
 
 export const HomePage = async () => {
   const data = await getData()
@@ -15,6 +16,7 @@ export const HomePage = async () => {
       <Link to="/about" className={css({ mt: '4', display: 'inline-block', textDecoration: 'underline' })}>
         Learn more
       </Link>
+      <MultiThemes />
     </div>
   )
 }

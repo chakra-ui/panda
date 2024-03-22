@@ -100,6 +100,8 @@ const styles = css({ bg: '|' })
 - `config.strictPropertyValues` will throw for properties that do not have config tokens, such as
   `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
 
+> In both cases, you can use the `[xxx]` escape-hatch syntax to use custom or raw CSS values without TypeScript errors.
+
 #### strictTokens
 
 With `config.strictTokens` enabled, you can only use token values in your styles. This prevents the use of custom or raw CSS values.
@@ -134,6 +136,7 @@ css({ display: 'block' }) // ✅ Valid
 
 css({ display: 'abc' }) // ❌ will throw since 'abc' is not part of predefined values of 'display'
 css({ pos: 'absolute123' }) // ❌ will throw since 'absolute123' is not part of predefined values of 'position'
+css({ display: '[var(--btn-display)]' }) // ✅ Valid, since `[var(--btn-display)]` is using the escape-hatch syntax
 
 css({ content: '""' }) // ✅ Valid, since `content` does not have a predefined list of values
 css({ flex: '0 1' }) // ✅ Valid, since `flex` does not have a predefined list of values
@@ -582,4 +585,46 @@ The styles generated at build time will look like this:
     padding-top: 20px;
   }
 }
+```
+
+## Global vars
+
+You can use the `globalVars` property to define global [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) or custom CSS [`@property`](https://developer.mozilla.org/en-US/docs/Web/CSS/@property) definitions.
+
+Panda will automatically generate the corresponding CSS variables and suggest them in your style objects.
+
+> They will be generated in the [`cssVarRoot`](/docs/references/config#cssvarroot) near your tokens.
+
+This can be especially useful when using a 3rd party library that provides custom CSS variables, like a popper library that exposes a `--popper-reference-width`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  globalVars: {
+    '--popper-reference-width': '4px',
+    // you can also generate a CSS @property
+    '--button-color': {
+      syntax: '<color>',
+      inherits: false,
+      initialValue: 'blue'
+    }
+  }
+})
+```
+
+> Note: Keys defined in `globalVars` will be available as a value for _every_ utilities, as they're not bound to token
+> categories.
+
+```ts
+import { css } from '../styled-system/css'
+
+const className = css({
+  '--button-color': 'colors.red.300',
+  // ^^^^^^^^^^^^  will be suggested
+
+  backgroundColor: 'var(--button-color)'
+  //                ^^^^^^^^^^^^^^^^^^  will be suggested
+})
 ```

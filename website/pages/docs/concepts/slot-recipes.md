@@ -17,6 +17,9 @@ A slot recipe consists of these properties:
 
 > **Credit:** This API was inspired by multipart components in [Chakra UI](https://chakra-ui.com/docs/styled-system/component-style) and slot variants in [Tailwind Variants](https://tailwind-variants.org)
 
+[See the comparison table between atomic recipes (`cva`) and `config recipes` here.](/docs/concepts/recipes#should-i-use-atomic-or-config-recipes-)
+The same comparison applies to `sva` and `slot recipes`.
+
 ## Atomic Slot Recipe (or sva)
 
 The `sva` function is a shorthand for creating a slot recipe with atomic variants. It takes the same arguments as `cva` but returns a slot recipe instead.
@@ -147,6 +150,36 @@ const checkbox = sva({
   defaultVariants: {...}
 })
 ```
+
+### Targeting slots
+
+You can set an optional `className` property in the `sva` config which can be used to target slots in the DOM.
+
+Let's say you want to apply a different border color to the checkbox control based on the size and the checked state. Here's how you would do it:
+
+Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
+
+```tsx
+import { sva } from '../styled-system/css'
+
+const button = sva({
+  className: 'btn',
+  slots: ['root', 'text'],
+  base: {
+    root: {
+      bg: 'blue.500',
+      _hover: {
+        // v--- 🎯 this will target the `text` slot
+        '& .btn__text': {
+          color: 'white'
+        }
+      }
+    }
+  }
+})
+```
+
+> Note: If you need to do the same thing using [`slotRecipes`](/docs/concepts/slot-recipes#config-slot-recipe) while using [`hash: true`](/docs/concepts/writing-styles#hashing), you should instead use `data-xxx` attributes to target the slots as the hashing will break your selectors using the `className`.
 
 ### TypeScript Guide
 

@@ -122,6 +122,21 @@ export default defineConfig({
 })
 ```
 
+Or you could even generate the CSS for every config `recipe` / `slotRecipes` (and each of their variants):
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: '*'
+  }
+})
+```
+
+This is mostly useful for testing purposes with [`Storybook`](/docs/installation/storybook).
+
 ## Removing unused CSS
 
 For an even smaller css output size, you can utilize [PurgeCSS](https://purgecss.com/) to treeshake and remove unused

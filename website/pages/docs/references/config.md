@@ -89,6 +89,29 @@ The resulting `reset` css would look like this:
 }
 ```
 
+You can also set the level to `element` (defaults to `parent`) to only reset the elements that have the scope class assigned.
+
+```json
+{
+  "preflight": { "scope": ".extension", "level": "element" }
+}
+```
+
+The resulting `reset` css would look like this:
+
+```css
+button.extension,
+select.extension {
+  text-transform: none;
+}
+
+table.extension {
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
+}
+```
+
 ### emitTokensOnly
 
 **Type**: `boolean`
@@ -665,7 +688,7 @@ The global styles for your project.
 
 ### theme
 
-**Type**: `Extendable<AnyTheme>`
+**Type**: `Extendable<Theme>`
 
 **Default**: `{}`
 
@@ -684,6 +707,57 @@ The theme configuration for your project.
       "colors": {
         "danger": { "value": "{colors.red}" },
         "success": { "value": "{colors.green}" }
+      }
+    }
+  }
+}
+```
+
+### themes
+
+**Type**: `Extendable<ThemeVariantsMap>`
+
+**Default**: `{}`
+
+The theme variants configuration for your project.
+
+```json
+{
+  "themes": {
+    "primary": {
+      "tokens": {
+        "colors": {
+          "text": { "value": "red" }
+        }
+      },
+      "semanticTokens": {
+        "colors": {
+          "muted": { "value": "{colors.red.200}" },
+          "body": {
+            "value": {
+              "base": "{colors.red.600}",
+              "_osDark": "{colors.red.400}"
+            }
+          }
+        }
+      }
+    },
+    "secondary": {
+      "tokens": {
+        "colors": {
+          "text": { "value": "blue" }
+        }
+      },
+      "semanticTokens": {
+        "colors": {
+          "muted": { "value": "{colors.blue.200}" },
+          "body": {
+            "value": {
+              "base": "{colors.blue.600}",
+              "_osDark": "{colors.blue.400}"
+            }
+          }
+        }
       }
     }
   }

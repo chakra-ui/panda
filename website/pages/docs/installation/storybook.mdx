@@ -278,3 +278,34 @@ If you are having issues with your `args` not generating the expected CSS, it's 
 
 - you didn't add a file glob for the Storybook files in your [`config.include`]((/docs/references/config#include)) like `"./stories/**/*.{js,jsx,ts,tsx}"`
 - you didn't wrap your `args` object (or some part of it) with the [`.raw()` marker that helps Panda find style usage](https://panda-css.com/docs/guides/dynamic-styling#alternative)
+
+```tsx filename="stories/Button.stories.tsx"
+import type { Meta, StoryObj } from '@storybook/react';
+import { button } from '../../styled-system/recipes';
+
+export const Funky: Story = {
+  // mark this as a button recipe usage
+  args: button.raw({
+    visual: 'funky',
+    shape: 'circle',
+    size: 'sm'
+  })
+}
+```
+
+#### some recipes styles are missing
+
+If you are having issues with your config `recipes` or `slotRecipes` not generating the expected CSS, it's probably because of:
+
+- you didn't add a file glob for the Storybook files in your [`config.include`]((/docs/references/config#include)) like `"./stories/**/*.{js,jsx,ts,tsx}"`
+- you haven't used every recipes variants in your app, so you might want to pre-generate it (only for storybook usage) with [`staticCss`](/docs/guides/static)
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+  // ...
+  staticCss: {
+    recipes: '*'
+  },
+})
