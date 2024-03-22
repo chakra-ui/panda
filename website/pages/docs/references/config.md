@@ -688,7 +688,7 @@ The global styles for your project.
 
 ### theme
 
-**Type**: `Extendable<AnyTheme>`
+**Type**: `Extendable<Theme>`
 
 **Default**: `{}`
 
@@ -707,6 +707,57 @@ The theme configuration for your project.
       "colors": {
         "danger": { "value": "{colors.red}" },
         "success": { "value": "{colors.green}" }
+      }
+    }
+  }
+}
+```
+
+### themes
+
+**Type**: `Extendable<ThemeVariantsMap>`
+
+**Default**: `{}`
+
+The theme variants configuration for your project.
+
+```json
+{
+  "themes": {
+    "primary": {
+      "tokens": {
+        "colors": {
+          "text": { "value": "red" }
+        }
+      },
+      "semanticTokens": {
+        "colors": {
+          "muted": { "value": "{colors.red.200}" },
+          "body": {
+            "value": {
+              "base": "{colors.red.600}",
+              "_osDark": "{colors.red.400}"
+            }
+          }
+        }
+      }
+    },
+    "secondary": {
+      "tokens": {
+        "colors": {
+          "text": { "value": "blue" }
+        }
+      },
+      "semanticTokens": {
+        "colors": {
+          "muted": { "value": "{colors.blue.200}" },
+          "body": {
+            "value": {
+              "base": "{colors.blue.600}",
+              "_osDark": "{colors.blue.400}"
+            }
+          }
+        }
       }
     }
   }
