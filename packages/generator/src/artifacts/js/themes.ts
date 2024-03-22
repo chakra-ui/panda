@@ -12,7 +12,7 @@ export function generateThemes(ctx: Context) {
 
   const { tokens, conditions } = ctx
 
-  return Object.entries(themes).map(([name, themeVariant]) => {
+  return Object.entries(themes).map(([name, _themeVariant]) => {
     const results = [] as string[]
     const condName = ctx.conditions.getThemeName(name)
 

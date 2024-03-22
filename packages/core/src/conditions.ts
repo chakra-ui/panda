@@ -5,7 +5,6 @@ import type {
   ConditionQuery,
   ConditionType,
   Conditions as ConditionsConfig,
-  ThemeVariant,
   ThemeVariantsMap,
 } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
