@@ -1,4 +1,4 @@
-import { isBaseCondition, toHash, walkObject } from '@pandacss/shared'
+import { isBaseCondition, toHash, walkObject, TokenData } from '@pandacss/shared'
 import { isCompositeTokenValue } from './is-composite'
 import { getReferences, hasReference } from './utils'
 
@@ -219,23 +219,28 @@ function cloneDeep<T>(value: T): any {
   return value
 }
 
-const TOKEN_TYPES = {
-  colors: 'color',
-  spacing: 'dimension',
-  sizing: 'dimension',
-  shadows: 'shadow',
-  fonts: 'fontFamily',
-  fontSizes: 'fontSize',
-  fontWeights: 'fontWeight',
-  letterSpacings: 'letterSpacing',
-  durations: 'duration',
-  transitions: 'transition',
-  radii: 'borderRadius',
-  gradients: 'gradient',
-  easings: 'cubicBezier',
-  borders: 'border',
-  borderWidths: 'borderWidth',
-  components: 'cti',
-  assets: 'asset',
-  aspectRatios: 'aspectRatio',
+const TOKEN_TYPES: Record<(typeof TokenData)[keyof typeof TokenData], string> = {
+  [TokenData.ZINDICES]: 'zIndex',
+  [TokenData.OPACITIES]: 'opacity',
+  [TokenData.COLORS]: 'color',
+  [TokenData.SPACING]: 'dimension',
+  [TokenData.SIZES]: 'dimension',
+  [TokenData.SHADOWS]: 'shadow',
+  [TokenData.FONTS]: 'fontFamily',
+  [TokenData.FONTSIZES]: 'fontSize',
+  [TokenData.FONTWEIGHTS]: 'fontWeight',
+  [TokenData.LINEHEIGHTS]: 'lineHeight',
+  [TokenData.LETTERSPACINGS]: 'letterSpacing',
+  [TokenData.DURATIONS]: 'duration',
+  [TokenData.TRANSITIONS]: 'transition',
+  [TokenData.RADII]: 'borderRadius',
+  [TokenData.BLURS]: 'blur',
+  [TokenData.GRADIENTS]: 'gradient',
+  [TokenData.EASINGS]: 'cubicBezier',
+  [TokenData.ANIMATIONS]: 'animation',
+  [TokenData.BORDERS]: 'border',
+  [TokenData.BORDERWIDTHS]: 'borderWidth',
+  [TokenData.ASSETS]: 'asset',
+  [TokenData.ASPECTRATIOS]: 'aspectRatio',
+  [TokenData.CONTAINERNAMES]: 'containerName',
 }
