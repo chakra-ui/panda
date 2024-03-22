@@ -6,6 +6,7 @@ import {
   mapObject,
   memo,
   walkObject,
+  TokenData,
   type CssVar,
   type CssVarOptions,
 } from '@pandacss/shared'
@@ -363,7 +364,7 @@ export class TokenDictionary {
     }
 
     const colorToken = tokenFn(colorPath)
-    const opacityToken = this.getByName(`opacities.${rawOpacity}`)?.value
+    const opacityToken = this.getByName(`${TokenData.OPACITIES}.${rawOpacity}`)?.value
 
     if (!opacityToken && isNaN(Number(rawOpacity))) {
       return { invalid: true, value: colorPath }

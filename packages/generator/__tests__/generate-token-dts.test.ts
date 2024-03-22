@@ -65,7 +65,7 @@ test('[dts] should generate package', () => {
     		animationName: AnimationName
     } & { [token: string]: never }
 
-    export type TokenCategory = "aspectRatios" | "zIndices" | "opacitiez" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "borderWidths" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets""
+    export type TokenCategory = "zIndices" | "opacities" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "durations" | "transitions" | "easings" | "animations" | "blurs" | "gradients" | "assets" | "borderWidths" | "aspectRatios" | "containerNames""
   `)
 })
 
@@ -144,6 +144,6 @@ test('[dts] should generate package - custom formatTokenName', () => {
     		animationName: AnimationName
     } & { [token: string]: never }
 
-    export type TokenCategory = "aspectRatios" | "zIndices" | "opacitiez" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "borderWidths" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets""
+    export type TokenCategory = "zIndices" | "opacities" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "durations" | "transitions" | "easings" | "animations" | "blurs" | "gradients" | "assets" | "borderWidths" | "aspectRatios" | "containerNames""
   `)
 })

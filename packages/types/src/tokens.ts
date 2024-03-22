@@ -83,6 +83,7 @@ export interface TokenDataTypes {
   radii: string
   borders: string | Border
   durations: string
+  transitions: string
   easings: string | number[]
   animations: string
   blurs: string

@@ -1,32 +1,7 @@
 import type { Context } from '@pandacss/core'
-import { capitalize, unionType } from '@pandacss/shared'
+import { capitalize, unionType, TokenData } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import pluralize from 'pluralize'
-
-const categories = [
-  'aspectRatios',
-  'zIndices',
-  'opacitiez',
-  'colors',
-  'fonts',
-  'fontSizes',
-  'fontWeights',
-  'lineHeights',
-  'letterSpacings',
-  'sizes',
-  'shadows',
-  'spacing',
-  'radii',
-  'borders',
-  'borderWidths',
-  'durations',
-  'easings',
-  'animations',
-  'blurs',
-  'gradients',
-  'breakpoints',
-  'assets',
-]
 
 export function generateTokenTypes(ctx: Context) {
   const {
@@ -65,7 +40,7 @@ export function generateTokenTypes(ctx: Context) {
 
   set.add(Array.from(result).join('\n'))
 
-  set.add(`export type TokenCategory = ${unionType(categories)}`)
+  set.add(`export type TokenCategory = ${unionType(Object.values(TokenData))}`)
 
   return outdent.string(Array.from(set).join('\n\n'))
 }
