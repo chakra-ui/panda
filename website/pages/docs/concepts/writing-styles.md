@@ -100,6 +100,8 @@ const styles = css({ bg: '|' })
 - `config.strictPropertyValues` will throw for properties that do not have config tokens, such as
   `display`, `content`, `willChange`, etc. when the value is not a predefined CSS value.
 
+> In both cases, you can use the `[xxx]` escape-hatch syntax to use custom or raw CSS values without TypeScript errors.
+
 #### strictTokens
 
 With `config.strictTokens` enabled, you can only use token values in your styles. This prevents the use of custom or raw CSS values.
@@ -134,6 +136,7 @@ css({ display: 'block' }) // ✅ Valid
 
 css({ display: 'abc' }) // ❌ will throw since 'abc' is not part of predefined values of 'display'
 css({ pos: 'absolute123' }) // ❌ will throw since 'absolute123' is not part of predefined values of 'position'
+css({ display: '[var(--btn-display)]' }) // ✅ Valid, since `[var(--btn-display)]` is using the escape-hatch syntax
 
 css({ content: '""' }) // ✅ Valid, since `content` does not have a predefined list of values
 css({ flex: '0 1' }) // ✅ Valid, since `flex` does not have a predefined list of values
