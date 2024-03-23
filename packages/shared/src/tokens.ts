@@ -1,4 +1,5 @@
-import { type TokenDataTypes } from '@pandacss/types'
+import type { TokenDataTypes } from '../../types/src/tokens'
+// direct import to avoid circular dependency
 
 type TokenType<T> = {
   [K in keyof T as K extends string ? Uppercase<K> : any]: K
