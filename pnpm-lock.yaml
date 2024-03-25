@@ -877,8 +877,8 @@ importers:
         specifier: 3.2.3
         version: 3.2.3(preact@10.19.5)
       '@testing-library/react':
-        specifier: 14.2.1
-        version: 14.2.1(react-dom@18.2.0)(react@18.2.0)
+        specifier: 14.2.2
+        version: 14.2.2(react-dom@18.2.0)(react@18.2.0)
       '@testing-library/vue':
         specifier: 8.0.3
         version: 8.0.3(vue@3.4.19)
@@ -2856,16 +2856,6 @@ packages:
       '@babel/core': 7.23.5
       '@babel/helper-plugin-utils': 7.22.5
 
-  /@babel/plugin-transform-react-jsx-self@7.23.3(@babel/core@7.23.9):
-    resolution: {integrity: sha512-qXRvbeKDSfwnlJnanVRp0SfuWE5DQhwQr5xtLBzp56Wabyo+4CMosF6Kfp+eOD/4FYpql64XVJ2W0pVLlJZxOQ==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/helper-plugin-utils': 7.22.5
-    dev: false
-
   /@babel/plugin-transform-react-jsx-source@7.23.3(@babel/core@7.23.5):
     resolution: {integrity: sha512-91RS0MDnAWDNvGC6Wio5XYkyWI39FMFO+JK9+4AlgaTH+yWwVTsw7/sn6LK0lH7c5F+TFkpv/3LfCJ1Ydwof/g==}
     engines: {node: '>=6.9.0'}
@@ -2874,16 +2864,6 @@ packages:
     dependencies:
       '@babel/core': 7.23.5
       '@babel/helper-plugin-utils': 7.22.5
-
-  /@babel/plugin-transform-react-jsx-source@7.23.3(@babel/core@7.23.9):
-    resolution: {integrity: sha512-91RS0MDnAWDNvGC6Wio5XYkyWI39FMFO+JK9+4AlgaTH+yWwVTsw7/sn6LK0lH7c5F+TFkpv/3LfCJ1Ydwof/g==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/helper-plugin-utils': 7.22.5
-    dev: false
 
   /@babel/plugin-transform-react-jsx@7.22.5(@babel/core@7.23.9):
     resolution: {integrity: sha512-rog5gZaVbUip5iWDMTYbVM15XQq+RkUKhET/IHR6oizR+JEoN6CAfTTuHcK4vwUyzca30qqHqEpzBOnaRMWYMA==}
@@ -9516,14 +9496,14 @@ packages:
       preact: 10.19.5
     dev: true
 
-  /@testing-library/react@14.2.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-sGdjws32ai5TLerhvzThYFbpnF9XtL65Cjf+gB0Dhr29BGqK+mAeN7SURSdu+eqgET4ANcWoC7FQpkaiGvBr+A==}
+  /@testing-library/react@14.2.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-SOUuM2ysCvjUWBXTNfQ/ztmnKDmqaiPV3SvoIuyxMUca45rbSWWAT/qB8CUs/JQ/ux/8JFs9DNdFQ3f6jH3crA==}
     engines: {node: '>=14'}
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
     dependencies:
-      '@babel/runtime': 7.23.8
+      '@babel/runtime': 7.23.9
       '@testing-library/dom': 9.3.4
       '@types/react-dom': 18.2.19
       react: 18.2.0
@@ -10608,9 +10588,9 @@ packages:
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0
     dependencies:
-      '@babel/core': 7.23.9
-      '@babel/plugin-transform-react-jsx-self': 7.23.3(@babel/core@7.23.9)
-      '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.23.9)
+      '@babel/core': 7.23.5
+      '@babel/plugin-transform-react-jsx-self': 7.23.3(@babel/core@7.23.5)
+      '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.23.5)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.0
       vite: 5.0.12(@types/node@20.11.30)
