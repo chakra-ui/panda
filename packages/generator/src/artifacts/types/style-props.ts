@@ -45,7 +45,9 @@ export function generateStyleProps(ctx: Context) {
             if (strictPropertyList.has(key)) {
               union.push([utilityValue, 'CssVars'].join(' | '))
             } else {
-              union.push([utilityValue, ctx.config.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '))
+              union.push(
+                [utilityValue, 'CssVars', ctx.config.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '),
+              )
             }
           } else {
             union.push([strictPropertyList.has(key) ? 'CssVars' : '', cssFallback].filter(Boolean).join(' | '))
