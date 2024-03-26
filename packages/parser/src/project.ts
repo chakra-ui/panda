@@ -1,5 +1,11 @@
 import type { ParserOptions } from '@pandacss/core'
-import type { ConfigTsOptions, PandaHooks, ParserResultConfigureOptions, Runtime } from '@pandacss/types'
+import type {
+  ConfigTsOptions,
+  PandaHooks,
+  ParserResultConfigureOptions,
+  Runtime,
+  JsxFactoryResultTransform,
+} from '@pandacss/types'
 import {
   FileSystemRefreshResult,
   ScriptKind,
@@ -127,7 +133,7 @@ export class Project {
 
     const original = sourceFile.getText()
 
-    const options: ParserResultConfigureOptions = {}
+    const options: ParserResultConfigureOptions & Partial<JsxFactoryResultTransform> = {}
     const custom = hooks['parser:before']?.({
       filePath,
       content: original,
@@ -147,6 +153,10 @@ export class Project {
     // or if the hook returned a different content
     if (original !== transformed) {
       sourceFile.replaceWithText(transformed)
+    }
+
+    if (hooks['parser:preprocess']) {
+      options.transform = hooks['parser:preprocess']
     }
 
     const result = this.parser(sourceFile, encoder, options)?.setFilePath(filePath)

@@ -2,7 +2,7 @@ import type { Artifact, ArtifactId, DiffConfigResult } from './artifact'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { HooksApiInterface } from './hooks-api'
 import type { LoggerInterface } from './logger'
-import type { ParserResultInterface } from './parser'
+import type { ParserResultInterface, ResultItem } from './parser'
 
 export interface PandaHooks {
   /**
@@ -32,6 +32,10 @@ export interface PandaHooks {
    * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
    */
   'parser:before': (args: ParserResultBeforeHookArgs) => string | void
+  /**
+   * @private USE IT ONLY IF YOU KNOW WHAT YOU ARE DOING
+   */
+  'parser:preprocess': JsxFactoryResultTransform['transform']
   /**
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
    * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
@@ -147,6 +151,10 @@ export interface ParserResultBeforeHookArgs {
   content: string
   configure: (opts: ParserResultConfigureOptions) => void
   original?: string
+}
+
+export interface JsxFactoryResultTransform {
+  transform: (result: { type: 'jsx-factory'; data: ResultItem['data'] }) => ResultItem['data']
 }
 
 export interface ParserResultAfterHookArgs {
