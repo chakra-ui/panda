@@ -14,7 +14,7 @@ export const effects: UtilityConfig = {
   },
   boxShadowColor: {
     shorthand: 'shadowColor',
-    className: 'shadow',
+    className: 'shadow-color',
     values: 'colors',
     transform: createColorMixTransform('--shadow-color'),
     group: 'Color',
@@ -27,17 +27,7 @@ export const effects: UtilityConfig = {
     className: 'filter',
     group: 'Effect',
     values: {
-      auto: [
-        'var(--blur)',
-        'var(--brightness)',
-        'var(--contrast)',
-        'var(--grayscale)',
-        'var(--hue-rotate)',
-        'var(--invert)',
-        'var(--saturate)',
-        'var(--sepia)',
-        'var(--drop-shadow)',
-      ].join(' '),
+      auto: 'var(--blur, ) var(--brightness, ) var(--contrast, ) var(--grayscale, ) var(--hue-rotate, ) var(--invert, ) var(--saturate, ) var(--sepia, ) var(--drop-shadow, )',
     },
   },
   brightness: {
@@ -128,16 +118,7 @@ export const effects: UtilityConfig = {
     className: 'backdrop',
     group: 'Effect',
     values: {
-      auto: [
-        'var(--backdrop-blur)',
-        'var(--backdrop-brightness)',
-        'var(--backdrop-contrast)',
-        'var(--backdrop-grayscale)',
-        'var(--backdrop-hue-rotate)',
-        'var(--backdrop-invert)',
-        'var(--backdrop-saturate)',
-        'var(--backdrop-sepia)',
-      ].join(' '),
+      auto: 'var(--backdrop-blur, ) var(--backdrop-brightness, ) var(--backdrop-contrast, ) var(--backdrop-grayscale, ) var(--backdrop-hue-rotate, ) var(--backdrop-invert, ) var(--backdrop-opacity, ) var(--backdrop-saturate, ) var(--backdrop-sepia, )',
     },
     transform(value) {
       return {

@@ -390,7 +390,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-duration
          */
-      animationDuration?: ConditionalValue<CssProperties["animationDuration"] | AnyString>
+      animationDuration?: ConditionalValue<UtilityValues["animationDuration"] | CssProperties["animationDuration"] | AnyString>
        /**
          * The **\`animation-fill-mode\`** CSS property sets how a CSS animation applies styles to its target before and after its execution.
          *
@@ -505,7 +505,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-timing-function
          */
-      animationTimingFunction?: ConditionalValue<CssProperties["animationTimingFunction"] | AnyString>
+      animationTimingFunction?: ConditionalValue<UtilityValues["animationTimingFunction"] | CssProperties["animationTimingFunction"] | AnyString>
        /**
          * The **\`animation-timeline\`** CSS property specifies the timeline that is used to control the progress of an animation.
          *
@@ -4755,7 +4755,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/rotate
          */
-      rotate?: ConditionalValue<CssProperties["rotate"] | AnyString>
+      rotate?: ConditionalValue<UtilityValues["rotate"] | CssProperties["rotate"] | AnyString>
        /**
          * The **\`row-gap\`** CSS property sets the size of the gap (gutter) between an element's rows.
          *
@@ -7289,6 +7289,7 @@ describe('generate property types', () => {
        shadowColor?: ConditionalValue<UtilityValues["boxShadowColor"] | AnyString>
        x?: ConditionalValue<UtilityValues["translateX"] | AnyString>
        y?: ConditionalValue<UtilityValues["translateY"] | AnyString>
+       z?: ConditionalValue<UtilityValues["translateZ"] | AnyString>
        /**
          * The \`scroll-margin-block\` shorthand property sets the scroll margins of an element in the block dimension.
          *
@@ -7339,17 +7340,22 @@ describe('generate property types', () => {
       scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssProperties["scrollPaddingInline"] | AnyString>
        hideFrom?: ConditionalValue<UtilityValues["hideFrom"] | AnyString>
        hideBelow?: ConditionalValue<UtilityValues["hideBelow"] | AnyString>
-       divideX?: ConditionalValue<UtilityValues["divideX"] | AnyString>
-       divideY?: ConditionalValue<UtilityValues["divideY"] | AnyString>
+       spaceX?: ConditionalValue<UtilityValues["spaceX"] | AnyString>
+       spaceY?: ConditionalValue<UtilityValues["spaceY"] | AnyString>
+       divideX?: ConditionalValue<string | number | AnyString>
+       divideY?: ConditionalValue<string | number | AnyString>
        divideColor?: ConditionalValue<UtilityValues["divideColor"] | AnyString>
        divideStyle?: ConditionalValue<UtilityValues["divideStyle"] | AnyString>
        fontSmoothing?: ConditionalValue<UtilityValues["fontSmoothing"] | AnyString>
        truncate?: ConditionalValue<UtilityValues["truncate"] | AnyString>
        backgroundGradient?: ConditionalValue<UtilityValues["backgroundGradient"] | AnyString>
        textGradient?: ConditionalValue<UtilityValues["textGradient"] | AnyString>
+       gradientFromPosition?: ConditionalValue<string | number | AnyString>
+       gradientToPosition?: ConditionalValue<string | number | AnyString>
        gradientFrom?: ConditionalValue<UtilityValues["gradientFrom"] | AnyString>
        gradientTo?: ConditionalValue<UtilityValues["gradientTo"] | AnyString>
        gradientVia?: ConditionalValue<UtilityValues["gradientVia"] | AnyString>
+       gradientViaPosition?: ConditionalValue<string | number | AnyString>
        borderTopRadius?: ConditionalValue<UtilityValues["borderTopRadius"] | AnyString>
        borderRightRadius?: ConditionalValue<UtilityValues["borderRightRadius"] | AnyString>
        borderBottomRadius?: ConditionalValue<UtilityValues["borderBottomRadius"] | AnyString>
@@ -7377,10 +7383,14 @@ describe('generate property types', () => {
        backdropSepia?: ConditionalValue<string | number | AnyString>
        borderSpacingX?: ConditionalValue<UtilityValues["borderSpacingX"] | AnyString>
        borderSpacingY?: ConditionalValue<UtilityValues["borderSpacingY"] | AnyString>
+       rotateX?: ConditionalValue<UtilityValues["rotateX"] | AnyString>
+       rotateY?: ConditionalValue<UtilityValues["rotateY"] | AnyString>
+       rotateZ?: ConditionalValue<UtilityValues["rotateZ"] | AnyString>
        scaleX?: ConditionalValue<string | number | AnyString>
        scaleY?: ConditionalValue<string | number | AnyString>
        translateX?: ConditionalValue<UtilityValues["translateX"] | AnyString>
        translateY?: ConditionalValue<UtilityValues["translateY"] | AnyString>
+       translateZ?: ConditionalValue<UtilityValues["translateZ"] | AnyString>
        scrollbar?: ConditionalValue<UtilityValues["scrollbar"] | AnyString>
        scrollSnapStrictness?: ConditionalValue<UtilityValues["scrollSnapStrictness"] | AnyString>
        /**
@@ -7851,7 +7861,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-duration
          */
-      animationDuration?: ConditionalValue<WithEscapeHatch<CssProperties["animationDuration"]>>
+      animationDuration?: ConditionalValue<WithEscapeHatch<UtilityValues["animationDuration"]>>
        /**
          * The **\`animation-fill-mode\`** CSS property sets how a CSS animation applies styles to its target before and after its execution.
          *
@@ -7966,7 +7976,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/animation-timing-function
          */
-      animationTimingFunction?: ConditionalValue<WithEscapeHatch<CssProperties["animationTimingFunction"]>>
+      animationTimingFunction?: ConditionalValue<WithEscapeHatch<UtilityValues["animationTimingFunction"]>>
        /**
          * The **\`animation-timeline\`** CSS property specifies the timeline that is used to control the progress of an animation.
          *
@@ -12216,7 +12226,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/rotate
          */
-      rotate?: ConditionalValue<WithEscapeHatch<CssProperties["rotate"]>>
+      rotate?: ConditionalValue<WithEscapeHatch<UtilityValues["rotate"]>>
        /**
          * The **\`row-gap\`** CSS property sets the size of the gap (gutter) between an element's rows.
          *
@@ -14750,6 +14760,7 @@ describe('generate property types', () => {
        shadowColor?: ConditionalValue<WithEscapeHatch<UtilityValues["boxShadowColor"]>>
        x?: ConditionalValue<WithEscapeHatch<UtilityValues["translateX"]>>
        y?: ConditionalValue<WithEscapeHatch<UtilityValues["translateY"]>>
+       z?: ConditionalValue<WithEscapeHatch<UtilityValues["translateZ"]>>
        /**
          * The \`scroll-margin-block\` shorthand property sets the scroll margins of an element in the block dimension.
          *
@@ -14800,17 +14811,22 @@ describe('generate property types', () => {
       scrollPaddingX?: ConditionalValue<WithEscapeHatch<UtilityValues["scrollPaddingInline"]>>
        hideFrom?: ConditionalValue<WithEscapeHatch<UtilityValues["hideFrom"]>>
        hideBelow?: ConditionalValue<WithEscapeHatch<UtilityValues["hideBelow"]>>
-       divideX?: ConditionalValue<WithEscapeHatch<UtilityValues["divideX"]>>
-       divideY?: ConditionalValue<WithEscapeHatch<UtilityValues["divideY"]>>
+       spaceX?: ConditionalValue<WithEscapeHatch<UtilityValues["spaceX"]>>
+       spaceY?: ConditionalValue<WithEscapeHatch<UtilityValues["spaceY"]>>
+       divideX?: ConditionalValue<WithEscapeHatch<string | number>>
+       divideY?: ConditionalValue<WithEscapeHatch<string | number>>
        divideColor?: ConditionalValue<WithEscapeHatch<UtilityValues["divideColor"]>>
        divideStyle?: ConditionalValue<WithEscapeHatch<string | number>>
        fontSmoothing?: ConditionalValue<WithEscapeHatch<UtilityValues["fontSmoothing"]>>
        truncate?: ConditionalValue<WithEscapeHatch<UtilityValues["truncate"]>>
        backgroundGradient?: ConditionalValue<WithEscapeHatch<UtilityValues["backgroundGradient"]>>
        textGradient?: ConditionalValue<WithEscapeHatch<UtilityValues["textGradient"]>>
+       gradientFromPosition?: ConditionalValue<WithEscapeHatch<string | number>>
+       gradientToPosition?: ConditionalValue<WithEscapeHatch<string | number>>
        gradientFrom?: ConditionalValue<WithEscapeHatch<UtilityValues["gradientFrom"]>>
        gradientTo?: ConditionalValue<WithEscapeHatch<UtilityValues["gradientTo"]>>
        gradientVia?: ConditionalValue<WithEscapeHatch<UtilityValues["gradientVia"]>>
+       gradientViaPosition?: ConditionalValue<WithEscapeHatch<string | number>>
        borderTopRadius?: ConditionalValue<WithEscapeHatch<UtilityValues["borderTopRadius"]>>
        borderRightRadius?: ConditionalValue<WithEscapeHatch<UtilityValues["borderRightRadius"]>>
        borderBottomRadius?: ConditionalValue<WithEscapeHatch<UtilityValues["borderBottomRadius"]>>
@@ -14838,10 +14854,14 @@ describe('generate property types', () => {
        backdropSepia?: ConditionalValue<WithEscapeHatch<string | number>>
        borderSpacingX?: ConditionalValue<WithEscapeHatch<UtilityValues["borderSpacingX"]>>
        borderSpacingY?: ConditionalValue<WithEscapeHatch<UtilityValues["borderSpacingY"]>>
+       rotateX?: ConditionalValue<WithEscapeHatch<string | number>>
+       rotateY?: ConditionalValue<WithEscapeHatch<string | number>>
+       rotateZ?: ConditionalValue<WithEscapeHatch<string | number>>
        scaleX?: ConditionalValue<WithEscapeHatch<string | number>>
        scaleY?: ConditionalValue<WithEscapeHatch<string | number>>
        translateX?: ConditionalValue<WithEscapeHatch<UtilityValues["translateX"]>>
        translateY?: ConditionalValue<WithEscapeHatch<UtilityValues["translateY"]>>
+       translateZ?: ConditionalValue<WithEscapeHatch<UtilityValues["translateZ"]>>
        scrollbar?: ConditionalValue<WithEscapeHatch<UtilityValues["scrollbar"]>>
        scrollSnapStrictness?: ConditionalValue<WithEscapeHatch<UtilityValues["scrollSnapStrictness"]>>
        /**

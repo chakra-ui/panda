@@ -3,13 +3,13 @@ import { createColorMixTransform } from '../color-mix-transform'
 
 export const outline: UtilityConfig = {
   outlineWidth: {
-    className: 'ring',
+    className: 'ring-width',
     shorthand: 'ringWidth',
     values: 'borderWidths',
     group: 'Border',
   },
   outlineColor: {
-    className: 'ring',
+    className: 'ring-color',
     values: 'colors',
     group: 'Color',
     shorthand: 'ringColor',
@@ -28,7 +28,7 @@ export const outline: UtilityConfig = {
     },
   },
   outlineOffset: {
-    className: 'ring',
+    className: 'ring-offset',
     shorthand: 'ringOffset',
     values: 'spacing',
     group: 'Border',

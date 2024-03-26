@@ -51,7 +51,7 @@ export const polyfill: UtilityConfig = {
     },
   },
   textSizeAdjust: {
-    className: 'text-size-adjust',
+    className: 'text-adjust',
     group: 'Typography',
     transform(value) {
       return { textSizeAdjust: value, WebkitTextSizeAdjust: value }

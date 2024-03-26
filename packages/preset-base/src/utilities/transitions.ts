@@ -74,6 +74,16 @@ export const transitions: UtilityConfig = {
     values: 'animationName',
     group: 'Transition',
   },
+  animationTimingFunction: {
+    className: 'animation-ease',
+    values: 'easings',
+    group: 'Transition',
+  },
+  animationDuration: {
+    className: 'animation-duration',
+    values: 'durations',
+    group: 'Transition',
+  },
   animationDelay: {
     className: 'animation-delay',
     values: 'durations',

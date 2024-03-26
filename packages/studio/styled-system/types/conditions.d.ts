@@ -150,9 +150,9 @@ export interface Conditions {
 	"_landscape": string
 	/** `@media (orientation: portrait)` */
 	"_portrait": string
-	/** ` &.dark, .dark &` */
+	/** `.dark &` */
 	"_dark": string
-	/** ` &.light, .light &` */
+	/** `.light &` */
 	"_light": string
 	/** `@media (prefers-color-scheme: dark)` */
 	"_osDark": string
@@ -178,6 +178,8 @@ export interface Conditions {
 	"_horizontal": string
 	/** `&[data-orientation=vertical]` */
 	"_vertical": string
+	/** `@starting-style` */
+	"_starting": string
 	/** `@media screen and (min-width: 40rem)` */
 	"sm": string
 	/** `@media screen and (min-width: 40rem) and (max-width: 47.9975rem)` */
