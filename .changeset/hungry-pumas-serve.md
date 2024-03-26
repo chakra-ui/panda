@@ -39,3 +39,20 @@ const conditions = {
 
 - Added new `_starting` condition to support the new `@starting-style` at-rule.
   [Learn more here](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
+
+- **Gradient Position**: Add new `gradientFromPosition` and `gradientToPosition` utilities for controlling the position
+  of the gradient color stops.
+
+```tsx
+<div
+  className={css({
+    bgGradient: 'to-r',
+    // from
+    gradientFrom: 'red',
+    gradientFromPosition: 'top left',
+    // to
+    gradientTo: 'blue',
+    gradientToPosition: 'bottom right',
+  })}
+/>
+```
