@@ -4129,4 +4129,146 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('slot recipes with textStyles', () => {
+    const code = `
+    import { cta } from 'styled-system/recipes';
+    import { css } from 'styled-system/css';
+
+    const Cta = ({ level, text, title }) => {
+      const cn = cta({ level });
+
+      return (
+        <div className={cn.wrapper}>
+          <p className={cn.heading}>{title}</p>
+          <p className={cn.text}>{text}</p>
+        </div>
+      );
+    };
+
+    const App = () => {
+      return (
+        <>
+        <div className="case">
+          <p>
+            The following paragraph should not have any bottom margin nor color
+            applied as it uses the <code>heading-1</code> <code>textStyle</code>:
+          </p>
+          <p
+            className={css({ textStyle: 'heading-1' })}
+          >
+            P with textStyle
+          </p>
+          <p>Text</p>
+        </div>
+        <div className="case">
+          <p>
+            The following paragraph should have a bottom margin and color applied
+            as it uses the <code>cta</code> recipe:
+          </p>
+          <Cta text="Text" title="P in recipe heading" level="1" />
+        </div>
+        </>)
+    }
+     `
+    const result = parseAndExtract(code, {
+      eject: true,
+      theme: {
+        breakpoints: { sm: '480px' },
+        slotRecipes: {
+          cta: {
+            className: 'cta',
+            slots: ['heading', 'text', 'wrapper'],
+            base: {},
+            variants: {
+              level: {
+                1: {
+                  heading: {
+                    textStyle: 'heading-1',
+                    color: { base: 'green', sm: 'red' },
+                    marginBottom: { base: '20px', sm: '40px' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        textStyles: {
+          'heading-1': {
+            description: 'Heading 1',
+            value: {
+              fontWeight: 'bold',
+              fontSize: { base: '2px', sm: '40px' },
+              textTransform: 'uppercase',
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "cta",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "textStyle": "heading-1",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+        {
+          "data": [
+            {
+              "level": "1",
+            },
+          ],
+          "name": "Cta",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        .cta__heading--level_1 {
+          text-transform: uppercase;
+          font-weight: bold;
+          font-size: 2px;
+          color: green;
+          margin-bottom: 20px;
+      }
+
+        @media screen and (min-width: 30rem) {
+          .cta__heading--level_1 {
+            font-size: 40px;
+            color: red;
+            margin-bottom: 40px;
+      }
+      }
+      }
+
+      @layer utilities {
+        @layer compositions {
+          .textStyle_heading-1 {
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 2px;
+      }
+
+          @media screen and (min-width: 30rem) {
+            .textStyle_heading-1 {
+              font-size: 40px;
+      }
+      }
+      }
+      }"
+    `)
+  })
 })
