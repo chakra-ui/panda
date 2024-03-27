@@ -4172,34 +4172,34 @@ describe('extract to css output pipeline', () => {
     }
      `
     const result = parseAndExtract(code, {
+      eject: true,
       theme: {
-        extend: {
-          slotRecipes: {
-            cta: {
-              className: 'cta',
-              slots: ['heading', 'text', 'wrapper'],
-              base: {},
-              variants: {
-                level: {
-                  1: {
-                    heading: {
-                      textStyle: 'heading-1',
-                      color: { base: 'green.500', sm: 'red.500' },
-                      marginBottom: { base: '20px', sm: '40px' },
-                    },
+        breakpoints: { sm: '480px' },
+        slotRecipes: {
+          cta: {
+            className: 'cta',
+            slots: ['heading', 'text', 'wrapper'],
+            base: {},
+            variants: {
+              level: {
+                1: {
+                  heading: {
+                    textStyle: 'heading-1',
+                    color: { base: 'green', sm: 'red' },
+                    marginBottom: { base: '20px', sm: '40px' },
                   },
                 },
               },
             },
           },
-          textStyles: {
-            'heading-1': {
-              description: 'Heading 1',
-              value: {
-                fontWeight: 'bold',
-                fontSize: { base: '2xl', sm: '4xl' },
-                textTransform: 'uppercase',
-              },
+        },
+        textStyles: {
+          'heading-1': {
+            description: 'Heading 1',
+            value: {
+              fontWeight: 'bold',
+              fontSize: { base: '2px', sm: '40px' },
+              textTransform: 'uppercase',
             },
           },
         },
@@ -4239,16 +4239,16 @@ describe('extract to css output pipeline', () => {
       "@layer recipes.slots {
         .cta__heading--level_1 {
           text-transform: uppercase;
-          font-weight: var(--font-weights-bold);
-          font-size: var(--font-sizes-2xl);
-          color: var(--colors-green-500);
+          font-weight: bold;
+          font-size: 2px;
+          color: green;
           margin-bottom: 20px;
       }
 
-        @media screen and (min-width: 40rem) {
+        @media screen and (min-width: 30rem) {
           .cta__heading--level_1 {
-            font-size: var(--font-sizes-4xl);
-            color: var(--colors-red-500);
+            font-size: 40px;
+            color: red;
             margin-bottom: 40px;
       }
       }
@@ -4258,14 +4258,14 @@ describe('extract to css output pipeline', () => {
         @layer compositions {
           .textStyle_heading-1 {
             text-transform: uppercase;
-            font-weight: var(--font-weights-bold);
-            font-size: var(--font-sizes-2xl);
+            font-weight: bold;
+            font-size: 2px;
       }
 
-          @media screen and (min-width: 40rem) {
+          @media screen and (min-width: 30rem) {
             .textStyle_heading-1 {
-              font-size: var(--font-sizes-4xl);
-              color: var(--colors-red-500);
+              font-size: 40px;
+              color: red;
               margin-bottom: 40px;
       }
       }
