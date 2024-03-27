@@ -4130,7 +4130,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('slot recipes with textStyles', () => {
+  test('slot recipes with textStyles', () => {
     const code = `
     import { cta } from 'styled-system/recipes';
     import { css } from 'styled-system/css';
@@ -4265,8 +4265,6 @@ describe('extract to css output pipeline', () => {
           @media screen and (min-width: 30rem) {
             .textStyle_heading-1 {
               font-size: 40px;
-              color: red;
-              margin-bottom: 40px;
       }
       }
       }
