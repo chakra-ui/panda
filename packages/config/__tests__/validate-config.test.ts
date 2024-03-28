@@ -642,7 +642,7 @@ describe('validateConfig', () => {
             blue: { 500: { value: 'blue' } },
             green: { 500: { value: 'green' } },
           },
-          opacity: {
+          opacities: {
             half: { value: 0.5 },
           },
         },

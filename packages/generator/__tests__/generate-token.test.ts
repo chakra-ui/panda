@@ -760,7 +760,7 @@ describe('generator', () => {
             border: { value: '{colors.pink/30}' },
             ref: { value: '{colors.border/40}' },
           },
-          opacity: {
+          opacities: {
             half: { value: 0.5 },
           },
         },
@@ -780,7 +780,7 @@ describe('generator', () => {
           --colors-pink: #ff00ff;
           --colors-border: color-mix(in srgb, var(--colors-pink) 30%, transparent);
           --colors-ref: color-mix(in srgb, var(--colors-border) 40%, transparent);
-          --opacity-half: 0.5;
+          --opacities-half: 0.5;
           --colors-primary: color-mix(in srgb, colors.blue.300 70%, transparent);
       }
       }"
@@ -800,7 +800,7 @@ describe('generator', () => {
             blue: { 500: { value: 'blue' } },
             green: { 500: { value: 'green' } },
           },
-          opacity: {
+          opacities: {
             half: { value: 0.5 },
           },
         },
@@ -823,7 +823,7 @@ describe('generator', () => {
         :where(html) {
           --colors-blue-500: blue;
           --colors-green-500: green;
-          --opacity-half: 0.5;
+          --opacities-half: 0.5;
           --colors-secondary: red;
       }
 

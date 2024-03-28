@@ -317,9 +317,6 @@ importers:
 
   packages/extractor:
     dependencies:
-      '@pandacss/shared':
-        specifier: workspace:*
-        version: link:../shared
       ts-evaluator:
         specifier: 1.2.0
         version: 1.2.0(typescript@5.3.3)

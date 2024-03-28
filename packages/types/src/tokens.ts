@@ -69,8 +69,8 @@ export interface Asset {
 }
 
 export interface TokenDataTypes {
-  zIndex: string | number
-  opacity: string | number
+  zIndices: string | number
+  opacities: string | number
   colors: string
   fonts: string | string[]
   fontSizes: string
@@ -83,6 +83,7 @@ export interface TokenDataTypes {
   radii: string
   borders: string | Border
   durations: string
+  transitions: string
   easings: string | number[]
   animations: string
   blurs: string

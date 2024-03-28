@@ -9,7 +9,7 @@ test('color-mix', () => {
         border: { value: '{colors.pink/30}' },
         ref: { value: '{colors.border/40}' },
       },
-      opacity: {
+      opacities: {
         half: { value: 0.5 },
       },
     },
@@ -33,7 +33,7 @@ test('color-mix', () => {
         "--colors-pink" => "#ff00ff",
         "--colors-border" => "color-mix(in srgb, var(--colors-pink) 30%, transparent)",
         "--colors-ref" => "color-mix(in srgb, var(--colors-border) 40%, transparent)",
-        "--opacity-half" => 0.5,
+        "--opacities-half" => 0.5,
       },
     }
   `)

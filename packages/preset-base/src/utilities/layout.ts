@@ -18,7 +18,7 @@ export const layout: UtilityConfig = {
   },
   zIndex: {
     className: 'z',
-    values: 'zIndex',
+    values: 'zIndices',
     group: 'Visibility',
   },
   boxSizing: {
