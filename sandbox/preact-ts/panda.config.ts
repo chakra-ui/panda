@@ -22,6 +22,14 @@ export default defineConfig({
           aaa: { value: 'azaz23' },
         },
       },
+      recipes: {
+        btn: {
+          base: {
+            color: 'blue.500',
+          },
+        },
+      },
     },
   },
+  importMap: ['styled-system', '#styles'],
 })

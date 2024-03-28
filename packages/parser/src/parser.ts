@@ -3,7 +3,7 @@ import { BoxNodeMap, box, extract, unbox, type EvaluateOptions, type Unboxed } f
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { astish } from '@pandacss/shared'
-import type { ParserResultConfigureOptions, ResultItem } from '@pandacss/types'
+import type { ParserResultConfigureOptions, ResultItem, JsxFactoryResultTransform } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
@@ -28,7 +28,7 @@ export function createParser(context: ParserOptions) {
   return function parse(
     sourceFile: SourceFile | undefined,
     encoder?: Generator['encoder'],
-    options?: ParserResultConfigureOptions,
+    options?: ParserResultConfigureOptions & Partial<JsxFactoryResultTransform>,
   ) {
     if (!sourceFile) return
 
@@ -187,8 +187,12 @@ export function createParser(context: ParserOptions) {
               if (query.kind === 'call-expression' && query.box.value[1]) {
                 const map = query.box.value[1]
                 const boxNode = box.isMap(map) ? map : box.fallback(query.box)
+
+                const combined = combineResult(unbox(boxNode))
+                const transformed = options?.transform?.({ type: 'jsx-factory', data: combined })
+
                 // ensure that data is always an object
-                const result = { name, box: boxNode, data: combineResult(unbox(boxNode)) } as ResultItem
+                const result = { name, box: boxNode, data: transformed ?? combined } as ResultItem
 
                 // CallExpression factory inline recipe
                 // panda("span", { base: {}, variants: { ... } })
@@ -201,8 +205,13 @@ export function createParser(context: ParserOptions) {
                 }
 
                 // panda("div", badge, { ... })
-                const options = query.box.value[2]
-                if (box.isUnresolvable(map) && options && box.isMap(options) && options.value.has('defaultProps')) {
+                const recipeOptions = query.box.value[2]
+                if (
+                  box.isUnresolvable(map) &&
+                  recipeOptions &&
+                  box.isMap(recipeOptions) &&
+                  recipeOptions.value.has('defaultProps')
+                ) {
                   const maybeIdentifier = map.getNode()
 
                   if (Node.isIdentifier(maybeIdentifier)) {
@@ -213,8 +222,8 @@ export function createParser(context: ParserOptions) {
                     parserResult.setRecipe(recipeName, {
                       type: 'jsx-recipe',
                       name: recipeName,
-                      box: options,
-                      data: combineResult(unbox(options.value.get('defaultProps'))),
+                      box: recipeOptions,
+                      data: combineResult(unbox(recipeOptions.value.get('defaultProps'))),
                     })
                   }
                 }
@@ -236,8 +245,12 @@ export function createParser(context: ParserOptions) {
               if (query.kind === 'call-expression') {
                 const map = query.box.value[0]
                 const boxNode = box.isMap(map) ? map : box.fallback(query.box)
+
+                const combined = combineResult(unbox(boxNode))
+                const transformed = options?.transform?.({ type: 'jsx-factory', data: combined })
+
                 // ensure that data is always an object
-                const result = { name, box: boxNode, data: combineResult(unbox(boxNode)) } as ResultItem
+                const result = { name, box: boxNode, data: transformed ?? combined } as ResultItem
 
                 // PropertyAccess factory inline recipe
                 // panda.span({ base: {}, variants: { ... } })

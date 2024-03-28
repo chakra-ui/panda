@@ -27,7 +27,7 @@ export const mergeHooks = (plugins: PandaPlugin[]) => {
         return [key, reducer(fns)]
       }
 
-      return [key, syncHooks.includes(key) ? callAll(...fns) : callAllAsync(...fns)]
+      return [key, syncHooks.includes(key as keyof PandaHooks) ? callAll(...fns) : callAllAsync(...fns)]
     }),
   ) as Partial<PandaHooks>
 
@@ -69,6 +69,20 @@ const reducers = {
 
     return content
   }),
+  'parser:preprocess': createReducer<'parser:preprocess'>((fns) => (_args) => {
+    const args = Object.assign({}, _args)
+    const original = _args.data
+    let data = args.data
+
+    for (const hookFn of fns) {
+      const result = hookFn(Object.assign(args, { data, original }))
+      if (result !== undefined) {
+        data = result
+      }
+    }
+
+    return data
+  }),
   'cssgen:done': createReducer<'cssgen:done'>((fns) => (_args) => {
     const args = Object.assign({}, _args)
     const original = _args.content
@@ -100,7 +114,13 @@ const reducers = {
   }),
 }
 
-const syncHooks = ['context:created', 'parser:before', 'parser:after', 'cssgen:done']
+const syncHooks: Array<keyof PandaHooks> = [
+  'context:created',
+  'parser:before',
+  'parser:preprocess',
+  'parser:after',
+  'cssgen:done',
+]
 
 const callAllAsync =
   <T extends (...a: any[]) => void | Promise<void>>(...fns: (T | undefined)[]) =>
