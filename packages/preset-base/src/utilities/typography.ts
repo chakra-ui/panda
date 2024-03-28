@@ -19,7 +19,7 @@ export const typography: UtilityConfig = {
     group: 'Typography',
   },
   fontWeight: {
-    className: 'font',
+    className: 'fw',
     values: 'fontWeights',
     group: 'Typography',
   },
@@ -51,7 +51,7 @@ export const typography: UtilityConfig = {
     group: 'Typography',
   },
   textAlign: {
-    className: 'text',
+    className: 'text-align',
     group: 'Typography',
   },
   textDecoration: {
@@ -59,23 +59,23 @@ export const typography: UtilityConfig = {
     group: 'Typography',
   },
   textDecorationColor: {
-    className: 'text-decor',
+    className: 'text-decor-color',
     values: 'colors',
     transform: createColorMixTransform('textDecorationColor'),
     group: 'Typography',
   },
   textEmphasisColor: {
-    className: 'text-emphasis',
+    className: 'text-emphasis-color',
     values: 'colors',
     transform: createColorMixTransform('textEmphasisColor'),
     group: 'Typography',
   },
   textDecorationStyle: {
-    className: 'decoration',
+    className: 'decoration-style',
     group: 'Typography',
   },
   textDecorationThickness: {
-    className: 'decoration',
+    className: 'decoration-thickness',
     group: 'Typography',
   },
   textUnderlineOffset: {
@@ -83,7 +83,7 @@ export const typography: UtilityConfig = {
     group: 'Typography',
   },
   textTransform: {
-    className: 'text',
+    className: 'text-transform',
     group: 'Typography',
   },
   textIndent: {
@@ -104,11 +104,11 @@ export const typography: UtilityConfig = {
     group: 'Typography',
   },
   textOverflow: {
-    className: 'text',
+    className: 'text-overflow',
     group: 'Typography',
   },
   verticalAlign: {
-    className: 'align',
+    className: 'v-align',
     group: 'Typography',
   },
   wordBreak: {
@@ -116,7 +116,7 @@ export const typography: UtilityConfig = {
     group: 'Typography',
   },
   textWrap: {
-    className: 'text',
+    className: 'text-wrap',
     values: ['wrap', 'balance', 'nowrap'],
     group: 'Typography',
     transform(value) {

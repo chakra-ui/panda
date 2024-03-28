@@ -27,14 +27,14 @@ describe('cva', () => {
   test('base styles', () => {
     const result = button()
 
-    expect(result).toMatchInlineSnapshot('"rounded_md font_semibold h_10 px_4"')
+    expect(result).toMatchInlineSnapshot(`"rounded_md fw_semibold h_10 px_4"`)
   })
 
   test('solid variant styles', () => {
     const result = button({ visual: 'solid' })
 
     expect(result).toMatchInlineSnapshot(
-      '"rounded_md font_semibold h_10 px_4 bg_colorPalette.500 dark:bg_colorPalette.300 text_white dark:text_gray.800"',
+      `"rounded_md fw_semibold h_10 px_4 bg_colorPalette.500 dark:bg_colorPalette.300 text_white dark:text_gray.800"`,
     )
   })
 
@@ -42,7 +42,7 @@ describe('cva', () => {
     const result = button({ visual: 'outline' })
 
     expect(result).toMatchInlineSnapshot(
-      '"rounded_md font_semibold h_10 px_4 border_1px_solid text_colorPalette.600 dark:text_colorPalette.200 border_currentColor"',
+      `"rounded_md fw_semibold h_10 px_4 border_1px_solid text_colorPalette.600 dark:text_colorPalette.200 border_currentColor"`,
     )
   })
 

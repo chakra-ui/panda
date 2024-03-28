@@ -19,6 +19,45 @@ export const transforms: UtilityConfig = {
     className: 'origin',
     group: 'Transform',
   },
+  rotate: {
+    className: 'rotate',
+    group: 'Transform',
+    property: 'rotate',
+    values: {
+      auto: 'var(--rotate-x) var(--rotate-y)',
+      'auto-3d': 'var(--rotate-x) var(--rotate-y) var(--rotate-z)',
+    },
+  },
+  rotateX: {
+    className: 'rotate-x',
+    group: 'Transform',
+    property: 'rotate',
+    transform(value) {
+      return {
+        '--rotate-x': value,
+      }
+    },
+  },
+  rotateY: {
+    className: 'rotate-y',
+    group: 'Transform',
+    property: 'rotate',
+    transform(value) {
+      return {
+        '--rotate-y': value,
+      }
+    },
+  },
+  rotateZ: {
+    className: 'rotate-z',
+    group: 'Transform',
+    property: 'rotate',
+    transform(value) {
+      return {
+        '--rotate-z': value,
+      }
+    },
+  },
   scale: {
     className: 'scale',
     group: 'Transform',
@@ -51,6 +90,7 @@ export const transforms: UtilityConfig = {
     property: 'translate',
     values: {
       auto: 'var(--translate-x) var(--translate-y)',
+      'auto-3d': 'var(--translate-x) var(--translate-y) var(--translate-z)',
     },
   },
   translateX: {
@@ -82,6 +122,22 @@ export const transforms: UtilityConfig = {
     transform(value) {
       return {
         '--translate-y': value,
+      }
+    },
+  },
+  translateZ: {
+    shorthand: 'z',
+    className: 'translate-z',
+    group: 'Transform',
+    values(theme) {
+      return {
+        ...theme('spacing'),
+        ...fractions,
+      }
+    },
+    transform(value) {
+      return {
+        '--translate-z': value,
       }
     },
   },

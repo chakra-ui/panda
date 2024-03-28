@@ -1125,12 +1125,12 @@ describe('rule processor', () => {
       }
 
         .bg-gradient_to-b {
-          --gradient-stops: var(--gradient-from), var(--gradient-to);
+          --gradient-stops: var(--gradient-via-stops, var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position));
           --gradient: var(--gradient-via-stops, var(--gradient-stops));
           background-image: linear-gradient(to bottom, var(--gradient));
       }
 
-        .from_rgb\\(200_200_200_\\/_\\.4\\) {
+        .gradient-from_rgb\\(200_200_200_\\/_\\.4\\) {
           --gradient-from: rgb(200 200 200 / .4);
       }
       }"

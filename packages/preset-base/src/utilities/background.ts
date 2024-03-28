@@ -4,23 +4,22 @@ import { createColorMixTransform } from '../color-mix-transform'
 export const background: UtilityConfig = {
   backgroundPosition: {
     shorthand: 'bgPosition',
-    className: 'bg',
+    className: 'bg-pos',
     group: 'Background',
   },
   backgroundPositionX: {
     shorthand: 'bgPositionX',
-    className: 'bg-x',
+    className: 'bg-pos-x',
     group: 'Background',
   },
   backgroundPositionY: {
     shorthand: 'bgPositionY',
-    className: 'bg-y',
+    className: 'bg-pos-y',
     group: 'Background',
   },
-
   backgroundAttachment: {
     shorthand: 'bgAttachment',
-    className: 'bg',
+    className: 'bg-attach',
     group: 'Background',
   },
   backgroundClip: {
@@ -48,7 +47,6 @@ export const background: UtilityConfig = {
     group: 'Background',
     transform: createColorMixTransform('backgroundColor'),
   },
-
   backgroundOrigin: {
     shorthand: 'bgOrigin',
     className: 'bg-origin',
@@ -72,84 +70,7 @@ export const background: UtilityConfig = {
   },
   backgroundSize: {
     shorthand: 'bgSize',
-    className: 'bg',
+    className: 'bg-size',
     group: 'Background',
-  },
-  backgroundGradient: {
-    shorthand: 'bgGradient',
-    className: 'bg-gradient',
-    group: 'Background',
-    values(theme) {
-      return {
-        ...theme('gradients'),
-        'to-t': 'linear-gradient(to top, var(--gradient))',
-        'to-tr': 'linear-gradient(to top right, var(--gradient))',
-        'to-r': 'linear-gradient(to right, var(--gradient))',
-        'to-br': 'linear-gradient(to bottom right, var(--gradient))',
-        'to-b': 'linear-gradient(to bottom, var(--gradient))',
-        'to-bl': 'linear-gradient(to bottom left, var(--gradient))',
-        'to-l': 'linear-gradient(to left, var(--gradient))',
-        'to-tl': 'linear-gradient(to top left, var(--gradient))',
-      }
-    },
-    transform(value) {
-      return {
-        '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
-        '--gradient': 'var(--gradient-via-stops, var(--gradient-stops))',
-        backgroundImage: value,
-      }
-    },
-  },
-  textGradient: {
-    className: 'text-gradient',
-    group: 'Background',
-    values(theme) {
-      return {
-        ...theme('gradients'),
-        'to-t': 'linear-gradient(to top, var(--gradient))',
-        'to-tr': 'linear-gradient(to top right, var(--gradient))',
-        'to-r': 'linear-gradient(to right, var(--gradient))',
-        'to-br': 'linear-gradient(to bottom right, var(--gradient))',
-        'to-b': 'linear-gradient(to bottom, var(--gradient))',
-        'to-bl': 'linear-gradient(to bottom left, var(--gradient))',
-        'to-l': 'linear-gradient(to left, var(--gradient))',
-        'to-tl': 'linear-gradient(to top left, var(--gradient))',
-      }
-    },
-    transform(value) {
-      return {
-        '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
-        '--gradient': 'var(--gradient-via-stops, var(--gradient-stops))',
-        backgroundImage: value,
-        WebkitBackgroundClip: 'text',
-        color: 'transparent',
-      }
-    },
-  },
-  gradientFrom: {
-    className: 'from',
-    values: 'colors',
-    group: 'Background',
-    transform: createColorMixTransform('--gradient-from'),
-  },
-  gradientTo: {
-    className: 'to',
-    values: 'colors',
-    group: 'Background',
-    transform: createColorMixTransform('--gradient-to'),
-  },
-  gradientVia: {
-    className: 'via',
-    values: 'colors',
-    group: 'Background',
-    transform(value, args) {
-      const transformed = gradientVia(value, args)
-      return {
-        ...transformed,
-        '--gradient-via-stops': 'var(--gradient-from), var(--gradient-via), var(--gradient-to)',
-      }
-    },
   },
 }
-
-const gradientVia = createColorMixTransform('--gradient-via')

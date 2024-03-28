@@ -188,7 +188,7 @@ describe('extract to css output pipeline', () => {
           background-image: url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true");
       }
 
-        .ring_var\\(--colors-pink-200\\) {
+        .ring-color_var\\(--colors-pink-200\\) {
           outline-color: var(--colors-pink-200);
       }
 
@@ -2931,7 +2931,7 @@ describe('extract to css output pipeline', () => {
           background-color: rgb(51 155 240);
       }
 
-        .ring_\\[rgb\\(51_155_240\\)\\]\\! {
+        .ring-color_\\[rgb\\(51_155_240\\)\\]\\! {
           outline-color: rgb(51 155 240) !important;
       }
 
@@ -3280,7 +3280,7 @@ describe('extract to css output pipeline', () => {
           border-radius: var(--radii-md);
       }
 
-        .font_semibold {
+        .fw_semibold {
           font-weight: var(--font-weights-semibold);
       }
 

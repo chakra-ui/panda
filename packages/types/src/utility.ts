@@ -85,6 +85,7 @@ export type CssSemanticGroup =
   | 'Color'
   | 'Typography'
   | 'Background'
+  | 'Background Gradient'
   | 'Shadow'
   | 'Table'
   | 'List'

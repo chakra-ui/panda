@@ -1,0 +1,41 @@
+import type { GlobalStyleObject } from '@pandacss/types'
+
+const EMPTY = '/*-*/ /*-*/'
+
+export const globalCss: GlobalStyleObject = {
+  '*, ::before, ::after, ::backdrop': {
+    '--blur': EMPTY,
+    '--brightness': EMPTY,
+    '--contrast': EMPTY,
+    '--grayscale': EMPTY,
+    '--hue-rotate': EMPTY,
+    '--invert': EMPTY,
+    '--saturate': EMPTY,
+    '--sepia': EMPTY,
+    '--drop-shadow': EMPTY,
+    '--backdrop-blur': EMPTY,
+    '--backdrop-brightness': EMPTY,
+    '--backdrop-contrast': EMPTY,
+    '--backdrop-grayscale': EMPTY,
+    '--backdrop-hue-rotate': EMPTY,
+    '--backdrop-invert': EMPTY,
+    '--backdrop-opacity': EMPTY,
+    '--backdrop-saturate': EMPTY,
+    '--backdrop-sepia': EMPTY,
+    '--gradient-from-position': EMPTY,
+    '--gradient-to-position': EMPTY,
+    '--gradient-via-position': EMPTY,
+    '--scroll-snap-strictness': 'proximity',
+    '--border-spacing-x': 0,
+    '--border-spacing-y': 0,
+    '--translate-x': 0,
+    '--translate-y': 0,
+    '--rotate': 0,
+    '--rotate-x': 0,
+    '--rotate-y': 0,
+    '--skew-x': 0,
+    '--skew-y': 0,
+    '--scale-x': 1,
+    '--scale-y': 1,
+  },
+}

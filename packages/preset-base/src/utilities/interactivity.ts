@@ -158,15 +158,15 @@ export const interactivity: UtilityConfig = {
     group: 'Scroll',
   },
   scrollSnapAlign: {
-    className: 'snap',
+    className: 'snap-align',
     group: 'Scroll',
   },
   scrollSnapStop: {
-    className: 'snap',
+    className: 'snap-stop',
     group: 'Scroll',
   },
   scrollSnapType: {
-    className: 'snap',
+    className: 'snap-type',
     group: 'Scroll',
     values: {
       none: 'none',
@@ -176,7 +176,7 @@ export const interactivity: UtilityConfig = {
     },
   },
   scrollSnapStrictness: {
-    className: 'strictness',
+    className: 'snap-strictness',
     values: ['mandatory', 'proximity'],
     group: 'Scroll',
     transform(value) {

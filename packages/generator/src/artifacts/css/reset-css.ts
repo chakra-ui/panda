@@ -16,89 +16,135 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
     selector = `&${scope}`
   }
 
-  const scoped = {
-    '*': { margin: '0px', padding: '0px', font: 'inherit' },
-    '*, *::before, *::after': {
+  const scoped: GlobalStyleObject = {
+    '*, ::before, ::after, ::backdrop, ::first-letter, ::file-selector-button': {
+      margin: '0px',
+      padding: '0px',
       boxSizing: 'border-box',
       borderWidth: '0px',
       borderStyle: 'solid',
       borderColor: 'var(--global-color-border, currentColor)',
     },
-
-    hr: { height: '0px', color: 'inherit', borderTopWidth: '1px' },
-    body: { height: '100%' },
-    img: { borderStyle: 'none' },
-    'img,  svg,  video,  canvas,  audio,  iframe,  embed,  object': {
+    hr: {
+      height: '0px',
+      color: 'inherit',
+      borderTopWidth: '1px',
+    },
+    body: {
+      height: '100%',
+      lineHeight: 'inherit',
+    },
+    img: {
+      borderStyle: 'none',
+    },
+    'img, svg, video, canvas, audio, iframe, embed, object': {
       display: 'block',
       verticalAlign: 'middle',
     },
-    'img,  video': { maxWidth: '100%', height: 'auto' },
-    'p,  h1,  h2,  h3,  h4,  h5,  h6': { overflowWrap: 'break-word' },
-    'ol,  ul': { listStyle: 'none' },
-    'code,  kbd,  pre,  samp': { fontSize: '1em' },
-    "button,  [type='button'],  [type='reset'],  [type='submit']": {
-      WebkitAppearance: 'button',
-      backgroundColor: 'transparent',
-      backgroundImage: 'none',
+    'img, video': {
+      maxWidth: '100%',
+      height: 'auto',
     },
-    'button,  input,  optgroup,  select,  textarea': { color: 'inherit' },
-    'button,  select': { textTransform: 'none' },
+    'h1, h2, h3, h4, h5, h6': {
+      fontSize: 'inherit',
+      fontWeight: 'inherit',
+      textWrap: 'balance',
+    },
+    'p, h1, h2, h3, h4, h5, h6': {
+      overflowWrap: 'break-word',
+    },
+    'ol, ul, menu': {
+      listStyle: 'none',
+    },
+    "button, input:where([type='button'], [type='reset'], [type='submit']), ::file-selector-button": {
+      appearance: 'button',
+    },
+    'button, input, optgroup, select, textarea, ::file-selector-button': {
+      font: 'inherit',
+      fontFeatureSettings: 'inherit',
+      fontVariationSettings: 'inherit',
+      letterSpacing: 'inherit',
+      color: 'inherit',
+      background: 'transparent',
+    },
+    '::placeholder': {
+      opacity: 1,
+      '--placeholder-fallback': 'color-mix(in srgb, currentColor 50%, transparent)',
+      color: 'var(--global-color-placeholder, var(--placeholder-fallback))',
+    },
+    "select, textarea, input:where(:not([type='button'], [type='reset'], [type='submit']))": {
+      borderWidth: '1px',
+      borderStyle: 'solid',
+    },
+    textarea: {
+      resize: 'vertical',
+    },
     table: {
       textIndent: '0px',
       borderColor: 'inherit',
       borderCollapse: 'collapse',
     },
-    'input::placeholder,  textarea::placeholder': {
-      opacity: 1,
-      color: 'var(--global-color-placeholder, #9ca3af)',
+    summary: {
+      display: 'list-item',
     },
-    textarea: { resize: 'vertical' },
-    summary: { display: 'list-item' },
-    small: { fontSize: '80%' },
-    'sub,  sup': {
+    small: {
+      fontSize: '80%',
+    },
+    'sub, sup': {
       fontSize: '75%',
       lineHeight: 0,
       position: 'relative',
       verticalAlign: 'baseline',
     },
-    sub: { bottom: '-0.25em' },
-    sup: { top: '-0.5em' },
-    dialog: { padding: '0px' },
-    a: { color: 'inherit', textDecoration: 'inherit' },
-    'abbr:where([title])': { textDecoration: 'underline dotted' },
-    'b,  strong': { fontWeight: 'bolder' },
-    'code,  kbd,  samp,  pre': {
-      fontSize: '1em',
+    sub: {
+      bottom: '-0.25em',
+    },
+    sup: {
+      top: '-0.5em',
+    },
+    dialog: {
+      padding: '0px',
+    },
+    a: {
+      color: 'inherit',
+      textDecoration: 'inherit',
+    },
+    'abbr:where([title])': {
+      textDecoration: 'underline dotted',
+    },
+    'b, strong': {
+      fontWeight: 'bolder',
+    },
+    'code, kbd, samp, pre': {
       '--font-mono-fallback': "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New'",
       fontFamily: 'var(--global-font-mono, var(--font-mono-fallback))',
+      fontSize: '1em',
+      fontFeatureSettings: 'normal',
+      fontVariationSettings: 'normal',
     },
-    'input[type="text"],  input[type="email"],  input[type="search"],  input[type="password"]': {
-      WebkitAppearance: 'none',
-      MozAppearance: 'none',
+    progress: {
+      verticalAlign: 'baseline',
     },
-    "input[type='search']": {
-      WebkitAppearance: 'textfield',
-      outlineOffset: '-2px',
-    },
-    '::-webkit-search-decoration,  ::-webkit-search-cancel-button': {
+    '::-webkit-search-decoration, ::-webkit-search-cancel-button': {
       WebkitAppearance: 'none',
     },
-    '::-webkit-file-upload-button': {
-      WebkitAppearance: 'button',
-      font: 'inherit',
-    },
-    'input[type="number"]::-webkit-inner-spin-button,  input[type="number"]::-webkit-outer-spin-button': {
+    '::-webkit-inner-spin-button, ::-webkit-outer-spin-button': {
       height: 'auto',
     },
-    "input[type='number']": { MozAppearance: 'textfield' },
-    ':-moz-ui-invalid': { boxShadow: 'none' },
-    ':-moz-focusring': { outline: 'auto' },
-    '[hidden]': { display: 'none !important' },
+    ':-moz-ui-invalid': {
+      boxShadow: 'none',
+    },
+    ':-moz-focusring': {
+      outline: 'auto',
+    },
+    '[hidden]': {
+      display: 'none !important',
+    },
   }
 
   const reset: GlobalStyleObject = {
-    [scope || 'html']: {
-      lineHeight: 1.5,
+    [scope || 'html, :host']: {
+      lineHeight: '1.5',
       '--font-fallback':
         "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
       WebkitTextSizeAdjust: '100%',
@@ -107,6 +153,7 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
       MozTabSize: '[4]',
       tabSize: '[4]',
       fontFamily: 'var(--global-font-body, var(--font-fallback))',
+      WebkitTapHighlightColor: 'transparent',
     },
   }
 

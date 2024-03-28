@@ -6,6 +6,7 @@ import { display } from './display'
 import { divide } from './divide'
 import { effects } from './effects'
 import { flexGrid } from './flex-and-grid'
+import { backgroundGradients } from './gradient'
 import { helpers } from './helpers'
 import { interactivity } from './interactivity'
 import { layout } from './layout'
@@ -32,6 +33,7 @@ export const utilities: UtilityConfig = Object.assign(
   typography,
   list,
   background,
+  backgroundGradients,
   border,
   effects,
   tables,

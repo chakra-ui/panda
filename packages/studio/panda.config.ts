@@ -71,18 +71,16 @@ export default {
       lineHeight: 'normal',
       fontWeight: 'normal',
       colorScheme: 'light dark',
-      color: 'text',
-      background: 'bg',
     },
-
-    a: {
-      color: 'unset',
-      textDecoration: 'none',
-    },
-
     body: {
       margin: 0,
       minHeight: '100dvh',
+      background: 'bg',
+      color: 'text',
+    },
+    a: {
+      color: 'unset',
+      textDecoration: 'none',
     },
   },
 } satisfies Config

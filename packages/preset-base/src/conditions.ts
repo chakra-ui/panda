@@ -83,8 +83,8 @@ export const conditions = {
   landscape: '@media (orientation: landscape)',
   portrait: '@media (orientation: portrait)',
 
-  dark: ' &.dark, .dark &',
-  light: ' &.light, .light &',
+  dark: '.dark &',
+  light: '.light &',
   osDark: '@media (prefers-color-scheme: dark)',
   osLight: '@media (prefers-color-scheme: light)',
 
@@ -101,4 +101,6 @@ export const conditions = {
 
   horizontal: '&[data-orientation=horizontal]',
   vertical: '&[data-orientation=vertical]',
+
+  starting: '@starting-style',
 }

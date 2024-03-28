@@ -280,7 +280,7 @@ describe('atomic / with nesting scope', () => {
       }
 
         @media screen and (min-width: 40rem) {
-          .\\[\\&\\:\\:placeholder\\]\\:sm\\:text_left::placeholder {
+          .\\[\\&\\:\\:placeholder\\]\\:sm\\:text-align_left::placeholder {
             text-align: left;
       }
       }
@@ -306,7 +306,7 @@ describe('atomic / with nesting scope', () => {
 
         @media base {
           @media screen and (min-width: 40rem) {
-            .\\[\\@media_base\\]\\:sm\\:text_left {
+            .\\[\\@media_base\\]\\:sm\\:text-align_left {
               text-align: left;
       }
       }
@@ -387,7 +387,7 @@ describe('atomic / with grouped conditions styles', () => {
 
         @media base {
           @media screen and (min-width: 40rem) {
-            .\\[\\@media_base\\]\\:\\[\\&\\:hover\\]\\:sm\\:text_left:hover {
+            .\\[\\@media_base\\]\\:\\[\\&\\:hover\\]\\:sm\\:text-align_left:hover {
               text-align: left;
       }
       }

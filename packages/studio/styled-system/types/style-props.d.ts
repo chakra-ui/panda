@@ -384,7 +384,7 @@ animationDirection?: ConditionalValue<CssVars | CssProperties["animationDirectio
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-duration
    */
-animationDuration?: ConditionalValue<CssProperties["animationDuration"] | AnyString>
+animationDuration?: ConditionalValue<UtilityValues["animationDuration"] | CssVars | CssProperties["animationDuration"] | AnyString>
  /**
    * The **`animation-fill-mode`** CSS property sets how a CSS animation applies styles to its target before and after its execution.
    *
@@ -499,7 +499,7 @@ animationRangeStart?: ConditionalValue<CssProperties["animationRangeStart"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-timing-function
    */
-animationTimingFunction?: ConditionalValue<CssProperties["animationTimingFunction"] | AnyString>
+animationTimingFunction?: ConditionalValue<UtilityValues["animationTimingFunction"] | CssVars | CssProperties["animationTimingFunction"] | AnyString>
  /**
    * The **`animation-timeline`** CSS property specifies the timeline that is used to control the progress of an animation.
    *
@@ -4749,7 +4749,7 @@ right?: ConditionalValue<UtilityValues["right"] | CssVars | CssProperties["right
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/rotate
    */
-rotate?: ConditionalValue<CssProperties["rotate"] | AnyString>
+rotate?: ConditionalValue<UtilityValues["rotate"] | CssVars | CssProperties["rotate"] | AnyString>
  /**
    * The **`row-gap`** CSS property sets the size of the gap (gutter) between an element's rows.
    *
@@ -7283,6 +7283,7 @@ shadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssProperties["
  shadowColor?: ConditionalValue<UtilityValues["boxShadowColor"] | CssVars | AnyString>
  x?: ConditionalValue<UtilityValues["translateX"] | CssVars | AnyString>
  y?: ConditionalValue<UtilityValues["translateY"] | CssVars | AnyString>
+ z?: ConditionalValue<UtilityValues["translateZ"] | CssVars | AnyString>
  /**
    * The `scroll-margin-block` shorthand property sets the scroll margins of an element in the block dimension.
    *
@@ -7333,17 +7334,22 @@ scrollPaddingY?: ConditionalValue<UtilityValues["scrollPaddingBlock"] | CssVars 
 scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars | CssProperties["scrollPaddingInline"] | AnyString>
  hideFrom?: ConditionalValue<UtilityValues["hideFrom"] | CssVars | AnyString>
  hideBelow?: ConditionalValue<UtilityValues["hideBelow"] | CssVars | AnyString>
- divideX?: ConditionalValue<UtilityValues["divideX"] | CssVars | AnyString>
- divideY?: ConditionalValue<UtilityValues["divideY"] | CssVars | AnyString>
+ spaceX?: ConditionalValue<UtilityValues["spaceX"] | CssVars | AnyString>
+ spaceY?: ConditionalValue<UtilityValues["spaceY"] | CssVars | AnyString>
+ divideX?: ConditionalValue<string | number | AnyString>
+ divideY?: ConditionalValue<string | number | AnyString>
  divideColor?: ConditionalValue<UtilityValues["divideColor"] | CssVars | AnyString>
  divideStyle?: ConditionalValue<UtilityValues["divideStyle"] | CssVars | AnyString>
  fontSmoothing?: ConditionalValue<UtilityValues["fontSmoothing"] | CssVars | AnyString>
  truncate?: ConditionalValue<UtilityValues["truncate"] | CssVars | AnyString>
  backgroundGradient?: ConditionalValue<UtilityValues["backgroundGradient"] | CssVars | AnyString>
  textGradient?: ConditionalValue<UtilityValues["textGradient"] | CssVars | AnyString>
+ gradientFromPosition?: ConditionalValue<string | number | AnyString>
+ gradientToPosition?: ConditionalValue<string | number | AnyString>
  gradientFrom?: ConditionalValue<UtilityValues["gradientFrom"] | CssVars | AnyString>
  gradientTo?: ConditionalValue<UtilityValues["gradientTo"] | CssVars | AnyString>
  gradientVia?: ConditionalValue<UtilityValues["gradientVia"] | CssVars | AnyString>
+ gradientViaPosition?: ConditionalValue<string | number | AnyString>
  borderTopRadius?: ConditionalValue<UtilityValues["borderTopRadius"] | CssVars | AnyString>
  borderRightRadius?: ConditionalValue<UtilityValues["borderRightRadius"] | CssVars | AnyString>
  borderBottomRadius?: ConditionalValue<UtilityValues["borderBottomRadius"] | CssVars | AnyString>
@@ -7371,10 +7377,14 @@ scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars
  backdropSepia?: ConditionalValue<string | number | AnyString>
  borderSpacingX?: ConditionalValue<UtilityValues["borderSpacingX"] | CssVars | AnyString>
  borderSpacingY?: ConditionalValue<UtilityValues["borderSpacingY"] | CssVars | AnyString>
+ rotateX?: ConditionalValue<UtilityValues["rotateX"] | CssVars | AnyString>
+ rotateY?: ConditionalValue<UtilityValues["rotateY"] | CssVars | AnyString>
+ rotateZ?: ConditionalValue<UtilityValues["rotateZ"] | CssVars | AnyString>
  scaleX?: ConditionalValue<string | number | AnyString>
  scaleY?: ConditionalValue<string | number | AnyString>
  translateX?: ConditionalValue<UtilityValues["translateX"] | CssVars | AnyString>
  translateY?: ConditionalValue<UtilityValues["translateY"] | CssVars | AnyString>
+ translateZ?: ConditionalValue<UtilityValues["translateZ"] | CssVars | AnyString>
  scrollbar?: ConditionalValue<UtilityValues["scrollbar"] | CssVars | AnyString>
  scrollSnapStrictness?: ConditionalValue<UtilityValues["scrollSnapStrictness"] | CssVars | AnyString>
  /**

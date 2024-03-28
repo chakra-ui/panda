@@ -2313,13 +2313,13 @@ describe('style decoder', () => {
             "result": {
               ".bg-gradient_to-b": {
                 "--gradient": "var(--gradient-via-stops, var(--gradient-stops))",
-                "--gradient-stops": "var(--gradient-from), var(--gradient-to)",
+                "--gradient-stops": "var(--gradient-via-stops, var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position))",
                 "backgroundImage": "linear-gradient(to bottom, var(--gradient))",
               },
             },
           },
           {
-            "className": "from_rgb\\(200_200_200_\\/_\\.4\\)",
+            "className": "gradient-from_rgb\\(200_200_200_\\/_\\.4\\)",
             "conditions": undefined,
             "entry": {
               "prop": "gradientFrom",
@@ -2328,7 +2328,7 @@ describe('style decoder', () => {
             "hash": "gradientFrom]___[value:rgb(200 200 200 / .4)",
             "layer": undefined,
             "result": {
-              ".from_rgb\\(200_200_200_\\/_\\.4\\)": {
+              ".gradient-from_rgb\\(200_200_200_\\/_\\.4\\)": {
                 "--gradient-from": "rgb(200 200 200 / .4)",
               },
             },

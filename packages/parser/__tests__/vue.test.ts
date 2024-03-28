@@ -141,7 +141,7 @@ describe('extract Vue templates', () => {
           color: green;
       }
 
-        .font_bold {
+        .fw_bold {
           font-weight: var(--font-weights-bold);
       }
       }"
@@ -393,7 +393,7 @@ describe('extract Vue templates', () => {
           color: green;
       }
 
-        .font_bold {
+        .fw_bold {
           font-weight: var(--font-weights-bold);
       }
       }"
@@ -534,7 +534,7 @@ describe('extract Vue templates', () => {
           color: green;
       }
 
-        .font_bold {
+        .fw_bold {
           font-weight: var(--font-weights-bold);
       }
       }"

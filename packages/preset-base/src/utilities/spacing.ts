@@ -135,4 +135,32 @@ export const spacing: UtilityConfig = {
     values: marginValues,
     group: 'Margin',
   },
+  spaceX: {
+    className: 'space-x',
+    values: marginValues,
+    property: 'marginInlineStart',
+    group: 'Margin',
+    transform(value) {
+      return {
+        '& > :not([hidden]) ~ :not([hidden])': {
+          marginInlineStart: value,
+          marginInlineEnd: '0px',
+        },
+      }
+    },
+  },
+  spaceY: {
+    className: 'space-y',
+    values: marginValues,
+    property: 'marginBlockStart',
+    group: 'Margin',
+    transform(value) {
+      return {
+        '& > :not([hidden]) ~ :not([hidden])': {
+          marginTop: value,
+          marginBottom: '0px',
+        },
+      }
+    },
+  },
 }
