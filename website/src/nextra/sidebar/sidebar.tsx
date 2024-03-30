@@ -8,7 +8,7 @@ import type { Item, PageItem } from 'nextra/normalize-pages'
 import { css, cx } from '@/styled-system/css'
 import { useConfig, useMenu } from '@/nextra/contexts'
 import { renderComponent } from '@/nextra/lib'
-import { TreeView, Collapse, IconButton } from '@/nextra'
+import { TreeView, Collapse, IconButton, Anchor } from '@/nextra'
 import { LocaleSwitch } from '../locale-switch'
 import { SidebarBackdrop } from './sidebar-backdrop'
 import { SidebarContainer } from './sidebar-container'
@@ -16,7 +16,7 @@ import { SidebarPlaceholder } from './sidebar-placeholder'
 import { SidebarHeader } from './sidebar-header'
 import { SidebarBody } from './sidebar-body'
 import { SidebarFooter } from './sidebar-footer'
-import { TreeViewLink } from '@/nextra/treeview/treeview-link'
+import { treeviewRecipe } from '@/nextra/treeview/treeview-link'
 
 /* -----------------------------------------------------------------------------
  * ThemeSwitch Container
@@ -181,20 +181,22 @@ export function Sidebar({
            */}
           {(!asPopover || !showSidebar) && (
             <Collapse isOpen={showSidebar} horizontal>
-              <TreeViewLink
-                href="/docs"
-                active={false}
-                mb="4"
-                gap="2"
-                smDown={{ display: 'none' }}
-              >
-                <ArrowRightIcon
-                  style={{
-                    transform: 'rotate(180deg)'
-                  }}
-                />
-                All Docs
-              </TreeViewLink>
+              {!isInIndex && (
+                <Anchor
+                  href="/docs"
+                  className={cx(
+                    treeviewRecipe({ active: false }),
+                    css({ mb: '4', gap: '2', smDown: { display: 'none' } })
+                  )}
+                >
+                  <ArrowRightIcon
+                    style={{
+                      transform: 'rotate(180deg)'
+                    }}
+                  />
+                  All Docs
+                </Anchor>
+              )}
               <TreeView
                 className={css({ smDown: { display: 'none' } })}
                 // The sidebar menu, shows only the docs directories.
