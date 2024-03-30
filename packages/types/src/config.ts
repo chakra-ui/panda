@@ -84,6 +84,7 @@ interface ExtendableStaticCssOptions extends StaticCssOptions {
 }
 
 export type CssPropertySyntax =
+  | '*'
   | '<length>'
   | '<number>'
   | '<percentage>'
@@ -108,7 +109,7 @@ export interface CssPropertyDefinition {
    * Sets the initial value for the property.
    * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/initial-value
    */
-  initialValue: string
+  initialValue?: string
   /**
    * Describes the allowable syntax for the property.
    * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax

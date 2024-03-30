@@ -27,11 +27,11 @@ export const layout: UtilityConfig = {
   },
 
   objectPosition: {
-    className: 'object',
+    className: 'obj-pos',
     group: 'Layout',
   },
   objectFit: {
-    className: 'object',
+    className: 'obj-fit',
     group: 'Layout',
   },
 

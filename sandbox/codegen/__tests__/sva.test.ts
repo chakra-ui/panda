@@ -39,7 +39,7 @@ describe('sva', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "icon": "fs_2xl",
-        "root": "rounded_md font_semibold h_10 px_4",
+        "root": "rounded_md fw_semibold h_10 px_4",
       }
     `)
   })
@@ -51,7 +51,7 @@ describe('sva', () => {
       `
       {
         "icon": "fs_2xl text_white",
-        "root": "rounded_md font_semibold h_10 px_4 bg_colorPalette.500 dark:bg_colorPalette.300 text_white dark:text_gray.800",
+        "root": "rounded_md fw_semibold h_10 px_4 bg_colorPalette.500 dark:bg_colorPalette.300 text_white dark:text_gray.800",
       }
     `,
     )
@@ -64,7 +64,7 @@ describe('sva', () => {
       `
       {
         "icon": "fs_2xl border_1px_solid",
-        "root": "rounded_md font_semibold h_10 px_4 border_1px_solid text_colorPalette.600 dark:text_colorPalette.200 border_currentColor",
+        "root": "rounded_md fw_semibold h_10 px_4 border_1px_solid text_colorPalette.600 dark:text_colorPalette.200 border_currentColor",
       }
     `,
     )

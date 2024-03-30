@@ -1434,7 +1434,7 @@ describe('preset patterns', () => {
           height: 100%;
       }
 
-        .\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
+        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>video {
           object-fit: cover;
       }
 
@@ -1526,7 +1526,7 @@ describe('preset patterns', () => {
           height: 100%;
       }
 
-        .\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
+        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>video {
           object-fit: cover;
       }
 
@@ -1834,7 +1834,7 @@ describe('staticCss', () => {
           height: 100%;
       }
 
-        .\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
+        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>video {
           object-fit: cover;
       }
 
@@ -1917,7 +1917,7 @@ describe('staticCss', () => {
           height: 100%;
       }
 
-        .\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
+        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>video {
           object-fit: cover;
       }
 
@@ -1965,7 +1965,7 @@ describe('staticCss', () => {
           .md\\:\\[\\&\\>\\*\\]\\:h_100\\%>* {
             height: 100%;
       }
-          .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:object_cover>video {
+          .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>video {
             object-fit: cover;
       }
           .md\\:before\\:content_\\"\\"::before {

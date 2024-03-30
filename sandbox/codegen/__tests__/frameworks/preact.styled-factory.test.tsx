@@ -187,7 +187,7 @@ describe('styled factory - cva', () => {
     const { firstChild } = container as HTMLElement
     expect(firstChild).toMatchInlineSnapshot(`
       <button
-        class="font_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px"
+        class="fw_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px"
       >
         Click me
       </button>
@@ -201,7 +201,7 @@ describe('styled factory - cva', () => {
       ).container.firstChild,
     ).toMatchInlineSnapshot(`
       <button
-        class="font_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px"
+        class="fw_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px"
       >
         Click me
       </button>

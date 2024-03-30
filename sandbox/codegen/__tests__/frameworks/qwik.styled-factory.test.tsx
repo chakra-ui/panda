@@ -199,7 +199,7 @@ describe('styled factory - cva', async () => {
       </WithOverrides>,
     )
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="font_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px">Click me</button>"`)
+    expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="fw_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px">Click me</button>"`)
 
     const second = await createDOM()
     await second.render(
@@ -208,7 +208,7 @@ describe('styled factory - cva', async () => {
       </WithOverrides>,
     )
     const container2 = second.screen.querySelector('button')!
-    expect(container2.outerHTML).toMatchInlineSnapshot(`"<button class="font_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px">Click me</button>"`)
+    expect(container2.outerHTML).toMatchInlineSnapshot(`"<button class="fw_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px">Click me</button>"`)
   })
 
   test('html props', async () => {

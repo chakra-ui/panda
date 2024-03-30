@@ -1,4 +1,5 @@
 import type { CssPropertyDefinition, GlobalVarsDefinition } from '@pandacss/types'
+import { outdent } from 'outdent'
 import { stringify } from './stringify'
 
 interface GlobalVarsOptions {
@@ -34,7 +35,8 @@ export class GlobalVars {
 const stringifyGlobalVars = (globalVars: GlobalVarsDefinition, cssVarRoot: string) => {
   if (!globalVars) return ''
 
-  const cssCustomProps = [] as string[]
+  const decls = [] as string[]
+
   const vars = { [cssVarRoot]: {} as Record<string, string> }
   const base = vars[cssVarRoot]
 
@@ -44,20 +46,20 @@ const stringifyGlobalVars = (globalVars: GlobalVarsDefinition, cssVarRoot: strin
       return
     }
     const css = stringifyProperty(key, value)
-    cssCustomProps.push(css)
+    decls.push(css)
   })
 
   const lines: string[] = []
   lines.push(stringify(vars))
-  lines.push(...cssCustomProps)
+  lines.push(...decls)
 
   return lines.join('\n\n')
 }
 
 function stringifyProperty(key: string, config: CssPropertyDefinition) {
-  return `@property ${key} {
+  return outdent`@property ${key} {
     syntax: '${config.syntax}';
     inherits: ${config.inherits};
-    initial-value: ${config.initialValue};
+    ${config.initialValue == null ? '' : `initial-value: ${config.initialValue};`}
   }`
 }

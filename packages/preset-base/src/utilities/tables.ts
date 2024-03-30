@@ -7,8 +7,13 @@ export const tables: UtilityConfig = {
   },
   borderSpacing: {
     className: 'border-spacing',
-    values: 'spacing',
     group: 'Table',
+    values(theme) {
+      return {
+        ...theme('spacing'),
+        auto: 'var(--border-spacing-x) var(--border-spacing-y)',
+      }
+    },
   },
   borderSpacingX: {
     className: 'border-spacing-x',
@@ -16,7 +21,7 @@ export const tables: UtilityConfig = {
     group: 'Table',
     transform(value) {
       return {
-        borderSpacing: `${value} var(--border-spacing-y)`,
+        '--border-spacing-x': value,
       }
     },
   },
@@ -26,7 +31,7 @@ export const tables: UtilityConfig = {
     group: 'Table',
     transform(value) {
       return {
-        borderSpacing: `var(--border-spacing-x) ${value}`,
+        '--border-spacing-y': value,
       }
     },
   },
