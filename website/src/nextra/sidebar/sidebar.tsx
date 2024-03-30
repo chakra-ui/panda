@@ -3,7 +3,7 @@ import type { Heading } from 'nextra'
 import type { FC, ReactElement, ReactNode } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { ExpandIcon } from 'nextra/icons'
+import { ArrowRightIcon, ExpandIcon } from 'nextra/icons'
 import type { Item, PageItem } from 'nextra/normalize-pages'
 import { css, cx } from '@/styled-system/css'
 import { useConfig, useMenu } from '@/nextra/contexts'
@@ -16,6 +16,7 @@ import { SidebarPlaceholder } from './sidebar-placeholder'
 import { SidebarHeader } from './sidebar-header'
 import { SidebarBody } from './sidebar-body'
 import { SidebarFooter } from './sidebar-footer'
+import { TreeViewLink } from '@/nextra/treeview/treeview-link'
 
 /* -----------------------------------------------------------------------------
  * ThemeSwitch Container
@@ -97,10 +98,15 @@ export function Sidebar({
   useEffect(() => {
     const activeElements = sidebarRef.current?.querySelectorAll('li.active')
 
-    if (activeElements?.length && (window.innerWidth > 767 || isMobileMenuOpen)) {
+    if (
+      activeElements?.length &&
+      (window.innerWidth > 767 || isMobileMenuOpen)
+    ) {
       // there is two menus in the DOM, first one rendered is desktop and second one is mobile
       // so we need to get active element from the right menu
-      const activeElement = isMobileMenuOpen ? activeElements[1] : activeElements[0];
+      const activeElement = isMobileMenuOpen
+        ? activeElements[1]
+        : activeElements[0]
 
       const scroll = () => {
         scrollIntoView(activeElement, {
@@ -129,10 +135,31 @@ export function Sidebar({
   const hasThemeSwitch = config.darkMode
   const hasFooter = hasThemeSwitch || hasI18n
 
+  const INDEX_FOLDERS = ['overview', 'installation', 'references']
+  const indexDirectories = docsDirectories.map(directory =>
+    INDEX_FOLDERS.includes(directory.name)
+      ? directory
+      : Object.assign({}, directory, {
+          route: directory.children?.[0].route,
+          children: null
+        })
+  )
+
+  const currentDir = router.asPath.match(/\/docs\/([^/]+)/)?.[1] ?? ''
+
+  const isInIndex = INDEX_FOLDERS.includes(currentDir)
+
+  const desktopDirectories = isInIndex
+    ? indexDirectories
+    : docsDirectories.filter(directory => directory.name === currentDir)
+
   return (
     <>
       {includePlaceholder && asPopover ? <SidebarPlaceholder /> : null}
-      <SidebarBackdrop isMobileMenuOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
+      <SidebarBackdrop
+        isMobileMenuOpen={isMobileMenuOpen}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
       <SidebarContainer
         ref={containerRef}
         showSidebar={showSidebar}
@@ -154,10 +181,24 @@ export function Sidebar({
            */}
           {(!asPopover || !showSidebar) && (
             <Collapse isOpen={showSidebar} horizontal>
+              <TreeViewLink
+                href="/docs"
+                active={false}
+                mb="4"
+                gap="2"
+                smDown={{ display: 'none' }}
+              >
+                <ArrowRightIcon
+                  style={{
+                    transform: 'rotate(180deg)'
+                  }}
+                />
+                All Docs
+              </TreeViewLink>
               <TreeView
                 className={css({ smDown: { display: 'none' } })}
                 // The sidebar menu, shows only the docs directories.
-                directories={docsDirectories}
+                directories={desktopDirectories}
                 // When the viewport size is larger than `md`, hide the anchors in
                 // the sidebar when `floatTOC` is enabled.
                 anchors={config.toc.float ? [] : anchors}
