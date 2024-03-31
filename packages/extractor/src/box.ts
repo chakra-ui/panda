@@ -1,4 +1,4 @@
-import type { Node } from 'ts-morph'
+import { Node } from 'ts-morph'
 import { getTypeOfLiteral } from './get-typeof-literal'
 import { toBoxNode } from './to-box-node'
 import {
@@ -46,6 +46,9 @@ export const box = {
       value: undefined,
       getNode: () => node.getNode(),
       getStack: () => node.getStack(),
+      getRange: () => node.getRange(),
+      toJSON: () => node.toJSON(),
+      toString: () => node.toString(),
     }
   },
   /**

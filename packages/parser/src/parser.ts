@@ -1,5 +1,14 @@
 import type { ImportResult, ParserOptions } from '@pandacss/core'
-import { BoxNodeMap, box, extract, unbox, type EvaluateOptions, type Unboxed } from '@pandacss/extractor'
+import {
+  BoxNodeMap,
+  box,
+  extract,
+  unbox,
+  type EvaluateOptions,
+  type Unboxed,
+  type BoxNode,
+  BoxNodeUnresolvable,
+} from '@pandacss/extractor'
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { astish } from '@pandacss/shared'
@@ -11,7 +20,7 @@ import { getImportDeclarations } from './get-import-declarations'
 import { ParserResult } from './parser-result'
 
 const combineResult = (unboxed: Unboxed) => {
-  return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
+  return [...(unboxed.conditions ?? []), unboxed.raw, ...(unboxed.spreadConditions ?? [])]
 }
 
 const defaultEnv: EvaluateOptions['environment'] = {
@@ -113,6 +122,20 @@ export function createParser(context: ParserOptions) {
       flags: { skipTraverseFiles: true },
     })
 
+    const unresolveds = new Set<BoxNodeUnresolvable>()
+
+    const getData = (box: BoxNode | undefined): ReturnType<typeof combineResult> => {
+      if (!box) return undefinedFallback
+
+      const unboxed = unbox(box)
+
+      if (unboxed.unresolved?.length) {
+        unboxed.unresolved.forEach((n) => unresolveds.add(n))
+      }
+
+      return combineResult(unboxed)
+    }
+
     extractResultByName.forEach((result, alias) => {
       //
       const name = file.getName(file.normalizeFnName(alias))
@@ -131,7 +154,7 @@ export function createParser(context: ParserOptions) {
                     name,
                     box: query.box,
                     data: query.box.value.reduce(
-                      (acc, value) => [...acc, ...combineResult(unbox(value))],
+                      (acc, value) => [...acc, ...getData(value)],
                       [] as Array<Unboxed['raw']>,
                     ),
                   })
@@ -140,7 +163,7 @@ export function createParser(context: ParserOptions) {
                   parserResult.set(name, {
                     name,
                     box: (query.box.value[0] as BoxNodeMap) ?? box.fallback(query.box),
-                    data: combineResult(unbox(query.box.value[0])),
+                    data: getData(query.box.value[0]),
                   })
                 }
                 //
@@ -162,7 +185,7 @@ export function createParser(context: ParserOptions) {
                 parserResult.setPattern(name, {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? box.fallback(query.box),
-                  data: combineResult(unbox(query.box.value[0])),
+                  data: getData(query.box.value[0]),
                 })
               }
             })
@@ -174,7 +197,7 @@ export function createParser(context: ParserOptions) {
                 parserResult.setRecipe(name, {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? box.fallback(query.box),
-                  data: combineResult(unbox(query.box.value[0])),
+                  data: getData(query.box.value[0]),
                 })
               }
             })
@@ -188,7 +211,7 @@ export function createParser(context: ParserOptions) {
                 const map = query.box.value[1]
                 const boxNode = box.isMap(map) ? map : box.fallback(query.box)
 
-                const combined = combineResult(unbox(boxNode))
+                const combined = getData(boxNode)
                 const transformed = options?.transform?.({ type: 'jsx-factory', data: combined })
 
                 // ensure that data is always an object
@@ -223,7 +246,7 @@ export function createParser(context: ParserOptions) {
                       type: 'jsx-recipe',
                       name: recipeName,
                       box: recipeOptions,
-                      data: combineResult(unbox(recipeOptions.value.get('defaultProps'))),
+                      data: getData(recipeOptions.value.get('defaultProps')),
                     })
                   }
                 }
@@ -246,7 +269,7 @@ export function createParser(context: ParserOptions) {
                 const map = query.box.value[0]
                 const boxNode = box.isMap(map) ? map : box.fallback(query.box)
 
-                const combined = combineResult(unbox(boxNode))
+                const combined = getData(boxNode)
                 const transformed = options?.transform?.({ type: 'jsx-factory', data: combined })
 
                 // ensure that data is always an object
@@ -279,7 +302,7 @@ export function createParser(context: ParserOptions) {
         //
         result.queryList.forEach((query) => {
           //
-          const data = combineResult(unbox(query.box))
+          const data = getData(query.box)
 
           switch (true) {
             case file.isJsxFactory(name) || file.isJsxFactory(alias): {
@@ -314,6 +337,73 @@ export function createParser(context: ParserOptions) {
       }
     })
 
+    if (unresolveds.size) {
+      // console.log('unresolveds', unresolvedsFalsePositives)
+
+      const list = Array.from(unresolveds)
+        .filter((n) => {
+          const node = n.getNode()
+
+          // TODO do we make this a bit more sophisticated (check for component-like parents) and keep it ?
+          // ASSUMPTION: binding elements are most likely used in JSX to pass props
+          // it's better to treat them as false positives
+          // ex:
+          // function Button({ children, variant, size, css: cssProp }: ButtonProps) {
+          //   return <button className={cx(button({ variant, size }), css(cssProp))}>{children}</button>
+          // }
+          if (Node.isBindingElement(node)) {
+            console.log(node.getKindName(), node.getText())
+            console.log(n.getStack().map((n) => [n.getKindName(), n.getText()]))
+            // return
+          }
+
+          // Ignore `styled` JSX factory
+          // we don't need to evaluate it but only to extract the arguments
+          // styled.div({ color: 'red.400' })
+          // styled("button", { color: "red.400" })
+          if (Node.isCallExpression(node)) {
+            const name = node.getExpression().getText()
+            if (file.isJsxFactory(name)) return
+          }
+
+          // Specifically ignore unresolved sva `slots`, it's not needed
+          // import { slots, slots as arkSlots } from './slots'
+          // `sva({ slots })` | `sva({ slots: arkSlots })`
+          if (Node.isIdentifier(node)) {
+            const stack = n.getStack()
+            const first = stack.at(0)
+            const slots = stack.find((n) => {
+              if (Node.isPropertyAccessExpression(n) && n.getName() === 'slots') {
+                return true
+              }
+
+              if (Node.isShorthandPropertyAssignment(n) && n.getName() === 'slots') {
+                return true
+              }
+            })
+
+            if (slots && first && Node.isCallExpression(first)) {
+              const name = first.getExpression().getText()
+              if (name === 'sva' || file.isAliasFnName(name)) return
+            }
+          }
+
+          return true
+        })
+        .map((n) => {
+          const node = n.getNode()
+
+          const range = n.getRange()
+          return `\`${node.getText()}\` at ${node.getSourceFile().getFilePath()}:${range.startLineNumber}:${range.startColumn}:${range.endLineNumber}:${range.endColumn}`
+        })
+
+      if (list.length) {
+        logger.warn('extractor', `Some values could not be statically extracted: \n` + list.join('\n') + '\n')
+      }
+    }
+
     return parserResult
   }
 }
+
+const undefinedFallback = [{}]

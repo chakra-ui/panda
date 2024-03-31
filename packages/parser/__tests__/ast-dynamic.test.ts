@@ -94,9 +94,11 @@ describe('[dynamic] ast parser', () => {
           },
           {
             "box": {
-              "getNode": [Function],
-              "getStack": [Function],
-              "value": undefined,
+              "column": 7,
+              "line": 16,
+              "node": "CallExpression",
+              "type": "array",
+              "value": [],
             },
             "data": [
               {},

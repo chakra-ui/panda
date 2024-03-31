@@ -1,5 +1,5 @@
 import { box } from './box'
-import type { BoxNode } from './box-factory'
+import type { BoxNode, BoxNodeUnresolvable } from './box-factory'
 import type { LiteralObject, LiteralValue } from './types'
 import { isNotNullish, isTruthyOrZero } from './utils'
 import { Node } from 'ts-morph'
@@ -101,6 +101,8 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
       getLiteralValue(elementNode, Object.assign({}, ctx, { path: ctx.path.concat(String(index)), parent: node })),
     )
   }
+
+  ctx.unresolved.push(node)
 }
 
 type BoxNodeType = BoxNode | BoxNode[] | undefined
@@ -114,11 +116,13 @@ interface UnboxContext {
   conditions: LiteralObject[]
   /** @example <ColorBox {...(someCondition && { color: "blue.100" })} /> */
   spreadConditions: LiteralObject[] // there is no specific upside to having this separated from conditions but it's easier to debug
+  unresolved: BoxNodeUnresolvable[]
 }
 export interface Unboxed {
   raw: LiteralObject
-  conditions: LiteralObject[]
-  spreadConditions: LiteralObject[]
+  conditions?: LiteralObject[]
+  spreadConditions?: LiteralObject[]
+  unresolved?: BoxNodeUnresolvable[]
 }
 
 export const cacheMap: CacheMap = new WeakMap()
@@ -138,6 +142,7 @@ export const unbox = (node: BoxNodeType, ctx?: Pick<UnboxContext, 'cache'>): Unb
     parent: undefined,
     conditions: [],
     spreadConditions: [],
+    unresolved: [],
   }
   const cache = createCache(_ctx.cache)
 
@@ -152,7 +157,19 @@ export const unbox = (node: BoxNodeType, ctx?: Pick<UnboxContext, 'cache'>): Unb
     raw = getLiteralValue(node, _ctx) as LiteralObject
   }
 
-  const result: Unboxed = { raw: raw ?? {}, conditions: _ctx.conditions, spreadConditions: _ctx.spreadConditions }
+  const result: Unboxed = { raw: raw ?? {} }
+
+  if (_ctx.conditions.length) {
+    result.conditions = _ctx.conditions
+  }
+
+  if (_ctx.spreadConditions.length) {
+    result.spreadConditions = _ctx.spreadConditions
+  }
+
+  if (_ctx.unresolved.length) {
+    result.unresolved = _ctx.unresolved
+  }
 
   if (raw) {
     cache.set(node, result)

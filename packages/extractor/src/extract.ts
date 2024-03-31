@@ -62,7 +62,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         }
 
         if (!byName.has(componentName)) {
-          byName.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
+          byName.set(componentName, { kind: 'component', queryList: [] })
         }
 
         if (!componentByNode.has(componentNode)) {
@@ -80,7 +80,6 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         if (!componentNode || !component) return
 
         const componentName = getComponentName(componentNode)
-        const boxByProp = byName.get(componentName)!.nodesByProp
 
         const matchProp = ({ propName, propNode }: MatchPropArgs) =>
           components.matchProp({ tagNode: componentNode!, tagName: componentName, propName, propNode })
@@ -104,7 +103,6 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
           mapValue.forEach((propValue, propName) => {
             if (matchProp({ propName, propNode: node as any })) {
               component.props.set(propName, propValue)
-              boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(propValue))
             }
           })
         }
@@ -136,7 +134,6 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         if (!componentNode || !component) return
 
         const componentName = getComponentName(componentNode)
-        const boxByProp = byName.get(componentName)!.nodesByProp
 
         const propName = node.getNameNode().getText()
         if (!components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode: node })) {
@@ -147,7 +144,6 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         if (!maybeBox) return
 
         component.props.set(propName, maybeBox)
-        boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
       }
     }
 
@@ -160,27 +156,16 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         functions.matchProp({ fnNode: node, fnName, propName, propNode })
 
       if (!byName.has(fnName)) {
-        byName.set(fnName, { kind: 'function', nodesByProp: new Map(), queryList: [] })
+        byName.set(fnName, { kind: 'function', queryList: [] })
       }
 
       const fnResultMap = byName.get(fnName)! as ExtractedFunctionResult
-      const boxByProp = fnResultMap.nodesByProp
 
       const boxNodeArray = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg)
 
       const nodeList = boxNodeArray.value.map((boxNode) => {
         if (box.isObject(boxNode) || box.isMap(boxNode)) {
           const mapValue = objectLikeToMap(boxNode, node)
-          const isMap = box.isMap(boxNode)
-
-          mapValue.forEach((propValue, propName) => {
-            // if the boxNode is an object
-            // that means it was evaluated so we need to filter its props
-            // otherwise, it was already filtered in extractCallExpressionArguments
-            if (isMap ? true : matchProp({ propName, propNode: node as any })) {
-              boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(propValue))
-            }
-          })
 
           const boxMap = box.map(mapValue, node, boxNode.getStack())
           if (box.isMap(boxNode) && boxNode.spreadConditions?.length) {
@@ -208,7 +193,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       if (!taggedTemplates.matchTaggedTemplate({ taggedTemplateNode: node, fnName })) return
 
       if (!byName.has(fnName)) {
-        byName.set(fnName, { kind: 'function', nodesByProp: new Map(), queryList: [] })
+        byName.set(fnName, { kind: 'function', queryList: [] })
       }
 
       const fnResultMap = byName.get(fnName)! as ExtractedFunctionResult

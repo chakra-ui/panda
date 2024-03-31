@@ -11,7 +11,7 @@ import type {
   SourceFile,
   TaggedTemplateExpression,
 } from 'ts-morph'
-import type { BoxNode, BoxNodeArray, BoxNodeLiteral, BoxNodeMap } from './box-factory'
+import type { BoxNodeArray, BoxNodeLiteral, BoxNodeMap } from './box-factory'
 
 export type PrimitiveType = string | number | boolean | null | undefined
 
@@ -45,7 +45,6 @@ export interface ExtractedTaggedTemplateInstance {
 
 export interface ExtractedFunctionResult {
   kind: 'function'
-  nodesByProp: Map<string, BoxNode[]>
   queryList: Array<ExtractedFunctionInstance | ExtractedTaggedTemplateInstance>
 }
 
@@ -56,7 +55,6 @@ export interface ExtractedComponentInstance {
 }
 export interface ExtractedComponentResult {
   kind: 'component'
-  nodesByProp: Map<string, BoxNode[]>
   queryList: ExtractedComponentInstance[]
 }
 

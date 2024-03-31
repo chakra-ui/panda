@@ -1,17 +1,8 @@
 import type { Node } from 'ts-morph'
 import { box } from './box'
-import {
-  BoxNodeConditional,
-  BoxNodeLiteral,
-  BoxNodeMap,
-  BoxNodeObject,
-  BoxNodeUnresolvable,
-  isBoxNode,
-  type BoxNode,
-  type MapTypeValue,
-} from './box-factory'
+import { BoxNodeLiteral, BoxNodeMap, BoxNodeObject, isBoxNode, type BoxNode, type MapTypeValue } from './box-factory'
 
-type MaybeObjectLikeBoxReturn = BoxNodeObject | BoxNodeMap | BoxNodeUnresolvable | BoxNodeConditional | undefined
+type MaybeObjectLikeBoxReturn = BoxNodeObject | BoxNodeMap | undefined
 export const objectLikeToMap = (maybeObject: MaybeObjectLikeBoxReturn, node: Node): MapTypeValue => {
   if (!maybeObject) {
     return new Map<string, BoxNode>()
@@ -19,10 +10,6 @@ export const objectLikeToMap = (maybeObject: MaybeObjectLikeBoxReturn, node: Nod
 
   if (!isBoxNode(maybeObject)) {
     return new Map<string, BoxNode>(Object.entries(maybeObject))
-  }
-
-  if (box.isUnresolvable(maybeObject) || box.isConditional(maybeObject)) {
-    return new Map<string, BoxNode>()
   }
 
   if (box.isMap(maybeObject)) {

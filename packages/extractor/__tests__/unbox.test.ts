@@ -20,7 +20,6 @@ test('unbox big theme', () => {
 
   expect(unboxResult).toMatchInlineSnapshot(`
     {
-      "conditions": [],
       "raw": [
         {
           "conditions": {
@@ -4156,7 +4155,6 @@ test('unbox big theme', () => {
           },
         },
       ],
-      "spreadConditions": [],
     }
   `)
 })
@@ -4223,14 +4221,12 @@ test('unbox with unresolvable spread', () => {
 
   expect(unbox(css)).toMatchInlineSnapshot(`
     {
-      "conditions": [],
       "raw": [
         {
           "backgroundColor": "blue.100",
           "color": "red",
         },
       ],
-      "spreadConditions": [],
     }
   `)
 
@@ -4280,7 +4276,15 @@ test('unbox with unresolvable spread', () => {
         "paddingInline": "4",
         "style": {},
       },
-      "spreadConditions": [],
+      "unresolved": [
+        {
+          "column": 29,
+          "line": 8,
+          "node": "Identifier",
+          "type": "unresolvable",
+          "value": undefined,
+        },
+      ],
     }
   `)
 })
@@ -4296,7 +4300,6 @@ test('unbox', () => {
   const css = (extracted.get('css')?.queryList[0].box as BoxNodeArray).value[0]
   expect(unbox(css)).toMatchInlineSnapshot(`
     {
-      "conditions": [],
       "raw": {
         "color": "red",
         "debug": true,
@@ -4304,7 +4307,6 @@ test('unbox', () => {
         "my": 6,
         "padding": 4,
       },
-      "spreadConditions": [],
     }
   `)
 })
@@ -4321,12 +4323,10 @@ test('unbox with spread', () => {
   const css = (extracted.get('css')?.queryList[0].box as BoxNodeArray).value[0]
   expect(unbox(css)).toMatchInlineSnapshot(`
     {
-      "conditions": [],
       "raw": {
         "backgroundColor": "green.100",
         "color": "rgba(75,173,58,0.50)",
       },
-      "spreadConditions": [],
     }
   `)
 })
@@ -4481,6 +4481,29 @@ test('unbox with conditions', () => {
               },
             },
           },
+        },
+      ],
+      "unresolved": [
+        {
+          "column": 19,
+          "line": 22,
+          "node": "Identifier",
+          "type": "unresolvable",
+          "value": undefined,
+        },
+        {
+          "column": 28,
+          "line": 34,
+          "node": "Identifier",
+          "type": "unresolvable",
+          "value": undefined,
+        },
+        {
+          "column": 13,
+          "line": 10,
+          "node": "Identifier",
+          "type": "unresolvable",
+          "value": undefined,
         },
       ],
     }
