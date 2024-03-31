@@ -1,4 +1,4 @@
-import type { BoxNodeArray, BoxNodeLiteral, BoxNodeMap, Unboxed } from '@pandacss/extractor'
+import type { BoxNodeArray, BoxNodeLiteral, BoxNodeMap, BoxNodeUnresolvable, Unboxed } from '@pandacss/extractor'
 
 export interface ResultItem {
   name?: string
@@ -15,6 +15,7 @@ export interface ParserResultInterface {
   sva: Set<ResultItem>
   recipe: Map<string, Set<ResultItem>>
   pattern: Map<string, Set<ResultItem>>
+  unresolveds: Set<BoxNodeUnresolvable>
   filePath: string | undefined
   isEmpty: () => boolean
   toArray: () => Array<ResultItem>

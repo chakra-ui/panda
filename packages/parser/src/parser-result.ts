@@ -1,4 +1,5 @@
 import type { ParserOptions } from '@pandacss/core'
+import type { BoxNodeUnresolvable } from '@pandacss/extractor'
 import { PandaError, getOrCreateSet } from '@pandacss/shared'
 import type { ParserResultInterface, ResultItem } from '@pandacss/types'
 
@@ -13,6 +14,7 @@ export class ParserResult implements ParserResultInterface {
   recipe = new Map<string, Set<ResultItem>>()
   pattern = new Map<string, Set<ResultItem>>()
 
+  unresolveds = new Set<BoxNodeUnresolvable>()
   filePath: string | undefined
   encoder: ParserOptions['encoder']
 

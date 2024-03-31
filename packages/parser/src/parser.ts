@@ -122,7 +122,7 @@ export function createParser(context: ParserOptions) {
       flags: { skipTraverseFiles: true },
     })
 
-    const unresolveds = new Set<BoxNodeUnresolvable>()
+    const unresolveds = parserResult.unresolveds
 
     const getData = (box: BoxNode | undefined): ReturnType<typeof combineResult> => {
       if (!box) return undefinedFallback
