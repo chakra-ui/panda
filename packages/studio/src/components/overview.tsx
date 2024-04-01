@@ -44,7 +44,7 @@ export default function Overview() {
         <Logo />
 
         <div className={vstack({ my: '10', textAlign: 'center' })}>
-          <Yums className={css({ fontSize: '24rem' })} />
+          <Yums className={css({ fontSize: '24rem', h: '300px' })} />
           <span className={css({ fontSize: '7xl', letterSpacing: 'tighter', fontWeight: 'medium' })}>Panda Studio</span>
           <p className={css({ fontSize: '2xl' })}>Live documentation for your design tokens (colors, fonts, etc.)</p>
         </div>
