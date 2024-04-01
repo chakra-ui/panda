@@ -5,6 +5,8 @@ import { TokenContent } from '../components/token-content'
 import { TokenGroup } from '../components/token-group'
 import { Input, Textarea } from './input'
 import { StickyTop } from './sticky-top'
+import { EmptyState } from './empty-state'
+import { TypographyIcon, XMarkIcon } from './icons'
 
 interface FontTokensProps {
   text?: string
@@ -21,6 +23,14 @@ export default function FontTokens(props: FontTokensProps) {
 
   const handleChange = (event: React.ChangeEvent<any>) => {
     setText(event.target.value)
+  }
+
+  if (fontTokens.length === 0) {
+    return (
+      <EmptyState title="No Tokens" icon={<TypographyIcon />}>
+        The panda config does not contain any `{token}` tokens
+      </EmptyState>
+    )
   }
 
   return (

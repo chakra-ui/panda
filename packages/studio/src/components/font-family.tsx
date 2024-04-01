@@ -1,6 +1,8 @@
 import * as React from 'react'
 import { Flex, HStack, Square, Stack, panda } from '../../styled-system/jsx'
 import * as context from '../lib/panda-context'
+import { EmptyState } from './empty-state'
+import { TypographyIcon } from './icons'
 
 const fonts = context.getTokens('fonts')
 
@@ -9,6 +11,14 @@ const symbols = Array.from({ length: 10 }, (_, i) => String.fromCharCode(48 + i)
 const specials = ['@', '#', '$', '%', '&', '!', '?', '+', '-']
 
 export const FontFamily = () => {
+  if (fonts.length === 0) {
+    return (
+      <EmptyState title="No Tokens" icon={<TypographyIcon />}>
+        The panda config does not contain any font family
+      </EmptyState>
+    )
+  }
+
   return (
     <Stack gap="10">
       {fonts.map((font) => (
