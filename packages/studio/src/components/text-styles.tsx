@@ -5,6 +5,7 @@ import { EmptyState } from './empty-state'
 import { TextStylesIcon } from './icons'
 import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
+import type { Dict } from '../../styled-system/types'
 
 export default function TextStyles() {
   const textStyles = Object.entries(context.textStyles)
@@ -18,7 +19,7 @@ export default function TextStyles() {
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
               </panda.div>
-              <panda.div flex="auto" my="3" style={styles} truncate>
+              <panda.div flex="auto" my="3" style={removeEscapeHatchSyntax(styles)} truncate>
                 Panda textStyles are time saving
               </panda.div>
             </panda.div>
@@ -30,5 +31,17 @@ export default function TextStyles() {
         )}
       </TokenContent>
     </TokenGroup>
+  )
+}
+
+const removeEscapeHatchSyntax = (styles: Dict) => {
+  return Object.fromEntries(
+    Object.entries(styles).map(([key, value]) => {
+      if (typeof value === 'string' && value[0] === '[' && value[value.length - 1] === ']') {
+        return [key, value.slice(1, -1)]
+      }
+
+      return [key, value]
+    }),
   )
 }
