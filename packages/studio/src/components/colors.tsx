@@ -27,12 +27,12 @@ export default function Colors() {
             <SemanticColorDisplay
               value={colors.base.value}
               condition="base"
-              token={getColorFromReference(colors.extensions.conditions.base)}
+              token={getColorFromReference(colors.extensions.conditions!.base)}
             />
             <SemanticColorDisplay
-              value={colors[colors.extensions.condition].value}
-              condition={colors.extensions.condition}
-              token={getColorFromReference(colors.extensions.conditions[colors.extensions.condition])}
+              value={colors[colors.extensions.condition!].value}
+              condition={colors.extensions.condition!}
+              token={getColorFromReference(colors.extensions.conditions![colors.extensions.condition!])}
             />
           </HStack>
 
