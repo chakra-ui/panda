@@ -1,0 +1,319 @@
+---
+title: Using Nx monorepo and Remix
+description: Easily use Panda with a Nx monorepo and a Remix application.
+---
+
+# Using Panda CSS with an Nx Monorepo and Remix
+
+Setting up Panda CSS in a [Nx monorepo](https://nx.dev/getting-started/intro) means you can use Panda CSS with any supported framework of Panda CSS that is also supported by Nx.
+This guide will showcase setting up Panda CSS in an integated Nx monorepo using Remix.
+The guide showcases the setup for NX 18+.
+
+
+## Start a new project
+
+<Steps>
+
+### Create NX monorepo project
+
+To get started, we will need to have an integrated Nx monorepo prepared.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dlx create-nx-workspace@latest --pm pnpm
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx create-nx-workspace@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dlx create-nx-workspace@latest --pm yarn
+    ```
+  </Tab>
+</Tabs>
+
+You will be asked a few questions, answer them as follows:
+
+```
+? Where would you like to create your workspace? test-panda
+? Which stack do you want to use?  None
+? Package-based monorepo, integrated monorepo, or standalone project? Integrated Monorepo:  Nx creates a monorepo that contains multiple projects.
+? Set up CI with caching, distribution and test deflaking...  Skip for now
+? Would you like remote caching to make your build faster?  Skip for now
+```
+
+Once all is complete then change into the created directory
+
+```bash
+cd test-panda
+```
+
+### Add Remix project
+
+Add a new Remix project using the official [Nx](https://nx.dev/nx-api/remix) CLI.
+
+
+Firstly, add the Nx remix plugin.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'nx']}>
+  <Tab>
+    ```bash
+    pnpm nx add @nx/remix
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx nx add @nx/remix
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn nx add @nx/remix
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    nx add @nx/remix
+    ```
+  </Tab>
+</Tabs>
+
+Then, add a new Remix application
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'nx']}>
+  <Tab>
+    ```bash
+    pnpm nx g @nx/remix:app remix-app --directory=apps/remix-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx nx g @nx/remix:app remix-app --directory=apps/remix-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn nx g @nx/remix:app remix-app --directory=apps/remix-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    nx g @nx/remix:app remix-app --directory=apps/remix-app
+    ```
+  </Tab>
+</Tabs>
+
+
+You will be asked a few questions, answer them as follows:
+
+```
+? What unit test runner should be used? vitest
+? Which E2E test runner would you like to use? none
+? What should be the project name and where should it be generated?  As provided: Name: remix-app  | Root: apps/remix-app
+```
+
+### Install Panda
+
+Install panda and create your `apps/remix-app/panda.config.ts` file.
+
+> Note: please take special notice of the  option `--cwd apps/remix-app`. This is important to install Panda CSS in the target application
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev
+    pnpm panda init --postcss --out-extension js --cwd apps/remix-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init --postcss --out-extension js --cwd apps/remix-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init --postcss --out-extension js --cwd apps/remix-app
+    ```
+  </Tab>
+</Tabs>
+
+### Modify the application project.json
+
+Add a `panda-prepare` target to `apps/remix-app/project.json`. This can enable you to build the Panda CSS folder independently.
+
+```diff {3-12} filename="apps/remix-app/project.json"
+{
+  "targets": {
+    "panda-prepare": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "pnpm panda codegen --cwd apps/remix-app"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "nx run-many -t panda-prepare --verbose"
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+- the `--verbose` flag is optional
+
+> This step ensures that the panda output directory is regenerated after each dependency installation for projects that define the `panda-prepare` task. So you can add the output directory to your `.gitignore` file and not worry about it.
+
+
+### Configure the content
+
+Make sure that all of the paths of your Remix components are included in the `include` section of the `apps/remix-app/panda.config.ts` file.
+
+```js {5, 11} filename="apps/remix-app/panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ // File extension for generated javascript files
+ outExtension: 'js',
+
+ // Whether to use css reset
+ preflight: true,
+
+ // Where to look for your css declarations
+ include: ["./app/routes/**/*.{ts,tsx,js,jsx}", "./app/components/**/*.{ts,tsx,js,jsx}"],
+
+ // Files to exclude
+ exclude: [],
+
+ // The output directory for your css system
+ outdir: "styled-system",
+})
+```
+
+### Configure the entry CSS with layers
+
+Create a new file `apps/remix-app/app/index.css` and add the following content:
+
+```css filename="apps/remix-app/app/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+Import the `index.css` file in your `apps/remix-app/app/root.tsx` file and add the `styles` variable to the `links` function.
+
+> Please ensure `@remix-run/css-bundle` is installed in the root `package.json` as a dependency and also added to `apps/remix-app/package.json`
+
+```tsx filename="apps/remix-app/app/root.tsx" {1-2,12-17}
+import { cssBundleHref } from "@remix-run/css-bundle";
+import type { LinksFunction, LinkDescriptor } from "@remix-run/node";
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+} from "@remix-run/react";
+
+import styles from "./index.css"
+
+export const links: LinksFunction = () => [
+  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
+  { rel: "stylesheet", href: styles } as LinkDescriptor,
+];
+
+export default function App() {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  );
+}
+```
+
+### Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'nx']}>
+  <Tab>
+    ```bash
+    pnpm nx run remix-app:dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx nx run remix-app:dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn nx run remix-app:dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    nx run remix-app:dev
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+Here is the snippet of code that you can use in your `apps/remix-app/routes/_index.tsx` file.
+
+```tsx filename="apps/remix-app/routes/_index.tsx" {2,7}
+import NxWelcome from '../nx-welcome';
+import { css } from "styled-system/css";
+
+export default function Index() {
+  return (
+    <div>
+      <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
+      <NxWelcome title={'remix-app'} />
+    </div>
+  );
+}
+```
+</Steps>
+
+## Troubleshooting
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `apps/remix-app/tsconfig.app.json` file:
+
+```json filename="apps/remix-app/tsconfig.app.json"
+{
+  // ...
+  "include":  [
+    "styled-system",
+    // ...
+  ]
+}
+```

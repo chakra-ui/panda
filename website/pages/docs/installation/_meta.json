@@ -14,5 +14,6 @@
   "preact": "Preact",
   "solidjs": "Solid.js",
   "svelte": "Svelte",
-  "storybook": "Storybook"
+  "storybook": "Storybook",
+  "nx-monorepo-remix": "Nx Monorepo: Remix"
 }
