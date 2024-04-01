@@ -10,7 +10,7 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ### Fixed
 
-- - Fix className collisions between utilities by using unique class names per property in the default preset.
+- Fix className collisions between utilities by using unique class names per property in the default preset.
 
 - Fix a bug where some styles would be grouped together in the same rule, even if they were not related to each other.
 
