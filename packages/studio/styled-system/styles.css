@@ -707,7 +707,6 @@
 }
 
 @layer utilities{
-
   .d_flex {
     display: flex;
 }
@@ -955,6 +954,10 @@
 
   .my_10 {
     margin-block: var(--spacing-10);
+}
+
+  .h_300px {
+    height: 300px;
 }
 
   .tracking_tighter {
