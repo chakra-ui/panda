@@ -20,7 +20,7 @@
   "devDependencies": {
     "@builder.io/qwik": "1.4.5",
     "@preact/preset-vite": "2.8.2",
-    "@solidjs/testing-library": "0.8.6",
+    "@solidjs/testing-library": "0.8.7",
     "@testing-library/jest-dom": "6.4.2",
     "@testing-library/preact": "3.2.3",
     "@testing-library/react": "14.2.2",

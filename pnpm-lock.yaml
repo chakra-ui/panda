@@ -868,8 +868,8 @@ importers:
         specifier: 2.8.2
         version: 2.8.2(@babel/core@7.23.9)(preact@10.19.5)(vite@5.1.3)
       '@solidjs/testing-library':
-        specifier: 0.8.6
-        version: 0.8.6(@solidjs/router@0.12.3)(solid-js@1.8.15)
+        specifier: 0.8.7
+        version: 0.8.7(solid-js@1.8.15)
       '@testing-library/jest-dom':
         specifier: 6.4.2
         version: 6.4.2(vitest@1.3.0)
@@ -8219,22 +8219,16 @@ packages:
     resolution: {integrity: sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==}
     dev: false
 
-  /@solidjs/router@0.12.3(solid-js@1.8.15):
-    resolution: {integrity: sha512-s5HunmOt5BXt514kHD9aDbiQ6la33297h9XKUGuMKpzJD1wgXhWTm+HmtG3SXirRfGc0UJ3yDDhNoAD8b2Om1w==}
-    peerDependencies:
-      solid-js: ^1.8.6
-    dependencies:
-      solid-js: 1.8.15
-    dev: true
-
-  /@solidjs/testing-library@0.8.6(@solidjs/router@0.12.3)(solid-js@1.8.15):
-    resolution: {integrity: sha512-MnDGfUw38SjE+lmCDZ44HeZq5WbDU7s/BTa7uvqv55GKatddoWiJmHanUAbuEtmwMdEv+fFQQzftkqrFXEn1BQ==}
+  /@solidjs/testing-library@0.8.7(solid-js@1.8.15):
+    resolution: {integrity: sha512-1Wl6Ewk+JyxQVzfG95KHa3H7hmCrdNcLigRgm0ih8fEBhbnVZakGoU2uizAWi5/8biwGwV9OQqW+bJO+nnJZ1Q==}
     engines: {node: '>= 14'}
     peerDependencies:
       '@solidjs/router': '>=0.9.0'
       solid-js: '>=1.0.0'
+    peerDependenciesMeta:
+      '@solidjs/router':
+        optional: true
     dependencies:
-      '@solidjs/router': 0.12.3(solid-js@1.8.15)
       '@testing-library/dom': 9.3.4
       solid-js: 1.8.15
     dev: true
