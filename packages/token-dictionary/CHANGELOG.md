@@ -34,7 +34,7 @@
 
   ```ts
   // panda.config.ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
@@ -43,15 +43,15 @@
       extend: {
         tokens: {
           colors: {
-            text: { value: "blue" },
+            text: { value: 'blue' },
           },
         },
         semanticTokens: {
           colors: {
             body: {
               value: {
-                base: "{colors.blue.600}",
-                _osDark: "{colors.blue.400}",
+                base: '{colors.blue.600}',
+                _osDark: '{colors.blue.400}',
               },
             },
           },
@@ -63,16 +63,16 @@
       primary: {
         tokens: {
           colors: {
-            text: { value: "red" },
+            text: { value: 'red' },
           },
         },
         semanticTokens: {
           colors: {
-            muted: { value: "{colors.red.200}" },
+            muted: { value: '{colors.red.200}' },
             body: {
               value: {
-                base: "{colors.red.600}",
-                _osDark: "{colors.red.400}",
+                base: '{colors.red.600}',
+                _osDark: '{colors.red.400}',
               },
             },
           },
@@ -81,23 +81,23 @@
       secondary: {
         tokens: {
           colors: {
-            text: { value: "blue" },
+            text: { value: 'blue' },
           },
         },
         semanticTokens: {
           colors: {
-            muted: { value: "{colors.blue.200}" },
+            muted: { value: '{colors.blue.200}' },
             body: {
               value: {
-                base: "{colors.blue.600}",
-                _osDark: "{colors.blue.400}",
+                base: '{colors.blue.600}',
+                _osDark: '{colors.blue.400}',
               },
             },
           },
         },
       },
     },
-  });
+  })
   ```
 
   ### Pregenerating themes
@@ -107,14 +107,14 @@
 
   ```ts
   // panda.config.ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     staticCss: {
-      themes: ["primary", "secondary"],
+      themes: ['primary', 'secondary'],
     },
-  });
+  })
   ```
 
   This will generate the following CSS:
@@ -126,7 +126,7 @@
       --colors-body: var(--colors-blue-600);
     }
 
-    [data-panda-theme="primary"] {
+    [data-panda-theme='primary'] {
       --colors-text: red;
       --colors-muted: var(--colors-red-200);
       --colors-body: var(--colors-red-600);
@@ -137,7 +137,7 @@
         --colors-body: var(--colors-blue-400);
       }
 
-      [data-panda-theme="primary"] {
+      [data-panda-theme='primary'] {
         --colors-body: var(--colors-red-400);
       }
     }
@@ -168,9 +168,9 @@
   Dynamically import a theme using its name:
 
   ```ts
-  import { getTheme } from "../styled-system/themes";
+  import { getTheme } from '../styled-system/themes'
 
-  const theme = await getTheme("red");
+  const theme = await getTheme('red')
   //    ^? {
   //     name: "red";
   //     id: string;
@@ -181,10 +181,10 @@
   Inject the theme styles into the DOM:
 
   ```ts
-  import { injectTheme } from "../styled-system/themes";
+  import { injectTheme } from '../styled-system/themes'
 
-  const theme = await getTheme("red");
-  injectTheme(document.documentElement, theme); // this returns the injected style element
+  const theme = await getTheme('red')
+  injectTheme(document.documentElement, theme) // this returns the injected style element
   ```
 
   ***
@@ -193,62 +193,54 @@
 
   ```tsx
   // app/layout.tsx
-  import { Inter } from "next/font/google";
-  import { cookies } from "next/headers";
-  import { ThemeName, getTheme } from "../../styled-system/themes";
+  import { Inter } from 'next/font/google'
+  import { cookies } from 'next/headers'
+  import { ThemeName, getTheme } from '../../styled-system/themes'
 
-  export default async function RootLayout({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) {
-    const store = cookies();
-    const themeName = store.get("theme")?.value as ThemeName;
-    const theme = themeName && (await getTheme(themeName));
+  export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const store = cookies()
+    const themeName = store.get('theme')?.value as ThemeName
+    const theme = themeName && (await getTheme(themeName))
 
     return (
       <html lang="en" data-panda-theme={themeName ? themeName : undefined}>
         {themeName && (
           <head>
-            <style
-              type="text/css"
-              id={theme.id}
-              dangerouslySetInnerHTML={{ __html: theme.css }}
-            />
+            <style type="text/css" id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />
           </head>
         )}
         <body>{children}</body>
       </html>
-    );
+    )
   }
 
   // app/page.tsx
-  import { getTheme, injectTheme } from "../../styled-system/themes";
+  import { getTheme, injectTheme } from '../../styled-system/themes'
 
   export default function Home() {
     return (
       <>
         <button
           onClick={async () => {
-            const current = document.documentElement.dataset.pandaTheme;
-            const next = current === "primary" ? "secondary" : "primary";
-            const theme = await getTheme(next);
-            setCookie("theme", next, 7);
-            injectTheme(document.documentElement, theme);
+            const current = document.documentElement.dataset.pandaTheme
+            const next = current === 'primary' ? 'secondary' : 'primary'
+            const theme = await getTheme(next)
+            setCookie('theme', next, 7)
+            injectTheme(document.documentElement, theme)
           }}
         >
           swap theme
         </button>
       </>
-    );
+    )
   }
 
   // Set a Cookie
   function setCookie(cName: string, cValue: any, expDays: number) {
-    let date = new Date();
-    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
+    let date = new Date()
+    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000)
+    const expires = 'expires=' + date.toUTCString()
+    document.cookie = cName + '=' + cValue + '; ' + expires + '; path=/'
   }
   ```
 
@@ -257,18 +249,18 @@
   Finally, you can create a theme contract to ensure that all themes have the same structure:
 
   ```ts
-  import { defineThemeContract } from "@pandacss/dev";
+  import { defineThemeContract } from '@pandacss/dev'
 
   const defineTheme = defineThemeContract({
     tokens: {
       colors: {
-        red: { value: "" }, // theme implementations must have a red color
+        red: { value: '' }, // theme implementations must have a red color
       },
     },
-  });
+  })
 
   defineTheme({
-    selector: ".theme-secondary",
+    selector: '.theme-secondary',
     tokens: {
       colors: {
         // ^^^^   Property 'red' is missing in type '{}' but required in type '{ red: { value: string; }; }'
@@ -277,7 +269,7 @@
         // red: { value: 'red' },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -285,30 +277,30 @@
 - 3af3940: Fix an issue when using a semantic token with one (but not all) condition using the color opacity modifier
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     theme: {
       extend: {
         tokens: {
           colors: {
-            black: { value: "black" },
-            white: { value: "white" },
+            black: { value: 'black' },
+            white: { value: 'white' },
           },
         },
         semanticTokens: {
           colors: {
             fg: {
               value: {
-                base: "{colors.black/87}",
-                _dark: "{colors.white}", // <- this was causing a weird issue
+                base: '{colors.black/87}',
+                _dark: '{colors.white}', // <- this was causing a weird issue
               },
             },
           },
         },
       },
     },
-  });
+  })
   ```
 
 - Updated dependencies [861a280]
@@ -326,20 +318,20 @@
 - f2fdc48: Fix negative `semanticTokens` generation
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     tokens: {
       spacing: {
-        1: { value: "1rem" },
+        1: { value: '1rem' },
       },
     },
     semanticTokens: {
       spacing: {
-        lg: { value: "{spacing.1}" },
+        lg: { value: '{spacing.1}' },
       },
     },
-  });
+  })
   ```
 
   Will now correctly generate the negative value:
@@ -380,18 +372,18 @@
 - d4942e0: Fix the color opacity modifier syntax for `semanticTokens` inside of conditions
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     conditions: {
-      light: ".light &",
-      dark: ".dark &",
+      light: '.light &',
+      dark: '.dark &',
     },
     theme: {
       tokens: {
         colors: {
-          blue: { 500: { value: "blue" } },
-          green: { 500: { value: "green" } },
+          blue: { 500: { value: 'blue' } },
+          green: { 500: { value: 'green' } },
         },
         opacity: {
           half: { value: 0.5 },
@@ -401,15 +393,15 @@
         colors: {
           secondary: {
             value: {
-              base: "red",
-              _light: "{colors.blue.500/32}", // <-- wasn't working as expected
-              _dark: "{colors.green.500/half}",
+              base: 'red',
+              _light: '{colors.blue.500/32}', // <-- wasn't working as expected
+              _dark: '{colors.green.500/half}',
             },
           },
         },
       },
     },
-  });
+  })
   ```
 
   will now correctly generate the following CSS:
@@ -424,19 +416,11 @@
     }
 
     .light {
-      --colors-secondary: color-mix(
-        in srgb,
-        var(--colors-blue-500) 32%,
-        transparent
-      );
+      --colors-secondary: color-mix(in srgb, var(--colors-blue-500) 32%, transparent);
     }
 
     .dark {
-      --colors-secondary: color-mix(
-        in srgb,
-        var(--colors-green-500) 50%,
-        transparent
-      );
+      --colors-secondary: color-mix(in srgb, var(--colors-green-500) 50%, transparent);
     }
   }
   ```
@@ -459,16 +443,16 @@
   ```ts
   // runtime usage
 
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
-  css({ bg: "{colors.blue.300/70}" });
+  css({ bg: '{colors.blue.300/70}' })
   // => @layer utilities {
   //    .bg_token\(colors\.blue\.300\/70\) {
   //      background: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
   //    }
   //  }
 
-  css({ bg: "token(colors.blue.300/70)" });
+  css({ bg: 'token(colors.blue.300/70)' })
   // => @layer utilities {
   //    .bg_token\(colors\.blue\.300\/70\) {
   //      background: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
@@ -478,37 +462,33 @@
 
   ```ts
   // build-time usage
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     theme: {
       tokens: {
         colors: {
           blue: {
-            300: { value: "#00f" },
+            300: { value: '#00f' },
           },
         },
       },
       semanticTokens: {
         colors: {
           primary: {
-            value: "{colors.blue.300/70}",
+            value: '{colors.blue.300/70}',
           },
         },
       },
     },
-  });
+  })
   ```
 
   ```css
   @layer tokens {
     :where(:root, :host) {
       --colors-blue-300: #00f;
-      --colors-primary: color-mix(
-        in srgb,
-        var(--colors-blue-300) 70%,
-        transparent
-      );
+      --colors-primary: color-mix(in srgb, var(--colors-blue-300) 70%, transparent);
     }
   }
   ```
@@ -545,7 +525,7 @@
   Given this config:
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
@@ -556,13 +536,13 @@
             bg: {
               primary: {
                 DEFAULT: {
-                  value: "{colors.red.500}",
+                  value: '{colors.red.500}',
                 },
                 base: {
-                  value: "{colors.green.500}",
+                  value: '{colors.green.500}',
                 },
                 hover: {
-                  value: "{colors.yellow.300}",
+                  value: '{colors.yellow.300}',
                 },
               },
             },
@@ -570,17 +550,17 @@
         },
       },
     },
-  });
+  })
   ```
 
   And this style usage:
 
   ```ts
-  import { css } from "styled-system/css";
+  import { css } from 'styled-system/css'
 
   css({
-    colorPalette: "bg.primary",
-  });
+    colorPalette: 'bg.primary',
+  })
   ```
 
   This is the difference in the generated css
@@ -694,10 +674,10 @@
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    "@container (min-width: {sizes.4xl})": {
-      color: "green",
+    '@container (min-width: {sizes.4xl})': {
+      color: 'green',
     },
-  });
+  })
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -776,13 +756,13 @@
         // add aspect ratio tokens
         tokens: {
           aspectRatios: {
-            "1:1": "1",
-            "16:9": "16/9",
+            '1:1': '1',
+            '16:9': '16/9',
           },
         },
       },
     },
-  });
+  })
   ```
 
   Here's what the default aspect ratio tokens in the base preset looks like:
@@ -843,11 +823,11 @@
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   const styles = css({
-    border: "2px solid {colors.primary}",
-  });
+    border: '2px solid {colors.primary}',
+  })
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -867,18 +847,18 @@
   ```jsx
   const styles = css({
     // token reference syntax
-    border: "2px solid {colors.primary}",
+    border: '2px solid {colors.primary}',
     // token function syntax
-    border: "2px solid token(colors.primary)",
-  });
+    border: '2px solid token(colors.primary)',
+  })
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: "2px solid token(colors.primary, red)",
-  });
+    border: '2px solid token(colors.primary, red)',
+  })
   ```
 
 ### Patch Changes
@@ -1126,18 +1106,18 @@
         colors: {
           button: {
             dark: {
-              value: "navy",
+              value: 'navy',
             },
             light: {
               DEFAULT: {
-                value: "skyblue",
+                value: 'skyblue',
               },
               accent: {
                 DEFAULT: {
-                  value: "cyan",
+                  value: 'cyan',
                 },
                 secondary: {
-                  value: "blue",
+                  value: 'blue',
                 },
               },
             },
@@ -1145,50 +1125,50 @@
         },
       },
     },
-  };
+  }
   ```
 
   You can now use the root `button` color palette and its values directly:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button",
-          color: "colorPalette.light",
-          backgroundColor: "colorPalette.dark",
+          colorPalette: 'button',
+          color: 'colorPalette.light',
+          backgroundColor: 'colorPalette.dark',
           _hover: {
-            color: "colorPalette.light.accent",
-            background: "colorPalette.light.accent.secondary",
+            color: 'colorPalette.light.accent',
+            background: 'colorPalette.light.accent.secondary',
           },
         })}
       >
         Root color palette
       </button>
-    );
-  };
+    )
+  }
   ```
 
   Or you can use any deeply nested property (e.g. `button.light.accent`) as a root color palette:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button.light.accent",
-          color: "colorPalette.secondary",
+          colorPalette: 'button.light.accent',
+          color: 'colorPalette.secondary',
         })}
       >
         Nested color palette leaf
       </button>
-    );
-  };
+    )
+  }
   ```
 
 ### Patch Changes
@@ -1403,11 +1383,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    "codegen:prepare": ({ artifacts, changed }) => {
+    'codegen:prepare': ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-});
+})
 ```
 
 - d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
@@ -1424,11 +1404,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [74485ef1]
@@ -1458,10 +1438,10 @@ export default defineConfig({
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    "@container (min-width: {sizes.4xl})": {
-      color: "green",
+    '@container (min-width: {sizes.4xl})': {
+      color: 'green',
     },
-  });
+  })
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -1540,13 +1520,13 @@ export default defineConfig({
         // add aspect ratio tokens
         tokens: {
           aspectRatios: {
-            "1:1": "1",
-            "16:9": "16/9",
+            '1:1': '1',
+            '16:9': '16/9',
           },
         },
       },
     },
-  });
+  })
   ```
 
   Here's what the default aspect ratio tokens in the base preset looks like:
@@ -1607,11 +1587,11 @@ export default defineConfig({
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   const styles = css({
-    border: "2px solid {colors.primary}",
-  });
+    border: '2px solid {colors.primary}',
+  })
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -1631,18 +1611,18 @@ export default defineConfig({
   ```jsx
   const styles = css({
     // token reference syntax
-    border: "2px solid {colors.primary}",
+    border: '2px solid {colors.primary}',
     // token function syntax
-    border: "2px solid token(colors.primary)",
-  });
+    border: '2px solid token(colors.primary)',
+  })
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: "2px solid token(colors.primary, red)",
-  });
+    border: '2px solid token(colors.primary, red)',
+  })
   ```
 
 ### Patch Changes
@@ -1890,18 +1870,18 @@ export default defineConfig({
         colors: {
           button: {
             dark: {
-              value: "navy",
+              value: 'navy',
             },
             light: {
               DEFAULT: {
-                value: "skyblue",
+                value: 'skyblue',
               },
               accent: {
                 DEFAULT: {
-                  value: "cyan",
+                  value: 'cyan',
                 },
                 secondary: {
-                  value: "blue",
+                  value: 'blue',
                 },
               },
             },
@@ -1909,50 +1889,50 @@ export default defineConfig({
         },
       },
     },
-  };
+  }
   ```
 
   You can now use the root `button` color palette and its values directly:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button",
-          color: "colorPalette.light",
-          backgroundColor: "colorPalette.dark",
+          colorPalette: 'button',
+          color: 'colorPalette.light',
+          backgroundColor: 'colorPalette.dark',
           _hover: {
-            color: "colorPalette.light.accent",
-            background: "colorPalette.light.accent.secondary",
+            color: 'colorPalette.light.accent',
+            background: 'colorPalette.light.accent.secondary',
           },
         })}
       >
         Root color palette
       </button>
-    );
-  };
+    )
+  }
   ```
 
   Or you can use any deeply nested property (e.g. `button.light.accent`) as a root color palette:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button.light.accent",
-          color: "colorPalette.secondary",
+          colorPalette: 'button.light.accent',
+          color: 'colorPalette.secondary',
         })}
       >
         Nested color palette leaf
       </button>
-    );
-  };
+    )
+  }
   ```
 
 ### Patch Changes
@@ -2162,7 +2142,7 @@ Will now allow you to use the following syntax for token path:
   Given this config:
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
@@ -2173,13 +2153,13 @@ Will now allow you to use the following syntax for token path:
             bg: {
               primary: {
                 DEFAULT: {
-                  value: "{colors.red.500}",
+                  value: '{colors.red.500}',
                 },
                 base: {
-                  value: "{colors.green.500}",
+                  value: '{colors.green.500}',
                 },
                 hover: {
-                  value: "{colors.yellow.300}",
+                  value: '{colors.yellow.300}',
                 },
               },
             },
@@ -2187,17 +2167,17 @@ Will now allow you to use the following syntax for token path:
         },
       },
     },
-  });
+  })
   ```
 
   And this style usage:
 
   ```ts
-  import { css } from "styled-system/css";
+  import { css } from 'styled-system/css'
 
   css({
-    colorPalette: "bg.primary",
-  });
+    colorPalette: 'bg.primary',
+  })
   ```
 
   This is the difference in the generated css
@@ -2311,10 +2291,10 @@ Will now allow you to use the following syntax for token path:
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    "@container (min-width: {sizes.4xl})": {
-      color: "green",
+    '@container (min-width: {sizes.4xl})': {
+      color: 'green',
     },
-  });
+  })
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -2393,13 +2373,13 @@ Will now allow you to use the following syntax for token path:
         // add aspect ratio tokens
         tokens: {
           aspectRatios: {
-            "1:1": "1",
-            "16:9": "16/9",
+            '1:1': '1',
+            '16:9': '16/9',
           },
         },
       },
     },
-  });
+  })
   ```
 
   Here's what the default aspect ratio tokens in the base preset looks like:
@@ -2460,11 +2440,11 @@ Will now allow you to use the following syntax for token path:
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   const styles = css({
-    border: "2px solid {colors.primary}",
-  });
+    border: '2px solid {colors.primary}',
+  })
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -2484,18 +2464,18 @@ Will now allow you to use the following syntax for token path:
   ```jsx
   const styles = css({
     // token reference syntax
-    border: "2px solid {colors.primary}",
+    border: '2px solid {colors.primary}',
     // token function syntax
-    border: "2px solid token(colors.primary)",
-  });
+    border: '2px solid token(colors.primary)',
+  })
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: "2px solid token(colors.primary, red)",
-  });
+    border: '2px solid token(colors.primary, red)',
+  })
   ```
 
 ### Patch Changes
@@ -2743,18 +2723,18 @@ Will now allow you to use the following syntax for token path:
         colors: {
           button: {
             dark: {
-              value: "navy",
+              value: 'navy',
             },
             light: {
               DEFAULT: {
-                value: "skyblue",
+                value: 'skyblue',
               },
               accent: {
                 DEFAULT: {
-                  value: "cyan",
+                  value: 'cyan',
                 },
                 secondary: {
-                  value: "blue",
+                  value: 'blue',
                 },
               },
             },
@@ -2762,50 +2742,50 @@ Will now allow you to use the following syntax for token path:
         },
       },
     },
-  };
+  }
   ```
 
   You can now use the root `button` color palette and its values directly:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button",
-          color: "colorPalette.light",
-          backgroundColor: "colorPalette.dark",
+          colorPalette: 'button',
+          color: 'colorPalette.light',
+          backgroundColor: 'colorPalette.dark',
           _hover: {
-            color: "colorPalette.light.accent",
-            background: "colorPalette.light.accent.secondary",
+            color: 'colorPalette.light.accent',
+            background: 'colorPalette.light.accent.secondary',
           },
         })}
       >
         Root color palette
       </button>
-    );
-  };
+    )
+  }
   ```
 
   Or you can use any deeply nested property (e.g. `button.light.accent`) as a root color palette:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button.light.accent",
-          color: "colorPalette.secondary",
+          colorPalette: 'button.light.accent',
+          color: 'colorPalette.secondary',
         })}
       >
         Nested color palette leaf
       </button>
-    );
-  };
+    )
+  }
   ```
 
 ### Patch Changes
@@ -3020,11 +3000,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    "codegen:prepare": ({ artifacts, changed }) => {
+    'codegen:prepare': ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-});
+})
 ```
 
 - d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
@@ -3041,11 +3021,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [74485ef1]
@@ -3075,10 +3055,10 @@ export default defineConfig({
   css({
     // ✅ this is fine now, will resolve to something like
     // `@container (min-width: 56em)`
-    "@container (min-width: {sizes.4xl})": {
-      color: "green",
+    '@container (min-width: {sizes.4xl})': {
+      color: 'green',
     },
-  });
+  })
   ```
 
   Fix an issue where the curly token references would not be escaped if the token path was not found.
@@ -3157,13 +3137,13 @@ export default defineConfig({
         // add aspect ratio tokens
         tokens: {
           aspectRatios: {
-            "1:1": "1",
-            "16:9": "16/9",
+            '1:1': '1',
+            '16:9': '16/9',
           },
         },
       },
     },
-  });
+  })
   ```
 
   Here's what the default aspect ratio tokens in the base preset looks like:
@@ -3224,11 +3204,11 @@ export default defineConfig({
 - de282f60: Support token reference syntax when authoring styles object, text styles and layer styles.
 
   ```jsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   const styles = css({
-    border: "2px solid {colors.primary}",
-  });
+    border: '2px solid {colors.primary}',
+  })
   ```
 
   This will resolve the token reference and convert it to css variables.
@@ -3248,18 +3228,18 @@ export default defineConfig({
   ```jsx
   const styles = css({
     // token reference syntax
-    border: "2px solid {colors.primary}",
+    border: '2px solid {colors.primary}',
     // token function syntax
-    border: "2px solid token(colors.primary)",
-  });
+    border: '2px solid token(colors.primary)',
+  })
   ```
 
   However, The `token(...)` syntax allows you to set a fallback value.
 
   ```jsx
   const styles = css({
-    border: "2px solid token(colors.primary, red)",
-  });
+    border: '2px solid token(colors.primary, red)',
+  })
   ```
 
 ### Patch Changes
@@ -3507,18 +3487,18 @@ export default defineConfig({
         colors: {
           button: {
             dark: {
-              value: "navy",
+              value: 'navy',
             },
             light: {
               DEFAULT: {
-                value: "skyblue",
+                value: 'skyblue',
               },
               accent: {
                 DEFAULT: {
-                  value: "cyan",
+                  value: 'cyan',
                 },
                 secondary: {
-                  value: "blue",
+                  value: 'blue',
                 },
               },
             },
@@ -3526,50 +3506,50 @@ export default defineConfig({
         },
       },
     },
-  };
+  }
   ```
 
   You can now use the root `button` color palette and its values directly:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button",
-          color: "colorPalette.light",
-          backgroundColor: "colorPalette.dark",
+          colorPalette: 'button',
+          color: 'colorPalette.light',
+          backgroundColor: 'colorPalette.dark',
           _hover: {
-            color: "colorPalette.light.accent",
-            background: "colorPalette.light.accent.secondary",
+            color: 'colorPalette.light.accent',
+            background: 'colorPalette.light.accent.secondary',
           },
         })}
       >
         Root color palette
       </button>
-    );
-  };
+    )
+  }
   ```
 
   Or you can use any deeply nested property (e.g. `button.light.accent`) as a root color palette:
 
   ```tsx
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   export const App = () => {
     return (
       <button
         className={css({
-          colorPalette: "button.light.accent",
-          color: "colorPalette.secondary",
+          colorPalette: 'button.light.accent',
+          color: 'colorPalette.secondary',
         })}
       >
         Nested color palette leaf
       </button>
-    );
-  };
+    )
+  }
   ```
 
 ### Patch Changes

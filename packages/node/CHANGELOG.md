@@ -228,10 +228,10 @@
 
   ```ts
   css({
-    padding: "1px",
-    paddingTop: "3px",
-    paddingBottom: "4px",
-  });
+    padding: '1px',
+    paddingTop: '3px',
+    paddingBottom: '4px',
+  })
   ```
 
   Will now always generate the following css:
@@ -359,8 +359,8 @@
   ```ts
   export default defineConfig({
     // ...
-    dependencies: ["path/to/files/**.ts"],
-  });
+    dependencies: ['path/to/files/**.ts'],
+  })
   ```
 
   - Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`,
@@ -412,54 +412,39 @@
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    "context:created": (args: {
-      ctx: ApiInterface;
-      logger: LoggerInterface;
-    }) => void;
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    "parser:before": (args: {
-      filePath: string;
-      content: string;
-    }) => string | void;
+    'parser:before': (args: { filePath: string; content: string }) => string | void
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    "parser:after": (args: {
-      filePath: string;
-      result: ParserResultInterface | undefined;
-    }) => void;
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
     /**
      * Called after the codegen is completed
      */
-    "codegen:done": () => MaybeAsyncReturn;
+    'codegen:done': () => MaybeAsyncReturn
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    "cssgen:done": (args: {
-      artifact:
-        | "global"
-        | "static"
-        | "reset"
-        | "tokens"
-        | "keyframes"
-        | "styles.css";
-      content: string;
-    }) => string | void;
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
   }
   ```
 
@@ -1077,16 +1062,16 @@
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -1099,14 +1084,14 @@
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 ### Patch Changes
@@ -1910,11 +1895,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    "codegen:prepare": ({ artifacts, changed }) => {
+    'codegen:prepare': ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-});
+})
 ```
 
 - d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
@@ -1931,11 +1916,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [0dd45b6a]
@@ -1985,8 +1970,8 @@ export default defineConfig({
   ```ts
   export default defineConfig({
     // ...
-    dependencies: ["path/to/files/**.ts"],
-  });
+    dependencies: ['path/to/files/**.ts'],
+  })
   ```
 
   - Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`,
@@ -2038,54 +2023,39 @@ export default defineConfig({
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    "context:created": (args: {
-      ctx: ApiInterface;
-      logger: LoggerInterface;
-    }) => void;
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    "parser:before": (args: {
-      filePath: string;
-      content: string;
-    }) => string | void;
+    'parser:before': (args: { filePath: string; content: string }) => string | void
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    "parser:after": (args: {
-      filePath: string;
-      result: ParserResultInterface | undefined;
-    }) => void;
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
     /**
      * Called after the codegen is completed
      */
-    "codegen:done": () => MaybeAsyncReturn;
+    'codegen:done': () => MaybeAsyncReturn
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    "cssgen:done": (args: {
-      artifact:
-        | "global"
-        | "static"
-        | "reset"
-        | "tokens"
-        | "keyframes"
-        | "styles.css";
-      content: string;
-    }) => string | void;
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
   }
   ```
 
@@ -2703,16 +2673,16 @@ export default defineConfig({
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -2725,14 +2695,14 @@ export default defineConfig({
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 ### Patch Changes

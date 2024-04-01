@@ -26,38 +26,39 @@
 
   ### Added
 
-  - **Spacing Utilities**: Add new `spaceX` and `spaceY` utilities for applying margin between elements. Especially useful
-    when applying negative margin to child elements.
+  - **Spacing Utilities**: Add new `spaceX` and `spaceY` utilities for applying margin between elements. Especially
+    useful when applying negative margin to child elements.
 
   ```tsx
-  <div className={flex({ spaceX: "-1" })}>
-    <div className={circle({ size: "5", bg: "red" })} />
-    <div className={circle({ size: "5", bg: "pink" })} />
+  <div className={flex({ spaceX: '-1' })}>
+    <div className={circle({ size: '5', bg: 'red' })} />
+    <div className={circle({ size: '5', bg: 'pink' })} />
   </div>
   ```
 
   - Added new `_starting` condition to support the new `@starting-style` at-rule.
     [Learn more here](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
-  - **Gradient Position**: Add new `gradientFromPosition` and `gradientToPosition` utilities for controlling the position
-    of the gradient color stops.
+  - **Gradient Position**: Add new `gradientFromPosition` and `gradientToPosition` utilities for controlling the
+    position of the gradient color stops.
 
   ```tsx
   <div
     className={css({
-      bgGradient: "to-r",
+      bgGradient: 'to-r',
       // from
-      gradientFrom: "red",
-      gradientFromPosition: "top left",
+      gradientFrom: 'red',
+      gradientFromPosition: 'top left',
       // to
-      gradientTo: "blue",
-      gradientToPosition: "bottom right",
+      gradientTo: 'blue',
+      gradientToPosition: 'bottom right',
     })}
   />
   ```
 
 ### Patch Changes
 
-- 4e6cf85: Add missing typings for CSS vars in properties bound to utilities (and that are not part of the list affected by `strictPropertyValues`)
+- 4e6cf85: Add missing typings for CSS vars in properties bound to utilities (and that are not part of the list affected
+  by `strictPropertyValues`)
 - Updated dependencies [7daf159]
 - Updated dependencies [bcfb5c5]
 - Updated dependencies [6247dfb]
@@ -95,7 +96,7 @@
 
   ```ts
   // panda.config.ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
@@ -104,15 +105,15 @@
       extend: {
         tokens: {
           colors: {
-            text: { value: "blue" },
+            text: { value: 'blue' },
           },
         },
         semanticTokens: {
           colors: {
             body: {
               value: {
-                base: "{colors.blue.600}",
-                _osDark: "{colors.blue.400}",
+                base: '{colors.blue.600}',
+                _osDark: '{colors.blue.400}',
               },
             },
           },
@@ -124,16 +125,16 @@
       primary: {
         tokens: {
           colors: {
-            text: { value: "red" },
+            text: { value: 'red' },
           },
         },
         semanticTokens: {
           colors: {
-            muted: { value: "{colors.red.200}" },
+            muted: { value: '{colors.red.200}' },
             body: {
               value: {
-                base: "{colors.red.600}",
-                _osDark: "{colors.red.400}",
+                base: '{colors.red.600}',
+                _osDark: '{colors.red.400}',
               },
             },
           },
@@ -142,23 +143,23 @@
       secondary: {
         tokens: {
           colors: {
-            text: { value: "blue" },
+            text: { value: 'blue' },
           },
         },
         semanticTokens: {
           colors: {
-            muted: { value: "{colors.blue.200}" },
+            muted: { value: '{colors.blue.200}' },
             body: {
               value: {
-                base: "{colors.blue.600}",
-                _osDark: "{colors.blue.400}",
+                base: '{colors.blue.600}',
+                _osDark: '{colors.blue.400}',
               },
             },
           },
         },
       },
     },
-  });
+  })
   ```
 
   ### Pregenerating themes
@@ -168,14 +169,14 @@
 
   ```ts
   // panda.config.ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     staticCss: {
-      themes: ["primary", "secondary"],
+      themes: ['primary', 'secondary'],
     },
-  });
+  })
   ```
 
   This will generate the following CSS:
@@ -187,7 +188,7 @@
       --colors-body: var(--colors-blue-600);
     }
 
-    [data-panda-theme="primary"] {
+    [data-panda-theme='primary'] {
       --colors-text: red;
       --colors-muted: var(--colors-red-200);
       --colors-body: var(--colors-red-600);
@@ -198,7 +199,7 @@
         --colors-body: var(--colors-blue-400);
       }
 
-      [data-panda-theme="primary"] {
+      [data-panda-theme='primary'] {
         --colors-body: var(--colors-red-400);
       }
     }
@@ -229,9 +230,9 @@
   Dynamically import a theme using its name:
 
   ```ts
-  import { getTheme } from "../styled-system/themes";
+  import { getTheme } from '../styled-system/themes'
 
-  const theme = await getTheme("red");
+  const theme = await getTheme('red')
   //    ^? {
   //     name: "red";
   //     id: string;
@@ -242,10 +243,10 @@
   Inject the theme styles into the DOM:
 
   ```ts
-  import { injectTheme } from "../styled-system/themes";
+  import { injectTheme } from '../styled-system/themes'
 
-  const theme = await getTheme("red");
-  injectTheme(document.documentElement, theme); // this returns the injected style element
+  const theme = await getTheme('red')
+  injectTheme(document.documentElement, theme) // this returns the injected style element
   ```
 
   ***
@@ -254,62 +255,54 @@
 
   ```tsx
   // app/layout.tsx
-  import { Inter } from "next/font/google";
-  import { cookies } from "next/headers";
-  import { ThemeName, getTheme } from "../../styled-system/themes";
+  import { Inter } from 'next/font/google'
+  import { cookies } from 'next/headers'
+  import { ThemeName, getTheme } from '../../styled-system/themes'
 
-  export default async function RootLayout({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) {
-    const store = cookies();
-    const themeName = store.get("theme")?.value as ThemeName;
-    const theme = themeName && (await getTheme(themeName));
+  export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const store = cookies()
+    const themeName = store.get('theme')?.value as ThemeName
+    const theme = themeName && (await getTheme(themeName))
 
     return (
       <html lang="en" data-panda-theme={themeName ? themeName : undefined}>
         {themeName && (
           <head>
-            <style
-              type="text/css"
-              id={theme.id}
-              dangerouslySetInnerHTML={{ __html: theme.css }}
-            />
+            <style type="text/css" id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />
           </head>
         )}
         <body>{children}</body>
       </html>
-    );
+    )
   }
 
   // app/page.tsx
-  import { getTheme, injectTheme } from "../../styled-system/themes";
+  import { getTheme, injectTheme } from '../../styled-system/themes'
 
   export default function Home() {
     return (
       <>
         <button
           onClick={async () => {
-            const current = document.documentElement.dataset.pandaTheme;
-            const next = current === "primary" ? "secondary" : "primary";
-            const theme = await getTheme(next);
-            setCookie("theme", next, 7);
-            injectTheme(document.documentElement, theme);
+            const current = document.documentElement.dataset.pandaTheme
+            const next = current === 'primary' ? 'secondary' : 'primary'
+            const theme = await getTheme(next)
+            setCookie('theme', next, 7)
+            injectTheme(document.documentElement, theme)
           }}
         >
           swap theme
         </button>
       </>
-    );
+    )
   }
 
   // Set a Cookie
   function setCookie(cName: string, cValue: any, expDays: number) {
-    let date = new Date();
-    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
+    let date = new Date()
+    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000)
+    const expires = 'expires=' + date.toUTCString()
+    document.cookie = cName + '=' + cValue + '; ' + expires + '; path=/'
   }
   ```
 
@@ -318,18 +311,18 @@
   Finally, you can create a theme contract to ensure that all themes have the same structure:
 
   ```ts
-  import { defineThemeContract } from "@pandacss/dev";
+  import { defineThemeContract } from '@pandacss/dev'
 
   const defineTheme = defineThemeContract({
     tokens: {
       colors: {
-        red: { value: "" }, // theme implementations must have a red color
+        red: { value: '' }, // theme implementations must have a red color
       },
     },
-  });
+  })
 
   defineTheme({
-    selector: ".theme-secondary",
+    selector: '.theme-secondary',
     tokens: {
       colors: {
         // ^^^^   Property 'red' is missing in type '{}' but required in type '{ red: { value: string; }; }'
@@ -338,7 +331,7 @@
         // red: { value: 'red' },
       },
     },
-  });
+  })
   ```
 
 - fabdabe: ## Changes
@@ -358,12 +351,12 @@
     theme: {
       extend: {
         colors: {
-          primary: { value: "blue" },
+          primary: { value: 'blue' },
         },
         // borderWidths: {}, // ⚠️ nothing defined here
       },
     },
-  });
+  })
   ```
 
   ```ts
@@ -374,8 +367,8 @@
 
     // ✅ after this PR, TS will not throw an error anymore as you don't have any `borderWidths` tokens
     // if you add one, this will error again (as it's supposed to)
-    borderWidths: "123px",
-  });
+    borderWidths: '123px',
+  })
   ```
 
   ## Description
@@ -402,63 +395,63 @@
   Example:
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     globalVars: {
-      "--some-color": "red",
-      "--button-color": {
-        syntax: "<color>",
+      '--some-color': 'red',
+      '--button-color': {
+        syntax: '<color>',
         inherits: false,
-        initialValue: "blue",
+        initialValue: 'blue',
       },
     },
-  });
+  })
   ```
 
   > Note: Keys defined in `globalVars` will be available as a value for _every_ utilities, as they're not bound to token
   > categories.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   const className = css({
-    "--button-color": "colors.red.300",
+    '--button-color': 'colors.red.300',
     // ^^^^^^^^^^^^  will be suggested
 
-    backgroundColor: "var(--button-color)",
+    backgroundColor: 'var(--button-color)',
     //                ^^^^^^^^^^^^^^^^^^  will be suggested
-  });
+  })
   ```
 
 - 656ff02: Fix `strictPropertyValues` typings should allow for `CssVars` (either predefined from `globalVars` or any
   custom CSS variable)
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     strictPropertyValues: true,
     globalVars: {
       extend: {
-        "--some-color": "red",
-        "--button-color": {
-          syntax: "<color>",
+        '--some-color': 'red',
+        '--button-color': {
+          syntax: '<color>',
           inherits: false,
-          initialValue: "blue",
+          initialValue: 'blue',
         },
       },
     },
-  });
+  })
   ```
 
   ```ts
   css({
     // ❌ was not allowed before when `strictPropertyValues` was enabled
-    display: "var(--button-color)", // ✅ will now be allowed/suggested
-  });
+    display: 'var(--button-color)', // ✅ will now be allowed/suggested
+  })
   ```
 
   If no `globalVars` are defined, any `var(--*)` will be allowed
@@ -466,8 +459,8 @@
   ```ts
   css({
     // ✅ will be allowed
-    display: "var(--xxx)",
-  });
+    display: 'var(--xxx)',
+  })
   ```
 
 - 340f4f1: Fix `Expression produces a union type that is too complex to represent` with `splitCssProps` because of
@@ -496,21 +489,21 @@
   export default defineConfig({
     semanticTokens: {
       colors: {
-        blue: { value: "blue" },
+        blue: { value: 'blue' },
         green: {
           value: {
-            base: "green",
-            _dark: "white",
+            base: 'green',
+            _dark: 'white',
           },
         },
         red: {
           value: {
-            base: "red",
+            base: 'red',
           },
         },
       },
     },
-  });
+  })
   ```
 
   This is the output of the `styled-system/token` JS token function:
@@ -539,32 +532,32 @@
   Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
 
   ```tsx
-  import { sva } from "../styled-system/css";
+  import { sva } from '../styled-system/css'
 
   const button = sva({
-    className: "btn",
-    slots: ["root", "text"],
+    className: 'btn',
+    slots: ['root', 'text'],
     base: {
       root: {
-        bg: "blue.500",
+        bg: 'blue.500',
         _hover: {
           // v--- 🎯 this will target the `text` slot
-          "& .btn__text": {
-            color: "white",
+          '& .btn__text': {
+            color: 'white',
           },
         },
       },
     },
-  });
+  })
 
   export const App = () => {
-    const classes = button();
+    const classes = button()
     return (
       <div className={classes.root}>
         <div className={classes.text}>Click me</div>
       </div>
-    );
-  };
+    )
+  }
   ```
 
 - Updated dependencies [f2fdc48]
@@ -588,11 +581,11 @@
 - 4576a60: Fix nested `styled` factory composition
 
   ```tsx
-  import { styled } from "../styled-system/jsx";
+  import { styled } from '../styled-system/jsx'
 
-  const BasicBox = styled("div", { base: { fontSize: "10px" } });
-  const ExtendedBox1 = styled(BasicBox, { base: { fontSize: "20px" } });
-  const ExtendedBox2 = styled(ExtendedBox1, { base: { fontSize: "30px" } });
+  const BasicBox = styled('div', { base: { fontSize: '10px' } })
+  const ExtendedBox1 = styled(BasicBox, { base: { fontSize: '20px' } })
+  const ExtendedBox2 = styled(ExtendedBox1, { base: { fontSize: '30px' } })
 
   export const App = () => {
     return (
@@ -605,8 +598,8 @@
         {/* NOW: ✅ fs_30px */}
         <ExtendedBox2>text3</ExtendedBox2>
       </>
-    );
-  };
+    )
+  }
   ```
 
   - @pandacss/core@0.34.3
@@ -627,12 +620,12 @@
   `Style` like `borderTopStyle`.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
-    borderTop: "1px solid red", // ✅ will now be fine as it should be
-    borderTopStyle: "abc", // ✅ will still report a TS error
-  });
+    borderTop: '1px solid red', // ✅ will now be fine as it should be
+    borderTopStyle: 'abc', // ✅ will still report a TS error
+  })
   ```
 
   ```diff
@@ -728,18 +721,18 @@
 - d4942e0: Fix the color opacity modifier syntax for `semanticTokens` inside of conditions
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     conditions: {
-      light: ".light &",
-      dark: ".dark &",
+      light: '.light &',
+      dark: '.dark &',
     },
     theme: {
       tokens: {
         colors: {
-          blue: { 500: { value: "blue" } },
-          green: { 500: { value: "green" } },
+          blue: { 500: { value: 'blue' } },
+          green: { 500: { value: 'green' } },
         },
         opacity: {
           half: { value: 0.5 },
@@ -749,15 +742,15 @@
         colors: {
           secondary: {
             value: {
-              base: "red",
-              _light: "{colors.blue.500/32}", // <-- wasn't working as expected
-              _dark: "{colors.green.500/half}",
+              base: 'red',
+              _light: '{colors.blue.500/32}', // <-- wasn't working as expected
+              _dark: '{colors.green.500/half}',
             },
           },
         },
       },
     },
-  });
+  })
   ```
 
   will now correctly generate the following CSS:
@@ -772,19 +765,11 @@
     }
 
     .light {
-      --colors-secondary: color-mix(
-        in srgb,
-        var(--colors-blue-500) 32%,
-        transparent
-      );
+      --colors-secondary: color-mix(in srgb, var(--colors-blue-500) 32%, transparent);
     }
 
     .dark {
-      --colors-secondary: color-mix(
-        in srgb,
-        var(--colors-green-500) 50%,
-        transparent
-      );
+      --colors-secondary: color-mix(in srgb, var(--colors-green-500) 50%, transparent);
     }
   }
   ```
@@ -825,15 +810,15 @@
   class assigned.
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     preflight: {
-      scope: ".my-scope",
-      level: "element", // 'element' | 'parent (default)'
+      scope: '.my-scope',
+      level: 'element', // 'element' | 'parent (default)'
     },
     // ...
-  });
+  })
   ```
 
   This will generate CSS that looks like:
@@ -875,20 +860,20 @@
   export default defaultConfig({
     conditions: {
       extend: {
-        supportHover: ["@media (hover: hover) and (pointer: fine)", "&:hover"],
+        supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
       },
     },
-  });
+  })
   ```
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     _supportHover: {
-      color: "red",
+      color: 'red',
     },
-  });
+  })
   ```
 
   will generate the following CSS:
@@ -959,10 +944,10 @@
 
   ```ts
   css({
-    padding: "1px",
-    paddingTop: "3px",
-    paddingBottom: "4px",
-  });
+    padding: '1px',
+    paddingTop: '3px',
+    paddingBottom: '4px',
+  })
   ```
 
   Will now always generate the following css:
@@ -1072,24 +1057,24 @@
     patterns: {
       hstack: {
         properties: {
-          justify: { type: "property", value: "justifyContent" },
-          gap: { type: "property", value: "gap" },
+          justify: { type: 'property', value: 'justifyContent' },
+          gap: { type: 'property', value: 'gap' },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: "40px" },
+        defaultValues: { gap: '40px' },
         transform(props) {
-          const { justify, gap, ...rest } = props;
+          const { justify, gap, ...rest } = props
           return {
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: justify,
             gap,
             ...rest,
-          };
+          }
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -1131,54 +1116,39 @@
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    "context:created": (args: {
-      ctx: ApiInterface;
-      logger: LoggerInterface;
-    }) => void;
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    "parser:before": (args: {
-      filePath: string;
-      content: string;
-    }) => string | void;
+    'parser:before': (args: { filePath: string; content: string }) => string | void
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    "parser:after": (args: {
-      filePath: string;
-      result: ParserResultInterface | undefined;
-    }) => void;
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
     /**
      * Called after the codegen is completed
      */
-    "codegen:done": () => MaybeAsyncReturn;
+    'codegen:done': () => MaybeAsyncReturn
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    "cssgen:done": (args: {
-      artifact:
-        | "global"
-        | "static"
-        | "reset"
-        | "tokens"
-        | "keyframes"
-        | "styles.css";
-      content: string;
-    }) => string | void;
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
   }
   ```
 
@@ -1326,18 +1296,18 @@
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
   ```
 
   now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will not throw there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
   ```
 
   Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
@@ -1348,79 +1318,79 @@
 
   ```ts
   type StrictableProps =
-    | "alignContent"
-    | "alignItems"
-    | "alignSelf"
-    | "all"
-    | "animationComposition"
-    | "animationDirection"
-    | "animationFillMode"
-    | "appearance"
-    | "backfaceVisibility"
-    | "backgroundAttachment"
-    | "backgroundClip"
-    | "borderCollapse"
-    | "border"
-    | "borderBlock"
-    | "borderBlockEnd"
-    | "borderBlockStart"
-    | "borderBottom"
-    | "borderInline"
-    | "borderInlineEnd"
-    | "borderInlineStart"
-    | "borderLeft"
-    | "borderRight"
-    | "borderTop"
-    | "borderBlockEndStyle"
-    | "borderBlockStartStyle"
-    | "borderBlockStyle"
-    | "borderBottomStyle"
-    | "borderInlineEndStyle"
-    | "borderInlineStartStyle"
-    | "borderInlineStyle"
-    | "borderLeftStyle"
-    | "borderRightStyle"
-    | "borderTopStyle"
-    | "boxDecorationBreak"
-    | "boxSizing"
-    | "breakAfter"
-    | "breakBefore"
-    | "breakInside"
-    | "captionSide"
-    | "clear"
-    | "columnFill"
-    | "columnRuleStyle"
-    | "contentVisibility"
-    | "direction"
-    | "display"
-    | "emptyCells"
-    | "flexDirection"
-    | "flexWrap"
-    | "float"
-    | "fontKerning"
-    | "forcedColorAdjust"
-    | "isolation"
-    | "lineBreak"
-    | "mixBlendMode"
-    | "objectFit"
-    | "outlineStyle"
-    | "overflow"
-    | "overflowX"
-    | "overflowY"
-    | "overflowBlock"
-    | "overflowInline"
-    | "overflowWrap"
-    | "pointerEvents"
-    | "position"
-    | "resize"
-    | "scrollBehavior"
-    | "touchAction"
-    | "transformBox"
-    | "transformStyle"
-    | "userSelect"
-    | "visibility"
-    | "wordBreak"
-    | "writingMode";
+    | 'alignContent'
+    | 'alignItems'
+    | 'alignSelf'
+    | 'all'
+    | 'animationComposition'
+    | 'animationDirection'
+    | 'animationFillMode'
+    | 'appearance'
+    | 'backfaceVisibility'
+    | 'backgroundAttachment'
+    | 'backgroundClip'
+    | 'borderCollapse'
+    | 'border'
+    | 'borderBlock'
+    | 'borderBlockEnd'
+    | 'borderBlockStart'
+    | 'borderBottom'
+    | 'borderInline'
+    | 'borderInlineEnd'
+    | 'borderInlineStart'
+    | 'borderLeft'
+    | 'borderRight'
+    | 'borderTop'
+    | 'borderBlockEndStyle'
+    | 'borderBlockStartStyle'
+    | 'borderBlockStyle'
+    | 'borderBottomStyle'
+    | 'borderInlineEndStyle'
+    | 'borderInlineStartStyle'
+    | 'borderInlineStyle'
+    | 'borderLeftStyle'
+    | 'borderRightStyle'
+    | 'borderTopStyle'
+    | 'boxDecorationBreak'
+    | 'boxSizing'
+    | 'breakAfter'
+    | 'breakBefore'
+    | 'breakInside'
+    | 'captionSide'
+    | 'clear'
+    | 'columnFill'
+    | 'columnRuleStyle'
+    | 'contentVisibility'
+    | 'direction'
+    | 'display'
+    | 'emptyCells'
+    | 'flexDirection'
+    | 'flexWrap'
+    | 'float'
+    | 'fontKerning'
+    | 'forcedColorAdjust'
+    | 'isolation'
+    | 'lineBreak'
+    | 'mixBlendMode'
+    | 'objectFit'
+    | 'outlineStyle'
+    | 'overflow'
+    | 'overflowX'
+    | 'overflowY'
+    | 'overflowBlock'
+    | 'overflowInline'
+    | 'overflowWrap'
+    | 'pointerEvents'
+    | 'position'
+    | 'resize'
+    | 'scrollBehavior'
+    | 'touchAction'
+    | 'transformBox'
+    | 'transformStyle'
+    | 'userSelect'
+    | 'visibility'
+    | 'wordBreak'
+    | 'writingMode'
   ```
 
 - Updated dependencies [657ca5da]
@@ -1491,38 +1461,38 @@
 
   ```ts
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
       visual: {
-        primary: { backgroundColor: "blue" },
-        secondary: { backgroundColor: "gray" },
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
       },
     },
-  });
+  })
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ["*"], // this
+        card: ['*'], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ["*"], responsive: true },
-          { visual: ["*"], responsive: true },
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ["*"] }, { visual: ["*"] }],
+        card: [{ size: ['*'] }, { visual: ['*'] }],
       },
     },
-  });
+  })
   ```
 
   Here's the diff in the generated CSS:
@@ -1669,17 +1639,17 @@
 
   ```ts
   css({
-    bg: "[#3B00B9]", // ✅ was okay
+    bg: '[#3B00B9]', // ✅ was okay
     _dark: {
       // ✅ was okay
-      color: "[#3B00B9]",
+      color: '[#3B00B9]',
     },
 
     // ❌ Not okay, will be fixed in this patch
     color: {
-      _dark: "[#3B00B9]",
+      _dark: '[#3B00B9]',
     },
-  });
+  })
   ```
 
 - 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
@@ -1687,9 +1657,9 @@
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 - Updated dependencies [8f4ce97c]
@@ -1730,18 +1700,18 @@
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: "#fff",
+    color: '#fff',
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: "100px",
+    width: '100px',
 
     // ✅ but this is now allowed:
-    bgColor: "[rgb(51 155 240)]",
-    fontSize: "[12px]",
-  });
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
   ```
 
 ### Patch Changes
@@ -1775,49 +1745,49 @@
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from "@pandacss/dev";
+  import { defineRecipe } from '@pandacss/dev'
 
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
     },
-    staticCss: [{ size: ["*"] }],
-  });
+    staticCss: [{ size: ['*'] }],
+  })
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ["*"],
+          size: ['*'],
         },
       },
     },
-  });
+  })
   ```
 
 - 052283c2: Fix vue `styled` factory internal class merging, for example:
 
   ```vue
   <script setup>
-  import { styled } from "../styled-system/jsx";
+  import { styled } from '../styled-system/jsx'
 
-  const StyledButton = styled("button", {
+  const StyledButton = styled('button', {
     base: {
-      bgColor: "red.300",
+      bgColor: 'red.300',
     },
-  });
+  })
   </script>
   <template>
     <StyledButton id="test" class="test">
@@ -1886,18 +1856,18 @@
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
   ```
 
   Now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will throw since 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
   ```
 
 - Updated dependencies [61831040]
@@ -1956,28 +1926,22 @@
 - b7cb2073: Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
 
   ```tsx
-  import { splitCssProps, styled } from "../styled-system/jsx";
-  import type { HTMLStyledProps } from "../styled-system/types";
+  import { splitCssProps, styled } from '../styled-system/jsx'
+  import type { HTMLStyledProps } from '../styled-system/types'
 
-  function SplitComponent({ children, ...props }: HTMLStyledProps<"div">) {
-    const [cssProps, restProps] = splitCssProps(props);
+  function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+    const [cssProps, restProps] = splitCssProps(props)
     return (
-      <styled.div
-        {...restProps}
-        className={css(
-          { display: "flex", height: "20", width: "20" },
-          cssProps,
-        )}
-      >
+      <styled.div {...restProps} className={css({ display: 'flex', height: '20', width: '20' }, cssProps)}>
         {children}
       </styled.div>
-    );
+    )
   }
 
   // Usage
 
   function App() {
-    return <SplitComponent margin="2">Click me</SplitComponent>;
+    return <SplitComponent margin="2">Click me</SplitComponent>
   }
   ```
 
@@ -2070,16 +2034,16 @@
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -2092,32 +2056,32 @@
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 - fbf062c6: Added a new type to extract variants out of styled components
 
   ```tsx
-  import { StyledVariantProps } from "../styled-system/jsx";
+  import { StyledVariantProps } from '../styled-system/jsx'
 
-  const Button = styled("button", {
-    base: { color: "black" },
+  const Button = styled('button', {
+    base: { color: 'black' },
     variants: {
       state: {
-        error: { color: "red" },
-        success: { color: "green" },
+        error: { color: 'red' },
+        success: { color: 'green' },
       },
     },
-  });
+  })
 
-  type ButtonVariantProps = StyledVariantProps<typeof Button>;
+  type ButtonVariantProps = StyledVariantProps<typeof Button>
   //   ^ { state?: 'error' | 'success' | undefined }
   ```
 
@@ -2219,9 +2183,9 @@
 
   ```ts
   interface FactoryOptions<TProps extends Dict> {
-    dataAttr?: boolean;
-    defaultProps?: TProps;
-    shouldForwardProp?(prop: string, variantKeys: string[]): boolean;
+    dataAttr?: boolean
+    defaultProps?: TProps
+    shouldForwardProp?(prop: string, variantKeys: string[]): boolean
   }
   ```
 
@@ -2229,16 +2193,16 @@
     This is useful for testing and debugging.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, { dataAttr: true });
+  const Button = styled('button', button, { dataAttr: true })
 
   const App = () => (
     <Button variant="secondary" mt="10px">
       Button
     </Button>
-  );
+  )
   // Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
   ```
 
@@ -2246,17 +2210,17 @@
     override the default variants or base styles of a recipe.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, {
+  const Button = styled('button', button, {
     defaultProps: {
-      variant: "secondary",
-      px: "10px",
+      variant: 'secondary',
+      px: '10px',
     },
-  });
+  })
 
-  const App = () => <Button>Button</Button>;
+  const App = () => <Button>Button</Button>
   // Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
   ```
 
@@ -2264,20 +2228,19 @@
     props except recipe variants and style props are forwarded.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
-  import { isCssProperty } from "../styled-system/jsx";
-  import { motion, isValidMotionProp } from "framer-motion";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
+  import { isCssProperty } from '../styled-system/jsx'
+  import { motion, isValidMotionProp } from 'framer-motion'
 
   const StyledMotion = styled(
     motion.div,
     {},
     {
       shouldForwardProp: (prop, variantKeys) =>
-        isValidMotionProp(prop) ||
-        (!variantKeys.includes(prop) && !isCssProperty(prop)),
+        isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
     },
-  );
+  )
   ```
 
   - @pandacss/types@0.15.4
@@ -2300,42 +2263,42 @@
 
   ```ts
   export default defineConfig({
-    outdir: "./outdir",
+    outdir: './outdir',
     importMap: {
-      css: "#panda/styled-system/css",
-      recipes: "#panda/styled-system/recipes",
-      patterns: "#panda/styled-system/patterns",
-      jsx: "#panda/styled-system/jsx",
+      css: '#panda/styled-system/css',
+      recipes: '#panda/styled-system/recipes',
+      patterns: '#panda/styled-system/patterns',
+      jsx: '#panda/styled-system/jsx',
     },
-  });
+  })
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: "../packages/styled-system",
+    outdir: '../packages/styled-system',
     importMap: {
-      css: "@monorepo/styled-system",
-      recipes: "@monorepo/styled-system",
-      patterns: "@monorepo/styled-system",
-      jsx: "@monorepo/styled-system",
+      css: '@monorepo/styled-system',
+      recipes: '@monorepo/styled-system',
+      patterns: '@monorepo/styled-system',
+      jsx: '@monorepo/styled-system',
     },
-  });
+  })
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: "styled-system",
+    outdir: 'styled-system',
     importMap: {
-      css: "styled-system/css",
-      recipes: "styled-system/recipes",
-      patterns: "styled-system/patterns",
-      jsx: "styled-system/jsx",
+      css: 'styled-system/css',
+      recipes: 'styled-system/recipes',
+      patterns: 'styled-system/patterns',
+      jsx: 'styled-system/jsx',
     },
-  });
+  })
   ```
 
 - 1eb31118: Automatically allow overriding config recipe compoundVariants styles within the `styled` JSX factory,
@@ -2345,22 +2308,22 @@
 
   ```ts file="panda.config.ts"
   const button = defineRecipe({
-    className: "btn",
-    base: { color: "green", fontSize: "16px" },
+    className: 'btn',
+    base: { color: 'green', fontSize: '16px' },
     variants: {
-      size: { small: { fontSize: "14px" } },
+      size: { small: { fontSize: '14px' } },
     },
-    compoundVariants: [{ size: "small", css: { color: "blue" } }],
-  });
+    compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+  })
   ```
 
   This would previously not merge the `color` property overrides, but now it does:
 
   ```tsx file="example.tsx"
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button);
+  const Button = styled('button', button)
 
   function App() {
     return (
@@ -2369,7 +2332,7 @@
           Click me
         </Button>
       </>
-    );
+    )
   }
   ```
 
@@ -2548,8 +2511,8 @@
     passed in. This is to allow the `css` function to merge the styles correctly.
 
   ```tsx
-  import { css } from "../styled-system/css";
-  css({ mx: "3", paddingTop: "4" }, { mx: "10", pt: "6" }); // => mx_10 pt_6
+  import { css } from '../styled-system/css'
+  css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' }) // => mx_10 pt_6
   ```
 
   > ⚠️ This approach should be preferred for merging styles over the current `cx` function, which will be reverted to
@@ -2574,29 +2537,26 @@
   be merged correctly.
 
   ```tsx title="src/components/Button.tsx"
-  import { css } from "../../styled-system/css";
+  import { css } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
-    const className = css(
-      { display: "flex", alignItem: "center", color: "black" },
-      cssProp,
-    );
-    return <button className={className}>{children}</button>;
-  };
+    const className = css({ display: 'flex', alignItem: 'center', color: 'black' }, cssProp)
+    return <button className={className}>{children}</button>
+  }
   ```
 
   Then you can use the `Button` component like this:
 
   ```tsx title="src/app/page.tsx"
-  import { css } from "../../styled-system/css";
-  import { Button, Thingy } from "./Button";
+  import { css } from '../../styled-system/css'
+  import { Button, Thingy } from './Button'
 
   export default function Page() {
     return (
-      <Button css={{ color: "pink", _hover: { color: "red" } }}>
+      <Button css={{ color: 'pink', _hover: { color: 'red' } }}>
         will result in `class="d_flex items_center text_pink hover:text_red"`
       </Button>
-    );
+    )
   }
   ```
 
@@ -2608,51 +2568,51 @@
   **Pattern Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { hstack } from "../../styled-system/patterns";
-  import { css, cva } from "../../styled-system/css";
+  import { hstack } from '../../styled-system/patterns'
+  import { css, cva } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
     // using the flex pattern
     const hstackProps = hstack.raw({
-      border: "1px solid",
-      _hover: { color: "blue.400" },
-    });
+      border: '1px solid',
+      _hover: { color: 'blue.400' },
+    })
 
     // merging the styles
-    const className = css(hstackProps, cssProp);
+    const className = css(hstackProps, cssProp)
 
-    return <button className={className}>{children}</button>;
-  };
+    return <button className={className}>{children}</button>
+  }
   ```
 
   **CVA Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { css, cva } from "../../styled-system/css";
+  import { css, cva } from '../../styled-system/css'
 
   const buttonRecipe = cva({
-    base: { display: "flex", fontSize: "lg" },
+    base: { display: 'flex', fontSize: 'lg' },
     variants: {
       variant: {
-        primary: { color: "white", backgroundColor: "blue.500" },
+        primary: { color: 'white', backgroundColor: 'blue.500' },
       },
     },
-  });
+  })
 
   export const Button = ({ css: cssProp = {}, children }) => {
     const className = css(
       // using the button recipe
-      buttonRecipe.raw({ variant: "primary" }),
+      buttonRecipe.raw({ variant: 'primary' }),
 
       // adding style overrides (internal)
-      { _hover: { color: "blue.400" } },
+      { _hover: { color: 'blue.400' } },
 
       // adding style overrides (external)
       cssProp,
-    );
+    )
 
-    return <button className={className}>{props.children}</button>;
-  };
+    return <button className={className}>{props.children}</button>
+  }
   ```
 
 - 36fdff89: Fix bug in generated js code for atomic slot recipe produce where `splitVariantProps` didn't work without
@@ -2699,14 +2659,7 @@
   Example:
 
   ```tsx
-  <h1
-    className={cx(
-      css({ mx: "3", paddingTop: "4" }),
-      css({ mx: "10", pt: "6" }),
-    )}
-  >
-    Will result in "mx_10 pt_6"
-  </h1>
+  <h1 className={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</h1>
   ```
 
 - dfb3f85f: Add missing svg props types
@@ -2751,12 +2704,12 @@
   **Definition**
 
   ```jsx
-  import { sva } from "styled-system/css";
+  import { sva } from 'styled-system/css'
 
   const button = sva({
-    slots: ["label", "icon"],
+    slots: ['label', 'icon'],
     base: {
-      label: { color: "red", textDecoration: "underline" },
+      label: { color: 'red', textDecoration: 'underline' },
     },
     variants: {
       rounded: {
@@ -2764,33 +2717,33 @@
       },
       size: {
         sm: {
-          label: { fontSize: "sm" },
-          icon: { fontSize: "sm" },
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
         },
         lg: {
-          label: { fontSize: "lg" },
-          icon: { fontSize: "lg", color: "pink" },
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
         },
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
     },
-  });
+  })
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: "lg", rounded: true });
+    const btnClass = button({ size: 'lg', rounded: true })
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    );
+    )
   }
   ```
 
@@ -2855,26 +2808,26 @@
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from "styled-system/jsx";
+  import { Circle } from 'styled-system/jsx'
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>;
-  };
+    return <Circle {...props}>{children}</Circle>
+  }
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ["CustomCircle"],
+          jsx: ['CustomCircle'],
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -2972,17 +2925,9 @@
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button
-        className={cx(
-          pinkRecipe({ variant }),
-          greenRecipe({ variant }),
-          blueRecipe({ variant }),
-        )}
-      >
-        Hello
-      </button>
-    );
-  };
+      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    )
+  }
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -3066,7 +3011,7 @@
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ["*"], shape: ["*"] }];
+      button: [{ size: ['*'], shape: ['*'] }]
     }
   }
   ```
@@ -3076,7 +3021,7 @@
   ```ts
   staticCss: {
     recipes: {
-      button: ["*"];
+      button: ['*']
     }
   }
   ```
@@ -3114,8 +3059,8 @@
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: "template-literal",
-  });
+    syntax: 'template-literal',
+  })
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
@@ -3147,12 +3092,12 @@
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     shorthands: false,
-  });
+  })
   ```
 
 ### Patch Changes
@@ -3272,11 +3217,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    "codegen:prepare": ({ artifacts, changed }) => {
+    'codegen:prepare': ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-});
+})
 ```
 
 - 49c760cd: Fix issue where responsive array in css and cva doesn't generate the correct classname
@@ -3294,11 +3239,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [74485ef1]
@@ -3337,24 +3282,24 @@ export default defineConfig({
     patterns: {
       hstack: {
         properties: {
-          justify: { type: "property", value: "justifyContent" },
-          gap: { type: "property", value: "gap" },
+          justify: { type: 'property', value: 'justifyContent' },
+          gap: { type: 'property', value: 'gap' },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: "40px" },
+        defaultValues: { gap: '40px' },
         transform(props) {
-          const { justify, gap, ...rest } = props;
+          const { justify, gap, ...rest } = props
           return {
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: justify,
             gap,
             ...rest,
-          };
+          }
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -3396,54 +3341,39 @@ export default defineConfig({
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    "context:created": (args: {
-      ctx: ApiInterface;
-      logger: LoggerInterface;
-    }) => void;
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    "parser:before": (args: {
-      filePath: string;
-      content: string;
-    }) => string | void;
+    'parser:before': (args: { filePath: string; content: string }) => string | void
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    "parser:after": (args: {
-      filePath: string;
-      result: ParserResultInterface | undefined;
-    }) => void;
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
     /**
      * Called after the codegen is completed
      */
-    "codegen:done": () => MaybeAsyncReturn;
+    'codegen:done': () => MaybeAsyncReturn
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    "cssgen:done": (args: {
-      artifact:
-        | "global"
-        | "static"
-        | "reset"
-        | "tokens"
-        | "keyframes"
-        | "styles.css";
-      content: string;
-    }) => string | void;
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
   }
   ```
 
@@ -3591,18 +3521,18 @@ export default defineConfig({
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
   ```
 
   now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will not throw there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
   ```
 
   Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
@@ -3613,79 +3543,79 @@ export default defineConfig({
 
   ```ts
   type StrictableProps =
-    | "alignContent"
-    | "alignItems"
-    | "alignSelf"
-    | "all"
-    | "animationComposition"
-    | "animationDirection"
-    | "animationFillMode"
-    | "appearance"
-    | "backfaceVisibility"
-    | "backgroundAttachment"
-    | "backgroundClip"
-    | "borderCollapse"
-    | "border"
-    | "borderBlock"
-    | "borderBlockEnd"
-    | "borderBlockStart"
-    | "borderBottom"
-    | "borderInline"
-    | "borderInlineEnd"
-    | "borderInlineStart"
-    | "borderLeft"
-    | "borderRight"
-    | "borderTop"
-    | "borderBlockEndStyle"
-    | "borderBlockStartStyle"
-    | "borderBlockStyle"
-    | "borderBottomStyle"
-    | "borderInlineEndStyle"
-    | "borderInlineStartStyle"
-    | "borderInlineStyle"
-    | "borderLeftStyle"
-    | "borderRightStyle"
-    | "borderTopStyle"
-    | "boxDecorationBreak"
-    | "boxSizing"
-    | "breakAfter"
-    | "breakBefore"
-    | "breakInside"
-    | "captionSide"
-    | "clear"
-    | "columnFill"
-    | "columnRuleStyle"
-    | "contentVisibility"
-    | "direction"
-    | "display"
-    | "emptyCells"
-    | "flexDirection"
-    | "flexWrap"
-    | "float"
-    | "fontKerning"
-    | "forcedColorAdjust"
-    | "isolation"
-    | "lineBreak"
-    | "mixBlendMode"
-    | "objectFit"
-    | "outlineStyle"
-    | "overflow"
-    | "overflowX"
-    | "overflowY"
-    | "overflowBlock"
-    | "overflowInline"
-    | "overflowWrap"
-    | "pointerEvents"
-    | "position"
-    | "resize"
-    | "scrollBehavior"
-    | "touchAction"
-    | "transformBox"
-    | "transformStyle"
-    | "userSelect"
-    | "visibility"
-    | "wordBreak"
-    | "writingMode";
+    | 'alignContent'
+    | 'alignItems'
+    | 'alignSelf'
+    | 'all'
+    | 'animationComposition'
+    | 'animationDirection'
+    | 'animationFillMode'
+    | 'appearance'
+    | 'backfaceVisibility'
+    | 'backgroundAttachment'
+    | 'backgroundClip'
+    | 'borderCollapse'
+    | 'border'
+    | 'borderBlock'
+    | 'borderBlockEnd'
+    | 'borderBlockStart'
+    | 'borderBottom'
+    | 'borderInline'
+    | 'borderInlineEnd'
+    | 'borderInlineStart'
+    | 'borderLeft'
+    | 'borderRight'
+    | 'borderTop'
+    | 'borderBlockEndStyle'
+    | 'borderBlockStartStyle'
+    | 'borderBlockStyle'
+    | 'borderBottomStyle'
+    | 'borderInlineEndStyle'
+    | 'borderInlineStartStyle'
+    | 'borderInlineStyle'
+    | 'borderLeftStyle'
+    | 'borderRightStyle'
+    | 'borderTopStyle'
+    | 'boxDecorationBreak'
+    | 'boxSizing'
+    | 'breakAfter'
+    | 'breakBefore'
+    | 'breakInside'
+    | 'captionSide'
+    | 'clear'
+    | 'columnFill'
+    | 'columnRuleStyle'
+    | 'contentVisibility'
+    | 'direction'
+    | 'display'
+    | 'emptyCells'
+    | 'flexDirection'
+    | 'flexWrap'
+    | 'float'
+    | 'fontKerning'
+    | 'forcedColorAdjust'
+    | 'isolation'
+    | 'lineBreak'
+    | 'mixBlendMode'
+    | 'objectFit'
+    | 'outlineStyle'
+    | 'overflow'
+    | 'overflowX'
+    | 'overflowY'
+    | 'overflowBlock'
+    | 'overflowInline'
+    | 'overflowWrap'
+    | 'pointerEvents'
+    | 'position'
+    | 'resize'
+    | 'scrollBehavior'
+    | 'touchAction'
+    | 'transformBox'
+    | 'transformStyle'
+    | 'userSelect'
+    | 'visibility'
+    | 'wordBreak'
+    | 'writingMode'
   ```
 
 - Updated dependencies [657ca5da]
@@ -3756,38 +3686,38 @@ export default defineConfig({
 
   ```ts
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
       visual: {
-        primary: { backgroundColor: "blue" },
-        secondary: { backgroundColor: "gray" },
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
       },
     },
-  });
+  })
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ["*"], // this
+        card: ['*'], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ["*"], responsive: true },
-          { visual: ["*"], responsive: true },
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ["*"] }, { visual: ["*"] }],
+        card: [{ size: ['*'] }, { visual: ['*'] }],
       },
     },
-  });
+  })
   ```
 
   Here's the diff in the generated CSS:
@@ -3934,17 +3864,17 @@ export default defineConfig({
 
   ```ts
   css({
-    bg: "[#3B00B9]", // ✅ was okay
+    bg: '[#3B00B9]', // ✅ was okay
     _dark: {
       // ✅ was okay
-      color: "[#3B00B9]",
+      color: '[#3B00B9]',
     },
 
     // ❌ Not okay, will be fixed in this patch
     color: {
-      _dark: "[#3B00B9]",
+      _dark: '[#3B00B9]',
     },
-  });
+  })
   ```
 
 - 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
@@ -3952,9 +3882,9 @@ export default defineConfig({
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 - Updated dependencies [8f4ce97c]
@@ -3995,18 +3925,18 @@ export default defineConfig({
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: "#fff",
+    color: '#fff',
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: "100px",
+    width: '100px',
 
     // ✅ but this is now allowed:
-    bgColor: "[rgb(51 155 240)]",
-    fontSize: "[12px]",
-  });
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
   ```
 
 ### Patch Changes
@@ -4040,49 +3970,49 @@ export default defineConfig({
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from "@pandacss/dev";
+  import { defineRecipe } from '@pandacss/dev'
 
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
     },
-    staticCss: [{ size: ["*"] }],
-  });
+    staticCss: [{ size: ['*'] }],
+  })
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ["*"],
+          size: ['*'],
         },
       },
     },
-  });
+  })
   ```
 
 - 052283c2: Fix vue `styled` factory internal class merging, for example:
 
   ```vue
   <script setup>
-  import { styled } from "../styled-system/jsx";
+  import { styled } from '../styled-system/jsx'
 
-  const StyledButton = styled("button", {
+  const StyledButton = styled('button', {
     base: {
-      bgColor: "red.300",
+      bgColor: 'red.300',
     },
-  });
+  })
   </script>
   <template>
     <StyledButton id="test" class="test">
@@ -4151,18 +4081,18 @@ export default defineConfig({
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
   ```
 
   Now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will throw since 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
   ```
 
 - Updated dependencies [61831040]
@@ -4221,28 +4151,22 @@ export default defineConfig({
 - b7cb2073: Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
 
   ```tsx
-  import { splitCssProps, styled } from "../styled-system/jsx";
-  import type { HTMLStyledProps } from "../styled-system/types";
+  import { splitCssProps, styled } from '../styled-system/jsx'
+  import type { HTMLStyledProps } from '../styled-system/types'
 
-  function SplitComponent({ children, ...props }: HTMLStyledProps<"div">) {
-    const [cssProps, restProps] = splitCssProps(props);
+  function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+    const [cssProps, restProps] = splitCssProps(props)
     return (
-      <styled.div
-        {...restProps}
-        className={css(
-          { display: "flex", height: "20", width: "20" },
-          cssProps,
-        )}
-      >
+      <styled.div {...restProps} className={css({ display: 'flex', height: '20', width: '20' }, cssProps)}>
         {children}
       </styled.div>
-    );
+    )
   }
 
   // Usage
 
   function App() {
-    return <SplitComponent margin="2">Click me</SplitComponent>;
+    return <SplitComponent margin="2">Click me</SplitComponent>
   }
   ```
 
@@ -4335,16 +4259,16 @@ export default defineConfig({
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -4357,32 +4281,32 @@ export default defineConfig({
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 - fbf062c6: Added a new type to extract variants out of styled components
 
   ```tsx
-  import { StyledVariantProps } from "../styled-system/jsx";
+  import { StyledVariantProps } from '../styled-system/jsx'
 
-  const Button = styled("button", {
-    base: { color: "black" },
+  const Button = styled('button', {
+    base: { color: 'black' },
     variants: {
       state: {
-        error: { color: "red" },
-        success: { color: "green" },
+        error: { color: 'red' },
+        success: { color: 'green' },
       },
     },
-  });
+  })
 
-  type ButtonVariantProps = StyledVariantProps<typeof Button>;
+  type ButtonVariantProps = StyledVariantProps<typeof Button>
   //   ^ { state?: 'error' | 'success' | undefined }
   ```
 
@@ -4484,9 +4408,9 @@ export default defineConfig({
 
   ```ts
   interface FactoryOptions<TProps extends Dict> {
-    dataAttr?: boolean;
-    defaultProps?: TProps;
-    shouldForwardProp?(prop: string, variantKeys: string[]): boolean;
+    dataAttr?: boolean
+    defaultProps?: TProps
+    shouldForwardProp?(prop: string, variantKeys: string[]): boolean
   }
   ```
 
@@ -4494,16 +4418,16 @@ export default defineConfig({
     This is useful for testing and debugging.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, { dataAttr: true });
+  const Button = styled('button', button, { dataAttr: true })
 
   const App = () => (
     <Button variant="secondary" mt="10px">
       Button
     </Button>
-  );
+  )
   // Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
   ```
 
@@ -4511,17 +4435,17 @@ export default defineConfig({
     override the default variants or base styles of a recipe.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, {
+  const Button = styled('button', button, {
     defaultProps: {
-      variant: "secondary",
-      px: "10px",
+      variant: 'secondary',
+      px: '10px',
     },
-  });
+  })
 
-  const App = () => <Button>Button</Button>;
+  const App = () => <Button>Button</Button>
   // Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
   ```
 
@@ -4529,20 +4453,19 @@ export default defineConfig({
     props except recipe variants and style props are forwarded.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
-  import { isCssProperty } from "../styled-system/jsx";
-  import { motion, isValidMotionProp } from "framer-motion";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
+  import { isCssProperty } from '../styled-system/jsx'
+  import { motion, isValidMotionProp } from 'framer-motion'
 
   const StyledMotion = styled(
     motion.div,
     {},
     {
       shouldForwardProp: (prop, variantKeys) =>
-        isValidMotionProp(prop) ||
-        (!variantKeys.includes(prop) && !isCssProperty(prop)),
+        isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
     },
-  );
+  )
   ```
 
   - @pandacss/types@0.15.4
@@ -4565,42 +4488,42 @@ export default defineConfig({
 
   ```ts
   export default defineConfig({
-    outdir: "./outdir",
+    outdir: './outdir',
     importMap: {
-      css: "#panda/styled-system/css",
-      recipes: "#panda/styled-system/recipes",
-      patterns: "#panda/styled-system/patterns",
-      jsx: "#panda/styled-system/jsx",
+      css: '#panda/styled-system/css',
+      recipes: '#panda/styled-system/recipes',
+      patterns: '#panda/styled-system/patterns',
+      jsx: '#panda/styled-system/jsx',
     },
-  });
+  })
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: "../packages/styled-system",
+    outdir: '../packages/styled-system',
     importMap: {
-      css: "@monorepo/styled-system",
-      recipes: "@monorepo/styled-system",
-      patterns: "@monorepo/styled-system",
-      jsx: "@monorepo/styled-system",
+      css: '@monorepo/styled-system',
+      recipes: '@monorepo/styled-system',
+      patterns: '@monorepo/styled-system',
+      jsx: '@monorepo/styled-system',
     },
-  });
+  })
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: "styled-system",
+    outdir: 'styled-system',
     importMap: {
-      css: "styled-system/css",
-      recipes: "styled-system/recipes",
-      patterns: "styled-system/patterns",
-      jsx: "styled-system/jsx",
+      css: 'styled-system/css',
+      recipes: 'styled-system/recipes',
+      patterns: 'styled-system/patterns',
+      jsx: 'styled-system/jsx',
     },
-  });
+  })
   ```
 
 - 1eb31118: Automatically allow overriding config recipe compoundVariants styles within the `styled` JSX factory,
@@ -4610,22 +4533,22 @@ export default defineConfig({
 
   ```ts file="panda.config.ts"
   const button = defineRecipe({
-    className: "btn",
-    base: { color: "green", fontSize: "16px" },
+    className: 'btn',
+    base: { color: 'green', fontSize: '16px' },
     variants: {
-      size: { small: { fontSize: "14px" } },
+      size: { small: { fontSize: '14px' } },
     },
-    compoundVariants: [{ size: "small", css: { color: "blue" } }],
-  });
+    compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+  })
   ```
 
   This would previously not merge the `color` property overrides, but now it does:
 
   ```tsx file="example.tsx"
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button);
+  const Button = styled('button', button)
 
   function App() {
     return (
@@ -4634,7 +4557,7 @@ export default defineConfig({
           Click me
         </Button>
       </>
-    );
+    )
   }
   ```
 
@@ -4813,8 +4736,8 @@ export default defineConfig({
     passed in. This is to allow the `css` function to merge the styles correctly.
 
   ```tsx
-  import { css } from "../styled-system/css";
-  css({ mx: "3", paddingTop: "4" }, { mx: "10", pt: "6" }); // => mx_10 pt_6
+  import { css } from '../styled-system/css'
+  css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' }) // => mx_10 pt_6
   ```
 
   > ⚠️ This approach should be preferred for merging styles over the current `cx` function, which will be reverted to
@@ -4839,29 +4762,26 @@ export default defineConfig({
   be merged correctly.
 
   ```tsx title="src/components/Button.tsx"
-  import { css } from "../../styled-system/css";
+  import { css } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
-    const className = css(
-      { display: "flex", alignItem: "center", color: "black" },
-      cssProp,
-    );
-    return <button className={className}>{children}</button>;
-  };
+    const className = css({ display: 'flex', alignItem: 'center', color: 'black' }, cssProp)
+    return <button className={className}>{children}</button>
+  }
   ```
 
   Then you can use the `Button` component like this:
 
   ```tsx title="src/app/page.tsx"
-  import { css } from "../../styled-system/css";
-  import { Button, Thingy } from "./Button";
+  import { css } from '../../styled-system/css'
+  import { Button, Thingy } from './Button'
 
   export default function Page() {
     return (
-      <Button css={{ color: "pink", _hover: { color: "red" } }}>
+      <Button css={{ color: 'pink', _hover: { color: 'red' } }}>
         will result in `class="d_flex items_center text_pink hover:text_red"`
       </Button>
-    );
+    )
   }
   ```
 
@@ -4873,51 +4793,51 @@ export default defineConfig({
   **Pattern Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { hstack } from "../../styled-system/patterns";
-  import { css, cva } from "../../styled-system/css";
+  import { hstack } from '../../styled-system/patterns'
+  import { css, cva } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
     // using the flex pattern
     const hstackProps = hstack.raw({
-      border: "1px solid",
-      _hover: { color: "blue.400" },
-    });
+      border: '1px solid',
+      _hover: { color: 'blue.400' },
+    })
 
     // merging the styles
-    const className = css(hstackProps, cssProp);
+    const className = css(hstackProps, cssProp)
 
-    return <button className={className}>{children}</button>;
-  };
+    return <button className={className}>{children}</button>
+  }
   ```
 
   **CVA Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { css, cva } from "../../styled-system/css";
+  import { css, cva } from '../../styled-system/css'
 
   const buttonRecipe = cva({
-    base: { display: "flex", fontSize: "lg" },
+    base: { display: 'flex', fontSize: 'lg' },
     variants: {
       variant: {
-        primary: { color: "white", backgroundColor: "blue.500" },
+        primary: { color: 'white', backgroundColor: 'blue.500' },
       },
     },
-  });
+  })
 
   export const Button = ({ css: cssProp = {}, children }) => {
     const className = css(
       // using the button recipe
-      buttonRecipe.raw({ variant: "primary" }),
+      buttonRecipe.raw({ variant: 'primary' }),
 
       // adding style overrides (internal)
-      { _hover: { color: "blue.400" } },
+      { _hover: { color: 'blue.400' } },
 
       // adding style overrides (external)
       cssProp,
-    );
+    )
 
-    return <button className={className}>{props.children}</button>;
-  };
+    return <button className={className}>{props.children}</button>
+  }
   ```
 
 - 36fdff89: Fix bug in generated js code for atomic slot recipe produce where `splitVariantProps` didn't work without
@@ -4964,14 +4884,7 @@ export default defineConfig({
   Example:
 
   ```tsx
-  <h1
-    className={cx(
-      css({ mx: "3", paddingTop: "4" }),
-      css({ mx: "10", pt: "6" }),
-    )}
-  >
-    Will result in "mx_10 pt_6"
-  </h1>
+  <h1 className={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</h1>
   ```
 
 - dfb3f85f: Add missing svg props types
@@ -5016,12 +4929,12 @@ export default defineConfig({
   **Definition**
 
   ```jsx
-  import { sva } from "styled-system/css";
+  import { sva } from 'styled-system/css'
 
   const button = sva({
-    slots: ["label", "icon"],
+    slots: ['label', 'icon'],
     base: {
-      label: { color: "red", textDecoration: "underline" },
+      label: { color: 'red', textDecoration: 'underline' },
     },
     variants: {
       rounded: {
@@ -5029,33 +4942,33 @@ export default defineConfig({
       },
       size: {
         sm: {
-          label: { fontSize: "sm" },
-          icon: { fontSize: "sm" },
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
         },
         lg: {
-          label: { fontSize: "lg" },
-          icon: { fontSize: "lg", color: "pink" },
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
         },
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
     },
-  });
+  })
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: "lg", rounded: true });
+    const btnClass = button({ size: 'lg', rounded: true })
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    );
+    )
   }
   ```
 
@@ -5120,26 +5033,26 @@ export default defineConfig({
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from "styled-system/jsx";
+  import { Circle } from 'styled-system/jsx'
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>;
-  };
+    return <Circle {...props}>{children}</Circle>
+  }
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ["CustomCircle"],
+          jsx: ['CustomCircle'],
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -5237,17 +5150,9 @@ export default defineConfig({
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button
-        className={cx(
-          pinkRecipe({ variant }),
-          greenRecipe({ variant }),
-          blueRecipe({ variant }),
-        )}
-      >
-        Hello
-      </button>
-    );
-  };
+      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    )
+  }
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -5331,7 +5236,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ["*"], shape: ["*"] }];
+      button: [{ size: ['*'], shape: ['*'] }]
     }
   }
   ```
@@ -5341,7 +5246,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: ["*"];
+      button: ['*']
     }
   }
   ```
@@ -5379,8 +5284,8 @@ export default defineConfig({
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: "template-literal",
-  });
+    syntax: 'template-literal',
+  })
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
@@ -5412,12 +5317,12 @@ export default defineConfig({
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     shorthands: false,
-  });
+  })
   ```
 
 ### Patch Changes
@@ -5540,20 +5445,20 @@ Will now allow you to use the following syntax for token path:
   export default defaultConfig({
     conditions: {
       extend: {
-        supportHover: ["@media (hover: hover) and (pointer: fine)", "&:hover"],
+        supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover'],
       },
     },
-  });
+  })
   ```
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     _supportHover: {
-      color: "red",
+      color: 'red',
     },
-  });
+  })
   ```
 
   will generate the following CSS:
@@ -5624,10 +5529,10 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   css({
-    padding: "1px",
-    paddingTop: "3px",
-    paddingBottom: "4px",
-  });
+    padding: '1px',
+    paddingTop: '3px',
+    paddingBottom: '4px',
+  })
   ```
 
   Will now always generate the following css:
@@ -5737,24 +5642,24 @@ Will now allow you to use the following syntax for token path:
     patterns: {
       hstack: {
         properties: {
-          justify: { type: "property", value: "justifyContent" },
-          gap: { type: "property", value: "gap" },
+          justify: { type: 'property', value: 'justifyContent' },
+          gap: { type: 'property', value: 'gap' },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: "40px" },
+        defaultValues: { gap: '40px' },
         transform(props) {
-          const { justify, gap, ...rest } = props;
+          const { justify, gap, ...rest } = props
           return {
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: justify,
             gap,
             ...rest,
-          };
+          }
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -5796,54 +5701,39 @@ Will now allow you to use the following syntax for token path:
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    "context:created": (args: {
-      ctx: ApiInterface;
-      logger: LoggerInterface;
-    }) => void;
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    "parser:before": (args: {
-      filePath: string;
-      content: string;
-    }) => string | void;
+    'parser:before': (args: { filePath: string; content: string }) => string | void
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    "parser:after": (args: {
-      filePath: string;
-      result: ParserResultInterface | undefined;
-    }) => void;
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
     /**
      * Called after the codegen is completed
      */
-    "codegen:done": () => MaybeAsyncReturn;
+    'codegen:done': () => MaybeAsyncReturn
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    "cssgen:done": (args: {
-      artifact:
-        | "global"
-        | "static"
-        | "reset"
-        | "tokens"
-        | "keyframes"
-        | "styles.css";
-      content: string;
-    }) => string | void;
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
   }
   ```
 
@@ -5991,18 +5881,18 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
   ```
 
   now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will not throw there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
   ```
 
   Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
@@ -6013,79 +5903,79 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   type StrictableProps =
-    | "alignContent"
-    | "alignItems"
-    | "alignSelf"
-    | "all"
-    | "animationComposition"
-    | "animationDirection"
-    | "animationFillMode"
-    | "appearance"
-    | "backfaceVisibility"
-    | "backgroundAttachment"
-    | "backgroundClip"
-    | "borderCollapse"
-    | "border"
-    | "borderBlock"
-    | "borderBlockEnd"
-    | "borderBlockStart"
-    | "borderBottom"
-    | "borderInline"
-    | "borderInlineEnd"
-    | "borderInlineStart"
-    | "borderLeft"
-    | "borderRight"
-    | "borderTop"
-    | "borderBlockEndStyle"
-    | "borderBlockStartStyle"
-    | "borderBlockStyle"
-    | "borderBottomStyle"
-    | "borderInlineEndStyle"
-    | "borderInlineStartStyle"
-    | "borderInlineStyle"
-    | "borderLeftStyle"
-    | "borderRightStyle"
-    | "borderTopStyle"
-    | "boxDecorationBreak"
-    | "boxSizing"
-    | "breakAfter"
-    | "breakBefore"
-    | "breakInside"
-    | "captionSide"
-    | "clear"
-    | "columnFill"
-    | "columnRuleStyle"
-    | "contentVisibility"
-    | "direction"
-    | "display"
-    | "emptyCells"
-    | "flexDirection"
-    | "flexWrap"
-    | "float"
-    | "fontKerning"
-    | "forcedColorAdjust"
-    | "isolation"
-    | "lineBreak"
-    | "mixBlendMode"
-    | "objectFit"
-    | "outlineStyle"
-    | "overflow"
-    | "overflowX"
-    | "overflowY"
-    | "overflowBlock"
-    | "overflowInline"
-    | "overflowWrap"
-    | "pointerEvents"
-    | "position"
-    | "resize"
-    | "scrollBehavior"
-    | "touchAction"
-    | "transformBox"
-    | "transformStyle"
-    | "userSelect"
-    | "visibility"
-    | "wordBreak"
-    | "writingMode";
+    | 'alignContent'
+    | 'alignItems'
+    | 'alignSelf'
+    | 'all'
+    | 'animationComposition'
+    | 'animationDirection'
+    | 'animationFillMode'
+    | 'appearance'
+    | 'backfaceVisibility'
+    | 'backgroundAttachment'
+    | 'backgroundClip'
+    | 'borderCollapse'
+    | 'border'
+    | 'borderBlock'
+    | 'borderBlockEnd'
+    | 'borderBlockStart'
+    | 'borderBottom'
+    | 'borderInline'
+    | 'borderInlineEnd'
+    | 'borderInlineStart'
+    | 'borderLeft'
+    | 'borderRight'
+    | 'borderTop'
+    | 'borderBlockEndStyle'
+    | 'borderBlockStartStyle'
+    | 'borderBlockStyle'
+    | 'borderBottomStyle'
+    | 'borderInlineEndStyle'
+    | 'borderInlineStartStyle'
+    | 'borderInlineStyle'
+    | 'borderLeftStyle'
+    | 'borderRightStyle'
+    | 'borderTopStyle'
+    | 'boxDecorationBreak'
+    | 'boxSizing'
+    | 'breakAfter'
+    | 'breakBefore'
+    | 'breakInside'
+    | 'captionSide'
+    | 'clear'
+    | 'columnFill'
+    | 'columnRuleStyle'
+    | 'contentVisibility'
+    | 'direction'
+    | 'display'
+    | 'emptyCells'
+    | 'flexDirection'
+    | 'flexWrap'
+    | 'float'
+    | 'fontKerning'
+    | 'forcedColorAdjust'
+    | 'isolation'
+    | 'lineBreak'
+    | 'mixBlendMode'
+    | 'objectFit'
+    | 'outlineStyle'
+    | 'overflow'
+    | 'overflowX'
+    | 'overflowY'
+    | 'overflowBlock'
+    | 'overflowInline'
+    | 'overflowWrap'
+    | 'pointerEvents'
+    | 'position'
+    | 'resize'
+    | 'scrollBehavior'
+    | 'touchAction'
+    | 'transformBox'
+    | 'transformStyle'
+    | 'userSelect'
+    | 'visibility'
+    | 'wordBreak'
+    | 'writingMode'
   ```
 
 - Updated dependencies [657ca5da]
@@ -6156,38 +6046,38 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
       visual: {
-        primary: { backgroundColor: "blue" },
-        secondary: { backgroundColor: "gray" },
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
       },
     },
-  });
+  })
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ["*"], // this
+        card: ['*'], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ["*"], responsive: true },
-          { visual: ["*"], responsive: true },
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ["*"] }, { visual: ["*"] }],
+        card: [{ size: ['*'] }, { visual: ['*'] }],
       },
     },
-  });
+  })
   ```
 
   Here's the diff in the generated CSS:
@@ -6334,17 +6224,17 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   css({
-    bg: "[#3B00B9]", // ✅ was okay
+    bg: '[#3B00B9]', // ✅ was okay
     _dark: {
       // ✅ was okay
-      color: "[#3B00B9]",
+      color: '[#3B00B9]',
     },
 
     // ❌ Not okay, will be fixed in this patch
     color: {
-      _dark: "[#3B00B9]",
+      _dark: '[#3B00B9]',
     },
-  });
+  })
   ```
 
 - 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
@@ -6352,9 +6242,9 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 - Updated dependencies [8f4ce97c]
@@ -6395,18 +6285,18 @@ Will now allow you to use the following syntax for token path:
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: "#fff",
+    color: '#fff',
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: "100px",
+    width: '100px',
 
     // ✅ but this is now allowed:
-    bgColor: "[rgb(51 155 240)]",
-    fontSize: "[12px]",
-  });
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
   ```
 
 ### Patch Changes
@@ -6440,49 +6330,49 @@ Will now allow you to use the following syntax for token path:
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from "@pandacss/dev";
+  import { defineRecipe } from '@pandacss/dev'
 
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
     },
-    staticCss: [{ size: ["*"] }],
-  });
+    staticCss: [{ size: ['*'] }],
+  })
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ["*"],
+          size: ['*'],
         },
       },
     },
-  });
+  })
   ```
 
 - 052283c2: Fix vue `styled` factory internal class merging, for example:
 
   ```vue
   <script setup>
-  import { styled } from "../styled-system/jsx";
+  import { styled } from '../styled-system/jsx'
 
-  const StyledButton = styled("button", {
+  const StyledButton = styled('button', {
     base: {
-      bgColor: "red.300",
+      bgColor: 'red.300',
     },
-  });
+  })
   </script>
   <template>
     <StyledButton id="test" class="test">
@@ -6551,18 +6441,18 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
   ```
 
   Now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will throw since 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
   ```
 
 - Updated dependencies [61831040]
@@ -6621,28 +6511,22 @@ Will now allow you to use the following syntax for token path:
 - b7cb2073: Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
 
   ```tsx
-  import { splitCssProps, styled } from "../styled-system/jsx";
-  import type { HTMLStyledProps } from "../styled-system/types";
+  import { splitCssProps, styled } from '../styled-system/jsx'
+  import type { HTMLStyledProps } from '../styled-system/types'
 
-  function SplitComponent({ children, ...props }: HTMLStyledProps<"div">) {
-    const [cssProps, restProps] = splitCssProps(props);
+  function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+    const [cssProps, restProps] = splitCssProps(props)
     return (
-      <styled.div
-        {...restProps}
-        className={css(
-          { display: "flex", height: "20", width: "20" },
-          cssProps,
-        )}
-      >
+      <styled.div {...restProps} className={css({ display: 'flex', height: '20', width: '20' }, cssProps)}>
         {children}
       </styled.div>
-    );
+    )
   }
 
   // Usage
 
   function App() {
-    return <SplitComponent margin="2">Click me</SplitComponent>;
+    return <SplitComponent margin="2">Click me</SplitComponent>
   }
   ```
 
@@ -6735,16 +6619,16 @@ Will now allow you to use the following syntax for token path:
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -6757,32 +6641,32 @@ Will now allow you to use the following syntax for token path:
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 - fbf062c6: Added a new type to extract variants out of styled components
 
   ```tsx
-  import { StyledVariantProps } from "../styled-system/jsx";
+  import { StyledVariantProps } from '../styled-system/jsx'
 
-  const Button = styled("button", {
-    base: { color: "black" },
+  const Button = styled('button', {
+    base: { color: 'black' },
     variants: {
       state: {
-        error: { color: "red" },
-        success: { color: "green" },
+        error: { color: 'red' },
+        success: { color: 'green' },
       },
     },
-  });
+  })
 
-  type ButtonVariantProps = StyledVariantProps<typeof Button>;
+  type ButtonVariantProps = StyledVariantProps<typeof Button>
   //   ^ { state?: 'error' | 'success' | undefined }
   ```
 
@@ -6884,9 +6768,9 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   interface FactoryOptions<TProps extends Dict> {
-    dataAttr?: boolean;
-    defaultProps?: TProps;
-    shouldForwardProp?(prop: string, variantKeys: string[]): boolean;
+    dataAttr?: boolean
+    defaultProps?: TProps
+    shouldForwardProp?(prop: string, variantKeys: string[]): boolean
   }
   ```
 
@@ -6894,16 +6778,16 @@ Will now allow you to use the following syntax for token path:
     This is useful for testing and debugging.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, { dataAttr: true });
+  const Button = styled('button', button, { dataAttr: true })
 
   const App = () => (
     <Button variant="secondary" mt="10px">
       Button
     </Button>
-  );
+  )
   // Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
   ```
 
@@ -6911,17 +6795,17 @@ Will now allow you to use the following syntax for token path:
     override the default variants or base styles of a recipe.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, {
+  const Button = styled('button', button, {
     defaultProps: {
-      variant: "secondary",
-      px: "10px",
+      variant: 'secondary',
+      px: '10px',
     },
-  });
+  })
 
-  const App = () => <Button>Button</Button>;
+  const App = () => <Button>Button</Button>
   // Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
   ```
 
@@ -6929,20 +6813,19 @@ Will now allow you to use the following syntax for token path:
     props except recipe variants and style props are forwarded.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
-  import { isCssProperty } from "../styled-system/jsx";
-  import { motion, isValidMotionProp } from "framer-motion";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
+  import { isCssProperty } from '../styled-system/jsx'
+  import { motion, isValidMotionProp } from 'framer-motion'
 
   const StyledMotion = styled(
     motion.div,
     {},
     {
       shouldForwardProp: (prop, variantKeys) =>
-        isValidMotionProp(prop) ||
-        (!variantKeys.includes(prop) && !isCssProperty(prop)),
+        isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
     },
-  );
+  )
   ```
 
   - @pandacss/types@0.15.4
@@ -6965,42 +6848,42 @@ Will now allow you to use the following syntax for token path:
 
   ```ts
   export default defineConfig({
-    outdir: "./outdir",
+    outdir: './outdir',
     importMap: {
-      css: "#panda/styled-system/css",
-      recipes: "#panda/styled-system/recipes",
-      patterns: "#panda/styled-system/patterns",
-      jsx: "#panda/styled-system/jsx",
+      css: '#panda/styled-system/css',
+      recipes: '#panda/styled-system/recipes',
+      patterns: '#panda/styled-system/patterns',
+      jsx: '#panda/styled-system/jsx',
     },
-  });
+  })
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: "../packages/styled-system",
+    outdir: '../packages/styled-system',
     importMap: {
-      css: "@monorepo/styled-system",
-      recipes: "@monorepo/styled-system",
-      patterns: "@monorepo/styled-system",
-      jsx: "@monorepo/styled-system",
+      css: '@monorepo/styled-system',
+      recipes: '@monorepo/styled-system',
+      patterns: '@monorepo/styled-system',
+      jsx: '@monorepo/styled-system',
     },
-  });
+  })
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: "styled-system",
+    outdir: 'styled-system',
     importMap: {
-      css: "styled-system/css",
-      recipes: "styled-system/recipes",
-      patterns: "styled-system/patterns",
-      jsx: "styled-system/jsx",
+      css: 'styled-system/css',
+      recipes: 'styled-system/recipes',
+      patterns: 'styled-system/patterns',
+      jsx: 'styled-system/jsx',
     },
-  });
+  })
   ```
 
 - 1eb31118: Automatically allow overriding config recipe compoundVariants styles within the `styled` JSX factory,
@@ -7010,22 +6893,22 @@ Will now allow you to use the following syntax for token path:
 
   ```ts file="panda.config.ts"
   const button = defineRecipe({
-    className: "btn",
-    base: { color: "green", fontSize: "16px" },
+    className: 'btn',
+    base: { color: 'green', fontSize: '16px' },
     variants: {
-      size: { small: { fontSize: "14px" } },
+      size: { small: { fontSize: '14px' } },
     },
-    compoundVariants: [{ size: "small", css: { color: "blue" } }],
-  });
+    compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+  })
   ```
 
   This would previously not merge the `color` property overrides, but now it does:
 
   ```tsx file="example.tsx"
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button);
+  const Button = styled('button', button)
 
   function App() {
     return (
@@ -7034,7 +6917,7 @@ Will now allow you to use the following syntax for token path:
           Click me
         </Button>
       </>
-    );
+    )
   }
   ```
 
@@ -7213,8 +7096,8 @@ Will now allow you to use the following syntax for token path:
     passed in. This is to allow the `css` function to merge the styles correctly.
 
   ```tsx
-  import { css } from "../styled-system/css";
-  css({ mx: "3", paddingTop: "4" }, { mx: "10", pt: "6" }); // => mx_10 pt_6
+  import { css } from '../styled-system/css'
+  css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' }) // => mx_10 pt_6
   ```
 
   > ⚠️ This approach should be preferred for merging styles over the current `cx` function, which will be reverted to
@@ -7239,29 +7122,26 @@ Will now allow you to use the following syntax for token path:
   be merged correctly.
 
   ```tsx title="src/components/Button.tsx"
-  import { css } from "../../styled-system/css";
+  import { css } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
-    const className = css(
-      { display: "flex", alignItem: "center", color: "black" },
-      cssProp,
-    );
-    return <button className={className}>{children}</button>;
-  };
+    const className = css({ display: 'flex', alignItem: 'center', color: 'black' }, cssProp)
+    return <button className={className}>{children}</button>
+  }
   ```
 
   Then you can use the `Button` component like this:
 
   ```tsx title="src/app/page.tsx"
-  import { css } from "../../styled-system/css";
-  import { Button, Thingy } from "./Button";
+  import { css } from '../../styled-system/css'
+  import { Button, Thingy } from './Button'
 
   export default function Page() {
     return (
-      <Button css={{ color: "pink", _hover: { color: "red" } }}>
+      <Button css={{ color: 'pink', _hover: { color: 'red' } }}>
         will result in `class="d_flex items_center text_pink hover:text_red"`
       </Button>
-    );
+    )
   }
   ```
 
@@ -7273,51 +7153,51 @@ Will now allow you to use the following syntax for token path:
   **Pattern Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { hstack } from "../../styled-system/patterns";
-  import { css, cva } from "../../styled-system/css";
+  import { hstack } from '../../styled-system/patterns'
+  import { css, cva } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
     // using the flex pattern
     const hstackProps = hstack.raw({
-      border: "1px solid",
-      _hover: { color: "blue.400" },
-    });
+      border: '1px solid',
+      _hover: { color: 'blue.400' },
+    })
 
     // merging the styles
-    const className = css(hstackProps, cssProp);
+    const className = css(hstackProps, cssProp)
 
-    return <button className={className}>{children}</button>;
-  };
+    return <button className={className}>{children}</button>
+  }
   ```
 
   **CVA Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { css, cva } from "../../styled-system/css";
+  import { css, cva } from '../../styled-system/css'
 
   const buttonRecipe = cva({
-    base: { display: "flex", fontSize: "lg" },
+    base: { display: 'flex', fontSize: 'lg' },
     variants: {
       variant: {
-        primary: { color: "white", backgroundColor: "blue.500" },
+        primary: { color: 'white', backgroundColor: 'blue.500' },
       },
     },
-  });
+  })
 
   export const Button = ({ css: cssProp = {}, children }) => {
     const className = css(
       // using the button recipe
-      buttonRecipe.raw({ variant: "primary" }),
+      buttonRecipe.raw({ variant: 'primary' }),
 
       // adding style overrides (internal)
-      { _hover: { color: "blue.400" } },
+      { _hover: { color: 'blue.400' } },
 
       // adding style overrides (external)
       cssProp,
-    );
+    )
 
-    return <button className={className}>{props.children}</button>;
-  };
+    return <button className={className}>{props.children}</button>
+  }
   ```
 
 - 36fdff89: Fix bug in generated js code for atomic slot recipe produce where `splitVariantProps` didn't work without
@@ -7364,14 +7244,7 @@ Will now allow you to use the following syntax for token path:
   Example:
 
   ```tsx
-  <h1
-    className={cx(
-      css({ mx: "3", paddingTop: "4" }),
-      css({ mx: "10", pt: "6" }),
-    )}
-  >
-    Will result in "mx_10 pt_6"
-  </h1>
+  <h1 className={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</h1>
   ```
 
 - dfb3f85f: Add missing svg props types
@@ -7416,12 +7289,12 @@ Will now allow you to use the following syntax for token path:
   **Definition**
 
   ```jsx
-  import { sva } from "styled-system/css";
+  import { sva } from 'styled-system/css'
 
   const button = sva({
-    slots: ["label", "icon"],
+    slots: ['label', 'icon'],
     base: {
-      label: { color: "red", textDecoration: "underline" },
+      label: { color: 'red', textDecoration: 'underline' },
     },
     variants: {
       rounded: {
@@ -7429,33 +7302,33 @@ Will now allow you to use the following syntax for token path:
       },
       size: {
         sm: {
-          label: { fontSize: "sm" },
-          icon: { fontSize: "sm" },
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
         },
         lg: {
-          label: { fontSize: "lg" },
-          icon: { fontSize: "lg", color: "pink" },
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
         },
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
     },
-  });
+  })
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: "lg", rounded: true });
+    const btnClass = button({ size: 'lg', rounded: true })
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    );
+    )
   }
   ```
 
@@ -7520,26 +7393,26 @@ Will now allow you to use the following syntax for token path:
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from "styled-system/jsx";
+  import { Circle } from 'styled-system/jsx'
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>;
-  };
+    return <Circle {...props}>{children}</Circle>
+  }
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ["CustomCircle"],
+          jsx: ['CustomCircle'],
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -7637,17 +7510,9 @@ Will now allow you to use the following syntax for token path:
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button
-        className={cx(
-          pinkRecipe({ variant }),
-          greenRecipe({ variant }),
-          blueRecipe({ variant }),
-        )}
-      >
-        Hello
-      </button>
-    );
-  };
+      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    )
+  }
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -7731,7 +7596,7 @@ Will now allow you to use the following syntax for token path:
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ["*"], shape: ["*"] }];
+      button: [{ size: ['*'], shape: ['*'] }]
     }
   }
   ```
@@ -7741,7 +7606,7 @@ Will now allow you to use the following syntax for token path:
   ```ts
   staticCss: {
     recipes: {
-      button: ["*"];
+      button: ['*']
     }
   }
   ```
@@ -7779,8 +7644,8 @@ Will now allow you to use the following syntax for token path:
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: "template-literal",
-  });
+    syntax: 'template-literal',
+  })
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
@@ -7812,12 +7677,12 @@ Will now allow you to use the following syntax for token path:
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     shorthands: false,
-  });
+  })
   ```
 
 ### Patch Changes
@@ -7937,11 +7802,11 @@ This hook is called right before writing the codegen files to disk. You can use 
 export default defineConfig({
   // ...
   hooks: {
-    "codegen:prepare": ({ artifacts, changed }) => {
+    'codegen:prepare': ({ artifacts, changed }) => {
       // do something with the emitted js/d.ts files
     },
   },
-});
+})
 ```
 
 - 49c760cd: Fix issue where responsive array in css and cva doesn't generate the correct classname
@@ -7959,11 +7824,11 @@ export default defineConfig({
   ```js
   module.exports = {
     plugins: {
-      "@pandacss/dev/postcss": {
-        logfile: "./logs/panda.log",
+      '@pandacss/dev/postcss': {
+        logfile: './logs/panda.log',
       },
     },
-  };
+  }
   ```
 
 - Updated dependencies [74485ef1]
@@ -8002,24 +7867,24 @@ export default defineConfig({
     patterns: {
       hstack: {
         properties: {
-          justify: { type: "property", value: "justifyContent" },
-          gap: { type: "property", value: "gap" },
+          justify: { type: 'property', value: 'justifyContent' },
+          gap: { type: 'property', value: 'gap' },
         },
         // you can also use a token like '10'
-        defaultValues: { gap: "40px" },
+        defaultValues: { gap: '40px' },
         transform(props) {
-          const { justify, gap, ...rest } = props;
+          const { justify, gap, ...rest } = props
           return {
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: justify,
             gap,
             ...rest,
-          };
+          }
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -8061,54 +7926,39 @@ export default defineConfig({
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
+    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    "context:created": (args: {
-      ctx: ApiInterface;
-      logger: LoggerInterface;
-    }) => void;
+    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
+    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    "parser:before": (args: {
-      filePath: string;
-      content: string;
-    }) => string | void;
+    'parser:before': (args: { filePath: string; content: string }) => string | void
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    "parser:after": (args: {
-      filePath: string;
-      result: ParserResultInterface | undefined;
-    }) => void;
+    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
     /**
      * Called after the codegen is completed
      */
-    "codegen:done": () => MaybeAsyncReturn;
+    'codegen:done': () => MaybeAsyncReturn
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    "cssgen:done": (args: {
-      artifact:
-        | "global"
-        | "static"
-        | "reset"
-        | "tokens"
-        | "keyframes"
-        | "styles.css";
-      content: string;
-    }) => string | void;
+    'cssgen:done': (args: {
+      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
+      content: string
+    }) => string | void
   }
   ```
 
@@ -8256,18 +8106,18 @@ export default defineConfig({
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ would throw since 'abc' is not part of predefined values of 'display' even thought there is no config token for 'abc'
   ```
 
   now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will not throw there is no config token for 'abc'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will not throw there is no config token for 'abc'
   ```
 
   Instead, if you want the v.19.0 behavior, you can use the new `config.strictPropertyValues` option. You can combine it
@@ -8278,79 +8128,79 @@ export default defineConfig({
 
   ```ts
   type StrictableProps =
-    | "alignContent"
-    | "alignItems"
-    | "alignSelf"
-    | "all"
-    | "animationComposition"
-    | "animationDirection"
-    | "animationFillMode"
-    | "appearance"
-    | "backfaceVisibility"
-    | "backgroundAttachment"
-    | "backgroundClip"
-    | "borderCollapse"
-    | "border"
-    | "borderBlock"
-    | "borderBlockEnd"
-    | "borderBlockStart"
-    | "borderBottom"
-    | "borderInline"
-    | "borderInlineEnd"
-    | "borderInlineStart"
-    | "borderLeft"
-    | "borderRight"
-    | "borderTop"
-    | "borderBlockEndStyle"
-    | "borderBlockStartStyle"
-    | "borderBlockStyle"
-    | "borderBottomStyle"
-    | "borderInlineEndStyle"
-    | "borderInlineStartStyle"
-    | "borderInlineStyle"
-    | "borderLeftStyle"
-    | "borderRightStyle"
-    | "borderTopStyle"
-    | "boxDecorationBreak"
-    | "boxSizing"
-    | "breakAfter"
-    | "breakBefore"
-    | "breakInside"
-    | "captionSide"
-    | "clear"
-    | "columnFill"
-    | "columnRuleStyle"
-    | "contentVisibility"
-    | "direction"
-    | "display"
-    | "emptyCells"
-    | "flexDirection"
-    | "flexWrap"
-    | "float"
-    | "fontKerning"
-    | "forcedColorAdjust"
-    | "isolation"
-    | "lineBreak"
-    | "mixBlendMode"
-    | "objectFit"
-    | "outlineStyle"
-    | "overflow"
-    | "overflowX"
-    | "overflowY"
-    | "overflowBlock"
-    | "overflowInline"
-    | "overflowWrap"
-    | "pointerEvents"
-    | "position"
-    | "resize"
-    | "scrollBehavior"
-    | "touchAction"
-    | "transformBox"
-    | "transformStyle"
-    | "userSelect"
-    | "visibility"
-    | "wordBreak"
-    | "writingMode";
+    | 'alignContent'
+    | 'alignItems'
+    | 'alignSelf'
+    | 'all'
+    | 'animationComposition'
+    | 'animationDirection'
+    | 'animationFillMode'
+    | 'appearance'
+    | 'backfaceVisibility'
+    | 'backgroundAttachment'
+    | 'backgroundClip'
+    | 'borderCollapse'
+    | 'border'
+    | 'borderBlock'
+    | 'borderBlockEnd'
+    | 'borderBlockStart'
+    | 'borderBottom'
+    | 'borderInline'
+    | 'borderInlineEnd'
+    | 'borderInlineStart'
+    | 'borderLeft'
+    | 'borderRight'
+    | 'borderTop'
+    | 'borderBlockEndStyle'
+    | 'borderBlockStartStyle'
+    | 'borderBlockStyle'
+    | 'borderBottomStyle'
+    | 'borderInlineEndStyle'
+    | 'borderInlineStartStyle'
+    | 'borderInlineStyle'
+    | 'borderLeftStyle'
+    | 'borderRightStyle'
+    | 'borderTopStyle'
+    | 'boxDecorationBreak'
+    | 'boxSizing'
+    | 'breakAfter'
+    | 'breakBefore'
+    | 'breakInside'
+    | 'captionSide'
+    | 'clear'
+    | 'columnFill'
+    | 'columnRuleStyle'
+    | 'contentVisibility'
+    | 'direction'
+    | 'display'
+    | 'emptyCells'
+    | 'flexDirection'
+    | 'flexWrap'
+    | 'float'
+    | 'fontKerning'
+    | 'forcedColorAdjust'
+    | 'isolation'
+    | 'lineBreak'
+    | 'mixBlendMode'
+    | 'objectFit'
+    | 'outlineStyle'
+    | 'overflow'
+    | 'overflowX'
+    | 'overflowY'
+    | 'overflowBlock'
+    | 'overflowInline'
+    | 'overflowWrap'
+    | 'pointerEvents'
+    | 'position'
+    | 'resize'
+    | 'scrollBehavior'
+    | 'touchAction'
+    | 'transformBox'
+    | 'transformStyle'
+    | 'userSelect'
+    | 'visibility'
+    | 'wordBreak'
+    | 'writingMode'
   ```
 
 - Updated dependencies [657ca5da]
@@ -8421,38 +8271,38 @@ export default defineConfig({
 
   ```ts
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
       visual: {
-        primary: { backgroundColor: "blue" },
-        secondary: { backgroundColor: "gray" },
+        primary: { backgroundColor: 'blue' },
+        secondary: { backgroundColor: 'gray' },
       },
     },
-  });
+  })
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
-        card: ["*"], // this
+        card: ['*'], // this
 
         // was equivalent to:
         card: [
           // notice how `responsive: true` was implicitly added
-          { size: ["*"], responsive: true },
-          { visual: ["*"], responsive: true },
+          { size: ['*'], responsive: true },
+          { visual: ['*'], responsive: true },
         ],
 
         //   will now correctly be equivalent to:
-        card: [{ size: ["*"] }, { visual: ["*"] }],
+        card: [{ size: ['*'] }, { visual: ['*'] }],
       },
     },
-  });
+  })
   ```
 
   Here's the diff in the generated CSS:
@@ -8599,17 +8449,17 @@ export default defineConfig({
 
   ```ts
   css({
-    bg: "[#3B00B9]", // ✅ was okay
+    bg: '[#3B00B9]', // ✅ was okay
     _dark: {
       // ✅ was okay
-      color: "[#3B00B9]",
+      color: '[#3B00B9]',
     },
 
     // ❌ Not okay, will be fixed in this patch
     color: {
-      _dark: "[#3B00B9]",
+      _dark: '[#3B00B9]',
     },
-  });
+  })
   ```
 
 - 647f05c9: Fix a CSS generation issue with `config.strictTokens` when using the `[xxx]` escape-hatch syntax with `!` or
@@ -8617,9 +8467,9 @@ export default defineConfig({
 
   ```ts
   css({
-    borderWidth: "[2px!]",
-    width: "[2px !important]",
-  });
+    borderWidth: '[2px!]',
+    width: '[2px !important]',
+  })
   ```
 
 - Updated dependencies [8f4ce97c]
@@ -8660,18 +8510,18 @@ export default defineConfig({
   and suffixing with `]`, e.g. writing `[123px]` as a value will bypass the token validation.
 
   ```ts
-  import { css } from "../styled-system/css";
+  import { css } from '../styled-system/css'
 
   css({
     // @ts-expect-error TS will throw when using from strictTokens: true
-    color: "#fff",
+    color: '#fff',
     // @ts-expect-error TS will throw when using from strictTokens: true
-    width: "100px",
+    width: '100px',
 
     // ✅ but this is now allowed:
-    bgColor: "[rgb(51 155 240)]",
-    fontSize: "[12px]",
-  });
+    bgColor: '[rgb(51 155 240)]',
+    fontSize: '[12px]',
+  })
   ```
 
 ### Patch Changes
@@ -8705,49 +8555,49 @@ export default defineConfig({
 - 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
-  import { defineRecipe } from "@pandacss/dev";
+  import { defineRecipe } from '@pandacss/dev'
 
   const card = defineRecipe({
-    className: "card",
-    base: { color: "white" },
+    className: 'card',
+    base: { color: 'white' },
     variants: {
       size: {
-        small: { fontSize: "14px" },
-        large: { fontSize: "18px" },
+        small: { fontSize: '14px' },
+        large: { fontSize: '18px' },
       },
     },
-    staticCss: [{ size: ["*"] }],
-  });
+    staticCss: [{ size: ['*'] }],
+  })
   ```
 
   would be the equivalent of defining it inside the main config:
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     staticCss: {
       recipes: {
         card: {
-          size: ["*"],
+          size: ['*'],
         },
       },
     },
-  });
+  })
   ```
 
 - 052283c2: Fix vue `styled` factory internal class merging, for example:
 
   ```vue
   <script setup>
-  import { styled } from "../styled-system/jsx";
+  import { styled } from '../styled-system/jsx'
 
-  const StyledButton = styled("button", {
+  const StyledButton = styled('button', {
     base: {
-      bgColor: "red.300",
+      bgColor: 'red.300',
     },
-  });
+  })
   </script>
   <template>
     <StyledButton id="test" class="test">
@@ -8816,18 +8666,18 @@ export default defineConfig({
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ❌ didn't throw even though 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ❌ didn't throw even though 'abc' is not a valid value for 'display'
   ```
 
   Now:
 
   ```ts
   // config.strictTokens = true
-  css({ display: "flex" }); // OK, didn't throw
-  css({ display: "block" }); // OK, didn't throw
-  css({ display: "abc" }); // ✅ will throw since 'abc' is not a valid value for 'display'
+  css({ display: 'flex' }) // OK, didn't throw
+  css({ display: 'block' }) // OK, didn't throw
+  css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
   ```
 
 - Updated dependencies [61831040]
@@ -8886,28 +8736,22 @@ export default defineConfig({
 - b7cb2073: Add a `splitCssProps` utility exported from the {outdir}/jsx entrypoint
 
   ```tsx
-  import { splitCssProps, styled } from "../styled-system/jsx";
-  import type { HTMLStyledProps } from "../styled-system/types";
+  import { splitCssProps, styled } from '../styled-system/jsx'
+  import type { HTMLStyledProps } from '../styled-system/types'
 
-  function SplitComponent({ children, ...props }: HTMLStyledProps<"div">) {
-    const [cssProps, restProps] = splitCssProps(props);
+  function SplitComponent({ children, ...props }: HTMLStyledProps<'div'>) {
+    const [cssProps, restProps] = splitCssProps(props)
     return (
-      <styled.div
-        {...restProps}
-        className={css(
-          { display: "flex", height: "20", width: "20" },
-          cssProps,
-        )}
-      >
+      <styled.div {...restProps} className={css({ display: 'flex', height: '20', width: '20' }, cssProps)}>
         {children}
       </styled.div>
-    );
+    )
   }
 
   // Usage
 
   function App() {
-    return <SplitComponent margin="2">Click me</SplitComponent>;
+    return <SplitComponent margin="2">Click me</SplitComponent>
   }
   ```
 
@@ -9000,16 +8844,16 @@ export default defineConfig({
   together and the styles will be merged correctly.
 
   ```jsx
-  const Box = styled("div", {
+  const Box = styled('div', {
     base: {
-      background: "red.light",
-      color: "white",
+      background: 'red.light',
+      color: 'white',
     },
-  });
+  })
 
   const ExtendedBox = styled(Box, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
 
   // <ExtendedBox> will have a background of `red.dark` and a color of `white`
   ```
@@ -9022,32 +8866,32 @@ export default defineConfig({
   - CVA or Inline CVA + Config Recipe = ❌
 
   ```jsx
-  import { button } from "../styled-system/recipes";
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("div", button);
+  const Button = styled('div', button)
 
   // ❌ This will throw an error
   const ExtendedButton = styled(Button, {
-    base: { background: "red.dark" },
-  });
+    base: { background: 'red.dark' },
+  })
   ```
 
 - fbf062c6: Added a new type to extract variants out of styled components
 
   ```tsx
-  import { StyledVariantProps } from "../styled-system/jsx";
+  import { StyledVariantProps } from '../styled-system/jsx'
 
-  const Button = styled("button", {
-    base: { color: "black" },
+  const Button = styled('button', {
+    base: { color: 'black' },
     variants: {
       state: {
-        error: { color: "red" },
-        success: { color: "green" },
+        error: { color: 'red' },
+        success: { color: 'green' },
       },
     },
-  });
+  })
 
-  type ButtonVariantProps = StyledVariantProps<typeof Button>;
+  type ButtonVariantProps = StyledVariantProps<typeof Button>
   //   ^ { state?: 'error' | 'success' | undefined }
   ```
 
@@ -9149,9 +8993,9 @@ export default defineConfig({
 
   ```ts
   interface FactoryOptions<TProps extends Dict> {
-    dataAttr?: boolean;
-    defaultProps?: TProps;
-    shouldForwardProp?(prop: string, variantKeys: string[]): boolean;
+    dataAttr?: boolean
+    defaultProps?: TProps
+    shouldForwardProp?(prop: string, variantKeys: string[]): boolean
   }
   ```
 
@@ -9159,16 +9003,16 @@ export default defineConfig({
     This is useful for testing and debugging.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, { dataAttr: true });
+  const Button = styled('button', button, { dataAttr: true })
 
   const App = () => (
     <Button variant="secondary" mt="10px">
       Button
     </Button>
-  );
+  )
   // Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
   ```
 
@@ -9176,17 +9020,17 @@ export default defineConfig({
     override the default variants or base styles of a recipe.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button, {
+  const Button = styled('button', button, {
     defaultProps: {
-      variant: "secondary",
-      px: "10px",
+      variant: 'secondary',
+      px: '10px',
     },
-  });
+  })
 
-  const App = () => <Button>Button</Button>;
+  const App = () => <Button>Button</Button>
   // Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
   ```
 
@@ -9194,20 +9038,19 @@ export default defineConfig({
     props except recipe variants and style props are forwarded.
 
   ```jsx
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
-  import { isCssProperty } from "../styled-system/jsx";
-  import { motion, isValidMotionProp } from "framer-motion";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
+  import { isCssProperty } from '../styled-system/jsx'
+  import { motion, isValidMotionProp } from 'framer-motion'
 
   const StyledMotion = styled(
     motion.div,
     {},
     {
       shouldForwardProp: (prop, variantKeys) =>
-        isValidMotionProp(prop) ||
-        (!variantKeys.includes(prop) && !isCssProperty(prop)),
+        isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
     },
-  );
+  )
   ```
 
   - @pandacss/types@0.15.4
@@ -9230,42 +9073,42 @@ export default defineConfig({
 
   ```ts
   export default defineConfig({
-    outdir: "./outdir",
+    outdir: './outdir',
     importMap: {
-      css: "#panda/styled-system/css",
-      recipes: "#panda/styled-system/recipes",
-      patterns: "#panda/styled-system/patterns",
-      jsx: "#panda/styled-system/jsx",
+      css: '#panda/styled-system/css',
+      recipes: '#panda/styled-system/recipes',
+      patterns: '#panda/styled-system/patterns',
+      jsx: '#panda/styled-system/jsx',
     },
-  });
+  })
   ```
 
   Or you could also make your outdir an actual package from your monorepo:
 
   ```ts
   export default defineConfig({
-    outdir: "../packages/styled-system",
+    outdir: '../packages/styled-system',
     importMap: {
-      css: "@monorepo/styled-system",
-      recipes: "@monorepo/styled-system",
-      patterns: "@monorepo/styled-system",
-      jsx: "@monorepo/styled-system",
+      css: '@monorepo/styled-system',
+      recipes: '@monorepo/styled-system',
+      patterns: '@monorepo/styled-system',
+      jsx: '@monorepo/styled-system',
     },
-  });
+  })
   ```
 
   Working with tsconfig paths aliases is easy:
 
   ```ts
   export default defineConfig({
-    outdir: "styled-system",
+    outdir: 'styled-system',
     importMap: {
-      css: "styled-system/css",
-      recipes: "styled-system/recipes",
-      patterns: "styled-system/patterns",
-      jsx: "styled-system/jsx",
+      css: 'styled-system/css',
+      recipes: 'styled-system/recipes',
+      patterns: 'styled-system/patterns',
+      jsx: 'styled-system/jsx',
     },
-  });
+  })
   ```
 
 - 1eb31118: Automatically allow overriding config recipe compoundVariants styles within the `styled` JSX factory,
@@ -9275,22 +9118,22 @@ export default defineConfig({
 
   ```ts file="panda.config.ts"
   const button = defineRecipe({
-    className: "btn",
-    base: { color: "green", fontSize: "16px" },
+    className: 'btn',
+    base: { color: 'green', fontSize: '16px' },
     variants: {
-      size: { small: { fontSize: "14px" } },
+      size: { small: { fontSize: '14px' } },
     },
-    compoundVariants: [{ size: "small", css: { color: "blue" } }],
-  });
+    compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+  })
   ```
 
   This would previously not merge the `color` property overrides, but now it does:
 
   ```tsx file="example.tsx"
-  import { styled } from "../styled-system/jsx";
-  import { button } from "../styled-system/recipes";
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
 
-  const Button = styled("button", button);
+  const Button = styled('button', button)
 
   function App() {
     return (
@@ -9299,7 +9142,7 @@ export default defineConfig({
           Click me
         </Button>
       </>
-    );
+    )
   }
   ```
 
@@ -9478,8 +9321,8 @@ export default defineConfig({
     passed in. This is to allow the `css` function to merge the styles correctly.
 
   ```tsx
-  import { css } from "../styled-system/css";
-  css({ mx: "3", paddingTop: "4" }, { mx: "10", pt: "6" }); // => mx_10 pt_6
+  import { css } from '../styled-system/css'
+  css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' }) // => mx_10 pt_6
   ```
 
   > ⚠️ This approach should be preferred for merging styles over the current `cx` function, which will be reverted to
@@ -9504,29 +9347,26 @@ export default defineConfig({
   be merged correctly.
 
   ```tsx title="src/components/Button.tsx"
-  import { css } from "../../styled-system/css";
+  import { css } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
-    const className = css(
-      { display: "flex", alignItem: "center", color: "black" },
-      cssProp,
-    );
-    return <button className={className}>{children}</button>;
-  };
+    const className = css({ display: 'flex', alignItem: 'center', color: 'black' }, cssProp)
+    return <button className={className}>{children}</button>
+  }
   ```
 
   Then you can use the `Button` component like this:
 
   ```tsx title="src/app/page.tsx"
-  import { css } from "../../styled-system/css";
-  import { Button, Thingy } from "./Button";
+  import { css } from '../../styled-system/css'
+  import { Button, Thingy } from './Button'
 
   export default function Page() {
     return (
-      <Button css={{ color: "pink", _hover: { color: "red" } }}>
+      <Button css={{ color: 'pink', _hover: { color: 'red' } }}>
         will result in `class="d_flex items_center text_pink hover:text_red"`
       </Button>
-    );
+    )
   }
   ```
 
@@ -9538,51 +9378,51 @@ export default defineConfig({
   **Pattern Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { hstack } from "../../styled-system/patterns";
-  import { css, cva } from "../../styled-system/css";
+  import { hstack } from '../../styled-system/patterns'
+  import { css, cva } from '../../styled-system/css'
 
   export const Button = ({ css: cssProp = {}, children }) => {
     // using the flex pattern
     const hstackProps = hstack.raw({
-      border: "1px solid",
-      _hover: { color: "blue.400" },
-    });
+      border: '1px solid',
+      _hover: { color: 'blue.400' },
+    })
 
     // merging the styles
-    const className = css(hstackProps, cssProp);
+    const className = css(hstackProps, cssProp)
 
-    return <button className={className}>{children}</button>;
-  };
+    return <button className={className}>{children}</button>
+  }
   ```
 
   **CVA Example:**
 
   ```tsx title="src/components/Button.tsx"
-  import { css, cva } from "../../styled-system/css";
+  import { css, cva } from '../../styled-system/css'
 
   const buttonRecipe = cva({
-    base: { display: "flex", fontSize: "lg" },
+    base: { display: 'flex', fontSize: 'lg' },
     variants: {
       variant: {
-        primary: { color: "white", backgroundColor: "blue.500" },
+        primary: { color: 'white', backgroundColor: 'blue.500' },
       },
     },
-  });
+  })
 
   export const Button = ({ css: cssProp = {}, children }) => {
     const className = css(
       // using the button recipe
-      buttonRecipe.raw({ variant: "primary" }),
+      buttonRecipe.raw({ variant: 'primary' }),
 
       // adding style overrides (internal)
-      { _hover: { color: "blue.400" } },
+      { _hover: { color: 'blue.400' } },
 
       // adding style overrides (external)
       cssProp,
-    );
+    )
 
-    return <button className={className}>{props.children}</button>;
-  };
+    return <button className={className}>{props.children}</button>
+  }
   ```
 
 - 36fdff89: Fix bug in generated js code for atomic slot recipe produce where `splitVariantProps` didn't work without
@@ -9629,14 +9469,7 @@ export default defineConfig({
   Example:
 
   ```tsx
-  <h1
-    className={cx(
-      css({ mx: "3", paddingTop: "4" }),
-      css({ mx: "10", pt: "6" }),
-    )}
-  >
-    Will result in "mx_10 pt_6"
-  </h1>
+  <h1 className={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</h1>
   ```
 
 - dfb3f85f: Add missing svg props types
@@ -9681,12 +9514,12 @@ export default defineConfig({
   **Definition**
 
   ```jsx
-  import { sva } from "styled-system/css";
+  import { sva } from 'styled-system/css'
 
   const button = sva({
-    slots: ["label", "icon"],
+    slots: ['label', 'icon'],
     base: {
-      label: { color: "red", textDecoration: "underline" },
+      label: { color: 'red', textDecoration: 'underline' },
     },
     variants: {
       rounded: {
@@ -9694,33 +9527,33 @@ export default defineConfig({
       },
       size: {
         sm: {
-          label: { fontSize: "sm" },
-          icon: { fontSize: "sm" },
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
         },
         lg: {
-          label: { fontSize: "lg" },
-          icon: { fontSize: "lg", color: "pink" },
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
         },
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
     },
-  });
+  })
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: "lg", rounded: true });
+    const btnClass = button({ size: 'lg', rounded: true })
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    );
+    )
   }
   ```
 
@@ -9785,26 +9618,26 @@ export default defineConfig({
   Update the `jsx` property to be used for advanced tracking of custom pattern components.
 
   ```jsx
-  import { Circle } from "styled-system/jsx";
+  import { Circle } from 'styled-system/jsx'
   const CustomCircle = ({ children, ...props }) => {
-    return <Circle {...props}>{children}</Circle>;
-  };
+    return <Circle {...props}>{children}</Circle>
+  }
   ```
 
   To track the `CustomCircle` component, you can now use the `jsx` property.
 
   ```js
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     patterns: {
       extend: {
         circle: {
-          jsx: ["CustomCircle"],
+          jsx: ['CustomCircle'],
         },
       },
     },
-  });
+  })
   ```
 
 ### Patch Changes
@@ -9902,17 +9735,9 @@ export default defineConfig({
   ```tsx
   const ComponentWithMultipleRecipes = ({ variant }) => {
     return (
-      <button
-        className={cx(
-          pinkRecipe({ variant }),
-          greenRecipe({ variant }),
-          blueRecipe({ variant }),
-        )}
-      >
-        Hello
-      </button>
-    );
-  };
+      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    )
+  }
   ```
 
   Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
@@ -9996,7 +9821,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: [{ size: ["*"], shape: ["*"] }];
+      button: [{ size: ['*'], shape: ['*'] }]
     }
   }
   ```
@@ -10006,7 +9831,7 @@ export default defineConfig({
   ```ts
   staticCss: {
     recipes: {
-      button: ["*"];
+      button: ['*']
     }
   }
   ```
@@ -10044,8 +9869,8 @@ export default defineConfig({
   // panda.config.ts
   export default defineConfig({
     //...
-    syntax: "template-literal",
-  });
+    syntax: 'template-literal',
+  })
   ```
 
   > For existing projects, you might need to run the `panda codegen --clean`
@@ -10077,12 +9902,12 @@ export default defineConfig({
 - 5b344b9c: Add support for disabling shorthand props
 
   ```ts
-  import { defineConfig } from "@pandacss/dev";
+  import { defineConfig } from '@pandacss/dev'
 
   export default defineConfig({
     // ...
     shorthands: false,
-  });
+  })
   ```
 
 ### Patch Changes

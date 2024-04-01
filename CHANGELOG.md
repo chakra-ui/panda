@@ -6,6 +6,89 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.37.0] - 2024-04-01
+
+### Fixed
+
+- - Fix className collisions between utilities by using unique class names per property in the default preset.
+
+- Fix a bug where some styles would be grouped together in the same rule, even if they were not related to each other.
+
+**Internal** details
+
+This was caused by an object reference being re-used while setting a property deeply in the hashes decoding process,
+leading to the mutation of a previous style object with additional properties.
+
+### Added
+
+- Add missing typings for CSS vars in properties bound to utilities (and that are not part of the list affected by
+  `strictPropertyValues`)
+- Allow multiple `importMap` (or multiple single import entrypoints if using the object format).
+
+It can be useful to use a component library's `styled-system` while also using your own `styled-system` in your app.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  importMap: ['@acme/styled-system', '@ui-lib/styled-system', 'styled-system'],
+})
+```
+
+Now you can use any of the `@acme/styled-system`, `@ui-lib/styled-system` and `styled-system` import sources:
+
+```ts
+import { css } from '@acme/css'
+import { css as uiCss } from '@ui-lib/styled-system/css'
+import { css as appCss } from '@ui-lib/styled-system/css'
+```
+
+- **Spacing Utilities**: Add new `spaceX` and `spaceY` utilities for applying margin between elements. Especially useful
+  when applying negative margin to child elements.
+
+```tsx
+<div className={flex({ spaceX: '-1' })}>
+  <div className={circle({ size: '5', bg: 'red' })} />
+  <div className={circle({ size: '5', bg: 'pink' })} />
+</div>
+```
+
+- Added new `_starting` condition to support the new `@starting-style` at-rule.
+  [Learn more here](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
+
+- **Gradient Position**: Add new `gradientFromPosition` and `gradientToPosition` utilities for controlling the position
+  of the gradient color stops.
+
+```tsx
+<div
+  className={css({
+    bgGradient: 'to-r',
+    // from
+    gradientFrom: 'red',
+    gradientFromPosition: 'top left',
+    // to
+    gradientTo: 'blue',
+    gradientToPosition: 'bottom right',
+  })}
+/>
+```
+
+### Changed
+
+- **Color Mode Selectors**: Changed the default selectors for `_light` and `_dark` to target parent elements. This
+  ensures consistent behavior with using these conditions to style pseudo elements (like `::before` and `::after`).
+
+```diff
+const conditions = {
+-  _dark: '&.dark, .dark &',
++  _dark: '.dark &',
+-  _light: '&.light, .light &',
++  _light: '.light &',
+}
+```
+
+- Changed `divideX` and `divideY` now maps to the `borderWidths` token group.
+
 ## [0.36.1] - 2024-03-19
 
 ### Fixed
