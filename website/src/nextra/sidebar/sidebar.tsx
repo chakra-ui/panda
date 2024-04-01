@@ -146,9 +146,7 @@ export function Sidebar({
   )
 
   const currentDir = router.asPath.match(/\/docs\/([^/]+)/)?.[1] ?? ''
-
   const isInIndex = INDEX_FOLDERS.includes(currentDir)
-
   const desktopDirectories = isInIndex
     ? indexDirectories
     : docsDirectories.filter(directory => directory.name === currentDir)
