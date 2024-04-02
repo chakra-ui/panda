@@ -65,6 +65,18 @@ describe('styled factory - cva', () => {
     `)
   })
 
+  test('compound variants', () => {
+    const { container } = render(<Button size="lg">Click me</Button>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <button
+        class="text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_lg px_123px py_md z_1"
+      >
+        Click me
+      </button>
+    `)
+  })
+
   test('custom className', () => {
     const { container } = render(
       <Button className="custom-btn" size="sm">
@@ -189,6 +201,18 @@ describe('styled factory - button recipe', () => {
     `)
   })
 
+  test('compound variants', () => {
+    const { container } = render(<Button visual="solid">Click me</Button>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <button
+        class="button button--visual_solid text_blue"
+      >
+        Click me
+      </button>
+    `)
+  })
+
   test('custom className', () => {
     const { container } = render(
       <Button className="custom-btn" size="sm">
@@ -278,7 +302,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual_outline button--size_md mx_2 text_red.200 fs_xl custom-btn"
+        class="button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn"
       >
         Click me
       </button>

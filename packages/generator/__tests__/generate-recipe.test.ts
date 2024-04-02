@@ -26,7 +26,7 @@ describe('generate recipes', () => {
       import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
 
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
-       const getRecipeStyles = (variants) => {
+       const getVariantProps = (variants) => {
          return {
            [name]: '__ignore__',
            ...defaultVariants,
@@ -60,7 +60,7 @@ describe('generate recipes', () => {
            }
          })
 
-         const recipeStyles = getRecipeStyles(variants)
+         const recipeStyles = getVariantProps(variants)
 
          if (withCompoundVariants) {
            const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
@@ -70,11 +70,13 @@ describe('generate recipes', () => {
          return recipeCss(recipeStyles)
         }
 
-         return Object.assign(recipeFn, {
+         return {
+           recipeFn,
+           getVariantProps,
            __getCompoundVariantCss__: (variants) => {
-             return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
+             return getCompoundVariantCss(compoundVariants, getVariantProps(variants));
            },
-         })
+         }
       }
 
       export const mergeRecipes = (recipeA, recipeB) => {
@@ -129,6 +131,7 @@ describe('generate recipes', () => {
         variantMap: TextStyleVariantMap
         variantKeys: Array<keyof TextStyleVariant>
         splitVariantProps<Props extends TextStyleVariantProps>(props: Props): [TextStyleVariantProps, Pretty<DistributiveOmit<Props, keyof TextStyleVariantProps>>]
+        getVariantProps: (props?: TextStyleVariantProps) => TextStyleVariantProps
       }
 
 
@@ -147,9 +150,10 @@ describe('generate recipes', () => {
 
       const textStyleVariantKeys = Object.keys(textStyleVariantMap)
 
-      export const textStyle = /* @__PURE__ */ Object.assign(memo(textStyleFn), {
+      export const textStyle = /* @__PURE__ */ Object.assign(memo(textStyleFn.recipeFn), {
         __recipe__: true,
         __name__: 'textStyle',
+        __getCompoundVariantCss__: textStyleFn.__getCompoundVariantCss__,
         raw: (props) => props,
         variantKeys: textStyleVariantKeys,
         variantMap: textStyleVariantMap,
@@ -159,6 +163,7 @@ describe('generate recipes', () => {
         splitVariantProps(props) {
           return splitProps(props, textStyleVariantKeys)
         },
+        getVariantProps: textStyleFn.getVariantProps,
       })",
           "name": "text-style",
         },
@@ -185,6 +190,7 @@ describe('generate recipes', () => {
         variantMap: TooltipStyleVariantMap
         variantKeys: Array<keyof TooltipStyleVariant>
         splitVariantProps<Props extends TooltipStyleVariantProps>(props: Props): [TooltipStyleVariantProps, Pretty<DistributiveOmit<Props, keyof TooltipStyleVariantProps>>]
+        getVariantProps: (props?: TooltipStyleVariantProps) => TooltipStyleVariantProps
       }
 
 
@@ -198,9 +204,10 @@ describe('generate recipes', () => {
 
       const tooltipStyleVariantKeys = Object.keys(tooltipStyleVariantMap)
 
-      export const tooltipStyle = /* @__PURE__ */ Object.assign(memo(tooltipStyleFn), {
+      export const tooltipStyle = /* @__PURE__ */ Object.assign(memo(tooltipStyleFn.recipeFn), {
         __recipe__: true,
         __name__: 'tooltipStyle',
+        __getCompoundVariantCss__: tooltipStyleFn.__getCompoundVariantCss__,
         raw: (props) => props,
         variantKeys: tooltipStyleVariantKeys,
         variantMap: tooltipStyleVariantMap,
@@ -210,6 +217,7 @@ describe('generate recipes', () => {
         splitVariantProps(props) {
           return splitProps(props, tooltipStyleVariantKeys)
         },
+        getVariantProps: tooltipStyleFn.getVariantProps,
       })",
           "name": "tooltip-style",
         },
@@ -236,6 +244,7 @@ describe('generate recipes', () => {
         variantMap: CardStyleVariantMap
         variantKeys: Array<keyof CardStyleVariant>
         splitVariantProps<Props extends CardStyleVariantProps>(props: Props): [CardStyleVariantProps, Pretty<DistributiveOmit<Props, keyof CardStyleVariantProps>>]
+        getVariantProps: (props?: CardStyleVariantProps) => CardStyleVariantProps
       }
 
 
@@ -253,9 +262,10 @@ describe('generate recipes', () => {
 
       const cardStyleVariantKeys = Object.keys(cardStyleVariantMap)
 
-      export const cardStyle = /* @__PURE__ */ Object.assign(memo(cardStyleFn), {
+      export const cardStyle = /* @__PURE__ */ Object.assign(memo(cardStyleFn.recipeFn), {
         __recipe__: true,
         __name__: 'cardStyle',
+        __getCompoundVariantCss__: cardStyleFn.__getCompoundVariantCss__,
         raw: (props) => props,
         variantKeys: cardStyleVariantKeys,
         variantMap: cardStyleVariantMap,
@@ -265,6 +275,7 @@ describe('generate recipes', () => {
         splitVariantProps(props) {
           return splitProps(props, cardStyleVariantKeys)
         },
+        getVariantProps: cardStyleFn.getVariantProps,
       })",
           "name": "card-style",
         },
@@ -292,6 +303,7 @@ describe('generate recipes', () => {
         variantMap: ButtonStyleVariantMap
         variantKeys: Array<keyof ButtonStyleVariant>
         splitVariantProps<Props extends ButtonStyleVariantProps>(props: Props): [ButtonStyleVariantProps, Pretty<DistributiveOmit<Props, keyof ButtonStyleVariantProps>>]
+        getVariantProps: (props?: ButtonStyleVariantProps) => ButtonStyleVariantProps
       }
 
 
@@ -317,9 +329,10 @@ describe('generate recipes', () => {
 
       const buttonStyleVariantKeys = Object.keys(buttonStyleVariantMap)
 
-      export const buttonStyle = /* @__PURE__ */ Object.assign(memo(buttonStyleFn), {
+      export const buttonStyle = /* @__PURE__ */ Object.assign(memo(buttonStyleFn.recipeFn), {
         __recipe__: true,
         __name__: 'buttonStyle',
+        __getCompoundVariantCss__: buttonStyleFn.__getCompoundVariantCss__,
         raw: (props) => props,
         variantKeys: buttonStyleVariantKeys,
         variantMap: buttonStyleVariantMap,
@@ -329,6 +342,7 @@ describe('generate recipes', () => {
         splitVariantProps(props) {
           return splitProps(props, buttonStyleVariantKeys)
         },
+        getVariantProps: buttonStyleFn.getVariantProps,
       })",
           "name": "button-style",
         },
@@ -355,6 +369,7 @@ describe('generate recipes', () => {
         variantMap: CheckboxVariantMap
         variantKeys: Array<keyof CheckboxVariant>
         splitVariantProps<Props extends CheckboxVariantProps>(props: Props): [CheckboxVariantProps, Pretty<DistributiveOmit<Props, keyof CheckboxVariantProps>>]
+        getVariantProps: (props?: CheckboxVariantProps) => CheckboxVariantProps
       }
 
 
@@ -384,7 +399,7 @@ describe('generate recipes', () => {
       const checkboxSlotFns = /* @__PURE__ */ checkboxSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, checkboxDefaultVariants, getSlotCompoundVariant(checkboxCompoundVariants, slotName))])
 
       const checkboxFn = memo((props = {}) => {
-        return Object.fromEntries(checkboxSlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
+        return Object.fromEntries(checkboxSlotFns.map(([slotName, slotFn]) => [slotName, slotFn.recipeFn(props)]))
       })
 
       const checkboxVariantKeys = [
@@ -433,6 +448,7 @@ describe('generate recipes', () => {
         variantMap: BadgeVariantMap
         variantKeys: Array<keyof BadgeVariant>
         splitVariantProps<Props extends BadgeVariantProps>(props: Props): [BadgeVariantProps, Pretty<DistributiveOmit<Props, keyof BadgeVariantProps>>]
+        getVariantProps: (props?: BadgeVariantProps) => BadgeVariantProps
       }
 
 
@@ -466,7 +482,7 @@ describe('generate recipes', () => {
       const badgeSlotFns = /* @__PURE__ */ badgeSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, badgeDefaultVariants, getSlotCompoundVariant(badgeCompoundVariants, slotName))])
 
       const badgeFn = memo((props = {}) => {
-        return Object.fromEntries(badgeSlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
+        return Object.fromEntries(badgeSlotFns.map(([slotName, slotFn]) => [slotName, slotFn.recipeFn(props)]))
       })
 
       const badgeVariantKeys = [

@@ -45,6 +45,7 @@ export interface RecipeRuntimeFn<T extends RecipeVariantRecord> extends RecipeVa
   splitVariantProps<Props extends RecipeSelection<T>>(
     props: Props,
   ): [RecipeSelection<T>, Pretty<DistributiveOmit<Props, keyof T>>]
+  getVariantProps: (props?: RecipeSelection<T>) => RecipeSelection<T>
 }
 
 type OneOrMore<T> = T | Array<T>
@@ -121,7 +122,7 @@ export interface SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVaria
   raw: (props?: RecipeSelection<T>) => Record<S, SystemStyleObject>
   variantKeys: (keyof T)[]
   variantMap: RecipeVariantMap<T>
-  splitVariantProps<Props extends RecipeSelection<T>>(props: Props): [RecipeSelection<T>, Pretty<Omit<Props, keyof T>>]
+  getVariantProps: (props?: RecipeSelection<T>) => RecipeSelection<T>
 }
 
 export type SlotRecipeCompoundVariant<S extends string, T> = T & {

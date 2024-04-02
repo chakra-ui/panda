@@ -60,4 +60,14 @@ describe('cva', () => {
       ]
     `)
   })
+
+  test('get variant props', () => {
+    const result = button.getVariantProps({ visual: 'outline' })
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "visual": "outline",
+      }
+    `)
+  })
 })

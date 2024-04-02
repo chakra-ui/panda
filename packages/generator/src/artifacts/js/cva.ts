@@ -17,9 +17,10 @@ export function generateCvaFn(ctx: Context) {
 
     export function cva(config) {
       const { base, variants, defaultVariants, compoundVariants } = defaults(config)
+      const getVariantProps = (variants) => ({ ...defaultVariants, ...compact(variants) })
 
       function resolve(props = {}) {
-        const computedVariants = { ...defaultVariants, ...compact(props) }
+        const computedVariants = getVariantProps(props)
         let variantCss = { ...base }
         for (const [key, value] of Object.entries(computedVariants)) {
           if (variants[key]?.[value]) {
@@ -63,6 +64,7 @@ export function generateCvaFn(ctx: Context) {
         config,
         merge,
         splitVariantProps,
+        getVariantProps
       })
     }
 
