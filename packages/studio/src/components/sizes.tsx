@@ -5,16 +5,19 @@ import { Grid, panda } from '../../styled-system/jsx'
 import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
 import type { Token } from '@pandacss/token-dictionary'
+import { EmptyState } from './empty-state'
+import { SizesIcon } from './icons'
 
 export interface SizesProps {
   sizes: Token[]
+  name: string
 }
 
 const contentRegex = /^(min|max|fit)-content$/
 const unitRegex = /(ch|%)$/
 
 export default function Sizes(props: SizesProps) {
-  const { sizes } = props
+  const { sizes, name } = props
 
   const sortedSizes = getSortedSizes(sizes).filter(
     (token) =>
@@ -26,6 +29,14 @@ export default function Sizes(props: SizesProps) {
       !contentRegex.test(token.value) &&
       !unitRegex.test(token.value),
   )
+
+  if (sortedSizes.length === 0) {
+    return (
+      <EmptyState title="No Tokens" icon={<SizesIcon />}>
+        The panda config does not contain any `{name}`` tokens
+      </EmptyState>
+    )
+  }
 
   return (
     <TokenGroup>

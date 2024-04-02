@@ -398,10 +398,35 @@ export class TokenDictionary {
   }
 
   /**
-   * Resolve token references to their actual raw value
+   * Get the value of a token reference
    */
   resolveReference(value: string) {
     return expandReferences(value, (key) => this.getByName(key)?.value)
+  }
+
+  /**
+   * Resolve token references to their actual raw value (recursively resolves references)
+   */
+  deepResolveReference(originalValue: string) {
+    const stack = [originalValue]
+    while (stack.length) {
+      const next = stack.pop()!
+
+      if (next.startsWith('{')) {
+        stack.push(this.resolveReference(next))
+        continue
+      }
+
+      if (next.startsWith('var(')) {
+        const ref = this.view.nameByVar.get(next)
+        if (ref) {
+          stack.push(this.resolveReference(`{${ref}}`))
+          continue
+        }
+      }
+
+      return next
+    }
   }
 
   build() {
@@ -451,13 +476,14 @@ export class TokenDictionaryView {
     const colorPalettes = new Map<ColorPalette, Map<VarName, VarRef>>()
     const valuesByCategory = new Map<TokenCategory, Map<VarName, TokenValue>>()
     const flatValues = new Map<TokenName, VarRef>()
+    const nameByVar = new Map<VarRef, TokenName>()
     const vars = new Map<ConditionName, Map<VarName, TokenValue>>()
 
     this.dictionary.allTokens.forEach((token) => {
       this.processCondition(token, conditionMap)
       this.processColorPalette(token, colorPalettes, this.dictionary.byName)
       this.processCategory(token, categoryMap)
-      this.processValue(token, valuesByCategory, flatValues)
+      this.processValue(token, valuesByCategory, flatValues, nameByVar)
       this.processVars(token, vars)
     })
 
@@ -468,6 +494,7 @@ export class TokenDictionaryView {
       colorPalettes,
       vars,
       values: flatValues,
+      nameByVar: nameByVar,
       json,
       get: memo((path: string, fallback?: string | number) => {
         return (flatValues.get(path) ?? fallback) as string
@@ -538,14 +565,20 @@ export class TokenDictionaryView {
     group.get(category)!.set(prop, token)
   }
 
-  private processValue(token: Token, byCategory: Map<string, Map<string, string>>, flat: Map<string, string>) {
+  private processValue(
+    token: Token,
+    byCategory: Map<string, Map<string, string>>,
+    flatValues: Map<string, string>,
+    nameByVar: Map<string, string>,
+  ) {
     const { category, prop, varRef, isNegative } = token.extensions
     if (!category) return
 
     if (!byCategory.has(category)) byCategory.set(category, new Map())
     const value = isNegative ? (token.extensions.condition !== 'base' ? token.originalValue : token.value) : varRef
     byCategory.get(category)!.set(prop, value)
-    flat.set(token.name, value)
+    flatValues.set(token.name, value)
+    nameByVar.set(value, token.name)
   }
 
   private processVars(token: Token, group: Map<string, Map<string, string>>) {

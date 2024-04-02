@@ -1,2 +1,3 @@
 export { TokenDictionary } from './dictionary'
-export { Token } from './token'
+export { Token, type TokenExtensions } from './token'
+export * from './utils'
