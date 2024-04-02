@@ -61,6 +61,16 @@ describe('styled factory - cva', async () => {
     )
   })
 
+  test('compound variants', async () => {
+    const { render, screen } = await createDOM()
+    await render(<Button size="lg">Click me</Button>)
+
+    const container = screen.querySelector('button')!
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      `"<button class="text_red.500 bg_blue.500 hover:text_red.600 hover:bg_blue.600 fs_lg px_123px py_md z_1">Click me</button>"`,
+    )
+  })
+
   test('custom className', async () => {
     const { render, screen } = await createDOM()
     await render(
@@ -199,7 +209,9 @@ describe('styled factory - cva', async () => {
       </WithOverrides>,
     )
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="fw_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px">Click me</button>"`)
+    expect(container.outerHTML).toMatchInlineSnapshot(
+      `"<button class="fw_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px">Click me</button>"`,
+    )
 
     const second = await createDOM()
     await second.render(
@@ -208,7 +220,9 @@ describe('styled factory - cva', async () => {
       </WithOverrides>,
     )
     const container2 = second.screen.querySelector('button')!
-    expect(container2.outerHTML).toMatchInlineSnapshot(`"<button class="fw_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px">Click me</button>"`)
+    expect(container2.outerHTML).toMatchInlineSnapshot(
+      `"<button class="fw_semibold h_20 color-palette_blue border-w_4px text_white px_20 fs_40px">Click me</button>"`,
+    )
   })
 
   test('html props', async () => {
@@ -240,6 +254,14 @@ describe('styled factory - button recipe', async () => {
 
     const container = screen.querySelector('button')!
     expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="button button--size_sm">Click me</button>"`)
+  })
+
+  test('compound variants', async () => {
+    const { render, screen } = await createDOM()
+    await render(<Button visual="solid">Click me</Button>)
+
+    const container = screen.querySelector('button')!
+    expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="button button--visual_solid">Click me</button>"`)
   })
 
   test('custom className', async () => {
