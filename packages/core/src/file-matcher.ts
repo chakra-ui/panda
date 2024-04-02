@@ -143,7 +143,7 @@ export class FileMatcher {
       return !!matchingImports.find((mod) => {
         // Match patterns/recipes when using a namespace import
         if (mod.kind === 'namespace') {
-          return keys.includes(id)
+          return keys.includes(id.replace(`${mod.alias}.`, ''))
         }
 
         return mod.alias === id || mod.name === id
@@ -164,17 +164,17 @@ export class FileMatcher {
   }
 
   private _patternsMatcher: ReturnType<typeof this.createMatch> | undefined
+
   isValidPattern = (id: string) => {
-    if (!this._patternsMatcher)
-      this._patternsMatcher = this.createMatch(this.importMap.pattern, this.context.patterns.keys)
-    const match = this._patternsMatcher
-    return match(id)
+    this._patternsMatcher ||= this.createMatch(this.importMap.pattern, this.context.patterns.keys)
+    return this._patternsMatcher(id)
   }
+
   private _recipesMatcher: ReturnType<typeof this.createMatch> | undefined
+
   isValidRecipe = (id: string) => {
-    if (!this._recipesMatcher) this._recipesMatcher = this.createMatch(this.importMap.recipe, this.context.recipes.keys)
-    const match = this._recipesMatcher
-    return match(id)
+    this._recipesMatcher ||= this.createMatch(this.importMap.recipe, this.context.recipes.keys)
+    return this._recipesMatcher(id)
   }
 
   isRawFn = (fnName: string) => {
@@ -182,21 +182,20 @@ export class FileMatcher {
     return name === 'css' || this.isValidPattern(name) || this.isValidRecipe(name)
   }
 
+  isNamespaced = (fnName: string) => {
+    return this.namespaces.has(fnName.split('.')[0])
+  }
+
   normalizeFnName = (fnName: string) => {
-    if (this.isRawFn(fnName)) return fnName.replace('.raw', '')
+    let name = fnName
 
-    // ASSUMPTION: the only way to have a `.` in the fnName is
-    // - when using `{fn}.raw` (handled above)
-    // - when using a jsx factory (e.g. `<styled.div />`) (skipped in the condition below)
-
-    // or when using a namespace import, which is the case handled in the condition below
-    // import * as p from '../styled-system/patterns'
-    // 'p.stack' => 'stack'
-    if (!this.isJsxFactory(fnName) && fnName.includes('.')) {
-      return fnName.split('.')[1]
+    // remove namespace and join with dot
+    if (this.isNamespaced(fnName)) {
+      name = name.split('.').slice(1).join('.')
     }
 
-    return fnName
+    if (this.isRawFn(name)) return name.replace('.raw', '')
+    return name
   }
 
   isAliasFnName = memo((fnName: string) => {
