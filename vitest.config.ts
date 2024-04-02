@@ -7,6 +7,7 @@ export default defineConfig({
   root: process.cwd(),
   plugins: [tsconfigPaths()],
   test: {
+    globals: true,
     setupFiles: ['tests-setup.ts'],
     hideSkippedTests: true,
     environment: 'happy-dom',

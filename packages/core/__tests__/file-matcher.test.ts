@@ -150,4 +150,14 @@ describe('file matcher', () => {
 
     expect(file.isRawFn('cva.raw')).toMatchInlineSnapshot('false')
   })
+
+  test('namespace', () => {
+    const ctx = createContext()
+
+    // import * as p from 'styled-system/patterns'
+    const file = ctx.imports.file([{ mod: 'styled-system/patterns', name: 'p', alias: 'p', kind: 'namespace' }])
+
+    expect(file.isValidPattern('p.stack')).toMatchInlineSnapshot(`true`)
+    expect(file.isValidPattern('p.grid')).toMatchInlineSnapshot(`true`)
+  })
 })

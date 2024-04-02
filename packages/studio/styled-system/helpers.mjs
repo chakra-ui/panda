@@ -229,7 +229,7 @@ var patternFns = {
   isCssUnit
 };
 var getPatternStyles = (pattern, styles) => {
-  if (!pattern.defaultValues)
+  if (!pattern?.defaultValues)
     return styles;
   const defaults = typeof pattern.defaultValues === "function" ? pattern.defaultValues(styles) : pattern.defaultValues;
   return Object.assign({}, defaults, compact(styles));

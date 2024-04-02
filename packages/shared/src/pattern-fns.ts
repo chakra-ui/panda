@@ -12,7 +12,7 @@ export const patternFns = {
 }
 
 export const getPatternStyles = (pattern: any, styles: Record<string, any>) => {
-  if (!pattern.defaultValues) return styles
+  if (!pattern?.defaultValues) return styles
   const defaults = typeof pattern.defaultValues === 'function' ? pattern.defaultValues(styles) : pattern.defaultValues
   return Object.assign({}, defaults, compact(styles))
 }
