@@ -43,6 +43,7 @@ export const validateConfig = (config: Partial<UserConfig>) => {
     semanticTokenNames: new Set(),
     valueAtPath: new Map(),
     refsByPath: new Map(),
+    typeByPath: new Map(),
   }
 
   if (config.theme) {

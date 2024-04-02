@@ -1,11 +1,16 @@
 import type { AddError } from '../types'
 import { isTokenReference } from './utils'
 
-export const validateTokenReferences = (
-  valueAtPath: Map<string, any>,
-  refsByPath: Map<string, Set<string>>,
-  addError: AddError,
-) => {
+interface Props {
+  valueAtPath: Map<string, any>
+  refsByPath: Map<string, Set<string>>
+  typeByPath: Map<string, 'tokens' | 'semanticTokens'>
+  addError: AddError
+}
+
+export const validateTokenReferences = (props: Props) => {
+  const { valueAtPath, refsByPath, addError, typeByPath } = props
+
   refsByPath.forEach((refs, path) => {
     if (refs.has(path)) {
       addError('tokens', `Self token reference: \`${path}\``)
@@ -23,7 +28,8 @@ export const validateTokenReferences = (
       const value = valueAtPath.get(currentPath)
 
       if (!value) {
-        addError('tokens', `Missing token: \`${currentPath}\` used in \`config.semanticTokens.${path}\``)
+        const configKey = typeByPath.get(path)
+        addError('tokens', `Missing token: \`${currentPath}\` used in \`theme.${configKey}.${path}\``)
       }
 
       if (isTokenReference(value) && !refsByPath.has(value)) {

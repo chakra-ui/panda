@@ -1,7 +1,7 @@
 import { isObject, walkObject } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import type { AddError, TokensData } from '../types'
-import { SEP, formatPath, isTokenReference, isValidToken } from './utils'
+import { SEP, formatPath, getReferences, isTokenReference, isValidToken, serializeTokenValue } from './utils'
 import { validateTokenReferences } from './validate-token-references'
 
 interface Options {
@@ -19,7 +19,7 @@ export const validateTokens = (options: Options) => {
 
   if (!theme) return
 
-  const { tokenNames, semanticTokenNames, valueAtPath, refsByPath } = tokens
+  const { tokenNames, semanticTokenNames, valueAtPath, refsByPath, typeByPath } = tokens
 
   if (theme.tokens) {
     const tokenPaths = new Set<string>()
@@ -44,10 +44,11 @@ export const validateTokens = (options: Options) => {
     )
 
     tokenPaths.forEach((path) => {
-      const value = valueAtPath.get(path)
+      const itemValue = valueAtPath.get(path)
       const formattedPath = formatPath(path)
+      typeByPath.set(formattedPath, 'tokens')
 
-      if (!isValidToken(value)) {
+      if (!isValidToken(itemValue)) {
         addError('tokens', `Token must contain 'value': \`theme.tokens.${formattedPath}\``)
         return
       }
@@ -57,9 +58,17 @@ export const validateTokens = (options: Options) => {
         return
       }
 
-      if (isTokenReference(value)) {
+      const valueStr = serializeTokenValue(itemValue.value || itemValue)
+      if (isTokenReference(valueStr)) {
         refsByPath.set(formattedPath, new Set([]))
       }
+
+      const references = refsByPath.get(formattedPath)
+      if (!references) return
+
+      getReferences(valueStr).forEach((reference) => {
+        references.add(reference)
+      })
     })
   }
 
@@ -84,20 +93,25 @@ export const validateTokens = (options: Options) => {
         walkObject(value, (itemValue, paths) => {
           const valuePath = paths.join(SEP)
           const formattedPath = formatPath(path)
+          typeByPath.set(formattedPath, 'semanticTokens')
           const fullPath = formattedPath + '.' + paths.join(SEP)
 
           if (valuePath.includes('value' + SEP + 'value')) {
             addError('tokens', `You used \`value\` twice resulting in an invalid token \`theme.tokens.${fullPath}\``)
           }
 
-          if (isTokenReference(itemValue)) {
+          const valueStr = serializeTokenValue(itemValue.value || itemValue)
+          if (isTokenReference(valueStr)) {
             if (!refsByPath.has(formattedPath)) {
               refsByPath.set(formattedPath, new Set())
             }
+
             const references = refsByPath.get(formattedPath)
             if (!references) return
-            const reference = itemValue.slice(1, -1)
-            references.add(reference)
+
+            getReferences(valueStr).forEach((reference) => {
+              references.add(reference)
+            })
           }
         })
       },
@@ -119,7 +133,7 @@ export const validateTokens = (options: Options) => {
         addError('tokens', `Token must contain 'value': \`theme.semanticTokens.${formattedPath}\``)
       }
     })
-
-    validateTokenReferences(valueAtPath, refsByPath, addError)
   }
+
+  validateTokenReferences({ valueAtPath, refsByPath, addError, typeByPath })
 }
