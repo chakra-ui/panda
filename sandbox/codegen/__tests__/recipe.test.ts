@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { button } from '../styled-system/recipes/button.mjs'
-import { buttonWithCompoundVariants } from '../styled-system/recipes/button-with-compound-variants.mjs'
+import { button } from '../styled-system/recipes/button'
+import { buttonWithCompoundVariants } from '../styled-system/recipes/button-with-compound-variants'
 
 describe('recipe', () => {
   test('base styles', () => {
@@ -56,8 +56,35 @@ describe('recipe', () => {
   })
 
   test('throws an error when using conditions with compound variants', () => {
+    // @ts-expect-error
     expect(() => buttonWithCompoundVariants({ visual: { base: 'solid', _hover: 'outline' } })).toThrow(
       '[recipe:button:visual] Conditions are not supported when using compound variants.',
     )
+  })
+
+  test('split variant props', () => {
+    const result = buttonWithCompoundVariants.splitVariantProps({ visual: 'solid', bg: 'red.500' })
+
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "visual": "solid",
+        },
+        {
+          "bg": "red.500",
+        },
+      ]
+    `)
+  })
+
+  test('get variant props', () => {
+    const result = buttonWithCompoundVariants.getVariantProps({ visual: 'outline' })
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "button": "__ignore__",
+        "visual": "outline",
+      }
+    `)
   })
 })

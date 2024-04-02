@@ -301,7 +301,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual_solid"
+        class="button button--visual_solid text_blue"
       >
         Click me
       </button>
@@ -397,7 +397,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_md button--visual_outline mx_2 text_red.200 fs_xl custom-btn"
+        class="button button--size_md button--visual_outline text_red.200 mx_2 fs_xl custom-btn"
       >
         Click me
       </button>

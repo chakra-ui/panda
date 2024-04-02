@@ -261,7 +261,7 @@ describe('styled factory - button recipe', async () => {
     await render(<Button visual="solid">Click me</Button>)
 
     const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="button button--visual_solid">Click me</button>"`)
+    expect(container.outerHTML).toMatchInlineSnapshot(`"<button class="button button--visual_solid text_blue">Click me</button>"`)
   })
 
   test('custom className', async () => {
@@ -339,7 +339,7 @@ describe('styled factory - button recipe', async () => {
 
     const container = screen.querySelector('button')!
     expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_outline button--size_md mx_2 text_red.200 fs_xl custom-btn">Click me</button>"`,
+      `"<button class="button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn">Click me</button>"`,
     )
   })
 

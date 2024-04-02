@@ -24,7 +24,7 @@ export function generateCreateRecipe(ctx: Context) {
    ${ctx.file.import('compact, createCss, splitProps, uniq, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
-    const getRecipeStyles = (variants) => {
+    const getVariantProps = (variants) => {
       return {
         [name]: '__ignore__',
         ...defaultVariants,
@@ -58,7 +58,7 @@ export function generateCreateRecipe(ctx: Context) {
         }
       })
 
-      const recipeStyles = getRecipeStyles(variants)
+      const recipeStyles = getVariantProps(variants)
 
       if (withCompoundVariants) {
         const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
@@ -68,11 +68,13 @@ export function generateCreateRecipe(ctx: Context) {
       return recipeCss(recipeStyles)
      }
 
-      return Object.assign(recipeFn, {
+      return {
+        recipeFn,
+        getVariantProps,
         __getCompoundVariantCss__: (variants) => {
-          return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
+          return getCompoundVariantCss(compoundVariants, getVariantProps(variants));
         },
-      })
+      }
    }
 
    export const mergeRecipes = (recipeA, recipeB) => {
@@ -127,7 +129,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         const ${baseName}SlotFns = /* @__PURE__ */ ${baseName}SlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, ${baseName}DefaultVariants, getSlotCompoundVariant(${baseName}CompoundVariants, slotName))])
 
         const ${baseName}Fn = memo((props = {}) => {
-          return Object.fromEntries(${baseName}SlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
+          return Object.fromEntries(${baseName}SlotFns.map(([slotName, slotFn]) => [slotName, slotFn.recipeFn(props)]))
         })
 
         const ${baseName}VariantKeys = ${stringify(Object.keys(variantKeyMap))}
@@ -157,9 +159,10 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
 
         const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
 
-        export const ${baseName} = /* @__PURE__ */ Object.assign(memo(${baseName}Fn), {
+        export const ${baseName} = /* @__PURE__ */ Object.assign(memo(${baseName}Fn.recipeFn), {
           __recipe__: true,
           __name__: '${baseName}',
+          __getCompoundVariantCss__: ${baseName}Fn.__getCompoundVariantCss__,
           raw: (props) => props,
           variantKeys: ${baseName}VariantKeys,
           variantMap: ${baseName}VariantMap,
@@ -169,6 +172,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           splitVariantProps(props) {
             return splitProps(props, ${baseName}VariantKeys)
           },
+          getVariantProps: ${baseName}Fn.getVariantProps,
         })
         `,
       )
@@ -211,6 +215,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           variantMap: ${upperName}VariantMap
           variantKeys: Array<keyof ${upperName}Variant>
           splitVariantProps<Props extends ${upperName}VariantProps>(props: Props): [${upperName}VariantProps, Pretty<DistributiveOmit<Props, keyof ${upperName}VariantProps>>]
+          getVariantProps: (props?: ${upperName}VariantProps) => ${upperName}VariantProps
         }
 
         ${description ? `/** ${description} */` : ''}
