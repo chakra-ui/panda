@@ -25,7 +25,6 @@ describe('css', () => {
   })
 
   test('css var', () => {
-    // @ts-expect-error expected from strictTokens: true
     assertType(css({ color: 'var(--button-color)' }))
     assertType(css({ display: 'var(--button-color)' }))
   })
