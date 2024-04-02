@@ -320,7 +320,7 @@ Related: [`config.watch`](/docs/references/config#watch)
 
 Skip generating CSS for theme tokens, preflight, keyframes, static and global css.
 
-Thich means that the generated CSS will only contain the CSS related to the styles found in the included files.
+This means that the generated CSS will only contain the CSS related to the styles found in the included files.
 
 > Note that you can use a `glob` to override the `config.include` option like this:
 > `panda cssgen "src/**/*.css" --minimal`
