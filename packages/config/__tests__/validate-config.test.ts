@@ -239,14 +239,14 @@ describe('validateConfig', () => {
         "[tokens] Token must contain 'value': \`theme.tokens.colors.secondary\`",
         "[tokens] Token must contain 'value': \`theme.tokens.colors.group.with.invalid\`",
         "[tokens] Token must contain 'value': \`theme.semanticTokens.colors.another.group.invalid\`",
-        "[tokens] Missing token: \`colors.doesntexist\` used in \`config.semanticTokens.colors.another.group.stillok\`",
+        "[tokens] Missing token: \`colors.doesntexist\` used in \`theme.semanticTokens.colors.another.group.stillok\`",
         "[tokens] Circular token reference: \`colors.another.group.recursive\` -> \`colors.another.circular\` -> ... -> \`colors.another.group.recursive\`",
-        "[tokens] Missing token: \`colors.missing\` used in \`config.semanticTokens.colors.another.group.missing\`",
+        "[tokens] Missing token: \`colors.missing\` used in \`theme.semanticTokens.colors.another.group.missing\`",
         "[tokens] Self token reference: \`colors.another.self\`",
         "[tokens] Circular token reference: \`colors.another.self\` -> \`colors.another.self\` -> ... -> \`colors.another.self\`",
         "[tokens] Circular token reference: \`colors.another.circular\` -> \`colors.another.group.recursive\` -> ... -> \`colors.another.circular\`",
-        "[tokens] Missing token: \`fontSizes.md2\` used in \`config.semanticTokens.fontSizes.main\`",
-        "[recipes] This recipe name is already used in \`config.patterns\`: btn-primary",
+        "[tokens] Missing token: \`fontSizes.md2\` used in \`theme.semanticTokens.fontSizes.main\`",
+        "[recipes] This recipe name is already used in \`patterns\`: btn-primary",
       }
     `)
   })
@@ -351,7 +351,7 @@ describe('validateConfig', () => {
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
       `
       [Error: ⚠️ Invalid config:
-      - [tokens] Missing token: \`colors.doesntexist\` used in \`config.semanticTokens.colors.another.group.stillok\`
+      - [tokens] Missing token: \`colors.doesntexist\` used in \`theme.semanticTokens.colors.another.group.stillok\`
       ]
     `,
     )
@@ -431,7 +431,7 @@ describe('validateConfig', () => {
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
       `
       [Error: ⚠️ Invalid config:
-      - [tokens] Missing token: \`colors.bg\` used in \`config.semanticTokens.colors.primary\`
+      - [tokens] Missing token: \`colors.bg\` used in \`theme.semanticTokens.colors.primary\`
       ]
     `,
     )
@@ -454,7 +454,7 @@ describe('validateConfig', () => {
     expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
       `
       [Error: ⚠️ Invalid config:
-      - [recipes] This recipe name is already used in \`config.patterns\`: \`stack\`
+      - [recipes] This recipe name is already used in \`patterns\`: \`stack\`
       ]
     `,
     )
@@ -511,7 +511,7 @@ describe('validateConfig', () => {
       [Error: ⚠️ Invalid config:
       - [tokens] Token must contain 'value': \`theme.semanticTokens.colors.primary\`
       - [tokens] Unknown token reference: \`colors.primary\` used in \`{colors.bbb}\`
-      - [tokens] Missing token: \`colors.red\` used in \`config.semanticTokens.colors.group.nested.something\`
+      - [tokens] Missing token: \`colors.red\` used in \`theme.semanticTokens.colors.group.nested.something\`
       ]
     `,
     )
@@ -661,5 +661,101 @@ describe('validateConfig', () => {
     }
 
     expect(validateConfig(config)).toMatchInlineSnapshot(`undefined`)
+  })
+
+  test('should validate shadow tokens', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      theme: {
+        tokens: {
+          shadows: {
+            strong: {
+              value: '2px 4px 16px 0px {colors.gray.934/16}, 0px 2px 4px 0px {colors.gray.34/8}',
+            },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`
+      Set {
+        "[tokens] Missing token: \`colors.gray.34\` used in \`theme.tokens.shadows.strong\`",
+        "[tokens] Missing token: \`colors.gray.934\` used in \`theme.tokens.shadows.strong\`",
+      }
+    `)
+  })
+
+  test('should validate composite tokens', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      theme: {
+        tokens: {
+          shadows: {
+            strong: {
+              value: {
+                offsetX: 2,
+                offsetY: 4,
+                blur: 16,
+                spread: 0,
+                color: '{colors.gray.100/16}',
+              },
+            },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`
+      Set {
+        "[tokens] Missing token: \`colors.gray.100\` used in \`theme.tokens.shadows.strong\`",
+      }
+    `)
+  })
+
+  test('should validate composite array tokens', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      theme: {
+        tokens: {
+          borders: {
+            soft: {
+              value: {
+                width: 1,
+                style: 'solid',
+                color: '{colors.gray.100}',
+              },
+            },
+          },
+          shadows: {
+            strong: {
+              value: [
+                {
+                  offsetX: 2,
+                  offsetY: 4,
+                  blur: 16,
+                  spread: 0,
+                  color: '{colors.gray.100/16}',
+                },
+                {
+                  offsetX: 0,
+                  offsetY: 2,
+                  blur: 4,
+                  spread: 0,
+                  color: '{colors.gray.300/8}',
+                },
+              ],
+            },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`
+      Set {
+        "[tokens] Missing token: \`colors.gray.100\` used in \`theme.tokens.borders.soft\`",
+        "[tokens] Missing token: \`colors.gray.300\` used in \`theme.tokens.shadows.strong\`",
+        "[tokens] Missing token: \`colors.gray.100\` used in \`theme.tokens.shadows.strong\`",
+      }
+    `)
   })
 })

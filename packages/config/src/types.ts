@@ -14,6 +14,7 @@ export interface TokensData {
   semanticTokenNames: Set<string>
   valueAtPath: Map<string, any>
   refsByPath: Map<string, Set<string>>
+  typeByPath: Map<string, 'tokens' | 'semanticTokens'>
 }
 
 export interface ArtifactNames {
