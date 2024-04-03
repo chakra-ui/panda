@@ -4,7 +4,7 @@ import { outdent } from 'outdent'
 export function generateSvaFn(ctx: Context) {
   return {
     js: outdent`
-    ${ctx.file.import('getSlotRecipes, memo, splitProps', '../helpers')}
+    ${ctx.file.import('compact, getSlotRecipes, memo, splitProps', '../helpers')}
     ${ctx.file.import('cva', './cva')}
     ${ctx.file.import('cx', './cx')}
 
@@ -12,6 +12,7 @@ export function generateSvaFn(ctx: Context) {
 
     export function sva(config) {
       const slots = Object.entries(getSlotRecipes(config)).map(([slot, slotCva]) => [slot, cva(slotCva)])
+      const defaultVariants = config.defaultVariants ?? {}
 
       function svaFn(props) {
         const result = slots.map(([slot, cvaFn]) => [slot, cx(cvaFn(props), config.className && slotClass(config.className, slot))])
@@ -29,6 +30,7 @@ export function generateSvaFn(ctx: Context) {
       function splitVariantProps(props) {
         return splitProps(props, variantKeys);
       }
+      const getVariantProps = (variants) => ({ ...(defaultVariants || {}), ...compact(variants) })
 
       const variantMap = Object.fromEntries(
         Object.entries(variants).map(([key, value]) => [key, Object.keys(value)])
@@ -40,6 +42,7 @@ export function generateSvaFn(ctx: Context) {
         variantMap,
         variantKeys,
         splitVariantProps,
+        getVariantProps,
       })
     }
     `,

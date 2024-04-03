@@ -52,7 +52,11 @@ const slotButton = defineSlotRecipe({
           border: '1px solid',
         },
       },
+      unstyled: {},
     },
+  },
+  defaultVariants: {
+    visual: 'unstyled',
   },
 })
 
@@ -76,6 +80,7 @@ const buttonWithCompoundVariantsRecipe = defineRecipe({
         color: { base: 'colorPalette.600', _dark: 'colorPalette.200' },
         borderColor: 'currentColor',
       },
+      unstyled: {},
     },
     size: {
       sm: { fontSize: '1rem' },
@@ -99,6 +104,9 @@ const buttonWithCompoundVariantsRecipe = defineRecipe({
       css: { color: 'red' },
     },
   ],
+  defaultVariants: {
+    visual: 'unstyled',
+  },
 })
 
 export default definePreset({

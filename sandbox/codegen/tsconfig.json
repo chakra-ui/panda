@@ -16,10 +16,10 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "styled-system"],
+  "include": ["src", "styled-system", "__tests__"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

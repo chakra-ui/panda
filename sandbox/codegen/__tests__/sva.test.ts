@@ -29,7 +29,11 @@ describe('sva', () => {
             border: '1px solid',
           },
         },
+        unstyled: {},
       },
+    },
+    defaultVariants: {
+      visual: 'unstyled',
     },
   })
 
@@ -82,6 +86,16 @@ describe('sva', () => {
           "bg": "red.500",
         },
       ]
+    `)
+  })
+
+  test('get variant props', () => {
+    const result = button.getVariantProps()
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "visual": "unstyled",
+      }
     `)
   })
 })

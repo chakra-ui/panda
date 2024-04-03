@@ -119,7 +119,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
       .when(
         Recipes.isSlotRecipeConfig,
         (config) => outdent`
-        ${ctx.file.import('getSlotCompoundVariant, memo, splitProps', '../helpers')}
+        ${ctx.file.import('compact, getSlotCompoundVariant, memo, splitProps', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
         const ${baseName}DefaultVariants = ${stringify(defaultVariants ?? {})}
@@ -133,6 +133,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         })
 
         const ${baseName}VariantKeys = ${stringify(Object.keys(variantKeyMap))}
+        const getVariantProps = (variants) => ({ ...${baseName}DefaultVariants, ...compact(variants) })
 
         export const ${baseName} = /* @__PURE__ */ Object.assign(${baseName}Fn, {
           __recipe__: false,
@@ -143,6 +144,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           splitVariantProps(props) {
             return splitProps(props, ${baseName}VariantKeys)
           },
+          getVariantProps
         })
         `,
       )

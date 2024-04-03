@@ -182,7 +182,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button"
+        class="button button--visual_unstyled"
       >
         Click me
       </button>
@@ -194,7 +194,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm"
+        class="button button--visual_unstyled button--size_sm"
       >
         Click me
       </button>
@@ -222,7 +222,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm custom-btn"
+        class="button button--visual_unstyled button--size_sm custom-btn"
       >
         Click me
       </button>
@@ -238,7 +238,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button mx_2 custom-btn"
+        class="button button--visual_unstyled mx_2 custom-btn"
       >
         Click me
       </button>
@@ -254,7 +254,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm mx_2 custom-btn"
+        class="button button--visual_unstyled button--size_sm mx_2 custom-btn"
       >
         Click me
       </button>
@@ -270,7 +270,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button text_red.100 fs_md custom-btn"
+        class="button button--visual_unstyled text_red.100 fs_md custom-btn"
       >
         Click me
       </button>
@@ -286,7 +286,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm text_red.100 fs_md custom-btn"
+        class="button button--visual_unstyled button--size_sm text_red.100 fs_md custom-btn"
       >
         Click me
       </button>

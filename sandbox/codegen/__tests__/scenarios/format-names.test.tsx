@@ -170,7 +170,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button"
+        class="button button--visual-unstyled"
       >
         Click me
       </button>
@@ -182,7 +182,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size-sm"
+        class="button button--visual-unstyled button--size-sm"
       >
         Click me
       </button>
@@ -198,7 +198,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size-sm custom-btn"
+        class="button button--visual-unstyled button--size-sm custom-btn"
       >
         Click me
       </button>
@@ -214,7 +214,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button mx-2 custom-btn"
+        class="button button--visual-unstyled mx-2 custom-btn"
       >
         Click me
       </button>
@@ -230,7 +230,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size-sm mx-2 custom-btn"
+        class="button button--visual-unstyled button--size-sm mx-2 custom-btn"
       >
         Click me
       </button>
@@ -246,7 +246,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button text-$red-100 fs-$md custom-btn"
+        class="button button--visual-unstyled text-$red-100 fs-$md custom-btn"
       >
         Click me
       </button>
@@ -262,7 +262,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size-sm text-$red-100 fs-$md custom-btn"
+        class="button button--visual-unstyled button--size-sm text-$red-100 fs-$md custom-btn"
       >
         Click me
       </button>
