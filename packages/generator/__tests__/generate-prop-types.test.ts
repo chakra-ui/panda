@@ -212,7 +212,7 @@ describe('generate property types', () => {
       type ImportantMark = "!" | "!important"
       type WhitespaceImportant = \` \${ImportantMark}\`
       type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T extends U, U = any> = U extends string ? \`\${U}\${Important}\` & { __important?: true } : T;
+      type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
 
       /**
        * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
@@ -230,7 +230,7 @@ describe('generate property types', () => {
        * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
        * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
        */
-      export type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
+      export type WithEscapeHatch<T> = T | \`[\${string}]\` | WithColorOpacityModifier<T> | WithImportant<T>
 
       /**
        * Will restrict the value of properties that have predefined values to those values only.
@@ -283,7 +283,7 @@ describe('generate property types', () => {
       type ImportantMark = "!" | "!important"
       type WhitespaceImportant = \` \${ImportantMark}\`
       type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T extends U, U = any> = U extends string ? \`\${U}\${Important}\` & { __important?: true } : T;
+      type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
 
       /**
        * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
@@ -301,7 +301,7 @@ describe('generate property types', () => {
        * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
        * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
        */
-      export type WithEscapeHatch<T> = T | \`[\${string}]\` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
+      export type WithEscapeHatch<T> = T | \`[\${string}]\` | WithColorOpacityModifier<T> | WithImportant<T>
 
       /**
        * Will restrict the value of properties that have predefined values to those values only.
