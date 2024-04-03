@@ -7,8 +7,8 @@ describe('sva', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "icon": "slot-button__icon",
-        "root": "slot-button__root",
+        "icon": "slot-button__icon slot-button__icon--visual_unstyled",
+        "root": "slot-button__root slot-button__root--visual_unstyled",
       }
     `)
   })
@@ -51,6 +51,16 @@ describe('sva', () => {
           "bg": "red.500",
         },
       ]
+    `)
+  })
+
+  test('get variant props', () => {
+    const result = slotButton.getVariantProps()
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "visual": "unstyled",
+      }
     `)
   })
 })

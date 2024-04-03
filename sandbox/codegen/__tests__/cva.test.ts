@@ -20,14 +20,20 @@ describe('cva', () => {
           color: { base: 'colorPalette.600', _dark: 'colorPalette.200' },
           borderColor: 'currentColor',
         },
+        unstyled: {},
       },
+    },
+    defaultVariants: {
+      visual: 'unstyled',
     },
   })
 
   test('base styles', () => {
     const result = button()
 
-    expect(result).toMatchInlineSnapshot(`"rounded_md fw_semibold h_10 px_4"`)
+    expect(result).toMatchInlineSnapshot(
+      `"rounded_md fw_semibold h_10 px_4"`,
+    )
   })
 
   test('solid variant styles', () => {
@@ -62,11 +68,11 @@ describe('cva', () => {
   })
 
   test('get variant props', () => {
-    const result = button.getVariantProps({ visual: 'outline' })
+    const result = button.getVariantProps()
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "visual": "outline",
+        "visual": "unstyled",
       }
     `)
   })

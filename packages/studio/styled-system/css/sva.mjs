@@ -1,4 +1,4 @@
-import { getSlotRecipes, memo, splitProps } from '../helpers.mjs';
+import { compact, getSlotRecipes, memo, splitProps } from '../helpers.mjs';
 import { cva } from './cva.mjs';
 import { cx } from './cx.mjs';
 
@@ -6,6 +6,7 @@ const slotClass = (className, slot) => className + '__' + slot
 
 export function sva(config) {
   const slots = Object.entries(getSlotRecipes(config)).map(([slot, slotCva]) => [slot, cva(slotCva)])
+  const defaultVariants = config.defaultVariants ?? {}
 
   function svaFn(props) {
     const result = slots.map(([slot, cvaFn]) => [slot, cx(cvaFn(props), config.className && slotClass(config.className, slot))])
@@ -23,6 +24,7 @@ export function sva(config) {
   function splitVariantProps(props) {
     return splitProps(props, variantKeys);
   }
+  const getVariantProps = (variants) => ({ ...(defaultVariants || {}), ...compact(variants) })
 
   const variantMap = Object.fromEntries(
     Object.entries(variants).map(([key, value]) => [key, Object.keys(value)])
@@ -34,5 +36,6 @@ export function sva(config) {
     variantMap,
     variantKeys,
     splitVariantProps,
+    getVariantProps,
   })
 }
