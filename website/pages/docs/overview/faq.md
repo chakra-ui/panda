@@ -271,14 +271,6 @@ If you run into any error related to "Transforming const to the configured targe
 
 ---
 
-### Can I set an alpha / add an opacity modifier on a color?
-
-Currently, setting an alpha on a color like `css({ color: "blue.200/40" })` is not possible. We are planning to implement this feature using the `color-mix` function.
-
-However, note that `color-mix` is a CSS native function and is not yet supported in all browsers. You can follow the discussion about this topic on this [GitHub link](https://github.com/chakra-ui/panda/discussions/862).
-
----
-
 ### How can I generate all possible CSS variants at build time?
 
 While it's possible to generate all variants, even unused ones, by using [`config.staticCss`](https://panda-css.com/docs/guides/dynamic-styling#using-static-css), it's generally **not recommended** to use it for more than a few values. However, keep in mind this approach compromises one of Panda's strengths: lean, usage-based CSS generation.
