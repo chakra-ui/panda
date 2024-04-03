@@ -212,7 +212,7 @@ describe('generate property types', () => {
       type ImportantMark = "!" | "!important"
       type WhitespaceImportant = \` \${ImportantMark}\`
       type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
+      type WithImportant<T extends U, U = any> = U extends string ? \`\${U}\${Important}\` & { __important?: true } : T;
 
       /**
        * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
@@ -283,7 +283,7 @@ describe('generate property types', () => {
       type ImportantMark = "!" | "!important"
       type WhitespaceImportant = \` \${ImportantMark}\`
       type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T> = T extends string ? \`\${T}\${Important}\${string}\` : T
+      type WithImportant<T extends U, U = any> = U extends string ? \`\${U}\${Important}\` & { __important?: true } : T;
 
       /**
        * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
