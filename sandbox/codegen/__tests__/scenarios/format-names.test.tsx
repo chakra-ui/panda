@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { render } from '@testing-library/react'
 import { styled } from '../../styled-system-format-names/jsx'
+import { token } from '../../styled-system-format-names/tokens'
 import { buttonWithCompoundVariants } from '../../styled-system-format-names/recipes'
 import React from 'react'
 
@@ -300,5 +301,15 @@ describe('styled factory - button recipe', () => {
         Click me
       </div>
     `)
+  })
+})
+
+describe('token fn', () => {
+  test('token', () => {
+    expect(token('$colors-red-300')).toMatchInlineSnapshot(`"#fca5a5"`)
+  })
+
+  test('token.var', () => {
+    expect(token.var('$colors-red-300')).toMatchInlineSnapshot(`"var(--colors-red-300)"`)
   })
 })

@@ -39,5 +39,14 @@ export default defineConfig({
         },
       })
     },
+    // We need to inject the dasherize function in the `tokens/index.mjs` file
+    'codegen:prepare': ({ artifacts }) => {
+      const artifact = artifacts
+        .find((art) => art.id === 'design-tokens')
+        ?.files.find((f) => f.file.includes('index') && !f.file.includes('.ts'))
+      if (!artifact) return
+
+      artifact.code = `const dasherize = ${dasherize};\n${artifact.code}`
+    },
   },
 })

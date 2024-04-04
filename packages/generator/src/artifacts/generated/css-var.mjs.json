@@ -1,0 +1,3 @@
+{
+  "content": "// src/css-var.ts\nvar escRegex = /[^a-zA-Z0-9_\\u0081-\\uffff-]/g;\nfunction esc(string) {\n  return `${string}`.replace(escRegex, (s) => `\\\\${s}`);\n}\nvar dashCaseRegex = /[A-Z]/g;\nfunction dashCase(string) {\n  return string.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`);\n}\nfunction cssVar(name, options) {\n  const { fallback = \"\", prefix = \"\", hash } = options;\n  const variable = hash ? [\"-\", prefix, options.toHash(name)].filter(Boolean).join(\"-\") : dashCase([\"-\", prefix, esc(name)].filter(Boolean).join(\"-\"));\n  const result = {\n    var: variable,\n    ref: `var(${variable}${fallback ? `, ${fallback}` : \"\"})`\n  };\n  return result;\n}\nexport {\n  cssVar\n};\n"
+}

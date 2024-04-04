@@ -167,7 +167,11 @@ export const addCssVariables: TokenTransformer = {
     const { prefix, hash } = dictionary
     const { isNegative, originalPath } = token.extensions
     const pathValue = isNegative ? originalPath : token.path
-    const variable = dictionary.formatCssVar(pathValue.filter(Boolean), { prefix, hash })
+    const variable = dictionary.formatCssVar(pathValue.filter(Boolean), {
+      prefix,
+      hash,
+      cssVar: dictionary.createCssVar,
+    })
     return {
       var: variable.var,
       varRef: variable.ref,
@@ -189,7 +193,7 @@ export const addConditionalCssVariables: TokenTransformer = {
 
     refs.forEach((ref) => {
       if (!ref.includes('/')) {
-        const variable = dictionary.formatCssVar(ref.split('.'), { prefix, hash }).ref
+        const variable = dictionary.formatCssVar(ref.split('.'), { prefix, hash, cssVar: dictionary.createCssVar }).ref
         token.value = token.value.replace(`{${ref}}`, variable)
         return
       }
