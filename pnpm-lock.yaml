@@ -863,7 +863,7 @@ importers:
     devDependencies:
       '@builder.io/qwik':
         specifier: 1.4.5
-        version: 1.4.5(@types/node@20.11.30)(undici@6.6.2)
+        version: 1.4.5(@types/node@20.11.30)(undici@6.11.1)
       '@preact/preset-vite':
         specifier: 2.8.2
         version: 2.8.2(@babel/core@7.23.9)(preact@10.19.5)(vite@5.1.3)
@@ -1083,7 +1083,7 @@ importers:
     devDependencies:
       '@builder.io/qwik':
         specifier: 1.4.5
-        version: 1.4.5(@types/node@20.11.30)(undici@6.6.2)
+        version: 1.4.5(@types/node@20.11.30)(undici@6.11.1)
       '@builder.io/qwik-city':
         specifier: 1.4.5
         version: 1.4.5(@types/node@20.11.30)
@@ -1097,8 +1097,8 @@ importers:
         specifier: 5.3.3
         version: 5.3.3
       undici:
-        specifier: 6.6.2
-        version: 6.6.2
+        specifier: 6.11.1
+        version: 6.11.1
       vite:
         specifier: 5.1.3
         version: 5.1.3(@types/node@20.11.30)
@@ -3294,7 +3294,7 @@ packages:
       '@types/mdx': 2.0.11
       source-map: 0.7.4
       svgo: 3.2.0
-      undici: 6.6.2
+      undici: 6.11.1
       vfile: 6.0.1
       vite: 5.1.3(@types/node@20.11.30)
       vite-imagetools: 6.2.9
@@ -3311,7 +3311,7 @@ packages:
       - terser
     dev: true
 
-  /@builder.io/qwik@1.4.5(@types/node@20.11.30)(undici@6.6.2):
+  /@builder.io/qwik@1.4.5(@types/node@20.11.30)(undici@6.11.1):
     resolution: {integrity: sha512-Z9bm2SGEHCW8HPZyIdWwF4WIAi7/Az2VQFFqsaeu4/O3pBFGYO2qBD+A6EwdJZhyijz8rSWsp48/zR4Nagm1Uw==}
     engines: {node: '>=16.8.0 <18.0.0 || >=18.11'}
     hasBin: true
@@ -3319,7 +3319,7 @@ packages:
       undici: '*'
     dependencies:
       csstype: 3.1.3
-      undici: 6.6.2
+      undici: 6.11.1
       vite: 5.1.3(@types/node@20.11.30)
     transitivePeerDependencies:
       - '@types/node'
@@ -27737,11 +27737,9 @@ packages:
       '@fastify/busboy': 2.1.0
     dev: true
 
-  /undici@6.6.2:
-    resolution: {integrity: sha512-vSqvUE5skSxQJ5sztTZ/CdeJb1Wq0Hf44hlYMciqHghvz+K88U0l7D6u1VsndoFgskDcnU+nG3gYmMzJVzd9Qg==}
+  /undici@6.11.1:
+    resolution: {integrity: sha512-KyhzaLJnV1qa3BSHdj4AZ2ndqI0QWPxYzaIOio0WzcEJB9gvuysprJSLtpvc2D9mhR9jPDUk7xlJlZbH2KR5iw==}
     engines: {node: '>=18.0'}
-    dependencies:
-      '@fastify/busboy': 2.1.0
     dev: true
 
   /unenv@1.9.0:
