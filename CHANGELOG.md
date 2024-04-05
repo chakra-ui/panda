@@ -6,6 +6,60 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.37.2] - 2024-04-05
+
+### Fixed
+
+- fix: build correct path for debug files on windows
+- Add missing type PatternProperties to solve a TypeScript issue (The inferred type of xxx cannot be named without a
+  reference)
+- Fix `sva` typings, the `splitVariantProps` was missing from the `d.ts` file
+
+### Added
+
+- Add a `getVariantProps` helper to the slot recipes API (`sva` and `config slot recipes`)
+
+```ts
+import { sva } from '../styled-system/css'
+import { getVariantProps } from '../styled-system/recipes'
+
+const button = sva({
+  slots: ['root', 'icon'],
+  // ...
+  variants: {
+    size: {
+      sm: {
+        // ...
+      },
+      md: {
+        // ...
+      },
+    },
+    variant: {
+      primary: {
+        // ...
+      },
+      danger: {
+        // ...
+      }
+    }
+  }
+  defaultVariants: {
+    size: 'md',
+    variant: 'primary',
+  }
+})
+
+// ✅ this will return the computed variants based on the defaultVariants + props passed
+const buttonProps = button.getVariantProps({ size: "sm" })
+//    ^? { size: "sm", variant: "primary" }
+```
+
+### Changed
+
+- Make `WithImportant<T>` more performant and ensure typescript is happy. This changes will make code autocompletion and
+  ts-related linting much faster than before.
+
 ## [0.37.1] - 2024-04-02
 
 ### Fixed
