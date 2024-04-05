@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "tsx ./cli.ts test",
+    "test:types": "tsx ./cli.ts test -t",
     "prepare": "tsx ./cli.ts codegen",
     "dev": "vite",
     "build": "tsc && vite build",

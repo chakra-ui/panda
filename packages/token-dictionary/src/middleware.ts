@@ -15,7 +15,7 @@ export const addNegativeTokens: TokenMiddleware = {
     tokens.forEach((token) => {
       //
       const originalPath = [...token.path]
-      const originalVar = dictionary.formatCssVar(originalPath, { prefix, hash })
+      const originalVar = dictionary.formatCssVar(originalPath, { prefix, hash, cssVar: dictionary.createCssVar })
 
       if (token.value === '0rem') {
         return

@@ -83,7 +83,11 @@ export class TokenDictionary {
 
   formatTokenName = (path: string[]): string => path.join('.')
 
-  formatCssVar = (path: string[], options: CssVarOptions): CssVar => cssVar(path.join('-'), options)
+  formatCssVar = (
+    path: string[],
+    options: CssVarOptions & { cssVar: (name: string, options: CssVarOptions) => CssVar },
+  ): CssVar => options.cssVar(path.join('-'), options)
+  createCssVar = cssVar
 
   registerTokens() {
     const { tokens = {}, semanticTokens = {}, breakpoints, themes = {} } = this.options

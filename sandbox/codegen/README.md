@@ -14,3 +14,8 @@
 - You're done ! You can run `bun cli.ts codegen {scenario}` and `bun cli.ts test {scenario}`
 
 > Pro tip: You can use `-u` or `--update` with `bun cli.ts test` to update every snapshots
+
+Vitest currently has a bug where using `typecheck: { enabled: true }` will not make the tests fail anymore when needed
+(runtime errors), only type-errors will be shown.
+
+To fix this we run tests twice, once with `typecheck: true` and once without.
