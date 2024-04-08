@@ -16,6 +16,7 @@ test('tokens / basic', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -32,6 +33,7 @@ test('tokens / basic', () => {
         "value": "#ff00ff",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -71,6 +73,7 @@ test('semantic tokens / nested', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -90,6 +93,7 @@ test('semantic tokens / nested', () => {
         "value": "#fff",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -110,6 +114,7 @@ test('semantic tokens / nested', () => {
         "value": "",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -130,6 +135,7 @@ test('semantic tokens / nested', () => {
         "value": "red",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -150,6 +156,7 @@ test('semantic tokens / nested', () => {
         "value": "#333",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",

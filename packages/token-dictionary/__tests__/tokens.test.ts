@@ -12,6 +12,7 @@ test('should work with default fixture', () => {
   expect(allSpacings).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -31,6 +32,7 @@ test('should work with default fixture', () => {
         "value": "0rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -50,6 +52,7 @@ test('should work with default fixture', () => {
         "value": "0.25rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -69,6 +72,7 @@ test('should work with default fixture', () => {
         "value": "0.5rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -88,6 +92,7 @@ test('should work with default fixture', () => {
         "value": "0.75rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -107,6 +112,7 @@ test('should work with default fixture', () => {
         "value": "1rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -126,6 +132,7 @@ test('should work with default fixture', () => {
         "value": "1.25rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -145,6 +152,7 @@ test('should work with default fixture', () => {
         "value": "1.5rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -164,6 +172,7 @@ test('should work with default fixture', () => {
         "value": "1.75rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -183,6 +192,7 @@ test('should work with default fixture', () => {
         "value": "2rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -202,6 +212,7 @@ test('should work with default fixture', () => {
         "value": "2.25rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -221,6 +232,7 @@ test('should work with default fixture', () => {
         "value": "2.5rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -240,6 +252,7 @@ test('should work with default fixture', () => {
         "value": "2.75rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -259,6 +272,7 @@ test('should work with default fixture', () => {
         "value": "3rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -278,6 +292,7 @@ test('should work with default fixture', () => {
         "value": "3.5rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -297,6 +312,7 @@ test('should work with default fixture', () => {
         "value": "4rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -316,6 +332,7 @@ test('should work with default fixture', () => {
         "value": "5rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -335,6 +352,7 @@ test('should work with default fixture', () => {
         "value": "6rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -354,6 +372,7 @@ test('should work with default fixture', () => {
         "value": "7rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -373,6 +392,7 @@ test('should work with default fixture', () => {
         "value": "8rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -392,6 +412,7 @@ test('should work with default fixture', () => {
         "value": "9rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -411,6 +432,7 @@ test('should work with default fixture', () => {
         "value": "10rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -430,6 +452,7 @@ test('should work with default fixture', () => {
         "value": "11rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -449,6 +472,7 @@ test('should work with default fixture', () => {
         "value": "12rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -468,6 +492,7 @@ test('should work with default fixture', () => {
         "value": "13rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -487,6 +512,7 @@ test('should work with default fixture', () => {
         "value": "14rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -506,6 +532,7 @@ test('should work with default fixture', () => {
         "value": "15rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -525,6 +552,7 @@ test('should work with default fixture', () => {
         "value": "16rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -544,6 +572,7 @@ test('should work with default fixture', () => {
         "value": "18rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -563,6 +592,7 @@ test('should work with default fixture', () => {
         "value": "20rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -582,6 +612,7 @@ test('should work with default fixture', () => {
         "value": "24rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -601,6 +632,7 @@ test('should work with default fixture', () => {
         "value": "0.125rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -620,6 +652,7 @@ test('should work with default fixture', () => {
         "value": "0.375rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -639,6 +672,7 @@ test('should work with default fixture', () => {
         "value": "0.625rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -658,6 +692,7 @@ test('should work with default fixture', () => {
         "value": "0.875rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -681,6 +716,7 @@ test('should work with default fixture', () => {
         "value": "var(--spacing-4)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -704,6 +740,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-1) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -727,6 +764,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-2) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -750,6 +788,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-3) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -773,6 +812,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-4) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -796,6 +836,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-5) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -819,6 +860,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-6) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -842,6 +884,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-7) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -865,6 +908,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-8) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -888,6 +932,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-9) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -911,6 +956,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-10) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -934,6 +980,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-11) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -957,6 +1004,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-12) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -980,6 +1028,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-14) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1003,6 +1052,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-16) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1026,6 +1076,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-20) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1049,6 +1100,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-24) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1072,6 +1124,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-28) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1095,6 +1148,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-32) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1118,6 +1172,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-36) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1141,6 +1196,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-40) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1164,6 +1220,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-44) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1187,6 +1244,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-48) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1210,6 +1268,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-52) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1233,6 +1292,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-56) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1256,6 +1316,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-60) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1279,6 +1340,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-64) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1302,6 +1364,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-72) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1325,6 +1388,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-80) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1348,6 +1412,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-96) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1371,6 +1436,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-0\\.5) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1394,6 +1460,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-1\\.5) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1417,6 +1484,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-2\\.5) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1440,6 +1508,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-3\\.5) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1467,6 +1536,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-gutter) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -1490,6 +1560,7 @@ test('should work with default fixture', () => {
         "value": "var(--spacing-5)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",

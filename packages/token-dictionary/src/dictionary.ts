@@ -113,7 +113,6 @@ export class TokenDictionary {
       node.setExtensions({
         category,
         prop: this.formatTokenName(path.slice(1)),
-        deprecated: token.deprecated,
       })
 
       if (isDefault) {

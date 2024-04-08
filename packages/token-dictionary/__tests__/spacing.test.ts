@@ -17,6 +17,7 @@ test('should add negative spacing', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -33,6 +34,7 @@ test('should add negative spacing', () => {
         "value": "40px",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -80,6 +82,7 @@ test('with semantic spacing', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -96,6 +99,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -116,6 +120,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -137,6 +142,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-sm) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -162,6 +168,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-gutter) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -182,6 +189,7 @@ test('with semantic spacing', () => {
         "value": "0.5rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -231,6 +239,7 @@ test('with semantic spacing', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -247,6 +256,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -267,6 +277,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -288,6 +299,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-sm) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -313,6 +325,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-nested) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -333,6 +346,7 @@ test('with semantic spacing', () => {
         "value": "50px",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",

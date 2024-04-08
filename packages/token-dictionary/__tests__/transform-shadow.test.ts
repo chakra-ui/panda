@@ -23,6 +23,7 @@ test('transform / shadow', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -39,6 +40,7 @@ test('transform / shadow', () => {
         "value": "#ff0000",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "shadows",
@@ -55,6 +57,7 @@ test('transform / shadow', () => {
         "value": "4px 10px 4px 0px #ff0000",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "shadows",

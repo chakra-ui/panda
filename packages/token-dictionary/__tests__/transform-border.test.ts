@@ -33,6 +33,7 @@ test('transform / border', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -51,6 +52,7 @@ test('transform / border', () => {
         "value": "#ff0000",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "borders",
@@ -69,6 +71,7 @@ test('transform / border', () => {
         "value": "1px solid var(--colors-red)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "borders",
@@ -87,6 +90,7 @@ test('transform / border', () => {
         "value": "2px solid var(--colors-red)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "borders",
@@ -109,6 +113,7 @@ test('transform / border', () => {
         "value": "var(--borders-sm)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "borders",
@@ -130,6 +135,7 @@ test('transform / border', () => {
         "value": "var(--borders-control-border)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "borders",

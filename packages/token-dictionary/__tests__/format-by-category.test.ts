@@ -21,6 +21,7 @@ test('format / by category', () => {
     Map {
       "colors" => Map {
         "red" => Token {
+          "deprecated": undefined,
           "description": undefined,
           "extensions": {
             "category": "colors",
@@ -50,6 +51,7 @@ test('format / by category', () => {
           "value": "#ff0000",
         },
         "blue" => Token {
+          "deprecated": undefined,
           "description": undefined,
           "extensions": {
             "category": "colors",
@@ -79,6 +81,7 @@ test('format / by category', () => {
           "value": "#0000ff",
         },
         "green" => Token {
+          "deprecated": undefined,
           "description": undefined,
           "extensions": {
             "category": "colors",

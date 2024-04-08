@@ -18,6 +18,7 @@ test('resolve aliases', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -34,6 +35,7 @@ test('resolve aliases', () => {
         "value": "#ff00ff",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -50,6 +52,7 @@ test('resolve aliases', () => {
         "value": "#ff00ff",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",

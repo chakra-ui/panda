@@ -35,6 +35,7 @@ test('should generate virtual palette', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -64,6 +65,7 @@ test('should generate virtual palette', () => {
         "value": "#000",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -94,6 +96,7 @@ test('should generate virtual palette', () => {
         "value": "#red300",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -124,6 +127,7 @@ test('should generate virtual palette', () => {
         "value": "#red500",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -154,6 +158,7 @@ test('should generate virtual palette', () => {
         "value": "#blue500",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -184,6 +189,7 @@ test('should generate virtual palette', () => {
         "value": "#blue700",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -204,6 +210,7 @@ test('should generate virtual palette', () => {
         "value": "colors.colorPalette",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -224,6 +231,7 @@ test('should generate virtual palette', () => {
         "value": "colors.colorPalette.300",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -244,6 +252,7 @@ test('should generate virtual palette', () => {
         "value": "colors.colorPalette.500",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -343,6 +352,7 @@ test('should generate nested object virtual palette', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -376,6 +386,7 @@ test('should generate nested object virtual palette', () => {
         "value": "navy",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -410,6 +421,7 @@ test('should generate nested object virtual palette', () => {
         "value": "skyblue",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -453,6 +465,7 @@ test('should generate nested object virtual palette', () => {
         "value": "cyan",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -506,6 +519,7 @@ test('should generate nested object virtual palette', () => {
         "value": "blue",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -526,6 +540,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette.dark",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -546,6 +561,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette.light",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -565,6 +581,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -586,6 +603,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette.light.accent",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -606,6 +624,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette.accent",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -625,6 +644,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -647,6 +667,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette.light.accent.secondary",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -668,6 +689,7 @@ test('should generate nested object virtual palette', () => {
         "value": "colors.colorPalette.accent.secondary",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -812,6 +834,7 @@ test('should generate virtual palette', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -841,6 +864,7 @@ test('should generate virtual palette', () => {
         "value": "#000",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -871,6 +895,7 @@ test('should generate virtual palette', () => {
         "value": "#red300",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -901,6 +926,7 @@ test('should generate virtual palette', () => {
         "value": "#red500",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -931,6 +957,7 @@ test('should generate virtual palette', () => {
         "value": "#blue500",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -961,6 +988,7 @@ test('should generate virtual palette', () => {
         "value": "#blue700",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -981,6 +1009,7 @@ test('should generate virtual palette', () => {
         "value": "$colors-colorPalette",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1001,6 +1030,7 @@ test('should generate virtual palette', () => {
         "value": "$colors-colorPalette-300",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1021,6 +1051,7 @@ test('should generate virtual palette', () => {
         "value": "$colors-colorPalette-500",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1121,6 +1152,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1154,6 +1186,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "navy",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1188,6 +1221,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "skyblue",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1231,6 +1265,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "cyan",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1284,6 +1319,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "blue",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1304,6 +1340,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette-dark",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1324,6 +1361,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette-light",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1343,6 +1381,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1364,6 +1403,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette-light-accent",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1384,6 +1424,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette-accent",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1403,6 +1444,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1425,6 +1467,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette-light-accent-secondary",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -1446,6 +1489,7 @@ test('should generate nested object virtual palette + custom formatTokenName', (
         "value": "$colors-colorPalette-accent-secondary",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",

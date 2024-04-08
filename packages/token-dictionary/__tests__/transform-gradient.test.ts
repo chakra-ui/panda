@@ -31,6 +31,7 @@ test('transform / gradient', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -47,6 +48,7 @@ test('transform / gradient', () => {
         "value": "#ff00ff",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "gradients",

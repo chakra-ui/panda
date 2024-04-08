@@ -79,6 +79,7 @@ describe('DiffEngine affecteds', () => {
 
     expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot(`
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -140,6 +141,7 @@ describe('DiffEngine affecteds', () => {
 
     expect(generator.tokens.getByName('colors.newColor123')).toMatchInlineSnapshot(`
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -196,6 +198,7 @@ describe('DiffEngine affecteds', () => {
 
     expect(generator.tokens.getByName('colors.blue.100')).toMatchInlineSnapshot(`
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -257,6 +260,7 @@ describe('DiffEngine affecteds', () => {
 
     expect(generator.tokens.getByName('colors.blue.100')).toMatchInlineSnapshot(`
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
