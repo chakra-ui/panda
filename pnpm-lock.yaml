@@ -736,8 +736,8 @@ importers:
         specifier: 5.9.1
         version: 5.9.1(prisma@5.9.1)
       '@textea/json-viewer':
-        specifier: 3.4.0
-        version: 3.4.0(@emotion/react@11.11.3)(@emotion/styled@11.11.0)(@mui/material@5.15.10)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 3.4.1
+        version: 3.4.1(@emotion/react@11.11.3)(@emotion/styled@11.11.0)(@mui/material@5.15.10)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
       lightningcss-wasm:
         specifier: 1.23.0
         version: 1.23.0
@@ -9522,8 +9522,8 @@ packages:
       - '@vue/server-renderer'
     dev: true
 
-  /@textea/json-viewer@3.4.0(@emotion/react@11.11.3)(@emotion/styled@11.11.0)(@mui/material@5.15.10)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-DrlebIvZhugE7sDGeV/00jsxnxQfSegOd29ZAVsdcepvdcHtl6m+cHjDmuFIX0CqJIXkXvDZF6P5ytPGx8H3ng==}
+  /@textea/json-viewer@3.4.1(@emotion/react@11.11.3)(@emotion/styled@11.11.0)(@mui/material@5.15.10)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-8cLptaqOZVw025/iF5Cb+4nX2jjLRlGfKxGd8D6Gm9pOzB/ZDgih+xl9zoWcVXwVlRj85uLae5oorKV8Yc+vog==}
     peerDependencies:
       '@emotion/react': ^11
       '@emotion/styled': ^11
@@ -9534,11 +9534,11 @@ packages:
       '@emotion/react': 11.11.3(@types/react@18.2.55)(react@18.2.0)
       '@emotion/styled': 11.11.0(@emotion/react@11.11.3)(@types/react@18.2.55)(react@18.2.0)
       '@mui/material': 5.15.10(@emotion/react@11.11.3)(@emotion/styled@11.11.0)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
-      clsx: 2.0.0
+      clsx: 2.1.0
       copy-to-clipboard: 3.3.3
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      zustand: 4.5.0(@types/react@18.2.55)(react@18.2.0)
+      zustand: 4.5.2(@types/react@18.2.55)(react@18.2.0)
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -29906,8 +29906,8 @@ packages:
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
-  /zustand@4.5.0(@types/react@18.2.55)(react@18.2.0):
-    resolution: {integrity: sha512-zlVFqS5TQ21nwijjhJlx4f9iGrXSL0o/+Dpy4txAP22miJ8Ti6c1Ol1RLNN98BMib83lmDH/2KmLwaNXpjrO1A==}
+  /zustand@4.5.2(@types/react@18.2.55)(react@18.2.0):
+    resolution: {integrity: sha512-2cN1tPkDVkwCy5ickKrI7vijSjPksFRfqS6237NzT0vqSsztTNnQdHw9mmN7uBdk3gceVXU0a+21jFzFzAc9+g==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
       '@types/react': '>=16.8'
