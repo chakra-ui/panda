@@ -57,6 +57,7 @@ function filterDefault(path: string[]) {
 export class TokenDictionary {
   allTokens: Token[] = []
   byName: Map<string, Token> = new Map()
+  private deprecated: Set<string> = new Set()
 
   constructor(private options: TokenDictionaryOptions) {}
 
@@ -112,6 +113,7 @@ export class TokenDictionary {
       node.setExtensions({
         category,
         prop: this.formatTokenName(path.slice(1)),
+        deprecated: token.deprecated,
       })
 
       if (isDefault) {
@@ -207,6 +209,10 @@ export class TokenDictionary {
   registerToken = (token: Token, transformPhase?: 'pre' | 'post') => {
     this.allTokens.push(token)
     this.byName.set(token.name, token)
+
+    if (token.deprecated) {
+      this.deprecated.add(token.name)
+    }
 
     if (transformPhase) {
       this.transforms.forEach((transform) => {
@@ -427,6 +433,10 @@ export class TokenDictionary {
 
       return next
     }
+  }
+
+  isDeprecated(name: string) {
+    return this.deprecated.has(name)
   }
 
   build() {

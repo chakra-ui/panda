@@ -16,7 +16,10 @@
     "jsxImportSource": "preact",
     "moduleResolution": "Bundler",
     "module": "ESNext",
-    "customConditions": ["source"]
+    "customConditions": ["source"],
+    "paths": {
+      "styled-system/*": ["./styled-system/*"]
+    }
   },
   "include": ["src", "./panda.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]

@@ -1,13 +1,11 @@
 import type { Recursive } from './shared'
 
-export type TokenStatus = 'deprecated' | 'experimental' | 'new'
-
 export interface Token<Value = any> {
   value: Value
   description?: string
   type?: string
+  deprecated?: boolean
   extensions?: {
-    status?: TokenStatus
     [key: string]: any
   }
 }

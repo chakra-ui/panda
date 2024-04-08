@@ -8,16 +8,14 @@ import { getReferences, hasReference } from './utils'
 export type TokenEntry<T = any> = {
   value: T
   description?: string
+  deprecated?: boolean
   type?: string
   extensions?: {
     [key: string]: any
   }
 }
 
-type TokenStatus = 'deprecated' | 'experimental' | 'new'
-
 interface ExtensionData {
-  status?: TokenStatus
   category?: string
   references?: TokenReferences
   condition?: string
@@ -37,12 +35,13 @@ export type TokenExtensions<T = {}> = ExtensionData & {
   [key: string]: any
 } & T
 
-interface ExtendedToken {
+interface TokenInput {
   name: string
   value: any
   type?: string
   path?: string[]
   description?: string
+  deprecated?: boolean
   extensions?: TokenExtensions
 }
 
@@ -57,26 +56,29 @@ export class Token {
 
   type?: string
   description?: string
+  deprecated?: boolean
   extensions: TokenExtensions
 
-  constructor(data: ExtendedToken) {
-    this.name = data.name
+  constructor(input: TokenInput) {
+    this.name = input.name
 
-    this.value = data.value
-    this.originalValue = data.value
+    this.value = input.value
+    this.originalValue = input.value
 
-    this.path = data.path ?? []
+    this.path = input.path ?? []
 
-    if (data.type) {
-      this.type = data.type
+    if (input.type) {
+      this.type = input.type
     }
 
-    if (data.description) {
-      this.description = data.description
+    if (input.description) {
+      this.description = input.description
     }
 
-    this.extensions = data.extensions ?? {}
-    this.extensions.condition = data.extensions?.condition ?? 'base'
+    this.extensions = input.extensions ?? {}
+    this.extensions.condition = input.extensions?.condition ?? 'base'
+    this.deprecated = input.deprecated
+
     this.setType()
   }
 

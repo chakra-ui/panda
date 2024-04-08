@@ -51,6 +51,10 @@ export interface PatternConfig<T extends PatternProperties = PatternProperties> 
    */
   transform?: (props: InferProps<T>, helpers: PatternHelpers) => SystemStyleObject
   /**
+   * Whether the pattern is deprecated.
+   */
+  deprecated?: boolean | string
+  /**
    * The jsx element name this pattern will generate.
    */
   jsxName?: string

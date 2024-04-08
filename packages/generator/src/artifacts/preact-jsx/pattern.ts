@@ -10,7 +10,7 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
 
   return details.map((pattern) => {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
-    const { description, jsxElement = 'div' } = pattern.config
+    const { description, jsxElement = 'div', deprecated } = pattern.config
 
     return {
       name: dashName,
@@ -70,7 +70,7 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
 
       export interface ${upperName}Props extends ${upperName}Properties, DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}> {}
 
-      ${description ? `/** ${description} */` : ''}
+      ${ctx.file.jsDocComment(description, { deprecated })}
       export declare const ${jsxName}: FunctionComponent<${upperName}Props>
       `,
     }
