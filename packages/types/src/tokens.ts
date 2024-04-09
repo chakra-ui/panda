@@ -4,7 +4,7 @@ export interface Token<Value = any> {
   value: Value
   description?: string
   type?: string
-  deprecated?: boolean
+  deprecated?: boolean | string
   extensions?: {
     [key: string]: any
   }
