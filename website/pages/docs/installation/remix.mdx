@@ -13,7 +13,8 @@ Setting up Panda CSS in a Remix project using PostCSS.
 
 ### Create Remix project
 
-To get started, we will need to create a new Remix project using the official [Create Remix](https://remix.run/docs/en/main/tutorials/jokes#generating-a-new-remix-project) CLI.
+To get started, we will need to create a new Remix project using the official 
+[Create Remix](https://remix.run/docs/en/main/start/quickstart) CLI. In this guide, we will use TypeScript.
 
 If you don't enter any parameter, the CLI will guide you through the process of creating a new Remix app.
 
@@ -40,46 +41,15 @@ If you don't enter any parameter, the CLI will guide you through the process of 
   </Tab>
 </Tabs>
 
-You will be asked a few questions, answer them as follows:
+You will be asked a few questions, answer these as follows:
 
 ```
-? Where would you like to create your app? test-app
-? What type of app do you want to create? Just the basics
-? Where do you want to deploy? Choose Remix App Server if you're unsure; it's easy to change deployment targets. Remix App Server
-? TypeScript or JavaScript? TypeScript
-? Do you want me to run `npm install`? No
+? Where should we create your new project? test-app
+? Install dependencies? No
 ```
 
-> **Note:** You should decline the `npm install` step as we will use a different package manager, i.e. type “n” for the last question.
+> **Note:** You should decline the dependency installation step as we will install dependencies together with Panda CSS.
 
-Enter the newly created directory and install the dependencies.
-
-<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
-  <Tab>
-    ```bash
-    cd test-app
-    pnpm install
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    cd test-app
-    npm install
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    cd test-app
-    yarn
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    cd test-app
-    bun install
-    ```
-  </Tab>
-</Tabs>
 
 ### Install Panda
 
@@ -89,25 +59,25 @@ Install panda and create your `panda.config.ts` file.
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
-    pnpm panda init --postcss --out-extension js
+    pnpm panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
     npm install -D @pandacss/dev
-    npx panda init --postcss --out-extension js
+    npx panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
     yarn add -D @pandacss/dev
-    yarn panda init --postcss --out-extension js
+    yarn panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
     bun add -D @pandacss/dev
-    bun panda init --postcss --out-extension js
+    bun panda init --postcss
     ```
   </Tab>
 </Tabs>
@@ -127,22 +97,22 @@ Open your `package.json` file and update the `scripts` section as follows:
   }
 }
 ```
-- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about 
+[codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+> This step ensures that the panda output directory is regenerated after each dependency installation. 
+So you can add the Panda CSS output directory to your `.gitignore` file and not worry about it.
 
 
 ### Configure the content
 
-Make sure that all of the paths of your Remix components are included in the `include` section of the `panda.config.ts` file.
+Make sure that all of the paths of your Remix components are included in the `include` section of 
+the `panda.config.ts` file.
 
 ```js {5, 11} filename="panda.config.ts"
 import { defineConfig } from "@pandacss/dev"
 
 export default defineConfig({
- // File extension for generated javascript files
- outExtension: 'js',
-
  // Whether to use css reset
  preflight: true,
 
@@ -167,8 +137,10 @@ Create a new file `app/index.css` and add the following content:
 
 Import the `index.css` file in your `app/root.tsx` file and add the `styles` variable to the `links` function.
 
+Please note the `?url` query parameter in the `import` statement. This is required by Vite to generate the correct path
+to the CSS file.
+
 ```tsx filename="app/root.tsx" {11,13}
-import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction } from "@remix-run/node";
 import {
   Links,
@@ -179,10 +151,9 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import styles from "./index.css"
+import styles from "./index.css?url"
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: styles },
 ];
 
@@ -259,7 +230,8 @@ export default function Index() {
 
 ## Troubleshooting
 
-If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` 
+directory in your `tsconfig.json` file:
 
 ```json filename="tsconfig.json"
 {
