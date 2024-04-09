@@ -54,15 +54,15 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
       const parsedPath = parse(file)
       const relative = path.relative(ctx.config.cwd, parsedPath.dir)
 
-      const astJsonPath = `${relative}/${parsedPath.name}.ast.json`.replaceAll(path.sep, '__')
-      const cssPath = `${relative}/${parsedPath.name}.css`.replaceAll(path.sep, '__')
+      const astJsonPath = `${relative}${path.sep}${parsedPath.name}.ast.json`.replaceAll(path.sep, '__')
+      const cssPath = `${relative}${path.sep}${parsedPath.name}.css`.replaceAll(path.sep, '__')
 
       logger.info('cli', `Writing ${colors.bold(`${outdir}/${astJsonPath}`)}`)
       logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
 
       return Promise.allSettled([
-        fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result.toJSON(), null, 2)),
-        fs.writeFile(`${outdir}/${cssPath}`, css),
+        fs.writeFile(`${outdir}${path.sep}${astJsonPath}`, JSON.stringify(result.toJSON(), null, 2)),
+        fs.writeFile(`${outdir}${path.sep}${cssPath}`, css),
       ])
     }
   })

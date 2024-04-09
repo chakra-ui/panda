@@ -208,7 +208,7 @@ type WithColorOpacityModifier<T> = T extends string ? `${T}/${string}` : T
 type ImportantMark = "!" | "!important"
 type WhitespaceImportant = ` ${ImportantMark}`
 type Important = ImportantMark | WhitespaceImportant
-type WithImportant<T> = T extends string ? `${T}${Important}${string}` : T
+type WithImportant<T> = T extends string ? `${T}${Important}` & { __important?: true } : T;
 
 /**
  * Only relevant when using `strictTokens` or `strictPropertyValues` in your config.
@@ -226,7 +226,7 @@ type WithImportant<T> = T extends string ? `${T}${Important}${string}` : T
  * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
  * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
  */
-export type WithEscapeHatch<T> = T | `[${string}]` | (T extends string ? WithColorOpacityModifier<string> | WithImportant<T> : T)
+export type WithEscapeHatch<T> = T | `[${string}]` | WithColorOpacityModifier<T> | WithImportant<T>
 
 /**
  * Will restrict the value of properties that have predefined values to those values only.

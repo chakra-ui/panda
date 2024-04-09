@@ -1,5 +1,19 @@
 # @pandacss/studio
 
+## 0.37.2
+
+### Patch Changes
+
+- b3beef4: Make `WithImportant<T>` more performant and ensure typescript is happy. This changes will make code
+  autocompletion and ts-related linting much faster than before.
+- Updated dependencies [74dfb3e]
+  - @pandacss/types@0.37.2
+  - @pandacss/astro-plugin-studio@0.37.2
+  - @pandacss/config@0.37.2
+  - @pandacss/logger@0.37.2
+  - @pandacss/token-dictionary@0.37.2
+  - @pandacss/shared@0.37.2
+
 ## 0.37.1
 
 ### Patch Changes

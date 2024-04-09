@@ -83,6 +83,7 @@ describe('styled factory - cva', () => {
 
   test('style prop', () => {
     const { container } = render(
+      // @ts-expect-error
       <Button className="custom-btn" mx="2">
         Click me
       </Button>,
@@ -100,6 +101,7 @@ describe('styled factory - cva', () => {
 
   test('style prop with variant', () => {
     const { container } = render(
+      // @ts-expect-error
       <Button className="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
@@ -149,6 +151,7 @@ describe('styled factory - cva', () => {
 
   test('all together', () => {
     const { container } = render(
+      // @ts-expect-error
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
       </Button>,
@@ -173,7 +176,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button"
+        class="button button--visual_unstyled"
       >
         Click me
       </button>
@@ -185,7 +188,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm"
+        class="button button--visual_unstyled button--size_sm"
       >
         Click me
       </button>
@@ -201,7 +204,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm custom-btn"
+        class="button button--visual_unstyled button--size_sm custom-btn"
       >
         Click me
       </button>
@@ -210,6 +213,7 @@ describe('styled factory - button recipe', () => {
 
   test('style prop', () => {
     const { container } = render(
+      // @ts-expect-error
       <Button className="custom-btn" mx="2">
         Click me
       </Button>,
@@ -217,7 +221,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button custom-btn"
+        class="button button--visual_unstyled custom-btn"
         mx="2"
       >
         Click me
@@ -227,6 +231,7 @@ describe('styled factory - button recipe', () => {
 
   test('style prop with variant', () => {
     const { container } = render(
+      // @ts-expect-error
       <Button className="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
@@ -234,7 +239,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm custom-btn"
+        class="button button--visual_unstyled button--size_sm custom-btn"
         mx="2"
       >
         Click me
@@ -251,7 +256,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button text_red.100 fs_md custom-btn"
+        class="button button--visual_unstyled text_red.100 fs_md custom-btn"
       >
         Click me
       </button>
@@ -267,7 +272,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--size_sm text_red.100 fs_md custom-btn"
+        class="button button--visual_unstyled button--size_sm text_red.100 fs_md custom-btn"
       >
         Click me
       </button>
@@ -276,6 +281,7 @@ describe('styled factory - button recipe', () => {
 
   test('all together', () => {
     const { container } = render(
+      // @ts-expect-error
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
       </Button>,
@@ -293,6 +299,7 @@ describe('styled factory - button recipe', () => {
 
   test('html props', () => {
     const { container } = render(
+      // @ts-expect-error
       <styled.div htmlWidth={123} height="123">
         Click me
       </styled.div>,

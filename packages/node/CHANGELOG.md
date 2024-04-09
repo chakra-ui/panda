@@ -1,5 +1,22 @@
 # @pandacss/node
 
+## 0.37.2
+
+### Patch Changes
+
+- 84edd38: fix: build correct path for debug files on windows
+- Updated dependencies [74dfb3e]
+- Updated dependencies [b3beef4]
+  - @pandacss/generator@0.37.2
+  - @pandacss/types@0.37.2
+  - @pandacss/parser@0.37.2
+  - @pandacss/config@0.37.2
+  - @pandacss/core@0.37.2
+  - @pandacss/logger@0.37.2
+  - @pandacss/token-dictionary@0.37.2
+  - @pandacss/extractor@0.37.2
+  - @pandacss/shared@0.37.2
+
 ## 0.37.1
 
 ### Patch Changes

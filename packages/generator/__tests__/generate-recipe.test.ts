@@ -374,7 +374,7 @@ describe('generate recipes', () => {
 
 
       export declare const checkbox: CheckboxRecipe",
-          "js": "import { getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
+          "js": "import { compact, getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
       const checkboxDefaultVariants = {
@@ -405,6 +405,7 @@ describe('generate recipes', () => {
       const checkboxVariantKeys = [
         "size"
       ]
+      const getVariantProps = (variants) => ({ ...checkboxDefaultVariants, ...compact(variants) })
 
       export const checkbox = /* @__PURE__ */ Object.assign(checkboxFn, {
         __recipe__: false,
@@ -421,6 +422,7 @@ describe('generate recipes', () => {
         splitVariantProps(props) {
           return splitProps(props, checkboxVariantKeys)
         },
+        getVariantProps
       })",
           "name": "checkbox",
         },
@@ -453,7 +455,7 @@ describe('generate recipes', () => {
 
 
       export declare const badge: BadgeRecipe",
-          "js": "import { getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
+          "js": "import { compact, getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
       const badgeDefaultVariants = {}
@@ -489,6 +491,7 @@ describe('generate recipes', () => {
         "size",
         "raised"
       ]
+      const getVariantProps = (variants) => ({ ...badgeDefaultVariants, ...compact(variants) })
 
       export const badge = /* @__PURE__ */ Object.assign(badgeFn, {
         __recipe__: false,
@@ -506,6 +509,7 @@ describe('generate recipes', () => {
         splitVariantProps(props) {
           return splitProps(props, badgeVariantKeys)
         },
+        getVariantProps
       })",
           "name": "badge",
         },
