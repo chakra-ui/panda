@@ -41,7 +41,7 @@ interface TokenInput {
   type?: string
   path?: string[]
   description?: string
-  deprecated?: boolean
+  deprecated?: boolean | string
   extensions?: TokenExtensions
 }
 
@@ -56,7 +56,7 @@ export class Token {
 
   type?: string
   description?: string
-  deprecated?: boolean
+  deprecated?: boolean | string
   extensions: TokenExtensions
 
   constructor(input: TokenInput) {
