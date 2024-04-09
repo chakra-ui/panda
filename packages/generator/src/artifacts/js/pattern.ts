@@ -12,7 +12,7 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
 
   return details.map((pattern) => {
     const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern
-    const { properties, transform, strict, description, defaultValues } = config
+    const { properties, transform, strict, description, defaultValues, deprecated } = config
 
     const patternConfigFn = stringify(compact({ transform, defaultValues })) ?? ''
 
@@ -70,7 +70,7 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
             raw: (styles?: ${upperName}Styles) => SystemStyleObject
           }
 
-          ${description ? `/** ${description} */` : ''}
+          ${ctx.file.jsDocComment(description, { deprecated })}
           export declare const ${baseName}: ${upperName}PatternFn;
           `
       }

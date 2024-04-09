@@ -16,6 +16,7 @@ export class Patterns {
   keys: string[]
   private utility: Utility
   private tokens: TokenDictionary
+  private deprecated: Set<string> = new Set()
 
   constructor(private options: PatternOptions) {
     this.patterns = options.config.patterns ?? {}
@@ -28,6 +29,10 @@ export class Patterns {
   private createDetail(name: string, pattern: PatternConfig): PatternNode {
     const names = this.getNames(name)
     const jsx = (pattern.jsx ?? []).concat([names.jsxName])
+
+    if (pattern.deprecated) {
+      this.deprecated.add(name)
+    }
 
     return {
       ...names,
@@ -71,6 +76,10 @@ export class Patterns {
 
   isEmpty(): boolean {
     return this.keys.length === 0
+  }
+
+  isDeprecated(name: string): boolean {
+    return this.deprecated.has(name)
   }
 
   saveOne(name: string, pattern: PatternConfig): void {

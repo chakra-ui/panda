@@ -1,3 +1,4 @@
+import { isString } from '@pandacss/shared'
 import type { Context } from './context'
 
 export class FileEngine {
@@ -46,5 +47,28 @@ export class FileEngine {
 
   isTypeFile(file: string): boolean {
     return file.endsWith('.d.ts') || file.endsWith('.d.mts')
+  }
+
+  jsDocComment(comment: string | undefined, options?: { deprecated?: boolean | string; default?: string }): string {
+    const { deprecated, default: defaultValue } = options ?? {}
+    if (!comment && !deprecated && !defaultValue) return ''
+
+    const comments: string[] = ['/**']
+
+    if (comment) {
+      comments.push(` * ${comment}`, '\n')
+    }
+
+    if (deprecated) {
+      const suffix = isString(deprecated) ? ` ${deprecated}` : ''
+      comments.push(` * @deprecated${suffix}`)
+    }
+
+    if (defaultValue) {
+      comments.push(` * @default ${defaultValue}`)
+    }
+
+    comments.push(' */')
+    return comments.join('\n')
   }
 }

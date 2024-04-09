@@ -25,6 +25,7 @@ describe('transform / assets', () => {
     expect(dictionary.allTokens).toMatchInlineSnapshot(`
       [
         Token {
+          "deprecated": undefined,
           "description": undefined,
           "extensions": {
             "category": "assets",
@@ -65,6 +66,7 @@ describe('transform / assets', () => {
     expect(dictionary.allTokens).toMatchInlineSnapshot(`
       [
         Token {
+          "deprecated": undefined,
           "description": "checkbox icon",
           "extensions": {
             "category": "assets",
@@ -102,6 +104,7 @@ describe('transform / assets', () => {
     expect(dictionary.allTokens).toMatchInlineSnapshot(`
       [
         Token {
+          "deprecated": undefined,
           "description": undefined,
           "extensions": {
             "category": "assets",

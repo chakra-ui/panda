@@ -64,6 +64,10 @@ export interface PropertyConfig {
    * The CSS semantic group this property belongs
    */
   group?: CssSemanticGroup
+  /**
+   * Whether this utility is deprecated or not.
+   */
+  deprecated?: boolean
 }
 
 export type CssSemanticGroup =

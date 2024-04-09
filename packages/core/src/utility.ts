@@ -81,6 +81,11 @@ export class Utility {
    */
   private configs: Map<string, PropertyConfig> = new Map()
 
+  /**
+   * The map of deprecated properties
+   */
+  private deprecated: Set<string> = new Set()
+
   separator = '_'
 
   prefix = ''
@@ -125,6 +130,15 @@ export class Utility {
         return [property, this.normalize(propertyConfig)]
       }),
     )
+  }
+
+  private assignDeprecated = (property: string, config: PropertyConfig) => {
+    if (!config.deprecated) return
+    this.deprecated.add(property)
+    if (isString(config.shorthand)) this.deprecated.add(config.shorthand)
+    if (Array.isArray(config.shorthand)) {
+      config.shorthand.forEach((shorthand) => this.deprecated.add(shorthand))
+    }
   }
 
   register = (property: string, config: PropertyConfig) => {
@@ -247,6 +261,7 @@ export class Utility {
 
   private assignProperty = (property: string, config: PropertyConfig) => {
     this.setTransform(property, config?.transform)
+    this.assignDeprecated(property, config)
 
     if (!config) return
 
@@ -494,5 +509,12 @@ export class Utility {
    */
   getPropShorthands = (prop: string) => {
     return this.getPropShorthandsMap().get(prop) ?? []
+  }
+
+  /**
+   * Whether a given property is deprecated
+   */
+  isDeprecated = (prop: string) => {
+    return this.deprecated.has(prop)
   }
 }

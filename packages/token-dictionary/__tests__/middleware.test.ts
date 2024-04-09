@@ -19,6 +19,7 @@ test('middleware / add negative', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -35,6 +36,7 @@ test('middleware / add negative', () => {
         "value": "4px",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -80,6 +82,7 @@ test('negative tokens', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -96,6 +99,7 @@ test('negative tokens', () => {
         "value": "1rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -115,6 +119,7 @@ test('negative tokens', () => {
         "value": "1rem",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -136,6 +141,7 @@ test('negative tokens', () => {
         "value": "calc(var(--spacing-1) * -1)",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "spacing",
@@ -191,6 +197,7 @@ test('middleware / formatTokenName', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",

@@ -65,6 +65,10 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
    */
   base?: SystemStyleObject
   /**
+   * Whether the recipe is deprecated.
+   */
+  deprecated?: boolean | string
+  /**
    * The multi-variant styles of the recipe.
    */
   variants?: T
@@ -141,6 +145,10 @@ export interface SlotRecipeDefinition<
    * An optional class name that can be used to target slots in the DOM.
    */
   className?: string
+  /**
+   * Whether the recipe is deprecated.
+   */
+  deprecated?: boolean | string
   /**
    * The parts/slots of the recipe.
    */

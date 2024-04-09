@@ -113,7 +113,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
 
   return details.map((recipe) => {
     const { baseName, config, upperName, variantKeyMap, dashName } = recipe
-    const { description, defaultVariants, compoundVariants } = config
+    const { description, defaultVariants, compoundVariants, deprecated } = config
 
     const jsCode = match(config)
       .when(
@@ -220,7 +220,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           getVariantProps: (props?: ${upperName}VariantProps) => ${upperName}VariantProps
         }
 
-        ${description ? `/** ${description} */` : ''}
+        ${ctx.file.jsDocComment(description, { deprecated })}
         export declare const ${baseName}: ${upperName}Recipe
         `,
     }

@@ -16,6 +16,7 @@ test('semantic tokens / deeply nested', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",
@@ -38,6 +39,7 @@ test('semantic tokens / deeply nested', () => {
         "value": "#fff",
       },
       Token {
+        "deprecated": undefined,
         "description": undefined,
         "extensions": {
           "category": "colors",

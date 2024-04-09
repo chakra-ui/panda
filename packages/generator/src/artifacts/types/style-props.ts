@@ -59,7 +59,11 @@ export function generateStyleProps(ctx: Context) {
             filtered.push('string | number')
           }
 
-          const comment = (csstype.comments as Record<string, string>)?.[prop] || ''
+          let comment = (csstype.comments as Record<string, string>)?.[prop] || ''
+          if (ctx.utility.isDeprecated(prop)) {
+            comment = comment ? comment.replace('@see', '@deprecated\n@see') : '/** @deprecated */'
+          }
+
           const value = filtered.filter(Boolean).join(' | ')
           const line = `${key}?: ${restrict(prop, value, ctx.config)}`
 

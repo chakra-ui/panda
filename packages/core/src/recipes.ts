@@ -49,6 +49,8 @@ export class Recipes {
 
   keys: string[] = []
 
+  private deprecated = new Set<string>()
+
   private context!: SerializeContext
 
   constructor(private recipes: RecipeRecord = {}) {
@@ -116,6 +118,8 @@ export class Recipes {
   }
 
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
+    if (recipe.deprecated) this.deprecated.add(name)
+
     const variantKeys = Object.keys(recipe.variants ?? {})
     const capitalized = capitalize(name)
     const jsx = Array.from(recipe.jsx ?? [capitalized])
@@ -150,6 +154,10 @@ export class Recipes {
 
   isEmpty = () => {
     return sharedState.nodes.size === 0
+  }
+
+  isDeprecated = (name: string) => {
+    return this.deprecated.has(name)
   }
 
   getNames = memo((name: string) => {
@@ -215,6 +223,7 @@ export class Recipes {
 
     const recipe: Required<RecipeConfig> = {
       ...config,
+      deprecated: config.deprecated == null ? false : config.deprecated,
       jsx,
       className,
       description,
