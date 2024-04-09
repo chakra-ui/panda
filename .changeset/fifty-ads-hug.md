@@ -31,7 +31,7 @@ defineConfig({
 defineConfig({
   theme: {
     tokens: {
-      space: {
+      spacing: {
         lg: { value: '8px', deprecated: 'use `8` instead' },
       },
     },
