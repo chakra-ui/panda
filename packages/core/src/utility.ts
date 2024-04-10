@@ -1,4 +1,5 @@
 import {
+  CacheMap,
   compact,
   getArbitraryValue,
   hypenateProperty,
@@ -37,14 +38,14 @@ export class Utility {
   tokens: TokenDictionary
 
   /**
-   * The map of property names to their resolved class names
+   * [cache] The map of property names to their resolved class names
    */
-  classNames: Map<string, string> = new Map()
+  classNames = new CacheMap<string, string>()
 
   /**
-   * The map of the property to their resolved styless
+   * [cache] The map of the property to their resolved styless
    */
-  styles: Map<string, Dict> = new Map()
+  styles = new CacheMap<string, Dict>()
 
   /**
    * Map of shorthand properties to their longhand properties
@@ -54,12 +55,12 @@ export class Utility {
   /**
    * The map of possible values for each property
    */
-  types: Map<string, Set<string>> = new Map()
+  types = new Map<string, Set<string>>()
 
   /**
    * The map of the property keys
    */
-  propertyTypeKeys: Map<string, Set<string>> = new Map()
+  propertyTypeKeys = new Map<string, Set<string>>()
 
   /**
    * The utility config
@@ -67,24 +68,19 @@ export class Utility {
   config: UtilityConfig = {}
 
   /**
-   * Useful for reporting custom values
-   */
-  customValues: Map<string, string> = new Map()
-
-  /**
    * The map of property names to their transform functions
    */
-  private transforms: Map<string, PropertyTransform> = new Map()
+  private transforms = new Map<string, PropertyTransform>()
 
   /**
    * The map of property names to their config
    */
-  private configs: Map<string, PropertyConfig> = new Map()
+  private configs = new Map<string, PropertyConfig>()
 
   /**
    * The map of deprecated properties
    */
-  private deprecated: Set<string> = new Set()
+  private deprecated = new Set<string>()
 
   separator = '_'
 
@@ -423,7 +419,7 @@ export class Utility {
   /**
    * Whether a given property exists in the config
    */
-  private isProperty = (prop: string) => {
+  has = (prop: string) => {
     return this.configs.has(prop)
   }
 
@@ -435,11 +431,6 @@ export class Utility {
       const propKey = this.getPropKey(prop, value)
 
       if (!this.classNames.has(propKey)) {
-        //
-        if (this.isProperty(prop)) {
-          this.customValues.set(prop, value)
-        }
-
         this.setClassName(prop, value)
       }
 
