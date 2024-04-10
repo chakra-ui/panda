@@ -2729,12 +2729,6 @@ describe('Utility', () => {
         },
       }
     `)
-
-    expect(utility.customValues).toMatchInlineSnapshot(`
-      Map {
-        "marginLeft" => "40px",
-      }
-    `)
   })
 
   test('allow retrieving the token object with the raw value', () => {

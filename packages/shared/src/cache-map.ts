@@ -44,4 +44,8 @@ export class CacheMap<K, V> {
   size = (): number => {
     return this.cache.size
   }
+
+  toJSON = () => {
+    return this.cache
+  }
 }
