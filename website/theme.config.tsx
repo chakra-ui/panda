@@ -79,20 +79,6 @@ const config: DocsThemeConfig = {
           <link key={index} rel={icon.rel} href={icon.url} />
         ))}
         <meta httpEquiv="Content-Language" content="en" />
-        <meta
-          name="description"
-          content={meta['description'] || seoConfig.description}
-        />
-        <meta
-          name="og:title"
-          content={title ? title + ' – Panda' : seoConfig.title.default}
-        />
-        <meta
-          name="og:description"
-          content={meta['description'] || seoConfig.description}
-        />
-        <meta name="og:image" content={seoConfig.openGraph.images} />
-        <meta name="og:url" content={seoConfig.openGraph.url} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content={seoConfig.twitter.site} />
         <meta name="twitter:creator" content={seoConfig.twitter.creator} />
