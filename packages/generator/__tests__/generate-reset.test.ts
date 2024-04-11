@@ -27,7 +27,7 @@ describe('generate reset', () => {
           font-family: var(--global-font-body, var(--font-fallback));
       }
 
-        *,::before,::after,::backdrop,::first-letter,::file-selector-button {
+        *,::before,::after,::backdrop,::file-selector-button {
           margin: 0px;
           padding: 0px;
           box-sizing: border-box;
@@ -93,11 +93,6 @@ describe('generate reset', () => {
           opacity: 1;
           --placeholder-fallback: color-mix(in srgb, currentColor 50%, transparent);
           color: var(--global-color-placeholder, var(--placeholder-fallback));
-      }
-
-        select,textarea,input:where(:not([type='button'], [type='reset'], [type='submit'])) {
-          border-width: 1px;
-          border-style: solid;
       }
 
         textarea {
@@ -204,7 +199,7 @@ describe('generate reset', () => {
           font-family: var(--global-font-body, var(--font-fallback));
       }
 
-        .pd-reset *,.pd-reset ::before,.pd-reset ::after,.pd-reset ::backdrop,.pd-reset ::first-letter,.pd-reset ::file-selector-button {
+        .pd-reset *,.pd-reset ::before,.pd-reset ::after,.pd-reset ::backdrop,.pd-reset ::file-selector-button {
           margin: 0px;
           padding: 0px;
           box-sizing: border-box;
@@ -338,11 +333,6 @@ describe('generate reset', () => {
           border-style: none;
       }
 
-        .pd-reset select,.pd-reset textarea,.pd-reset input:where(:not([type='button'], [type='reset'], [type='submit'])) {
-          border-width: 1px;
-          border-style: solid;
-      }
-
         .pd-reset small {
           font-size: 80%;
       }
@@ -381,7 +371,7 @@ describe('generate reset', () => {
           font-family: var(--global-font-body, var(--font-fallback));
       }
 
-        *.pd-reset,::before.pd-reset,::after.pd-reset,::backdrop.pd-reset,::first-letter.pd-reset,::file-selector-button.pd-reset {
+        *.pd-reset,::before.pd-reset,::after.pd-reset,::backdrop.pd-reset,::file-selector-button.pd-reset {
           margin: 0px;
           padding: 0px;
           box-sizing: border-box;
@@ -447,11 +437,6 @@ describe('generate reset', () => {
           opacity: 1;
           --placeholder-fallback: color-mix(in srgb, currentColor 50%, transparent);
           color: var(--global-color-placeholder, var(--placeholder-fallback));
-      }
-
-        select.pd-reset,textarea.pd-reset,input:where(:not([type='button'], [type='reset'], [type='submit'])).pd-reset {
-          border-width: 1px;
-          border-style: solid;
       }
 
         textarea.pd-reset {

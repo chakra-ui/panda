@@ -17,7 +17,7 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   }
 
   const scoped: GlobalStyleObject = {
-    '*, ::before, ::after, ::backdrop, ::first-letter, ::file-selector-button': {
+    '*, ::before, ::after, ::backdrop, ::file-selector-button': {
       margin: '0px',
       padding: '0px',
       boxSizing: 'border-box',
@@ -71,10 +71,6 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
       opacity: 1,
       '--placeholder-fallback': 'color-mix(in srgb, currentColor 50%, transparent)',
       color: 'var(--global-color-placeholder, var(--placeholder-fallback))',
-    },
-    "select, textarea, input:where(:not([type='button'], [type='reset'], [type='submit']))": {
-      borderWidth: '1px',
-      borderStyle: 'solid',
     },
     textarea: {
       resize: 'vertical',
