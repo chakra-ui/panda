@@ -158,6 +158,7 @@ export class TokenDictionary {
     walkObject(
       computedTokens,
       (token, path) => {
+        // if (path.at(-1) === 'deprecated') return
         const node = processToken(token, path)
         this.registerToken(node)
       },

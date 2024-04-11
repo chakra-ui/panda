@@ -44,6 +44,7 @@ export const validateTokens = (options: Options) => {
     )
 
     tokenPaths.forEach((path) => {
+      if (path.endsWith('deprecated')) return
       const itemValue = valueAtPath.get(path)
       const formattedPath = formatPath(path)
       typeByPath.set(formattedPath, 'tokens')
