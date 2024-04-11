@@ -3,7 +3,7 @@ export class CacheMap<K, V> implements Map<K, V> {
   private keysInUse: K[]
   private maxCacheSize: number
 
-  constructor(maxCacheSize: number = 500) {
+  constructor(maxCacheSize = 500) {
     this.maxCacheSize = maxCacheSize
     this.cache = new Map<K, V>()
     this.keysInUse = []

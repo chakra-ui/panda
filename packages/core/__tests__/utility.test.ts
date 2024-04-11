@@ -2787,7 +2787,7 @@ describe('Utility', () => {
     expect(utility.getTypes()).toMatchInlineSnapshot(`Map {}`)
   })
 
-  test.only('skip type:Token[category] when category values is empty', () => {
+  test('skip type:Token[category] when category values is empty', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({}).init(),
       config: {
