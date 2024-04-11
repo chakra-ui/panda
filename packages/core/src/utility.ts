@@ -16,6 +16,7 @@ import type {
   Dict,
   PropertyConfig,
   PropertyTransform,
+  TokenDataTypes,
   TransformArgs,
   UtilityConfig,
 } from '@pandacss/types'
@@ -233,6 +234,29 @@ export class Utility {
     return values
   }
 
+  getPropertyRawValue(config: PropertyConfig, value: string) {
+    const { values } = config
+    if (!values) return value
+
+    if (isString(values)) {
+      return this.tokens.view.valuesByCategory.get(values as keyof TokenDataTypes)?.get(String(value)) || value
+    }
+
+    if (Array.isArray(values)) {
+      return value
+    }
+
+    if (isFunction(values)) {
+      return values(this.getTokenCategoryValues.bind(this))[value] || value
+    }
+
+    if (values.type) {
+      return value
+    }
+
+    return values[value as keyof typeof values] || value
+  }
+
   getToken = (path: string) => {
     return this.tokens.view.get(path)
   }
@@ -260,23 +284,33 @@ export class Utility {
     this.assignDeprecated(property, config)
 
     if (!config) return
-
     this.configs.set(property, config)
-    const values = this.getPropertyValues(config)
-
-    if (!values) return
-
-    for (const [alias, raw] of Object.entries(values)) {
-      const propKey = this.getPropKey(property, alias)
-      this.setStyles(property, raw, alias, propKey)
-      this.setClassName(property, alias)
-    }
   }
 
   private assignProperties = () => {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
       if (!propertyConfig) continue
       this.assignProperty(property, propertyConfig)
+    }
+  }
+
+  assignPropertiesValues = () => {
+    for (const [property, propertyConfig] of Object.entries(this.config)) {
+      if (!propertyConfig) continue
+      this.assignPropertyValues(property, propertyConfig)
+    }
+
+    return this
+  }
+
+  private assignPropertyValues = (property: string, config: PropertyConfig) => {
+    const values = this.getPropertyValues(config)
+    if (!values) return
+
+    for (const [alias, raw] of Object.entries(values)) {
+      const propKey = this.getPropKey(property, alias)
+      this.setStyles(property, raw, alias, propKey)
+      this.getOrCreateClassName(property, alias)
     }
   }
 
@@ -399,21 +433,29 @@ export class Utility {
     return [this.prefix, className].filter(Boolean).join('-')
   }
 
-  private setClassName = (property: string, raw: string) => {
-    const propKey = this.getPropKey(property, raw)
+  /**
+   * Returns the resolved className for a given property and value
+   */
+  getClassName = (property: string, raw: string) => {
     const config = this.configs.get(property)
 
-    let className: string
-
     if (!config || !config.className) {
-      className = this.hash(hypenateProperty(property), raw)
-    } else {
-      className = this.hash(config.className, raw)
+      return this.hash(hypenateProperty(property), raw)
     }
 
-    this.classNames.set(propKey, className)
+    return this.hash(config.className, raw)
+  }
 
-    return this
+  getOrCreateClassName = (property: string, raw: string) => {
+    const propKey = this.getPropKey(property, raw)
+    let className = this.classNames.get(propKey)
+
+    if (!className) {
+      className = this.getClassName(property, raw)
+      this.classNames.set(propKey, className)
+    }
+
+    return className
   }
 
   /**
@@ -424,28 +466,16 @@ export class Utility {
   }
 
   /**
-   * Returns the resolved className for a given property and value
-   */
-  private getOrCreateClassName = (prop: string, value: string) => {
-    const inner = (prop: string, value: string) => {
-      const propKey = this.getPropKey(prop, value)
-
-      if (!this.classNames.has(propKey)) {
-        this.setClassName(prop, value)
-      }
-
-      return this.classNames.get(propKey)!
-    }
-
-    return inner(prop, value)
-  }
-
-  /**
    * Get or create the resolved styles for a given property and value
    */
   private getOrCreateStyle = (prop: string, value: string) => {
     const propKey = this.getPropKey(prop, value)
-    this.styles.get(propKey) ?? this.setStyles(prop, value, value, propKey)
+    const styles = this.styles.get(propKey)
+    if (styles) return styles
+
+    const config = this.configs.get(prop)
+    const raw = config ? this.getPropertyRawValue(config, value) : value
+    this.setStyles(prop, raw, value, propKey)
     return this.styles.get(propKey)!
   }
 

@@ -1,77 +1,89 @@
 export class CacheMap<K, V> implements Map<K, V> {
-  private cache = new Map<K, V>()
-  private previousCache = new Map<K, V>()
-  private cacheSize = 0
+  private cache: Map<K, V>
+  private keysInUse: K[]
+  private maxCacheSize: number
 
-  constructor(private maxCacheSize = 500) {}
+  constructor(maxCacheSize: number = 500) {
+    this.maxCacheSize = maxCacheSize
+    this.cache = new Map<K, V>()
+    this.keysInUse = []
+  }
 
-  private update = (key: K, value: V): void => {
+  get(key: K) {
+    if (!this.cache.has(key)) {
+      return undefined
+    }
+    this.updateKeyUsage(key)
+    return this.cache.get(key)
+  }
+
+  set(key: K, value: V) {
+    if (!this.cache.has(key) && this.cache.size === this.maxCacheSize) {
+      this.evictLeastRecentlyUsed()
+    }
     this.cache.set(key, value)
-    this.cacheSize++
-    console.log(key, this.cacheSize, this.maxCacheSize)
-
-    if (this.cacheSize > this.maxCacheSize) {
-      this.cacheSize = 0
-      this.previousCache = this.cache
-      this.cache = new Map()
-    }
-  }
-
-  get = (key: K): V | undefined => {
-    let value = this.cache.get(key)
-    if (value !== undefined) return value
-    if ((value = this.previousCache.get(key)) !== undefined) {
-      this.update(key, value)
-      return value
-    }
-  }
-
-  set = (key: K, value: V) => {
-    if (this.cache.has(key)) {
-      this.cache.set(key, value)
-    } else {
-      this.update(key, value)
-    }
-
+    this.updateKeyUsage(key)
     return this
   }
 
-  has = (key: K): boolean => {
+  delete(key: K) {
+    const result = this.cache.delete(key)
+    if (result) {
+      const index = this.keysInUse.indexOf(key)
+      if (index !== -1) {
+        this.keysInUse.splice(index, 1)
+      }
+    }
+    return result
+  }
+
+  private updateKeyUsage(key: K) {
+    const index = this.keysInUse.indexOf(key)
+    if (index !== -1) {
+      this.keysInUse.splice(index, 1)
+    }
+    this.keysInUse.push(key)
+  }
+
+  private evictLeastRecentlyUsed() {
+    const keyToEvict = this.keysInUse.shift()
+    if (keyToEvict !== undefined) {
+      this.cache.delete(keyToEvict)
+    }
+  }
+
+  clear() {
+    this.cache.clear()
+    this.keysInUse = []
+  }
+
+  has(key: K): boolean {
     return this.cache.has(key)
   }
 
-  delete = (key: K): boolean => {
-    return this.cache.delete(key)
-  }
-
-  get size() {
+  get size(): number {
     return this.cache.size
   }
 
-  clear = () => {
-    this.cache.clear()
-    this.previousCache.clear()
+  forEach(callback: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any) {
+    this.cache.forEach(callback, thisArg)
   }
 
-  forEach = (fn: (value: V, key: K, map: Map<K, V>) => void) => {
-    this.cache.forEach(fn)
-  }
-
-  entries = () => {
-    return this.cache.entries()
-  }
-
-  keys = () => {
+  keys() {
     return this.cache.keys()
   }
 
-  values = () => {
+  values() {
     return this.cache.values()
-  };
+  }
 
-  [Symbol.iterator] = () => {
+  entries() {
+    return this.cache.entries()
+  }
+
+  [Symbol.iterator]() {
     return this.cache[Symbol.iterator]()
-  };
+  }
 
   [Symbol.toStringTag] = 'CacheMap'
 
@@ -79,3 +91,5 @@ export class CacheMap<K, V> implements Map<K, V> {
     return this.cache
   }
 }
+
+// export const CacheMap = Map

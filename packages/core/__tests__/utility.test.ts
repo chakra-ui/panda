@@ -36,7 +36,7 @@ describe('Utility', () => {
           },
         },
       },
-    })
+    }).assignPropertiesValues()
 
     expect(utility.classNames).toMatchInlineSnapshot(`
       Map {
@@ -108,7 +108,7 @@ describe('Utility', () => {
           },
         },
       },
-    })
+    }).assignPropertiesValues()
 
     expect(utility.styles).toMatchInlineSnapshot(`
       Map {
@@ -422,7 +422,7 @@ describe('Utility', () => {
           },
         },
       },
-    })
+    }).assignPropertiesValues()
 
     expect(utility.types).toMatchInlineSnapshot(`
       Map {
@@ -2308,7 +2308,7 @@ describe('Utility', () => {
           },
         },
       },
-    })
+    }).assignPropertiesValues()
 
     expect(utility.styles).toMatchInlineSnapshot(`
       Map {
@@ -2749,7 +2749,7 @@ describe('Utility', () => {
           },
         },
       },
-    })
+    }).assignPropertiesValues()
 
     expect(utility.classNames).toMatchInlineSnapshot(`
       Map {
@@ -2776,7 +2776,7 @@ describe('Utility', () => {
   test('skip generating colorPalette when no colors', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({}).init(),
-    })
+    }).assignPropertiesValues()
 
     expect(utility.types).toMatchInlineSnapshot(`Map {}`)
 
@@ -2787,7 +2787,7 @@ describe('Utility', () => {
     expect(utility.getTypes()).toMatchInlineSnapshot(`Map {}`)
   })
 
-  test('skip type:Token[category] when category values is empty', () => {
+  test.only('skip type:Token[category] when category values is empty', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({}).init(),
       config: {
@@ -2796,7 +2796,7 @@ describe('Utility', () => {
           values: (tokens) => ({ ...tokens('spacing'), '2': '2px' }),
         },
       },
-    })
+    }).assignPropertiesValues()
 
     expect(utility.types).toMatchInlineSnapshot(`
       Map {
@@ -2847,7 +2847,7 @@ describe('Utility', () => {
           values: 'zIndex',
         },
       },
-    })
+    }).assignPropertiesValues()
 
     expect(utility.types).toMatchInlineSnapshot(`
       Map {

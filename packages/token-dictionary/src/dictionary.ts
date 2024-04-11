@@ -505,6 +505,7 @@ export class TokenDictionaryView {
       values: flatValues,
       nameByVar: nameByVar,
       json,
+      valuesByCategory,
       get: memo((path: string, fallback?: string | number) => {
         return (flatValues.get(path) ?? fallback) as string
       }),
