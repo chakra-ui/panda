@@ -12,6 +12,7 @@ import {
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   AnyFunction,
+  Config,
   Dict,
   PropertyConfig,
   PropertyTransform,
@@ -21,13 +22,13 @@ import type {
 import type { TransformResult } from './types'
 import { colorMix } from './color-mix'
 
-export interface UtilityOptions {
+export interface UtilityOptions extends Pick<Config, 'shorthands' | 'strictTokens'> {
   config?: UtilityConfig
   tokens: TokenDictionary
   separator?: string
   prefix?: string
   shorthands?: boolean
-  strictTokens?: boolean
+  strictTokens?: Config['strictTokens']
 }
 
 export class Utility {
@@ -90,7 +91,7 @@ export class Utility {
 
   prefix = ''
 
-  strictTokens = false
+  strictTokens: Config['strictTokens'] = false
 
   constructor(options: UtilityOptions) {
     const { tokens, config = {}, separator, prefix, shorthands, strictTokens } = options

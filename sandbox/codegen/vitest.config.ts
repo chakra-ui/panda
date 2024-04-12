@@ -34,6 +34,12 @@ const options: TestUserConfig = {
       typecheck: { enabled: true, include: ['**/__tests__/scenarios/strict-tokens.{test,spec}.{j,t}s?(x)'] },
     },
   },
+  'strict-tokens-extends': {
+    test: {
+      include: ['**/__tests__/scenarios/strict-tokens-extends.{test,spec}.{j,t}s?(x)'],
+      typecheck: { enabled: true, include: ['**/__tests__/scenarios/strict-tokens-extends.{test,spec}.{j,t}s?(x)'] },
+    },
+  },
   'strict-property-values': {
     test: {
       include: ['**/__tests__/scenarios/strict-property-values.{test,spec}.{j,t}s?(x)'],

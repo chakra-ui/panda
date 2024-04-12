@@ -46,7 +46,17 @@ export function generateStyleProps(ctx: Context) {
               union.push([utilityValue, 'CssVars'].join(' | '))
             } else {
               union.push(
-                [utilityValue, 'CssVars', ctx.config.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '),
+                [
+                  utilityValue,
+                  'CssVars',
+                  ctx.config.strictTokens === 'extends'
+                    ? `OnlyKnown<"${prop}", ${cssFallback}>`
+                    : ctx.config.strictTokens
+                      ? ''
+                      : cssFallback,
+                ]
+                  .filter(Boolean)
+                  .join(' | '),
               )
             }
           } else {

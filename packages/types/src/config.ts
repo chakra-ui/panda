@@ -385,7 +385,7 @@ interface CodegenOptions {
   /**
    * Change generated typescript definitions to be more strict for property having a token or utility.
    */
-  strictTokens?: boolean
+  strictTokens?: boolean | 'extends'
   /**
    * Change generated typescript definitions to be more strict for built-in CSS properties to only allow valid CSS values.
    */

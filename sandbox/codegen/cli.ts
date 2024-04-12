@@ -11,6 +11,7 @@ const scenarioList = [
   'solid',
   'vue',
   'strict-tokens',
+  'strict-tokens-extends',
   'strict-property-values',
   'strict',
   'jsx-minimal',
