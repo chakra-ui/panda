@@ -265,3 +265,122 @@ describe('import map', () => {
     expect(file.find('sx')).toBeFalsy()
   })
 })
+
+describe('import map - outdir', () => {
+  test('default', () => {
+    const ctx = createContext()
+    expect(ctx.imports.outdir).toMatchInlineSnapshot('"styled-system"')
+  })
+
+  test('relative outdir', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: './styled-system',
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: 'styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: '.',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl - relative outdir', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: '../styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: '.',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl - parent outdir', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: '../styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: '.',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl - nested parent outdir', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: '../../../styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: '.',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl - ./src', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: 'styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: './src',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl - ./src - relative outdir', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: '../styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: './src',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl - ./src - parent outdir', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: '../styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: './src',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+
+  test('with baseUrl - ./src - nested parent outdir', () => {
+    const ctx = createContext({
+      cwd: '/Users/astahmer/dev/open-source/panda-app',
+      outdir: '../../../styled-system',
+      tsconfig: {
+        compilerOptions: {
+          baseUrl: './src',
+        },
+      },
+    })
+    expect(ctx.imports.outdir).toMatchInlineSnapshot(`"styled-system"`)
+  })
+})

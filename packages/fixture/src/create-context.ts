@@ -39,7 +39,7 @@ export const createGeneratorContext = (userConfig?: Config) => {
   return new Generator({ ...fixtureDefaults, config: resolvedConfig })
 }
 
-export const createContext = (userConfig?: Config) => {
+export const createContext = (userConfig?: Config & Pick<Partial<LoadConfigResult>, 'tsconfig'>) => {
   let resolvedConfig = (
     userConfig ? mergeConfigs([userConfig, userConfig.eject ? {} : fixtureDefaults.config]) : fixtureDefaults.config
   ) as UserConfig
@@ -66,8 +66,8 @@ export const createContext = (userConfig?: Config) => {
     hooks: userConfig?.hooks ?? {},
     config: Object.assign({}, defaults, resolvedConfig),
     tsconfig: {
-      // @ts-expect-error
       ...userConfig?.tsconfig,
+      // @ts-expect-error
       useInMemoryFileSystem: true,
     },
   })
