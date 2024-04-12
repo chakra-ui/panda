@@ -3649,4 +3649,118 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test.only('config.outdir detection', () => {
+    const code = `
+    import { styled } from "styled-system/jsx";
+
+    export const Markdown = () => {
+      return (
+        <ReactMarkdown
+          components={{
+            blockquote: ({ ref, node, ...props }) => (
+              <styled.blockquote
+                borderLeftWidth="4px"
+                borderLeftStyle="solid"
+                borderLeftColor="border.default"
+                padding={4}
+                {...props}
+              />
+            ),
+            ul: ({ ref, node, ...props }) => (
+              <styled.ul pl="4" listStyleType="disc" {...props} />
+            ),
+            ol: ({ ref, node, ...props }) => (
+              <styled.ol pl="4" listStyleType="decimal" {...props} />
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      );
+    };
+
+     `
+    const result = parseAndExtract(
+      code,
+      {
+        outdir: './styled-system',
+      },
+      {
+        compilerOptions: {
+          baseUrl: '.',
+        },
+      },
+    )
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "ReactMarkdown",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`""`)
+  })
+
+  test.only('config.outdir detection nested', () => {
+    const code = `
+    import { styled } from "styled-system/jsx";
+
+    export const Markdown = () => {
+      return (
+        <ReactMarkdown
+          components={{
+            blockquote: ({ ref, node, ...props }) => (
+              <styled.blockquote
+                borderLeftWidth="4px"
+                borderLeftStyle="solid"
+                borderLeftColor="border.default"
+                padding={4}
+                {...props}
+              />
+            ),
+            ul: ({ ref, node, ...props }) => (
+              <styled.ul pl="4" listStyleType="disc" {...props} />
+            ),
+            ol: ({ ref, node, ...props }) => (
+              <styled.ol pl="4" listStyleType="decimal" {...props} />
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      );
+    };
+
+     `
+    const result = parseAndExtract(
+      code,
+      {
+        outdir: './src/styled-system',
+      },
+      {
+        compilerOptions: {
+          baseUrl: './src',
+        },
+      },
+    )
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "ReactMarkdown",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`""`)
+  })
 })
