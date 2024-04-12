@@ -3650,7 +3650,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('config.outdir detection', () => {
+  test('config.outdir detection with baseUrl', () => {
     const code = `
     import { styled } from "styled-system/jsx";
 
@@ -3701,13 +3701,75 @@ describe('extract to css output pipeline', () => {
           "name": "ReactMarkdown",
           "type": "jsx",
         },
+        {
+          "data": [
+            {
+              "borderLeftColor": "border.default",
+              "borderLeftStyle": "solid",
+              "borderLeftWidth": "4px",
+              "padding": 4,
+            },
+          ],
+          "name": "styled.blockquote",
+          "type": "jsx-factory",
+        },
+        {
+          "data": [
+            {
+              "listStyleType": "disc",
+              "pl": "4",
+            },
+          ],
+          "name": "styled.ul",
+          "type": "jsx-factory",
+        },
+        {
+          "data": [
+            {
+              "listStyleType": "decimal",
+              "pl": "4",
+            },
+          ],
+          "name": "styled.ol",
+          "type": "jsx-factory",
+        },
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`""`)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_4 {
+          padding: var(--spacing-4);
+      }
+
+        .border-lw_4px {
+          border-left-width: 4px;
+      }
+
+        .border-left-style_solid {
+          border-left-style: solid;
+      }
+
+        .border-l_border\\.default {
+          border-left-color: border.default;
+      }
+
+        .pl_4 {
+          padding-left: var(--spacing-4);
+      }
+
+        .list-type_disc {
+          list-style-type: disc;
+      }
+
+        .list-type_decimal {
+          list-style-type: decimal;
+      }
+      }"
+    `)
   })
 
-  test.only('config.outdir detection nested', () => {
+  test('config.outdir detection in nested folder with baseUrl', () => {
     const code = `
     import { styled } from "styled-system/jsx";
 
@@ -3758,9 +3820,71 @@ describe('extract to css output pipeline', () => {
           "name": "ReactMarkdown",
           "type": "jsx",
         },
+        {
+          "data": [
+            {
+              "borderLeftColor": "border.default",
+              "borderLeftStyle": "solid",
+              "borderLeftWidth": "4px",
+              "padding": 4,
+            },
+          ],
+          "name": "styled.blockquote",
+          "type": "jsx-factory",
+        },
+        {
+          "data": [
+            {
+              "listStyleType": "disc",
+              "pl": "4",
+            },
+          ],
+          "name": "styled.ul",
+          "type": "jsx-factory",
+        },
+        {
+          "data": [
+            {
+              "listStyleType": "decimal",
+              "pl": "4",
+            },
+          ],
+          "name": "styled.ol",
+          "type": "jsx-factory",
+        },
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`""`)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_4 {
+          padding: var(--spacing-4);
+      }
+
+        .border-lw_4px {
+          border-left-width: 4px;
+      }
+
+        .border-left-style_solid {
+          border-left-style: solid;
+      }
+
+        .border-l_border\\.default {
+          border-left-color: border.default;
+      }
+
+        .pl_4 {
+          padding-left: var(--spacing-4);
+      }
+
+        .list-type_disc {
+          list-style-type: disc;
+      }
+
+        .list-type_decimal {
+          list-style-type: decimal;
+      }
+      }"
+    `)
   })
 })

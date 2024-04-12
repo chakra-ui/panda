@@ -67,6 +67,7 @@ export const createContext = (userConfig?: Config) => {
     config: Object.assign({}, defaults, resolvedConfig),
     tsconfig: {
       // @ts-expect-error
+      ...userConfig?.tsconfig,
       useInMemoryFileSystem: true,
     },
   })

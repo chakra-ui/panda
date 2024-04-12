@@ -104,7 +104,7 @@ export class ImportMap {
     const baseUrl = compilerOptions.baseUrl ?? ''
 
     const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
-    return outdir.replace(relativeBaseUrl, '')
+    return outdir.replace(relativeBaseUrl, '').replace('./', '')
   }
 
   normalize = (map: string | ImportMapInput | undefined): ImportMapOutput => {
