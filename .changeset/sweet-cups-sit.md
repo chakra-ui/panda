@@ -11,6 +11,14 @@ your theme).
 Example:
 
 ```ts
+// panda.config.js
+import { defineConfig } from '@pandacss/dev'
+export default defineConfig({
+  //...
+  strictTokens: 'extends',
+})
+
+// app.tsx
 import { css } from './styled-system/css'
 
 css({ color: 'blue' }) // ✅ will work as `blue` is a native value for the CSS color property
@@ -27,4 +35,8 @@ css({ color: 'unset' }) // ✅
 // or another example with the width property
 css({ width: 'min-content' }) // ✅
 css({ width: 'max-content' }) // ✅
+
+// and anything else will still not be allowed
+css({ color: '#FFF' }) // ❌ will throw a type error
+css({ width: '123px' }) // ❌ will throw a type error
 ```
