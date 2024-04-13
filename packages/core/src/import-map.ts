@@ -98,13 +98,10 @@ export class ImportMap {
   }
 
   private getOutdir = () => {
-    const { cwd, outdir } = this.context.config
+    const { outdir } = this.context.config
 
-    const compilerOptions = this.context.conf.tsconfig?.compilerOptions ?? {}
-    const baseUrl = compilerOptions.baseUrl ?? ''
-
-    const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
-    return outdir.replace(relativeBaseUrl, '')
+    const split = outdir.split('/')
+    return split[split.length - 1]
   }
 
   normalize = (map: string | ImportMapInput | undefined): ImportMapOutput => {
