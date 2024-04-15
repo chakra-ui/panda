@@ -8,7 +8,6 @@ import {
   FileTree,
   Tab,
   Tabs,
-  useConfig
 } from './src'
 import { Steps } from './src/mdx/steps'
 import { css } from './styled-system/css'
@@ -70,9 +69,6 @@ const config: DocsThemeConfig = {
     )
   },
   head: () => {
-    const { frontMatter: meta } = useConfig()
-    const { title } = meta
-
     return (
       <>
         {seoConfig.icons.map((icon, index) => (
