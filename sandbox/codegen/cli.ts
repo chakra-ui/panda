@@ -53,12 +53,13 @@ cli
   .command('test [scenario]', 'Run tests')
   .option('-u, --update', 'Update snapshots')
   .option('-w, --watch', 'Watch mode')
+  .option('-t, --typecheck', 'Enable typecheck')
   .action(async (scenario, options) => {
     if (scenario && !isValidScenario(scenario)) return
 
     const commands = (scenario ? [scenario] : scenarioList).map((fw) => ({
       cmd: `pnpm vitest${options.update ? ' -u' : ''}${options.watch ? '' : ' run'}`,
-      env: { MODE: fw },
+      env: { MODE: fw, TYPECHECK: options.typecheck ? 1 : undefined },
     }))
 
     for (const command of commands) {

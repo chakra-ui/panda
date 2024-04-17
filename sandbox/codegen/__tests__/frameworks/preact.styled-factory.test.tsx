@@ -239,14 +239,14 @@ describe('styled factory - button recipe', () => {
   test('base styles', () => {
     const { container } = render(<Button>Click me</Button>)
 
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(`"<button class="button">Click me</button>"`)
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(`"<button class="button button--visual_unstyled">Click me</button>"`)
   })
 
   test('variant styles', () => {
     const { container } = render(<Button size="sm">Click me</Button>)
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--size_sm">Click me</button>"`,
+      `"<button class="button button--visual_unstyled button--size_sm">Click me</button>"`,
     )
   })
 
@@ -270,7 +270,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--size_sm custom-btn">Click me</button>"`,
+      `"<button class="button button--visual_unstyled button--size_sm custom-btn">Click me</button>"`,
     )
   })
 
@@ -282,7 +282,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button mx_2 custom-btn">Click me</button>"`,
+      `"<button class="button button--visual_unstyled mx_2 custom-btn">Click me</button>"`,
     )
   })
 
@@ -294,7 +294,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--size_sm mx_2 custom-btn">Click me</button>"`,
+      `"<button class="button button--visual_unstyled button--size_sm mx_2 custom-btn">Click me</button>"`,
     )
   })
 
@@ -306,7 +306,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button text_red.100 fs_md custom-btn">Click me</button>"`,
+      `"<button class="button button--visual_unstyled text_red.100 fs_md custom-btn">Click me</button>"`,
     )
   })
 
@@ -318,7 +318,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--size_sm text_red.100 fs_md custom-btn">Click me</button>"`,
+      `"<button class="button button--visual_unstyled button--size_sm text_red.100 fs_md custom-btn">Click me</button>"`,
     )
   })
 
