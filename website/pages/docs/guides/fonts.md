@@ -74,29 +74,29 @@ export default function App({ Component, pageProps }) {
 }
 ```
 
-### Font Source
+### Fontsource
 
-Fontsource provides a straightforward process for installing fonts into your web application.
+[Fontsource](https://fontsource.org/) streamlines the process of integrating fonts into your web application.
 
-First you need to install the desired font package.
+To begin, install your desired font package:
 
 ```bash
-pnpm add @fontsource/fira-code
+pnpm add @fontsource-variable/fira-code
 ```
 
-Then import the font in your project.
+Next, import the font into your project:
 
 ```jsx
 import '@fontsource/fira-code'
 ```
 
-Finally, you can import the css styles for the specific weight and subset you want to use.
+Lastly, import the CSS styles for the specific weight and subset you intend to use:
 
 ```css filename="styles/font.css"
-import '@fontsource/open-sans/500.css';
+import '@fontsource-variable/fira-code'
 
 :root {
-  --font-fira-code: 'Fira Code', monospace;
+  --font-fira-code: 'Fira Code Variable', monospace;
 }
 ```
 
