@@ -435,4 +435,22 @@ describe('styled factory - button recipe', () => {
     `,
     )
   })
+
+  test('array css prop', () => {
+    const { container } = render(() => (
+      <styled.div css={[{ color: 'blue.300', backgroundColor: 'yellow.300' }, { backgroundColor: 'green.300' }]}>
+        array css prop
+      </styled.div>
+    ))
+
+    expect(container.firstChild).toMatchInlineSnapshot(
+      `
+      <div
+        class="text_blue.300 bg_green.300"
+      >
+        array css prop
+      </div>
+    `,
+    )
+  })
 })

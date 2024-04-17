@@ -65,7 +65,7 @@ export type CompositionStyleObject<Property extends string> = Nested<FilterStyle
  * Jsx style props
  * -----------------------------------------------------------------------------*/
 interface WithCss {
-  css?: SystemStyleObject
+  css?: SystemStyleObject | SystemStyleObject[]
 }
 type StyleProps = SystemStyleObject & WithCss
 

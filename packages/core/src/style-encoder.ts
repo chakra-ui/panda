@@ -141,7 +141,14 @@ export class StyleEncoder {
     const styles = this.filterStyleProps(styleProps)
 
     if (styles.css) {
-      this.processAtomic(styles.css)
+      // if the css prop is an array, we need to process each item separately
+      // otherwise we would treat it as a responsive object using the array syntax
+      // (e.g. `{ mx: [1, 2, 3] }`) -> `mx: { base: 1, sm: 2, md: 3 }`
+      if (Array.isArray(styles.css)) {
+        styles.css.forEach((style) => this.processAtomic(style))
+      } else {
+        this.processAtomic(styles.css)
+      }
     }
 
     this.processAtomic(styles.css ? Object.assign({}, styles, { css: undefined }) : styles)
