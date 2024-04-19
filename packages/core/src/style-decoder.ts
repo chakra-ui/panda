@@ -1,4 +1,5 @@
 import {
+  CacheMap,
   PandaError,
   deepSet,
   esc,
@@ -28,9 +29,9 @@ export class StyleDecoder {
 
   classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
   //
-  atomic_cache = new Map<string, AtomicStyleResult>()
-  group_cache = new Map<string, GroupedResult>()
-  recipe_base_cache = new Map<string, RecipeBaseResult>()
+  atomic_cache = new CacheMap<string, AtomicStyleResult>()
+  group_cache = new CacheMap<string, GroupedResult>()
+  recipe_base_cache = new CacheMap<string, RecipeBaseResult>()
   //
   atomic = new Set<AtomicStyleResult>()
   //
