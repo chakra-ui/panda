@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { jsxParser } from './fixture'
+import { jsxParser, parseAndExtract } from './fixture'
 
 describe('jsx', () => {
   test('should extract', () => {
@@ -417,6 +417,74 @@ describe('jsx', () => {
           "type": "jsx-factory",
         },
       }
+    `)
+  })
+
+  test('should extract array css prop', () => {
+    const code = `
+       import { styled } from "styled-system/jsx"
+
+       function Button() {
+         return (
+            <>
+              <styled.div css={[{ color: 'blue.300' }, { backgroundColor: 'green.300' }]}>
+                array css prop
+              </styled.div>
+              <styled.div css={{ color: 'yellow.300' }}>
+                simple css prop
+              </styled.div>
+            </>
+        )
+       }
+     `
+
+    const result = parseAndExtract(code)
+
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "css": [
+                {
+                  "color": "blue.300",
+                },
+                {
+                  "backgroundColor": "green.300",
+                },
+              ],
+            },
+          ],
+          "name": "styled.div",
+          "type": "jsx-factory",
+        },
+        {
+          "data": [
+            {
+              "css": {
+                "color": "yellow.300",
+              },
+            },
+          ],
+          "name": "styled.div",
+          "type": "jsx-factory",
+        },
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\.300 {
+          color: var(--colors-blue-300);
+      }
+
+        .text_yellow\\.300 {
+          color: var(--colors-yellow-300);
+      }
+
+        .bg_green\\.300 {
+          background-color: var(--colors-green-300);
+      }
+      }"
     `)
   })
 })

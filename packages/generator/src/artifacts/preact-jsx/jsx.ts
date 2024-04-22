@@ -45,13 +45,13 @@ export function generatePreactJsxFactory(ctx: Context) {
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps)
-          return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, combinedProps.className)
+          return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, ...(Array.isArray(cssStyles) ? cssStyles : [cssStyles])), combinedProps.class, combinedProps.className)
         }
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = __cvaFn__.raw(variantProps)
-          return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, combinedProps.className)
+          return cx(css(cvaStyles, propStyles, ...(Array.isArray(cssStyles) ? cssStyles : [cssStyles])), combinedProps.class, combinedProps.className)
         }
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
