@@ -36,11 +36,14 @@
   "files": [
     "dist"
   ],
+  "peerDependencies": {
+    "postcss": "^8.4.x"
+  },
   "dependencies": {
-    "@pandacss/node": "workspace:*",
-    "postcss": "8.4.35"
+    "@pandacss/node": "workspace:*"
   },
   "devDependencies": {
-    "@pandacss/logger": "workspace:*"
+    "@pandacss/logger": "workspace:*",
+    "postcss": "8.4.35"
   }
 }

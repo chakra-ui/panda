@@ -36,6 +36,9 @@
   "files": [
     "dist"
   ],
+  "peerDependencies": {
+    "postcss": "^8.4.x"
+  },
   "dependencies": {
     "@pandacss/core": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:^",
@@ -46,10 +49,10 @@
     "javascript-stringify": "2.1.0",
     "outdent": " ^0.8.0",
     "pluralize": "8.0.0",
-    "postcss": "8.4.35",
     "ts-pattern": "5.0.8"
   },
   "devDependencies": {
-    "@types/pluralize": "0.0.33"
+    "@types/pluralize": "0.0.33",
+    "postcss": "8.4.35"
   }
 }

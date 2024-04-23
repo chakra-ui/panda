@@ -1,4 +1,4 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
 
 settings:
   autoInstallPeers: true
@@ -283,9 +283,6 @@ importers:
       outdent:
         specifier: 0.8.0
         version: 0.8.0
-      postcss:
-        specifier: 8.4.35
-        version: 8.4.35
       postcss-discard-duplicates:
         specifier: 6.0.1
         version: 6.0.1(postcss@8.4.35)
@@ -314,6 +311,9 @@ importers:
       '@types/lodash.merge':
         specifier: 4.6.9
         version: 4.6.9
+      postcss:
+        specifier: 8.4.35
+        version: 8.4.35
 
   packages/extractor:
     dependencies:
@@ -389,9 +389,6 @@ importers:
       pluralize:
         specifier: 8.0.0
         version: 8.0.0
-      postcss:
-        specifier: 8.4.35
-        version: 8.4.35
       ts-pattern:
         specifier: 5.0.8
         version: 5.0.8
@@ -399,6 +396,9 @@ importers:
       '@types/pluralize':
         specifier: 0.0.33
         version: 0.0.33
+      postcss:
+        specifier: 8.4.35
+        version: 8.4.35
 
   packages/is-valid-prop:
     devDependencies:
@@ -490,9 +490,6 @@ importers:
       pluralize:
         specifier: 8.0.0
         version: 8.0.0
-      postcss:
-        specifier: 8.4.35
-        version: 8.4.35
       preferred-pm:
         specifier: 3.1.2
         version: 3.1.2
@@ -530,6 +527,9 @@ importers:
       p-limit:
         specifier: 5.0.0
         version: 5.0.0
+      postcss:
+        specifier: 8.4.35
+        version: 8.4.35
 
   packages/parser:
     dependencies:
@@ -576,13 +576,13 @@ importers:
       '@pandacss/node':
         specifier: workspace:*
         version: link:../node
-      postcss:
-        specifier: 8.4.35
-        version: 8.4.35
     devDependencies:
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger
+      postcss:
+        specifier: 8.4.35
+        version: 8.4.35
 
   packages/preset-atlaskit:
     dependencies:
@@ -14900,7 +14900,7 @@ packages:
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0, npm: '>=7.0.0'}
     dependencies:
       mdn-data: 2.0.28
-      source-map-js: 1.0.2
+      source-map-js: 1.2.0
     dev: true
 
   /css-tree@2.3.1:
@@ -14908,7 +14908,7 @@ packages:
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
     dependencies:
       mdn-data: 2.0.30
-      source-map-js: 1.0.2
+      source-map-js: 1.2.0
     dev: true
 
   /css-what@5.1.0:
@@ -21020,7 +21020,7 @@ packages:
     dependencies:
       '@babel/parser': 7.23.9
       '@babel/types': 7.23.9
-      source-map-js: 1.0.2
+      source-map-js: 1.2.0
     dev: true
 
   /make-dir@2.1.0:
@@ -24685,7 +24685,7 @@ packages:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.0.0
-      source-map-js: 1.0.2
+      source-map-js: 1.2.0
     dev: false
 
   /postcss@8.4.35:
@@ -24694,7 +24694,7 @@ packages:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.0.0
-      source-map-js: 1.0.2
+      source-map-js: 1.2.0
 
   /postcss@8.4.38:
     resolution: {integrity: sha512-Wglpdk03BSfXkHoQa3b/oulrotAkwrlLDRSOb9D0bN86FdRyE9lppSp33aHNPgBa0JKCoB+drFLZkQoRRYae5A==}
