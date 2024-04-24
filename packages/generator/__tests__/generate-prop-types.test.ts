@@ -5,7 +5,7 @@ import { generatePropTypes } from '../src/artifacts/types/prop-types'
 describe('generate property types', () => {
   test('should ', () => {
     expect(generatePropTypes(createContext())).toMatchInlineSnapshot(`
-      "import type { Conditional } from './conditions';
+      "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 
@@ -268,7 +268,7 @@ describe('generate property types', () => {
         }),
       ),
     ).toMatchInlineSnapshot(`
-      "import type { Conditional } from './conditions';
+      "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 

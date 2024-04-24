@@ -6,7 +6,7 @@ export function generatePropTypes(ctx: Context) {
 
   const result = [
     outdent`
-    ${ctx.file.importType('Conditional', './conditions')}
+    ${ctx.file.importType('ConditionalValue', './conditions')}
     ${ctx.file.importType('CssProperties', './system-types')}
     ${ctx.file.importType('Tokens', '../tokens/index')}
 
