@@ -30,8 +30,9 @@ const runCommand = (command: string, envVars = {}) => {
   return new Promise((resolve, reject) => {
     const [cmd, ...args] = command.split(' ')
     const proc = spawn(cmd, args, {
-      stdio: 'inherit',
       env: { ...process.env, ...envVars },
+      shell: true,
+      stdio: 'inherit',
     })
 
     proc.on('close', (code) => {
