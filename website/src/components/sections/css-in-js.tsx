@@ -134,7 +134,7 @@ export const SectionCssInJS = () => {
 
             <Stack
               direction={{ base: 'column', lg: 'row' }}
-              align={{ base: 'center', lg: 'center' }}
+              align={{ base: 'center', lg: 'flex-start' }}
               justify="space-between"
               w="100%"
               gap="8"
