@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { Conditional } from './conditions';
+import type { ConditionalValue } from './conditions';
 import type { CssProperties } from './system-types';
 import type { Tokens } from '../tokens/index';
 
