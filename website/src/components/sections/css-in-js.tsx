@@ -134,12 +134,11 @@ export const SectionCssInJS = () => {
 
             <Stack
               direction={{ base: 'column', lg: 'row' }}
-              align={{ base: 'center', lg: 'flex-start' }}
+              align={{ base: 'center', lg: 'center' }}
               justify="space-between"
               w="100%"
               gap="8"
             >
-              <panda.div style={{display:"flex", justifyContent:"space-between", width:'100%', alignItems:'center' }}>
               {features.map(({ title, description, icon }) => (
                   <Stack maxW="20ch" textStyle="xl" width="full" key={title}>
                     <HStack>
@@ -154,7 +153,6 @@ export const SectionCssInJS = () => {
                     </panda.span>
                   </Stack>
               ))}
-              </panda.div>
             </Stack>
           </VStack>
         </VStack>
