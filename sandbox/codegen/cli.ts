@@ -31,7 +31,6 @@ const runCommand = (command: string, envVars = {}) => {
     const [cmd, ...args] = command.split(' ')
     const proc = spawn(cmd, args, {
       env: { ...process.env, ...envVars },
-      shell: true,
       stdio: 'inherit',
     })
 
