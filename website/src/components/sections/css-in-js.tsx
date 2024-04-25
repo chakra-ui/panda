@@ -139,20 +139,22 @@ export const SectionCssInJS = () => {
               w="100%"
               gap="8"
             >
+              <panda.div style={{display:"flex", justifyContent:"space-between", width:'100%', alignItems:'center' }}>
               {features.map(({ title, description, icon }) => (
-                <Stack maxW="440px" textStyle="xl" width="full" key={title}>
-                  <HStack>
-                    <Icon
-                      icon={icon}
-                      className={css({ color: 'yellow.300' })}
-                    />
-                    <panda.span fontWeight="semibold">{title}</panda.span>
-                  </HStack>
-                  <panda.span color="gray.200" maxW={{ lg: '256px' }}>
-                    {description}
-                  </panda.span>
-                </Stack>
+                  <Stack maxW="20ch" textStyle="xl" width="full" key={title}>
+                    <HStack>
+                      <Icon
+                        icon={icon}
+                        className={css({ color: 'yellow.300' })}
+                        />
+                      <panda.span fontWeight="semibold">{title}</panda.span>
+                    </HStack>
+                    <panda.span color="gray.200" maxW={{ lg: '256px' }}>
+                      {description}
+                    </panda.span>
+                  </Stack>
               ))}
+              </panda.div>
             </Stack>
           </VStack>
         </VStack>
