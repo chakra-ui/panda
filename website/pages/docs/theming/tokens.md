@@ -411,8 +411,6 @@ const theme = {
 }
 ```
 
-> Radii tokens are typically used in `border-radius` property.
-
 ### Shadows
 
 Shadow tokens represent the shadow of an element. Its value is defined as single or multiple values containing a
