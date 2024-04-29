@@ -1,5 +1,21 @@
 # @pandacss/dev
 
+## 0.38.0
+
+### Patch Changes
+
+- Updated dependencies [96b47b3]
+- Updated dependencies [bc09d89]
+- Updated dependencies [2c8b933]
+  - @pandacss/types@0.38.0
+  - @pandacss/token-dictionary@0.38.0
+  - @pandacss/shared@0.38.0
+  - @pandacss/node@0.38.0
+  - @pandacss/config@0.38.0
+  - @pandacss/logger@0.38.0
+  - @pandacss/preset-panda@0.38.0
+  - @pandacss/postcss@0.38.0
+
 ## 0.37.2
 
 ### Patch Changes
@@ -78,7 +94,7 @@
 
   ```ts
   // panda.config.ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
@@ -87,15 +103,15 @@
       extend: {
         tokens: {
           colors: {
-            text: { value: 'blue' },
+            text: { value: "blue" },
           },
         },
         semanticTokens: {
           colors: {
             body: {
               value: {
-                base: '{colors.blue.600}',
-                _osDark: '{colors.blue.400}',
+                base: "{colors.blue.600}",
+                _osDark: "{colors.blue.400}",
               },
             },
           },
@@ -107,16 +123,16 @@
       primary: {
         tokens: {
           colors: {
-            text: { value: 'red' },
+            text: { value: "red" },
           },
         },
         semanticTokens: {
           colors: {
-            muted: { value: '{colors.red.200}' },
+            muted: { value: "{colors.red.200}" },
             body: {
               value: {
-                base: '{colors.red.600}',
-                _osDark: '{colors.red.400}',
+                base: "{colors.red.600}",
+                _osDark: "{colors.red.400}",
               },
             },
           },
@@ -125,23 +141,23 @@
       secondary: {
         tokens: {
           colors: {
-            text: { value: 'blue' },
+            text: { value: "blue" },
           },
         },
         semanticTokens: {
           colors: {
-            muted: { value: '{colors.blue.200}' },
+            muted: { value: "{colors.blue.200}" },
             body: {
               value: {
-                base: '{colors.blue.600}',
-                _osDark: '{colors.blue.400}',
+                base: "{colors.blue.600}",
+                _osDark: "{colors.blue.400}",
               },
             },
           },
         },
       },
     },
-  })
+  });
   ```
 
   ### Pregenerating themes
@@ -151,14 +167,14 @@
 
   ```ts
   // panda.config.ts
-  import { defineConfig } from '@pandacss/dev'
+  import { defineConfig } from "@pandacss/dev";
 
   export default defineConfig({
     // ...
     staticCss: {
-      themes: ['primary', 'secondary'],
+      themes: ["primary", "secondary"],
     },
-  })
+  });
   ```
 
   This will generate the following CSS:
@@ -170,7 +186,7 @@
       --colors-body: var(--colors-blue-600);
     }
 
-    [data-panda-theme='primary'] {
+    [data-panda-theme="primary"] {
       --colors-text: red;
       --colors-muted: var(--colors-red-200);
       --colors-body: var(--colors-red-600);
@@ -181,7 +197,7 @@
         --colors-body: var(--colors-blue-400);
       }
 
-      [data-panda-theme='primary'] {
+      [data-panda-theme="primary"] {
         --colors-body: var(--colors-red-400);
       }
     }
@@ -212,9 +228,9 @@
   Dynamically import a theme using its name:
 
   ```ts
-  import { getTheme } from '../styled-system/themes'
+  import { getTheme } from "../styled-system/themes";
 
-  const theme = await getTheme('red')
+  const theme = await getTheme("red");
   //    ^? {
   //     name: "red";
   //     id: string;
@@ -225,10 +241,10 @@
   Inject the theme styles into the DOM:
 
   ```ts
-  import { injectTheme } from '../styled-system/themes'
+  import { injectTheme } from "../styled-system/themes";
 
-  const theme = await getTheme('red')
-  injectTheme(document.documentElement, theme) // this returns the injected style element
+  const theme = await getTheme("red");
+  injectTheme(document.documentElement, theme); // this returns the injected style element
   ```
 
   ***
@@ -237,54 +253,62 @@
 
   ```tsx
   // app/layout.tsx
-  import { Inter } from 'next/font/google'
-  import { cookies } from 'next/headers'
-  import { ThemeName, getTheme } from '../../styled-system/themes'
+  import { Inter } from "next/font/google";
+  import { cookies } from "next/headers";
+  import { ThemeName, getTheme } from "../../styled-system/themes";
 
-  export default async function RootLayout({ children }: { children: React.ReactNode }) {
-    const store = cookies()
-    const themeName = store.get('theme')?.value as ThemeName
-    const theme = themeName && (await getTheme(themeName))
+  export default async function RootLayout({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) {
+    const store = cookies();
+    const themeName = store.get("theme")?.value as ThemeName;
+    const theme = themeName && (await getTheme(themeName));
 
     return (
       <html lang="en" data-panda-theme={themeName ? themeName : undefined}>
         {themeName && (
           <head>
-            <style type="text/css" id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />
+            <style
+              type="text/css"
+              id={theme.id}
+              dangerouslySetInnerHTML={{ __html: theme.css }}
+            />
           </head>
         )}
         <body>{children}</body>
       </html>
-    )
+    );
   }
 
   // app/page.tsx
-  import { getTheme, injectTheme } from '../../styled-system/themes'
+  import { getTheme, injectTheme } from "../../styled-system/themes";
 
   export default function Home() {
     return (
       <>
         <button
           onClick={async () => {
-            const current = document.documentElement.dataset.pandaTheme
-            const next = current === 'primary' ? 'secondary' : 'primary'
-            const theme = await getTheme(next)
-            setCookie('theme', next, 7)
-            injectTheme(document.documentElement, theme)
+            const current = document.documentElement.dataset.pandaTheme;
+            const next = current === "primary" ? "secondary" : "primary";
+            const theme = await getTheme(next);
+            setCookie("theme", next, 7);
+            injectTheme(document.documentElement, theme);
           }}
         >
           swap theme
         </button>
       </>
-    )
+    );
   }
 
   // Set a Cookie
   function setCookie(cName: string, cValue: any, expDays: number) {
-    let date = new Date()
-    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000)
-    const expires = 'expires=' + date.toUTCString()
-    document.cookie = cName + '=' + cValue + '; ' + expires + '; path=/'
+    let date = new Date();
+    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
+    const expires = "expires=" + date.toUTCString();
+    document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
   }
   ```
 
@@ -293,18 +317,18 @@
   Finally, you can create a theme contract to ensure that all themes have the same structure:
 
   ```ts
-  import { defineThemeContract } from '@pandacss/dev'
+  import { defineThemeContract } from "@pandacss/dev";
 
   const defineTheme = defineThemeContract({
     tokens: {
       colors: {
-        red: { value: '' }, // theme implementations must have a red color
+        red: { value: "" }, // theme implementations must have a red color
       },
     },
-  })
+  });
 
   defineTheme({
-    selector: '.theme-secondary',
+    selector: ".theme-secondary",
     tokens: {
       colors: {
         // ^^^^   Property 'red' is missing in type '{}' but required in type '{ red: { value: string; }; }'
@@ -313,7 +337,7 @@
         // red: { value: 'red' },
       },
     },
-  })
+  });
   ```
 
 ### Patch Changes
@@ -539,11 +563,11 @@
   ```js
   module.exports = {
     plugins: {
-      '@pandacss/dev/postcss': {
-        logfile: './logs/panda.log',
+      "@pandacss/dev/postcss": {
+        logfile: "./logs/panda.log",
       },
     },
-  }
+  };
   ```
 
 - Updated dependencies [0dd45b6a]
@@ -590,8 +614,8 @@
   ```ts
   export default defineConfig({
     // ...
-    dependencies: ['path/to/files/**.ts'],
-  })
+    dependencies: ["path/to/files/**.ts"],
+  });
   ```
 
   - Invoke `config:change` hook in more situations (when the `--watch` flag is passed to `panda codegen`,
@@ -640,39 +664,54 @@
      * Called when the config is resolved, after all the presets are loaded and merged.
      * This is the first hook called, you can use it to tweak the config before the context is created.
      */
-    'config:resolved': (args: { conf: LoadConfigResult }) => MaybeAsyncReturn
+    "config:resolved": (args: { conf: LoadConfigResult }) => MaybeAsyncReturn;
     /**
      * Called when the Panda context has been created and the API is ready to be used.
      */
-    'context:created': (args: { ctx: ApiInterface; logger: LoggerInterface }) => void
+    "context:created": (args: {
+      ctx: ApiInterface;
+      logger: LoggerInterface;
+    }) => void;
     /**
      * Called when the config file or one of its dependencies (imports) has changed.
      */
-    'config:change': (args: { config: UserConfig }) => MaybeAsyncReturn
+    "config:change": (args: { config: UserConfig }) => MaybeAsyncReturn;
     /**
      * Called after reading the file content but before parsing it.
      * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
      * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
      */
-    'parser:before': (args: { filePath: string; content: string }) => string | void
+    "parser:before": (args: {
+      filePath: string;
+      content: string;
+    }) => string | void;
     /**
      * Called after the file styles are extracted and processed into the resulting ParserResult object.
      * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
      */
-    'parser:after': (args: { filePath: string; result: ParserResultInterface | undefined }) => void
+    "parser:after": (args: {
+      filePath: string;
+      result: ParserResultInterface | undefined;
+    }) => void;
     /**
      * Called after the codegen is completed
      */
-    'codegen:done': () => MaybeAsyncReturn
+    "codegen:done": () => MaybeAsyncReturn;
     /**
      * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
      * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
      * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
      */
-    'cssgen:done': (args: {
-      artifact: 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-      content: string
-    }) => string | void
+    "cssgen:done": (args: {
+      artifact:
+        | "global"
+        | "static"
+        | "reset"
+        | "tokens"
+        | "keyframes"
+        | "styles.css";
+      content: string;
+    }) => string | void;
   }
   ```
 
@@ -1570,12 +1609,12 @@
   **Definition**
 
   ```jsx
-  import { sva } from 'styled-system/css'
+  import { sva } from "styled-system/css";
 
   const button = sva({
-    slots: ['label', 'icon'],
+    slots: ["label", "icon"],
     base: {
-      label: { color: 'red', textDecoration: 'underline' },
+      label: { color: "red", textDecoration: "underline" },
     },
     variants: {
       rounded: {
@@ -1583,33 +1622,33 @@
       },
       size: {
         sm: {
-          label: { fontSize: 'sm' },
-          icon: { fontSize: 'sm' },
+          label: { fontSize: "sm" },
+          icon: { fontSize: "sm" },
         },
         lg: {
-          label: { fontSize: 'lg' },
-          icon: { fontSize: 'lg', color: 'pink' },
+          label: { fontSize: "lg" },
+          icon: { fontSize: "lg", color: "pink" },
         },
       },
     },
     defaultVariants: {
-      size: 'sm',
+      size: "sm",
     },
-  })
+  });
   ```
 
   **Usage**
 
   ```jsx
   export function App() {
-    const btnClass = button({ size: 'lg', rounded: true })
+    const btnClass = button({ size: "lg", rounded: true });
 
     return (
       <button>
         <p class={btnClass.label}> Label</p>
         <p class={btnClass.icon}> Icon</p>
       </button>
-    )
+    );
   }
   ```
 

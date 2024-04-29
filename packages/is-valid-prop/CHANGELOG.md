@@ -1,5 +1,7 @@
 # @pandacss/is-valid-prop
 
+## 0.38.0
+
 ## 0.37.2
 
 ## 0.37.1
@@ -29,12 +31,12 @@
     theme: {
       extend: {
         colors: {
-          primary: { value: 'blue' },
+          primary: { value: "blue" },
         },
         // borderWidths: {}, // ⚠️ nothing defined here
       },
     },
-  })
+  });
   ```
 
   ```ts
@@ -45,8 +47,8 @@
 
     // ✅ after this PR, TS will not throw an error anymore as you don't have any `borderWidths` tokens
     // if you add one, this will error again (as it's supposed to)
-    borderWidths: '123px',
-  })
+    borderWidths: "123px",
+  });
   ```
 
   ## Description
