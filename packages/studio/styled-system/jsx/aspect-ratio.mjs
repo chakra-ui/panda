@@ -1,5 +1,5 @@
 import { createElement, forwardRef } from 'react'
-false
+
 import { splitProps } from '../helpers.mjs';
 import { getAspectRatioStyle } from '../patterns/aspect-ratio.mjs';
 import { panda } from './factory.mjs';

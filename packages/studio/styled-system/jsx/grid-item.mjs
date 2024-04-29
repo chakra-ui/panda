@@ -1,5 +1,5 @@
 import { createElement, forwardRef } from 'react'
-false
+
 import { splitProps } from '../helpers.mjs';
 import { getGridItemStyle } from '../patterns/grid-item.mjs';
 import { panda } from './factory.mjs';

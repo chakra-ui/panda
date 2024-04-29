@@ -1,5 +1,5 @@
 import { createElement, forwardRef } from 'react'
-false
+
 import { splitProps } from '../helpers.mjs';
 import { getBoxStyle } from '../patterns/box.mjs';
 import { panda } from './factory.mjs';

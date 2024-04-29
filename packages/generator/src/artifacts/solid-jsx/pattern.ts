@@ -17,7 +17,7 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
       js: outdent`
     import { createMemo, mergeProps, splitProps } from 'solid-js'
     import { createComponent } from 'solid-js/web'
-    ${jsxStyleProps === 'minimal' && ctx.file.import('mergeCss', '../css/css')}
+    ${jsxStyleProps === 'minimal' ? ctx.file.import('mergeCss', '../css/css') : ''}
     ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
     ${ctx.file.import(factoryName, './factory')}
 

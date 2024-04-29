@@ -16,7 +16,7 @@ export function generateReactJsxPattern(ctx: Context, filters?: ArtifactFilters)
       name: dashName,
       js: outdent`
       import { createElement, forwardRef } from 'react'
-      ${jsxStyleProps === 'minimal' && ctx.file.import('mergeCss', '../css/css')}
+      ${jsxStyleProps === 'minimal' ? ctx.file.import('mergeCss', '../css/css') : ''}
       ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
       ${ctx.file.import(factoryName, './factory')}

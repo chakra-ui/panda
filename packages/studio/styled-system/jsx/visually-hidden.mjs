@@ -1,5 +1,5 @@
 import { createElement, forwardRef } from 'react'
-false
+
 import { splitProps } from '../helpers.mjs';
 import { getVisuallyHiddenStyle } from '../patterns/visually-hidden.mjs';
 import { panda } from './factory.mjs';
