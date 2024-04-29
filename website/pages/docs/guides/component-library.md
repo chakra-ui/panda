@@ -302,6 +302,29 @@ export default defineConfig({
 })
 ```
 
+### Skip codegen in the consuming app
+
+Since we intend to use `@acme-org/styled-system` in the consuming app, it's not necessary to generate a local `styled-system`. One way to achieve this is to create a plugin, which we can add to our `panda.config.ts`:  
+
+```tsx filename="panda.config.ts
+import { defineConfig, definePlugin } from '@pandacss/dev';
+
+const skipCodegenPlugin = definePlugin({
+    name: 'skip-codegen',
+    hooks: {
+        'codegen:prepare': () => {
+            return [];
+        },
+    },
+});
+
+export default defineConfig({
+    plugins: [skipCodegenPlugin],
+    // ...
+```
+
+This way, we avoid bundling `outdir` twice and it's clearer to developers which should be used.
+
 ## FAQ
 
 ### Why should my component library use an external package `styled-system`?
