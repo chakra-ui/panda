@@ -754,8 +754,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0
       nanoid:
-        specifier: 5.0.6
-        version: 5.0.6
+        specifier: 5.0.7
+        version: 5.0.7
       next:
         specifier: 14.1.0
         version: 14.1.0(@babel/core@7.12.9)(react-dom@18.2.0)(react@18.2.0)
@@ -22523,8 +22523,8 @@ packages:
     hasBin: true
     dev: true
 
-  /nanoid@5.0.6:
-    resolution: {integrity: sha512-rRq0eMHoGZxlvaFOUdK1Ev83Bd1IgzzR+WJ3IbDJ7QOSdAxYjlurSPqFs9s4lJg29RT6nPwizFtJhQS6V5xgiA==}
+  /nanoid@5.0.7:
+    resolution: {integrity: sha512-oLxFY2gd2IqnjcYyOXD8XGCftpGtZP2AbHbOkthDkvRywH5ayNtPVy9YlOPcHckXzbLTCHpkb7FB+yuxKV13pQ==}
     engines: {node: ^18 || >=20}
     hasBin: true
     dev: false
