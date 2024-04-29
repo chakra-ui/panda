@@ -40,7 +40,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@vue/compiler-sfc": "3.4.19",
-    "magic-string": "0.30.8",
+    "magic-string": "0.30.10",
     "ts-morph": "21.0.1",
     "ts-pattern": "5.0.8"
   },
