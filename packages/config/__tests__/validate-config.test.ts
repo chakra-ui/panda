@@ -758,4 +758,24 @@ describe('validateConfig', () => {
       }
     `)
   })
+
+  test('should work with deprecated', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'warn',
+      theme: {
+        tokens: {
+          colors: {
+            green: {
+              400: {
+                value: '#dfdf',
+                deprecated: true,
+              },
+            },
+          },
+        },
+      },
+    }
+
+    expect(validateConfig(config)).toMatchInlineSnapshot(`undefined`)
+  })
 })

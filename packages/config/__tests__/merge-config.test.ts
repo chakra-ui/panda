@@ -614,6 +614,55 @@ describe('mergeConfigs / theme', () => {
       }
     `)
   })
+
+  test('flat and nested object + deprecated', () => {
+    const preset = definePreset({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              black: { value: 'black', deprecated: 'use white instead' },
+            },
+          },
+        },
+      },
+    })
+
+    const userConfig = defineConfig({
+      theme: {
+        tokens: {
+          colors: {
+            black: {
+              30: { value: 'black/30', deprecated: true },
+            },
+          },
+        },
+      },
+    })
+
+    const result = mergeConfigs([userConfig, preset])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "black": {
+                "30": {
+                  "deprecated": true,
+                  "value": "black/30",
+                },
+                "DEFAULT": {
+                  "deprecated": "use white instead",
+                  "value": "black",
+                },
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
 })
 
 describe('mergeConfigs / utilities', () => {

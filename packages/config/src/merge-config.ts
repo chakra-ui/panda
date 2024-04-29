@@ -1,7 +1,8 @@
-import { assign, isObject, mergeWith, traverse } from '@pandacss/shared'
+import { assign, mergeWith, walkObject } from '@pandacss/shared'
 import type { Config, UserConfig } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
+import { isValidToken } from './validation/utils'
 
 type Extendable<T> = T & { extend?: T }
 interface Dict {
@@ -66,7 +67,7 @@ const compact = (obj: any) => {
   }, {} as any)
 }
 
-const tokenKeys = ['description', 'extensions', 'type', 'value']
+const tokenKeys = ['description', 'extensions', 'type', 'value', 'deprecated']
 
 /**
  * Merge all configs into a single config
@@ -122,20 +123,24 @@ export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
    * ```
    */
   if (withoutEmpty.theme?.tokens) {
-    traverse(withoutEmpty.theme.tokens, (args) => args, {
-      stop(args) {
-        if (isObject(args.value) && 'value' in args.value) {
-          const keys = Object.keys(args.value)
-          if (keys.filter((k) => !tokenKeys.includes(k)).length) {
-            const { type: _type, description: _description, extensions: _extensions, value, DEFAULT } = args.value
-            args.value.DEFAULT = { value: DEFAULT?.value ?? value }
-            delete args.value.value
-          }
+    walkObject(withoutEmpty.theme.tokens, (args) => args, {
+      stop(token) {
+        if (!isValidToken(token)) return false
 
-          return true
+        const keys = Object.keys(token)
+        const nestedKeys = keys.filter((k) => !tokenKeys.includes(k))
+        const nested = nestedKeys.length > 0
+
+        if (nested) {
+          token.DEFAULT ||= {}
+          tokenKeys.forEach((key) => {
+            if (token[key] == null) return
+            token.DEFAULT[key] ||= token[key]
+            delete token[key]
+          })
         }
 
-        return false
+        return true
       },
     })
   }

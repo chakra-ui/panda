@@ -3,7 +3,7 @@ import { isObject, isString } from '@pandacss/shared'
 const REFERENCE_REGEX = /({([^}]*)})/g
 const curlyBracketRegex = /[{}]/g
 
-export const isValidToken = (token: unknown) => Object.hasOwnProperty.call(token, 'value')
+export const isValidToken = (token: unknown) => isObject(token) && Object.hasOwnProperty.call(token, 'value')
 export const isTokenReference = (value: unknown) => typeof value === 'string' && REFERENCE_REGEX.test(value)
 
 export const formatPath = (path: string) => path
