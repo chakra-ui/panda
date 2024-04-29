@@ -1,5 +1,5 @@
 import { createElement, forwardRef } from 'react'
-import { mergeCss } from '../css/css.mjs';
+false
 import { splitProps } from '../helpers.mjs';
 import { getDividerStyle } from '../patterns/divider.mjs';
 import { panda } from './factory.mjs';

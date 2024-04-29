@@ -1,5 +1,5 @@
 import { createElement, forwardRef } from 'react'
-import { mergeCss } from '../css/css.mjs';
+false
 import { splitProps } from '../helpers.mjs';
 import { getGridStyle } from '../patterns/grid.mjs';
 import { panda } from './factory.mjs';
