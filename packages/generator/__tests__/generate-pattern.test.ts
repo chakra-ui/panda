@@ -473,9 +473,7 @@ test('should generate pattern', () => {
       return {
         _before: {
           content: '""',
-          display: "block",
           position: "absolute",
-          cursor: "inherit",
           inset: "0",
           zIndex: "0",
           ...props["_before"]

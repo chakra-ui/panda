@@ -43,7 +43,7 @@ By default, the container sets the following properties:
 - `position: relative`
 - `paddingX: { base: 4, md: 6, lg: 8 }`
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -91,7 +91,7 @@ The `stack` function accepts the following properties:
 - `align`: An alias for the css `align-items` property.
 - `justify`: An alias for the css `justify-content` property.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -133,7 +133,7 @@ function App() {
 The HStack pattern is a wrapper around the `stack` pattern that sets the `direction` property to `horizontal`, and
 centers the elements vertically.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -176,7 +176,7 @@ The VStack pattern is a wrapper around the `stack` pattern that sets the `direct
 the elements horizontally.
 
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -226,7 +226,7 @@ The `wrap` function accepts the following properties:
 - `align`: An alias for the css `align-items` property.
 - `justify`: An alias for the css `justify-content` property.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -274,7 +274,7 @@ The `aspectRatio` function accepts the following properties:
 
 - `ratio`: The aspect ratio of the container. Can be a number or a string.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -329,7 +329,7 @@ The `flex` function accepts the following properties:
 - `grow`: An alias for the css `flex-grow` property.
 - `shrink`: An alias for the css `flex-shrink` property.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -374,7 +374,7 @@ The `center` function accepts the following properties:
 
 - `inline`: Whether to use `inline-flex` or `flex` for the container. The value is a boolean.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -409,6 +409,52 @@ function App() {
   </Tab>
 </Tabs>
 
+### LinkOverlay
+
+The link overlay pattern is used to expand a link's clickable area to its nearest parent with `position: relative`.
+
+> We recommend using this pattern when the relative parent contains at most one clickable link.
+
+
+<Tabs items={['Function', 'JSX']}>
+<Tab>
+
+```tsx
+import { css } from '../styled-system/css'
+import { linkOverlay } from '../styled-system/patterns'
+
+function App() {
+  return (
+    <div className={css({ pos: "relative" })}>
+      <img src="https://via.placeholder.com/150" alt="placeholder" />
+      <a href="#" className={linkOverlay()}>
+        View more
+      </a>
+    </div>
+  )
+}
+```
+</Tab>
+
+<Tab>
+
+```tsx
+import { Box, LinkOverlay } from '../styled-system/jsx'
+
+function App() {
+  return (
+    <Box pos="relative">
+      <img src="https://via.placeholder.com/150" alt="placeholder" />
+      <LinkOverlay href="#">
+        View more
+      </LinkOverlay>
+    </Box>
+  )
+}
+```
+</Tab>
+</Tabs>
+
 ### Float
 
 The Float pattern is used to anchor an element to the top, bottom, left or right of the container.
@@ -423,7 +469,7 @@ The `float` function accepts the following properties:
 - `offsetX`: Same as `offset`, but only for the horizontal axis.
 - `offsetY`: Same as `offset`, but only for the vertical axis.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -470,7 +516,7 @@ The `grid` function accepts the following properties:
 - `rowGap`: The gap between the elements in the stack vertically.
 - `minChildWidth`: The minimum width of the child elements before wrapping.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -520,7 +566,7 @@ The `gridItem` function accepts the following properties:
 - `colStart`: The column the item starts at.
 - `colEnd`: The column the item ends at.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -567,7 +613,7 @@ The `divider` function accepts the following properties:
 - `thickness`: The thickness of the divider. Can be a sizing token, or arbitrary value.
 - `color`: The color of the divider. Can be a color token, or arbitrary value.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -612,7 +658,7 @@ The `circle` function accepts the following properties:
 
 - `size`: The size of the circle. Can be a sizing token, or arbitrary value.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -645,7 +691,7 @@ The `square` function accepts the following properties:
 
 - `size`: The size of the square. Can be a sizing token, or arbitrary value.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx
@@ -698,7 +744,7 @@ The `bleed` function accepts the following properties:
 - `inline`: The amount of padding to negate on the horizontal axis. Should match the parent's padding.
 - `block`: The amount of padding to negate on the vertical axis. Should match the parent's padding.
 
-<Tabs items={['function', 'JSX']}>
+<Tabs items={['Function', 'JSX']}>
 <Tab>
 
 ```tsx

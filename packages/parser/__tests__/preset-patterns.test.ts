@@ -518,16 +518,8 @@ describe('preset patterns', () => {
           position: relative;
       }
 
-        .before\\:d_block::before {
-          display: block;
-      }
-
         .before\\:pos_absolute::before {
           position: absolute;
-      }
-
-        .before\\:cursor_inherit::before {
-          cursor: inherit;
       }
 
         .before\\:inset_0::before {
@@ -585,16 +577,8 @@ describe('preset patterns', () => {
           position: relative;
       }
 
-        .before\\:d_block::before {
-          display: block;
-      }
-
         .before\\:pos_absolute::before {
           position: absolute;
-      }
-
-        .before\\:cursor_inherit::before {
-          cursor: inherit;
       }
 
         .before\\:inset_0::before {
