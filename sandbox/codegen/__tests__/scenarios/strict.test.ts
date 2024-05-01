@@ -39,10 +39,11 @@ describe('css', () => {
 
   test('shorthand prop', () => {
     assertType(
+      // @ts-expect-error expected from strictTokens: true
       css({
-        // @ts-expect-error expected from strictTokens: true
+        // error cause
         backgroundColor: 'red',
-        // @ts-expect-error expected from strictTokens: true
+        // error cause
         bg: 'red',
       }),
     )
@@ -58,10 +59,11 @@ describe('css', () => {
 
   test('nested condition prop', () => {
     assertType(
+      // @ts-expect-error expected from strictTokens: true
       css({
         _hover: {
           _dark: {
-            // @ts-expect-error expected from strictTokens: true
+            // error cause
             bg: 'pink',
           },
         },
@@ -71,8 +73,9 @@ describe('css', () => {
 
   test('arbitrary value', () => {
     assertType(
+      // @ts-expect-error expected from strictTokens: true
       css({
-        // @ts-expect-error expected from strictTokens: true
+        // error cause
         color: '#fff',
       }),
     )
@@ -115,23 +118,24 @@ describe('css', () => {
 
   test('important', () => {
     assertType(
+      // @ts-expect-error expected from strictTokens: true
       css({
         fontSize: '2xl !important',
         p: '4 !important',
-        // @ts-expect-error expected from strictTokens: true
+        // error cause
         bgColor: '#fff!',
-        // @ts-expect-error expected from strictTokens: true
+        // error cause
         borderColor: '#fff !important',
         _hover: {
           fontSize: '2xl !important',
           p: '4 !important',
-          // @ts-expect-error expected from strictTokens: true
+          // error cause
 
           bgColor: '#fff!',
-          // @ts-expect-error expected from strictTokens: true
+          // error cause
           borderColor: '#fff !important',
         },
-        // @ts-expect-error expected from strictTokens: true
+        // error cause
         backgroundColor: {
           _disabled: '2xl!',
           _active: '4 !important',
@@ -144,9 +148,10 @@ describe('css', () => {
 
   test('responsive condition', () => {
     assertType(
+      // @ts-expect-error expected from strictTokens: true
       css({
         sm: {
-          // @ts-expect-error expected from strictTokens: true
+          // error cause
           bg: 'purple',
         },
       }),
@@ -155,12 +160,13 @@ describe('css', () => {
 
   test('responsive array syntax prop', () => {
     assertType(
+      // @ts-expect-error expected from strictTokens: true
       css({
         bg: [
           'cyan.100',
           'cyan.200',
           null,
-          // @ts-expect-error expected from strictTokens: true
+          // error cause
           undefined,
           'cyan.300',
         ],
@@ -170,8 +176,9 @@ describe('css', () => {
 
   test('using inline token helper - in value', () => {
     assertType(
+      // @ts-expect-error expected from strictTokens: true
       css({
-        // @ts-expect-error expected from strictTokens: true
+        // error cause
         border: '1px solid token(colors.blue.400)',
       }),
     )
