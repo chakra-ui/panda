@@ -4,12 +4,9 @@ import { css } from '../css/index.mjs';
 const linkOverlayConfig = {
 transform(props) {
   return {
-    position: "static",
     _before: {
       content: '""',
-      display: "block",
       position: "absolute",
-      cursor: "inherit",
       inset: "0",
       zIndex: "0",
       ...props["_before"]

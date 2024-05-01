@@ -8,7 +8,6 @@ export * from './spacer';
 export * from './square';
 export * from './circle';
 export * from './center';
-export * from './link-box';
 export * from './link-overlay';
 export * from './aspect-ratio';
 export * from './grid';
