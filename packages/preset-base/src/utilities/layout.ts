@@ -117,7 +117,8 @@ export const layout: UtilityConfig = {
   },
   float: {
     className: 'float',
-    values: ['left', 'right', 'start', 'end'],
+    values: ['start', 'end'],
+    property: 'float',
     group: 'Position',
     transform(value) {
       if (value === 'start') {
