@@ -42,8 +42,6 @@ test('[dts] should generate package', () => {
 
     export type BreakpointToken = "sm" | "md" | "lg" | "xl" | "2xl"
 
-    export type AnimationName = "spin" | "ping" | "pulse" | "bounce"
-
     export type Tokens = {
     		aspectRatios: AspectRatioToken
     		borders: BorderToken
@@ -62,7 +60,6 @@ test('[dts] should generate package', () => {
     		sizes: SizeToken
     		animations: AnimationToken
     		breakpoints: BreakpointToken
-    		animationName: AnimationName
     } & { [token: string]: never }
 
     export type TokenCategory = "aspectRatios" | "zIndex" | "opacity" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "borderWidths" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets""
@@ -121,8 +118,6 @@ test('[dts] should generate package - custom formatTokenName', () => {
 
     export type BreakpointToken = "$sm" | "$md" | "$lg" | "$xl" | "$2xl"
 
-    export type AnimationName = "spin" | "ping" | "pulse" | "bounce"
-
     export type Tokens = {
     		aspectRatios: AspectRatioToken
     		borders: BorderToken
@@ -141,7 +136,6 @@ test('[dts] should generate package - custom formatTokenName', () => {
     		sizes: SizeToken
     		animations: AnimationToken
     		breakpoints: BreakpointToken
-    		animationName: AnimationName
     } & { [token: string]: never }
 
     export type TokenCategory = "aspectRatios" | "zIndex" | "opacity" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "borderWidths" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets""

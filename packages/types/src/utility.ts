@@ -10,7 +10,7 @@ interface TokenFn {
 type ThemeFn = (token: (path: string) => any) => Record<string, string>
 
 export type PropertyValues =
-  | LiteralUnion<TokenCategory>
+  | LiteralUnion<TokenCategory | 'keyframes'>
   | string[]
   | { type: string }
   | Record<string, string>

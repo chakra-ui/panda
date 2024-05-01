@@ -71,7 +71,7 @@ export const transitions: UtilityConfig = {
   },
   animationName: {
     className: 'animation-name',
-    values: 'animationName',
+    values: 'keyframes',
     group: 'Transition',
   },
   animationTimingFunction: {

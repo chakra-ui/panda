@@ -13,6 +13,7 @@ import {
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   AnyFunction,
+  CssKeyframes,
   Dict,
   PropertyConfig,
   PropertyTransform,
@@ -30,6 +31,7 @@ export interface UtilityOptions {
   prefix?: string
   shorthands?: boolean
   strictTokens?: boolean
+  keyframes?: CssKeyframes
 }
 
 export class Utility {
@@ -89,7 +91,7 @@ export class Utility {
 
   strictTokens = false
 
-  constructor(options: UtilityOptions) {
+  constructor(private options: UtilityOptions) {
     const { tokens, config = {}, separator, prefix, shorthands, strictTokens } = options
 
     this.tokens = tokens
@@ -268,8 +270,12 @@ export class Utility {
   /**
    * Normalize the property config
    */
-  normalize = (value: PropertyConfig | undefined): PropertyConfig | undefined => {
-    const config = { ...value }
+  normalize = (propertyConfig: PropertyConfig | undefined): PropertyConfig | undefined => {
+    const config = { ...propertyConfig }
+
+    if (config.values === 'keyframes') {
+      config.values = Object.keys(this.options.keyframes ?? {})
+    }
 
     // set graceful defaults for className
     if (config.shorthand && !config.className) {
