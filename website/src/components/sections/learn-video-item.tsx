@@ -1,10 +1,10 @@
-import { css, cx } from '@/styled-system/css'
+import { css } from '@/styled-system/css'
 import { Circle, HStack, Stack, panda } from '@/styled-system/jsx'
-import { float, linkBox, linkOverlay } from '@/styled-system/patterns'
+import { float, linkOverlay } from '@/styled-system/patterns'
 import Image from 'next/image'
 import Link from 'next/link'
 
-type Props = {
+interface Props {
   title: string
   duration: string
   url: string
@@ -15,7 +15,7 @@ type Props = {
 export const LearnVideoItem = (props: Props) => {
   const { title, duration, thumbnail, url, comingSoon } = props
   return (
-    <Stack gap="6" className={cx('group', linkBox())}>
+    <Stack gap="6" pos="relative" className="group">
       <panda.div
         w="100%"
         h="240px"

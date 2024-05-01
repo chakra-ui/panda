@@ -9,7 +9,6 @@ export * from './spacer.mjs';
 export * from './square.mjs';
 export * from './circle.mjs';
 export * from './center.mjs';
-export * from './link-box.mjs';
 export * from './link-overlay.mjs';
 export * from './aspect-ratio.mjs';
 export * from './grid.mjs';

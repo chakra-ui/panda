@@ -317,29 +317,13 @@ const divider = definePattern({
   },
 })
 
-const linkBox = definePattern({
-  transform(props) {
-    return {
-      position: 'relative',
-      '& :where(a, abbr)': {
-        position: 'relative',
-        zIndex: '1',
-      },
-      ...props,
-    }
-  },
-})
-
 const linkOverlay = definePattern({
   jsxElement: 'a',
   transform(props) {
     return {
-      position: 'static',
       _before: {
         content: '""',
-        display: 'block',
         position: 'absolute',
-        cursor: 'inherit',
         inset: '0',
         zIndex: '0',
         ...props['_before'],
@@ -472,7 +456,6 @@ export const patterns = {
   square,
   circle,
   center,
-  linkBox,
   linkOverlay,
   aspectRatio,
   grid,

@@ -477,13 +477,14 @@ describe('preset patterns', () => {
     `)
   })
 
-  test('linkOverlay, linkBox', () => {
+  test('linkOverlay', () => {
     const code = `
-      import { linkOverlay, linkBox } from "styled-system/patterns"
+      import { css } from "styled-system/css"
+      import { linkOverlay } from "styled-system/patterns"
 
       function Button() {
         return (
-          <div className={linkBox()}>
+          <div className={css({ pos: 'relative' })}>
               <a className={linkOverlay()}>Click me</a>
           </div>
         )
@@ -494,10 +495,12 @@ describe('preset patterns', () => {
       [
         {
           "data": [
-            {},
+            {
+              "pos": "relative",
+            },
           ],
-          "name": "linkBox",
-          "type": "pattern",
+          "name": "css",
+          "type": "css",
         },
         {
           "data": [
@@ -515,28 +518,8 @@ describe('preset patterns', () => {
           position: relative;
       }
 
-        .pos_static {
-          position: static;
-      }
-
-        .\\[\\&_\\:where\\(a\\,_abbr\\)\\]\\:pos_relative :where(a, abbr) {
-          position: relative;
-      }
-
-        .\\[\\&_\\:where\\(a\\,_abbr\\)\\]\\:z_1 :where(a, abbr) {
-          z-index: 1;
-      }
-
-        .before\\:d_block::before {
-          display: block;
-      }
-
         .before\\:pos_absolute::before {
           position: absolute;
-      }
-
-        .before\\:cursor_inherit::before {
-          cursor: inherit;
       }
 
         .before\\:inset_0::before {
@@ -554,15 +537,15 @@ describe('preset patterns', () => {
     `)
   })
 
-  test('jsx linkOverlay, linkBox', () => {
+  test('jsx linkOverlay', () => {
     const code = `
-      import { LinkBox, LinkOverlay } from "styled-system/jsx"
+      import { Box, LinkOverlay } from "styled-system/jsx"
 
       function Button() {
         return (
-          <LinkBox>
+          <Box pos="relative">
               <LinkOverlay>Click me</LinkOverlay>
-          </LinkBox>
+          </Box>
         )
       }
      `
@@ -571,9 +554,11 @@ describe('preset patterns', () => {
       [
         {
           "data": [
-            {},
+            {
+              "pos": "relative",
+            },
           ],
-          "name": "LinkBox",
+          "name": "Box",
           "type": "jsx-pattern",
         },
         {
@@ -592,28 +577,8 @@ describe('preset patterns', () => {
           position: relative;
       }
 
-        .pos_static {
-          position: static;
-      }
-
-        .\\[\\&_\\:where\\(a\\,_abbr\\)\\]\\:pos_relative :where(a, abbr) {
-          position: relative;
-      }
-
-        .\\[\\&_\\:where\\(a\\,_abbr\\)\\]\\:z_1 :where(a, abbr) {
-          z-index: 1;
-      }
-
-        .before\\:d_block::before {
-          display: block;
-      }
-
         .before\\:pos_absolute::before {
           position: absolute;
-      }
-
-        .before\\:cursor_inherit::before {
-          cursor: inherit;
       }
 
         .before\\:inset_0::before {

@@ -450,52 +450,6 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export interface LinkBoxProperties {
-       
-    }
-
-
-    interface LinkBoxStyles extends LinkBoxProperties, DistributiveOmit<SystemStyleObject, keyof LinkBoxProperties > {}
-
-    interface LinkBoxPatternFn {
-      (styles?: LinkBoxStyles): string
-      raw: (styles?: LinkBoxStyles) => SystemStyleObject
-    }
-
-
-    export declare const linkBox: LinkBoxPatternFn;
-    ",
-        "js": "import { getPatternStyles, patternFns } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
-
-    const linkBoxConfig = {
-    transform(props) {
-      return {
-        position: "relative",
-        "& :where(a, abbr)": {
-          position: "relative",
-          zIndex: "1"
-        },
-        ...props
-      };
-    }}
-
-    export const getLinkBoxStyle = (styles = {}) => {
-      const _styles = getPatternStyles(linkBoxConfig, styles)
-      return linkBoxConfig.transform(_styles, patternFns)
-    }
-
-    export const linkBox = (styles) => css(getLinkBoxStyle(styles))
-    linkBox.raw = getLinkBoxStyle",
-        "name": "link-box",
-      },
-      {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
-    import type { Properties } from '../types/csstype';
-    import type { SystemProperties } from '../types/style-props';
-    import type { DistributiveOmit } from '../types/system-types';
-    import type { Tokens } from '../tokens/index';
-
     export interface LinkOverlayProperties {
        
     }
@@ -517,12 +471,9 @@ test('should generate pattern', () => {
     const linkOverlayConfig = {
     transform(props) {
       return {
-        position: "static",
         _before: {
           content: '""',
-          display: "block",
           position: "absolute",
-          cursor: "inherit",
           inset: "0",
           zIndex: "0",
           ...props["_before"]
