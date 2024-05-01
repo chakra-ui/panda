@@ -180,7 +180,7 @@ function createCss(context) {
   });
 }
 function compactStyles(...styles) {
-  return styles.filter((style) => isObject(style) && Object.keys(compact(style)).length > 0);
+  return styles.flat().filter((style) => isObject(style) && Object.keys(compact(style)).length > 0);
 }
 function createMergeCss(context) {
   function resolve(styles) {

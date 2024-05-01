@@ -72,7 +72,7 @@ export function generateSolidJsxFactory(ctx: Context) {
             __cvaFn__.__getCompoundVariantCss__?.(variantProps)
           return cx(
             __cvaFn__(variantProps, false),
-            css(compoundVariantStyles, propStyles, ...(Array.isArray(cssStyles) ? cssStyles : [cssStyles])),
+            css(compoundVariantStyles, propStyles, cssStyles),
             localProps.class,
             localProps.className
           )
@@ -82,7 +82,7 @@ export function generateSolidJsxFactory(ctx: Context) {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = __cvaFn__.raw(variantProps)
           return cx(
-            css(cvaStyles, propStyles, ...(Array.isArray(cssStyles) ? cssStyles : [cssStyles])),
+            css(cvaStyles, propStyles, cssStyles),
             localProps.class,
             localProps.className
           )

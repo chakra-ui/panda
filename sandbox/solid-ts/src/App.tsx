@@ -1,7 +1,7 @@
-import { ParentProps, createSignal } from 'solid-js'
+import { ParentProps } from 'solid-js'
 import { RecipeVariantProps, css, cva } from '../styled-system/css'
-import { splitCssProps, styled } from '../styled-system/jsx'
-import { JsxStyleProps } from '../styled-system/types'
+import { splitCssProps } from '../styled-system/jsx'
+import { HTMLStyledProps, JsxStyleProps } from '../styled-system/types'
 
 const btn = cva({ variants: { size: { sm: { textStyle: 'sm' }, md: { textStyle: 'md' } } } })
 
@@ -17,38 +17,20 @@ const Button = (props: ParentProps<ButtonProps & JsxStyleProps>) => {
   )
 }
 
+type DivProps = HTMLStyledProps<'div'>
+
+export const Div = ({ css: cssProp = {}, children }: DivProps) => {
+  const className = css(cssProp)
+  // Argument of type 'SystemStyleObject | SystemStyleObject[]' is not assignable to parameter of type 'false | SystemStyleObject | null | undefined'.
+
+  return <div class={className}>{children}</div>
+}
+
 export function App() {
-  const [value, setValue] = createSignal(0)
   return (
     <>
-      <styled.div
-        background="pink"
-        paddingBlock="20px"
-        fontFamily="SF Mono"
-        color="black"
-        class={value() === 3 ? 'red' : 'blue'}
-        fontSize="20px"
-        marginTop="20px"
-        paddingLeft="90px"
-        borderRadius="10px"
-        data-value={value()}
-        onClick={() => {
-          setValue(value() + 1)
-        }}
-      >
-        {value()} Edit <code>src/App.tsx</code> and save to reload.
-      </styled.div>
-      <div
-        class={css({
-          color: 'fg.default',
-          fontSize: '2xs',
-          '--button-color': 'colors.red.300',
-          '--xxx': 'spacing.10',
-        })}
-      >
-        {' '}
-        aaa
-      </div>
+      <Div css={[{ color: 'red.300' }, { backgroundColor: 'blue.100' }]}>Div</Div>
+      <Div css={{ color: 'blue.500' }}>Div</Div>
       <Button size="md">button</Button>
     </>
   )
