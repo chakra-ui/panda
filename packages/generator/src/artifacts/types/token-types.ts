@@ -29,10 +29,7 @@ const categories = [
 ]
 
 export function generateTokenTypes(ctx: Context) {
-  const {
-    tokens,
-    config: { theme },
-  } = ctx
+  const { tokens } = ctx
 
   const set = new Set<string>()
 
@@ -52,12 +49,6 @@ export function generateTokenTypes(ctx: Context) {
       const typeName = capitalize(pluralize.singular(key))
       set.add(`export type ${typeName}Token = ${unionType(value.keys())}`)
       result.add(`\t\t${key}: ${typeName}Token`)
-    }
-
-    const keyframes = Object.keys(theme?.keyframes ?? {})
-    if (keyframes.length) {
-      set.add(`export type AnimationName = ${unionType(keyframes)}`)
-      result.add(`\t\tanimationName: AnimationName`)
     }
   }
 

@@ -250,6 +250,7 @@ export class Context {
       separator: config.separator,
       shorthands: config.shorthands,
       strictTokens: config.strictTokens,
+      keyframes: config.theme?.keyframes,
     })
   }
 
