@@ -8,9 +8,18 @@ describe('generate css-fn', () => {
       {
         "dts": "import type { SystemStyleObject } from '../types/index';
 
+      type Styles = SystemStyleObject | undefined | null | false
+
       interface CssFunction {
-        (...styles: Array<SystemStyleObject | Array<SystemStyleObject> | undefined | null | false>): string
-        raw: (...styles: Array<SystemStyleObject | Array<SystemStyleObject> | undefined | null | false>) => SystemStyleObject
+        (styles: Styles): string
+        (styles: Styles[]): string
+        (...styles: Array<Styles | Styles[]>): string
+        (styles: Styles): string
+
+        raw: (styles: Styles) => string
+        raw: (styles: Styles[]) => string
+        raw: (...styles: Array<Styles | Styles[]>) => string
+        raw: (styles: Styles) => string
       }
 
       export declare const css: CssFunction;",
@@ -85,9 +94,18 @@ describe('generate css-fn', () => {
       {
         "dts": "import type { SystemStyleObject } from '../types/index';
 
+      type Styles = SystemStyleObject | undefined | null | false
+
       interface CssFunction {
-        (...styles: Array<SystemStyleObject | Array<SystemStyleObject> | undefined | null | false>): string
-        raw: (...styles: Array<SystemStyleObject | Array<SystemStyleObject> | undefined | null | false>) => SystemStyleObject
+        (styles: Styles): string
+        (styles: Styles[]): string
+        (...styles: Array<Styles | Styles[]>): string
+        (styles: Styles): string
+
+        raw: (styles: Styles) => string
+        raw: (styles: Styles[]) => string
+        raw: (...styles: Array<Styles | Styles[]>) => string
+        raw: (styles: Styles) => string
       }
 
       export declare const css: CssFunction;",
