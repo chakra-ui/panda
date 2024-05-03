@@ -1,4 +1,4 @@
-import { assertType, describe, test } from 'vitest'
+import { assertType, describe, test, expect } from 'vitest'
 import { css } from '../../styled-system-strict/css'
 
 describe('css', () => {

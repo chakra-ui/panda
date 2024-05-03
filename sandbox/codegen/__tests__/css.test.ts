@@ -113,4 +113,13 @@ describe('css', () => {
 
     expect(className).toMatchInlineSnapshot('"fs_lg sm:fs_xs"')
   })
+
+  test('merging styles with array item', () => {
+    const className = css({ fontSize: 'sm', bgColor: 'red.500' }, [
+      { backgroundColor: 'red.600' },
+      { fontSize: '12px' },
+    ])
+
+    expect(className).toMatchInlineSnapshot(`"fs_12px bg_red.600"`)
+  })
 })

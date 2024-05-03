@@ -85,7 +85,7 @@ interface StyleObject {
 }
 
 function compactStyles(...styles: StyleObject[]) {
-  return styles.filter((style) => isObject(style) && Object.keys(compact(style)).length > 0)
+  return styles.flat().filter((style) => isObject(style) && Object.keys(compact(style)).length > 0)
 }
 
 export function createMergeCss(context: CreateCssContext) {
