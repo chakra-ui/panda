@@ -287,8 +287,8 @@ importers:
         specifier: 8.4.35
         version: 8.4.35
       postcss-discard-duplicates:
-        specifier: 6.0.1
-        version: 6.0.1(postcss@8.4.35)
+        specifier: 6.0.3
+        version: 6.0.3(postcss@8.4.35)
       postcss-discard-empty:
         specifier: 6.0.3
         version: 6.0.3(postcss@8.4.35)
@@ -12544,8 +12544,8 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
 
-  postcss-discard-duplicates@6.0.1:
-    resolution: {integrity: sha512-1hvUs76HLYR8zkScbwyJ8oJEugfPV+WchpnA+26fpJ7Smzs51CzGBHC32RS03psuX/2l0l0UKh2StzNxOrKCYg==}
+  postcss-discard-duplicates@6.0.3:
+    resolution: {integrity: sha512-+JA0DCvc5XvFAxwx6f/e68gQu/7Z9ud584VLmcgto28eB8FqSFZwtrLwB5Kcp70eIoWP/HXqz4wpo8rD8gpsTw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.4.31
@@ -24762,7 +24762,7 @@ snapshots:
       postcss-colormin: 6.0.2(postcss@8.4.35)
       postcss-convert-values: 6.0.2(postcss@8.4.35)
       postcss-discard-comments: 6.0.1(postcss@8.4.35)
-      postcss-discard-duplicates: 6.0.1(postcss@8.4.35)
+      postcss-discard-duplicates: 6.0.3(postcss@8.4.35)
       postcss-discard-empty: 6.0.3(postcss@8.4.35)
       postcss-discard-overridden: 6.0.1(postcss@8.4.35)
       postcss-merge-longhand: 6.0.2(postcss@8.4.35)
@@ -31053,7 +31053,7 @@ snapshots:
     dependencies:
       postcss: 8.4.35
 
-  postcss-discard-duplicates@6.0.1(postcss@8.4.35):
+  postcss-discard-duplicates@6.0.3(postcss@8.4.35):
     dependencies:
       postcss: 8.4.35
 
