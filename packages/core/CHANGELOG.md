@@ -1,5 +1,30 @@
 # @pandacss/core
 
+## 0.39.1
+
+### Patch Changes
+
+- @pandacss/is-valid-prop@0.39.1
+- @pandacss/logger@0.39.1
+- @pandacss/shared@0.39.1
+- @pandacss/token-dictionary@0.39.1
+- @pandacss/types@0.39.1
+
+## 0.39.0
+
+### Patch Changes
+
+- c3e797e: Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
+  autocompletion was available.
+- Updated dependencies [221c9a2]
+- Updated dependencies [c3e797e]
+- Updated dependencies [935ec86]
+  - @pandacss/types@0.39.0
+  - @pandacss/shared@0.39.0
+  - @pandacss/logger@0.39.0
+  - @pandacss/token-dictionary@0.39.0
+  - @pandacss/is-valid-prop@0.39.0
+
 ## 0.38.0
 
 ### Minor Changes

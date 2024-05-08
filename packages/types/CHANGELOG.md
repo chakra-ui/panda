@@ -1,5 +1,19 @@
 # @pandacss/types
 
+## 0.39.1
+
+## 0.39.0
+
+### Minor Changes
+
+- 221c9a2: Add support for more typography related properties in text styles such as `fontFeatureSettings`,
+  `fontPalette`, etc.
+
+### Patch Changes
+
+- c3e797e: Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
+  autocompletion was available.
+
 ## 0.38.0
 
 ### Minor Changes

@@ -6,6 +6,84 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.39.1] - 2024-05-07
+
+### Fixed
+
+Fix `css.raw` typings after recent ([0.39.0](https://github.com/chakra-ui/panda/discussions/2560)) changes allowing
+arrays of `SystemStyleObject`
+
+## [0.39.0] - 2024-04-29
+
+### Fixed
+
+- Fix issue where `mergeCss` import in `styled-system/jsx/*` could be unused.
+- Fix issue where `float` property did not allow inherited values (auto, initial, none, etc.)
+- Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no autocompletion was
+  available.
+
+### Added
+
+- Add support for more typography related properties in text styles such as `fontFeatureSettings`, `fontPalette`, etc.
+- Allow passing arrays of `SystemStyleObject` to the `css(xxx, [aaa, bbb, ccc], yyy)` fn
+
+This is useful when you are creating your own styled component and want to benefit
+[from the recent `css` array property support](https://github.com/chakra-ui/panda/pull/2515).
+
+```diff
+import { css } from 'styled-system/css'
+import type { HTMLStyledProps } from 'styled-system/types'
+
+type ButtonProps = HTMLStyledProps<'button'>
+
+export const Button = ({ css: cssProp = {}, children }: ButtonProps) => {
+-  const className = css(...(Array.isArray(cssProp) ? cssProp : [cssProp]))
++  const className = css(cssProp)
+  return <button className={className}>{children}</button>
+}
+```
+
+### Changed
+
+- **BREAKING 💥**
+
+Remove `linkBox` pattern in favor of using adding `position: relative` when using the `linkOverlay` pattern.
+
+**Before**
+
+```jsx
+import { linkBox, linkOverlay } from 'styled-system/patterns'
+
+const App = () => {
+  return (
+    <div className={linkBox()}>
+      <img src="https://via.placeholder.com/150" alt="placeholder" />
+      <a href="#" className={linkOverlay()}>
+        Link
+      </a>
+    </div>
+  )
+}
+```
+
+**After**
+
+```jsx
+import { css } from 'styled-system/css'
+import { linkOverlay } from 'styled-system/patterns'
+
+const App = () => {
+  return (
+    <div className={css({ pos: 'relative' })}>
+      <img src="https://via.placeholder.com/150" alt="placeholder" />
+      <a href="#" className={linkOverlay()}>
+        Link
+      </a>
+    </div>
+  )
+}
+```
+
 ## [0.38.0] - 2024-04-29
 
 ### Fixed

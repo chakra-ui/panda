@@ -1,5 +1,40 @@
 # @pandacss/node
 
+## 0.39.1
+
+### Patch Changes
+
+- Updated dependencies [99be6f1]
+  - @pandacss/generator@0.39.1
+  - @pandacss/parser@0.39.1
+  - @pandacss/config@0.39.1
+  - @pandacss/core@0.39.1
+  - @pandacss/extractor@0.39.1
+  - @pandacss/logger@0.39.1
+  - @pandacss/shared@0.39.1
+  - @pandacss/token-dictionary@0.39.1
+  - @pandacss/types@0.39.1
+
+## 0.39.0
+
+### Patch Changes
+
+- Updated dependencies [df2546a]
+- Updated dependencies [221c9a2]
+- Updated dependencies [0714f31]
+- Updated dependencies [2116abe]
+- Updated dependencies [c3e797e]
+- Updated dependencies [935ec86]
+  - @pandacss/generator@0.39.0
+  - @pandacss/parser@0.39.0
+  - @pandacss/types@0.39.0
+  - @pandacss/core@0.39.0
+  - @pandacss/shared@0.39.0
+  - @pandacss/config@0.39.0
+  - @pandacss/logger@0.39.0
+  - @pandacss/token-dictionary@0.39.0
+  - @pandacss/extractor@0.39.0
+
 ## 0.38.0
 
 ### Minor Changes

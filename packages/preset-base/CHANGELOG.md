@@ -1,5 +1,63 @@
 # @pandacss/preset-base
 
+## 0.39.1
+
+### Patch Changes
+
+- @pandacss/types@0.39.1
+
+## 0.39.0
+
+### Minor Changes
+
+- df2546a: **BREAKING 💥**
+
+  Remove `linkBox` pattern in favor of using adding `position: relative` when using the `linkOverlay` pattern.
+
+  **Before**
+
+  ```jsx
+  import { linkBox, linkOverlay } from 'styled-system/patterns'
+
+  const App = () => {
+    return (
+      <div className={linkBox()}>
+        <img src="https://via.placeholder.com/150" alt="placeholder" />
+        <a href="#" className={linkOverlay()}>
+          Link
+        </a>
+      </div>
+    )
+  }
+  ```
+
+  **After**
+
+  ```jsx
+  import { css } from 'styled-system/css'
+  import { linkOverlay } from 'styled-system/patterns'
+
+  const App = () => {
+    return (
+      <div className={css({ pos: 'relative' })}>
+        <img src="https://via.placeholder.com/150" alt="placeholder" />
+        <a href="#" className={linkOverlay()}>
+          Link
+        </a>
+      </div>
+    )
+  }
+  ```
+
+### Patch Changes
+
+- 2116abe: Fix issue where `float` property did not allow inherited values (auto, initial, none, etc.)
+- c3e797e: Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
+  autocompletion was available.
+- Updated dependencies [221c9a2]
+- Updated dependencies [c3e797e]
+  - @pandacss/types@0.39.0
+
 ## 0.38.0
 
 ### Patch Changes

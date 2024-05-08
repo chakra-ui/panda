@@ -1,5 +1,98 @@
 # @pandacss/generator
 
+## 0.39.1
+
+### Patch Changes
+
+- 99be6f1: Fix `css.raw` typings after recent ([0.39.0](https://github.com/chakra-ui/panda/discussions/2560)) changes
+  allowing arrays of `SystemStyleObject`
+  - @pandacss/core@0.39.1
+  - @pandacss/is-valid-prop@0.39.1
+  - @pandacss/logger@0.39.1
+  - @pandacss/shared@0.39.1
+  - @pandacss/token-dictionary@0.39.1
+  - @pandacss/types@0.39.1
+
+## 0.39.0
+
+### Minor Changes
+
+- df2546a: **BREAKING 💥**
+
+  Remove `linkBox` pattern in favor of using adding `position: relative` when using the `linkOverlay` pattern.
+
+  **Before**
+
+  ```jsx
+  import { linkBox, linkOverlay } from 'styled-system/patterns'
+
+  const App = () => {
+    return (
+      <div className={linkBox()}>
+        <img src="https://via.placeholder.com/150" alt="placeholder" />
+        <a href="#" className={linkOverlay()}>
+          Link
+        </a>
+      </div>
+    )
+  }
+  ```
+
+  **After**
+
+  ```jsx
+  import { css } from 'styled-system/css'
+  import { linkOverlay } from 'styled-system/patterns'
+
+  const App = () => {
+    return (
+      <div className={css({ pos: 'relative' })}>
+        <img src="https://via.placeholder.com/150" alt="placeholder" />
+        <a href="#" className={linkOverlay()}>
+          Link
+        </a>
+      </div>
+    )
+  }
+  ```
+
+- 221c9a2: Add support for more typography related properties in text styles such as `fontFeatureSettings`,
+  `fontPalette`, etc.
+
+### Patch Changes
+
+- 0714f31: Fix issue where `mergeCss` import in `styled-system/jsx/*` could be unused.
+- 2116abe: Fix issue where `float` property did not allow inherited values (auto, initial, none, etc.)
+- c3e797e: Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
+  autocompletion was available.
+- 935ec86: Allow passing arrays of `SystemStyleObject` to the `css(xxx, [aaa, bbb, ccc], yyy)` fn
+
+  This is useful when you are creating your own styled component and want to benefit
+  [from the recent `css` array property support](https://github.com/chakra-ui/panda/pull/2515).
+
+  ```diff
+  import { css } from 'styled-system/css'
+  import type { HTMLStyledProps } from 'styled-system/types'
+
+  type ButtonProps = HTMLStyledProps<'button'>
+
+  export const Button = ({ css: cssProp = {}, children }: ButtonProps) => {
+  -  const className = css(...(Array.isArray(cssProp) ? cssProp : [cssProp]))
+  +  const className = css(cssProp)
+    return <button className={className}>{children}</button>
+  }
+  ```
+
+- Updated dependencies [221c9a2]
+- Updated dependencies [c3e797e]
+- Updated dependencies [935ec86]
+  - @pandacss/types@0.39.0
+  - @pandacss/core@0.39.0
+  - @pandacss/shared@0.39.0
+  - @pandacss/logger@0.39.0
+  - @pandacss/token-dictionary@0.39.0
+  - @pandacss/is-valid-prop@0.39.0
+
 ## 0.38.0
 
 ### Minor Changes
