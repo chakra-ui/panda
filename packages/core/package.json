@@ -48,7 +48,7 @@
     "lightningcss": "1.23.0",
     "lodash.merge": "4.6.2",
     "outdent": "0.8.0",
-    "postcss": "8.4.35",
+    "postcss": "8.4.38",
     "postcss-discard-duplicates": "6.0.1",
     "postcss-discard-empty": "6.0.3",
     "postcss-merge-rules": "6.0.3",
