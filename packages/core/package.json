@@ -50,7 +50,7 @@
     "outdent": "0.8.0",
     "postcss": "8.4.35",
     "postcss-discard-duplicates": "6.0.1",
-    "postcss-discard-empty": "6.0.1",
+    "postcss-discard-empty": "6.0.3",
     "postcss-merge-rules": "6.0.3",
     "postcss-minify-selectors": "6.0.4",
     "postcss-nested": "6.0.1",
