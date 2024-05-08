@@ -1,5 +1,11 @@
 # @pandacss/preset-open-props
 
+## 0.39.1
+
+### Patch Changes
+
+- @pandacss/types@0.39.1
+
 ## 0.39.0
 
 ### Patch Changes
