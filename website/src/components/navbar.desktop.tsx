@@ -25,6 +25,12 @@ export const DesktopNavBar = () => {
       <HStack gap="4">
         <NavLink href="/docs">Docs</NavLink>
         <NavLink href="/learn">Learn</NavLink>
+        <NavLink href="https://play.panda-css.com/" isExternal>
+          <HStack>
+            <span>Playground</span>
+            <ButtonIcon icon="ExternalLink" />
+          </HStack>
+        </NavLink>
         <NavLink href="https://github.com/chakra-ui/panda" isExternal>
           <HStack>
             <span>Github</span>
