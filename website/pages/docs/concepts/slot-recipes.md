@@ -122,7 +122,7 @@ When a slot recipe is created, Panda will pre-generate the css of all the possib
 
 Compound variants are a way to apply style overrides to a slot based on the combination of variants.
 
-Let's say you want to apply a different border color to the checkbox control based on the size and the checked state. Here's how you would do it:
+Let's say you want to apply a different border color to the checkbox control based on its `size` and the `isChecked` variant, here's how to do it:
 
 ```jsx filename="checkbox.recipe.ts" {14-22}
 import { sva } from '../styled-system/css'
@@ -143,7 +143,7 @@ const checkbox = sva({
       size: 'sm',
       isChecked: true,
       css: {
-        control: { borderColor: 'green-500' }
+        control: { borderColor: 'green.500' }
       }
     }
   ],
@@ -155,9 +155,9 @@ const checkbox = sva({
 
 You can set an optional `className` property in the `sva` config which can be used to target slots in the DOM.
 
-Let's say you want to apply a different border color to the checkbox control based on the size and the checked state. Here's how you would do it:
+> Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
 
-Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
+Let's say you want to apply a different border color to the button text directly from the `root` slot. Here's how you would do it:
 
 ```tsx
 import { sva } from '../styled-system/css'
@@ -179,7 +179,7 @@ const button = sva({
 })
 ```
 
-> Note: If you need to do the same thing using [`slotRecipes`](/docs/concepts/slot-recipes#config-slot-recipe) while using [`hash: true`](/docs/concepts/writing-styles#hashing), you should instead use `data-xxx` attributes to target the slots as the hashing will break your selectors using the `className`.
+> Note: This doesn't work when you have the `hash: true` option in your panda config. We recommend using `data-x` selectors to target slots.
 
 ### TypeScript Guide
 
