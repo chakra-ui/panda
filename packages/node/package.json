@@ -50,7 +50,7 @@
     "chokidar": "3.6.0",
     "fast-glob": "3.3.2",
     "file-size": "1.0.0",
-    "filesize": "10.1.1",
+    "filesize": "10.1.2",
     "fs-extra": "11.2.0",
     "glob-parent": "6.0.2",
     "is-glob": "4.0.3",
