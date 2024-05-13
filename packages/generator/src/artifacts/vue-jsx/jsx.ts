@@ -120,7 +120,7 @@ export function generateVueJsxFactory(ctx: Context) {
     export const ${factoryName} = /* @__PURE__ */ styledFn.bind();
 
     tags.split(', ').forEach((tag) => {
-      styled[tag] = styled(tag);
+      ${factoryName}[tag] = ${factoryName}(tag);
     });
     `,
   }
