@@ -14,7 +14,7 @@ export type DistributiveUnion<T, U> = {
   [K in keyof T]: K extends keyof U ? U[K] | T[K] : T[K]
 } & DistributiveOmit<U, keyof T>
 
-export type Assign<T, U> = DistributiveOmit<T, keyof U> & U
+export type Assign<T, U> = Omit<T, keyof U> & U
 
 /* -----------------------------------------------------------------------------
  * Native css properties

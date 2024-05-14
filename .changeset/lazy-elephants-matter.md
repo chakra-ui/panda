@@ -4,4 +4,4 @@
 "@pandacss/types": patch
 ---
 
-Update `Assign` type to use `DistributiveOmit` to speed up type checking
+Update `Assign` type to use `Omit` to speed up type checking
