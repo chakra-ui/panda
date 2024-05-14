@@ -37,7 +37,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@csstools/postcss-cascade-layers": "4.0.4",
+    "@csstools/postcss-cascade-layers": "4.0.6",
     "@pandacss/is-valid-prop": "workspace:^",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
