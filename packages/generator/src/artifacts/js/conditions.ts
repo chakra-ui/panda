@@ -1,13 +1,20 @@
-import type { Context } from '@pandacss/core'
-import outdent from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateConditions(ctx: Context) {
-  const keys = Object.keys(ctx.conditions.values).concat('base')
-  return {
-    js: outdent`
-    ${ctx.file.import('withoutSpace', '../helpers')}
-
-    const conditionsStr = "${keys.join(',')}"
+export const cssConditionsJsArtifact = new ArtifactFile({
+  id: 'css/conditions.js',
+  fileName: 'conditions',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['conditions'],
+  imports: {
+    'helpers.js': ['withoutSpace'],
+  },
+  computed(ctx) {
+    return { keys: Object.keys(ctx.conditions.values).concat('base') }
+  },
+  code(params) {
+    return `
+    const conditionsStr = "${params.computed.keys.join(',')}"
     const conditions = new Set(conditionsStr.split(','))
 
     export function isCondition(value){
@@ -39,40 +46,57 @@ export function generateConditions(ctx: Context) {
           return 0
         })
       }
-      `,
-    dts: outdent`
-    ${ctx.file.importType('AnySelector, Selectors', './selectors')}
+      `
+  },
+})
 
+export const typesConditionsDtsArtifact = new ArtifactFile({
+  id: 'types/conditions.d.ts',
+  fileName: 'conditions',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['conditions'],
+  imports: {
+    'types/selectors.d.ts': ['AnySelector', 'Selectors'],
+  },
+  computed(ctx) {
+    return {
+      conditions: ctx.conditions,
+    }
+  },
+  code(params) {
+    const conditions = params.computed.conditions
+    const keys = Object.keys(conditions.values).concat('base')
+
+    return `
     export interface Conditions {
-    ${keys
-      .map(
-        (key) =>
-          `\t${
-            key === 'base'
-              ? `/** The base (=no conditions) styles to apply  */\n`
-              : ctx.conditions.get(key)
-                ? `/** \`${([] as string[]).concat(ctx.conditions.get(key) ?? '').join(' ')}\` */\n`
-                : ''
-          }\t${JSON.stringify(key)}: string`,
-      )
-      .join('\n')}
-    }
+      ${keys
+        .map(
+          (key) =>
+            `\t${
+              key === 'base'
+                ? `/** The base (=no conditions) styles to apply  */\n`
+                : conditions.get(key)
+                  ? `/** \`${([] as string[]).concat(conditions.get(key) ?? '').join(' ')}\` */\n`
+                  : ''
+            }\t${JSON.stringify(key)}: string`,
+        )
+        .join('\n')}
+      }
 
-    export type ConditionalValue<V> =
-      | V
-      | Array<V | null>
-      | {
-          [K in keyof Conditions]?: ConditionalValue<V>
-        }
+      export type ConditionalValue<V> =
+        | V
+        | Array<V | null>
+        | {
+            [K in keyof Conditions]?: ConditionalValue<V>
+          }
 
-    export type Nested<P> = P & {
-      [K in Selectors]?: Nested<P>
-    } & {
-      [K in AnySelector]?: Nested<P>
-    } & {
-      [K in keyof Conditions]?: Nested<P>
-    }
-
-  `,
-  }
-}
+      export type Nested<P> = P & {
+        [K in Selectors]?: Nested<P>
+      } & {
+        [K in AnySelector]?: Nested<P>
+      } & {
+        [K in keyof Conditions]?: Nested<P>
+      }`
+  },
+})

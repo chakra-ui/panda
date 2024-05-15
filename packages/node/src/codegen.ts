@@ -1,5 +1,6 @@
 import type { ArtifactId } from '@pandacss/types'
 import pLimit from 'p-limit'
+import prettier from 'prettier'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 

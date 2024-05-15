@@ -1,6 +1,7 @@
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import type { Artifact, PandaHooks, Runtime } from '@pandacss/types'
+import prettier from 'prettier'
 
 interface OutputEngineOptions extends Generator {
   runtime: Runtime
@@ -45,7 +46,7 @@ export class OutputEngine {
         const absPath = this.path.join(...dir, file)
 
         logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
-        return this.fs.writeFile(absPath, code)
+        return this.fs.writeFile(absPath, await prettier.format(code, { parser: 'typescript' }))
       }),
     )
   }

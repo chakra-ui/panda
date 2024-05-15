@@ -1,15 +1,17 @@
-import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateCssFn(ctx: Context) {
-  const { utility, hash, prefix, conditions } = ctx
-
-  const { separator, getPropShorthands } = utility
-
-  return {
-    dts: outdent`
-    ${ctx.file.importType('SystemStyleObject', '../types/index')}
-
+export const cssFnDtsArtifact = new ArtifactFile({
+  id: 'css/css.d.ts',
+  fileName: 'css',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: [],
+  importsType: {
+    'types/index.d.ts': ['SystemStyleObject'],
+  },
+  code() {
+    return `
     type Styles = SystemStyleObject | undefined | null | false
 
     interface CssRawFunction {
@@ -29,11 +31,35 @@ export function generateCssFn(ctx: Context) {
     }
 
     export declare const css: CssFunction;
-    `,
-    js: outdent`
-    ${ctx.file.import('createCss, createMergeCss, hypenateProperty, withoutSpace', '../helpers')}
-    ${ctx.file.import('sortConditions, finalizeConditions', './conditions')}
+    `
+  },
+})
 
+export const cssFnJsArtifact = new ArtifactFile({
+  id: 'css/css.js',
+  fileName: 'css',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['hash', 'prefix', 'conditions', 'separator'],
+  imports: {
+    'helpers.js': ['createCss', 'createMergeCss', 'hypenateProperty', 'withoutSpace'],
+    'css/conditions.js': ['finalizeConditions', 'sortConditions'],
+  },
+  computed(ctx) {
+    const { utility, conditions } = ctx
+    const { getPropShorthands } = utility
+
+    return {
+      utility,
+      conditions,
+      getPropShorthands,
+    }
+  },
+  code(params) {
+    const { hash, prefix, separator } = params.dependencies
+    const { utility, conditions, getPropShorthands } = params.computed
+
+    return `
     const utilities = "${utility
       .entries()
       .map(([prop, className]) => {
@@ -125,6 +151,6 @@ export function generateCssFn(ctx: Context) {
     css.raw = (...styles) => mergeCss(...styles)
 
     export const { mergeCss, assignCss } = createMergeCss(context)
-    `,
-  }
-}
+    `
+  },
+})

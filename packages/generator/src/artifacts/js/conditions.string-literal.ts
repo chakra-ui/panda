@@ -1,11 +1,16 @@
-import type { Context } from '@pandacss/core'
-import outdent from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateStringLiteralConditions(ctx: Context) {
-  return {
-    js: outdent`
-    ${ctx.file.import('withoutSpace', '../helpers')}
-
+export const stringLiteralConditionsJsArtifact = new ArtifactFile({
+  id: 'css/conditions.js',
+  fileName: 'conditions',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: [],
+  imports: {
+    'helpers.js': ['withoutSpace'],
+  },
+  code() {
+    return `
     export const isCondition = (val) => condRegex.test(val)
 
     const condRegex = /^@|&|&$/
@@ -23,9 +28,6 @@ export function generateStringLiteralConditions(ctx: Context) {
         if (!aa && bb) return -1
         return 0
       })
-    }
-      `,
-    dts: outdent`
-  `,
-  }
-}
+    }`
+  },
+})
