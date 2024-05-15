@@ -1,22 +1,30 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
-import { match } from 'ts-pattern'
+import { ArtifactFile } from '../artifact'
 
-export function generatedJsxHelpers(ctx: Context) {
-  return {
-    js: match(ctx.isTemplateLiteralSyntax)
-      .with(
-        true,
-        () => outdent`
-      export const getDisplayName = (Component) => {
-        if (typeof Component === 'string') return Component
-        return Component?.displayName || Component?.name || 'Component'
-      }`,
-      )
-      .otherwise(
-        () => outdent`
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
+export const jsxHelpersJsArtifact = new ArtifactFile({
+  id: 'jsx/factory-helpers.js',
+  fileName: 'factory-helper',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['is-valid-prop'],
+  imports: (ctx) => {
+    if (ctx.isTemplateLiteralSyntax) return
+    return {
+      'jsx/is-valid-prop.js': ['isCssProperty'],
+    }
+  },
+  computed(ctx) {
+    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) {
+      return `
+    export const getDisplayName = (Component) => {
+      if (typeof Component === 'string') return Component
+      return Component?.displayName || Component?.name || 'Component'
+    }`
+    }
 
+    return `
     export const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
 
     export const composeShouldForwardProps = (tag, shouldForwardProp) =>
@@ -36,8 +44,6 @@ export function generatedJsxHelpers(ctx: Context) {
     export const getDisplayName = (Component) => {
       if (typeof Component === 'string') return Component
       return Component?.displayName || Component?.name || 'Component'
-    }
-  `,
-      ),
-  }
-}
+    }`
+  },
+})

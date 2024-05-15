@@ -22,14 +22,26 @@ interface GenerateCodeParams<TDeps extends RawOrContextFn<ConfigPath[]>, TComput
   computed: TComputed
 }
 
+export type ArtifactImports = Partial<Record<ArtifactFileId, string[]>>
+
 interface ArtifactOptions<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed> {
   id: ArtifactFileId
   fileName: string
-  type: 'js' | 'dts'
+  /**
+   * Will be used to pick the right file extension
+   * for 'js': depending on `config.outExtension` it can be `.js` or `.mjs`
+   * for 'dts': depending on `config.forceConsistentTypeExtension` it can be `.d.ts` or `.d.mts`
+   */
+  type: 'js' | 'dts' | 'json'
   dir: RawOrContextFn<string | string[]>
+  /**
+   * List of config paths that will be used (at some point) to compute the artifact
+   * When using a path that exists in both the config AND also in the `Context`
+   * the value/typing will be the one from the `Context`
+   */
   dependencies: TDeps
-  imports?: RawOrContextFn<Partial<Record<ArtifactFileId, string[]>>>
-  importsType?: RawOrContextFn<Partial<Record<ArtifactFileId, string[]>>>
+  imports?: RawOrContextFn<undefined | ArtifactImports>
+  importsType?: RawOrContextFn<undefined | ArtifactImports>
   computed?: (ctx: Context) => TComputed
   code: (params: GenerateCodeParams<TDeps, TComputed>) => string | undefined
 }
@@ -58,11 +70,6 @@ export class ArtifactFile<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed>
   }
 }
 
-// class Artifact {
-//     constructor (public id: ArtifactId, public files: ArtifactFile<any, any>[]) {
-//     }
-// }
-
 interface Artifact {
   id: ArtifactId
   files: ArtifactFile<any, any>[]
@@ -73,23 +80,29 @@ interface GeneratedArtifact {
   content: string
 }
 
-export class ArtifactGraph {
-  private nodes: Map<ArtifactId, Artifact> = new Map()
+export class ArtifactMap {
+  private artifacts: Map<ArtifactId, Artifact> = new Map()
+  private files: Map<ArtifactFileId, ArtifactFile<any, any>> = new Map()
 
   add(artifact: Artifact) {
-    this.nodes.set(artifact.id, artifact)
+    this.artifacts.set(artifact.id, artifact)
+    artifact.files.forEach((file) => this.files.set(file.id, file))
   }
 
   get(name: ArtifactId) {
-    return this.nodes.get(name)
+    return this.artifacts.get(name)
+  }
+
+  getByFileId(fileId: ArtifactFileId) {
+    return this.files.get(fileId)
   }
 
   filter(ids: ArtifactId[]) {
-    return Array.from(this.nodes.values()).filter((node) => ids.includes(node.id))
+    return Array.from(this.artifacts.values()).filter((node) => ids.includes(node.id))
   }
 
   generate(ctx: Context, ids: ArtifactId[] | undefined) {
-    const stack = ids ? this.filter(ids) : Array.from(this.nodes.values())
+    const stack = ids ? this.filter(ids) : Array.from(this.artifacts.values())
     const seen = new Set<ArtifactId>()
     const contents = [] as Array<GeneratedArtifact>
 

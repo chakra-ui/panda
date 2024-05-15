@@ -1,7 +1,7 @@
 import type { Context } from '@pandacss/core'
 import { Recipes } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
-import type { ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFileId, ArtifactFilters } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { ArtifactFile } from '../artifact'
 
@@ -9,17 +9,17 @@ const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'
 
 export const createRecipeArtifact = new ArtifactFile({
-  id: 'recipes/create-recipe',
+  id: 'recipes/create-recipe.js',
   fileName: 'create-recipe',
   type: 'js',
   dir: (ctx) => ctx.paths.recipe,
   dependencies: ['separator', 'prefix', 'hash', 'theme.breakpoints'],
   imports: {
-    'css/css': ['conditions', 'css', 'cva', 'cx'],
-    'css/conditions': ['finalizeConditions', 'sortConditions'],
-    'css/cva': ['assertCompoundVariant', 'getCompoundVariantCss'],
-    'css/cx': ['cx'],
-    helpers: ['compact', 'createCss', 'splitProps', 'uniq', 'withoutSpace'],
+    'css/css.js': ['conditions', 'css', 'cva', 'cx'],
+    'css/conditions.js': ['finalizeConditions', 'sortConditions'],
+    'css/cva.js': ['assertCompoundVariant', 'getCompoundVariantCss'],
+    'css/cx.js': ['cx'],
+    'helpers.js': ['compact', 'createCss', 'splitProps', 'uniq', 'withoutSpace'],
   },
   computed: (ctx) => {
     return {
@@ -129,14 +129,14 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         Recipes.isSlotRecipeConfig,
         (config) =>
           new ArtifactFile({
-            id: 'recipes/' + dashName,
+            id: ('recipes/' + dashName) as ArtifactFileId,
             fileName: dashName,
             type: 'js',
             dir: (ctx) => ctx.paths.recipe,
             dependencies: [],
             imports: {
-              helpers: ['compact', 'getSlotCompoundVariant', 'memo', 'splitProps'],
-              'create-recipe': ['createRecipe'],
+              'helpers.js': ['compact', 'getSlotCompoundVariant', 'memo', 'splitProps'],
+              'recipes/create-recipe.js': ['createRecipe'],
             },
             code() {
               return `
@@ -171,14 +171,14 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
       .otherwise(
         (config) =>
           new ArtifactFile({
-            id: 'recipes/' + dashName,
+            id: ('recipes/' + dashName) as ArtifactFileId,
             fileName: dashName,
             type: 'js',
             dir: (ctx) => ctx.paths.recipe,
             dependencies: [],
             imports: {
-              helpers: ['memo', 'splitProps'],
-              'create-recipe': ['createRecipe', 'mergeRecipes'],
+              'helpers.js': ['memo', 'splitProps'],
+              'recipes/create-recipe.js': ['createRecipe', 'mergeRecipes'],
             },
             code() {
               return `
@@ -214,13 +214,13 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
       name: dashName,
       js: jsCode,
       dts: new ArtifactFile({
-        id: 'recipes/' + dashName,
+        id: ('recipes/' + dashName) as ArtifactFileId,
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.recipe,
         dependencies: [],
         importsType: {
-          'types/index': ['ConditionalValue', 'DistributiveOmit', 'Pretty'],
+          'types/index.d.ts': ['ConditionalValue', 'DistributiveOmit', 'Pretty'],
         },
         code() {
           return `

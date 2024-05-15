@@ -1,13 +1,18 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateSvaFn(ctx: Context) {
-  return {
-    js: outdent`
-    ${ctx.file.import('compact, getSlotRecipes, memo, splitProps', '../helpers')}
-    ${ctx.file.import('cva', './cva')}
-    ${ctx.file.import('cx', './cx')}
-
+export const svaJsArtifact = new ArtifactFile({
+  id: 'css/sva.js',
+  fileName: 'sva',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: [],
+  imports: {
+    'helpers.js': ['compact', 'getSlotRecipes', 'memo', 'splitProps'],
+    'css/cva.js': ['cva'],
+    'css/cx.js': ['cx'],
+  },
+  code() {
+    return `
     const slotClass = (className, slot) => className + '__' + slot
 
     export function sva(config) {
@@ -44,12 +49,20 @@ export function generateSvaFn(ctx: Context) {
         splitVariantProps,
         getVariantProps,
       })
-    }
-    `,
-    dts: outdent`
-    ${ctx.file.importType('SlotRecipeCreatorFn', '../types/recipe')}
+    }`
+  },
+})
 
-    export declare const sva: SlotRecipeCreatorFn
-    `,
-  }
-}
+export const svaDtsArtifact = new ArtifactFile({
+  id: 'css/sva.d.ts',
+  fileName: 'sva',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: [],
+  importsType: {
+    'types/recipe.d.ts': ['SlotRecipeCreatorFn'],
+  },
+  code() {
+    return `export declare const sva: SlotRecipeCreatorFn`
+  },
+})

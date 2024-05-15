@@ -1,45 +1,75 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
+import { ArtifactFile } from '../artifact'
 import isValidPropJson from '../generated/is-valid-prop.mjs.json' assert { type: 'json' }
 
 const cssPropRegex = /var cssPropertiesStr = ".*?";/
 const memoFnDeclarationRegex = /function memo(.+?)\nvar cssPropertySelectorRegex/s
 
-export function generateIsValidProp(ctx: Context) {
-  if (ctx.isTemplateLiteralSyntax) return
-  let content = isValidPropJson.content
+export const isValidPropJsArtifact = new ArtifactFile({
+  id: 'jsx/is-valid-prop.js',
+  fileName: 'is-valid-prop',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  imports: (ctx) => {
+    const helpersImports = ['splitProps']
 
-  // replace user generated props by those from ctx, `css` or nothing
-  content = content.replace(
-    'var userGeneratedStr = "";',
-    `var userGeneratedStr = "${match(ctx.jsx.styleProps)
-      .with('all', () => Array.from(ctx.properties).join(','))
-      .with('minimal', () => 'css')
-      .with('none', () => '')
-      .exhaustive()}"`,
-  )
-
-  // replace memo function declaration with an import from helpers
-  content = content.replace(memoFnDeclarationRegex, 'var cssPropertySelectorRegex')
-
-  // remove browser CSS props / memo function call when not needed
-  if (ctx.jsx.styleProps === 'minimal' || ctx.jsx.styleProps === 'none') {
-    content = content.replace('/* @__PURE__ */ memo(', '/* @__PURE__ */ (')
-    content = content.replace(cssPropRegex, 'var cssPropertiesStr = "";')
-  } else {
     // we want memo if we're using style props
-    content = ctx.file.import('memo', '../helpers') + '\n' + content
-  }
+    if (ctx.jsx.styleProps === 'all') {
+      helpersImports.push('memo')
+    }
 
-  content = ctx.file.import('splitProps', '../helpers') + '\n' + content
-  content += `export const splitCssProps = (props) =>  splitProps(props, isCssProperty)`
+    return {
+      'helpers.js': helpersImports,
+    }
+  },
+  dependencies: ['splitProps', 'isCssProperty'],
+  computed(ctx) {
+    return {
+      isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
+      jsx: ctx.jsx,
+      properties: ctx.properties,
+    }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
+    let content = isValidPropJson.content
 
-  return {
-    js: content,
-    dts: outdent`
-    import type { DistributiveOmit, HTMLPandaProps, JsxStyleProps, Pretty } from '../types';
+    // replace user generated props by those from ctx, `css` or nothing
+    content = content.replace(
+      'var userGeneratedStr = "";',
+      `var userGeneratedStr = "${match(params.computed.jsx.styleProps)
+        .with('all', () => Array.from(params.computed.properties).join(','))
+        .with('minimal', () => 'css')
+        .with('none', () => '')
+        .exhaustive()}"`,
+    )
 
+    // replace memo function declaration with an import from helpers
+    content = content.replace(memoFnDeclarationRegex, 'var cssPropertySelectorRegex')
+
+    // remove browser CSS props / memo function call when not needed
+    if (params.computed.jsx.styleProps === 'minimal' || params.computed.jsx.styleProps === 'none') {
+      content = content.replace('/* @__PURE__ */ memo(', '/* @__PURE__ */ (')
+      content = content.replace(cssPropRegex, 'var cssPropertiesStr = "";')
+    }
+
+    content += `export const splitCssProps = (props) =>  splitProps(props, isCssProperty)`
+
+    return content
+  },
+})
+
+export const isValidPropDtsArtifact = new ArtifactFile({
+  id: 'jsx/is-valid-prop.d.ts',
+  fileName: 'is-valid-prop',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: [],
+  importsType: {
+    'types/index.d.ts': ['DistributiveOmit', 'JsxStyleProps', 'Pretty'],
+  },
+  code() {
+    return `
     declare const isCssProperty: (value: string) => boolean;
 
     type CssPropKey = keyof JsxStyleProps
@@ -48,6 +78,6 @@ export function generateIsValidProp(ctx: Context) {
     declare const splitCssProps: <T>(props: T) => [JsxStyleProps, OmittedCssProps<T>]
 
     export { isCssProperty, splitCssProps };
-    `,
-  }
-}
+    `
+  },
+})

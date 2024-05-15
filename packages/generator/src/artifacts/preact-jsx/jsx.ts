@@ -1,21 +1,33 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generatePreactJsxFactory(ctx: Context) {
-  const { factoryName, componentName } = ctx.jsx
+export const preactJsxFactoryArtifact = new ArtifactFile({
+  id: 'jsx/factory.js',
+  fileName: 'factory',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsx', 'css/index'],
+  imports: {
+    'jsx/factory-helpers.js': [
+      'defaultShouldForwardProp',
+      'composeShouldForwardProps',
+      'composeCvaFn',
+      'getDisplayName',
+    ],
+    'helpers.js': ['splitProps', 'normalizeHTMLProps'],
+    'css/index.js': ['css', 'cx', 'cva'],
+    'jsx/is-valid-prop.js': ['isCssProperty'],
+  },
+  computed(ctx) {
+    const { factoryName, componentName } = ctx.jsx
+    return { factoryName, componentName }
+  },
+  code(params) {
+    const { componentName, factoryName } = params.computed
 
-  return {
-    js: outdent`
+    return `
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
     import { useMemo } from 'preact/hooks'
-    ${ctx.file.import(
-      'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
-      './factory-helper',
-    )}
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
-    ${ctx.file.import('css, cx, cva', '../css/index')}
-    ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -92,6 +104,6 @@ export function generatePreactJsxFactory(ctx: Context) {
     }
 
     export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
-    `,
-  }
-}
+    `
+  },
+})

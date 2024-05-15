@@ -1,19 +1,30 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateQwikJsxFactory(ctx: Context) {
-  const { factoryName, componentName } = ctx.jsx
+export const qwikJsxFactoryArtifact = new ArtifactFile({
+  id: 'jsx/factory.js',
+  fileName: 'factory',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+  imports: {
+    'jsx/factory-helpers.js': [
+      'defaultShouldForwardProp',
+      'composeShouldForwardProps',
+      'composeCvaFn',
+      'getDisplayName',
+    ],
+    'helpers.js': ['splitProps', 'normalizeHTMLProps'],
+    'css/index.js': ['css', 'cx', 'cva'],
+    'jsx/is-valid-prop.js': ['isCssProperty'],
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { componentName, factoryName } = params.computed.jsx
 
-  return {
-    js: outdent`
+    return `
     import { h } from '@builder.io/qwik'
-    ${ctx.file.import(
-      'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
-      './factory-helper',
-    )}
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
-    ${ctx.file.import('css, cx, cva', '../css/index')}
-    ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -90,6 +101,6 @@ export function generateQwikJsxFactory(ctx: Context) {
 
     export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
 
-    `,
-  }
-}
+    `
+  },
+})

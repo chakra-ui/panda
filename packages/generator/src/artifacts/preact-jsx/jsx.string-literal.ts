@@ -1,15 +1,25 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generatePreactJsxStringLiteralFactory(ctx: Context) {
-  const { factoryName, componentName } = ctx.jsx
+export const preactJsxStringLiteralFactoryJsArtifact = new ArtifactFile({
+  id: 'jsx/factory.js',
+  fileName: 'factory',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsx', 'css/index'],
+  imports: {
+    'jsx/factory-helpers.js': ['getDisplayName'],
+    'css/index.js': ['css', 'cx'],
+  },
+  computed(ctx) {
+    const { factoryName, componentName } = ctx.jsx
+    return { factoryName, componentName }
+  },
+  code(params) {
+    const { componentName, factoryName } = params.computed
 
-  return {
-    js: outdent`
+    return `
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
-    ${ctx.file.import('getDisplayName', './factory-helper')}
-    ${ctx.file.import('css, cx', '../css/index')}
 
     function createStyledFn(Dynamic) {
       const __base__ = Dynamic.__base__ || Dynamic
@@ -57,6 +67,6 @@ export function generatePreactJsxStringLiteralFactory(ctx: Context) {
     }
 
     export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
-    `,
-  }
-}
+    `
+  },
+})

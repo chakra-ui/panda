@@ -46,7 +46,7 @@ export class OutputEngine {
         const absPath = this.path.join(...dir, file)
 
         logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
-        return this.fs.writeFile(absPath, await prettier.format(code, { parser: 'typescript' }))
+        return this.fs.writeFile(absPath, await prettier.format(code, { filepath: absPath }))
       }),
     )
   }

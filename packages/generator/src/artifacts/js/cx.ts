@@ -1,8 +1,13 @@
-import outdent from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateCx() {
-  return {
-    js: outdent`
+export const cxJsArtifact = new ArtifactFile({
+  id: 'css/cx.js',
+  fileName: 'cx',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: [],
+  code() {
+    return `
     function cx() {
       let str = '',
         i = 0,
@@ -18,12 +23,22 @@ export function generateCx() {
     }
 
     export { cx }
-  `,
-    dts: outdent`
-       type Argument = string | boolean | null | undefined
+  `
+  },
+})
 
-       /** Conditionally join classNames into a single string */
-       export declare function cx(...args: Argument[]): string
-      `,
-  }
-}
+export const cxDtsArtifact = new ArtifactFile({
+  id: 'css/cx.d.ts',
+  fileName: 'cx',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: [],
+  code() {
+    return `
+    type Argument = string | boolean | null | undefined
+
+    /** Conditionally join classNames into a single string */
+    export declare function cx(...args: Argument[]): string
+    `
+  },
+})

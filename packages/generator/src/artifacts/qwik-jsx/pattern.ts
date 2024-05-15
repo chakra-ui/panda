@@ -1,7 +1,8 @@
 import type { Context } from '@pandacss/core'
-import type { ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFileId, ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
+import { ArtifactFile, type ArtifactImports } from '../artifact'
 
 export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
@@ -14,66 +15,97 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
 
     return {
       name: dashName,
-      js: outdent`
-      import { h } from '@builder.io/qwik'
-      ${jsxStyleProps === 'minimal' ? ctx.file.import('mergeCss', '../css/css') : ''}
-      ${ctx.file.import('splitProps', '../helpers')}
-      ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
-      ${ctx.file.import(factoryName, './factory')}
+      js: new ArtifactFile({
+        id: `patterns/${dashName}.js` as ArtifactFileId,
+        fileName: dashName,
+        type: 'js',
+        dir: (ctx) => ctx.paths.jsx,
+        dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        imports: () => {
+          const conditionals = {} as ArtifactImports
+          if (jsxStyleProps === 'minimal') {
+            conditionals['css/css.js'] = ['mergeCss']
+          }
 
-      export const ${jsxName} = /* @__PURE__ */ function ${jsxName}(props) {
-        ${match(jsxStyleProps)
-          .with(
-            'none',
-            () => outdent`
-          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
-          
-          const styleProps = ${styleFnName}(patternProps)
-          const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
-          
-          return h(Comp, restProps)
-          `,
-          )
-          .with(
-            'minimal',
-            () => outdent`
-          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
-          
-          const styleProps = ${styleFnName}(patternProps)
-          const cssProps = { css: mergeCss(styleProps, props.css) }
-          const mergedProps = { ...restProps, ...cssProps }
+          return {
+            ...conditionals,
+            'jsx/factory.js': [factoryName],
+            'helpers.js': ['splitProps'],
+          }
+        },
+        code() {
+          return `
+          import { h } from '@builder.io/qwik'
+          ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
 
-          return h(${factoryName}.${jsxElement}, mergedProps)
-          `,
-          )
-          .with(
-            'all',
-            () => outdent`
-          const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
-          
-          const styleProps = ${styleFnName}(patternProps)
-          const mergedProps = { ...styleProps, ...restProps }
-          
-          return h(${factoryName}.${jsxElement}, mergedProps)
-          `,
-          )
-          .exhaustive()}
-      }
-      `,
+          export const ${jsxName} = /* @__PURE__ */ function ${jsxName}(props) {
+            ${match(jsxStyleProps)
+              .with(
+                'none',
+                () => outdent`
+              const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
-      dts: outdent`
-      import type { Component } from '@builder.io/qwik'
-      ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
-      ${ctx.file.importType(typeName, '../types/jsx')}
-      ${ctx.file.importType('Assign, DistributiveOmit', '../types/system-types')}
+              const styleProps = ${styleFnName}(patternProps)
+              const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
 
-      export interface ${upperName}Props extends Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
-        blocklistType || '""'
-      }>> {}
+              return h(Comp, restProps)
+              `,
+              )
+              .with(
+                'minimal',
+                () => outdent`
+              const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
-      ${ctx.file.jsDocComment(description, { deprecated })}
-      export declare const ${jsxName}: Component<${upperName}Props>
-      `,
+              const styleProps = ${styleFnName}(patternProps)
+              const cssProps = { css: mergeCss(styleProps, props.css) }
+              const mergedProps = { ...restProps, ...cssProps }
+
+              return h(${factoryName}.${jsxElement}, mergedProps)
+              `,
+              )
+              .with(
+                'all',
+                () => outdent`
+              const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+
+              const styleProps = ${styleFnName}(patternProps)
+              const mergedProps = { ...styleProps, ...restProps }
+
+              return h(${factoryName}.${jsxElement}, mergedProps)
+              `,
+              )
+              .exhaustive()}
+          }
+          `
+        },
+      }),
+
+      dts: new ArtifactFile({
+        id: `patterns/${dashName}.d.ts` as ArtifactFileId,
+        fileName: dashName,
+        type: 'dts',
+        dir: (ctx) => ctx.paths.jsx,
+        dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        imports: {
+          'types/system-types.d.ts': ['DistributiveOmit'],
+          'types/jsx.d.ts': [typeName],
+        },
+        code() {
+          return `
+          import type { Component } from '@builder.io/qwik'
+          ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
+          ${ctx.file.importType(typeName, '../types/jsx')}
+          ${ctx.file.importType('Assign, DistributiveOmit', '../types/system-types')}
+
+          export interface ${upperName}Props extends Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
+            blocklistType || '""'
+          }>> {}
+
+          ${ctx.file.jsDocComment(description, { deprecated })}
+          export declare const ${jsxName}: Component<${upperName}Props>
+          `
+        },
+      }),
     }
   })
 }
