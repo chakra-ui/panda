@@ -1,4 +1,12 @@
-const configs = ['.ts', '.js', '.mts', '.mjs', '.cts', '.cjs']
-const pandaConfigRegex = new RegExp(`panda.config(${configs.join('|')})$`)
+const configName = 'panda'
 
-export const isPandaConfig = (file: string) => pandaConfigRegex.test(file)
+const pandaConfigFiles = new Set([
+  `${configName}.config.ts`,
+  `${configName}.config.js`,
+  `${configName}.config.mts`,
+  `${configName}.config.mjs`,
+  `${configName}.config.cts`,
+  `${configName}.config.cjs`,
+])
+
+export const isPandaConfig = (file: string) => pandaConfigFiles.has(file)
