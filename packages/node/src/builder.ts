@@ -1,7 +1,7 @@
 import { findConfig, getConfigDependencies } from '@pandacss/config'
 import { optimizeCss } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
-import { CacheMap, PandaError, uniq } from '@pandacss/shared'
+import { PandaError, uniq } from '@pandacss/shared'
 import type { DiffConfigResult } from '@pandacss/types'
 import { existsSync, statSync } from 'fs'
 import { normalize, resolve } from 'path'
@@ -11,7 +11,7 @@ import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 import { parseDependency } from './parse-dependency'
 
-const fileModifiedMap = new CacheMap<string, number>()
+const fileModifiedMap = new Map<string, number>()
 
 interface FileChanges {
   changes: Map<string, FileMeta>
