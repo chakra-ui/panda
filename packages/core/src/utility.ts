@@ -1,5 +1,4 @@
 import {
-  CacheMap,
   compact,
   getArbitraryValue,
   hypenateProperty,
@@ -43,12 +42,12 @@ export class Utility {
   /**
    * [cache] The map of property names to their resolved class names
    */
-  classNames = new CacheMap<string, string>()
+  classNames = new Map<string, string>()
 
   /**
    * [cache] The map of the property to their resolved styless
    */
-  styles = new CacheMap<string, Dict>()
+  styles = new Map<string, Dict>()
 
   /**
    * Map of shorthand properties to their longhand properties
