@@ -101,7 +101,6 @@ export const writeAnalyzeJSON = (filePath: string, result: ReturnType<typeof ana
         utilities: ctx.config.utilities,
         conditions: ctx.config.conditions,
         shorthands: ctx.utility.shorthands,
-        parserOptions: ctx.parserOptions,
       }),
       analyzeResultSerializer,
       2,
