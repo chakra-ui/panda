@@ -2069,11 +2069,11 @@ describe('staticCss', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
         .\\--bleed-x_token\\(spacing\\.0\\,_0\\) {
-          --bleed-x: var(--spacing-0, \\30);
+          --bleed-x: var(--spacing-0, 0);
       }
 
         .\\--bleed-y_token\\(spacing\\.0\\,_0\\) {
-          --bleed-y: var(--spacing-0, \\30);
+          --bleed-y: var(--spacing-0, 0);
       }
 
         .mx_calc\\(var\\(--bleed-x\\,_0\\)_\\*_-1\\) {
@@ -2085,123 +2085,123 @@ describe('staticCss', () => {
       }
 
         .\\--bleed-x_token\\(spacing\\.1\\,_1\\) {
-          --bleed-x: var(--spacing-1, \\31);
+          --bleed-x: var(--spacing-1, 1);
       }
 
         .\\--bleed-x_token\\(spacing\\.2\\,_2\\) {
-          --bleed-x: var(--spacing-2, \\32);
+          --bleed-x: var(--spacing-2, 2);
       }
 
         .\\--bleed-x_token\\(spacing\\.3\\,_3\\) {
-          --bleed-x: var(--spacing-3, \\33);
+          --bleed-x: var(--spacing-3, 3);
       }
 
         .\\--bleed-x_token\\(spacing\\.4\\,_4\\) {
-          --bleed-x: var(--spacing-4, \\34);
+          --bleed-x: var(--spacing-4, 4);
       }
 
         .\\--bleed-x_token\\(spacing\\.5\\,_5\\) {
-          --bleed-x: var(--spacing-5, \\35);
+          --bleed-x: var(--spacing-5, 5);
       }
 
         .\\--bleed-x_token\\(spacing\\.6\\,_6\\) {
-          --bleed-x: var(--spacing-6, \\36);
+          --bleed-x: var(--spacing-6, 6);
       }
 
         .\\--bleed-x_token\\(spacing\\.7\\,_7\\) {
-          --bleed-x: var(--spacing-7, \\37);
+          --bleed-x: var(--spacing-7, 7);
       }
 
         .\\--bleed-x_token\\(spacing\\.8\\,_8\\) {
-          --bleed-x: var(--spacing-8, \\38);
+          --bleed-x: var(--spacing-8, 8);
       }
 
         .\\--bleed-x_token\\(spacing\\.9\\,_9\\) {
-          --bleed-x: var(--spacing-9, \\39);
+          --bleed-x: var(--spacing-9, 9);
       }
 
         .\\--bleed-x_token\\(spacing\\.10\\,_10\\) {
-          --bleed-x: var(--spacing-10, \\310);
+          --bleed-x: var(--spacing-10, 10);
       }
 
         .\\--bleed-x_token\\(spacing\\.11\\,_11\\) {
-          --bleed-x: var(--spacing-11, \\311);
+          --bleed-x: var(--spacing-11, 11);
       }
 
         .\\--bleed-x_token\\(spacing\\.12\\,_12\\) {
-          --bleed-x: var(--spacing-12, \\312);
+          --bleed-x: var(--spacing-12, 12);
       }
 
         .\\--bleed-x_token\\(spacing\\.14\\,_14\\) {
-          --bleed-x: var(--spacing-14, \\314);
+          --bleed-x: var(--spacing-14, 14);
       }
 
         .\\--bleed-x_token\\(spacing\\.16\\,_16\\) {
-          --bleed-x: var(--spacing-16, \\316);
+          --bleed-x: var(--spacing-16, 16);
       }
 
         .\\--bleed-x_token\\(spacing\\.20\\,_20\\) {
-          --bleed-x: var(--spacing-20, \\320);
+          --bleed-x: var(--spacing-20, 20);
       }
 
         .\\--bleed-x_token\\(spacing\\.24\\,_24\\) {
-          --bleed-x: var(--spacing-24, \\324);
+          --bleed-x: var(--spacing-24, 24);
       }
 
         .\\--bleed-x_token\\(spacing\\.28\\,_28\\) {
-          --bleed-x: var(--spacing-28, \\328);
+          --bleed-x: var(--spacing-28, 28);
       }
 
         .\\--bleed-x_token\\(spacing\\.32\\,_32\\) {
-          --bleed-x: var(--spacing-32, \\332);
+          --bleed-x: var(--spacing-32, 32);
       }
 
         .\\--bleed-x_token\\(spacing\\.36\\,_36\\) {
-          --bleed-x: var(--spacing-36, \\336);
+          --bleed-x: var(--spacing-36, 36);
       }
 
         .\\--bleed-x_token\\(spacing\\.40\\,_40\\) {
-          --bleed-x: var(--spacing-40, \\340);
+          --bleed-x: var(--spacing-40, 40);
       }
 
         .\\--bleed-x_token\\(spacing\\.44\\,_44\\) {
-          --bleed-x: var(--spacing-44, \\344);
+          --bleed-x: var(--spacing-44, 44);
       }
 
         .\\--bleed-x_token\\(spacing\\.48\\,_48\\) {
-          --bleed-x: var(--spacing-48, \\348);
+          --bleed-x: var(--spacing-48, 48);
       }
 
         .\\--bleed-x_token\\(spacing\\.52\\,_52\\) {
-          --bleed-x: var(--spacing-52, \\352);
+          --bleed-x: var(--spacing-52, 52);
       }
 
         .\\--bleed-x_token\\(spacing\\.56\\,_56\\) {
-          --bleed-x: var(--spacing-56, \\356);
+          --bleed-x: var(--spacing-56, 56);
       }
 
         .\\--bleed-x_token\\(spacing\\.60\\,_60\\) {
-          --bleed-x: var(--spacing-60, \\360);
+          --bleed-x: var(--spacing-60, 60);
       }
 
         .\\--bleed-x_token\\(spacing\\.64\\,_64\\) {
-          --bleed-x: var(--spacing-64, \\364);
+          --bleed-x: var(--spacing-64, 64);
       }
 
         .\\--bleed-x_token\\(spacing\\.72\\,_72\\) {
-          --bleed-x: var(--spacing-72, \\372);
+          --bleed-x: var(--spacing-72, 72);
       }
 
         .\\--bleed-x_token\\(spacing\\.80\\,_80\\) {
-          --bleed-x: var(--spacing-80, \\380);
+          --bleed-x: var(--spacing-80, 80);
       }
 
         .\\--bleed-x_token\\(spacing\\.96\\,_96\\) {
-          --bleed-x: var(--spacing-96, \\396);
+          --bleed-x: var(--spacing-96, 96);
       }
 
         .\\--bleed-x_token\\(spacing\\.auto\\,_auto\\) {
-          --bleed-x: var(spacing\\.auto, auto);
+          --bleed-x: auto;
       }
 
         .\\--bleed-x_token\\(spacing\\.0\\.5\\,_0\\.5\\) {
@@ -2225,119 +2225,119 @@ describe('staticCss', () => {
       }
 
         .\\--bleed-x_token\\(spacing\\.-1\\,_-1\\) {
-          --bleed-x: calc(var(--spacing-1) * -1, -\\31);
+          --bleed-x: calc(var(--spacing-1) * -1, -1);
       }
 
         .\\--bleed-x_token\\(spacing\\.-2\\,_-2\\) {
-          --bleed-x: calc(var(--spacing-2) * -1, -\\32);
+          --bleed-x: calc(var(--spacing-2) * -1, -2);
       }
 
         .\\--bleed-x_token\\(spacing\\.-3\\,_-3\\) {
-          --bleed-x: calc(var(--spacing-3) * -1, -\\33);
+          --bleed-x: calc(var(--spacing-3) * -1, -3);
       }
 
         .\\--bleed-x_token\\(spacing\\.-4\\,_-4\\) {
-          --bleed-x: calc(var(--spacing-4) * -1, -\\34);
+          --bleed-x: calc(var(--spacing-4) * -1, -4);
       }
 
         .\\--bleed-x_token\\(spacing\\.-5\\,_-5\\) {
-          --bleed-x: calc(var(--spacing-5) * -1, -\\35);
+          --bleed-x: calc(var(--spacing-5) * -1, -5);
       }
 
         .\\--bleed-x_token\\(spacing\\.-6\\,_-6\\) {
-          --bleed-x: calc(var(--spacing-6) * -1, -\\36);
+          --bleed-x: calc(var(--spacing-6) * -1, -6);
       }
 
         .\\--bleed-x_token\\(spacing\\.-7\\,_-7\\) {
-          --bleed-x: calc(var(--spacing-7) * -1, -\\37);
+          --bleed-x: calc(var(--spacing-7) * -1, -7);
       }
 
         .\\--bleed-x_token\\(spacing\\.-8\\,_-8\\) {
-          --bleed-x: calc(var(--spacing-8) * -1, -\\38);
+          --bleed-x: calc(var(--spacing-8) * -1, -8);
       }
 
         .\\--bleed-x_token\\(spacing\\.-9\\,_-9\\) {
-          --bleed-x: calc(var(--spacing-9) * -1, -\\39);
+          --bleed-x: calc(var(--spacing-9) * -1, -9);
       }
 
         .\\--bleed-x_token\\(spacing\\.-10\\,_-10\\) {
-          --bleed-x: calc(var(--spacing-10) * -1, -\\310);
+          --bleed-x: calc(var(--spacing-10) * -1, -10);
       }
 
         .\\--bleed-x_token\\(spacing\\.-11\\,_-11\\) {
-          --bleed-x: calc(var(--spacing-11) * -1, -\\311);
+          --bleed-x: calc(var(--spacing-11) * -1, -11);
       }
 
         .\\--bleed-x_token\\(spacing\\.-12\\,_-12\\) {
-          --bleed-x: calc(var(--spacing-12) * -1, -\\312);
+          --bleed-x: calc(var(--spacing-12) * -1, -12);
       }
 
         .\\--bleed-x_token\\(spacing\\.-14\\,_-14\\) {
-          --bleed-x: calc(var(--spacing-14) * -1, -\\314);
+          --bleed-x: calc(var(--spacing-14) * -1, -14);
       }
 
         .\\--bleed-x_token\\(spacing\\.-16\\,_-16\\) {
-          --bleed-x: calc(var(--spacing-16) * -1, -\\316);
+          --bleed-x: calc(var(--spacing-16) * -1, -16);
       }
 
         .\\--bleed-x_token\\(spacing\\.-20\\,_-20\\) {
-          --bleed-x: calc(var(--spacing-20) * -1, -\\320);
+          --bleed-x: calc(var(--spacing-20) * -1, -20);
       }
 
         .\\--bleed-x_token\\(spacing\\.-24\\,_-24\\) {
-          --bleed-x: calc(var(--spacing-24) * -1, -\\324);
+          --bleed-x: calc(var(--spacing-24) * -1, -24);
       }
 
         .\\--bleed-x_token\\(spacing\\.-28\\,_-28\\) {
-          --bleed-x: calc(var(--spacing-28) * -1, -\\328);
+          --bleed-x: calc(var(--spacing-28) * -1, -28);
       }
 
         .\\--bleed-x_token\\(spacing\\.-32\\,_-32\\) {
-          --bleed-x: calc(var(--spacing-32) * -1, -\\332);
+          --bleed-x: calc(var(--spacing-32) * -1, -32);
       }
 
         .\\--bleed-x_token\\(spacing\\.-36\\,_-36\\) {
-          --bleed-x: calc(var(--spacing-36) * -1, -\\336);
+          --bleed-x: calc(var(--spacing-36) * -1, -36);
       }
 
         .\\--bleed-x_token\\(spacing\\.-40\\,_-40\\) {
-          --bleed-x: calc(var(--spacing-40) * -1, -\\340);
+          --bleed-x: calc(var(--spacing-40) * -1, -40);
       }
 
         .\\--bleed-x_token\\(spacing\\.-44\\,_-44\\) {
-          --bleed-x: calc(var(--spacing-44) * -1, -\\344);
+          --bleed-x: calc(var(--spacing-44) * -1, -44);
       }
 
         .\\--bleed-x_token\\(spacing\\.-48\\,_-48\\) {
-          --bleed-x: calc(var(--spacing-48) * -1, -\\348);
+          --bleed-x: calc(var(--spacing-48) * -1, -48);
       }
 
         .\\--bleed-x_token\\(spacing\\.-52\\,_-52\\) {
-          --bleed-x: calc(var(--spacing-52) * -1, -\\352);
+          --bleed-x: calc(var(--spacing-52) * -1, -52);
       }
 
         .\\--bleed-x_token\\(spacing\\.-56\\,_-56\\) {
-          --bleed-x: calc(var(--spacing-56) * -1, -\\356);
+          --bleed-x: calc(var(--spacing-56) * -1, -56);
       }
 
         .\\--bleed-x_token\\(spacing\\.-60\\,_-60\\) {
-          --bleed-x: calc(var(--spacing-60) * -1, -\\360);
+          --bleed-x: calc(var(--spacing-60) * -1, -60);
       }
 
         .\\--bleed-x_token\\(spacing\\.-64\\,_-64\\) {
-          --bleed-x: calc(var(--spacing-64) * -1, -\\364);
+          --bleed-x: calc(var(--spacing-64) * -1, -64);
       }
 
         .\\--bleed-x_token\\(spacing\\.-72\\,_-72\\) {
-          --bleed-x: calc(var(--spacing-72) * -1, -\\372);
+          --bleed-x: calc(var(--spacing-72) * -1, -72);
       }
 
         .\\--bleed-x_token\\(spacing\\.-80\\,_-80\\) {
-          --bleed-x: calc(var(--spacing-80) * -1, -\\380);
+          --bleed-x: calc(var(--spacing-80) * -1, -80);
       }
 
         .\\--bleed-x_token\\(spacing\\.-96\\,_-96\\) {
-          --bleed-x: calc(var(--spacing-96) * -1, -\\396);
+          --bleed-x: calc(var(--spacing-96) * -1, -96);
       }
 
         .\\--bleed-x_token\\(spacing\\.-0\\.5\\,_-0\\.5\\) {
@@ -2357,7 +2357,7 @@ describe('staticCss', () => {
       }
 
         .\\--bleed-x_token\\(spacing\\.-gutter\\,_-gutter\\) {
-          --bleed-x: calc(var(--spacing-gutter) * -1, \\-gutter);
+          --bleed-x: calc(var(--spacing-gutter) * -1, -gutter);
       }
       }"
     `)
