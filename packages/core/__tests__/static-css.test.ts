@@ -890,11 +890,11 @@ describe('static-css', () => {
       }
 
         .\\--bleed-x_token\\(spacing\\.20\\,_20\\) {
-          --bleed-x: var(--spacing-20, \\320);
+          --bleed-x: var(--spacing-20, 20);
       }
 
         .\\--bleed-y_token\\(spacing\\.0\\,_0\\) {
-          --bleed-y: var(spacing\\.0, \\30);
+          --bleed-y: 0;
       }
 
         .mx_calc\\(var\\(--bleed-x\\,_0\\)_\\*_-1\\) {
@@ -906,27 +906,27 @@ describe('static-css', () => {
       }
 
         .\\--bleed-x_token\\(spacing\\.40\\,_40\\) {
-          --bleed-x: var(--spacing-40, \\340);
+          --bleed-x: var(--spacing-40, 40);
       }
 
         .\\--bleed-x_token\\(spacing\\.60\\,_60\\) {
-          --bleed-x: var(--spacing-60, \\360);
+          --bleed-x: var(--spacing-60, 60);
       }
 
         .\\--bleed-x_token\\(spacing\\.auto\\,_auto\\) {
-          --bleed-x: var(spacing\\.auto, auto);
+          --bleed-x: auto;
       }
 
         .\\--bleed-x_token\\(spacing\\.-20\\,_-20\\) {
-          --bleed-x: calc(var(--spacing-20) * -1, -\\320);
+          --bleed-x: calc(var(--spacing-20) * -1, -20);
       }
 
         .\\--bleed-x_token\\(spacing\\.-40\\,_-40\\) {
-          --bleed-x: calc(var(--spacing-40) * -1, -\\340);
+          --bleed-x: calc(var(--spacing-40) * -1, -40);
       }
 
         .\\--bleed-x_token\\(spacing\\.-60\\,_-60\\) {
-          --bleed-x: calc(var(--spacing-60) * -1, -\\360);
+          --bleed-x: calc(var(--spacing-60) * -1, -60);
       }
 
         .\\--thickness_1px {

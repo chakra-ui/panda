@@ -2794,7 +2794,7 @@ describe('extract to css output pipeline', () => {
       }
 
         .grid-cols_repeat\\(auto-fit\\,_minmax\\(token\\(sizes\\.20\\,_20\\)\\,_1fr\\)\\) {
-          grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, \\320), 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, 20), 1fr));
       }
       }"
     `)
