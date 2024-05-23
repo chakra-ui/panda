@@ -68,9 +68,8 @@ export type CompositionStyleObject<Property extends string> = Nested<FilterStyle
 interface WithCss {
   css?: SystemStyleObject | SystemStyleObject[]
 }
-type StyleProps = SystemStyleObject & WithCss
 
-export type JsxStyleProps = StyleProps & WithCss
+export type JsxStyleProps = SystemStyleObject & WithCss
 
 export interface PatchedHTMLProps {
   htmlWidth?: string | number
