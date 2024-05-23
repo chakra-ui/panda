@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
+import React from 'react'
 import { Box, Stack, styled } from '../../styled-system-jsx-minimal/jsx'
 import { render } from '@testing-library/react'
 import { buttonWithCompoundVariants } from '../../styled-system-jsx-none/recipes'
-import React from 'react'
 
 describe('styled factory - cva', () => {
   const Button = styled('button', {
@@ -83,7 +83,6 @@ describe('styled factory - cva', () => {
 
   test('style prop', () => {
     const { container } = render(
-      // @ts-expect-error
       <Button className="custom-btn" mx="2">
         Click me
       </Button>,
@@ -101,7 +100,6 @@ describe('styled factory - cva', () => {
 
   test('style prop with variant', () => {
     const { container } = render(
-      // @ts-expect-error
       <Button className="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
@@ -151,7 +149,6 @@ describe('styled factory - cva', () => {
 
   test('all together', () => {
     const { container } = render(
-      // @ts-expect-error
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
       </Button>,
@@ -213,7 +210,6 @@ describe('styled factory - button recipe', () => {
 
   test('style prop', () => {
     const { container } = render(
-      // @ts-expect-error
       <Button className="custom-btn" mx="2">
         Click me
       </Button>,
@@ -231,7 +227,6 @@ describe('styled factory - button recipe', () => {
 
   test('style prop with variant', () => {
     const { container } = render(
-      // @ts-expect-error
       <Button className="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
@@ -281,7 +276,6 @@ describe('styled factory - button recipe', () => {
 
   test('all together', () => {
     const { container } = render(
-      // @ts-expect-error
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
       </Button>,
