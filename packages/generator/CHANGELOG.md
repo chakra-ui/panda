@@ -1,5 +1,19 @@
 # @pandacss/generator
 
+## 0.39.2
+
+### Patch Changes
+
+- 39c305f: Vue JSX: Fix issue where using custom `jsxFactory` name causes a runtime error
+- Updated dependencies [1f636eb]
+- Updated dependencies [8b07cdf]
+  - @pandacss/shared@0.39.2
+  - @pandacss/core@0.39.2
+  - @pandacss/token-dictionary@0.39.2
+  - @pandacss/types@0.39.2
+  - @pandacss/is-valid-prop@0.39.2
+  - @pandacss/logger@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes

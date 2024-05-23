@@ -1,5 +1,25 @@
 # @pandacss/node
 
+## 0.39.2
+
+### Patch Changes
+
+- 1f636eb: Fix a cache issue that leads to HMR growing slower in some cases
+- af15ae9: Fix `panda analyze` JSON output serialization
+- Updated dependencies [39c305f]
+- Updated dependencies [2f63a4c]
+- Updated dependencies [1f636eb]
+- Updated dependencies [8b07cdf]
+  - @pandacss/generator@0.39.2
+  - @pandacss/config@0.39.2
+  - @pandacss/shared@0.39.2
+  - @pandacss/core@0.39.2
+  - @pandacss/token-dictionary@0.39.2
+  - @pandacss/parser@0.39.2
+  - @pandacss/extractor@0.39.2
+  - @pandacss/types@0.39.2
+  - @pandacss/logger@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes
