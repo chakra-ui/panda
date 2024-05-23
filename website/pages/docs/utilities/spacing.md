@@ -45,8 +45,8 @@ Use the `padding{X|Y}` properties to apply padding on the horizontal and vertica
 | `pr`, `paddingRight`  | `padding-right`  | `spacing`      |
 | `pt`, `paddingTop`    | `padding-top`    | `spacing`      |
 | `pb`, `paddingBottom` | `padding-bottom` | `spacing`      |
-| `px`, `paddingX`      | `padding-left`   | `spacing`      |
-| `py`, `paddingY`      | `padding-top`    | `spacing`      |
+| `px`, `paddingX`      | `padding-inline` | `spacing`      |
+| `py`, `paddingY`      | `padding-block`  | `spacing`      |
 
 ### Logical properties
 
