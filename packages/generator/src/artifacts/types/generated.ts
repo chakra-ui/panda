@@ -9,6 +9,7 @@ import selectors from '../generated/selectors.d.ts.json' assert { type: 'json' }
 import staticCss from '../generated/static-css.d.ts.json' assert { type: 'json' }
 import system from '../generated/system-types.d.ts.json' assert { type: 'json' }
 
+// TODO
 export function getGeneratedTypes(ctx: Context) {
   /**
    * convert import type { CompositionStyleObject } from './system-types'
@@ -29,6 +30,7 @@ export function getGeneratedTypes(ctx: Context) {
 }
 
 const jsxStyleProps = 'export type JsxStyleProps = StyleProps & WithCss'
+// TODO
 export function getGeneratedSystemTypes(ctx: Context) {
   /**
    * convert import type { CompositionStyleObject } from './system-types'

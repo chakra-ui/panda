@@ -1,19 +1,31 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateSolidJsxFactory(ctx: Context) {
-  const { componentName, factoryName } = ctx.jsx
-  return {
-    js: outdent`
+export const solidJsxFactoryArtifact = new ArtifactFile({
+  id: 'jsx/factory.js',
+  fileName: 'factory',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsxFactory', 'jsxFramework'],
+  imports: {
+    'jsx/factory-helpers.js': [
+      'composeCvaFn',
+      'composeShouldForwardProps',
+      'defaultShouldForwardProp',
+      'getDisplayName',
+    ],
+    'helpers.js': ['normalizeHTMLProps'],
+    'css/index.js': ['css', 'cx', 'cva'],
+    'jsx/is-valid-prop.js': ['isCssProperty'],
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { componentName, factoryName } = params.computed.jsx
+
+    return `
     import { createMemo, mergeProps, splitProps } from 'solid-js'
     import { Dynamic, createComponent } from 'solid-js/web'
-    ${ctx.file.import('css, cx, cva', '../css/index')}
-    ${ctx.file.import('normalizeHTMLProps', '../helpers')}
-    ${ctx.file.import(
-      'composeCvaFn, composeShouldForwardProps, defaultShouldForwardProp, getDisplayName',
-      './factory-helper',
-    )}
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
     function styledFn(element, configOrCva = {}, options = {}) {
       const cvaFn =
@@ -134,6 +146,6 @@ export function generateSolidJsxFactory(ctx: Context) {
     }
 
     export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
-    `,
-  }
-}
+    `
+  },
+})

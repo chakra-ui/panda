@@ -1,67 +1,95 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateSolidJsxTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName, variantName } = ctx.jsx
+export const solidJsxFactoryArtifact = new ArtifactFile({
+  id: 'jsx/factory.d.ts',
+  fileName: 'factory',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['jsxFactory'],
+  imports: (ctx) => ({
+    'types/jsx.d.ts': [ctx.jsx.upperName],
+  }),
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { factoryName, upperName } = params.computed.jsx
 
-  return {
-    jsxFactory: outdent`
-${ctx.file.importType(upperName, '../types/jsx')}
-export declare const ${factoryName}: ${upperName}
-    `,
-    jsxType: outdent`
-import type { ComponentProps, Component, JSX } from 'solid-js'
-${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
-${ctx.file.importType(
-  'Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty',
-  './system-types',
-)}
+    return `export declare const ${factoryName}: ${upperName}`
+  },
+})
 
-interface Dict {
-  [k: string]: unknown
-}
+export const solidJsxTypesArtifact = new ArtifactFile({
+  id: 'types/jsx.d.ts',
+  fileName: 'jsx',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['jsxFactory'],
+  imports: {
+    'types/recipe.d.ts': ['RecipeDefinition', 'RecipeSelection', 'RecipeVariantRecord'],
+    'types/system-types.d.ts': [
+      'Assign',
+      'DistributiveOmit',
+      'DistributiveUnion',
+      'JsxHTMLProps',
+      'JsxStyleProps',
+      'Pretty',
+    ],
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { componentName, upperName, typeName, variantName } = params.computed.jsx
 
-export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
+    return `
+    import type { ComponentProps, Component, JSX } from 'solid-js'
 
-export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
-  (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
-  displayName?: string
-}
+    interface Dict {
+      [k: string]: unknown
+    }
 
-interface RecipeFn {
-  __type: any
-}
+    export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
 
-export interface JsxFactoryOptions<TProps extends Dict> {
-  dataAttr?: boolean
-  defaultProps?: TProps
-  shouldForwardProp?(prop: string, variantKeys: string[]): boolean
-}
+    export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
+      (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
+      displayName?: string
+    }
 
-export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
+    interface RecipeFn {
+      __type: any
+    }
 
-export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
-  ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
-  : ${componentName}<T, P>
+    export interface JsxFactoryOptions<TProps extends Dict> {
+      dataAttr?: boolean
+      defaultProps?: TProps
+      shouldForwardProp?(prop: string, variantKeys: string[]): boolean
+    }
 
-export interface JsxFactory {
-  <T extends ElementType>(component: T): ${componentName}<T, {}>
-  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<
-    T,
-    RecipeSelection<P>
-  >
-  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): JsxElement<T, P['__type']>
-}
+    export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
 
-export type JsxElements = {
-  [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}>
-}
+    export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
+      ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
+      : ${componentName}<T, P>
 
-export type ${upperName} = JsxFactory & JsxElements
+    export interface JsxFactory {
+      <T extends ElementType>(component: T): ${componentName}<T, {}>
+      <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<
+        T,
+        RecipeSelection<P>
+      >
+      <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): JsxElement<T, P['__type']>
+    }
 
-export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
+    export type JsxElements = {
+      [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}>
+    }
 
-export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
-  `,
-  }
-}
+    export type ${upperName} = JsxFactory & JsxElements
+
+    export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
+
+    export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
+      `
+  },
+})

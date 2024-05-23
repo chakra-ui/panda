@@ -1,39 +1,61 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateSolidJsxStringLiteralTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName } = ctx.jsx
+export const solidJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
+  id: 'jsx/factory.d.ts',
+  fileName: 'factory',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['jsxFactory'],
+  imports: (ctx) => ({
+    'types/jsx.d.ts': [ctx.jsx.upperName],
+  }),
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { factoryName, upperName } = params.computed.jsx
 
-  return {
-    jsxFactory: outdent`
-${ctx.file.importType(upperName, '../types/jsx')}
-export declare const ${factoryName}: ${upperName}
-    `,
-    jsxType: outdent`
-import type { Component, ComponentProps, JSX } from 'solid-js'
+    return `export declare const ${factoryName}: ${upperName}`
+  },
+})
 
-interface Dict {
-  [k: string]: unknown
-}
+export const solidJsxStringLiteralTypesArtifact = new ArtifactFile({
+  id: 'types/jsx.d.ts',
+  fileName: 'jsx',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['jsxFactory'],
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { componentName, upperName, typeName } = params.computed.jsx
 
-export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
+    return `
+    import type { Component, ComponentProps, JSX } from 'solid-js'
 
-export type ${componentName}<T extends ElementType> = {
-    (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
-    displayName?: string
-}
+    interface Dict {
+      [k: string]: unknown
+    }
 
-export interface JsxFactory {
-    <T extends ElementType>(component: T): ${componentName}<T>
-}
+    export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
 
-export type JsxElements = {
-  [K in keyof JSX.IntrinsicElements]: ${componentName}<K>
-}
+    export type ${componentName}<T extends ElementType> = {
+        (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
+        displayName?: string
+    }
 
-export type ${upperName} = JsxFactory & JsxElements
+    export interface JsxFactory {
+        <T extends ElementType>(component: T): ${componentName}<T>
+    }
 
-export type ${typeName}<T extends ElementType> = ComponentProps<T>
-  `,
-  }
-}
+    export type JsxElements = {
+      [K in keyof JSX.IntrinsicElements]: ${componentName}<K>
+    }
+
+    export type ${upperName} = JsxFactory & JsxElements
+
+    export type ${typeName}<T extends ElementType> = ComponentProps<T>
+      `
+  },
+})

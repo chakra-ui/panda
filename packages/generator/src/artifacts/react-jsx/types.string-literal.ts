@@ -1,17 +1,41 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateReactJsxStringLiteralTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName } = ctx.jsx
+export const reactJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
+  id: 'types/jsx.d.ts',
+  fileName: 'jsx',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsxFactory'],
+  importsType: (ctx) => {
+    return {
+      'types/jsx.d.ts': [ctx.jsx.upperName],
+    }
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { factoryName, upperName } = params.computed.jsx
+    return `export declare const ${factoryName}: ${upperName}`
+  },
+})
 
-  return {
-    jsxFactory: outdent`
-${ctx.file.importType(upperName, '../types/jsx')}
-export declare const ${factoryName}: ${upperName}
-    `,
-    jsxType: outdent`
+export const reactJsxTypesStringLiteralArtifact = new ArtifactFile({
+  id: 'types/jsx.d.ts',
+  fileName: 'jsx',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsxFactory'],
+  imports: {
+    'types/system-types.d.ts': ['DistributiveOmit'],
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { componentName, upperName, typeName } = params.computed.jsx
+    return `
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
-${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
 interface Dict {
   [k: string]: unknown
@@ -37,6 +61,6 @@ export type JsxElements = {
 export type ${upperName} = JsxFactory & JsxElements
 
 export type ${typeName}<T extends ElementType> = ComponentProps<T>
-  `,
-  }
-}
+  `
+  },
+})

@@ -5,7 +5,7 @@ export const qwikJsxStringLiteralFactoryArtifact = new ArtifactFile({
   fileName: 'factory',
   type: 'js',
   dir: (ctx) => ctx.paths.jsx,
-  dependencies: ['jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+  dependencies: ['jsxFactory'],
   imports: {
     'jsx/factory-helpers.js': ['getDisplayName'],
     'css/index.js': ['css', 'cx'],
