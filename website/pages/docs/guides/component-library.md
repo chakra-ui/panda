@@ -16,10 +16,10 @@ When creating a component library that uses Panda which can be used in a variety
 
 ## Recommendations
 
-- Library Code shouldn't be published on npm and App code uses Panda, use [ship build info](#ship-the-build-info-file) approach
-- App code might not use Panda, use the [static css](#ship-a-static-css-file) file approach
-- App code lives in an internal monorepo, use the [include src files](#include-the-src-files) approach
-- Library code doesn't ship components but only ships tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
+- If your library code shouldn't be published on npm and App code uses Panda, use [ship build info](#ship-the-build-info-file) approach
+- If your app code doesn't use Panda, use the [static css](#ship-a-static-css-file) file approach
+- If your app code lives in a monorepo, use the [include src files](#include-the-src-files) approach
+- If your library code doesn't ship components but only ships tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
 
 > ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your library code has any custom tokens, patterns or recipes.
 
@@ -334,15 +334,13 @@ export function App() {
 
 Marking the `styled-system` as an external package in your build tool means that the generated JS runtime code (the `css` function is the example above) is imported only once, avoiding duplication.
 
-````
-
 ### How do I use the `@acme-org/styled-system` package ?
 
 You can use your monorepo workspace package `@acme-org/styled-system` just like any other dependency in your app or component library code.
 
 ```bash
 pnpm add @acme-org/styled-system
-````
+```
 
 Set the `importMap` in your `panda.config.ts` to that same package name. This will inform Panda which imports belong to the `styled-system`.
 
