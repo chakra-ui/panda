@@ -1,5 +1,21 @@
 # @pandacss/parser
 
+## 0.39.2
+
+### Patch Changes
+
+- 8b07cdf: Allow nesting (string) token references in the fallback argument, fix an issue where using CSS var in the
+  fallback argument would be mistakenly escaped
+- Updated dependencies [2f63a4c]
+- Updated dependencies [1f636eb]
+- Updated dependencies [8b07cdf]
+  - @pandacss/config@0.39.2
+  - @pandacss/shared@0.39.2
+  - @pandacss/core@0.39.2
+  - @pandacss/extractor@0.39.2
+  - @pandacss/types@0.39.2
+  - @pandacss/logger@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes

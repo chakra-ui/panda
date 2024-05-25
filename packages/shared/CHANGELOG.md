@@ -1,5 +1,11 @@
 # @pandacss/shared
 
+## 0.39.2
+
+### Patch Changes
+
+- 1f636eb: Fix a cache issue that leads to HMR growing slower in some cases
+
 ## 0.39.1
 
 ## 0.39.0

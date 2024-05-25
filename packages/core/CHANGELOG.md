@@ -1,5 +1,20 @@
 # @pandacss/core
 
+## 0.39.2
+
+### Patch Changes
+
+- 1f636eb: Fix a cache issue that leads to HMR growing slower in some cases
+- 8b07cdf: Allow nesting (string) token references in the fallback argument, fix an issue where using CSS var in the
+  fallback argument would be mistakenly escaped
+- Updated dependencies [1f636eb]
+- Updated dependencies [8b07cdf]
+  - @pandacss/shared@0.39.2
+  - @pandacss/token-dictionary@0.39.2
+  - @pandacss/types@0.39.2
+  - @pandacss/is-valid-prop@0.39.2
+  - @pandacss/logger@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes
