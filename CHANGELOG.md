@@ -6,6 +6,20 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.39.2] - 2024-05-25
+
+### Fixed
+
+- Vue JSX: Fix issue where using custom `jsxFactory` name causes a runtime error
+- Fix issue where panda could load unrelated config files that look like a config e.g. `theming-panda.config.ts`
+- Fix a cache issue that leads to HMR growing slower in some cases
+- Fix an issue where using CSS var in the token references fallback argument would be escaped
+- Fix `panda analyze` JSON output serialization
+
+### Added
+
+- Allow nesting (string) token references in the fallback argument
+
 ## [0.39.1] - 2024-05-07
 
 ### Fixed
