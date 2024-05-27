@@ -1279,10 +1279,10 @@ importers:
         version: link:../../packages/cli
       '@sveltejs/adapter-auto':
         specifier: 3.1.1
-        version: 3.1.1(@sveltejs/kit@2.5.7(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))
+        version: 3.1.1(@sveltejs/kit@2.5.10(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))
       '@sveltejs/kit':
-        specifier: 2.5.7
-        version: 2.5.7(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
+        specifier: 2.5.10
+        version: 2.5.10(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
       autoprefixer:
         specifier: 10.4.19
         version: 10.4.19(postcss@8.4.38)
@@ -5487,8 +5487,8 @@ packages:
     peerDependencies:
       '@sveltejs/kit': ^2.0.0
 
-  '@sveltejs/kit@2.5.7':
-    resolution: {integrity: sha512-6uedTzrb7nQrw6HALxnPrPaXdIN2jJJTzTIl96Z3P5NiG+OAfpdPbrWrvkJ3GN4CfWqrmU4dJqwMMRMTD/C7ow==}
+  '@sveltejs/kit@2.5.10':
+    resolution: {integrity: sha512-OqoyTmFG2cYmCFAdBfW+Qxbg8m23H4dv6KqwEt7ofr/ROcfcIl3Z/VT56L22H9f0uNZyr+9Bs1eh2gedOCK9kA==}
     engines: {node: '>=18.13'}
     hasBin: true
     peerDependencies:
@@ -6980,6 +6980,7 @@ packages:
   are-we-there-yet@2.0.0:
     resolution: {integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw==}
     engines: {node: '>=10'}
+    deprecated: This package is no longer supported.
 
   arg@1.0.0:
     resolution: {integrity: sha512-Wk7TEzl1KqvTGs/uyhmHO/3XLd3t1UeU4IstvPXVzGPM522cTjqjNZ99esCkcL52sjqjo8e8CTBcWhkxvGzoAw==}
@@ -9529,6 +9530,7 @@ packages:
   gauge@3.0.2:
     resolution: {integrity: sha512-+5J6MS/5XksCuXq++uFRsnUd7Ovu1XenbeuIuNRJxYWjgQbPuFhT14lAvsWfqfAmnwluf1OwMjz39HjfLPci0Q==}
     engines: {node: '>=10'}
+    deprecated: This package is no longer supported.
 
   generic-names@4.0.0:
     resolution: {integrity: sha512-ySFolZQfw9FoDb3ed9d80Cm9f0+r7qj+HJkWjeD9RBfpxEVTlVhol+gvaQB/78WbwYfbnNh8nWHHBSlg072y6A==}
@@ -9649,10 +9651,12 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
+    deprecated: Glob versions prior to v9 are no longer supported
 
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
+    deprecated: Glob versions prior to v9 are no longer supported
 
   global-directory@4.0.1:
     resolution: {integrity: sha512-wHTUcDUoZ1H5/0iVqEudYW4/kAlN5cZ3j/bXn0Dpbizl9iaUVeWSHqiOjsgk6OW2bkLclbBjzewBz6weQ1zA2Q==}
@@ -10093,6 +10097,9 @@ packages:
   import-meta-resolve@4.0.0:
     resolution: {integrity: sha512-okYUR7ZQPH+efeuMJGlq4f8ubUgO50kByRPyt/Cy1Io4PSRsPjxME+YlVaCOx+NIToW7hCsZNFJyTPFFKepRSA==}
 
+  import-meta-resolve@4.1.0:
+    resolution: {integrity: sha512-I6fiaX09Xivtk+THaMfAwnA3MVA5Big1WHF1Dfx9hFuvNIWpXnorlkzhcQf6ehrqQiiZECRt1poOAkPmer3ruw==}
+
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
     engines: {node: '>=0.8.19'}
@@ -10103,6 +10110,7 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -12044,6 +12052,7 @@ packages:
 
   npmlog@5.0.1:
     resolution: {integrity: sha512-AqZtDUWOMKs1G/8lwylVjrdYgqA4d9nu8hc+0gzRxlDb1I10+FHBGMXs6aiQHFdCUUlqH99MUMuLfzWDNDtfxw==}
+    deprecated: This package is no longer supported.
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
@@ -13353,6 +13362,7 @@ packages:
   read-package-json@7.0.0:
     resolution: {integrity: sha512-uL4Z10OKV4p6vbdvIXB+OzhInYtIozl/VxUBPgNkBuUi2DeRonnuspmaVAMcrkmfjKGNmRndyQAbE7/AmzGwFg==}
     engines: {node: ^16.14.0 || >=18.0.0}
+    deprecated: This package is no longer supported. Please use @npmcli/package-json instead.
 
   read-pkg-up@7.0.1:
     resolution: {integrity: sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==}
@@ -13666,14 +13676,17 @@ packages:
 
   rimraf@2.6.3:
     resolution: {integrity: sha512-mwqeW5XsA2qAejG46gYdENaxXjx9onRNCfn7L0duuP4hCuTIi/QO7PDK07KJfp1d+izWPrzEJDcSqBa0OZQriA==}
+    deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
   rimraf@2.7.1:
     resolution: {integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==}
+    deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
   rimraf@3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
+    deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
   rimraf@5.0.5:
@@ -21156,19 +21169,19 @@ snapshots:
       '@types/express': 4.17.17
       file-system-cache: 2.3.0
 
-  '@sveltejs/adapter-auto@3.1.1(@sveltejs/kit@2.5.7(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))':
+  '@sveltejs/adapter-auto@3.1.1(@sveltejs/kit@2.5.10(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))':
     dependencies:
-      '@sveltejs/kit': 2.5.7(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
+      '@sveltejs/kit': 2.5.10(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
       import-meta-resolve: 4.0.0
 
-  '@sveltejs/kit@2.5.7(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))':
+  '@sveltejs/kit@2.5.10(@sveltejs/vite-plugin-svelte@3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))':
     dependencies:
       '@sveltejs/vite-plugin-svelte': 3.1.0(svelte@4.2.11)(vite@5.1.7(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
       '@types/cookie': 0.6.0
       cookie: 0.6.0
       devalue: 5.0.0
       esm-env: 1.0.0
-      import-meta-resolve: 4.0.0
+      import-meta-resolve: 4.1.0
       kleur: 4.1.5
       magic-string: 0.30.10
       mrmime: 2.0.0
@@ -27922,6 +27935,8 @@ snapshots:
   import-lazy@4.0.0: {}
 
   import-meta-resolve@4.0.0: {}
+
+  import-meta-resolve@4.1.0: {}
 
   imurmurhash@0.1.4: {}
 
