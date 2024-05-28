@@ -1,5 +1,33 @@
 # @pandacss/dev
 
+## 0.40.0
+
+### Minor Changes
+
+- 5dcdae4: Improve monorepo setup DX by exposing some cli flags
+
+  ### `panda init`
+
+  - Added new flag `--no-codegen` to skip codegen during initialization
+  - Added new flag `--outdir` to specify the output directory for generated files
+
+  ### `panda emit-pkg`
+
+  - Added new `--base` flag to specify the base directory for the entrypoints in the generated `package.json#exports`
+    field
+
+### Patch Changes
+
+- Updated dependencies [5dcdae4]
+  - @pandacss/node@0.40.0
+  - @pandacss/postcss@0.40.0
+  - @pandacss/config@0.40.0
+  - @pandacss/logger@0.40.0
+  - @pandacss/preset-panda@0.40.0
+  - @pandacss/shared@0.40.0
+  - @pandacss/token-dictionary@0.40.0
+  - @pandacss/types@0.40.0
+
 ## 0.39.2
 
 ### Patch Changes
