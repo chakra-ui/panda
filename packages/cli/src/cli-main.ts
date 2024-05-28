@@ -49,7 +49,9 @@ export async function main() {
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--silent', 'Suppress all messages except errors')
     .option('--no-gitignore', "Don't update the .gitignore")
+    .option('--no-codegen', "Don't run the codegen logic")
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
+    .option('--outdir <dir>', 'The output directory for the generated files')
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
     .option('--strict-tokens', 'Using strictTokens: true')
@@ -62,6 +64,7 @@ export async function main() {
       }
 
       const flags = { ...initFlags, ...options }
+
       const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
       const cwd = resolve(flags.cwd ?? '')
@@ -82,14 +85,22 @@ export async function main() {
 
       await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
-      const ctx = await loadConfigAndCreateContext({ cwd, configPath, config: { gitignore } })
-      const { msg, box } = await codegen(ctx)
+      const ctx = await loadConfigAndCreateContext({
+        cwd,
+        configPath,
+        config: compact({ gitignore, outdir: flags.outdir }),
+      })
 
       if (gitignore) {
         setupGitIgnore(ctx)
       }
 
-      logger.log(msg + box)
+      if (flags.codegen) {
+        const { msg, box } = await codegen(ctx)
+        logger.log(msg + box)
+      } else {
+        logger.log(ctx.initMessage())
+      }
 
       done()
 
@@ -479,10 +490,11 @@ export async function main() {
   cli
     .command('emit-pkg', 'Emit package.json with entrypoints')
     .option('--outdir <dir>', 'Output directory', { default: '.' })
+    .option('--base <source>', 'The base directory of the package.json entrypoints')
     .option('--silent', "Don't print any logs")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags: EmitPackageCommandFlags) => {
-      const { outdir, silent } = flags
+      const { outdir, silent, base } = flags
 
       if (silent) {
         logger.level = 'silent'
@@ -500,10 +512,14 @@ export async function main() {
 
       const exports = [] as any[]
 
+      const createDir = (...dir: string[]) => {
+        return ['.', base, ...dir].filter(Boolean).join('/')
+      }
+
       const createEntry = (dir: string) => ({
-        types: ctx.file.extDts(`./${dir}/index`),
-        require: ctx.file.ext(`./${dir}/index`),
-        import: ctx.file.ext(`./${dir}/index`),
+        types: ctx.file.extDts(createDir(dir, 'index')),
+        require: ctx.file.ext(createDir(dir, 'index')),
+        import: ctx.file.ext(createDir(dir, 'index')),
       })
 
       exports.push(
@@ -528,6 +544,8 @@ export async function main() {
         exports.push(['./themes', createEntry('themes')])
       }
 
+      const stylesDir = createDir('styles.css')
+
       if (!exists) {
         //
         const content = {
@@ -539,7 +557,7 @@ export async function main() {
           license: 'ISC',
           exports: {
             ...Object.fromEntries(exports),
-            './styles.css': './styles.css',
+            './styles.css': stylesDir,
           },
           scripts: {
             prepare: 'panda codegen --clean',
@@ -554,7 +572,7 @@ export async function main() {
         content.exports = {
           ...content.exports,
           ...Object.fromEntries(exports),
-          './styles.css': './styles.css',
+          './styles.css': stylesDir,
         }
 
         await ctx.runtime.fs.writeFile(pkgPath, JSON.stringify(content, null, 2))

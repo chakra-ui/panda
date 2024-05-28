@@ -5,6 +5,7 @@ import { ParserResult, Project } from '@pandacss/parser'
 import { uniq } from '@pandacss/shared'
 import type { LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
 import { debounce } from 'perfect-debounce'
+import { createBox } from './cli-box'
 import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
 import { OutputEngine } from './output-engine'
@@ -48,6 +49,13 @@ export class PandaContext extends Generator {
     const { cwd, dependencies } = this.config
     if (!dependencies) return []
     return this.runtime.fs.glob({ include: dependencies, cwd })
+  }
+
+  initMessage = () => {
+    return createBox({
+      content: this.messages.codegenComplete(),
+      title: this.messages.exclamation(),
+    })
   }
 
   getFiles = () => {

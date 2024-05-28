@@ -1,13 +1,14 @@
 import type { Config } from '@pandacss/types'
 
 export interface InitCommandFlags
-  extends Pick<Config, 'jsxFramework' | 'syntax' | 'cwd' | 'poll' | 'watch' | 'gitignore' | 'outExtension'> {
+  extends Pick<Config, 'jsxFramework' | 'syntax' | 'cwd' | 'poll' | 'watch' | 'gitignore' | 'outExtension' | 'outdir'> {
   force?: boolean
   postcss?: boolean
   silent?: boolean
   interactive?: boolean
   config?: string
   logfile?: string
+  codegen?: boolean
 }
 
 export interface CssGenCommandFlags {
@@ -92,4 +93,5 @@ export interface EmitPackageCommandFlags {
   outdir: string
   silent?: boolean
   cwd: string
+  base?: string
 }
