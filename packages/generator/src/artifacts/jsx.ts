@@ -1,41 +1,29 @@
 import type { Context } from '@pandacss/core'
 import type { ArtifactFilters, JsxFramework } from '@pandacss/types'
-import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
-import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
-import { generatePreactJsxStringLiteralTypes } from './preact-jsx/types.string-literal'
-import { generateQwikJsxFactory, generateQwikJsxPattern, generateQwikJsxTypes } from './qwik-jsx'
-import { generateQwikJsxStringLiteralFactory } from './qwik-jsx/jsx.string-literal'
-import { generateQwikJsxStringLiteralTypes } from './qwik-jsx/types.string-literal'
-import { generateReactJsxFactory, generateReactJsxPattern, generateReactJsxTypes } from './react-jsx'
-import { generateReactJsxStringLiteralFactory } from './react-jsx/jsx.string-literal'
-import { generateReactJsxStringLiteralTypes } from './react-jsx/types.string-literal'
-import { generateSolidJsxFactory, generateSolidJsxPattern, generateSolidJsxTypes } from './solid-jsx'
-import { generateSolidJsxStringLiteralFactory } from './solid-jsx/jsx.string-literal'
-import { generateSolidJsxStringLiteralTypes } from './solid-jsx/types.string-literal'
-import { generateVueJsxFactory } from './vue-jsx/jsx'
-import { generateVueJsxStringLiteralFactory } from './vue-jsx/jsx.string-literal'
-import { generateVueJsxPattern } from './vue-jsx/pattern'
-import { generateVueJsxTypes } from './vue-jsx/types'
-import { generateVueJsxStringLiteralTypes } from './vue-jsx/types.string-literal'
+import { qwikJsx } from './qwik-jsx'
+import { preactJsx } from './preact-jsx'
+import { reactJsx } from './react-jsx'
+import { solidJsx } from './solid-jsx'
+import { vueJsx } from './vue-jsx'
 
 /* -----------------------------------------------------------------------------
  * JSX Types
  * -----------------------------------------------------------------------------*/
 
 const typesMap = {
-  react: generateReactJsxTypes,
-  preact: generatePreactJsxTypes,
-  solid: generateSolidJsxTypes,
-  vue: generateVueJsxTypes,
-  qwik: generateQwikJsxTypes,
+  react: reactJsx.jsxTypes,
+  preact: preactJsx.jsxTypes,
+  solid: solidJsx.jsxTypes,
+  vue: vueJsx.jsxTypes,
+  qwik: qwikJsx.jsxTypes,
 }
 
 const typesStringLiteralMap = {
-  react: generateReactJsxStringLiteralTypes,
-  solid: generateSolidJsxStringLiteralTypes,
-  qwik: generateQwikJsxStringLiteralTypes,
-  preact: generatePreactJsxStringLiteralTypes,
-  vue: generateVueJsxStringLiteralTypes,
+  react: reactJsx.stringLiteral.jsxTypes,
+  solid: solidJsx.stringLiteral.jsxTypes,
+  qwik: qwikJsx.stringLiteral.jsxTypes,
+  preact: preactJsx.stringLiteral.jsxTypes,
+  vue: vueJsx.stringLiteral.jsxTypes,
 }
 
 const isKnownFramework = (framework: string): framework is JsxFramework => Boolean((typesMap as any)[framework])
@@ -43,8 +31,7 @@ const isKnownFramework = (framework: string): framework is JsxFramework => Boole
 export function generateJsxTypes(ctx: Context) {
   if (!ctx.jsx.framework) return
   if (!isKnownFramework(ctx.jsx.framework)) return
-  const type = ctx.isTemplateLiteralSyntax ? typesStringLiteralMap[ctx.jsx.framework] : typesMap[ctx.jsx.framework]
-  return type?.(ctx)
+  return ctx.isTemplateLiteralSyntax ? typesStringLiteralMap[ctx.jsx.framework] : typesMap[ctx.jsx.framework]
 }
 
 /* -----------------------------------------------------------------------------
@@ -52,28 +39,25 @@ export function generateJsxTypes(ctx: Context) {
  * -----------------------------------------------------------------------------*/
 
 const factoryMap = {
-  react: generateReactJsxFactory,
-  solid: generateSolidJsxFactory,
-  preact: generatePreactJsxFactory,
-  vue: generateVueJsxFactory,
-  qwik: generateQwikJsxFactory,
+  react: reactJsx.jsxFactory,
+  solid: solidJsx.jsxFactory,
+  preact: preactJsx.jsxFactory,
+  vue: vueJsx.jsxFactory,
+  qwik: qwikJsx.jsxFactory,
 }
 
 const factoryStringLiteralMap = {
-  react: generateReactJsxStringLiteralFactory,
-  solid: generateSolidJsxStringLiteralFactory,
-  qwik: generateQwikJsxStringLiteralFactory,
-  preact: generatePreactJsxStringLiteralFactory,
-  vue: generateVueJsxStringLiteralFactory,
+  react: reactJsx.stringLiteral.jsxFactory,
+  solid: solidJsx.stringLiteral.jsxFactory,
+  qwik: qwikJsx.stringLiteral.jsxFactory,
+  preact: preactJsx.stringLiteral.jsxFactory,
+  vue: vueJsx.stringLiteral.jsxFactory,
 }
 
 export function generateJsxFactory(ctx: Context) {
   if (!ctx.jsx.framework) return
   if (!isKnownFramework(ctx.jsx.framework)) return
-  const factory = ctx.isTemplateLiteralSyntax
-    ? factoryStringLiteralMap[ctx.jsx.framework]
-    : factoryMap[ctx.jsx.framework]
-  return factory?.(ctx)
+  return ctx.isTemplateLiteralSyntax ? factoryStringLiteralMap[ctx.jsx.framework] : factoryMap[ctx.jsx.framework]
 }
 
 /* -----------------------------------------------------------------------------
@@ -81,11 +65,11 @@ export function generateJsxFactory(ctx: Context) {
  * -----------------------------------------------------------------------------*/
 
 const patternMap = {
-  react: generateReactJsxPattern,
-  solid: generateSolidJsxPattern,
-  preact: generatePreactJsxPattern,
-  vue: generateVueJsxPattern,
-  qwik: generateQwikJsxPattern,
+  react: reactJsx.generatePatterns,
+  solid: solidJsx.generatePatterns,
+  preact: preactJsx.generatePatterns,
+  vue: vueJsx.generatePatterns,
+  qwik: qwikJsx.generatePatterns,
 }
 
 export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {

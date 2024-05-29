@@ -1,6 +1,6 @@
 import { ArtifactFile } from '../artifact'
 
-export const preactJsxStringLiteralFactoryJsArtifact = new ArtifactFile({
+export const preactJsxStringLiteralFactoryArtifact = new ArtifactFile({
   id: 'jsx/factory.js',
   fileName: 'factory',
   type: 'js',

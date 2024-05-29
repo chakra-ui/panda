@@ -1,5 +1,25 @@
 import { ArtifactFile } from '../artifact'
 
+export const preactJsxFactoryTypesArtifact = new ArtifactFile({
+  id: 'jsx/factory.d.ts',
+  fileName: 'factory',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsxFactory'],
+  importsType: (ctx) => {
+    return {
+      'types/jsx.d.ts': [ctx.jsx.upperName],
+    }
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { factoryName, upperName } = params.computed.jsx
+    return `export declare const ${factoryName}: ${upperName}`
+  },
+})
+
 export const preactJsxTypesArtifact = new ArtifactFile({
   id: 'types/jsx.d.ts',
   fileName: 'types',

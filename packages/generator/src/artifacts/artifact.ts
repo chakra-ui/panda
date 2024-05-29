@@ -70,7 +70,7 @@ export class ArtifactFile<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed>
   }
 }
 
-interface Artifact {
+export interface Artifact {
   id: ArtifactId
   files: ArtifactFile<any, any>[]
 }
@@ -87,6 +87,7 @@ export class ArtifactMap {
   add(artifact: Artifact) {
     this.artifacts.set(artifact.id, artifact)
     artifact.files.forEach((file) => this.files.set(file.id, file))
+    return this
   }
 
   get(name: ArtifactId) {
@@ -121,9 +122,14 @@ export class ArtifactMap {
         const computedId = callable(ctx, node.dir)
         const fileWithExt = node.type === 'js' ? ctx.file.ext(node.fileName) : ctx.file.extDts(node.fileName)
 
+        let content = code
+        if (node.type === 'dts') {
+          content = `/* eslint-disable */\n${code}`
+        }
+
         contents.push({
           path: [...(Array.isArray(computedId) ? computedId : [computedId]), fileWithExt],
-          content: code,
+          content,
         })
 
         const imports = callable(ctx, node.imports)

@@ -75,51 +75,54 @@ export const themesIndexJsArtifact = new ArtifactFile({
   },
 })
 
-export function generateThemesIndex(ctx: Context, files: ReturnType<typeof generateThemes>) {
-  const { themes } = ctx.config
-  if (!themes) return
-  if (!files) return
+export const themesIndexDtsArtifact = new ArtifactFile({
+  id: 'themes/index.d.ts',
+  fileName: 'index',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.themes,
+  dependencies: ['themes'],
+  computed(ctx) {
+    const { themes } = ctx.config
+    const files = generateThemes(ctx)
+    return { themes, files }
+  },
+  code(params) {
+    const { themes, files } = params.computed
+    if (!themes) return
+    if (!files) return
 
-  const themeName = Object.keys(themes)
+    const themeName = Object.keys(themes)
 
-  return new ArtifactFile({
-    id: 'themes/index.d.ts',
-    fileName: 'index',
-    type: 'dts',
-    dir: (ctx) => ctx.paths.themes,
-    dependencies: ['themes'],
-    code() {
-      return `
-      export type ThemeName = ${themeName.map((name) => `'${name}'`).join(' | ')}
-      export type ThemeByName = {
-        ${files
-          .map((f) => {
-            const theme = JSON.parse(f.json) as GeneratedTheme
-            if (!theme.css) return ''
-            return `'${f.name}': {
-              id: string,
-              name: '${f.name}',
-              css: string
-            }`
-          })
-          .join('\n')}
-      }
+    return `
+    export type ThemeName = ${themeName.map((name) => `'${name}'`).join(' | ')}
+    export type ThemeByName = {
+      ${files
+        .map((f) => {
+          const theme = JSON.parse(f.json) as GeneratedTheme
+          if (!theme.css) return ''
+          return `'${f.name}': {
+            id: string,
+            name: '${f.name}',
+            css: string
+          }`
+        })
+        .join('\n')}
+    }
 
-      export type Theme<T extends ThemeName> = ThemeByName[T]
+    export type Theme<T extends ThemeName> = ThemeByName[T]
 
-      /**
-       * Dynamically import a theme by name
-       */
-      export declare function getTheme<T extends ThemeName>(themeName: T): Promise<ThemeByName[T]>
+    /**
+     * Dynamically import a theme by name
+     */
+    export declare function getTheme<T extends ThemeName>(themeName: T): Promise<ThemeByName[T]>
 
-      /**
-       * Inject a theme stylesheet into the document
-       */
-      export declare function injectTheme(el: HTMLElement, theme: Theme<any>): HTMLStyleElement
-      `
-    },
-  })
-}
+    /**
+     * Inject a theme stylesheet into the document
+     */
+    export declare function injectTheme(el: HTMLElement, theme: Theme<any>): HTMLStyleElement
+    `
+  },
+})
 
 interface GeneratedTheme extends Omit<ThemeVariant, 'tokens' | 'semanticTokens'> {
   name: string

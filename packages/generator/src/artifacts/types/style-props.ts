@@ -1,28 +1,43 @@
-import type { Context } from '@pandacss/core'
 import { allCssProperties } from '@pandacss/is-valid-prop'
 import { unionType } from '@pandacss/shared'
-import outdent from 'outdent'
 
 import type { UserConfig } from '@pandacss/types'
+import { ArtifactFile } from '../artifact'
 import csstype from '../generated/csstype.d.ts.json' assert { type: 'json' }
 
-export function generateStyleProps(ctx: Context) {
-  const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
-  const propTypes = ctx.utility.getTypes()
+export const stylePropsArtifact = new ArtifactFile({
+  id: 'types/style-props.d.ts',
+  fileName: 'style-props',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: [],
+  importsType: {
+    'types/conditions.d.ts': ['ConditionalValue'],
+    'types/prop-type.d.ts': ['OnlyKnown', 'UtilityValues', 'WithEscapeHatch'],
+    'types/system-types.d.ts': ['CssProperties'],
+    'tokens/index.d.ts': ['Token'],
+  },
+  computed(ctx) {
+    return {
+      config: ctx.config,
+      utility: ctx.utility,
+      cssVars: unionType(ctx.globalVars.vars),
+      cssVarNames: unionType(ctx.globalVars.names),
+      hasCssVars: !ctx.globalVars.isEmpty(),
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
+    const propTypes = ctx.utility.getTypes()
+    const { cssVars, cssVarNames, hasCssVars } = params.computed
 
-  const cssVars = unionType(ctx.globalVars.vars)
-
-  return outdent`
-    ${ctx.file.importType('ConditionalValue', './conditions')}
-    ${ctx.file.importType('OnlyKnown, UtilityValues, WithEscapeHatch', './prop-type')}
-    ${ctx.file.importType('CssProperties', './system-types')}
-    ${ctx.file.importType('Token', '../tokens/index')}
-
+    return `
     type AnyString = (string & {})
     type CssVars = ${[cssVars || '`var(--${string})`'].filter(Boolean).join(' | ')}
-    type CssVarValue = ConditionalValue<Token${ctx.globalVars.isEmpty() ? '' : ' | CssVars'} | AnyString | (number & {})>
+    type CssVarValue = ConditionalValue<Token${hasCssVars ? ' | CssVars' : ''} | AnyString | (number & {})>
 
-    type CssVarName = ${unionType(ctx.globalVars.names)} | AnyString
+    type CssVarName = ${cssVarNames} | AnyString
     type CssVarKeys = \`--\${CssVarName}\`
 
     export type CssVarProperties = {
@@ -72,7 +87,8 @@ export function generateStyleProps(ctx: Context) {
         .join('\n')}
     }
     `
-}
+  },
+})
 
 const strictPropertyList = new Set([
   'alignContent',

@@ -1,21 +1,28 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateVueJsxStringLiteralFactory(ctx: Context) {
-  const { componentName, factoryName } = ctx.jsx
-
-  return {
-    js: outdent`
-    import { defineComponent, h, computed } from 'vue'
-    ${ctx.file.import('getDisplayName', './factory-helper')}
-    ${ctx.file.import('css, cx', '../css/index')}
+export const vueJsxStringLiteralFactoryArtifact = new ArtifactFile({
+  id: 'jsx/factory.js',
+  fileName: 'factory',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsxFactory'],
+  imports: {
+    'jsx/factory-helpers.js': ['getDisplayName'],
+    'css/index.js': ['css', 'cx'],
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { componentName, factoryName } = params.computed.jsx
+    return `import { defineComponent, h, computed } from 'vue'
 
   function createStyled(Dynamic) {
     const name = getDisplayName(Dynamic)
 
     function styledFn(template) {
       const styles = css.raw(template)
-      
+
       const ${componentName} = defineComponent({
         name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
@@ -30,7 +37,7 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
 
           const vModelProps = computed(() => {
             const result = {};
-    
+
             if (
               props.as === 'input' &&
               (props.type === 'checkbox' || props.type === 'radio')
@@ -53,10 +60,10 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
                 emit('update:modelValue', value, event);
               };
             }
-    
+
             return result;
           });
-          
+
           return () => {
             return h(
               props.as,
@@ -84,7 +91,6 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
 
   tags.split(', ').forEach((tag) => {
     styled[tag] = styled(tag);
-  });
-    `,
-  }
-}
+  });`
+  },
+})

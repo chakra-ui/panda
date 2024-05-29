@@ -1,6 +1,6 @@
 import { ArtifactFile } from '../artifact'
 
-export const preactJsxTypesStringLiteralArtifact = new ArtifactFile({
+export const preactJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
   id: `jsx/factory.d.ts`,
   fileName: 'factory',
   type: 'dts',
@@ -20,7 +20,7 @@ export const preactJsxTypesStringLiteralArtifact = new ArtifactFile({
   },
 })
 
-export const preactJsxTypeStringLiteralArtifact = new ArtifactFile({
+export const preactJsxTypesStringLiteralArtifact = new ArtifactFile({
   id: `types/jsx.d.ts`,
   fileName: 'types',
   type: 'dts',

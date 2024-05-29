@@ -1,27 +1,21 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export const generateTypesEntry = (ctx: Context, isJsxRequired: boolean) => {
-  const indexExports = [
-    // We need to export types used in the global.d.ts here to avoid TS errors such as `The inferred type of 'xxx' cannot be named without a reference to 'yyy'`
-    `import '${ctx.file.extDts('./global')}'`,
-    ctx.file.exportTypeStar('./conditions'),
-    ctx.file.exportTypeStar('./pattern'),
-    ctx.file.exportTypeStar('./recipe'),
-    ctx.file.exportTypeStar('./system-types'),
-    isJsxRequired && ctx.file.exportTypeStar('./jsx'),
-    ctx.file.exportTypeStar('./style-props'),
-  ].filter(Boolean)
-
-  return {
-    global: outdent`
-    // @ts-nocheck
+export const typesGlobalArtifact = new ArtifactFile({
+  id: 'types/global.d.ts',
+  fileName: 'index',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['types'],
+  importsType: {
+    'types/recipe.d.ts': ['RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig'],
+    'types/pattern.d.ts': ['PatternConfig, PatternProperties'],
+    'types/system-types.d.ts': ['GlobalStyleObject, SystemStyleObject'],
+    'types/composition.d.ts': ['CompositionStyles'],
+    'types/parts.d.ts': ['Parts'],
+  },
+  code() {
+    return `// @ts-nocheck
     import type * as Panda from '@pandacss/dev'
-    ${ctx.file.importType('RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig', './recipe')}
-    ${ctx.file.importType('Parts', './parts')}
-    ${ctx.file.importType('PatternConfig, PatternProperties', './pattern')}
-    ${ctx.file.importType('GlobalStyleObject, SystemStyleObject', './system-types')}
-    ${ctx.file.importType('CompositionStyles', './composition')}
 
     declare module '@pandacss/dev' {
       export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): Panda.RecipeConfig
@@ -32,13 +26,37 @@ export const generateTypesEntry = (ctx: Context, isJsxRequired: boolean) => {
       export function defineLayerStyles(definition: CompositionStyles['layerStyles']): Panda.LayerStyles
       export function definePattern<T extends PatternProperties>(config: PatternConfig<T>): Panda.PatternConfig
       export function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => Partial<Record<keyof T, SystemStyleObject>>
+    }`
+  },
+})
+
+export const typesIndexArtifact = new ArtifactFile({
+  id: 'types/index.d.ts',
+  fileName: 'index',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['types'],
+  computed(ctx) {
+    return {
+      extDts: ctx.file.extDts,
+      exportTypeStar: ctx.file.exportTypeStar,
+      isJsxRequired: Boolean(ctx.jsx.framework),
     }
-    `,
-    index: outdent`
-    ${indexExports.join('\n')}
-    `,
-    helpers: outdent`
-    export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-    `,
-  }
-}
+  },
+  code(params) {
+    const file = params.computed
+
+    const indexExports = [
+      // We need to export types used in the global.d.ts here to avoid TS errors such as `The inferred type of 'xxx' cannot be named without a reference to 'yyy'`
+      `import '${file.extDts('./global')}'`,
+      file.exportTypeStar('./conditions'),
+      file.exportTypeStar('./pattern'),
+      file.exportTypeStar('./recipe'),
+      file.exportTypeStar('./system-types'),
+      params.computed.isJsxRequired && file.exportTypeStar('./jsx'),
+      file.exportTypeStar('./style-props'),
+    ].filter(Boolean)
+
+    return indexExports.join('\n')
+  },
+})

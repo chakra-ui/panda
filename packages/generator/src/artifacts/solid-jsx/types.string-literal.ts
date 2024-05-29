@@ -19,7 +19,7 @@ export const solidJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
   },
 })
 
-export const solidJsxStringLiteralTypesArtifact = new ArtifactFile({
+export const solidJsxTypesStringLiteralArtifact = new ArtifactFile({
   id: 'types/jsx.d.ts',
   fileName: 'jsx',
   type: 'dts',

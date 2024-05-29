@@ -1,27 +1,33 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generatePropTypes(ctx: Context) {
-  const { utility } = ctx
+export const propTypesArtifact = new ArtifactFile({
+  id: 'types/prop-type.d.ts',
+  fileName: 'prop-types',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['utilities'],
+  imports: {
+    'types/conditions.d.ts': ['ConditionalValue'],
+    'types/system-types.d.ts': ['CssProperties'],
+    'tokens/index.d.ts': ['Tokens'],
+  },
+  computed(ctx) {
+    return { utility: ctx.utility }
+  },
+  code(params) {
+    const { utility } = params.computed
 
-  const result = [
-    outdent`
-    ${ctx.file.importType('ConditionalValue', './conditions')}
-    ${ctx.file.importType('CssProperties', './system-types')}
-    ${ctx.file.importType('Tokens', '../tokens/index')}
+    const result = [`export interface UtilityValues {`]
 
-    export interface UtilityValues {`,
-  ]
+    const types = utility.getTypes()
 
-  const types = utility.getTypes()
+    for (const [prop, values] of types.entries()) {
+      result.push(`\t${prop}: ${values.join(' | ')};`)
+    }
 
-  for (const [prop, values] of types.entries()) {
-    result.push(`\t${prop}: ${values.join(' | ')};`)
-  }
+    result.push('}', '\n')
 
-  result.push('}', '\n')
-
-  return outdent`
+    return `
   ${result.join('\n')}
 
   type WithColorOpacityModifier<T> = T extends string ? \`$\{T}/\${string}\` : T
@@ -63,4 +69,5 @@ export function generatePropTypes(ctx: Context) {
     ? Value
     : Value extends \`\${infer _}\` ? Value : never
   `
-}
+  },
+})

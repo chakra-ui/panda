@@ -1,19 +1,29 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact'
 
-export function generateVueJsxFactory(ctx: Context) {
-  const { factoryName, componentName } = ctx.jsx
-
-  return {
-    js: outdent`
+export const vueJsxFactoryArtifact = new ArtifactFile({
+  id: 'jsx/factory.js',
+  fileName: 'factory',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['jsxFactory'],
+  imports: {
+    'jsx/factory-helpers.js': [
+      'defaultShouldForwardProp',
+      'composeShouldForwardProps',
+      'composeCvaFn',
+      'getDisplayName',
+    ],
+    'jsx/is-valid-prop.js': ['isCssProperty'],
+    'css/index.js': ['css', 'cx', 'cva'],
+    'helpers.js': ['splitProps', 'normalizeHTMLProps'],
+  },
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    const { componentName, factoryName } = params.computed.jsx
+    return `
     import { defineComponent, h, computed } from 'vue'
-    ${ctx.file.import(
-      'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
-      './factory-helper',
-    )}
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
-    ${ctx.file.import('css, cx, cva', '../css/index')}
-    ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -122,6 +132,6 @@ export function generateVueJsxFactory(ctx: Context) {
     tags.split(', ').forEach((tag) => {
       styled[tag] = styled(tag);
     });
-    `,
-  }
-}
+    `
+  },
+})

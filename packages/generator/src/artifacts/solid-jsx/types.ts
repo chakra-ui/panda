@@ -1,6 +1,6 @@
 import { ArtifactFile } from '../artifact'
 
-export const solidJsxFactoryArtifact = new ArtifactFile({
+export const solidJsxFactoryTypesArtifact = new ArtifactFile({
   id: 'jsx/factory.d.ts',
   fileName: 'factory',
   type: 'dts',
