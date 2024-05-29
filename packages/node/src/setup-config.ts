@@ -15,9 +15,10 @@ type SetupOptions = Partial<Config> & {
 }
 
 export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
-  const { force, outExtension, jsxFramework, syntax } = opts
+  const { force, outExtension, jsxFramework, syntax, outdir = 'styled-system' } = opts
 
   let configFile: string | undefined
+
   try {
     configFile = findConfig({ cwd })
   } catch (err) {
@@ -58,7 +59,7 @@ export default defineConfig({
     },
 
     // The output directory for your css system
-    outdir: "styled-system",
+    outdir: ${JSON.stringify(outdir)},
     ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}',` : ''}
     ${syntax ? `\n // The CSS Syntax to use to use\nsyntax: '${syntax}'` : ''}
 })

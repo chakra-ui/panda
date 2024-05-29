@@ -83,7 +83,16 @@ export async function main() {
         await setupPostcss(cwd)
       }
 
-      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
+      await setupConfig(
+        cwd,
+        compact({
+          force,
+          outExtension,
+          jsxFramework,
+          syntax,
+          outdir: flags.outdir,
+        }),
+      )
 
       const ctx = await loadConfigAndCreateContext({
         cwd,
