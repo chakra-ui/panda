@@ -80,6 +80,7 @@ export type ArtifactFileId =
   | 'types/style-props.d.ts'
   | 'types/system-types.d.ts'
   | 'helpers.js'
+  | 'package.json'
 
 export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
 
@@ -101,6 +102,7 @@ export interface ArtifactFilters {
 
 export interface DiffConfigResult {
   hasConfigChanged: boolean
+  // TODO rm this
   artifacts: Set<ArtifactId>
   diffs: Difference[]
 }

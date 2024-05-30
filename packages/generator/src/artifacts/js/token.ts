@@ -1,6 +1,6 @@
-import { type Artifact, ArtifactFile } from '../artifact'
+import { type ArtifactGroup, ArtifactFile } from '../artifact'
 
-const tokenJsArtifact = new ArtifactFile({
+export const tokenJsArtifact = new ArtifactFile({
   id: 'tokens/index.js',
   fileName: 'token',
   type: 'js',
@@ -36,7 +36,7 @@ const tokenJsArtifact = new ArtifactFile({
   },
 })
 
-const tokenDtsArtifact = new ArtifactFile({
+export const tokenDtsArtifact = new ArtifactFile({
   id: 'tokens/index.d.ts',
   fileName: 'token',
   type: 'dts',
@@ -60,7 +60,7 @@ const tokenDtsArtifact = new ArtifactFile({
   },
 })
 
-export const designTokenArtifact: Artifact = {
+export const designTokenArtifact: ArtifactGroup = {
   id: 'design-tokens',
   files: [tokenJsArtifact, tokenDtsArtifact],
 }

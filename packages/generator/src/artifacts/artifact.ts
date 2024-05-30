@@ -70,80 +70,83 @@ export class ArtifactFile<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed>
   }
 }
 
-export interface Artifact {
+export interface ArtifactGroup {
   id: ArtifactId
   files: ArtifactFile<any, any>[]
 }
 
-interface GeneratedArtifact {
+export interface GeneratedArtifact {
   path: string[]
   content: string
 }
 
 export class ArtifactMap {
-  private artifacts: Map<ArtifactId, Artifact> = new Map()
+  private artifacts: Map<ArtifactId, ArtifactGroup> = new Map()
   private files: Map<ArtifactFileId, ArtifactFile<any, any>> = new Map()
 
-  add(artifact: Artifact) {
+  addGroup(artifact: ArtifactGroup) {
     this.artifacts.set(artifact.id, artifact)
     artifact.files.forEach((file) => this.files.set(file.id, file))
     return this
   }
 
-  get(name: ArtifactId) {
-    return this.artifacts.get(name)
+  getGroup(id: ArtifactId) {
+    return this.artifacts.get(id)
   }
 
-  getByFileId(fileId: ArtifactFileId) {
-    return this.files.get(fileId)
+  addFile(artifact: ArtifactFile<any, any>) {
+    this.files.set(artifact.id, artifact)
+    return this
   }
 
-  filter(ids: ArtifactId[]) {
-    return Array.from(this.artifacts.values()).filter((node) => ids.includes(node.id))
+  getFile(id: ArtifactFileId) {
+    return this.files.get(id)
   }
 
-  generate(ctx: Context, ids: ArtifactId[] | undefined) {
-    const stack = ids ? this.filter(ids) : Array.from(this.artifacts.values())
-    const seen = new Set<ArtifactId>()
+  filter(ids: ArtifactFileId[]) {
+    return Array.from(this.files.values()).filter((node) => ids.includes(node.id))
+  }
+
+  generate(ctx: Context, ids: ArtifactFileId[] | undefined) {
+    const stack = ids ? this.filter(ids) : Array.from(this.files.values())
+    const seen = new Set<ArtifactFileId>()
     const contents = [] as Array<GeneratedArtifact>
 
     while (stack.length) {
-      const artifact = stack.pop()!
-      seen.add(artifact.id)
+      const node = stack.pop()!
+      seen.add(node.id)
 
-      artifact.files.forEach((node) => {
-        const dependencies = callable(ctx, node.dependencies as RawOrContextFn<ConfigPath[]>)
-        const code = node.code?.({
-          dependencies: dependencies.map((dep) => (ctx as any)[dep] || (ctx.config as any)[dep]),
-          computed: callable(ctx, node.computed),
-        })
-        if (!code) return
-
-        const computedId = callable(ctx, node.dir)
-        const fileWithExt = node.type === 'js' ? ctx.file.ext(node.fileName) : ctx.file.extDts(node.fileName)
-
-        let content = code
-        if (node.type === 'dts') {
-          content = `/* eslint-disable */\n${code}`
-        }
-
-        contents.push({
-          path: [...(Array.isArray(computedId) ? computedId : [computedId]), fileWithExt],
-          content,
-        })
-
-        const imports = callable(ctx, node.imports)
-        if (imports) {
-          Object.keys(imports).forEach((key) => {
-            const importedArtifactId = key as ArtifactId
-            const depNode = this.get(importedArtifactId)
-            if (depNode && !seen.has(importedArtifactId)) {
-              seen.add(importedArtifactId)
-              stack.push(depNode)
-            }
-          })
-        }
+      const dependencies = callable(ctx, node.dependencies as RawOrContextFn<ConfigPath[]>)
+      const code = node.code?.({
+        dependencies: dependencies.map((dep) => (ctx as any)[dep] || (ctx.config as any)[dep]),
+        computed: callable(ctx, node.computed),
       })
+      if (!code) return
+
+      const computedId = callable(ctx, node.dir)
+      const fileWithExt = node.type === 'js' ? ctx.file.ext(node.fileName) : ctx.file.extDts(node.fileName)
+
+      let content = code
+      if (node.type === 'dts') {
+        content = `/* eslint-disable */\n${code}`
+      }
+
+      contents.push({
+        path: [...(Array.isArray(computedId) ? computedId : [computedId]), fileWithExt],
+        content,
+      })
+
+      const imports = callable(ctx, node.imports)
+      if (imports) {
+        Object.keys(imports).forEach((key) => {
+          const importedFileId = key as ArtifactFileId
+          const depNode = this.getFile(importedFileId)
+          if (depNode && !seen.has(importedFileId)) {
+            seen.add(importedFileId)
+            stack.push(depNode)
+          }
+        })
+      }
     }
 
     return contents

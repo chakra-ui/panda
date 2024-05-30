@@ -74,6 +74,7 @@ const artifactConfigDeps: Record<ArtifactId, ConfigPath[]> = {
 }
 
 // Prepare a list of regex that resolves to an artifact id from a list of config paths
+// TODO
 export const artifactMatchers = Object.entries(artifactConfigDeps).map(([key, paths]) => {
   if (!paths.length) return () => undefined
   return createMatcher(key, paths.concat(all))

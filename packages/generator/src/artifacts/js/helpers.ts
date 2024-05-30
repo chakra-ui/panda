@@ -1,9 +1,9 @@
-import { type Artifact, ArtifactFile } from '../artifact'
+import { type ArtifactGroup, ArtifactFile } from '../artifact'
 import astishMjs from '../generated/astish.mjs.json' assert { type: 'json' }
 import helpersMjs from '../generated/helpers.mjs.json' assert { type: 'json' }
 import normalizeHtmlMjs from '../generated/normalize-html.mjs.json' assert { type: 'json' }
 
-const helpersJsArtifact = new ArtifactFile({
+export const helpersJsArtifact = new ArtifactFile({
   id: 'helpers.js',
   fileName: 'helpers',
   type: 'js',
@@ -30,7 +30,7 @@ const helpersJsArtifact = new ArtifactFile({
   },
 })
 
-export const helpersArtifact: Artifact = {
-  id: 'helpers',
-  files: [helpersJsArtifact],
-}
+// export const helpersArtifact: ArtifactGroup = {
+//   id: 'helpers',
+//   files: [helpersJsArtifact],
+// }
