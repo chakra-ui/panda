@@ -16,7 +16,7 @@ export function generateIsValidProp(ctx: Context) {
     `var userGeneratedStr = "${match(ctx.jsx.styleProps)
       .with('all', () => Array.from(ctx.properties).join(','))
       .with('minimal', () => 'css')
-      .with('none', () => '')
+      .with('none', () => 'css')
       .exhaustive()}"`,
   )
 

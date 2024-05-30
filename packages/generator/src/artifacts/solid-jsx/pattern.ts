@@ -28,10 +28,14 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
           () => outdent`
         const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
         
-        const styleProps = ${styleFnName}(patternProps)
-        const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+        const cssProps = createMemo(() => {
+          const styleProps = ${styleFnName}(patternProps)
+          return { css: styleProps }
+        })
         
-        return createComponent(Comp, restProps)
+        const mergedProps = mergeProps(restProps, cssProps)
+
+        return createComponent(${factoryName}.${jsxElement}, mergedProps)
         `,
         )
         .with(
@@ -43,6 +47,7 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
           const styleProps = ${styleFnName}(patternProps)
           return { css: mergeCss(styleProps, props.css) }
         })
+
         const mergedProps = mergeProps(restProps, cssProps)
 
         return createComponent(${factoryName}.${jsxElement}, mergedProps)
