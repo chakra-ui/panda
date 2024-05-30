@@ -29,9 +29,9 @@ export function generateReactJsxPattern(ctx: Context, filters?: ArtifactFilters)
           const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
           
           const styleProps = ${styleFnName}(patternProps)
-          const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+          const mergedProps = { ref, ...restProps, css: styleProps }
           
-          return createElement(Comp, { ref, ...restProps })
+          return createElement(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .with(

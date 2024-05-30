@@ -30,9 +30,9 @@ export function generatePreactJsxPattern(ctx: Context, filters?: ArtifactFilters
           const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
           
           const styleProps = ${styleFnName}(patternProps)
-          const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+          const mergedProps = { ref, ...restProps, css: styleProps }
           
-          return h(Comp, { ref, ...restProps })
+          return h(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .with(

@@ -71,4 +71,12 @@ export class FileEngine {
     comments.push(' */')
     return comments.join('\n')
   }
+
+  /**
+   * convert import type { CompositionStyleObject } from './system-types'
+   * to import type { CompositionStyleObject } from './system-types.d.ts'
+   */
+  rewriteTypeImport(code: string) {
+    return code.replace(/import\s+type\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"]/g, this.importType('$1', '$2'))
+  }
 }
