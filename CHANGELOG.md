@@ -6,6 +6,17 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.40.1] - 2024-05-31
+
+### Fixed
+
+- Fix issue where using `jsxStyleProps: none` with the generated jsx patterns, lead to unoptimized code that causes the
+  component to be recreated on every render.
+
+### Changed
+
+- Improve `panda init --outdir=<x>` command to reflect `outdir` in generated panda config file.
+
 ## [0.40.0] - 2024-05-29
 
 ### Added
