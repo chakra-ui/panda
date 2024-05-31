@@ -1,5 +1,21 @@
 # @pandacss/node
 
+## 0.40.1
+
+### Patch Changes
+
+- 48ff2b8: Improve `panda init --outdir=<x>` command to reflect `outdir` in generated panda config file.
+- Updated dependencies [d2cc156]
+  - @pandacss/generator@0.40.1
+  - @pandacss/core@0.40.1
+  - @pandacss/parser@0.40.1
+  - @pandacss/config@0.40.1
+  - @pandacss/extractor@0.40.1
+  - @pandacss/logger@0.40.1
+  - @pandacss/shared@0.40.1
+  - @pandacss/token-dictionary@0.40.1
+  - @pandacss/types@0.40.1
+
 ## 0.40.0
 
 ### Minor Changes
