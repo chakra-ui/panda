@@ -1,5 +1,5 @@
 import type { Context } from '@pandacss/core'
-import type { ArtifactFileId, ArtifactId, Config, ConfigPath, Pretty } from '@pandacss/types'
+import type { ArtifactFileId, ArtifactId, Config, ConfigPath, DiffConfigResult, Pretty } from '@pandacss/types'
 
 type RawOrContextFn<T> = T | ((ctx: Context) => T)
 type InferRaw<T> = T extends RawOrContextFn<infer R> ? R : T
@@ -46,7 +46,7 @@ interface ArtifactOptions<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed>
   code: (params: GenerateCodeParams<TDeps, TComputed>) => string | undefined
 }
 
-export class ArtifactFile<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed>
+export class ArtifactFile<TDeps extends RawOrContextFn<ConfigPath[]> = RawOrContextFn<ConfigPath[]>, TComputed = any>
   implements ArtifactOptions<TDeps, TComputed>
 {
   id: ArtifactFileId
@@ -70,9 +70,41 @@ export class ArtifactFile<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed>
   }
 }
 
+/**
+ * Acts like a .gitignore matcher
+ * e.g a list of string to search for nested path with glob and exclusion allowed
+ * ["outdir", "theme.recipes", '*.css', '!aaa.*.bbb']
+ */
+function createMatcher(id: string, patterns: string[]) {
+  if (!patterns?.length) return () => undefined
+
+  const includePatterns = [] as string[]
+  const excludePatterns = [] as string[]
+  const deduped = new Set(patterns)
+
+  // Separate inclusion and exclusion patterns
+  deduped.forEach((pattern) => {
+    // replace '*' with '.*' for regex matching
+    const regexString = pattern.replace(/\*/g, '.*')
+    if (pattern.startsWith('!')) {
+      excludePatterns.push(regexString.slice(1))
+    } else {
+      includePatterns.push(regexString)
+    }
+  })
+
+  const include = new RegExp(includePatterns.join('|'))
+  const exclude = new RegExp(excludePatterns.join('|'))
+
+  return (path: string) => {
+    if (excludePatterns.length && exclude.test(path)) return
+    return include.test(path) ? id : undefined
+  }
+}
+
 export interface ArtifactGroup {
   id: ArtifactId
-  files: ArtifactFile<any, any>[]
+  files: ArtifactFile[]
 }
 
 export interface GeneratedArtifact {
@@ -82,7 +114,7 @@ export interface GeneratedArtifact {
 
 export class ArtifactMap {
   private artifacts: Map<ArtifactId, ArtifactGroup> = new Map()
-  private files: Map<ArtifactFileId, ArtifactFile<any, any>> = new Map()
+  private files: Map<ArtifactFileId, ArtifactFile> = new Map()
 
   addGroup(artifact: ArtifactGroup) {
     this.artifacts.set(artifact.id, artifact)
@@ -94,7 +126,7 @@ export class ArtifactMap {
     return this.artifacts.get(id)
   }
 
-  addFile(artifact: ArtifactFile<any, any>) {
+  addFile(artifact: ArtifactFile) {
     this.files.set(artifact.id, artifact)
     return this
   }
@@ -107,7 +139,36 @@ export class ArtifactMap {
     return Array.from(this.files.values()).filter((node) => ids.includes(node.id))
   }
 
-  generate(ctx: Context, ids: ArtifactFileId[] | undefined) {
+  createMatchers(ctx: Context) {
+    const matchers = [] as Array<ReturnType<typeof createMatcher>>
+    this.files.forEach((file) => {
+      matchers.push(createMatcher(file.id, callable(ctx, file.dependencies)))
+    })
+
+    return matchers
+  }
+
+  computeAffectedFiles(ctx: Context, diffResult?: DiffConfigResult) {
+    if (!diffResult) return new Set(this.files.keys())
+
+    const matchers = this.createMatchers(ctx)
+    const affecteds = new Set<ArtifactFileId>()
+
+    diffResult.diffs.forEach((change) => {
+      const changePath = change.path.join('.')
+
+      matchers.forEach((matcher) => {
+        const id = matcher(changePath) as ArtifactFileId | undefined
+        if (!id) return
+
+        affecteds.add(id)
+      })
+    })
+
+    return affecteds
+  }
+
+  generate(ctx: Context, ids: ArtifactFileId[]) {
     const stack = ids ? this.filter(ids) : Array.from(this.files.values())
     const seen = new Set<ArtifactFileId>()
     const contents = [] as Array<GeneratedArtifact>
@@ -118,7 +179,9 @@ export class ArtifactMap {
 
       const dependencies = callable(ctx, node.dependencies as RawOrContextFn<ConfigPath[]>)
       const code = node.code?.({
-        dependencies: dependencies.map((dep) => (ctx as any)[dep] || (ctx.config as any)[dep]),
+        dependencies: Object.fromEntries(
+          dependencies.map((dep) => [dep, (ctx as any)[dep] || (ctx.config as any)[dep]]),
+        ) as any,
         computed: callable(ctx, node.computed),
       })
       if (!code) return

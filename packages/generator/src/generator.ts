@@ -1,5 +1,5 @@
 import { Context, type StyleDecoder, type Stylesheet } from '@pandacss/core'
-import type { ArtifactId, CssArtifactType, LoadConfigResult } from '@pandacss/types'
+import type { ArtifactId, CssArtifactType, DiffConfigResult, LoadConfigResult } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateGlobalCss } from './artifacts/css/global-css'
 import { generateKeyframeCss } from './artifacts/css/keyframe-css'
@@ -21,10 +21,11 @@ export class Generator extends Context {
    * Generate all the artifacts
    * Can opt-in to filter them if a list of ArtifactId is provided
    */
-  getArtifacts = () => {
+  getArtifacts = (diffResult?: DiffConfigResult) => {
     const map = registerStaticArtifacts(this.config.emitTokensOnly ? getDesignTokensArtifacts() : this.artifacts)
+    const affecteds = map.computeAffectedFiles(this, diffResult)
 
-    return map.generate(this, undefined)
+    return map.generate(this, Array.from(affecteds))
   }
 
   appendCssOfType = (type: CssArtifactType, sheet: Stylesheet) => {

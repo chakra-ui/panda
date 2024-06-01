@@ -133,7 +133,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
             fileName: dashName,
             type: 'js',
             dir: (ctx) => ctx.paths.recipe,
-            dependencies: [],
+            dependencies: ['theme.slotRecipes.' + baseName],
             imports: {
               'helpers.js': ['compact', 'getSlotCompoundVariant', 'memo', 'splitProps'],
               'recipes/create-recipe.js': ['createRecipe'],

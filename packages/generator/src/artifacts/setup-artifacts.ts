@@ -1,28 +1,28 @@
 import type { Context } from '@pandacss/core'
 import type { AffectedArtifacts, Artifact, ArtifactFilters, ArtifactId } from '@pandacss/types'
 import outdent from 'outdent'
+import { ArtifactFile, ArtifactMap } from './artifact'
 import { cssConditionsJsArtifact, typesConditionsDtsArtifact } from './js/conditions'
 import { stringLiteralConditionsJsArtifact } from './js/conditions.string-literal'
-import { cssFnJsArtifact, cssFnDtsArtifact } from './js/css-fn'
-import { stringLiteralCssFnJsArtifact, stringLiteralCssFnDtsArtifact } from './js/css-fn.string-literal'
+import { cssFnDtsArtifact, cssFnJsArtifact } from './js/css-fn'
+import { stringLiteralCssFnDtsArtifact, stringLiteralCssFnJsArtifact } from './js/css-fn.string-literal'
 import { cvaDtsArtifact, cvaJsArtifact } from './js/cva'
-import { cxJsArtifact, cxDtsArtifact } from './js/cx'
+import { cxDtsArtifact, cxJsArtifact } from './js/cx'
 import { helpersJsArtifact } from './js/helpers'
-import { isValidPropJsArtifact, isValidPropDtsArtifact } from './js/is-valid-prop'
+import { isValidPropDtsArtifact, isValidPropJsArtifact } from './js/is-valid-prop'
 import { jsxHelpersJsArtifact } from './js/jsx-helper'
 import { generatePattern } from './js/pattern'
 import { createRecipeArtifact, generateRecipes } from './js/recipe'
-import { svaJsArtifact, svaDtsArtifact } from './js/sva'
-import { generateThemes, themesIndexJsArtifact, themesIndexDtsArtifact } from './js/themes'
+import { svaDtsArtifact, svaJsArtifact } from './js/sva'
+import { themesIndexDtsArtifact, themesIndexJsArtifact } from './js/themes'
 import { tokenDtsArtifact, tokenJsArtifact } from './js/token'
-import { generateJsxFactory, generateJsxPatterns, generateJsxTypes } from './jsx'
+import { generateJsxPatterns } from './jsx'
 import { packageJsonArtifact } from './pkg-json'
 import { getGeneratedSystemTypes, getGeneratedTypes } from './types/generated'
-import { typesIndexArtifact, typesGlobalArtifact } from './types/main'
+import { typesGlobalArtifact, typesIndexArtifact } from './types/main'
 import { propTypesArtifact } from './types/prop-types'
 import { stylePropsArtifact } from './types/style-props'
 import { tokenTypesArtifact } from './types/token-types'
-import { ArtifactMap } from './artifact'
 
 export function getDesignTokensArtifacts() {
   return new ArtifactMap().addFile(tokenJsArtifact).addFile(tokenDtsArtifact).addFile(tokenTypesArtifact)
@@ -56,24 +56,49 @@ function setupGeneratedSystemTypes(ctx: Context): Artifact {
   }
 }
 
-function setupRecipesIndex(ctx: Context): Artifact | undefined {
-  if (ctx.recipes.isEmpty()) return
+const recipesIndexJsArtifact = new ArtifactFile({
+  id: 'recipes/index.js',
+  fileName: 'index',
+  type: 'js',
+  dir: (ctx) => ctx.paths.recipe,
+  dependencies: ['recipes', 'syntax'],
+  computed(ctx) {
+    return {
+      hasRecipes: !ctx.recipes.isEmpty(),
+      recipes: ctx.recipes.details.map((recipe) => recipe.dashName),
+      exportStar: ctx.file.exportStar,
+      exportTypeStar: ctx.file.exportTypeStar,
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    if (!ctx.hasRecipes) return
 
-  const fileNames = ctx.recipes.details.map((recipe) => recipe.dashName)
-  const index = {
-    js: outdent.string(fileNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')),
-    dts: outdent.string(fileNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')),
-  }
+    return ctx.recipes.map((file) => ctx.exportStar(`./${file}`)).join('\n')
+  },
+})
 
-  return {
-    id: 'recipes-index',
-    dir: ctx.paths.recipe,
-    files: [
-      { file: ctx.file.ext('index'), code: index.js },
-      { file: ctx.file.extDts('index'), code: index.dts },
-    ],
-  }
-}
+const recipesIndexDtsArtifact = new ArtifactFile({
+  id: 'recipes/index.d.ts',
+  fileName: 'index',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.recipe,
+  dependencies: ['recipes', 'syntax'],
+  computed(ctx) {
+    return {
+      hasRecipes: !ctx.recipes.isEmpty(),
+      recipes: ctx.recipes.details.map((recipe) => recipe.dashName),
+      exportStar: ctx.file.exportStar,
+      exportTypeStar: ctx.file.exportTypeStar,
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    if (!ctx.hasRecipes) return
+
+    return ctx.recipes.map((file) => ctx.exportTypeStar(`./${file}`)).join('\n')
+  },
+})
 
 function setupRecipes(ctx: Context, filters?: ArtifactFilters): Artifact | undefined {
   if (ctx.recipes.isEmpty()) return
@@ -144,157 +169,171 @@ function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | u
   }
 }
 
-function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
-  if (!ctx.jsx.framework) return
+const patternsIndexJsArtifact = new ArtifactFile({
+  id: 'patterns/index.js',
+  fileName: 'index',
+  type: 'js',
+  dir: (ctx) => ctx.paths.pattern,
+  dependencies: ['patterns', 'syntax', 'jsxFramework'],
+  computed(ctx) {
+    return {
+      isStyleProp: !ctx.isTemplateLiteralSyntax,
+      patternNames: ctx.patterns.details.map((pattern) => pattern.dashName),
+      exportStar: ctx.file.exportStar,
+      exportTypeStar: ctx.file.exportTypeStar,
+      jsx: ctx.jsx,
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    if (!ctx.jsx.framework) return
 
-  const isStyleProp = !ctx.isTemplateLiteralSyntax
-  const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
+    const { isStyleProp, patternNames } = ctx
 
-  const index = {
-    js: outdent`
-  ${ctx.file.exportStar('./factory')}
-  ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
-  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
-  `,
-    dts: outdent`
-  ${ctx.file.exportTypeStar('./factory')}
-  ${isStyleProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
-  ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')) : ''}
-  ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
-    `,
-  }
+    return `
+    ${ctx.exportStar('./factory')}
+    ${isStyleProp ? ctx.exportStar('./is-valid-prop') : ''}
+    ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.exportStar(`./${file}`)).join('\n')) : ''}
+    `
+  },
+})
 
-  return {
-    id: 'jsx-patterns-index',
-    dir: ctx.paths.jsx,
-    files: [
-      { file: ctx.file.ext('index'), code: index.js },
-      { file: ctx.file.extDts('index'), code: index.dts },
-    ],
-  }
-}
+const patternsIndexDtsArtifact = new ArtifactFile({
+  id: 'patterns/index.d.ts',
+  fileName: 'index',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.pattern,
+  dependencies: ['patterns', 'syntax'],
+  computed(ctx) {
+    return {
+      isStyleProp: !ctx.isTemplateLiteralSyntax,
+      patternNames: ctx.patterns.details.map((pattern) => pattern.dashName),
+      exportTypeStar: ctx.file.exportTypeStar,
+      exportType: ctx.file.exportType,
+      jsx: ctx.jsx,
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    if (!ctx.jsx.framework) return
 
-function setupCssIndex(ctx: Context): Artifact {
-  const index = {
-    js: outdent`
-  ${ctx.file.exportStar('./css')}
-  ${ctx.file.exportStar('./cx')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportStar('./cva')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportStar('./sva')}
- `,
-    dts: outdent`
-  ${ctx.file.exportTypeStar('./css')}
-  ${ctx.file.exportTypeStar('./cx')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportTypeStar('./cva')}
-  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.exportTypeStar('./sva')}
-  `,
-  }
+    const { isStyleProp, patternNames } = ctx
 
-  return {
-    id: 'css-index',
-    dir: ctx.paths.css,
-    files: [
-      { file: ctx.file.ext('index'), code: index.js },
-      { file: ctx.file.extDts('index'), code: index.dts },
-    ],
-  }
-}
+    return `
+    ${ctx.exportTypeStar('./factory')}
+    ${isStyleProp ? ctx.exportTypeStar('./is-valid-prop') : ''}
+    ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.exportTypeStar(`./${file}`)).join('\n')) : ''}
+    ${ctx.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
+      `
+  },
+})
 
-const getAffectedArtifacts = (ids?: string[]): AffectedArtifacts | undefined => {
-  if (!ids) return
+const cssIndexJsArtifact = new ArtifactFile({
+  id: 'css/index.js',
+  fileName: 'index',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['syntax'],
+  computed(ctx) {
+    return {
+      exportStar: ctx.file.exportStar,
+      exportTypeStar: ctx.file.exportTypeStar,
+      isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    return `
+    ${ctx.exportStar('./css')}
+    ${ctx.exportStar('./cx')}
+    ${ctx.isTemplateLiteralSyntax ? '' : ctx.exportStar('./cva')}
+    ${ctx.isTemplateLiteralSyntax ? '' : ctx.exportStar('./sva')}
+   `
+  },
+})
 
-  const hasSpecificArtifacts = ids.some(
-    (id) => id.startsWith('recipes.') || id.startsWith('slot-recipes.') || id.startsWith('patterns.'),
-  )
-  if (!hasSpecificArtifacts) return
-
-  return {
-    recipes: ids
-      .filter((id) => id.startsWith('recipes.') || id.startsWith('slot-recipes.'))
-      .map((id) => id.replace('slot-recipes.', '').replace('recipes.', '')),
-    patterns: ids.filter((id) => id.startsWith('patterns.')).map((id) => id.replace('patterns.', '')),
-  }
-}
-
-const filterArtifactsFiles = (artifacts: Artifact[], filters?: ArtifactFilters): Artifact[] => {
-  const affected = filters?.affecteds
-
-  return artifacts.map((artifact) => {
-    const files = artifact?.files ?? []
-    const filtered = files.filter((item) => {
-      if (!item) return
-      if (!affected) return true
-
-      // only rewrite the affected files (and index files)
-      // or all of them if we don't have a list to filter them
-      if (affected.recipes && !item.file.includes('index') && artifact?.dir?.includes('recipes')) {
-        const isAffected = affected.recipes.some((recipe) => item.file.includes(recipe))
-        if (!isAffected) return
-      }
-      if (
-        affected.patterns &&
-        !item.file.includes('index') &&
-        (artifact?.dir?.includes('patterns') || artifact?.dir?.includes('jsx'))
-      ) {
-        const isAffected = affected.patterns.some((pattern) => item.file.includes(pattern))
-        if (!isAffected) return
-      }
-
-      return true
-    })
-    return { ...artifact, files: filtered } as Artifact
-  })
-}
+const cssIndexDtsArtifact = new ArtifactFile({
+  id: 'css/index.d.ts',
+  fileName: 'index',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['syntax'],
+  computed(ctx) {
+    return {
+      exportStar: ctx.file.exportStar,
+      exportTypeStar: ctx.file.exportTypeStar,
+      isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    return `
+    ${ctx.exportTypeStar('./css')}
+    ${ctx.exportTypeStar('./cx')}
+    ${ctx.isTemplateLiteralSyntax ? '' : ctx.exportTypeStar('./cva')}
+    ${ctx.isTemplateLiteralSyntax ? '' : ctx.exportTypeStar('./sva')}
+    `
+  },
+})
 
 type ArtifactEntry = [ArtifactId, (ctx: Context, filters?: ArtifactFilters) => Artifact | undefined]
 const entries: ArtifactEntry[] = [
   ['types-gen', setupGeneratedTypes],
   ['types-gen-system', setupGeneratedSystemTypes],
-  ['recipes-index', setupRecipesIndex],
   ['recipes', setupRecipes],
-  ['patterns-index', setupPatternsIndex],
   ['patterns', setupPatterns],
   ['jsx-patterns', setupJsxPatterns],
-  ['jsx-patterns-index', setupJsxPatternsIndex],
-  ['css-index', setupCssIndex],
 ]
 
 export const registerStaticArtifacts = (artifactsMap: ArtifactMap) => {
-  // TODO
-  // const affecteds = getAffectedArtifacts(ids)
-  // const matches = filterArtifactsFiles(artifacts, { ids, affecteds })
-  // TODO remove "ids?: ArtifactId[]" from the function signature and everything above
-  // instead, compute it based on the ArtifactMap + dependencies
-  // search for artifactMatchers
-
-  return artifactsMap
-    .addFile(helpersJsArtifact)
-    .addFile(tokenJsArtifact)
-    .addFile(tokenDtsArtifact)
-    .addFile(cssConditionsJsArtifact)
-    .addFile(typesConditionsDtsArtifact)
-    .addFile(stringLiteralConditionsJsArtifact)
-    .addFile(cssFnJsArtifact)
-    .addFile(cssFnDtsArtifact)
-    .addFile(stringLiteralCssFnJsArtifact)
-    .addFile(stringLiteralCssFnDtsArtifact)
-    .addFile(cvaDtsArtifact)
-    .addFile(cvaJsArtifact)
-    .addFile(cxJsArtifact)
-    .addFile(cxDtsArtifact)
-    .addFile(isValidPropJsArtifact)
-    .addFile(isValidPropDtsArtifact)
-    .addFile(jsxHelpersJsArtifact)
-    .addFile(createRecipeArtifact)
-    .addFile(svaJsArtifact)
-    .addFile(svaDtsArtifact)
-    .addFile(svaJsArtifact)
-    .addFile(themesIndexJsArtifact)
-    .addFile(themesIndexDtsArtifact)
-    .addFile(packageJsonArtifact)
-    .addFile(typesIndexArtifact)
-    .addFile(typesGlobalArtifact)
-    .addFile(propTypesArtifact)
-    .addFile(stylePropsArtifact)
-    .addFile(tokenTypesArtifact)
+  return (
+    artifactsMap
+      // {outdir}/
+      .addFile(helpersJsArtifact)
+      .addFile(packageJsonArtifact)
+      // {outdir}/css/
+      .addFile(cssConditionsJsArtifact)
+      .addFile(cssFnJsArtifact)
+      .addFile(cssFnDtsArtifact)
+      //
+      .addFile(cssIndexJsArtifact)
+      .addFile(cssIndexDtsArtifact)
+      //
+      .addFile(cvaDtsArtifact)
+      .addFile(cvaJsArtifact)
+      //
+      .addFile(cxJsArtifact)
+      .addFile(cxDtsArtifact)
+      //
+      .addFile(svaJsArtifact)
+      .addFile(svaDtsArtifact)
+      // {outdir}/css/ [syntax=template-literal]
+      .addFile(stringLiteralConditionsJsArtifact)
+      .addFile(stringLiteralCssFnJsArtifact)
+      .addFile(stringLiteralCssFnDtsArtifact)
+      // {outdir}/jsx/
+      .addFile(isValidPropJsArtifact)
+      .addFile(isValidPropDtsArtifact)
+      .addFile(jsxHelpersJsArtifact)
+      // {outdir}/recipes/
+      .addFile(recipesIndexJsArtifact)
+      .addFile(recipesIndexDtsArtifact)
+      .addFile(createRecipeArtifact)
+      // {outdir}/recipes/
+      .addFile(patternsIndexJsArtifact)
+      .addFile(patternsIndexDtsArtifact)
+      // {outdir}/themes/
+      .addFile(themesIndexJsArtifact)
+      .addFile(themesIndexDtsArtifact)
+      // {outdir}/tokens/
+      .addFile(tokenJsArtifact)
+      .addFile(tokenDtsArtifact)
+      // {outdir}/types/
+      .addFile(typesConditionsDtsArtifact)
+      .addFile(typesIndexArtifact)
+      .addFile(typesGlobalArtifact)
+      .addFile(propTypesArtifact)
+      .addFile(stylePropsArtifact)
+      .addFile(tokenTypesArtifact)
+  )
 }
