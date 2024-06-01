@@ -1,21 +1,18 @@
 import type { Context } from '@pandacss/core'
-import type { ArtifactFileId, ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFileId } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import { ArtifactFile, type ArtifactImports } from '../artifact'
 
-export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters) {
+export function generateSolidJsxPattern(ctx: Context) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
-  const details = ctx.patterns.filterDetails(filters)
-
-  return details.map((pattern) => {
+  return ctx.patterns.details.flatMap((pattern) => {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div', deprecated } = pattern.config
 
-    return {
-      name: dashName,
-      js: new ArtifactFile({
+    return [
+      new ArtifactFile({
         id: `jsx/pattern/${dashName}.js` as ArtifactFileId,
         fileName: `${dashName}.js`,
         type: 'js',
@@ -86,8 +83,7 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
           `
         },
       }),
-
-      dts: new ArtifactFile({
+      new ArtifactFile({
         id: `jsx/pattern/${dashName}.d.ts` as ArtifactFileId,
         fileName: `${dashName}.d.ts`,
         type: 'dts',
@@ -111,6 +107,6 @@ export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters)
           `
         },
       }),
-    }
+    ]
   })
 }

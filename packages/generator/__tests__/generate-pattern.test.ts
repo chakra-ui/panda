@@ -2,11 +2,11 @@ import { fixtureDefaults } from '@pandacss/fixture'
 import type { LoadConfigResult } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
-import { generatePattern } from '../src/artifacts/js/pattern'
+import { getPatternsArtifacts } from '../src/artifacts/js/pattern'
 
 const patterns = (config: LoadConfigResult) => {
   const generator = new Generator(config)
-  return generatePattern(generator)
+  return getPatternsArtifacts(generator)
 }
 
 test('should generate pattern', () => {
@@ -20,7 +20,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface BoxProperties {
-       
+
     }
 
 
@@ -451,7 +451,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface LinkOverlayProperties {
-       
+
     }
 
 
@@ -723,7 +723,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface ContainerProperties {
-       
+
     }
 
 
@@ -947,7 +947,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface VisuallyHiddenProperties {
-       
+
     }
 
 

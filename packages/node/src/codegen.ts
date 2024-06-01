@@ -1,4 +1,4 @@
-import type { ArtifactId } from '@pandacss/types'
+import type { ArtifactFileId, ArtifactId, DiffConfigResult } from '@pandacss/types'
 import pLimit from 'p-limit'
 import prettier from 'prettier'
 import { createBox } from './cli-box'
@@ -9,20 +9,21 @@ const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)
 
 const limit = pLimit(20)
 
-export async function codegen(ctx: PandaContext, ids?: ArtifactId[]) {
+export async function codegen(ctx: PandaContext, changes?: DiffConfigResult) {
   if (ctx.config.clean) ctx.output.empty()
 
-  let artifacts = ctx.getArtifacts(ids)
+  const artifacts = ctx.getArtifacts(changes)
+  let generated = artifacts.generated
   if (ctx.hooks['codegen:prepare']) {
-    const results = await ctx.hooks['codegen:prepare']?.({ changed: ids, artifacts })
-    if (results) artifacts = results
+    const results = await ctx.hooks['codegen:prepare']?.({ changed: artifacts.changed, artifacts: generated })
+    if (results) generated = results
   }
 
   // limit concurrency since we might output a lot of files
-  const promises = artifacts.map((artifact) => limit(() => ctx.output.write(artifact)))
+  const promises = generated.map((artifact) => limit(() => ctx.output.write(artifact)))
   await Promise.allSettled(promises)
 
-  await ctx.hooks['codegen:done']?.({ changed: ids })
+  await ctx.hooks['codegen:done']?.({ changed: artifacts.changed })
 
   return {
     box: createBox({

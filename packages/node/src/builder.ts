@@ -27,7 +27,7 @@ export class Builder {
   private hasEmitted = false
   private filesMeta: FileChanges | undefined
   private explicitDepsMeta: FileChanges | undefined
-  private affecteds: DiffConfigResult | undefined
+  private changes: DiffConfigResult | undefined
   private configDependencies: Set<string> = new Set()
 
   setConfigDependencies(options: SetupContextOptions) {
@@ -62,11 +62,11 @@ export class Builder {
 
     const ctx = this.getContextOrThrow()
 
-    this.affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+    this.changes = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
       this.context = new PandaContext(conf)
     })
 
-    logger.debug('builder', this.affecteds)
+    logger.debug('builder', this.changes)
 
     // explicit config dependencies change
     this.explicitDepsMeta = this.checkFilesChanged(this.context.explicitDeps)
@@ -77,13 +77,13 @@ export class Builder {
       })
 
       logger.debug('builder', '⚙️ Explicit config dependencies changed')
-      this.affecteds.hasConfigChanged = true
+      this.changes.hasConfigChanged = true
     }
 
     // config change
-    if (this.affecteds.hasConfigChanged) {
+    if (this.changes.hasConfigChanged) {
       logger.debug('builder', '⚙️ Config changed, reloading')
-      await ctx.hooks['config:change']?.({ config: ctx.config, changes: this.affecteds })
+      await ctx.hooks['config:change']?.({ config: ctx.config, changes: this.changes })
       return
     }
 
@@ -97,9 +97,9 @@ export class Builder {
 
   async emit() {
     // ensure emit is only called when the config is changed
-    if (this.hasEmitted && this.affecteds?.hasConfigChanged) {
+    if (this.hasEmitted && this.changes?.hasConfigChanged) {
       logger.debug('builder', 'Emit artifacts after config change')
-      await codegen(this.getContextOrThrow(), Array.from(this.affecteds.artifacts))
+      await codegen(this.getContextOrThrow(), this.changes)
     }
 
     this.hasEmitted = true
@@ -152,7 +152,7 @@ export class Builder {
   extractFile = (ctx: PandaContext, file: string) => {
     const meta = this.filesMeta?.changes.get(file) ?? this.getFileMeta(file)
 
-    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : true
+    const hasConfigChanged = this.changes ? this.changes.hasConfigChanged : true
     if (meta.isUnchanged && !hasConfigChanged) return
 
     const parserResult = ctx.parseFile(file)
@@ -162,7 +162,7 @@ export class Builder {
   }
 
   extract = () => {
-    const hasConfigChanged = this.affecteds ? this.affecteds.hasConfigChanged : true
+    const hasConfigChanged = this.changes ? this.changes.hasConfigChanged : true
     if (!this.filesMeta && !hasConfigChanged) {
       logger.debug('builder', 'No files or config changed, skipping extract')
       return

@@ -1,21 +1,18 @@
 import type { Context } from '@pandacss/core'
-import type { ArtifactFileId, ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFileId } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import { ArtifactFile, type ArtifactImports } from '../artifact'
 
-export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
+export function generateVueJsxPattern(ctx: Context) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
-  const details = ctx.patterns.filterDetails(filters)
-
-  return details.map((pattern) => {
+  return ctx.patterns.details.flatMap((pattern) => {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div', deprecated } = pattern.config
 
-    return {
-      name: dashName,
-      js: new ArtifactFile({
+    return [
+      new ArtifactFile({
         id: `jsx/${dashName}.js` as ArtifactFileId,
         fileName: dashName,
         type: 'js',
@@ -88,18 +85,28 @@ export function generateVueJsxPattern(ctx: Context, filters?: ArtifactFilters) {
           `
         },
       }),
+      new ArtifactFile({
+        id: `jsx/${dashName}.d.ts` as ArtifactFileId,
+        fileName: dashName,
+        type: 'dts',
+        dir: (ctx) => ctx.paths.jsx,
+        dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        imports: {
+          'types/system-types.d.ts': ['DistributiveOmit'],
+          'types/jsx.d.ts': [typeName],
+        },
+        code() {
+          return `
+          import type { FunctionalComponent } from 'vue'
+          ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
 
-      dts: outdent`
-    import type { FunctionalComponent } from 'vue'
-    ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
-    ${ctx.file.importType(typeName, '../types/jsx')}
-    ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+          export interface ${upperName}Props extends ${upperName}Properties, DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}> {}
 
-    export interface ${upperName}Props extends ${upperName}Properties, DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}> {}
-
-    ${ctx.file.jsDocComment(description, { deprecated })}
-    export declare const ${jsxName}: FunctionalComponent<${upperName}Props>
-    `,
-    }
+          ${ctx.file.jsDocComment(description, { deprecated })}
+          export declare const ${jsxName}: FunctionalComponent<${upperName}Props>
+          `
+        },
+      }),
+    ]
   })
 }

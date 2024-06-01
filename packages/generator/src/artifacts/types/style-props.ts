@@ -5,7 +5,7 @@ import type { UserConfig } from '@pandacss/types'
 import { ArtifactFile } from '../artifact'
 import csstype from '../generated/csstype.d.ts.json' assert { type: 'json' }
 
-export const stylePropsArtifact = new ArtifactFile({
+export const typesStylePropsArtifact = new ArtifactFile({
   id: 'types/style-props.d.ts',
   fileName: 'style-props',
   type: 'dts',
@@ -24,6 +24,7 @@ export const stylePropsArtifact = new ArtifactFile({
       cssVars: unionType(ctx.globalVars.vars),
       cssVarNames: unionType(ctx.globalVars.names),
       hasCssVars: !ctx.globalVars.isEmpty(),
+      restrict: restrict,
     }
   },
   code(params) {

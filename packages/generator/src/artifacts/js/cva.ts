@@ -108,14 +108,11 @@ export const cvaDtsArtifact = new ArtifactFile({
   importsType: {
     'types/index.d.ts': ['RecipeCreatorFn'],
   },
-  computed(ctx) {
-    return { exportType: ctx.file.exportType }
-  },
   code(params) {
     return `
     export declare const cva: RecipeCreatorFn
 
-    ${params.computed.exportType('RecipeVariant, RecipeVariantProps', '../types/recipe')}
+    ${params.file.exportType('RecipeVariant, RecipeVariantProps', '../types/recipe')}
     `
   },
 })

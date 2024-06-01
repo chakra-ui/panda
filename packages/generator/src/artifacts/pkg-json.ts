@@ -9,12 +9,10 @@ export const packageJsonArtifact = new ArtifactFile({
   computed(ctx) {
     return {
       outdir: ctx.config.outdir,
-      ext: ctx.file.ext,
-      extDts: ctx.file.extDts,
     }
   },
   code(params) {
-    const { outdir, extDts, ext } = params.computed
+    const { outdir } = params.computed
 
     const pkg = {
       name: outdir,
@@ -23,37 +21,37 @@ export const packageJsonArtifact = new ArtifactFile({
       type: 'module',
       exports: {
         './css': {
-          types: extDts('./css/index'),
-          require: ext(`./css/index`),
-          import: ext(`./css/index`),
+          types: params.file.extDts('./css/index'),
+          require: params.file.ext(`./css/index`),
+          import: params.file.ext(`./css/index`),
         },
         './jsx': {
-          types: extDts('./jsx/index'),
-          require: ext(`./jsx/index`),
-          import: ext(`./jsx/index`),
+          types: params.file.extDts('./jsx/index'),
+          require: params.file.ext(`./jsx/index`),
+          import: params.file.ext(`./jsx/index`),
         },
         './patterns': {
-          types: extDts('./patterns/index'),
-          require: ext(`./patterns/index`),
-          import: ext(`./patterns/index`),
+          types: params.file.extDts('./patterns/index'),
+          require: params.file.ext(`./patterns/index`),
+          import: params.file.ext(`./patterns/index`),
         },
         './recipes': {
-          types: extDts('./recipes/index'),
-          require: ext(`./recipes/index`),
-          import: ext(`./recipes/index`),
+          types: params.file.extDts('./recipes/index'),
+          require: params.file.ext(`./recipes/index`),
+          import: params.file.ext(`./recipes/index`),
         },
         './themes': {
-          types: extDts('./themes/index'),
-          require: ext(`./themes/index`),
-          import: ext(`./themes/index`),
+          types: params.file.extDts('./themes/index'),
+          require: params.file.ext(`./themes/index`),
+          import: params.file.ext(`./themes/index`),
         },
         './tokens': {
-          types: extDts('./tokens/index'),
-          require: ext(`./tokens/index`),
-          import: ext(`./tokens/index`),
+          types: params.file.extDts('./tokens/index'),
+          require: params.file.ext(`./tokens/index`),
+          import: params.file.ext(`./tokens/index`),
         },
         './types': {
-          types: extDts('./types/index'),
+          types: params.file.extDts('./types/index'),
         },
         './styles.css': './styles.css',
       },

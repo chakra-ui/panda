@@ -1,17 +1,17 @@
 import type { LoadConfigResult } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Generator } from '../src'
-import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
+import { recipesCreateRecipeArtifact, getRecipesArtifacts } from '../src/artifacts/js/recipe'
 import { fixtureDefaults } from '@pandacss/fixture'
 
 const createRecipeJs = (config: LoadConfigResult) => {
   const generator = new Generator(config)
-  return generateCreateRecipe(generator)
+  return recipesCreateRecipeArtifact(generator)
 }
 
 const recipeJs = (config: LoadConfigResult) => {
   const generator = new Generator(config)
-  return generateRecipes(generator)
+  return getRecipesArtifacts(generator)
 }
 
 describe('generate recipes', () => {
@@ -47,14 +47,14 @@ describe('generate recipes', () => {
          }
 
          const recipeCss = createCss({
-           
+
            conditions: {
              shift: sortConditions,
              finalize: finalizeConditions,
              breakpoints: { keys: ["base","sm","md","lg","xl","2xl"] }
            },
            utility: {
-             
+
              toHash: (path, hashFn) => hashFn(path.join(":")),
              transform,
            }
@@ -172,7 +172,7 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface TooltipStyleVariant {
-        
+
       }
 
       type TooltipStyleVariantMap = {

@@ -5,12 +5,13 @@ import { stringify } from 'javascript-stringify'
 import { match } from 'ts-pattern'
 import { ArtifactFile } from '../artifact'
 
-export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
-  if (ctx.patterns.isEmpty()) return
+export function getPatternsArtifacts(ctx: Context, filters?: ArtifactFilters) {
+  if (ctx.patterns.isEmpty()) return []
+  if (ctx.isTemplateLiteralSyntax) return []
 
   const details = ctx.patterns.filterDetails(filters)
 
-  return details.map((pattern) => {
+  return details.flatMap((pattern) => {
     const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern
     const { properties, transform, strict, description, defaultValues, deprecated } = config
 
@@ -25,9 +26,8 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
       helperImports.push('__objRest')
     }
 
-    return {
-      name: dashName,
-      dts: new ArtifactFile({
+    return [
+      new ArtifactFile({
         id: `patterns/${dashName}.d.ts` as ArtifactFileId,
         fileName: dashName,
         type: 'dts',
@@ -85,7 +85,7 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
          `
         },
       }),
-      js: new ArtifactFile({
+      new ArtifactFile({
         id: `patterns/${dashName}.js` as ArtifactFileId,
         fileName: dashName,
         type: 'js',
@@ -114,6 +114,6 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
           `
         },
       }),
-    }
+    ]
   })
 }

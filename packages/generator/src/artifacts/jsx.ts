@@ -1,7 +1,7 @@
 import type { Context } from '@pandacss/core'
-import type { ArtifactFilters, JsxFramework } from '@pandacss/types'
-import { qwikJsx } from './qwik-jsx'
+import type { JsxFramework } from '@pandacss/types'
 import { preactJsx } from './preact-jsx'
+import { qwikJsx } from './qwik-jsx'
 import { reactJsx } from './react-jsx'
 import { solidJsx } from './solid-jsx'
 import { vueJsx } from './vue-jsx'
@@ -72,8 +72,9 @@ const patternMap = {
   qwik: qwikJsx.generatePatterns,
 }
 
-export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {
+export function generateJsxPatterns(ctx: Context) {
   if (ctx.isTemplateLiteralSyntax || ctx.patterns.isEmpty() || !ctx.jsx.framework) return []
-  if (!isKnownFramework(ctx.jsx.framework)) return
-  return patternMap[ctx.jsx.framework!](ctx, filters)
+  if (!isKnownFramework(ctx.jsx.framework)) return []
+
+  return patternMap[ctx.jsx.framework!](ctx)
 }

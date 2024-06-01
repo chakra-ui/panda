@@ -8,7 +8,7 @@ import { ArtifactFile } from '../artifact'
 const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'
 
-export const createRecipeArtifact = new ArtifactFile({
+export const recipesCreateRecipeArtifact = new ArtifactFile({
   id: 'recipes/create-recipe.js',
   fileName: 'create-recipe',
   type: 'js',
@@ -113,33 +113,30 @@ export const createRecipeArtifact = new ArtifactFile({
   },
 })
 
-export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
-  const { recipes } = ctx
+export function getRecipesArtifacts(ctx: Context) {
+  if (ctx.recipes.isEmpty()) return []
 
-  if (recipes.isEmpty()) return
-
-  const details = ctx.recipes.filterDetails(filters)
-
-  return details.map((recipe) => {
+  return ctx.recipes.details.flatMap((recipe) => {
     const { baseName, config, upperName, variantKeyMap, dashName } = recipe
     const { description, defaultVariants, compoundVariants, deprecated } = config
 
-    const jsCode = match(config)
-      .when(
-        Recipes.isSlotRecipeConfig,
-        (config) =>
-          new ArtifactFile({
-            id: ('recipes/' + dashName) as ArtifactFileId,
-            fileName: dashName,
-            type: 'js',
-            dir: (ctx) => ctx.paths.recipe,
-            dependencies: ['theme.slotRecipes.' + baseName],
-            imports: {
-              'helpers.js': ['compact', 'getSlotCompoundVariant', 'memo', 'splitProps'],
-              'recipes/create-recipe.js': ['createRecipe'],
-            },
-            code() {
-              return `
+    return [
+      match(config)
+        .when(
+          Recipes.isSlotRecipeConfig,
+          (config) =>
+            new ArtifactFile({
+              id: ('recipes/' + dashName) as ArtifactFileId,
+              fileName: dashName,
+              type: 'js',
+              dir: (ctx) => ctx.paths.recipe,
+              dependencies: ['theme.slotRecipes.' + baseName],
+              imports: {
+                'helpers.js': ['compact', 'getSlotCompoundVariant', 'memo', 'splitProps'],
+                'recipes/create-recipe.js': ['createRecipe'],
+              },
+              code() {
+                return `
             const ${baseName}DefaultVariants = ${stringify(defaultVariants ?? {})}
             const ${baseName}CompoundVariants = ${stringify(compoundVariants ?? [])}
 
@@ -165,23 +162,23 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
               getVariantProps
             })
             `
-            },
-          }),
-      )
-      .otherwise(
-        (config) =>
-          new ArtifactFile({
-            id: ('recipes/' + dashName) as ArtifactFileId,
-            fileName: dashName,
-            type: 'js',
-            dir: (ctx) => ctx.paths.recipe,
-            dependencies: [],
-            imports: {
-              'helpers.js': ['memo', 'splitProps'],
-              'recipes/create-recipe.js': ['createRecipe', 'mergeRecipes'],
-            },
-            code() {
-              return `
+              },
+            }),
+        )
+        .otherwise(
+          (config) =>
+            new ArtifactFile({
+              id: ('recipes/' + dashName) as ArtifactFileId,
+              fileName: dashName,
+              type: 'js',
+              dir: (ctx) => ctx.paths.recipe,
+              dependencies: ['theme.recipes.' + baseName],
+              imports: {
+                'helpers.js': ['memo', 'splitProps'],
+                'recipes/create-recipe.js': ['createRecipe', 'mergeRecipes'],
+              },
+              code() {
+                return `
             const ${baseName}Fn = /* @__PURE__ */ createRecipe('${config.className}', ${stringify(
               defaultVariants ?? {},
             )}, ${stringify(compoundVariants ?? [])})
@@ -206,19 +203,15 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
               getVariantProps: ${baseName}Fn.getVariantProps,
             })
             `
-            },
-          }),
-      )
-
-    return {
-      name: dashName,
-      js: jsCode,
-      dts: new ArtifactFile({
+              },
+            }),
+        ),
+      new ArtifactFile({
         id: ('recipes/' + dashName) as ArtifactFileId,
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.recipe,
-        dependencies: [],
+        dependencies: ['theme.recipes.' + baseName],
         importsType: {
           'types/index.d.ts': ['ConditionalValue', 'DistributiveOmit', 'Pretty'],
         },
@@ -264,6 +257,6 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           `
         },
       }),
-    }
+    ]
   })
 }

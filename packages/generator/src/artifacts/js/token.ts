@@ -1,4 +1,4 @@
-import { type ArtifactGroup, ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact'
 
 export const tokenJsArtifact = new ArtifactFile({
   id: 'tokens/index.js',
@@ -45,9 +45,6 @@ export const tokenDtsArtifact = new ArtifactFile({
   importsType: {
     'types/index.d.ts': ['Token'],
   },
-  computed(ctx) {
-    return { exportTypeStar: ctx.file.exportTypeStar }
-  },
   code(params) {
     return `
     export declare const token: {
@@ -55,12 +52,7 @@ export const tokenDtsArtifact = new ArtifactFile({
       var: (path: Token, fallback?: string) => string
     }
 
-    ${params.computed.exportTypeStar('./tokens')}
+    ${params.file.exportTypeStar('./tokens')}
     `
   },
 })
-
-export const designTokenArtifact: ArtifactGroup = {
-  id: 'design-tokens',
-  files: [tokenJsArtifact, tokenDtsArtifact],
-}

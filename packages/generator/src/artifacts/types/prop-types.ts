@@ -1,6 +1,6 @@
 import { ArtifactFile } from '../artifact'
 
-export const propTypesArtifact = new ArtifactFile({
+export const typesPropTypesArtifact = new ArtifactFile({
   id: 'types/prop-type.d.ts',
   fileName: 'prop-types',
   type: 'dts',

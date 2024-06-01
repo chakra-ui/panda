@@ -38,23 +38,19 @@ export const typesIndexArtifact = new ArtifactFile({
   dependencies: ['types'],
   computed(ctx) {
     return {
-      extDts: ctx.file.extDts,
-      exportTypeStar: ctx.file.exportTypeStar,
       isJsxRequired: Boolean(ctx.jsx.framework),
     }
   },
   code(params) {
-    const file = params.computed
-
     const indexExports = [
       // We need to export types used in the global.d.ts here to avoid TS errors such as `The inferred type of 'xxx' cannot be named without a reference to 'yyy'`
-      `import '${file.extDts('./global')}'`,
-      file.exportTypeStar('./conditions'),
-      file.exportTypeStar('./pattern'),
-      file.exportTypeStar('./recipe'),
-      file.exportTypeStar('./system-types'),
-      params.computed.isJsxRequired && file.exportTypeStar('./jsx'),
-      file.exportTypeStar('./style-props'),
+      `import '${params.file.extDts('./global')}'`,
+      params.file.exportTypeStar('./conditions'),
+      params.file.exportTypeStar('./pattern'),
+      params.file.exportTypeStar('./recipe'),
+      params.file.exportTypeStar('./system-types'),
+      params.computed.isJsxRequired && params.file.exportTypeStar('./jsx'),
+      params.file.exportTypeStar('./style-props'),
     ].filter(Boolean)
 
     return indexExports.join('\n')
