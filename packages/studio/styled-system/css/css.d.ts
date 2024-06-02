@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { SystemStyleObject } from "../types/index";
+import type { SystemStyleObject } from "../types/index.d.ts";
 
 type Styles = SystemStyleObject | undefined | null | false;
 

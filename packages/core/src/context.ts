@@ -42,6 +42,7 @@ const defaults = (config: UserConfig): UserConfig => ({
   outExtension: 'mjs',
   shorthands: true,
   syntax: 'object-literal',
+  separator: '_',
   ...config,
   layers: {
     reset: 'reset',

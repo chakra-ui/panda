@@ -90,18 +90,17 @@ export const typesSelectorsArtifact = new ArtifactFile({
   },
 })
 
+const jsxStyleProps = 'export type JsxStyleProps = StyleProps & WithCss'
 export const typesSystemTypesArtifact = new ArtifactFile({
   id: 'types/system-types.d.ts',
   fileName: 'system-types',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
-  dependencies: [],
+  dependencies: ['jsxFramework', 'jsxStyleProps'],
   computed(ctx) {
     return { jsx: ctx.jsx }
   },
   code(params) {
-    const jsxStyleProps = 'export type JsxStyleProps = StyleProps & WithCss'
-
     return rewriteImports(
       params.file,
       match(params.computed.jsx.styleProps)

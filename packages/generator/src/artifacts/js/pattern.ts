@@ -1,23 +1,21 @@
 import type { Context } from '@pandacss/core'
 import { compact, unionType } from '@pandacss/shared'
-import type { ArtifactFileId, ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFileId } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { match } from 'ts-pattern'
 import { ArtifactFile } from '../artifact'
 
-export function getPatternsArtifacts(ctx: Context, filters?: ArtifactFilters) {
+export function getPatternsArtifacts(ctx: Context) {
   if (ctx.patterns.isEmpty()) return []
   if (ctx.isTemplateLiteralSyntax) return []
 
-  const details = ctx.patterns.filterDetails(filters)
-
-  return details.flatMap((pattern) => {
+  return ctx.patterns.details.flatMap((pattern) => {
     const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern
     const { properties, transform, strict, description, defaultValues, deprecated } = config
 
     const patternConfigFn = stringify(compact({ transform, defaultValues })) ?? ''
 
-    const helperImports = ['getPatternStyles, patternFns']
+    const helperImports = [] as string[]
     // depending on the esbuild result, sometimes the transform function couldi include polyfills (e.g. __spreadValues)
     if (patternConfigFn.includes('__spreadValues')) {
       helperImports.push('__spreadValues')
@@ -97,8 +95,7 @@ export function getPatternsArtifacts(ctx: Context, filters?: ArtifactFilters) {
         },
         code() {
           return `
-          ${ctx.file.import(helperImports.join(', '), '../helpers')}
-          ${ctx.file.import('css', '../css/index')}
+          ${helperImports.length ? ctx.file.import(helperImports.join(', '), '../helpers') : ''}
 
           const ${baseName}Config = ${patternConfigFn
             .replace(`{transform`, `{\ntransform`)

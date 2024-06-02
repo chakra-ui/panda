@@ -46,7 +46,9 @@ export const themesIndexJsArtifact = new ArtifactFile({
   type: 'js',
   dir: (ctx) => ctx.paths.themes,
   dependencies: ['themes'],
-  code() {
+  code(params) {
+    if (!params.dependencies.themes) return
+
     return `
     export const getTheme = (themeName) => import('./' + themeName + '.json').then((m) => m.default)
 

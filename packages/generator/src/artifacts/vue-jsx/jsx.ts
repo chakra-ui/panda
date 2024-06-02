@@ -7,7 +7,7 @@ export const vueJsxFactoryArtifact = new ArtifactFile({
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory'],
   imports: {
-    'jsx/factory-helpers.js': [
+    'jsx/factory-helper.js': [
       'defaultShouldForwardProp',
       'composeShouldForwardProps',
       'composeCvaFn',

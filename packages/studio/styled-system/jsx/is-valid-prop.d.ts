@@ -1,10 +1,9 @@
 /* eslint-disable */
 import type {
   DistributiveOmit,
-  HTMLPandaProps,
   JsxStyleProps,
   Pretty,
-} from "../types";
+} from "../types/index.d.ts";
 
 declare const isCssProperty: (value: string) => boolean;
 

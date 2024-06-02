@@ -1,8 +1,9 @@
 /* eslint-disable */
+import { HTMLPandaProps } from "../types/jsx.mjs";
+import { DistributiveOmit } from "../types/system-types.mjs";
+
 import type { FunctionComponent } from "react";
 import type { SquareProperties } from "../patterns/square";
-import type { HTMLPandaProps } from "../types/jsx";
-import type { DistributiveOmit } from "../types/system-types";
 
 export interface SquareProps
   extends SquareProperties,

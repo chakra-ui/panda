@@ -1,8 +1,8 @@
-import { createElement, forwardRef } from "react";
-
 import { splitProps } from "../helpers.mjs";
-import { getCircleStyle } from "../patterns/circle.mjs";
 import { panda } from "./factory.mjs";
+
+import { createElement, forwardRef } from "react";
+import { getCircleStyle } from "../patterns/circle.mjs";
 
 export const Circle = /* @__PURE__ */ forwardRef(function Circle(props, ref) {
   const [patternProps, restProps] = splitProps(props, ["size"]);

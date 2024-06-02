@@ -7,7 +7,7 @@ export const qwikJsxFactoryArtifact = new ArtifactFile({
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory', 'jsxFramework', 'jsxStyleProps'],
   imports: {
-    'jsx/factory-helpers.js': [
+    'jsx/factory-helper.js': [
       'defaultShouldForwardProp',
       'composeShouldForwardProps',
       'composeCvaFn',

@@ -4,13 +4,18 @@ export const cvaJsArtifact = new ArtifactFile({
   id: 'css/cva.js',
   fileName: 'cva',
   type: 'js',
-  dir: (ctx) => ctx.paths.recipe,
-  dependencies: ['hash', 'prefix', 'conditions', 'separator'],
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['syntax'],
   imports: {
     'helpers.js': ['compact', 'mergeProps', 'memo', 'splitProps', 'uniq'],
-    'css/css.js': ['createCss', 'createMergeCss', 'hypenateProperty', 'withoutSpace'],
+    'css/css.js': ['css', 'mergeCss'],
   },
-  code() {
+  computed(ctx) {
+    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
+
     return `
     const defaults = (conf) => ({
       base: {},
@@ -103,7 +108,7 @@ export const cvaDtsArtifact = new ArtifactFile({
   id: 'css/cva.d.ts',
   fileName: 'cva',
   type: 'dts',
-  dir: (ctx) => ctx.paths.recipe,
+  dir: (ctx) => ctx.paths.css,
   dependencies: [],
   importsType: {
     'types/index.d.ts': ['RecipeCreatorFn'],

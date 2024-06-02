@@ -1,13 +1,14 @@
-import { createElement, forwardRef, useMemo } from "react";
-import { css, cx, cva } from "../css/index.mjs";
+import { css, cva, cx } from "../css/index.mjs";
+import { normalizeHTMLProps, splitProps } from "../helpers.mjs";
 import {
-  defaultShouldForwardProp,
-  composeShouldForwardProps,
   composeCvaFn,
+  composeShouldForwardProps,
+  defaultShouldForwardProp,
   getDisplayName,
 } from "./factory-helper.mjs";
-import { splitProps, normalizeHTMLProps } from "../helpers.mjs";
 import { isCssProperty } from "./is-valid-prop.mjs";
+
+import { createElement, forwardRef, useMemo } from "react";
 
 function styledFn(Dynamic, configOrCva = {}, options = {}) {
   const cvaFn =

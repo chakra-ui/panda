@@ -13,7 +13,7 @@ export function generateQwikJsxPattern(ctx: Context) {
 
     return [
       new ArtifactFile({
-        id: `patterns/${dashName}.js` as ArtifactFileId,
+        id: `jsx/${dashName}.js` as ArtifactFileId,
         fileName: dashName,
         type: 'js',
         dir: (ctx) => ctx.paths.jsx,
@@ -77,21 +77,19 @@ export function generateQwikJsxPattern(ctx: Context) {
         },
       }),
       new ArtifactFile({
-        id: `patterns/${dashName}.d.ts` as ArtifactFileId,
+        id: `jsx/${dashName}.d.ts` as ArtifactFileId,
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.jsx,
         dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
         imports: {
-          'types/system-types.d.ts': ['DistributiveOmit'],
+          'types/system-types.d.ts': ['Assign', 'DistributiveOmit'],
           'types/jsx.d.ts': [typeName],
         },
         code() {
           return `
           import type { Component } from '@builder.io/qwik'
           ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
-          ${ctx.file.importType(typeName, '../types/jsx')}
-          ${ctx.file.importType('Assign, DistributiveOmit', '../types/system-types')}
 
           export interface ${upperName}Props extends Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
             blocklistType || '""'

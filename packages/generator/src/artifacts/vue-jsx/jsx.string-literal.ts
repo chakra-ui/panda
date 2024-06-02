@@ -7,7 +7,7 @@ export const vueJsxStringLiteralFactoryArtifact = new ArtifactFile({
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory'],
   imports: {
-    'jsx/factory-helpers.js': ['getDisplayName'],
+    'jsx/factory-helper.js': ['getDisplayName'],
     'css/index.js': ['css', 'cx'],
   },
   computed(ctx) {

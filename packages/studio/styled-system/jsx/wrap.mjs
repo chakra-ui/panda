@@ -1,8 +1,8 @@
-import { createElement, forwardRef } from "react";
-
 import { splitProps } from "../helpers.mjs";
-import { getWrapStyle } from "../patterns/wrap.mjs";
 import { panda } from "./factory.mjs";
+
+import { createElement, forwardRef } from "react";
+import { getWrapStyle } from "../patterns/wrap.mjs";
 
 export const Wrap = /* @__PURE__ */ forwardRef(function Wrap(props, ref) {
   const [patternProps, restProps] = splitProps(props, [

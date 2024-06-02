@@ -13,7 +13,7 @@ export function generatePreactJsxPattern(ctx: Context) {
 
     return [
       new ArtifactFile({
-        id: `patterns/${dashName}.js` as ArtifactFileId,
+        id: `jsx/${dashName}.js` as ArtifactFileId,
         fileName: dashName,
         type: 'js',
         dir: (ctx) => ctx.paths.jsx,
@@ -79,7 +79,7 @@ export function generatePreactJsxPattern(ctx: Context) {
         },
       }),
       new ArtifactFile({
-        id: `patterns/${dashName}.d.ts` as ArtifactFileId,
+        id: `jsx/${dashName}.d.ts` as ArtifactFileId,
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.jsx,

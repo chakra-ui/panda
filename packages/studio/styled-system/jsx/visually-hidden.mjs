@@ -1,8 +1,8 @@
-import { createElement, forwardRef } from "react";
-
 import { splitProps } from "../helpers.mjs";
-import { getVisuallyHiddenStyle } from "../patterns/visually-hidden.mjs";
 import { panda } from "./factory.mjs";
+
+import { createElement, forwardRef } from "react";
+import { getVisuallyHiddenStyle } from "../patterns/visually-hidden.mjs";
 
 export const VisuallyHidden = /* @__PURE__ */ forwardRef(
   function VisuallyHidden(props, ref) {

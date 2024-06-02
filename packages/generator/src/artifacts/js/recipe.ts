@@ -1,7 +1,7 @@
 import type { Context } from '@pandacss/core'
 import { Recipes } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
-import type { ArtifactFileId, ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFileId } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { ArtifactFile } from '../artifact'
 
@@ -13,12 +13,12 @@ export const recipesCreateRecipeArtifact = new ArtifactFile({
   fileName: 'create-recipe',
   type: 'js',
   dir: (ctx) => ctx.paths.recipe,
-  dependencies: ['separator', 'prefix', 'hash', 'theme.breakpoints'],
+  dependencies: ['separator', 'prefix', 'hash', 'theme.breakpoints', 'hooks', 'plugins'],
   imports: {
-    'css/css.js': ['conditions', 'css', 'cva', 'cx'],
+    'css/css.js': ['css'],
+    'css/cx.js': ['cx'],
     'css/conditions.js': ['finalizeConditions', 'sortConditions'],
     'css/cva.js': ['assertCompoundVariant', 'getCompoundVariantCss'],
-    'css/cx.js': ['cx'],
     'helpers.js': ['compact', 'createCss', 'splitProps', 'uniq', 'withoutSpace'],
   },
   computed: (ctx) => {
@@ -108,7 +108,6 @@ export const recipesCreateRecipeArtifact = new ArtifactFile({
        },
      })
      }
-   }
    `
   },
 })
@@ -126,7 +125,7 @@ export function getRecipesArtifacts(ctx: Context) {
           Recipes.isSlotRecipeConfig,
           (config) =>
             new ArtifactFile({
-              id: ('recipes/' + dashName) as ArtifactFileId,
+              id: ('recipes/' + dashName + '.js') as ArtifactFileId,
               fileName: dashName,
               type: 'js',
               dir: (ctx) => ctx.paths.recipe,
@@ -168,7 +167,7 @@ export function getRecipesArtifacts(ctx: Context) {
         .otherwise(
           (config) =>
             new ArtifactFile({
-              id: ('recipes/' + dashName) as ArtifactFileId,
+              id: ('recipes/' + dashName + '.js') as ArtifactFileId,
               fileName: dashName,
               type: 'js',
               dir: (ctx) => ctx.paths.recipe,
@@ -207,19 +206,17 @@ export function getRecipesArtifacts(ctx: Context) {
             }),
         ),
       new ArtifactFile({
-        id: ('recipes/' + dashName) as ArtifactFileId,
+        id: ('recipes/' + dashName + '.dts') as ArtifactFileId,
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.recipe,
         dependencies: ['theme.recipes.' + baseName],
         importsType: {
-          'types/index.d.ts': ['ConditionalValue', 'DistributiveOmit', 'Pretty'],
+          'types/index.d.ts': ['ConditionalValue'],
+          'types/system-types.d.ts': ['DistributiveOmit', 'Pretty'],
         },
         code() {
           return `
-          ${ctx.file.importType('ConditionalValue', '../types/index')}
-          ${ctx.file.importType('DistributiveOmit, Pretty', '../types/system-types')}
-
           interface ${upperName}Variant {
             ${Object.keys(variantKeyMap)
               .map((key) => {

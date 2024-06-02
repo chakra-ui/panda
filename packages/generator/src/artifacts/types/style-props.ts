@@ -10,7 +10,7 @@ export const typesStylePropsArtifact = new ArtifactFile({
   fileName: 'style-props',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
-  dependencies: [],
+  dependencies: ['utilities', 'globalVars', 'shorthands'],
   importsType: {
     'types/conditions.d.ts': ['ConditionalValue'],
     'types/prop-type.d.ts': ['OnlyKnown', 'UtilityValues', 'WithEscapeHatch'],
@@ -19,7 +19,8 @@ export const typesStylePropsArtifact = new ArtifactFile({
   },
   computed(ctx) {
     return {
-      config: ctx.config,
+      strictTokens: ctx.config.strictTokens,
+      strictPropertyValues: ctx.config.strictPropertyValues,
       utility: ctx.utility,
       cssVars: unionType(ctx.globalVars.vars),
       cssVarNames: unionType(ctx.globalVars.names),
@@ -61,9 +62,7 @@ export const typesStylePropsArtifact = new ArtifactFile({
             if (strictPropertyList.has(key)) {
               union.push([utilityValue, 'CssVars'].join(' | '))
             } else {
-              union.push(
-                [utilityValue, 'CssVars', ctx.config.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '),
-              )
+              union.push([utilityValue, 'CssVars', ctx.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '))
             }
           } else {
             union.push([strictPropertyList.has(key) ? 'CssVars' : '', cssFallback].filter(Boolean).join(' | '))
@@ -81,7 +80,10 @@ export const typesStylePropsArtifact = new ArtifactFile({
           }
 
           const value = filtered.filter(Boolean).join(' | ')
-          const line = `${key}?: ${restrict(prop, value, ctx.config)}`
+          const line = `${key}?: ${restrict(prop, value, {
+            strictTokens: ctx.strictTokens,
+            strictPropertyValues: ctx.strictPropertyValues,
+          })}`
 
           return ' ' + [comment, line].filter(Boolean).join('\n')
         })
@@ -156,7 +158,7 @@ const strictPropertyList = new Set([
   'writingMode',
 ])
 
-const restrict = (key: string, value: string, config: UserConfig) => {
+const restrict = (key: string, value: string, config: Pick<UserConfig, 'strictTokens' | 'strictPropertyValues'>) => {
   if (config.strictPropertyValues && strictPropertyList.has(key)) {
     return `ConditionalValue<WithEscapeHatch<OnlyKnown<"${key}", ${value}>>>`
   }

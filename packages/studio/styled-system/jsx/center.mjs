@@ -1,8 +1,8 @@
-import { createElement, forwardRef } from "react";
-
 import { splitProps } from "../helpers.mjs";
-import { getCenterStyle } from "../patterns/center.mjs";
 import { panda } from "./factory.mjs";
+
+import { createElement, forwardRef } from "react";
+import { getCenterStyle } from "../patterns/center.mjs";
 
 export const Center = /* @__PURE__ */ forwardRef(function Center(props, ref) {
   const [patternProps, restProps] = splitProps(props, ["inline"]);

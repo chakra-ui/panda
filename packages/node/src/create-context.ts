@@ -3,7 +3,7 @@ import { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import { ParserResult, Project } from '@pandacss/parser'
 import { uniq } from '@pandacss/shared'
-import type { LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
+import type { ArtifactFileId, LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
 import { debounce } from 'perfect-debounce'
 import { DiffEngine } from './diff-engine'
 import { nodeRuntime } from './node-runtime'
@@ -102,9 +102,9 @@ export class PandaContext extends Generator {
   writeCss = (sheet?: Stylesheet) => {
     logger.info('css', this.runtime.path.join(...this.paths.root, 'styles.css'))
     return this.output.write({
-      id: 'styles.css' as any,
-      dir: this.paths.root,
-      files: [{ file: 'styles.css', code: this.getCss(sheet) }],
+      id: 'styles.css' as ArtifactFileId,
+      path: this.paths.getFilePath('styles.css'),
+      content: this.getCss(sheet),
     })
   }
 

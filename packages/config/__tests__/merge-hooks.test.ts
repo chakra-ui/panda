@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { mergeHooks } from '../src/merge-hooks'
-import type { Artifact } from '@pandacss/types'
+import type { ArtifactFileId, GeneratedArtifact } from '@pandacss/types'
 
 describe('mergeConfigs / theme', () => {
   test('should merge hooks and call sequentially async', async () => {
@@ -90,7 +90,7 @@ describe('mergeConfigs / theme', () => {
 
   test('should merge hooks and call sequentially using previous result: codegen:prepare', async () => {
     const order: number[] = []
-    let original: Artifact[]
+    let original: GeneratedArtifact[]
     const hooks = mergeHooks([
       {
         name: 'panda-plugin',
@@ -101,7 +101,7 @@ describe('mergeConfigs / theme', () => {
             original = args.original!
 
             return args.artifacts.map((art) => {
-              return { ...art, files: art.files.map((f) => ({ ...f, code: (f.code || '').replace('aaa', 'xxx') })) }
+              return { ...art, content: (art.content || '').replace('aaa', 'xxx') }
             })
           },
         },
@@ -116,36 +116,33 @@ describe('mergeConfigs / theme', () => {
             expect(args.original).toMatchInlineSnapshot(`
               [
                 {
-                  "files": [
-                    {
-                      "code": "aaa aaa aaa",
-                      "file": "aaa.js",
-                    },
-                  ],
+                  "content": "aaa aaa aaa",
                   "id": "recipes.1",
+                  "path": [
+                    "recipes",
+                    "aaa.js",
+                  ],
                 },
                 {
-                  "files": [
-                    {
-                      "code": "bbb bbb bbb",
-                      "file": "bbb.js",
-                    },
-                  ],
+                  "content": "bbb bbb bbb",
                   "id": "recipes.2",
+                  "path": [
+                    "recipes",
+                    "bbb.js",
+                  ],
                 },
                 {
-                  "files": [
-                    {
-                      "code": "ccc ccc ccc",
-                      "file": "ccc.js",
-                    },
-                  ],
+                  "content": "ccc ccc ccc",
                   "id": "recipes.3",
+                  "path": [
+                    "recipes",
+                    "ccc.js",
+                  ],
                 },
               ]
             `)
             return args.artifacts.map((art) => {
-              return { ...art, files: art.files.map((f) => ({ ...f, code: (f.code || '').replace('bbb', 'zzz') })) }
+              return { ...art, content: (art.content || '').replace('bbb', 'zzz') }
             })
           },
         },
@@ -155,9 +152,9 @@ describe('mergeConfigs / theme', () => {
     const result = await hooks['codegen:prepare']?.({
       changed: [],
       artifacts: [
-        { id: 'recipes.1', files: [{ code: 'aaa aaa aaa', file: 'aaa.js' }] },
-        { id: 'recipes.2', files: [{ code: 'bbb bbb bbb', file: 'bbb.js' }] },
-        { id: 'recipes.3', files: [{ code: 'ccc ccc ccc', file: 'ccc.js' }] },
+        { id: 'recipes.1' as ArtifactFileId, path: ['recipes', 'aaa.js'], content: 'aaa aaa aaa' },
+        { id: 'recipes.2' as ArtifactFileId, path: ['recipes', 'bbb.js'], content: 'bbb bbb bbb' },
+        { id: 'recipes.3' as ArtifactFileId, path: ['recipes', 'ccc.js'], content: 'ccc ccc ccc' },
       ],
     })
 
@@ -170,31 +167,28 @@ describe('mergeConfigs / theme', () => {
     expect(result).toMatchInlineSnapshot(`
       [
         {
-          "files": [
-            {
-              "code": "xxx aaa aaa",
-              "file": "aaa.js",
-            },
-          ],
+          "content": "xxx aaa aaa",
           "id": "recipes.1",
+          "path": [
+            "recipes",
+            "aaa.js",
+          ],
         },
         {
-          "files": [
-            {
-              "code": "zzz bbb bbb",
-              "file": "bbb.js",
-            },
-          ],
+          "content": "zzz bbb bbb",
           "id": "recipes.2",
+          "path": [
+            "recipes",
+            "bbb.js",
+          ],
         },
         {
-          "files": [
-            {
-              "code": "ccc ccc ccc",
-              "file": "ccc.js",
-            },
-          ],
+          "content": "ccc ccc ccc",
           "id": "recipes.3",
+          "path": [
+            "recipes",
+            "ccc.js",
+          ],
         },
       ]
     `)

@@ -5,7 +5,7 @@ export const cssConditionsJsArtifact = new ArtifactFile({
   fileName: 'conditions',
   type: 'js',
   dir: (ctx) => ctx.paths.css,
-  dependencies: ['conditions'],
+  dependencies: ['conditions', 'theme.breakpoints', 'theme.containerNames', 'theme.containerSizes'],
   imports: {
     'helpers.js': ['withoutSpace'],
   },
@@ -55,7 +55,7 @@ export const typesConditionsDtsArtifact = new ArtifactFile({
   fileName: 'conditions',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
-  dependencies: ['conditions'],
+  dependencies: ['conditions', 'theme.breakpoints', 'theme.containerNames', 'theme.containerSizes'],
   imports: {
     'types/selectors.d.ts': ['AnySelector', 'Selectors'],
   },

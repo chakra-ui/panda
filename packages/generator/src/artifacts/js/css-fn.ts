@@ -1,4 +1,3 @@
-import { outdent } from 'outdent'
 import { ArtifactFile } from '../artifact'
 
 export const cssFnDtsArtifact = new ArtifactFile({
@@ -6,11 +5,16 @@ export const cssFnDtsArtifact = new ArtifactFile({
   fileName: 'css',
   type: 'dts',
   dir: (ctx) => ctx.paths.css,
-  dependencies: [],
+  dependencies: ['syntax'],
   importsType: {
     'types/index.d.ts': ['SystemStyleObject'],
   },
-  code() {
+  computed(ctx) {
+    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
+
     return `
     type Styles = SystemStyleObject | undefined | null | false
 
@@ -40,7 +44,7 @@ export const cssFnJsArtifact = new ArtifactFile({
   fileName: 'css',
   type: 'js',
   dir: (ctx) => ctx.paths.css,
-  dependencies: ['hash', 'prefix', 'conditions', 'separator'],
+  dependencies: ['syntax', 'hash', 'prefix', 'separator', 'shorthands', 'theme.breakpoints', 'hooks', 'plugins'],
   imports: {
     'helpers.js': ['createCss', 'createMergeCss', 'hypenateProperty', 'withoutSpace'],
     'css/conditions.js': ['finalizeConditions', 'sortConditions'],
@@ -51,13 +55,16 @@ export const cssFnJsArtifact = new ArtifactFile({
 
     return {
       utility,
-      conditions,
+      breakpoints: conditions.breakpoints.keys,
+      isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
       getPropShorthands,
     }
   },
   code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
+
     const { hash, prefix, separator } = params.dependencies
-    const { utility, conditions, getPropShorthands } = params.computed
+    const { utility, getPropShorthands, breakpoints } = params.computed
 
     return `
     const utilities = "${utility
@@ -99,7 +106,7 @@ export const cssFnJsArtifact = new ArtifactFile({
     const classNameByProp = new Map()
     ${
       utility.hasShorthand
-        ? outdent`
+        ? `
     const shorthands = new Map()
     utilities.split(',').forEach((utility) => {
       const [prop, meta] = utility.split(':')
@@ -114,7 +121,7 @@ export const cssFnJsArtifact = new ArtifactFile({
 
     const resolveShorthand = (prop) => shorthands.get(prop) || prop
     `
-        : outdent`
+        : `
     utilities.split(',').forEach((utility) => {
       const [prop, className] = utility.split(':')
       classNameByProp.set(prop, className)
@@ -127,7 +134,7 @@ export const cssFnJsArtifact = new ArtifactFile({
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
-        breakpoints: { keys: ${JSON.stringify(conditions.breakpoints.keys)} }
+        breakpoints: { keys: ${JSON.stringify(breakpoints)} }
       },
       utility: {
         ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}

@@ -10,33 +10,33 @@ import { helpersJsArtifact } from './js/helpers'
 import { isValidPropDtsArtifact, isValidPropJsArtifact } from './js/is-valid-prop'
 import { jsxHelpersJsArtifact } from './js/jsx-helper'
 import { getPatternsArtifacts } from './js/pattern'
-import { recipesCreateRecipeArtifact, getRecipesArtifacts } from './js/recipe'
+import { getRecipesArtifacts, recipesCreateRecipeArtifact } from './js/recipe'
 import { svaDtsArtifact, svaJsArtifact } from './js/sva'
 import { themesIndexDtsArtifact, themesIndexJsArtifact } from './js/themes'
 import { tokenDtsArtifact, tokenJsArtifact } from './js/token'
-import { generateJsxPatterns } from './jsx'
+import { generateJsxFactory, generateJsxPatterns, generateJsxTypes } from './jsx'
 import { packageJsonArtifact } from './pkg-json'
+import {
+  typesCompositionArtifact,
+  typesCssTypeArtifact,
+  typesPartsArtifact,
+  typesPatternArtifact,
+  typesRecipeArtifact,
+  typesSelectorsArtifact,
+  typesStaticCssArtifact,
+  typesSystemTypesArtifact,
+} from './types/generated'
 import { typesGlobalArtifact, typesIndexArtifact } from './types/main'
 import { typesPropTypesArtifact } from './types/prop-types'
 import { typesStylePropsArtifact } from './types/style-props'
 import { tokenTypesArtifact } from './types/token-types'
-import {
-  typesCssTypeArtifact,
-  typesStaticCssArtifact,
-  typesRecipeArtifact,
-  typesPatternArtifact,
-  typesPartsArtifact,
-  typesCompositionArtifact,
-  typesSelectorsArtifact,
-  typesSystemTypesArtifact,
-} from './types/generated'
 
 const recipesIndexJsArtifact = new ArtifactFile({
   id: 'recipes/index.js',
   fileName: 'index',
   type: 'js',
   dir: (ctx) => ctx.paths.recipe,
-  dependencies: ['recipes', 'syntax'],
+  dependencies: ['recipes'],
   computed(ctx) {
     return {
       hasRecipes: !ctx.recipes.isEmpty(),
@@ -56,7 +56,7 @@ const recipesIndexDtsArtifact = new ArtifactFile({
   fileName: 'index',
   type: 'dts',
   dir: (ctx) => ctx.paths.recipe,
-  dependencies: ['recipes', 'syntax'],
+  dependencies: ['recipes'],
   computed(ctx) {
     return {
       hasRecipes: !ctx.recipes.isEmpty(),
@@ -76,7 +76,47 @@ const patternsIndexJsArtifact = new ArtifactFile({
   fileName: 'index',
   type: 'js',
   dir: (ctx) => ctx.paths.pattern,
-  dependencies: ['patterns', 'syntax', 'jsxFramework'],
+  dependencies: ['syntax', 'patterns'],
+  computed(ctx) {
+    return {
+      patternNames: ctx.patterns.details.map((pattern) => pattern.dashName),
+      hasPatterns: !ctx.patterns.isEmpty(),
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    if (!ctx.hasPatterns) return
+
+    return ctx.patternNames.map((file) => params.file.exportStar(`./${file}`)).join('\n')
+  },
+})
+
+const patternsIndexDtsArtifact = new ArtifactFile({
+  id: 'patterns/index.d.ts',
+  fileName: 'index',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.pattern,
+  dependencies: ['syntax', 'patterns'],
+  computed(ctx) {
+    return {
+      patternNames: ctx.patterns.details.map((pattern) => pattern.dashName),
+      hasPatterns: !ctx.patterns.isEmpty(),
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    if (!ctx.hasPatterns) return
+
+    return ctx.patternNames.map((file) => params.file.exportTypeStar(`./${file}`)).join('\n')
+  },
+})
+
+const jsxIndexJsArtifact = new ArtifactFile({
+  id: 'jsx/index.js',
+  fileName: 'index',
+  type: 'js',
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['syntax', 'patterns', 'jsxFramework'],
   computed(ctx) {
     return {
       isStyleProp: !ctx.isTemplateLiteralSyntax,
@@ -98,12 +138,12 @@ const patternsIndexJsArtifact = new ArtifactFile({
   },
 })
 
-const patternsIndexDtsArtifact = new ArtifactFile({
-  id: 'patterns/index.d.ts',
+const jsxIndexDtsArtifact = new ArtifactFile({
+  id: 'jsx/index.d.ts',
   fileName: 'index',
   type: 'dts',
-  dir: (ctx) => ctx.paths.pattern,
-  dependencies: ['patterns', 'syntax'],
+  dir: (ctx) => ctx.paths.jsx,
+  dependencies: ['syntax', 'patterns', 'jsxFramework', 'jsxFactory'],
   computed(ctx) {
     return {
       isStyleProp: !ctx.isTemplateLiteralSyntax,
@@ -139,6 +179,7 @@ const cssIndexJsArtifact = new ArtifactFile({
   },
   code(params) {
     const ctx = params.computed
+
     return `
     ${params.file.exportStar('./css')}
     ${params.file.exportStar('./cx')}
@@ -170,6 +211,7 @@ const cssIndexDtsArtifact = new ArtifactFile({
   },
 })
 
+// TODO map artifact files structure to mirror the generated styled-system
 const getStaticArtifacts = () => {
   return (
     new ArtifactMap()
@@ -177,14 +219,11 @@ const getStaticArtifacts = () => {
       .addFile(helpersJsArtifact)
       .addFile(packageJsonArtifact)
       // {outdir}/css/
-      .addFile(cssFnJsArtifact)
-      .addFile(cssFnDtsArtifact)
-      //
       .addFile(cssIndexJsArtifact)
       .addFile(cssIndexDtsArtifact)
       //
-      .addFile(cvaDtsArtifact)
       .addFile(cvaJsArtifact)
+      .addFile(cvaDtsArtifact)
       //
       .addFile(cxJsArtifact)
       .addFile(cxDtsArtifact)
@@ -192,14 +231,18 @@ const getStaticArtifacts = () => {
       .addFile(svaJsArtifact)
       .addFile(svaDtsArtifact)
       // {outdir}/jsx/
+      .addFile(jsxIndexJsArtifact)
+      .addFile(jsxIndexDtsArtifact)
+      //
       .addFile(isValidPropJsArtifact)
       .addFile(isValidPropDtsArtifact)
+      //
       .addFile(jsxHelpersJsArtifact)
       // {outdir}/recipes/
       .addFile(recipesIndexJsArtifact)
       .addFile(recipesIndexDtsArtifact)
       .addFile(recipesCreateRecipeArtifact)
-      // {outdir}/recipes/
+      // {outdir}/patterns/
       .addFile(patternsIndexJsArtifact)
       .addFile(patternsIndexDtsArtifact)
       // {outdir}/themes/
@@ -232,8 +275,8 @@ const getObjectSyntaxArtifacts = () => {
     new ArtifactMap()
       // {outdir}/css/ [syntax=object-literal]
       .addFile(cssConditionsJsArtifact)
-      .addFile(cssIndexJsArtifact)
-      .addFile(cssIndexDtsArtifact)
+      .addFile(cssFnJsArtifact)
+      .addFile(cssFnDtsArtifact)
   )
 }
 
@@ -262,12 +305,20 @@ const getDesignTokensArtifacts = () => {
 type StaticArtifacts = ReturnType<typeof getStaticArtifacts>
 type ObjectSyntaxArtifacts = ReturnType<typeof getObjectSyntaxArtifacts>
 type StringLiteralArtifacts = ReturnType<typeof getStringLiteralArtifacts>
+type JsxFactoryArtifacts = NonNullable<ReturnType<typeof generateJsxFactory>>
+type JsxTypesArtifacts = NonNullable<ReturnType<typeof generateJsxTypes>>
 
 type PossibleArtifacts = MergeArtifactMaps<
   StaticArtifacts,
-  MergeArtifactMaps<ObjectSyntaxArtifacts, StringLiteralArtifacts>
+  MergeArtifactMaps<
+    MergeArtifactMaps<ObjectSyntaxArtifacts, StringLiteralArtifacts>,
+    MergeArtifactMaps<JsxFactoryArtifacts, ArtifactMap<{ [K in JsxTypesArtifacts['id']]: JsxTypesArtifacts }>>
+  >
 >
 
+/**
+ * Adds all necesarry artifacts to the map based on the config
+ */
 export const getArtifactsMap = (ctx: Context): PossibleArtifacts => {
   if (ctx.config.emitTokensOnly) return getDesignTokensArtifacts() as any
 
@@ -281,6 +332,18 @@ export const getArtifactsMap = (ctx: Context): PossibleArtifacts => {
 
     if (ctx.jsx.framework) {
       generateJsxPatterns(ctx).forEach((artifact) => staticArtifacts.addFile(artifact))
+    }
+  }
+
+  if (ctx.jsx.framework) {
+    const jsxFactoryArtifacts = generateJsxFactory(ctx)
+    if (jsxFactoryArtifacts) {
+      staticArtifacts.merge(jsxFactoryArtifacts)
+    }
+
+    const jsxTypes = generateJsxTypes(ctx)
+    if (jsxTypes) {
+      staticArtifacts.addFile(jsxTypes)
     }
   }
 

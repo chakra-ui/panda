@@ -1,5 +1,5 @@
-import { compact, mergeProps, memo, splitProps, uniq } from "../helpers.mjs";
 import { css, mergeCss } from "./css.mjs";
+import { compact, memo, mergeProps, splitProps, uniq } from "../helpers.mjs";
 
 const defaults = (conf) => ({
   base: {},

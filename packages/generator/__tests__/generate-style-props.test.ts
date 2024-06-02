@@ -1,28 +1,37 @@
-import { createContext } from '@pandacss/fixture'
+import { createGeneratorContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { generateStyleProps } from '../src/artifacts/types/style-props'
+import { typesStylePropsArtifact } from '../src/artifacts/types/style-props'
+import type { Config } from '@pandacss/types'
+import { ArtifactMap } from '../src/artifacts/artifact'
+
+const generateStyleProps = (userConfig?: Config) => {
+  return new ArtifactMap().addFile(typesStylePropsArtifact).generate(createGeneratorContext(userConfig))
+}
 
 describe('generate property types', () => {
   test('should ', () => {
-    expect(generateStyleProps(createContext())).toMatchInlineSnapshot(`
-      "import type { ConditionalValue } from './conditions';
-      import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type';
-      import type { CssProperties } from './system-types';
-      import type { Token } from '../tokens/index';
+    expect(generateStyleProps()).toMatchInlineSnapshot(`
+      [
+        {
+          "content": "/* eslint-disable */
+      import type { Token } from '../tokens/index.d.ts'
+      import type { ConditionalValue } from './conditions.d.ts'
+      import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type.d.ts'
+      import type { CssProperties } from './system-types.d.ts'
 
-      type AnyString = (string & {})
-      type CssVars = \`var(--\${string})\`
-      type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
+          type AnyString = (string & {})
+          type CssVars = \`var(--\${string})\`
+          type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
-      type CssVarName =  | AnyString
-      type CssVarKeys = \`--\${CssVarName}\`
+          type CssVarName =  | AnyString
+          type CssVarKeys = \`--\${CssVarName}\`
 
-      export type CssVarProperties = {
-        [key in CssVarKeys]?: CssVarValue
-      }
+          export type CssVarProperties = {
+            [key in CssVarKeys]?: CssVarValue
+          }
 
-      export interface SystemProperties {
-         /**
+          export interface SystemProperties {
+             /**
          * The **\`appearance\`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
          *
          * **Syntax**: \`none | button | button-bevel | caret | checkbox | default-button | inner-spin-button | listbox | listitem | media-controls-background | media-controls-fullscreen-background | media-current-time-display | media-enter-fullscreen-button | media-exit-fullscreen-button | media-fullscreen-button | media-mute-button | media-overlay-play-button | media-play-button | media-seek-back-button | media-seek-forward-button | media-slider | media-sliderthumb | media-time-remaining-display | media-toggle-closed-captions-button | media-volume-slider | media-volume-slider-container | media-volume-sliderthumb | menulist | menulist-button | menulist-text | menulist-textfield | meter | progress-bar | progress-bar-value | push-button | radio | searchfield | searchfield-cancel-button | searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical | square-button | textarea | textfield | -apple-pay-button\`
@@ -7470,30 +7479,42 @@ describe('generate property types', () => {
        debug?: ConditionalValue<UtilityValues["debug"] | CssVars | AnyString>
        colorPalette?: ConditionalValue<UtilityValues["colorPalette"] | CssVars | AnyString>
        textStyle?: ConditionalValue<UtilityValues["textStyle"] | CssVars | AnyString>
-      }"
+          }
+          ",
+          "id": "types/style-props.d.ts",
+          "path": [
+            "styled-system",
+            "types",
+            "style-props.d.ts",
+          ],
+        },
+      ]
     `)
   })
 
   test('with stricTokens true', () => {
-    expect(generateStyleProps(createContext({ strictTokens: true }))).toMatchInlineSnapshot(`
-      "import type { ConditionalValue } from './conditions';
-      import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type';
-      import type { CssProperties } from './system-types';
-      import type { Token } from '../tokens/index';
+    expect(generateStyleProps({ strictTokens: true })).toMatchInlineSnapshot(`
+      [
+        {
+          "content": "/* eslint-disable */
+      import type { Token } from '../tokens/index.d.ts'
+      import type { ConditionalValue } from './conditions.d.ts'
+      import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type.d.ts'
+      import type { CssProperties } from './system-types.d.ts'
 
-      type AnyString = (string & {})
-      type CssVars = \`var(--\${string})\`
-      type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
+          type AnyString = (string & {})
+          type CssVars = \`var(--\${string})\`
+          type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
-      type CssVarName =  | AnyString
-      type CssVarKeys = \`--\${CssVarName}\`
+          type CssVarName =  | AnyString
+          type CssVarKeys = \`--\${CssVarName}\`
 
-      export type CssVarProperties = {
-        [key in CssVarKeys]?: CssVarValue
-      }
+          export type CssVarProperties = {
+            [key in CssVarKeys]?: CssVarValue
+          }
 
-      export interface SystemProperties {
-         /**
+          export interface SystemProperties {
+             /**
          * The **\`appearance\`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
          *
          * **Syntax**: \`none | button | button-bevel | caret | checkbox | default-button | inner-spin-button | listbox | listitem | media-controls-background | media-controls-fullscreen-background | media-current-time-display | media-enter-fullscreen-button | media-exit-fullscreen-button | media-fullscreen-button | media-mute-button | media-overlay-play-button | media-play-button | media-seek-back-button | media-seek-forward-button | media-slider | media-sliderthumb | media-time-remaining-display | media-toggle-closed-captions-button | media-volume-slider | media-volume-slider-container | media-volume-sliderthumb | menulist | menulist-button | menulist-text | menulist-textfield | meter | progress-bar | progress-bar-value | push-button | radio | searchfield | searchfield-cancel-button | searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical | square-button | textarea | textfield | -apple-pay-button\`
@@ -14941,48 +14962,57 @@ describe('generate property types', () => {
        debug?: ConditionalValue<WithEscapeHatch<UtilityValues["debug"] | CssVars>>
        colorPalette?: ConditionalValue<WithEscapeHatch<UtilityValues["colorPalette"] | CssVars>>
        textStyle?: ConditionalValue<WithEscapeHatch<UtilityValues["textStyle"] | CssVars>>
-      }"
+          }
+          ",
+          "id": "types/style-props.d.ts",
+          "path": [
+            "styled-system",
+            "types",
+            "style-props.d.ts",
+          ],
+        },
+      ]
     `)
   })
 
   test('with globalVars', () => {
-    const str = generateStyleProps(
-      createContext({
-        hooks: {
-          'config:resolved': ({ config, utils }) => {
-            return utils.omit(config, ['utilities', 'theme.tokens', 'theme.semanticTokens'])
-          },
+    const result = generateStyleProps({
+      hooks: {
+        'config:resolved': ({ config, utils }) => {
+          return utils.omit(config, ['utilities', 'theme.tokens', 'theme.semanticTokens'])
         },
-        globalVars: {
-          '--random-color': 'red',
-          '--button-color': {
-            syntax: '<color>',
-            inherits: false,
-            initialValue: 'blue',
-          },
+      },
+      globalVars: {
+        '--random-color': 'red',
+        '--button-color': {
+          syntax: '<color>',
+          inherits: false,
+          initialValue: 'blue',
         },
-      }),
-    )
+      },
+    })
+    const str = result[0].content
 
     expect(str.slice(0, str.indexOf('WebkitBorderBefore'))).toMatchInlineSnapshot(`
-      "import type { ConditionalValue } from './conditions';
-      import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type';
-      import type { CssProperties } from './system-types';
-      import type { Token } from '../tokens/index';
+      "/* eslint-disable */
+      import type { Token } from '../tokens/index.d.ts'
+      import type { ConditionalValue } from './conditions.d.ts'
+      import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type.d.ts'
+      import type { CssProperties } from './system-types.d.ts'
 
-      type AnyString = (string & {})
-      type CssVars = "var(--random-color)" | "var(--button-color)"
-      type CssVarValue = ConditionalValue<Token | CssVars | AnyString | (number & {})>
+          type AnyString = (string & {})
+          type CssVars = "var(--random-color)" | "var(--button-color)"
+          type CssVarValue = ConditionalValue<Token | CssVars | AnyString | (number & {})>
 
-      type CssVarName = "random-color" | "button-color" | AnyString
-      type CssVarKeys = \`--\${CssVarName}\`
+          type CssVarName = "random-color" | "button-color" | AnyString
+          type CssVarKeys = \`--\${CssVarName}\`
 
-      export type CssVarProperties = {
-        [key in CssVarKeys]?: CssVarValue
-      }
+          export type CssVarProperties = {
+            [key in CssVarKeys]?: CssVarValue
+          }
 
-      export interface SystemProperties {
-         /**
+          export interface SystemProperties {
+             /**
          * The **\`appearance\`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
          *
          * **Syntax**: \`none | button | button-bevel | caret | checkbox | default-button | inner-spin-button | listbox | listitem | media-controls-background | media-controls-fullscreen-background | media-current-time-display | media-enter-fullscreen-button | media-exit-fullscreen-button | media-fullscreen-button | media-mute-button | media-overlay-play-button | media-play-button | media-seek-back-button | media-seek-forward-button | media-slider | media-sliderthumb | media-time-remaining-display | media-toggle-closed-captions-button | media-volume-slider | media-volume-slider-container | media-volume-sliderthumb | menulist | menulist-button | menulist-text | menulist-textfield | meter | progress-bar | progress-bar-value | push-button | radio | searchfield | searchfield-cancel-button | searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical | square-button | textarea | textfield | -apple-pay-button\`

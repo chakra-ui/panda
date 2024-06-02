@@ -22,7 +22,16 @@ export const isValidPropJsArtifact = new ArtifactFile({
       'helpers.js': helpersImports,
     }
   },
-  dependencies: ['splitProps', 'isCssProperty'],
+  dependencies: [
+    'syntax',
+    'jsxFramework',
+    'jsxStyleProps',
+    'utilities',
+    'conditions',
+    'theme.breakpoints',
+    'theme.containerNames',
+    'theme.containerSizes',
+  ],
   computed(ctx) {
     return {
       isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
@@ -32,6 +41,8 @@ export const isValidPropJsArtifact = new ArtifactFile({
   },
   code(params) {
     if (params.computed.isTemplateLiteralSyntax) return
+    if (!params.computed.jsx.framework) return
+
     let content = isValidPropJson.content
 
     // replace user generated props by those from ctx, `css` or nothing
@@ -64,11 +75,16 @@ export const isValidPropDtsArtifact = new ArtifactFile({
   fileName: 'is-valid-prop',
   type: 'dts',
   dir: (ctx) => ctx.paths.jsx,
-  dependencies: [],
+  dependencies: ['jsxFramework'],
   importsType: {
     'types/index.d.ts': ['DistributiveOmit', 'JsxStyleProps', 'Pretty'],
   },
-  code() {
+  computed(ctx) {
+    return { jsx: ctx.jsx }
+  },
+  code(params) {
+    if (!params.computed.jsx.framework) return
+
     return `
     declare const isCssProperty: (value: string) => boolean;
 

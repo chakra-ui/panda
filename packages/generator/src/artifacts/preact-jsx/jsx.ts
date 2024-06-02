@@ -7,7 +7,7 @@ export const preactJsxFactoryArtifact = new ArtifactFile({
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsx', 'css/index'],
   imports: {
-    'jsx/factory-helpers.js': [
+    'jsx/factory-helper.js': [
       'defaultShouldForwardProp',
       'composeShouldForwardProps',
       'composeCvaFn',

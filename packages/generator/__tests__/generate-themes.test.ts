@@ -1,50 +1,61 @@
-import { createContext } from '@pandacss/fixture'
+import { createContext, createGeneratorContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { generateThemes, generateThemesIndex } from '../src/artifacts/js/themes'
+import { generateThemes, themesIndexJsArtifact, themesIndexDtsArtifact } from '../src/artifacts/js/themes'
+import type { Config } from '@pandacss/types'
+import { ArtifactMap } from '../src/artifacts/artifact'
+
+const generateThemesIndex = (userConfig?: Config) => {
+  return new ArtifactMap()
+    .addFile(themesIndexJsArtifact)
+    .addFile(themesIndexDtsArtifact)
+    .generate(createGeneratorContext(userConfig))
+}
 
 describe('generate themes', () => {
-  test('generateThemes', () => {
-    const ctx = createContext({
-      themes: {
-        default: {
-          tokens: {
-            colors: {
-              primary: { value: 'blue' },
-            },
-          },
-          semanticTokens: {
-            colors: {
-              simple: {
-                value: '{colors.red.600}',
-              },
-              text: {
-                value: {
-                  base: '{colors.blue.600}',
-                  _osDark: '{colors.blue.400}',
-                },
-              },
-            },
+  const config: Config = {
+    themes: {
+      default: {
+        tokens: {
+          colors: {
+            primary: { value: 'blue' },
           },
         },
-        pink: {
-          tokens: {
-            colors: {
-              primary: { value: 'pink' },
+        semanticTokens: {
+          colors: {
+            simple: {
+              value: '{colors.red.600}',
             },
-          },
-          semanticTokens: {
-            colors: {
-              text: {
-                value: {
-                  base: '{colors.pink.600}',
-                  _osDark: '{colors.pink.400}',
-                },
+            text: {
+              value: {
+                base: '{colors.blue.600}',
+                _osDark: '{colors.blue.400}',
               },
             },
           },
         },
       },
-    })
+      pink: {
+        tokens: {
+          colors: {
+            primary: { value: 'pink' },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            text: {
+              value: {
+                base: '{colors.pink.600}',
+                _osDark: '{colors.pink.400}',
+              },
+            },
+          },
+        },
+      },
+    },
+  }
+
+  test('generateThemes', () => {
+    const ctx = createContext(config)
 
     const files = generateThemes(ctx)
     expect(files).toMatchInlineSnapshot(`
@@ -67,63 +78,79 @@ describe('generate themes', () => {
         },
       ]
     `)
+  })
 
-    expect(generateThemesIndex(ctx, files)).toMatchInlineSnapshot(`
+  test('generateThemesIndex', () => {
+    expect(generateThemesIndex(config)).toMatchInlineSnapshot(`
       [
         {
-          "code": "export const getTheme = (themeName) => import('./' + themeName + '.json').then((m) => m.default)
+          "content": "/* eslint-disable */
 
-      export function injectTheme(el, theme) {
-        const doc = el.ownerDocument || document
-        let sheet = doc.getElementById(theme.id)
+          export type ThemeName = 'default' | 'pink'
+          export type ThemeByName = {
+            'default': {
+                  id: string,
+                  name: 'default',
+                  css: string
+                }
+      'pink': {
+                  id: string,
+                  name: 'pink',
+                  css: string
+                }
+          }
 
-        if (!sheet) {
-          sheet = doc.createElement('style')
-          sheet.setAttribute('type', 'text/css')
-          sheet.setAttribute('id', theme.id)
-        }
+          export type Theme<T extends ThemeName> = ThemeByName[T]
 
-        const head = doc.head || doc.getElementsByTagName('head')[0]
-        if (!head) {
-          throw new Error('No head found in doc')
-        }
+          /**
+           * Dynamically import a theme by name
+           */
+          export declare function getTheme<T extends ThemeName>(themeName: T): Promise<ThemeByName[T]>
 
-        el.dataset.pandaTheme = theme.name
-
-        head.appendChild(sheet)
-        sheet.innerHTML = theme.css
-
-        return sheet
-      }",
-          "file": "index.mjs",
+          /**
+           * Inject a theme stylesheet into the document
+           */
+          export declare function injectTheme(el: HTMLElement, theme: Theme<any>): HTMLStyleElement
+          ",
+          "id": "themes/index.d.ts",
+          "path": [
+            "styled-system",
+            "themes",
+            "index.d.ts",
+          ],
         },
         {
-          "code": "export type ThemeName = 'default' | 'pink'
-      export type ThemeByName = {
-        'default': {
-                id: string,
-                name: 'default',
-                css: string
-              }
-      'pink': {
-                id: string,
-                name: 'pink',
-                css: string
-              }
-      }
+          "content": "
+          export const getTheme = (themeName) => import('./' + themeName + '.json').then((m) => m.default)
 
-      export type Theme<T extends ThemeName> = ThemeByName[T]
+          export function injectTheme(el, theme) {
+            const doc = el.ownerDocument || document
+            let sheet = doc.getElementById(theme.id)
 
-      /**
-       * Dynamically import a theme by name
-       */
-      export declare function getTheme<T extends ThemeName>(themeName: T): Promise<ThemeByName[T]>
+            if (!sheet) {
+              sheet = doc.createElement('style')
+              sheet.setAttribute('type', 'text/css')
+              sheet.setAttribute('id', theme.id)
+            }
 
-      /**
-       * Inject a theme stylesheet into the document
-       */
-      export declare function injectTheme(el: HTMLElement, theme: Theme<any>): HTMLStyleElement",
-          "file": "index.d.ts",
+            const head = doc.head || doc.getElementsByTagName('head')[0]
+            if (!head) {
+              throw new Error('No head found in doc')
+            }
+
+            el.dataset.pandaTheme = theme.name
+
+            head.appendChild(sheet)
+            sheet.innerHTML = theme.css
+
+            return sheet
+          }",
+          "id": "themes/index.js",
+          "path": [
+            "styled-system",
+            "themes",
+            "index.mjs",
+          ],
         },
       ]
     `)

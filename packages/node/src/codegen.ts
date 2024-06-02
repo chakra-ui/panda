@@ -1,6 +1,5 @@
-import type { ArtifactFileId, ArtifactId, DiffConfigResult } from '@pandacss/types'
+import type { DiffConfigResult } from '@pandacss/types'
 import pLimit from 'p-limit'
-import prettier from 'prettier'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 
@@ -13,17 +12,19 @@ export async function codegen(ctx: PandaContext, changes?: DiffConfigResult) {
   if (ctx.config.clean) ctx.output.empty()
 
   const artifacts = ctx.getArtifacts(changes)
+  const changed = Array.from(artifacts.changed)
   let generated = artifacts.generated
+
   if (ctx.hooks['codegen:prepare']) {
-    const results = await ctx.hooks['codegen:prepare']?.({ changed: artifacts.changed, artifacts: generated })
-    if (results) generated = results
+    const update = await ctx.hooks['codegen:prepare']?.({ changed, artifacts: generated })
+    if (update) generated = update as typeof generated
   }
 
   // limit concurrency since we might output a lot of files
   const promises = generated.map((artifact) => limit(() => ctx.output.write(artifact)))
   await Promise.allSettled(promises)
 
-  await ctx.hooks['codegen:done']?.({ changed: artifacts.changed })
+  await ctx.hooks['codegen:done']?.({ changed })
 
   return {
     box: createBox({

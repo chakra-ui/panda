@@ -1,8 +1,12 @@
 /* eslint-disable */
-import type { ConditionalValue } from "./conditions";
-import type { OnlyKnown, UtilityValues, WithEscapeHatch } from "./prop-type";
-import type { CssProperties } from "./system-types";
-import type { Token } from "../tokens/index";
+import type { Token } from "../tokens/index.d.ts";
+import type { ConditionalValue } from "./conditions.d.ts";
+import type {
+  OnlyKnown,
+  UtilityValues,
+  WithEscapeHatch,
+} from "./prop-type.d.ts";
+import type { CssProperties } from "./system-types.d.ts";
 
 type AnyString = string & {};
 type CssVars = `var(--${string})`;

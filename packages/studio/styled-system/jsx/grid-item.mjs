@@ -1,8 +1,8 @@
-import { createElement, forwardRef } from "react";
-
 import { splitProps } from "../helpers.mjs";
-import { getGridItemStyle } from "../patterns/grid-item.mjs";
 import { panda } from "./factory.mjs";
+
+import { createElement, forwardRef } from "react";
+import { getGridItemStyle } from "../patterns/grid-item.mjs";
 
 export const GridItem = /* @__PURE__ */ forwardRef(
   function GridItem(props, ref) {

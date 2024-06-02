@@ -1,6 +1,6 @@
 import { capitalize, createRegex, dashCase, getPatternStyles, isObject, memo, uncapitalize } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
-import type { ArtifactFilters, Dict, PatternConfig, PatternHelpers, UserConfig } from '@pandacss/types'
+import type { Dict, PatternConfig, PatternHelpers, UserConfig } from '@pandacss/types'
 import type { Utility } from './utility'
 
 interface PatternOptions {
@@ -102,11 +102,6 @@ export class Patterns {
     if (detailIndex > -1) {
       this.details.splice(detailIndex, 1)
     }
-  }
-
-  filterDetails(filters?: ArtifactFilters) {
-    const patternDiffs = filters?.affecteds?.patterns
-    return patternDiffs ? this.details.filter((pattern) => patternDiffs.includes(pattern.dashName)) : this.details
   }
 
   getPropertyValues = (patternName: string, property: string) => {

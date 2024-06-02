@@ -5,7 +5,7 @@ export const stringLiteralConditionsJsArtifact = new ArtifactFile({
   fileName: 'conditions',
   type: 'js',
   dir: (ctx) => ctx.paths.css,
-  dependencies: [],
+  dependencies: ['syntax'],
   imports: {
     'helpers.js': ['withoutSpace'],
   },

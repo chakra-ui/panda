@@ -9,7 +9,6 @@ import {
   splitProps,
 } from '@pandacss/shared'
 import type {
-  ArtifactFilters,
   Dict,
   PartialBy,
   RecipeConfig,
@@ -18,8 +17,8 @@ import type {
   SystemStyleObject,
 } from '@pandacss/types'
 import merge from 'lodash.merge'
-import type { RecipeNode } from './types'
 import { transformStyles, type SerializeContext } from './serialize'
+import type { RecipeNode } from './types'
 
 interface RecipeRecord {
   [key: string]: RecipeConfig | SlotRecipeConfig
@@ -275,11 +274,6 @@ export class Recipes {
         styles: sharedState.styles.get(propKey) ?? {},
       }
     }
-  }
-
-  filterDetails = (filters?: ArtifactFilters) => {
-    const recipeDiffs = filters?.affecteds?.recipes
-    return recipeDiffs ? this.details.filter((recipe) => recipeDiffs.includes(recipe.dashName)) : this.details
   }
 
   static inferSlots = (recipe: PartialBy<SlotRecipeDefinition, 'slots'>) => {

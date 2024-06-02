@@ -1,18 +1,22 @@
 import type { Context, FileEngine } from '@pandacss/core'
-import type { ArtifactFileId, ArtifactId, Config, ConfigPath, DiffConfigResult, Pretty } from '@pandacss/types'
+import type { ArtifactFileId, Config, ConfigPath, DiffConfigResult, Pretty } from '@pandacss/types'
 
-type RawOrContextFn<T> = T | ((ctx: Context) => T)
-type InferRaw<T> = T extends RawOrContextFn<infer R> ? R : T
+type RawOrFn<Input, T> = T | ((input: Input) => T)
+type InferRawInput<Input, T> = T extends RawOrFn<Input, infer R> ? R : T
+
+type RawOrContextFn<T> = RawOrFn<Context, T>
+type Diffs = DiffConfigResult['diffs']
+type ConfigPathsOrDiffsFn = RawOrFn<Diffs, ConfigPath[]>
 
 type RemoveUnknowns<T> = {
   [K in keyof T as HasUnknown<T[K]> extends true ? never : K]: T[K]
 }
 type HasUnknown<T> = unknown extends T ? true : false
 
-export interface GenerateCodeParams<TDeps extends RawOrContextFn<ConfigPath[]>, TComputed> {
+export interface GenerateCodeParams<TDeps extends ConfigPathsOrDiffsFn, TComputed> {
   dependencies: Pretty<
     RemoveUnknowns<{
-      [Key in InferRaw<TDeps>[number]]: Key extends keyof Context & keyof Config
+      [Key in InferRawInput<Diffs, TDeps>[number]]: Key extends keyof Context & keyof Config
         ? Context[Key]
         : Key extends keyof Config
           ? Exclude<Config[Key], undefined>
@@ -25,11 +29,7 @@ export interface GenerateCodeParams<TDeps extends RawOrContextFn<ConfigPath[]>, 
 
 export type ArtifactImports = Partial<Record<ArtifactFileId, string[]>>
 
-export interface ArtifactOptions<
-  TFileId extends ArtifactFileId,
-  TDeps extends RawOrContextFn<ConfigPath[]>,
-  TComputed,
-> {
+export interface ArtifactOptions<TFileId extends ArtifactFileId, TDeps extends ConfigPathsOrDiffsFn, TComputed> {
   id: TFileId
   fileName: string
   /**
@@ -38,22 +38,22 @@ export interface ArtifactOptions<
    * for 'dts': depending on `config.forceConsistentTypeExtension` it can be `.d.ts` or `.d.mts`
    */
   type: 'js' | 'dts' | 'json'
-  dir: RawOrContextFn<string | string[]>
+  dir: RawOrContextFn<string[]>
   /**
    * List of config paths that will be used (at some point) to compute the artifact
    * When using a path that exists in both the config AND also in the `Context`
    * the value/typing will be the one from the `Context`
    */
   dependencies: TDeps
-  imports?: RawOrContextFn<undefined | ArtifactImports>
-  importsType?: RawOrContextFn<undefined | ArtifactImports>
+  imports?: RawOrContextFn<ArtifactImports>
+  importsType?: RawOrContextFn<ArtifactImports>
   computed?: (ctx: Context) => TComputed
   code: (params: GenerateCodeParams<TDeps, TComputed>) => string | undefined
 }
 
 export class ArtifactFile<
   TFileId extends ArtifactFileId,
-  TDeps extends RawOrContextFn<ConfigPath[]> = RawOrContextFn<ConfigPath[]>,
+  TDeps extends ConfigPathsOrDiffsFn = ConfigPathsOrDiffsFn,
   TComputed = any,
 > implements ArtifactOptions<TFileId, TDeps, TComputed>
 {
@@ -63,6 +63,7 @@ export class ArtifactFile<
   dir: ArtifactOptions<TFileId, TDeps, TComputed>['dir']
   dependencies: ArtifactOptions<TFileId, TDeps, TComputed>['dependencies']
   imports: ArtifactOptions<TFileId, TDeps, TComputed>['imports']
+  importsType: ArtifactOptions<TFileId, TDeps, TComputed>['importsType']
   computed?: ArtifactOptions<TFileId, TDeps, TComputed>['computed']
   code: ArtifactOptions<TFileId, TDeps, TComputed>['code']
 
@@ -73,6 +74,7 @@ export class ArtifactFile<
     this.dir = options.dir
     this.dependencies = options.dependencies
     this.imports = options.imports
+    this.importsType = options.importsType
     this.computed = options.computed
     this.code = options.code
   }
@@ -117,9 +119,10 @@ export interface GeneratedArtifact<TFileId> {
 }
 
 type ExtendFiles<TFiles, T extends ArtifactFile<any>> = Pretty<TFiles & { [K in T['id']]: T }>
-type MergeFiles<TSource, TTarget> = TSource & TTarget
-export type MergeArtifactMaps<TSource extends ArtifactMap<any>, TTarget extends ArtifactMap<any>> = ArtifactMap<
-  Pretty<TSource['zzz_internal_type'] & TTarget['zzz_internal_type']>
+type MergeFiles<TCurrent, TMerged> = TCurrent & TMerged
+
+export type MergeArtifactMaps<TCurrent extends ArtifactMap<any>, TMerged extends ArtifactMap<any>> = ArtifactMap<
+  Pretty<TCurrent['zzz_internal_type'] & TMerged['zzz_internal_type']>
 >
 
 type InferMapTypeFromRecord<TFiles> = Map<
@@ -133,17 +136,10 @@ type InferMapTypeFromRecord<TFiles> = Map<
   }[keyof TFiles]
 >
 
-/**
- * trick to combine multiple unions of objects into a single object
- * only works with objects not primitives
- * @param union - Union of objects
- * @returns Intersection of objects
- */
-export type UnionToIntersection<union> = (union extends any ? (k: union) => void : never) extends (
-  k: infer intersection,
-) => void
-  ? intersection
-  : never
+export interface GenerateArtifactOptions {
+  ids?: ArtifactFileId[]
+  diffs?: DiffConfigResult['diffs']
+}
 
 export class ArtifactMap<TFiles> {
   private files: InferMapTypeFromRecord<TFiles> = new Map()
@@ -171,10 +167,10 @@ export class ArtifactMap<TFiles> {
     return this as ArtifactMap<Pretty<MergeFiles<TFiles, TTarget>>>
   }
 
-  private createMatchers(ctx: Context) {
+  private createMatchers(diffs?: DiffConfigResult['diffs']) {
     const matchers = [] as Array<ReturnType<typeof createMatcher>>
     this.files.forEach((file) => {
-      matchers.push(createMatcher(file.id, callable(ctx, file.dependencies)))
+      matchers.push(createMatcher(file.id, callable(diffs ?? [], file.dependencies)))
     })
 
     return matchers
@@ -183,7 +179,7 @@ export class ArtifactMap<TFiles> {
   computeChangedFiles(ctx: Context, diffResult?: DiffConfigResult) {
     if (!diffResult) return new Set(this.files.keys())
 
-    const matchers = this.createMatchers(ctx)
+    const matchers = this.createMatchers(diffResult.diffs)
     const changed = new Set<keyof TFiles>()
 
     diffResult.diffs.forEach((change) => {
@@ -200,8 +196,8 @@ export class ArtifactMap<TFiles> {
     return changed
   }
 
-  getCodeParams(ctx: Context, node: ArtifactFile<any, any, any>) {
-    const dependencies = callable(ctx, node.dependencies as RawOrContextFn<ConfigPath[]>)
+  getCodeParams(ctx: Context, node: ArtifactFile<any>, diffs?: DiffConfigResult['diffs']) {
+    const dependencies = callable(diffs ?? [], node.dependencies)
     return {
       dependencies: Object.fromEntries(
         // Get dependency from context if it exists, fallback to config otherwise
@@ -212,14 +208,14 @@ export class ArtifactMap<TFiles> {
     }
   }
 
-  private getFileName(ctx: Context, node: ArtifactFile<any, any, any>) {
+  private getFileName(ctx: Context, node: ArtifactFile<any>) {
     if (node.type === 'js') return ctx.file.ext(node.fileName)
     if (node.type === 'dts') return ctx.file.extDts(node.fileName)
 
     return node.fileName
   }
 
-  generate(ctx: Context, ids?: ArtifactFileId[]) {
+  generate(ctx: Context, { ids, diffs }: GenerateArtifactOptions = {}) {
     const stack = this.filter(ids)
     const seen = new Set<ArtifactFileId>()
     const contents = [] as Array<GeneratedArtifact<keyof TFiles>>
@@ -230,20 +226,43 @@ export class ArtifactMap<TFiles> {
 
       seen.add(node.id)
 
-      const code = node.code?.(this.getCodeParams(ctx, node))
+      const code = node.code?.(this.getCodeParams(ctx, node, diffs))
       if (!code) continue
 
-      const computedId = callable(ctx, node.dir)
-      const fileWithExt = this.getFileName(ctx, node)
+      const dir = callable(ctx, node.dir)
+      const artifactDir = dir
+        .join('/')
+        .replace(ctx.config.cwd, '')
+        .replace(ctx.config.outdir, '')
+        .split('/')
+        .filter(Boolean)
 
       let content = code
-      if (node.type === 'dts') {
-        content = `/* eslint-disable */\n${code}`
+      // Add sorted imports to the top of the file, relative to the current file
+      if (node.imports || node.importsType) {
+        const imports = Object.entries(callable(ctx, node.imports ?? {})).map(([from, imports]) => [
+          from,
+          `import { ${imports.sort().join(', ')} } from '${ctx.file.ext(relative(artifactDir, from))}'`,
+        ])
+        const importTypes = Object.entries(callable(ctx, node.importsType ?? {})).map(([from, imports]) => [
+          from,
+          `import type { ${imports.sort().join(', ')} } from '${ctx.file.extDts(relative(artifactDir, from))}'`,
+        ])
+
+        const allImports = [...imports, ...importTypes]
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map(([_from, imports]) => imports)
+        content = `${allImports.join('\n')}\n${content}`
       }
 
+      if (node.type === 'dts') {
+        content = `/* eslint-disable */\n${content}`
+      }
+
+      const fileWithExt = this.getFileName(ctx, node)
       contents.push({
         id: node.id as keyof TFiles,
-        path: [...(Array.isArray(computedId) ? computedId : [computedId]), fileWithExt],
+        path: [...dir, fileWithExt],
         content,
       })
 
@@ -263,5 +282,29 @@ export class ArtifactMap<TFiles> {
   }
 }
 
-const callable = <T>(context: Context, value: RawOrContextFn<T>): InferRaw<T> =>
-  typeof value === 'function' ? (value as any)(context) : value
+const callable = <Input, T>(input: Input, value: RawOrFn<Input, T>): InferRawInput<Input, T> =>
+  typeof value === 'function' ? (value as any)(input) : value
+
+const relative = (current: string[], moduleSpecifier: string) => {
+  const from = moduleSpecifier.split('.')[0].split('/')
+
+  // Find the common base path
+  let i = 0
+  while (i < current.length && i < from.length && current[i] === from[i]) {
+    i++
+  }
+
+  const upPaths = Array(current.length - i).fill('..')
+  const downPaths = from.slice(i)
+  const relativePath = [...upPaths, ...downPaths].join('/')
+
+  if (!relativePath) {
+    return './'
+  }
+
+  if (relativePath.startsWith('../')) {
+    return relativePath
+  }
+
+  return './' + relativePath
+}

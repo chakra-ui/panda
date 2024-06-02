@@ -9,7 +9,7 @@ export const reactJsxFactoryArtifact = new ArtifactFile({
   imports: {
     'css/index.js': ['css', 'cx', 'cva'],
     'helpers.js': ['splitProps', 'normalizeHTMLProps'],
-    'jsx/factory-helpers.js': [
+    'jsx/factory-helper.js': [
       'defaultShouldForwardProp',
       'composeShouldForwardProps',
       'composeCvaFn',

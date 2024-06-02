@@ -7,7 +7,7 @@ export const solidJsxFactoryArtifact = new ArtifactFile({
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory', 'jsxFramework'],
   imports: {
-    'jsx/factory-helpers.js': [
+    'jsx/factory-helper.js': [
       'composeCvaFn',
       'composeShouldForwardProps',
       'defaultShouldForwardProp',

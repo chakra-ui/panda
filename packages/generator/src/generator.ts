@@ -16,20 +16,23 @@ export class Generator extends Context {
   constructor(conf: LoadConfigResult) {
     super(conf)
   }
+
   /**
    * Generate all the artifacts
    * Can opt-in to filter them if a list of ArtifactId is provided
    */
   getArtifacts = (diffResult?: DiffConfigResult) => {
     const map = getArtifactsMap(this)
-
     const changed = map.computeChangedFiles(this, diffResult)
-    // const styleProps = map.getFile("types/style-props.d.ts")
-    // styleProps.code({ computed:{
-    //   restrict: ()
-    // }})
 
-    return { map, changed, generated: map.generate(this, changed.size ? Array.from(changed) : undefined) }
+    return {
+      map,
+      changed,
+      generated: map.generate(this, {
+        ids: changed.size ? Array.from(changed) : undefined,
+        diffs: diffResult?.diffs,
+      }),
+    }
   }
 
   appendCssOfType = (type: CssArtifactType, sheet: Stylesheet) => {

@@ -5,7 +5,7 @@ export const typesGlobalArtifact = new ArtifactFile({
   fileName: 'index',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
-  dependencies: ['types'],
+  dependencies: [],
   importsType: {
     'types/recipe.d.ts': ['RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig'],
     'types/pattern.d.ts': ['PatternConfig, PatternProperties'],
@@ -35,7 +35,7 @@ export const typesIndexArtifact = new ArtifactFile({
   fileName: 'index',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
-  dependencies: ['types'],
+  dependencies: ['jsxFramework'],
   computed(ctx) {
     return {
       isJsxRequired: Boolean(ctx.jsx.framework),

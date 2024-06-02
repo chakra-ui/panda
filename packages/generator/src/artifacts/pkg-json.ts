@@ -5,13 +5,15 @@ export const packageJsonArtifact = new ArtifactFile({
   fileName: 'package.json',
   type: 'json',
   dir: (ctx) => ctx.paths.root,
-  dependencies: [],
+  dependencies: ['outdir', 'emitPackage'],
   computed(ctx) {
     return {
+      emitPackage: ctx.config.emitPackage,
       outdir: ctx.config.outdir,
     }
   },
   code(params) {
+    if (!params.computed.emitPackage) return
     const { outdir } = params.computed
 
     const pkg = {

@@ -6,7 +6,7 @@ export const typesPropTypesArtifact = new ArtifactFile({
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
   dependencies: ['utilities'],
-  imports: {
+  importsType: {
     'types/conditions.d.ts': ['ConditionalValue'],
     'types/system-types.d.ts': ['CssProperties'],
     'tokens/index.d.ts': ['Tokens'],

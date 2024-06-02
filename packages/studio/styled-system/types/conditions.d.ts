@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { AnySelector, Selectors } from "./selectors";
+import { AnySelector, Selectors } from "./selectors.mjs";
 
 export interface Conditions {
   /** `&:is(:hover, [data-hover])` */

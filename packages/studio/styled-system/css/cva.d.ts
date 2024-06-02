@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { RecipeCreatorFn } from "../types/recipe";
+import type { RecipeCreatorFn } from "../types/index.d.ts";
 
 export declare const cva: RecipeCreatorFn;
 

@@ -1,17 +1,46 @@
 import { createContext } from '@pandacss/fixture'
 import type { Config } from '@pandacss/types'
 import { expect, test } from 'vitest'
-import { generateTokenJs } from '../src/artifacts/js/token'
+import { ArtifactMap } from '../src/artifacts/artifact'
+import { tokenDtsArtifact, tokenJsArtifact } from '../src/artifacts/js/token'
 
 const tokenJs = (userConfig?: Config) => {
-  const generator = createContext(userConfig)
-  return generateTokenJs(generator).js
+  const context = createContext(userConfig)
+  return new ArtifactMap()
+    .addFile(tokenJsArtifact)
+    .addFile(tokenDtsArtifact)
+    .generate(context)
+    .map(({ path, ...generated }) => ({
+      ...generated,
+      path: path.filter((part) => part !== context.config.cwd),
+    }))
 }
 
 test('[dts] should generate package', () => {
   expect(tokenJs()).toMatchInlineSnapshot(
     `
-    "const tokens = {
+    [
+      {
+        "content": "/* eslint-disable */
+    import type { Token } from './tokens.d.ts'
+
+        export declare const token: {
+          (path: Token, fallback?: string): string
+          var: (path: Token, fallback?: string) => string
+        }
+
+        export * from './tokens';
+        ",
+        "id": "tokens/index.d.ts",
+        "path": [
+          "styled-system",
+          "tokens",
+          "token.d.ts",
+        ],
+      },
+      {
+        "content": "
+        const tokens = {
       "aspectRatios.square": {
         "value": "1 / 1",
         "variable": "var(--aspect-ratios-square)"
@@ -1990,15 +2019,23 @@ test('[dts] should generate package', () => {
       }
     }
 
-    export function token(path, fallback) {
-      return tokens[path]?.value || fallback
-    }
+        export function token(path, fallback) {
+          return tokens[path]?.value || fallback
+        }
 
-    function tokenVar(path, fallback) {
-      return tokens[path]?.variable || fallback
-    }
+        function tokenVar(path, fallback) {
+          return tokens[path]?.variable || fallback
+        }
 
-    token.var = tokenVar"
+        token.var = tokenVar",
+        "id": "tokens/index.js",
+        "path": [
+          "styled-system",
+          "tokens",
+          "token.mjs",
+        ],
+      },
+    ]
   `,
   )
 })
@@ -2016,7 +2053,28 @@ test('with formatTokenName', () => {
     }),
   ).toMatchInlineSnapshot(
     `
-    "const tokens = {
+    [
+      {
+        "content": "/* eslint-disable */
+    import type { Token } from './tokens.d.ts'
+
+        export declare const token: {
+          (path: Token, fallback?: string): string
+          var: (path: Token, fallback?: string) => string
+        }
+
+        export * from './tokens';
+        ",
+        "id": "tokens/index.d.ts",
+        "path": [
+          "styled-system",
+          "tokens",
+          "token.d.ts",
+        ],
+      },
+      {
+        "content": "
+        const tokens = {
       "$aspectRatios-square": {
         "value": "1 / 1",
         "variable": "var(--aspect-ratios-square)"
@@ -3995,59 +4053,77 @@ test('with formatTokenName', () => {
       }
     }
 
-    export function token(path, fallback) {
-      return tokens[path]?.value || fallback
-    }
+        export function token(path, fallback) {
+          return tokens[path]?.value || fallback
+        }
 
-    function tokenVar(path, fallback) {
-      return tokens[path]?.variable || fallback
-    }
+        function tokenVar(path, fallback) {
+          return tokens[path]?.variable || fallback
+        }
 
-    token.var = tokenVar"
+        token.var = tokenVar",
+        "id": "tokens/index.js",
+        "path": [
+          "styled-system",
+          "tokens",
+          "token.mjs",
+        ],
+      },
+    ]
   `,
   )
 })
 
 test('use raw value when possible for semanticTokens', () => {
   expect(
-    generateTokenJs(
-      createContext({
-        eject: true,
-        theme: {
-          tokens: {},
-          semanticTokens: {
-            colors: {
-              blue: { value: 'blue' },
-              green: {
-                value: {
-                  base: 'green',
-                  _dark: 'white',
-                },
+    tokenJs({
+      eject: true,
+      theme: {
+        tokens: {},
+        semanticTokens: {
+          colors: {
+            blue: { value: 'blue' },
+            green: {
+              value: {
+                base: 'green',
+                _dark: 'white',
               },
-              red: {
-                value: {
-                  base: 'red',
-                },
-              },
-              blueRef: { value: '{colors.blue}' },
-              redRef: { value: '{colors.red}' },
             },
+            red: {
+              value: {
+                base: 'red',
+              },
+            },
+            blueRef: { value: '{colors.blue}' },
+            redRef: { value: '{colors.red}' },
           },
         },
-      }),
-    ),
+      },
+    }),
   ).toMatchInlineSnapshot(
     `
-    {
-      "dts": "import type { Token } from './tokens';
+    [
+      {
+        "content": "/* eslint-disable */
+    import type { Token } from './tokens.d.ts'
 
-    export declare const token: {
-      (path: Token, fallback?: string): string
-      var: (path: Token, fallback?: string) => string
-    }
+        export declare const token: {
+          (path: Token, fallback?: string): string
+          var: (path: Token, fallback?: string) => string
+        }
 
-    export * from './tokens';",
-      "js": "const tokens = {
+        export * from './tokens';
+        ",
+        "id": "tokens/index.d.ts",
+        "path": [
+          "styled-system",
+          "tokens",
+          "token.d.ts",
+        ],
+      },
+      {
+        "content": "
+        const tokens = {
       "colors.blue": {
         "value": "blue",
         "variable": "var(--colors-blue)"
@@ -4074,16 +4150,23 @@ test('use raw value when possible for semanticTokens', () => {
       }
     }
 
-    export function token(path, fallback) {
-      return tokens[path]?.value || fallback
-    }
+        export function token(path, fallback) {
+          return tokens[path]?.value || fallback
+        }
 
-    function tokenVar(path, fallback) {
-      return tokens[path]?.variable || fallback
-    }
+        function tokenVar(path, fallback) {
+          return tokens[path]?.variable || fallback
+        }
 
-    token.var = tokenVar",
-    }
+        token.var = tokenVar",
+        "id": "tokens/index.js",
+        "path": [
+          "styled-system",
+          "tokens",
+          "token.mjs",
+        ],
+      },
+    ]
   `,
   )
 })

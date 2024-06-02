@@ -5,7 +5,7 @@ export const tokenJsArtifact = new ArtifactFile({
   fileName: 'token',
   type: 'js',
   dir: (ctx) => ctx.paths.token,
-  dependencies: [],
+  dependencies: ['theme.tokens', 'theme.semanticTokens'],
   computed(ctx) {
     return { tokens: ctx.tokens }
   },
@@ -43,7 +43,7 @@ export const tokenDtsArtifact = new ArtifactFile({
   dir: (ctx) => ctx.paths.token,
   dependencies: [],
   importsType: {
-    'types/index.d.ts': ['Token'],
+    'tokens/tokens.d.ts': ['Token'],
   },
   code(params) {
     return `

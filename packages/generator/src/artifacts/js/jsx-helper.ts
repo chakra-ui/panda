@@ -1,21 +1,24 @@
 import { ArtifactFile } from '../artifact'
 
 export const jsxHelpersJsArtifact = new ArtifactFile({
-  id: 'jsx/factory-helpers.js',
+  id: 'jsx/factory-helper.js',
   fileName: 'factory-helper',
   type: 'js',
   dir: (ctx) => ctx.paths.jsx,
-  dependencies: ['is-valid-prop'],
+  dependencies: ['syntax'],
   imports: (ctx) => {
-    if (ctx.isTemplateLiteralSyntax) return
+    if (ctx.isTemplateLiteralSyntax) return {}
+
     return {
       'jsx/is-valid-prop.js': ['isCssProperty'],
     }
   },
   computed(ctx) {
-    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax }
+    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax, jsx: ctx.jsx }
   },
   code(params) {
+    if (!params.computed.jsx.framework) return
+
     if (params.computed.isTemplateLiteralSyntax) {
       return `
     export const getDisplayName = (Component) => {

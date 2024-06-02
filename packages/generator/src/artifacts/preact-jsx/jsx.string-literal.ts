@@ -7,7 +7,7 @@ export const preactJsxStringLiteralFactoryArtifact = new ArtifactFile({
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsx', 'css/index'],
   imports: {
-    'jsx/factory-helpers.js': ['getDisplayName'],
+    'jsx/factory-helper.js': ['getDisplayName'],
     'css/index.js': ['css', 'cx'],
   },
   computed(ctx) {

@@ -1,8 +1,8 @@
-import { createElement, forwardRef } from "react";
-
 import { splitProps } from "../helpers.mjs";
-import { getAspectRatioStyle } from "../patterns/aspect-ratio.mjs";
 import { panda } from "./factory.mjs";
+
+import { createElement, forwardRef } from "react";
+import { getAspectRatioStyle } from "../patterns/aspect-ratio.mjs";
 
 export const AspectRatio = /* @__PURE__ */ forwardRef(
   function AspectRatio(props, ref) {

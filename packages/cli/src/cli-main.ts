@@ -134,12 +134,12 @@ export async function main() {
       if (watch) {
         ctx.watchConfig(
           async () => {
-            const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+            const changes = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
 
-            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
-            await codegen(ctx, Array.from(affecteds.artifacts))
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes })
+            await codegen(ctx, changes)
             logger.info('ctx:updated', 'config rebuilt ✅')
           },
           { cwd, poll },
@@ -215,11 +215,11 @@ export async function main() {
         //
         ctx.watchConfig(
           async () => {
-            const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+            const changes = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
 
-            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes })
             await cssgen(ctx, options)
             logger.info('ctx:updated', 'config rebuilt ✅')
           },
@@ -451,11 +451,11 @@ export async function main() {
       if (watch) {
         ctx.watchConfig(
           async () => {
-            const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+            const changes = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
               ctx = new PandaContext(conf)
             })
 
-            await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
+            await ctx.hooks['config:change']?.({ config: ctx.config, changes })
             await buildInfo(ctx, outfile)
             logger.info('ctx:updated', 'config rebuilt ✅')
           },

@@ -1,6 +1,6 @@
-import { compact, getSlotRecipes, memo, splitProps } from "../helpers.mjs";
 import { cva } from "./cva.mjs";
 import { cx } from "./cx.mjs";
+import { compact, getSlotRecipes, memo, splitProps } from "../helpers.mjs";
 
 const slotClass = (className, slot) => className + "__" + slot;
 

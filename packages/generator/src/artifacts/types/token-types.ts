@@ -33,7 +33,7 @@ export const tokenTypesArtifact = new ArtifactFile({
   fileName: 'token-types',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
-  dependencies: [],
+  dependencies: ['theme.tokens', 'theme.semanticTokens'],
   computed(ctx) {
     return { tokens: ctx.tokens }
   },

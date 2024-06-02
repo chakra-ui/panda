@@ -5,6 +5,7 @@ import { qwikJsx } from './qwik-jsx'
 import { reactJsx } from './react-jsx'
 import { solidJsx } from './solid-jsx'
 import { vueJsx } from './vue-jsx'
+import { ArtifactMap } from './artifact'
 
 /* -----------------------------------------------------------------------------
  * JSX Types
@@ -57,7 +58,11 @@ const factoryStringLiteralMap = {
 export function generateJsxFactory(ctx: Context) {
   if (!ctx.jsx.framework) return
   if (!isKnownFramework(ctx.jsx.framework)) return
-  return ctx.isTemplateLiteralSyntax ? factoryStringLiteralMap[ctx.jsx.framework] : factoryMap[ctx.jsx.framework]
+
+  const { js, dts } = ctx.isTemplateLiteralSyntax
+    ? factoryStringLiteralMap[ctx.jsx.framework]
+    : factoryMap[ctx.jsx.framework]
+  return new ArtifactMap().addFile(js).addFile(dts)
 }
 
 /* -----------------------------------------------------------------------------

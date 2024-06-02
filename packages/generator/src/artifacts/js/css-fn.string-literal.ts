@@ -5,7 +5,7 @@ export const stringLiteralCssFnDtsArtifact = new ArtifactFile({
   fileName: 'css',
   type: 'dts',
   dir: (ctx) => ctx.paths.css,
-  dependencies: [],
+  dependencies: ['syntax'],
   code() {
     return 'export declare function css(template: { raw: readonly string[] | ArrayLike<string> }): string'
   },
@@ -16,7 +16,7 @@ export const stringLiteralCssFnJsArtifact = new ArtifactFile({
   fileName: 'css',
   type: 'js',
   dir: (ctx) => ctx.paths.css,
-  dependencies: ['hash', 'prefix', 'conditions', 'separator'],
+  dependencies: ['syntax', 'hash', 'prefix', 'separator', 'hooks', 'plugins'],
   imports: {
     'helpers.js': ['astish', 'createCss', 'isObject', 'mergeProps', 'withoutSpace'],
     'css/conditions.js': ['finalizeConditions', 'sortConditions'],

@@ -5,13 +5,18 @@ export const svaJsArtifact = new ArtifactFile({
   fileName: 'sva',
   type: 'js',
   dir: (ctx) => ctx.paths.css,
-  dependencies: [],
+  dependencies: ['syntax'],
   imports: {
     'helpers.js': ['compact', 'getSlotRecipes', 'memo', 'splitProps'],
     'css/cva.js': ['cva'],
     'css/cx.js': ['cx'],
   },
-  code() {
+  computed(ctx) {
+    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
+
     return `
     const slotClass = (className, slot) => className + '__' + slot
 
