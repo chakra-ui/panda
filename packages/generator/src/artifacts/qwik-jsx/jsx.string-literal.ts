@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const qwikJsxStringLiteralFactoryArtifact = new ArtifactFile({
   id: 'jsx/factory.js',

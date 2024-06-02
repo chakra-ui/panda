@@ -1,6 +1,6 @@
 import { createGeneratorContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { ArtifactMap } from '../src/artifacts/artifact'
+import { ArtifactMap } from '../src/artifacts/artifact-map'
 import { getRecipesArtifacts, recipesCreateRecipeArtifact } from '../src/artifacts/js/recipe'
 import type { Config } from '@pandacss/types'
 

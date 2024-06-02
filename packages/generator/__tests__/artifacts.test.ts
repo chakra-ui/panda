@@ -1,9 +1,6 @@
 import { createGeneratorContext } from '@pandacss/fixture'
-import { type GeneratedArtifact } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { Generator } from '../src'
 import { getArtifactsMap } from '../src/artifacts/setup-artifacts'
-import { ArtifactMap } from '../src/artifacts/artifact'
 
 describe('setup-artifacts', () => {
   test('getArtifactsMap', () => {

@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const solidJsxStringLiteralFactoryArtifact = new ArtifactFile({
   id: 'jsx/factory.js',

@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const stringLiteralCssFnDtsArtifact = new ArtifactFile({
   id: 'css/css.d.ts',

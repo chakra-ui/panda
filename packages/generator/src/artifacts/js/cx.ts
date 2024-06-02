@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const cxJsArtifact = new ArtifactFile({
   id: 'css/cx.js',

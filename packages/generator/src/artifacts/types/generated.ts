@@ -1,6 +1,6 @@
 import type { FileEngine } from '@pandacss/core'
 import { match } from 'ts-pattern'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 import composition from '../generated/composition.d.ts.json' assert { type: 'json' }
 import csstype from '../generated/csstype.d.ts.json' assert { type: 'json' }
 import parts from '../generated/parts.d.ts.json' assert { type: 'json' }

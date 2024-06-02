@@ -1,7 +1,7 @@
 import { Context, type StyleDecoder, type Stylesheet } from '@pandacss/core'
 import type { CssArtifactType, DiffConfigResult, LoadConfigResult } from '@pandacss/types'
 import { match } from 'ts-pattern'
-import { ArtifactMap } from './artifacts/artifact'
+import { ArtifactMap } from './artifacts/artifact-map'
 import { generateGlobalCss } from './artifacts/css/global-css'
 import { generateKeyframeCss } from './artifacts/css/keyframe-css'
 import { generateParserCss } from './artifacts/css/parser-css'

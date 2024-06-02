@@ -1,7 +1,7 @@
 import { createContext } from '@pandacss/fixture'
 import type { Config } from '@pandacss/types'
 import { expect, test } from 'vitest'
-import { ArtifactMap } from '../src/artifacts/artifact'
+import { ArtifactMap } from '../src/artifacts/artifact-map'
 import { tokenDtsArtifact, tokenJsArtifact } from '../src/artifacts/js/token'
 
 const tokenJs = (userConfig?: Config) => {

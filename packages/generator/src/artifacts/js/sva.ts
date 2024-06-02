@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const svaJsArtifact = new ArtifactFile({
   id: 'css/sva.js',

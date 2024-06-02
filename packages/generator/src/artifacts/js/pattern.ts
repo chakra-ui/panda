@@ -3,7 +3,7 @@ import { compact, unionType } from '@pandacss/shared'
 import type { ArtifactFileId } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { match } from 'ts-pattern'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export function getPatternsArtifacts(ctx: Context) {
   if (ctx.patterns.isEmpty()) return []

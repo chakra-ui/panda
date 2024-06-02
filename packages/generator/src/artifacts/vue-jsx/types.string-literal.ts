@@ -1,6 +1,4 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const vueJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
   id: 'jsx/factory.d.ts',
@@ -63,11 +61,3 @@ export const vueJsxTypesStringLiteralArtifact = new ArtifactFile({
       `
   },
 })
-
-export function generateVueJsxStringLiteralTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName } = ctx.jsx
-
-  return {
-    jsxFactory: outdent,
-  }
-}

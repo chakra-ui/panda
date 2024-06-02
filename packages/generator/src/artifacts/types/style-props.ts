@@ -2,7 +2,7 @@ import { allCssProperties } from '@pandacss/is-valid-prop'
 import { unionType } from '@pandacss/shared'
 
 import type { UserConfig } from '@pandacss/types'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 import csstype from '../generated/csstype.d.ts.json' assert { type: 'json' }
 
 export const typesStylePropsArtifact = new ArtifactFile({

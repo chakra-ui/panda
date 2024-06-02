@@ -1,7 +1,7 @@
 import type { Context } from '@pandacss/core'
 import { createContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { ArtifactMap } from '../src/artifacts/artifact'
+import { ArtifactMap } from '../src/artifacts/artifact-map'
 import { cssFnDtsArtifact, cssFnJsArtifact } from '../src/artifacts/js/css-fn'
 
 const generateCssFn = (context: Context) => {

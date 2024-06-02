@@ -3,7 +3,7 @@ import { Recipes } from '@pandacss/core'
 import { unionType } from '@pandacss/shared'
 import type { ArtifactFileId } from '@pandacss/types'
 import { match } from 'ts-pattern'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'

@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const typesGlobalArtifact = new ArtifactFile({
   id: 'types/global.d.ts',

@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const typesPropTypesArtifact = new ArtifactFile({
   id: 'types/prop-type.d.ts',

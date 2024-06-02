@@ -5,7 +5,7 @@ import { qwikJsx } from './qwik-jsx'
 import { reactJsx } from './react-jsx'
 import { solidJsx } from './solid-jsx'
 import { vueJsx } from './vue-jsx'
-import { ArtifactMap } from './artifact'
+import { ArtifactMap } from './artifact-map'
 
 /* -----------------------------------------------------------------------------
  * JSX Types

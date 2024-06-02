@@ -3,7 +3,7 @@ import type { LoadConfigResult } from '@pandacss/types'
 import { expect, test } from 'vitest'
 import { Generator } from '../src'
 import { getPatternsArtifacts } from '../src/artifacts/js/pattern'
-import { ArtifactMap } from '../src/artifacts/artifact'
+import { ArtifactMap } from '../src/artifacts/artifact-map'
 
 const patterns = (config: LoadConfigResult) => {
   const generator = new Generator(config)

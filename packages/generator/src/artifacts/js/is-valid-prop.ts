@@ -1,5 +1,5 @@
 import { match } from 'ts-pattern'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 import isValidPropJson from '../generated/is-valid-prop.mjs.json' assert { type: 'json' }
 
 const cssPropRegex = /var cssPropertiesStr = ".*?";/

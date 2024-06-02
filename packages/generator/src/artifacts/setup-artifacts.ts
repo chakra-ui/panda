@@ -1,5 +1,5 @@
 import type { Context } from '@pandacss/core'
-import { ArtifactFile, ArtifactMap, type MergeArtifactMaps } from './artifact'
+import { ArtifactFile, ArtifactMap, type MergeArtifactMaps } from './artifact-map'
 import { cssConditionsJsArtifact, typesConditionsDtsArtifact } from './js/conditions'
 import { stringLiteralConditionsJsArtifact } from './js/conditions.string-literal'
 import { cssFnDtsArtifact, cssFnJsArtifact } from './js/css-fn'

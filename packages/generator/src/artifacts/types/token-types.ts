@@ -1,7 +1,7 @@
 import { capitalize, unionType } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import pluralize from 'pluralize'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 const categories = [
   'aspectRatios',

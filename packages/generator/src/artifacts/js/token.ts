@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const tokenJsArtifact = new ArtifactFile({
   id: 'tokens/index.js',

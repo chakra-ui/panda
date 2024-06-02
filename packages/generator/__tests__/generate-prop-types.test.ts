@@ -2,7 +2,7 @@ import { createContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 import { typesPropTypesArtifact } from '../src/artifacts/types/prop-types'
 import type { Context } from '@pandacss/core'
-import { ArtifactMap } from '../src/artifacts/artifact'
+import { ArtifactMap } from '../src/artifacts/artifact-map'
 
 const generatePropTypes = (context: Context) => {
   return new ArtifactMap()

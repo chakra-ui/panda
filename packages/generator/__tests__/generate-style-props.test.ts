@@ -2,7 +2,7 @@ import { createGeneratorContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 import { typesStylePropsArtifact } from '../src/artifacts/types/style-props'
 import type { Config } from '@pandacss/types'
-import { ArtifactMap } from '../src/artifacts/artifact'
+import { ArtifactMap } from '../src/artifacts/artifact-map'
 
 const generateStyleProps = (userConfig?: Config) => {
   return new ArtifactMap().addFile(typesStylePropsArtifact).generate(createGeneratorContext(userConfig))

@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const qwikJsxFactoryTypesArtifact = new ArtifactFile({
   id: 'jsx/factory.d.ts',

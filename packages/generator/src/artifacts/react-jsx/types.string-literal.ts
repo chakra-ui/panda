@@ -1,4 +1,4 @@
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 
 export const reactJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
   id: 'types/jsx.d.ts',

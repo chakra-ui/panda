@@ -2,7 +2,7 @@ import type { Context } from '@pandacss/core'
 import type { ArtifactFileId } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import { ArtifactFile, type ArtifactImports } from '../artifact'
+import { ArtifactFile, type ArtifactImports } from '../artifact-map'
 
 export function generatePreactJsxPattern(ctx: Context) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx

@@ -1,7 +1,7 @@
 import type { Context } from '@pandacss/core'
 import { compact } from '@pandacss/shared'
 import type { ThemeVariant } from '@pandacss/types'
-import { ArtifactFile } from '../artifact'
+import { ArtifactFile } from '../artifact-map'
 import { stringifyVars } from '../css/token-css'
 
 const getThemeId = (themeName: string) => 'panda-theme-' + themeName

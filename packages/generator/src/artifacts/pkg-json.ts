@@ -1,4 +1,4 @@
-import { ArtifactFile } from './artifact'
+import { ArtifactFile } from './artifact-map'
 
 export const packageJsonArtifact = new ArtifactFile({
   id: 'package.json',
