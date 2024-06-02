@@ -283,6 +283,10 @@ describe('setup-artifacts', () => {
           "path": "styled-system/css/css.d.ts",
         },
         {
+          "id": "types/index.d.ts",
+          "path": "styled-system/types/index.d.ts",
+        },
+        {
           "id": "css/css.js",
           "path": "styled-system/css/css.mjs",
         },
@@ -489,6 +493,34 @@ describe('setup-artifacts', () => {
         {
           "id": "patterns/cq.d.ts",
           "path": "styled-system/patterns/cq.d.ts",
+        },
+        {
+          "id": "tokens/index.d.ts",
+          "path": "styled-system/tokens/token.d.ts",
+        },
+        {
+          "id": "tokens/tokens.d.ts",
+          "path": "styled-system/types/token-types.d.ts",
+        },
+        {
+          "id": "types/style-props.d.ts",
+          "path": "styled-system/types/style-props.d.ts",
+        },
+        {
+          "id": "types/prop-type.d.ts",
+          "path": "styled-system/types/prop-types.d.ts",
+        },
+        {
+          "id": "types/conditions.d.ts",
+          "path": "styled-system/types/conditions.d.ts",
+        },
+        {
+          "id": "types/selectors.d.ts",
+          "path": "styled-system/types/selectors.d.ts",
+        },
+        {
+          "id": "types/csstype.d.ts",
+          "path": "styled-system/types/csstype.d.ts",
         },
         {
           "id": "patterns/visually-hidden.js",
@@ -703,10 +735,6 @@ describe('setup-artifacts', () => {
           "path": "styled-system/recipes/text-style.mjs",
         },
         {
-          "id": "types/selectors.d.ts",
-          "path": "styled-system/types/selectors.d.ts",
-        },
-        {
           "id": "types/composition.d.ts",
           "path": "styled-system/types/composition.d.ts",
         },
@@ -723,36 +751,8 @@ describe('setup-artifacts', () => {
           "path": "styled-system/types/static-css.d.ts",
         },
         {
-          "id": "types/csstype.d.ts",
-          "path": "styled-system/types/csstype.d.ts",
-        },
-        {
-          "id": "types/style-props.d.ts",
-          "path": "styled-system/types/style-props.d.ts",
-        },
-        {
-          "id": "types/prop-type.d.ts",
-          "path": "styled-system/types/prop-types.d.ts",
-        },
-        {
           "id": "types/global.d.ts",
           "path": "styled-system/types/index.d.ts",
-        },
-        {
-          "id": "types/index.d.ts",
-          "path": "styled-system/types/index.d.ts",
-        },
-        {
-          "id": "types/conditions.d.ts",
-          "path": "styled-system/types/conditions.d.ts",
-        },
-        {
-          "id": "tokens/tokens.d.ts",
-          "path": "styled-system/types/token-types.d.ts",
-        },
-        {
-          "id": "tokens/index.d.ts",
-          "path": "styled-system/tokens/token.d.ts",
         },
         {
           "id": "tokens/index.js",

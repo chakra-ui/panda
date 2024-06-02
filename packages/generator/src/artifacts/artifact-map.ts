@@ -253,6 +253,17 @@ export class ArtifactMap<TFiles> {
           .sort((a, b) => a[0].localeCompare(b[0]))
           .map(([_from, imports]) => imports)
         content = `${allImports.join('\n')}\n${content}`
+
+        // Disable transitive imports generation on HMR
+        if (!diffs) {
+          ;[...imports, ...importTypes].forEach((key) => {
+            const importedFileId = key[0] as ArtifactFileId
+            const depNode = this.getFile(importedFileId as keyof TFiles)
+            if (depNode && !seen.has(importedFileId)) {
+              stack.push(depNode as any)
+            }
+          })
+        }
       }
 
       if (node.type === 'dts') {
@@ -265,17 +276,6 @@ export class ArtifactMap<TFiles> {
         path: [...dir, fileWithExt],
         content,
       })
-
-      const imports = callable(ctx, node.imports)
-      if (imports) {
-        Object.keys(imports).forEach((key) => {
-          const importedFileId = key as ArtifactFileId
-          const depNode = this.getFile(importedFileId as keyof TFiles)
-          if (depNode && !seen.has(importedFileId)) {
-            stack.push(depNode as any)
-          }
-        })
-      }
     }
 
     return contents

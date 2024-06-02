@@ -2,7 +2,7 @@ import { ArtifactFile } from '../artifact-map'
 
 export const typesGlobalArtifact = new ArtifactFile({
   id: 'types/global.d.ts',
-  fileName: 'index',
+  fileName: 'global',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
   dependencies: [],
@@ -15,6 +15,7 @@ export const typesGlobalArtifact = new ArtifactFile({
   },
   code() {
     return `// @ts-nocheck
+
     import type * as Panda from '@pandacss/dev'
 
     declare module '@pandacss/dev' {

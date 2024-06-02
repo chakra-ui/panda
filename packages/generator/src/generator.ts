@@ -9,6 +9,7 @@ import { generateResetCss } from './artifacts/css/reset-css'
 import { generateStaticCss } from './artifacts/css/static-css'
 import { generateTokenCss } from './artifacts/css/token-css'
 import { getArtifactsMap } from './artifacts/setup-artifacts'
+import { logger } from '@pandacss/logger'
 
 export class Generator extends Context {
   artifacts = new ArtifactMap()
@@ -24,6 +25,8 @@ export class Generator extends Context {
   getArtifacts = (diffResult?: DiffConfigResult) => {
     const map = getArtifactsMap(this)
     const changed = map.computeChangedFiles(this, diffResult)
+
+    logger.debug('artifacts', changed)
 
     return {
       map,

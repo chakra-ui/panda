@@ -1,16 +1,17 @@
 /* eslint-disable */
-// @ts-nocheck
-import type * as Panda from "@pandacss/dev";
+import type { CompositionStyles } from "./composition.d.ts";
+import type { Parts } from "./parts.d.ts";
+import type { PatternConfig, PatternProperties } from "./pattern.d.ts";
 import type {
   RecipeVariantRecord,
   RecipeConfig,
   SlotRecipeVariantRecord,
   SlotRecipeConfig,
-} from "./recipe";
-import type { Parts } from "./parts";
-import type { PatternConfig, PatternProperties } from "./pattern";
-import type { GlobalStyleObject, SystemStyleObject } from "./system-types";
-import type { CompositionStyles } from "./composition";
+} from "./recipe.d.ts";
+import type { GlobalStyleObject, SystemStyleObject } from "./system-types.d.ts";
+// @ts-nocheck
+
+import type * as Panda from "@pandacss/dev";
 
 declare module "@pandacss/dev" {
   export function defineRecipe<V extends RecipeVariantRecord>(

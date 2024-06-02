@@ -22,7 +22,7 @@ export const preactJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
 
 export const preactJsxTypesStringLiteralArtifact = new ArtifactFile({
   id: `types/jsx.d.ts`,
-  fileName: 'types',
+  fileName: 'jsx',
   type: 'dts',
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory', 'jsxFramework'],

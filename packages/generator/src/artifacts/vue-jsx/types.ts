@@ -21,8 +21,8 @@ export const vueJsxFactoryTypesArtifact = new ArtifactFile({
 })
 
 export const vueJsxTypesArtifact = new ArtifactFile({
-  id: 'jsx/factory.d.ts',
-  fileName: 'factory',
+  id: 'types/jsx.d.ts',
+  fileName: 'jsx',
   type: 'dts',
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory', 'jsxFramework'],

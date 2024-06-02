@@ -1,8 +1,8 @@
 import { ArtifactFile } from '../artifact-map'
 
 export const reactJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
-  id: 'types/jsx.d.ts',
-  fileName: 'jsx',
+  id: 'jsx/factory.d.ts',
+  fileName: 'factory',
   type: 'dts',
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory'],

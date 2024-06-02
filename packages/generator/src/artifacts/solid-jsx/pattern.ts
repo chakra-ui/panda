@@ -14,7 +14,7 @@ export function generateSolidJsxPattern(ctx: Context) {
     return [
       new ArtifactFile({
         id: `jsx/pattern/${dashName}.js` as ArtifactFileId,
-        fileName: `${dashName}.js`,
+        fileName: dashName,
         type: 'js',
         dir: (ctx) => ctx.paths.jsx,
         dependencies: ['jsxFactory', 'jsxFramework', 'jsxStyleProps'],
@@ -85,7 +85,7 @@ export function generateSolidJsxPattern(ctx: Context) {
       }),
       new ArtifactFile({
         id: `jsx/pattern/${dashName}.d.ts` as ArtifactFileId,
-        fileName: `${dashName}.d.ts`,
+        fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.jsx,
         dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
