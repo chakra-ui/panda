@@ -35,7 +35,7 @@ test('[dts] should generate package', () => {
         "path": [
           "styled-system",
           "tokens",
-          "token.d.ts",
+          "index.d.ts",
         ],
       },
       {
@@ -2032,7 +2032,7 @@ test('[dts] should generate package', () => {
         "path": [
           "styled-system",
           "tokens",
-          "token.mjs",
+          "index.mjs",
         ],
       },
     ]
@@ -2069,7 +2069,7 @@ test('with formatTokenName', () => {
         "path": [
           "styled-system",
           "tokens",
-          "token.d.ts",
+          "index.d.ts",
         ],
       },
       {
@@ -4066,7 +4066,7 @@ test('with formatTokenName', () => {
         "path": [
           "styled-system",
           "tokens",
-          "token.mjs",
+          "index.mjs",
         ],
       },
     ]
@@ -4118,7 +4118,7 @@ test('use raw value when possible for semanticTokens', () => {
         "path": [
           "styled-system",
           "tokens",
-          "token.d.ts",
+          "index.d.ts",
         ],
       },
       {
@@ -4163,7 +4163,7 @@ test('use raw value when possible for semanticTokens', () => {
         "path": [
           "styled-system",
           "tokens",
-          "token.mjs",
+          "index.mjs",
         ],
       },
     ]

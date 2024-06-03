@@ -138,6 +138,7 @@ describe('setup-artifacts', () => {
         "jsx/cq.js",
         "jsx/cq.d.ts",
         "jsx/factory.js",
+        "jsx/factory.d.ts",
         "types/jsx.d.ts",
         "css/conditions.js",
         "css/css.js",
@@ -300,7 +301,7 @@ describe('setup-artifacts', () => {
         },
         {
           "id": "types/jsx.d.ts",
-          "path": "styled-system/jsx/jsx.d.ts",
+          "path": "styled-system/types/jsx.d.ts",
         },
         {
           "id": "types/system-types.d.ts",
@@ -309,6 +310,10 @@ describe('setup-artifacts', () => {
         {
           "id": "types/recipe.d.ts",
           "path": "styled-system/types/recipe.d.ts",
+        },
+        {
+          "id": "jsx/factory.d.ts",
+          "path": "styled-system/jsx/factory.d.ts",
         },
         {
           "id": "jsx/factory.js",
@@ -496,11 +501,11 @@ describe('setup-artifacts', () => {
         },
         {
           "id": "tokens/index.d.ts",
-          "path": "styled-system/tokens/token.d.ts",
+          "path": "styled-system/tokens/index.d.ts",
         },
         {
           "id": "tokens/tokens.d.ts",
-          "path": "styled-system/types/token-types.d.ts",
+          "path": "styled-system/tokens/tokens.d.ts",
         },
         {
           "id": "types/style-props.d.ts",
@@ -508,7 +513,7 @@ describe('setup-artifacts', () => {
         },
         {
           "id": "types/prop-type.d.ts",
-          "path": "styled-system/types/prop-types.d.ts",
+          "path": "styled-system/types/prop-type.d.ts",
         },
         {
           "id": "types/conditions.d.ts",
@@ -752,11 +757,11 @@ describe('setup-artifacts', () => {
         },
         {
           "id": "types/global.d.ts",
-          "path": "styled-system/types/index.d.ts",
+          "path": "styled-system/types/global.d.ts",
         },
         {
           "id": "tokens/index.js",
-          "path": "styled-system/tokens/token.mjs",
+          "path": "styled-system/tokens/index.mjs",
         },
         {
           "id": "patterns/index.d.ts",
@@ -832,7 +837,7 @@ describe('setup-artifacts', () => {
         },
         {
           "id": "tokens/tokens.d.ts",
-          "path": "styled-system/types/token-types.d.ts",
+          "path": "styled-system/tokens/tokens.d.ts",
         },
       ]
     `)
@@ -860,7 +865,7 @@ describe('setup-artifacts', () => {
         },
         {
           "id": "tokens/tokens.d.ts",
-          "path": "styled-system/types/token-types.d.mts",
+          "path": "styled-system/tokens/tokens.d.mts",
         },
       ]
     `)

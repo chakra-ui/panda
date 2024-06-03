@@ -82,8 +82,8 @@ test('[dts] should generate package', () => {
         "id": "tokens/tokens.d.ts",
         "path": [
           "styled-system",
-          "types",
-          "token-types.d.ts",
+          "tokens",
+          "tokens.d.ts",
         ],
       },
     ]
@@ -167,8 +167,8 @@ test('[dts] should generate package - custom formatTokenName', () => {
         "id": "tokens/tokens.d.ts",
         "path": [
           "styled-system",
-          "types",
-          "token-types.d.ts",
+          "tokens",
+          "tokens.d.ts",
         ],
       },
     ]

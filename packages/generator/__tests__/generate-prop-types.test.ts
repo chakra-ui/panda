@@ -266,7 +266,7 @@ describe('generate property types', () => {
           "path": [
             "styled-system",
             "types",
-            "prop-types.d.ts",
+            "prop-type.d.ts",
           ],
         },
       ]
@@ -349,7 +349,7 @@ describe('generate property types', () => {
           "path": [
             "styled-system",
             "types",
-            "prop-types.d.ts",
+            "prop-type.d.ts",
           ],
         },
       ]
