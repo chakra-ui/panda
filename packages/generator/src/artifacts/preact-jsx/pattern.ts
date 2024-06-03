@@ -17,7 +17,7 @@ export function generatePreactJsxPattern(ctx: Context) {
         fileName: dashName,
         type: 'js',
         dir: (ctx) => ctx.paths.jsx,
-        dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        dependencies: [`patterns.${dashName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
         imports: () => {
           const conditionals = {} as ArtifactImports
           if (jsxStyleProps === 'minimal') {
@@ -81,7 +81,7 @@ export function generatePreactJsxPattern(ctx: Context) {
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.jsx,
-        dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        dependencies: [`patterns.${dashName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
         importsType: {
           'types/system-types.d.ts': ['DistributiveOmit'],
           'types/jsx.d.ts': [typeName],
