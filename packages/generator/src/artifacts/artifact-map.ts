@@ -269,6 +269,9 @@ export class ArtifactMap<TFiles> {
       if (node.type === 'dts') {
         content = `/* eslint-disable */\n${content}`
       }
+      if (node.id === 'types/global.d.ts') {
+        content = `// @ts-nocheck\n${content}`
+      }
 
       const fileWithExt = this.getFileName(ctx, node)
       contents.push({

@@ -14,9 +14,7 @@ export const typesGlobalArtifact = new ArtifactFile({
     'types/parts.d.ts': ['Parts'],
   },
   code() {
-    return `// @ts-nocheck
-
-    import type * as Panda from '@pandacss/dev'
+    return `import type * as Panda from '@pandacss/dev'
 
     declare module '@pandacss/dev' {
       export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): Panda.RecipeConfig
