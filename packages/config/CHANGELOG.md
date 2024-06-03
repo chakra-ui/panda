@@ -1,5 +1,38 @@
 # @pandacss/config
 
+## 0.40.1
+
+### Patch Changes
+
+- @pandacss/logger@0.40.1
+- @pandacss/preset-base@0.40.1
+- @pandacss/preset-panda@0.40.1
+- @pandacss/shared@0.40.1
+- @pandacss/types@0.40.1
+
+## 0.40.0
+
+### Patch Changes
+
+- @pandacss/logger@0.40.0
+- @pandacss/preset-base@0.40.0
+- @pandacss/preset-panda@0.40.0
+- @pandacss/shared@0.40.0
+- @pandacss/types@0.40.0
+
+## 0.39.2
+
+### Patch Changes
+
+- 2f63a4c: Fix issue where panda could load unrelated config files that look like a config e.g.
+  `theming-panda.config.ts`
+- Updated dependencies [1f636eb]
+  - @pandacss/shared@0.39.2
+  - @pandacss/types@0.39.2
+  - @pandacss/logger@0.39.2
+  - @pandacss/preset-base@0.39.2
+  - @pandacss/preset-panda@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes

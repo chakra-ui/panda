@@ -1,5 +1,56 @@
 # @pandacss/core
 
+## 0.40.1
+
+### Patch Changes
+
+- d2cc156: Fix issue where using `jsxStyleProps: none` with the generated jsx patterns, lead to unoptimized code that
+  causes the component to be recreated on every render.
+  - @pandacss/is-valid-prop@0.40.1
+  - @pandacss/logger@0.40.1
+  - @pandacss/shared@0.40.1
+  - @pandacss/token-dictionary@0.40.1
+  - @pandacss/types@0.40.1
+
+## 0.40.0
+
+### Minor Changes
+
+- 5dcdae4: Improve monorepo setup DX by exposing some cli flags
+
+  ### `panda init`
+
+  - Added new flag `--no-codegen` to skip codegen during initialization
+  - Added new flag `--outdir` to specify the output directory for generated files
+
+  ### `panda emit-pkg`
+
+  - Added new `--base` flag to specify the base directory for the entrypoints in the generated `package.json#exports`
+    field
+
+### Patch Changes
+
+- @pandacss/is-valid-prop@0.40.0
+- @pandacss/logger@0.40.0
+- @pandacss/shared@0.40.0
+- @pandacss/token-dictionary@0.40.0
+- @pandacss/types@0.40.0
+
+## 0.39.2
+
+### Patch Changes
+
+- 1f636eb: Fix a cache issue that leads to HMR growing slower in some cases
+- 8b07cdf: Allow nesting (string) token references in the fallback argument, fix an issue where using CSS var in the
+  fallback argument would be mistakenly escaped
+- Updated dependencies [1f636eb]
+- Updated dependencies [8b07cdf]
+  - @pandacss/shared@0.39.2
+  - @pandacss/token-dictionary@0.39.2
+  - @pandacss/types@0.39.2
+  - @pandacss/is-valid-prop@0.39.2
+  - @pandacss/logger@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes

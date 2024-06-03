@@ -1,5 +1,27 @@
 # @pandacss/postcss
 
+## 0.40.1
+
+### Patch Changes
+
+- Updated dependencies [48ff2b8]
+  - @pandacss/node@0.40.1
+
+## 0.40.0
+
+### Patch Changes
+
+- Updated dependencies [5dcdae4]
+  - @pandacss/node@0.40.0
+
+## 0.39.2
+
+### Patch Changes
+
+- Updated dependencies [1f636eb]
+- Updated dependencies [af15ae9]
+  - @pandacss/node@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes

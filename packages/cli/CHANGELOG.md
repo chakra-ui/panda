@@ -1,5 +1,65 @@
 # @pandacss/dev
 
+## 0.40.1
+
+### Patch Changes
+
+- 48ff2b8: Improve `panda init --outdir=<x>` command to reflect `outdir` in generated panda config file.
+- Updated dependencies [48ff2b8]
+  - @pandacss/node@0.40.1
+  - @pandacss/postcss@0.40.1
+  - @pandacss/config@0.40.1
+  - @pandacss/logger@0.40.1
+  - @pandacss/preset-panda@0.40.1
+  - @pandacss/shared@0.40.1
+  - @pandacss/token-dictionary@0.40.1
+  - @pandacss/types@0.40.1
+
+## 0.40.0
+
+### Minor Changes
+
+- 5dcdae4: Improve monorepo setup DX by exposing some cli flags
+
+  ### `panda init`
+
+  - Added new flag `--no-codegen` to skip codegen during initialization
+  - Added new flag `--outdir` to specify the output directory for generated files
+
+  ### `panda emit-pkg`
+
+  - Added new `--base` flag to specify the base directory for the entrypoints in the generated `package.json#exports`
+    field
+
+### Patch Changes
+
+- Updated dependencies [5dcdae4]
+  - @pandacss/node@0.40.0
+  - @pandacss/postcss@0.40.0
+  - @pandacss/config@0.40.0
+  - @pandacss/logger@0.40.0
+  - @pandacss/preset-panda@0.40.0
+  - @pandacss/shared@0.40.0
+  - @pandacss/token-dictionary@0.40.0
+  - @pandacss/types@0.40.0
+
+## 0.39.2
+
+### Patch Changes
+
+- Updated dependencies [2f63a4c]
+- Updated dependencies [1f636eb]
+- Updated dependencies [8b07cdf]
+- Updated dependencies [af15ae9]
+  - @pandacss/config@0.39.2
+  - @pandacss/shared@0.39.2
+  - @pandacss/node@0.39.2
+  - @pandacss/token-dictionary@0.39.2
+  - @pandacss/postcss@0.39.2
+  - @pandacss/types@0.39.2
+  - @pandacss/logger@0.39.2
+  - @pandacss/preset-panda@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes

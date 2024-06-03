@@ -98,6 +98,11 @@ export const buildComplete = (count: number) =>
   Successfully extracted css from ${count} file(s) ✨
   `
 
+const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
+const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+
+export const exclamation = () => `🐼 ${pickRandom(randomWords)}! ✨`
+
 export const cssArtifactComplete = (type: string) => `Successfully generated ${type} css artifact ✨`
 
 export const getMessages = (
@@ -112,6 +117,7 @@ export const getMessages = (
   buildComplete,
   configWatch,
   cssArtifactComplete,
+  exclamation,
 })
 
 export type Messages = ReturnType<typeof getMessages>

@@ -130,7 +130,7 @@ export const vueJsxFactoryArtifact = new ArtifactFile({
     export const ${factoryName} = /* @__PURE__ */ styledFn.bind();
 
     tags.split(', ').forEach((tag) => {
-      styled[tag] = styled(tag);
+      ${factoryName}[tag] = ${factoryName}(tag);
     });
     `
   },

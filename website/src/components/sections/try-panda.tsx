@@ -11,7 +11,7 @@ const installSteps = [
   },
   {
     title: 'Run the initialize command',
-    command: 'npm run panda init -p'
+    command: 'npx panda init --postcss'
   },
   {
     title: 'Start using Panda in your project',

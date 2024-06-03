@@ -44,10 +44,8 @@ export function generatePreactJsxPattern(ctx: Context) {
                 () => outdent`
               const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
-              const styleProps = ${styleFnName}(patternProps)
-              const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
-
-              return h(Comp, { ref, ...restProps })
+              const mergedProps = { ref, ...restProps, css: styleProps }
+              return h(${factoryName}.${jsxElement}, mergedProps)
               `,
               )
               .with(

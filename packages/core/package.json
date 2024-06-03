@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/core",
-  "version": "0.39.1",
+  "version": "0.40.1",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -37,7 +37,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@csstools/postcss-cascade-layers": "4.0.4",
+    "@csstools/postcss-cascade-layers": "4.0.6",
     "@pandacss/is-valid-prop": "workspace:^",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",

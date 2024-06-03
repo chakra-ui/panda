@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
+import React from 'react'
 import { Box, Stack, styled } from '../../styled-system-jsx-minimal/jsx'
 import { render } from '@testing-library/react'
 import { buttonWithCompoundVariants } from '../../styled-system-jsx-none/recipes'
-import React from 'react'
 
 describe('styled factory - cva', () => {
   const Button = styled('button', {

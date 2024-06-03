@@ -43,7 +43,7 @@ export function generateReactJsxPattern(ctx: Context) {
               const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
               const styleProps = ${styleFnName}(patternProps)
-              const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+              const mergedProps = { ref, ...restProps, css: styleProps }
 
               return createElement(Comp, { ref, ...restProps })
               `,

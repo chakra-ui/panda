@@ -44,13 +44,14 @@ export function generateVueJsxPattern(ctx: Context) {
                   .with(
                     'none',
                     () => outdent`
-                  const Comp = computed(() => {
+                  const cssProps = computed(() => {
                     const styleProps = ${styleFnName}(props)
-                    return ${factoryName}("${jsxElement}", { base: styleProps })
+                    return { css: styleProps }
                   })
 
                   return () => {
-                    return h(Comp.value, attrs, slots)
+                    const mergedProps = { ...attrs, ...cssProps.value }
+                    return h(${factoryName}.${jsxElement}, mergedProps, slots)
                   }
                   `,
                   )

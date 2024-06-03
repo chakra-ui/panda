@@ -1,5 +1,23 @@
 # @pandacss/preset-panda
 
+## 0.40.1
+
+### Patch Changes
+
+- @pandacss/types@0.40.1
+
+## 0.40.0
+
+### Patch Changes
+
+- @pandacss/types@0.40.0
+
+## 0.39.2
+
+### Patch Changes
+
+- @pandacss/types@0.39.2
+
 ## 0.39.1
 
 ### Patch Changes

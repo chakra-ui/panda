@@ -43,9 +43,7 @@ export function generateQwikJsxPattern(ctx: Context) {
               const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
               const styleProps = ${styleFnName}(patternProps)
-              const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
-
-              return h(Comp, restProps)
+              const mergedProps = { ref, ...restProps, css: styleProps }
               `,
               )
               .with(

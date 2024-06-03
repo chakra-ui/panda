@@ -51,7 +51,7 @@ export const isValidPropJsArtifact = new ArtifactFile({
       `var userGeneratedStr = "${match(params.computed.jsx.styleProps)
         .with('all', () => Array.from(params.computed.properties).join(','))
         .with('minimal', () => 'css')
-        .with('none', () => '')
+        .with('none', () => 'css')
         .exhaustive()}"`,
     )
 

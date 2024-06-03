@@ -20,7 +20,7 @@
   "devDependencies": {
     "@builder.io/qwik": "1.4.5",
     "@preact/preset-vite": "2.8.2",
-    "@solidjs/testing-library": "0.8.7",
+    "@solidjs/testing-library": "0.8.8",
     "@testing-library/jest-dom": "6.4.2",
     "@testing-library/preact": "3.2.3",
     "@testing-library/react": "14.2.2",
@@ -32,7 +32,7 @@
     "@vitejs/plugin-vue-jsx": "3.1.0",
     "cac": "6.7.14",
     "eslint-plugin-react-hooks": "4.6.0",
-    "eslint-plugin-react-refresh": "0.4.6",
+    "eslint-plugin-react-refresh": "0.4.7",
     "happy-dom": "13.3.8",
     "jsdom": "24.0.0",
     "preact": "10.19.5",

@@ -2,6 +2,7 @@ import {
   capitalize,
   compact,
   cssVar,
+  esc,
   isString,
   mapObject,
   memo,
@@ -16,6 +17,7 @@ import { middlewares } from './middleware'
 import { Token, type TokenExtensions } from './token'
 import { transforms, type ColorPaletteExtensions } from './transform'
 import { assertTokenFormat, expandReferences, getReferences, isToken, mapToJson } from './utils'
+import { expandTokenReferences } from './expand-token-references'
 
 type EnforcePhase = 'pre' | 'post'
 
@@ -388,7 +390,9 @@ export class TokenDictionary {
    * Expand token references to their CSS variable
    */
   expandReferenceInValue(value: string) {
-    return expandReferences(value, (path) => {
+    return expandTokenReferences(value, (path) => {
+      if (!path) return
+
       if (path.includes('/')) {
         const mix = this.colorMix(path, this.view.get.bind(this.view))
         if (mix.invalid) {
@@ -398,7 +402,11 @@ export class TokenDictionary {
         return mix.value
       }
 
-      return this.view.get(path)
+      const resolved = this.view.get(path)
+      if (resolved) return resolved
+
+      // If the path includes an unresolved token reference, we need to escape it
+      return tokenPathRegex.test(path) ? esc(path) : path
     })
   }
 
@@ -624,3 +632,5 @@ function replaceRootWithColorPalette(path: string[], colorPaletteRoot: string[])
 
   return path
 }
+
+const tokenPathRegex = /\w+\.\w+/

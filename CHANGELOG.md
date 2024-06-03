@@ -6,6 +6,47 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.40.1] - 2024-05-31
+
+### Fixed
+
+- Fix issue where using `jsxStyleProps: none` with the generated jsx patterns, lead to unoptimized code that causes the
+  component to be recreated on every render.
+
+### Changed
+
+- Improve `panda init --outdir=<x>` command to reflect `outdir` in generated panda config file.
+
+## [0.40.0] - 2024-05-29
+
+### Added
+
+Improve monorepo setup DX by exposing some cli flags
+
+**`panda init`**
+
+- Added new flag `--no-codegen` to skip codegen during initialization
+- Added new flag `--outdir` to specify the output directory for generated files
+
+**`panda emit-pkg`**
+
+- Added new `--base` flag to specify the base directory for the entrypoints in the generated `package.json#exports`
+  field
+
+## [0.39.2] - 2024-05-25
+
+### Fixed
+
+- Vue JSX: Fix issue where using custom `jsxFactory` name causes a runtime error
+- Fix issue where panda could load unrelated config files that look like a config e.g. `theming-panda.config.ts`
+- Fix a cache issue that leads to HMR growing slower in some cases
+- Fix an issue where using CSS var in the token references fallback argument would be escaped
+- Fix `panda analyze` JSON output serialization
+
+### Added
+
+- Allow nesting (string) token references in the fallback argument
+
 ## [0.39.1] - 2024-05-07
 
 ### Fixed

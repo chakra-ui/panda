@@ -47,10 +47,9 @@ export function generateSolidJsxPattern(ctx: Context) {
                 () => outdent`
               const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
-              const styleProps = ${styleFnName}(patternProps)
-              const Comp = ${factoryName}("${jsxElement}", { base: styleProps })
+              const mergedProps = mergeProps(restProps, cssProps)
 
-              return createComponent(Comp, restProps)
+              return createComponent(${factoryName}.${jsxElement}, mergedProps)
               `,
               )
               .with(
