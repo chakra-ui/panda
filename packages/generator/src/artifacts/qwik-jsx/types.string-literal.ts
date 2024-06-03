@@ -24,7 +24,7 @@ export const qwikJsxTypesStringLiteralArtifact = new ArtifactFile({
   id: 'types/jsx.d.ts',
   fileName: 'jsx',
   type: 'dts',
-  dir: (ctx) => ctx.paths.jsx,
+  dir: (ctx) => ctx.paths.types,
   dependencies: ['jsxFactory', 'jsxFramework'],
   computed(ctx) {
     return { jsx: ctx.jsx }

@@ -2,7 +2,7 @@ import { ArtifactFile } from '../artifact-map'
 
 export const typesPropTypesArtifact = new ArtifactFile({
   id: 'types/prop-type.d.ts',
-  fileName: 'prop-types',
+  fileName: 'prop-type',
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
   dependencies: ['utilities'],

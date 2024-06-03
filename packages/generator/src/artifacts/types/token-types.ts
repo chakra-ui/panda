@@ -30,9 +30,9 @@ const categories = [
 
 export const tokenTypesArtifact = new ArtifactFile({
   id: 'tokens/tokens.d.ts',
-  fileName: 'token-types',
+  fileName: 'tokens',
   type: 'dts',
-  dir: (ctx) => ctx.paths.types,
+  dir: (ctx) => ctx.paths.token,
   dependencies: ['theme.tokens', 'theme.semanticTokens'],
   computed(ctx) {
     return { tokens: ctx.tokens }

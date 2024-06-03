@@ -1,15 +1,9 @@
 /* eslint-disable */
 import type {
-  ComponentPropsWithoutRef,
-  ElementType,
-  ElementRef,
-  Ref,
-} from "react";
-import type {
   RecipeDefinition,
   RecipeSelection,
   RecipeVariantRecord,
-} from "./recipe";
+} from "./recipe.d.ts";
 import type {
   Assign,
   DistributiveOmit,
@@ -17,7 +11,14 @@ import type {
   JsxHTMLProps,
   JsxStyleProps,
   Pretty,
-} from "./system-types";
+} from "./system-types.d.ts";
+
+import type {
+  ComponentPropsWithoutRef,
+  ElementType,
+  ElementRef,
+  Ref,
+} from "react";
 
 interface Dict {
   [k: string]: unknown;

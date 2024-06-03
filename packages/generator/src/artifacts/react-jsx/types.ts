@@ -1,7 +1,7 @@
 import { ArtifactFile } from '../artifact-map'
 
 export const reactJsxFactoryTypesArtifact = new ArtifactFile({
-  id: 'types/jsx.d.ts',
+  id: 'jsx/factory.d.ts',
   fileName: 'factory',
   type: 'dts',
   dir: (ctx) => ctx.paths.jsx,
@@ -24,7 +24,7 @@ export const reactJsxTypesArtifact = new ArtifactFile({
   id: 'types/jsx.d.ts',
   fileName: 'jsx',
   type: 'dts',
-  dir: (ctx) => ctx.paths.jsx,
+  dir: (ctx) => ctx.paths.types,
   dependencies: ['jsxFactory'],
   importsType: {
     'types/recipe.d.ts': ['RecipeDefinition, RecipeSelection, RecipeVariantRecord'],

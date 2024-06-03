@@ -24,7 +24,7 @@ export const vueJsxTypesArtifact = new ArtifactFile({
   id: 'types/jsx.d.ts',
   fileName: 'jsx',
   type: 'dts',
-  dir: (ctx) => ctx.paths.jsx,
+  dir: (ctx) => ctx.paths.types,
   dependencies: ['jsxFactory', 'jsxFramework'],
   importsType: {
     'recipes/index.d.ts': ['RecipeDefinition, RecipeSelection, RecipeVariantRecord'],

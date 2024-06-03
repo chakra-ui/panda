@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable */
 import type { CompositionStyles } from "./composition.d.ts";
 import type { Parts } from "./parts.d.ts";
@@ -9,8 +10,6 @@ import type {
   SlotRecipeConfig,
 } from "./recipe.d.ts";
 import type { GlobalStyleObject, SystemStyleObject } from "./system-types.d.ts";
-// @ts-nocheck
-
 import type * as Panda from "@pandacss/dev";
 
 declare module "@pandacss/dev" {

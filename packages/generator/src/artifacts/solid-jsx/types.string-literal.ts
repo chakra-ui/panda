@@ -4,7 +4,7 @@ export const solidJsxFactoryStringLiteralTypesArtifact = new ArtifactFile({
   id: 'jsx/factory.d.ts',
   fileName: 'factory',
   type: 'dts',
-  dir: (ctx) => ctx.paths.types,
+  dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory'],
   imports: (ctx) => ({
     'types/jsx.d.ts': [ctx.jsx.upperName],

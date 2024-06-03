@@ -2,7 +2,7 @@ import { ArtifactFile } from '../artifact-map'
 
 export const tokenJsArtifact = new ArtifactFile({
   id: 'tokens/index.js',
-  fileName: 'token',
+  fileName: 'index',
   type: 'js',
   dir: (ctx) => ctx.paths.token,
   dependencies: ['theme.tokens', 'theme.semanticTokens'],
@@ -38,7 +38,7 @@ export const tokenJsArtifact = new ArtifactFile({
 
 export const tokenDtsArtifact = new ArtifactFile({
   id: 'tokens/index.d.ts',
-  fileName: 'token',
+  fileName: 'index',
   type: 'dts',
   dir: (ctx) => ctx.paths.token,
   dependencies: [],

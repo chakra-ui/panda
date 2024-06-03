@@ -24,13 +24,13 @@ export const preactJsxTypesArtifact = new ArtifactFile({
   id: 'types/jsx.d.ts',
   fileName: 'jsx',
   type: 'dts',
-  dir: (ctx) => ctx.paths.jsx,
+  dir: (ctx) => ctx.paths.types,
   dependencies: ['jsxFactory', 'jsxFramework'],
   computed(ctx) {
     return { jsx: ctx.jsx }
   },
   code(params) {
-    const { componentName, typeName, upperName } = params.computed.jsx
+    const { componentName, typeName, upperName, variantName } = params.computed.jsx
     return `
     import type { ComponentProps, JSX } from 'preact'
 
@@ -40,22 +40,45 @@ export const preactJsxTypesArtifact = new ArtifactFile({
       [k: string]: unknown
     }
 
-    export type ${componentName}<T extends ElementType> = {
-      (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
+    export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
+      (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
       displayName?: string
     }
 
+    interface RecipeFn {
+      __type: any
+    }
+
+    export interface JsxFactoryOptions<TProps extends Dict> {
+      dataAttr?: boolean
+      defaultProps?: TProps
+      shouldForwardProp?(prop: string, variantKeys: string[]): boolean
+    }
+
+    export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>
+
+    export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
+      ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
+      : ${componentName}<T, P>
+
     export interface JsxFactory {
-      <T extends ElementType>(component: T): ${componentName}<T>
+      <T extends ElementType>(component: T): ${componentName}<T, {}>
+      <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<
+        T,
+        RecipeSelection<P>
+      >
+      <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): JsxElement<T, P['__type']>
     }
 
     export type JsxElements = {
-      [K in keyof JSX.IntrinsicElements]: ${componentName}<K>
+      [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}>
     }
 
     export type ${upperName} = JsxFactory & JsxElements
 
-    export type ${typeName}<T extends ElementType> = ComponentProps<T>
+    export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
+
+    export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
       `
   },
 })

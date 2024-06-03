@@ -1,6 +1,6 @@
 /* eslint-disable */
-import { HTMLPandaProps } from "../types/jsx.mjs";
-import { DistributiveOmit } from "../types/system-types.mjs";
+import type { HTMLPandaProps } from "../types/jsx.d.ts";
+import type { DistributiveOmit } from "../types/system-types.d.ts";
 
 import type { FunctionComponent } from "react";
 import type { SpacerProperties } from "../patterns/spacer";
