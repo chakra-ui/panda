@@ -8,7 +8,7 @@ const generateThemesIndex = (userConfig?: Config) => {
   return new ArtifactMap()
     .addFile(themesIndexJsArtifact)
     .addFile(themesIndexDtsArtifact)
-    .generate(createGeneratorContext(userConfig))
+    .generate(createGeneratorContext(userConfig)).contents
 }
 
 describe('generate themes', () => {

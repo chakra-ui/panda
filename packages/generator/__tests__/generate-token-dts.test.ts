@@ -9,7 +9,7 @@ const generateTokenTypes = (userConfig?: Config) => {
   return new ArtifactMap()
     .addFile(tokenTypesArtifact)
     .generate(context)
-    .map(({ path, ...generated }) => ({
+    .contents.map(({ path, ...generated }) => ({
       ...generated,
       path: path.filter((part) => part !== context.config.cwd),
     }))

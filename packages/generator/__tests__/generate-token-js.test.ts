@@ -10,7 +10,7 @@ const tokenJs = (userConfig?: Config) => {
     .addFile(tokenJsArtifact)
     .addFile(tokenDtsArtifact)
     .generate(context)
-    .map(({ path, ...generated }) => ({
+    .contents.map(({ path, ...generated }) => ({
       ...generated,
       path: path.filter((part) => part !== context.config.cwd),
     }))

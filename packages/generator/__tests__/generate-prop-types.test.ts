@@ -8,7 +8,7 @@ const generatePropTypes = (context: Context) => {
   return new ArtifactMap()
     .addFile(typesPropTypesArtifact)
     .generate(context)
-    .map(({ path, ...generated }) => ({
+    .contents.map(({ path, ...generated }) => ({
       ...generated,
       path: path.filter((part) => part !== context.config.cwd),
     }))

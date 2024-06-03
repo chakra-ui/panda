@@ -5,7 +5,7 @@ import type { Config } from '@pandacss/types'
 import { ArtifactMap } from '../src/artifacts/artifact-map'
 
 const generateStyleProps = (userConfig?: Config) => {
-  return new ArtifactMap().addFile(typesStylePropsArtifact).generate(createGeneratorContext(userConfig))
+  return new ArtifactMap().addFile(typesStylePropsArtifact).generate(createGeneratorContext(userConfig)).contents
 }
 
 describe('generate property types', () => {

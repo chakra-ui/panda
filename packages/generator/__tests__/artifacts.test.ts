@@ -176,7 +176,7 @@ describe('setup-artifacts', () => {
   test('generate - will generate artifacts matching ids + their imports', () => {
     const generator = createGeneratorContext()
     const artifacts = getArtifactsMap(generator)
-    expect(artifacts.generate(generator, { ids: ['css/conditions.js'] }).map((generated) => generated.path))
+    expect(artifacts.generate(generator, { ids: ['css/conditions.js'] }).contents.map((generated) => generated.path))
       .toMatchInlineSnapshot(`
         [
           [
@@ -191,8 +191,9 @@ describe('setup-artifacts', () => {
         ]
       `)
 
-    expect(artifacts.generate(generator, { ids: ['recipes/create-recipe.js'] }).map((generated) => generated.path))
-      .toMatchInlineSnapshot(`
+    expect(
+      artifacts.generate(generator, { ids: ['recipes/create-recipe.js'] }).contents.map((generated) => generated.path),
+    ).toMatchInlineSnapshot(`
         [
           [
             "styled-system",
@@ -821,7 +822,7 @@ describe('setup-artifacts', () => {
     expect(
       artifacts
         .generate(generator, { ids: ['css/conditions.js', 'tokens/tokens.d.ts', 'package.json', 'helpers.js'] })
-        .map(({ content, ...generated }) => ({
+        .contents.map(({ content, ...generated }) => ({
           ...generated,
           path: generated.path.join('/'),
         })),
@@ -849,7 +850,7 @@ describe('setup-artifacts', () => {
     expect(
       artifacts
         .generate(generator, { ids: ['css/conditions.js', 'tokens/tokens.d.ts', 'package.json', 'helpers.js'] })
-        .map(({ content, ...generated }) => ({
+        .contents.map(({ content, ...generated }) => ({
           ...generated,
           path: generated.path.join('/'),
         })),

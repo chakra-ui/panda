@@ -78,6 +78,17 @@ export class ArtifactFile<
     this.computed = options.computed
     this.code = options.code
   }
+
+  getFileName(ctx: Context) {
+    if (this.type === 'js') return ctx.file.ext(this.fileName)
+    if (this.type === 'dts') return ctx.file.extDts(this.fileName)
+
+    return this.fileName
+  }
+
+  getPath(ctx: Context) {
+    return [...callable(ctx, this.dir), this.fileName]
+  }
 }
 
 /**
@@ -154,6 +165,10 @@ export class ArtifactMap<TFiles> {
     return this.files.get(id) as TFiles[TFileId]
   }
 
+  getFiles() {
+    return Array.from(this.files.values())
+  }
+
   filter(ids?: ArtifactFileId[]) {
     return ids
       ? Array.from(this.files.values()).filter((node) => ids.includes(node.id))
@@ -208,17 +223,11 @@ export class ArtifactMap<TFiles> {
     }
   }
 
-  private getFileName(ctx: Context, node: ArtifactFile<any>) {
-    if (node.type === 'js') return ctx.file.ext(node.fileName)
-    if (node.type === 'dts') return ctx.file.extDts(node.fileName)
-
-    return node.fileName
-  }
-
   generate(ctx: Context, { ids, diffs }: GenerateArtifactOptions = {}) {
     const stack = this.filter(ids)
     const seen = new Set<ArtifactFileId>()
     const contents = [] as Array<GeneratedArtifact<keyof TFiles>>
+    const empty = [] as Array<ArtifactFileId>
 
     while (stack.length) {
       const node = stack.pop()!
@@ -227,7 +236,10 @@ export class ArtifactMap<TFiles> {
       seen.add(node.id)
 
       const code = node.code?.(this.getCodeParams(ctx, node, diffs))
-      if (!code) continue
+      if (!code) {
+        empty.push(node.id)
+        continue
+      }
 
       const dir = callable(ctx, node.dir)
       const artifactDir = dir
@@ -274,15 +286,14 @@ export class ArtifactMap<TFiles> {
         content = `// @ts-nocheck\n${content}`
       }
 
-      const fileWithExt = this.getFileName(ctx, node)
       contents.push({
         id: node.id as keyof TFiles,
-        path: [...dir, fileWithExt],
+        path: [...dir, node.getFileName(ctx)],
         content,
       })
     }
 
-    return contents
+    return { empty, contents }
   }
 }
 

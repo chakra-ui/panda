@@ -25,6 +25,10 @@ export class OutputEngine {
     this.fs.rmDirSync(this.path.join(...this.paths.root))
   }
 
+  rm = (absPath: string) => {
+    this.fs.rmFileSync(absPath)
+  }
+
   ensure = (file: string, cwd: string) => {
     const outPath = this.path.resolve(cwd, file)
     const dirname = this.path.dirname(outPath)

@@ -28,13 +28,16 @@ export class Generator extends Context {
 
     logger.debug('artifacts', changed)
 
+    const { empty, contents } = map.generate(this, {
+      ids: changed.size ? Array.from(changed) : undefined,
+      diffs: diffResult?.diffs,
+    })
+
     return {
       map,
       changed,
-      generated: map.generate(this, {
-        ids: changed.size ? Array.from(changed) : undefined,
-        diffs: diffResult?.diffs,
-      }),
+      empty,
+      generated: contents,
     }
   }
 
