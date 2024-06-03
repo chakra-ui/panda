@@ -25,7 +25,7 @@ export const solidJsxTypesArtifact = new ArtifactFile({
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
   dependencies: ['jsxFactory'],
-  imports: {
+  importsType: {
     'types/recipe.d.ts': ['RecipeDefinition', 'RecipeSelection', 'RecipeVariantRecord'],
     'types/system-types.d.ts': [
       'Assign',

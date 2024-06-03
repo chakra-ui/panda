@@ -89,7 +89,7 @@ export function generateSolidJsxPattern(ctx: Context) {
         type: 'dts',
         dir: (ctx) => ctx.paths.jsx,
         dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
-        imports: {
+        importsType: {
           'types/system-types.d.ts': ['Assign', 'DistributiveOmit'],
           'types/jsx.d.ts': [typeName],
         },

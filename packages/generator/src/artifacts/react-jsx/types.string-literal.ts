@@ -26,7 +26,7 @@ export const reactJsxTypesStringLiteralArtifact = new ArtifactFile({
   type: 'dts',
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory'],
-  imports: {
+  importsType: {
     'types/system-types.d.ts': ['DistributiveOmit'],
   },
   computed(ctx) {

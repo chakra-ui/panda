@@ -82,7 +82,7 @@ export function generateReactJsxPattern(ctx: Context) {
         type: 'dts',
         dir: (ctx) => ctx.paths.jsx,
         dependencies: ['patterns', 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
-        imports: {
+        importsType: {
           'types/system-types.d.ts': ['DistributiveOmit'],
           'types/jsx.d.ts': [typeName],
         },

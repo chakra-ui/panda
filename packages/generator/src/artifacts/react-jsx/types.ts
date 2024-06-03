@@ -26,7 +26,7 @@ export const reactJsxTypesArtifact = new ArtifactFile({
   type: 'dts',
   dir: (ctx) => ctx.paths.jsx,
   dependencies: ['jsxFactory'],
-  imports: {
+  importsType: {
     'types/recipe.d.ts': ['RecipeDefinition, RecipeSelection, RecipeVariantRecord'],
     'types/system-types.d.ts': [
       'Assign',

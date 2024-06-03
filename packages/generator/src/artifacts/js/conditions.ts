@@ -56,7 +56,7 @@ export const typesConditionsDtsArtifact = new ArtifactFile({
   type: 'dts',
   dir: (ctx) => ctx.paths.types,
   dependencies: ['conditions', 'theme.breakpoints', 'theme.containerNames', 'theme.containerSizes'],
-  imports: {
+  importsType: {
     'types/selectors.d.ts': ['AnySelector', 'Selectors'],
   },
   computed(ctx) {
