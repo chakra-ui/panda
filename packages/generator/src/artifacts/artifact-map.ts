@@ -256,7 +256,8 @@ export class ArtifactMap<TFiles> {
 
         // Disable transitive imports generation on HMR
         if (!diffs) {
-          ;[...imports, ...importTypes].forEach((key) => {
+          const both = [...imports, ...importTypes]
+          both.forEach((key) => {
             const importedFileId = key[0] as ArtifactFileId
             const depNode = this.getFile(importedFileId as keyof TFiles)
             if (depNode && !seen.has(importedFileId)) {

@@ -1,4 +1,3 @@
-import type { FileEngine } from '@pandacss/core'
 import { match } from 'ts-pattern'
 import { ArtifactFile } from '../artifact-map'
 import composition from '../generated/composition.d.ts.json' assert { type: 'json' }
