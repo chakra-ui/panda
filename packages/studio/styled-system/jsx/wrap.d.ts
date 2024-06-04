@@ -1,10 +1,12 @@
 /* eslint-disable */
-import type { FunctionComponent } from 'react'
-import type { WrapProperties } from '../patterns/wrap';
-import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { HTMLPandaProps } from "../types/jsx.d.ts";
+import type { DistributiveOmit } from "../types/system-types.d.ts";
 
-export interface WrapProps extends WrapProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof WrapProperties > {}
+import type { FunctionComponent } from "react";
+import type { WrapProperties } from "../patterns/wrap";
 
+export interface WrapProps
+  extends WrapProperties,
+    DistributiveOmit<HTMLPandaProps<"div">, keyof WrapProperties> {}
 
-export declare const Wrap: FunctionComponent<WrapProps>
+export declare const Wrap: FunctionComponent<WrapProps>;

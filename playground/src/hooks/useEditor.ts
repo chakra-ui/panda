@@ -170,12 +170,11 @@ export function useEditor(props: PandaEditorProps) {
 
   const setupLibs = useCallback(
     (monaco: Parameters<OnMount>[1]) => {
-      const libs = artifacts.flatMap((artifact) => {
-        if (!artifact) return []
-        return artifact.files.map((file) => ({
-          filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
-          content: file.code ?? '',
-        }))
+      const libs = artifacts.generated.map((artifact) => {
+        return {
+          filePath: `file:///node_modules/${artifact.path.join('/')}`,
+          content: artifact.content ?? '',
+        }
       })
 
       return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))

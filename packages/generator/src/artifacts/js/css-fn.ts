@@ -1,15 +1,21 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact-map'
 
-export function generateCssFn(ctx: Context) {
-  const { utility, hash, prefix, conditions } = ctx
+export const cssFnDtsArtifact = new ArtifactFile({
+  id: 'css/css.d.ts',
+  fileName: 'css',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['syntax'],
+  importsType: {
+    'types/index.d.ts': ['SystemStyleObject'],
+  },
+  computed(ctx) {
+    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
 
-  const { separator, getPropShorthands } = utility
-
-  return {
-    dts: outdent`
-    ${ctx.file.importType('SystemStyleObject', '../types/index')}
-
+    return `
     type Styles = SystemStyleObject | undefined | null | false
 
     interface CssRawFunction {
@@ -29,11 +35,38 @@ export function generateCssFn(ctx: Context) {
     }
 
     export declare const css: CssFunction;
-    `,
-    js: outdent`
-    ${ctx.file.import('createCss, createMergeCss, hypenateProperty, withoutSpace', '../helpers')}
-    ${ctx.file.import('sortConditions, finalizeConditions', './conditions')}
+    `
+  },
+})
 
+export const cssFnJsArtifact = new ArtifactFile({
+  id: 'css/css.js',
+  fileName: 'css',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['syntax', 'hash', 'prefix', 'separator', 'shorthands', 'theme.breakpoints', 'hooks', 'plugins'],
+  imports: {
+    'helpers.js': ['createCss', 'createMergeCss', 'hypenateProperty', 'withoutSpace'],
+    'css/conditions.js': ['finalizeConditions', 'sortConditions'],
+  },
+  computed(ctx) {
+    const { utility, conditions } = ctx
+    const { getPropShorthands } = utility
+
+    return {
+      utility,
+      breakpoints: conditions.breakpoints.keys,
+      isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax,
+      getPropShorthands,
+    }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
+
+    const { hash, prefix, separator } = params.dependencies
+    const { utility, getPropShorthands, breakpoints } = params.computed
+
+    return `
     const utilities = "${utility
       .entries()
       .map(([prop, className]) => {
@@ -73,7 +106,7 @@ export function generateCssFn(ctx: Context) {
     const classNameByProp = new Map()
     ${
       utility.hasShorthand
-        ? outdent`
+        ? `
     const shorthands = new Map()
     utilities.split(',').forEach((utility) => {
       const [prop, meta] = utility.split(':')
@@ -88,7 +121,7 @@ export function generateCssFn(ctx: Context) {
 
     const resolveShorthand = (prop) => shorthands.get(prop) || prop
     `
-        : outdent`
+        : `
     utilities.split(',').forEach((utility) => {
       const [prop, className] = utility.split(':')
       classNameByProp.set(prop, className)
@@ -101,7 +134,7 @@ export function generateCssFn(ctx: Context) {
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
-        breakpoints: { keys: ${JSON.stringify(conditions.breakpoints.keys)} }
+        breakpoints: { keys: ${JSON.stringify(breakpoints)} }
       },
       utility: {
         ${prefix.className ? 'prefix: ' + JSON.stringify(prefix.className) + ',' : ''}
@@ -125,6 +158,6 @@ export function generateCssFn(ctx: Context) {
     css.raw = (...styles) => mergeCss(...styles)
 
     export const { mergeCss, assignCss } = createMergeCss(context)
-    `,
-  }
-}
+    `
+  },
+})

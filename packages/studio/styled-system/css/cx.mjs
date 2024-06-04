@@ -1,15 +1,15 @@
 function cx() {
-  let str = '',
+  let str = "",
     i = 0,
-    arg
+    arg;
 
   for (; i < arguments.length; ) {
-    if ((arg = arguments[i++]) && typeof arg === 'string') {
-      str && (str += ' ')
-      str += arg
+    if ((arg = arguments[i++]) && typeof arg === "string") {
+      str && (str += " ");
+      str += arg;
     }
   }
-  return str
+  return str;
 }
 
-export { cx }
+export { cx };

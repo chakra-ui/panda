@@ -21,7 +21,7 @@ const createConfigResult = (config: UserConfig) => {
   return { ...conf, serialized, deserialize } as LoadConfigResult
 }
 
-describe('DiffEngine affecteds', () => {
+describe('DiffEngine changed', () => {
   test('add theme.tokens', () => {
     const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
@@ -47,20 +47,17 @@ describe('DiffEngine affecteds', () => {
       },
     ])
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
       generator = new Generator({ ...conf, hooks: generator.hooks })
     })
 
-    expect(affecteds.artifacts).toMatchInlineSnapshot(`
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
       Set {
-        "design-tokens",
-        "types",
-        "css-fn",
-        "jsx-is-valid-prop",
-        "themes",
+        "tokens/index.js",
+        "tokens/tokens.d.ts",
       }
     `)
-    expect(affecteds.diffs).toMatchInlineSnapshot(`
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
       [
         {
           "path": [
@@ -112,17 +109,14 @@ describe('DiffEngine affecteds', () => {
 
     const resetConfig = mergeConfigs([{}, defaultConfig()])
 
-    const affectedsAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
-    expect(affectedsAfterReset.artifacts).toMatchInlineSnapshot(`
+    const changedAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
+    expect(generator.getArtifacts(changedAfterReset).changed).toMatchInlineSnapshot(`
       Set {
-        "design-tokens",
-        "types",
-        "css-fn",
-        "jsx-is-valid-prop",
-        "themes",
+        "tokens/index.js",
+        "tokens/tokens.d.ts",
       }
     `)
-    expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
+    expect(changedAfterReset.diffs).toMatchInlineSnapshot(`
       [
         {
           "oldValue": {
@@ -230,17 +224,14 @@ describe('DiffEngine affecteds', () => {
       }
     `)
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
-    expect(affecteds.artifacts).toMatchInlineSnapshot(`
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
       Set {
-        "design-tokens",
-        "types",
-        "css-fn",
-        "jsx-is-valid-prop",
-        "themes",
+        "tokens/index.js",
+        "tokens/tokens.d.ts",
       }
     `)
-    expect(affecteds.diffs).toMatchInlineSnapshot(`
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
       [
         {
           "oldValue": "#dbeafe",
@@ -319,15 +310,14 @@ describe('DiffEngine affecteds', () => {
 
     expect(generator.recipes.getConfig('newRecipe')).toMatchInlineSnapshot('undefined')
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
-    expect(affecteds.artifacts).toMatchInlineSnapshot(`
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
       Set {
-        "recipes-index",
-        "recipes.new-recipe",
-        "recipes",
+        "recipes/index.js",
+        "recipes/index.d.ts",
       }
     `)
-    expect(affecteds.diffs).toMatchInlineSnapshot(`
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
       [
         {
           "path": [
@@ -350,15 +340,14 @@ describe('DiffEngine affecteds', () => {
 
     const resetConfig = mergeConfigs([{}, defaultConfig()])
 
-    const affectedsAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
-    expect(affectedsAfterReset.artifacts).toMatchInlineSnapshot(`
+    const changedAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
+    expect(generator.getArtifacts(changedAfterReset).changed).toMatchInlineSnapshot(`
       Set {
-        "recipes-index",
-        "recipes.new-recipe",
-        "recipes",
+        "recipes/index.js",
+        "recipes/index.d.ts",
       }
     `)
-    expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
+    expect(changedAfterReset.diffs).toMatchInlineSnapshot(`
       [
         {
           "oldValue": {
@@ -402,15 +391,16 @@ describe('DiffEngine affecteds', () => {
       },
     ])
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
-    expect(affecteds.artifacts).toMatchInlineSnapshot(`
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
       Set {
-        "recipes-index",
-        "recipes.button-style",
-        "recipes",
+        "recipes/index.js",
+        "recipes/index.d.ts",
+        "recipes/button-style.js",
+        "recipes/button-style.dts",
       }
     `)
-    expect(affecteds.diffs).toMatchInlineSnapshot(`
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
       [
         {
           "oldValue": "buttonStyle",
@@ -441,7 +431,7 @@ describe('DiffEngine affecteds', () => {
   test('add theme.patterns', () => {
     const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
-    const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
+    let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
     const nextConfig = mergeConfigs([
       {},
@@ -459,17 +449,22 @@ describe('DiffEngine affecteds', () => {
       },
     ])
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
-    expect(affecteds.artifacts).toMatchInlineSnapshot(`
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
       Set {
-        "patterns-index",
-        "patterns.new-pattern",
-        "patterns",
-        "jsx-patterns",
-        "jsx-patterns-index",
+        "jsx/index.js",
+        "jsx/index.d.ts",
+        "patterns/index.js",
+        "patterns/index.d.ts",
+        "patterns/new-pattern.d.ts",
+        "patterns/new-pattern.js",
+        "jsx/new-pattern.js",
+        "jsx/new-pattern.d.ts",
       }
     `)
-    expect(affecteds.diffs).toMatchInlineSnapshot(`
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
       [
         {
           "path": [
@@ -502,17 +497,22 @@ describe('DiffEngine affecteds', () => {
       },
     ])
 
-    const affectedsChangeTransform = diffEngine.refresh(createConfigResult(nextConfigChangeTransform))
-    expect(affectedsChangeTransform.artifacts).toMatchInlineSnapshot(`
+    const changedChangeTransform = diffEngine.refresh(createConfigResult(nextConfigChangeTransform), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
+    expect(generator.getArtifacts(changedChangeTransform).changed).toMatchInlineSnapshot(`
       Set {
-        "patterns-index",
-        "patterns.new-pattern",
-        "patterns",
-        "jsx-patterns",
-        "jsx-patterns-index",
+        "jsx/index.js",
+        "jsx/index.d.ts",
+        "patterns/index.js",
+        "patterns/index.d.ts",
+        "patterns/new-pattern.d.ts",
+        "patterns/new-pattern.js",
+        "jsx/new-pattern.js",
+        "jsx/new-pattern.d.ts",
       }
     `)
-    expect(affectedsChangeTransform.diffs).toMatchInlineSnapshot(`
+    expect(changedChangeTransform.diffs).toMatchInlineSnapshot(`
       [
         {
           "oldValue": "transform() {
@@ -533,17 +533,18 @@ describe('DiffEngine affecteds', () => {
 
     const resetConfig = mergeConfigs([{}, defaultConfig()])
 
-    const affectedsAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
-    expect(affectedsAfterReset.artifacts).toMatchInlineSnapshot(`
+    const changedAfterReset = diffEngine.refresh(createConfigResult(resetConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
+    expect(generator.getArtifacts(changedAfterReset).changed).toMatchInlineSnapshot(`
       Set {
-        "patterns-index",
-        "patterns.new-pattern",
-        "patterns",
-        "jsx-patterns",
-        "jsx-patterns-index",
+        "jsx/index.js",
+        "jsx/index.d.ts",
+        "patterns/index.js",
+        "patterns/index.d.ts",
       }
     `)
-    expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
+    expect(changedAfterReset.diffs).toMatchInlineSnapshot(`
       [
         {
           "oldValue": {
@@ -579,17 +580,20 @@ describe('DiffEngine affecteds', () => {
       },
     ])
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
-    expect(affecteds.artifacts).toMatchInlineSnapshot(`
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
       Set {
-        "patterns-index",
-        "patterns.flex",
-        "patterns",
-        "jsx-patterns",
-        "jsx-patterns-index",
+        "jsx/index.js",
+        "jsx/index.d.ts",
+        "patterns/index.js",
+        "patterns/index.d.ts",
+        "patterns/flex.d.ts",
+        "patterns/flex.js",
+        "jsx/flex.js",
+        "jsx/flex.d.ts",
       }
     `)
-    expect(affecteds.diffs).toMatchInlineSnapshot(`
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
       [
         {
           "path": [
@@ -604,13 +608,189 @@ describe('DiffEngine affecteds', () => {
     `)
   })
 
+  test('update syntax', () => {
+    const defaultConfig = (): Config => ({ syntax: 'object-literal', ...fixtureDefaults.config })
+    let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
+    const diffEngine = new DiffEngine(generator)
+    const nextConfig = mergeConfigs([
+      {
+        ...defaultConfig(),
+        syntax: 'template-literal',
+      },
+    ])
+
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
+      Set {
+        "helpers.js",
+        "css/index.js",
+        "css/index.d.ts",
+        "css/cva.js",
+        "css/sva.js",
+        "jsx/index.js",
+        "jsx/index.d.ts",
+        "jsx/is-valid-prop.js",
+        "jsx/factory-helper.js",
+        "patterns/index.js",
+        "patterns/index.d.ts",
+        "css/conditions.js",
+        "css/css.js",
+        "css/css.d.ts",
+      }
+    `)
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
+      [
+        {
+          "oldValue": "object-literal",
+          "path": [
+            "syntax",
+          ],
+          "type": "CHANGE",
+          "value": "template-literal",
+        },
+      ]
+    `)
+  })
+
+  test('add themes', () => {
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
+    const diffEngine = new DiffEngine(generator)
+    const nextConfig = mergeConfigs([
+      {
+        ...defaultConfig(),
+        themes: {
+          extend: {
+            newTheme: {
+              tokens: {
+                colors: {
+                  newColor123: { value: 'blue.100' },
+                },
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
+      Set {
+        "themes/index.js",
+        "themes/index.d.ts",
+      }
+    `)
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
+      [
+        {
+          "path": [
+            "themes",
+          ],
+          "type": "CREATE",
+          "value": {
+            "newTheme": {
+              "tokens": {
+                "colors": {
+                  "newColor123": {
+                    "value": "blue.100",
+                  },
+                },
+              },
+            },
+          },
+        },
+      ]
+    `)
+  })
+
+  test('update plugins', () => {
+    const defaultConfig = (): Config => ({ hash: true, syntax: 'template-literal', ...fixtureDefaults.config })
+    const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
+    const diffEngine = new DiffEngine(generator)
+    const nextConfig = mergeConfigs([
+      {
+        ...defaultConfig(),
+        hash: true,
+        plugins: [
+          {
+            name: 'plugin123',
+            hooks: {
+              'utility:created': ({ configure }) => {
+                configure({
+                  toHash(paths, toHash) {
+                    const stringConds = paths.join(':')
+                    const splitConds = stringConds.split('_')
+                    const hashConds = splitConds.map(toHash)
+                    return hashConds.join('_')
+                  },
+                })
+              },
+            },
+          },
+        ],
+      },
+    ])
+
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
+      Set {
+        "recipes/create-recipe.js",
+        "css/css.js",
+      }
+    `)
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
+      [
+        {
+          "path": [
+            "hooks",
+          ],
+          "type": "CREATE",
+          "value": {
+            "utility:created": "async (...a) => {
+        for (const fn of fns) {
+          await fn?.(...a);
+        }
+      }",
+          },
+        },
+        {
+          "path": [
+            "plugins",
+          ],
+          "type": "CREATE",
+          "value": [
+            {
+              "hooks": {
+                "utility:created": "({ configure }) => {
+                      configure({
+                        toHash(paths, toHash) {
+                          const stringConds = paths.join(":");
+                          const splitConds = stringConds.split("_");
+                          const hashConds = splitConds.map(toHash);
+                          return hashConds.join("_");
+                        }
+                      });
+                    }",
+              },
+              "name": "plugin123",
+            },
+          ],
+        },
+      ]
+    `)
+  })
+
   test('update separator', () => {
     const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
     let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
 
-    expect(generator.config.separator).toMatchInlineSnapshot('undefined')
+    expect(generator.config.separator).toMatchInlineSnapshot(`"_"`)
     expect(generator.utility.separator).toMatchInlineSnapshot('"_"')
     expect(generator.recipes['separator']).toMatchInlineSnapshot('"_"')
 
@@ -619,7 +799,7 @@ describe('DiffEngine affecteds', () => {
       separator: '=',
     } as UserConfig
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
       generator = new Generator({ ...conf, hooks: generator.hooks })
     })
 
@@ -627,15 +807,13 @@ describe('DiffEngine affecteds', () => {
     expect(generator.utility.separator).toMatchInlineSnapshot('"="')
     expect(generator.recipes['separator']).toMatchInlineSnapshot('"="')
 
-    expect(affecteds.artifacts).toMatchInlineSnapshot(`
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot(`
       Set {
-        "types",
-        "css-fn",
-        "create-recipe",
-        "jsx-is-valid-prop",
+        "recipes/create-recipe.js",
+        "css/css.js",
       }
     `)
-    expect(affecteds.diffs).toMatchInlineSnapshot(`
+    expect(diffResult.diffs).toMatchInlineSnapshot(`
       [
         {
           "path": [
@@ -656,13 +834,13 @@ describe('DiffEngine affecteds', () => {
     const diffEngine = new DiffEngine(generator)
     const nextConfig = mergeConfigs([{}, config, {}])
 
-    const affecteds = diffEngine.refresh(createConfigResult(nextConfig))
-    expect(affecteds.artifacts).toMatchInlineSnapshot('Set {}')
-    expect(affecteds.diffs).toMatchInlineSnapshot('[]')
+    const diffResult = diffEngine.refresh(createConfigResult(nextConfig))
+    expect(generator.getArtifacts(diffResult).changed).toMatchInlineSnapshot('Set {}')
+    expect(diffResult.diffs).toMatchInlineSnapshot('[]')
 
     const resetConfig = mergeConfigs([defaultConfig()])
-    const affectedsAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
-    expect(affectedsAfterReset.artifacts).toMatchInlineSnapshot('Set {}')
-    expect(affecteds.diffs).toMatchInlineSnapshot('[]')
+    const changedAfterReset = diffEngine.refresh(createConfigResult(resetConfig))
+    expect(generator.getArtifacts(changedAfterReset).changed).toMatchInlineSnapshot('Set {}')
+    expect(diffResult.diffs).toMatchInlineSnapshot('[]')
   })
 })
