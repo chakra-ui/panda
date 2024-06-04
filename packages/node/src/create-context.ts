@@ -109,11 +109,14 @@ export class PandaContext extends Generator {
 
   writeCss = (sheet?: Stylesheet) => {
     logger.info('css', this.runtime.path.join(...this.paths.root, 'styles.css'))
-    return this.output.write({
-      id: 'styles.css' as ArtifactFileId,
-      path: this.paths.getFilePath('styles.css'),
-      content: this.getCss(sheet),
-    })
+    return this.output.write(
+      {
+        id: 'styles.css' as ArtifactFileId,
+        path: this.paths.getFilePath('styles.css'),
+        content: this.getCss(sheet),
+      },
+      false,
+    )
   }
 
   watchConfig = (cb: (file: string) => void | Promise<void>, opts?: Omit<WatchOptions, 'include'>) => {

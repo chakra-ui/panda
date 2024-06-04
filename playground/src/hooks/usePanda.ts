@@ -51,9 +51,9 @@ export function usePanda(state: State, config: Config | null) {
 
     const artifacts = context.getArtifacts() ?? []
 
-    const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
+    const allJsFiles = artifacts.generated.filter((a) => a.id.endsWith('.js'))
     const previewJs = allJsFiles
-      .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
+      .map((f) => f.content?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
       ?.join('\n')
 
     const cssArtifacts: CssFileArtifact[] = [

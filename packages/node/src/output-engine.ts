@@ -36,7 +36,7 @@ export class OutputEngine {
     return outPath
   }
 
-  write = async (output: GeneratedArtifact | undefined) => {
+  write = async (output: GeneratedArtifact | undefined, format = true) => {
     if (!output?.content) return
 
     const absPath = this.path.join(...output.path)
@@ -45,7 +45,10 @@ export class OutputEngine {
 
     logger.debug('write:file', absPath)
     try {
-      await this.fs.writeFile(absPath, await prettier.format(output.content, { filepath: absPath }))
+      await this.fs.writeFile(
+        absPath,
+        format ? await prettier.format(output.content, { filepath: absPath }) : output.content,
+      )
     } catch (e) {
       // Prettier throws when the syntax is invalid
       logger.error('write:file:' + output.id, e)
