@@ -133,7 +133,7 @@ This approach comes with a few downsides:
 
 ### Summary
 
-- create a Panda [preset](docs/customization/presets) so that you (and your users) can share the same design system tokens
+- create a Panda [preset](/docs/customization/presets) so that you (and your users) can share the same design system tokens
 - create a workspace package for your outdir (`@acme-org/styled-system`) and use that package name as the `importMap` in your app code
 - have your component library (`@acme-org/components`) use the `@acme-org/styled-system` package as external
 
@@ -144,7 +144,7 @@ Let's make a dedicated workspace package for your `outdir`:
 1. Create a new directory `packages/styled-system` (or any other name)
 2. Install `@pandacss/dev` as a dev dependency
 3. Run the `panda init` command in there to generate a `panda.config.ts` file, don't forget to set the `jsxFramework` if needed
-4. [optional] you might want to install and import your [preset](docs/customization/presets) in this `panda.config.ts` file as well
+4. [optional] you might want to install and import your [preset](/docs/customization/presets) in this `panda.config.ts` file as well
 5. Run the [`panda emit-pkg`](/docs/references/cli#emit-pkg) command to set the entrypoints in [`exports`](https://nodejs.org/api/packages.html#exports)
 
 This should look similar to this:
