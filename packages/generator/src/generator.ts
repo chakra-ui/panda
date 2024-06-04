@@ -24,7 +24,7 @@ export class Generator extends Context {
    */
   getArtifacts = (diffResult?: DiffConfigResult) => {
     const map = getArtifactsMap(this)
-    const changed = map.computeChangedFiles(this, diffResult)
+    const changed = map.computeChangedFiles(diffResult)
 
     logger.debug('artifacts', changed)
 

@@ -191,7 +191,7 @@ export class ArtifactMap<TFiles> {
     return matchers
   }
 
-  computeChangedFiles(ctx: Context, diffResult?: DiffConfigResult) {
+  computeChangedFiles(diffResult?: DiffConfigResult) {
     if (!diffResult) return new Set(this.files.keys())
 
     const matchers = this.createMatchers(diffResult.diffs)

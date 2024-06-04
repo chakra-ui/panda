@@ -8,7 +8,7 @@ export function generateSolidJsxPattern(ctx: Context) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
   return ctx.patterns.details.flatMap((pattern) => {
-    const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
+    const { baseName, upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div', deprecated } = pattern.config
 
     return [
@@ -17,7 +17,7 @@ export function generateSolidJsxPattern(ctx: Context) {
         fileName: dashName,
         type: 'js',
         dir: (ctx) => ctx.paths.jsx,
-        dependencies: [`patterns.${dashName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        dependencies: [`patterns.${baseName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
         imports: () => {
           const conditionals = {} as ArtifactImports
           if (jsxStyleProps === 'minimal') {
@@ -87,7 +87,7 @@ export function generateSolidJsxPattern(ctx: Context) {
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.jsx,
-        dependencies: [`patterns.${dashName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        dependencies: [`patterns.${baseName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
         importsType: {
           'types/system-types.d.ts': ['Assign', 'DistributiveOmit'],
           'types/jsx.d.ts': [typeName],

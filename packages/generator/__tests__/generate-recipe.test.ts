@@ -18,9 +18,10 @@ const recipeJs = (userConfig?: Config) => {
 describe('generate recipes', () => {
   test('should ', () => {
     expect(createRecipeJs()).toMatchInlineSnapshot(`
-      [
-        {
-          "content": "import { finalizeConditions, sortConditions } from '../css/conditions.mjs'
+      {
+        "contents": [
+          {
+            "content": "import { finalizeConditions, sortConditions } from '../css/conditions.mjs'
       import { css } from '../css/css.mjs'
       import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs'
       import { cx } from '../css/cx.mjs'
@@ -103,20 +104,23 @@ describe('generate recipes', () => {
            })
            }
          ",
-          "id": "recipes/create-recipe.js",
-          "path": [
-            "styled-system",
-            "recipes",
-            "create-recipe.mjs",
-          ],
-        },
-      ]
+            "id": "recipes/create-recipe.js",
+            "path": [
+              "styled-system",
+              "recipes",
+              "create-recipe.mjs",
+            ],
+          },
+        ],
+        "empty": [],
+      }
     `)
 
     expect(recipeJs()).toMatchInlineSnapshot(`
-      [
-        {
-          "content": "/* eslint-disable */
+      {
+        "contents": [
+          {
+            "content": "/* eslint-disable */
       import type { ConditionalValue } from '../types/index.d.ts'
       import type { DistributiveOmit, Pretty } from '../types/system-types.d.ts'
 
@@ -146,15 +150,15 @@ describe('generate recipes', () => {
                 
                 export declare const badge: BadgeRecipe
                 ",
-          "id": "recipes/badge.dts",
-          "path": [
-            "styled-system",
-            "recipes",
-            "badge.d.ts",
-          ],
-        },
-        {
-          "content": "import { compact, getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs'
+            "id": "recipes/badge.dts",
+            "path": [
+              "styled-system",
+              "recipes",
+              "badge.d.ts",
+            ],
+          },
+          {
+            "content": "import { compact, getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs'
       import { createRecipe } from './create-recipe.mjs'
 
                   const badgeDefaultVariants = {}
@@ -211,15 +215,15 @@ describe('generate recipes', () => {
                     getVariantProps
                   })
                   ",
-          "id": "recipes/badge.js",
-          "path": [
-            "styled-system",
-            "recipes",
-            "badge.mjs",
-          ],
-        },
-        {
-          "content": "/* eslint-disable */
+            "id": "recipes/badge.js",
+            "path": [
+              "styled-system",
+              "recipes",
+              "badge.mjs",
+            ],
+          },
+          {
+            "content": "/* eslint-disable */
       import type { ConditionalValue } from '../types/index.d.ts'
       import type { DistributiveOmit, Pretty } from '../types/system-types.d.ts'
 
@@ -248,15 +252,15 @@ describe('generate recipes', () => {
                 
                 export declare const checkbox: CheckboxRecipe
                 ",
-          "id": "recipes/checkbox.dts",
-          "path": [
-            "styled-system",
-            "recipes",
-            "checkbox.d.ts",
-          ],
-        },
-        {
-          "content": "import { compact, getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs'
+            "id": "recipes/checkbox.dts",
+            "path": [
+              "styled-system",
+              "recipes",
+              "checkbox.d.ts",
+            ],
+          },
+          {
+            "content": "import { compact, getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs'
       import { createRecipe } from './create-recipe.mjs'
 
                   const checkboxDefaultVariants = {
@@ -307,15 +311,15 @@ describe('generate recipes', () => {
                     getVariantProps
                   })
                   ",
-          "id": "recipes/checkbox.js",
-          "path": [
-            "styled-system",
-            "recipes",
-            "checkbox.mjs",
-          ],
-        },
-        {
-          "content": "/* eslint-disable */
+            "id": "recipes/checkbox.js",
+            "path": [
+              "styled-system",
+              "recipes",
+              "checkbox.mjs",
+            ],
+          },
+          {
+            "content": "/* eslint-disable */
       import type { ConditionalValue } from '../types/index.d.ts'
       import type { DistributiveOmit, Pretty } from '../types/system-types.d.ts'
 
@@ -345,15 +349,15 @@ describe('generate recipes', () => {
                 
                 export declare const buttonStyle: ButtonStyleRecipe
                 ",
-          "id": "recipes/button-style.dts",
-          "path": [
-            "styled-system",
-            "recipes",
-            "button-style.d.ts",
-          ],
-        },
-        {
-          "content": "import { memo, splitProps } from '../helpers.mjs'
+            "id": "recipes/button-style.dts",
+            "path": [
+              "styled-system",
+              "recipes",
+              "button-style.d.ts",
+            ],
+          },
+          {
+            "content": "import { memo, splitProps } from '../helpers.mjs'
       import { createRecipe, mergeRecipes } from './create-recipe.mjs'
 
                   const buttonStyleFn = /* @__PURE__ */ createRecipe('buttonStyle', {
@@ -390,15 +394,15 @@ describe('generate recipes', () => {
                     getVariantProps: buttonStyleFn.getVariantProps,
                   })
                   ",
-          "id": "recipes/button-style.js",
-          "path": [
-            "styled-system",
-            "recipes",
-            "button-style.mjs",
-          ],
-        },
-        {
-          "content": "/* eslint-disable */
+            "id": "recipes/button-style.js",
+            "path": [
+              "styled-system",
+              "recipes",
+              "button-style.mjs",
+            ],
+          },
+          {
+            "content": "/* eslint-disable */
       import type { ConditionalValue } from '../types/index.d.ts'
       import type { DistributiveOmit, Pretty } from '../types/system-types.d.ts'
 
@@ -427,15 +431,15 @@ describe('generate recipes', () => {
                 
                 export declare const cardStyle: CardStyleRecipe
                 ",
-          "id": "recipes/card-style.dts",
-          "path": [
-            "styled-system",
-            "recipes",
-            "card-style.d.ts",
-          ],
-        },
-        {
-          "content": "import { memo, splitProps } from '../helpers.mjs'
+            "id": "recipes/card-style.dts",
+            "path": [
+              "styled-system",
+              "recipes",
+              "card-style.d.ts",
+            ],
+          },
+          {
+            "content": "import { memo, splitProps } from '../helpers.mjs'
       import { createRecipe, mergeRecipes } from './create-recipe.mjs'
 
                   const cardStyleFn = /* @__PURE__ */ createRecipe('card', {}, [])
@@ -464,15 +468,15 @@ describe('generate recipes', () => {
                     getVariantProps: cardStyleFn.getVariantProps,
                   })
                   ",
-          "id": "recipes/card-style.js",
-          "path": [
-            "styled-system",
-            "recipes",
-            "card-style.mjs",
-          ],
-        },
-        {
-          "content": "/* eslint-disable */
+            "id": "recipes/card-style.js",
+            "path": [
+              "styled-system",
+              "recipes",
+              "card-style.mjs",
+            ],
+          },
+          {
+            "content": "/* eslint-disable */
       import type { ConditionalValue } from '../types/index.d.ts'
       import type { DistributiveOmit, Pretty } from '../types/system-types.d.ts'
 
@@ -501,15 +505,15 @@ describe('generate recipes', () => {
                 
                 export declare const tooltipStyle: TooltipStyleRecipe
                 ",
-          "id": "recipes/tooltip-style.dts",
-          "path": [
-            "styled-system",
-            "recipes",
-            "tooltip-style.d.ts",
-          ],
-        },
-        {
-          "content": "import { memo, splitProps } from '../helpers.mjs'
+            "id": "recipes/tooltip-style.dts",
+            "path": [
+              "styled-system",
+              "recipes",
+              "tooltip-style.d.ts",
+            ],
+          },
+          {
+            "content": "import { memo, splitProps } from '../helpers.mjs'
       import { createRecipe, mergeRecipes } from './create-recipe.mjs'
 
                   const tooltipStyleFn = /* @__PURE__ */ createRecipe('tooltipStyle', {}, [])
@@ -534,15 +538,15 @@ describe('generate recipes', () => {
                     getVariantProps: tooltipStyleFn.getVariantProps,
                   })
                   ",
-          "id": "recipes/tooltip-style.js",
-          "path": [
-            "styled-system",
-            "recipes",
-            "tooltip-style.mjs",
-          ],
-        },
-        {
-          "content": "/* eslint-disable */
+            "id": "recipes/tooltip-style.js",
+            "path": [
+              "styled-system",
+              "recipes",
+              "tooltip-style.mjs",
+            ],
+          },
+          {
+            "content": "/* eslint-disable */
       import type { ConditionalValue } from '../types/index.d.ts'
       import type { DistributiveOmit, Pretty } from '../types/system-types.d.ts'
 
@@ -571,15 +575,15 @@ describe('generate recipes', () => {
                 
                 export declare const textStyle: TextStyleRecipe
                 ",
-          "id": "recipes/text-style.dts",
-          "path": [
-            "styled-system",
-            "recipes",
-            "text-style.d.ts",
-          ],
-        },
-        {
-          "content": "import { memo, splitProps } from '../helpers.mjs'
+            "id": "recipes/text-style.dts",
+            "path": [
+              "styled-system",
+              "recipes",
+              "text-style.d.ts",
+            ],
+          },
+          {
+            "content": "import { memo, splitProps } from '../helpers.mjs'
       import { createRecipe, mergeRecipes } from './create-recipe.mjs'
 
                   const textStyleFn = /* @__PURE__ */ createRecipe('textStyle', {}, [])
@@ -609,14 +613,16 @@ describe('generate recipes', () => {
                     getVariantProps: textStyleFn.getVariantProps,
                   })
                   ",
-          "id": "recipes/text-style.js",
-          "path": [
-            "styled-system",
-            "recipes",
-            "text-style.mjs",
-          ],
-        },
-      ]
+            "id": "recipes/text-style.js",
+            "path": [
+              "styled-system",
+              "recipes",
+              "text-style.mjs",
+            ],
+          },
+        ],
+        "empty": [],
+      }
     `)
   })
 })

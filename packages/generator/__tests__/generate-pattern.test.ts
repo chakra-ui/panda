@@ -14,9 +14,10 @@ const patterns = (config: LoadConfigResult) => {
 
 test('should generate pattern', () => {
   expect(patterns(fixtureDefaults)).toMatchInlineSnapshot(`
-    [
-      {
-        "content": "import { css } from '../css/index.mjs'
+    {
+      "contents": [
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -40,15 +41,15 @@ test('should generate pattern', () => {
               export const cq = (styles) => css(getCqStyle(styles))
               cq.raw = getCqStyle
               ",
-        "id": "patterns/cq.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "cq.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/cq.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "cq.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -73,15 +74,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/cq.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "cq.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/cq.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "cq.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -102,15 +103,15 @@ test('should generate pattern', () => {
               export const visuallyHidden = (styles) => css(getVisuallyHiddenStyle(styles))
               visuallyHidden.raw = getVisuallyHiddenStyle
               ",
-        "id": "patterns/visually-hidden.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "visually-hidden.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/visually-hidden.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "visually-hidden.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -134,15 +135,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/visually-hidden.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "visually-hidden.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/visually-hidden.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "visually-hidden.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -169,15 +170,15 @@ test('should generate pattern', () => {
               export const bleed = (styles) => css(getBleedStyle(styles))
               bleed.raw = getBleedStyle
               ",
-        "id": "patterns/bleed.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "bleed.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/bleed.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "bleed.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -202,15 +203,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/bleed.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "bleed.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/bleed.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "bleed.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -265,15 +266,15 @@ test('should generate pattern', () => {
               export const float = (styles) => css(getFloatStyle(styles))
               float.raw = getFloatStyle
               ",
-        "id": "patterns/float.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "float.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/float.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "float.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -300,15 +301,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/float.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "float.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/float.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "float.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -336,15 +337,15 @@ test('should generate pattern', () => {
               export const divider = (styles) => css(getDividerStyle(styles))
               divider.raw = getDividerStyle
               ",
-        "id": "patterns/divider.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "divider.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/divider.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "divider.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -370,15 +371,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/divider.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "divider.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/divider.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "divider.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -402,15 +403,15 @@ test('should generate pattern', () => {
               export const container = (styles) => css(getContainerStyle(styles))
               container.raw = getContainerStyle
               ",
-        "id": "patterns/container.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "container.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/container.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "container.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -434,15 +435,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/container.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "container.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/container.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "container.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -470,15 +471,15 @@ test('should generate pattern', () => {
               export const wrap = (styles) => css(getWrapStyle(styles))
               wrap.raw = getWrapStyle
               ",
-        "id": "patterns/wrap.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "wrap.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/wrap.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "wrap.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -506,15 +507,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/wrap.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "wrap.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/wrap.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "wrap.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -542,15 +543,15 @@ test('should generate pattern', () => {
               export const gridItem = (styles) => css(getGridItemStyle(styles))
               gridItem.raw = getGridItemStyle
               ",
-        "id": "patterns/grid-item.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "grid-item.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/grid-item.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "grid-item.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -579,15 +580,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/grid-item.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "grid-item.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/grid-item.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "grid-item.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -617,15 +618,15 @@ test('should generate pattern', () => {
               export const grid = (styles) => css(getGridStyle(styles))
               grid.raw = getGridStyle
               ",
-        "id": "patterns/grid.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "grid.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/grid.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "grid.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -653,15 +654,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/grid.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "grid.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/grid.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "grid.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -702,15 +703,15 @@ test('should generate pattern', () => {
               export const aspectRatio = (styles) => css(getAspectRatioStyle(styles))
               aspectRatio.raw = getAspectRatioStyle
               ",
-        "id": "patterns/aspect-ratio.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "aspect-ratio.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/aspect-ratio.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "aspect-ratio.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -734,15 +735,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/aspect-ratio.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "aspect-ratio.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/aspect-ratio.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "aspect-ratio.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -769,15 +770,15 @@ test('should generate pattern', () => {
               export const linkOverlay = (styles) => css(getLinkOverlayStyle(styles))
               linkOverlay.raw = getLinkOverlayStyle
               ",
-        "id": "patterns/link-overlay.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "link-overlay.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/link-overlay.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "link-overlay.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -801,15 +802,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/link-overlay.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "link-overlay.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/link-overlay.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "link-overlay.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -833,15 +834,15 @@ test('should generate pattern', () => {
               export const center = (styles) => css(getCenterStyle(styles))
               center.raw = getCenterStyle
               ",
-        "id": "patterns/center.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "center.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/center.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "center.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -865,15 +866,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/center.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "center.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/center.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "center.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -901,15 +902,15 @@ test('should generate pattern', () => {
               export const circle = (styles) => css(getCircleStyle(styles))
               circle.raw = getCircleStyle
               ",
-        "id": "patterns/circle.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "circle.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/circle.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "circle.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -933,15 +934,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/circle.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "circle.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/circle.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "circle.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -968,15 +969,15 @@ test('should generate pattern', () => {
               export const square = (styles) => css(getSquareStyle(styles))
               square.raw = getSquareStyle
               ",
-        "id": "patterns/square.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "square.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/square.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "square.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -1000,15 +1001,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/square.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "square.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/square.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "square.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -1032,15 +1033,15 @@ test('should generate pattern', () => {
               export const spacer = (styles) => css(getSpacerStyle(styles))
               spacer.raw = getSpacerStyle
               ",
-        "id": "patterns/spacer.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "spacer.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/spacer.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "spacer.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -1064,15 +1065,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/spacer.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "spacer.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/spacer.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "spacer.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -1099,15 +1100,15 @@ test('should generate pattern', () => {
               export const hstack = (styles) => css(getHstackStyle(styles))
               hstack.raw = getHstackStyle
               ",
-        "id": "patterns/hstack.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "hstack.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/hstack.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "hstack.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -1132,15 +1133,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/hstack.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "hstack.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/hstack.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "hstack.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -1167,15 +1168,15 @@ test('should generate pattern', () => {
               export const vstack = (styles) => css(getVstackStyle(styles))
               vstack.raw = getVstackStyle
               ",
-        "id": "patterns/vstack.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "vstack.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/vstack.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "vstack.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -1200,15 +1201,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/vstack.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "vstack.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/vstack.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "vstack.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -1235,15 +1236,15 @@ test('should generate pattern', () => {
               export const stack = (styles) => css(getStackStyle(styles))
               stack.raw = getStackStyle
               ",
-        "id": "patterns/stack.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "stack.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/stack.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "stack.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -1270,15 +1271,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/stack.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "stack.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/stack.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "stack.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -1307,15 +1308,15 @@ test('should generate pattern', () => {
               export const flex = (styles) => css(getFlexStyle(styles))
               flex.raw = getFlexStyle
               ",
-        "id": "patterns/flex.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "flex.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/flex.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "flex.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -1345,15 +1346,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/flex.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "flex.d.ts",
-        ],
-      },
-      {
-        "content": "import { css } from '../css/index.mjs'
+          "id": "patterns/flex.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "flex.d.ts",
+          ],
+        },
+        {
+          "content": "import { css } from '../css/index.mjs'
     import { getPatternStyles, patternFns } from '../helpers.mjs'
 
               
@@ -1371,15 +1372,15 @@ test('should generate pattern', () => {
               export const box = (styles) => css(getBoxStyle(styles))
               box.raw = getBoxStyle
               ",
-        "id": "patterns/box.js",
-        "path": [
-          "styled-system",
-          "patterns",
-          "box.mjs",
-        ],
-      },
-      {
-        "content": "/* eslint-disable */
+          "id": "patterns/box.js",
+          "path": [
+            "styled-system",
+            "patterns",
+            "box.mjs",
+          ],
+        },
+        {
+          "content": "/* eslint-disable */
     import type { Tokens } from '../tokens/index.d.ts'
     import type { Properties } from '../types/csstype.d.ts'
     import type { ConditionalValue, SystemStyleObject } from '../types/index.d.ts'
@@ -1403,13 +1404,15 @@ test('should generate pattern', () => {
                   
 
              ",
-        "id": "patterns/box.d.ts",
-        "path": [
-          "styled-system",
-          "patterns",
-          "box.d.ts",
-        ],
-      },
-    ]
+          "id": "patterns/box.d.ts",
+          "path": [
+            "styled-system",
+            "patterns",
+            "box.d.ts",
+          ],
+        },
+      ],
+      "empty": [],
+    }
   `)
 })

@@ -30,7 +30,7 @@ export function getPatternsArtifacts(ctx: Context) {
         fileName: dashName,
         type: 'dts',
         dir: (ctx) => ctx.paths.pattern,
-        dependencies: [`patterns.${dashName}`],
+        dependencies: [`patterns.${baseName}`],
         importsType: {
           'types/index.d.ts': ['SystemStyleObject', 'ConditionalValue'],
           'types/csstype.d.ts': ['Properties'],
@@ -88,7 +88,7 @@ export function getPatternsArtifacts(ctx: Context) {
         fileName: dashName,
         type: 'js',
         dir: (ctx) => ctx.paths.pattern,
-        dependencies: [`patterns.${dashName}`],
+        dependencies: [`patterns.${baseName}`],
         imports: {
           'helpers.js': ['getPatternStyles', 'patternFns'],
           'css/index.js': ['css'],
