@@ -1,12 +1,16 @@
 import type { Context } from '@pandacss/core'
 import { Recipes } from '@pandacss/core'
-import { unionType } from '@pandacss/shared'
+import { isBoolean, unionType } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 
 const stringify = (value: any) => JSON.stringify(value, null, 2)
 const isBooleanValue = (value: string) => value === 'true' || value === 'false'
+const hasOwn = (obj: any | undefined, key: string): obj is Record<string, any> => {
+  if (!obj) return false
+  return Object.prototype.hasOwnProperty.call(obj, key)
+}
 
 export function generateCreateRecipe(ctx: Context) {
   const { conditions, recipes, prefix, hash, utility } = ctx
@@ -115,6 +119,19 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
     const { baseName, config, upperName, variantKeyMap, dashName } = recipe
     const { description, defaultVariants, compoundVariants, deprecated } = config
 
+    const getDefaultValueJsDoc = (key: string) => {
+      if (!hasOwn(defaultVariants, key)) return
+      let defaultValue = defaultVariants[key]
+
+      if (isBoolean(defaultValue)) {
+        defaultValue = defaultValue ? `true` : `false`
+      } else {
+        defaultValue = JSON.stringify(defaultValue)
+      }
+
+      return ctx.file.jsDocComment('', { default: defaultValue })
+    }
+
     const jsCode = match(config)
       .when(
         Recipes.isSlotRecipeConfig,
@@ -192,8 +209,8 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           ${Object.keys(variantKeyMap)
             .map((key) => {
               const values = variantKeyMap[key]
-              if (values.every(isBooleanValue)) return `${key}: boolean`
-              return `${key}: ${unionType(values)}`
+              const valueStr = values.every(isBooleanValue) ? `${key}: boolean` : `${key}: ${unionType(values)}`
+              return [getDefaultValueJsDoc(key), valueStr].filter(Boolean).join('\n')
             })
             .join('\n')}
         }

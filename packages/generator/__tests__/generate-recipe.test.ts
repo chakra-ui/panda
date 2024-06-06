@@ -284,7 +284,13 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface ButtonStyleVariant {
-        size: "sm" | "md"
+        /**
+       * @default "md"
+       */
+      size: "sm" | "md"
+      /**
+       * @default "solid"
+       */
       variant: "solid" | "outline"
       }
 
@@ -351,7 +357,10 @@ describe('generate recipes', () => {
       import type { DistributiveOmit, Pretty } from '../types/system-types';
 
       interface CheckboxVariant {
-        size: "sm" | "md" | "lg"
+        /**
+       * @default "sm"
+       */
+      size: "sm" | "md" | "lg"
       }
 
       type CheckboxVariantMap = {
