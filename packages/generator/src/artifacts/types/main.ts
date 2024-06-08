@@ -13,6 +13,10 @@ export const typesGlobalArtifact = new ArtifactFile({
     'types/composition.d.ts': ['CompositionStyles'],
     'types/parts.d.ts': ['Parts'],
   },
+  // TODO
+  // prepend () {
+  //   return `// @ts-nocheck`
+  // },
   code() {
     return `import type * as Panda from '@pandacss/dev'
 

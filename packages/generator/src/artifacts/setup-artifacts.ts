@@ -211,7 +211,6 @@ const cssIndexDtsArtifact = new ArtifactFile({
   },
 })
 
-// TODO map artifact files structure to mirror the generated styled-system
 const getStaticArtifacts = () => {
   return (
     new ArtifactMap()

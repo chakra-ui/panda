@@ -87,7 +87,7 @@ export class ArtifactFile<
   }
 
   getPath(ctx: Context) {
-    return [...callable(ctx, this.dir), this.fileName]
+    return [...callable(ctx, this.dir), this.getFileName(ctx)]
   }
 }
 
@@ -252,6 +252,7 @@ export class ArtifactMap<TFiles> {
       let content = code
       // Add sorted imports to the top of the file, relative to the current file
       if (node.imports || node.importsType) {
+        // TODO use FileEngine to get the imports
         const imports = Object.entries(callable(ctx, node.imports ?? {})).map(([from, imports]) => [
           from,
           `import { ${imports.sort().join(', ')} } from '${ctx.file.ext(relative(artifactDir, from))}'`,
@@ -300,6 +301,7 @@ export class ArtifactMap<TFiles> {
 const callable = <Input, T>(input: Input, value: RawOrFn<Input, T>): InferRawInput<Input, T> =>
   typeof value === 'function' ? (value as any)(input) : value
 
+// TODO move to FileEngine
 const relative = (current: string[], moduleSpecifier: string) => {
   const from = moduleSpecifier.split('.')[0].split('/')
 

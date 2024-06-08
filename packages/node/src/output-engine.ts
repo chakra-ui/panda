@@ -52,6 +52,7 @@ export class OutputEngine {
     } catch (e) {
       // Prettier throws when the syntax is invalid
       logger.error('write:file:' + output.id, e)
+      return this.fs.writeFile(absPath, output.content)
     }
   }
 }
