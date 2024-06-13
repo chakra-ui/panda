@@ -1,9 +1,7 @@
 import type { ParserResultInterface, ReportInstanceItem, ReportItem } from '@pandacss/types'
-import { box } from '@pandacss/extractor'
+import { BoxNodeMap, box } from '@pandacss/extractor'
 import type { PandaContext } from './create-context'
 import type { ResultItem } from '@pandacss/types'
-
-type BoxNodeMap = ReportInstanceItem['box']
 
 const createReportMaps = () => {
   const byInstanceOfKind = new Map<'function' | 'component', Set<ReportInstanceItem['instanceId']>>()
@@ -120,9 +118,9 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
             filepath,
             path: current.concat(attrName),
             value,
-            box: attrNode,
             isKnown: false,
-          } as ReportItem // TODO satisfies
+            range: map.getRange(),
+          } as ReportItem
           reportInstanceItem.contains.push(reportItem.id)
 
           if (conditions.has(attrName)) {
@@ -222,9 +220,9 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
         kind,
         filepath,
         value: item.data,
-        box: item.box,
+        range: item.box.getRange(),
         contains: [],
-      } as ReportInstanceItem // TODO satisfies
+      } satisfies ReportInstanceItem
 
       if (box.isArray(item.box)) {
         addTo(byInstanceInFilepath, filepath, reportInstanceItem.instanceId)

@@ -1,7 +1,17 @@
-import type { BoxNodeEmptyInitializer, BoxNodeLiteral, BoxNodeMap } from '@pandacss/extractor'
+import type { BoxNode } from '@pandacss/extractor'
 import type { Config } from './config'
 
 export type ReportItemType = 'object' | 'cva' | 'pattern' | 'recipe' | 'jsx' | 'jsx-factory'
+
+type Range = {
+  startPosition: number
+  startLineNumber: number
+  startColumn: number
+  endPosition: number
+  endLineNumber: number
+  endColumn: number
+}
+
 export interface ReportItem {
   id: number
   from: string
@@ -14,7 +24,7 @@ export interface ReportItem {
   value: string | number | true
   category: string
   isKnown: boolean
-  box: BoxNodeLiteral | BoxNodeEmptyInitializer
+  range: Range
 }
 
 /**
@@ -25,7 +35,7 @@ export interface ReportInstanceItem extends Pick<ReportItem, 'from' | 'type' | '
   instanceId: number
   contains: Array<ReportItem['id']>
   value: Record<string, any>
-  box: BoxNodeMap
+  range: Range
 }
 
 export interface ReportMaps {
@@ -129,21 +139,14 @@ export interface ReportItemJSON {
   value: string | number | true
   category: string
   isKnown: boolean
-  box: {
-    type: 'literal' | 'empty-initializer'
-    value: string | number | boolean | undefined | null
-    node: string
-    stack: string[]
-    line: number
-    column: number
-  }
+  range: Range
 }
 
 export interface ReportInstanceItemJSON extends Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> {
   instanceId: number
   contains: Array<ReportItem['id']>
   value: Record<string, any>
-  box: { type: 'map'; value: Record<string, any>; node: string; stack: string[]; line: number; column: number }
+  range: Range
 }
 
 export interface AnalysisReportJSON {
@@ -158,22 +161,12 @@ export interface AnalysisReportJSON {
     byFilePathMaps: Record<string, ReportMapsJSON>
   }
   fileSizes: FileSizes
-  cwd: Config['cwd']
-  theme: Config['theme']
-  utilities: Config['utilities']
-  conditions: Config['conditions']
-  shorthands: Record<string, string>
-  // Generator["parserOptions""]
-  parserOptions: {
-    importMap: {
-      css: string
-      recipe: string
-      pattern: string
-      jsx: string
-    }
-    jsx: {
-      factory: string
-      nodes: Array<{ type: 'string'; name: string; props: string[]; baseName: string }>
-    }
+  config: {
+    cwd: Config['cwd']
+    theme: Config['theme']
+    utilities: Config['utilities']
+    patterns: Config['patterns']
+    conditions: Config['conditions']
+    shorthands: Record<string, string>
   }
 }

@@ -2,9 +2,11 @@ import { logger } from '@pandacss/logger'
 import type { ParserResultInterface } from '@pandacss/types'
 import { filesize } from 'filesize'
 import { writeFile } from 'fs/promises'
+import path from 'node:path'
 import zlib from 'zlib'
 import { classifyTokens } from './classify'
 import type { PandaContext } from './create-context'
+import { version } from '../package.json'
 
 const gzipSizeSync = (code: string | Buffer) => zlib.gzipSync(code, { level: zlib.constants.Z_BEST_COMPRESSION }).length
 
@@ -17,16 +19,21 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
   const timesMap = new Map<string, number>()
 
   const files = ctx.getFiles()
+  const sheet = ctx.createSheet()
+  ctx.appendLayerParams(sheet)
+  ctx.appendBaselineCss(sheet)
+
   files.forEach((file) => {
     const start = performance.now()
     const result = ctx.project.parseSourceFile(file)
 
     const extractMs = performance.now() - start
-    timesMap.set(file, extractMs)
+    const relativePath = path.relative(ctx.config.cwd, file)
+    timesMap.set(relativePath, extractMs)
     logger.debug('analyze', `Parsed ${file} in ${extractMs}ms`)
 
     if (result) {
-      filesMap.set(file, result)
+      filesMap.set(relativePath, result)
       options.onResult?.(file, result)
     }
   })
@@ -34,17 +41,37 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
   const totalMs = Array.from(timesMap.values()).reduce((a, b) => a + b, 0)
   logger.debug('analyze', `Analyzed ${files.length} files in ${totalMs.toFixed(2)}ms`)
 
-  const minify = ctx.config.minify
+  ctx.appendParserCss(sheet)
 
-  ctx.config.optimize = true
+  const cssStart = performance.now()
   ctx.config.minify = false
+  const css = ctx.getCss(sheet)
+  const cssMs = performance.now() - cssStart
 
-  // TODO
-  const css = ''
-  const minifiedCss = ''
+  const cssMinifyStart = performance.now()
+  ctx.config.minify = true
+  const minifiedCss = ctx.getCss(sheet)
+  const cssMinifyMs = performance.now() - cssMinifyStart
 
-  // restore minify config
-  ctx.config.minify = minify
+  let lightningCss = ''
+  let lightningCssMs: number | undefined
+  let lightningCssMinifiedCss = ''
+  let lightningCssMinifiedMs: number | undefined
+
+  const isUsingLightningCss = ctx.config.lightningcss
+  if (!isUsingLightningCss) {
+    sheet['context'].lightningcss = true
+
+    ctx.config.minify = false
+    const lightningcssStart = performance.now()
+    lightningCss = ctx.getCss(sheet)
+    lightningCssMs = performance.now() - lightningcssStart
+
+    ctx.config.minify = true
+    const lightningcssMinifyStart = performance.now()
+    lightningCssMinifiedCss = ctx.getCss(sheet)
+    lightningCssMinifiedMs = performance.now() - lightningcssMinifyStart
+  }
 
   const start = performance.now()
   const analysis = classifyTokens(ctx, filesMap)
@@ -53,9 +80,20 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
   return Object.assign(
     {
       duration: {
-        extractTimeByFiles: Object.fromEntries(timesMap.entries()),
-        extractTotal: totalMs,
         classify: classifyMs,
+        //
+        cssMs,
+        cssMinifyMs,
+        //
+        ...(!isUsingLightningCss
+          ? {
+              lightningCssMs,
+              lightningCssMinifiedMs,
+            }
+          : {}),
+        //
+        extractTotal: totalMs,
+        extractTimeByFiles: Object.fromEntries(timesMap.entries()),
       },
       fileSizes: {
         lineCount: css.split('\n').length,
@@ -65,6 +103,12 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
           normal: filesize(gzipSizeSync(css)),
           minified: filesize(gzipSizeSync(minifiedCss)),
         },
+        lightningCss: !isUsingLightningCss
+          ? {
+              normal: filesize(Buffer.byteLength(lightningCss, 'utf-8')),
+              minified: filesize(Buffer.byteLength(lightningCssMinifiedCss, 'utf-8')),
+            }
+          : 'Already using lightningcss',
       },
     },
     analysis,
@@ -84,11 +128,6 @@ const analyzeResultSerializer = (_key: string, value: any) => {
 }
 
 export const writeAnalyzeJSON = (filePath: string, result: ReturnType<typeof analyzeTokens>, ctx: PandaContext) => {
-  // prevent writing twice the same BoxNode in the output (already serialized in the `byId` map)
-  result.details.byInstanceId.forEach((item) => {
-    item.box = item.box.toJSON() as any
-  })
-
   const dirname = ctx.runtime.path.dirname(filePath)
   ctx.runtime.fs.ensureDirSync(dirname)
 
@@ -96,11 +135,15 @@ export const writeAnalyzeJSON = (filePath: string, result: ReturnType<typeof ana
     filePath,
     JSON.stringify(
       Object.assign(result, {
-        cwd: ctx.config.cwd,
-        theme: ctx.config.theme,
-        utilities: ctx.config.utilities,
-        conditions: ctx.config.conditions,
-        shorthands: ctx.utility.shorthands,
+        schemaVersion: version,
+        config: {
+          cwd: ctx.config.cwd,
+          theme: ctx.config.theme,
+          utilities: ctx.config.utilities,
+          patterns: ctx.config.patterns,
+          conditions: ctx.config.conditions,
+          shorthands: ctx.utility.shorthands,
+        },
       }),
       analyzeResultSerializer,
       2,
