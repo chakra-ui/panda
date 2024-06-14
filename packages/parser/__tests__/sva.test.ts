@@ -223,7 +223,7 @@ describe('ast parser / sva', () => {
     `)
   })
 
-  test.only('unresolvable slots - spread', () => {
+  test('unresolvable slots - spread', () => {
     const code = `
     import { sva } from 'styled-system/css'
     const parts = ['positioner', 'content']
@@ -249,7 +249,7 @@ describe('ast parser / sva', () => {
                 },
               },
               "slots": [
-                undefined,
+                "root",
               ],
             },
           ],
@@ -259,6 +259,12 @@ describe('ast parser / sva', () => {
       ]
     `)
 
-    expect(result.css).toMatchInlineSnapshot(`""`)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_6 {
+          padding: var(--spacing-6);
+      }
+      }"
+    `)
   })
 })
