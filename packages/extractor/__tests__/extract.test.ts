@@ -6052,3 +6052,40 @@ p.stack({ mt: "40px" })`
     }
   `)
 })
+
+// TODO ? not useful as of now
+it.skip('extracts slots when spread', () => {
+  const code = `import { sva } from 'styled-system/css';
+
+  const parts = ['positioner', 'content']
+
+  const useStyles = sva({
+    slots: [...parts],
+    base: {
+      root: { bgColor: 'red' }
+    },
+  });`
+
+  expect(extractFromCode(code, { functionNameList: ['sva'] })).toMatchInlineSnapshot(`
+    {
+      "sva": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "base": {
+                "root": {
+                  "bgColor": "red",
+                },
+              },
+              "slots": [
+                undefined,
+              ],
+            },
+          ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
