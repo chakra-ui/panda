@@ -1,5 +1,32 @@
 # @pandacss/core
 
+## 0.41.0
+
+### Patch Changes
+
+- 2750261: Fix an issue where spreading an identifier in a sva `slots` array would prevent expected CSS from being
+  generated
+
+  ```ts
+  import { sva } from 'styled-system/css'
+  const parts = ['positioner', 'content']
+
+  const card = sva({
+    slots: [...parts], // <- spreading here was causing the below CSS not to be generated, it's now fixed ✅
+    base: {
+      root: {
+        p: '6',
+      },
+    },
+  })
+  ```
+
+  - @pandacss/types@0.41.0
+  - @pandacss/is-valid-prop@0.41.0
+  - @pandacss/logger@0.41.0
+  - @pandacss/shared@0.41.0
+  - @pandacss/token-dictionary@0.41.0
+
 ## 0.40.1
 
 ### Patch Changes
