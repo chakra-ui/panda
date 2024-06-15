@@ -268,7 +268,7 @@ export class StyleEncoder {
   }
 
   processAtomicSlotRecipe = (recipe: PartialBy<SlotRecipeDefinition, 'slots'>) => {
-    recipe.slots ||= Recipes.inferSlots(recipe)
+    if (!recipe.slots?.filter(Boolean).length) recipe.slots = Recipes.inferSlots(recipe)
     const slots = getSlotRecipes(recipe)
 
     for (const slotRecipe of Object.values(slots)) {

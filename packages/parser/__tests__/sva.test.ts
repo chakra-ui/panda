@@ -222,4 +222,49 @@ describe('ast parser / sva', () => {
       }"
     `)
   })
+
+  test('unresolvable slots - spread', () => {
+    const code = `
+    import { sva } from 'styled-system/css'
+    const parts = ['positioner', 'content']
+
+    const card = sva({
+      slots: [...parts],
+      base: {
+        root: {
+          p: '6',
+        },
+      },
+    })
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "root": {
+                  "p": "6",
+                },
+              },
+              "slots": [
+                "root",
+              ],
+            },
+          ],
+          "name": "sva",
+          "type": "sva",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_6 {
+          padding: var(--spacing-6);
+      }
+      }"
+    `)
+  })
 })
