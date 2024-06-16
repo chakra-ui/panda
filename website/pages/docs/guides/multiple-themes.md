@@ -14,6 +14,7 @@ to model this in Panda.
 We'll start by defining the following conditions for these theme and color modes:
 
 ```js
+// panda.config.ts
 const config = {
   conditions: {
     light: '[data-color-mode=light] &',
@@ -29,6 +30,7 @@ const config = {
 Next, we'll define a `colors.text` semantic token for the pink and blue theme.
 
 ```js
+// panda.config.ts
 const theme = {
   // ...
   semanticTokens: {
@@ -47,6 +49,7 @@ const theme = {
 Next, we'll modify `colors.text` to support light and dark color modes for each theme.
 
 ```js
+// panda.config.ts
 const theme = {
   // ...
   semanticTokens: {
