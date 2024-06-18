@@ -25,6 +25,7 @@ type Range = {
 export interface PropertyReportItem {
   index: string
   componentIndex: ComponentReportItem['componentIndex']
+  componentName: ComponentReportItem['name']
   reportItemKind: 'token' | 'utility'
 
   path: string[]

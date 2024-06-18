@@ -113,6 +113,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
           const propReportItem = {
             index: String(id++),
             componentIndex: String(componentReportItem.componentIndex),
+            componentName: componentReportItem.name,
             tokenType: undefined,
             propName: attrName,
             name: name,
