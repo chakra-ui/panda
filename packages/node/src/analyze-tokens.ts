@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { ParserResultInterface } from '@pandacss/types'
+import type { ParserResultInterface, ReportSnapshot, ReportSnapshotJSON } from '@pandacss/types'
 import { filesize } from 'filesize'
 import { writeFile } from 'fs/promises'
 import path from 'node:path'
@@ -14,7 +14,7 @@ interface Options {
   onResult?: (file: string, result: ParserResultInterface) => void
 }
 
-export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
+export function analyzeTokens(ctx: PandaContext, options: Options = {}): ReportSnapshot {
   const filesMap = new Map<string, ParserResultInterface>()
   const timesMap = new Map<string, number>()
 
@@ -77,7 +77,7 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
   const analysis = classifyTokens(ctx, filesMap)
   const classifyMs = performance.now() - start
 
-  return Object.assign(
+  const details = Object.assign(
     {
       duration: {
         classify: classifyMs,
@@ -108,11 +108,22 @@ export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
               normal: filesize(Buffer.byteLength(lightningCss, 'utf-8')),
               minified: filesize(Buffer.byteLength(lightningCssMinifiedCss, 'utf-8')),
             }
-          : 'Already using lightningcss',
+          : undefined,
       },
     },
-    analysis,
-  )
+    analysis.details,
+  ) satisfies ReportSnapshot['details']
+
+  const { globalCss, ...config } = ctx.config
+
+  return {
+    schemaVersion: version,
+    details,
+    propByIndex: analysis.propById,
+    componentByIndex: analysis.componentById,
+    derived: analysis.derived,
+    config,
+  }
 }
 
 const analyzeResultSerializer = (_key: string, value: any) => {
@@ -127,26 +138,9 @@ const analyzeResultSerializer = (_key: string, value: any) => {
   return value
 }
 
-export const writeAnalyzeJSON = (filePath: string, result: ReturnType<typeof analyzeTokens>, ctx: PandaContext) => {
+export const writeAnalyzeJSON = (filePath: string, result: ReportSnapshot, ctx: PandaContext) => {
   const dirname = ctx.runtime.path.dirname(filePath)
   ctx.runtime.fs.ensureDirSync(dirname)
 
-  return writeFile(
-    filePath,
-    JSON.stringify(
-      Object.assign(result, {
-        schemaVersion: version,
-        config: {
-          cwd: ctx.config.cwd,
-          theme: ctx.config.theme,
-          utilities: ctx.config.utilities,
-          patterns: ctx.config.patterns,
-          conditions: ctx.config.conditions,
-          shorthands: ctx.utility.shorthands,
-        },
-      }),
-      analyzeResultSerializer,
-      2,
-    ),
-  )
+  return writeFile(filePath, JSON.stringify(result, analyzeResultSerializer, 2))
 }

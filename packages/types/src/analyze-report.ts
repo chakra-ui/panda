@@ -1,7 +1,17 @@
-import type { BoxNode } from '@pandacss/extractor'
 import type { Config } from './config'
 
-export type ReportItemType = 'object' | 'cva' | 'pattern' | 'recipe' | 'jsx' | 'jsx-factory'
+export type ReportItemType =
+  | 'css'
+  | 'cva'
+  | 'sva'
+  | 'pattern'
+  | 'recipe'
+  | 'jsx-factory'
+  | 'jsx-pattern'
+  | 'jsx-recipe'
+  | 'jsx'
+
+type ComponentKind = 'component' | 'function'
 
 type Range = {
   startPosition: number
@@ -12,44 +22,49 @@ type Range = {
   endColumn: number
 }
 
-export interface ReportItem {
-  id: number
-  from: string
-  type: ReportItemType
-  filepath: string
-  kind: 'function' | 'component'
+export interface PropertyReportItem {
+  index: string
+  componentIndex: ComponentReportItem['componentIndex']
+  reportItemKind: 'token' | 'utility'
+
   path: string[]
-  propName: string
   conditionName?: string | undefined
-  value: string | number | true
-  category: string
-  isKnown: boolean
+  propName: string
+  value: string | number | boolean
+
+  tokenType?: string
+  isKnownValue: boolean
+
   range: Range
+  filepath: string
 }
 
 /**
- * An instance is either a component usage or a function usage
- * @example an instance name could be 'Button', 'css', 'panda.div', 'vstack', ...
+ * An component is either a component usage or a function usage
+ * @example an component name could be 'Button', 'css', 'panda.div', 'vstack', ...
  */
-export interface ReportInstanceItem extends Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> {
-  instanceId: number
-  contains: Array<ReportItem['id']>
+export interface ComponentReportItem extends Pick<PropertyReportItem, 'filepath'> {
+  name: string
+  reportItemType: ReportItemType
+  kind: ComponentKind
+  componentIndex: string
+  contains: Array<PropertyReportItem['index']>
   value: Record<string, any>
   range: Range
 }
 
-export interface ReportMaps {
-  byInstanceOfKind: Map<'function' | 'component', Set<ReportInstanceItem['instanceId']>>
-  byPropertyName: Map<string, Set<ReportItem['id']>>
-  byCategory: Map<string, Set<ReportItem['id']>>
-  byConditionName: Map<string, Set<ReportItem['id']>>
-  byShorthand: Map<string, Set<ReportItem['id']>>
-  byTokenName: Map<string, Set<ReportItem['id']>>
-  byPropertyPath: Map<string, Set<ReportItem['id']>>
-  fromKind: Map<'function' | 'component', Set<ReportItem['id']>>
-  byType: Map<string, Set<ReportItem['id']>>
-  byInstanceName: Map<string, Set<ReportItem['id']>>
-  colorsUsed: Map<string, Set<ReportItem['id']>>
+export interface ReportDerivedMaps {
+  byComponentOfKind: Map<ComponentKind, Set<ComponentReportItem['componentIndex']>>
+  byPropertyName: Map<string, Set<PropertyReportItem['index']>>
+  byTokenType: Map<string, Set<PropertyReportItem['index']>>
+  byConditionName: Map<string, Set<PropertyReportItem['index']>>
+  byShorthand: Map<string, Set<PropertyReportItem['index']>>
+  byTokenName: Map<string, Set<PropertyReportItem['index']>>
+  byPropertyPath: Map<string, Set<PropertyReportItem['index']>>
+  fromKind: Map<ComponentKind, Set<PropertyReportItem['index']>>
+  byType: Map<string, Set<PropertyReportItem['index']>>
+  byComponentName: Map<string, Set<PropertyReportItem['index']>>
+  colorsUsed: Map<string, Set<PropertyReportItem['index']>>
 }
 
 export interface ReportCounts {
@@ -59,9 +74,9 @@ export interface ReportCounts {
   shorthandUsed: number
   propertyPathUsed: number
   typeUsed: number
-  instanceNameUsed: number
+  componentNameUsed: number
   kindUsed: number
-  instanceOfKindUsed: number
+  componentOfKindUsed: number
   colorsUsed: number
 }
 
@@ -70,8 +85,7 @@ export interface MostUsedItem {
   count: number
 }
 export interface ReportStats {
-  filesWithMostInstance: Record<string, number>
-  filesWithMostPropValueCombinations: Record<string, number>
+  filesWithMostComponent: Record<string, number>
   mostUseds: {
     propNames: Array<MostUsedItem>
     tokens: Array<MostUsedItem>
@@ -80,9 +94,9 @@ export interface ReportStats {
     conditions: Array<MostUsedItem>
     propertyPaths: Array<MostUsedItem>
     types: Array<MostUsedItem>
-    instanceNames: Array<MostUsedItem>
+    componentNames: Array<MostUsedItem>
     fromKinds: Array<MostUsedItem>
-    instanceOfKinds: Array<MostUsedItem>
+    componentOfKinds: Array<MostUsedItem>
     colors: Array<MostUsedItem>
   }
 }
@@ -90,13 +104,15 @@ export interface ReportStats {
 export interface ReportDetails {
   counts: ReportCounts
   stats: ReportStats
-  details: {
-    byId: Map<ReportItem['id'], ReportItem>
-    byInstanceId: Map<ReportInstanceItem['instanceId'], ReportInstanceItem>
-    byFilepath: Map<string, Set<ReportItem['id']>>
-    byInstanceInFilepath: Map<string, Set<ReportInstanceItem['instanceId']>>
-    globalMaps: ReportMaps
-    byFilePathMaps: Map<string, ReportMaps>
+  fileSizes: FileSizes
+  duration: {
+    classify: number
+    cssMs: number
+    cssMinifyMs: number
+    extractTotal: number
+    extractTimeByFiles: Record<string, number>
+    lightningCssMs?: number
+    lightningCssMinifiedMs?: number
   }
 }
 
@@ -107,66 +123,50 @@ interface FileSizes {
     normal: string
     minified: string
   }
-}
-
-export interface AnalysisReport extends ReportDetails {
-  fileSizes: FileSizes
-}
-
-interface ReportMapsJSON {
-  byInstanceOfKind: Record<'function' | 'component', Array<ReportInstanceItem['instanceId']>>
-  byPropertyName: Record<string, Array<ReportItem['id']>>
-  byCategory: Record<string, Array<ReportItem['id']>>
-  byConditionName: Record<string, Array<ReportItem['id']>>
-  byShorthand: Record<string, Array<ReportItem['id']>>
-  byTokenName: Record<string, Array<ReportItem['id']>>
-  byPropertyPath: Record<string, Array<ReportItem['id']>>
-  fromKind: Record<'function' | 'component', Array<ReportItem['id']>>
-  byType: Record<string, Array<ReportItem['id']>>
-  byInstanceName: Record<string, Array<ReportItem['id']>>
-  colorsUsed: Record<string, Array<ReportItem['id']>>
-}
-
-export interface ReportItemJSON {
-  id: number
-  from: string
-  type: ReportItemType
-  filepath: string
-  kind: 'function' | 'component'
-  path: string[]
-  propName: string
-  conditionName?: string | undefined
-  value: string | number | true
-  category: string
-  isKnown: boolean
-  range: Range
-}
-
-export interface ReportInstanceItemJSON extends Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> {
-  instanceId: number
-  contains: Array<ReportItem['id']>
-  value: Record<string, any>
-  range: Range
-}
-
-export interface AnalysisReportJSON {
-  counts: ReportCounts
-  stats: ReportStats
-  details: {
-    byId: Record<ReportItemJSON['id'], ReportItemJSON>
-    byInstanceId: Record<ReportInstanceItemJSON['instanceId'], ReportInstanceItemJSON>
-    byFilepath: Record<string, Array<ReportItemJSON['id']>>
-    byInstanceInFilepath: Record<string, Array<ReportInstanceItemJSON['instanceId']>>
-    globalMaps: ReportMapsJSON
-    byFilePathMaps: Record<string, ReportMapsJSON>
+  lightningCss?: {
+    normal: string
+    minified: string
   }
-  fileSizes: FileSizes
-  config: {
-    cwd: Config['cwd']
-    theme: Config['theme']
-    utilities: Config['utilities']
-    patterns: Config['patterns']
-    conditions: Config['conditions']
-    shorthands: Record<string, string>
+}
+
+export interface ReportSnapshot {
+  schemaVersion: string
+  details: ReportDetails
+  config: Omit<Config, 'globalCss'>
+
+  propByIndex: Map<PropertyReportItem['index'], PropertyReportItem>
+  componentByIndex: Map<ComponentReportItem['componentIndex'], ComponentReportItem>
+
+  derived: {
+    byFilepath: Map<string, Set<PropertyReportItem['index']>>
+    byComponentInFilepath: Map<string, Set<ComponentReportItem['componentIndex']>>
+    globalMaps: ReportDerivedMaps
+    byFilePathMaps: Map<string, ReportDerivedMaps>
+  }
+}
+
+interface ReportDerivedMapsJSON {
+  byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem['componentIndex']>>
+  byPropertyName: Record<string, Array<PropertyReportItem['index']>>
+  byTokenType: Record<string, Array<PropertyReportItem['index']>>
+  byConditionName: Record<string, Array<PropertyReportItem['index']>>
+  byShorthand: Record<string, Array<PropertyReportItem['index']>>
+  byTokenName: Record<string, Array<PropertyReportItem['index']>>
+  byPropertyPath: Record<string, Array<PropertyReportItem['index']>>
+  fromKind: Record<ComponentKind, Array<PropertyReportItem['index']>>
+  byType: Record<string, Array<PropertyReportItem['index']>>
+  byComponentName: Record<string, Array<PropertyReportItem['index']>>
+  colorsUsed: Record<string, Array<PropertyReportItem['index']>>
+}
+
+export interface ReportSnapshotJSON extends Omit<ReportSnapshot, 'propByIndex' | 'componentByIndex' | 'derived'> {
+  propByIndex: Record<PropertyReportItem['index'], PropertyReportItem>
+  componentByIndex: Record<ComponentReportItem['componentIndex'], ComponentReportItem>
+
+  derived: {
+    byFilepath: Record<string, Array<PropertyReportItem['index']>>
+    byComponentInFilepath: Record<string, Array<ComponentReportItem['componentIndex']>>
+    globalMaps: ReportDerivedMapsJSON
+    byFilePathMaps: Record<string, ReportDerivedMapsJSON>
   }
 }
