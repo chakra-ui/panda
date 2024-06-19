@@ -23,6 +23,7 @@ const categories = [
   'easings',
   'animations',
   'blurs',
+  'dropShadows',
   'gradients',
   'breakpoints',
   'assets',
