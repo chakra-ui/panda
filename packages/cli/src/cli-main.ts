@@ -391,7 +391,7 @@ export async function main() {
         return
       }
 
-      logger.info('cli', `Found ${result.propById.size} token used in ${result.derived.byFilePathMaps.size} files`)
+      logger.info('cli', `Found ${result.propByIndex.size} token used in ${result.derived.byFilePathMaps.size} files`)
     })
 
   cli

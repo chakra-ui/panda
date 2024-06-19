@@ -1,12 +1,12 @@
 import { logger } from '@pandacss/logger'
-import type { ParserResultInterface, ReportSnapshot, ReportSnapshotJSON } from '@pandacss/types'
+import type { ParserResultInterface, ReportSnapshot } from '@pandacss/types'
 import { filesize } from 'filesize'
 import { writeFile } from 'fs/promises'
 import path from 'node:path'
 import zlib from 'zlib'
+import { version } from '../package.json'
 import { classifyTokens } from './classify'
 import type { PandaContext } from './create-context'
-import { version } from '../package.json'
 
 const gzipSizeSync = (code: string | Buffer) => zlib.gzipSync(code, { level: zlib.constants.Z_BEST_COMPRESSION }).length
 
