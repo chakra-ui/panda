@@ -59,7 +59,7 @@ test('transform / shadow', () => {
           "sm",
         ],
         "type": "dropShadow",
-        "value": "4px 10px 4px #ff0000",
+        "value": "drop-shadow(4px 10px 4px #ff0000)",
       },
       Token {
         "deprecated": undefined,

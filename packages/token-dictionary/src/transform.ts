@@ -146,7 +146,7 @@ export const transformDropShadow: TokenTransformer = {
 
     if (isCompositeDropShadow(token.value)) {
       const { offsetX, offsetY, blur, color } = token.value
-      return `${offsetX}px ${offsetY}px ${blur}px ${color}`
+      return `drop-shadow(${offsetX}px ${offsetY}px ${blur}px ${color})`
     }
 
     return token.value
