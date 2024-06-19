@@ -39,7 +39,7 @@ export interface StudioCommandFlags extends Pick<Config, 'cwd'> {
 
 export interface AnalyzeCommandFlags {
   silent?: boolean
-  json?: string
+  outfile?: string
   cwd?: string
   config?: string
 }
