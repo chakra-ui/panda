@@ -66,7 +66,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
     }
 
     if (componentReportItem.reportItemType === 'pattern') {
-      const pattern = ctx.patterns.getConfig(componentReportItem.name.toLowerCase())
+      const pattern = ctx.patterns.getConfig(componentReportItem.componentName.toLowerCase())
       const patternProp = pattern?.properties?.[propName]
       if (!patternProp) return false
 
@@ -105,7 +105,8 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
     }
 
     const processMap = (map: BoxNodeMap, current: string[], componentReportItem: ComponentReportItem) => {
-      const { name, reportItemType: type, kind } = componentReportItem
+      const { reportItemType: type, kind } = componentReportItem
+      const name = componentReportItem.componentName
 
       map.value.forEach((attrNode, attrName) => {
         if (box.isLiteral(attrNode) || box.isEmptyInitializer(attrNode)) {
@@ -113,10 +114,9 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
           const propReportItem = {
             index: String(id++),
             componentIndex: String(componentReportItem.componentIndex),
-            componentName: componentReportItem.name,
+            componentName: name,
             tokenType: undefined,
             propName: attrName,
-            name: name,
             reportItemKind: 'utility',
             reportItemType: type,
             kind,
@@ -228,7 +228,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
 
       const componentReportItem = {
         componentIndex: String(componentIndex++),
-        name: item.name!,
+        componentName: item.name!,
         reportItemType: item.type!,
         kind,
         filepath,

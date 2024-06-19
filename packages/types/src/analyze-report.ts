@@ -25,7 +25,7 @@ type Range = {
 export interface PropertyReportItem {
   index: string
   componentIndex: ComponentReportItem['componentIndex']
-  componentName: ComponentReportItem['name']
+  componentName: ComponentReportItem['componentName']
   reportItemKind: 'token' | 'utility'
 
   path: string[]
@@ -45,10 +45,10 @@ export interface PropertyReportItem {
  * @example an component name could be 'Button', 'css', 'panda.div', 'vstack', ...
  */
 export interface ComponentReportItem extends Pick<PropertyReportItem, 'filepath'> {
-  name: string
+  componentIndex: string
+  componentName: string
   reportItemType: ReportItemType
   kind: ComponentKind
-  componentIndex: string
   contains: Array<PropertyReportItem['index']>
   value: Record<string, any>
   range: Range
