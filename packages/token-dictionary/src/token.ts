@@ -240,4 +240,5 @@ const TOKEN_TYPES = {
   components: 'cti',
   assets: 'asset',
   aspectRatios: 'aspectRatio',
+  dropShadows: 'dropShadow',
 }

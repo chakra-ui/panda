@@ -2,7 +2,7 @@ import { isString } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
 import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
-import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-composite'
+import { isCompositeBorder, isCompositeDropShadow, isCompositeGradient, isCompositeShadow } from './is-composite'
 import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
 import { expandReferences, getReferences } from './utils'
@@ -125,6 +125,31 @@ export const transformAssets: TokenTransformer = {
       .with({ type: 'url' }, ({ value }) => `url("${value}")`)
       .with({ type: 'svg' }, ({ value }) => `url("${svgToDataUri(value)}")`)
       .exhaustive()
+  },
+}
+
+/* -----------------------------------------------------------------------------
+ * DropShadow token transform
+ * -----------------------------------------------------------------------------*/
+
+export const transformDropShadow: TokenTransformer = {
+  name: 'tokens/dropShadow',
+  match: (token) => token.extensions.category === 'dropShadows',
+  transform(token, dict) {
+    if (isString(token.value)) {
+      return token.value
+    }
+
+    if (Array.isArray(token.value)) {
+      return token.value.map((value) => this.transform({ value } as Token, dict)).join(', ')
+    }
+
+    if (isCompositeDropShadow(token.value)) {
+      const { offsetX, offsetY, blur, color } = token.value
+      return `${offsetX}px ${offsetY}px ${blur}px ${color}`
+    }
+
+    return token.value
   },
 }
 
@@ -353,6 +378,7 @@ export const transforms = [
   transformEasings,
   transformBorders,
   transformAssets,
+  transformDropShadow,
   addCssVariables,
   transformColorMix, // depends on `addCssVariables`
   addConditionalCssVariables,

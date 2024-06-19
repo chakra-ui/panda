@@ -32,6 +32,13 @@ export const isCompositeAsset = isMatching({
   value: P.string,
 })
 
+export const isCompositeDropShadow = isMatching({
+  offsetX: P.number,
+  offsetY: P.number,
+  blur: P.number,
+  color: P.string,
+})
+
 export const isCompositeTokenValue = (value: any) => {
   return (
     isCompositeGradient(value) ||
