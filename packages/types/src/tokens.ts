@@ -66,6 +66,13 @@ export interface Asset {
   value: string
 }
 
+export interface DropShadow {
+  offsetX: number
+  offsetY: number
+  blur: number
+  color: string
+}
+
 export interface TokenDataTypes {
   zIndex: string | number
   opacity: string | number
@@ -84,6 +91,7 @@ export interface TokenDataTypes {
   easings: string | number[]
   animations: string
   blurs: string
+  dropShadows: DropShadow | DropShadow[] | string | string[]
   gradients: string | Gradient
   assets: string | Asset
   borderWidths: string
