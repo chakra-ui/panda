@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { transformDropShadow } from '../src/transform'
 
-test('transform / shadow', () => {
+test('transform / dropShadow', () => {
   const dictionary = new TokenDictionary({
     tokens: {
       colors: {
