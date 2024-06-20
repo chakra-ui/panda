@@ -91,12 +91,19 @@ export interface TokenDataTypes {
   containerNames: string
 }
 
+export type DefaultTokenCategory = keyof TokenDataTypes
+export type TokenCategory = DefaultTokenCategory | (string & {})
+
+type UnknownTokenTypeValue = string | number | Record<string, any>
+
 export type Tokens = {
-  [key in keyof TokenDataTypes]?: Recursive<Token<TokenDataTypes[key]>>
+  [key in TokenCategory]?: Recursive<
+    Token<key extends DefaultTokenCategory ? TokenDataTypes[key] : UnknownTokenTypeValue>
+  >
 }
 
 export type SemanticTokens<ConditionKey extends string = string> = {
-  [key in keyof TokenDataTypes]?: Recursive<SemanticToken<TokenDataTypes[key], ConditionKey>>
+  [key in TokenCategory]?: Recursive<
+    SemanticToken<key extends DefaultTokenCategory ? TokenDataTypes[key] : UnknownTokenTypeValue, ConditionKey>
+  >
 }
-
-export type TokenCategory = keyof TokenDataTypes

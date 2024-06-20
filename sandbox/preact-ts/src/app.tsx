@@ -1,6 +1,6 @@
-import { css } from 'styled-system/css'
-import { stack } from 'styled-system/patterns'
-import { btn } from 'styled-system/recipes'
+import { css } from '../styled-system/css'
+import { stack } from '../styled-system/patterns'
+import { btn } from '../styled-system/recipes'
 
 export const App = () => {
   return (
@@ -10,6 +10,7 @@ export const App = () => {
       </div>
       <div className={css({ color: 'yellow' })}></div>
       <div className={btn()}>aaaa Click me</div>
+      <div className={css({ filter: 'blurry' })}>blurry</div>
     </>
   )
 }

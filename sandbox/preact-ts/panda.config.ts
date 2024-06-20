@@ -15,11 +15,23 @@ export default defineConfig({
       },
     },
   },
+  utilities: {
+    extend: {
+      filter: {
+        values: 'filters',
+      },
+    },
+  },
   theme: {
     extend: {
       tokens: {
         colors: {
-          aaa: { value: 'azaz23' },
+          foreground: { value: '#ebdbb2' },
+        },
+        filters: {
+          blurry: {
+            value: 'blur(5px)',
+          },
         },
       },
       recipes: {

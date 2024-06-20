@@ -3887,4 +3887,57 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('unknown token type', () => {
+    const code = `
+    import { css } from 'styled-system/css'
+
+    export const App = () => {
+      return (
+          <div className={css({
+            filter: 'blurry'
+          })}>blurry</div>
+      )
+    }
+     `
+    const result = parseAndExtract(code, {
+      utilities: {
+        extend: {
+          filter: {
+            values: 'filters',
+          },
+        },
+      },
+      theme: {
+        tokens: {
+          filters: {
+            blurry: {
+              value: 'blur(5px)',
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "filter": "blurry",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .filter_blurry {
+          filter: var(--filters-blurry);
+      }
+      }"
+    `)
+  })
 })
