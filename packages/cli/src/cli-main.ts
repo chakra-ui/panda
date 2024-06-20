@@ -360,7 +360,7 @@ export async function main() {
 
   cli
     .command('analyze [glob]', 'Analyze design token usage in glob')
-    .option('--json [filepath]', 'Output analyze report in JSON')
+    .option('--outfile [filepath]', 'Output analyze report in JSON')
     .option('--silent', "Don't print any logs")
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
@@ -385,13 +385,13 @@ export async function main() {
         },
       })
 
-      if (flags?.json && typeof flags.json === 'string') {
-        await writeAnalyzeJSON(flags.json, result, ctx)
-        logger.info('cli', `JSON report saved to ${flags.json}`)
+      if (flags?.outfile && typeof flags.outfile === 'string') {
+        await writeAnalyzeJSON(flags.outfile, result, ctx)
+        logger.info('cli', `JSON report saved to ${resolve(flags.outfile)}`)
         return
       }
 
-      logger.info('cli', `Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`)
+      logger.info('cli', `Found ${result.propByIndex.size} token used in ${result.derived.byFilePathMaps.size} files`)
     })
 
   cli
