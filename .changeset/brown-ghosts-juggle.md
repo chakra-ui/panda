@@ -14,14 +14,16 @@ export default defineConfig({
   theme: {
     extend: {
       tokens: {
-        filters: { // ✅ this is now allowed !
+        filters: {
+          // ✅ this is now allowed !
           blurry: {
             value: 'blur(5px)',
           },
         },
       },
+    },
   },
-   utilities: {
+  utilities: {
     extend: {
       filter: {
         values: 'filters', // ✅ you can reference your own TokenCategory here

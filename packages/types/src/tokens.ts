@@ -94,7 +94,7 @@ export interface TokenDataTypes {
 export type DefaultTokenCategory = keyof TokenDataTypes
 export type TokenCategory = DefaultTokenCategory | (string & {})
 
-type UnknownTokenTypeValue = string | number | Record<string, any>
+type UnknownTokenTypeValue = string | number
 
 export type Tokens = {
   [key in TokenCategory]?: Recursive<
