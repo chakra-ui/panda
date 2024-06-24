@@ -963,11 +963,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/cli
       gatsby:
-        specifier: 5.13.5
-        version: 5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
+        specifier: 5.13.6
+        version: 5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
       gatsby-plugin-postcss:
         specifier: 6.13.1
-        version: 6.13.1(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(postcss@8.4.38)(typescript@5.3.3)(webpack@5.91.0(@swc/core@1.4.0)(esbuild@0.19.12))
+        version: 6.13.1(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(postcss@8.4.38)(typescript@5.3.3)(webpack@5.91.0(@swc/core@1.4.0)(esbuild@0.19.12))
       postcss:
         specifier: 8.4.38
         version: 8.4.38
@@ -1049,7 +1049,7 @@ importers:
         version: link:../../packages/cli
       nuxt:
         specifier: 3.10.2
-        version: 3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
+        version: 3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.1.1(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
       postcss:
         specifier: 8.4.38
         version: 8.4.38
@@ -3534,10 +3534,12 @@ packages:
   '@humanwhocodes/config-array@0.11.13':
     resolution: {integrity: sha512-JSBDMiDKSzQVngfRjOdFXgFfklaXI4K9nLF49Auh21lmBWRLIK3+xTErTWD4KU54pb6coM6ESE7Awz/FNU3zgQ==}
     engines: {node: '>=10.10.0'}
+    deprecated: Use @eslint/config-array instead
 
   '@humanwhocodes/config-array@0.5.0':
     resolution: {integrity: sha512-FagtKFz74XrTl7y6HCzQpwDfXP0yhxe9lHLD1UZxjvZIcbyRz8zTFF/yYNfSfzU414eDwZ1SrO0Qvtyf+wFMQg==}
     engines: {node: '>=10.10.0'}
+    deprecated: Use @eslint/config-array instead
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -3545,9 +3547,11 @@ packages:
 
   '@humanwhocodes/object-schema@1.2.1':
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
+    deprecated: Use @eslint/object-schema instead
 
   '@humanwhocodes/object-schema@2.0.3':
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
+    deprecated: Use @eslint/object-schema instead
 
   '@img/sharp-darwin-arm64@0.33.2':
     resolution: {integrity: sha512-itHBs1rPmsmGF9p4qRe++CzCgd+kFYktnsoR1sbIAfsRMrJZau0Tt1AH9KVnufc2/tU02Gf6Ibujx+15qRE03w==}
@@ -9457,8 +9461,8 @@ packages:
     resolution: {integrity: sha512-CEm+5M2+3PzPcqTaJ0xjNuorQ3d1PfnKG1yqRRPfw8LFdPiycGhZAug/jqx0iTyVWXFHakEmddlykGFEbq54/Q==}
     engines: {node: '>=18.0.0'}
 
-  gatsby@5.13.5:
-    resolution: {integrity: sha512-H6tfNlZxy4Tjan9DHtDSkrSw3crhfdFSkvOYcKL2JOBDjK2YStvDQhgETbnsA3JWDxpbxQaHhupd9QUYV/sKlA==}
+  gatsby@5.13.6:
+    resolution: {integrity: sha512-WsjhhqMkzCH03aLcP6xsxN08PpLrOjvCivjl6hZCVwxGDw9vz+zK8yFSjPzq2TL5hA4lbQc6bdJaMvaads/DuA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -18969,17 +18973,6 @@ snapshots:
       - rollup
       - supports-color
 
-  '@nuxt/devtools-kit@1.0.8(nuxt@3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(rollup@4.14.1)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))':
-    dependencies:
-      '@nuxt/kit': 3.10.2(rollup@4.14.1)
-      '@nuxt/schema': 3.10.2(rollup@4.14.1)
-      execa: 7.2.0
-      nuxt: 3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
-      vite: 5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
-
   '@nuxt/devtools-wizard@1.0.8':
     dependencies:
       consola: 3.2.3
@@ -19029,51 +19022,6 @@ snapshots:
       vite: 5.1.1(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)
       vite-plugin-inspect: 0.8.3(@nuxt/kit@3.10.2(rollup@4.14.1))(rollup@4.14.1)(vite@5.1.1(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
       vite-plugin-vue-inspector: 4.0.2(vite@5.1.1(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
-      which: 3.0.1
-      ws: 8.16.0
-    transitivePeerDependencies:
-      - bluebird
-      - bufferutil
-      - rollup
-      - supports-color
-      - utf-8-validate
-
-  '@nuxt/devtools@1.0.8(nuxt@3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(rollup@4.14.1)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))':
-    dependencies:
-      '@antfu/utils': 0.7.7
-      '@nuxt/devtools-kit': 1.0.8(nuxt@3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(rollup@4.14.1)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
-      '@nuxt/devtools-wizard': 1.0.8
-      '@nuxt/kit': 3.10.2(rollup@4.14.1)
-      birpc: 0.2.15
-      consola: 3.2.3
-      destr: 2.0.2
-      error-stack-parser-es: 0.1.1
-      execa: 7.2.0
-      fast-glob: 3.3.2
-      flatted: 3.3.1
-      get-port-please: 3.1.2
-      hookable: 5.5.3
-      image-meta: 0.2.0
-      is-installed-globally: 1.0.0
-      launch-editor: 2.6.1
-      local-pkg: 0.5.0
-      magicast: 0.3.3
-      nuxt: 3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
-      nypm: 0.3.6
-      ohash: 1.1.3
-      pacote: 17.0.6
-      pathe: 1.1.2
-      perfect-debounce: 1.0.0
-      pkg-types: 1.0.3
-      rc9: 2.1.1
-      scule: 1.3.0
-      semver: 7.6.0
-      simple-git: 3.22.0
-      sirv: 2.0.4
-      unimport: 3.7.1(rollup@4.14.1)
-      vite: 5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)
-      vite-plugin-inspect: 0.8.3(@nuxt/kit@3.10.2(rollup@4.14.1))(rollup@4.14.1)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
-      vite-plugin-vue-inspector: 4.0.2(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
       which: 3.0.1
       ws: 8.16.0
     transitivePeerDependencies:
@@ -23691,12 +23639,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-plugin-remove-graphql-queries@5.13.1(@babel/core@7.23.9)(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)):
+  babel-plugin-remove-graphql-queries@5.13.1(@babel/core@7.23.9)(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)):
     dependencies:
       '@babel/core': 7.23.9
       '@babel/runtime': 7.24.4
       '@babel/types': 7.24.0
-      gatsby: 5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
+      gatsby: 5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
       gatsby-core-utils: 4.13.1
 
   babel-plugin-syntax-trailing-function-commas@7.0.0-beta.0: {}
@@ -25940,7 +25888,7 @@ snapshots:
 
   eslint-plugin-jsx-a11y@6.8.0(eslint@7.32.0):
     dependencies:
-      '@babel/runtime': 7.23.8
+      '@babel/runtime': 7.24.4
       aria-query: 5.3.0
       array-includes: 3.1.7
       array.prototype.flatmap: 1.3.2
@@ -26795,7 +26743,7 @@ snapshots:
       '@parcel/transformer-js': 2.8.3(@parcel/core@2.8.3)
       '@parcel/transformer-json': 2.8.3(@parcel/core@2.8.3)
 
-  gatsby-plugin-page-creator@5.13.1(encoding@0.1.13)(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1):
+  gatsby-plugin-page-creator@5.13.1(encoding@0.1.13)(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1):
     dependencies:
       '@babel/runtime': 7.24.4
       '@babel/traverse': 7.24.1
@@ -26803,10 +26751,10 @@ snapshots:
       chokidar: 3.6.0
       fs-exists-cached: 1.0.0
       fs-extra: 11.2.0
-      gatsby: 5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
+      gatsby: 5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
       gatsby-core-utils: 4.13.1
       gatsby-page-utils: 3.13.1
-      gatsby-plugin-utils: 4.13.1(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1)
+      gatsby-plugin-utils: 4.13.1(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1)
       gatsby-telemetry: 4.13.1(encoding@0.1.13)
       globby: 11.1.0
       lodash: 4.17.21
@@ -26815,17 +26763,17 @@ snapshots:
       - graphql
       - supports-color
 
-  gatsby-plugin-postcss@6.13.1(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(postcss@8.4.38)(typescript@5.3.3)(webpack@5.91.0(@swc/core@1.4.0)(esbuild@0.19.12)):
+  gatsby-plugin-postcss@6.13.1(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(postcss@8.4.38)(typescript@5.3.3)(webpack@5.91.0(@swc/core@1.4.0)(esbuild@0.19.12)):
     dependencies:
       '@babel/runtime': 7.23.8
-      gatsby: 5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
+      gatsby: 5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
       postcss: 8.4.38
       postcss-loader: 7.3.4(postcss@8.4.38)(typescript@5.3.3)(webpack@5.91.0(@swc/core@1.4.0)(esbuild@0.19.12))
     transitivePeerDependencies:
       - typescript
       - webpack
 
-  gatsby-plugin-typescript@5.13.1(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)):
+  gatsby-plugin-typescript@5.13.1(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)):
     dependencies:
       '@babel/core': 7.23.9
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.23.9)
@@ -26833,17 +26781,17 @@ snapshots:
       '@babel/plugin-proposal-optional-chaining': 7.21.0(@babel/core@7.23.9)
       '@babel/preset-typescript': 7.23.3(@babel/core@7.23.9)
       '@babel/runtime': 7.24.4
-      babel-plugin-remove-graphql-queries: 5.13.1(@babel/core@7.23.9)(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))
-      gatsby: 5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
+      babel-plugin-remove-graphql-queries: 5.13.1(@babel/core@7.23.9)(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))
+      gatsby: 5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
     transitivePeerDependencies:
       - supports-color
 
-  gatsby-plugin-utils@4.13.1(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1):
+  gatsby-plugin-utils@4.13.1(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1):
     dependencies:
       '@babel/runtime': 7.24.4
       fastq: 1.17.1
       fs-extra: 11.2.0
-      gatsby: 5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
+      gatsby: 5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3)
       gatsby-core-utils: 4.13.1
       gatsby-sharp: 1.13.0
       graphql: 16.8.1
@@ -26896,7 +26844,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3):
+  gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3):
     dependencies:
       '@babel/code-frame': 7.24.2
       '@babel/core': 7.23.9
@@ -26936,7 +26884,7 @@ snapshots:
       babel-loader: 8.3.0(@babel/core@7.23.9)(webpack@5.91.0(@swc/core@1.4.0)(esbuild@0.19.12))
       babel-plugin-add-module-exports: 1.0.4
       babel-plugin-dynamic-import-node: 2.3.3
-      babel-plugin-remove-graphql-queries: 5.13.1(@babel/core@7.23.9)(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))
+      babel-plugin-remove-graphql-queries: 5.13.1(@babel/core@7.23.9)(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))
       babel-preset-gatsby: 3.13.2(@babel/core@7.23.9)(core-js@3.36.0)
       better-opn: 2.1.1
       bluebird: 3.7.2
@@ -26986,9 +26934,9 @@ snapshots:
       gatsby-link: 5.13.1(@gatsbyjs/reach-router@2.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       gatsby-page-utils: 3.13.1
       gatsby-parcel-config: 1.13.1(@parcel/core@2.8.3)
-      gatsby-plugin-page-creator: 5.13.1(encoding@0.1.13)(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1)
-      gatsby-plugin-typescript: 5.13.1(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))
-      gatsby-plugin-utils: 4.13.1(gatsby@5.13.5(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1)
+      gatsby-plugin-page-creator: 5.13.1(encoding@0.1.13)(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1)
+      gatsby-plugin-typescript: 5.13.1(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))
+      gatsby-plugin-utils: 4.13.1(gatsby@5.13.6(@swc/core@1.4.0)(babel-eslint@10.1.0(eslint@7.32.0))(encoding@0.1.13)(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@3.13.1)(typescript@5.3.3)(webpack-hot-middleware@2.25.3))(graphql@16.8.1)
       gatsby-react-router-scroll: 6.13.1(@gatsbyjs/reach-router@2.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       gatsby-script: 2.13.0(@gatsbyjs/reach-router@2.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       gatsby-telemetry: 4.13.1(encoding@0.1.13)
@@ -30385,102 +30333,6 @@ snapshots:
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/devtools': 1.0.8(nuxt@3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.1.1(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(rollup@4.14.1)(vite@5.1.1(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
-      '@nuxt/kit': 3.10.2(rollup@4.14.1)
-      '@nuxt/schema': 3.10.2(rollup@4.14.1)
-      '@nuxt/telemetry': 2.5.3(rollup@4.14.1)
-      '@nuxt/ui-templates': 1.3.1
-      '@nuxt/vite-builder': 3.10.2(@types/node@20.12.7)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vue@3.4.19(typescript@5.3.3))
-      '@unhead/dom': 1.8.10
-      '@unhead/ssr': 1.8.10
-      '@unhead/vue': 1.8.10(vue@3.4.19(typescript@5.3.3))
-      '@vue/shared': 3.4.19
-      acorn: 8.11.3
-      c12: 1.8.0
-      chokidar: 3.6.0
-      cookie-es: 1.0.0
-      defu: 6.1.4
-      destr: 2.0.2
-      devalue: 4.3.2
-      esbuild: 0.20.0
-      escape-string-regexp: 5.0.0
-      estree-walker: 3.0.3
-      fs-extra: 11.2.0
-      globby: 14.0.1
-      h3: 1.10.1
-      hookable: 5.5.3
-      jiti: 1.21.0
-      klona: 2.0.6
-      knitwork: 1.0.0
-      magic-string: 0.30.10
-      mlly: 1.5.0
-      nitropack: 2.8.1(encoding@0.1.13)
-      nuxi: 3.10.1
-      nypm: 0.3.6
-      ofetch: 1.3.3
-      ohash: 1.1.3
-      pathe: 1.1.2
-      perfect-debounce: 1.0.0
-      pkg-types: 1.0.3
-      radix3: 1.1.0
-      scule: 1.3.0
-      std-env: 3.7.0
-      strip-literal: 2.0.0
-      ufo: 1.4.0
-      ultrahtml: 1.5.2
-      uncrypto: 0.1.3
-      unctx: 2.3.1
-      unenv: 1.9.0
-      unimport: 3.7.1(rollup@4.14.1)
-      unplugin: 1.7.1
-      unplugin-vue-router: 0.7.0(rollup@4.14.1)(vue-router@4.2.5(vue@3.4.19(typescript@5.3.3)))(vue@3.4.19(typescript@5.3.3))
-      untyped: 1.4.2
-      vue: 3.4.19(typescript@5.3.3)
-      vue-bundle-renderer: 2.0.0
-      vue-devtools-stub: 0.1.0
-      vue-router: 4.2.5(vue@3.4.19(typescript@5.3.3))
-    optionalDependencies:
-      '@parcel/watcher': 2.4.0
-      '@types/node': 20.12.7
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - bluebird
-      - bufferutil
-      - encoding
-      - eslint
-      - idb-keyval
-      - less
-      - lightningcss
-      - meow
-      - optionator
-      - rollup
-      - sass
-      - stylelint
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - typescript
-      - utf-8-validate
-      - vite
-      - vls
-      - vti
-      - vue-tsc
-      - xml2js
-
-  nuxt@3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)):
-    dependencies:
-      '@nuxt/devalue': 2.0.2
-      '@nuxt/devtools': 1.0.8(nuxt@3.10.2(@parcel/watcher@2.4.0)(@types/node@20.12.7)(encoding@0.1.13)(eslint@8.56.0)(less@4.2.0)(lightningcss@1.23.0)(optionator@0.9.3)(rollup@4.14.1)(terser@5.30.3)(typescript@5.3.3)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(rollup@4.14.1)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3))
       '@nuxt/kit': 3.10.2(rollup@4.14.1)
       '@nuxt/schema': 3.10.2(rollup@4.14.1)
       '@nuxt/telemetry': 2.5.3(rollup@4.14.1)
@@ -34406,24 +34258,6 @@ snapshots:
       - rollup
       - supports-color
 
-  vite-plugin-inspect@0.8.3(@nuxt/kit@3.10.2(rollup@4.14.1))(rollup@4.14.1)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)):
-    dependencies:
-      '@antfu/utils': 0.7.7
-      '@rollup/pluginutils': 5.1.0(rollup@4.14.1)
-      debug: 4.3.4
-      error-stack-parser-es: 0.1.1
-      fs-extra: 11.2.0
-      open: 10.0.3
-      perfect-debounce: 1.0.0
-      picocolors: 1.0.0
-      sirv: 2.0.4
-      vite: 5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)
-    optionalDependencies:
-      '@nuxt/kit': 3.10.2(rollup@4.14.1)
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
-
   vite-plugin-solid@2.10.1(@testing-library/jest-dom@6.4.2(vitest@1.5.0(@types/node@20.11.30)(happy-dom@13.3.8)(jsdom@24.0.0)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)))(solid-js@1.8.15)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)):
     dependencies:
       '@babel/core': 7.23.9
@@ -34466,21 +34300,6 @@ snapshots:
       kolorist: 1.8.0
       magic-string: 0.30.10
       vite: 5.1.1(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)
-    transitivePeerDependencies:
-      - supports-color
-
-  vite-plugin-vue-inspector@4.0.2(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)):
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/plugin-proposal-decorators': 7.23.9(@babel/core@7.23.9)
-      '@babel/plugin-syntax-import-attributes': 7.23.3(@babel/core@7.23.9)
-      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.23.9)
-      '@babel/plugin-transform-typescript': 7.23.5(@babel/core@7.23.9)
-      '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.23.9)
-      '@vue/compiler-dom': 3.4.19
-      kolorist: 1.8.0
-      magic-string: 0.30.10
-      vite: 5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.23.0)(terser@5.30.3)
     transitivePeerDependencies:
       - supports-color
 
