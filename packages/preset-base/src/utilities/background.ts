@@ -42,7 +42,7 @@ export const background: UtilityConfig = {
   },
   backgroundColor: {
     shorthand: 'bgColor',
-    className: 'bg',
+    className: 'bg-color',
     values: 'colors',
     group: 'Background',
     transform: createColorMixTransform('backgroundColor'),

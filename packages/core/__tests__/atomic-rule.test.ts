@@ -408,7 +408,7 @@ describe('atomic / with direct nesting', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         @media (min-width: 768px) {
-          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg_green {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg-color_green {
             background-color: green;
       }
       }
@@ -474,7 +474,7 @@ describe('atomic / with direct nesting', () => {
           cursor: pointer;
       }
 
-        .bg_red {
+        .bg-color_red {
           background-color: red;
       }
 
@@ -490,7 +490,7 @@ describe('atomic / with direct nesting', () => {
           margin-left: $2;
       }
 
-        .test .\\[\\.test_\\&\\]\\:bg_blue {
+        .test .\\[\\.test_\\&\\]\\:bg-color_blue {
           background-color: blue;
       }
 
@@ -503,13 +503,13 @@ describe('atomic / with direct nesting', () => {
       }
 
         @media (min-width: 768px) {
-          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg_green {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg-color_green {
             background-color: green;
       }
           .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:fs_\\$small {
             font-size: $small;
       }
-          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:\\[\\&\\:hover\\]\\:bg_yellow:hover {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:\\[\\&\\:hover\\]\\:bg-color_yellow:hover {
             background-color: yellow;
       }
       }
@@ -573,19 +573,19 @@ describe('atomic / with direct nesting', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         @supports (display: flex) {
-          .\\[\\@supports_\\(display\\:_flex\\)\\]\\:bg_blue {
+          .\\[\\@supports_\\(display\\:_flex\\)\\]\\:bg-color_blue {
             background-color: blue;
       }
       }
 
         @supports (display: grid) {
-          .\\[\\@supports_\\(display\\:_grid\\)\\]\\:bg_red {
+          .\\[\\@supports_\\(display\\:_grid\\)\\]\\:bg-color_red {
             background-color: red;
       }
       }
 
         @supports not (display: grid) {
-          .\\[\\@supports_not_\\(display\\:_grid\\)\\]\\:bg_green {
+          .\\[\\@supports_not_\\(display\\:_grid\\)\\]\\:bg-color_green {
             background-color: green;
       }
       }

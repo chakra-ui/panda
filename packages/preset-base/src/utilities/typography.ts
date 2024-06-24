@@ -98,7 +98,7 @@ export const typography: UtilityConfig = {
   },
   textShadowColor: {
     shorthand: 'textShadowColor',
-    className: 'text-shadow',
+    className: 'text-shadow-color',
     values: 'colors',
     transform: createColorMixTransform('--text-shadow-color'),
     group: 'Typography',

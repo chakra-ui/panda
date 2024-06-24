@@ -230,7 +230,7 @@ describe('styled factory - cva', () => {
     const { firstChild } = container as HTMLElement
     expect(firstChild).toMatchInlineSnapshot(`
       <button
-        class="fw_semibold h_10 fw_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px"
+        class="fw_semibold h_10 fw_semibold h_20 color-palette_red border-w_4px border-color_currentColor px_12 fs_32px"
       >
         Click me
       </button>
@@ -428,7 +428,7 @@ describe('styled factory - button recipe', () => {
     expect(container.firstChild).toMatchInlineSnapshot(
       `
       <div
-        class="d_flex flex_column gap_10px text_red.400"
+        class="d_flex flex-dir_column gap_10px text_red.400"
       >
         Click me
       </div>
@@ -446,7 +446,7 @@ describe('styled factory - button recipe', () => {
     expect(container.firstChild).toMatchInlineSnapshot(
       `
       <div
-        class="text_blue.300 bg_green.300"
+        class="text_blue.300 bg-color_green.300"
       >
         array css prop
       </div>

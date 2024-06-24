@@ -165,7 +165,7 @@ export const border: UtilityConfig = {
     group: 'Border',
   },
   borderColor: {
-    className: 'border',
+    className: 'border-color',
     values: 'colors',
     group: 'Border',
     transform: createColorMixTransform('borderColor'),
@@ -177,13 +177,13 @@ export const border: UtilityConfig = {
     shorthand: 'borderX',
   },
   borderInlineWidth: {
-    className: 'border-x',
+    className: 'border-xw',
     values: 'borderWidths',
     group: 'Border',
     shorthand: 'borderXWidth',
   },
   borderInlineColor: {
-    className: 'border-x',
+    className: 'border-xc',
     values: 'colors',
     group: 'Border',
     shorthand: 'borderXColor',
@@ -196,13 +196,13 @@ export const border: UtilityConfig = {
     shorthand: 'borderY',
   },
   borderBlockWidth: {
-    className: 'border-y',
+    className: 'border-yw',
     values: 'borderWidths',
     group: 'Border',
     shorthand: 'borderYWidth',
   },
   borderBlockColor: {
-    className: 'border-y',
+    className: 'border-yc',
     values: 'colors',
     group: 'Border',
     shorthand: 'borderYColor',
@@ -214,7 +214,7 @@ export const border: UtilityConfig = {
     group: 'Border',
   },
   borderLeftColor: {
-    className: 'border-l',
+    className: 'border-lc',
     values: 'colors',
     group: 'Border',
     transform: createColorMixTransform('borderLeftColor'),
@@ -226,13 +226,13 @@ export const border: UtilityConfig = {
     shorthand: 'borderStart',
   },
   borderInlineStartWidth: {
-    className: 'border-s',
+    className: 'border-sw',
     values: 'borderWidths',
     group: 'Border',
     shorthand: 'borderStartWidth',
   },
   borderInlineStartColor: {
-    className: 'border-s',
+    className: 'border-sc',
     values: 'colors',
     group: 'Border',
     shorthand: 'borderStartColor',
@@ -244,7 +244,7 @@ export const border: UtilityConfig = {
     group: 'Border',
   },
   borderRightColor: {
-    className: 'border-r',
+    className: 'border-rc',
     values: 'colors',
     group: 'Border',
     transform: createColorMixTransform('borderRightColor'),
@@ -256,13 +256,13 @@ export const border: UtilityConfig = {
     shorthand: 'borderEnd',
   },
   borderInlineEndWidth: {
-    className: 'border-e',
+    className: 'border-ew',
     values: 'borderWidths',
     group: 'Border',
     shorthand: 'borderEndWidth',
   },
   borderInlineEndColor: {
-    className: 'border-e',
+    className: 'border-ec',
     values: 'colors',
     group: 'Border',
     shorthand: 'borderEndColor',
@@ -274,7 +274,7 @@ export const border: UtilityConfig = {
     group: 'Border',
   },
   borderTopColor: {
-    className: 'border-t',
+    className: 'border-tc',
     values: 'colors',
     group: 'Border',
     transform: createColorMixTransform('borderTopColor'),
@@ -285,7 +285,7 @@ export const border: UtilityConfig = {
     group: 'Border',
   },
   borderBottomColor: {
-    className: 'border-b',
+    className: 'border-bc',
     values: 'colors',
     group: 'Border',
     transform: createColorMixTransform('borderBottomColor'),
@@ -296,7 +296,7 @@ export const border: UtilityConfig = {
     group: 'Border',
   },
   borderBlockEndColor: {
-    className: 'border-be',
+    className: 'border-bec',
     values: 'colors',
     group: 'Border',
     transform: createColorMixTransform('borderBlockEndColor'),
@@ -307,7 +307,7 @@ export const border: UtilityConfig = {
     group: 'Border',
   },
   borderBlockStartColor: {
-    className: 'border-bs',
+    className: 'border-bsc',
     values: 'colors',
     group: 'Border',
     transform: createColorMixTransform('borderBlockStartColor'),

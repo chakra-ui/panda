@@ -200,7 +200,7 @@ describe('extract to css output pipeline', () => {
           color: #2ecc71;
       }
 
-        .hover\\:bg_var\\(--some-bg\\):is(:hover, [data-hover]) {
+        .hover\\:bg-color_var\\(--some-bg\\):is(:hover, [data-hover]) {
           background-color: var(--some-bg);
       }
 
@@ -1218,7 +1218,7 @@ describe('extract to css output pipeline', () => {
             color: var(--colors-color-palette-secondary);
         }
 
-          .bg_colorPalette\\.dark {
+          .bg-color_colorPalette\\.dark {
             background-color: var(--colors-color-palette-dark);
         }
 
@@ -1281,7 +1281,7 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
 
@@ -1293,7 +1293,7 @@ describe('extract to css output pipeline', () => {
           justify-content: flex-end;
       }
 
-        .flex_row {
+        .flex-dir_row {
           flex-direction: row;
       }
       }"
@@ -1358,7 +1358,7 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
 
@@ -1788,7 +1788,7 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -1911,11 +1911,11 @@ describe('extract to css output pipeline', () => {
           color: purple;
       }
 
-        .bg_tomato {
+        .bg-color_tomato {
           background-color: tomato;
       }
 
-        .bg_yellow {
+        .bg-color_yellow {
           background-color: yellow;
       }
       }"
@@ -1986,15 +1986,15 @@ describe('extract to css output pipeline', () => {
           max-width: 800px;
       }
 
-        .\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em:not(:first-child) {
+        .\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbe_1em:not(:first-child) {
           margin-block-end: 1em;
       }
 
-        .\\[\\&_p\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mt_1em p:not(:first-child) {
+        .\\[\\&_p\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mts_1em p:not(:first-child) {
           margin-block-start: 1em;
       }
 
-        .\\[\\&_h1\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em h1:not(:first-child),.\\[\\&_h2\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em h2:not(:first-child) {
+        .\\[\\&_h1\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbe_1em h1:not(:first-child),.\\[\\&_h2\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbe_1em h2:not(:first-child) {
           margin-block-end: 1em;
       }
       }"
@@ -2224,7 +2224,7 @@ describe('extract to css output pipeline', () => {
           color: red;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -2350,7 +2350,7 @@ describe('extract to css output pipeline', () => {
           color: red;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -2927,7 +2927,7 @@ describe('extract to css output pipeline', () => {
           background: var(--colors-red-300);
       }
 
-        .bg_\\[rgb\\(51_155_240\\)\\] {
+        .bg-color_\\[rgb\\(51_155_240\\)\\] {
           background-color: rgb(51 155 240);
       }
 
@@ -2935,7 +2935,7 @@ describe('extract to css output pipeline', () => {
           outline-color: rgb(51 155 240) !important;
       }
 
-        .border_\\[rgb\\(51_155_240\\)\\]\\! {
+        .border-color_\\[rgb\\(51_155_240\\)\\]\\! {
           border-color: rgb(51 155 240) !important;
       }
       }"
@@ -3118,7 +3118,7 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
 
@@ -3197,7 +3197,7 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -3242,7 +3242,7 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -3348,7 +3348,7 @@ describe('extract to css output pipeline', () => {
           --colors-color-palette-hover: var(--colors-bg-primary-hover);
       }
 
-        .bg_colorPalette {
+        .bg-color_colorPalette {
           background-color: var(--colors-color-palette);
       }
       }"
@@ -3497,11 +3497,11 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-black);
       }
 
-        .bg_black\\.10 {
+        .bg-color_black\\.10 {
           background-color: var(--colors-black-10);
       }
 
-        .border_black\\.20 {
+        .border-color_black\\.20 {
           border-color: var(--colors-black-20);
       }
       }"
@@ -3750,7 +3750,7 @@ describe('extract to css output pipeline', () => {
           border-left-style: solid;
       }
 
-        .border-l_border\\.default {
+        .border-lc_border\\.default {
           border-left-color: border.default;
       }
 
@@ -3869,7 +3869,7 @@ describe('extract to css output pipeline', () => {
           border-left-style: solid;
       }
 
-        .border-l_border\\.default {
+        .border-lc_border\\.default {
           border-left-color: border.default;
       }
 

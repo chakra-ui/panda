@@ -105,7 +105,7 @@ describe('jsx pattern', () => {
           gap: var(--spacing-2);
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"

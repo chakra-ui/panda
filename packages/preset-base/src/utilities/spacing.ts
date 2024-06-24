@@ -43,12 +43,12 @@ export const spacing: UtilityConfig = {
     shorthand: ['py', 'paddingY'],
   },
   paddingBlockEnd: {
-    className: 'pb',
+    className: 'pbe',
     values: 'spacing',
     group: 'Padding',
   },
   paddingBlockStart: {
-    className: 'pt',
+    className: 'p-bs',
     values: 'spacing',
     group: 'Padding',
   },
@@ -108,12 +108,12 @@ export const spacing: UtilityConfig = {
     shorthand: ['my', 'marginY'],
   },
   marginBlockEnd: {
-    className: 'mb',
+    className: 'mbe',
     values: marginValues,
     group: 'Margin',
   },
   marginBlockStart: {
-    className: 'mt',
+    className: 'mts',
     values: marginValues,
     group: 'Margin',
   },

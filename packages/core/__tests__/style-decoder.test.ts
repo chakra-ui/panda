@@ -548,7 +548,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:bg_red",
+          "className": "sm\\:bg-color_red",
           "conditions": [
             {
               "name": "breakpoint",
@@ -566,7 +566,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:red]___[cond:sm",
           "layer": undefined,
           "result": {
-            ".sm\\:bg_red": {
+            ".sm\\:bg-color_red": {
               "@media screen and (min-width: 40rem)": {
                 "backgroundColor": "red",
               },
@@ -574,7 +574,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:hover\\:bg_green",
+          "className": "sm\\:hover\\:bg-color_green",
           "conditions": [
             {
               "name": "breakpoint",
@@ -597,7 +597,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:green]___[cond:sm<___>_hover",
           "layer": undefined,
           "result": {
-            ".sm\\:hover\\:bg_green": {
+            ".sm\\:hover\\:bg-color_green": {
               "@media screen and (min-width: 40rem)": {
                 "&:is(:hover, [data-hover])": {
                   "backgroundColor": "green",
@@ -1178,7 +1178,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "bg_blue",
+          "className": "bg-color_blue",
           "conditions": undefined,
           "entry": {
             "prop": "backgroundColor",
@@ -1187,13 +1187,13 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:blue",
           "layer": undefined,
           "result": {
-            ".bg_blue": {
+            ".bg-color_blue": {
               "backgroundColor": "blue",
             },
           },
         },
         {
-          "className": "bg_transparent",
+          "className": "bg-color_transparent",
           "conditions": undefined,
           "entry": {
             "prop": "backgroundColor",
@@ -1202,7 +1202,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:transparent",
           "layer": undefined,
           "result": {
-            ".bg_transparent": {
+            ".bg-color_transparent": {
               "backgroundColor": "var(--colors-transparent)",
             },
           },
@@ -1280,7 +1280,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1296,7 +1296,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:bg_gray": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray": {
               "&[data-disabled]": {
                 "backgroundColor": "gray",
               },
@@ -1304,7 +1304,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1320,7 +1320,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:transparent]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:bg_transparent": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent": {
               "&[data-disabled]": {
                 "backgroundColor": "var(--colors-transparent)",
               },
@@ -1352,7 +1352,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\:bg_darkblue",
+          "className": "hover\\:bg-color_darkblue",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -1368,7 +1368,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:darkblue]___[cond:_hover",
           "layer": undefined,
           "result": {
-            ".hover\\:bg_darkblue": {
+            ".hover\\:bg-color_darkblue": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "darkblue",
               },
@@ -1376,7 +1376,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\:bg_blue",
+          "className": "hover\\:bg-color_blue",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -1392,7 +1392,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:blue]___[cond:_hover",
           "layer": undefined,
           "result": {
-            ".hover\\:bg_blue": {
+            ".hover\\:bg-color_blue": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "blue",
               },

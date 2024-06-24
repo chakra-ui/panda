@@ -1113,7 +1113,7 @@ describe('static-css', () => {
           border-block-end-width: var(--thickness);
       }
 
-        .border-e_var\\(--thickness\\) {
+        .border-ew_var\\(--thickness\\) {
           border-inline-end-width: var(--thickness);
       }
 

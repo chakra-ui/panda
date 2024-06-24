@@ -199,7 +199,7 @@ describe('styled factory - cva', () => {
     const { firstChild } = container as HTMLElement
     expect(firstChild).toMatchInlineSnapshot(`
       <button
-        class="fw_semibold h_20 color-palette_red border-w_4px border_currentColor px_12 fs_32px"
+        class="fw_semibold h_20 color-palette_red border-w_4px border-color_currentColor px_12 fs_32px"
       >
         Click me
       </button>
@@ -239,7 +239,9 @@ describe('styled factory - button recipe', () => {
   test('base styles', () => {
     const { container } = render(<Button>Click me</Button>)
 
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(`"<button class="button button--visual_unstyled">Click me</button>"`)
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<button class="button button--visual_unstyled">Click me</button>"`,
+    )
   })
 
   test('variant styles', () => {
@@ -348,7 +350,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<div class="d_flex flex_column gap_10px text_red.400">Click me</div>"`,
+      `"<div class="d_flex flex-dir_column gap_10px text_red.400">Click me</div>"`,
     )
   })
 
@@ -360,7 +362,7 @@ describe('styled factory - button recipe', () => {
     )
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<div class="text_blue.300 bg_green.300">array css prop</div>"`,
+      `"<div class="text_blue.300 bg-color_green.300">array css prop</div>"`,
     )
   })
 })

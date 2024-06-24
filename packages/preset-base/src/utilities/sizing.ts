@@ -64,7 +64,7 @@ export const sizing: UtilityConfig = {
     values: widthValues,
   },
   inlineSize: {
-    className: 'w',
+    className: 'w-is',
     group: 'Width',
     values: widthValues,
   },
@@ -76,7 +76,7 @@ export const sizing: UtilityConfig = {
     values: widthValues,
   },
   minInlineSize: {
-    className: 'min-w',
+    className: 'min-w-is',
     group: 'Width',
     values: widthValues,
   },
@@ -88,7 +88,7 @@ export const sizing: UtilityConfig = {
     values: widthValues,
   },
   maxInlineSize: {
-    className: 'max-w',
+    className: 'max-w-is',
     group: 'Width',
     values: widthValues,
   },
@@ -100,7 +100,7 @@ export const sizing: UtilityConfig = {
     values: heightValues,
   },
   blockSize: {
-    className: 'h',
+    className: 'h-bs',
     group: 'Height',
     values: heightValues,
   },
@@ -112,7 +112,7 @@ export const sizing: UtilityConfig = {
     values: heightValues,
   },
   minBlockSize: {
-    className: 'min-h',
+    className: 'min-h-bs',
     group: 'Height',
     values: heightValues,
   },

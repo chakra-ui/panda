@@ -48,7 +48,7 @@ export const flexGrid: UtilityConfig = {
     },
   },
   flexDirection: {
-    className: 'flex',
+    className: 'flex-dir',
     group: 'Flex Layout',
     shorthand: 'flexDir',
   },
@@ -171,17 +171,17 @@ export const flexGrid: UtilityConfig = {
     values: 'spacing',
   },
   gridGap: {
-    className: 'gap',
+    className: 'grid-gap',
     group: 'Grid Layout',
     values: 'spacing',
   },
   gridRowGap: {
-    className: 'gap-x',
+    className: 'grid-gap-x',
     group: 'Grid Layout',
     values: 'spacing',
   },
   gridColumnGap: {
-    className: 'gap-y',
+    className: 'grid-gap-y',
     group: 'Grid Layout',
     values: 'spacing',
   },
