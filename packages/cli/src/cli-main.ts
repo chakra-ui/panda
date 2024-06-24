@@ -211,7 +211,6 @@ export async function main() {
       }
 
       const overrideConfig = {
-        optimize: true,
         ...rest,
         ...(glob ? { include: [glob] } : undefined),
       }

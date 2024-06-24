@@ -48,7 +48,7 @@ export class RuleProcessor {
     const { decoder, sheet } = this.getParamsOrThrow()
 
     sheet.processDecoder(decoder)
-    return sheet.toCss({ optimize: true, ...options })
+    return sheet.toCss(options)
   }
 
   css(styles: SystemStyleObject): AtomicRule {

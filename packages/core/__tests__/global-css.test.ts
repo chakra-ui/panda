@@ -6,7 +6,7 @@ function globalCss(values: Dict) {
   const ctx = createGeneratorContext()
   const sheet = ctx.createSheet()
   sheet.processGlobalCss(values)
-  return sheet.toCss({ optimize: true })
+  return sheet.toCss()
 }
 
 describe('Global css', () => {

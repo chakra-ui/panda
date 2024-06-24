@@ -107,7 +107,7 @@ export class Stylesheet {
     )
   }
 
-  toCss = ({ optimize = false, minify }: CssOptions = {}) => {
+  toCss = ({ minify }: CssOptions = {}) => {
     try {
       const breakpoints = this.context.conditions.breakpoints
       const root = this.context.layers.insert()
@@ -121,7 +121,6 @@ export class Stylesheet {
 
       const result = postcss(plugins).process(root)
       const css = result.toString()
-      if (!optimize) return css
 
       return optimizeCss(css, {
         minify,
