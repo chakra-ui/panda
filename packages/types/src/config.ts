@@ -443,11 +443,6 @@ export interface Config
     HooksOptions,
     PluginsOptions {
   /**
-   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-   * @default 'false'
-   */
-  eject?: boolean
-  /**
    * The validation strictness to use when validating the config.
    * - When set to 'none', no validation will be performed.
    * - When set to 'warn', warnings will be logged when validation fails.

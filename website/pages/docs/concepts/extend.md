@@ -130,10 +130,6 @@ const { stack, ...pandaBasePresetPatterns } = pandaBasePreset.patterns
 
 export default defineConfig({
   presets: ['@pandacss/preset-panda'], // 👈 we still want the tokens, breakpoints and textStyles from this preset
-
-  // ⚠️ we need to eject to prevent the `@pandacss/preset-base` from being resolved
-  // https://panda-css.com/docs/customization/presets#which-panda-presets-will-be-included-
-  eject: true,
   patterns: {
     extend: {
       ...pandaBasePresetPatterns

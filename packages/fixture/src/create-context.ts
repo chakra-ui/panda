@@ -39,7 +39,9 @@ export const createGeneratorContext = (userConfig?: Config) => {
   return new Generator({ ...fixtureDefaults, config: resolvedConfig })
 }
 
-export const createContext = (userConfig?: Config & Pick<Partial<LoadConfigResult>, 'tsconfig'>) => {
+export const createContext = (
+  userConfig?: Config & Pick<Partial<LoadConfigResult>, 'tsconfig'> & { eject?: boolean },
+) => {
   let resolvedConfig = (
     userConfig ? mergeConfigs([userConfig, userConfig.eject ? {} : fixtureDefaults.config]) : fixtureDefaults.config
   ) as UserConfig

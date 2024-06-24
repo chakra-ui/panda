@@ -131,6 +131,9 @@ importers:
         specifier: 6.7.14
         version: 6.7.14
     devDependencies:
+      '@pandacss/preset-base':
+        specifier: workspace:*
+        version: link:../preset-base
       '@types/update-notifier':
         specifier: 6.0.8
         version: 6.0.8
