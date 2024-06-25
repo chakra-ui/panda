@@ -8,7 +8,7 @@ function globalVars(vars?: GlobalVarsDefinition) {
   })
   const sheet = ctx.createSheet()
   sheet.processGlobalCss({})
-  return sheet.toCss({ optimize: true })
+  return sheet.toCss()
 }
 
 describe('Global vars', () => {

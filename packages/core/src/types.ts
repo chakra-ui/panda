@@ -85,7 +85,7 @@ export interface RecipeNode {
   props: string[]
 }
 
-export interface CssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
+export interface CssOptions extends Pick<UserConfig, 'minify'> {}
 
 export interface ProcessOptions {
   styles: Dict
