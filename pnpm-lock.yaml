@@ -115,6 +115,12 @@ importers:
       '@pandacss/postcss':
         specifier: workspace:*
         version: link:../postcss
+      '@pandacss/preset-base':
+        specifier: workspace:*
+        version: link:../preset-base
+      '@pandacss/preset-panda':
+        specifier: workspace:*
+        version: link:../preset-panda
       '@pandacss/shared':
         specifier: workspace:*
         version: link:../shared
@@ -128,12 +134,6 @@ importers:
         specifier: 6.7.14
         version: 6.7.14
     devDependencies:
-      '@pandacss/preset-base':
-        specifier: workspace:*
-        version: link:../preset-base
-      '@pandacss/preset-panda':
-        specifier: workspace:*
-        version: link:../preset-panda
       '@types/update-notifier':
         specifier: 6.0.8
         version: 6.0.8
