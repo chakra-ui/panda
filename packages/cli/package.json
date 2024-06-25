@@ -61,7 +61,6 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
     "@pandacss/postcss": "workspace:*",
-    "@pandacss/preset-panda": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
@@ -69,6 +68,7 @@
   },
   "devDependencies": {
     "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
     "@types/update-notifier": "6.0.8",
     "kleur": "4.1.5",
     "update-notifier": "7.0.0"
