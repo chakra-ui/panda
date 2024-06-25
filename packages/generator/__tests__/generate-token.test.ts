@@ -2,7 +2,7 @@ import { createContext } from '@pandacss/fixture'
 import type { Config } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 
-const tokenCss = (config?: Config) => {
+const tokenCss = (config?: Config & { eject?: boolean }) => {
   const ctx = createContext(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('tokens', sheet)
@@ -86,6 +86,107 @@ describe('generator', () => {
           --shadows-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
           --shadows-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
           --shadows-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+          --blurs-sm: 4px;
+          --blurs-base: 8px;
+          --blurs-md: 12px;
+          --blurs-lg: 16px;
+          --blurs-xl: 24px;
+          --blurs-2xl: 40px;
+          --blurs-3xl: 64px;
+          --spacing-0: 0rem;
+          --spacing-1: 0.25rem;
+          --spacing-2: 0.5rem;
+          --spacing-3: 0.75rem;
+          --spacing-4: 1rem;
+          --spacing-5: 1.25rem;
+          --spacing-6: 1.5rem;
+          --spacing-7: 1.75rem;
+          --spacing-8: 2rem;
+          --spacing-9: 2.25rem;
+          --spacing-10: 2.5rem;
+          --spacing-11: 2.75rem;
+          --spacing-12: 3rem;
+          --spacing-14: 3.5rem;
+          --spacing-16: 4rem;
+          --spacing-20: 5rem;
+          --spacing-24: 6rem;
+          --spacing-28: 7rem;
+          --spacing-32: 8rem;
+          --spacing-36: 9rem;
+          --spacing-40: 10rem;
+          --spacing-44: 11rem;
+          --spacing-48: 12rem;
+          --spacing-52: 13rem;
+          --spacing-56: 14rem;
+          --spacing-60: 15rem;
+          --spacing-64: 16rem;
+          --spacing-72: 18rem;
+          --spacing-80: 20rem;
+          --spacing-96: 24rem;
+          --spacing-0\\.5: 0.125rem;
+          --spacing-1\\.5: 0.375rem;
+          --spacing-2\\.5: 0.625rem;
+          --spacing-3\\.5: 0.875rem;
+          --sizes-0: 0rem;
+          --sizes-1: 0.25rem;
+          --sizes-2: 0.5rem;
+          --sizes-3: 0.75rem;
+          --sizes-4: 1rem;
+          --sizes-5: 1.25rem;
+          --sizes-6: 1.5rem;
+          --sizes-7: 1.75rem;
+          --sizes-8: 2rem;
+          --sizes-9: 2.25rem;
+          --sizes-10: 2.5rem;
+          --sizes-11: 2.75rem;
+          --sizes-12: 3rem;
+          --sizes-14: 3.5rem;
+          --sizes-16: 4rem;
+          --sizes-20: 5rem;
+          --sizes-24: 6rem;
+          --sizes-28: 7rem;
+          --sizes-32: 8rem;
+          --sizes-36: 9rem;
+          --sizes-40: 10rem;
+          --sizes-44: 11rem;
+          --sizes-48: 12rem;
+          --sizes-52: 13rem;
+          --sizes-56: 14rem;
+          --sizes-60: 15rem;
+          --sizes-64: 16rem;
+          --sizes-72: 18rem;
+          --sizes-80: 20rem;
+          --sizes-96: 24rem;
+          --sizes-0\\.5: 0.125rem;
+          --sizes-1\\.5: 0.375rem;
+          --sizes-2\\.5: 0.625rem;
+          --sizes-3\\.5: 0.875rem;
+          --sizes-xs: 20rem;
+          --sizes-sm: 24rem;
+          --sizes-md: 28rem;
+          --sizes-lg: 32rem;
+          --sizes-xl: 36rem;
+          --sizes-2xl: 42rem;
+          --sizes-3xl: 48rem;
+          --sizes-4xl: 56rem;
+          --sizes-5xl: 64rem;
+          --sizes-6xl: 72rem;
+          --sizes-7xl: 80rem;
+          --sizes-8xl: 90rem;
+          --sizes-prose: 65ch;
+          --sizes-full: 100%;
+          --sizes-min: min-content;
+          --sizes-max: max-content;
+          --sizes-fit: fit-content;
+          --sizes-breakpoint-sm: 640px;
+          --sizes-breakpoint-md: 768px;
+          --sizes-breakpoint-lg: 1024px;
+          --sizes-breakpoint-xl: 1280px;
+          --sizes-breakpoint-2xl: 1536px;
+          --animations-spin: spin 1s linear infinite;
+          --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+          --animations-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          --animations-bounce: bounce 1s infinite;
           --colors-current: currentColor;
           --colors-black: #000;
           --colors-white: #fff;
@@ -335,107 +436,6 @@ describe('generator', () => {
           --colors-deep-test-yam: %555;
           --colors-deep-test-pool-poller: #fff;
           --colors-deep-test-pool-tall: $dfdf;
-          --blurs-sm: 4px;
-          --blurs-base: 8px;
-          --blurs-md: 12px;
-          --blurs-lg: 16px;
-          --blurs-xl: 24px;
-          --blurs-2xl: 40px;
-          --blurs-3xl: 64px;
-          --spacing-0: 0rem;
-          --spacing-1: 0.25rem;
-          --spacing-2: 0.5rem;
-          --spacing-3: 0.75rem;
-          --spacing-4: 1rem;
-          --spacing-5: 1.25rem;
-          --spacing-6: 1.5rem;
-          --spacing-7: 1.75rem;
-          --spacing-8: 2rem;
-          --spacing-9: 2.25rem;
-          --spacing-10: 2.5rem;
-          --spacing-11: 2.75rem;
-          --spacing-12: 3rem;
-          --spacing-14: 3.5rem;
-          --spacing-16: 4rem;
-          --spacing-20: 5rem;
-          --spacing-24: 6rem;
-          --spacing-28: 7rem;
-          --spacing-32: 8rem;
-          --spacing-36: 9rem;
-          --spacing-40: 10rem;
-          --spacing-44: 11rem;
-          --spacing-48: 12rem;
-          --spacing-52: 13rem;
-          --spacing-56: 14rem;
-          --spacing-60: 15rem;
-          --spacing-64: 16rem;
-          --spacing-72: 18rem;
-          --spacing-80: 20rem;
-          --spacing-96: 24rem;
-          --spacing-0\\.5: 0.125rem;
-          --spacing-1\\.5: 0.375rem;
-          --spacing-2\\.5: 0.625rem;
-          --spacing-3\\.5: 0.875rem;
-          --sizes-0: 0rem;
-          --sizes-1: 0.25rem;
-          --sizes-2: 0.5rem;
-          --sizes-3: 0.75rem;
-          --sizes-4: 1rem;
-          --sizes-5: 1.25rem;
-          --sizes-6: 1.5rem;
-          --sizes-7: 1.75rem;
-          --sizes-8: 2rem;
-          --sizes-9: 2.25rem;
-          --sizes-10: 2.5rem;
-          --sizes-11: 2.75rem;
-          --sizes-12: 3rem;
-          --sizes-14: 3.5rem;
-          --sizes-16: 4rem;
-          --sizes-20: 5rem;
-          --sizes-24: 6rem;
-          --sizes-28: 7rem;
-          --sizes-32: 8rem;
-          --sizes-36: 9rem;
-          --sizes-40: 10rem;
-          --sizes-44: 11rem;
-          --sizes-48: 12rem;
-          --sizes-52: 13rem;
-          --sizes-56: 14rem;
-          --sizes-60: 15rem;
-          --sizes-64: 16rem;
-          --sizes-72: 18rem;
-          --sizes-80: 20rem;
-          --sizes-96: 24rem;
-          --sizes-0\\.5: 0.125rem;
-          --sizes-1\\.5: 0.375rem;
-          --sizes-2\\.5: 0.625rem;
-          --sizes-3\\.5: 0.875rem;
-          --sizes-xs: 20rem;
-          --sizes-sm: 24rem;
-          --sizes-md: 28rem;
-          --sizes-lg: 32rem;
-          --sizes-xl: 36rem;
-          --sizes-2xl: 42rem;
-          --sizes-3xl: 48rem;
-          --sizes-4xl: 56rem;
-          --sizes-5xl: 64rem;
-          --sizes-6xl: 72rem;
-          --sizes-7xl: 80rem;
-          --sizes-8xl: 90rem;
-          --sizes-prose: 65ch;
-          --sizes-full: 100%;
-          --sizes-min: min-content;
-          --sizes-max: max-content;
-          --sizes-fit: fit-content;
-          --sizes-breakpoint-sm: 640px;
-          --sizes-breakpoint-md: 768px;
-          --sizes-breakpoint-lg: 1024px;
-          --sizes-breakpoint-xl: 1280px;
-          --sizes-breakpoint-2xl: 1536px;
-          --animations-spin: spin 1s linear infinite;
-          --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-          --animations-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-          --animations-bounce: bounce 1s infinite;
           --breakpoints-sm: 640px;
           --breakpoints-md: 768px;
           --breakpoints-lg: 1024px;
@@ -552,12 +552,45 @@ describe('generator', () => {
             --colors-test-50: #f9f9f9;
             --colors-test-100: #f2f2f2;
             --colors-deep-test-yam: %555;
-            --colors-deep-test-pool-poller: #fff;
-            --colors-deep-test-pool-tall: $dfdf;
             --colors-deep-test-pool-palette-50: #f9f9f9;
             --colors-deep-test-pool-palette-100: #f2f2f2;
             --colors-deep-test-pool-palette-200: #ebebeb;
+            --colors-deep-test-pool-poller: #fff;
+            --colors-deep-test-pool-tall: $dfdf;
+            --colors-primary: var(--colors-red-500);
+            --colors-secondary: var(--colors-red-800);
+            --colors-complex: var(--colors-red-800);
+            --colors-button-thick: #fff;
+            --colors-button-card-body: #fff;
+            --colors-button-card-heading: #fff;
+            --spacing-gutter: var(--spacing-4);
         }
+
+          :where([data-theme=dark], .dark) {
+            --colors-primary: var(--colors-red-400);
+            --colors-secondary: var(--colors-red-700);
+            --colors-button-thick: #000;
+            --colors-button-card-body: #000;
+            --colors-button-card-heading: #000
+        }
+
+          [data-color=material] {
+            --colors-surface: #m-b
+        }
+
+          [data-color=material]:where([data-theme=dark], .dark) {
+            --colors-surface: #m-d
+                }
+
+          [data-color=pastel] {
+            --colors-surface: #p-b
+        }
+
+          @media (forced-colors: active) {
+            :where([data-theme=dark], .dark) {
+              --colors-complex: var(--colors-red-700)
+                    }
+                }
         }"
       `)
     })
@@ -586,12 +619,45 @@ describe('generator', () => {
       expect(css).toMatchInlineSnapshot(`
         "@layer tokens {
           :where(html) {
+            --colors-deep-test-yam: %555;
+            --colors-deep-test-pool-poller: #fff;
+            --colors-deep-test-pool-tall: $dfdf;
             --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+            --colors-primary: var(--colors-red-500);
+            --colors-secondary: var(--colors-red-800);
+            --colors-complex: var(--colors-red-800);
+            --colors-button-thick: #fff;
+            --colors-button-card-body: #fff;
+            --colors-button-card-heading: #fff;
+            --spacing-gutter: var(--spacing-4);
         }
 
-          .dark {
-            --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
+          :where([data-theme=dark], .dark) {
+            --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3);
+            --colors-primary: var(--colors-red-400);
+            --colors-secondary: var(--colors-red-700);
+            --colors-button-thick: #000;
+            --colors-button-card-body: #000;
+            --colors-button-card-heading: #000
         }
+
+          [data-color=material] {
+            --colors-surface: #m-b
+        }
+
+          [data-color=material]:where([data-theme=dark], .dark) {
+            --colors-surface: #m-d
+                }
+
+          [data-color=pastel] {
+            --colors-surface: #p-b
+        }
+
+          @media (forced-colors: active) {
+            :where([data-theme=dark], .dark) {
+              --colors-complex: var(--colors-red-700)
+                    }
+                }
         }"
       `)
     })
@@ -640,13 +706,49 @@ describe('generator', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(html) {
-          --colors-red: #ef4444;
-          --colors-semantic-red: var(--colors-danger);
           --borders-red: 1px solid var(--colors-red);
           --borders-semantic-red: var(--borders-danger);
-          --colors-danger: var(--colors-red);
+          --colors-red: #ef4444;
+          --colors-semantic-red: var(--colors-danger);
+          --colors-deep-test-yam: %555;
+          --colors-deep-test-pool-poller: #fff;
+          --colors-deep-test-pool-tall: $dfdf;
           --borders-danger: var(--borders-red);
+          --colors-danger: var(--colors-red);
+          --colors-primary: var(--colors-red-500);
+          --colors-secondary: var(--colors-red-800);
+          --colors-complex: var(--colors-red-800);
+          --colors-button-thick: #fff;
+          --colors-button-card-body: #fff;
+          --colors-button-card-heading: #fff;
+          --spacing-gutter: var(--spacing-4);
       }
+
+        :where([data-theme=dark], .dark) {
+          --colors-primary: var(--colors-red-400);
+          --colors-secondary: var(--colors-red-700);
+          --colors-button-thick: #000;
+          --colors-button-card-body: #000;
+          --colors-button-card-heading: #000
+      }
+
+        [data-color=material] {
+          --colors-surface: #m-b
+      }
+
+        [data-color=material]:where([data-theme=dark], .dark) {
+          --colors-surface: #m-d
+              }
+
+        [data-color=pastel] {
+          --colors-surface: #p-b
+      }
+
+        @media (forced-colors: active) {
+          :where([data-theme=dark], .dark) {
+            --colors-complex: var(--colors-red-700)
+                  }
+              }
       }"
     `)
   })
@@ -712,14 +814,47 @@ describe('generator', () => {
       "@layer tokens {
         :where(html) {
           --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
-          --colors-test-pink: var(--colors-pink-900);
+          --colors-deep-test-yam: %555;
+          --colors-deep-test-pool-poller: #fff;
+          --colors-deep-test-pool-tall: $dfdf;
           --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
           --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink);
+          --colors-test-pink: var(--colors-pink-900);
+          --colors-primary: var(--colors-red-500);
+          --colors-secondary: var(--colors-red-800);
+          --colors-complex: var(--colors-red-800);
+          --colors-button-thick: #fff;
+          --colors-button-card-body: #fff;
+          --colors-button-card-heading: #fff;
+          --spacing-gutter: var(--spacing-4);
       }
 
-        .dark {
-          --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink)
+        :where([data-theme=dark], .dark) {
+          --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink);
+          --colors-primary: var(--colors-red-400);
+          --colors-secondary: var(--colors-red-700);
+          --colors-button-thick: #000;
+          --colors-button-card-body: #000;
+          --colors-button-card-heading: #000
       }
+
+        [data-color=material] {
+          --colors-surface: #m-b
+      }
+
+        [data-color=material]:where([data-theme=dark], .dark) {
+          --colors-surface: #m-d
+              }
+
+        [data-color=pastel] {
+          --colors-surface: #p-b
+      }
+
+        @media (forced-colors: active) {
+          :where([data-theme=dark], .dark) {
+            --colors-complex: var(--colors-red-700)
+                  }
+              }
       }"
     `)
   })

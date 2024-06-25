@@ -1,10 +1,11 @@
 import presetBase from '@pandacss/preset-base'
 import presetPanda from '@pandacss/preset-panda'
-import type { Config } from '@pandacss/types'
+import type { Preset } from '@pandacss/types'
 
 import { recipes } from './recipes'
 import { semanticTokens } from './semantic-tokens'
 import { slotRecipes } from './slot-recipes'
+import { mergeConfigs } from '@pandacss/config'
 
 const textStyles = {
   headline: {
@@ -23,37 +24,48 @@ const textStyles = {
   },
 }
 
-export const fixturePreset: Config = {
+export const fixturePreset = {
   presets: [presetBase, presetPanda],
   conditions: {
-    materialTheme: '[data-color=material] &',
-    pastelTheme: '[data-color=pastel] &',
-    dark: '[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]',
-    light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
+    extend: {
+      materialTheme: '[data-color=material] &',
+      pastelTheme: '[data-color=pastel] &',
+      dark: '[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]',
+      light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
+    },
   },
   theme: {
-    textStyles,
-    tokens: {
-      colors: {
-        deep: {
-          test: {
-            yam: {
-              value: '%555',
-            },
-            pool: {
-              poller: {
-                value: '#fff',
+    extend: {
+      textStyles,
+      tokens: {
+        colors: {
+          deep: {
+            test: {
+              yam: {
+                value: '%555',
               },
-              tall: {
-                value: '$dfdf',
+              pool: {
+                poller: {
+                  value: '#fff',
+                },
+                tall: {
+                  value: '$dfdf',
+                },
               },
             },
           },
         },
       },
+      semanticTokens,
+      recipes,
+      slotRecipes,
     },
-    semanticTokens,
-    recipes,
-    slotRecipes,
   },
+} satisfies Preset
+
+export const builtInPresets = {
+  base: presetBase,
+  panda: presetPanda,
 }
+
+export const fixtureMergedConfig = mergeConfigs([fixturePreset, ...fixturePreset.presets])

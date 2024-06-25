@@ -30,6 +30,6 @@ describe('atomic-rule / prefix', () => {
       }
       }"
     `)
-    expect(frontend({ color: { sm: 'red' } })).toMatchInlineSnapshot('"tw-geqOyW"')
+    expect(frontend({ color: { sm: 'red' } })).toMatchInlineSnapshot(`"tw-geqOyW"`)
   })
 })

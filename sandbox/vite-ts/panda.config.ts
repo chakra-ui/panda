@@ -3,6 +3,7 @@ import { removeUnusedCssVars } from './remove-unused-css-vars'
 import { removeUnusedKeyframes } from './remove-unused-keyframes'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   hooks: {
     // Dynamically add a recipe
     'config:resolved': async ({ config }) => {

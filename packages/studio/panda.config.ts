@@ -1,6 +1,7 @@
 import type { Config } from '@pandacss/types'
 
 export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   gitignore: false,
   preflight: true,
   include: ['./src/**/*.{tsx,jsx,astro}'],

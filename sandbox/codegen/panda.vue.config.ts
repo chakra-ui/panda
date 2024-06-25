@@ -2,7 +2,7 @@ import { defineConfig } from '@pandacss/dev'
 import codegenPreset from './preset'
 
 export default defineConfig({
-  presets: ['@pandacss/dev/presets', codegenPreset],
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', codegenPreset],
   // Whether to use css reset
   preflight: true,
 

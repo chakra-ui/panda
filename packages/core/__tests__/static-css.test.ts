@@ -1,4 +1,4 @@
-import { fixtureDefaults } from '@pandacss/fixture'
+import { fixtureDefaults, fixtureMergedConfig } from '@pandacss/fixture'
 import { type StaticCssOptions } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Context } from '../src/context'
@@ -11,7 +11,8 @@ describe('static-css', () => {
     ...defaults,
     config: {
       ...defaults.config,
-      theme: JSON.parse(JSON.stringify(defaults.config.theme)),
+      ...fixtureMergedConfig,
+      theme: JSON.parse(JSON.stringify(fixtureMergedConfig.theme)),
     },
   } as typeof fixtureDefaults
 

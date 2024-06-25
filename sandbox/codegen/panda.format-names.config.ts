@@ -8,7 +8,7 @@ const dasherize = (token) =>
     .replace(/^-+|-+$/g, '')
 
 export default defineConfig({
-  presets: ['@pandacss/dev/presets', codegenPreset],
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', codegenPreset],
   // Whether to use css reset
   preflight: true,
 

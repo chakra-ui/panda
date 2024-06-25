@@ -28,13 +28,13 @@ describe('generate classnames', () => {
       css({
         top: { sm: { _rtl: '20px', _hover: '50px' }, lg: '120px' },
       }),
-    ).toMatchInlineSnapshot('"sm:rtl:top_20px sm:hover:top_50px lg:top_120px"')
+    ).toMatchInlineSnapshot(`"sm:rtl:top_20px sm:hover:top_50px lg:top_120px"`)
 
     expect(
       css({
         left: { base: '20px', md: '40px' },
       }),
-    ).toMatchInlineSnapshot('"left_20px md:left_40px"')
+    ).toMatchInlineSnapshot(`"left_20px md:left_40px"`)
   })
 
   test('should expand shorthand before processing', () => {
@@ -59,7 +59,7 @@ describe('generate classnames', () => {
       css({
         _hover: { width: '40px', w: '90px' },
       }),
-    ).toMatchInlineSnapshot('"hover:w_90px"')
+    ).toMatchInlineSnapshot(`"hover:w_90px"`)
   })
 
   test('should respect important', () => {
