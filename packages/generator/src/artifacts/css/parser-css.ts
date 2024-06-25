@@ -6,12 +6,12 @@ export const generateParserCss = (ctx: Context, decoder: StyleDecoder) => {
   if (!decoder) return ''
 
   const sheet = ctx.createSheet()
-  const { minify, optimize } = ctx.config
+  const { minify } = ctx.config
 
   sheet.processDecoder(decoder)
 
   try {
-    const css = sheet.toCss({ minify, optimize })
+    const css = sheet.toCss({ minify })
     return css
   } catch (err) {
     logger.error('serializer:css', 'Failed to serialize CSS: ' + err)

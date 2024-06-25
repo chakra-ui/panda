@@ -14,7 +14,6 @@ export async function debug(ctx: PandaContext, options: DebugOptions) {
 
   // easier to debug
   ctx.config.minify = false
-  ctx.config.optimize = true
 
   const { fs, path } = ctx.runtime
   const outdir = options.outdir

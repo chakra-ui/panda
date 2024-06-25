@@ -6,7 +6,7 @@ const resetCss = (config?: Config) => {
   const ctx = createContext(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('preflight', sheet)
-  return sheet.toCss({ optimize: true })
+  return sheet.toCss()
 }
 
 describe('generate reset', () => {
