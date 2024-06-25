@@ -312,11 +312,6 @@ interface CssgenOptions {
    */
   separator?: '_' | '=' | '-'
   /**
-   * Whether to optimize the generated css.
-   * @default true
-   */
-  optimize?: boolean
-  /**
    * Whether to minify the generated css.
    * @default false
    */

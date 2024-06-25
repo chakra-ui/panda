@@ -12,7 +12,6 @@ const hookUtils = {
 }
 
 const defaults: UserConfig = {
-  optimize: true,
   cwd: '',
   outdir: 'styled-system',
   include: [],

@@ -72,7 +72,7 @@ describe('sort style rules', () => {
     const sheet = ctx.createSheet()
     sheet.processDecoder(ctx.decoder)
 
-    expect(sheet.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .fs_1 {
           font-size: 1px;
@@ -125,7 +125,7 @@ describe('sort style rules', () => {
     const sheet2 = ctx.createSheet()
     sheet2.processDecoder(ctx.decoder)
 
-    expect(sheet2.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet2.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .fs_1 {
           font-size: 1px;
@@ -189,7 +189,7 @@ describe('sort style rules', () => {
     const sheet = ctx.createSheet()
     sheet.processDecoder(ctx.decoder)
 
-    expect(sheet.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
           .btn {
@@ -237,7 +237,7 @@ describe('sort style rules', () => {
     const sheet2 = ctx.createSheet()
     sheet2.processDecoder(ctx.decoder)
 
-    expect(sheet2.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet2.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
           .btn {

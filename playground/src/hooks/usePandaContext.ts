@@ -10,7 +10,6 @@ const defaultConfig = resolveConfig({
   include: [],
   outdir: 'styled-system',
   preflight: true,
-  optimize: true,
   staticCss: { recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'] },
   jsxFramework: undefined,
 })!
@@ -38,7 +37,6 @@ export const usePandaContext = (userConfig: Config | null): Generator & { error?
       include: [],
       outdir: 'styled-system',
       preflight: true,
-      optimize: true,
       ...userConfig,
       staticCss: merge(userConfig?.staticCss, {
         recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],

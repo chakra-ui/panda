@@ -6,7 +6,7 @@ const tokenCss = (config?: Config & { eject?: boolean }) => {
   const ctx = createContext(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('tokens', sheet)
-  return sheet.toCss({ optimize: true })
+  return sheet.toCss()
 }
 
 describe('generator', () => {
