@@ -1,41 +1,10 @@
 import presetBase from '@pandacss/preset-base'
 import presetPanda from '@pandacss/preset-panda'
-import type { PresetCore, Theme } from '@pandacss/types'
+import type { Config } from '@pandacss/types'
 
 import { recipes } from './recipes'
-import { slotRecipes } from './slot-recipes'
 import { semanticTokens } from './semantic-tokens'
-
-export const conditions = {
-  ...presetBase.conditions,
-  materialTheme: '[data-color=material] &',
-  pastelTheme: '[data-color=pastel] &',
-  dark: '[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]',
-  light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
-}
-
-const theme = presetPanda.theme
-const tokens = {
-  ...theme.tokens,
-  colors: {
-    ...theme.tokens?.colors,
-    deep: {
-      test: {
-        yam: {
-          value: '%555',
-        },
-        pool: {
-          poller: {
-            value: '#fff',
-          },
-          tall: {
-            value: '$dfdf',
-          },
-        },
-      },
-    },
-  },
-} as Theme['tokens']
+import { slotRecipes } from './slot-recipes'
 
 const textStyles = {
   headline: {
@@ -54,13 +23,35 @@ const textStyles = {
   },
 }
 
-export const fixturePreset: Omit<PresetCore, 'globalCss' | 'staticCss' | 'globalVars'> = {
-  ...presetBase,
-  conditions,
+export const fixturePreset: Config = {
+  presets: [presetBase, presetPanda],
+  conditions: {
+    materialTheme: '[data-color=material] &',
+    pastelTheme: '[data-color=pastel] &',
+    dark: '[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]',
+    light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
+  },
   theme: {
-    ...theme,
     textStyles,
-    tokens,
+    tokens: {
+      colors: {
+        deep: {
+          test: {
+            yam: {
+              value: '%555',
+            },
+            pool: {
+              poller: {
+                value: '#fff',
+              },
+              tall: {
+                value: '$dfdf',
+              },
+            },
+          },
+        },
+      },
+    },
     semanticTokens,
     recipes,
     slotRecipes,
