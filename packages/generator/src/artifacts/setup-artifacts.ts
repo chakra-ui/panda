@@ -15,7 +15,6 @@ import { generateCreateRecipe, generateRecipes } from './js/recipe'
 import { generateSvaFn } from './js/sva'
 import { generateTokenJs } from './js/token'
 import { generateJsxFactory, generateJsxPatterns, generateJsxTypes } from './jsx'
-import { generatePackageJson } from './pkg-json'
 import { getGeneratedSystemTypes, getGeneratedTypes } from './types/generated'
 import { generateTypesEntry } from './types/main'
 import { generatePropTypes } from './types/prop-types'
@@ -379,14 +378,6 @@ function setupCssIndex(ctx: Context): Artifact {
   }
 }
 
-function setupPackageJson(ctx: Context): Artifact | undefined {
-  if (!ctx.config.emitPackage) return
-  return {
-    id: 'package.json',
-    files: [{ file: 'package.json', code: generatePackageJson(ctx) }],
-  }
-}
-
 function setupThemes(ctx: Context): Artifact | undefined {
   const { themes } = ctx.config
   if (!themes) return
@@ -483,7 +474,6 @@ const entries: ArtifactEntry[] = [
   ['jsx-patterns', setupJsxPatterns],
   ['jsx-patterns-index', setupJsxPatternsIndex],
   ['css-index', setupCssIndex],
-  ['package.json', setupPackageJson],
   ['themes', setupThemes],
 ]
 
