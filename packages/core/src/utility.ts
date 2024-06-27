@@ -364,6 +364,11 @@ export class Utility {
     }
   }
 
+  addPropertyType = (property: string, type: string[]) => {
+    const set = this.types.get(property) ?? new Set()
+    this.types.set(property, new Set([...set, ...type]))
+  }
+
   /**
    * Returns the Typescript type for the define properties
    */
