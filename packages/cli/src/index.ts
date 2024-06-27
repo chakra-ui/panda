@@ -122,6 +122,10 @@ export function defineStyles(definition: SystemStyleObject) {
   return definition
 }
 
+export function defineMotionStyles(definition: CompositionStyles['motionStyles']) {
+  return definition
+}
+
 export type {
   CompositionStyles,
   Config,
