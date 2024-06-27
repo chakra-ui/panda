@@ -184,7 +184,7 @@ describe('preset patterns', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -232,7 +232,7 @@ describe('preset patterns', () => {
           color: var(--colors-blue-100);
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -278,7 +278,7 @@ describe('preset patterns', () => {
           align-items: center;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -330,7 +330,7 @@ describe('preset patterns', () => {
           align-items: center;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"
@@ -376,7 +376,7 @@ describe('preset patterns', () => {
           align-items: center;
       }
 
-        .flex_row {
+        .flex-dir_row {
           flex-direction: row;
       }
       }"
@@ -428,7 +428,7 @@ describe('preset patterns', () => {
           align-items: center;
       }
 
-        .flex_row {
+        .flex-dir_row {
           flex-direction: row;
       }
       }"
@@ -2619,7 +2619,7 @@ describe('staticCss', () => {
           border-block-end-width: var(--thickness);
       }
 
-        .border-e_var\\(--thickness\\) {
+        .border-ew_var\\(--thickness\\) {
           border-inline-end-width: var(--thickness);
       }
       }"

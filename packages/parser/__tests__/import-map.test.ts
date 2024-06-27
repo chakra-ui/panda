@@ -129,12 +129,12 @@ describe('config.importMap', () => {
           flex: 1 1 0%;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
 
         @media screen and (min-width: 40rem) {
-          .sm\\:flex_row {
+          .sm\\:flex-dir_row {
             flex-direction: row;
       }
       }
@@ -158,7 +158,7 @@ describe('config.importMap', () => {
           .print\\:h_297mm {
             height: 297mm;
       }
-          .print\\:flex_row {
+          .print\\:flex-dir_row {
             flex-direction: row;
       }
       }

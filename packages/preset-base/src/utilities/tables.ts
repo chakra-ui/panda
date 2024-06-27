@@ -2,7 +2,7 @@ import type { UtilityConfig } from '@pandacss/types'
 
 export const tables: UtilityConfig = {
   borderCollapse: {
-    className: 'border',
+    className: 'border-collapse',
     group: 'Table',
   },
   borderSpacing: {

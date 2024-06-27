@@ -65,11 +65,11 @@ describe('Atomic recipe', () => {
           font-size: var(--font-sizes-lg);
       }
 
-        .bg_blue\\.500 {
+        .bg-color_blue\\.500 {
           background-color: var(--colors-blue-500);
       }
 
-        .bg_red\\.500 {
+        .bg-color_red\\.500 {
           background-color: var(--colors-red-500);
       }
 

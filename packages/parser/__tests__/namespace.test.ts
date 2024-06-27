@@ -35,7 +35,7 @@ describe('extract namespace', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
 
@@ -214,7 +214,7 @@ describe('extract namespace', () => {
           color: green;
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
       }"

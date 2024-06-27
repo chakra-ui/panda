@@ -13,7 +13,7 @@
     font-family: var(--global-font-body, var(--font-fallback));
 }
 
-  *,::before,::after,::backdrop,::first-letter,::file-selector-button {
+  *,::before,::after,::backdrop,::file-selector-button {
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
@@ -79,11 +79,6 @@
     opacity: 1;
     --placeholder-fallback: color-mix(in srgb, currentColor 50%, transparent);
     color: var(--global-color-placeholder, var(--placeholder-fallback));
-}
-
-  select,textarea,input:where(:not([type='button'], [type='reset'], [type='submit'])) {
-    border-width: 1px;
-    border-style: solid;
 }
 
   textarea {
@@ -1134,7 +1129,7 @@
     letter-spacing: var(--letter-spacings-tight);
 }
 
-  .flex_column {
+  .flex-dir_column {
     flex-direction: column;
 }
 
@@ -1154,7 +1149,7 @@
     border-width: 1px;
 }
 
-  .border_card {
+  .border-color_card {
     border-color: var(--colors-card);
 }
 
@@ -1170,7 +1165,7 @@
     align-items: center;
 }
 
-  .flex_row {
+  .flex-dir_row {
     flex-direction: row;
 }
 
@@ -1230,7 +1225,7 @@
     line-height: var(--line-heights-normal);
 }
 
-  .border_border {
+  .border-color_border {
     border-color: var(--colors-border);
 }
 
@@ -1250,7 +1245,7 @@
     border-top-width: 8px;
 }
 
-  .border-t_accent {
+  .border-tc_accent {
     border-top-color: var(--colors-accent);
 }
 
@@ -1278,7 +1273,7 @@
     border-bottom-right-radius: var(--radii-sm);
 }
 
-  .border_neutral\.700 {
+  .border-color_neutral\.700 {
     border-color: var(--colors-neutral-700);
 }
 

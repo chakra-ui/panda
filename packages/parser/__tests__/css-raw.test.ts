@@ -193,11 +193,11 @@ describe('{fn}.raw', () => {
           padding-top: var(--spacing-6);
       }
 
-        .flex_column {
+        .flex-dir_column {
           flex-direction: column;
       }
 
-        .flex_row {
+        .flex-dir_row {
           flex-direction: row;
       }
       }"

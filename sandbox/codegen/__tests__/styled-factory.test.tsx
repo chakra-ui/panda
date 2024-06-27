@@ -350,7 +350,7 @@ describe('styled factory - button recipe', () => {
     expect(container.firstChild).toMatchInlineSnapshot(
       `
       <div
-        class="d_flex flex_column gap_10px text_red.400"
+        class="d_flex flex-dir_column gap_10px text_red.400"
       >
         Click me
       </div>
@@ -368,7 +368,7 @@ describe('styled factory - button recipe', () => {
     expect(container.firstChild).toMatchInlineSnapshot(
       `
       <div
-        class="text_blue.300 bg_green.300"
+        class="text_blue.300 bg-color_green.300"
       >
         array css prop
       </div>

@@ -481,7 +481,7 @@ describe('jsx', () => {
           color: var(--colors-yellow-300);
       }
 
-        .bg_green\\.300 {
+        .bg-color_green\\.300 {
           background-color: var(--colors-green-300);
       }
       }"

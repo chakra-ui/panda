@@ -314,8 +314,8 @@ describe('rule processor', () => {
         "sm\\:w_2",
         "sm\\:text_yellow",
         "sm\\:fs_sm",
-        "sm\\:bg_red",
-        "sm\\:hover\\:bg_green",
+        "sm\\:bg-color_red",
+        "sm\\:hover\\:bg-color_green",
         "hover\\:md\\:fs_lg",
         "xl\\:w_3",
         "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
@@ -390,13 +390,13 @@ describe('rule processor', () => {
           .sm\\:fs_sm {
             font-size: var(--font-sizes-sm);
       }
-          .sm\\:bg_red {
+          .sm\\:bg-color_red {
             background-color: red;
       }
       }
 
         @media screen and (min-width: 40rem) {
-          .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg-color_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
@@ -552,16 +552,16 @@ describe('rule processor', () => {
         "text_blue",
         "items_center",
         "justify_center",
-        "bg_blue",
-        "bg_transparent",
+        "bg-color_blue",
+        "bg-color_transparent",
         "\\[\\&\\[data-disabled\\]\\]\\:text_black",
         "\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray",
         "\\[\\&\\[data-disabled\\]\\]\\:text_gray",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg_gray",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg_transparent",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent",
         "hover\\:text_white",
-        "hover\\:bg_darkblue",
-        "hover\\:bg_blue",
+        "hover\\:bg-color_darkblue",
+        "hover\\:bg-color_blue",
       ]
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
@@ -621,11 +621,11 @@ describe('rule processor', () => {
           justify-content: center;
       }
 
-        .bg_blue {
+        .bg-color_blue {
           background-color: blue;
       }
 
-        .bg_transparent {
+        .bg-color_transparent {
           background-color: var(--colors-transparent);
       }
 
@@ -641,11 +641,11 @@ describe('rule processor', () => {
           color: gray;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:bg_gray[data-disabled] {
+        .\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray[data-disabled] {
           background-color: gray;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:bg_transparent[data-disabled] {
+        .\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent[data-disabled] {
           background-color: var(--colors-transparent);
       }
 
@@ -653,11 +653,11 @@ describe('rule processor', () => {
           color: var(--colors-white);
       }
 
-        .hover\\:bg_darkblue:is(:hover, [data-hover]) {
+        .hover\\:bg-color_darkblue:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        .hover\\:bg_blue:is(:hover, [data-hover]) {
+        .hover\\:bg-color_blue:is(:hover, [data-hover]) {
           background-color: blue;
       }
       }"
@@ -1289,7 +1289,7 @@ describe('js to css', () => {
           background: var(--colors-white) !important;
       }
 
-        .border_red\\! {
+        .border-color_red\\! {
           border-color: red !important;
       }
 
@@ -1444,23 +1444,23 @@ describe('js to css', () => {
     expect(result.className).toMatchInlineSnapshot(`
       [
         "bg_red",
-        "bg_blue",
+        "bg-color_blue",
         "dark\\:bg_red",
-        "dark\\:bg_blue",
+        "dark\\:bg-color_blue",
         "focus\\:bg_red",
-        "focus\\:bg_blue",
+        "focus\\:bg-color_blue",
         "hover\\:bg_red",
-        "hover\\:bg_blue",
+        "hover\\:bg-color_blue",
         "md\\:bg_red",
-        "md\\:bg_blue",
+        "md\\:bg-color_blue",
         "md\\:light\\:bg_red",
-        "md\\:light\\:bg_blue",
+        "md\\:light\\:bg-color_blue",
         "md\\:light\\:focus\\:bg_red",
-        "md\\:light\\:focus\\:bg_blue",
+        "md\\:light\\:focus\\:bg-color_blue",
         "md\\:light\\:hover\\:bg_red",
-        "md\\:light\\:hover\\:bg_blue",
+        "md\\:light\\:hover\\:bg-color_blue",
         "md\\:light\\:active\\:bg_red",
-        "md\\:light\\:active\\:bg_blue",
+        "md\\:light\\:active\\:bg-color_blue",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
@@ -1469,7 +1469,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        .bg_blue {
+        .bg-color_blue {
           background-color: blue;
       }
 
@@ -1477,7 +1477,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        [data-theme=dark] .dark\\:bg_blue,.dark .dark\\:bg_blue,.dark\\:bg_blue.dark,.dark\\:bg_blue[data-theme=dark] {
+        [data-theme=dark] .dark\\:bg-color_blue,.dark .dark\\:bg-color_blue,.dark\\:bg-color_blue.dark,.dark\\:bg-color_blue[data-theme=dark] {
           background-color: blue;
       }
 
@@ -1485,7 +1485,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        .focus\\:bg_blue:is(:focus, [data-focus]) {
+        .focus\\:bg-color_blue:is(:focus, [data-focus]) {
           background-color: blue;
       }
 
@@ -1493,7 +1493,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        .hover\\:bg_blue:is(:hover, [data-hover]) {
+        .hover\\:bg-color_blue:is(:hover, [data-hover]) {
           background-color: blue;
       }
 
@@ -1501,13 +1501,13 @@ describe('js to css', () => {
           .md\\:bg_red {
             background: red;
       }
-          .md\\:bg_blue {
+          .md\\:bg-color_blue {
             background-color: blue;
       }
           [data-theme=light] .md\\:light\\:bg_red,.light .md\\:light\\:bg_red,.md\\:light\\:bg_red.light,.md\\:light\\:bg_red[data-theme=light] {
             background: red;
       }
-          [data-theme=light] .md\\:light\\:bg_blue,.light .md\\:light\\:bg_blue,.md\\:light\\:bg_blue.light,.md\\:light\\:bg_blue[data-theme=light] {
+          [data-theme=light] .md\\:light\\:bg-color_blue,.light .md\\:light\\:bg-color_blue,.md\\:light\\:bg-color_blue.light,.md\\:light\\:bg-color_blue[data-theme=light] {
             background-color: blue;
       }
       }
@@ -1519,7 +1519,7 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg_blue:is(:focus, [data-focus])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus])[data-theme=light] {
             background-color: blue;
       }
       }
@@ -1531,7 +1531,7 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg_blue:is(:hover, [data-hover])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover])[data-theme=light] {
             background-color: blue;
       }
       }
@@ -1543,7 +1543,7 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:active\\:bg_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg_blue:is(:active, [data-active]).light,.md\\:light\\:active\\:bg_blue:is(:active, [data-active])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:active\\:bg-color_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg-color_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg-color_blue:is(:active, [data-active]).light,.md\\:light\\:active\\:bg-color_blue:is(:active, [data-active])[data-theme=light] {
             background-color: blue;
       }
       }

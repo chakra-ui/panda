@@ -68,7 +68,7 @@ describe('sva', () => {
       `
       {
         "icon": "fs_2xl border_1px_solid",
-        "root": "rounded_md fw_semibold h_10 px_4 border_1px_solid text_colorPalette.600 dark:text_colorPalette.200 border_currentColor",
+        "root": "rounded_md fw_semibold h_10 px_4 border_1px_solid text_colorPalette.600 dark:text_colorPalette.200 border-color_currentColor",
       }
     `,
     )

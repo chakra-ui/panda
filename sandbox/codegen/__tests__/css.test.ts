@@ -89,17 +89,17 @@ describe('css', () => {
   test('same prop', () => {
     const className = css({ bgColor: 'red.100', backgroundColor: 'red.200' })
 
-    expect(className).toMatchInlineSnapshot('"bg_red.200"')
+    expect(className).toMatchInlineSnapshot('"bg-color_red.200"')
 
     const className2 = css({ backgroundColor: 'red.300', bgColor: 'red.400' })
 
-    expect(className2).toMatchInlineSnapshot('"bg_red.400"')
+    expect(className2).toMatchInlineSnapshot('"bg-color_red.400"')
   })
 
   test('merging styles', () => {
     const className = css({ fontSize: 'sm', bgColor: 'red.500' }, { backgroundColor: 'red.600' })
 
-    expect(className).toMatchInlineSnapshot('"fs_sm bg_red.600"')
+    expect(className).toMatchInlineSnapshot('"fs_sm bg-color_red.600"')
   })
 
   test('merging styles with nested conditions', () => {
@@ -120,7 +120,7 @@ describe('css', () => {
       { fontSize: '12px' },
     ])
 
-    expect(className).toMatchInlineSnapshot(`"fs_12px bg_red.600"`)
+    expect(className).toMatchInlineSnapshot(`"fs_12px bg-color_red.600"`)
   })
 })
 

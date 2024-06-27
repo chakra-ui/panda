@@ -75,12 +75,12 @@ export const interactivity: UtilityConfig = {
     shorthand: ['scrollMarginY'],
   },
   scrollMarginBlockEnd: {
-    className: 'scroll-mb',
+    className: 'scroll-mbe',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginBlockStart: {
-    className: 'scroll-mt',
+    className: 'scroll-mbt',
     values: 'spacing',
     group: 'Scroll',
   },
@@ -112,12 +112,12 @@ export const interactivity: UtilityConfig = {
     shorthand: ['scrollPaddingY'],
   },
   scrollPaddingBlockStart: {
-    className: 'scroll-pt',
+    className: 'scroll-pbs',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingBlockEnd: {
-    className: 'scroll-pb',
+    className: 'scroll-pbe',
     values: 'spacing',
     group: 'Scroll',
   },
@@ -153,7 +153,7 @@ export const interactivity: UtilityConfig = {
     group: 'Scroll',
   },
   scrollPaddingBottom: {
-    className: 'scroll-pb',
+    className: 'scroll-pbo',
     values: 'spacing',
     group: 'Scroll',
   },
