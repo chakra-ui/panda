@@ -1,5 +1,25 @@
 # @pandacss/node
 
+## 0.42.0
+
+### Patch Changes
+
+- 19c3a2c: Minor changes in the `panda analyze --output coverage.json` file
+- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+  generated CSS where possible.
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [17a1932]
+  - @pandacss/extractor@0.42.0
+  - @pandacss/types@0.42.0
+  - @pandacss/generator@0.42.0
+  - @pandacss/config@0.42.0
+  - @pandacss/core@0.42.0
+  - @pandacss/parser@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/token-dictionary@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes
