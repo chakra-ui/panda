@@ -9,7 +9,7 @@ export function withoutImportant<T extends string | number | boolean>(value: T) 
 }
 
 export function withoutSpace<T extends string | number | boolean>(str: T) {
-  return typeof str === 'string' ? str.replaceAll(' ', '_') : str
+  return typeof str === 'string' ? str.split(' ').join('_') : str
 }
 
 type Dict = Record<string, unknown>

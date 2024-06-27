@@ -36,7 +36,7 @@ const fallbackCondition: NonNullable<CreateCssContext['conditions']> = {
   breakpoints: { keys: [] },
 }
 
-const sanitize = (value: any) => (typeof value === 'string' ? value.replaceAll(/[\n\s]+/g, ' ') : value)
+const sanitize = (value: any) => (typeof value === 'string' ? value.replace(/[\n\s]+/g, ' ') : value)
 
 export function createCss(context: CreateCssContext) {
   const { utility, hash, conditions: conds = fallbackCondition } = context
