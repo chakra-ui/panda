@@ -1,11 +1,14 @@
-import { fixturePreset } from '@pandacss/fixture'
+import { builtInPresets } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 import { Conditions } from '../src/conditions'
 import { compareAtRuleOrMixed as _compareAtRuleOrMixed } from '../src/sort-style-rules'
 
 describe('Conditions', () => {
   test('condition transformation', () => {
-    const css = new Conditions({ conditions: fixturePreset.conditions!, breakpoints: fixturePreset.theme.breakpoints })
+    const css = new Conditions({
+      conditions: builtInPresets.base.conditions!,
+      breakpoints: builtInPresets.panda.theme.breakpoints,
+    })
     expect(css.normalize('@media (min-width: 768px)')).toMatchInlineSnapshot(`
       {
         "name": "media",
@@ -76,7 +79,10 @@ describe('Conditions', () => {
   })
 
   test('conditions sorting', () => {
-    const css = new Conditions({ conditions: fixturePreset.conditions!, breakpoints: fixturePreset.theme.breakpoints })
+    const css = new Conditions({
+      conditions: builtInPresets.base.conditions!,
+      breakpoints: builtInPresets.panda.theme.breakpoints,
+    })
     const conditions = ['sm', 'md', 'lg', '_hover', '_focus', '_focus-visible', '_focus-within', '_active']
     expect(css.sort(conditions).map((c) => c.raw)).toMatchInlineSnapshot(`
       [

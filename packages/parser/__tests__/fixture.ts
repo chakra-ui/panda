@@ -142,7 +142,11 @@ interface ParseAndExtractReturn {
   css: string
 }
 
-export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig): ParseAndExtractReturn => {
+export const parseAndExtract = (
+  code: string,
+  userConfig?: Config & { eject?: boolean },
+  tsconfig?: TSConfig,
+): ParseAndExtractReturn => {
   const ctx = getFixtureProject(code, userConfig, tsconfig)
   const encoder = ctx.encoder.clone()
   const result = ctx.project.parseSourceFile(filePath, encoder)!

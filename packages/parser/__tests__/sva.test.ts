@@ -184,6 +184,18 @@ describe('ast parser / sva', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        @layer compositions {
+          .textStyle_lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+      }
+
+          .textStyle_xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+      }
+      }
+
         .p_6 {
           padding: var(--spacing-6);
       }

@@ -83,5 +83,3 @@ export default defineConfig({
   presets: ['@pandacss/preset-panda']
 })
 ```
-
-> Note: You don't need to install `@pandacss/preset-base` or `@pandacss/preset-panda`. Panda will automatically resolve them for you.

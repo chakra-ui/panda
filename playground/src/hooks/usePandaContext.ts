@@ -5,6 +5,7 @@ import { merge } from 'merge-anything'
 import { resolveConfig } from '@/src/lib/config/resolve-config'
 
 const defaultConfig = resolveConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   cwd: '',
   include: [],
   outdir: 'styled-system',
@@ -31,6 +32,7 @@ export const usePandaContext = (userConfig: Config | null): Generator & { error?
 
   try {
     config = resolveConfig({
+      presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
       cwd: '',
       include: [],
       outdir: 'styled-system',
