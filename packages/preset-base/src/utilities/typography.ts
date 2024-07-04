@@ -18,6 +18,22 @@ export const typography: UtilityConfig = {
     values: 'fontSizes',
     group: 'Typography',
   },
+  fontSizeAdjust: {
+    className: 'fs-a',
+    group: 'Typography',
+  },
+  fontPalette: {
+    className: 'fp',
+    group: 'Typography',
+  },
+  fontKerning: {
+    className: 'fk',
+    group: 'Typography',
+  },
+  fontFeatureSettings: {
+    className: 'ff-s',
+    group: 'Typography',
+  },
   fontWeight: {
     className: 'fw',
     values: 'fontWeights',
@@ -35,6 +51,22 @@ export const typography: UtilityConfig = {
         WebkitFontSmoothing: value,
       }
     },
+  },
+  fontVariant: {
+    className: 'fv',
+    group: 'Typography',
+  },
+  fontVariantAlternates: {
+    className: 'fv-alt',
+    group: 'Typography',
+  },
+  fontVariantCaps: {
+    className: 'fv-caps',
+    group: 'Typography',
+  },
+  fontVariationSettings: {
+    className: 'fv-s',
+    group: 'Typography',
   },
   fontVariantNumeric: {
     className: 'fv-num',

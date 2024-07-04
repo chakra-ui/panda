@@ -16,7 +16,7 @@ export const tables: UtilityConfig = {
     },
   },
   borderSpacingX: {
-    className: 'bd-sp-x',
+    className: 'bd-sx',
     values: 'spacing',
     group: 'Table',
     transform(value) {
@@ -26,7 +26,7 @@ export const tables: UtilityConfig = {
     },
   },
   borderSpacingY: {
-    className: 'bd-sp-y',
+    className: 'bd-sy',
     values: 'spacing',
     group: 'Table',
     transform(value) {

@@ -113,7 +113,7 @@ export const spacing: UtilityConfig = {
     group: 'Margin',
   },
   marginBlockStart: {
-    className: 'mts',
+    className: 'mbs',
     values: marginValues,
     group: 'Margin',
   },

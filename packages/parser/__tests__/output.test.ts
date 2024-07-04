@@ -1990,7 +1990,7 @@ describe('extract to css output pipeline', () => {
           margin-block-end: 1em;
       }
 
-        .\\[\\&_p\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mts_1em p:not(:first-child) {
+        .\\[\\&_p\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbs_1em p:not(:first-child) {
           margin-block-start: 1em;
       }
 
