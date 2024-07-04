@@ -6,7 +6,7 @@ const keyframes = (obj?: Dict) => {
   const ctx = createGeneratorContext(obj ? { theme: { keyframes: obj } } : undefined)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('keyframes', sheet)
-  return sheet.toCss({ optimize: true })
+  return sheet.toCss()
 }
 
 describe('keyframes', () => {
