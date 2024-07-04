@@ -2,12 +2,12 @@ import type { UtilityConfig } from '@pandacss/types'
 
 export const layout: UtilityConfig = {
   aspectRatio: {
-    className: 'aspect',
+    className: 'asp',
     values: 'aspectRatios',
     group: 'Layout',
   },
   boxDecorationBreak: {
-    className: 'decoration',
+    className: 'bx-db',
     group: 'Layout',
     transform(value) {
       return {
@@ -22,29 +22,29 @@ export const layout: UtilityConfig = {
     group: 'Visibility',
   },
   boxSizing: {
-    className: 'box',
+    className: 'bx-s',
     group: 'System',
   },
 
   objectPosition: {
-    className: 'obj-pos',
+    className: 'obj-p',
     group: 'Layout',
   },
   objectFit: {
-    className: 'obj-fit',
+    className: 'obj-f',
     group: 'Layout',
   },
 
   overscrollBehavior: {
-    className: 'overscroll',
+    className: 'ovscl',
     group: 'Scroll',
   },
   overscrollBehaviorX: {
-    className: 'overscroll-x',
+    className: 'ovscl-x',
     group: 'Scroll',
   },
   overscrollBehaviorY: {
-    className: 'overscroll-y',
+    className: 'ovscl-y',
     group: 'Scroll',
   },
 
@@ -63,6 +63,14 @@ export const layout: UtilityConfig = {
     values: 'spacing',
     group: 'Position',
   },
+  inset: {
+    className: 'inset',
+    group: 'Position',
+    values: (theme) => ({
+      auto: 'auto',
+      ...theme('spacing'),
+    }),
+  },
   insetInline: {
     className: 'inset-x',
     values: 'spacing',
@@ -75,32 +83,24 @@ export const layout: UtilityConfig = {
     group: 'Position',
     shorthand: ['insetY'],
   },
-  inset: {
-    className: 'inset',
-    group: 'Position',
-    values: (theme) => ({
-      auto: 'auto',
-      ...theme('spacing'),
-    }),
-  },
   insetBlockEnd: {
-    className: 'inset-b',
+    className: 'inset-be',
     values: 'spacing',
     group: 'Position',
   },
   insetBlockStart: {
-    className: 'inset-t',
+    className: 'inset-bs',
     values: 'spacing',
     group: 'Position',
   },
   insetInlineEnd: {
-    className: 'end',
+    className: 'inset-e',
     values: 'spacing',
     group: 'Position',
     shorthand: ['insetEnd', 'end'],
   },
   insetInlineStart: {
-    className: 'start',
+    className: 'inset-s',
     values: 'spacing',
     group: 'Position',
     shorthand: ['insetStart', 'start'],

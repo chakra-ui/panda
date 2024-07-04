@@ -164,35 +164,35 @@ describe('static-css', () => {
           padding: 60px;
       }
 
-        .text_red\\.200 {
+        .c_red\\.200 {
           color: var(--colors-red-200);
       }
 
-        .text_blue\\.200 {
+        .c_blue\\.200 {
           color: var(--colors-blue-200);
       }
 
-        .text_green\\.200 {
+        .c_green\\.200 {
           color: var(--colors-green-200);
       }
 
-        .text_colorPalette\\.200 {
+        .c_colorPalette\\.200 {
           color: var(--colors-color-palette-200);
       }
 
-        [data-theme=light] .light\\:text_red\\.200,.light .light\\:text_red\\.200,.light\\:text_red\\.200.light,.light\\:text_red\\.200[data-theme=light],[data-theme=dark] .dark\\:text_red\\.200,.dark .dark\\:text_red\\.200,.dark\\:text_red\\.200.dark,.dark\\:text_red\\.200[data-theme=dark] {
+        [data-theme=light] .light\\:c_red\\.200,.light .light\\:c_red\\.200,.light\\:c_red\\.200.light,.light\\:c_red\\.200[data-theme=light],[data-theme=dark] .dark\\:c_red\\.200,.dark .dark\\:c_red\\.200,.dark\\:c_red\\.200.dark,.dark\\:c_red\\.200[data-theme=dark] {
           color: var(--colors-red-200);
       }
 
-        [data-theme=light] .light\\:text_blue\\.200,.light .light\\:text_blue\\.200,.light\\:text_blue\\.200.light,.light\\:text_blue\\.200[data-theme=light],[data-theme=dark] .dark\\:text_blue\\.200,.dark .dark\\:text_blue\\.200,.dark\\:text_blue\\.200.dark,.dark\\:text_blue\\.200[data-theme=dark] {
+        [data-theme=light] .light\\:c_blue\\.200,.light .light\\:c_blue\\.200,.light\\:c_blue\\.200.light,.light\\:c_blue\\.200[data-theme=light],[data-theme=dark] .dark\\:c_blue\\.200,.dark .dark\\:c_blue\\.200,.dark\\:c_blue\\.200.dark,.dark\\:c_blue\\.200[data-theme=dark] {
           color: var(--colors-blue-200);
       }
 
-        [data-theme=light] .light\\:text_green\\.200,.light .light\\:text_green\\.200,.light\\:text_green\\.200.light,.light\\:text_green\\.200[data-theme=light],[data-theme=dark] .dark\\:text_green\\.200,.dark .dark\\:text_green\\.200,.dark\\:text_green\\.200.dark,.dark\\:text_green\\.200[data-theme=dark] {
+        [data-theme=light] .light\\:c_green\\.200,.light .light\\:c_green\\.200,.light\\:c_green\\.200.light,.light\\:c_green\\.200[data-theme=light],[data-theme=dark] .dark\\:c_green\\.200,.dark .dark\\:c_green\\.200,.dark\\:c_green\\.200.dark,.dark\\:c_green\\.200[data-theme=dark] {
           color: var(--colors-green-200);
       }
 
-        [data-theme=light] .light\\:text_colorPalette\\.200,.light .light\\:text_colorPalette\\.200,.light\\:text_colorPalette\\.200.light,.light\\:text_colorPalette\\.200[data-theme=light],[data-theme=dark] .dark\\:text_colorPalette\\.200,.dark .dark\\:text_colorPalette\\.200,.dark\\:text_colorPalette\\.200.dark,.dark\\:text_colorPalette\\.200[data-theme=dark] {
+        [data-theme=light] .light\\:c_colorPalette\\.200,.light .light\\:c_colorPalette\\.200,.light\\:c_colorPalette\\.200.light,.light\\:c_colorPalette\\.200[data-theme=light],[data-theme=dark] .dark\\:c_colorPalette\\.200,.dark .dark\\:c_colorPalette\\.200,.dark\\:c_colorPalette\\.200.dark,.dark\\:c_colorPalette\\.200[data-theme=dark] {
           color: var(--colors-color-palette-200);
       }
 
@@ -577,51 +577,51 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer utilities {
-        .text_red\\.200 {
+        .c_red\\.200 {
           color: var(--colors-red-200);
       }
 
-        .text_blue\\.200 {
+        .c_blue\\.200 {
           color: var(--colors-blue-200);
       }
 
-        .text_green\\.200 {
+        .c_green\\.200 {
           color: var(--colors-green-200);
       }
 
-        .text_colorPalette\\.200 {
+        .c_colorPalette\\.200 {
           color: var(--colors-color-palette-200);
       }
 
-        .focus\\:text_red\\.200:is(:focus, [data-focus]) {
+        .focus\\:c_red\\.200:is(:focus, [data-focus]) {
           color: var(--colors-red-200);
       }
 
-        .focus\\:text_blue\\.200:is(:focus, [data-focus]) {
+        .focus\\:c_blue\\.200:is(:focus, [data-focus]) {
           color: var(--colors-blue-200);
       }
 
-        .focus\\:text_green\\.200:is(:focus, [data-focus]) {
+        .focus\\:c_green\\.200:is(:focus, [data-focus]) {
           color: var(--colors-green-200);
       }
 
-        .focus\\:text_colorPalette\\.200:is(:focus, [data-focus]) {
+        .focus\\:c_colorPalette\\.200:is(:focus, [data-focus]) {
           color: var(--colors-color-palette-200);
       }
 
-        .hover\\:text_red\\.200:is(:hover, [data-hover]) {
+        .hover\\:c_red\\.200:is(:hover, [data-hover]) {
           color: var(--colors-red-200);
       }
 
-        .hover\\:text_blue\\.200:is(:hover, [data-hover]) {
+        .hover\\:c_blue\\.200:is(:hover, [data-hover]) {
           color: var(--colors-blue-200);
       }
 
-        .hover\\:text_green\\.200:is(:hover, [data-hover]) {
+        .hover\\:c_green\\.200:is(:hover, [data-hover]) {
           color: var(--colors-green-200);
       }
 
-        .hover\\:text_colorPalette\\.200:is(:hover, [data-hover]) {
+        .hover\\:c_colorPalette\\.200:is(:hover, [data-hover]) {
           color: var(--colors-color-palette-200);
       }
       }",
@@ -869,7 +869,7 @@ describe('static-css', () => {
           height: sm;
       }
 
-        .rounded_9999px {
+        .bdr_9999px {
           border-radius: 9999px;
       }
 
@@ -981,19 +981,19 @@ describe('static-css', () => {
           position: absolute;
       }
 
-        .inset-t_0 {
+        .inset-bs_0 {
           inset-block-start: 0;
       }
 
-        .inset-b_auto {
+        .inset-be_auto {
           inset-block-end: auto;
       }
 
-        .start_auto {
+        .inset-s_auto {
           inset-inline-start: auto;
       }
 
-        .end_20 {
+        .inset-e_20 {
           inset-inline-end: var(--spacing-20);
       }
 
@@ -1001,59 +1001,59 @@ describe('static-css', () => {
           translate: 50% -50%;
       }
 
-        .end_40 {
+        .inset-e_40 {
           inset-inline-end: var(--spacing-40);
       }
 
-        .end_60 {
+        .inset-e_60 {
           inset-inline-end: var(--spacing-60);
       }
 
-        .end_-20 {
+        .inset-e_-20 {
           inset-inline-end: calc(var(--spacing-20) * -1);
       }
 
-        .end_-40 {
+        .inset-e_-40 {
           inset-inline-end: calc(var(--spacing-40) * -1);
       }
 
-        .end_-60 {
+        .inset-e_-60 {
           inset-inline-end: calc(var(--spacing-60) * -1);
       }
 
-        .inset-t_20 {
+        .inset-bs_20 {
           inset-block-start: var(--spacing-20);
       }
 
-        .end_0 {
+        .inset-e_0 {
           inset-inline-end: 0;
       }
 
-        .inset-t_40 {
+        .inset-bs_40 {
           inset-block-start: var(--spacing-40);
       }
 
-        .inset-t_60 {
+        .inset-bs_60 {
           inset-block-start: var(--spacing-60);
       }
 
-        .inset-t_-20 {
+        .inset-bs_-20 {
           inset-block-start: calc(var(--spacing-20) * -1);
       }
 
-        .inset-t_-40 {
+        .inset-bs_-40 {
           inset-block-start: calc(var(--spacing-40) * -1);
       }
 
-        .inset-t_-60 {
+        .inset-bs_-60 {
           inset-block-start: calc(var(--spacing-60) * -1);
       }
 
-        .inset-t_auto {
+        .inset-bs_auto {
           inset-block-start: auto;
       }
 
-        .inset-b_0 {
+        .inset-be_0 {
           inset-block-end: 0;
       }
 
@@ -1061,11 +1061,11 @@ describe('static-css', () => {
           translate: 50% 50%;
       }
 
-        .start_0 {
+        .inset-s_0 {
           inset-inline-start: 0;
       }
 
-        .end_auto {
+        .inset-e_auto {
           inset-inline-end: auto;
       }
 
@@ -1077,23 +1077,23 @@ describe('static-css', () => {
           translate: -50% -50%;
       }
 
-        .start_50\\% {
+        .inset-s_50\\% {
           inset-inline-start: 50%;
       }
 
-        .end_50\\% {
+        .inset-e_50\\% {
           inset-inline-end: 50%;
       }
 
-        .inset-t_50\\% {
+        .inset-bs_50\\% {
           inset-block-start: 50%;
       }
 
-        .inset-b_50\\% {
+        .inset-be_50\\% {
           inset-block-end: 50%;
       }
 
-        .self_stretch {
+        .as_stretch {
           align-self: stretch;
       }
 
@@ -1101,11 +1101,11 @@ describe('static-css', () => {
           justify-self: stretch;
       }
 
-        .items_center {
+        .ai_center {
           align-items: center;
       }
 
-        .justify_center {
+        .jc_center {
           justify-content: center;
       }
 
@@ -1113,7 +1113,7 @@ describe('static-css', () => {
           border-block-end-width: var(--thickness);
       }
 
-        .border-e_var\\(--thickness\\) {
+        .bd-e-w_var\\(--thickness\\) {
           border-inline-end-width: var(--thickness);
       }
 
@@ -1129,7 +1129,7 @@ describe('static-css', () => {
           display: flex;
       }
 
-        .\\[\\&\\>\\*\\]\\:overflow_hidden>* {
+        .\\[\\&\\>\\*\\]\\:ov_hidden>* {
           overflow: hidden;
       }
 
@@ -1149,7 +1149,7 @@ describe('static-css', () => {
           height: 100%;
       }
 
-        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>video {
+        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>video {
           object-fit: cover;
       }
 
@@ -1161,11 +1161,11 @@ describe('static-css', () => {
           padding-bottom: NaN%;
       }
 
-        .\\[\\&\\>\\*\\]\\:justify_center>* {
+        .\\[\\&\\>\\*\\]\\:jc_center>* {
           justify-content: center;
       }
 
-        .\\[\\&\\>\\*\\]\\:items_center>* {
+        .\\[\\&\\>\\*\\]\\:ai_center>* {
           align-items: center;
       }
 
@@ -1182,7 +1182,7 @@ describe('static-css', () => {
           .md\\:\\[\\&\\>\\*\\]\\:d_flex>* {
             display: flex;
       }
-          .md\\:\\[\\&\\>\\*\\]\\:overflow_hidden>* {
+          .md\\:\\[\\&\\>\\*\\]\\:ov_hidden>* {
             overflow: hidden;
       }
           .md\\:\\[\\&\\>\\*\\]\\:pos_absolute>* {
@@ -1197,7 +1197,7 @@ describe('static-css', () => {
           .md\\:\\[\\&\\>\\*\\]\\:h_100\\%>* {
             height: 100%;
       }
-          .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-fit_cover>video {
+          .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>video {
             object-fit: cover;
       }
           .md\\:before\\:content_\\"\\"::before {
@@ -1206,10 +1206,10 @@ describe('static-css', () => {
           .md\\:before\\:pb_NaN\\%::before {
             padding-bottom: NaN%;
       }
-          .md\\:\\[\\&\\>\\*\\]\\:justify_center>* {
+          .md\\:\\[\\&\\>\\*\\]\\:jc_center>* {
             justify-content: center;
       }
-          .md\\:\\[\\&\\>\\*\\]\\:items_center>* {
+          .md\\:\\[\\&\\>\\*\\]\\:ai_center>* {
             align-items: center;
       }
       }
@@ -1956,7 +1956,7 @@ describe('static-css', () => {
       }
 
       @layer utilities {
-        .text_ButtonHighlight {
+        .c_ButtonHighlight {
           color: ButtonHighlight;
       }
       }",

@@ -9,14 +9,38 @@ export const svg: UtilityConfig = {
     transform: createColorMixTransform('fill'),
   },
   stroke: {
-    className: 'stroke',
+    className: 'stk',
     values: 'colors',
     group: 'Color',
     transform: createColorMixTransform('stroke'),
   },
   strokeWidth: {
-    className: 'stroke-w',
+    className: 'stk-w',
     values: 'borderWidths',
+    group: 'Border',
+  },
+  strokeDasharray: {
+    className: 'stk-dsh',
+    group: 'Border',
+  },
+  strokeDashoffset: {
+    className: 'stk-do',
+    group: 'Border',
+  },
+  strokeLinecap: {
+    className: 'stk-lc',
+    group: 'Border',
+  },
+  strokeLinejoin: {
+    className: 'stk-lj',
+    group: 'Border',
+  },
+  strokeMiterlimit: {
+    className: 'stk-ml',
+    group: 'Border',
+  },
+  strokeOpacity: {
+    className: 'stk-op',
     group: 'Border',
   },
 }

@@ -40,6 +40,7 @@ describe('generator', () => {
           --radii-xl: 0.75rem;
           --radii-2xl: 1rem;
           --radii-3xl: 1.5rem;
+          --radii-4xl: 2rem;
           --radii-full: 9999px;
           --font-weights-thin: 100;
           --font-weights-extralight: 200;

@@ -3,13 +3,13 @@ import { createColorMixTransform } from '../color-mix-transform'
 
 export const typography: UtilityConfig = {
   color: {
-    className: 'text',
+    className: 'c',
     values: 'colors',
     group: 'Color',
     transform: createColorMixTransform('color'),
   },
   fontFamily: {
-    className: 'font',
+    className: 'ff',
     values: 'fonts',
     group: 'Typography',
   },
@@ -18,13 +18,29 @@ export const typography: UtilityConfig = {
     values: 'fontSizes',
     group: 'Typography',
   },
+  fontSizeAdjust: {
+    className: 'fs-a',
+    group: 'Typography',
+  },
+  fontPalette: {
+    className: 'fp',
+    group: 'Typography',
+  },
+  fontKerning: {
+    className: 'fk',
+    group: 'Typography',
+  },
+  fontFeatureSettings: {
+    className: 'ff-s',
+    group: 'Typography',
+  },
   fontWeight: {
     className: 'fw',
     values: 'fontWeights',
     group: 'Typography',
   },
   fontSmoothing: {
-    className: 'smoothing',
+    className: 'fsmt',
     group: 'Typography',
     values: {
       antialiased: 'antialiased',
@@ -36,87 +52,103 @@ export const typography: UtilityConfig = {
       }
     },
   },
+  fontVariant: {
+    className: 'fv',
+    group: 'Typography',
+  },
+  fontVariantAlternates: {
+    className: 'fv-alt',
+    group: 'Typography',
+  },
+  fontVariantCaps: {
+    className: 'fv-caps',
+    group: 'Typography',
+  },
+  fontVariationSettings: {
+    className: 'fv-s',
+    group: 'Typography',
+  },
   fontVariantNumeric: {
-    className: 'numeric',
+    className: 'fv-num',
     group: 'Typography',
   },
   letterSpacing: {
-    className: 'tracking',
+    className: 'ls',
     values: 'letterSpacings',
     group: 'Typography',
   },
   lineHeight: {
-    className: 'leading',
+    className: 'lh',
     values: 'lineHeights',
     group: 'Typography',
   },
   textAlign: {
-    className: 'text-align',
+    className: 'ta',
     group: 'Typography',
   },
   textDecoration: {
-    className: 'text-decor',
+    className: 'td',
     group: 'Typography',
   },
   textDecorationColor: {
-    className: 'text-decor-color',
+    className: 'td-c',
     values: 'colors',
     transform: createColorMixTransform('textDecorationColor'),
     group: 'Typography',
   },
   textEmphasisColor: {
-    className: 'text-emphasis-color',
+    className: 'te-c',
     values: 'colors',
     transform: createColorMixTransform('textEmphasisColor'),
     group: 'Typography',
   },
   textDecorationStyle: {
-    className: 'decoration-style',
+    className: 'td-s',
     group: 'Typography',
   },
   textDecorationThickness: {
-    className: 'decoration-thickness',
+    className: 'td-t',
     group: 'Typography',
   },
   textUnderlineOffset: {
-    className: 'underline-offset',
+    className: 'tu-o',
     group: 'Typography',
   },
   textTransform: {
-    className: 'text-transform',
+    className: 'tt',
     group: 'Typography',
   },
   textIndent: {
-    className: 'indent',
+    className: 'ti',
     group: 'Typography',
     values: 'spacing',
   },
   textShadow: {
-    className: 'text-shadow',
+    className: 'tsh',
     values: 'shadows',
     group: 'Typography',
   },
   textShadowColor: {
     shorthand: 'textShadowColor',
-    className: 'text-shadow',
+    className: 'tsh-c',
     values: 'colors',
     transform: createColorMixTransform('--text-shadow-color'),
     group: 'Typography',
   },
   textOverflow: {
-    className: 'text-overflow',
+    className: 'tov',
     group: 'Typography',
   },
   verticalAlign: {
-    className: 'v-align',
+    className: 'va',
     group: 'Typography',
   },
   wordBreak: {
-    className: 'break',
+    className: 'wb',
     group: 'Typography',
   },
   textWrap: {
-    className: 'text-wrap',
+    className: 'tw',
     values: ['wrap', 'balance', 'nowrap'],
     group: 'Typography',
     transform(value) {
@@ -124,7 +156,7 @@ export const typography: UtilityConfig = {
     },
   },
   truncate: {
-    className: 'truncate',
+    className: 'trunc',
     values: { type: 'boolean' },
     group: 'Typography',
     transform(value) {
@@ -137,7 +169,7 @@ export const typography: UtilityConfig = {
     },
   },
   lineClamp: {
-    className: 'clamp',
+    className: 'lc',
     group: 'Typography',
     transform(value) {
       if (value === 'none') {

@@ -2,56 +2,56 @@ import type { UtilityConfig } from '@pandacss/types'
 
 export const polyfill: UtilityConfig = {
   appearance: {
-    className: 'appearance',
+    className: 'ap',
     group: 'Visibility',
     transform(value) {
       return { appearance: value, WebkitAppearance: value }
     },
   },
   backfaceVisibility: {
-    className: 'backface',
+    className: 'bfv',
     group: 'Visibility',
     transform(value) {
       return { backfaceVisibility: value, WebkitBackfaceVisibility: value }
     },
   },
   clipPath: {
-    className: 'clip-path',
+    className: 'cp-path',
     group: 'Other',
     transform(value) {
       return { clipPath: value, WebkitClipPath: value }
     },
   },
   hyphens: {
-    className: 'hyphens',
+    className: 'hy',
     group: 'Other',
     transform(value) {
       return { hyphens: value, WebkitHyphens: value }
     },
   },
   mask: {
-    className: 'mask',
+    className: 'msk',
     group: 'Other',
     transform(value) {
       return { mask: value, WebkitMask: value }
     },
   },
   maskImage: {
-    className: 'mask-image',
+    className: 'msk-i',
     group: 'Other',
     transform(value) {
       return { maskImage: value, WebkitMaskImage: value }
     },
   },
   maskSize: {
-    className: 'mask-size',
+    className: 'msk-s',
     group: 'Other',
     transform(value) {
       return { maskSize: value, WebkitMaskSize: value }
     },
   },
   textSizeAdjust: {
-    className: 'text-adjust',
+    className: 'txt-adj',
     group: 'Typography',
     transform(value) {
       return { textSizeAdjust: value, WebkitTextSizeAdjust: value }
