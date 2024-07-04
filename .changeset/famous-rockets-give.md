@@ -5,4 +5,4 @@
 '@pandacss/dev': patch
 ---
 
-Minor changes in the `panda analyze --output coverage.json` file
+Minor changes to the format of the `panda analyze --output coverage.json` file
