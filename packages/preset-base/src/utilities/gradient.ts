@@ -23,7 +23,7 @@ const gradientVars = {
 export const backgroundGradients: UtilityConfig = {
   backgroundGradient: {
     shorthand: 'bgGradient',
-    className: 'bg-gradient',
+    className: 'bg-grad',
     group: 'Background Gradient',
     values(theme) {
       return {
@@ -39,7 +39,7 @@ export const backgroundGradients: UtilityConfig = {
     },
   },
   textGradient: {
-    className: 'text-gradient',
+    className: 'txt-grad',
     group: 'Background Gradient',
     values(theme) {
       return {
@@ -57,7 +57,7 @@ export const backgroundGradients: UtilityConfig = {
     },
   },
   gradientFromPosition: {
-    className: 'gradient-from-pos',
+    className: 'grad-from-pos',
     group: 'Background Gradient',
     transform(value) {
       return {
@@ -66,7 +66,7 @@ export const backgroundGradients: UtilityConfig = {
     },
   },
   gradientToPosition: {
-    className: 'gradient-to-pos',
+    className: 'grad-to-pos',
     group: 'Background Gradient',
     transform(value) {
       return {
@@ -75,19 +75,19 @@ export const backgroundGradients: UtilityConfig = {
     },
   },
   gradientFrom: {
-    className: 'gradient-from',
+    className: 'grad-from',
     values: 'colors',
     group: 'Background Gradient',
     transform: createColorMixTransform('--gradient-from'),
   },
   gradientTo: {
-    className: 'gradient-to',
+    className: 'grad-to',
     values: 'colors',
     group: 'Background Gradient',
     transform: createColorMixTransform('--gradient-to'),
   },
   gradientVia: {
-    className: 'gradient-via',
+    className: 'grad-via',
     values: 'colors',
     group: 'Background Gradient',
     transform(value, args) {
@@ -100,7 +100,7 @@ export const backgroundGradients: UtilityConfig = {
     },
   },
   gradientViaPosition: {
-    className: 'gradient-via-pos',
+    className: 'grad-via-pos',
     group: 'Background Gradient',
     transform(value) {
       return {

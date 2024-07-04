@@ -121,23 +121,23 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_green\\.400 {
+        .c_green\\.400 {
           color: var(--colors-green-400);
       }
 
-        .text_purple\\.400 {
+        .c_purple\\.400 {
           color: var(--colors-purple-400);
       }
 
-        .text_red\\.500 {
+        .c_red\\.500 {
           color: var(--colors-red-500);
       }
 
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .text_green {
+        .c_green {
           color: green;
       }
 
@@ -262,7 +262,7 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_grey\\.70 {
+        .c_grey\\.70 {
           color: grey.70;
       }
       }"
@@ -373,23 +373,23 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_green\\.400 {
+        .c_green\\.400 {
           color: var(--colors-green-400);
       }
 
-        .text_purple\\.400 {
+        .c_purple\\.400 {
           color: var(--colors-purple-400);
       }
 
-        .text_red\\.500 {
+        .c_red\\.500 {
           color: var(--colors-red-500);
       }
 
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .text_green {
+        .c_green {
           color: green;
       }
 
@@ -514,23 +514,23 @@ describe('extract Vue templates', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_green\\.400 {
+        .c_green\\.400 {
           color: var(--colors-green-400);
       }
 
-        .text_purple\\.400 {
+        .c_purple\\.400 {
           color: var(--colors-purple-400);
       }
 
-        .text_red\\.500 {
+        .c_red\\.500 {
           color: var(--colors-red-500);
       }
 
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .text_green {
+        .c_green {
           color: green;
       }
 

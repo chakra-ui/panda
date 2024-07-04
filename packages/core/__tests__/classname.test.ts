@@ -22,7 +22,7 @@ describe('generate classnames', () => {
         color: { _light: 'red', _dark: 'green' },
         opacity: { _dark: 'slate400' },
       }),
-    ).toMatchInlineSnapshot('"light:text_red dark:text_green dark:opacity_slate400"')
+    ).toMatchInlineSnapshot(`"light:c_red dark:c_green dark:op_slate400"`)
 
     expect(
       css({
@@ -69,7 +69,7 @@ describe('generate classnames', () => {
         color: 'red !important',
         fontSize: '30px!',
       }),
-    ).toMatchInlineSnapshot('"text_red! fs_30px!"')
+    ).toMatchInlineSnapshot(`"c_red! fs_30px!"`)
   })
 
   test('should omit spaces in nested selectors', () => {

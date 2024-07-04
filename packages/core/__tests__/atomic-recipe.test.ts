@@ -45,7 +45,7 @@ describe('Atomic recipe', () => {
           padding: var(--spacing-2);
       }
 
-        .rounded_sm {
+        .bdr_sm {
           border-radius: var(--radii-sm);
       }
 
@@ -53,11 +53,11 @@ describe('Atomic recipe', () => {
           padding: var(--spacing-4);
       }
 
-        .rounded_md {
+        .bdr_md {
           border-radius: var(--radii-md);
       }
 
-        .text_white {
+        .c_white {
           color: var(--colors-white);
       }
 
@@ -65,15 +65,15 @@ describe('Atomic recipe', () => {
           font-size: var(--font-sizes-lg);
       }
 
-        .bg_blue\\.500 {
+        .bg-c_blue\\.500 {
           background-color: var(--colors-blue-500);
       }
 
-        .bg_red\\.500 {
+        .bg-c_red\\.500 {
           background-color: var(--colors-red-500);
       }
 
-        .hover\\:text_green:is(:hover, [data-hover]) {
+        .hover\\:c_green:is(:hover, [data-hover]) {
           color: green;
       }
       }"

@@ -16,7 +16,19 @@ const fractions = { ...positiveFractions, ...negativeFractions }
 
 export const transforms: UtilityConfig = {
   transformOrigin: {
-    className: 'origin',
+    className: 'trf-o',
+    group: 'Transform',
+  },
+  transformBox: {
+    className: 'trf-b',
+    group: 'Transform',
+  },
+  transformStyle: {
+    className: 'trf-s',
+    group: 'Transform',
+  },
+  transform: {
+    className: 'trf',
     group: 'Transform',
   },
   rotate: {

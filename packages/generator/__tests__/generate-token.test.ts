@@ -6,7 +6,7 @@ const tokenCss = (config?: Config) => {
   const ctx = createContext(config)
   const sheet = ctx.createSheet()
   ctx.appendCssOfType('tokens', sheet)
-  return sheet.toCss({ optimize: true })
+  return sheet.toCss()
 }
 
 describe('generator', () => {
@@ -40,6 +40,7 @@ describe('generator', () => {
           --radii-xl: 0.75rem;
           --radii-2xl: 1rem;
           --radii-3xl: 1.5rem;
+          --radii-4xl: 2rem;
           --radii-full: 9999px;
           --font-weights-thin: 100;
           --font-weights-extralight: 200;

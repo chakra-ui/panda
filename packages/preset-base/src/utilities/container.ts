@@ -6,13 +6,13 @@ export const container: UtilityConfig = {
     group: 'Container',
   },
   containerName: {
-    className: 'cq-name',
+    className: 'cq-n',
     property: 'containerName',
     values: 'containerNames',
     group: 'Container',
   },
   containerType: {
-    className: 'cq-type',
+    className: 'cq-t',
     group: 'Container',
   },
 }

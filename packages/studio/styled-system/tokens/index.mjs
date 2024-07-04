@@ -103,6 +103,10 @@ const tokens = {
     "value": "1.5rem",
     "variable": "var(--radii-3xl)"
   },
+  "radii.4xl": {
+    "value": "2rem",
+    "variable": "var(--radii-4xl)"
+  },
   "radii.full": {
     "value": "9999px",
     "variable": "var(--radii-full)"

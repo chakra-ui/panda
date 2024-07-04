@@ -473,15 +473,15 @@ describe('jsx', () => {
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_blue\\.300 {
+        .c_blue\\.300 {
           color: var(--colors-blue-300);
       }
 
-        .text_yellow\\.300 {
+        .c_yellow\\.300 {
           color: var(--colors-yellow-300);
       }
 
-        .bg_green\\.300 {
+        .bg-c_green\\.300 {
           background-color: var(--colors-green-300);
       }
       }"

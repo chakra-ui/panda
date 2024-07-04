@@ -196,11 +196,11 @@ describe('ast parser / sva', () => {
           width: var(--sizes-md);
       }
 
-        .shadow_md {
+        .bx-sh_md {
           box-shadow: var(--shadows-md);
       }
 
-        .rounded_md {
+        .bdr_md {
           border-radius: var(--radii-md);
       }
 
@@ -216,7 +216,7 @@ describe('ast parser / sva', () => {
           background: #262626;
       }
 
-        [data-theme=dark] .dark\\:text_white,.dark .dark\\:text_white,.dark\\:text_white.dark,.dark\\:text_white[data-theme=dark] {
+        [data-theme=dark] .dark\\:c_white,.dark .dark\\:c_white,.dark\\:c_white.dark,.dark\\:c_white[data-theme=dark] {
           color: var(--colors-white);
       }
       }"

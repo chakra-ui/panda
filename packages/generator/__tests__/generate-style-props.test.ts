@@ -4832,7 +4832,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-color
          */
-      scrollbarColor?: ConditionalValue<CssProperties["scrollbarColor"] | AnyString>
+      scrollbarColor?: ConditionalValue<UtilityValues["scrollbarColor"] | CssVars | CssProperties["scrollbarColor"] | AnyString>
        /**
          * The **\`scrollbar-gutter\`** CSS property allows authors to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
          *
@@ -4846,7 +4846,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-gutter
          */
-      scrollbarGutter?: ConditionalValue<CssProperties["scrollbarGutter"] | AnyString>
+      scrollbarGutter?: ConditionalValue<UtilityValues["scrollbarGutter"] | CssVars | CssProperties["scrollbarGutter"] | AnyString>
        /**
          * The **\`scrollbar-width\`** property allows the author to set the maximum thickness of an element's scrollbars when they are shown.
          *
@@ -4860,7 +4860,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-width
          */
-      scrollbarWidth?: ConditionalValue<CssProperties["scrollbarWidth"] | AnyString>
+      scrollbarWidth?: ConditionalValue<UtilityValues["scrollbarWidth"] | CssVars | CssProperties["scrollbarWidth"] | AnyString>
        /**
          * The **\`scroll-behavior\`** CSS property sets the behavior for a scrolling box when scrolling is triggered by the navigation or CSSOM scrolling APIs.
          *
@@ -7383,6 +7383,7 @@ describe('generate property types', () => {
        backdropSepia?: ConditionalValue<string | number | AnyString>
        borderSpacingX?: ConditionalValue<UtilityValues["borderSpacingX"] | CssVars | AnyString>
        borderSpacingY?: ConditionalValue<UtilityValues["borderSpacingY"] | CssVars | AnyString>
+       animationState?: ConditionalValue<string | number | AnyString>
        rotateX?: ConditionalValue<UtilityValues["rotateX"] | CssVars | AnyString>
        rotateY?: ConditionalValue<UtilityValues["rotateY"] | CssVars | AnyString>
        rotateZ?: ConditionalValue<UtilityValues["rotateZ"] | CssVars | AnyString>
@@ -12303,7 +12304,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-color
          */
-      scrollbarColor?: ConditionalValue<WithEscapeHatch<CssProperties["scrollbarColor"]>>
+      scrollbarColor?: ConditionalValue<WithEscapeHatch<UtilityValues["scrollbarColor"] | CssVars>>
        /**
          * The **\`scrollbar-gutter\`** CSS property allows authors to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
          *
@@ -12317,7 +12318,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-gutter
          */
-      scrollbarGutter?: ConditionalValue<WithEscapeHatch<CssProperties["scrollbarGutter"]>>
+      scrollbarGutter?: ConditionalValue<WithEscapeHatch<UtilityValues["scrollbarGutter"] | CssVars>>
        /**
          * The **\`scrollbar-width\`** property allows the author to set the maximum thickness of an element's scrollbars when they are shown.
          *
@@ -12331,7 +12332,7 @@ describe('generate property types', () => {
          *
          * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-width
          */
-      scrollbarWidth?: ConditionalValue<WithEscapeHatch<CssProperties["scrollbarWidth"]>>
+      scrollbarWidth?: ConditionalValue<WithEscapeHatch<UtilityValues["scrollbarWidth"] | CssVars>>
        /**
          * The **\`scroll-behavior\`** CSS property sets the behavior for a scrolling box when scrolling is triggered by the navigation or CSSOM scrolling APIs.
          *
@@ -14854,6 +14855,7 @@ describe('generate property types', () => {
        backdropSepia?: ConditionalValue<WithEscapeHatch<string | number>>
        borderSpacingX?: ConditionalValue<WithEscapeHatch<UtilityValues["borderSpacingX"] | CssVars>>
        borderSpacingY?: ConditionalValue<WithEscapeHatch<UtilityValues["borderSpacingY"] | CssVars>>
+       animationState?: ConditionalValue<WithEscapeHatch<string | number>>
        rotateX?: ConditionalValue<WithEscapeHatch<string | number>>
        rotateY?: ConditionalValue<WithEscapeHatch<string | number>>
        rotateZ?: ConditionalValue<WithEscapeHatch<string | number>>
