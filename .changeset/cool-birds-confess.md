@@ -8,5 +8,5 @@
 '@pandacss/core': minor
 ---
 
-- Ensure classnames are unique across all utilities to prevent clash potential
+- Ensure classnames are unique across utilities to prevent potential clash
 - Add support for `4xl` border radius token
