@@ -161,7 +161,7 @@ describe('{fn}.raw', () => {
           margin-inline: var(--spacing-3);
       }
 
-        .text_amber\\.100 {
+        .c_amber\\.100 {
           color: var(--colors-amber-100);
       }
 
@@ -169,7 +169,7 @@ describe('{fn}.raw', () => {
           margin-inline: var(--spacing-10);
       }
 
-        .text_blue\\.950 {
+        .c_blue\\.950 {
           color: var(--colors-blue-950);
       }
 
@@ -193,11 +193,11 @@ describe('{fn}.raw', () => {
           padding-top: var(--spacing-6);
       }
 
-        .flex-dir_column {
+        .flex-d_column {
           flex-direction: column;
       }
 
-        .flex-dir_row {
+        .flex-d_row {
           flex-direction: row;
       }
       }"

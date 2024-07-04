@@ -4,27 +4,27 @@ import { createColorMixTransform } from '../color-mix-transform'
 export const background: UtilityConfig = {
   backgroundPosition: {
     shorthand: 'bgPosition',
-    className: 'bg-pos',
+    className: 'bg-p',
     group: 'Background',
   },
   backgroundPositionX: {
     shorthand: 'bgPositionX',
-    className: 'bg-pos-x',
+    className: 'bg-p-x',
     group: 'Background',
   },
   backgroundPositionY: {
     shorthand: 'bgPositionY',
-    className: 'bg-pos-y',
+    className: 'bg-p-y',
     group: 'Background',
   },
   backgroundAttachment: {
     shorthand: 'bgAttachment',
-    className: 'bg-attach',
+    className: 'bg-a',
     group: 'Background',
   },
   backgroundClip: {
     shorthand: 'bgClip',
-    className: 'bg-clip',
+    className: 'bg-cp',
     group: 'Background',
     transform(value) {
       return {
@@ -42,35 +42,35 @@ export const background: UtilityConfig = {
   },
   backgroundColor: {
     shorthand: 'bgColor',
-    className: 'bg-color',
+    className: 'bg-c',
     values: 'colors',
     group: 'Background',
     transform: createColorMixTransform('backgroundColor'),
   },
   backgroundOrigin: {
     shorthand: 'bgOrigin',
-    className: 'bg-origin',
+    className: 'bg-o',
     group: 'Background',
   },
   backgroundImage: {
     shorthand: 'bgImage',
-    className: 'bg-img',
+    className: 'bg-i',
     values: 'assets',
     group: 'Background',
   },
   backgroundRepeat: {
     shorthand: 'bgRepeat',
-    className: 'bg-repeat',
+    className: 'bg-r',
     group: 'Background',
   },
   backgroundBlendMode: {
     shorthand: 'bgBlendMode',
-    className: 'bg-blend',
+    className: 'bg-bm',
     group: 'Background',
   },
   backgroundSize: {
     shorthand: 'bgSize',
-    className: 'bg-size',
+    className: 'bg-s',
     group: 'Background',
   },
 }

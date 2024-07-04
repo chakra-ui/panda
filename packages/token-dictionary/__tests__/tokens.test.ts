@@ -1618,6 +1618,7 @@ test('should work with default fixture', () => {
       "radii.xl" => "var(--radii-xl)",
       "radii.2xl" => "var(--radii-2xl)",
       "radii.3xl" => "var(--radii-3xl)",
+      "radii.4xl" => "var(--radii-4xl)",
       "radii.full" => "var(--radii-full)",
       "fontWeights.thin" => "var(--font-weights-thin)",
       "fontWeights.extralight" => "var(--font-weights-extralight)",

@@ -3,25 +3,25 @@ import { createColorMixTransform } from '../color-mix-transform'
 
 export const effects: UtilityConfig = {
   opacity: {
-    className: 'opacity',
+    className: 'op',
     values: 'opacity',
     group: 'Background',
   },
   boxShadow: {
     shorthand: 'shadow',
-    className: 'shadow',
+    className: 'bx-sh',
     values: 'shadows',
     group: 'Shadow',
   },
   boxShadowColor: {
     shorthand: 'shadowColor',
-    className: 'shadow-color',
+    className: 'bx-sh-c',
     values: 'colors',
     transform: createColorMixTransform('--shadow-color'),
     group: 'Color',
   },
   mixBlendMode: {
-    className: 'mix-blend',
+    className: 'mix-bm',
     group: 'Effect',
   },
   filter: {
@@ -116,7 +116,7 @@ export const effects: UtilityConfig = {
   },
 
   backdropFilter: {
-    className: 'backdrop',
+    className: 'bkdp',
     group: 'Effect',
     values: {
       auto: 'var(--backdrop-blur, ) var(--backdrop-brightness, ) var(--backdrop-contrast, ) var(--backdrop-grayscale, ) var(--backdrop-hue-rotate, ) var(--backdrop-invert, ) var(--backdrop-opacity, ) var(--backdrop-saturate, ) var(--backdrop-sepia, )',
@@ -129,7 +129,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropBlur: {
-    className: 'backdrop-blur',
+    className: 'bkdp-blur',
     group: 'Effect',
     values: 'blurs',
     transform(value) {
@@ -139,7 +139,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropBrightness: {
-    className: 'backdrop-brightness',
+    className: 'bkdp-brightness',
     group: 'Effect',
     transform(value) {
       return {
@@ -148,7 +148,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropContrast: {
-    className: 'backdrop-contrast',
+    className: 'bkdp-contrast',
     group: 'Effect',
     transform(value) {
       return {
@@ -157,7 +157,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropGrayscale: {
-    className: 'backdrop-grayscale',
+    className: 'bkdp-grayscale',
     group: 'Effect',
     transform(value) {
       return {
@@ -166,7 +166,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropHueRotate: {
-    className: 'backdrop-hue-rotate',
+    className: 'bkdp-hue-rotate',
     group: 'Effect',
     transform(value) {
       return {
@@ -175,7 +175,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropInvert: {
-    className: 'backdrop-invert',
+    className: 'bkdp-invert',
     group: 'Effect',
     transform(value) {
       return {
@@ -184,7 +184,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropOpacity: {
-    className: 'backdrop-opacity',
+    className: 'bkdp-opacity',
     group: 'Effect',
     transform(value) {
       return {
@@ -193,7 +193,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropSaturate: {
-    className: 'backdrop-saturate',
+    className: 'bkdp-saturate',
     group: 'Effect',
     transform(value) {
       return {
@@ -202,7 +202,7 @@ export const effects: UtilityConfig = {
     },
   },
   backdropSepia: {
-    className: 'backdrop-sepia',
+    className: 'bkdp-sepia',
     group: 'Effect',
     transform(value) {
       return {

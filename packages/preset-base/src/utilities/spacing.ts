@@ -48,7 +48,7 @@ export const spacing: UtilityConfig = {
     group: 'Padding',
   },
   paddingBlockStart: {
-    className: 'p-bs',
+    className: 'pbs',
     values: 'spacing',
     group: 'Padding',
   },
@@ -136,7 +136,7 @@ export const spacing: UtilityConfig = {
     group: 'Margin',
   },
   spaceX: {
-    className: 'space-x',
+    className: 'sx',
     values: marginValues,
     property: 'marginInlineStart',
     group: 'Margin',
@@ -150,7 +150,7 @@ export const spacing: UtilityConfig = {
     },
   },
   spaceY: {
-    className: 'space-y',
+    className: 'sy',
     values: marginValues,
     property: 'marginBlockStart',
     group: 'Margin',

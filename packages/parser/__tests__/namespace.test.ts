@@ -35,7 +35,7 @@ describe('extract namespace', () => {
           gap: 10px;
       }
 
-        .flex-dir_column {
+        .flex-d_column {
           flex-direction: column;
       }
 
@@ -128,15 +128,15 @@ describe('extract namespace', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .text_blue {
+        .c_blue {
           color: blue;
       }
 
-        .text_green {
+        .c_green {
           color: green;
       }
       }"
@@ -190,7 +190,7 @@ describe('extract namespace', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red {
+        .c_red {
           color: red;
       }
 
@@ -202,7 +202,7 @@ describe('extract namespace', () => {
           gap: 10px;
       }
 
-        .text_blue {
+        .c_blue {
           color: blue;
       }
 
@@ -210,11 +210,11 @@ describe('extract namespace', () => {
           display: grid;
       }
 
-        .text_green {
+        .c_green {
           color: green;
       }
 
-        .flex-dir_column {
+        .flex-d_column {
           flex-direction: column;
       }
       }"
@@ -270,11 +270,11 @@ describe('extract namespace', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .text_blue {
+        .c_blue {
           color: blue;
       }
       }"

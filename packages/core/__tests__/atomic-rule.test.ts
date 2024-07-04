@@ -15,7 +15,7 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\! {
+        .c_red\\! {
           color: red !important;
       }
 
@@ -124,15 +124,15 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        [data-theme=light] .light\\:text_red,.light .light\\:text_red,.light\\:text_red.light,.light\\:text_red[data-theme=light] {
+        [data-theme=light] .light\\:c_red,.light .light\\:c_red,.light\\:c_red.light,.light\\:c_red[data-theme=light] {
           color: red;
       }
 
-        [data-theme=dark] .dark\\:text_green,.dark .dark\\:text_green,.dark\\:text_green.dark,.dark\\:text_green[data-theme=dark] {
+        [data-theme=dark] .dark\\:c_green,.dark .dark\\:c_green,.dark\\:c_green.dark,.dark\\:c_green[data-theme=dark] {
           color: green;
       }
 
-        [data-theme=dark] .dark\\:opacity_slate400,.dark .dark\\:opacity_slate400,.dark\\:opacity_slate400.dark,.dark\\:opacity_slate400[data-theme=dark] {
+        [data-theme=dark] .dark\\:op_slate400,.dark .dark\\:op_slate400,.dark\\:op_slate400.dark,.dark\\:op_slate400[data-theme=dark] {
           opacity: slate400;
       }
       }"
@@ -280,7 +280,7 @@ describe('atomic / with nesting scope', () => {
       }
 
         @media screen and (min-width: 40rem) {
-          .\\[\\&\\:\\:placeholder\\]\\:sm\\:text-align_left::placeholder {
+          .\\[\\&\\:\\:placeholder\\]\\:sm\\:ta_left::placeholder {
             text-align: left;
       }
       }
@@ -306,7 +306,7 @@ describe('atomic / with nesting scope', () => {
 
         @media base {
           @media screen and (min-width: 40rem) {
-            .\\[\\@media_base\\]\\:sm\\:text-align_left {
+            .\\[\\@media_base\\]\\:sm\\:ta_left {
               text-align: left;
       }
       }
@@ -338,7 +338,7 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        .hover\\:text_pink\\.400:is(:hover, [data-hover]) {
+        .hover\\:c_pink\\.400:is(:hover, [data-hover]) {
           color: var(--colors-pink-400);
       }
 
@@ -387,7 +387,7 @@ describe('atomic / with grouped conditions styles', () => {
 
         @media base {
           @media screen and (min-width: 40rem) {
-            .\\[\\@media_base\\]\\:\\[\\&\\:hover\\]\\:sm\\:text-align_left:hover {
+            .\\[\\@media_base\\]\\:\\[\\&\\:hover\\]\\:sm\\:ta_left:hover {
               text-align: left;
       }
       }
@@ -408,7 +408,7 @@ describe('atomic / with direct nesting', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         @media (min-width: 768px) {
-          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg-color_green {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg-c_green {
             background-color: green;
       }
       }
@@ -458,7 +458,7 @@ describe('atomic / with direct nesting', () => {
           all: unset;
       }
 
-        .border_none {
+        .bd_none {
           border: var(--borders-none);
       }
 
@@ -466,7 +466,7 @@ describe('atomic / with direct nesting', () => {
           padding: $3 $3;
       }
 
-        .rounded_\\$button {
+        .bdr_\\$button {
           border-radius: $button;
       }
 
@@ -474,7 +474,7 @@ describe('atomic / with direct nesting', () => {
           cursor: pointer;
       }
 
-        .bg-color_red {
+        .bg-c_red {
           background-color: red;
       }
 
@@ -482,7 +482,7 @@ describe('atomic / with direct nesting', () => {
           font-size: $xsmall;
       }
 
-        .\\[\\&_\\.my-class\\]\\:text_red .my-class,.\\[\\&_span\\]\\:text_red span {
+        .\\[\\&_\\.my-class\\]\\:c_red .my-class,.\\[\\&_span\\]\\:c_red span {
           color: red;
       }
 
@@ -490,26 +490,26 @@ describe('atomic / with direct nesting', () => {
           margin-left: $2;
       }
 
-        .test .\\[\\.test_\\&\\]\\:bg-color_blue {
+        .test .\\[\\.test_\\&\\]\\:bg-c_blue {
           background-color: blue;
       }
 
-        .\\[\\&\\:focus\\,_\\&\\:hover\\]\\:shadow_none:focus,.\\[\\&\\:focus\\,_\\&\\:hover\\]\\:shadow_none:hover {
+        .\\[\\&\\:focus\\,_\\&\\:hover\\]\\:bx-sh_none:focus,.\\[\\&\\:focus\\,_\\&\\:hover\\]\\:bx-sh_none:hover {
           box-shadow: none;
       }
 
-        :focus > .\\[\\:focus_\\>_\\&\\]\\:text_white {
+        :focus > .\\[\\:focus_\\>_\\&\\]\\:c_white {
           color: var(--colors-white);
       }
 
         @media (min-width: 768px) {
-          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg-color_green {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:bg-c_green {
             background-color: green;
       }
           .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:fs_\\$small {
             font-size: $small;
       }
-          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:\\[\\&\\:hover\\]\\:bg-color_yellow:hover {
+          .\\[\\@media_\\(min-width\\:_768px\\)\\]\\:\\[\\&\\:hover\\]\\:bg-c_yellow:hover {
             background-color: yellow;
       }
       }
@@ -526,7 +526,7 @@ describe('atomic / with direct nesting', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        .\\[\\&_kbd\\]\\:text_red kbd {
+        .\\[\\&_kbd\\]\\:c_red kbd {
           color: red;
       }
       }"
@@ -573,19 +573,19 @@ describe('atomic / with direct nesting', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         @supports (display: flex) {
-          .\\[\\@supports_\\(display\\:_flex\\)\\]\\:bg-color_blue {
+          .\\[\\@supports_\\(display\\:_flex\\)\\]\\:bg-c_blue {
             background-color: blue;
       }
       }
 
         @supports (display: grid) {
-          .\\[\\@supports_\\(display\\:_grid\\)\\]\\:bg-color_red {
+          .\\[\\@supports_\\(display\\:_grid\\)\\]\\:bg-c_red {
             background-color: red;
       }
       }
 
         @supports not (display: grid) {
-          .\\[\\@supports_not_\\(display\\:_grid\\)\\]\\:bg-color_green {
+          .\\[\\@supports_not_\\(display\\:_grid\\)\\]\\:bg-c_green {
             background-color: green;
       }
       }

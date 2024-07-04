@@ -58,7 +58,7 @@ describe('rule processor', () => {
         "m_2",
         "mx_token\\(spacing\\.2\\)",
         "my_-2",
-        "text_blue\\.300",
+        "c_blue\\.300",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
@@ -75,7 +75,7 @@ describe('rule processor', () => {
           margin-block: calc(var(--spacing-2) * -1);
       }
 
-        .text_blue\\.300 {
+        .c_blue\\.300 {
           color: var(--colors-blue-300);
       }
       }"
@@ -107,7 +107,7 @@ describe('rule processor', () => {
         "p_\\{\\$spacing-2\\}",
         "mx_token\\(\\$spacing-2\\)",
         "my_-\\$2",
-        "text_\\$blue-300",
+        "c_\\$blue-300",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
@@ -128,7 +128,7 @@ describe('rule processor', () => {
           margin-block: calc(var(--spacing-2) * -1);
       }
 
-        .text_\\$blue-300 {
+        .c_\\$blue-300 {
           color: var(--colors-blue-300);
       }
       }"
@@ -179,7 +179,7 @@ describe('rule processor', () => {
         "AxiDH",
         "hHAKfe",
         "pWVwj",
-        "cXgKQC",
+        "hDAFEs",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
@@ -196,7 +196,7 @@ describe('rule processor', () => {
           margin-block: calc(var(--ebuyxV) * -1);
       }
 
-        .cXgKQC {
+        .hDAFEs {
           color: var(--bMEoOM);
       }
       }"
@@ -232,7 +232,7 @@ describe('rule processor', () => {
         "bnJC_bnIF",
         "PJOa_hhWZwA",
         "PJOH_PIXg",
-        "fzDuiy_bNBgpA",
+        "bnJA_bNBgpA",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
@@ -249,7 +249,7 @@ describe('rule processor', () => {
           margin-block: calc(var(--ebuyxV) * -1);
       }
 
-        .fzDuiy_bNBgpA {
+        .bnJA_bNBgpA {
           color: var(--bMEoOM);
       }
       }"
@@ -298,27 +298,27 @@ describe('rule processor', () => {
     expect(result.className).toMatchInlineSnapshot(
       `
       [
-        "text_red",
-        "border_1px_solid_token\\(colors\\.red\\.100\\)",
+        "c_red",
+        "bd_1px_solid_token\\(colors\\.red\\.100\\)",
         "bg_blue\\.300",
         "textStyle_headline\\.h1",
         "w_1",
         "fs_xs",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green",
         "dark\\:fs_2xl",
         "hover\\:fs_md",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:c_purple",
         "hover\\:focus\\:fs_xl",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:c_cyan",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:c_orange",
         "sm\\:w_2",
-        "sm\\:text_yellow",
+        "sm\\:c_yellow",
         "sm\\:fs_sm",
-        "sm\\:bg-color_red",
-        "sm\\:hover\\:bg-color_green",
+        "sm\\:bg-c_red",
+        "sm\\:hover\\:bg-c_green",
         "hover\\:md\\:fs_lg",
         "xl\\:w_3",
-        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
+        "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:c_pink",
       ]
     `,
     )
@@ -332,11 +332,11 @@ describe('rule processor', () => {
       }
       }
 
-        .text_red\\! {
+        .c_red\\! {
           color: red !important;
       }
 
-        .border_1px_solid_token\\(colors\\.red\\.100\\) {
+        .bd_1px_solid_token\\(colors\\.red\\.100\\) {
           border: 1px solid var(--colors-red-100);
       }
 
@@ -352,7 +352,7 @@ describe('rule processor', () => {
           font-size: var(--font-sizes-xs);
       }
 
-        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green[data-attr='test'] {
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green[data-attr='test'] {
           color: green;
       }
 
@@ -364,7 +364,7 @@ describe('rule processor', () => {
           font-size: var(--font-sizes-md);
       }
 
-        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+        .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:c_purple[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
           color: purple;
       }
 
@@ -372,11 +372,11 @@ describe('rule processor', () => {
           font-size: var(--font-sizes-xl);
       }
 
-        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:c_cyan[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
           color: cyan;
       }
 
-        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]):is([open], [data-open], [data-state="open"]) {
+        .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:c_orange[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]):is([open], [data-open], [data-state="open"]) {
           color: orange;
       }
 
@@ -384,19 +384,19 @@ describe('rule processor', () => {
           .sm\\:w_2 {
             width: var(--sizes-2);
       }
-          .sm\\:text_yellow {
+          .sm\\:c_yellow {
             color: yellow;
       }
           .sm\\:fs_sm {
             font-size: var(--font-sizes-sm);
       }
-          .sm\\:bg-color_red {
+          .sm\\:bg-c_red {
             background-color: red;
       }
       }
 
         @media screen and (min-width: 40rem) {
-          .sm\\:hover\\:bg-color_green:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg-c_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
@@ -414,7 +414,7 @@ describe('rule processor', () => {
       }
 
         @media screen and (min-width: 80rem) {
-          .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
+          .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:c_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
             color: pink;
       }
       }
@@ -547,21 +547,21 @@ describe('rule processor', () => {
         "h_3rem",
         "min-w_3rem",
         "p_0_0\\.75rem",
-        "text_white",
-        "border_1px_solid_blue",
-        "text_blue",
-        "items_center",
-        "justify_center",
-        "bg-color_blue",
-        "bg-color_transparent",
-        "\\[\\&\\[data-disabled\\]\\]\\:text_black",
-        "\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray",
-        "\\[\\&\\[data-disabled\\]\\]\\:text_gray",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray",
-        "\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent",
-        "hover\\:text_white",
-        "hover\\:bg-color_darkblue",
-        "hover\\:bg-color_blue",
+        "c_white",
+        "bd_1px_solid_blue",
+        "c_blue",
+        "ai_center",
+        "jc_center",
+        "bg-c_blue",
+        "bg-c_transparent",
+        "\\[\\&\\[data-disabled\\]\\]\\:c_black",
+        "\\[\\&\\[data-disabled\\]\\]\\:bd_1px_solid_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:c_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg-c_gray",
+        "\\[\\&\\[data-disabled\\]\\]\\:bg-c_transparent",
+        "hover\\:c_white",
+        "hover\\:bg-c_darkblue",
+        "hover\\:bg-c_blue",
       ]
     `)
     expect(buttonStyle.css).toMatchInlineSnapshot(`
@@ -601,63 +601,63 @@ describe('rule processor', () => {
           padding: 0 0.75rem;
       }
 
-        .text_white {
+        .c_white {
           color: var(--colors-white);
       }
 
-        .border_1px_solid_blue {
+        .bd_1px_solid_blue {
           border: 1px solid blue;
       }
 
-        .text_blue {
+        .c_blue {
           color: blue;
       }
 
-        .items_center {
+        .ai_center {
           align-items: center;
       }
 
-        .justify_center {
+        .jc_center {
           justify-content: center;
       }
 
-        .bg-color_blue {
+        .bg-c_blue {
           background-color: blue;
       }
 
-        .bg-color_transparent {
+        .bg-c_transparent {
           background-color: var(--colors-transparent);
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:text_black[data-disabled] {
+        .\\[\\&\\[data-disabled\\]\\]\\:c_black[data-disabled] {
           color: var(--colors-black);
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray[data-disabled] {
+        .\\[\\&\\[data-disabled\\]\\]\\:bd_1px_solid_gray[data-disabled] {
           border: 1px solid gray;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:text_gray[data-disabled] {
+        .\\[\\&\\[data-disabled\\]\\]\\:c_gray[data-disabled] {
           color: gray;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray[data-disabled] {
+        .\\[\\&\\[data-disabled\\]\\]\\:bg-c_gray[data-disabled] {
           background-color: gray;
       }
 
-        .\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent[data-disabled] {
+        .\\[\\&\\[data-disabled\\]\\]\\:bg-c_transparent[data-disabled] {
           background-color: var(--colors-transparent);
       }
 
-        .hover\\:text_white:is(:hover, [data-hover]) {
+        .hover\\:c_white:is(:hover, [data-hover]) {
           color: var(--colors-white);
       }
 
-        .hover\\:bg-color_darkblue:is(:hover, [data-hover]) {
+        .hover\\:bg-c_darkblue:is(:hover, [data-hover]) {
           background-color: darkblue;
       }
 
-        .hover\\:bg-color_blue:is(:hover, [data-hover]) {
+        .hover\\:bg-c_blue:is(:hover, [data-hover]) {
           background-color: blue;
       }
       }"
@@ -757,7 +757,7 @@ describe('rule processor', () => {
       [
         "d_flex",
         "gap_2",
-        "rounded_sm",
+        "bdr_sm",
         "w_8",
         "h_8",
         "w_10",
@@ -765,8 +765,8 @@ describe('rule processor', () => {
         "w_12",
         "h_12",
         "ms_2",
-        "items_center",
-        "border-w_1px",
+        "ai_center",
+        "bd-w_1px",
         "fs_sm",
         "fs_md",
         "fs_lg",
@@ -782,7 +782,7 @@ describe('rule processor', () => {
           gap: var(--spacing-2);
       }
 
-        .rounded_sm {
+        .bdr_sm {
           border-radius: var(--radii-sm);
       }
 
@@ -814,11 +814,11 @@ describe('rule processor', () => {
           margin-inline-start: var(--spacing-2);
       }
 
-        .items_center {
+        .ai_center {
           align-items: center;
       }
 
-        .border-w_1px {
+        .bd-w_1px {
           border-width: 1px;
       }
 
@@ -961,11 +961,11 @@ describe('rule processor', () => {
       }
 
       @layer utilities {
-        .text_blue\\.300 {
+        .c_blue\\.300 {
           color: var(--colors-blue-300);
       }
 
-        .border_2px_solid_token\\(colors\\.green\\.100\\) {
+        .bd_2px_solid_token\\(colors\\.green\\.100\\) {
           border: 2px solid var(--colors-green-100);
       }
 
@@ -981,7 +981,7 @@ describe('rule processor', () => {
           font-size: 16px;
       }
 
-        .hover\\:text_red\\.400:is(:hover, [data-hover]) {
+        .hover\\:c_red\\.400:is(:hover, [data-hover]) {
           color: var(--colors-red-400);
       }
       }"
@@ -1003,11 +1003,11 @@ describe('rule processor', () => {
 
     expect(processor.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .text_blue {
+        .c_blue {
           color: blue;
       }
       }"
@@ -1108,15 +1108,15 @@ describe('rule processor', () => {
           height: 100%;
       }
 
-        .transition_all_\\.3s_ease-in-out {
+        .trs_all_\\.3s_ease-in-out {
           transition: all .3s ease-in-out;
       }
 
-        .opacity_0\\! {
+        .op_0\\! {
           opacity: 0 !important;
       }
 
-        .opacity_1 {
+        .op_1 {
           opacity: 1;
       }
 
@@ -1124,13 +1124,13 @@ describe('rule processor', () => {
           height: 10px;
       }
 
-        .bg-gradient_to-b {
+        .bg-grad_to-b {
           --gradient-stops: var(--gradient-via-stops, var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position));
           --gradient: var(--gradient-via-stops, var(--gradient-stops));
           background-image: linear-gradient(to bottom, var(--gradient));
       }
 
-        .gradient-from_rgb\\(200_200_200_\\/_\\.4\\) {
+        .grad-from_rgb\\(200_200_200_\\/_\\.4\\) {
           --gradient-from: rgb(200 200 200 / .4);
       }
       }"
@@ -1142,7 +1142,7 @@ describe('rule processor', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "className": [
-          "truncate_false",
+          "trunc_false",
         ],
         "css": "",
       }
@@ -1152,10 +1152,10 @@ describe('rule processor', () => {
     expect(result2).toMatchInlineSnapshot(`
       {
         "className": [
-          "truncate_true",
+          "trunc_true",
         ],
         "css": "@layer utilities {
-        .truncate_true {
+        .trunc_true {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -1185,12 +1185,12 @@ describe('rule processor', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "className": [
-          "text_\\#fff",
+          "c_\\#fff",
           "d_block",
           "d_none",
         ],
         "css": "@layer utilities {
-        .text_\\#fff {
+        .c_\\#fff {
           color: #fff;
       }
 
@@ -1236,7 +1236,7 @@ describe('js to css', () => {
           width: 42px;
       }
 
-        .opacity_1 {
+        .op_1 {
           opacity: 1;
       }
 
@@ -1281,7 +1281,7 @@ describe('js to css', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_pink\\! {
+        .c_pink\\! {
           color: pink !important;
       }
 
@@ -1289,11 +1289,11 @@ describe('js to css', () => {
           background: var(--colors-white) !important;
       }
 
-        .border-color_red\\! {
+        .bd-c_red\\! {
           border-color: red !important;
       }
 
-        .font_A {
+        .ff_A {
           font-family: A;
       }
       }"
@@ -1305,7 +1305,7 @@ describe('js to css', () => {
       {
         "className": [
           "bg_red\\.300\\/40",
-          "text_white",
+          "c_white",
         ],
         "css": "@layer utilities {
         .bg_red\\.300\\/40 {
@@ -1313,7 +1313,7 @@ describe('js to css', () => {
           background: var(--mix-background, var(--colors-red-300));
       }
 
-        .text_white {
+        .c_white {
           color: var(--colors-white);
       }
       }",
@@ -1333,33 +1333,33 @@ describe('js to css', () => {
     })
     expect(result.className).toMatchInlineSnapshot(`
       [
-        "rounded-t_0px",
-        "overflow_hidden",
-        "border-w_1px",
-        "border-bw_3px",
-        "border-w_2px",
+        "bdr-t_0px",
+        "ov_hidden",
+        "bd-w_1px",
+        "bd-b-w_3px",
+        "bd-w_2px",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .rounded-t_0px {
+        .bdr-t_0px {
           border-top-left-radius: 0px;
           border-top-right-radius: 0px;
       }
 
-        .overflow_hidden {
+        .ov_hidden {
           overflow: hidden;
       }
 
-        .border-w_1px {
+        .bd-w_1px {
           border-width: 1px;
       }
 
-        .border-bw_3px {
+        .bd-b-w_3px {
           border-bottom-width: 3px;
       }
 
-        .border-w_2px {
+        .bd-w_2px {
           border-width: 2px;
       }
       }"
@@ -1444,23 +1444,23 @@ describe('js to css', () => {
     expect(result.className).toMatchInlineSnapshot(`
       [
         "bg_red",
-        "bg-color_blue",
+        "bg-c_blue",
         "dark\\:bg_red",
-        "dark\\:bg-color_blue",
+        "dark\\:bg-c_blue",
         "focus\\:bg_red",
-        "focus\\:bg-color_blue",
+        "focus\\:bg-c_blue",
         "hover\\:bg_red",
-        "hover\\:bg-color_blue",
+        "hover\\:bg-c_blue",
         "md\\:bg_red",
-        "md\\:bg-color_blue",
+        "md\\:bg-c_blue",
         "md\\:light\\:bg_red",
-        "md\\:light\\:bg-color_blue",
+        "md\\:light\\:bg-c_blue",
         "md\\:light\\:focus\\:bg_red",
-        "md\\:light\\:focus\\:bg-color_blue",
+        "md\\:light\\:focus\\:bg-c_blue",
         "md\\:light\\:hover\\:bg_red",
-        "md\\:light\\:hover\\:bg-color_blue",
+        "md\\:light\\:hover\\:bg-c_blue",
         "md\\:light\\:active\\:bg_red",
-        "md\\:light\\:active\\:bg-color_blue",
+        "md\\:light\\:active\\:bg-c_blue",
       ]
     `)
     expect(result.css).toMatchInlineSnapshot(`
@@ -1469,7 +1469,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        .bg-color_blue {
+        .bg-c_blue {
           background-color: blue;
       }
 
@@ -1477,7 +1477,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        [data-theme=dark] .dark\\:bg-color_blue,.dark .dark\\:bg-color_blue,.dark\\:bg-color_blue.dark,.dark\\:bg-color_blue[data-theme=dark] {
+        [data-theme=dark] .dark\\:bg-c_blue,.dark .dark\\:bg-c_blue,.dark\\:bg-c_blue.dark,.dark\\:bg-c_blue[data-theme=dark] {
           background-color: blue;
       }
 
@@ -1485,7 +1485,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        .focus\\:bg-color_blue:is(:focus, [data-focus]) {
+        .focus\\:bg-c_blue:is(:focus, [data-focus]) {
           background-color: blue;
       }
 
@@ -1493,7 +1493,7 @@ describe('js to css', () => {
           background: red;
       }
 
-        .hover\\:bg-color_blue:is(:hover, [data-hover]) {
+        .hover\\:bg-c_blue:is(:hover, [data-hover]) {
           background-color: blue;
       }
 
@@ -1501,13 +1501,13 @@ describe('js to css', () => {
           .md\\:bg_red {
             background: red;
       }
-          .md\\:bg-color_blue {
+          .md\\:bg-c_blue {
             background-color: blue;
       }
           [data-theme=light] .md\\:light\\:bg_red,.light .md\\:light\\:bg_red,.md\\:light\\:bg_red.light,.md\\:light\\:bg_red[data-theme=light] {
             background: red;
       }
-          [data-theme=light] .md\\:light\\:bg-color_blue,.light .md\\:light\\:bg-color_blue,.md\\:light\\:bg-color_blue.light,.md\\:light\\:bg-color_blue[data-theme=light] {
+          [data-theme=light] .md\\:light\\:bg-c_blue,.light .md\\:light\\:bg-c_blue,.md\\:light\\:bg-c_blue.light,.md\\:light\\:bg-c_blue[data-theme=light] {
             background-color: blue;
       }
       }
@@ -1519,7 +1519,7 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg-color_blue:is(:focus, [data-focus])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus])[data-theme=light] {
             background-color: blue;
       }
       }
@@ -1531,7 +1531,7 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg-color_blue:is(:hover, [data-hover])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover])[data-theme=light] {
             background-color: blue;
       }
       }
@@ -1543,7 +1543,7 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:active\\:bg-color_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg-color_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg-color_blue:is(:active, [data-active]).light,.md\\:light\\:active\\:bg-color_blue:is(:active, [data-active])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]).light,.md\\:light\\:active\\:bg-c_blue:is(:active, [data-active])[data-theme=light] {
             background-color: blue;
       }
       }
@@ -1700,7 +1700,7 @@ describe('js to css', () => {
       `
       [
         "hover\\:focus\\:w_2px",
-        "hover\\:custom\\:text_blue",
+        "hover\\:custom\\:c_blue",
         "md\\:w_3px",
         "hover\\:md\\:w_5px",
       ]
@@ -1713,7 +1713,7 @@ describe('js to css', () => {
           width: 2px;
       }
 
-        .hover\\:custom\\:text_blue:is(:hover, [data-hover])[data-attr="custom"] {
+        .hover\\:custom\\:c_blue:is(:hover, [data-hover])[data-attr="custom"] {
           color: blue;
       }
 
@@ -1762,9 +1762,9 @@ describe('js to css', () => {
     expect(result.className).toMatchInlineSnapshot(
       `
       [
-        "hover\\:custom\\:text_blue",
-        "hover\\:mixed\\:text_green",
-        "hover\\:mixedMd\\:text_6px",
+        "hover\\:custom\\:c_blue",
+        "hover\\:mixed\\:c_green",
+        "hover\\:mixedMd\\:c_6px",
         "hover\\:md\\:w_5px",
       ]
     `,
@@ -1772,16 +1772,16 @@ describe('js to css', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .hover\\:custom\\:text_blue:is(:hover, [data-hover])[data-attr="custom"] {
+        .hover\\:custom\\:c_blue:is(:hover, [data-hover])[data-attr="custom"] {
           color: blue;
       }
 
-        .hover\\:mixed\\:text_green[data-attr="custom"]:is(:hover, [data-hover]) {
+        .hover\\:mixed\\:c_green[data-attr="custom"]:is(:hover, [data-hover]) {
           color: green;
       }
 
         @media screen and (min-width: 48em) {
-          .hover\\:mixedMd\\:text_6px[data-attr="custom"]:is(:hover, [data-hover]) {
+          .hover\\:mixedMd\\:c_6px[data-attr="custom"]:is(:hover, [data-hover]) {
             color: 6px;
       }
       }
@@ -1815,8 +1815,8 @@ describe('js to css', () => {
       `
       [
         "sm\\:w_1px",
-        "md\\:text_3px",
-        "lg\\:text_2px",
+        "md\\:c_3px",
+        "lg\\:c_2px",
         "xl\\:w_4px",
       ]
     `,
@@ -1831,13 +1831,13 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          .md\\:text_3px {
+          .md\\:c_3px {
             color: 3px;
       }
       }
 
         @media screen and (min-width: 64rem) {
-          .lg\\:text_2px {
+          .lg\\:c_2px {
             color: 2px;
       }
       }
@@ -1892,13 +1892,13 @@ describe('js to css', () => {
     expect(result.className).toMatchInlineSnapshot(
       `
       [
-        "mixedSm\\:text_red",
-        "mixedSupportSm\\:text_green",
+        "mixedSm\\:c_red",
+        "mixedSupportSm\\:c_green",
         "sm\\:w_1px",
-        "mixedMd\\:text_blue",
-        "mixedSupportMd\\:text_yellow",
-        "md\\:text_3px",
-        "lg\\:text_2px",
+        "mixedMd\\:c_blue",
+        "mixedSupportMd\\:c_yellow",
+        "md\\:c_3px",
+        "lg\\:c_2px",
         "xl\\:w_4px",
       ]
     `,
@@ -1907,14 +1907,14 @@ describe('js to css', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @media screen and (min-width: 40em) {
-          .mixedSm\\:text_red[data-attr="custom"] {
+          .mixedSm\\:c_red[data-attr="custom"] {
             color: red;
       }
       }
 
         @media screen and (min-width: 40em) {
           @support (display: flex) {
-            .mixedSupportSm\\:text_green[data-attr="custom"] {
+            .mixedSupportSm\\:c_green[data-attr="custom"] {
               color: green;
       }
       }
@@ -1927,27 +1927,27 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48em) {
-          .mixedMd\\:text_blue[data-attr="custom"] {
+          .mixedMd\\:c_blue[data-attr="custom"] {
             color: blue;
       }
       }
 
         @media screen and (min-width: 48em) {
           @support (display: flex) {
-            .mixedSupportMd\\:text_yellow[data-attr="custom"] {
+            .mixedSupportMd\\:c_yellow[data-attr="custom"] {
               color: yellow;
       }
       }
       }
 
         @media screen and (min-width: 48rem) {
-          .md\\:text_3px {
+          .md\\:c_3px {
             color: 3px;
       }
       }
 
         @media screen and (min-width: 64rem) {
-          .lg\\:text_2px {
+          .lg\\:c_2px {
             color: 2px;
       }
       }
@@ -2059,8 +2059,8 @@ describe('js to css', () => {
         "dark\\:w_1px",
         "hover\\:w_2px",
         "hover\\:focus\\:w_3px",
-        "custom\\:text_red",
-        "hover\\:custom\\:text_blue",
+        "custom\\:c_red",
+        "hover\\:custom\\:c_blue",
         "smHover\\:w_7px",
         "sm\\:w_4px",
         "mdHover\\:w_8px",
@@ -2089,11 +2089,11 @@ describe('js to css', () => {
           width: 3px;
       }
 
-        .custom\\:text_red[data-attr="custom"] {
+        .custom\\:c_red[data-attr="custom"] {
           color: red;
       }
 
-        .hover\\:custom\\:text_blue[data-attr="custom"]:is(:hover, [data-hover]) {
+        .hover\\:custom\\:c_blue[data-attr="custom"]:is(:hover, [data-hover]) {
           color: blue;
       }
 

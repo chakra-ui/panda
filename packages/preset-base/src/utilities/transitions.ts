@@ -20,7 +20,7 @@ const transitionMap: Record<string, any> = {
 
 export const transitions: UtilityConfig = {
   transitionTimingFunction: {
-    className: 'ease',
+    className: 'trs-tmf',
     values: 'easings',
     group: 'Transition',
     transform(value: string) {
@@ -31,12 +31,12 @@ export const transitions: UtilityConfig = {
     },
   },
   transitionDelay: {
-    className: 'delay',
+    className: 'trs-dly',
     values: 'durations',
     group: 'Transition',
   },
   transitionDuration: {
-    className: 'duration',
+    className: 'trs-dur',
     values: 'durations',
     group: 'Transition',
     transform(value: string) {
@@ -47,7 +47,7 @@ export const transitions: UtilityConfig = {
     },
   },
   transitionProperty: {
-    className: 'transition-prop',
+    className: 'trs-prop',
     group: 'Transition',
     transform(value) {
       return {
@@ -57,36 +57,79 @@ export const transitions: UtilityConfig = {
     },
   },
   transition: {
-    className: 'transition',
+    className: 'trs',
     values: Object.keys(transitionMap),
     group: 'Transition',
     transform(value: string) {
       return transitionMap[value] ?? { transition: value }
     },
   },
+
+  // Animations
+
   animation: {
-    className: 'animation',
+    className: 'anim',
     values: 'animations',
-    group: 'Transition',
+    group: 'Animation',
   },
   animationName: {
-    className: 'animation-name',
+    className: 'anim-n',
     values: 'keyframes',
-    group: 'Transition',
+    group: 'Animation',
   },
   animationTimingFunction: {
-    className: 'animation-ease',
+    className: 'anim-tmf',
     values: 'easings',
-    group: 'Transition',
+    group: 'Animation',
   },
   animationDuration: {
-    className: 'animation-duration',
+    className: 'anim-dur',
     values: 'durations',
-    group: 'Transition',
+    group: 'Animation',
   },
   animationDelay: {
-    className: 'animation-delay',
+    className: 'anim-dly',
     values: 'durations',
-    group: 'Transition',
+    group: 'Animation',
+  },
+  animationPlayState: {
+    className: 'anim-ps',
+    group: 'Animation',
+  },
+  animationComposition: {
+    className: 'anim-comp',
+    group: 'Animation',
+  },
+  animationFillMode: {
+    className: 'anim-fm',
+    group: 'Animation',
+  },
+  animationDirection: {
+    className: 'anim-dir',
+    group: 'Animation',
+  },
+  animationIterationCount: {
+    className: 'anim-ic',
+    group: 'Animation',
+  },
+  animationRange: {
+    className: 'anim-r',
+    group: 'Animation',
+  },
+  animationState: {
+    className: 'anim-s',
+    group: 'Animation',
+  },
+  animationRangeStart: {
+    className: 'anim-rs',
+    group: 'Animation',
+  },
+  animationRangeEnd: {
+    className: 'anim-re',
+    group: 'Animation',
+  },
+  animationTimeline: {
+    className: 'anim-tl',
+    group: 'Animation',
   },
 }

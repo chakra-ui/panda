@@ -3,23 +3,25 @@ import { createColorMixTransform } from '../color-mix-transform'
 
 export const interactivity: UtilityConfig = {
   accentColor: {
-    className: 'accent',
+    className: 'ac-c',
     values: 'colors',
     transform: createColorMixTransform('accentColor'),
     group: 'Color',
   },
   caretColor: {
-    className: 'caret',
+    className: 'ca-c',
     values: 'colors',
     group: 'Color',
     transform: createColorMixTransform('caretColor'),
   },
   scrollBehavior: {
-    className: 'scroll',
+    className: 'scr-bhv',
     group: 'Scroll',
   },
+
+  // Scroll bar
   scrollbar: {
-    className: 'scrollbar',
+    className: 'scr-bar',
     values: ['visible', 'hidden'],
     group: 'Scroll',
     transform(value) {
@@ -43,130 +45,153 @@ export const interactivity: UtilityConfig = {
       }
     },
   },
+  scrollbarColor: {
+    className: 'scr-bar-c',
+    values: 'colors',
+    group: 'Scroll',
+    transform: createColorMixTransform('scrollbarColor'),
+  },
+  scrollbarGutter: {
+    className: 'scr-bar-g',
+    values: 'spacing',
+    group: 'Scroll',
+  },
+  scrollbarWidth: {
+    className: 'scr-bar-w',
+    values: 'sizes',
+    group: 'Scroll',
+  },
+
+  // Scroll Margin
   scrollMargin: {
-    className: 'scroll-m',
+    className: 'scr-m',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginLeft: {
-    className: 'scroll-ml',
+    className: 'scr-ml',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginRight: {
-    className: 'scroll-mr',
+    className: 'scr-mr',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginTop: {
-    className: 'scroll-mt',
+    className: 'scr-mt',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginBottom: {
-    className: 'scroll-mb',
+    className: 'scr-mb',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginBlock: {
-    className: 'scroll-my',
+    className: 'scr-my',
     values: 'spacing',
     group: 'Scroll',
     shorthand: ['scrollMarginY'],
   },
   scrollMarginBlockEnd: {
-    className: 'scroll-mbe',
+    className: 'scr-mbe',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginBlockStart: {
-    className: 'scroll-mbt',
+    className: 'scr-mbt',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginInline: {
-    className: 'scroll-mx',
+    className: 'scr-mx',
     values: 'spacing',
     group: 'Scroll',
     shorthand: ['scrollMarginX'],
   },
   scrollMarginInlineEnd: {
-    className: 'scroll-me',
+    className: 'scr-me',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollMarginInlineStart: {
-    className: 'scroll-ms',
+    className: 'scr-ms',
     values: 'spacing',
     group: 'Scroll',
   },
+
+  // Scroll Padding
   scrollPadding: {
-    className: 'scroll-p',
+    className: 'scr-p',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingBlock: {
-    className: 'scroll-pb',
+    className: 'scr-py',
     values: 'spacing',
     group: 'Scroll',
     shorthand: ['scrollPaddingY'],
   },
   scrollPaddingBlockStart: {
-    className: 'scroll-pbs',
+    className: 'scr-pbs',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingBlockEnd: {
-    className: 'scroll-pbe',
+    className: 'scr-pbe',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingInline: {
-    className: 'scroll-px',
+    className: 'scr-px',
     values: 'spacing',
     group: 'Scroll',
     shorthand: ['scrollPaddingX'],
   },
   scrollPaddingInlineEnd: {
-    className: 'scroll-pe',
+    className: 'scr-pe',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingInlineStart: {
-    className: 'scroll-ps',
+    className: 'scr-ps',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingLeft: {
-    className: 'scroll-pl',
+    className: 'scr-pl',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingRight: {
-    className: 'scroll-pr',
+    className: 'scr-pr',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingTop: {
-    className: 'scroll-pt',
+    className: 'scr-pt',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollPaddingBottom: {
-    className: 'scroll-pbo',
+    className: 'scr-pb',
     values: 'spacing',
     group: 'Scroll',
   },
+
+  // Scroll Snap
+
   scrollSnapAlign: {
-    className: 'snap-align',
+    className: 'scr-sa',
     group: 'Scroll',
   },
   scrollSnapStop: {
-    className: 'snap-stop',
+    className: 'scrs-s',
     group: 'Scroll',
   },
   scrollSnapType: {
-    className: 'snap-type',
+    className: 'scrs-t',
     group: 'Scroll',
     values: {
       none: 'none',
@@ -176,7 +201,7 @@ export const interactivity: UtilityConfig = {
     },
   },
   scrollSnapStrictness: {
-    className: 'snap-strictness',
+    className: 'scrs-strt',
     values: ['mandatory', 'proximity'],
     group: 'Scroll',
     transform(value) {
@@ -186,36 +211,76 @@ export const interactivity: UtilityConfig = {
     },
   },
   scrollSnapMargin: {
-    className: 'snap-m',
+    className: 'scrs-m',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollSnapMarginTop: {
-    className: 'snap-mt',
+    className: 'scrs-mt',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollSnapMarginBottom: {
-    className: 'snap-mb',
+    className: 'scrs-mb',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollSnapMarginLeft: {
-    className: 'snap-ml',
+    className: 'scrs-ml',
     values: 'spacing',
     group: 'Scroll',
   },
   scrollSnapMarginRight: {
-    className: 'snap-mr',
+    className: 'scrs-mr',
     values: 'spacing',
     group: 'Scroll',
   },
+  scrollSnapCoordinate: {
+    className: 'scrs-c',
+    group: 'Scroll',
+  },
+  scrollSnapDestination: {
+    className: 'scrs-d',
+    group: 'Scroll',
+  },
+  scrollSnapPointsX: {
+    className: 'scrs-px',
+    group: 'Scroll',
+  },
+  scrollSnapPointsY: {
+    className: 'scrs-py',
+    group: 'Scroll',
+  },
+  scrollSnapTypeX: {
+    className: 'scrs-tx',
+    group: 'Scroll',
+  },
+  scrollSnapTypeY: {
+    className: 'scrs-ty',
+    group: 'Scroll',
+  },
+
+  // Scroll Timeline
+
+  scrollTimeline: {
+    className: 'scrtl',
+    group: 'Scroll',
+  },
+  scrollTimelineAxis: {
+    className: 'scrtl-a',
+    group: 'Scroll',
+  },
+  scrollTimelineName: {
+    className: 'scrtl-n',
+    group: 'Scroll',
+  },
   touchAction: {
-    className: 'touch',
+    className: 'tch-a',
     group: 'Interactivity',
   },
+
   userSelect: {
-    className: 'select',
+    className: 'us',
     group: 'Interactivity',
     transform(value) {
       return {
@@ -223,5 +288,64 @@ export const interactivity: UtilityConfig = {
         userSelect: value,
       }
     },
+  },
+
+  // Overflow
+  overflow: {
+    className: 'ov',
+    group: 'Scroll',
+  },
+  overflowWrap: {
+    className: 'ov-wrap',
+    group: 'Scroll',
+  },
+  overflowX: {
+    className: 'ov-x',
+    group: 'Scroll',
+  },
+  overflowY: {
+    className: 'ov-y',
+    group: 'Scroll',
+  },
+  overflowAnchor: {
+    className: 'ov-a',
+    group: 'Scroll',
+  },
+  overflowBlock: {
+    className: 'ov-b',
+    group: 'Scroll',
+  },
+  overflowInline: {
+    className: 'ov-i',
+    group: 'Scroll',
+  },
+  overflowClipBox: {
+    className: 'ovcp-bx',
+    group: 'Scroll',
+  },
+  overflowClipMargin: {
+    className: 'ovcp-m',
+    group: 'Scroll',
+  },
+
+  overscrollBehavior: {
+    className: 'ovs-b',
+    group: 'Scroll',
+  },
+  overscrollBehaviorX: {
+    className: 'ovs-bx',
+    group: 'Scroll',
+  },
+  overscrollBehaviorY: {
+    className: 'ovs-by',
+    group: 'Scroll',
+  },
+  overscrollBehaviorBlock: {
+    className: 'ovs-bb',
+    group: 'Scroll',
+  },
+  overscrollBehaviorInline: {
+    className: 'ovs-bi',
+    group: 'Scroll',
   },
 }

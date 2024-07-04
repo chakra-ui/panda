@@ -48,7 +48,7 @@ describe('style decoder', () => {
     expect(result).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "border_2px_solid_\\{colors\\.red\\.300\\}",
+          "className": "bd_2px_solid_\\{colors\\.red\\.300\\}",
           "conditions": undefined,
           "entry": {
             "prop": "border",
@@ -57,7 +57,7 @@ describe('style decoder', () => {
           "hash": "border]___[value:2px solid {colors.red.300}",
           "layer": undefined,
           "result": {
-            ".border_2px_solid_\\{colors\\.red\\.300\\}": {
+            ".bd_2px_solid_\\{colors\\.red\\.300\\}": {
               "border": "2px solid var(--colors-red-300)",
             },
           },
@@ -75,7 +75,7 @@ describe('style decoder', () => {
     expect(result).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "text_blue",
+          "className": "c_blue",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -84,13 +84,13 @@ describe('style decoder', () => {
           "hash": "color]___[value:blue",
           "layer": undefined,
           "result": {
-            ".text_blue": {
+            ".c_blue": {
               "color": "blue",
             },
           },
         },
         {
-          "className": "md\\:text_red",
+          "className": "md\\:c_red",
           "conditions": [
             {
               "name": "breakpoint",
@@ -108,7 +108,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:red]___[cond:md",
           "layer": undefined,
           "result": {
-            ".md\\:text_red": {
+            ".md\\:c_red": {
               "@media screen and (min-width: 48rem)": {
                 "color": "red",
               },
@@ -162,7 +162,7 @@ describe('style decoder', () => {
       `
       Set {
         {
-          "className": "text_red",
+          "className": "c_red",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -171,13 +171,13 @@ describe('style decoder', () => {
           "hash": "color]___[value:red !important",
           "layer": undefined,
           "result": {
-            ".text_red\\!": {
+            ".c_red\\!": {
               "color": "red !important",
             },
           },
         },
         {
-          "className": "border_1px_solid_token\\(colors\\.red\\.100\\)",
+          "className": "bd_1px_solid_token\\(colors\\.red\\.100\\)",
           "conditions": undefined,
           "entry": {
             "prop": "border",
@@ -186,7 +186,7 @@ describe('style decoder', () => {
           "hash": "border]___[value:1px solid token(colors.red.100)",
           "layer": undefined,
           "result": {
-            ".border_1px_solid_token\\(colors\\.red\\.100\\)": {
+            ".bd_1px_solid_token\\(colors\\.red\\.100\\)": {
               "border": "1px solid var(--colors-red-100)",
             },
           },
@@ -253,7 +253,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green",
           "conditions": [
             {
               "raw": "&[data-attr='test']",
@@ -269,7 +269,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:green]___[cond:&[data-attr='test']",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:text_green": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green": {
               "&[data-attr='test']": {
                 "color": "green",
               },
@@ -325,7 +325,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:c_purple",
           "conditions": [
             {
               "raw": "&[data-attr='test']",
@@ -346,7 +346,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:purple]___[cond:&[data-attr='test']<___>_expanded",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:text_purple": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:c_purple": {
               "&[data-attr='test']": {
                 "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
                   "color": "purple",
@@ -387,7 +387,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:c_cyan",
           "conditions": [
             {
               "raw": "&[data-attr='test']",
@@ -413,7 +413,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:cyan]___[cond:&[data-attr='test']<___>_expanded<___>.target &",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:text_cyan": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:c_cyan": {
               "&[data-attr='test']": {
                 "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
                   ".target &": {
@@ -425,7 +425,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:c_orange",
           "conditions": [
             {
               "raw": "&[data-attr='test']",
@@ -456,7 +456,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:orange]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>_open",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:text_orange": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:c_orange": {
               "&[data-attr='test']": {
                 "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
                   "&:is([open], [data-open], [data-state="open"])": {
@@ -496,7 +496,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:text_yellow",
+          "className": "sm\\:c_yellow",
           "conditions": [
             {
               "name": "breakpoint",
@@ -514,7 +514,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:yellow]___[cond:sm",
           "layer": undefined,
           "result": {
-            ".sm\\:text_yellow": {
+            ".sm\\:c_yellow": {
               "@media screen and (min-width: 40rem)": {
                 "color": "yellow",
               },
@@ -548,7 +548,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:bg-color_red",
+          "className": "sm\\:bg-c_red",
           "conditions": [
             {
               "name": "breakpoint",
@@ -566,7 +566,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:red]___[cond:sm",
           "layer": undefined,
           "result": {
-            ".sm\\:bg-color_red": {
+            ".sm\\:bg-c_red": {
               "@media screen and (min-width: 40rem)": {
                 "backgroundColor": "red",
               },
@@ -574,7 +574,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:hover\\:bg-color_green",
+          "className": "sm\\:hover\\:bg-c_green",
           "conditions": [
             {
               "name": "breakpoint",
@@ -597,7 +597,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:green]___[cond:sm<___>_hover",
           "layer": undefined,
           "result": {
-            ".sm\\:hover\\:bg-color_green": {
+            ".sm\\:hover\\:bg-c_green": {
               "@media screen and (min-width: 40rem)": {
                 "&:is(:hover, [data-hover])": {
                   "backgroundColor": "green",
@@ -666,7 +666,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink",
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:c_pink",
           "conditions": [
             {
               "name": "breakpoint",
@@ -699,7 +699,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:pink]___[cond:&[data-attr='test']<___>_expanded<___>.target &<___>xl",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:text_pink": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:c_pink": {
               "@media screen and (min-width: 80rem)": {
                 "&[data-attr='test']": {
                   "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
@@ -1103,7 +1103,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "text_white",
+          "className": "c_white",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -1112,13 +1112,13 @@ describe('style decoder', () => {
           "hash": "color]___[value:white",
           "layer": undefined,
           "result": {
-            ".text_white": {
+            ".c_white": {
               "color": "var(--colors-white)",
             },
           },
         },
         {
-          "className": "border_1px_solid_blue",
+          "className": "bd_1px_solid_blue",
           "conditions": undefined,
           "entry": {
             "prop": "border",
@@ -1127,13 +1127,13 @@ describe('style decoder', () => {
           "hash": "border]___[value:1px solid blue",
           "layer": undefined,
           "result": {
-            ".border_1px_solid_blue": {
+            ".bd_1px_solid_blue": {
               "border": "1px solid blue",
             },
           },
         },
         {
-          "className": "text_blue",
+          "className": "c_blue",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -1142,13 +1142,13 @@ describe('style decoder', () => {
           "hash": "color]___[value:blue",
           "layer": undefined,
           "result": {
-            ".text_blue": {
+            ".c_blue": {
               "color": "blue",
             },
           },
         },
         {
-          "className": "items_center",
+          "className": "ai_center",
           "conditions": undefined,
           "entry": {
             "prop": "alignItems",
@@ -1157,13 +1157,13 @@ describe('style decoder', () => {
           "hash": "alignItems]___[value:center",
           "layer": undefined,
           "result": {
-            ".items_center": {
+            ".ai_center": {
               "alignItems": "center",
             },
           },
         },
         {
-          "className": "justify_center",
+          "className": "jc_center",
           "conditions": undefined,
           "entry": {
             "prop": "justifyContent",
@@ -1172,13 +1172,13 @@ describe('style decoder', () => {
           "hash": "justifyContent]___[value:center",
           "layer": undefined,
           "result": {
-            ".justify_center": {
+            ".jc_center": {
               "justifyContent": "center",
             },
           },
         },
         {
-          "className": "bg-color_blue",
+          "className": "bg-c_blue",
           "conditions": undefined,
           "entry": {
             "prop": "backgroundColor",
@@ -1187,13 +1187,13 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:blue",
           "layer": undefined,
           "result": {
-            ".bg-color_blue": {
+            ".bg-c_blue": {
               "backgroundColor": "blue",
             },
           },
         },
         {
-          "className": "bg-color_transparent",
+          "className": "bg-c_transparent",
           "conditions": undefined,
           "entry": {
             "prop": "backgroundColor",
@@ -1202,13 +1202,13 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:transparent",
           "layer": undefined,
           "result": {
-            ".bg-color_transparent": {
+            ".bg-c_transparent": {
               "backgroundColor": "var(--colors-transparent)",
             },
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:text_black",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:c_black",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1224,7 +1224,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:black]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:text_black": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:c_black": {
               "&[data-disabled]": {
                 "color": "var(--colors-black)",
               },
@@ -1232,7 +1232,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bd_1px_solid_gray",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1248,7 +1248,7 @@ describe('style decoder', () => {
           "hash": "border]___[value:1px solid gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:border_1px_solid_gray": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bd_1px_solid_gray": {
               "&[data-disabled]": {
                 "border": "1px solid gray",
               },
@@ -1256,7 +1256,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:text_gray",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:c_gray",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1272,7 +1272,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:text_gray": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:c_gray": {
               "&[data-disabled]": {
                 "color": "gray",
               },
@@ -1280,7 +1280,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg-c_gray",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1296,7 +1296,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:bg-color_gray": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg-c_gray": {
               "&[data-disabled]": {
                 "backgroundColor": "gray",
               },
@@ -1304,7 +1304,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:bg-c_transparent",
           "conditions": [
             {
               "raw": "&[data-disabled]",
@@ -1320,7 +1320,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:transparent]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:bg-color_transparent": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:bg-c_transparent": {
               "&[data-disabled]": {
                 "backgroundColor": "var(--colors-transparent)",
               },
@@ -1328,7 +1328,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\:text_white",
+          "className": "hover\\:c_white",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -1344,7 +1344,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:white]___[cond:_hover",
           "layer": undefined,
           "result": {
-            ".hover\\:text_white": {
+            ".hover\\:c_white": {
               "&:is(:hover, [data-hover])": {
                 "color": "var(--colors-white)",
               },
@@ -1352,7 +1352,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\:bg-color_darkblue",
+          "className": "hover\\:bg-c_darkblue",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -1368,7 +1368,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:darkblue]___[cond:_hover",
           "layer": undefined,
           "result": {
-            ".hover\\:bg-color_darkblue": {
+            ".hover\\:bg-c_darkblue": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "darkblue",
               },
@@ -1376,7 +1376,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\:bg-color_blue",
+          "className": "hover\\:bg-c_blue",
           "conditions": [
             {
               "raw": "&:is(:hover, [data-hover])",
@@ -1392,7 +1392,7 @@ describe('style decoder', () => {
           "hash": "backgroundColor]___[value:blue]___[cond:_hover",
           "layer": undefined,
           "result": {
-            ".hover\\:bg-color_blue": {
+            ".hover\\:bg-c_blue": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "blue",
               },
@@ -1749,7 +1749,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "rounded_sm",
+          "className": "bdr_sm",
           "conditions": undefined,
           "entry": {
             "prop": "borderRadius",
@@ -1758,7 +1758,7 @@ describe('style decoder', () => {
           "hash": "borderRadius]___[value:sm",
           "layer": undefined,
           "result": {
-            ".rounded_sm": {
+            ".bdr_sm": {
               "borderRadius": "var(--radii-sm)",
             },
           },
@@ -1869,7 +1869,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "items_center",
+          "className": "ai_center",
           "conditions": undefined,
           "entry": {
             "prop": "alignItems",
@@ -1878,13 +1878,13 @@ describe('style decoder', () => {
           "hash": "alignItems]___[value:center",
           "layer": undefined,
           "result": {
-            ".items_center": {
+            ".ai_center": {
               "alignItems": "center",
             },
           },
         },
         {
-          "className": "border-w_1px",
+          "className": "bd-w_1px",
           "conditions": undefined,
           "entry": {
             "prop": "borderWidth",
@@ -1893,7 +1893,7 @@ describe('style decoder', () => {
           "hash": "borderWidth]___[value:1px",
           "layer": undefined,
           "result": {
-            ".border-w_1px": {
+            ".bd-w_1px": {
               "borderWidth": "1px",
             },
           },
@@ -1998,7 +1998,7 @@ describe('style decoder', () => {
     expect(decoder.collect(encoder).atomic).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "text_red",
+          "className": "c_red",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -2007,13 +2007,13 @@ describe('style decoder', () => {
           "hash": "color]___[value:red",
           "layer": undefined,
           "result": {
-            ".text_red": {
+            ".c_red": {
               "color": "red",
             },
           },
         },
         {
-          "className": "text_blue",
+          "className": "c_blue",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -2022,7 +2022,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:blue",
           "layer": undefined,
           "result": {
-            ".text_blue": {
+            ".c_blue": {
               "color": "blue",
             },
           },
@@ -2242,7 +2242,7 @@ describe('style decoder', () => {
             },
           },
           {
-            "className": "transition_all_\\.3s_ease-in-out",
+            "className": "trs_all_\\.3s_ease-in-out",
             "conditions": undefined,
             "entry": {
               "prop": "transition",
@@ -2251,13 +2251,13 @@ describe('style decoder', () => {
             "hash": "transition]___[value:all .3s ease-in-out",
             "layer": undefined,
             "result": {
-              ".transition_all_\\.3s_ease-in-out": {
+              ".trs_all_\\.3s_ease-in-out": {
                 "transition": "all .3s ease-in-out",
               },
             },
           },
           {
-            "className": "opacity_0",
+            "className": "op_0",
             "conditions": undefined,
             "entry": {
               "prop": "opacity",
@@ -2266,13 +2266,13 @@ describe('style decoder', () => {
             "hash": "opacity]___[value:0 !important",
             "layer": undefined,
             "result": {
-              ".opacity_0\\!": {
+              ".op_0\\!": {
                 "opacity": "0 !important",
               },
             },
           },
           {
-            "className": "opacity_1",
+            "className": "op_1",
             "conditions": undefined,
             "entry": {
               "prop": "opacity",
@@ -2281,7 +2281,7 @@ describe('style decoder', () => {
             "hash": "opacity]___[value:1",
             "layer": undefined,
             "result": {
-              ".opacity_1": {
+              ".op_1": {
                 "opacity": 1,
               },
             },
@@ -2302,7 +2302,7 @@ describe('style decoder', () => {
             },
           },
           {
-            "className": "bg-gradient_to-b",
+            "className": "bg-grad_to-b",
             "conditions": undefined,
             "entry": {
               "prop": "backgroundGradient",
@@ -2311,7 +2311,7 @@ describe('style decoder', () => {
             "hash": "backgroundGradient]___[value:to-b",
             "layer": undefined,
             "result": {
-              ".bg-gradient_to-b": {
+              ".bg-grad_to-b": {
                 "--gradient": "var(--gradient-via-stops, var(--gradient-stops))",
                 "--gradient-stops": "var(--gradient-via-stops, var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position))",
                 "backgroundImage": "linear-gradient(to bottom, var(--gradient))",
@@ -2319,7 +2319,7 @@ describe('style decoder', () => {
             },
           },
           {
-            "className": "gradient-from_rgb\\(200_200_200_\\/_\\.4\\)",
+            "className": "grad-from_rgb\\(200_200_200_\\/_\\.4\\)",
             "conditions": undefined,
             "entry": {
               "prop": "gradientFrom",
@@ -2328,7 +2328,7 @@ describe('style decoder', () => {
             "hash": "gradientFrom]___[value:rgb(200 200 200 / .4)",
             "layer": undefined,
             "result": {
-              ".gradient-from_rgb\\(200_200_200_\\/_\\.4\\)": {
+              ".grad-from_rgb\\(200_200_200_\\/_\\.4\\)": {
                 "--gradient-from": "rgb(200 200 200 / .4)",
               },
             },
@@ -2634,7 +2634,7 @@ describe('style decoder', () => {
     expect(result).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "truncate_false",
+          "className": "trunc_false",
           "conditions": undefined,
           "entry": {
             "prop": "truncate",
@@ -2643,7 +2643,7 @@ describe('style decoder', () => {
           "hash": "truncate]___[value:false",
           "layer": undefined,
           "result": {
-            ".truncate_false": {},
+            ".trunc_false": {},
           },
         },
       }
@@ -2653,7 +2653,7 @@ describe('style decoder', () => {
     expect(result2).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "truncate_true",
+          "className": "trunc_true",
           "conditions": undefined,
           "entry": {
             "prop": "truncate",
@@ -2662,7 +2662,7 @@ describe('style decoder', () => {
           "hash": "truncate]___[value:true",
           "layer": undefined,
           "result": {
-            ".truncate_true": {
+            ".trunc_true": {
               "overflow": "hidden",
               "textOverflow": "ellipsis",
               "whiteSpace": "nowrap",
@@ -2693,7 +2693,7 @@ describe('style decoder', () => {
     expect(result).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "text_\\#fff",
+          "className": "c_\\#fff",
           "conditions": undefined,
           "entry": {
             "prop": "color",
@@ -2702,7 +2702,7 @@ describe('style decoder', () => {
           "hash": "color]___[value:#fff",
           "layer": undefined,
           "result": {
-            ".text_\\#fff": {
+            ".c_\\#fff": {
               "color": "#fff",
             },
           },
