@@ -6,6 +6,7 @@ export const getConfig = (
   const conf = `${imports ?? ''}${otherCode ? `\n\n${otherCode}` : ''}
 
 export const config = defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   ${config ?? ''}${config?.endsWith(',') ? '' : ','}
   globalCss: {
     html: {
