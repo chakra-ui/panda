@@ -3449,6 +3449,7 @@ describe('extract to css output pipeline', () => {
     const result = parseAndExtract(code, {
       presets: [
         {
+          name: 'preset',
           theme: {
             extend: {
               tokens: {
