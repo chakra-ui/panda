@@ -1,5 +1,47 @@
 # @pandacss/node
 
+## 0.42.0
+
+### Patch Changes
+
+- 19c3a2c: Minor changes to the format of the `panda analyze --output coverage.json` file
+- ec64819: Change recipes `className` to be optional, both for `recipes` and `slotRecipes`, with a fallback to its name.
+
+  ```ts
+  import { defineConfig } from '@pandacss/core'
+
+  export default defineConfig({
+    recipes: {
+      button: {
+        className: 'button', // 👈 was mandatory, is now optional
+        variants: {
+          size: {
+            sm: { padding: '2', borderRadius: 'sm' },
+            md: { padding: '4', borderRadius: 'md' },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+  generated CSS where possible.
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [ec64819]
+- Updated dependencies [17a1932]
+  - @pandacss/generator@0.42.0
+  - @pandacss/parser@0.42.0
+  - @pandacss/types@0.42.0
+  - @pandacss/core@0.42.0
+  - @pandacss/extractor@0.42.0
+  - @pandacss/config@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/token-dictionary@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes
