@@ -1,10 +1,12 @@
 /* eslint-disable */
-import type { FunctionComponent } from 'react'
-import type { LinkOverlayProperties } from '../patterns/link-overlay';
-import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { HTMLPandaProps } from "../types/jsx.d.ts";
+import type { DistributiveOmit } from "../types/system-types.d.ts";
 
-export interface LinkOverlayProps extends LinkOverlayProperties, DistributiveOmit<HTMLPandaProps<'a'>, keyof LinkOverlayProperties > {}
+import type { FunctionComponent } from "react";
+import type { LinkOverlayProperties } from "../patterns/link-overlay";
 
+export interface LinkOverlayProps
+  extends LinkOverlayProperties,
+    DistributiveOmit<HTMLPandaProps<"a">, keyof LinkOverlayProperties> {}
 
-export declare const LinkOverlay: FunctionComponent<LinkOverlayProps>
+export declare const LinkOverlay: FunctionComponent<LinkOverlayProps>;

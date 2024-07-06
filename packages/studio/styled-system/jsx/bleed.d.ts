@@ -1,10 +1,12 @@
 /* eslint-disable */
-import type { FunctionComponent } from 'react'
-import type { BleedProperties } from '../patterns/bleed';
-import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { HTMLPandaProps } from "../types/jsx.d.ts";
+import type { DistributiveOmit } from "../types/system-types.d.ts";
 
-export interface BleedProps extends BleedProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof BleedProperties > {}
+import type { FunctionComponent } from "react";
+import type { BleedProperties } from "../patterns/bleed";
 
+export interface BleedProps
+  extends BleedProperties,
+    DistributiveOmit<HTMLPandaProps<"div">, keyof BleedProperties> {}
 
-export declare const Bleed: FunctionComponent<BleedProps>
+export declare const Bleed: FunctionComponent<BleedProps>;

@@ -15,7 +15,6 @@ import { svaDtsArtifact, svaJsArtifact } from './js/sva'
 import { themesIndexDtsArtifact, themesIndexJsArtifact } from './js/themes'
 import { tokenDtsArtifact, tokenJsArtifact } from './js/token'
 import { generateJsxFactory, generateJsxPatterns, generateJsxTypes } from './jsx'
-import { packageJsonArtifact } from './pkg-json'
 import {
   typesCompositionArtifact,
   typesCssTypeArtifact,
@@ -216,7 +215,6 @@ const getStaticArtifacts = () => {
     new ArtifactMap()
       // {outdir}/
       .addFile(helpersJsArtifact)
-      .addFile(packageJsonArtifact)
       // {outdir}/css/
       .addFile(cssIndexJsArtifact)
       .addFile(cssIndexDtsArtifact)

@@ -8,7 +8,6 @@ describe('setup-artifacts', () => {
     expect(artifacts.filter().map((artifact) => artifact.id) as any).toMatchInlineSnapshot(`
       [
         "helpers.js",
-        "package.json",
         "css/index.js",
         "css/index.d.ts",
         "css/cva.js",
