@@ -50,30 +50,34 @@ export function resolveConfig(config?: Config) {
  * PLayground won't be able to handle bundling presets
  */
 function getResolvedConfig(config: ExtendableConfig) {
-  const presets = config.presets ?? []
-
+  const stack: ExtendableConfig[] = [config]
   const configs: ExtendableConfig[] = []
-  while (presets.length > 0) {
-    const preset = presets.shift()!
 
-    if (!isPlaygroundPreset(preset)) {
-      console.error(`Invalid preset: ${preset}`)
+  while (stack.length > 0) {
+    const current = stack.pop()!
+
+    if (!isPlaygroundPreset(current as Preset)) {
+      console.error(`Invalid preset: ${current}`)
       return
     }
 
-    if (preset instanceof Promise) {
-      preset.then((result) => {
-        configs.unshift(result)
-        presets.unshift(...(result.presets ?? []))
-      })
-    } else {
-      configs.unshift(preset)
-      presets.unshift(...(preset.presets ?? []))
+    const subPresets = current.presets ?? []
+    for (const subPreset of subPresets) {
+      // Only handle object presets
+      if (typeof subPreset === 'object' && !(subPreset instanceof Promise)) {
+        stack.push(subPreset)
+      }
     }
+
+    configs.unshift(current)
   }
 
-  configs.unshift(config)
-  return mergeConfigs(configs) as Config
+  const merged = mergeConfigs(configs) as Config
+
+  // Keep the resolved presets so we can find the origin of a token
+  merged.presets = configs.slice(0, -1) as Preset[]
+
+  return merged
 }
 
 function isPlaygroundPreset(preset: string | Preset | Promise<Preset>): preset is Preset | Promise<Preset> {
