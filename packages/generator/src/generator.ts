@@ -76,10 +76,7 @@ export class Generator extends Context {
 
   getCss = (stylesheet?: Stylesheet) => {
     const sheet = stylesheet ?? this.createSheet()
-    let css = sheet.toCss({
-      optimize: true,
-      minify: this.config.minify,
-    })
+    let css = sheet.toCss({ minify: this.config.minify })
 
     if (this.hooks['cssgen:done']) {
       css = this.hooks['cssgen:done']({ artifact: 'styles.css', content: css }) ?? css

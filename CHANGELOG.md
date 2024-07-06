@@ -6,6 +6,31 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.41.0] - 2024-06-16
+
+### Fixed
+
+Fix an issue where spreading an identifier in a sva `slots` array would prevent expected CSS from being generated
+
+```ts
+import { sva } from 'styled-system/css'
+const parts = ['positioner', 'content']
+
+const card = sva({
+  slots: [...parts], // <- spreading here was causing the below CSS not to be generated, it's now fixed ✅
+  base: {
+    root: {
+      p: '6',
+    },
+  },
+})
+```
+
+### Added
+
+Annotate config recipe default variants with the `@default` js doc comment. This makes it easy to know the default value
+of a variant.
+
 ## [0.40.1] - 2024-05-31
 
 ### Fixed

@@ -28,9 +28,9 @@ describe('generate property types', () => {
       	aspectRatio: Tokens["aspectRatios"];
       	top: Tokens["spacing"];
       	left: Tokens["spacing"];
+      	inset: "auto" | Tokens["spacing"];
       	insetInline: Tokens["spacing"];
       	insetBlock: Tokens["spacing"];
-      	inset: "auto" | Tokens["spacing"];
       	insetBlockEnd: Tokens["spacing"];
       	insetBlockStart: Tokens["spacing"];
       	insetInlineEnd: Tokens["spacing"];
@@ -183,6 +183,9 @@ describe('generate property types', () => {
       	accentColor: Tokens["colors"];
       	caretColor: Tokens["colors"];
       	scrollbar: "visible" | "hidden";
+      	scrollbarColor: Tokens["colors"];
+      	scrollbarGutter: Tokens["spacing"];
+      	scrollbarWidth: Tokens["sizes"];
       	scrollMargin: Tokens["spacing"];
       	scrollMarginLeft: Tokens["spacing"];
       	scrollMarginRight: Tokens["spacing"];

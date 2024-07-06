@@ -37,6 +37,7 @@ export const tokens = defineTokens({
     xl: { value: '0.75rem' },
     '2xl': { value: '1rem' },
     '3xl': { value: '1.5rem' },
+    '4xl': { value: '2rem' },
     full: { value: '9999px' },
   },
   fontWeights,

@@ -4,6 +4,7 @@
   "version": "0.0.2",
   "type": "module",
   "scripts": {
+    "test:up": "tsx ./cli.ts test -u",
     "test": "tsx ./cli.ts test && tsx ./cli.ts test -t",
     "prepare": "tsx ./cli.ts codegen",
     "dev": "vite",
@@ -19,7 +20,7 @@
   },
   "devDependencies": {
     "@builder.io/qwik": "1.4.5",
-    "@preact/preset-vite": "2.8.2",
+    "@preact/preset-vite": "2.8.3",
     "@solidjs/testing-library": "0.8.8",
     "@testing-library/jest-dom": "6.4.2",
     "@testing-library/preact": "3.2.3",
@@ -28,7 +29,7 @@
     "@types/react": "18.2.55",
     "@types/react-dom": "18.2.19",
     "@vitejs/plugin-react-swc": "3.6.0",
-    "@vitejs/plugin-vue": "5.0.4",
+    "@vitejs/plugin-vue": "5.0.5",
     "@vitejs/plugin-vue-jsx": "3.1.0",
     "cac": "6.7.14",
     "eslint-plugin-react-hooks": "4.6.0",
@@ -39,7 +40,8 @@
     "solid-js": "1.8.15",
     "tsx": "4.7.1",
     "typescript": "5.3.3",
-    "vite": "5.1.7",
+    "vite": "5.2.13",
+    "vitest": "1.5.0",
     "vite-plugin-solid": "2.9.1",
     "vue": "3.4.19"
   }

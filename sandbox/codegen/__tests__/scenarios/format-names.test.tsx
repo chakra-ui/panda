@@ -46,7 +46,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-500 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600"
+        class="c-$red-500 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600"
       >
         Click me
       </button>
@@ -58,7 +58,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-500 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600 fs-$sm px-$sm py-$xs"
+        class="c-$red-500 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600 fs-$sm px-$sm py-$xs"
       >
         Click me
       </button>
@@ -74,7 +74,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-500 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600 fs-$sm px-$sm py-$xs custom-btn"
+        class="c-$red-500 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600 fs-$sm px-$sm py-$xs custom-btn"
       >
         Click me
       </button>
@@ -90,7 +90,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-500 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600 mx-2 custom-btn"
+        class="c-$red-500 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600 mx-2 custom-btn"
       >
         Click me
       </button>
@@ -106,7 +106,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-500 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600 fs-$sm px-$sm py-$xs mx-2 custom-btn"
+        class="c-$red-500 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600 fs-$sm px-$sm py-$xs mx-2 custom-btn"
       >
         Click me
       </button>
@@ -122,7 +122,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-100 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600 fs-$md custom-btn"
+        class="c-$red-100 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600 fs-$md custom-btn"
       >
         Click me
       </button>
@@ -138,7 +138,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-100 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600 fs-$md px-$sm py-$xs custom-btn"
+        class="c-$red-100 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600 fs-$md px-$sm py-$xs custom-btn"
       >
         Click me
       </button>
@@ -154,7 +154,7 @@ describe('styled factory - cva', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="text-$red-200 bg-$blue-500 hover:text-$red-600 hover:bg-$blue-600 fs-$xl px-123px py-$md z-1 mx-$2 custom-btn"
+        class="c-$red-200 bg-$blue-500 hover:c-$red-600 hover:bg-$blue-600 fs-$xl px-123px py-$md z-1 mx-$2 custom-btn"
       >
         Click me
       </button>
@@ -246,7 +246,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual-unstyled text-$red-100 fs-$md custom-btn"
+        class="button button--visual-unstyled c-$red-100 fs-$md custom-btn"
       >
         Click me
       </button>
@@ -262,7 +262,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual-unstyled button--size-sm text-$red-100 fs-$md custom-btn"
+        class="button button--visual-unstyled button--size-sm c-$red-100 fs-$md custom-btn"
       >
         Click me
       </button>
@@ -278,7 +278,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual-outline button--size-md text-$red-200 mx--$2 fs-$xl custom-btn"
+        class="button button--visual-outline button--size-md c-$red-200 mx--$2 fs-$xl custom-btn"
       >
         Click me
       </button>

@@ -11,5 +11,7 @@
   "slot-recipes": "Slot Recipes",
   "style-props": "JSX Style Props",
   "color-opacity-modifier": "Color opacity modifier",
-  "hooks": "Hooks"
+  "hooks": "Hooks",
+  "styled-system": "Styled System",
+  "extend": "The extend keyword"
 }

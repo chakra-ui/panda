@@ -196,11 +196,11 @@ describe('ast parser / sva', () => {
           width: var(--sizes-md);
       }
 
-        .shadow_md {
+        .bx-sh_md {
           box-shadow: var(--shadows-md);
       }
 
-        .rounded_md {
+        .bdr_md {
           border-radius: var(--radii-md);
       }
 
@@ -216,8 +216,53 @@ describe('ast parser / sva', () => {
           background: #262626;
       }
 
-        [data-theme=dark] .dark\\:text_white,.dark .dark\\:text_white,.dark\\:text_white.dark,.dark\\:text_white[data-theme=dark] {
+        [data-theme=dark] .dark\\:c_white,.dark .dark\\:c_white,.dark\\:c_white.dark,.dark\\:c_white[data-theme=dark] {
           color: var(--colors-white);
+      }
+      }"
+    `)
+  })
+
+  test('unresolvable slots - spread', () => {
+    const code = `
+    import { sva } from 'styled-system/css'
+    const parts = ['positioner', 'content']
+
+    const card = sva({
+      slots: [...parts],
+      base: {
+        root: {
+          p: '6',
+        },
+      },
+    })
+     `
+    const result = parseAndExtract(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "root": {
+                  "p": "6",
+                },
+              },
+              "slots": [
+                "root",
+              ],
+            },
+          ],
+          "name": "sva",
+          "type": "sva",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_6 {
+          padding: var(--spacing-6);
       }
       }"
     `)

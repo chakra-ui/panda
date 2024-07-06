@@ -72,7 +72,7 @@ describe('sort style rules', () => {
     const sheet = ctx.createSheet()
     sheet.processDecoder(ctx.decoder)
 
-    expect(sheet.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .fs_1 {
           font-size: 1px;
@@ -94,13 +94,13 @@ describe('sort style rules', () => {
           .sm\\:fs_5 {
             font-size: 5px;
       }
-          .sm\\:bg_red {
+          .sm\\:bg-c_red {
             background-color: red;
       }
       }
 
         @media screen and (min-width: 40rem) {
-          .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg-c_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
@@ -125,7 +125,7 @@ describe('sort style rules', () => {
     const sheet2 = ctx.createSheet()
     sheet2.processDecoder(ctx.decoder)
 
-    expect(sheet2.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet2.toCss()).toMatchInlineSnapshot(`
       "@layer utilities {
         .fs_1 {
           font-size: 1px;
@@ -155,25 +155,25 @@ describe('sort style rules', () => {
           .sm\\:fs_5 {
             font-size: 5px;
       }
-          .sm\\:bg_red {
+          .sm\\:bg-c_red {
             background-color: red;
       }
           .sm\\:fs_5\\.3 {
             font-size: 5.3px;
       }
-          .sm\\:bg_blue {
+          .sm\\:bg-c_blue {
             background-color: blue;
       }
       }
 
         @media screen and (min-width: 40rem) {
-          .sm\\:hover\\:bg_green:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg-c_green:is(:hover, [data-hover]) {
             background-color: green;
       }
       }
 
         @media screen and (min-width: 40rem) {
-          .sm\\:hover\\:bg_purple:is(:hover, [data-hover]) {
+          .sm\\:hover\\:bg-c_purple:is(:hover, [data-hover]) {
             background-color: purple;
       }
       }
@@ -189,7 +189,7 @@ describe('sort style rules', () => {
     const sheet = ctx.createSheet()
     sheet.processDecoder(ctx.decoder)
 
-    expect(sheet.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
           .btn {
@@ -237,7 +237,7 @@ describe('sort style rules', () => {
     const sheet2 = ctx.createSheet()
     sheet2.processDecoder(ctx.decoder)
 
-    expect(sheet2.toCss({ optimize: true })).toMatchInlineSnapshot(`
+    expect(sheet2.toCss()).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
           .btn {

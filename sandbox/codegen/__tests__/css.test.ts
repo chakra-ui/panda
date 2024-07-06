@@ -11,7 +11,7 @@ describe('css', () => {
   test('token value', () => {
     const className = css({ color: 'blue.300' })
 
-    expect(className).toMatchInlineSnapshot('"text_blue.300"')
+    expect(className).toMatchInlineSnapshot(`"c_blue.300"`)
   })
 
   test('utility prop', () => {
@@ -47,7 +47,7 @@ describe('css', () => {
   test('arbitrary value', () => {
     const className = css({ color: '#fff' })
 
-    expect(className).toMatchInlineSnapshot('"text_#fff"')
+    expect(className).toMatchInlineSnapshot(`"c_#fff"`)
   })
 
   test('arbitrary selector', () => {
@@ -71,7 +71,7 @@ describe('css', () => {
   test('using inline token helper - in value', () => {
     const className = css({ border: '1px solid token(colors.blue.400)' })
 
-    expect(className).toMatchInlineSnapshot('"border_1px_solid_token(colors.blue.400)"')
+    expect(className).toMatchInlineSnapshot(`"bd_1px_solid_token(colors.blue.400)"`)
   })
 
   test('using inline token helper - in condition', () => {
@@ -89,23 +89,23 @@ describe('css', () => {
   test('same prop', () => {
     const className = css({ bgColor: 'red.100', backgroundColor: 'red.200' })
 
-    expect(className).toMatchInlineSnapshot('"bg_red.200"')
+    expect(className).toMatchInlineSnapshot(`"bg-c_red.200"`)
 
     const className2 = css({ backgroundColor: 'red.300', bgColor: 'red.400' })
 
-    expect(className2).toMatchInlineSnapshot('"bg_red.400"')
+    expect(className2).toMatchInlineSnapshot(`"bg-c_red.400"`)
   })
 
   test('merging styles', () => {
     const className = css({ fontSize: 'sm', bgColor: 'red.500' }, { backgroundColor: 'red.600' })
 
-    expect(className).toMatchInlineSnapshot('"fs_sm bg_red.600"')
+    expect(className).toMatchInlineSnapshot(`"fs_sm bg-c_red.600"`)
   })
 
   test('merging styles with nested conditions', () => {
     const className = css({ fontSize: 'sm', _hover: { color: 'green.100' } }, { _hover: { color: 'green.200' } })
 
-    expect(className).toMatchInlineSnapshot('"fs_sm hover:text_green.200"')
+    expect(className).toMatchInlineSnapshot(`"fs_sm hover:c_green.200"`)
   })
 
   test('merging styles with object condition prop', () => {
@@ -120,7 +120,7 @@ describe('css', () => {
       { fontSize: '12px' },
     ])
 
-    expect(className).toMatchInlineSnapshot(`"fs_12px bg_red.600"`)
+    expect(className).toMatchInlineSnapshot(`"fs_12px bg-c_red.600"`)
   })
 })
 

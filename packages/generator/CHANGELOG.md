@@ -1,5 +1,22 @@
 # @pandacss/generator
 
+## 0.41.0
+
+### Minor Changes
+
+- af8a29a: Annotate config recipe default variants with the `@default` js doc comment. This makes it easy to know the
+  default value of a variant.
+
+### Patch Changes
+
+- Updated dependencies [2750261]
+  - @pandacss/core@0.41.0
+  - @pandacss/types@0.41.0
+  - @pandacss/is-valid-prop@0.41.0
+  - @pandacss/logger@0.41.0
+  - @pandacss/shared@0.41.0
+  - @pandacss/token-dictionary@0.41.0
+
 ## 0.40.1
 
 ### Patch Changes

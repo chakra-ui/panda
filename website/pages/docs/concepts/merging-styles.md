@@ -84,6 +84,47 @@ const className = css(
 // => 'bg_red border_1px_solid_black color_white font-size_12px'
 ```
 
+## Merging `sva` + `css` styles
+
+The same technique can be used to merge an atomic `sva` recipe and a style object.
+
+```js
+import { css, sva } from 'styled-system/css'
+
+const overrideStyles = css.raw({
+  bg: 'red',
+  color: 'white'
+})
+
+const buttonStyles = sva({
+  slots: ['root']
+  base: {
+    root: {
+      bg: 'blue',
+      border: '1px solid black'
+    }
+  },
+  variants: {
+    size: {
+      root: {
+        small: { fontSize: '12px' }
+      }
+    }
+  }
+})
+
+// returns the resolved style object for all slots
+const { root } = buttonStyles.raw({ size: 'small' })
+
+const className = css(
+  root,
+  // add the override styles
+  overrideStyles
+)
+
+// => 'bg_red border_1px_solid_black color_white font-size_12px'
+```
+
 ## Merging config recipe and style object
 
 Due to the fact that the generated styles of a config recipe is saved in the `@layer recipe` cascade layer, they can overriden with any atomic styles. Use the `cx` function to achieve that.

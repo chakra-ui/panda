@@ -2,11 +2,11 @@ import type { UtilityConfig } from '@pandacss/types'
 
 export const tables: UtilityConfig = {
   borderCollapse: {
-    className: 'border',
+    className: 'bd-cl',
     group: 'Table',
   },
   borderSpacing: {
-    className: 'border-spacing',
+    className: 'bd-sp',
     group: 'Table',
     values(theme) {
       return {
@@ -16,7 +16,7 @@ export const tables: UtilityConfig = {
     },
   },
   borderSpacingX: {
-    className: 'border-spacing-x',
+    className: 'bd-sx',
     values: 'spacing',
     group: 'Table',
     transform(value) {
@@ -26,7 +26,7 @@ export const tables: UtilityConfig = {
     },
   },
   borderSpacingY: {
-    className: 'border-spacing-y',
+    className: 'bd-sy',
     values: 'spacing',
     group: 'Table',
     transform(value) {
@@ -36,7 +36,7 @@ export const tables: UtilityConfig = {
     },
   },
   tableLayout: {
-    className: 'table',
+    className: 'tbl',
     group: 'Table',
   },
 }

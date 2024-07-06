@@ -224,20 +224,6 @@ would result in:
 }
 ```
 
-### optimize
-
-**Type**: `boolean`
-
-**Default**: `true`
-
-Whether to optimize the generated css. This can be set to `false` to boost build times during development.
-
-```json
-{
-  "optimize": true
-}
-```
-
 ### minify
 
 **Type**: `boolean`

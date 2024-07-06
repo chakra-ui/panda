@@ -32,7 +32,7 @@ test('[dts] should generate package', () => {
 
     export type DurationToken = "fastest" | "faster" | "fast" | "normal" | "slow" | "slower" | "slowest"
 
-    export type RadiusToken = "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full"
+    export type RadiusToken = "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "full"
 
     export type FontWeightToken = "thin" | "extralight" | "light" | "normal" | "medium" | "semibold" | "bold" | "extrabold" | "black"
 
@@ -117,7 +117,7 @@ test('[dts] should generate package - custom formatTokenName', () => {
 
     export type DurationToken = "$fastest" | "$faster" | "$fast" | "$normal" | "$slow" | "$slower" | "$slowest"
 
-    export type RadiusToken = "$xs" | "$sm" | "$md" | "$lg" | "$xl" | "$2xl" | "$3xl" | "$full"
+    export type RadiusToken = "$xs" | "$sm" | "$md" | "$lg" | "$xl" | "$2xl" | "$3xl" | "$4xl" | "$full"
 
     export type FontWeightToken = "$thin" | "$extralight" | "$light" | "$normal" | "$medium" | "$semibold" | "$bold" | "$extrabold" | "$black"
 

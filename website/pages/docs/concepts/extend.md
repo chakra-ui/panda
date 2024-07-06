@@ -3,6 +3,8 @@ title: The extend keyword
 description: What is and how to to use the extend keyword
 ---
 
+# The extend keyword
+
 The `extend` keyword allows you to extend the default Panda configuration. It is useful when you want to add your own customizations to Panda, without erasing the default `presets` values (`conditions`, `tokens`, `utilities`, etc).
 
 It will (deeply) merge your customizations with the default ones, instead of replacing them.

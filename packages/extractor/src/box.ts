@@ -46,6 +46,7 @@ export const box = {
       value: undefined,
       getNode: () => node.getNode(),
       getStack: () => node.getStack(),
+      getRange: () => node.getRange(),
     }
   },
   /**

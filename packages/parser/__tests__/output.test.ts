@@ -35,12 +35,12 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_blue {
+        .c_blue {
           color: blue;
       }
 
         @media screen and (min-width: 48rem) {
-          .md\\:text_red {
+          .md\\:c_red {
             color: red;
       }
       }
@@ -156,11 +156,11 @@ describe('extract to css output pipeline', () => {
           inset: var(--spacing-0);
       }
 
-        .text_blue\\.100 {
+        .c_blue\\.100 {
           color: var(--colors-blue-100);
       }
 
-        .border_1px_solid_token\\(colors\\.yellow\\.100\\) {
+        .bd_1px_solid_token\\(colors\\.yellow\\.100\\) {
           border: 1px solid var(--colors-yellow-100);
       }
 
@@ -168,7 +168,7 @@ describe('extract to css output pipeline', () => {
           --shadow: var(--colors-orange-100);
       }
 
-        .shadow_0_0_0_4px_var\\(--shadow\\) {
+        .bx-sh_0_0_0_4px_var\\(--shadow\\) {
           box-shadow: 0 0 0 4px var(--shadow);
       }
 
@@ -184,11 +184,11 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-2);
       }
 
-        .bg-img_url\\(\\"https\\:\\/\\/raw\\.githubusercontent\\.com\\/chakra-ui\\/chakra-ui\\/main\\/media\\/logo-colored\\@2x\\.png\\?raw\\=true\\"\\) {
+        .bg-i_url\\(\\"https\\:\\/\\/raw\\.githubusercontent\\.com\\/chakra-ui\\/chakra-ui\\/main\\/media\\/logo-colored\\@2x\\.png\\?raw\\=true\\"\\) {
           background-image: url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true");
       }
 
-        .ring-color_var\\(--colors-pink-200\\) {
+        .ring-c_var\\(--colors-pink-200\\) {
           outline-color: var(--colors-pink-200);
       }
 
@@ -196,11 +196,11 @@ describe('extract to css output pipeline', () => {
           --shadow: var(--colors-gray-800);
       }
 
-        .hover\\:text_\\#2ecc71:is(:hover, [data-hover]) {
+        .hover\\:c_\\#2ecc71:is(:hover, [data-hover]) {
           color: #2ecc71;
       }
 
-        .hover\\:bg_var\\(--some-bg\\):is(:hover, [data-hover]) {
+        .hover\\:bg-c_var\\(--some-bg\\):is(:hover, [data-hover]) {
           background-color: var(--some-bg);
       }
 
@@ -211,7 +211,7 @@ describe('extract to css output pipeline', () => {
           .md\\:m_1px {
             margin: 1px;
       }
-          .md\\:text_red\\.100 {
+          .md\\:c_red\\.100 {
             color: var(--colors-red-100);
       }
       }
@@ -479,7 +479,7 @@ describe('extract to css output pipeline', () => {
       }
 
       @layer utilities {
-        .text_yellow {
+        .c_yellow {
           color: yellow;
       }
       }"
@@ -912,11 +912,11 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_blue\\.100 {
+        .c_blue\\.100 {
           color: var(--colors-blue-100);
       }
 
-        .text_red\\.100 {
+        .c_red\\.100 {
           color: var(--colors-red-100);
       }
       }"
@@ -983,7 +983,7 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .closed > .\\[\\.closed_\\>_\\&\\]\\:text_green\\.100 {
+        .closed > .\\[\\.closed_\\>_\\&\\]\\:c_green\\.100 {
           color: var(--colors-green-100);
       }
 
@@ -995,7 +995,7 @@ describe('extract to css output pipeline', () => {
           cursor: pointer;
       }
 
-        .closed > [data-theme=dark] .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900,.closed > .dark .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900.dark,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:text_green\\.900[data-theme=dark] {
+        .closed > [data-theme=dark] .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900,.closed > .dark .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900.dark,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900[data-theme=dark] {
           color: var(--colors-green-900);
       }
 
@@ -1059,7 +1059,7 @@ describe('extract to css output pipeline', () => {
           background: var(--colors-color-palette-100);
       }
 
-        .hover\\:text_colorPalette\\.300:is(:hover, [data-hover]) {
+        .hover\\:c_colorPalette\\.300:is(:hover, [data-hover]) {
           color: var(--colors-color-palette-300);
       }
       }"
@@ -1191,7 +1191,7 @@ describe('extract to css output pipeline', () => {
             --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary);
         }
 
-          .text_colorPalette\\.light {
+          .c_colorPalette\\.light {
             color: var(--colors-color-palette-light);
         }
 
@@ -1201,7 +1201,7 @@ describe('extract to css output pipeline', () => {
             --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
         }
 
-          .text_colorPalette\\.accent {
+          .c_colorPalette\\.accent {
             color: var(--colors-color-palette-accent);
         }
 
@@ -1214,15 +1214,15 @@ describe('extract to css output pipeline', () => {
             --colors-color-palette-secondary: var(--colors-button-light-accent-secondary);
         }
 
-          .text_colorPalette\\.secondary {
+          .c_colorPalette\\.secondary {
             color: var(--colors-color-palette-secondary);
         }
 
-          .bg_colorPalette\\.dark {
+          .bg-c_colorPalette\\.dark {
             background-color: var(--colors-color-palette-dark);
         }
 
-          .hover\\:text_colorPalette\\.light\\.accent:is(:hover, [data-hover]) {
+          .hover\\:c_colorPalette\\.light\\.accent:is(:hover, [data-hover]) {
             color: var(--colors-color-palette-light-accent);
         }
 
@@ -1281,19 +1281,19 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
 
-        .items_center {
+        .ai_center {
           align-items: center;
       }
 
-        .justify_flex-end {
+        .jc_flex-end {
           justify-content: flex-end;
       }
 
-        .flex_row {
+        .flex-d_row {
           flex-direction: row;
       }
       }"
@@ -1358,15 +1358,15 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
 
-        .items_center {
+        .ai_center {
           align-items: center;
       }
 
-        .items_flex-end {
+        .ai_flex-end {
           align-items: flex-end;
       }
       }"
@@ -1418,11 +1418,11 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\.100 {
+        .c_red\\.100 {
           color: var(--colors-red-100);
       }
 
-        .text_yellow\\.100 {
+        .c_yellow\\.100 {
           color: var(--colors-yellow-100);
       }
       }"
@@ -1578,19 +1578,19 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_blue\\.100 {
+        .c_blue\\.100 {
           color: var(--colors-blue-100);
       }
 
-        .text_green\\.100 {
+        .c_green\\.100 {
           color: var(--colors-green-100);
       }
 
-        .text_rose\\.100 {
+        .c_rose\\.100 {
           color: var(--colors-rose-100);
       }
 
-        .text_sky\\.100 {
+        .c_sky\\.100 {
           color: var(--colors-sky-100);
       }
 
@@ -1788,7 +1788,7 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
       }"
@@ -1903,19 +1903,19 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-10);
       }
 
-        .text_pink {
+        .c_pink {
           color: pink;
       }
 
-        .text_purple {
+        .c_purple {
           color: purple;
       }
 
-        .bg_tomato {
+        .bg-c_tomato {
           background-color: tomato;
       }
 
-        .bg_yellow {
+        .bg-c_yellow {
           background-color: yellow;
       }
       }"
@@ -1986,15 +1986,15 @@ describe('extract to css output pipeline', () => {
           max-width: 800px;
       }
 
-        .\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em:not(:first-child) {
+        .\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbe_1em:not(:first-child) {
           margin-block-end: 1em;
       }
 
-        .\\[\\&_p\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mt_1em p:not(:first-child) {
+        .\\[\\&_p\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbs_1em p:not(:first-child) {
           margin-block-start: 1em;
       }
 
-        .\\[\\&_h1\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em h1:not(:first-child),.\\[\\&_h2\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mb_1em h2:not(:first-child) {
+        .\\[\\&_h1\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbe_1em h1:not(:first-child),.\\[\\&_h2\\]\\:\\[\\&\\:not\\(\\:first-child\\)\\]\\:mbe_1em h2:not(:first-child) {
           margin-block-end: 1em;
       }
       }"
@@ -2220,11 +2220,11 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
       }"
@@ -2346,11 +2346,11 @@ describe('extract to css output pipeline', () => {
           gap: 10px;
       }
 
-        .text_red {
+        .c_red {
           color: red;
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
       }"
@@ -2624,19 +2624,19 @@ describe('extract to css output pipeline', () => {
       }
 
       @layer utilities {
-        .text_amber\\.400 {
+        .c_amber\\.400 {
           color: var(--colors-amber-400);
       }
 
-        [data-theme=dark] .dark\\:text_sky\\.300,.dark .dark\\:text_sky\\.300,.dark\\:text_sky\\.300.dark,.dark\\:text_sky\\.300[data-theme=dark] {
+        [data-theme=dark] .dark\\:c_sky\\.300,.dark .dark\\:c_sky\\.300,.dark\\:c_sky\\.300.dark,.dark\\:c_sky\\.300[data-theme=dark] {
           color: var(--colors-sky-300);
       }
 
-        .hover\\:text_amber\\.500:is(:hover, [data-hover]) {
+        .hover\\:c_amber\\.500:is(:hover, [data-hover]) {
           color: var(--colors-amber-500);
       }
 
-        [data-theme=dark] .hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover]),.dark .hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover]),.hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover]).dark,.hover\\:dark\\:text_sky\\.200:is(:hover, [data-hover])[data-theme=dark] {
+        [data-theme=dark] .hover\\:dark\\:c_sky\\.200:is(:hover, [data-hover]),.dark .hover\\:dark\\:c_sky\\.200:is(:hover, [data-hover]),.hover\\:dark\\:c_sky\\.200:is(:hover, [data-hover]).dark,.hover\\:dark\\:c_sky\\.200:is(:hover, [data-hover])[data-theme=dark] {
           color: var(--colors-sky-200);
       }
       }"
@@ -2789,11 +2789,11 @@ describe('extract to css output pipeline', () => {
           gap: var(--spacing-8);
       }
 
-        .grid-cols_repeat\\(auto-fit\\,_minmax\\(80px\\,_1fr\\)\\) {
+        .grid-tc_repeat\\(auto-fit\\,_minmax\\(80px\\,_1fr\\)\\) {
           grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
       }
 
-        .grid-cols_repeat\\(auto-fit\\,_minmax\\(token\\(sizes\\.20\\,_20\\)\\,_1fr\\)\\) {
+        .grid-tc_repeat\\(auto-fit\\,_minmax\\(token\\(sizes\\.20\\,_20\\)\\,_1fr\\)\\) {
           grid-template-columns: repeat(auto-fit, minmax(var(--sizes-20, 20), 1fr));
       }
       }"
@@ -2842,13 +2842,13 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @container (min-width: 36rem) {
-          .\\[\\@container_\\(min-width\\:_token\\(sizes\\.xl\\)\\)\\]\\:text_green\\.300 {
+          .\\[\\@container_\\(min-width\\:_token\\(sizes\\.xl\\)\\)\\]\\:c_green\\.300 {
             color: var(--colors-green-300);
       }
       }
 
         @media (min-width: 42rem) {
-          .\\[\\@media_\\(min-width\\:_token\\(sizes\\.2xl\\)\\)\\]\\:text_red\\.300 {
+          .\\[\\@media_\\(min-width\\:_token\\(sizes\\.2xl\\)\\)\\]\\:c_red\\.300 {
             color: var(--colors-red-300);
       }
       }
@@ -2919,7 +2919,7 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_\\[\\#fff\\] {
+        .c_\\[\\#fff\\] {
           color: #fff;
       }
 
@@ -2927,15 +2927,15 @@ describe('extract to css output pipeline', () => {
           background: var(--colors-red-300);
       }
 
-        .bg_\\[rgb\\(51_155_240\\)\\] {
+        .bg-c_\\[rgb\\(51_155_240\\)\\] {
           background-color: rgb(51 155 240);
       }
 
-        .ring-color_\\[rgb\\(51_155_240\\)\\]\\! {
+        .ring-c_\\[rgb\\(51_155_240\\)\\]\\! {
           outline-color: rgb(51 155 240) !important;
       }
 
-        .border_\\[rgb\\(51_155_240\\)\\]\\! {
+        .bd-c_\\[rgb\\(51_155_240\\)\\]\\! {
           border-color: rgb(51 155 240) !important;
       }
       }"
@@ -3118,7 +3118,7 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
 
@@ -3197,7 +3197,7 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
       }"
@@ -3242,7 +3242,7 @@ describe('extract to css output pipeline', () => {
           display: flex;
       }
 
-        .flex_column {
+        .flex-d_column {
           flex-direction: column;
       }
       }"
@@ -3286,7 +3286,7 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         @media (hover: hover) and (pointer: fine) {
-          :is(span .weirdCondition\\:text_red:hover > div) ~ :is(span .weirdCondition\\:text_red:hover > div) {
+          :is(span .weirdCondition\\:c_red:hover > div) ~ :is(span .weirdCondition\\:c_red:hover > div) {
             color: red;
       }
       }
@@ -3348,7 +3348,7 @@ describe('extract to css output pipeline', () => {
           --colors-color-palette-hover: var(--colors-bg-primary-hover);
       }
 
-        .bg_colorPalette {
+        .bg-c_colorPalette {
           background-color: var(--colors-color-palette);
       }
       }"
@@ -3431,7 +3431,7 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .bg-img_checkbox {
+        .bg-i_checkbox {
           background-image: var(--assets-checkbox);
       }
       }"
@@ -3493,15 +3493,15 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_black {
+        .c_black {
           color: var(--colors-black);
       }
 
-        .bg_black\\.10 {
+        .bg-c_black\\.10 {
           background-color: var(--colors-black-10);
       }
 
-        .border_black\\.20 {
+        .bd-c_black\\.20 {
           border-color: var(--colors-black-20);
       }
       }"
@@ -3742,7 +3742,7 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .border-lw_4px {
+        .bd-l-w_4px {
           border-left-width: 4px;
       }
 
@@ -3750,7 +3750,7 @@ describe('extract to css output pipeline', () => {
           border-left-style: solid;
       }
 
-        .border-l_border\\.default {
+        .bd-l-c_border\\.default {
           border-left-color: border.default;
       }
 
@@ -3758,11 +3758,11 @@ describe('extract to css output pipeline', () => {
           padding-left: var(--spacing-4);
       }
 
-        .list-type_disc {
+        .li-t_disc {
           list-style-type: disc;
       }
 
-        .list-type_decimal {
+        .li-t_decimal {
           list-style-type: decimal;
       }
       }"
@@ -3861,7 +3861,7 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .border-lw_4px {
+        .bd-l-w_4px {
           border-left-width: 4px;
       }
 
@@ -3869,7 +3869,7 @@ describe('extract to css output pipeline', () => {
           border-left-style: solid;
       }
 
-        .border-l_border\\.default {
+        .bd-l-c_border\\.default {
           border-left-color: border.default;
       }
 
@@ -3877,11 +3877,11 @@ describe('extract to css output pipeline', () => {
           padding-left: var(--spacing-4);
       }
 
-        .list-type_disc {
+        .li-t_disc {
           list-style-type: disc;
       }
 
-        .list-type_decimal {
+        .li-t_decimal {
           list-style-type: decimal;
       }
       }"
