@@ -87,6 +87,7 @@ describe('recipe ruleset', () => {
     expect(createGeneratorContext().recipes.details.find((r) => r.baseName === 'buttonStyle')).toMatchInlineSnapshot(`
       {
         "baseName": "buttonStyle",
+        "className": "buttonStyle",
         "config": {
           "base": {
             "&:is(:hover, [data-hover])": {

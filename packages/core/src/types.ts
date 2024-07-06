@@ -40,6 +40,10 @@ export interface RecipeNode {
    */
   baseName: string
   /**
+   * The class name of the recipe. Defaults to the baseName if not specified.
+   */
+  className: string
+  /**
    * Discriminant
    */
   type: 'recipe'
