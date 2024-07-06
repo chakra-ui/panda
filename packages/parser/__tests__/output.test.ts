@@ -3887,4 +3887,74 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('conditions JIT merging', () => {
+    const code = `
+    export const App = () => {
+      return (
+        <div
+          className={css({
+            color: 'red',
+            _hover: { color: 'blue' },
+            '&_hover:not(_focusVisible)': {
+              color: 'green',
+            },
+            '&:not(_disabled)': {
+              color: 'purple',
+            },
+          })}
+        />
+      )
+    }`
+    const result = parseAndExtract(code, {
+      eject: true,
+      conditions: {
+        hover: '&:is(:hover, [data-hover])',
+        focusVisible: '&:is(:focus-visible, [data-focus-visible])',
+        disabled: '&:is(:disabled, [disabled], [data-disabled])',
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "&:not(_disabled)": {
+                "color": "purple",
+              },
+              "&_hover:not(_focusVisible)": {
+                "color": "green",
+              },
+              "_hover": {
+                "color": "blue",
+              },
+              "color": "red",
+            },
+          ],
+          "name": "css",
+          "type": "css",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .color_red {
+          color: red;
+      }
+
+        .\\[\\&\\:not\\(_disabled\\)\\]\\:color_purple:not(.\\[\\&\\:not\\(_disabled\\)\\]\\:color_purple:is(:disabled, [disabled], [data-disabled])) {
+          color: purple;
+      }
+
+        .\\[\\&_hover\\:not\\(_focusVisible\\)\\]\\:color_green.\\[\\&_hover\\:not\\(_focusVisible\\)\\]\\:color_green:is(:hover, [data-hover]):not(.\\[\\&_hover\\:not\\(_focusVisible\\)\\]\\:color_green:is(:focus-visible, [data-focus-visible])) {
+          color: green;
+      }
+
+        .hover\\:color_blue:is(:hover, [data-hover]) {
+          color: blue;
+      }
+      }"
+    `)
+  })
 })

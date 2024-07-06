@@ -73,11 +73,19 @@ describe('Conditions', () => {
           ],
         }
       `)
+
+    expect(css.normalize('&:not(_disabled)')).toMatchInlineSnapshot(`
+      {
+        "raw": "&:not(&:is(:disabled, [disabled], [data-disabled]))",
+        "type": "self-nesting",
+        "value": "&:not(&:is(:disabled, [disabled], [data-disabled]))",
+      }
+    `)
   })
 
   test('conditions sorting', () => {
     const css = new Conditions({ conditions: fixturePreset.conditions!, breakpoints: fixturePreset.theme.breakpoints })
-    const conditions = ['sm', 'md', 'lg', '_hover', '_focus', '_focus-visible', '_focus-within', '_active']
+    const conditions = ['sm', 'md', 'lg', '_hover', '_focus', '_focusVisible', '_focusWithin', '_active']
     expect(css.sort(conditions).map((c) => c.raw)).toMatchInlineSnapshot(`
       [
         "@media screen and (min-width: 40rem)",
@@ -85,6 +93,8 @@ describe('Conditions', () => {
         "@media screen and (min-width: 64rem)",
         "&:is(:hover, [data-hover])",
         "&:is(:focus, [data-focus])",
+        "&:is(:focus-visible, [data-focus-visible])",
+        "&:focus-within",
         "&:is(:active, [data-active])",
       ]
     `)

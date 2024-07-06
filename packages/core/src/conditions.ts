@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import { capitalize, isBaseCondition, isObject, toRem, withoutSpace } from '@pandacss/shared'
+import { PandaError, capitalize, isBaseCondition, isObject, toRem, withoutSpace } from '@pandacss/shared'
 import type {
   ConditionDetails,
   ConditionQuery,
@@ -29,13 +29,17 @@ export class Conditions {
 
   breakpoints: Breakpoints
 
+  conditionsRegex: RegExp | null
+
   constructor(private options: Options) {
     const { breakpoints: breakpointValues = {}, conditions = {} } = options
 
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
 
-    const entries = Object.entries(conditions).map(([key, value]) => [`_${key}`, parseCondition(value)])
+    const entries = Object.entries(conditions).map(
+      ([key, value]) => [`_${key}`, parseCondition(value)] as [string, ConditionDetails],
+    )
 
     const containers = this.setupContainers()
     const themes = this.setupThemes()
@@ -46,6 +50,11 @@ export class Conditions {
       ...containers,
       ...themes,
     }
+
+    const simpleConditionNames = entries
+      .filter(([key, details]) => key.startsWith('_') && details.type !== 'mixed')
+      .map(([key]) => key)
+    this.conditionsRegex = simpleConditionNames.length ? new RegExp(`(${simpleConditionNames.join('|')})`, 'g') : null
   }
 
   private setupContainers = () => {
@@ -140,7 +149,29 @@ export class Conditions {
   }
 
   isCondition = (key: string) => {
-    return this.has(key) || !!this.getRaw(key) || isBaseCondition(key)
+    return this.has(key) || !!this.getRaw(key) || isBaseCondition(key) || this.hasKnownCondition(key)
+  }
+
+  hasKnownCondition = (key: string) => {
+    return this.conditionsRegex?.test(key) ?? false
+  }
+
+  resolveKnownConditionsJIT = (key: string) => {
+    if (!this.conditionsRegex || !this.hasKnownCondition(key)) return key
+
+    return key.replace(this.conditionsRegex, (match) => {
+      const cond = this.values[match]
+      if (!cond) return match
+
+      if (Array.isArray(cond.raw)) {
+        throw new PandaError(
+          'CONDITION',
+          `Cannot use mixed condition reference in JIT condition "${cond.raw.join(', ')}"`,
+        )
+      }
+
+      return cond.raw
+    })
   }
 
   isEmpty = () => {
@@ -163,12 +194,20 @@ export class Conditions {
   }
 
   sort = (conditions: string[]): ConditionDetails[] => {
-    const rawConditions = conditions.map(this.getRaw).filter(Boolean) as ConditionDetails[]
+    const rawConditions = conditions
+      .map((cond) => {
+        if (this.has(cond)) return this.getRaw(cond)
+        return this.getRaw(this.resolveKnownConditionsJIT(cond))
+      })
+      .filter(Boolean) as ConditionDetails[]
     return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
   }
 
   normalize = (condition: ConditionQuery | ConditionDetails): ConditionDetails | undefined => {
-    return isObject(condition) ? (condition as ConditionDetails) : this.getRaw(condition)
+    if (isObject(condition)) return condition as ConditionDetails
+
+    if (this.has(condition) || Array.isArray(condition)) return this.getRaw(condition)
+    return this.getRaw(this.resolveKnownConditionsJIT(condition))
   }
 
   keys = () => {
