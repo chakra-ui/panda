@@ -7,16 +7,12 @@ export class PathEngine {
     return this.context.config.cwd
   }
 
-  private get emitPackage() {
-    return this.context.config.emitPackage || false
-  }
-
   private get outdir() {
     return this.context.config.outdir
   }
 
   getFilePath(file?: string) {
-    return [this.cwd, this.emitPackage ? 'node_modules' : undefined, this.outdir, file].filter(Boolean) as string[]
+    return [this.cwd, this.outdir, file].filter(Boolean) as string[]
   }
 
   get root() {

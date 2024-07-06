@@ -15,13 +15,13 @@ describe('complex-rule', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        [data-theme=dark] .dark\\:text_green500,.dark .dark\\:text_green500,.dark\\:text_green500.dark,.dark\\:text_green500[data-theme=dark] {
+        [data-theme=dark] .dark\\:c_green500,.dark .dark\\:c_green500,.dark\\:c_green500.dark,.dark\\:c_green500[data-theme=dark] {
           color: green500;
       }
 
         @media screen and (min-width: 40rem) {
           @media screen and (min-width: 48rem) {
-            [data-theme=dark] .dark\\:sm\\:md\\:text_red200,.dark .dark\\:sm\\:md\\:text_red200,.dark\\:sm\\:md\\:text_red200.dark,.dark\\:sm\\:md\\:text_red200[data-theme=dark] {
+            [data-theme=dark] .dark\\:sm\\:md\\:c_red200,.dark .dark\\:sm\\:md\\:c_red200,.dark\\:sm\\:md\\:c_red200.dark,.dark\\:sm\\:md\\:c_red200[data-theme=dark] {
               color: red200;
       }
       }

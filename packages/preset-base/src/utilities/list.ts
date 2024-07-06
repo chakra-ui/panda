@@ -2,16 +2,20 @@ import type { UtilityConfig } from '@pandacss/types'
 
 export const list: UtilityConfig = {
   listStyleType: {
-    className: 'list-type',
+    className: 'li-t',
     group: 'List',
   },
   listStylePosition: {
-    className: 'list-pos',
+    className: 'li-pos',
     group: 'List',
   },
   listStyleImage: {
-    className: 'list-img',
+    className: 'li-img',
     group: 'List',
     values: 'assets',
+  },
+  listStyle: {
+    className: 'li-s',
+    group: 'List',
   },
 }

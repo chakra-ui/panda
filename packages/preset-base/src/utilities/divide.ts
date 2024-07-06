@@ -5,7 +5,7 @@ const divideColor = createColorMixTransform('borderColor')
 
 export const divide: UtilityConfig = {
   divideX: {
-    className: 'divide-x',
+    className: 'dvd-x',
     values: 'borderWidths',
     group: 'Border',
     transform(value) {
@@ -18,7 +18,7 @@ export const divide: UtilityConfig = {
     },
   },
   divideY: {
-    className: 'divide-y',
+    className: 'dvd-y',
     values: 'borderWidths',
     group: 'Border',
     transform(value) {
@@ -31,7 +31,7 @@ export const divide: UtilityConfig = {
     },
   },
   divideColor: {
-    className: 'divide-color',
+    className: 'dvd-c',
     values: 'colors',
     group: 'Border',
     transform(value, args) {
@@ -41,7 +41,7 @@ export const divide: UtilityConfig = {
     },
   },
   divideStyle: {
-    className: 'divide-style',
+    className: 'dvd-s',
     property: 'borderStyle',
     group: 'Border',
     transform(value) {

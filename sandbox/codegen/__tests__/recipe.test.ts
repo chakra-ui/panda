@@ -43,16 +43,16 @@ describe('recipe', () => {
   test('compoundVariants', () => {
     const result = buttonWithCompoundVariants({ visual: 'solid' })
 
-    expect(result).toMatchInlineSnapshot(`"button button--visual_solid text_blue"`)
+    expect(result).toMatchInlineSnapshot(`"button button--visual_solid c_blue"`)
 
     const result2 = buttonWithCompoundVariants({ visual: 'outline', size: 'md' })
-    expect(result2).toMatchInlineSnapshot(`"button button--visual_outline button--size_md text_green"`)
+    expect(result2).toMatchInlineSnapshot(`"button button--visual_outline button--size_md c_green"`)
 
     const result3 = buttonWithCompoundVariants({ visual: 'outline', size: 'sm' })
-    expect(result3).toMatchInlineSnapshot(`"button button--visual_outline button--size_sm text_red"`)
+    expect(result3).toMatchInlineSnapshot(`"button button--visual_outline button--size_sm c_red"`)
 
     const result4 = buttonWithCompoundVariants({ visual: 'outline', size: 'lg' })
-    expect(result4).toMatchInlineSnapshot(`"button button--visual_outline button--size_lg text_red"`)
+    expect(result4).toMatchInlineSnapshot(`"button button--visual_outline button--size_lg c_red"`)
   })
 
   test('throws an error when using conditions with compound variants', () => {

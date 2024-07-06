@@ -148,10 +148,10 @@ describe('color-mix', () => {
     expect(css({ color: '{colors.pink.400/30}' })).toMatchInlineSnapshot(`
       {
         "className": [
-          "text_\\{colors\\.pink\\.400\\/30\\}",
+          "c_\\{colors\\.pink\\.400\\/30\\}",
         ],
         "css": "@layer utilities {
-        .text_\\{colors\\.pink\\.400\\/30\\} {
+        .c_\\{colors\\.pink\\.400\\/30\\} {
           color: color-mix(in srgb, var(--colors-pink-400) 30%, transparent);
       }
       }",

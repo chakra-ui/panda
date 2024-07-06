@@ -4,6 +4,7 @@
   "version": "0.0.2",
   "type": "module",
   "scripts": {
+    "test:up": "tsx ./cli.ts test -u",
     "test": "tsx ./cli.ts test && tsx ./cli.ts test -t",
     "prepare": "tsx ./cli.ts codegen",
     "dev": "vite",
@@ -40,6 +41,7 @@
     "tsx": "4.7.1",
     "typescript": "5.3.3",
     "vite": "5.2.13",
+    "vitest": "1.5.0",
     "vite-plugin-solid": "2.9.1",
     "vue": "3.4.19"
   }
