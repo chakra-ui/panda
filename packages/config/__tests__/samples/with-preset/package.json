@@ -1,5 +1,5 @@
 {
-  "name": "sandbox-config-test-nested-files",
+  "name": "sandbox-config-test-with-preset",
   "private": true,
   "devDependencies": {
     "@pandacss/dev": "workspace:^"

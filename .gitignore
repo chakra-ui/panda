@@ -19,6 +19,8 @@ __generated__
 .idea
 *.vsix
 .vercel
+.turbo
+storybook-static
 
 ## Panda
 styled-system

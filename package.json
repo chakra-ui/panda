@@ -7,9 +7,9 @@
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
     "prepare": "husky && pnpm build-fast",
-    "dev": "pnpm --parallel --filter=./packages/** dev",
-    "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
-    "build": "pnpm -r --filter=./packages/** build",
+    "dev": "pnpm turbo dev --filter=./packages/**",
+    "build-fast": "pnpm turbo build-fast --filter=./packages/**",
+    "build": "pnpm turbo build --filter=./packages/**",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rimraf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",
@@ -59,7 +59,8 @@
     "@typescript-eslint/parser": "7.0.1",
     "eslint": "8.56.0",
     "eslint-config-prettier": "9.1.0",
-    "prettier": "3.2.5"
+    "prettier": "3.2.5",
+    "turbo": "^2.0.6"
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
