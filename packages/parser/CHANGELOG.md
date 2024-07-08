@@ -1,5 +1,46 @@
 # @pandacss/parser
 
+## 0.42.0
+
+### Minor Changes
+
+- e157dd1: - Ensure classnames are unique across utilities to prevent potential clash
+  - Add support for `4xl` border radius token
+
+### Patch Changes
+
+- ec64819: Change recipes `className` to be optional, both for `recipes` and `slotRecipes`, with a fallback to its name.
+
+  ```ts
+  import { defineConfig } from '@pandacss/core'
+
+  export default defineConfig({
+    recipes: {
+      button: {
+        className: 'button', // 👈 was mandatory, is now optional
+        variants: {
+          size: {
+            sm: { padding: '2', borderRadius: 'sm' },
+            md: { padding: '4', borderRadius: 'md' },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [ec64819]
+- Updated dependencies [17a1932]
+  - @pandacss/types@0.42.0
+  - @pandacss/core@0.42.0
+  - @pandacss/extractor@0.42.0
+  - @pandacss/config@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

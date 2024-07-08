@@ -1,5 +1,12 @@
 # @pandacss/extractor
 
+## 0.42.0
+
+### Patch Changes
+
+- 19c3a2c: Minor changes to the format of the `panda analyze --output coverage.json` file
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes
