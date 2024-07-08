@@ -6,6 +6,59 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.42.0] - 2024-07-08
+
+### Added
+
+- Add support for `4xl` border radius token
+
+### Changed
+
+- Ensure classnames are unique across utilities to prevent potential clash
+- Change recipes `className` to be optional, both for `recipes` and `slotRecipes`, with a fallback to its name.
+- Minor changes to the format of the `panda analyze --output coverage.json` file
+
+```ts
+import { defineConfig } from '@pandacss/core'
+
+export default defineConfig({
+  recipes: {
+    button: {
+      className: 'button', // 👈 was mandatory, is now optional
+      variants: {
+        size: {
+          sm: { padding: '2', borderRadius: 'sm' },
+          md: { padding: '4', borderRadius: 'md' },
+        },
+      },
+    },
+  },
+})
+```
+
+- [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the generated
+  CSS where possible.
+- BREAKING: Remove `emitPackage` config option,
+
+  tldr: use `importMap` instead for absolute paths (e.g can be used for component libraries)
+
+  `emitPackage` is deprecated, it's known for causing several issues:
+
+  - bundlers sometimes eagerly cache the `node_modules`, leading to `panda codegen` updates to the `styled-system` not
+    visible in the browser
+  - auto-imports are not suggested in your IDE.
+  - in some IDE the typings are not always reflected properly
+
+  As alternatives, you can use:
+
+  - relative paths instead of absolute paths (e.g. `../styled-system/css` instead of `styled-system/css`)
+  - use package.json #imports and/or tsconfig path aliases (prefer package.json#imports when possible, TS 5.4 supports
+    them by default) like `#styled-system/css` instead of `styled-system/css`
+    https://nodejs.org/api/packages.html#subpath-imports
+  - for a component library, use a dedicated workspace package (e.g. `@acme/styled-system`) and use
+    `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to extract, e.g.
+    `import { css } from '@acme/styled-system/css'` https://panda-css.com/docs/guides/component-library
+
 ## [0.41.0] - 2024-06-16
 
 ### Fixed
