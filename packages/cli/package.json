@@ -55,13 +55,18 @@
     "*.d.ts",
     "postcss.js"
   ],
+  "bundleDependencies": [
+    "@pandacss/preset-base",
+    "@pandacss/preset-panda"
+  ],
   "dependencies": {
     "@clack/prompts": "0.7.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
-    "@pandacss/postcss": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/postcss": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",

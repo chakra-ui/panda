@@ -21,7 +21,7 @@ export default defineConfig({
 
 **Type**: `string[]`
 
-**Default**: `['@pandacss/preset-base', '@pandacss/preset-panda']`
+**Default**: `[]`
 
 The set of reusable and shareable configuration presets.
 
@@ -31,20 +31,6 @@ as a set of overrides and extensions.
 ```json
 {
   "presets": ["@pandacss/preset-base", "@pandacss/preset-panda"]
-}
-```
-
-### eject
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-
-```json
-{
-  "eject": true
 }
 ```
 

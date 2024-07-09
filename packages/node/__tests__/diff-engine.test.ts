@@ -1,5 +1,5 @@
 import { mergeConfigs } from '@pandacss/config'
-import { fixtureDefaults } from '@pandacss/fixture'
+import { fixtureDefaults, fixtureMergedConfig } from '@pandacss/fixture'
 import { Generator } from '@pandacss/generator'
 import { parseJson, stringifyJson } from '@pandacss/shared'
 import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
@@ -23,7 +23,7 @@ const createConfigResult = (config: UserConfig) => {
 
 describe('DiffEngine affecteds', () => {
   test('add theme.tokens', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
 
     let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
 
@@ -174,7 +174,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.tokens', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -294,7 +294,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('add theme.recipes', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
 
     const config = defaultConfig() as UserConfig
     const generator = new Generator(createConfigResult(config))
@@ -381,7 +381,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.recipes', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -439,7 +439,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('add theme.patterns', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
 
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -562,7 +562,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update theme.patterns', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
     const generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
     const nextConfig = mergeConfigs([
@@ -605,7 +605,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('update separator', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
 
     let generator = new Generator(createConfigResult(defaultConfig() as UserConfig))
     const diffEngine = new DiffEngine(generator)
@@ -649,7 +649,7 @@ describe('DiffEngine affecteds', () => {
   })
 
   test('nothing changes', () => {
-    const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
+    const defaultConfig = (): Config => ({ ...fixtureDefaults.config, ...fixtureMergedConfig })
 
     const config = defaultConfig() as UserConfig
     const generator = new Generator(createConfigResult(config))

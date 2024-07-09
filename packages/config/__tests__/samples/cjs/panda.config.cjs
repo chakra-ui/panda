@@ -3,7 +3,7 @@ const { tokens } = require('../common/tokens')
 
 module.exports = defineConfig({
   preflight: true,
-  presets: ['@pandacss/dev/presets'],
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   include: ['./src/**/*.{ts,tsx,jsx}'],
   exclude: [],
   hash: false,

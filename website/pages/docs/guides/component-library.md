@@ -57,7 +57,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   //...
-  presets: ['@pandacss/dev/presets', acmePreset]
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', acmePreset]
 })
 ```
 

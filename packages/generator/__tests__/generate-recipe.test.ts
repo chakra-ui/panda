@@ -1,22 +1,18 @@
-import type { LoadConfigResult } from '@pandacss/types'
+import { createGeneratorContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { Generator } from '../src'
 import { generateCreateRecipe, generateRecipes } from '../src/artifacts/js/recipe'
-import { fixtureDefaults } from '@pandacss/fixture'
 
-const createRecipeJs = (config: LoadConfigResult) => {
-  const generator = new Generator(config)
-  return generateCreateRecipe(generator)
+const createRecipeJs = () => {
+  return generateCreateRecipe(createGeneratorContext())
 }
 
-const recipeJs = (config: LoadConfigResult) => {
-  const generator = new Generator(config)
-  return generateRecipes(generator)
+const recipeJs = () => {
+  return generateRecipes(createGeneratorContext())
 }
 
 describe('generate recipes', () => {
   test('should ', () => {
-    expect(createRecipeJs(fixtureDefaults)).toMatchInlineSnapshot(`
+    expect(createRecipeJs()).toMatchInlineSnapshot(`
       {
         "dts": "",
         "js": "import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
@@ -106,7 +102,7 @@ describe('generate recipes', () => {
       }
     `)
 
-    expect(recipeJs(fixtureDefaults)).toMatchInlineSnapshot(`
+    expect(recipeJs()).toMatchInlineSnapshot(`
       [
         {
           "dts": "import type { ConditionalValue } from '../types/index';

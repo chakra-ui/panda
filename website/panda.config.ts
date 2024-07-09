@@ -8,6 +8,7 @@ import { layerStyles } from './theme/layer-styles'
 import { globalCss } from './theme/global-css'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   // define the content to scan 👇🏻
   include: [
