@@ -1,10 +1,12 @@
 /* eslint-disable */
-import type { FunctionComponent } from 'react'
-import type { CenterProperties } from '../patterns/center';
-import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { HTMLPandaProps } from "../types/jsx.d.ts";
+import type { DistributiveOmit } from "../types/system-types.d.ts";
 
-export interface CenterProps extends CenterProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof CenterProperties > {}
+import type { FunctionComponent } from "react";
+import type { CenterProperties } from "../patterns/center";
 
+export interface CenterProps
+  extends CenterProperties,
+    DistributiveOmit<HTMLPandaProps<"div">, keyof CenterProperties> {}
 
-export declare const Center: FunctionComponent<CenterProps>
+export declare const Center: FunctionComponent<CenterProps>;

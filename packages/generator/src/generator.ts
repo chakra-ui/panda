@@ -1,21 +1,44 @@
 import { Context, type StyleDecoder, type Stylesheet } from '@pandacss/core'
-import type { ArtifactId, CssArtifactType, LoadConfigResult } from '@pandacss/types'
+import type { CssArtifactType, DiffConfigResult, LoadConfigResult } from '@pandacss/types'
 import { match } from 'ts-pattern'
-import { generateArtifacts } from './artifacts'
+import { ArtifactMap } from './artifacts/artifact-map'
 import { generateGlobalCss } from './artifacts/css/global-css'
 import { generateKeyframeCss } from './artifacts/css/keyframe-css'
 import { generateParserCss } from './artifacts/css/parser-css'
 import { generateResetCss } from './artifacts/css/reset-css'
 import { generateStaticCss } from './artifacts/css/static-css'
 import { generateTokenCss } from './artifacts/css/token-css'
+import { getArtifactsMap } from './artifacts/setup-artifacts'
+import { logger } from '@pandacss/logger'
 
 export class Generator extends Context {
+  artifacts = new ArtifactMap()
+
   constructor(conf: LoadConfigResult) {
     super(conf)
   }
 
-  getArtifacts = (ids?: ArtifactId[] | undefined) => {
-    return generateArtifacts(this, ids)
+  /**
+   * Generate all the artifacts
+   * Can opt-in to filter them if a list of ArtifactId is provided
+   */
+  getArtifacts = (diffResult?: DiffConfigResult) => {
+    const map = getArtifactsMap(this)
+    const changed = map.computeChangedFiles(diffResult)
+
+    logger.debug('artifacts', changed)
+
+    const { empty, contents } = map.generate(this, {
+      ids: changed.size ? Array.from(changed) : undefined,
+      diffs: diffResult?.diffs,
+    })
+
+    return {
+      map,
+      changed,
+      empty,
+      generated: contents,
+    }
   }
 
   appendCssOfType = (type: CssArtifactType, sheet: Stylesheet) => {
