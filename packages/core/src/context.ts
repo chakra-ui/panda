@@ -139,6 +139,8 @@ export class Context {
 
     // Relies on this.encoder, this.decoder
     this.setupCompositions(theme)
+    this.registerAnimationName(theme)
+
     this.recipes.save(this.baseSheetContext)
 
     this.staticCss = new StaticCss({
@@ -269,9 +271,13 @@ export class Context {
   }
 
   setupCompositions = (theme: Theme): void => {
-    const { textStyles, layerStyles } = theme
+    const { textStyles, layerStyles, motionStyles } = theme
 
-    const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
+    const compositions = compact({
+      textStyle: textStyles,
+      layerStyle: layerStyles,
+      motionStyle: motionStyles,
+    })
 
     const stylesheetCtx = {
       ...this.baseSheetContext,
@@ -295,6 +301,10 @@ export class Context {
 
       this.utility.register(key, config)
     }
+  }
+
+  private registerAnimationName = (theme: Theme): void => {
+    this.utility.addPropertyType('animationName', Object.keys(theme.keyframes ?? {}))
   }
 
   setupProperties = (): void => {

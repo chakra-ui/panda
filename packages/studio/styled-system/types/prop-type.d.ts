@@ -148,7 +148,7 @@ export interface UtilityValues {
 	transitionDuration: Tokens["durations"];
 	transition: "all" | "common" | "background" | "colors" | "opacity" | "shadow" | "transform";
 	animation: Tokens["animations"];
-	animationName: "spin" | "ping" | "pulse" | "bounce";
+	animationName: "spin" | "ping" | "pulse" | "bounce" | "fade-in" | "fade-out" | "slide-out-left" | "slide-out-right" | "slide-out-up" | "slide-out-down" | "slide-from-top" | "slide-from-bottom" | "slide-from-left" | "slide-from-right" | "slide-to-top" | "slide-to-bottom" | "slide-to-left" | "slide-to-right" | "scale-in" | "scale-out";
 	animationTimingFunction: Tokens["easings"];
 	animationDuration: Tokens["durations"];
 	animationDelay: Tokens["durations"];
