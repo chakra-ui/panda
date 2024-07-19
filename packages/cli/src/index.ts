@@ -2,6 +2,7 @@ import type {
   CompositionStyles,
   Config,
   CssKeyframes,
+  GlobalFontface,
   GlobalStyleObject,
   HooksApiInterface,
   LayerStyles,
@@ -69,6 +70,10 @@ export function defineKeyframes(keyframes: CssKeyframes) {
 }
 
 export function defineGlobalStyles(definition: GlobalStyleObject) {
+  return definition
+}
+
+export function defineGlobalFontface(definition: GlobalFontface) {
   return definition
 }
 

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import type {  ConditionalValue, Nested  } from './conditions';
-import type {  PropertiesFallback  } from './csstype';
+import type {  AtRule, PropertiesFallback  } from './csstype';
 import type {  SystemProperties, CssVarProperties  } from './style-props';
 
 type String = string & {}
@@ -56,11 +56,32 @@ export interface ExtendableGlobalStyleObject {
   extend?: GlobalStyleObject | undefined
 }
 
+/* -----------------------------------------------------------------------------
+ * Composition (text styles, layer styles)
+ * -----------------------------------------------------------------------------*/
+
 type FilterStyleObject<P extends string> = {
   [K in P]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown
 }
 
 export type CompositionStyleObject<Property extends string> = Nested<FilterStyleObject<Property> & CssVarProperties>
+
+/* -----------------------------------------------------------------------------
+ * Font face
+ * -----------------------------------------------------------------------------*/
+
+export type GlobalFontfaceRule = Omit<AtRule.FontFaceFallback, 'src'> & Required<Pick<AtRule.FontFaceFallback, 'src'>>
+
+export type FontfaceRule = Omit<GlobalFontfaceRule, 'fontFamily'>
+
+export interface GlobalFontface {
+  [name: string]: FontfaceRule | FontfaceRule[]
+}
+
+export interface ExtendableGlobalFontface {
+  [name: string]: FontfaceRule | FontfaceRule[] | GlobalFontface | undefined
+  extend?: GlobalFontface | undefined
+}
 
 /* -----------------------------------------------------------------------------
  * Jsx style props
