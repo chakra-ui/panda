@@ -24,7 +24,10 @@ export interface TransformResult {
 }
 
 export interface StylesheetContext
-  extends Pick<Context, 'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks' | 'globalVars'> {
+  extends Pick<
+    Context,
+    'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks' | 'globalVars' | 'globalFontface'
+  > {
   layers: Layers
   helpers: PatternHelpers
   hash?: boolean

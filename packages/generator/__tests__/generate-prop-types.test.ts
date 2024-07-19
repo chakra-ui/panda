@@ -278,6 +278,7 @@ describe('generate property types', () => {
 
       export interface UtilityValues {
       	textStyle: "headline.h1" | "headline.h2";
+      	animationName: "spin" | "ping" | "pulse" | "bounce";
       }
 
 
