@@ -122,6 +122,72 @@ Then alias the font names to css variables.
 }
 ```
 
+### Global Font Face
+
+You can also define global font face in your panda config.
+
+```js
+export default defineConfig({
+  globalFontface: {
+    Fira: {
+      src: 'url(/fonts/fira.woff2) format("woff2")',
+      fontWeight: 400,
+      fontStyle: 'normal',
+      fontDisplay: 'swap'
+    }
+  }
+})
+```
+
+You can also define multiple font sources for the same weight.
+
+```js
+export default defineConfig({
+  globalFontface: {
+    Fira: {
+      src: [
+        'url(/fonts/fira.woff2) format("woff2")',
+        'url(/fonts/fira.woff) format("woff")'
+      ],
+      fontWeight: 400,
+      fontStyle: 'normal',
+      fontDisplay: 'swap'
+    }
+  }
+})
+```
+
+You can also define multiple font weights.
+
+```js
+export default defineConfig({
+  globalFontface: {
+    Fira: [
+      {
+        src: 'url(/fonts/fira.woff2) format("woff2")',
+        fontWeight: 400,
+        fontStyle: 'normal',
+        fontDisplay: 'swap'
+      },
+      {
+        src: 'url(/fonts/fira-bold.woff2) format("woff2")',
+        fontWeight: 700,
+        fontStyle: 'normal',
+        fontDisplay: 'swap'
+      }
+    ]
+  }
+})
+```
+
+Then expose the font names to css variables.
+
+```css
+:root {
+  --font-fira-code: 'Fira Code Variable', monospace;
+}
+```
+
 ## Update Panda Config
 
 ```js
