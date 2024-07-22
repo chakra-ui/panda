@@ -93,9 +93,7 @@ import '@fontsource/fira-code'
 Lastly, import the CSS styles for the specific weight and subset you intend to use:
 
 ```css filename="styles/font.css"
-import '@fontsource-variable/fira-code'
-
-:root {
+import '@fontsource-variable/fira-code' :root {
   --font-fira-code: 'Fira Code Variable', monospace;
 }
 ```
@@ -186,6 +184,16 @@ Then expose the font names to css variables.
 :root {
   --font-fira-code: 'Fira Code Variable', monospace;
 }
+```
+
+You can also use [globalVars](/docs/concepts/writing-styles#global-vars) in your panda config to define the variables.
+
+```js
+export default defineConfig({
+  globalVars: {
+    '--font-fira-code': 'Fira Code Variable, monospace'
+  }
+})
 ```
 
 ## Update Panda Config
