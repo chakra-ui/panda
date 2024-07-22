@@ -5,7 +5,11 @@
   <a href="https://panda-css.com">Panda</a> is a universal styling solution for the modern web &mdash;
   <br/>
   build time, type safe, and scalable CSS-in-JS
-  <br/><br/>
+  <br/>
+  <img alt="NPM Downloads" src="https://img.shields.io/npm/dm/%40pandacss%2Fdev"> <img alt="NPM Version" src="https://img.shields.io/npm/v/%40pandacss%2Fdev"> <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/panda__css">
+
+  <br/>
+  <br/>
 </p>
 
 ## Features
