@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.44.0
+
+### Minor Changes
+
+- c99cb75: Add a `name` mandatory key in `Preset` to make it easy to target one specifically
+
 ## 0.43.0
 
 ### Minor Changes

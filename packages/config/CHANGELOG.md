@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 0.44.0
+
+### Patch Changes
+
+- d7f5cab: Ensure `globalFontface` definitions are merged correctly
+- Updated dependencies [c99cb75]
+  - @pandacss/types@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/preset-base@0.44.0
+  - @pandacss/preset-panda@0.44.0
+  - @pandacss/shared@0.44.0
+
 ## 0.43.0
 
 ### Patch Changes
