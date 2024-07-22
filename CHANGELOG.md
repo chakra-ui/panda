@@ -6,6 +6,20 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.44.0] - 2024-07-22
+
+### Fixed
+
+- Ensure `globalFontface` definitions are merged correctly
+
+### Added
+
+- Add a `name` mandatory key in `Preset` to make it easy to target one specifically
+
+### Changed
+
+- Replace `JSX` with `React.JSX` for better React 19 support
+
 ## [0.43.0] - 2024-07-19
 
 ### Added
