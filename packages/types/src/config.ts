@@ -450,7 +450,9 @@ export interface Config
   validation?: 'none' | 'warn' | 'error'
 }
 
-export interface Preset extends ExtendableOptions, PresetOptions {}
+export interface Preset extends ExtendableOptions, PresetOptions {
+  name: string
+}
 
 export interface UserConfig
   extends Partial<PresetCore>,
