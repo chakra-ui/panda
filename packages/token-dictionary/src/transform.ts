@@ -1,4 +1,4 @@
-import { isString } from '@pandacss/shared'
+import { isCssUnit, isString } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
 import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
@@ -6,6 +6,10 @@ import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-
 import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
 import { expandReferences, getReferences } from './utils'
+
+function toUnit(v: string | number) {
+  return isCssUnit(v) ? v : `${v}px`
+}
 
 /* -----------------------------------------------------------------------------
  * Shadow token transform
@@ -108,7 +112,7 @@ export const transformBorders: TokenTransformer = {
 
     if (isCompositeBorder(token.value)) {
       const { width, style, color } = token.value
-      return `${width}px ${style} ${color}`
+      return `${toUnit(width)} ${style} ${color}`
     }
 
     return token.value
