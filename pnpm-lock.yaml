@@ -868,8 +868,8 @@ importers:
         specifier: 2.8.3
         version: 2.8.3(@babel/core@7.23.9)(preact@10.19.5)(vite@5.2.13(@types/node@20.12.7)(less@4.2.0)(lightningcss@1.25.1)(terser@5.30.3))
       '@solidjs/testing-library':
-        specifier: 0.8.8
-        version: 0.8.8(solid-js@1.8.15)
+        specifier: 0.8.9
+        version: 0.8.9(solid-js@1.8.15)
       '@testing-library/jest-dom':
         specifier: 6.4.2
         version: 6.4.2(vitest@1.5.0(@types/node@20.12.7)(happy-dom@13.3.8)(jsdom@24.0.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.30.3))
@@ -5525,8 +5525,8 @@ packages:
   '@socket.io/component-emitter@3.1.0':
     resolution: {integrity: sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==}
 
-  '@solidjs/testing-library@0.8.8':
-    resolution: {integrity: sha512-47J9Aw+iG45Fs5Kxu/IJmkaaucpF7qhDazW+iXeNssAYI0FH+4MeM/SfYRhPbIMH/hBpMh/XjbK1Wpyu9PcSwg==}
+  '@solidjs/testing-library@0.8.9':
+    resolution: {integrity: sha512-gcjTSHwzXqy8roTrDgHTasRkrUcWjVm/7T7wjUI5WNm2BdUTTi296CorTiIGQVFZg2BVYuwtJOzzNn71Y/QQfg==}
     engines: {node: '>= 14'}
     peerDependencies:
       '@solidjs/router': '>=0.9.0'
@@ -6015,8 +6015,8 @@ packages:
   '@tanstack/virtual-core@3.0.0':
     resolution: {integrity: sha512-SYXOBTjJb05rXa2vl55TTwO40A6wKu0R5i1qQwhJYNDIqaIGF7D0HsLw+pJAyi2OvntlEIVusx3xtbbgSUi6zg==}
 
-  '@testing-library/dom@10.1.0':
-    resolution: {integrity: sha512-wdsYKy5zupPyLCW2Je5DLHSxSfbIp6h80WoHOQc+RPtmPGA52O9x5MJEkv92Sjonpq+poOAtUKhh1kBGAXBrNA==}
+  '@testing-library/dom@10.4.0':
+    resolution: {integrity: sha512-pemlzrSESWbdAloYml3bAJMEfNh1Z7EduzqPKprCH5S341frlpYnUEW0H72dLxa6IsYr+mPno20GiSm+h9dEdQ==}
     engines: {node: '>=18'}
 
   '@testing-library/dom@8.20.0':
@@ -18650,7 +18650,7 @@ snapshots:
 
   '@babel/traverse@7.24.1':
     dependencies:
-      '@babel/code-frame': 7.24.2
+      '@babel/code-frame': 7.24.7
       '@babel/generator': 7.24.4
       '@babel/helper-environment-visitor': 7.22.20
       '@babel/helper-function-name': 7.23.0
@@ -22379,9 +22379,9 @@ snapshots:
 
   '@socket.io/component-emitter@3.1.0': {}
 
-  '@solidjs/testing-library@0.8.8(solid-js@1.8.15)':
+  '@solidjs/testing-library@0.8.9(solid-js@1.8.15)':
     dependencies:
-      '@testing-library/dom': 10.1.0
+      '@testing-library/dom': 10.4.0
       solid-js: 1.8.15
 
   '@storybook/addon-actions@7.6.16':
@@ -23366,10 +23366,10 @@ snapshots:
 
   '@tanstack/virtual-core@3.0.0': {}
 
-  '@testing-library/dom@10.1.0':
+  '@testing-library/dom@10.4.0':
     dependencies:
-      '@babel/code-frame': 7.24.2
-      '@babel/runtime': 7.24.4
+      '@babel/code-frame': 7.24.7
+      '@babel/runtime': 7.24.8
       '@types/aria-query': 5.0.1
       aria-query: 5.3.0
       chalk: 4.1.2
