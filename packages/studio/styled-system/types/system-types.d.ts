@@ -46,7 +46,7 @@ interface GenericProperties {
 
 export type NestedCssProperties = Nested<CssProperties>
 
-export type SystemStyleObject = Nested<SystemProperties & CssVarProperties>
+export type SystemStyleObject = Omit<Nested<SystemProperties & CssVarProperties>, 'base'>
 
 export interface GlobalStyleObject {
   [selector: string]: SystemStyleObject
