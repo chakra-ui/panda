@@ -19,7 +19,7 @@
     "@pandacss/dev": "workspace:*",
     "gatsby": "5.13.7",
     "gatsby-plugin-postcss": "6.13.1",
-    "postcss": "8.4.39",
+    "postcss": "8.4.40",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
