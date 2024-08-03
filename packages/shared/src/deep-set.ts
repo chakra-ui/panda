@@ -19,7 +19,7 @@ export const deepSet = <T extends Dict>(target: T, path: string[], value: Dict |
 
     if (i === path.length - 1) {
       if (isValueObject && isObject(current[key])) {
-        current[key] = Object.assign({ ...current[key] }, value)
+        current[key] = mergeProps(current[key], value)
       } else {
         current[key] = value
       }
