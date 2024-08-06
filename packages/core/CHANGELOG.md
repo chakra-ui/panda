@@ -1,5 +1,55 @@
 # @pandacss/core
 
+## 0.45.0
+
+### Minor Changes
+
+- 1e4da63: Add support resolving `DEFAULT` in textStyles and layerStyles, just like tokens.
+
+  ```jsx
+  export default defineConfig({
+    theme: {
+      textStyles: {
+        display: {
+          // 'display'
+          DEFAULT: {
+            value: {
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+            },
+          },
+          // 'display.large'
+          large: {
+            value: {
+              fontSize: '2rem',
+              fontWeight: 'bold',
+            },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  In case, you can use `textStyles: display` to reference the DEFAULT display value.
+
+  ```jsx
+  css({ textStyle: 'display' })
+  ```
+
+### Patch Changes
+
+- 552dd4b: Fix issue where `divideY` and `divideColor` utilities, used together in a recipe, doesn't generate the
+  correct css.
+- Updated dependencies [dcc9053]
+- Updated dependencies [a21fcfe]
+- Updated dependencies [552dd4b]
+  - @pandacss/types@0.45.0
+  - @pandacss/token-dictionary@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/logger@0.45.0
+  - @pandacss/is-valid-prop@0.45.0
+
 ## 0.44.0
 
 ### Patch Changes
