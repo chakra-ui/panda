@@ -15,7 +15,7 @@ Next.js provides a built-in automatic self-hosting for any font file by using th
 
 Here's an example of how to load a local "Mona Sans" font and a Google Font "Fira Code" in your Next.js project.
 
-```jsx filename="styles/font.ts"
+```js filename="styles/font.ts"
 import { Fira_Code } from 'next/font/google'
 import localFont from 'next/font/local'
 
@@ -32,6 +32,8 @@ export const FiraCode = Fira_Code({
   variable: '--font-fira-code'
 })
 ```
+
+> Ideally, you should load the font in the layout file.
 
 Next, you need to add the font variables to your HTML document. You can do this using either the App Router or the Pages Router.
 
@@ -221,8 +223,8 @@ import { css } from '../styled-system/css'
 function Page() {
   return (
     <div>
-      <h1 className={css({ fontFamily: 'fira' })}>Mona Sans</h1>
-      <code className={css({ fontFamily: 'mona' })}>Fira Code</code>
+      <h1 className={css({ fontFamily: 'mona' })}>Mona Sans</h1>
+      <code className={css({ fontFamily: 'fira' })}>Fira Code</code>
     </div>
   )
 }

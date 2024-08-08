@@ -6,6 +6,79 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.45.0] - 2024-08-06
+
+### Fixed
+
+- Fix issue where composite border token with `width: 1px` renders `1pxpx` in CSS
+- Fix issue where `divideY` and `divideColor` utilities, used together in a recipe, doesn't generate the correct css.
+
+### Added
+
+Add support resolving `DEFAULT` in textStyles and layerStyles, just like tokens.
+
+```jsx
+export default defineConfig({
+  theme: {
+    textStyles: {
+      display: {
+        // 'display'
+        DEFAULT: {
+          value: {
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+          },
+        },
+        // 'display.large'
+        large: {
+          value: {
+            fontSize: '2rem',
+            fontWeight: 'bold',
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+In case, you can use `textStyles: display` to reference the DEFAULT display value.
+
+```jsx
+css({ textStyle: 'display' })
+```
+
+### Changed
+
+Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or conditional
+styles.
+
+**Before**
+
+```jsx
+hstack({
+  // ❌ doesn't work
+  base: {
+    background: 'red.400',
+    p: '11',
+  },
+  display: 'flex',
+  flexDirection: 'column',
+})
+```
+
+**After**
+
+```jsx
+hstack({
+  // ✅ works
+  background: 'red.400',
+  p: '11',
+  display: 'flex',
+  flexDirection: 'column',
+})
+```
+
 ## [0.44.0] - 2024-07-22
 
 ### Fixed
