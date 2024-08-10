@@ -21,6 +21,11 @@ describe('generator', () => {
           },
           shadows: {
             test: { value: '0 4px 20px 0 {colors.primary/30}' },
+            test2: { value: { blur: 2, spread: 2, color: '{colors.primary/20}', offsetX: 0, offsetY: 0 } },
+          },
+          borders: {
+            test: { value: '2px solid {colors.primary/40}' },
+            test2: { value: { width: '1px', style: 'solid', color: '{colors.primary/40}' } },
           },
         },
       },
@@ -32,6 +37,9 @@ describe('generator', () => {
           --colors-primary: #f9a4d6;
           --colors-secondary: color-mix(in srgb, var(--colors-primary) 20%, transparent);
           --shadows-test: 0 4px 20px 0 color-mix(in srgb, var(--colors-primary) 30%, transparent);
+          --shadows-test2: 0px 0px 2px 2px color-mix(in srgb, var(--colors-primary) 20%, transparent);
+          --borders-test: 2px solid color-mix(in srgb, var(--colors-primary) 40%, transparent);
+          --borders-test2: 1px solid color-mix(in srgb, var(--colors-primary) 40%, transparent);
       }
       }"
     `)
