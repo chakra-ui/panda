@@ -10,6 +10,33 @@ const tokenCss = (config?: Config) => {
 }
 
 describe('generator', () => {
+  test('shadow tokens', () => {
+    const css = tokenCss({
+      eject: true,
+      theme: {
+        tokens: {
+          colors: {
+            primary: { value: '#f9a4d6' },
+            secondary: { value: '{colors.primary/20}' },
+          },
+          shadows: {
+            test: { value: '0 4px 20px 0 {colors.primary/30}' },
+          },
+        },
+      },
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(html) {
+          --colors-primary: #f9a4d6;
+          --colors-secondary: color-mix(in srgb, var(--colors-primary) 20%, transparent);
+          --shadows-test: 0 4px 20px 0 color-mix(in srgb, var(--colors-primary) 30%, transparent);
+      }
+      }"
+    `)
+  })
+
   test('[css] should generate css', () => {
     expect(tokenCss()).toMatchInlineSnapshot(`
       "@layer tokens {
