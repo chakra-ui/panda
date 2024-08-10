@@ -80,10 +80,18 @@ export default defineConfig({
 
 ### Configure the entry CSS with layers
 
-Add this code to an `src/index.css` file imported in the root component of your project.
+Add the layer css code to the `src/index.css` file
 
 ```css filename="src/index.css"
 @layer reset, base, tokens, recipes, utilities;
+```
+
+Then, import the `src/index.css` file in your page or layout file
+
+```md filename="src/pages/index.astro"
+---
+import '../index.css';
+---
 ```
 
 ### Update the postcss config
