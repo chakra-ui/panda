@@ -21,7 +21,7 @@
     "@sveltejs/kit": "2.5.20",
     "autoprefixer": "10.4.20",
     "eslint-plugin-svelte3": "4.0.0",
-    "postcss": "8.4.40",
+    "postcss": "8.4.41",
     "postcss-load-config": "5.1.0",
     "prettier-plugin-svelte": "3.2.5",
     "svelte": "4.2.11",
