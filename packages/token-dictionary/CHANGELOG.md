@@ -1,5 +1,14 @@
 # @pandacss/token-dictionary
 
+## 0.45.1
+
+### Patch Changes
+
+- 3439ecf: Fix issue where shadow token with color opacity modifier produces incorrect css value
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
 ## 0.45.0
 
 ### Patch Changes

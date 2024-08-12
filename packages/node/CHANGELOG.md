@@ -1,5 +1,21 @@
 # @pandacss/node
 
+## 0.45.1
+
+### Patch Changes
+
+- 26924c7: chore: switch to package-manager-detector to reduce dependencies
+- Updated dependencies [3439ecf]
+  - @pandacss/token-dictionary@0.45.1
+  - @pandacss/core@0.45.1
+  - @pandacss/generator@0.45.1
+  - @pandacss/parser@0.45.1
+  - @pandacss/config@0.45.1
+  - @pandacss/extractor@0.45.1
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
 ## 0.45.0
 
 ### Patch Changes
