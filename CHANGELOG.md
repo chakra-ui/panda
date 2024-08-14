@@ -6,6 +6,16 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.45.1] - 2024-08-14
+
+### Fixed
+
+Fix issue where shadow token with color opacity modifier produces incorrect css value
+
+### Changed
+
+[Internal] switch to package-manager-detector to reduce dependencies
+
 ## [0.45.0] - 2024-08-06
 
 ### Fixed
