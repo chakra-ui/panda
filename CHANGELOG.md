@@ -6,6 +6,216 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.45.1] - 2024-08-14
+
+### Fixed
+
+Fix issue where shadow token with color opacity modifier produces incorrect css value
+
+### Changed
+
+[Internal] switch to package-manager-detector to reduce dependencies
+
+## [0.45.0] - 2024-08-06
+
+### Fixed
+
+- Fix issue where composite border token with `width: 1px` renders `1pxpx` in CSS
+- Fix issue where `divideY` and `divideColor` utilities, used together in a recipe, doesn't generate the correct css.
+
+### Added
+
+Add support resolving `DEFAULT` in textStyles and layerStyles, just like tokens.
+
+```jsx
+export default defineConfig({
+  theme: {
+    textStyles: {
+      display: {
+        // 'display'
+        DEFAULT: {
+          value: {
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+          },
+        },
+        // 'display.large'
+        large: {
+          value: {
+            fontSize: '2rem',
+            fontWeight: 'bold',
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+In case, you can use `textStyles: display` to reference the DEFAULT display value.
+
+```jsx
+css({ textStyle: 'display' })
+```
+
+### Changed
+
+Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or conditional
+styles.
+
+**Before**
+
+```jsx
+hstack({
+  // ❌ doesn't work
+  base: {
+    background: 'red.400',
+    p: '11',
+  },
+  display: 'flex',
+  flexDirection: 'column',
+})
+```
+
+**After**
+
+```jsx
+hstack({
+  // ✅ works
+  background: 'red.400',
+  p: '11',
+  display: 'flex',
+  flexDirection: 'column',
+})
+```
+
+## [0.44.0] - 2024-07-22
+
+### Fixed
+
+- Ensure `globalFontface` definitions are merged correctly
+
+### Added
+
+- Add a `name` mandatory key in `Preset` to make it easy to target one specifically
+
+### Changed
+
+- Replace `JSX` with `React.JSX` for better React 19 support
+
+## [0.43.0] - 2024-07-19
+
+### Added
+
+Add support for defining global font face in config and preset
+
+```ts
+// pandacss.config.js
+export default defineConfig({
+  globalFontface: {
+    Roboto: {
+      src: 'url(/fonts/roboto.woff2) format("woff2")',
+      fontWeight: '400',
+      fontStyle: 'normal',
+    },
+  },
+})
+```
+
+You can also add multiple font `src` for the same weight
+
+```ts
+// pandacss.config.js
+
+export default defineConfig({
+  globalFontface: {
+    Roboto: {
+      // multiple src
+      src: ['url(/fonts/roboto.woff2) format("woff2")', 'url(/fonts/roboto.woff) format("woff")'],
+      fontWeight: '400',
+      fontStyle: 'normal',
+    },
+  },
+})
+```
+
+You can also define multiple font weights
+
+```ts
+// pandacss.config.js
+
+export default defineConfig({
+  globalFontface: {
+    // multiple font weights
+    Roboto: [
+      {
+        src: 'url(/fonts/roboto.woff2) format("woff2")',
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+      {
+        src: 'url(/fonts/roboto-bold.woff2) format("woff2")',
+        fontWeight: '700',
+        fontStyle: 'normal',
+      },
+    ],
+  },
+})
+```
+
+## [0.42.0] - 2024-07-08
+
+### Added
+
+- Add support for `4xl` border radius token
+
+### Changed
+
+- Ensure classnames are unique across utilities to prevent potential clash
+- Change recipes `className` to be optional, both for `recipes` and `slotRecipes`, with a fallback to its name.
+- Minor changes to the format of the `panda analyze --output coverage.json` file
+
+```ts
+import { defineConfig } from '@pandacss/core'
+
+export default defineConfig({
+  recipes: {
+    button: {
+      className: 'button', // 👈 was mandatory, is now optional
+      variants: {
+        size: {
+          sm: { padding: '2', borderRadius: 'sm' },
+          md: { padding: '4', borderRadius: 'md' },
+        },
+      },
+    },
+  },
+})
+```
+
+- [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the generated
+  CSS where possible.
+- BREAKING: Remove `emitPackage` config option,
+
+  tldr: use `importMap` instead for absolute paths (e.g can be used for component libraries)
+
+  `emitPackage` is deprecated, it's known for causing several issues:
+
+  - bundlers sometimes eagerly cache the `node_modules`, leading to `panda codegen` updates to the `styled-system` not
+    visible in the browser
+  - auto-imports are not suggested in your IDE.
+  - in some IDE the typings are not always reflected properly
+
+  As alternatives, you can use:
+
+  - relative paths instead of absolute paths (e.g. `../styled-system/css` instead of `styled-system/css`)
+  - use package.json #imports and/or tsconfig path aliases (prefer package.json#imports when possible, TS 5.4 supports
+    them by default) like `#styled-system/css` instead of `styled-system/css`
+    https://nodejs.org/api/packages.html#subpath-imports
+  - for a component library, use a dedicated workspace package (e.g. `@acme/styled-system`) and use
+    `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to extract, e.g.
+    `import { css } from '@acme/styled-system/css'` https://panda-css.com/docs/guides/component-library
+
 ## [0.41.0] - 2024-06-16
 
 ### Fixed

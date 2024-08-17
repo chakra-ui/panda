@@ -1,5 +1,5 @@
-import { assign, mergeWith, walkObject } from '@pandacss/shared'
-import type { Config, UserConfig } from '@pandacss/types'
+import { PANDA_CONFIG_NAME, assign, mergeWith, walkObject } from '@pandacss/shared'
+import type { Config } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
 import { isValidToken } from './validation/utils'
@@ -72,26 +72,28 @@ const tokenKeys = ['description', 'extensions', 'type', 'value', 'deprecated']
 /**
  * Merge all configs into a single config
  */
-export function mergeConfigs(configs: ExtendableConfig[]): UserConfig {
-  const [userConfig] = configs
+export function mergeConfigs(configs: ExtendableConfig[]) {
+  const userConfig = configs.at(-1)!
   const pluginHooks = userConfig.plugins ?? []
   if (userConfig.hooks) {
-    pluginHooks.push({ name: '__panda.config__', hooks: userConfig.hooks })
+    pluginHooks.push({ name: PANDA_CONFIG_NAME, hooks: userConfig.hooks })
   }
 
+  const reversed = Array.from(configs).reverse()
   const mergedResult = assign(
     {
-      conditions: mergeExtensions(configs.map((config) => config.conditions ?? {})),
-      theme: mergeExtensions(configs.map((config) => config.theme ?? {})),
-      patterns: mergeExtensions(configs.map((config) => config.patterns ?? {})),
-      utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
-      globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
-      globalVars: mergeExtensions(configs.map((config) => config.globalVars ?? {})),
-      staticCss: mergeExtensions(configs.map((config) => config.staticCss ?? {})),
-      themes: mergeExtensions(configs.map((config) => config.themes ?? {})),
+      conditions: mergeExtensions(reversed.map((config) => config.conditions ?? {})),
+      theme: mergeExtensions(reversed.map((config) => config.theme ?? {})),
+      patterns: mergeExtensions(reversed.map((config) => config.patterns ?? {})),
+      utilities: mergeExtensions(reversed.map((config) => config.utilities ?? {})),
+      globalCss: mergeExtensions(reversed.map((config) => config.globalCss ?? {})),
+      globalVars: mergeExtensions(reversed.map((config) => config.globalVars ?? {})),
+      globalFontface: mergeExtensions(reversed.map((config) => config.globalFontface ?? {})),
+      staticCss: mergeExtensions(reversed.map((config) => config.staticCss ?? {})),
+      themes: mergeExtensions(reversed.map((config) => config.themes ?? {})),
       hooks: mergeHooks(pluginHooks),
     },
-    ...configs,
+    ...reversed,
   )
 
   const withoutEmpty = compact(mergedResult)

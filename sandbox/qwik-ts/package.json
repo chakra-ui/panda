@@ -21,13 +21,13 @@
     "qwik": "qwik"
   },
   "devDependencies": {
-    "@builder.io/qwik": "1.4.5",
+    "@builder.io/qwik": "1.7.3",
     "@builder.io/qwik-city": "1.4.5",
     "@pandacss/dev": "workspace:*",
     "eslint-plugin-qwik": "1.4.5",
     "typescript": "5.3.3",
     "undici": "6.18.2",
-    "vite": "5.2.13",
+    "vite": "5.4.0",
     "vite-tsconfig-paths": "4.3.1"
   }
 }

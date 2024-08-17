@@ -9,6 +9,12 @@ import { mergeConfigs } from '@pandacss/config'
 
 const textStyles = {
   headline: {
+    DEFAULT: {
+      value: {
+        fontSize: '1.5rem',
+        fontWeight: 'bold',
+      },
+    },
     h1: {
       value: {
         fontSize: '2rem',

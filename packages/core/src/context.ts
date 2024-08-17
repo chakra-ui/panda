@@ -34,6 +34,7 @@ import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
 import type { ParserOptions, StylesheetContext } from './types'
 import { Utility } from './utility'
+import { GlobalFontface } from './global-fontface'
 
 const defaults = (config: UserConfig): UserConfig => ({
   cssVarRoot: ':where(:root, :host)',
@@ -67,7 +68,9 @@ export class Context {
   imports: ImportMap
   paths: PathEngine
   file: FileEngine
+
   globalVars: GlobalVars
+  globalFontface: GlobalFontface
 
   encoder: StyleEncoder
   decoder: StyleDecoder
@@ -139,6 +142,9 @@ export class Context {
 
     // Relies on this.encoder, this.decoder
     this.setupCompositions(theme)
+    this.registerAnimationName(theme)
+    this.registerFontFamily(config.globalFontface)
+
     this.recipes.save(this.baseSheetContext)
 
     this.staticCss = new StaticCss({
@@ -177,6 +183,10 @@ export class Context {
     this.globalVars = new GlobalVars({
       globalVars: this.config.globalVars as GlobalVarsDefinition,
       cssVarRoot: this.config.cssVarRoot!,
+    })
+
+    this.globalFontface = new GlobalFontface({
+      globalFontface: this.config.globalFontface,
     })
 
     this.messages = getMessages({
@@ -297,6 +307,14 @@ export class Context {
     }
   }
 
+  private registerAnimationName = (theme: Theme): void => {
+    this.utility.addPropertyType('animationName', Object.keys(theme.keyframes ?? {}))
+  }
+
+  private registerFontFamily = (fontFaces: Record<string, any> | undefined): void => {
+    this.utility.addPropertyType('fontFamily', Object.keys(fontFaces ?? {}))
+  }
+
   setupProperties = (): void => {
     this.properties = new Set(['css', ...this.utility.keys(), ...this.conditions.keys()])
     this.isValidProperty = memo((key: string) => this.properties.has(key) || isCssProperty(key))
@@ -317,6 +335,7 @@ export class Context {
       cssVarRoot: this.config.cssVarRoot!,
       helpers: patternFns,
       globalVars: this.globalVars,
+      globalFontface: this.globalFontface,
     } satisfies Omit<StylesheetContext, 'layers'>
   }
 

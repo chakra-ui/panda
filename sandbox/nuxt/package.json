@@ -12,8 +12,8 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "postcss": "8.4.38",
-    "nuxt": "3.10.2",
+    "postcss": "8.4.41",
+    "nuxt": "3.12.4",
     "vue": "3.4.19",
     "@pandacss/dev": "workspace:*"
   }

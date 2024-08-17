@@ -1,4 +1,4 @@
-import { isString } from '@pandacss/shared'
+import { isCssUnit, isString } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
 import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
@@ -6,6 +6,10 @@ import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-
 import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
 import { expandReferences, getReferences } from './utils'
+
+function toUnit(v: string | number) {
+  return isCssUnit(v) ? v : `${v}px`
+}
 
 /* -----------------------------------------------------------------------------
  * Shadow token transform
@@ -108,7 +112,7 @@ export const transformBorders: TokenTransformer = {
 
     if (isCompositeBorder(token.value)) {
       const { width, style, color } = token.value
-      return `${width}px ${style} ${color}`
+      return `${toUnit(width)} ${style} ${color}`
     }
 
     return token.value
@@ -184,32 +188,31 @@ export const addConditionalCssVariables: TokenTransformer = {
   name: 'tokens/conditionals',
   transform(token, dictionary) {
     const { prefix, hash } = dictionary
+
     const refs = getReferences(token.value)
     if (!refs.length) return token.value
 
-    refs.forEach((ref) => {
-      if (!ref.includes('/')) {
+    const modifier = refs.some((ref) => ref.includes('/'))
+
+    if (!modifier) {
+      refs.forEach((ref) => {
         const variable = dictionary.formatCssVar(ref.split('.'), { prefix, hash }).ref
         token.value = token.value.replace(`{${ref}}`, variable)
-        return
+      })
+    } else {
+      const tokenFn = (name: string) => {
+        const token = dictionary.getByName(name)
+        return token?.extensions.varRef
       }
 
-      const expanded = expandReferences(token.value, (path) => {
-        const tokenFn = (tokenPath: string) => {
-          const token = dictionary.getByName(tokenPath)
-          return token?.extensions.varRef
-        }
-
+      token.value = expandReferences(token.value, (path) => {
         const mix = dictionary.colorMix(path, tokenFn)
         if (mix.invalid) {
           throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
         }
-
         return mix.value
       })
-
-      token.value = token.value.replace(`{${ref}}`, expanded)
-    })
+    }
 
     return token.value
   },

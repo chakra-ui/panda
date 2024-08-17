@@ -1,5 +1,139 @@
 # @pandacss/types
 
+## 0.45.1
+
+## 0.45.0
+
+### Minor Changes
+
+- dcc9053: Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or
+  conditional styles.
+
+  **Before**
+
+  ```jsx
+  hstack({
+    // ❌ doesn't work
+    base: {
+      background: 'red.400',
+      p: '11',
+    },
+    display: 'flex',
+    flexDirection: 'column',
+  })
+  ```
+
+  **After**
+
+  ```jsx
+  hstack({
+    // ✅ works
+    background: 'red.400',
+    p: '11',
+    display: 'flex',
+    flexDirection: 'column',
+  })
+  ```
+
+## 0.44.0
+
+### Minor Changes
+
+- c99cb75: Add a `name` mandatory key in `Preset` to make it easy to target one specifically
+
+## 0.43.0
+
+### Minor Changes
+
+- e952f82: Add support for defining global font face in config and preset
+
+  ```ts
+  // pandacss.config.js
+  export default defineConfig({
+    globalFontface: {
+      Roboto: {
+        src: 'url(/fonts/roboto.woff2) format("woff2")',
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+    },
+  })
+  ```
+
+  You can also add multiple font `src` for the same weight
+
+  ```ts
+  // pandacss.config.js
+
+  export default defineConfig({
+    globalFontface: {
+      Roboto: {
+        // multiple src
+        src: ['url(/fonts/roboto.woff2) format("woff2")', 'url(/fonts/roboto.woff) format("woff")'],
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+    },
+  })
+  ```
+
+  You can also define multiple font weights
+
+  ```ts
+  // pandacss.config.js
+
+  export default defineConfig({
+    globalFontface: {
+      // multiple font weights
+      Roboto: [
+        {
+          src: 'url(/fonts/roboto.woff2) format("woff2")',
+          fontWeight: '400',
+          fontStyle: 'normal',
+        },
+        {
+          src: 'url(/fonts/roboto-bold.woff2) format("woff2")',
+          fontWeight: '700',
+          fontStyle: 'normal',
+        },
+      ],
+    },
+  })
+  ```
+
+## 0.42.0
+
+### Minor Changes
+
+- e157dd1: - Ensure classnames are unique across utilities to prevent potential clash
+  - Add support for `4xl` border radius token
+- f00ff88: BREAKING: Remove `emitPackage` config option,
+
+  tldr: use `importMap` instead for absolute paths (e.g can be used for component libraries)
+
+  `emitPackage` is deprecated, it's known for causing several issues:
+
+  - bundlers sometimes eagerly cache the `node_modules`, leading to `panda codegen` updates to the `styled-system` not
+    visible in the browser
+  - auto-imports are not suggested in your IDE.
+  - in some IDE the typings are not always reflected properly
+
+  As alternatives, you can use:
+
+  - relative paths instead of absolute paths (e.g. `../styled-system/css` instead of `styled-system/css`)
+  - use package.json #imports and/or tsconfig path aliases (prefer package.json#imports when possible, TS 5.4 supports
+    them by default) like `#styled-system/css` instead of `styled-system/css`
+    https://nodejs.org/api/packages.html#subpath-imports
+  - for a component library, use a dedicated workspace package (e.g. `@acme/styled-system`) and use
+    `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to extract, e.g.
+    `import { css } from '@acme/styled-system/css'` https://panda-css.com/docs/guides/component-library
+
+### Patch Changes
+
+- 19c3a2c: Minor changes to the format of the `panda analyze --output coverage.json` file
+- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+  generated CSS where possible.
+
 ## 0.41.0
 
 ## 0.40.1

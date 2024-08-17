@@ -2,6 +2,7 @@ import type {
   CompositionStyles,
   Config,
   CssKeyframes,
+  GlobalFontface,
   GlobalStyleObject,
   HooksApiInterface,
   LayerStyles,
@@ -27,7 +28,7 @@ import type {
  * -----------------------------------------------------------------------------*/
 
 export function defineConfig(config: Config) {
-  return config
+  return Object.assign(config, { name: '__panda.config__' })
 }
 
 export function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeConfig {
@@ -69,6 +70,10 @@ export function defineKeyframes(keyframes: CssKeyframes) {
 }
 
 export function defineGlobalStyles(definition: GlobalStyleObject) {
+  return definition
+}
+
+export function defineGlobalFontface(definition: GlobalFontface) {
   return definition
 }
 

@@ -20,14 +20,16 @@ export default defineConfig({
 
 ## Creating a preset
 
-Presets are also valid Panda configuration objects, taking a similar shape to the configuration you would add in
-your `panda.config.ts` file.
+Presets are also valid Panda configuration objects, taking a similar shape to the configuration you would add in your `panda.config.ts` file.
+
+> **Note:** Every preset must have a unique name.
 
 ```js
 // my-preset.js
 import { definePreset } from '@pandacss/dev'
 
 export default definePreset({
+  name: 'my-preset',
   theme: {
     tokens: {
       colors: {
@@ -73,6 +75,7 @@ export default async function myPreset() {
   const roseColors = await getRoseColors()
 
   return definePreset({
+    name: 'my-preset',
     theme: {
       tokens: {
         colors: {

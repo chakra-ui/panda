@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import { omit, parseJson, stringifyJson, traverse } from '@pandacss/shared'
+import { PANDA_CONFIG_NAME, omit, parseJson, stringifyJson, traverse } from '@pandacss/shared'
 import type { LoadConfigResult, UserConfig } from '@pandacss/types'
 import { getBundledPreset } from './bundled-preset'
 import { getResolvedConfig } from './get-resolved-config'
@@ -53,7 +53,7 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
     }
   }
 
-  const serialized = stringifyJson(loadConfigResult.config)
+  const serialized = stringifyJson(Object.assign({}, loadConfigResult.config, { name: PANDA_CONFIG_NAME, presets: [] }))
   const deserialize = () => parseJson(serialized)
 
   return { ...loadConfigResult, serialized, deserialize, hooks }

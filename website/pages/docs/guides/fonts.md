@@ -15,7 +15,7 @@ Next.js provides a built-in automatic self-hosting for any font file by using th
 
 Here's an example of how to load a local "Mona Sans" font and a Google Font "Fira Code" in your Next.js project.
 
-```jsx filename="styles/font.ts"
+```js filename="styles/font.ts"
 import { Fira_Code } from 'next/font/google'
 import localFont from 'next/font/local'
 
@@ -32,6 +32,8 @@ export const FiraCode = Fira_Code({
   variable: '--font-fira-code'
 })
 ```
+
+> Ideally, you should load the font in the layout file.
 
 Next, you need to add the font variables to your HTML document. You can do this using either the App Router or the Pages Router.
 
@@ -93,9 +95,7 @@ import '@fontsource/fira-code'
 Lastly, import the CSS styles for the specific weight and subset you intend to use:
 
 ```css filename="styles/font.css"
-import '@fontsource-variable/fira-code'
-
-:root {
+import '@fontsource-variable/fira-code' :root {
   --font-fira-code: 'Fira Code Variable', monospace;
 }
 ```
@@ -120,6 +120,82 @@ Then alias the font names to css variables.
 :root {
   --font-mona-sans: 'Mona Sans', sans-serif;
 }
+```
+
+### Global Font Face
+
+You can also define global font face in your panda config.
+
+```js
+export default defineConfig({
+  globalFontface: {
+    Fira: {
+      src: 'url(/fonts/fira.woff2) format("woff2")',
+      fontWeight: 400,
+      fontStyle: 'normal',
+      fontDisplay: 'swap'
+    }
+  }
+})
+```
+
+You can also define multiple font sources for the same weight.
+
+```js
+export default defineConfig({
+  globalFontface: {
+    Fira: {
+      src: [
+        'url(/fonts/fira.woff2) format("woff2")',
+        'url(/fonts/fira.woff) format("woff")'
+      ],
+      fontWeight: 400,
+      fontStyle: 'normal',
+      fontDisplay: 'swap'
+    }
+  }
+})
+```
+
+You can also define multiple font weights.
+
+```js
+export default defineConfig({
+  globalFontface: {
+    Fira: [
+      {
+        src: 'url(/fonts/fira.woff2) format("woff2")',
+        fontWeight: 400,
+        fontStyle: 'normal',
+        fontDisplay: 'swap'
+      },
+      {
+        src: 'url(/fonts/fira-bold.woff2) format("woff2")',
+        fontWeight: 700,
+        fontStyle: 'normal',
+        fontDisplay: 'swap'
+      }
+    ]
+  }
+})
+```
+
+Then expose the font names to css variables.
+
+```css
+:root {
+  --font-fira-code: 'Fira Code Variable', monospace;
+}
+```
+
+You can also use [globalVars](/docs/concepts/writing-styles#global-vars) in your panda config to define the variables.
+
+```js
+export default defineConfig({
+  globalVars: {
+    '--font-fira-code': 'Fira Code Variable, monospace'
+  }
+})
 ```
 
 ## Update Panda Config
@@ -147,8 +223,8 @@ import { css } from '../styled-system/css'
 function Page() {
   return (
     <div>
-      <h1 className={css({ fontFamily: 'fira' })}>Mona Sans</h1>
-      <code className={css({ fontFamily: 'mona' })}>Fira Code</code>
+      <h1 className={css({ fontFamily: 'mona' })}>Mona Sans</h1>
+      <code className={css({ fontFamily: 'fira' })}>Fira Code</code>
     </div>
   )
 }

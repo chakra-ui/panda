@@ -61,6 +61,7 @@ export class Stylesheet {
 
     let css = stringify(result)
     css += this.context.globalVars.toString()
+    css += this.context.globalFontface.toString()
 
     if (this.context.hooks['cssgen:done']) {
       css = this.context.hooks['cssgen:done']({ artifact: 'global', content: css }) ?? css

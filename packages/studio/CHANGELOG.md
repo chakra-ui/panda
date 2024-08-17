@@ -1,5 +1,76 @@
 # @pandacss/studio
 
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [3439ecf]
+  - @pandacss/token-dictionary@0.45.1
+  - @pandacss/astro-plugin-studio@0.45.1
+  - @pandacss/config@0.45.1
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- Updated dependencies [dcc9053]
+- Updated dependencies [a21fcfe]
+- Updated dependencies [552dd4b]
+  - @pandacss/types@0.45.0
+  - @pandacss/token-dictionary@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/config@0.45.0
+  - @pandacss/logger@0.45.0
+  - @pandacss/astro-plugin-studio@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [d7f5cab]
+- Updated dependencies [c99cb75]
+  - @pandacss/config@0.44.0
+  - @pandacss/types@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/token-dictionary@0.44.0
+  - @pandacss/astro-plugin-studio@0.44.0
+  - @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/types@0.43.0
+  - @pandacss/config@0.43.0
+  - @pandacss/logger@0.43.0
+  - @pandacss/token-dictionary@0.43.0
+  - @pandacss/astro-plugin-studio@0.43.0
+  - @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- e157dd1: - Ensure classnames are unique across utilities to prevent potential clash
+  - Add support for `4xl` border radius token
+
+### Patch Changes
+
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [17a1932]
+  - @pandacss/types@0.42.0
+  - @pandacss/config@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/token-dictionary@0.42.0
+  - @pandacss/astro-plugin-studio@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes
