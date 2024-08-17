@@ -579,6 +579,7 @@ describe('generator', () => {
         conditions: {
           dark: '.dark &',
         },
+        eject: true,
       })
 
       expect(css).toMatchInlineSnapshot(`
@@ -588,45 +589,12 @@ describe('generator', () => {
             --colors-test-50: #f9f9f9;
             --colors-test-100: #f2f2f2;
             --colors-deep-test-yam: %555;
+            --colors-deep-test-pool-poller: #fff;
+            --colors-deep-test-pool-tall: $dfdf;
             --colors-deep-test-pool-palette-50: #f9f9f9;
             --colors-deep-test-pool-palette-100: #f2f2f2;
             --colors-deep-test-pool-palette-200: #ebebeb;
-            --colors-deep-test-pool-poller: #fff;
-            --colors-deep-test-pool-tall: $dfdf;
-            --colors-primary: var(--colors-red-500);
-            --colors-secondary: var(--colors-red-800);
-            --colors-complex: var(--colors-red-800);
-            --colors-button-thick: #fff;
-            --colors-button-card-body: #fff;
-            --colors-button-card-heading: #fff;
-            --spacing-gutter: var(--spacing-4);
         }
-
-          :where([data-theme=dark], .dark) {
-            --colors-primary: var(--colors-red-400);
-            --colors-secondary: var(--colors-red-700);
-            --colors-button-thick: #000;
-            --colors-button-card-body: #000;
-            --colors-button-card-heading: #000
-        }
-
-          [data-color=material] {
-            --colors-surface: #m-b
-        }
-
-          [data-color=material]:where([data-theme=dark], .dark) {
-            --colors-surface: #m-d
-                }
-
-          [data-color=pastel] {
-            --colors-surface: #p-b
-        }
-
-          @media (forced-colors: active) {
-            :where([data-theme=dark], .dark) {
-              --colors-complex: var(--colors-red-700)
-                    }
-                }
         }"
       `)
     })
@@ -650,50 +618,18 @@ describe('generator', () => {
         conditions: {
           dark: '.dark &',
         },
+        eject: true,
       })
 
       expect(css).toMatchInlineSnapshot(`
         "@layer tokens {
           :where(html) {
-            --colors-deep-test-yam: %555;
-            --colors-deep-test-pool-poller: #fff;
-            --colors-deep-test-pool-tall: $dfdf;
             --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-            --colors-primary: var(--colors-red-500);
-            --colors-secondary: var(--colors-red-800);
-            --colors-complex: var(--colors-red-800);
-            --colors-button-thick: #fff;
-            --colors-button-card-body: #fff;
-            --colors-button-card-heading: #fff;
-            --spacing-gutter: var(--spacing-4);
         }
 
-          :where([data-theme=dark], .dark) {
-            --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3);
-            --colors-primary: var(--colors-red-400);
-            --colors-secondary: var(--colors-red-700);
-            --colors-button-thick: #000;
-            --colors-button-card-body: #000;
-            --colors-button-card-heading: #000
+          .dark {
+            --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
         }
-
-          [data-color=material] {
-            --colors-surface: #m-b
-        }
-
-          [data-color=material]:where([data-theme=dark], .dark) {
-            --colors-surface: #m-d
-                }
-
-          [data-color=pastel] {
-            --colors-surface: #p-b
-        }
-
-          @media (forced-colors: active) {
-            :where([data-theme=dark], .dark) {
-              --colors-complex: var(--colors-red-700)
-                    }
-                }
         }"
       `)
     })
@@ -737,54 +673,19 @@ describe('generator', () => {
       conditions: {
         dark: '.dark &',
       },
+      eject: true,
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(html) {
-          --borders-red: 1px solid var(--colors-red);
-          --borders-semantic-red: var(--borders-danger);
           --colors-red: #ef4444;
           --colors-semantic-red: var(--colors-danger);
-          --colors-deep-test-yam: %555;
-          --colors-deep-test-pool-poller: #fff;
-          --colors-deep-test-pool-tall: $dfdf;
-          --borders-danger: var(--borders-red);
+          --borders-red: 1px solid var(--colors-red);
+          --borders-semantic-red: var(--borders-danger);
           --colors-danger: var(--colors-red);
-          --colors-primary: var(--colors-red-500);
-          --colors-secondary: var(--colors-red-800);
-          --colors-complex: var(--colors-red-800);
-          --colors-button-thick: #fff;
-          --colors-button-card-body: #fff;
-          --colors-button-card-heading: #fff;
-          --spacing-gutter: var(--spacing-4);
+          --borders-danger: var(--borders-red);
       }
-
-        :where([data-theme=dark], .dark) {
-          --colors-primary: var(--colors-red-400);
-          --colors-secondary: var(--colors-red-700);
-          --colors-button-thick: #000;
-          --colors-button-card-body: #000;
-          --colors-button-card-heading: #000
-      }
-
-        [data-color=material] {
-          --colors-surface: #m-b
-      }
-
-        [data-color=material]:where([data-theme=dark], .dark) {
-          --colors-surface: #m-d
-              }
-
-        [data-color=pastel] {
-          --colors-surface: #p-b
-      }
-
-        @media (forced-colors: active) {
-          :where([data-theme=dark], .dark) {
-            --colors-complex: var(--colors-red-700)
-                  }
-              }
       }"
     `)
   })
@@ -844,53 +745,21 @@ describe('generator', () => {
       conditions: {
         dark: '.dark &',
       },
+      eject: true,
     })
 
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(html) {
           --shadows-test1: 0px 0px 0px 4px var(--colors-test-pink);
-          --colors-deep-test-yam: %555;
-          --colors-deep-test-pool-poller: #fff;
-          --colors-deep-test-pool-tall: $dfdf;
+          --colors-test-pink: var(--colors-pink-900);
           --shadows-test-broken-shadow: 0px 0px 0px 4px var(--colors-test-pink);
           --shadows-complex-shadow: 0px 0px 0px 4px var(--colors-test-pink);
-          --colors-test-pink: var(--colors-pink-900);
-          --colors-primary: var(--colors-red-500);
-          --colors-secondary: var(--colors-red-800);
-          --colors-complex: var(--colors-red-800);
-          --colors-button-thick: #fff;
-          --colors-button-card-body: #fff;
-          --colors-button-card-heading: #fff;
-          --spacing-gutter: var(--spacing-4);
       }
 
-        :where([data-theme=dark], .dark) {
-          --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink);
-          --colors-primary: var(--colors-red-400);
-          --colors-secondary: var(--colors-red-700);
-          --colors-button-thick: #000;
-          --colors-button-card-body: #000;
-          --colors-button-card-heading: #000
+        .dark {
+          --shadows-complex-shadow: 2px 8px 30px 4px var(--colors-test-pink)
       }
-
-        [data-color=material] {
-          --colors-surface: #m-b
-      }
-
-        [data-color=material]:where([data-theme=dark], .dark) {
-          --colors-surface: #m-d
-              }
-
-        [data-color=pastel] {
-          --colors-surface: #p-b
-      }
-
-        @media (forced-colors: active) {
-          :where([data-theme=dark], .dark) {
-            --colors-complex: var(--colors-red-700)
-                  }
-              }
       }"
     `)
   })

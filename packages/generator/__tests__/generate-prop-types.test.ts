@@ -206,7 +206,7 @@ describe('generate property types', () => {
       	debug: boolean;
       	containerName: CssProperties["containerName"];
       	colorPalette: "current" | "black" | "white" | "transparent" | "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "neutral" | "stone" | "zinc" | "gray" | "slate" | "deep" | "deep.test" | "deep.test.pool" | "primary" | "secondary" | "complex" | "button" | "button.card" | "surface";
-      	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl" | "headline.h1" | "headline.h2";
+      	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl" | "headline" | "headline.h1" | "headline.h2";
       }
 
 
@@ -277,7 +277,8 @@ describe('generate property types', () => {
       import type { Tokens } from '../tokens/index';
 
       export interface UtilityValues {
-      	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl" | "headline.h1" | "headline.h2";
+      	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl" | "headline" | "headline.h1" | "headline.h2";
+      	animationName: "spin" | "ping" | "pulse" | "bounce";
       }
 
 

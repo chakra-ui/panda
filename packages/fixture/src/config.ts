@@ -31,6 +31,7 @@ const textStyles = {
 }
 
 export const fixturePreset = {
+  name: '@pandacss/fixture-preset',
   presets: [presetBase, presetPanda],
   conditions: {
     extend: {
