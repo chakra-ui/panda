@@ -1,16 +1,14 @@
-import { fixtureDefaults } from '@pandacss/fixture'
-import type { LoadConfigResult } from '@pandacss/types'
+import { createGeneratorContext } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
-import { Generator } from '../src'
 import { generatePattern } from '../src/artifacts/js/pattern'
 
-const patterns = (config: LoadConfigResult) => {
-  const generator = new Generator(config)
+const patterns = () => {
+  const generator = createGeneratorContext()
   return generatePattern(generator)
 }
 
 test('should generate pattern', () => {
-  expect(patterns(fixtureDefaults)).toMatchInlineSnapshot(`
+  expect(patterns()).toMatchInlineSnapshot(`
     [
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';

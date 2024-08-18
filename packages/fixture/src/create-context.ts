@@ -4,7 +4,7 @@ import { Generator } from '@pandacss/generator'
 import { PandaContext } from '@pandacss/node'
 import { omit, parseJson, stringifyJson, traverse } from '@pandacss/shared'
 import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
-import { fixturePreset } from './config'
+import { fixturePreset, builtInPresets } from './config'
 
 const hookUtils = {
   omit: omit,
@@ -30,14 +30,34 @@ export const fixtureDefaults = {
   deserialize: () => parseJson(stringifyJson(config)),
 } as LoadConfigResult
 
-export const createGeneratorContext = (userConfig?: Config) => {
-  const resolvedConfig = mergeConfigs([userConfig?.eject ? {} : fixtureDefaults.config, userConfig ?? {}]) as UserConfig
+export const createGeneratorContext = (userConfig?: Config & { eject?: boolean }) => {
+  const configs = []
+  if (userConfig) {
+    configs.push(userConfig)
+  }
+
+  if (!userConfig?.eject) {
+    configs.push(fixtureDefaults.config, builtInPresets.panda, builtInPresets.base)
+  }
+
+  const resolvedConfig = mergeConfigs(configs) as UserConfig
 
   return new Generator({ ...fixtureDefaults, config: resolvedConfig })
 }
 
-export const createContext = (userConfig?: Config & Pick<Partial<LoadConfigResult>, 'tsconfig'>) => {
-  let resolvedConfig = mergeConfigs([userConfig?.eject ? {} : fixtureDefaults.config, userConfig ?? {}]) as UserConfig
+export const createContext = (
+  userConfig?: Config & Pick<Partial<LoadConfigResult>, 'tsconfig'> & { eject?: boolean },
+) => {
+  const configs = []
+  if (userConfig) {
+    configs.push(userConfig)
+  }
+
+  if (!userConfig?.eject) {
+    configs.push(fixtureDefaults.config, builtInPresets.panda, builtInPresets.base)
+  }
+
+  let resolvedConfig = mergeConfigs(configs) as UserConfig
 
   const hooks = userConfig?.hooks ?? {}
 

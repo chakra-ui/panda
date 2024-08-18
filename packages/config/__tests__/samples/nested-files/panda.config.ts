@@ -3,7 +3,7 @@ import { themeTokens } from './src'
 
 export default defineConfig({
   preflight: true,
-  presets: ['@pandacss/dev/presets'],
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   include: ['./src/**/*.{ts,tsx,jsx}'],
   exclude: [],
   hash: false,

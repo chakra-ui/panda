@@ -1,6 +1,7 @@
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   studio: {
     logo: 'https://place-hold.it/36x24',
   },

@@ -3,7 +3,7 @@ import { tsImportPreset } from './src/ts-import-preset'
 
 export default defineConfig({
   preflight: true,
-  presets: ['@pandacss/dev/presets', tsImportPreset, require('./src/required-preset')],
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', tsImportPreset, require('./src/required-preset')],
   include: ['./src/**/*.{ts,tsx,jsx}'],
   exclude: [],
   hash: false,

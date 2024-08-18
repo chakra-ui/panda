@@ -1182,13 +1182,13 @@ describe('extract to css output pipeline', () => {
       expect(result.css).toMatchInlineSnapshot(`
         "@layer utilities {
           .color-palette_button {
-            --colors-color-palette-thick: var(--colors-button-thick);
-            --colors-color-palette-card-body: var(--colors-button-card-body);
-            --colors-color-palette-card-heading: var(--colors-button-card-heading);
             --colors-color-palette-dark: var(--colors-button-dark);
             --colors-color-palette-light: var(--colors-button-light);
             --colors-color-palette-light-accent: var(--colors-button-light-accent);
             --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary);
+            --colors-color-palette-thick: var(--colors-button-thick);
+            --colors-color-palette-card-body: var(--colors-button-card-body);
+            --colors-color-palette-card-heading: var(--colors-button-card-heading);
         }
 
           .c_colorPalette\\.light {
@@ -3363,10 +3363,12 @@ describe('extract to css output pipeline', () => {
      `
     const result = parseAndExtract(code, {
       theme: {
-        tokens: {
-          spacing: {
-            '025': {
-              value: '0.125rem',
+        extend: {
+          tokens: {
+            spacing: {
+              '025': {
+                value: '0.125rem',
+              },
             },
           },
         },
@@ -3403,12 +3405,14 @@ describe('extract to css output pipeline', () => {
      `
     const result = parseAndExtract(code, {
       theme: {
-        tokens: {
-          assets: {
-            checkbox: {
-              value: {
-                type: 'svg',
-                value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
+        extend: {
+          tokens: {
+            assets: {
+              checkbox: {
+                value: {
+                  type: 'svg',
+                  value: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h8"/></svg>`,
+                },
               },
             },
           },

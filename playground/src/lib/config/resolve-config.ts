@@ -1,7 +1,5 @@
 import type { Config, Preset } from '@pandacss/types'
 import { mergeConfigs } from '@pandacss/config/merge'
-import presetBase from '@pandacss/preset-base'
-import presetPanda from '@pandacss/preset-panda'
 import { validateConfig } from '../../../../packages/config/src/validate-config'
 import { logger } from '@pandacss/logger'
 
@@ -13,17 +11,10 @@ export function resolveConfig(config?: Config) {
 
   const presets = new Set<any>()
 
-  if (!config.eject) {
-    presets.add(presetBase)
-  }
-
   if (config.presets) {
-    //
     config.presets.forEach((preset: any) => {
       presets.add(preset)
     })
-  } else if (!config.eject) {
-    presets.add(presetPanda)
   }
 
   presets.add(playgroundPreset)

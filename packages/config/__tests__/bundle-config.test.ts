@@ -24,7 +24,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
           ],
           "theme": {
             "extend": {
@@ -62,7 +63,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
           ],
           "theme": {
             "extend": {
@@ -103,7 +105,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
             {
               "name": "ts-import-preset",
               "theme": {
@@ -192,7 +195,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
           ],
           "theme": {
             "extend": {
@@ -233,7 +237,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
           ],
           "theme": {
             "extend": {
@@ -274,7 +279,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
           ],
           "theme": {
             "extend": {
@@ -315,7 +321,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
           ],
           "theme": {
             "extend": {
@@ -356,7 +363,8 @@ describe('bundle config', () => {
           "name": "__panda.config__",
           "preflight": true,
           "presets": [
-            "@pandacss/dev/presets",
+            "@pandacss/preset-base",
+            "@pandacss/preset-panda",
           ],
           "theme": {
             "extend": {

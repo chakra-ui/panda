@@ -117,10 +117,10 @@ describe('color-mix', () => {
     expect(css({ gradientFrom: 'red/33' })).toMatchInlineSnapshot(`
       {
         "className": [
-          "from_red\\/33",
+          "grad-from_red\\/33",
         ],
         "css": "@layer utilities {
-        .from_red\\/33 {
+        .grad-from_red\\/33 {
           --mix---gradient-from: color-mix(in srgb, red 33%, transparent);
           --gradient-from: var(--mix---gradient-from, red);
       }

@@ -2,7 +2,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   preflight: false,
-  presets: ['@pandacss/dev/presets'],
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   include: ['./ts-import-map.js'],
   exclude: [],
   hash: false,

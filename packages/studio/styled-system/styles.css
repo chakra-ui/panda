@@ -167,6 +167,9 @@
 @layer base{
   :root {
     --made-with-panda: '🐼';
+}
+
+  :root {
     --global-color-border: var(--colors-border);
     --global-color-placeholder: var(--colors-neutral-500);
     color-scheme: light dark;
@@ -1374,7 +1377,11 @@
     color: var(--colors-neutral-300);
 }
 
-  .currentPage\:c_accent[aria-current=page],.\[\&\.active\]\:c_accent.active {
+  .currentPage\:c_accent[aria-current=page] {
+    color: var(--colors-accent);
+}
+
+  .\[\&\.active\]\:c_accent.active {
     color: var(--colors-accent);
 }
 

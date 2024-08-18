@@ -44,6 +44,8 @@ export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
 import { defineConfig } from "@pandacss/dev"
 
 export default defineConfig({
+    // The set of reusable and shareable configuration presets.
+    presets: ["@pandacss/preset-base", "@pandacss/preset-panda"],
     // Whether to use css reset
     preflight: true,
     ${outExtension ? `\n // The extension for the emitted JavaScript files\noutExtension: '${outExtension}',` : ''}
