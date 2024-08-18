@@ -10,6 +10,7 @@ import { fontSizes, fontWeights, fonts, letterSpacings, lineHeights } from './ty
 const definePreset = <T extends Preset>(config: T) => config
 
 export const preset = definePreset({
+  name: '@pandacss/preset-atlaskit',
   theme: {
     breakpoints: breakpoints,
     tokens: {

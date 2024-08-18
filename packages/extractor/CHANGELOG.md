@@ -1,5 +1,37 @@
 # @pandacss/extractor
 
+## 0.45.1
+
+### Patch Changes
+
+- @pandacss/shared@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- Updated dependencies [552dd4b]
+  - @pandacss/shared@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- 19c3a2c: Minor changes to the format of the `panda analyze --output coverage.json` file
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

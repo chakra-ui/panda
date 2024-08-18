@@ -239,3 +239,13 @@ directory in your `tsconfig.json` file:
   "include":  ["src", "styled-system"]
 }
 ```
+
+If your app doesn't reload when making changes to the `panda.config.ts` file, consider
+adding `watchPaths` in your remix config file.
+
+```js filename="remix.config.js"
+export default {
+  // ...
+  watchPaths: ["panda.config.ts"],
+};
+```

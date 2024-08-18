@@ -4,7 +4,12 @@ import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
 import type { Keys, LiteralUnion, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
-import type { ExtendableGlobalStyleObject, GlobalStyleObject } from './system-types'
+import type {
+  ExtendableGlobalFontface,
+  ExtendableGlobalStyleObject,
+  GlobalFontface,
+  GlobalStyleObject,
+} from './system-types'
 import type { ExtendableTheme, Theme } from './theme'
 import type { ExtendableUtilityConfig, UtilityConfig } from './utility'
 
@@ -52,6 +57,10 @@ export interface PresetCore {
    * The global styles for your project.
    */
   globalCss: GlobalStyleObject
+  /**
+   * The global fontface for your project.
+   */
+  globalFontface?: GlobalFontface
   /**
    * Used to generate css utility classes for your project.
    */
@@ -147,6 +156,10 @@ export interface ExtendableOptions {
    * The global styles for your project.
    */
   globalCss?: ExtendableGlobalStyleObject
+  /**
+   * The global fontface for your project.
+   */
+  globalFontface?: ExtendableGlobalFontface
   /**
    * Used to generate css utility classes for your project.
    */
@@ -437,7 +450,9 @@ export interface Config
   validation?: 'none' | 'warn' | 'error'
 }
 
-export interface Preset extends ExtendableOptions, PresetOptions {}
+export interface Preset extends ExtendableOptions, PresetOptions {
+  name: string
+}
 
 export interface UserConfig
   extends Partial<PresetCore>,

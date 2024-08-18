@@ -127,9 +127,11 @@ export class Recipes {
     }
 
     const match = createRegex(jsx)
+    const className = recipe.className ?? name
 
     sharedState.nodes.set(name, {
       ...this.getNames(name),
+      className,
       jsx,
       type: 'recipe' as const,
       variantKeys,
@@ -210,7 +212,6 @@ export class Recipes {
 
   normalize = (name: string, config: RecipeConfig) => {
     const {
-      className,
       jsx = [capitalize(name)],
       base = {},
       variants = {},
@@ -220,6 +221,7 @@ export class Recipes {
       staticCss = [],
     } = config
 
+    const className = config.className ?? name
     const recipe: Required<RecipeConfig> = {
       ...config,
       deprecated: config.deprecated == null ? false : config.deprecated,
@@ -236,12 +238,12 @@ export class Recipes {
     recipe.base = transformStyles(this.context, base, name)
 
     sharedState.styles.set(name, recipe.base)
-    sharedState.classNames.set(name, className)
+    sharedState.classNames.set(name, recipe.className)
 
     for (const [key, variant] of Object.entries(variants)) {
       for (const [variantKey, styles] of Object.entries(variant)) {
         const propKey = this.getPropKey(name, key, variantKey)
-        const className = this.getClassName(config.className, key, variantKey)
+        const className = this.getClassName(recipe.className, key, variantKey)
 
         const styleObject = transformStyles(this.context, styles, className)
 

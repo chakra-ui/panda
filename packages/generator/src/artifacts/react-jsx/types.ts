@@ -43,7 +43,7 @@ export const reactJsxTypesArtifact = new ArtifactFile({
   code(params) {
     const { componentName, upperName, typeName, variantName } = params.computed.jsx
     return `
-    import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
+    import type { ComponentPropsWithoutRef, ElementType, ElementRef, JSX, Ref } from 'react'
 
     interface Dict {
       [k: string]: unknown

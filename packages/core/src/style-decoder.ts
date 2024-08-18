@@ -208,10 +208,13 @@ export class StyleDecoder {
     const recipeConfig = this.context.recipes.getConfig(recipeName)
     if (!recipeConfig) return
 
+    const recipeNode = this.context.recipes.getRecipe(recipeName)
+    if (!recipeNode) return
+
     const className =
       'slots' in recipeConfig && slot
-        ? this.context.recipes.getSlotKey(recipeConfig.className, slot)
-        : recipeConfig.className
+        ? this.context.recipes.getSlotKey(recipeNode.className, slot)
+        : recipeNode.className
 
     const cached = this.recipe_base_cache.get(className)
     if (cached) return cached

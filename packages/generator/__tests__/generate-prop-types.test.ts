@@ -221,7 +221,7 @@ describe('generate property types', () => {
       	debug: boolean;
       	containerName: CssProperties["containerName"];
       	colorPalette: "current" | "black" | "white" | "transparent" | "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "neutral" | "stone" | "zinc" | "gray" | "slate" | "deep" | "deep.test" | "deep.test.pool" | "primary" | "secondary" | "complex" | "button" | "button.card" | "surface";
-      	textStyle: "headline.h1" | "headline.h2";
+      	textStyle: "headline" | "headline.h1" | "headline.h2";
       }
 
 
@@ -304,7 +304,8 @@ describe('generate property types', () => {
       import type { CssProperties } from './system-types.d.ts'
 
         export interface UtilityValues {
-      	textStyle: "headline.h1" | "headline.h2";
+      	textStyle: "headline" | "headline.h1" | "headline.h2";
+      	animationName: "spin" | "ping" | "pulse" | "bounce";
       }
 
 

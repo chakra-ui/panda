@@ -1,5 +1,113 @@
 # @pandacss/node
 
+## 0.45.1
+
+### Patch Changes
+
+- 26924c7: chore: switch to package-manager-detector to reduce dependencies
+- Updated dependencies [3439ecf]
+  - @pandacss/token-dictionary@0.45.1
+  - @pandacss/core@0.45.1
+  - @pandacss/generator@0.45.1
+  - @pandacss/parser@0.45.1
+  - @pandacss/config@0.45.1
+  - @pandacss/extractor@0.45.1
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- Updated dependencies [dcc9053]
+- Updated dependencies [a21fcfe]
+- Updated dependencies [1e4da63]
+- Updated dependencies [552dd4b]
+  - @pandacss/generator@0.45.0
+  - @pandacss/types@0.45.0
+  - @pandacss/token-dictionary@0.45.0
+  - @pandacss/core@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/parser@0.45.0
+  - @pandacss/config@0.45.0
+  - @pandacss/logger@0.45.0
+  - @pandacss/extractor@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [d7f5cab]
+- Updated dependencies [a8c0cde]
+- Updated dependencies [c99cb75]
+  - @pandacss/config@0.44.0
+  - @pandacss/generator@0.44.0
+  - @pandacss/types@0.44.0
+  - @pandacss/parser@0.44.0
+  - @pandacss/core@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/token-dictionary@0.44.0
+  - @pandacss/extractor@0.44.0
+  - @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/generator@0.43.0
+  - @pandacss/types@0.43.0
+  - @pandacss/core@0.43.0
+  - @pandacss/parser@0.43.0
+  - @pandacss/config@0.43.0
+  - @pandacss/logger@0.43.0
+  - @pandacss/token-dictionary@0.43.0
+  - @pandacss/extractor@0.43.0
+  - @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- 19c3a2c: Minor changes to the format of the `panda analyze --output coverage.json` file
+- ec64819: Change recipes `className` to be optional, both for `recipes` and `slotRecipes`, with a fallback to its name.
+
+  ```ts
+  import { defineConfig } from '@pandacss/core'
+
+  export default defineConfig({
+    recipes: {
+      button: {
+        className: 'button', // 👈 was mandatory, is now optional
+        variants: {
+          size: {
+            sm: { padding: '2', borderRadius: 'sm' },
+            md: { padding: '4', borderRadius: 'md' },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+  generated CSS where possible.
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [ec64819]
+- Updated dependencies [17a1932]
+  - @pandacss/generator@0.42.0
+  - @pandacss/parser@0.42.0
+  - @pandacss/types@0.42.0
+  - @pandacss/core@0.42.0
+  - @pandacss/extractor@0.42.0
+  - @pandacss/config@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/token-dictionary@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

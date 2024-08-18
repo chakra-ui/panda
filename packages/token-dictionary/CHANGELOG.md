@@ -1,5 +1,55 @@
 # @pandacss/token-dictionary
 
+## 0.45.1
+
+### Patch Changes
+
+- 3439ecf: Fix issue where shadow token with color opacity modifier produces incorrect css value
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- a21fcfe: Fix issue where composite border token with `width: 1px` renders `1pxpx` in CSS
+- Updated dependencies [dcc9053]
+- Updated dependencies [552dd4b]
+  - @pandacss/types@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/logger@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [c99cb75]
+  - @pandacss/types@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/types@0.43.0
+  - @pandacss/logger@0.43.0
+  - @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [17a1932]
+  - @pandacss/types@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

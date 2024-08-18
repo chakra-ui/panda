@@ -861,6 +861,33 @@ Only use valid CSS values for properties that do have a predefined list of value
 }
 ```
 
+### globalFontface
+
+**Type**: `GlobalFontfaceDefinition`
+
+**Default**: `{}`
+
+Global font face definitions.
+
+```json
+{
+  "globalFontface": {
+    "Inter": {
+      "src": "url(/fonts/inter.woff2) format('woff2')",
+      "fontWeight": "400",
+      "fontStyle": "normal"
+    },
+    "Roboto": {
+      "src": "url(/fonts/roboto.woff2) format('woff2')",
+      "fontWeight": "400",
+      "fontStyle": "normal"
+    }
+  }
+}
+```
+
+Check out the [Custom Fonts](/docs/guides/fonts#global-font-face) guide for more information on how to use the `globalFontface` option.
+
 ## JSX options
 
 ### jsxFramework

@@ -11,6 +11,8 @@ test('transform / border', () => {
       borders: {
         sm: { value: '1px solid {colors.red}' },
         md: { value: { width: 2, style: 'solid', color: '{colors.red}' } },
+        lg: { value: { width: '2px', style: 'solid', color: 'pink' } },
+        xl: { value: { width: '2', style: 'dashed', color: 'green' } },
       },
     },
     semanticTokens: {
@@ -88,6 +90,44 @@ test('transform / border', () => {
         ],
         "type": "border",
         "value": "2px solid var(--colors-red)",
+      },
+      Token {
+        "deprecated": undefined,
+        "description": undefined,
+        "extensions": {
+          "category": "borders",
+          "condition": "base",
+          "prop": "lg",
+          "var": "--borders-lg",
+          "varRef": "var(--borders-lg)",
+        },
+        "name": "borders.lg",
+        "originalValue": "2px solid pink",
+        "path": [
+          "borders",
+          "lg",
+        ],
+        "type": "border",
+        "value": "2px solid pink",
+      },
+      Token {
+        "deprecated": undefined,
+        "description": undefined,
+        "extensions": {
+          "category": "borders",
+          "condition": "base",
+          "prop": "xl",
+          "var": "--borders-xl",
+          "varRef": "var(--borders-xl)",
+        },
+        "name": "borders.xl",
+        "originalValue": "2px dashed green",
+        "path": [
+          "borders",
+          "xl",
+        ],
+        "type": "border",
+        "value": "2px dashed green",
       },
       Token {
         "deprecated": undefined,

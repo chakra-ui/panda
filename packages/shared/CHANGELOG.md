@@ -1,5 +1,20 @@
 # @pandacss/shared
 
+## 0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- 552dd4b: Fix issue where `divideY` and `divideColor` utilities, used together in a recipe, doesn't generate the
+  correct css.
+
+## 0.44.0
+
+## 0.43.0
+
+## 0.42.0
+
 ## 0.41.0
 
 ## 0.40.1

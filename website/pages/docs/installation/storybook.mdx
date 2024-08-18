@@ -132,11 +132,11 @@ Locate your main CSS file and add the following layers:
 
 ### Import the CSS in your Storybook config
 
-Locate your `.storybook/preview.js` file and import the CSS file.
+Locate your `.storybook/preview.ts` file and import the CSS file.
 
 In this example CSS file is located in the `src` folder.
 
-```js {1} filename=".storybook/preview.js"
+```ts {1} filename=".storybook/preview.ts"
 import "../src/index.css";
 
 import type { Preview } from "@storybook/react";
@@ -156,7 +156,7 @@ const preview: Preview = {
 export default preview;
 ```
 
-## Start your build process
+### Start the Storybook server
 
 Run the following command to start your Storybook server.
 
@@ -246,9 +246,42 @@ export const Default: Story = {
 
 </Steps>
 
-### Troubleshooting
 
-#### `Cannot find module '@pandacss/dev/postcss'`
+## Configuring Dark Mode
+
+To enable dark mode in Storybook, you can use the `@storybook/addon-themes` package.
+
+```bash
+pnpm add -D @storybook/addon-themes
+```
+
+Then, update your `.storybook/preview.ts` file to include the following:
+
+```ts filename=".storybook/preview.ts"
+import { withThemeByClassName } from '@storybook/addon-themes';
+import type { Preview, ReactRenderer } from '@storybook/react';
+
+const preview: Preview = {
+  // ...
+  decorators: [
+    withThemeByClassName<ReactRenderer>({
+      themes: {
+        light: '',
+        dark: 'dark',
+      },
+      defaultTheme: 'light',
+    }),
+  ],
+};
+
+export default preview;
+```
+
+With that in place, you should see the light/dark switcher in Storybook's toolbar.
+
+## Troubleshooting
+
+### Cannot find postcss plugin
 
 If you are having issues with the PostCSS plugin similar to `Cannot find module '@pandacss/dev/postcss'`,
 update the PostCSS config as follows:
@@ -259,7 +292,7 @@ module.exports = {
 }
 ```
 
-#### HMR not triggered
+### HMR not triggered
 
 If you are having issues with HMR not being triggered after a `panda.config.ts` change (or one of its [dependencies](/docs/references/config#dependencies)), you can manually specify the files that should trigger a rebuild by adding the following to your `panda.config.ts`:
 
@@ -272,7 +305,7 @@ export default defineConfig({
 })
 ```
 
-#### styles in `args` is not generated
+### Styles in `args` is not generated
 
 If you are having issues with your `args` not generating the expected CSS, it's probably because of:
 
@@ -293,7 +326,7 @@ export const Funky: Story = {
 }
 ```
 
-#### some recipes styles are missing
+### Some recipes styles are missing
 
 If you are having issues with your config `recipes` or `slotRecipes` not generating the expected CSS, it's probably because of:
 

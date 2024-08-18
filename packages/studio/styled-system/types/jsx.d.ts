@@ -17,6 +17,7 @@ import type {
   ComponentPropsWithoutRef,
   ElementType,
   ElementRef,
+  JSX,
   Ref,
 } from "react";
 

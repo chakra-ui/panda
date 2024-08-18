@@ -19,7 +19,10 @@ export async function main() {
     let content = readFileSync(inputPath, 'utf8').replace("'./tokens'", "'../tokens'")
 
     if (input.includes('system-types.ts')) {
-      content = content.replace('(SystemProperties | GenericProperties)', 'SystemProperties')
+      content = content.replace(
+        /Nested<\((SystemProperties \| GenericProperties)\) & CssVarProperties>/,
+        "Omit<Nested<SystemProperties & CssVarProperties>, 'base'>",
+      )
     }
 
     const packagesDir = join(__dirname, '..', '..')
