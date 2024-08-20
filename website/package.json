@@ -16,7 +16,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "bright": "0.8.5",
     "flexsearch": "0.7.43",
-    "focus-visible": "5.2.0",
+    "focus-visible": "5.2.1",
     "git-url-parse": "14.0.0",
     "intersection-observer": "0.12.2",
     "match-sorter": "6.3.4",
