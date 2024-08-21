@@ -211,12 +211,12 @@ describe('generate property types', () => {
 
 
 
-      type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
+      type WithColorOpacityModifier<T> = [T] extends [string] ? \`\${T}/\${string}\` & { __colorOpacityModifier?: true } : never
 
       type ImportantMark = "!" | "!important"
       type WhitespaceImportant = \` \${ImportantMark}\`
       type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
+      type WithImportant<T> = [T] extends [string] ? \`\${T}\${Important}\` & { __important?: true } : never
 
       /**
        * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
@@ -283,12 +283,12 @@ describe('generate property types', () => {
 
 
 
-      type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
+      type WithColorOpacityModifier<T> = [T] extends [string] ? \`\${T}/\${string}\` & { __colorOpacityModifier?: true } : never
 
       type ImportantMark = "!" | "!important"
       type WhitespaceImportant = \` \${ImportantMark}\`
       type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
+      type WithImportant<T> = [T] extends [string] ? \`\${T}\${Important}\` & { __important?: true } : never
 
       /**
        * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
