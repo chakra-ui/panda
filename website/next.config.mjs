@@ -28,6 +28,11 @@ export default withNextra({
         source: '/play',
         destination: 'https://play.panda-css.com',
         permanent: true
+      },
+      {
+        source: '/learn',
+        destination: 'https://pandamastery.com',
+        permanent: true
       }
     ]
   },

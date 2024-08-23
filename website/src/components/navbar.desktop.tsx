@@ -1,9 +1,12 @@
+import { css } from '@/styled-system/css'
 import { HStack } from '@/styled-system/jsx'
 import { center } from '@/styled-system/patterns'
-import { ButtonIcon, Icon } from '@/theme/icons'
+import { Icon } from '@/theme/icons'
 import Link from 'next/link'
+import { FaGithub } from 'react-icons/fa'
+import { CourseMiniBanner } from './course-banner'
 import { NavLink } from './nav-link'
-import { ThemeSwitchButton } from './theme-switch-button'
+import { ThemeSwitchIconButton } from './theme-switch-button'
 
 export const DesktopNavBar = () => {
   return (
@@ -18,26 +21,23 @@ export const DesktopNavBar = () => {
       position="relative"
       justify="space-between"
     >
-      <Link href="/" className={center({ flexShrink: '0' })}>
-        <Icon icon="LogoWithText" />
-      </Link>
+      <HStack gap="4">
+        <Link href="/" className={center({ flexShrink: '0' })}>
+          <Icon icon="LogoWithText" />
+        </Link>
+        <CourseMiniBanner />
+      </HStack>
 
       <HStack gap="4">
         <NavLink href="/docs">Docs</NavLink>
         <NavLink href="/learn">Learn</NavLink>
         <NavLink href="https://play.panda-css.com/" isExternal>
-          <HStack>
-            <span>Playground</span>
-            <ButtonIcon icon="ExternalLink" />
-          </HStack>
+          Playground
         </NavLink>
         <NavLink href="https://github.com/chakra-ui/panda" isExternal>
-          <HStack>
-            <span>Github</span>
-            <ButtonIcon icon="ExternalLink" />
-          </HStack>
+          <FaGithub className={css({ fontSize: '2xl' })} />
         </NavLink>
-        <ThemeSwitchButton />
+        <ThemeSwitchIconButton />
       </HStack>
     </HStack>
   )

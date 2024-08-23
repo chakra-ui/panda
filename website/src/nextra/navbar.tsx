@@ -1,3 +1,4 @@
+import { CourseBanner } from '@/components/course-banner'
 import { css, cx } from '@/styled-system/css'
 import { navbar } from '@/styled-system/recipes'
 import { Menu, Portal } from '@ark-ui/react'
@@ -8,9 +9,9 @@ import type {
   MenuItem as MenuItemData,
   PageItem
 } from 'nextra/normalize-pages'
-import { renderComponent } from './lib'
 import { Anchor } from './anchor'
 import { useConfig, useMenu } from './contexts'
+import { renderComponent } from './lib'
 
 export interface NavBarProps {
   flatDirectories: Item[]
@@ -139,6 +140,8 @@ export function Navbar({ flatDirectories, items }: NavBarProps) {
         data-part="blur"
         className={cx('nextra-nav-container-blur')}
       />
+
+      <CourseBanner />
       <nav data-scope="navbar" data-part="nav">
         {config.logoLink ? (
           <Anchor
