@@ -1,11 +1,11 @@
 import { logger } from '@pandacss/logger'
-import type { ArtifactId, Config } from '@pandacss/types'
+import type { Config, DiffConfigResult } from '@pandacss/types'
 import { codegen } from './codegen'
 import { loadConfigAndCreateContext } from './config'
 import { PandaContext } from './create-context'
 
-async function build(ctx: PandaContext, artifactIds?: ArtifactId[]) {
-  await codegen(ctx, artifactIds)
+async function build(ctx: PandaContext, changes?: DiffConfigResult) {
+  await codegen(ctx, changes)
 
   if (ctx.config.emitTokensOnly) {
     return logger.info('css:emit', 'Successfully rebuilt the css variables and js function to query your tokens ✨')
@@ -33,13 +33,13 @@ export async function generate(config: Config, configPath?: string) {
     //
     ctx.watchConfig(
       async () => {
-        const affecteds = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
+        const changes = await ctx.diff.reloadConfigAndRefreshContext((conf) => {
           ctx = new PandaContext(conf)
         })
 
         logger.info('ctx:updated', 'config rebuilt ✅')
-        await ctx.hooks['config:change']?.({ config: ctx.config, changes: affecteds })
-        return build(ctx, Array.from(affecteds.artifacts))
+        await ctx.hooks['config:change']?.({ config: ctx.config, changes: changes })
+        return build(ctx, changes)
       },
       { cwd, poll },
     )

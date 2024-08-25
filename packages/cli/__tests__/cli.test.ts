@@ -54,6 +54,10 @@ describe('CLI', () => {
     // init on existing project
     const output2 = execSync(cmd, { cwd: testsCwd }).toString()
     expect(output2.includes('It looks like you already have panda created')).toBe(true)
+  })
+
+  test('init --force', async () => {
+    const cmd = `node ${binPath} init --cwd="${testsCwd}" --force`
 
     // init with --force
     const output3 = execSync(cmd + ' --force --postcss --logfile="./panda.log"', { cwd: testsCwd }).toString()

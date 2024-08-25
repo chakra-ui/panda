@@ -1,6 +1,7 @@
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import type { Artifact, PandaHooks, Runtime } from '@pandacss/types'
+import type { GeneratedArtifact, PandaHooks, Runtime } from '@pandacss/types'
+import prettier from 'prettier'
 
 interface OutputEngineOptions extends Generator {
   runtime: Runtime
@@ -24,6 +25,10 @@ export class OutputEngine {
     this.fs.rmDirSync(this.path.join(...this.paths.root))
   }
 
+  rm = (absPath: string) => {
+    this.fs.rmFileSync(absPath)
+  }
+
   ensure = (file: string, cwd: string) => {
     const outPath = this.path.resolve(cwd, file)
     const dirname = this.path.dirname(outPath)
@@ -31,22 +36,23 @@ export class OutputEngine {
     return outPath
   }
 
-  write = (output: Artifact | undefined) => {
-    if (!output) return
+  write = async (output: GeneratedArtifact | undefined, format = true) => {
+    if (!output?.content) return
 
-    const { dir = this.paths.root, files } = output
-    this.fs.ensureDirSync(this.path.join(...dir))
+    const absPath = this.path.join(...output.path)
+    const dirname = this.path.dirname(absPath)
+    this.fs.ensureDirSync(dirname)
 
-    return Promise.allSettled(
-      files.map(async (artifact) => {
-        if (!artifact?.code) return
-
-        const { file, code } = artifact
-        const absPath = this.path.join(...dir, file)
-
-        logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
-        return this.fs.writeFile(absPath, code)
-      }),
-    )
+    logger.debug('write:file', absPath)
+    try {
+      await this.fs.writeFile(
+        absPath,
+        format ? await prettier.format(output.content, { filepath: absPath }) : output.content,
+      )
+    } catch (e) {
+      // Prettier throws when the syntax is invalid
+      logger.error('write:file:' + output.id, e)
+      return this.fs.writeFile(absPath, output.content)
+    }
   }
 }

@@ -1,15 +1,30 @@
 import { createContext } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { generatePropTypes } from '../src/artifacts/types/prop-types'
+import { typesPropTypesArtifact } from '../src/artifacts/types/prop-types'
+import type { Context } from '@pandacss/core'
+import { ArtifactMap } from '../src/artifacts/artifact-map'
+
+const generatePropTypes = (context: Context) => {
+  return new ArtifactMap()
+    .addFile(typesPropTypesArtifact)
+    .generate(context)
+    .contents.map(({ path, ...generated }) => ({
+      ...generated,
+      path: path.filter((part) => part !== context.config.cwd),
+    }))
+}
 
 describe('generate property types', () => {
   test('should ', () => {
     expect(generatePropTypes(createContext())).toMatchInlineSnapshot(`
-      "import type { ConditionalValue } from './conditions';
-      import type { CssProperties } from './system-types';
-      import type { Tokens } from '../tokens/index';
+      [
+        {
+          "content": "/* eslint-disable */
+      import type { Tokens } from '../tokens/index.d.ts'
+      import type { ConditionalValue } from './conditions.d.ts'
+      import type { CssProperties } from './system-types.d.ts'
 
-      export interface UtilityValues {
+        export interface UtilityValues {
       	aspectRatio: Tokens["aspectRatios"];
       	top: Tokens["spacing"];
       	left: Tokens["spacing"];
@@ -211,44 +226,53 @@ describe('generate property types', () => {
 
 
 
-      type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
+        type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
 
-      type ImportantMark = "!" | "!important"
-      type WhitespaceImportant = \` \${ImportantMark}\`
-      type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
+        type ImportantMark = "!" | "!important"
+        type WhitespaceImportant = \` \${ImportantMark}\`
+        type Important = ImportantMark | WhitespaceImportant
+        type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
 
-      /**
-       * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
-       * - Allows you to use an escape hatch (e.g. \`[123px]\`) to use any string as a value.
-       * - Allows you to use a color opacity modifier (e.g. \`red/300\`) with known color values.
-       * - Allows you to use an important mark (e.g. \`!\` or \`!important\`) in the value.
-       *
-       * This is useful when you want to use a value that is not defined in the config or want to opt-out of the defaults.
-       *
-       * @example
-       * css({
-       *   fontSize: '[123px]', // ⚠️ will not throw even if you haven't defined 123px as a token
-       * })
-       *
-       * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
-       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
-       */
-      export type WithEscapeHatch<T> = T | \`[\${string}]\` | WithColorOpacityModifier<T> | WithImportant<T>
+        /**
+         * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
+         * - Allows you to use an escape hatch (e.g. \`[123px]\`) to use any string as a value.
+         * - Allows you to use a color opacity modifier (e.g. \`red/300\`) with known color values.
+         * - Allows you to use an important mark (e.g. \`!\` or \`!important\`) in the value.
+         *
+         * This is useful when you want to use a value that is not defined in the config or want to opt-out of the defaults.
+         *
+         * @example
+         * css({
+         *   fontSize: '[123px]', // ⚠️ will not throw even if you haven't defined 123px as a token
+         * })
+         *
+         * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
+         * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+         */
+        export type WithEscapeHatch<T> = T | \`[\${string}]\` | WithColorOpacityModifier<T> | WithImportant<T>
 
-      /**
-       * Will restrict the value of properties that have predefined values to those values only.
-       *
-       * @example
-       * css({
-       *   display: 'abc', // ❌ will throw
-       * })
-       *
-       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
-       */
-      export type OnlyKnown<Key, Value> = Value extends boolean
-        ? Value
-        : Value extends \`\${infer _}\` ? Value : never"
+        /**
+         * Will restrict the value of properties that have predefined values to those values only.
+         *
+         * @example
+         * css({
+         *   display: 'abc', // ❌ will throw
+         * })
+         *
+         * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+         */
+        export type OnlyKnown<Key, Value> = Value extends boolean
+          ? Value
+          : Value extends \`\${infer _}\` ? Value : never
+        ",
+          "id": "types/prop-type.d.ts",
+          "path": [
+            "styled-system",
+            "types",
+            "prop-type.d.ts",
+          ],
+        },
+      ]
     `)
   })
 
@@ -272,55 +296,67 @@ describe('generate property types', () => {
         }),
       ),
     ).toMatchInlineSnapshot(`
-      "import type { ConditionalValue } from './conditions';
-      import type { CssProperties } from './system-types';
-      import type { Tokens } from '../tokens/index';
+      [
+        {
+          "content": "/* eslint-disable */
+      import type { Tokens } from '../tokens/index.d.ts'
+      import type { ConditionalValue } from './conditions.d.ts'
+      import type { CssProperties } from './system-types.d.ts'
 
-      export interface UtilityValues {
+        export interface UtilityValues {
       	textStyle: "headline" | "headline.h1" | "headline.h2";
       	animationName: "spin" | "ping" | "pulse" | "bounce";
       }
 
 
 
-      type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
+        type WithColorOpacityModifier<T> = T extends string ? \`\${T}/\${string}\` : T
 
-      type ImportantMark = "!" | "!important"
-      type WhitespaceImportant = \` \${ImportantMark}\`
-      type Important = ImportantMark | WhitespaceImportant
-      type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
+        type ImportantMark = "!" | "!important"
+        type WhitespaceImportant = \` \${ImportantMark}\`
+        type Important = ImportantMark | WhitespaceImportant
+        type WithImportant<T> = T extends string ? \`\${T}\${Important}\` & { __important?: true } : T;
 
-      /**
-       * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
-       * - Allows you to use an escape hatch (e.g. \`[123px]\`) to use any string as a value.
-       * - Allows you to use a color opacity modifier (e.g. \`red/300\`) with known color values.
-       * - Allows you to use an important mark (e.g. \`!\` or \`!important\`) in the value.
-       *
-       * This is useful when you want to use a value that is not defined in the config or want to opt-out of the defaults.
-       *
-       * @example
-       * css({
-       *   fontSize: '[123px]', // ⚠️ will not throw even if you haven't defined 123px as a token
-       * })
-       *
-       * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
-       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
-       */
-      export type WithEscapeHatch<T> = T | \`[\${string}]\` | WithColorOpacityModifier<T> | WithImportant<T>
+        /**
+         * Only relevant when using \`strictTokens\` or \`strictPropertyValues\` in your config.
+         * - Allows you to use an escape hatch (e.g. \`[123px]\`) to use any string as a value.
+         * - Allows you to use a color opacity modifier (e.g. \`red/300\`) with known color values.
+         * - Allows you to use an important mark (e.g. \`!\` or \`!important\`) in the value.
+         *
+         * This is useful when you want to use a value that is not defined in the config or want to opt-out of the defaults.
+         *
+         * @example
+         * css({
+         *   fontSize: '[123px]', // ⚠️ will not throw even if you haven't defined 123px as a token
+         * })
+         *
+         * @see https://panda-css.com/docs/concepts/writing-styles#stricttokens
+         * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+         */
+        export type WithEscapeHatch<T> = T | \`[\${string}]\` | WithColorOpacityModifier<T> | WithImportant<T>
 
-      /**
-       * Will restrict the value of properties that have predefined values to those values only.
-       *
-       * @example
-       * css({
-       *   display: 'abc', // ❌ will throw
-       * })
-       *
-       * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
-       */
-      export type OnlyKnown<Key, Value> = Value extends boolean
-        ? Value
-        : Value extends \`\${infer _}\` ? Value : never"
+        /**
+         * Will restrict the value of properties that have predefined values to those values only.
+         *
+         * @example
+         * css({
+         *   display: 'abc', // ❌ will throw
+         * })
+         *
+         * @see https://panda-css.com/docs/concepts/writing-styles#strictpropertyvalues
+         */
+        export type OnlyKnown<Key, Value> = Value extends boolean
+          ? Value
+          : Value extends \`\${infer _}\` ? Value : never
+        ",
+          "id": "types/prop-type.d.ts",
+          "path": [
+            "styled-system",
+            "types",
+            "prop-type.d.ts",
+          ],
+        },
+      ]
     `)
   })
 })

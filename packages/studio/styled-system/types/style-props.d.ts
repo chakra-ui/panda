@@ -1,232 +1,290 @@
 /* eslint-disable */
-import type { ConditionalValue } from './conditions';
-import type { OnlyKnown, UtilityValues, WithEscapeHatch } from './prop-type';
-import type { CssProperties } from './system-types';
-import type { Token } from '../tokens/index';
+import type { Token } from "../tokens/index.d.ts";
+import type { ConditionalValue } from "./conditions.d.ts";
+import type {
+  OnlyKnown,
+  UtilityValues,
+  WithEscapeHatch,
+} from "./prop-type.d.ts";
+import type { CssProperties } from "./system-types.d.ts";
 
-type AnyString = (string & {})
-type CssVars = `var(--${string})`
-type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
+type AnyString = string & {};
+type CssVars = `var(--${string})`;
+type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>;
 
-type CssVarName =  | AnyString
-type CssVarKeys = `--${CssVarName}`
+type CssVarName = AnyString;
+type CssVarKeys = `--${CssVarName}`;
 
 export type CssVarProperties = {
-  [key in CssVarKeys]?: CssVarValue
-}
+  [key in CssVarKeys]?: CssVarValue;
+};
 
 export interface SystemProperties {
-   /**
+  /**
    * The **`appearance`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
    *
    * **Syntax**: `none | button | button-bevel | caret | checkbox | default-button | inner-spin-button | listbox | listitem | media-controls-background | media-controls-fullscreen-background | media-current-time-display | media-enter-fullscreen-button | media-exit-fullscreen-button | media-fullscreen-button | media-mute-button | media-overlay-play-button | media-play-button | media-seek-back-button | media-seek-forward-button | media-slider | media-sliderthumb | media-time-remaining-display | media-toggle-closed-captions-button | media-volume-slider | media-volume-slider-container | media-volume-sliderthumb | menulist | menulist-button | menulist-text | menulist-textfield | meter | progress-bar | progress-bar-value | push-button | radio | searchfield | searchfield-cancel-button | searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical | square-button | textarea | textfield | -apple-pay-button`
    *
    * **Initial value**: `none` (but this value is overridden in the user agent CSS)
    */
-WebkitAppearance?: ConditionalValue<CssProperties["WebkitAppearance"] | AnyString>
- /**
+  WebkitAppearance?: ConditionalValue<
+    CssProperties["WebkitAppearance"] | AnyString
+  >;
+  /**
    * The **`-webkit-border-before`** CSS property is a shorthand property for setting the individual logical block start border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-width'> || <'border-style'> || <color>`
    */
-WebkitBorderBefore?: ConditionalValue<CssProperties["WebkitBorderBefore"] | AnyString>
- /**
+  WebkitBorderBefore?: ConditionalValue<
+    CssProperties["WebkitBorderBefore"] | AnyString
+  >;
+  /**
    * **Syntax**: `<color>`
    *
    * **Initial value**: `currentcolor`
    */
-WebkitBorderBeforeColor?: ConditionalValue<CssProperties["WebkitBorderBeforeColor"] | AnyString>
- /**
+  WebkitBorderBeforeColor?: ConditionalValue<
+    CssProperties["WebkitBorderBeforeColor"] | AnyString
+  >;
+  /**
    * **Syntax**: `<'border-style'>`
    *
    * **Initial value**: `none`
    */
-WebkitBorderBeforeStyle?: ConditionalValue<CssProperties["WebkitBorderBeforeStyle"] | AnyString>
- /**
+  WebkitBorderBeforeStyle?: ConditionalValue<
+    CssProperties["WebkitBorderBeforeStyle"] | AnyString
+  >;
+  /**
    * **Syntax**: `<'border-width'>`
    *
    * **Initial value**: `medium`
    */
-WebkitBorderBeforeWidth?: ConditionalValue<CssProperties["WebkitBorderBeforeWidth"] | AnyString>
- /**
+  WebkitBorderBeforeWidth?: ConditionalValue<
+    CssProperties["WebkitBorderBeforeWidth"] | AnyString
+  >;
+  /**
    * The **`-webkit-box-reflect`** CSS property lets you reflect the content of an element in one specific direction.
    *
    * **Syntax**: `[ above | below | right | left ]? <length>? <image>?`
    *
    * **Initial value**: `none`
    */
-WebkitBoxReflect?: ConditionalValue<CssProperties["WebkitBoxReflect"] | AnyString>
- /**
+  WebkitBoxReflect?: ConditionalValue<
+    CssProperties["WebkitBoxReflect"] | AnyString
+  >;
+  /**
    * The **`-webkit-line-clamp`** CSS property allows limiting of the contents of a block to the specified number of lines.
    *
    * **Syntax**: `none | <integer>`
    *
    * **Initial value**: `none`
    */
-WebkitLineClamp?: ConditionalValue<CssProperties["WebkitLineClamp"] | AnyString>
- /**
+  WebkitLineClamp?: ConditionalValue<
+    CssProperties["WebkitLineClamp"] | AnyString
+  >;
+  /**
    * The **`mask`** CSS shorthand property hides an element (partially or fully) by masking or clipping the image at specific points.
    *
    * **Syntax**: `[ <mask-reference> || <position> [ / <bg-size> ]? || <repeat-style> || [ <box> | border | padding | content | text ] || [ <box> | border | padding | content ] ]#`
    */
-WebkitMask?: ConditionalValue<CssProperties["WebkitMask"] | AnyString>
- /**
+  WebkitMask?: ConditionalValue<CssProperties["WebkitMask"] | AnyString>;
+  /**
    * If a `mask-image` is specified, `-webkit-mask-attachment` determines whether the mask image's position is fixed within the viewport, or scrolls along with its containing block.
    *
    * **Syntax**: `<attachment>#`
    *
    * **Initial value**: `scroll`
    */
-WebkitMaskAttachment?: ConditionalValue<CssProperties["WebkitMaskAttachment"] | AnyString>
- /**
+  WebkitMaskAttachment?: ConditionalValue<
+    CssProperties["WebkitMaskAttachment"] | AnyString
+  >;
+  /**
    * The **`mask-clip`** CSS property determines the area which is affected by a mask. The painted content of an element must be restricted to this area.
    *
    * **Syntax**: `[ <box> | border | padding | content | text ]#`
    *
    * **Initial value**: `border`
    */
-WebkitMaskClip?: ConditionalValue<CssProperties["WebkitMaskClip"] | AnyString>
- /**
+  WebkitMaskClip?: ConditionalValue<
+    CssProperties["WebkitMaskClip"] | AnyString
+  >;
+  /**
    * The **`-webkit-mask-composite`** property specifies the manner in which multiple mask images applied to the same element are composited with one another. Mask images are composited in the opposite order that they are declared with the `-webkit-mask-image` property.
    *
    * **Syntax**: `<composite-style>#`
    *
    * **Initial value**: `source-over`
    */
-WebkitMaskComposite?: ConditionalValue<CssProperties["WebkitMaskComposite"] | AnyString>
- /**
+  WebkitMaskComposite?: ConditionalValue<
+    CssProperties["WebkitMaskComposite"] | AnyString
+  >;
+  /**
    * The **`mask-image`** CSS property sets the image that is used as mask layer for an element. By default this means the alpha channel of the mask image will be multiplied with the alpha channel of the element. This can be controlled with the `mask-mode` property.
    *
    * **Syntax**: `<mask-reference>#`
    *
    * **Initial value**: `none`
    */
-WebkitMaskImage?: ConditionalValue<CssProperties["WebkitMaskImage"] | AnyString>
- /**
+  WebkitMaskImage?: ConditionalValue<
+    CssProperties["WebkitMaskImage"] | AnyString
+  >;
+  /**
    * The **`mask-origin`** CSS property sets the origin of a mask.
    *
    * **Syntax**: `[ <box> | border | padding | content ]#`
    *
    * **Initial value**: `padding`
    */
-WebkitMaskOrigin?: ConditionalValue<CssProperties["WebkitMaskOrigin"] | AnyString>
- /**
+  WebkitMaskOrigin?: ConditionalValue<
+    CssProperties["WebkitMaskOrigin"] | AnyString
+  >;
+  /**
    * The **`mask-position`** CSS property sets the initial position, relative to the mask position layer set by `mask-origin`, for each defined mask image.
    *
    * **Syntax**: `<position>#`
    *
    * **Initial value**: `0% 0%`
    */
-WebkitMaskPosition?: ConditionalValue<CssProperties["WebkitMaskPosition"] | AnyString>
- /**
+  WebkitMaskPosition?: ConditionalValue<
+    CssProperties["WebkitMaskPosition"] | AnyString
+  >;
+  /**
    * The `-webkit-mask-position-x` CSS property sets the initial horizontal position of a mask image.
    *
    * **Syntax**: `[ <length-percentage> | left | center | right ]#`
    *
    * **Initial value**: `0%`
    */
-WebkitMaskPositionX?: ConditionalValue<CssProperties["WebkitMaskPositionX"] | AnyString>
- /**
+  WebkitMaskPositionX?: ConditionalValue<
+    CssProperties["WebkitMaskPositionX"] | AnyString
+  >;
+  /**
    * The `-webkit-mask-position-y` CSS property sets the initial vertical position of a mask image.
    *
    * **Syntax**: `[ <length-percentage> | top | center | bottom ]#`
    *
    * **Initial value**: `0%`
    */
-WebkitMaskPositionY?: ConditionalValue<CssProperties["WebkitMaskPositionY"] | AnyString>
- /**
+  WebkitMaskPositionY?: ConditionalValue<
+    CssProperties["WebkitMaskPositionY"] | AnyString
+  >;
+  /**
    * The **`mask-repeat`** CSS property sets how mask images are repeated. A mask image can be repeated along the horizontal axis, the vertical axis, both axes, or not repeated at all.
    *
    * **Syntax**: `<repeat-style>#`
    *
    * **Initial value**: `repeat`
    */
-WebkitMaskRepeat?: ConditionalValue<CssProperties["WebkitMaskRepeat"] | AnyString>
- /**
+  WebkitMaskRepeat?: ConditionalValue<
+    CssProperties["WebkitMaskRepeat"] | AnyString
+  >;
+  /**
    * The `-webkit-mask-repeat-x` property specifies whether and how a mask image is repeated (tiled) horizontally.
    *
    * **Syntax**: `repeat | no-repeat | space | round`
    *
    * **Initial value**: `repeat`
    */
-WebkitMaskRepeatX?: ConditionalValue<CssProperties["WebkitMaskRepeatX"] | AnyString>
- /**
+  WebkitMaskRepeatX?: ConditionalValue<
+    CssProperties["WebkitMaskRepeatX"] | AnyString
+  >;
+  /**
    * The `-webkit-mask-repeat-y` property sets whether and how a mask image is repeated (tiled) vertically.
    *
    * **Syntax**: `repeat | no-repeat | space | round`
    *
    * **Initial value**: `repeat`
    */
-WebkitMaskRepeatY?: ConditionalValue<CssProperties["WebkitMaskRepeatY"] | AnyString>
- /**
+  WebkitMaskRepeatY?: ConditionalValue<
+    CssProperties["WebkitMaskRepeatY"] | AnyString
+  >;
+  /**
    * The **`mask-size`** CSS property specifies the sizes of the mask images. The size of the image can be fully or partially constrained in order to preserve its intrinsic ratio.
    *
    * **Syntax**: `<bg-size>#`
    *
    * **Initial value**: `auto auto`
    */
-WebkitMaskSize?: ConditionalValue<CssProperties["WebkitMaskSize"] | AnyString>
- /**
+  WebkitMaskSize?: ConditionalValue<
+    CssProperties["WebkitMaskSize"] | AnyString
+  >;
+  /**
    * The `-webkit-overflow-scrolling` CSS property controls whether or not touch devices use momentum-based scrolling for a given element.
    *
    * **Syntax**: `auto | touch`
    *
    * **Initial value**: `auto`
    */
-WebkitOverflowScrolling?: ConditionalValue<CssProperties["WebkitOverflowScrolling"] | AnyString>
- /**
+  WebkitOverflowScrolling?: ConditionalValue<
+    CssProperties["WebkitOverflowScrolling"] | AnyString
+  >;
+  /**
    * **`-webkit-tap-highlight-color`** is a non-standard CSS property that sets the color of the highlight that appears over a link while it's being tapped. The highlighting indicates to the user that their tap is being successfully recognized, and indicates which element they're tapping on.
    *
    * **Syntax**: `<color>`
    *
    * **Initial value**: `black`
    */
-WebkitTapHighlightColor?: ConditionalValue<CssProperties["WebkitTapHighlightColor"] | AnyString>
- /**
+  WebkitTapHighlightColor?: ConditionalValue<
+    CssProperties["WebkitTapHighlightColor"] | AnyString
+  >;
+  /**
    * The **`-webkit-text-fill-color`** CSS property specifies the fill color of characters of text. If this property is not set, the value of the `color` property is used.
    *
    * **Syntax**: `<color>`
    *
    * **Initial value**: `currentcolor`
    */
-WebkitTextFillColor?: ConditionalValue<CssProperties["WebkitTextFillColor"] | AnyString>
- /**
+  WebkitTextFillColor?: ConditionalValue<
+    CssProperties["WebkitTextFillColor"] | AnyString
+  >;
+  /**
    * The **`-webkit-text-stroke`** CSS property specifies the width and color of strokes for text characters. This is a shorthand property for the longhand properties `-webkit-text-stroke-width` and `-webkit-text-stroke-color`.
    *
    * **Syntax**: `<length> || <color>`
    */
-WebkitTextStroke?: ConditionalValue<CssProperties["WebkitTextStroke"] | AnyString>
- /**
+  WebkitTextStroke?: ConditionalValue<
+    CssProperties["WebkitTextStroke"] | AnyString
+  >;
+  /**
    * The **`-webkit-text-stroke-color`** CSS property specifies the stroke color of characters of text. If this property is not set, the value of the `color` property is used.
    *
    * **Syntax**: `<color>`
    *
    * **Initial value**: `currentcolor`
    */
-WebkitTextStrokeColor?: ConditionalValue<CssProperties["WebkitTextStrokeColor"] | AnyString>
- /**
+  WebkitTextStrokeColor?: ConditionalValue<
+    CssProperties["WebkitTextStrokeColor"] | AnyString
+  >;
+  /**
    * The **`-webkit-text-stroke-width`** CSS property specifies the width of the stroke for text.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    */
-WebkitTextStrokeWidth?: ConditionalValue<CssProperties["WebkitTextStrokeWidth"] | AnyString>
- /**
+  WebkitTextStrokeWidth?: ConditionalValue<
+    CssProperties["WebkitTextStrokeWidth"] | AnyString
+  >;
+  /**
    * The `-webkit-touch-callout` CSS property controls the display of the default callout shown when you touch and hold a touch target.
    *
    * **Syntax**: `default | none`
    *
    * **Initial value**: `default`
    */
-WebkitTouchCallout?: ConditionalValue<CssProperties["WebkitTouchCallout"] | AnyString>
- /**
+  WebkitTouchCallout?: ConditionalValue<
+    CssProperties["WebkitTouchCallout"] | AnyString
+  >;
+  /**
    * **Syntax**: `read-only | read-write | read-write-plaintext-only`
    *
    * **Initial value**: `read-only`
    */
-WebkitUserModify?: ConditionalValue<CssProperties["WebkitUserModify"] | AnyString>
- /**
+  WebkitUserModify?: ConditionalValue<
+    CssProperties["WebkitUserModify"] | AnyString
+  >;
+  /**
    * The **`accent-color`** CSS property sets the accent color for user-interface controls generated by some elements.
    *
    * **Syntax**: `auto | <color>`
@@ -239,8 +297,13 @@ WebkitUserModify?: ConditionalValue<CssProperties["WebkitUserModify"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/accent-color
    */
-accentColor?: ConditionalValue<UtilityValues["accentColor"] | CssVars | CssProperties["accentColor"] | AnyString>
- /**
+  accentColor?: ConditionalValue<
+    | UtilityValues["accentColor"]
+    | CssVars
+    | CssProperties["accentColor"]
+    | AnyString
+  >;
+  /**
    * The CSS **`align-content`** property sets the distribution of space between and around content items along a flexbox's cross-axis or a grid's block axis.
    *
    * **Syntax**: `normal | <baseline-position> | <content-distribution> | <overflow-position>? <content-position>`
@@ -254,8 +317,10 @@ accentColor?: ConditionalValue<UtilityValues["accentColor"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/align-content
    */
-alignContent?: ConditionalValue<CssVars | CssProperties["alignContent"] | AnyString>
- /**
+  alignContent?: ConditionalValue<
+    CssVars | CssProperties["alignContent"] | AnyString
+  >;
+  /**
    * The CSS **`align-items`** property sets the `align-self` value on all direct children as a group. In Flexbox, it controls the alignment of items on the Cross Axis. In Grid Layout, it controls the alignment of items on the Block Axis within their grid area.
    *
    * **Syntax**: `normal | stretch | <baseline-position> | [ <overflow-position>? <self-position> ]`
@@ -269,8 +334,10 @@ alignContent?: ConditionalValue<CssVars | CssProperties["alignContent"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/align-items
    */
-alignItems?: ConditionalValue<CssVars | CssProperties["alignItems"] | AnyString>
- /**
+  alignItems?: ConditionalValue<
+    CssVars | CssProperties["alignItems"] | AnyString
+  >;
+  /**
    * The **`align-self`** CSS property overrides a grid or flex item's `align-items` value. In Grid, it aligns the item inside the grid area. In Flexbox, it aligns the item on the cross axis.
    *
    * **Syntax**: `auto | normal | stretch | <baseline-position> | <overflow-position>? <self-position>`
@@ -284,8 +351,10 @@ alignItems?: ConditionalValue<CssVars | CssProperties["alignItems"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/align-self
    */
-alignSelf?: ConditionalValue<CssVars | CssProperties["alignSelf"] | AnyString>
- /**
+  alignSelf?: ConditionalValue<
+    CssVars | CssProperties["alignSelf"] | AnyString
+  >;
+  /**
    * The **`align-tracks`** CSS property sets the alignment in the masonry axis for grid containers that have masonry in their block axis.
    *
    * **Syntax**: `[ normal | <baseline-position> | <content-distribution> | <overflow-position>? <content-position> ]#`
@@ -298,8 +367,8 @@ alignSelf?: ConditionalValue<CssVars | CssProperties["alignSelf"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/align-tracks
    */
-alignTracks?: ConditionalValue<CssProperties["alignTracks"] | AnyString>
- /**
+  alignTracks?: ConditionalValue<CssProperties["alignTracks"] | AnyString>;
+  /**
    * The **`all`** shorthand CSS property resets all of an element's properties except `unicode-bidi`, `direction`, and CSS Custom Properties. It can set properties to their initial or inherited values, or to the values specified in another cascade layer or stylesheet origin.
    *
    * **Syntax**: `initial | inherit | unset | revert | revert-layer`
@@ -312,8 +381,8 @@ alignTracks?: ConditionalValue<CssProperties["alignTracks"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/all
    */
-all?: ConditionalValue<CssVars | CssProperties["all"] | AnyString>
- /**
+  all?: ConditionalValue<CssVars | CssProperties["all"] | AnyString>;
+  /**
    * The **`animation`** shorthand CSS property applies an animation between styles. It is a shorthand for `animation-name`, `animation-duration`, `animation-timing-function`, `animation-delay`, `animation-iteration-count`, `animation-direction`, `animation-fill-mode`, and `animation-play-state`.
    *
    * **Syntax**: `<single-animation>#`
@@ -325,8 +394,13 @@ all?: ConditionalValue<CssVars | CssProperties["all"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation
    */
-animation?: ConditionalValue<UtilityValues["animation"] | CssVars | CssProperties["animation"] | AnyString>
- /**
+  animation?: ConditionalValue<
+    | UtilityValues["animation"]
+    | CssVars
+    | CssProperties["animation"]
+    | AnyString
+  >;
+  /**
    * The **`animation-composition`** CSS property specifies the composite operation to use when multiple animations affect the same property simultaneously.
    *
    * **Syntax**: `<single-animation-composition>#`
@@ -339,8 +413,10 @@ animation?: ConditionalValue<UtilityValues["animation"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-composition
    */
-animationComposition?: ConditionalValue<CssVars | CssProperties["animationComposition"] | AnyString>
- /**
+  animationComposition?: ConditionalValue<
+    CssVars | CssProperties["animationComposition"] | AnyString
+  >;
+  /**
    * The **`animation-delay`** CSS property specifies the amount of time to wait from applying the animation to an element before beginning to perform the animation. The animation can start later, immediately from its beginning, or immediately and partway through the animation.
    *
    * **Syntax**: `<time>#`
@@ -354,8 +430,13 @@ animationComposition?: ConditionalValue<CssVars | CssProperties["animationCompos
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-delay
    */
-animationDelay?: ConditionalValue<UtilityValues["animationDelay"] | CssVars | CssProperties["animationDelay"] | AnyString>
- /**
+  animationDelay?: ConditionalValue<
+    | UtilityValues["animationDelay"]
+    | CssVars
+    | CssProperties["animationDelay"]
+    | AnyString
+  >;
+  /**
    * The **`animation-direction`** CSS property sets whether an animation should play forward, backward, or alternate back and forth between playing the sequence forward and backward.
    *
    * **Syntax**: `<single-animation-direction>#`
@@ -369,8 +450,10 @@ animationDelay?: ConditionalValue<UtilityValues["animationDelay"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-direction
    */
-animationDirection?: ConditionalValue<CssVars | CssProperties["animationDirection"] | AnyString>
- /**
+  animationDirection?: ConditionalValue<
+    CssVars | CssProperties["animationDirection"] | AnyString
+  >;
+  /**
    * The **`animation-duration`** CSS property sets the length of time that an animation takes to complete one cycle.
    *
    * **Syntax**: `<time>#`
@@ -384,8 +467,13 @@ animationDirection?: ConditionalValue<CssVars | CssProperties["animationDirectio
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-duration
    */
-animationDuration?: ConditionalValue<UtilityValues["animationDuration"] | CssVars | CssProperties["animationDuration"] | AnyString>
- /**
+  animationDuration?: ConditionalValue<
+    | UtilityValues["animationDuration"]
+    | CssVars
+    | CssProperties["animationDuration"]
+    | AnyString
+  >;
+  /**
    * The **`animation-fill-mode`** CSS property sets how a CSS animation applies styles to its target before and after its execution.
    *
    * **Syntax**: `<single-animation-fill-mode>#`
@@ -399,8 +487,10 @@ animationDuration?: ConditionalValue<UtilityValues["animationDuration"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-fill-mode
    */
-animationFillMode?: ConditionalValue<CssVars | CssProperties["animationFillMode"] | AnyString>
- /**
+  animationFillMode?: ConditionalValue<
+    CssVars | CssProperties["animationFillMode"] | AnyString
+  >;
+  /**
    * The **`animation-iteration-count`** CSS property sets the number of times an animation sequence should be played before stopping.
    *
    * **Syntax**: `<single-animation-iteration-count>#`
@@ -414,8 +504,10 @@ animationFillMode?: ConditionalValue<CssVars | CssProperties["animationFillMode"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-iteration-count
    */
-animationIterationCount?: ConditionalValue<CssProperties["animationIterationCount"] | AnyString>
- /**
+  animationIterationCount?: ConditionalValue<
+    CssProperties["animationIterationCount"] | AnyString
+  >;
+  /**
    * The **`animation-name`** CSS property specifies the names of one or more `@keyframes` at-rules that describe the animation to apply to an element. Multiple `@keyframe` at-rules are specified as a comma-separated list of names. If the specified name does not match any `@keyframe` at-rule, no properties are animated.
    *
    * **Syntax**: `[ none | <keyframes-name> ]#`
@@ -429,8 +521,13 @@ animationIterationCount?: ConditionalValue<CssProperties["animationIterationCoun
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-name
    */
-animationName?: ConditionalValue<UtilityValues["animationName"] | CssVars | CssProperties["animationName"] | AnyString>
- /**
+  animationName?: ConditionalValue<
+    | UtilityValues["animationName"]
+    | CssVars
+    | CssProperties["animationName"]
+    | AnyString
+  >;
+  /**
    * The **`animation-play-state`** CSS property sets whether an animation is running or paused.
    *
    * **Syntax**: `<single-animation-play-state>#`
@@ -444,8 +541,10 @@ animationName?: ConditionalValue<UtilityValues["animationName"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-play-state
    */
-animationPlayState?: ConditionalValue<CssProperties["animationPlayState"] | AnyString>
- /**
+  animationPlayState?: ConditionalValue<
+    CssProperties["animationPlayState"] | AnyString
+  >;
+  /**
    * The **`animation-range`** CSS shorthand property is used to set the start and end of an animation's attachment range along its timeline, i.e. where along the timeline an animation will start and end.
    *
    * **Syntax**: `[ <'animation-range-start'> <'animation-range-end'>? ]#`
@@ -456,8 +555,10 @@ animationPlayState?: ConditionalValue<CssProperties["animationPlayState"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-range
    */
-animationRange?: ConditionalValue<CssProperties["animationRange"] | AnyString>
- /**
+  animationRange?: ConditionalValue<
+    CssProperties["animationRange"] | AnyString
+  >;
+  /**
    * The **`animation-range-end`** CSS property is used to set the end of an animation's attachment range along its timeline, i.e. where along the timeline an animation will end.
    *
    * **Syntax**: `[ normal | <length-percentage> | <timeline-range-name> <length-percentage>? ]#`
@@ -470,8 +571,10 @@ animationRange?: ConditionalValue<CssProperties["animationRange"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-range-end
    */
-animationRangeEnd?: ConditionalValue<CssProperties["animationRangeEnd"] | AnyString>
- /**
+  animationRangeEnd?: ConditionalValue<
+    CssProperties["animationRangeEnd"] | AnyString
+  >;
+  /**
    * The **`animation-range-start`** CSS property is used to set the start of an animation's attachment range along its timeline, i.e. where along the timeline an animation will start.
    *
    * **Syntax**: `[ normal | <length-percentage> | <timeline-range-name> <length-percentage>? ]#`
@@ -484,8 +587,10 @@ animationRangeEnd?: ConditionalValue<CssProperties["animationRangeEnd"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-range-start
    */
-animationRangeStart?: ConditionalValue<CssProperties["animationRangeStart"] | AnyString>
- /**
+  animationRangeStart?: ConditionalValue<
+    CssProperties["animationRangeStart"] | AnyString
+  >;
+  /**
    * The **`animation-timing-function`** CSS property sets how an animation progresses through the duration of each cycle.
    *
    * **Syntax**: `<easing-function>#`
@@ -499,8 +604,13 @@ animationRangeStart?: ConditionalValue<CssProperties["animationRangeStart"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-timing-function
    */
-animationTimingFunction?: ConditionalValue<UtilityValues["animationTimingFunction"] | CssVars | CssProperties["animationTimingFunction"] | AnyString>
- /**
+  animationTimingFunction?: ConditionalValue<
+    | UtilityValues["animationTimingFunction"]
+    | CssVars
+    | CssProperties["animationTimingFunction"]
+    | AnyString
+  >;
+  /**
    * The **`animation-timeline`** CSS property specifies the timeline that is used to control the progress of an animation.
    *
    * **Syntax**: `<single-animation-timeline>#`
@@ -513,8 +623,10 @@ animationTimingFunction?: ConditionalValue<UtilityValues["animationTimingFunctio
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/animation-timeline
    */
-animationTimeline?: ConditionalValue<CssProperties["animationTimeline"] | AnyString>
- /**
+  animationTimeline?: ConditionalValue<
+    CssProperties["animationTimeline"] | AnyString
+  >;
+  /**
    * The **`appearance`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
    *
    * **Syntax**: `none | auto | textfield | menulist-button | <compat-auto>`
@@ -528,8 +640,10 @@ animationTimeline?: ConditionalValue<CssProperties["animationTimeline"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/appearance
    */
-appearance?: ConditionalValue<CssVars | CssProperties["appearance"] | AnyString>
- /**
+  appearance?: ConditionalValue<
+    CssVars | CssProperties["appearance"] | AnyString
+  >;
+  /**
    * The **`aspect-ratio`** CSS property sets a **preferred aspect ratio** for the box, which will be used in the calculation of auto sizes and some other layout functions.
    *
    * **Syntax**: `auto | <ratio>`
@@ -542,9 +656,14 @@ appearance?: ConditionalValue<CssVars | CssProperties["appearance"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/aspect-ratio
    */
-aspectRatio?: ConditionalValue<UtilityValues["aspectRatio"] | CssVars | CssProperties["aspectRatio"] | AnyString>
- azimuth?: ConditionalValue<CssProperties["azimuth"] | AnyString>
- /**
+  aspectRatio?: ConditionalValue<
+    | UtilityValues["aspectRatio"]
+    | CssVars
+    | CssProperties["aspectRatio"]
+    | AnyString
+  >;
+  azimuth?: ConditionalValue<CssProperties["azimuth"] | AnyString>;
+  /**
    * The **`backdrop-filter`** CSS property lets you apply graphical effects such as blurring or color shifting to the area behind an element. Because it applies to everything _behind_ the element, to see the effect you must make the element or its background at least partially transparent.
    *
    * **Syntax**: `none | <filter-function-list>`
@@ -557,8 +676,13 @@ aspectRatio?: ConditionalValue<UtilityValues["aspectRatio"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/backdrop-filter
    */
-backdropFilter?: ConditionalValue<UtilityValues["backdropFilter"] | CssVars | CssProperties["backdropFilter"] | AnyString>
- /**
+  backdropFilter?: ConditionalValue<
+    | UtilityValues["backdropFilter"]
+    | CssVars
+    | CssProperties["backdropFilter"]
+    | AnyString
+  >;
+  /**
    * The **`backface-visibility`** CSS property sets whether the back face of an element is visible when turned towards the user.
    *
    * **Syntax**: `visible | hidden`
@@ -572,8 +696,10 @@ backdropFilter?: ConditionalValue<UtilityValues["backdropFilter"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/backface-visibility
    */
-backfaceVisibility?: ConditionalValue<CssVars | CssProperties["backfaceVisibility"] | AnyString>
- /**
+  backfaceVisibility?: ConditionalValue<
+    CssVars | CssProperties["backfaceVisibility"] | AnyString
+  >;
+  /**
    * The **`background`** shorthand CSS property sets all background style properties at once, such as color, image, origin and size, or repeat method.
    *
    * **Syntax**: `[ <bg-layer> , ]* <final-bg-layer>`
@@ -584,8 +710,13 @@ backfaceVisibility?: ConditionalValue<CssVars | CssProperties["backfaceVisibilit
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background
    */
-background?: ConditionalValue<UtilityValues["background"] | CssVars | CssProperties["background"] | AnyString>
- /**
+  background?: ConditionalValue<
+    | UtilityValues["background"]
+    | CssVars
+    | CssProperties["background"]
+    | AnyString
+  >;
+  /**
    * The **`background-attachment`** CSS property sets whether a background image's position is fixed within the viewport, or scrolls with its containing block.
    *
    * **Syntax**: `<attachment>#`
@@ -598,8 +729,10 @@ background?: ConditionalValue<UtilityValues["background"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-attachment
    */
-backgroundAttachment?: ConditionalValue<CssVars | CssProperties["backgroundAttachment"] | AnyString>
- /**
+  backgroundAttachment?: ConditionalValue<
+    CssVars | CssProperties["backgroundAttachment"] | AnyString
+  >;
+  /**
    * The **`background-blend-mode`** CSS property sets how an element's background images should blend with each other and with the element's background color.
    *
    * **Syntax**: `<blend-mode>#`
@@ -612,8 +745,10 @@ backgroundAttachment?: ConditionalValue<CssVars | CssProperties["backgroundAttac
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-blend-mode
    */
-backgroundBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | AnyString>
- /**
+  backgroundBlendMode?: ConditionalValue<
+    CssProperties["backgroundBlendMode"] | AnyString
+  >;
+  /**
    * The **`background-clip`** CSS property sets whether an element's background extends underneath its border box, padding box, or content box.
    *
    * **Syntax**: `<box>#`
@@ -627,8 +762,10 @@ backgroundBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-clip
    */
-backgroundClip?: ConditionalValue<CssVars | CssProperties["backgroundClip"] | AnyString>
- /**
+  backgroundClip?: ConditionalValue<
+    CssVars | CssProperties["backgroundClip"] | AnyString
+  >;
+  /**
    * The **`background-color`** CSS property sets the background color of an element.
    *
    * **Syntax**: `<color>`
@@ -641,8 +778,13 @@ backgroundClip?: ConditionalValue<CssVars | CssProperties["backgroundClip"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-color
    */
-backgroundColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | CssProperties["backgroundColor"] | AnyString>
- /**
+  backgroundColor?: ConditionalValue<
+    | UtilityValues["backgroundColor"]
+    | CssVars
+    | CssProperties["backgroundColor"]
+    | AnyString
+  >;
+  /**
    * The **`background-image`** CSS property sets one or more background images on an element.
    *
    * **Syntax**: `<bg-image>#`
@@ -655,8 +797,13 @@ backgroundColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-image
    */
-backgroundImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | CssProperties["backgroundImage"] | AnyString>
- /**
+  backgroundImage?: ConditionalValue<
+    | UtilityValues["backgroundImage"]
+    | CssVars
+    | CssProperties["backgroundImage"]
+    | AnyString
+  >;
+  /**
    * The **`background-origin`** CSS property sets the background's origin: from the border start, inside the border, or inside the padding.
    *
    * **Syntax**: `<box>#`
@@ -669,8 +816,10 @@ backgroundImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-origin
    */
-backgroundOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyString>
- /**
+  backgroundOrigin?: ConditionalValue<
+    CssProperties["backgroundOrigin"] | AnyString
+  >;
+  /**
    * The **`background-position`** CSS property sets the initial position for each background image. The position is relative to the position layer set by `background-origin`.
    *
    * **Syntax**: `<bg-position>#`
@@ -683,8 +832,10 @@ backgroundOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-position
    */
-backgroundPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyString>
- /**
+  backgroundPosition?: ConditionalValue<
+    CssProperties["backgroundPosition"] | AnyString
+  >;
+  /**
    * The **`background-position-x`** CSS property sets the initial horizontal position for each background image. The position is relative to the position layer set by `background-origin`.
    *
    * **Syntax**: `[ center | [ [ left | right | x-start | x-end ]? <length-percentage>? ]! ]#`
@@ -697,8 +848,10 @@ backgroundPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-position-x
    */
-backgroundPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | AnyString>
- /**
+  backgroundPositionX?: ConditionalValue<
+    CssProperties["backgroundPositionX"] | AnyString
+  >;
+  /**
    * The **`background-position-y`** CSS property sets the initial vertical position for each background image. The position is relative to the position layer set by `background-origin`.
    *
    * **Syntax**: `[ center | [ [ top | bottom | y-start | y-end ]? <length-percentage>? ]! ]#`
@@ -711,8 +864,10 @@ backgroundPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-position-y
    */
-backgroundPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | AnyString>
- /**
+  backgroundPositionY?: ConditionalValue<
+    CssProperties["backgroundPositionY"] | AnyString
+  >;
+  /**
    * The **`background-repeat`** CSS property sets how background images are repeated. A background image can be repeated along the horizontal and vertical axes, or not repeated at all.
    *
    * **Syntax**: `<repeat-style>#`
@@ -725,8 +880,10 @@ backgroundPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-repeat
    */
-backgroundRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyString>
- /**
+  backgroundRepeat?: ConditionalValue<
+    CssProperties["backgroundRepeat"] | AnyString
+  >;
+  /**
    * The **`background-size`** CSS property sets the size of the element's background image. The image can be left to its natural size, stretched, or constrained to fit the available space.
    *
    * **Syntax**: `<bg-size>#`
@@ -740,8 +897,10 @@ backgroundRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-size
    */
-backgroundSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
- /**
+  backgroundSize?: ConditionalValue<
+    CssProperties["backgroundSize"] | AnyString
+  >;
+  /**
    * The **`block-size`** CSS property defines the horizontal or vertical size of an element's block, depending on its writing mode. It corresponds to either the `width` or the `height` property, depending on the value of `writing-mode`.
    *
    * **Syntax**: `<'width'>`
@@ -754,8 +913,13 @@ backgroundSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/block-size
    */
-blockSize?: ConditionalValue<UtilityValues["blockSize"] | CssVars | CssProperties["blockSize"] | AnyString>
- /**
+  blockSize?: ConditionalValue<
+    | UtilityValues["blockSize"]
+    | CssVars
+    | CssProperties["blockSize"]
+    | AnyString
+  >;
+  /**
    * The **`border`** shorthand CSS property sets an element's border. It sets the values of `border-width`, `border-style`, and `border-color`.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
@@ -766,8 +930,10 @@ blockSize?: ConditionalValue<UtilityValues["blockSize"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border
    */
-border?: ConditionalValue<UtilityValues["border"] | CssVars | CssProperties["border"] | AnyString>
- /**
+  border?: ConditionalValue<
+    UtilityValues["border"] | CssVars | CssProperties["border"] | AnyString
+  >;
+  /**
    * The **`border-block`** CSS property is a shorthand property for setting the individual logical block border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -778,8 +944,13 @@ border?: ConditionalValue<UtilityValues["border"] | CssVars | CssProperties["bor
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block
    */
-borderBlock?: ConditionalValue<UtilityValues["borderBlock"] | CssVars | CssProperties["borderBlock"] | AnyString>
- /**
+  borderBlock?: ConditionalValue<
+    | UtilityValues["borderBlock"]
+    | CssVars
+    | CssProperties["borderBlock"]
+    | AnyString
+  >;
+  /**
    * The **`border-block-color`** CSS property defines the color of the logical block borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
@@ -792,8 +963,13 @@ borderBlock?: ConditionalValue<UtilityValues["borderBlock"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-color
    */
-borderBlockColor?: ConditionalValue<UtilityValues["borderBlockColor"] | CssVars | CssProperties["borderBlockColor"] | AnyString>
- /**
+  borderBlockColor?: ConditionalValue<
+    | UtilityValues["borderBlockColor"]
+    | CssVars
+    | CssProperties["borderBlockColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-block-style`** CSS property defines the style of the logical block borders of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style` and `border-bottom-style`, or `border-left-style` and `border-right-style` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-style'>`
@@ -806,8 +982,10 @@ borderBlockColor?: ConditionalValue<UtilityValues["borderBlockColor"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-style
    */
-borderBlockStyle?: ConditionalValue<CssVars | CssProperties["borderBlockStyle"] | AnyString>
- /**
+  borderBlockStyle?: ConditionalValue<
+    CssVars | CssProperties["borderBlockStyle"] | AnyString
+  >;
+  /**
    * The **`border-block-width`** CSS property defines the width of the logical block borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -820,8 +998,10 @@ borderBlockStyle?: ConditionalValue<CssVars | CssProperties["borderBlockStyle"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-width
    */
-borderBlockWidth?: ConditionalValue<CssProperties["borderBlockWidth"] | AnyString>
- /**
+  borderBlockWidth?: ConditionalValue<
+    CssProperties["borderBlockWidth"] | AnyString
+  >;
+  /**
    * The **`border-block-end`** CSS property is a shorthand property for setting the individual logical block-end border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -832,8 +1012,13 @@ borderBlockWidth?: ConditionalValue<CssProperties["borderBlockWidth"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end
    */
-borderBlockEnd?: ConditionalValue<UtilityValues["borderBlockEnd"] | CssVars | CssProperties["borderBlockEnd"] | AnyString>
- /**
+  borderBlockEnd?: ConditionalValue<
+    | UtilityValues["borderBlockEnd"]
+    | CssVars
+    | CssProperties["borderBlockEnd"]
+    | AnyString
+  >;
+  /**
    * The **`border-block-end-color`** CSS property defines the color of the logical block-end border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>`
@@ -846,8 +1031,13 @@ borderBlockEnd?: ConditionalValue<UtilityValues["borderBlockEnd"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-color
    */
-borderBlockEndColor?: ConditionalValue<UtilityValues["borderBlockEndColor"] | CssVars | CssProperties["borderBlockEndColor"] | AnyString>
- /**
+  borderBlockEndColor?: ConditionalValue<
+    | UtilityValues["borderBlockEndColor"]
+    | CssVars
+    | CssProperties["borderBlockEndColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-block-end-style`** CSS property defines the style of the logical block-end border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-style'>`
@@ -860,8 +1050,10 @@ borderBlockEndColor?: ConditionalValue<UtilityValues["borderBlockEndColor"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-style
    */
-borderBlockEndStyle?: ConditionalValue<CssVars | CssProperties["borderBlockEndStyle"] | AnyString>
- /**
+  borderBlockEndStyle?: ConditionalValue<
+    CssVars | CssProperties["borderBlockEndStyle"] | AnyString
+  >;
+  /**
    * The **`border-block-end-width`** CSS property defines the width of the logical block-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -874,8 +1066,10 @@ borderBlockEndStyle?: ConditionalValue<CssVars | CssProperties["borderBlockEndSt
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-width
    */
-borderBlockEndWidth?: ConditionalValue<CssProperties["borderBlockEndWidth"] | AnyString>
- /**
+  borderBlockEndWidth?: ConditionalValue<
+    CssProperties["borderBlockEndWidth"] | AnyString
+  >;
+  /**
    * The **`border-block-start`** CSS property is a shorthand property for setting the individual logical block-start border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -886,8 +1080,13 @@ borderBlockEndWidth?: ConditionalValue<CssProperties["borderBlockEndWidth"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start
    */
-borderBlockStart?: ConditionalValue<UtilityValues["borderBlockStart"] | CssVars | CssProperties["borderBlockStart"] | AnyString>
- /**
+  borderBlockStart?: ConditionalValue<
+    | UtilityValues["borderBlockStart"]
+    | CssVars
+    | CssProperties["borderBlockStart"]
+    | AnyString
+  >;
+  /**
    * The **`border-block-start-color`** CSS property defines the color of the logical block-start border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>`
@@ -900,8 +1099,13 @@ borderBlockStart?: ConditionalValue<UtilityValues["borderBlockStart"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-color
    */
-borderBlockStartColor?: ConditionalValue<UtilityValues["borderBlockStartColor"] | CssVars | CssProperties["borderBlockStartColor"] | AnyString>
- /**
+  borderBlockStartColor?: ConditionalValue<
+    | UtilityValues["borderBlockStartColor"]
+    | CssVars
+    | CssProperties["borderBlockStartColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-block-start-style`** CSS property defines the style of the logical block start border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-style'>`
@@ -914,8 +1118,10 @@ borderBlockStartColor?: ConditionalValue<UtilityValues["borderBlockStartColor"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-style
    */
-borderBlockStartStyle?: ConditionalValue<CssVars | CssProperties["borderBlockStartStyle"] | AnyString>
- /**
+  borderBlockStartStyle?: ConditionalValue<
+    CssVars | CssProperties["borderBlockStartStyle"] | AnyString
+  >;
+  /**
    * The **`border-block-start-width`** CSS property defines the width of the logical block-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -928,8 +1134,10 @@ borderBlockStartStyle?: ConditionalValue<CssVars | CssProperties["borderBlockSta
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-width
    */
-borderBlockStartWidth?: ConditionalValue<CssProperties["borderBlockStartWidth"] | AnyString>
- /**
+  borderBlockStartWidth?: ConditionalValue<
+    CssProperties["borderBlockStartWidth"] | AnyString
+  >;
+  /**
    * The **`border-bottom`** shorthand CSS property sets an element's bottom border. It sets the values of `border-bottom-width`, `border-bottom-style` and `border-bottom-color`.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
@@ -940,8 +1148,13 @@ borderBlockStartWidth?: ConditionalValue<CssProperties["borderBlockStartWidth"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom
    */
-borderBottom?: ConditionalValue<UtilityValues["borderBottom"] | CssVars | CssProperties["borderBottom"] | AnyString>
- /**
+  borderBottom?: ConditionalValue<
+    | UtilityValues["borderBottom"]
+    | CssVars
+    | CssProperties["borderBottom"]
+    | AnyString
+  >;
+  /**
    * The **`border-bottom-color`** CSS property sets the color of an element's bottom border. It can also be set with the shorthand CSS properties `border-color` or `border-bottom`.
    *
    * **Syntax**: `<'border-top-color'>`
@@ -954,8 +1167,13 @@ borderBottom?: ConditionalValue<UtilityValues["borderBottom"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-color
    */
-borderBottomColor?: ConditionalValue<UtilityValues["borderBottomColor"] | CssVars | CssProperties["borderBottomColor"] | AnyString>
- /**
+  borderBottomColor?: ConditionalValue<
+    | UtilityValues["borderBottomColor"]
+    | CssVars
+    | CssProperties["borderBottomColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-bottom-left-radius`** CSS property rounds the bottom-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -969,8 +1187,13 @@ borderBottomColor?: ConditionalValue<UtilityValues["borderBottomColor"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-left-radius
    */
-borderBottomLeftRadius?: ConditionalValue<UtilityValues["borderBottomLeftRadius"] | CssVars | CssProperties["borderBottomLeftRadius"] | AnyString>
- /**
+  borderBottomLeftRadius?: ConditionalValue<
+    | UtilityValues["borderBottomLeftRadius"]
+    | CssVars
+    | CssProperties["borderBottomLeftRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-bottom-right-radius`** CSS property rounds the bottom-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -984,8 +1207,13 @@ borderBottomLeftRadius?: ConditionalValue<UtilityValues["borderBottomLeftRadius"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-right-radius
    */
-borderBottomRightRadius?: ConditionalValue<UtilityValues["borderBottomRightRadius"] | CssVars | CssProperties["borderBottomRightRadius"] | AnyString>
- /**
+  borderBottomRightRadius?: ConditionalValue<
+    | UtilityValues["borderBottomRightRadius"]
+    | CssVars
+    | CssProperties["borderBottomRightRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-bottom-style`** CSS property sets the line style of an element's bottom `border`.
    *
    * **Syntax**: `<line-style>`
@@ -998,8 +1226,10 @@ borderBottomRightRadius?: ConditionalValue<UtilityValues["borderBottomRightRadiu
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-style
    */
-borderBottomStyle?: ConditionalValue<CssVars | CssProperties["borderBottomStyle"] | AnyString>
- /**
+  borderBottomStyle?: ConditionalValue<
+    CssVars | CssProperties["borderBottomStyle"] | AnyString
+  >;
+  /**
    * The **`border-bottom-width`** CSS property sets the width of the bottom border of an element.
    *
    * **Syntax**: `<line-width>`
@@ -1012,8 +1242,10 @@ borderBottomStyle?: ConditionalValue<CssVars | CssProperties["borderBottomStyle"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-width
    */
-borderBottomWidth?: ConditionalValue<CssProperties["borderBottomWidth"] | AnyString>
- /**
+  borderBottomWidth?: ConditionalValue<
+    CssProperties["borderBottomWidth"] | AnyString
+  >;
+  /**
    * The **`border-collapse`** CSS property sets whether cells inside a `<table>` have shared or separate borders.
    *
    * **Syntax**: `collapse | separate`
@@ -1026,8 +1258,10 @@ borderBottomWidth?: ConditionalValue<CssProperties["borderBottomWidth"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-collapse
    */
-borderCollapse?: ConditionalValue<CssVars | CssProperties["borderCollapse"] | AnyString>
- /**
+  borderCollapse?: ConditionalValue<
+    CssVars | CssProperties["borderCollapse"] | AnyString
+  >;
+  /**
    * The **`border-color`** shorthand CSS property sets the color of an element's border.
    *
    * **Syntax**: `<color>{1,4}`
@@ -1038,8 +1272,13 @@ borderCollapse?: ConditionalValue<CssVars | CssProperties["borderCollapse"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-color
    */
-borderColor?: ConditionalValue<UtilityValues["borderColor"] | CssVars | CssProperties["borderColor"] | AnyString>
- /**
+  borderColor?: ConditionalValue<
+    | UtilityValues["borderColor"]
+    | CssVars
+    | CssProperties["borderColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-end-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -1052,8 +1291,13 @@ borderColor?: ConditionalValue<UtilityValues["borderColor"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-end-end-radius
    */
-borderEndEndRadius?: ConditionalValue<UtilityValues["borderEndEndRadius"] | CssVars | CssProperties["borderEndEndRadius"] | AnyString>
- /**
+  borderEndEndRadius?: ConditionalValue<
+    | UtilityValues["borderEndEndRadius"]
+    | CssVars
+    | CssProperties["borderEndEndRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-end-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -1066,8 +1310,13 @@ borderEndEndRadius?: ConditionalValue<UtilityValues["borderEndEndRadius"] | CssV
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-end-start-radius
    */
-borderEndStartRadius?: ConditionalValue<UtilityValues["borderEndStartRadius"] | CssVars | CssProperties["borderEndStartRadius"] | AnyString>
- /**
+  borderEndStartRadius?: ConditionalValue<
+    | UtilityValues["borderEndStartRadius"]
+    | CssVars
+    | CssProperties["borderEndStartRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-image`** CSS property draws an image around a given element. It replaces the element's regular border.
    *
    * **Syntax**: `<'border-image-source'> || <'border-image-slice'> [ / <'border-image-width'> | / <'border-image-width'>? / <'border-image-outset'> ]? || <'border-image-repeat'>`
@@ -1079,8 +1328,8 @@ borderEndStartRadius?: ConditionalValue<UtilityValues["borderEndStartRadius"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-image
    */
-borderImage?: ConditionalValue<CssProperties["borderImage"] | AnyString>
- /**
+  borderImage?: ConditionalValue<CssProperties["borderImage"] | AnyString>;
+  /**
    * The **`border-image-outset`** CSS property sets the distance by which an element's border image is set out from its border box.
    *
    * **Syntax**: `[ <length> | <number> ]{1,4}`
@@ -1093,8 +1342,10 @@ borderImage?: ConditionalValue<CssProperties["borderImage"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-image-outset
    */
-borderImageOutset?: ConditionalValue<CssProperties["borderImageOutset"] | AnyString>
- /**
+  borderImageOutset?: ConditionalValue<
+    CssProperties["borderImageOutset"] | AnyString
+  >;
+  /**
    * The **`border-image-repeat`** CSS property defines how the edge regions and middle region of a source image are adjusted to fit the dimensions of an element's border image. The middle region can be displayed by using the keyword "fill" in the border-image-slice property.
    *
    * **Syntax**: `[ stretch | repeat | round | space ]{1,2}`
@@ -1107,8 +1358,10 @@ borderImageOutset?: ConditionalValue<CssProperties["borderImageOutset"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-image-repeat
    */
-borderImageRepeat?: ConditionalValue<CssProperties["borderImageRepeat"] | AnyString>
- /**
+  borderImageRepeat?: ConditionalValue<
+    CssProperties["borderImageRepeat"] | AnyString
+  >;
+  /**
    * The **`border-image-slice`** CSS property divides the image specified by `border-image-source` into regions. These regions form the components of an element's border image.
    *
    * **Syntax**: `<number-percentage>{1,4} && fill?`
@@ -1121,8 +1374,10 @@ borderImageRepeat?: ConditionalValue<CssProperties["borderImageRepeat"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-image-slice
    */
-borderImageSlice?: ConditionalValue<CssProperties["borderImageSlice"] | AnyString>
- /**
+  borderImageSlice?: ConditionalValue<
+    CssProperties["borderImageSlice"] | AnyString
+  >;
+  /**
    * The **`border-image-source`** CSS property sets the source image used to create an element's border image.
    *
    * **Syntax**: `none | <image>`
@@ -1135,8 +1390,10 @@ borderImageSlice?: ConditionalValue<CssProperties["borderImageSlice"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-image-source
    */
-borderImageSource?: ConditionalValue<CssProperties["borderImageSource"] | AnyString>
- /**
+  borderImageSource?: ConditionalValue<
+    CssProperties["borderImageSource"] | AnyString
+  >;
+  /**
    * The **`border-image-width`** CSS property sets the width of an element's border image.
    *
    * **Syntax**: `[ <length-percentage> | <number> | auto ]{1,4}`
@@ -1149,8 +1406,10 @@ borderImageSource?: ConditionalValue<CssProperties["borderImageSource"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-image-width
    */
-borderImageWidth?: ConditionalValue<CssProperties["borderImageWidth"] | AnyString>
- /**
+  borderImageWidth?: ConditionalValue<
+    CssProperties["borderImageWidth"] | AnyString
+  >;
+  /**
    * The **`border-inline`** CSS property is a shorthand property for setting the individual logical inline border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -1161,8 +1420,13 @@ borderImageWidth?: ConditionalValue<CssProperties["borderImageWidth"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline
    */
-borderInline?: ConditionalValue<UtilityValues["borderInline"] | CssVars | CssProperties["borderInline"] | AnyString>
- /**
+  borderInline?: ConditionalValue<
+    | UtilityValues["borderInline"]
+    | CssVars
+    | CssProperties["borderInline"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-end`** CSS property is a shorthand property for setting the individual logical inline-end border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -1173,8 +1437,13 @@ borderInline?: ConditionalValue<UtilityValues["borderInline"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end
    */
-borderInlineEnd?: ConditionalValue<UtilityValues["borderInlineEnd"] | CssVars | CssProperties["borderInlineEnd"] | AnyString>
- /**
+  borderInlineEnd?: ConditionalValue<
+    | UtilityValues["borderInlineEnd"]
+    | CssVars
+    | CssProperties["borderInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-color`** CSS property defines the color of the logical inline borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
@@ -1187,8 +1456,13 @@ borderInlineEnd?: ConditionalValue<UtilityValues["borderInlineEnd"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-color
    */
-borderInlineColor?: ConditionalValue<UtilityValues["borderInlineColor"] | CssVars | CssProperties["borderInlineColor"] | AnyString>
- /**
+  borderInlineColor?: ConditionalValue<
+    | UtilityValues["borderInlineColor"]
+    | CssVars
+    | CssProperties["borderInlineColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-style`** CSS property defines the style of the logical inline borders of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style` and `border-bottom-style`, or `border-left-style` and `border-right-style` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-style'>`
@@ -1201,8 +1475,10 @@ borderInlineColor?: ConditionalValue<UtilityValues["borderInlineColor"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-style
    */
-borderInlineStyle?: ConditionalValue<CssVars | CssProperties["borderInlineStyle"] | AnyString>
- /**
+  borderInlineStyle?: ConditionalValue<
+    CssVars | CssProperties["borderInlineStyle"] | AnyString
+  >;
+  /**
    * The **`border-inline-width`** CSS property defines the width of the logical inline borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -1215,8 +1491,10 @@ borderInlineStyle?: ConditionalValue<CssVars | CssProperties["borderInlineStyle"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-width
    */
-borderInlineWidth?: ConditionalValue<CssProperties["borderInlineWidth"] | AnyString>
- /**
+  borderInlineWidth?: ConditionalValue<
+    CssProperties["borderInlineWidth"] | AnyString
+  >;
+  /**
    * The **`border-inline-end-color`** CSS property defines the color of the logical inline-end border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>`
@@ -1230,8 +1508,13 @@ borderInlineWidth?: ConditionalValue<CssProperties["borderInlineWidth"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-color
    */
-borderInlineEndColor?: ConditionalValue<UtilityValues["borderInlineEndColor"] | CssVars | CssProperties["borderInlineEndColor"] | AnyString>
- /**
+  borderInlineEndColor?: ConditionalValue<
+    | UtilityValues["borderInlineEndColor"]
+    | CssVars
+    | CssProperties["borderInlineEndColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-end-style`** CSS property defines the style of the logical inline end border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-style'>`
@@ -1245,8 +1528,10 @@ borderInlineEndColor?: ConditionalValue<UtilityValues["borderInlineEndColor"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-style
    */
-borderInlineEndStyle?: ConditionalValue<CssVars | CssProperties["borderInlineEndStyle"] | AnyString>
- /**
+  borderInlineEndStyle?: ConditionalValue<
+    CssVars | CssProperties["borderInlineEndStyle"] | AnyString
+  >;
+  /**
    * The **`border-inline-end-width`** CSS property defines the width of the logical inline-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -1260,8 +1545,10 @@ borderInlineEndStyle?: ConditionalValue<CssVars | CssProperties["borderInlineEnd
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-width
    */
-borderInlineEndWidth?: ConditionalValue<CssProperties["borderInlineEndWidth"] | AnyString>
- /**
+  borderInlineEndWidth?: ConditionalValue<
+    CssProperties["borderInlineEndWidth"] | AnyString
+  >;
+  /**
    * The **`border-inline-start`** CSS property is a shorthand property for setting the individual logical inline-start border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -1272,8 +1559,13 @@ borderInlineEndWidth?: ConditionalValue<CssProperties["borderInlineEndWidth"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start
    */
-borderInlineStart?: ConditionalValue<UtilityValues["borderInlineStart"] | CssVars | CssProperties["borderInlineStart"] | AnyString>
- /**
+  borderInlineStart?: ConditionalValue<
+    | UtilityValues["borderInlineStart"]
+    | CssVars
+    | CssProperties["borderInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-start-color`** CSS property defines the color of the logical inline start border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>`
@@ -1287,8 +1579,13 @@ borderInlineStart?: ConditionalValue<UtilityValues["borderInlineStart"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-color
    */
-borderInlineStartColor?: ConditionalValue<UtilityValues["borderInlineStartColor"] | CssVars | CssProperties["borderInlineStartColor"] | AnyString>
- /**
+  borderInlineStartColor?: ConditionalValue<
+    | UtilityValues["borderInlineStartColor"]
+    | CssVars
+    | CssProperties["borderInlineStartColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-start-style`** CSS property defines the style of the logical inline start border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-style'>`
@@ -1302,8 +1599,10 @@ borderInlineStartColor?: ConditionalValue<UtilityValues["borderInlineStartColor"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-style
    */
-borderInlineStartStyle?: ConditionalValue<CssVars | CssProperties["borderInlineStartStyle"] | AnyString>
- /**
+  borderInlineStartStyle?: ConditionalValue<
+    CssVars | CssProperties["borderInlineStartStyle"] | AnyString
+  >;
+  /**
    * The **`border-inline-start-width`** CSS property defines the width of the logical inline-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -1316,8 +1615,10 @@ borderInlineStartStyle?: ConditionalValue<CssVars | CssProperties["borderInlineS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-width
    */
-borderInlineStartWidth?: ConditionalValue<CssProperties["borderInlineStartWidth"] | AnyString>
- /**
+  borderInlineStartWidth?: ConditionalValue<
+    CssProperties["borderInlineStartWidth"] | AnyString
+  >;
+  /**
    * The **`border-left`** shorthand CSS property sets all the properties of an element's left border.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
@@ -1328,8 +1629,13 @@ borderInlineStartWidth?: ConditionalValue<CssProperties["borderInlineStartWidth"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-left
    */
-borderLeft?: ConditionalValue<UtilityValues["borderLeft"] | CssVars | CssProperties["borderLeft"] | AnyString>
- /**
+  borderLeft?: ConditionalValue<
+    | UtilityValues["borderLeft"]
+    | CssVars
+    | CssProperties["borderLeft"]
+    | AnyString
+  >;
+  /**
    * The **`border-left-color`** CSS property sets the color of an element's left border. It can also be set with the shorthand CSS properties `border-color` or `border-left`.
    *
    * **Syntax**: `<color>`
@@ -1342,8 +1648,13 @@ borderLeft?: ConditionalValue<UtilityValues["borderLeft"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-left-color
    */
-borderLeftColor?: ConditionalValue<UtilityValues["borderLeftColor"] | CssVars | CssProperties["borderLeftColor"] | AnyString>
- /**
+  borderLeftColor?: ConditionalValue<
+    | UtilityValues["borderLeftColor"]
+    | CssVars
+    | CssProperties["borderLeftColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-left-style`** CSS property sets the line style of an element's left `border`.
    *
    * **Syntax**: `<line-style>`
@@ -1356,8 +1667,10 @@ borderLeftColor?: ConditionalValue<UtilityValues["borderLeftColor"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-left-style
    */
-borderLeftStyle?: ConditionalValue<CssVars | CssProperties["borderLeftStyle"] | AnyString>
- /**
+  borderLeftStyle?: ConditionalValue<
+    CssVars | CssProperties["borderLeftStyle"] | AnyString
+  >;
+  /**
    * The **`border-left-width`** CSS property sets the width of the left border of an element.
    *
    * **Syntax**: `<line-width>`
@@ -1370,8 +1683,10 @@ borderLeftStyle?: ConditionalValue<CssVars | CssProperties["borderLeftStyle"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-left-width
    */
-borderLeftWidth?: ConditionalValue<CssProperties["borderLeftWidth"] | AnyString>
- /**
+  borderLeftWidth?: ConditionalValue<
+    CssProperties["borderLeftWidth"] | AnyString
+  >;
+  /**
    * The **`border-radius`** CSS property rounds the corners of an element's outer border edge. You can set a single radius to make circular corners, or two radii to make elliptical corners.
    *
    * **Syntax**: `<length-percentage>{1,4} [ / <length-percentage>{1,4} ]?`
@@ -1383,8 +1698,13 @@ borderLeftWidth?: ConditionalValue<CssProperties["borderLeftWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-radius
    */
-borderRadius?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssProperties["borderRadius"] | AnyString>
- /**
+  borderRadius?: ConditionalValue<
+    | UtilityValues["borderRadius"]
+    | CssVars
+    | CssProperties["borderRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-right`** shorthand CSS property sets all the properties of an element's right border.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
@@ -1395,8 +1715,13 @@ borderRadius?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-right
    */
-borderRight?: ConditionalValue<UtilityValues["borderRight"] | CssVars | CssProperties["borderRight"] | AnyString>
- /**
+  borderRight?: ConditionalValue<
+    | UtilityValues["borderRight"]
+    | CssVars
+    | CssProperties["borderRight"]
+    | AnyString
+  >;
+  /**
    * The **`border-right-color`** CSS property sets the color of an element's right border. It can also be set with the shorthand CSS properties `border-color` or `border-right`.
    *
    * **Syntax**: `<color>`
@@ -1409,8 +1734,13 @@ borderRight?: ConditionalValue<UtilityValues["borderRight"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-right-color
    */
-borderRightColor?: ConditionalValue<UtilityValues["borderRightColor"] | CssVars | CssProperties["borderRightColor"] | AnyString>
- /**
+  borderRightColor?: ConditionalValue<
+    | UtilityValues["borderRightColor"]
+    | CssVars
+    | CssProperties["borderRightColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-right-style`** CSS property sets the line style of an element's right `border`.
    *
    * **Syntax**: `<line-style>`
@@ -1423,8 +1753,10 @@ borderRightColor?: ConditionalValue<UtilityValues["borderRightColor"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-right-style
    */
-borderRightStyle?: ConditionalValue<CssVars | CssProperties["borderRightStyle"] | AnyString>
- /**
+  borderRightStyle?: ConditionalValue<
+    CssVars | CssProperties["borderRightStyle"] | AnyString
+  >;
+  /**
    * The **`border-right-width`** CSS property sets the width of the right border of an element.
    *
    * **Syntax**: `<line-width>`
@@ -1437,8 +1769,10 @@ borderRightStyle?: ConditionalValue<CssVars | CssProperties["borderRightStyle"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-right-width
    */
-borderRightWidth?: ConditionalValue<CssProperties["borderRightWidth"] | AnyString>
- /**
+  borderRightWidth?: ConditionalValue<
+    CssProperties["borderRightWidth"] | AnyString
+  >;
+  /**
    * The **`border-spacing`** CSS property sets the distance between the borders of adjacent cells in a `<table>`. This property applies only when `border-collapse` is `separate`.
    *
    * **Syntax**: `<length> <length>?`
@@ -1451,8 +1785,13 @@ borderRightWidth?: ConditionalValue<CssProperties["borderRightWidth"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-spacing
    */
-borderSpacing?: ConditionalValue<UtilityValues["borderSpacing"] | CssVars | CssProperties["borderSpacing"] | AnyString>
- /**
+  borderSpacing?: ConditionalValue<
+    | UtilityValues["borderSpacing"]
+    | CssVars
+    | CssProperties["borderSpacing"]
+    | AnyString
+  >;
+  /**
    * The **`border-start-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -1465,8 +1804,13 @@ borderSpacing?: ConditionalValue<UtilityValues["borderSpacing"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-start-end-radius
    */
-borderStartEndRadius?: ConditionalValue<UtilityValues["borderStartEndRadius"] | CssVars | CssProperties["borderStartEndRadius"] | AnyString>
- /**
+  borderStartEndRadius?: ConditionalValue<
+    | UtilityValues["borderStartEndRadius"]
+    | CssVars
+    | CssProperties["borderStartEndRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-start-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -1479,8 +1823,13 @@ borderStartEndRadius?: ConditionalValue<UtilityValues["borderStartEndRadius"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-start-start-radius
    */
-borderStartStartRadius?: ConditionalValue<UtilityValues["borderStartStartRadius"] | CssVars | CssProperties["borderStartStartRadius"] | AnyString>
- /**
+  borderStartStartRadius?: ConditionalValue<
+    | UtilityValues["borderStartStartRadius"]
+    | CssVars
+    | CssProperties["borderStartStartRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-style`** shorthand CSS property sets the line style for all four sides of an element's border.
    *
    * **Syntax**: `<line-style>{1,4}`
@@ -1491,8 +1840,8 @@ borderStartStartRadius?: ConditionalValue<UtilityValues["borderStartStartRadius"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-style
    */
-borderStyle?: ConditionalValue<CssProperties["borderStyle"] | AnyString>
- /**
+  borderStyle?: ConditionalValue<CssProperties["borderStyle"] | AnyString>;
+  /**
    * The **`border-top`** shorthand CSS property sets all the properties of an element's top border.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
@@ -1503,8 +1852,13 @@ borderStyle?: ConditionalValue<CssProperties["borderStyle"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top
    */
-borderTop?: ConditionalValue<UtilityValues["borderTop"] | CssVars | CssProperties["borderTop"] | AnyString>
- /**
+  borderTop?: ConditionalValue<
+    | UtilityValues["borderTop"]
+    | CssVars
+    | CssProperties["borderTop"]
+    | AnyString
+  >;
+  /**
    * The **`border-top-color`** CSS property sets the color of an element's top border. It can also be set with the shorthand CSS properties `border-color` or `border-top`.
    *
    * **Syntax**: `<color>`
@@ -1517,8 +1871,13 @@ borderTop?: ConditionalValue<UtilityValues["borderTop"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top-color
    */
-borderTopColor?: ConditionalValue<UtilityValues["borderTopColor"] | CssVars | CssProperties["borderTopColor"] | AnyString>
- /**
+  borderTopColor?: ConditionalValue<
+    | UtilityValues["borderTopColor"]
+    | CssVars
+    | CssProperties["borderTopColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-top-left-radius`** CSS property rounds the top-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -1532,8 +1891,13 @@ borderTopColor?: ConditionalValue<UtilityValues["borderTopColor"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top-left-radius
    */
-borderTopLeftRadius?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | CssVars | CssProperties["borderTopLeftRadius"] | AnyString>
- /**
+  borderTopLeftRadius?: ConditionalValue<
+    | UtilityValues["borderTopLeftRadius"]
+    | CssVars
+    | CssProperties["borderTopLeftRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-top-right-radius`** CSS property rounds the top-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -1547,8 +1911,13 @@ borderTopLeftRadius?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top-right-radius
    */
-borderTopRightRadius?: ConditionalValue<UtilityValues["borderTopRightRadius"] | CssVars | CssProperties["borderTopRightRadius"] | AnyString>
- /**
+  borderTopRightRadius?: ConditionalValue<
+    | UtilityValues["borderTopRightRadius"]
+    | CssVars
+    | CssProperties["borderTopRightRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-top-style`** CSS property sets the line style of an element's top `border`.
    *
    * **Syntax**: `<line-style>`
@@ -1561,8 +1930,10 @@ borderTopRightRadius?: ConditionalValue<UtilityValues["borderTopRightRadius"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top-style
    */
-borderTopStyle?: ConditionalValue<CssVars | CssProperties["borderTopStyle"] | AnyString>
- /**
+  borderTopStyle?: ConditionalValue<
+    CssVars | CssProperties["borderTopStyle"] | AnyString
+  >;
+  /**
    * The **`border-top-width`** CSS property sets the width of the top border of an element.
    *
    * **Syntax**: `<line-width>`
@@ -1575,8 +1946,10 @@ borderTopStyle?: ConditionalValue<CssVars | CssProperties["borderTopStyle"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top-width
    */
-borderTopWidth?: ConditionalValue<CssProperties["borderTopWidth"] | AnyString>
- /**
+  borderTopWidth?: ConditionalValue<
+    CssProperties["borderTopWidth"] | AnyString
+  >;
+  /**
    * The **`border-width`** shorthand CSS property sets the width of an element's border.
    *
    * **Syntax**: `<line-width>{1,4}`
@@ -1587,8 +1960,8 @@ borderTopWidth?: ConditionalValue<CssProperties["borderTopWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-width
    */
-borderWidth?: ConditionalValue<CssProperties["borderWidth"] | AnyString>
- /**
+  borderWidth?: ConditionalValue<CssProperties["borderWidth"] | AnyString>;
+  /**
    * The **`bottom`** CSS property participates in setting the vertical position of a positioned element. It has no effect on non-positioned elements.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -1601,9 +1974,11 @@ borderWidth?: ConditionalValue<CssProperties["borderWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/bottom
    */
-bottom?: ConditionalValue<UtilityValues["bottom"] | CssVars | CssProperties["bottom"] | AnyString>
- boxAlign?: ConditionalValue<CssProperties["boxAlign"] | AnyString>
- /**
+  bottom?: ConditionalValue<
+    UtilityValues["bottom"] | CssVars | CssProperties["bottom"] | AnyString
+  >;
+  boxAlign?: ConditionalValue<CssProperties["boxAlign"] | AnyString>;
+  /**
    * The **`box-decoration-break`** CSS property specifies how an element's fragments should be rendered when broken across multiple lines, columns, or pages.
    *
    * **Syntax**: `slice | clone`
@@ -1616,15 +1991,19 @@ bottom?: ConditionalValue<UtilityValues["bottom"] | CssVars | CssProperties["bot
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/box-decoration-break
    */
-boxDecorationBreak?: ConditionalValue<CssVars | CssProperties["boxDecorationBreak"] | AnyString>
- boxDirection?: ConditionalValue<CssProperties["boxDirection"] | AnyString>
- boxFlex?: ConditionalValue<CssProperties["boxFlex"] | AnyString>
- boxFlexGroup?: ConditionalValue<CssProperties["boxFlexGroup"] | AnyString>
- boxLines?: ConditionalValue<CssProperties["boxLines"] | AnyString>
- boxOrdinalGroup?: ConditionalValue<CssProperties["boxOrdinalGroup"] | AnyString>
- boxOrient?: ConditionalValue<CssProperties["boxOrient"] | AnyString>
- boxPack?: ConditionalValue<CssProperties["boxPack"] | AnyString>
- /**
+  boxDecorationBreak?: ConditionalValue<
+    CssVars | CssProperties["boxDecorationBreak"] | AnyString
+  >;
+  boxDirection?: ConditionalValue<CssProperties["boxDirection"] | AnyString>;
+  boxFlex?: ConditionalValue<CssProperties["boxFlex"] | AnyString>;
+  boxFlexGroup?: ConditionalValue<CssProperties["boxFlexGroup"] | AnyString>;
+  boxLines?: ConditionalValue<CssProperties["boxLines"] | AnyString>;
+  boxOrdinalGroup?: ConditionalValue<
+    CssProperties["boxOrdinalGroup"] | AnyString
+  >;
+  boxOrient?: ConditionalValue<CssProperties["boxOrient"] | AnyString>;
+  boxPack?: ConditionalValue<CssProperties["boxPack"] | AnyString>;
+  /**
    * The **`box-shadow`** CSS property adds shadow effects around an element's frame. You can set multiple effects separated by commas. A box shadow is described by X and Y offsets relative to the element, blur and spread radius, and color.
    *
    * **Syntax**: `none | <shadow>#`
@@ -1638,8 +2017,13 @@ boxDecorationBreak?: ConditionalValue<CssVars | CssProperties["boxDecorationBrea
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/box-shadow
    */
-boxShadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssProperties["boxShadow"] | AnyString>
- /**
+  boxShadow?: ConditionalValue<
+    | UtilityValues["boxShadow"]
+    | CssVars
+    | CssProperties["boxShadow"]
+    | AnyString
+  >;
+  /**
    * The **`box-sizing`** CSS property sets how the total width and height of an element is calculated.
    *
    * **Syntax**: `content-box | border-box`
@@ -1653,8 +2037,10 @@ boxShadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/box-sizing
    */
-boxSizing?: ConditionalValue<CssVars | CssProperties["boxSizing"] | AnyString>
- /**
+  boxSizing?: ConditionalValue<
+    CssVars | CssProperties["boxSizing"] | AnyString
+  >;
+  /**
    * The **`break-after`** CSS property sets how page, column, or region breaks should behave after a generated box. If there is no generated box, the property is ignored.
    *
    * **Syntax**: `auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region`
@@ -1667,8 +2053,10 @@ boxSizing?: ConditionalValue<CssVars | CssProperties["boxSizing"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/break-after
    */
-breakAfter?: ConditionalValue<CssVars | CssProperties["breakAfter"] | AnyString>
- /**
+  breakAfter?: ConditionalValue<
+    CssVars | CssProperties["breakAfter"] | AnyString
+  >;
+  /**
    * The **`break-before`** CSS property sets how page, column, or region breaks should behave before a generated box. If there is no generated box, the property is ignored.
    *
    * **Syntax**: `auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region`
@@ -1681,8 +2069,10 @@ breakAfter?: ConditionalValue<CssVars | CssProperties["breakAfter"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/break-before
    */
-breakBefore?: ConditionalValue<CssVars | CssProperties["breakBefore"] | AnyString>
- /**
+  breakBefore?: ConditionalValue<
+    CssVars | CssProperties["breakBefore"] | AnyString
+  >;
+  /**
    * The **`break-inside`** CSS property sets how page, column, or region breaks should behave inside a generated box. If there is no generated box, the property is ignored.
    *
    * **Syntax**: `auto | avoid | avoid-page | avoid-column | avoid-region`
@@ -1695,8 +2085,10 @@ breakBefore?: ConditionalValue<CssVars | CssProperties["breakBefore"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/break-inside
    */
-breakInside?: ConditionalValue<CssVars | CssProperties["breakInside"] | AnyString>
- /**
+  breakInside?: ConditionalValue<
+    CssVars | CssProperties["breakInside"] | AnyString
+  >;
+  /**
    * The **`caption-side`** CSS property puts the content of a table's `<caption>` on the specified side. The values are relative to the `writing-mode` of the table.
    *
    * **Syntax**: `top | bottom | block-start | block-end | inline-start | inline-end`
@@ -1709,10 +2101,12 @@ breakInside?: ConditionalValue<CssVars | CssProperties["breakInside"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/caption-side
    */
-captionSide?: ConditionalValue<CssVars | CssProperties["captionSide"] | AnyString>
- /** **Syntax**: `<'caret-color'> || <'caret-shape'>` */
-caret?: ConditionalValue<CssProperties["caret"] | AnyString>
- /**
+  captionSide?: ConditionalValue<
+    CssVars | CssProperties["captionSide"] | AnyString
+  >;
+  /** **Syntax**: `<'caret-color'> || <'caret-shape'>` */
+  caret?: ConditionalValue<CssProperties["caret"] | AnyString>;
+  /**
    * The **`caret-color`** CSS property sets the color of the **insertion caret**, the visible marker where the next character typed will be inserted. This is sometimes referred to as the **text input cursor**. The caret appears in elements such as `<input>` or those with the `contenteditable` attribute. The caret is typically a thin vertical line that flashes to help make it more noticeable. By default, it is black, but its color can be altered with this property.
    *
    * **Syntax**: `auto | <color>`
@@ -1725,14 +2119,19 @@ caret?: ConditionalValue<CssProperties["caret"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/caret-color
    */
-caretColor?: ConditionalValue<UtilityValues["caretColor"] | CssVars | CssProperties["caretColor"] | AnyString>
- /**
+  caretColor?: ConditionalValue<
+    | UtilityValues["caretColor"]
+    | CssVars
+    | CssProperties["caretColor"]
+    | AnyString
+  >;
+  /**
    * **Syntax**: `auto | bar | block | underscore`
    *
    * **Initial value**: `auto`
    */
-caretShape?: ConditionalValue<CssProperties["caretShape"] | AnyString>
- /**
+  caretShape?: ConditionalValue<CssProperties["caretShape"] | AnyString>;
+  /**
    * The **`clear`** CSS property sets whether an element must be moved below (cleared) floating elements that precede it. The `clear` property applies to floating and non-floating elements.
    *
    * **Syntax**: `none | left | right | both | inline-start | inline-end`
@@ -1745,9 +2144,9 @@ caretShape?: ConditionalValue<CssProperties["caretShape"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/clear
    */
-clear?: ConditionalValue<CssVars | CssProperties["clear"] | AnyString>
- clip?: ConditionalValue<CssProperties["clip"] | AnyString>
- /**
+  clear?: ConditionalValue<CssVars | CssProperties["clear"] | AnyString>;
+  clip?: ConditionalValue<CssProperties["clip"] | AnyString>;
+  /**
    * The **`clip-path`** CSS property creates a clipping region that sets what part of an element should be shown. Parts that are inside the region are shown, while those outside are hidden.
    *
    * **Syntax**: `<clip-source> | [ <basic-shape> || <geometry-box> ] | none`
@@ -1761,8 +2160,8 @@ clear?: ConditionalValue<CssVars | CssProperties["clear"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/clip-path
    */
-clipPath?: ConditionalValue<CssProperties["clipPath"] | AnyString>
- /**
+  clipPath?: ConditionalValue<CssProperties["clipPath"] | AnyString>;
+  /**
    * The **`color`** CSS property sets the foreground color value of an element's text and text decorations, and sets the `currentcolor` value. `currentcolor` may be used as an indirect value on _other_ properties and is the default for other color properties, such as `border-color`.
    *
    * **Syntax**: `<color>`
@@ -1775,8 +2174,10 @@ clipPath?: ConditionalValue<CssProperties["clipPath"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/color
    */
-color?: ConditionalValue<UtilityValues["color"] | CssVars | CssProperties["color"] | AnyString>
- /**
+  color?: ConditionalValue<
+    UtilityValues["color"] | CssVars | CssProperties["color"] | AnyString
+  >;
+  /**
    * The **`color-scheme`** CSS property allows an element to indicate which color schemes it can comfortably be rendered in.
    *
    * **Syntax**: `normal | [ light | dark | <custom-ident> ]+ && only?`
@@ -1789,8 +2190,8 @@ color?: ConditionalValue<UtilityValues["color"] | CssVars | CssProperties["color
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/color-scheme
    */
-colorScheme?: ConditionalValue<CssProperties["colorScheme"] | AnyString>
- /**
+  colorScheme?: ConditionalValue<CssProperties["colorScheme"] | AnyString>;
+  /**
    * The **`column-count`** CSS property breaks an element's content into the specified number of columns.
    *
    * **Syntax**: `<integer> | auto`
@@ -1804,8 +2205,8 @@ colorScheme?: ConditionalValue<CssProperties["colorScheme"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-count
    */
-columnCount?: ConditionalValue<CssProperties["columnCount"] | AnyString>
- /**
+  columnCount?: ConditionalValue<CssProperties["columnCount"] | AnyString>;
+  /**
    * The **`column-fill`** CSS property controls how an element's contents are balanced when broken into columns.
    *
    * **Syntax**: `auto | balance | balance-all`
@@ -1819,8 +2220,10 @@ columnCount?: ConditionalValue<CssProperties["columnCount"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-fill
    */
-columnFill?: ConditionalValue<CssVars | CssProperties["columnFill"] | AnyString>
- /**
+  columnFill?: ConditionalValue<
+    CssVars | CssProperties["columnFill"] | AnyString
+  >;
+  /**
    * The **`column-gap`** CSS property sets the size of the gap (gutter) between an element's columns.
    *
    * **Syntax**: `normal | <length-percentage>`
@@ -1833,8 +2236,13 @@ columnFill?: ConditionalValue<CssVars | CssProperties["columnFill"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-gap
    */
-columnGap?: ConditionalValue<UtilityValues["columnGap"] | CssVars | CssProperties["columnGap"] | AnyString>
- /**
+  columnGap?: ConditionalValue<
+    | UtilityValues["columnGap"]
+    | CssVars
+    | CssProperties["columnGap"]
+    | AnyString
+  >;
+  /**
    * The **`column-rule`** shorthand CSS property sets the width, style, and color of the line drawn between columns in a multi-column layout.
    *
    * **Syntax**: `<'column-rule-width'> || <'column-rule-style'> || <'column-rule-color'>`
@@ -1846,8 +2254,8 @@ columnGap?: ConditionalValue<UtilityValues["columnGap"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-rule
    */
-columnRule?: ConditionalValue<CssProperties["columnRule"] | AnyString>
- /**
+  columnRule?: ConditionalValue<CssProperties["columnRule"] | AnyString>;
+  /**
    * The **`column-rule-color`** CSS property sets the color of the line drawn between columns in a multi-column layout.
    *
    * **Syntax**: `<color>`
@@ -1861,8 +2269,10 @@ columnRule?: ConditionalValue<CssProperties["columnRule"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-color
    */
-columnRuleColor?: ConditionalValue<CssProperties["columnRuleColor"] | AnyString>
- /**
+  columnRuleColor?: ConditionalValue<
+    CssProperties["columnRuleColor"] | AnyString
+  >;
+  /**
    * The **`column-rule-style`** CSS property sets the style of the line drawn between columns in a multi-column layout.
    *
    * **Syntax**: `<'border-style'>`
@@ -1876,8 +2286,10 @@ columnRuleColor?: ConditionalValue<CssProperties["columnRuleColor"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-style
    */
-columnRuleStyle?: ConditionalValue<CssVars | CssProperties["columnRuleStyle"] | AnyString>
- /**
+  columnRuleStyle?: ConditionalValue<
+    CssVars | CssProperties["columnRuleStyle"] | AnyString
+  >;
+  /**
    * The **`column-rule-width`** CSS property sets the width of the line drawn between columns in a multi-column layout.
    *
    * **Syntax**: `<'border-width'>`
@@ -1891,8 +2303,10 @@ columnRuleStyle?: ConditionalValue<CssVars | CssProperties["columnRuleStyle"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-width
    */
-columnRuleWidth?: ConditionalValue<CssProperties["columnRuleWidth"] | AnyString>
- /**
+  columnRuleWidth?: ConditionalValue<
+    CssProperties["columnRuleWidth"] | AnyString
+  >;
+  /**
    * The **`column-span`** CSS property makes it possible for an element to span across all columns when its value is set to `all`.
    *
    * **Syntax**: `none | all`
@@ -1906,8 +2320,8 @@ columnRuleWidth?: ConditionalValue<CssProperties["columnRuleWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-span
    */
-columnSpan?: ConditionalValue<CssProperties["columnSpan"] | AnyString>
- /**
+  columnSpan?: ConditionalValue<CssProperties["columnSpan"] | AnyString>;
+  /**
    * The **`column-width`** CSS property sets the ideal column width in a multi-column layout. The container will have as many columns as can fit without any of them having a width less than the `column-width` value. If the width of the container is narrower than the specified value, the single column's width will be smaller than the declared column width.
    *
    * **Syntax**: `<length> | auto`
@@ -1921,8 +2335,8 @@ columnSpan?: ConditionalValue<CssProperties["columnSpan"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/column-width
    */
-columnWidth?: ConditionalValue<CssProperties["columnWidth"] | AnyString>
- /**
+  columnWidth?: ConditionalValue<CssProperties["columnWidth"] | AnyString>;
+  /**
    * The **`columns`** CSS shorthand property sets the number of columns to use when drawing an element's contents, as well as those columns' widths.
    *
    * **Syntax**: `<'column-width'> || <'column-count'>`
@@ -1934,8 +2348,8 @@ columnWidth?: ConditionalValue<CssProperties["columnWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/columns
    */
-columns?: ConditionalValue<CssProperties["columns"] | AnyString>
- /**
+  columns?: ConditionalValue<CssProperties["columns"] | AnyString>;
+  /**
    * The **`contain`** CSS property indicates that an element and its contents are, as much as possible, independent from the rest of the document tree. Containment enables isolating a subsection of the DOM, providing performance benefits by limiting calculations of layout, style, paint, size, or any combination to a DOM subtree rather than the entire page. Containment can also be used to scope CSS counters and quotes.
    *
    * **Syntax**: `none | strict | content | [ [ size || inline-size ] || layout || style || paint ]`
@@ -1948,8 +2362,8 @@ columns?: ConditionalValue<CssProperties["columns"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/contain
    */
-contain?: ConditionalValue<CssProperties["contain"] | AnyString>
- /**
+  contain?: ConditionalValue<CssProperties["contain"] | AnyString>;
+  /**
    * The **`contain-intrinsic-size`** CSS shorthand property sets the size of an element that a browser will use for layout when the element is subject to size containment.
    *
    * **Syntax**: `[ auto? [ none | <length> ] ]{1,2}`
@@ -1960,8 +2374,10 @@ contain?: ConditionalValue<CssProperties["contain"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-size
    */
-containIntrinsicSize?: ConditionalValue<CssProperties["containIntrinsicSize"] | AnyString>
- /**
+  containIntrinsicSize?: ConditionalValue<
+    CssProperties["containIntrinsicSize"] | AnyString
+  >;
+  /**
    * The **`contain-intrinsic-block-size`** CSS logical property defines the block size of an element that a browser can use for layout when the element is subject to size containment.
    *
    * **Syntax**: `auto? [ none | <length> ]`
@@ -1974,8 +2390,10 @@ containIntrinsicSize?: ConditionalValue<CssProperties["containIntrinsicSize"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-contain-intrinsic-block-size
    */
-containIntrinsicBlockSize?: ConditionalValue<CssProperties["containIntrinsicBlockSize"] | AnyString>
- /**
+  containIntrinsicBlockSize?: ConditionalValue<
+    CssProperties["containIntrinsicBlockSize"] | AnyString
+  >;
+  /**
    * The **`contain-intrinsic-length`** CSS property sets the height of an element that a browser can use for layout when the element is subject to size containment.
    *
    * **Syntax**: `auto? [ none | <length> ]`
@@ -1988,8 +2406,10 @@ containIntrinsicBlockSize?: ConditionalValue<CssProperties["containIntrinsicBloc
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-height
    */
-containIntrinsicHeight?: ConditionalValue<CssProperties["containIntrinsicHeight"] | AnyString>
- /**
+  containIntrinsicHeight?: ConditionalValue<
+    CssProperties["containIntrinsicHeight"] | AnyString
+  >;
+  /**
    * The **`contain-intrinsic-inline-size`** CSS logical property defines the inline-size of an element that a browser can use for layout when the element is subject to size containment.
    *
    * **Syntax**: `auto? [ none | <length> ]`
@@ -2002,8 +2422,10 @@ containIntrinsicHeight?: ConditionalValue<CssProperties["containIntrinsicHeight"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-contain-intrinsic-inline-size
    */
-containIntrinsicInlineSize?: ConditionalValue<CssProperties["containIntrinsicInlineSize"] | AnyString>
- /**
+  containIntrinsicInlineSize?: ConditionalValue<
+    CssProperties["containIntrinsicInlineSize"] | AnyString
+  >;
+  /**
    * The **`contain-intrinsic-width`** CSS property sets the width of an element that a browser will use for layout when the element is subject to size containment.
    *
    * **Syntax**: `auto? [ none | <length> ]`
@@ -2016,8 +2438,10 @@ containIntrinsicInlineSize?: ConditionalValue<CssProperties["containIntrinsicInl
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-width
    */
-containIntrinsicWidth?: ConditionalValue<CssProperties["containIntrinsicWidth"] | AnyString>
- /**
+  containIntrinsicWidth?: ConditionalValue<
+    CssProperties["containIntrinsicWidth"] | AnyString
+  >;
+  /**
    * The **container** shorthand CSS property establishes the element as a query container and specifies the name or name for the containment context used in a container query.
    *
    * **Syntax**: `<'container-name'> [ / <'container-type'> ]?`
@@ -2028,8 +2452,8 @@ containIntrinsicWidth?: ConditionalValue<CssProperties["containIntrinsicWidth"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/container
    */
-container?: ConditionalValue<CssProperties["container"] | AnyString>
- /**
+  container?: ConditionalValue<CssProperties["container"] | AnyString>;
+  /**
    * The **container-name** CSS property specifies a list of query container names used by the @container at-rule in a container query. A container query will apply styles to elements based on the size of the nearest ancestor with a containment context. When a containment context is given a name, it can be specifically targeted using the `@container` at-rule instead of the nearest ancestor with containment.
    *
    * **Syntax**: `none | <custom-ident>+`
@@ -2042,8 +2466,13 @@ container?: ConditionalValue<CssProperties["container"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/container-name
    */
-containerName?: ConditionalValue<UtilityValues["containerName"] | CssVars | CssProperties["containerName"] | AnyString>
- /**
+  containerName?: ConditionalValue<
+    | UtilityValues["containerName"]
+    | CssVars
+    | CssProperties["containerName"]
+    | AnyString
+  >;
+  /**
    * The **container-type** CSS property is used to define the type of containment used in a container query.
    *
    * **Syntax**: `normal | size | inline-size`
@@ -2056,8 +2485,8 @@ containerName?: ConditionalValue<UtilityValues["containerName"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/container-type
    */
-containerType?: ConditionalValue<CssProperties["containerType"] | AnyString>
- /**
+  containerType?: ConditionalValue<CssProperties["containerType"] | AnyString>;
+  /**
    * The **`content`** CSS property replaces an element with a generated value. Objects inserted using the `content` property are **anonymous replaced elements**.
    *
    * **Syntax**: `normal | none | [ <content-replacement> | <content-list> ] [/ [ <string> | <counter> ]+ ]?`
@@ -2070,8 +2499,8 @@ containerType?: ConditionalValue<CssProperties["containerType"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/content
    */
-content?: ConditionalValue<CssProperties["content"] | AnyString>
- /**
+  content?: ConditionalValue<CssProperties["content"] | AnyString>;
+  /**
    * The **`content-visibility`** CSS property controls whether or not an element renders its contents at all, along with forcing a strong set of containments, allowing user agents to potentially omit large swathes of layout and rendering work until it becomes needed. It enables the user agent to skip an element's rendering work (including layout and painting) until it is needed — which makes the initial page load much faster.
    *
    * **Syntax**: `visible | auto | hidden`
@@ -2084,8 +2513,10 @@ content?: ConditionalValue<CssProperties["content"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/content-visibility
    */
-contentVisibility?: ConditionalValue<CssVars | CssProperties["contentVisibility"] | AnyString>
- /**
+  contentVisibility?: ConditionalValue<
+    CssVars | CssProperties["contentVisibility"] | AnyString
+  >;
+  /**
    * The **`counter-increment`** CSS property increases or decreases the value of a CSS counter by a given value.
    *
    * **Syntax**: `[ <counter-name> <integer>? ]+ | none`
@@ -2098,8 +2529,10 @@ contentVisibility?: ConditionalValue<CssVars | CssProperties["contentVisibility"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/counter-increment
    */
-counterIncrement?: ConditionalValue<CssProperties["counterIncrement"] | AnyString>
- /**
+  counterIncrement?: ConditionalValue<
+    CssProperties["counterIncrement"] | AnyString
+  >;
+  /**
    * The **`counter-reset`** CSS property resets a CSS counter to a given value. This property will create a new counter or reversed counter with the given name on the specified element.
    *
    * **Syntax**: `[ <counter-name> <integer>? | <reversed-counter-name> <integer>? ]+ | none`
@@ -2112,8 +2545,8 @@ counterIncrement?: ConditionalValue<CssProperties["counterIncrement"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/counter-reset
    */
-counterReset?: ConditionalValue<CssProperties["counterReset"] | AnyString>
- /**
+  counterReset?: ConditionalValue<CssProperties["counterReset"] | AnyString>;
+  /**
    * The **`counter-set`** CSS property sets a CSS counter to a given value. It manipulates the value of existing counters, and will only create new counters if there isn't already a counter of the given name on the element.
    *
    * **Syntax**: `[ <counter-name> <integer>? ]+ | none`
@@ -2126,8 +2559,8 @@ counterReset?: ConditionalValue<CssProperties["counterReset"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/counter-set
    */
-counterSet?: ConditionalValue<CssProperties["counterSet"] | AnyString>
- /**
+  counterSet?: ConditionalValue<CssProperties["counterSet"] | AnyString>;
+  /**
    * The **`cursor`** CSS property sets the mouse cursor, if any, to show when the mouse pointer is over an element.
    *
    * **Syntax**: `[ [ <url> [ <x> <y> ]? , ]* [ auto | default | none | context-menu | help | pointer | progress | wait | cell | crosshair | text | vertical-text | alias | copy | move | no-drop | not-allowed | e-resize | n-resize | ne-resize | nw-resize | s-resize | se-resize | sw-resize | w-resize | ew-resize | ns-resize | nesw-resize | nwse-resize | col-resize | row-resize | all-scroll | zoom-in | zoom-out | grab | grabbing ] ]`
@@ -2140,8 +2573,8 @@ counterSet?: ConditionalValue<CssProperties["counterSet"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/cursor
    */
-cursor?: ConditionalValue<CssProperties["cursor"] | AnyString>
- /**
+  cursor?: ConditionalValue<CssProperties["cursor"] | AnyString>;
+  /**
    * The **`direction`** CSS property sets the direction of text, table columns, and horizontal overflow. Use `rtl` for languages written from right to left (like Hebrew or Arabic), and `ltr` for those written from left to right (like English and most other languages).
    *
    * **Syntax**: `ltr | rtl`
@@ -2154,8 +2587,10 @@ cursor?: ConditionalValue<CssProperties["cursor"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/direction
    */
-direction?: ConditionalValue<CssVars | CssProperties["direction"] | AnyString>
- /**
+  direction?: ConditionalValue<
+    CssVars | CssProperties["direction"] | AnyString
+  >;
+  /**
    * The **`display`** CSS property sets whether an element is treated as a block or inline element and the layout used for its children, such as flow layout, grid or flex.
    *
    * **Syntax**: `[ <display-outside> || <display-inside> ] | <display-listitem> | <display-internal> | <display-box> | <display-legacy>`
@@ -2168,8 +2603,8 @@ direction?: ConditionalValue<CssVars | CssProperties["direction"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/display
    */
-display?: ConditionalValue<CssVars | CssProperties["display"] | AnyString>
- /**
+  display?: ConditionalValue<CssVars | CssProperties["display"] | AnyString>;
+  /**
    * The **`empty-cells`** CSS property sets whether borders and backgrounds appear around `<table>` cells that have no visible content.
    *
    * **Syntax**: `show | hide`
@@ -2182,8 +2617,10 @@ display?: ConditionalValue<CssVars | CssProperties["display"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/empty-cells
    */
-emptyCells?: ConditionalValue<CssVars | CssProperties["emptyCells"] | AnyString>
- /**
+  emptyCells?: ConditionalValue<
+    CssVars | CssProperties["emptyCells"] | AnyString
+  >;
+  /**
    * The **`filter`** CSS property applies graphical effects like blur or color shift to an element. Filters are commonly used to adjust the rendering of images, backgrounds, and borders.
    *
    * **Syntax**: `none | <filter-function-list>`
@@ -2197,8 +2634,10 @@ emptyCells?: ConditionalValue<CssVars | CssProperties["emptyCells"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/filter
    */
-filter?: ConditionalValue<UtilityValues["filter"] | CssVars | CssProperties["filter"] | AnyString>
- /**
+  filter?: ConditionalValue<
+    UtilityValues["filter"] | CssVars | CssProperties["filter"] | AnyString
+  >;
+  /**
    * The **`flex`** CSS shorthand property sets how a flex _item_ will grow or shrink to fit the space available in its flex container.
    *
    * **Syntax**: `none | [ <'flex-grow'> <'flex-shrink'>? || <'flex-basis'> ]`
@@ -2210,8 +2649,10 @@ filter?: ConditionalValue<UtilityValues["filter"] | CssVars | CssProperties["fil
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex
    */
-flex?: ConditionalValue<UtilityValues["flex"] | CssVars | CssProperties["flex"] | AnyString>
- /**
+  flex?: ConditionalValue<
+    UtilityValues["flex"] | CssVars | CssProperties["flex"] | AnyString
+  >;
+  /**
    * The **`flex-basis`** CSS property sets the initial main size of a flex item. It sets the size of the content box unless otherwise set with `box-sizing`.
    *
    * **Syntax**: `content | <'width'>`
@@ -2225,8 +2666,13 @@ flex?: ConditionalValue<UtilityValues["flex"] | CssVars | CssProperties["flex"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex-basis
    */
-flexBasis?: ConditionalValue<UtilityValues["flexBasis"] | CssVars | CssProperties["flexBasis"] | AnyString>
- /**
+  flexBasis?: ConditionalValue<
+    | UtilityValues["flexBasis"]
+    | CssVars
+    | CssProperties["flexBasis"]
+    | AnyString
+  >;
+  /**
    * The **`flex-direction`** CSS property sets how flex items are placed in the flex container defining the main axis and the direction (normal or reversed).
    *
    * **Syntax**: `row | row-reverse | column | column-reverse`
@@ -2240,8 +2686,10 @@ flexBasis?: ConditionalValue<UtilityValues["flexBasis"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex-direction
    */
-flexDirection?: ConditionalValue<CssVars | CssProperties["flexDirection"] | AnyString>
- /**
+  flexDirection?: ConditionalValue<
+    CssVars | CssProperties["flexDirection"] | AnyString
+  >;
+  /**
    * The **`flex-flow`** CSS shorthand property specifies the direction of a flex container, as well as its wrapping behavior.
    *
    * **Syntax**: `<'flex-direction'> || <'flex-wrap'>`
@@ -2253,8 +2701,8 @@ flexDirection?: ConditionalValue<CssVars | CssProperties["flexDirection"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex-flow
    */
-flexFlow?: ConditionalValue<CssProperties["flexFlow"] | AnyString>
- /**
+  flexFlow?: ConditionalValue<CssProperties["flexFlow"] | AnyString>;
+  /**
    * The **`flex-grow`** CSS property sets the flex grow factor of a flex item's main size.
    *
    * **Syntax**: `<number>`
@@ -2268,8 +2716,8 @@ flexFlow?: ConditionalValue<CssProperties["flexFlow"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex-grow
    */
-flexGrow?: ConditionalValue<CssProperties["flexGrow"] | AnyString>
- /**
+  flexGrow?: ConditionalValue<CssProperties["flexGrow"] | AnyString>;
+  /**
    * The **`flex-shrink`** CSS property sets the flex shrink factor of a flex item. If the size of all flex items is larger than the flex container, items shrink to fit according to `flex-shrink`.
    *
    * **Syntax**: `<number>`
@@ -2283,8 +2731,8 @@ flexGrow?: ConditionalValue<CssProperties["flexGrow"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex-shrink
    */
-flexShrink?: ConditionalValue<CssProperties["flexShrink"] | AnyString>
- /**
+  flexShrink?: ConditionalValue<CssProperties["flexShrink"] | AnyString>;
+  /**
    * The **`flex-wrap`** CSS property sets whether flex items are forced onto one line or can wrap onto multiple lines. If wrapping is allowed, it sets the direction that lines are stacked.
    *
    * **Syntax**: `nowrap | wrap | wrap-reverse`
@@ -2298,8 +2746,8 @@ flexShrink?: ConditionalValue<CssProperties["flexShrink"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex-wrap
    */
-flexWrap?: ConditionalValue<CssVars | CssProperties["flexWrap"] | AnyString>
- /**
+  flexWrap?: ConditionalValue<CssVars | CssProperties["flexWrap"] | AnyString>;
+  /**
    * The **`float`** CSS property places an element on the left or right side of its container, allowing text and inline elements to wrap around it. The element is removed from the normal flow of the page, though still remaining a part of the flow (in contrast to absolute positioning).
    *
    * **Syntax**: `left | right | none | inline-start | inline-end`
@@ -2312,8 +2760,8 @@ flexWrap?: ConditionalValue<CssVars | CssProperties["flexWrap"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/float
    */
-float?: ConditionalValue<UtilityValues["float"] | CssVars | AnyString>
- /**
+  float?: ConditionalValue<UtilityValues["float"] | CssVars | AnyString>;
+  /**
    * The **`font`** CSS shorthand property sets all the different properties of an element's font. Alternatively, it sets an element's font to a system font.
    *
    * **Syntax**: `[ [ <'font-style'> || <font-variant-css21> || <'font-weight'> || <'font-stretch'> ]? <'font-size'> [ / <'line-height'> ]? <'font-family'> ] | caption | icon | menu | message-box | small-caption | status-bar`
@@ -2324,8 +2772,8 @@ float?: ConditionalValue<UtilityValues["float"] | CssVars | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font
    */
-font?: ConditionalValue<CssProperties["font"] | AnyString>
- /**
+  font?: ConditionalValue<CssProperties["font"] | AnyString>;
+  /**
    * The **`font-family`** CSS property specifies a prioritized list of one or more font family names and/or generic family names for the selected element.
    *
    * **Syntax**: `[ <family-name> | <generic-family> ]#`
@@ -2338,8 +2786,13 @@ font?: ConditionalValue<CssProperties["font"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-family
    */
-fontFamily?: ConditionalValue<UtilityValues["fontFamily"] | CssVars | CssProperties["fontFamily"] | AnyString>
- /**
+  fontFamily?: ConditionalValue<
+    | UtilityValues["fontFamily"]
+    | CssVars
+    | CssProperties["fontFamily"]
+    | AnyString
+  >;
+  /**
    * The **`font-feature-settings`** CSS property controls advanced typographic features in OpenType fonts.
    *
    * **Syntax**: `normal | <feature-tag-value>#`
@@ -2353,8 +2806,10 @@ fontFamily?: ConditionalValue<UtilityValues["fontFamily"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-feature-settings
    */
-fontFeatureSettings?: ConditionalValue<CssProperties["fontFeatureSettings"] | AnyString>
- /**
+  fontFeatureSettings?: ConditionalValue<
+    CssProperties["fontFeatureSettings"] | AnyString
+  >;
+  /**
    * The **`font-kerning`** CSS property sets the use of the kerning information stored in a font.
    *
    * **Syntax**: `auto | normal | none`
@@ -2368,8 +2823,10 @@ fontFeatureSettings?: ConditionalValue<CssProperties["fontFeatureSettings"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-kerning
    */
-fontKerning?: ConditionalValue<CssVars | CssProperties["fontKerning"] | AnyString>
- /**
+  fontKerning?: ConditionalValue<
+    CssVars | CssProperties["fontKerning"] | AnyString
+  >;
+  /**
    * The **`font-language-override`** CSS property controls the use of language-specific glyphs in a typeface.
    *
    * **Syntax**: `normal | <string>`
@@ -2383,8 +2840,10 @@ fontKerning?: ConditionalValue<CssVars | CssProperties["fontKerning"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-language-override
    */
-fontLanguageOverride?: ConditionalValue<CssProperties["fontLanguageOverride"] | AnyString>
- /**
+  fontLanguageOverride?: ConditionalValue<
+    CssProperties["fontLanguageOverride"] | AnyString
+  >;
+  /**
    * The **`font-optical-sizing`** CSS property sets whether text rendering is optimized for viewing at different sizes.
    *
    * **Syntax**: `auto | none`
@@ -2397,8 +2856,10 @@ fontLanguageOverride?: ConditionalValue<CssProperties["fontLanguageOverride"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-optical-sizing
    */
-fontOpticalSizing?: ConditionalValue<CssProperties["fontOpticalSizing"] | AnyString>
- /**
+  fontOpticalSizing?: ConditionalValue<
+    CssProperties["fontOpticalSizing"] | AnyString
+  >;
+  /**
    * **Syntax**: `normal | light | dark | <palette-identifier>`
    *
    * **Initial value**: `normal`
@@ -2409,8 +2870,8 @@ fontOpticalSizing?: ConditionalValue<CssProperties["fontOpticalSizing"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-palette
    */
-fontPalette?: ConditionalValue<CssProperties["fontPalette"] | AnyString>
- /**
+  fontPalette?: ConditionalValue<CssProperties["fontPalette"] | AnyString>;
+  /**
    * The **`font-variation-settings`** CSS property provides low-level control over variable font characteristics, by specifying the four letter axis names of the characteristics you want to vary, along with their values.
    *
    * **Syntax**: `normal | [ <string> <number> ]#`
@@ -2423,8 +2884,10 @@ fontPalette?: ConditionalValue<CssProperties["fontPalette"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variation-settings
    */
-fontVariationSettings?: ConditionalValue<CssProperties["fontVariationSettings"] | AnyString>
- /**
+  fontVariationSettings?: ConditionalValue<
+    CssProperties["fontVariationSettings"] | AnyString
+  >;
+  /**
    * The **`font-size`** CSS property sets the size of the font. Changing the font size also updates the sizes of the font size-relative `<length>` units, such as `em`, `ex`, and so forth.
    *
    * **Syntax**: `<absolute-size> | <relative-size> | <length-percentage>`
@@ -2437,8 +2900,10 @@ fontVariationSettings?: ConditionalValue<CssProperties["fontVariationSettings"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-size
    */
-fontSize?: ConditionalValue<UtilityValues["fontSize"] | CssVars | CssProperties["fontSize"] | AnyString>
- /**
+  fontSize?: ConditionalValue<
+    UtilityValues["fontSize"] | CssVars | CssProperties["fontSize"] | AnyString
+  >;
+  /**
    * The **`font-size-adjust`** CSS property sets the size of lower-case letters relative to the current font size (which defines the size of upper-case letters).
    *
    * **Syntax**: `none | [ ex-height | cap-height | ch-width | ic-width | ic-height ]? [ from-font | <number> ]`
@@ -2451,8 +2916,10 @@ fontSize?: ConditionalValue<UtilityValues["fontSize"] | CssVars | CssProperties[
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-size-adjust
    */
-fontSizeAdjust?: ConditionalValue<CssProperties["fontSizeAdjust"] | AnyString>
- /**
+  fontSizeAdjust?: ConditionalValue<
+    CssProperties["fontSizeAdjust"] | AnyString
+  >;
+  /**
    * The **`font-smooth`** CSS property controls the application of anti-aliasing when fonts are rendered.
    *
    * **Syntax**: `auto | never | always | <absolute-size> | <length>`
@@ -2465,8 +2932,8 @@ fontSizeAdjust?: ConditionalValue<CssProperties["fontSizeAdjust"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-smooth
    */
-fontSmooth?: ConditionalValue<CssProperties["fontSmooth"] | AnyString>
- /**
+  fontSmooth?: ConditionalValue<CssProperties["fontSmooth"] | AnyString>;
+  /**
    * The **`font-stretch`** CSS property selects a normal, condensed, or expanded face from a font.
    *
    * **Syntax**: `<font-stretch-absolute>`
@@ -2479,8 +2946,8 @@ fontSmooth?: ConditionalValue<CssProperties["fontSmooth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-stretch
    */
-fontStretch?: ConditionalValue<CssProperties["fontStretch"] | AnyString>
- /**
+  fontStretch?: ConditionalValue<CssProperties["fontStretch"] | AnyString>;
+  /**
    * The **`font-style`** CSS property sets whether a font should be styled with a normal, italic, or oblique face from its `font-family`.
    *
    * **Syntax**: `normal | italic | oblique <angle>?`
@@ -2493,8 +2960,8 @@ fontStretch?: ConditionalValue<CssProperties["fontStretch"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-style
    */
-fontStyle?: ConditionalValue<CssProperties["fontStyle"] | AnyString>
- /**
+  fontStyle?: ConditionalValue<CssProperties["fontStyle"] | AnyString>;
+  /**
    * The **`font-synthesis`** CSS property controls which missing typefaces, bold, italic, or small-caps, may be synthesized by the browser.
    *
    * **Syntax**: `none | [ weight || style || small-caps || position]`
@@ -2507,8 +2974,8 @@ fontStyle?: ConditionalValue<CssProperties["fontStyle"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis
    */
-fontSynthesis?: ConditionalValue<CssProperties["fontSynthesis"] | AnyString>
- /**
+  fontSynthesis?: ConditionalValue<CssProperties["fontSynthesis"] | AnyString>;
+  /**
    * The **`font-synthesis-position`** CSS property lets you specify whether or not a browser may synthesize the subscript and superscript "position" typefaces when they are missing in a font family, while using `font-variant-position` to set the positions.
    *
    * **Syntax**: `auto | none`
@@ -2521,8 +2988,10 @@ fontSynthesis?: ConditionalValue<CssProperties["fontSynthesis"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-position
    */
-fontSynthesisPosition?: ConditionalValue<CssProperties["fontSynthesisPosition"] | AnyString>
- /**
+  fontSynthesisPosition?: ConditionalValue<
+    CssProperties["fontSynthesisPosition"] | AnyString
+  >;
+  /**
    * The **`font-synthesis-small-caps`** CSS property lets you specify whether or not the browser may synthesize small-caps typeface when it is missing in a font family. Small-caps glyphs typically use the form of uppercase letters but are reduced to the size of lowercase letters.
    *
    * **Syntax**: `auto | none`
@@ -2535,8 +3004,10 @@ fontSynthesisPosition?: ConditionalValue<CssProperties["fontSynthesisPosition"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-small-caps
    */
-fontSynthesisSmallCaps?: ConditionalValue<CssProperties["fontSynthesisSmallCaps"] | AnyString>
- /**
+  fontSynthesisSmallCaps?: ConditionalValue<
+    CssProperties["fontSynthesisSmallCaps"] | AnyString
+  >;
+  /**
    * The **`font-synthesis-style`** CSS property lets you specify whether or not the browser may synthesize the oblique typeface when it is missing in a font family.
    *
    * **Syntax**: `auto | none`
@@ -2549,8 +3020,10 @@ fontSynthesisSmallCaps?: ConditionalValue<CssProperties["fontSynthesisSmallCaps"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-style
    */
-fontSynthesisStyle?: ConditionalValue<CssProperties["fontSynthesisStyle"] | AnyString>
- /**
+  fontSynthesisStyle?: ConditionalValue<
+    CssProperties["fontSynthesisStyle"] | AnyString
+  >;
+  /**
    * The **`font-synthesis-weight`** CSS property lets you specify whether or not the browser may synthesize the bold typeface when it is missing in a font family.
    *
    * **Syntax**: `auto | none`
@@ -2563,8 +3036,10 @@ fontSynthesisStyle?: ConditionalValue<CssProperties["fontSynthesisStyle"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-weight
    */
-fontSynthesisWeight?: ConditionalValue<CssProperties["fontSynthesisWeight"] | AnyString>
- /**
+  fontSynthesisWeight?: ConditionalValue<
+    CssProperties["fontSynthesisWeight"] | AnyString
+  >;
+  /**
    * The **`font-variant`** CSS shorthand property allows you to set all the font variants for a font.
    *
    * **Syntax**: `normal | none | [ <common-lig-values> || <discretionary-lig-values> || <historical-lig-values> || <contextual-alt-values> || stylistic( <feature-value-name> ) || historical-forms || styleset( <feature-value-name># ) || character-variant( <feature-value-name># ) || swash( <feature-value-name> ) || ornaments( <feature-value-name> ) || annotation( <feature-value-name> ) || [ small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps ] || <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero || <east-asian-variant-values> || <east-asian-width-values> || ruby ]`
@@ -2577,8 +3052,8 @@ fontSynthesisWeight?: ConditionalValue<CssProperties["fontSynthesisWeight"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant
    */
-fontVariant?: ConditionalValue<CssProperties["fontVariant"] | AnyString>
- /**
+  fontVariant?: ConditionalValue<CssProperties["fontVariant"] | AnyString>;
+  /**
    * The **`font-variant-alternates`** CSS property controls the usage of alternate glyphs. These alternate glyphs may be referenced by alternative names defined in `@font-feature-values`.
    *
    * **Syntax**: `normal | [ stylistic( <feature-value-name> ) || historical-forms || styleset( <feature-value-name># ) || character-variant( <feature-value-name># ) || swash( <feature-value-name> ) || ornaments( <feature-value-name> ) || annotation( <feature-value-name> ) ]`
@@ -2591,8 +3066,10 @@ fontVariant?: ConditionalValue<CssProperties["fontVariant"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-alternates
    */
-fontVariantAlternates?: ConditionalValue<CssProperties["fontVariantAlternates"] | AnyString>
- /**
+  fontVariantAlternates?: ConditionalValue<
+    CssProperties["fontVariantAlternates"] | AnyString
+  >;
+  /**
    * The **`font-variant-caps`** CSS property controls the use of alternate glyphs for capital letters.
    *
    * **Syntax**: `normal | small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps`
@@ -2605,8 +3082,10 @@ fontVariantAlternates?: ConditionalValue<CssProperties["fontVariantAlternates"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-caps
    */
-fontVariantCaps?: ConditionalValue<CssProperties["fontVariantCaps"] | AnyString>
- /**
+  fontVariantCaps?: ConditionalValue<
+    CssProperties["fontVariantCaps"] | AnyString
+  >;
+  /**
    * The **`font-variant-east-asian`** CSS property controls the use of alternate glyphs for East Asian scripts, like Japanese and Chinese.
    *
    * **Syntax**: `normal | [ <east-asian-variant-values> || <east-asian-width-values> || ruby ]`
@@ -2619,8 +3098,10 @@ fontVariantCaps?: ConditionalValue<CssProperties["fontVariantCaps"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-east-asian
    */
-fontVariantEastAsian?: ConditionalValue<CssProperties["fontVariantEastAsian"] | AnyString>
- /**
+  fontVariantEastAsian?: ConditionalValue<
+    CssProperties["fontVariantEastAsian"] | AnyString
+  >;
+  /**
    * **Syntax**: `normal | text | emoji | unicode`
    *
    * **Initial value**: `normal`
@@ -2631,8 +3112,10 @@ fontVariantEastAsian?: ConditionalValue<CssProperties["fontVariantEastAsian"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-emoji
    */
-fontVariantEmoji?: ConditionalValue<CssProperties["fontVariantEmoji"] | AnyString>
- /**
+  fontVariantEmoji?: ConditionalValue<
+    CssProperties["fontVariantEmoji"] | AnyString
+  >;
+  /**
    * The **`font-variant-ligatures`** CSS property controls which ligatures and contextual forms are used in textual content of the elements it applies to. This leads to more harmonized forms in the resulting text.
    *
    * **Syntax**: `normal | none | [ <common-lig-values> || <discretionary-lig-values> || <historical-lig-values> || <contextual-alt-values> ]`
@@ -2646,8 +3129,10 @@ fontVariantEmoji?: ConditionalValue<CssProperties["fontVariantEmoji"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-ligatures
    */
-fontVariantLigatures?: ConditionalValue<CssProperties["fontVariantLigatures"] | AnyString>
- /**
+  fontVariantLigatures?: ConditionalValue<
+    CssProperties["fontVariantLigatures"] | AnyString
+  >;
+  /**
    * The **`font-variant-numeric`** CSS property controls the usage of alternate glyphs for numbers, fractions, and ordinal markers.
    *
    * **Syntax**: `normal | [ <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero ]`
@@ -2660,8 +3145,10 @@ fontVariantLigatures?: ConditionalValue<CssProperties["fontVariantLigatures"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-numeric
    */
-fontVariantNumeric?: ConditionalValue<CssProperties["fontVariantNumeric"] | AnyString>
- /**
+  fontVariantNumeric?: ConditionalValue<
+    CssProperties["fontVariantNumeric"] | AnyString
+  >;
+  /**
    * The **`font-variant-position`** CSS property controls the use of alternate, smaller glyphs that are positioned as superscript or subscript.
    *
    * **Syntax**: `normal | sub | super`
@@ -2674,8 +3161,10 @@ fontVariantNumeric?: ConditionalValue<CssProperties["fontVariantNumeric"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-position
    */
-fontVariantPosition?: ConditionalValue<CssProperties["fontVariantPosition"] | AnyString>
- /**
+  fontVariantPosition?: ConditionalValue<
+    CssProperties["fontVariantPosition"] | AnyString
+  >;
+  /**
    * The **`font-weight`** CSS property sets the weight (or boldness) of the font. The weights available depend on the `font-family` that is currently set.
    *
    * **Syntax**: `<font-weight-absolute> | bolder | lighter`
@@ -2688,8 +3177,13 @@ fontVariantPosition?: ConditionalValue<CssProperties["fontVariantPosition"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/font-weight
    */
-fontWeight?: ConditionalValue<UtilityValues["fontWeight"] | CssVars | CssProperties["fontWeight"] | AnyString>
- /**
+  fontWeight?: ConditionalValue<
+    | UtilityValues["fontWeight"]
+    | CssVars
+    | CssProperties["fontWeight"]
+    | AnyString
+  >;
+  /**
    * The **`forced-color-adjust`** CSS property allows authors to opt certain elements out of forced colors mode. This then restores the control of those values to CSS.
    *
    * **Syntax**: `auto | none`
@@ -2703,8 +3197,10 @@ fontWeight?: ConditionalValue<UtilityValues["fontWeight"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/forced-color-adjust
    */
-forcedColorAdjust?: ConditionalValue<CssVars | CssProperties["forcedColorAdjust"] | AnyString>
- /**
+  forcedColorAdjust?: ConditionalValue<
+    CssVars | CssProperties["forcedColorAdjust"] | AnyString
+  >;
+  /**
    * The **`gap`** CSS property sets the gaps (gutters) between rows and columns. It is a shorthand for `row-gap` and `column-gap`.
    *
    * **Syntax**: `<'row-gap'> <'column-gap'>?`
@@ -2715,8 +3211,10 @@ forcedColorAdjust?: ConditionalValue<CssVars | CssProperties["forcedColorAdjust"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/gap
    */
-gap?: ConditionalValue<UtilityValues["gap"] | CssVars | CssProperties["gap"] | AnyString>
- /**
+  gap?: ConditionalValue<
+    UtilityValues["gap"] | CssVars | CssProperties["gap"] | AnyString
+  >;
+  /**
    * The **`grid`** CSS property is a shorthand property that sets all of the explicit and implicit grid properties in a single declaration.
    *
    * **Syntax**: `<'grid-template'> | <'grid-template-rows'> / [ auto-flow && dense? ] <'grid-auto-columns'>? | [ auto-flow && dense? ] <'grid-auto-rows'>? / <'grid-template-columns'>`
@@ -2727,8 +3225,8 @@ gap?: ConditionalValue<UtilityValues["gap"] | CssVars | CssProperties["gap"] | A
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid
    */
-grid?: ConditionalValue<CssProperties["grid"] | AnyString>
- /**
+  grid?: ConditionalValue<CssProperties["grid"] | AnyString>;
+  /**
    * The **`grid-area`** CSS shorthand property specifies a grid item's size and location within a grid by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the edges of its grid area.
    *
    * **Syntax**: `<grid-line> [ / <grid-line> ]{0,3}`
@@ -2739,8 +3237,8 @@ grid?: ConditionalValue<CssProperties["grid"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-area
    */
-gridArea?: ConditionalValue<CssProperties["gridArea"] | AnyString>
- /**
+  gridArea?: ConditionalValue<CssProperties["gridArea"] | AnyString>;
+  /**
    * The **`grid-auto-columns`** CSS property specifies the size of an implicitly-created grid column track or pattern of tracks.
    *
    * **Syntax**: `<track-size>+`
@@ -2753,8 +3251,13 @@ gridArea?: ConditionalValue<CssProperties["gridArea"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-auto-columns
    */
-gridAutoColumns?: ConditionalValue<UtilityValues["gridAutoColumns"] | CssVars | CssProperties["gridAutoColumns"] | AnyString>
- /**
+  gridAutoColumns?: ConditionalValue<
+    | UtilityValues["gridAutoColumns"]
+    | CssVars
+    | CssProperties["gridAutoColumns"]
+    | AnyString
+  >;
+  /**
    * The **`grid-auto-flow`** CSS property controls how the auto-placement algorithm works, specifying exactly how auto-placed items get flowed into the grid.
    *
    * **Syntax**: `[ row | column ] || dense`
@@ -2767,8 +3270,8 @@ gridAutoColumns?: ConditionalValue<UtilityValues["gridAutoColumns"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-auto-flow
    */
-gridAutoFlow?: ConditionalValue<CssProperties["gridAutoFlow"] | AnyString>
- /**
+  gridAutoFlow?: ConditionalValue<CssProperties["gridAutoFlow"] | AnyString>;
+  /**
    * The **`grid-auto-rows`** CSS property specifies the size of an implicitly-created grid row track or pattern of tracks.
    *
    * **Syntax**: `<track-size>+`
@@ -2781,8 +3284,13 @@ gridAutoFlow?: ConditionalValue<CssProperties["gridAutoFlow"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-auto-rows
    */
-gridAutoRows?: ConditionalValue<UtilityValues["gridAutoRows"] | CssVars | CssProperties["gridAutoRows"] | AnyString>
- /**
+  gridAutoRows?: ConditionalValue<
+    | UtilityValues["gridAutoRows"]
+    | CssVars
+    | CssProperties["gridAutoRows"]
+    | AnyString
+  >;
+  /**
    * The **`grid-column`** CSS shorthand property specifies a grid item's size and location within a grid column by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-start and inline-end edge of its grid area.
    *
    * **Syntax**: `<grid-line> [ / <grid-line> ]?`
@@ -2793,8 +3301,13 @@ gridAutoRows?: ConditionalValue<UtilityValues["gridAutoRows"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-column
    */
-gridColumn?: ConditionalValue<UtilityValues["gridColumn"] | CssVars | CssProperties["gridColumn"] | AnyString>
- /**
+  gridColumn?: ConditionalValue<
+    | UtilityValues["gridColumn"]
+    | CssVars
+    | CssProperties["gridColumn"]
+    | AnyString
+  >;
+  /**
    * The **`grid-column-end`** CSS property specifies a grid item's end position within the grid column by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the block-end edge of its grid area.
    *
    * **Syntax**: `<grid-line>`
@@ -2807,9 +3320,14 @@ gridColumn?: ConditionalValue<UtilityValues["gridColumn"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-column-end
    */
-gridColumnEnd?: ConditionalValue<CssProperties["gridColumnEnd"] | AnyString>
- gridColumnGap?: ConditionalValue<UtilityValues["gridColumnGap"] | CssVars | CssProperties["gridColumnGap"] | AnyString>
- /**
+  gridColumnEnd?: ConditionalValue<CssProperties["gridColumnEnd"] | AnyString>;
+  gridColumnGap?: ConditionalValue<
+    | UtilityValues["gridColumnGap"]
+    | CssVars
+    | CssProperties["gridColumnGap"]
+    | AnyString
+  >;
+  /**
    * The **`grid-column-start`** CSS property specifies a grid item's start position within the grid column by contributing a line, a span, or nothing (automatic) to its grid placement. This start position defines the block-start edge of the grid area.
    *
    * **Syntax**: `<grid-line>`
@@ -2822,9 +3340,13 @@ gridColumnEnd?: ConditionalValue<CssProperties["gridColumnEnd"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-column-start
    */
-gridColumnStart?: ConditionalValue<CssProperties["gridColumnStart"] | AnyString>
- gridGap?: ConditionalValue<UtilityValues["gridGap"] | CssVars | CssProperties["gridGap"] | AnyString>
- /**
+  gridColumnStart?: ConditionalValue<
+    CssProperties["gridColumnStart"] | AnyString
+  >;
+  gridGap?: ConditionalValue<
+    UtilityValues["gridGap"] | CssVars | CssProperties["gridGap"] | AnyString
+  >;
+  /**
    * The **`grid-row`** CSS shorthand property specifies a grid item's size and location within a grid row by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-start and inline-end edge of its grid area.
    *
    * **Syntax**: `<grid-line> [ / <grid-line> ]?`
@@ -2835,8 +3357,10 @@ gridColumnStart?: ConditionalValue<CssProperties["gridColumnStart"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-row
    */
-gridRow?: ConditionalValue<UtilityValues["gridRow"] | CssVars | CssProperties["gridRow"] | AnyString>
- /**
+  gridRow?: ConditionalValue<
+    UtilityValues["gridRow"] | CssVars | CssProperties["gridRow"] | AnyString
+  >;
+  /**
    * The **`grid-row-end`** CSS property specifies a grid item's end position within the grid row by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-end edge of its grid area.
    *
    * **Syntax**: `<grid-line>`
@@ -2849,9 +3373,14 @@ gridRow?: ConditionalValue<UtilityValues["gridRow"] | CssVars | CssProperties["g
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-row-end
    */
-gridRowEnd?: ConditionalValue<CssProperties["gridRowEnd"] | AnyString>
- gridRowGap?: ConditionalValue<UtilityValues["gridRowGap"] | CssVars | CssProperties["gridRowGap"] | AnyString>
- /**
+  gridRowEnd?: ConditionalValue<CssProperties["gridRowEnd"] | AnyString>;
+  gridRowGap?: ConditionalValue<
+    | UtilityValues["gridRowGap"]
+    | CssVars
+    | CssProperties["gridRowGap"]
+    | AnyString
+  >;
+  /**
    * The **`grid-row-start`** CSS property specifies a grid item's start position within the grid row by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-start edge of its grid area.
    *
    * **Syntax**: `<grid-line>`
@@ -2864,8 +3393,8 @@ gridRowEnd?: ConditionalValue<CssProperties["gridRowEnd"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-row-start
    */
-gridRowStart?: ConditionalValue<CssProperties["gridRowStart"] | AnyString>
- /**
+  gridRowStart?: ConditionalValue<CssProperties["gridRowStart"] | AnyString>;
+  /**
    * The **`grid-template`** CSS property is a shorthand property for defining grid columns, grid rows, and grid areas.
    *
    * **Syntax**: `none | [ <'grid-template-rows'> / <'grid-template-columns'> ] | [ <line-names>? <string> <track-size>? <line-names>? ]+ [ / <explicit-track-list> ]?`
@@ -2876,8 +3405,8 @@ gridRowStart?: ConditionalValue<CssProperties["gridRowStart"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-template
    */
-gridTemplate?: ConditionalValue<CssProperties["gridTemplate"] | AnyString>
- /**
+  gridTemplate?: ConditionalValue<CssProperties["gridTemplate"] | AnyString>;
+  /**
    * The **`grid-template-areas`** CSS property specifies named grid areas, establishing the cells in the grid and assigning them names.
    *
    * **Syntax**: `none | <string>+`
@@ -2890,8 +3419,10 @@ gridTemplate?: ConditionalValue<CssProperties["gridTemplate"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-areas
    */
-gridTemplateAreas?: ConditionalValue<CssProperties["gridTemplateAreas"] | AnyString>
- /**
+  gridTemplateAreas?: ConditionalValue<
+    CssProperties["gridTemplateAreas"] | AnyString
+  >;
+  /**
    * The **`grid-template-columns`** CSS property defines the line names and track sizing functions of the grid columns.
    *
    * **Syntax**: `none | <track-list> | <auto-track-list> | subgrid <line-name-list>?`
@@ -2904,8 +3435,13 @@ gridTemplateAreas?: ConditionalValue<CssProperties["gridTemplateAreas"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-columns
    */
-gridTemplateColumns?: ConditionalValue<UtilityValues["gridTemplateColumns"] | CssVars | CssProperties["gridTemplateColumns"] | AnyString>
- /**
+  gridTemplateColumns?: ConditionalValue<
+    | UtilityValues["gridTemplateColumns"]
+    | CssVars
+    | CssProperties["gridTemplateColumns"]
+    | AnyString
+  >;
+  /**
    * The **`grid-template-rows`** CSS property defines the line names and track sizing functions of the grid rows.
    *
    * **Syntax**: `none | <track-list> | <auto-track-list> | subgrid <line-name-list>?`
@@ -2918,8 +3454,13 @@ gridTemplateColumns?: ConditionalValue<UtilityValues["gridTemplateColumns"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-rows
    */
-gridTemplateRows?: ConditionalValue<UtilityValues["gridTemplateRows"] | CssVars | CssProperties["gridTemplateRows"] | AnyString>
- /**
+  gridTemplateRows?: ConditionalValue<
+    | UtilityValues["gridTemplateRows"]
+    | CssVars
+    | CssProperties["gridTemplateRows"]
+    | AnyString
+  >;
+  /**
    * The **`hanging-punctuation`** CSS property specifies whether a punctuation mark should hang at the start or end of a line of text. Hanging punctuation may be placed outside the line box.
    *
    * **Syntax**: `none | [ first || [ force-end | allow-end ] || last ]`
@@ -2932,8 +3473,10 @@ gridTemplateRows?: ConditionalValue<UtilityValues["gridTemplateRows"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/hanging-punctuation
    */
-hangingPunctuation?: ConditionalValue<CssProperties["hangingPunctuation"] | AnyString>
- /**
+  hangingPunctuation?: ConditionalValue<
+    CssProperties["hangingPunctuation"] | AnyString
+  >;
+  /**
    * The **`height`** CSS property specifies the height of an element. By default, the property defines the height of the content area. If `box-sizing` is set to `border-box`, however, it instead determines the height of the border area.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -2946,8 +3489,10 @@ hangingPunctuation?: ConditionalValue<CssProperties["hangingPunctuation"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/height
    */
-height?: ConditionalValue<UtilityValues["height"] | CssVars | CssProperties["height"] | AnyString>
- /**
+  height?: ConditionalValue<
+    UtilityValues["height"] | CssVars | CssProperties["height"] | AnyString
+  >;
+  /**
    * The **`hyphenate-character`** CSS property sets the character (or string) used at the end of a line before a hyphenation break.
    *
    * **Syntax**: `auto | <string>`
@@ -2961,8 +3506,10 @@ height?: ConditionalValue<UtilityValues["height"] | CssVars | CssProperties["hei
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/hyphenate-character
    */
-hyphenateCharacter?: ConditionalValue<CssProperties["hyphenateCharacter"] | AnyString>
- /**
+  hyphenateCharacter?: ConditionalValue<
+    CssProperties["hyphenateCharacter"] | AnyString
+  >;
+  /**
    * The **`hyphenate-limit-chars`** CSS property specifies the minimum word length to allow hyphenation of words as well as the the minimum number of characters before and after the hyphen.
    *
    * **Syntax**: `[ auto | <integer> ]{1,3}`
@@ -2973,8 +3520,10 @@ hyphenateCharacter?: ConditionalValue<CssProperties["hyphenateCharacter"] | AnyS
    * | :-----: | :-----: | :----: | :--: | :-: |
    * | **109** |   No    |   No   | n/a  | No  |
    */
-hyphenateLimitChars?: ConditionalValue<CssProperties["hyphenateLimitChars"] | AnyString>
- /**
+  hyphenateLimitChars?: ConditionalValue<
+    CssProperties["hyphenateLimitChars"] | AnyString
+  >;
+  /**
    * The **`hyphens`** CSS property specifies how words should be hyphenated when text wraps across multiple lines. It can prevent hyphenation entirely, hyphenate at manually-specified points within the text, or let the browser automatically insert hyphens where appropriate.
    *
    * **Syntax**: `none | manual | auto`
@@ -2988,8 +3537,8 @@ hyphenateLimitChars?: ConditionalValue<CssProperties["hyphenateLimitChars"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/hyphens
    */
-hyphens?: ConditionalValue<CssProperties["hyphens"] | AnyString>
- /**
+  hyphens?: ConditionalValue<CssProperties["hyphens"] | AnyString>;
+  /**
    * The **`image-orientation`** CSS property specifies a layout-independent correction to the orientation of an image.
    *
    * **Syntax**: `from-image | <angle> | [ <angle>? flip ]`
@@ -3002,8 +3551,10 @@ hyphens?: ConditionalValue<CssProperties["hyphens"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/image-orientation
    */
-imageOrientation?: ConditionalValue<CssProperties["imageOrientation"] | AnyString>
- /**
+  imageOrientation?: ConditionalValue<
+    CssProperties["imageOrientation"] | AnyString
+  >;
+  /**
    * The **`image-rendering`** CSS property sets an image scaling algorithm. The property applies to an element itself, to any images set in its other properties, and to its descendants.
    *
    * **Syntax**: `auto | crisp-edges | pixelated`
@@ -3016,15 +3567,19 @@ imageOrientation?: ConditionalValue<CssProperties["imageOrientation"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/image-rendering
    */
-imageRendering?: ConditionalValue<CssProperties["imageRendering"] | AnyString>
- /**
+  imageRendering?: ConditionalValue<
+    CssProperties["imageRendering"] | AnyString
+  >;
+  /**
    * **Syntax**: `[ from-image || <resolution> ] && snap?`
    *
    * **Initial value**: `1dppx`
    */
-imageResolution?: ConditionalValue<CssProperties["imageResolution"] | AnyString>
- imeMode?: ConditionalValue<CssProperties["imeMode"] | AnyString>
- /**
+  imageResolution?: ConditionalValue<
+    CssProperties["imageResolution"] | AnyString
+  >;
+  imeMode?: ConditionalValue<CssProperties["imeMode"] | AnyString>;
+  /**
    * The `initial-letter` CSS property sets styling for dropped, raised, and sunken initial letters.
    *
    * **Syntax**: `normal | [ <number> <integer>? ]`
@@ -3037,9 +3592,11 @@ imageResolution?: ConditionalValue<CssProperties["imageResolution"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/initial-letter
    */
-initialLetter?: ConditionalValue<CssProperties["initialLetter"] | AnyString>
- initialLetterAlign?: ConditionalValue<CssProperties["initialLetterAlign"] | AnyString>
- /**
+  initialLetter?: ConditionalValue<CssProperties["initialLetter"] | AnyString>;
+  initialLetterAlign?: ConditionalValue<
+    CssProperties["initialLetterAlign"] | AnyString
+  >;
+  /**
    * The **`inline-size`** CSS property defines the horizontal or vertical size of an element's block, depending on its writing mode. It corresponds to either the `width` or the `height` property, depending on the value of `writing-mode`.
    *
    * **Syntax**: `<'width'>`
@@ -3052,14 +3609,19 @@ initialLetter?: ConditionalValue<CssProperties["initialLetter"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inline-size
    */
-inlineSize?: ConditionalValue<UtilityValues["inlineSize"] | CssVars | CssProperties["inlineSize"] | AnyString>
- /**
+  inlineSize?: ConditionalValue<
+    | UtilityValues["inlineSize"]
+    | CssVars
+    | CssProperties["inlineSize"]
+    | AnyString
+  >;
+  /**
    * **Syntax**: `auto | none`
    *
    * **Initial value**: `auto`
    */
-inputSecurity?: ConditionalValue<CssProperties["inputSecurity"] | AnyString>
- /**
+  inputSecurity?: ConditionalValue<CssProperties["inputSecurity"] | AnyString>;
+  /**
    * The **`inset`** CSS property is a shorthand that corresponds to the `top`, `right`, `bottom`, and/or `left` properties. It has the same multi-value syntax of the `margin` shorthand.
    *
    * **Syntax**: `<'top'>{1,4}`
@@ -3070,8 +3632,10 @@ inputSecurity?: ConditionalValue<CssProperties["inputSecurity"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset
    */
-inset?: ConditionalValue<UtilityValues["inset"] | CssVars | CssProperties["inset"] | AnyString>
- /**
+  inset?: ConditionalValue<
+    UtilityValues["inset"] | CssVars | CssProperties["inset"] | AnyString
+  >;
+  /**
    * The **`inset-block`** CSS property defines the logical block start and end offsets of an element, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>{1,2}`
@@ -3082,8 +3646,13 @@ inset?: ConditionalValue<UtilityValues["inset"] | CssVars | CssProperties["inset
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-block
    */
-insetBlock?: ConditionalValue<UtilityValues["insetBlock"] | CssVars | CssProperties["insetBlock"] | AnyString>
- /**
+  insetBlock?: ConditionalValue<
+    | UtilityValues["insetBlock"]
+    | CssVars
+    | CssProperties["insetBlock"]
+    | AnyString
+  >;
+  /**
    * The **`inset-block-end`** CSS property defines the logical block end offset of an element, which maps to a physical inset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -3096,8 +3665,13 @@ insetBlock?: ConditionalValue<UtilityValues["insetBlock"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-block-end
    */
-insetBlockEnd?: ConditionalValue<UtilityValues["insetBlockEnd"] | CssVars | CssProperties["insetBlockEnd"] | AnyString>
- /**
+  insetBlockEnd?: ConditionalValue<
+    | UtilityValues["insetBlockEnd"]
+    | CssVars
+    | CssProperties["insetBlockEnd"]
+    | AnyString
+  >;
+  /**
    * The **`inset-block-start`** CSS property defines the logical block start offset of an element, which maps to a physical inset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -3110,8 +3684,13 @@ insetBlockEnd?: ConditionalValue<UtilityValues["insetBlockEnd"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-block-start
    */
-insetBlockStart?: ConditionalValue<UtilityValues["insetBlockStart"] | CssVars | CssProperties["insetBlockStart"] | AnyString>
- /**
+  insetBlockStart?: ConditionalValue<
+    | UtilityValues["insetBlockStart"]
+    | CssVars
+    | CssProperties["insetBlockStart"]
+    | AnyString
+  >;
+  /**
    * The **`inset-inline`** CSS property defines the logical start and end offsets of an element in the inline direction, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>{1,2}`
@@ -3122,8 +3701,13 @@ insetBlockStart?: ConditionalValue<UtilityValues["insetBlockStart"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline
    */
-insetInline?: ConditionalValue<UtilityValues["insetInline"] | CssVars | CssProperties["insetInline"] | AnyString>
- /**
+  insetInline?: ConditionalValue<
+    | UtilityValues["insetInline"]
+    | CssVars
+    | CssProperties["insetInline"]
+    | AnyString
+  >;
+  /**
    * The **`inset-inline-end`** CSS property defines the logical inline end inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -3136,8 +3720,13 @@ insetInline?: ConditionalValue<UtilityValues["insetInline"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-end
    */
-insetInlineEnd?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssProperties["insetInlineEnd"] | AnyString>
- /**
+  insetInlineEnd?: ConditionalValue<
+    | UtilityValues["insetInlineEnd"]
+    | CssVars
+    | CssProperties["insetInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`inset-inline-start`** CSS property defines the logical inline start inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -3150,8 +3739,13 @@ insetInlineEnd?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-start
    */
-insetInlineStart?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssProperties["insetInlineStart"] | AnyString>
- /**
+  insetInlineStart?: ConditionalValue<
+    | UtilityValues["insetInlineStart"]
+    | CssVars
+    | CssProperties["insetInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`isolation`** CSS property determines whether an element must create a new stacking context.
    *
    * **Syntax**: `auto | isolate`
@@ -3164,8 +3758,10 @@ insetInlineStart?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/isolation
    */
-isolation?: ConditionalValue<CssVars | CssProperties["isolation"] | AnyString>
- /**
+  isolation?: ConditionalValue<
+    CssVars | CssProperties["isolation"] | AnyString
+  >;
+  /**
    * The CSS **`justify-content`** property defines how the browser distributes space between and around content items along the main-axis of a flex container, and the inline axis of a grid container.
    *
    * **Syntax**: `normal | <content-distribution> | <overflow-position>? [ <content-position> | left | right ]`
@@ -3179,8 +3775,10 @@ isolation?: ConditionalValue<CssVars | CssProperties["isolation"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/justify-content
    */
-justifyContent?: ConditionalValue<CssProperties["justifyContent"] | AnyString>
- /**
+  justifyContent?: ConditionalValue<
+    CssProperties["justifyContent"] | AnyString
+  >;
+  /**
    * The CSS **`justify-items`** property defines the default `justify-self` for all items of the box, giving them all a default way of justifying each box along the appropriate axis.
    *
    * **Syntax**: `normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ] | legacy | legacy && [ left | right | center ]`
@@ -3193,8 +3791,8 @@ justifyContent?: ConditionalValue<CssProperties["justifyContent"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/justify-items
    */
-justifyItems?: ConditionalValue<CssProperties["justifyItems"] | AnyString>
- /**
+  justifyItems?: ConditionalValue<CssProperties["justifyItems"] | AnyString>;
+  /**
    * The CSS **`justify-self`** property sets the way a box is justified inside its alignment container along the appropriate axis.
    *
    * **Syntax**: `auto | normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ]`
@@ -3207,8 +3805,8 @@ justifyItems?: ConditionalValue<CssProperties["justifyItems"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/justify-self
    */
-justifySelf?: ConditionalValue<CssProperties["justifySelf"] | AnyString>
- /**
+  justifySelf?: ConditionalValue<CssProperties["justifySelf"] | AnyString>;
+  /**
    * The **`justify-tracks`** CSS property sets the alignment in the masonry axis for grid containers that have masonry in their inline axis.
    *
    * **Syntax**: `[ normal | <content-distribution> | <overflow-position>? [ <content-position> | left | right ] ]#`
@@ -3221,8 +3819,8 @@ justifySelf?: ConditionalValue<CssProperties["justifySelf"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/justify-tracks
    */
-justifyTracks?: ConditionalValue<CssProperties["justifyTracks"] | AnyString>
- /**
+  justifyTracks?: ConditionalValue<CssProperties["justifyTracks"] | AnyString>;
+  /**
    * The **`left`** CSS property participates in specifying the horizontal position of a positioned element. It has no effect on non-positioned elements.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -3235,8 +3833,10 @@ justifyTracks?: ConditionalValue<CssProperties["justifyTracks"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/left
    */
-left?: ConditionalValue<UtilityValues["left"] | CssVars | CssProperties["left"] | AnyString>
- /**
+  left?: ConditionalValue<
+    UtilityValues["left"] | CssVars | CssProperties["left"] | AnyString
+  >;
+  /**
    * The **`letter-spacing`** CSS property sets the horizontal spacing behavior between text characters. This value is added to the natural spacing between characters while rendering the text. Positive values of `letter-spacing` causes characters to spread farther apart, while negative values of `letter-spacing` bring characters closer together.
    *
    * **Syntax**: `normal | <length>`
@@ -3249,8 +3849,13 @@ left?: ConditionalValue<UtilityValues["left"] | CssVars | CssProperties["left"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/letter-spacing
    */
-letterSpacing?: ConditionalValue<UtilityValues["letterSpacing"] | CssVars | CssProperties["letterSpacing"] | AnyString>
- /**
+  letterSpacing?: ConditionalValue<
+    | UtilityValues["letterSpacing"]
+    | CssVars
+    | CssProperties["letterSpacing"]
+    | AnyString
+  >;
+  /**
    * The **`line-break`** CSS property sets how to break lines of Chinese, Japanese, or Korean (CJK) text when working with punctuation and symbols.
    *
    * **Syntax**: `auto | loose | normal | strict | anywhere`
@@ -3264,14 +3869,16 @@ letterSpacing?: ConditionalValue<UtilityValues["letterSpacing"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/line-break
    */
-lineBreak?: ConditionalValue<CssVars | CssProperties["lineBreak"] | AnyString>
- /**
+  lineBreak?: ConditionalValue<
+    CssVars | CssProperties["lineBreak"] | AnyString
+  >;
+  /**
    * **Syntax**: `none | <integer>`
    *
    * **Initial value**: `none`
    */
-lineClamp?: ConditionalValue<CssProperties["lineClamp"] | AnyString>
- /**
+  lineClamp?: ConditionalValue<CssProperties["lineClamp"] | AnyString>;
+  /**
    * The **`line-height`** CSS property sets the height of a line box. It's commonly used to set the distance between lines of text. On block-level elements, it specifies the minimum height of line boxes within the element. On non-replaced inline elements, it specifies the height that is used to calculate line box height.
    *
    * **Syntax**: `normal | <number> | <length> | <percentage>`
@@ -3284,8 +3891,13 @@ lineClamp?: ConditionalValue<CssProperties["lineClamp"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/line-height
    */
-lineHeight?: ConditionalValue<UtilityValues["lineHeight"] | CssVars | CssProperties["lineHeight"] | AnyString>
- /**
+  lineHeight?: ConditionalValue<
+    | UtilityValues["lineHeight"]
+    | CssVars
+    | CssProperties["lineHeight"]
+    | AnyString
+  >;
+  /**
    * The **`line-height-step`** CSS property sets the step unit for line box heights. When the property is set, line box heights are rounded up to the closest multiple of the unit.
    *
    * **Syntax**: `<length>`
@@ -3298,8 +3910,10 @@ lineHeight?: ConditionalValue<UtilityValues["lineHeight"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/line-height-step
    */
-lineHeightStep?: ConditionalValue<CssProperties["lineHeightStep"] | AnyString>
- /**
+  lineHeightStep?: ConditionalValue<
+    CssProperties["lineHeightStep"] | AnyString
+  >;
+  /**
    * The **`list-style`** CSS shorthand property allows you to set all the list style properties at once.
    *
    * **Syntax**: `<'list-style-type'> || <'list-style-position'> || <'list-style-image'>`
@@ -3310,8 +3924,8 @@ lineHeightStep?: ConditionalValue<CssProperties["lineHeightStep"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/list-style
    */
-listStyle?: ConditionalValue<CssProperties["listStyle"] | AnyString>
- /**
+  listStyle?: ConditionalValue<CssProperties["listStyle"] | AnyString>;
+  /**
    * The **`list-style-image`** CSS property sets an image to be used as the list item marker.
    *
    * **Syntax**: `<image> | none`
@@ -3324,8 +3938,13 @@ listStyle?: ConditionalValue<CssProperties["listStyle"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/list-style-image
    */
-listStyleImage?: ConditionalValue<UtilityValues["listStyleImage"] | CssVars | CssProperties["listStyleImage"] | AnyString>
- /**
+  listStyleImage?: ConditionalValue<
+    | UtilityValues["listStyleImage"]
+    | CssVars
+    | CssProperties["listStyleImage"]
+    | AnyString
+  >;
+  /**
    * The **`list-style-position`** CSS property sets the position of the `::marker` relative to a list item.
    *
    * **Syntax**: `inside | outside`
@@ -3338,8 +3957,10 @@ listStyleImage?: ConditionalValue<UtilityValues["listStyleImage"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/list-style-position
    */
-listStylePosition?: ConditionalValue<CssProperties["listStylePosition"] | AnyString>
- /**
+  listStylePosition?: ConditionalValue<
+    CssProperties["listStylePosition"] | AnyString
+  >;
+  /**
    * The **`list-style-type`** CSS property sets the marker (such as a disc, character, or custom counter style) of a list item element.
    *
    * **Syntax**: `<counter-style> | <string> | none`
@@ -3352,8 +3973,8 @@ listStylePosition?: ConditionalValue<CssProperties["listStylePosition"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/list-style-type
    */
-listStyleType?: ConditionalValue<CssProperties["listStyleType"] | AnyString>
- /**
+  listStyleType?: ConditionalValue<CssProperties["listStyleType"] | AnyString>;
+  /**
    * The **`margin`** CSS shorthand property sets the margin area on all four sides of an element.
    *
    * **Syntax**: `[ <length> | <percentage> | auto ]{1,4}`
@@ -3364,8 +3985,10 @@ listStyleType?: ConditionalValue<CssProperties["listStyleType"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin
    */
-margin?: ConditionalValue<UtilityValues["margin"] | CssVars | CssProperties["margin"] | AnyString>
- /**
+  margin?: ConditionalValue<
+    UtilityValues["margin"] | CssVars | CssProperties["margin"] | AnyString
+  >;
+  /**
    * The **`margin-block`** CSS shorthand property defines the logical block start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>{1,2}`
@@ -3376,8 +3999,13 @@ margin?: ConditionalValue<UtilityValues["margin"] | CssVars | CssProperties["mar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-block
    */
-marginBlock?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssProperties["marginBlock"] | AnyString>
- /**
+  marginBlock?: ConditionalValue<
+    | UtilityValues["marginBlock"]
+    | CssVars
+    | CssProperties["marginBlock"]
+    | AnyString
+  >;
+  /**
    * The **`margin-block-end`** CSS property defines the logical block end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>`
@@ -3390,8 +4018,13 @@ marginBlock?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-block-end
    */
-marginBlockEnd?: ConditionalValue<UtilityValues["marginBlockEnd"] | CssVars | CssProperties["marginBlockEnd"] | AnyString>
- /**
+  marginBlockEnd?: ConditionalValue<
+    | UtilityValues["marginBlockEnd"]
+    | CssVars
+    | CssProperties["marginBlockEnd"]
+    | AnyString
+  >;
+  /**
    * The **`margin-block-start`** CSS property defines the logical block start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>`
@@ -3404,8 +4037,13 @@ marginBlockEnd?: ConditionalValue<UtilityValues["marginBlockEnd"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-block-start
    */
-marginBlockStart?: ConditionalValue<UtilityValues["marginBlockStart"] | CssVars | CssProperties["marginBlockStart"] | AnyString>
- /**
+  marginBlockStart?: ConditionalValue<
+    | UtilityValues["marginBlockStart"]
+    | CssVars
+    | CssProperties["marginBlockStart"]
+    | AnyString
+  >;
+  /**
    * The **`margin-bottom`** CSS property sets the margin area on the bottom of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -3418,8 +4056,13 @@ marginBlockStart?: ConditionalValue<UtilityValues["marginBlockStart"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-bottom
    */
-marginBottom?: ConditionalValue<UtilityValues["marginBottom"] | CssVars | CssProperties["marginBottom"] | AnyString>
- /**
+  marginBottom?: ConditionalValue<
+    | UtilityValues["marginBottom"]
+    | CssVars
+    | CssProperties["marginBottom"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline`** CSS shorthand property is a shorthand property that defines both the logical inline start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>{1,2}`
@@ -3430,8 +4073,13 @@ marginBottom?: ConditionalValue<UtilityValues["marginBottom"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline
    */
-marginInline?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperties["marginInline"] | AnyString>
- /**
+  marginInline?: ConditionalValue<
+    | UtilityValues["marginInline"]
+    | CssVars
+    | CssProperties["marginInline"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline-end`** CSS property defines the logical inline end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. In other words, it corresponds to the `margin-top`, `margin-right`, `margin-bottom` or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'margin-left'>`
@@ -3445,8 +4093,13 @@ marginInline?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-end
    */
-marginInlineEnd?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssProperties["marginInlineEnd"] | AnyString>
- /**
+  marginInlineEnd?: ConditionalValue<
+    | UtilityValues["marginInlineEnd"]
+    | CssVars
+    | CssProperties["marginInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline-start`** CSS property defines the logical inline start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. It corresponds to the `margin-top`, `margin-right`, `margin-bottom`, or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'margin-left'>`
@@ -3460,8 +4113,13 @@ marginInlineEnd?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-start
    */
-marginInlineStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | CssProperties["marginInlineStart"] | AnyString>
- /**
+  marginInlineStart?: ConditionalValue<
+    | UtilityValues["marginInlineStart"]
+    | CssVars
+    | CssProperties["marginInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`margin-left`** CSS property sets the margin area on the left side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -3474,8 +4132,13 @@ marginInlineStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-left
    */
-marginLeft?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssProperties["marginLeft"] | AnyString>
- /**
+  marginLeft?: ConditionalValue<
+    | UtilityValues["marginLeft"]
+    | CssVars
+    | CssProperties["marginLeft"]
+    | AnyString
+  >;
+  /**
    * The **`margin-right`** CSS property sets the margin area on the right side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -3488,8 +4151,13 @@ marginLeft?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-right
    */
-marginRight?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssProperties["marginRight"] | AnyString>
- /**
+  marginRight?: ConditionalValue<
+    | UtilityValues["marginRight"]
+    | CssVars
+    | CssProperties["marginRight"]
+    | AnyString
+  >;
+  /**
    * The **`margin-top`** CSS property sets the margin area on the top of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -3502,8 +4170,13 @@ marginRight?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-top
    */
-marginTop?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssProperties["marginTop"] | AnyString>
- /**
+  marginTop?: ConditionalValue<
+    | UtilityValues["marginTop"]
+    | CssVars
+    | CssProperties["marginTop"]
+    | AnyString
+  >;
+  /**
    * The `margin-trim` property allows the container to trim the margins of its children where they adjoin the container's edges.
    *
    * **Syntax**: `none | in-flow | all`
@@ -3516,8 +4189,8 @@ marginTop?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-trim
    */
-marginTrim?: ConditionalValue<CssProperties["marginTrim"] | AnyString>
- /**
+  marginTrim?: ConditionalValue<CssProperties["marginTrim"] | AnyString>;
+  /**
    * The **`mask`** CSS shorthand property hides an element (partially or fully) by masking or clipping the image at specific points.
    *
    * **Syntax**: `<mask-layer>#`
@@ -3529,8 +4202,8 @@ marginTrim?: ConditionalValue<CssProperties["marginTrim"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask
    */
-mask?: ConditionalValue<CssProperties["mask"] | AnyString>
- /**
+  mask?: ConditionalValue<CssProperties["mask"] | AnyString>;
+  /**
    * The **`mask-border`** CSS shorthand property lets you create a mask along the edge of an element's border.
    *
    * **Syntax**: `<'mask-border-source'> || <'mask-border-slice'> [ / <'mask-border-width'>? [ / <'mask-border-outset'> ]? ]? || <'mask-border-repeat'> || <'mask-border-mode'>`
@@ -3542,16 +4215,18 @@ mask?: ConditionalValue<CssProperties["mask"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-border
    */
-maskBorder?: ConditionalValue<CssProperties["maskBorder"] | AnyString>
- /**
+  maskBorder?: ConditionalValue<CssProperties["maskBorder"] | AnyString>;
+  /**
    * The **`mask-border-mode`** CSS property specifies the blending mode used in a mask border.
    *
    * **Syntax**: `luminance | alpha`
    *
    * **Initial value**: `alpha`
    */
-maskBorderMode?: ConditionalValue<CssProperties["maskBorderMode"] | AnyString>
- /**
+  maskBorderMode?: ConditionalValue<
+    CssProperties["maskBorderMode"] | AnyString
+  >;
+  /**
    * The **`mask-border-outset`** CSS property specifies the distance by which an element's mask border is set out from its border box.
    *
    * **Syntax**: `[ <length> | <number> ]{1,4}`
@@ -3565,8 +4240,10 @@ maskBorderMode?: ConditionalValue<CssProperties["maskBorderMode"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-outset
    */
-maskBorderOutset?: ConditionalValue<CssProperties["maskBorderOutset"] | AnyString>
- /**
+  maskBorderOutset?: ConditionalValue<
+    CssProperties["maskBorderOutset"] | AnyString
+  >;
+  /**
    * The **`mask-border-repeat`** CSS property sets how the edge regions of a source image are adjusted to fit the dimensions of an element's mask border.
    *
    * **Syntax**: `[ stretch | repeat | round | space ]{1,2}`
@@ -3580,8 +4257,10 @@ maskBorderOutset?: ConditionalValue<CssProperties["maskBorderOutset"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-repeat
    */
-maskBorderRepeat?: ConditionalValue<CssProperties["maskBorderRepeat"] | AnyString>
- /**
+  maskBorderRepeat?: ConditionalValue<
+    CssProperties["maskBorderRepeat"] | AnyString
+  >;
+  /**
    * The **`mask-border-slice`** CSS property divides the image set by `mask-border-source` into regions. These regions are used to form the components of an element's mask border.
    *
    * **Syntax**: `<number-percentage>{1,4} fill?`
@@ -3595,8 +4274,10 @@ maskBorderRepeat?: ConditionalValue<CssProperties["maskBorderRepeat"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-slice
    */
-maskBorderSlice?: ConditionalValue<CssProperties["maskBorderSlice"] | AnyString>
- /**
+  maskBorderSlice?: ConditionalValue<
+    CssProperties["maskBorderSlice"] | AnyString
+  >;
+  /**
    * The **`mask-border-source`** CSS property sets the source image used to create an element's mask border.
    *
    * **Syntax**: `none | <image>`
@@ -3610,8 +4291,10 @@ maskBorderSlice?: ConditionalValue<CssProperties["maskBorderSlice"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-source
    */
-maskBorderSource?: ConditionalValue<CssProperties["maskBorderSource"] | AnyString>
- /**
+  maskBorderSource?: ConditionalValue<
+    CssProperties["maskBorderSource"] | AnyString
+  >;
+  /**
    * The **`mask-border-width`** CSS property sets the width of an element's mask border.
    *
    * **Syntax**: `[ <length-percentage> | <number> | auto ]{1,4}`
@@ -3625,8 +4308,10 @@ maskBorderSource?: ConditionalValue<CssProperties["maskBorderSource"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-width
    */
-maskBorderWidth?: ConditionalValue<CssProperties["maskBorderWidth"] | AnyString>
- /**
+  maskBorderWidth?: ConditionalValue<
+    CssProperties["maskBorderWidth"] | AnyString
+  >;
+  /**
    * The **`mask-clip`** CSS property determines the area which is affected by a mask. The painted content of an element must be restricted to this area.
    *
    * **Syntax**: `[ <geometry-box> | no-clip ]#`
@@ -3640,8 +4325,8 @@ maskBorderWidth?: ConditionalValue<CssProperties["maskBorderWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-clip
    */
-maskClip?: ConditionalValue<CssProperties["maskClip"] | AnyString>
- /**
+  maskClip?: ConditionalValue<CssProperties["maskClip"] | AnyString>;
+  /**
    * The **`mask-composite`** CSS property represents a compositing operation used on the current mask layer with the mask layers below it.
    *
    * **Syntax**: `<compositing-operator>#`
@@ -3654,8 +4339,8 @@ maskClip?: ConditionalValue<CssProperties["maskClip"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-composite
    */
-maskComposite?: ConditionalValue<CssProperties["maskComposite"] | AnyString>
- /**
+  maskComposite?: ConditionalValue<CssProperties["maskComposite"] | AnyString>;
+  /**
    * The **`mask-image`** CSS property sets the image that is used as mask layer for an element. By default this means the alpha channel of the mask image will be multiplied with the alpha channel of the element. This can be controlled with the `mask-mode` property.
    *
    * **Syntax**: `<mask-reference>#`
@@ -3669,8 +4354,8 @@ maskComposite?: ConditionalValue<CssProperties["maskComposite"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-image
    */
-maskImage?: ConditionalValue<CssProperties["maskImage"] | AnyString>
- /**
+  maskImage?: ConditionalValue<CssProperties["maskImage"] | AnyString>;
+  /**
    * The **`mask-mode`** CSS property sets whether the mask reference defined by `mask-image` is treated as a luminance or alpha mask.
    *
    * **Syntax**: `<masking-mode>#`
@@ -3683,8 +4368,8 @@ maskImage?: ConditionalValue<CssProperties["maskImage"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-mode
    */
-maskMode?: ConditionalValue<CssProperties["maskMode"] | AnyString>
- /**
+  maskMode?: ConditionalValue<CssProperties["maskMode"] | AnyString>;
+  /**
    * The **`mask-origin`** CSS property sets the origin of a mask.
    *
    * **Syntax**: `<geometry-box>#`
@@ -3698,8 +4383,8 @@ maskMode?: ConditionalValue<CssProperties["maskMode"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-origin
    */
-maskOrigin?: ConditionalValue<CssProperties["maskOrigin"] | AnyString>
- /**
+  maskOrigin?: ConditionalValue<CssProperties["maskOrigin"] | AnyString>;
+  /**
    * The **`mask-position`** CSS property sets the initial position, relative to the mask position layer set by `mask-origin`, for each defined mask image.
    *
    * **Syntax**: `<position>#`
@@ -3713,8 +4398,8 @@ maskOrigin?: ConditionalValue<CssProperties["maskOrigin"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-position
    */
-maskPosition?: ConditionalValue<CssProperties["maskPosition"] | AnyString>
- /**
+  maskPosition?: ConditionalValue<CssProperties["maskPosition"] | AnyString>;
+  /**
    * The **`mask-repeat`** CSS property sets how mask images are repeated. A mask image can be repeated along the horizontal axis, the vertical axis, both axes, or not repeated at all.
    *
    * **Syntax**: `<repeat-style>#`
@@ -3728,8 +4413,8 @@ maskPosition?: ConditionalValue<CssProperties["maskPosition"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-repeat
    */
-maskRepeat?: ConditionalValue<CssProperties["maskRepeat"] | AnyString>
- /**
+  maskRepeat?: ConditionalValue<CssProperties["maskRepeat"] | AnyString>;
+  /**
    * The **`mask-size`** CSS property specifies the sizes of the mask images. The size of the image can be fully or partially constrained in order to preserve its intrinsic ratio.
    *
    * **Syntax**: `<bg-size>#`
@@ -3743,8 +4428,8 @@ maskRepeat?: ConditionalValue<CssProperties["maskRepeat"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-size
    */
-maskSize?: ConditionalValue<CssProperties["maskSize"] | AnyString>
- /**
+  maskSize?: ConditionalValue<CssProperties["maskSize"] | AnyString>;
+  /**
    * The **`mask-type`** CSS property sets whether an SVG `<mask>` element is used as a _luminance_ or an _alpha_ mask. It applies to the `<mask>` element itself.
    *
    * **Syntax**: `luminance | alpha`
@@ -3757,8 +4442,8 @@ maskSize?: ConditionalValue<CssProperties["maskSize"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mask-type
    */
-maskType?: ConditionalValue<CssProperties["maskType"] | AnyString>
- /**
+  maskType?: ConditionalValue<CssProperties["maskType"] | AnyString>;
+  /**
    * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ pack | next ] || [ definite-first | ordered ]`
@@ -3771,8 +4456,10 @@ maskType?: ConditionalValue<CssProperties["maskType"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/masonry-auto-flow
    */
-masonryAutoFlow?: ConditionalValue<CssProperties["masonryAutoFlow"] | AnyString>
- /**
+  masonryAutoFlow?: ConditionalValue<
+    CssProperties["masonryAutoFlow"] | AnyString
+  >;
+  /**
    * The **`math-depth`** property describes a notion of _depth_ for each element of a mathematical formula, with respect to the top-level container of that formula. Concretely, this is used to determine the computed value of the font-size property when its specified value is `math`.
    *
    * **Syntax**: `auto-add | add(<integer>) | <integer>`
@@ -3785,8 +4472,8 @@ masonryAutoFlow?: ConditionalValue<CssProperties["masonryAutoFlow"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/math-depth
    */
-mathDepth?: ConditionalValue<CssProperties["mathDepth"] | AnyString>
- /**
+  mathDepth?: ConditionalValue<CssProperties["mathDepth"] | AnyString>;
+  /**
    * The `math-shift` property indicates whether superscripts inside MathML formulas should be raised by a normal or compact shift.
    *
    * **Syntax**: `normal | compact`
@@ -3799,8 +4486,8 @@ mathDepth?: ConditionalValue<CssProperties["mathDepth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/math-shift
    */
-mathShift?: ConditionalValue<CssProperties["mathShift"] | AnyString>
- /**
+  mathShift?: ConditionalValue<CssProperties["mathShift"] | AnyString>;
+  /**
    * The `math-style` property indicates whether MathML equations should render with normal or compact height.
    *
    * **Syntax**: `normal | compact`
@@ -3813,8 +4500,8 @@ mathShift?: ConditionalValue<CssProperties["mathShift"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/math-style
    */
-mathStyle?: ConditionalValue<CssProperties["mathStyle"] | AnyString>
- /**
+  mathStyle?: ConditionalValue<CssProperties["mathStyle"] | AnyString>;
+  /**
    * The **`max-block-size`** CSS property specifies the maximum size of an element in the direction opposite that of the writing direction as specified by `writing-mode`. That is, if the writing direction is horizontal, then `max-block-size` is equivalent to `max-height`; if the writing direction is vertical, `max-block-size` is the same as `max-width`.
    *
    * **Syntax**: `<'max-width'>`
@@ -3827,8 +4514,13 @@ mathStyle?: ConditionalValue<CssProperties["mathStyle"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/max-block-size
    */
-maxBlockSize?: ConditionalValue<UtilityValues["maxBlockSize"] | CssVars | CssProperties["maxBlockSize"] | AnyString>
- /**
+  maxBlockSize?: ConditionalValue<
+    | UtilityValues["maxBlockSize"]
+    | CssVars
+    | CssProperties["maxBlockSize"]
+    | AnyString
+  >;
+  /**
    * The **`max-height`** CSS property sets the maximum height of an element. It prevents the used value of the `height` property from becoming larger than the value specified for `max-height`.
    *
    * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -3841,8 +4533,13 @@ maxBlockSize?: ConditionalValue<UtilityValues["maxBlockSize"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/max-height
    */
-maxHeight?: ConditionalValue<UtilityValues["maxHeight"] | CssVars | CssProperties["maxHeight"] | AnyString>
- /**
+  maxHeight?: ConditionalValue<
+    | UtilityValues["maxHeight"]
+    | CssVars
+    | CssProperties["maxHeight"]
+    | AnyString
+  >;
+  /**
    * The **`max-inline-size`** CSS property defines the horizontal or vertical maximum size of an element's block, depending on its writing mode. It corresponds to either the `max-width` or the `max-height` property, depending on the value of `writing-mode`.
    *
    * **Syntax**: `<'max-width'>`
@@ -3856,14 +4553,19 @@ maxHeight?: ConditionalValue<UtilityValues["maxHeight"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/max-inline-size
    */
-maxInlineSize?: ConditionalValue<UtilityValues["maxInlineSize"] | CssVars | CssProperties["maxInlineSize"] | AnyString>
- /**
+  maxInlineSize?: ConditionalValue<
+    | UtilityValues["maxInlineSize"]
+    | CssVars
+    | CssProperties["maxInlineSize"]
+    | AnyString
+  >;
+  /**
    * **Syntax**: `none | <integer>`
    *
    * **Initial value**: `none`
    */
-maxLines?: ConditionalValue<CssProperties["maxLines"] | AnyString>
- /**
+  maxLines?: ConditionalValue<CssProperties["maxLines"] | AnyString>;
+  /**
    * The **`max-width`** CSS property sets the maximum width of an element. It prevents the used value of the `width` property from becoming larger than the value specified by `max-width`.
    *
    * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -3876,8 +4578,10 @@ maxLines?: ConditionalValue<CssProperties["maxLines"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/max-width
    */
-maxWidth?: ConditionalValue<UtilityValues["maxWidth"] | CssVars | CssProperties["maxWidth"] | AnyString>
- /**
+  maxWidth?: ConditionalValue<
+    UtilityValues["maxWidth"] | CssVars | CssProperties["maxWidth"] | AnyString
+  >;
+  /**
    * The **`min-block-size`** CSS property defines the minimum horizontal or vertical size of an element's block, depending on its writing mode. It corresponds to either the `min-width` or the `min-height` property, depending on the value of `writing-mode`.
    *
    * **Syntax**: `<'min-width'>`
@@ -3890,8 +4594,13 @@ maxWidth?: ConditionalValue<UtilityValues["maxWidth"] | CssVars | CssProperties[
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/min-block-size
    */
-minBlockSize?: ConditionalValue<UtilityValues["minBlockSize"] | CssVars | CssProperties["minBlockSize"] | AnyString>
- /**
+  minBlockSize?: ConditionalValue<
+    | UtilityValues["minBlockSize"]
+    | CssVars
+    | CssProperties["minBlockSize"]
+    | AnyString
+  >;
+  /**
    * The **`min-height`** CSS property sets the minimum height of an element. It prevents the used value of the `height` property from becoming smaller than the value specified for `min-height`.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -3904,8 +4613,13 @@ minBlockSize?: ConditionalValue<UtilityValues["minBlockSize"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/min-height
    */
-minHeight?: ConditionalValue<UtilityValues["minHeight"] | CssVars | CssProperties["minHeight"] | AnyString>
- /**
+  minHeight?: ConditionalValue<
+    | UtilityValues["minHeight"]
+    | CssVars
+    | CssProperties["minHeight"]
+    | AnyString
+  >;
+  /**
    * The **`min-inline-size`** CSS property defines the horizontal or vertical minimal size of an element's block, depending on its writing mode. It corresponds to either the `min-width` or the `min-height` property, depending on the value of `writing-mode`.
    *
    * **Syntax**: `<'min-width'>`
@@ -3918,8 +4632,13 @@ minHeight?: ConditionalValue<UtilityValues["minHeight"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/min-inline-size
    */
-minInlineSize?: ConditionalValue<UtilityValues["minInlineSize"] | CssVars | CssProperties["minInlineSize"] | AnyString>
- /**
+  minInlineSize?: ConditionalValue<
+    | UtilityValues["minInlineSize"]
+    | CssVars
+    | CssProperties["minInlineSize"]
+    | AnyString
+  >;
+  /**
    * The **`min-width`** CSS property sets the minimum width of an element. It prevents the used value of the `width` property from becoming smaller than the value specified for `min-width`.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -3932,8 +4651,10 @@ minInlineSize?: ConditionalValue<UtilityValues["minInlineSize"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/min-width
    */
-minWidth?: ConditionalValue<UtilityValues["minWidth"] | CssVars | CssProperties["minWidth"] | AnyString>
- /**
+  minWidth?: ConditionalValue<
+    UtilityValues["minWidth"] | CssVars | CssProperties["minWidth"] | AnyString
+  >;
+  /**
    * The **`mix-blend-mode`** CSS property sets how an element's content should blend with the content of the element's parent and the element's background.
    *
    * **Syntax**: `<blend-mode> | plus-lighter`
@@ -3946,8 +4667,10 @@ minWidth?: ConditionalValue<UtilityValues["minWidth"] | CssVars | CssProperties[
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/mix-blend-mode
    */
-mixBlendMode?: ConditionalValue<CssVars | CssProperties["mixBlendMode"] | AnyString>
- /**
+  mixBlendMode?: ConditionalValue<
+    CssVars | CssProperties["mixBlendMode"] | AnyString
+  >;
+  /**
    * The **`object-fit`** CSS property sets how the content of a replaced element, such as an `<img>` or `<video>`, should be resized to fit its container.
    *
    * **Syntax**: `fill | contain | cover | none | scale-down`
@@ -3960,8 +4683,10 @@ mixBlendMode?: ConditionalValue<CssVars | CssProperties["mixBlendMode"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/object-fit
    */
-objectFit?: ConditionalValue<CssVars | CssProperties["objectFit"] | AnyString>
- /**
+  objectFit?: ConditionalValue<
+    CssVars | CssProperties["objectFit"] | AnyString
+  >;
+  /**
    * The **`object-position`** CSS property specifies the alignment of the selected replaced element's contents within the element's box. Areas of the box which aren't covered by the replaced element's object will show the element's background.
    *
    * **Syntax**: `<position>`
@@ -3974,8 +4699,10 @@ objectFit?: ConditionalValue<CssVars | CssProperties["objectFit"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/object-position
    */
-objectPosition?: ConditionalValue<CssProperties["objectPosition"] | AnyString>
- /**
+  objectPosition?: ConditionalValue<
+    CssProperties["objectPosition"] | AnyString
+  >;
+  /**
    * The **`offset`** CSS shorthand property sets all the properties required for animating an element along a defined path.
    *
    * **Syntax**: `[ <'offset-position'>? [ <'offset-path'> [ <'offset-distance'> || <'offset-rotate'> ]? ]? ]! [ / <'offset-anchor'> ]?`
@@ -3987,8 +4714,8 @@ objectPosition?: ConditionalValue<CssProperties["objectPosition"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/offset
    */
-offset?: ConditionalValue<CssProperties["offset"] | AnyString>
- /**
+  offset?: ConditionalValue<CssProperties["offset"] | AnyString>;
+  /**
    * **Syntax**: `auto | <position>`
    *
    * **Initial value**: `auto`
@@ -3999,8 +4726,8 @@ offset?: ConditionalValue<CssProperties["offset"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/offset-anchor
    */
-offsetAnchor?: ConditionalValue<CssProperties["offsetAnchor"] | AnyString>
- /**
+  offsetAnchor?: ConditionalValue<CssProperties["offsetAnchor"] | AnyString>;
+  /**
    * The **`offset-distance`** CSS property specifies a position along an `offset-path` for an element to be placed.
    *
    * **Syntax**: `<length-percentage>`
@@ -4014,8 +4741,10 @@ offsetAnchor?: ConditionalValue<CssProperties["offsetAnchor"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/offset-distance
    */
-offsetDistance?: ConditionalValue<CssProperties["offsetDistance"] | AnyString>
- /**
+  offsetDistance?: ConditionalValue<
+    CssProperties["offsetDistance"] | AnyString
+  >;
+  /**
    * The **`offset-path`** CSS property specifies a motion path for an element to follow and defines the element's positioning within the parent container or SVG coordinate system.
    *
    * **Syntax**: `none | <offset-path> || <coord-box>`
@@ -4029,8 +4758,8 @@ offsetDistance?: ConditionalValue<CssProperties["offsetDistance"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/offset-path
    */
-offsetPath?: ConditionalValue<CssProperties["offsetPath"] | AnyString>
- /**
+  offsetPath?: ConditionalValue<CssProperties["offsetPath"] | AnyString>;
+  /**
    * **Syntax**: `normal | auto | <position>`
    *
    * **Initial value**: `auto`
@@ -4041,8 +4770,10 @@ offsetPath?: ConditionalValue<CssProperties["offsetPath"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/offset-position
    */
-offsetPosition?: ConditionalValue<CssProperties["offsetPosition"] | AnyString>
- /**
+  offsetPosition?: ConditionalValue<
+    CssProperties["offsetPosition"] | AnyString
+  >;
+  /**
    * The **`offset-rotate`** CSS property defines the orientation/direction of the element as it is positioned along the `offset-path`.
    *
    * **Syntax**: `[ auto | reverse ] || <angle>`
@@ -4056,8 +4787,8 @@ offsetPosition?: ConditionalValue<CssProperties["offsetPosition"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/offset-rotate
    */
-offsetRotate?: ConditionalValue<CssProperties["offsetRotate"] | AnyString>
- /**
+  offsetRotate?: ConditionalValue<CssProperties["offsetRotate"] | AnyString>;
+  /**
    * The **`opacity`** CSS property sets the opacity of an element. Opacity is the degree to which content behind an element is hidden, and is the opposite of transparency.
    *
    * **Syntax**: `<alpha-value>`
@@ -4070,8 +4801,8 @@ offsetRotate?: ConditionalValue<CssProperties["offsetRotate"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/opacity
    */
-opacity?: ConditionalValue<CssProperties["opacity"] | AnyString>
- /**
+  opacity?: ConditionalValue<CssProperties["opacity"] | AnyString>;
+  /**
    * The **`order`** CSS property sets the order to lay out an item in a flex or grid container. Items in a container are sorted by ascending `order` value and then by their source code order.
    *
    * **Syntax**: `<integer>`
@@ -4085,8 +4816,8 @@ opacity?: ConditionalValue<CssProperties["opacity"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/order
    */
-order?: ConditionalValue<CssProperties["order"] | AnyString>
- /**
+  order?: ConditionalValue<CssProperties["order"] | AnyString>;
+  /**
    * The **`orphans`** CSS property sets the minimum number of lines in a block container that must be shown at the _bottom_ of a page, region, or column.
    *
    * **Syntax**: `<integer>`
@@ -4099,8 +4830,8 @@ order?: ConditionalValue<CssProperties["order"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/orphans
    */
-orphans?: ConditionalValue<CssProperties["orphans"] | AnyString>
- /**
+  orphans?: ConditionalValue<CssProperties["orphans"] | AnyString>;
+  /**
    * The **`outline`** CSS shorthand property sets most of the outline properties in a single declaration.
    *
    * **Syntax**: `[ <'outline-color'> || <'outline-style'> || <'outline-width'> ]`
@@ -4111,8 +4842,10 @@ orphans?: ConditionalValue<CssProperties["orphans"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline
    */
-outline?: ConditionalValue<UtilityValues["outline"] | CssVars | CssProperties["outline"] | AnyString>
- /**
+  outline?: ConditionalValue<
+    UtilityValues["outline"] | CssVars | CssProperties["outline"] | AnyString
+  >;
+  /**
    * The **`outline-color`** CSS property sets the color of an element's outline.
    *
    * **Syntax**: `<color> | invert`
@@ -4125,8 +4858,13 @@ outline?: ConditionalValue<UtilityValues["outline"] | CssVars | CssProperties["o
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline-color
    */
-outlineColor?: ConditionalValue<UtilityValues["outlineColor"] | CssVars | CssProperties["outlineColor"] | AnyString>
- /**
+  outlineColor?: ConditionalValue<
+    | UtilityValues["outlineColor"]
+    | CssVars
+    | CssProperties["outlineColor"]
+    | AnyString
+  >;
+  /**
    * The **`outline-offset`** CSS property sets the amount of space between an outline and the edge or border of an element.
    *
    * **Syntax**: `<length>`
@@ -4139,8 +4877,13 @@ outlineColor?: ConditionalValue<UtilityValues["outlineColor"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline-offset
    */
-outlineOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssProperties["outlineOffset"] | AnyString>
- /**
+  outlineOffset?: ConditionalValue<
+    | UtilityValues["outlineOffset"]
+    | CssVars
+    | CssProperties["outlineOffset"]
+    | AnyString
+  >;
+  /**
    * The **`outline-style`** CSS property sets the style of an element's outline. An outline is a line that is drawn around an element, outside the `border`.
    *
    * **Syntax**: `auto | <'border-style'>`
@@ -4153,8 +4896,10 @@ outlineOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline-style
    */
-outlineStyle?: ConditionalValue<CssVars | CssProperties["outlineStyle"] | AnyString>
- /**
+  outlineStyle?: ConditionalValue<
+    CssVars | CssProperties["outlineStyle"] | AnyString
+  >;
+  /**
    * The CSS **`outline-width`** property sets the thickness of an element's outline. An outline is a line that is drawn around an element, outside the `border`.
    *
    * **Syntax**: `<line-width>`
@@ -4167,8 +4912,8 @@ outlineStyle?: ConditionalValue<CssVars | CssProperties["outlineStyle"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline-width
    */
-outlineWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>
- /**
+  outlineWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>;
+  /**
    * The **`overflow`** CSS shorthand property sets the desired behavior for an element's overflow — i.e. when an element's content is too big to fit in its block formatting context — in both directions.
    *
    * **Syntax**: `[ visible | hidden | clip | scroll | auto ]{1,2}`
@@ -4181,8 +4926,8 @@ outlineWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow
    */
-overflow?: ConditionalValue<CssVars | CssProperties["overflow"] | AnyString>
- /**
+  overflow?: ConditionalValue<CssVars | CssProperties["overflow"] | AnyString>;
+  /**
    * **Syntax**: `auto | none`
    *
    * **Initial value**: `auto`
@@ -4193,8 +4938,10 @@ overflow?: ConditionalValue<CssVars | CssProperties["overflow"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow-anchor
    */
-overflowAnchor?: ConditionalValue<CssProperties["overflowAnchor"] | AnyString>
- /**
+  overflowAnchor?: ConditionalValue<
+    CssProperties["overflowAnchor"] | AnyString
+  >;
+  /**
    * **Syntax**: `visible | hidden | clip | scroll | auto`
    *
    * **Initial value**: `auto`
@@ -4205,16 +4952,20 @@ overflowAnchor?: ConditionalValue<CssProperties["overflowAnchor"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow-block
    */
-overflowBlock?: ConditionalValue<CssVars | CssProperties["overflowBlock"] | AnyString>
- /**
+  overflowBlock?: ConditionalValue<
+    CssVars | CssProperties["overflowBlock"] | AnyString
+  >;
+  /**
    * The **`overflow-clip-box`** CSS property specifies relative to which box the clipping happens when there is an overflow. It is short hand for the `overflow-clip-box-inline` and `overflow-clip-box-block` properties.
    *
    * **Syntax**: `padding-box | content-box`
    *
    * **Initial value**: `padding-box`
    */
-overflowClipBox?: ConditionalValue<CssProperties["overflowClipBox"] | AnyString>
- /**
+  overflowClipBox?: ConditionalValue<
+    CssProperties["overflowClipBox"] | AnyString
+  >;
+  /**
    * **Syntax**: `<visual-box> || <length [0,∞]>`
    *
    * **Initial value**: `0px`
@@ -4225,8 +4976,10 @@ overflowClipBox?: ConditionalValue<CssProperties["overflowClipBox"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow-clip-margin
    */
-overflowClipMargin?: ConditionalValue<CssProperties["overflowClipMargin"] | AnyString>
- /**
+  overflowClipMargin?: ConditionalValue<
+    CssProperties["overflowClipMargin"] | AnyString
+  >;
+  /**
    * **Syntax**: `visible | hidden | clip | scroll | auto`
    *
    * **Initial value**: `auto`
@@ -4237,8 +4990,10 @@ overflowClipMargin?: ConditionalValue<CssProperties["overflowClipMargin"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow-inline
    */
-overflowInline?: ConditionalValue<CssVars | CssProperties["overflowInline"] | AnyString>
- /**
+  overflowInline?: ConditionalValue<
+    CssVars | CssProperties["overflowInline"] | AnyString
+  >;
+  /**
    * The **`overflow-wrap`** CSS property applies to inline elements, setting whether the browser should insert line breaks within an otherwise unbreakable string to prevent text from overflowing its line box.
    *
    * **Syntax**: `normal | break-word | anywhere`
@@ -4252,8 +5007,10 @@ overflowInline?: ConditionalValue<CssVars | CssProperties["overflowInline"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow-wrap
    */
-overflowWrap?: ConditionalValue<CssVars | CssProperties["overflowWrap"] | AnyString>
- /**
+  overflowWrap?: ConditionalValue<
+    CssVars | CssProperties["overflowWrap"] | AnyString
+  >;
+  /**
    * The **`overflow-x`** CSS property sets what shows when content overflows a block-level element's left and right edges. This may be nothing, a scroll bar, or the overflow content.
    *
    * **Syntax**: `visible | hidden | clip | scroll | auto`
@@ -4266,8 +5023,10 @@ overflowWrap?: ConditionalValue<CssVars | CssProperties["overflowWrap"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow-x
    */
-overflowX?: ConditionalValue<CssVars | CssProperties["overflowX"] | AnyString>
- /**
+  overflowX?: ConditionalValue<
+    CssVars | CssProperties["overflowX"] | AnyString
+  >;
+  /**
    * The **`overflow-y`** CSS property sets what shows when content overflows a block-level element's top and bottom edges. This may be nothing, a scroll bar, or the overflow content.
    *
    * **Syntax**: `visible | hidden | clip | scroll | auto`
@@ -4280,8 +5039,10 @@ overflowX?: ConditionalValue<CssVars | CssProperties["overflowX"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overflow-y
    */
-overflowY?: ConditionalValue<CssVars | CssProperties["overflowY"] | AnyString>
- /**
+  overflowY?: ConditionalValue<
+    CssVars | CssProperties["overflowY"] | AnyString
+  >;
+  /**
    * The **`overlay`** CSS property specifies whether an element appearing in the top layer (for example, a shown popover or modal `<dialog>` element) is actually rendered in the top layer. This property is only relevant within a list of `transition-property` values, and only if `allow-discrete` is set as the `transition-behavior`.
    *
    * **Syntax**: `none | auto`
@@ -4294,8 +5055,8 @@ overflowY?: ConditionalValue<CssVars | CssProperties["overflowY"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overlay
    */
-overlay?: ConditionalValue<CssProperties["overlay"] | AnyString>
- /**
+  overlay?: ConditionalValue<CssProperties["overlay"] | AnyString>;
+  /**
    * The **`overscroll-behavior`** CSS property sets what a browser does when reaching the boundary of a scrolling area. It's a shorthand for `overscroll-behavior-x` and `overscroll-behavior-y`.
    *
    * **Syntax**: `[ contain | none | auto ]{1,2}`
@@ -4308,8 +5069,10 @@ overlay?: ConditionalValue<CssProperties["overlay"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior
    */
-overscrollBehavior?: ConditionalValue<CssProperties["overscrollBehavior"] | AnyString>
- /**
+  overscrollBehavior?: ConditionalValue<
+    CssProperties["overscrollBehavior"] | AnyString
+  >;
+  /**
    * The **`overscroll-behavior-block`** CSS property sets the browser's behavior when the block direction boundary of a scrolling area is reached.
    *
    * **Syntax**: `contain | none | auto`
@@ -4322,8 +5085,10 @@ overscrollBehavior?: ConditionalValue<CssProperties["overscrollBehavior"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-block
    */
-overscrollBehaviorBlock?: ConditionalValue<CssProperties["overscrollBehaviorBlock"] | AnyString>
- /**
+  overscrollBehaviorBlock?: ConditionalValue<
+    CssProperties["overscrollBehaviorBlock"] | AnyString
+  >;
+  /**
    * The **`overscroll-behavior-inline`** CSS property sets the browser's behavior when the inline direction boundary of a scrolling area is reached.
    *
    * **Syntax**: `contain | none | auto`
@@ -4336,8 +5101,10 @@ overscrollBehaviorBlock?: ConditionalValue<CssProperties["overscrollBehaviorBloc
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-inline
    */
-overscrollBehaviorInline?: ConditionalValue<CssProperties["overscrollBehaviorInline"] | AnyString>
- /**
+  overscrollBehaviorInline?: ConditionalValue<
+    CssProperties["overscrollBehaviorInline"] | AnyString
+  >;
+  /**
    * The **`overscroll-behavior-x`** CSS property sets the browser's behavior when the horizontal boundary of a scrolling area is reached.
    *
    * **Syntax**: `contain | none | auto`
@@ -4350,8 +5117,10 @@ overscrollBehaviorInline?: ConditionalValue<CssProperties["overscrollBehaviorInl
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-x
    */
-overscrollBehaviorX?: ConditionalValue<CssProperties["overscrollBehaviorX"] | AnyString>
- /**
+  overscrollBehaviorX?: ConditionalValue<
+    CssProperties["overscrollBehaviorX"] | AnyString
+  >;
+  /**
    * The **`overscroll-behavior-y`** CSS property sets the browser's behavior when the vertical boundary of a scrolling area is reached.
    *
    * **Syntax**: `contain | none | auto`
@@ -4364,8 +5133,10 @@ overscrollBehaviorX?: ConditionalValue<CssProperties["overscrollBehaviorX"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-y
    */
-overscrollBehaviorY?: ConditionalValue<CssProperties["overscrollBehaviorY"] | AnyString>
- /**
+  overscrollBehaviorY?: ConditionalValue<
+    CssProperties["overscrollBehaviorY"] | AnyString
+  >;
+  /**
    * The **`padding`** CSS shorthand property sets the padding area on all four sides of an element at once.
    *
    * **Syntax**: `[ <length> | <percentage> ]{1,4}`
@@ -4376,8 +5147,10 @@ overscrollBehaviorY?: ConditionalValue<CssProperties["overscrollBehaviorY"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding
    */
-padding?: ConditionalValue<UtilityValues["padding"] | CssVars | CssProperties["padding"] | AnyString>
- /**
+  padding?: ConditionalValue<
+    UtilityValues["padding"] | CssVars | CssProperties["padding"] | AnyString
+  >;
+  /**
    * The **`padding-block`** CSS shorthand property defines the logical block start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>{1,2}`
@@ -4388,8 +5161,13 @@ padding?: ConditionalValue<UtilityValues["padding"] | CssVars | CssProperties["p
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-block
    */
-paddingBlock?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssProperties["paddingBlock"] | AnyString>
- /**
+  paddingBlock?: ConditionalValue<
+    | UtilityValues["paddingBlock"]
+    | CssVars
+    | CssProperties["paddingBlock"]
+    | AnyString
+  >;
+  /**
    * The **`padding-block-end`** CSS property defines the logical block end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -4402,8 +5180,13 @@ paddingBlock?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-block-end
    */
-paddingBlockEnd?: ConditionalValue<UtilityValues["paddingBlockEnd"] | CssVars | CssProperties["paddingBlockEnd"] | AnyString>
- /**
+  paddingBlockEnd?: ConditionalValue<
+    | UtilityValues["paddingBlockEnd"]
+    | CssVars
+    | CssProperties["paddingBlockEnd"]
+    | AnyString
+  >;
+  /**
    * The **`padding-block-start`** CSS property defines the logical block start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -4416,8 +5199,13 @@ paddingBlockEnd?: ConditionalValue<UtilityValues["paddingBlockEnd"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-block-start
    */
-paddingBlockStart?: ConditionalValue<UtilityValues["paddingBlockStart"] | CssVars | CssProperties["paddingBlockStart"] | AnyString>
- /**
+  paddingBlockStart?: ConditionalValue<
+    | UtilityValues["paddingBlockStart"]
+    | CssVars
+    | CssProperties["paddingBlockStart"]
+    | AnyString
+  >;
+  /**
    * The **`padding-bottom`** CSS property sets the height of the padding area on the bottom of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -4430,8 +5218,13 @@ paddingBlockStart?: ConditionalValue<UtilityValues["paddingBlockStart"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-bottom
    */
-paddingBottom?: ConditionalValue<UtilityValues["paddingBottom"] | CssVars | CssProperties["paddingBottom"] | AnyString>
- /**
+  paddingBottom?: ConditionalValue<
+    | UtilityValues["paddingBottom"]
+    | CssVars
+    | CssProperties["paddingBottom"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline`** CSS shorthand property defines the logical inline start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>{1,2}`
@@ -4442,8 +5235,13 @@ paddingBottom?: ConditionalValue<UtilityValues["paddingBottom"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline
    */
-paddingInline?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProperties["paddingInline"] | AnyString>
- /**
+  paddingInline?: ConditionalValue<
+    | UtilityValues["paddingInline"]
+    | CssVars
+    | CssProperties["paddingInline"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline-end`** CSS property defines the logical inline end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -4457,8 +5255,13 @@ paddingInline?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-end
    */
-paddingInlineEnd?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssProperties["paddingInlineEnd"] | AnyString>
- /**
+  paddingInlineEnd?: ConditionalValue<
+    | UtilityValues["paddingInlineEnd"]
+    | CssVars
+    | CssProperties["paddingInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline-start`** CSS property defines the logical inline start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -4472,8 +5275,13 @@ paddingInlineEnd?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-start
    */
-paddingInlineStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | CssProperties["paddingInlineStart"] | AnyString>
- /**
+  paddingInlineStart?: ConditionalValue<
+    | UtilityValues["paddingInlineStart"]
+    | CssVars
+    | CssProperties["paddingInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`padding-left`** CSS property sets the width of the padding area to the left of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -4486,8 +5294,13 @@ paddingInlineStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssV
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-left
    */
-paddingLeft?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssProperties["paddingLeft"] | AnyString>
- /**
+  paddingLeft?: ConditionalValue<
+    | UtilityValues["paddingLeft"]
+    | CssVars
+    | CssProperties["paddingLeft"]
+    | AnyString
+  >;
+  /**
    * The **`padding-right`** CSS property sets the width of the padding area on the right of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -4500,8 +5313,13 @@ paddingLeft?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-right
    */
-paddingRight?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssProperties["paddingRight"] | AnyString>
- /**
+  paddingRight?: ConditionalValue<
+    | UtilityValues["paddingRight"]
+    | CssVars
+    | CssProperties["paddingRight"]
+    | AnyString
+  >;
+  /**
    * The **`padding-top`** CSS property sets the height of the padding area on the top of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -4514,8 +5332,13 @@ paddingRight?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-top
    */
-paddingTop?: ConditionalValue<UtilityValues["paddingTop"] | CssVars | CssProperties["paddingTop"] | AnyString>
- /**
+  paddingTop?: ConditionalValue<
+    | UtilityValues["paddingTop"]
+    | CssVars
+    | CssProperties["paddingTop"]
+    | AnyString
+  >;
+  /**
    * The **`page`** CSS property is used to specify the named page, a specific type of page defined by the `@page` at-rule.
    *
    * **Syntax**: `auto | <custom-ident>`
@@ -4528,8 +5351,8 @@ paddingTop?: ConditionalValue<UtilityValues["paddingTop"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/page
    */
-page?: ConditionalValue<CssProperties["page"] | AnyString>
- /**
+  page?: ConditionalValue<CssProperties["page"] | AnyString>;
+  /**
    * The **`page-break-after`** CSS property adjusts page breaks _after_ the current element.
    *
    * **Syntax**: `auto | always | avoid | left | right | recto | verso`
@@ -4542,8 +5365,10 @@ page?: ConditionalValue<CssProperties["page"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/page-break-after
    */
-pageBreakAfter?: ConditionalValue<CssProperties["pageBreakAfter"] | AnyString>
- /**
+  pageBreakAfter?: ConditionalValue<
+    CssProperties["pageBreakAfter"] | AnyString
+  >;
+  /**
    * The **`page-break-before`** CSS property adjusts page breaks _before_ the current element.
    *
    * **Syntax**: `auto | always | avoid | left | right | recto | verso`
@@ -4556,8 +5381,10 @@ pageBreakAfter?: ConditionalValue<CssProperties["pageBreakAfter"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/page-break-before
    */
-pageBreakBefore?: ConditionalValue<CssProperties["pageBreakBefore"] | AnyString>
- /**
+  pageBreakBefore?: ConditionalValue<
+    CssProperties["pageBreakBefore"] | AnyString
+  >;
+  /**
    * The **`page-break-inside`** CSS property adjusts page breaks _inside_ the current element.
    *
    * **Syntax**: `auto | avoid`
@@ -4570,8 +5397,10 @@ pageBreakBefore?: ConditionalValue<CssProperties["pageBreakBefore"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/page-break-inside
    */
-pageBreakInside?: ConditionalValue<CssProperties["pageBreakInside"] | AnyString>
- /**
+  pageBreakInside?: ConditionalValue<
+    CssProperties["pageBreakInside"] | AnyString
+  >;
+  /**
    * The **`paint-order`** CSS property lets you control the order in which the fill and stroke (and painting markers) of text content and shapes are drawn.
    *
    * **Syntax**: `normal | [ fill || stroke || markers ]`
@@ -4584,8 +5413,8 @@ pageBreakInside?: ConditionalValue<CssProperties["pageBreakInside"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/paint-order
    */
-paintOrder?: ConditionalValue<CssProperties["paintOrder"] | AnyString>
- /**
+  paintOrder?: ConditionalValue<CssProperties["paintOrder"] | AnyString>;
+  /**
    * The **`perspective`** CSS property determines the distance between the z=0 plane and the user in order to give a 3D-positioned element some perspective.
    *
    * **Syntax**: `none | <length>`
@@ -4599,8 +5428,8 @@ paintOrder?: ConditionalValue<CssProperties["paintOrder"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/perspective
    */
-perspective?: ConditionalValue<CssProperties["perspective"] | AnyString>
- /**
+  perspective?: ConditionalValue<CssProperties["perspective"] | AnyString>;
+  /**
    * The **`perspective-origin`** CSS property determines the position at which the viewer is looking. It is used as the _vanishing point_ by the `perspective` property.
    *
    * **Syntax**: `<position>`
@@ -4614,8 +5443,10 @@ perspective?: ConditionalValue<CssProperties["perspective"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/perspective-origin
    */
-perspectiveOrigin?: ConditionalValue<CssProperties["perspectiveOrigin"] | AnyString>
- /**
+  perspectiveOrigin?: ConditionalValue<
+    CssProperties["perspectiveOrigin"] | AnyString
+  >;
+  /**
    * The **`place-content`** CSS shorthand property allows you to align content along both the block and inline directions at once (i.e. the `align-content` and `justify-content` properties) in a relevant layout system such as Grid or Flexbox.
    *
    * **Syntax**: `<'align-content'> <'justify-content'>?`
@@ -4626,8 +5457,8 @@ perspectiveOrigin?: ConditionalValue<CssProperties["perspectiveOrigin"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/place-content
    */
-placeContent?: ConditionalValue<CssProperties["placeContent"] | AnyString>
- /**
+  placeContent?: ConditionalValue<CssProperties["placeContent"] | AnyString>;
+  /**
    * The CSS **`place-items`** shorthand property allows you to align items along both the block and inline directions at once (i.e. the `align-items` and `justify-items` properties) in a relevant layout system such as Grid or Flexbox. If the second value is not set, the first value is also used for it.
    *
    * **Syntax**: `<'align-items'> <'justify-items'>?`
@@ -4638,8 +5469,8 @@ placeContent?: ConditionalValue<CssProperties["placeContent"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/place-items
    */
-placeItems?: ConditionalValue<CssProperties["placeItems"] | AnyString>
- /**
+  placeItems?: ConditionalValue<CssProperties["placeItems"] | AnyString>;
+  /**
    * The **`place-self`** CSS shorthand property allows you to align an individual item in both the block and inline directions at once (i.e. the `align-self` and `justify-self` properties) in a relevant layout system such as Grid or Flexbox. If the second value is not present, the first value is also used for it.
    *
    * **Syntax**: `<'align-self'> <'justify-self'>?`
@@ -4650,8 +5481,8 @@ placeItems?: ConditionalValue<CssProperties["placeItems"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/place-self
    */
-placeSelf?: ConditionalValue<CssProperties["placeSelf"] | AnyString>
- /**
+  placeSelf?: ConditionalValue<CssProperties["placeSelf"] | AnyString>;
+  /**
    * The **`pointer-events`** CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.
    *
    * **Syntax**: `auto | none | visiblePainted | visibleFill | visibleStroke | visible | painted | fill | stroke | all | inherit`
@@ -4664,8 +5495,10 @@ placeSelf?: ConditionalValue<CssProperties["placeSelf"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/pointer-events
    */
-pointerEvents?: ConditionalValue<CssVars | CssProperties["pointerEvents"] | AnyString>
- /**
+  pointerEvents?: ConditionalValue<
+    CssVars | CssProperties["pointerEvents"] | AnyString
+  >;
+  /**
    * The **`position`** CSS property sets how an element is positioned in a document. The `top`, `right`, `bottom`, and `left` properties determine the final location of positioned elements.
    *
    * **Syntax**: `static | relative | absolute | sticky | fixed`
@@ -4678,8 +5511,8 @@ pointerEvents?: ConditionalValue<CssVars | CssProperties["pointerEvents"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/position
    */
-position?: ConditionalValue<CssVars | CssProperties["position"] | AnyString>
- /**
+  position?: ConditionalValue<CssVars | CssProperties["position"] | AnyString>;
+  /**
    * The **`print-color-adjust`** CSS property sets what, if anything, the user agent may do to optimize the appearance of the element on the output device. By default, the browser is allowed to make any adjustments to the element's appearance it determines to be necessary and prudent given the type and capabilities of the output device.
    *
    * **Syntax**: `economy | exact`
@@ -4693,8 +5526,10 @@ position?: ConditionalValue<CssVars | CssProperties["position"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/print-color-adjust
    */
-printColorAdjust?: ConditionalValue<CssProperties["printColorAdjust"] | AnyString>
- /**
+  printColorAdjust?: ConditionalValue<
+    CssProperties["printColorAdjust"] | AnyString
+  >;
+  /**
    * The **`quotes`** CSS property sets how the browser should render quotation marks that are added using the `open-quotes` or `close-quotes` values of the CSS `content` property.
    *
    * **Syntax**: `none | auto | [ <string> <string> ]+`
@@ -4707,8 +5542,8 @@ printColorAdjust?: ConditionalValue<CssProperties["printColorAdjust"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/quotes
    */
-quotes?: ConditionalValue<CssProperties["quotes"] | AnyString>
- /**
+  quotes?: ConditionalValue<CssProperties["quotes"] | AnyString>;
+  /**
    * The **`resize`** CSS property sets whether an element is resizable, and if so, in which directions.
    *
    * **Syntax**: `none | both | horizontal | vertical | block | inline`
@@ -4721,8 +5556,8 @@ quotes?: ConditionalValue<CssProperties["quotes"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/resize
    */
-resize?: ConditionalValue<CssVars | CssProperties["resize"] | AnyString>
- /**
+  resize?: ConditionalValue<CssVars | CssProperties["resize"] | AnyString>;
+  /**
    * The **`right`** CSS property participates in specifying the horizontal position of a positioned element. It has no effect on non-positioned elements.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -4735,8 +5570,10 @@ resize?: ConditionalValue<CssVars | CssProperties["resize"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/right
    */
-right?: ConditionalValue<UtilityValues["right"] | CssVars | CssProperties["right"] | AnyString>
- /**
+  right?: ConditionalValue<
+    UtilityValues["right"] | CssVars | CssProperties["right"] | AnyString
+  >;
+  /**
    * The **`rotate`** CSS property allows you to specify rotation transforms individually and independently of the `transform` property. This maps better to typical user interface usage, and saves having to remember the exact order of transform functions to specify in the `transform` property.
    *
    * **Syntax**: `none | <angle> | [ x | y | z | <number>{3} ] && <angle>`
@@ -4749,8 +5586,10 @@ right?: ConditionalValue<UtilityValues["right"] | CssVars | CssProperties["right
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/rotate
    */
-rotate?: ConditionalValue<UtilityValues["rotate"] | CssVars | CssProperties["rotate"] | AnyString>
- /**
+  rotate?: ConditionalValue<
+    UtilityValues["rotate"] | CssVars | CssProperties["rotate"] | AnyString
+  >;
+  /**
    * The **`row-gap`** CSS property sets the size of the gap (gutter) between an element's rows.
    *
    * **Syntax**: `normal | <length-percentage>`
@@ -4763,8 +5602,10 @@ rotate?: ConditionalValue<UtilityValues["rotate"] | CssVars | CssProperties["rot
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/row-gap
    */
-rowGap?: ConditionalValue<UtilityValues["rowGap"] | CssVars | CssProperties["rowGap"] | AnyString>
- /**
+  rowGap?: ConditionalValue<
+    UtilityValues["rowGap"] | CssVars | CssProperties["rowGap"] | AnyString
+  >;
+  /**
    * The **`ruby-align`** CSS property defines the distribution of the different ruby elements over the base.
    *
    * **Syntax**: `start | center | space-between | space-around`
@@ -4777,14 +5618,14 @@ rowGap?: ConditionalValue<UtilityValues["rowGap"] | CssVars | CssProperties["row
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/ruby-align
    */
-rubyAlign?: ConditionalValue<CssProperties["rubyAlign"] | AnyString>
- /**
+  rubyAlign?: ConditionalValue<CssProperties["rubyAlign"] | AnyString>;
+  /**
    * **Syntax**: `separate | collapse | auto`
    *
    * **Initial value**: `separate`
    */
-rubyMerge?: ConditionalValue<CssProperties["rubyMerge"] | AnyString>
- /**
+  rubyMerge?: ConditionalValue<CssProperties["rubyMerge"] | AnyString>;
+  /**
    * The **`ruby-position`** CSS property defines the position of a ruby element relatives to its base element. It can be positioned over the element (`over`), under it (`under`), or between the characters on their right side (`inter-character`).
    *
    * **Syntax**: `[ alternate || [ over | under ] ] | inter-character`
@@ -4798,8 +5639,8 @@ rubyMerge?: ConditionalValue<CssProperties["rubyMerge"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/ruby-position
    */
-rubyPosition?: ConditionalValue<CssProperties["rubyPosition"] | AnyString>
- /**
+  rubyPosition?: ConditionalValue<CssProperties["rubyPosition"] | AnyString>;
+  /**
    * The **`scale`** CSS property allows you to specify scale transforms individually and independently of the `transform` property. This maps better to typical user interface usage, and saves having to remember the exact order of transform functions to specify in the `transform` value.
    *
    * **Syntax**: `none | <number>{1,3}`
@@ -4812,8 +5653,10 @@ rubyPosition?: ConditionalValue<CssProperties["rubyPosition"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scale
    */
-scale?: ConditionalValue<UtilityValues["scale"] | CssVars | CssProperties["scale"] | AnyString>
- /**
+  scale?: ConditionalValue<
+    UtilityValues["scale"] | CssVars | CssProperties["scale"] | AnyString
+  >;
+  /**
    * The **`scrollbar-color`** CSS property sets the color of the scrollbar track and thumb.
    *
    * **Syntax**: `auto | <color>{2}`
@@ -4826,8 +5669,13 @@ scale?: ConditionalValue<UtilityValues["scale"] | CssVars | CssProperties["scale
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-color
    */
-scrollbarColor?: ConditionalValue<UtilityValues["scrollbarColor"] | CssVars | CssProperties["scrollbarColor"] | AnyString>
- /**
+  scrollbarColor?: ConditionalValue<
+    | UtilityValues["scrollbarColor"]
+    | CssVars
+    | CssProperties["scrollbarColor"]
+    | AnyString
+  >;
+  /**
    * The **`scrollbar-gutter`** CSS property allows authors to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
    *
    * **Syntax**: `auto | stable && both-edges?`
@@ -4840,8 +5688,13 @@ scrollbarColor?: ConditionalValue<UtilityValues["scrollbarColor"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-gutter
    */
-scrollbarGutter?: ConditionalValue<UtilityValues["scrollbarGutter"] | CssVars | CssProperties["scrollbarGutter"] | AnyString>
- /**
+  scrollbarGutter?: ConditionalValue<
+    | UtilityValues["scrollbarGutter"]
+    | CssVars
+    | CssProperties["scrollbarGutter"]
+    | AnyString
+  >;
+  /**
    * The **`scrollbar-width`** property allows the author to set the maximum thickness of an element's scrollbars when they are shown.
    *
    * **Syntax**: `auto | thin | none`
@@ -4854,8 +5707,13 @@ scrollbarGutter?: ConditionalValue<UtilityValues["scrollbarGutter"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-width
    */
-scrollbarWidth?: ConditionalValue<UtilityValues["scrollbarWidth"] | CssVars | CssProperties["scrollbarWidth"] | AnyString>
- /**
+  scrollbarWidth?: ConditionalValue<
+    | UtilityValues["scrollbarWidth"]
+    | CssVars
+    | CssProperties["scrollbarWidth"]
+    | AnyString
+  >;
+  /**
    * The **`scroll-behavior`** CSS property sets the behavior for a scrolling box when scrolling is triggered by the navigation or CSSOM scrolling APIs.
    *
    * **Syntax**: `auto | smooth`
@@ -4868,8 +5726,10 @@ scrollbarWidth?: ConditionalValue<UtilityValues["scrollbarWidth"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-behavior
    */
-scrollBehavior?: ConditionalValue<CssVars | CssProperties["scrollBehavior"] | AnyString>
- /**
+  scrollBehavior?: ConditionalValue<
+    CssVars | CssProperties["scrollBehavior"] | AnyString
+  >;
+  /**
    * The **`scroll-margin`** shorthand property sets all of the scroll margins of an element at once, assigning values much like the `margin` property does for margins of an element.
    *
    * **Syntax**: `<length>{1,4}`
@@ -4881,8 +5741,13 @@ scrollBehavior?: ConditionalValue<CssVars | CssProperties["scrollBehavior"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin
    */
-scrollMargin?: ConditionalValue<UtilityValues["scrollMargin"] | CssVars | CssProperties["scrollMargin"] | AnyString>
- /**
+  scrollMargin?: ConditionalValue<
+    | UtilityValues["scrollMargin"]
+    | CssVars
+    | CssProperties["scrollMargin"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-block` shorthand property sets the scroll margins of an element in the block dimension.
    *
    * **Syntax**: `<length>{1,2}`
@@ -4893,8 +5758,13 @@ scrollMargin?: ConditionalValue<UtilityValues["scrollMargin"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block
    */
-scrollMarginBlock?: ConditionalValue<UtilityValues["scrollMarginBlock"] | CssVars | CssProperties["scrollMarginBlock"] | AnyString>
- /**
+  scrollMarginBlock?: ConditionalValue<
+    | UtilityValues["scrollMarginBlock"]
+    | CssVars
+    | CssProperties["scrollMarginBlock"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-block-start` property defines the margin of the scroll snap area at the start of the block dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -4907,8 +5777,13 @@ scrollMarginBlock?: ConditionalValue<UtilityValues["scrollMarginBlock"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block-start
    */
-scrollMarginBlockStart?: ConditionalValue<UtilityValues["scrollMarginBlockStart"] | CssVars | CssProperties["scrollMarginBlockStart"] | AnyString>
- /**
+  scrollMarginBlockStart?: ConditionalValue<
+    | UtilityValues["scrollMarginBlockStart"]
+    | CssVars
+    | CssProperties["scrollMarginBlockStart"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-block-end` property defines the margin of the scroll snap area at the end of the block dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -4921,8 +5796,13 @@ scrollMarginBlockStart?: ConditionalValue<UtilityValues["scrollMarginBlockStart"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block-end
    */
-scrollMarginBlockEnd?: ConditionalValue<UtilityValues["scrollMarginBlockEnd"] | CssVars | CssProperties["scrollMarginBlockEnd"] | AnyString>
- /**
+  scrollMarginBlockEnd?: ConditionalValue<
+    | UtilityValues["scrollMarginBlockEnd"]
+    | CssVars
+    | CssProperties["scrollMarginBlockEnd"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-bottom` property defines the bottom margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -4936,8 +5816,13 @@ scrollMarginBlockEnd?: ConditionalValue<UtilityValues["scrollMarginBlockEnd"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-bottom
    */
-scrollMarginBottom?: ConditionalValue<UtilityValues["scrollMarginBottom"] | CssVars | CssProperties["scrollMarginBottom"] | AnyString>
- /**
+  scrollMarginBottom?: ConditionalValue<
+    | UtilityValues["scrollMarginBottom"]
+    | CssVars
+    | CssProperties["scrollMarginBottom"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-inline` shorthand property sets the scroll margins of an element in the inline dimension.
    *
    * **Syntax**: `<length>{1,2}`
@@ -4948,8 +5833,13 @@ scrollMarginBottom?: ConditionalValue<UtilityValues["scrollMarginBottom"] | CssV
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline
    */
-scrollMarginInline?: ConditionalValue<UtilityValues["scrollMarginInline"] | CssVars | CssProperties["scrollMarginInline"] | AnyString>
- /**
+  scrollMarginInline?: ConditionalValue<
+    | UtilityValues["scrollMarginInline"]
+    | CssVars
+    | CssProperties["scrollMarginInline"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-inline-start` property defines the margin of the scroll snap area at the start of the inline dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -4962,8 +5852,13 @@ scrollMarginInline?: ConditionalValue<UtilityValues["scrollMarginInline"] | CssV
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline-start
    */
-scrollMarginInlineStart?: ConditionalValue<UtilityValues["scrollMarginInlineStart"] | CssVars | CssProperties["scrollMarginInlineStart"] | AnyString>
- /**
+  scrollMarginInlineStart?: ConditionalValue<
+    | UtilityValues["scrollMarginInlineStart"]
+    | CssVars
+    | CssProperties["scrollMarginInlineStart"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-inline-end` property defines the margin of the scroll snap area at the end of the inline dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -4976,8 +5871,13 @@ scrollMarginInlineStart?: ConditionalValue<UtilityValues["scrollMarginInlineStar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline-end
    */
-scrollMarginInlineEnd?: ConditionalValue<UtilityValues["scrollMarginInlineEnd"] | CssVars | CssProperties["scrollMarginInlineEnd"] | AnyString>
- /**
+  scrollMarginInlineEnd?: ConditionalValue<
+    | UtilityValues["scrollMarginInlineEnd"]
+    | CssVars
+    | CssProperties["scrollMarginInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-left` property defines the left margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -4991,8 +5891,13 @@ scrollMarginInlineEnd?: ConditionalValue<UtilityValues["scrollMarginInlineEnd"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-left
    */
-scrollMarginLeft?: ConditionalValue<UtilityValues["scrollMarginLeft"] | CssVars | CssProperties["scrollMarginLeft"] | AnyString>
- /**
+  scrollMarginLeft?: ConditionalValue<
+    | UtilityValues["scrollMarginLeft"]
+    | CssVars
+    | CssProperties["scrollMarginLeft"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-right` property defines the right margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -5006,8 +5911,13 @@ scrollMarginLeft?: ConditionalValue<UtilityValues["scrollMarginLeft"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-right
    */
-scrollMarginRight?: ConditionalValue<UtilityValues["scrollMarginRight"] | CssVars | CssProperties["scrollMarginRight"] | AnyString>
- /**
+  scrollMarginRight?: ConditionalValue<
+    | UtilityValues["scrollMarginRight"]
+    | CssVars
+    | CssProperties["scrollMarginRight"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-top` property defines the top margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -5021,8 +5931,13 @@ scrollMarginRight?: ConditionalValue<UtilityValues["scrollMarginRight"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-top
    */
-scrollMarginTop?: ConditionalValue<UtilityValues["scrollMarginTop"] | CssVars | CssProperties["scrollMarginTop"] | AnyString>
- /**
+  scrollMarginTop?: ConditionalValue<
+    | UtilityValues["scrollMarginTop"]
+    | CssVars
+    | CssProperties["scrollMarginTop"]
+    | AnyString
+  >;
+  /**
    * The **`scroll-padding`** shorthand property sets scroll padding on all sides of an element at once, much like the `padding` property does for padding on an element.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,4}`
@@ -5033,8 +5948,13 @@ scrollMarginTop?: ConditionalValue<UtilityValues["scrollMarginTop"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding
    */
-scrollPadding?: ConditionalValue<UtilityValues["scrollPadding"] | CssVars | CssProperties["scrollPadding"] | AnyString>
- /**
+  scrollPadding?: ConditionalValue<
+    | UtilityValues["scrollPadding"]
+    | CssVars
+    | CssProperties["scrollPadding"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-block` shorthand property sets the scroll padding of an element in the block dimension.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
@@ -5045,8 +5965,13 @@ scrollPadding?: ConditionalValue<UtilityValues["scrollPadding"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block
    */
-scrollPaddingBlock?: ConditionalValue<UtilityValues["scrollPaddingBlock"] | CssVars | CssProperties["scrollPaddingBlock"] | AnyString>
- /**
+  scrollPaddingBlock?: ConditionalValue<
+    | UtilityValues["scrollPaddingBlock"]
+    | CssVars
+    | CssProperties["scrollPaddingBlock"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-block-start` property defines offsets for the start edge in the block dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5059,8 +5984,13 @@ scrollPaddingBlock?: ConditionalValue<UtilityValues["scrollPaddingBlock"] | CssV
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block-start
    */
-scrollPaddingBlockStart?: ConditionalValue<UtilityValues["scrollPaddingBlockStart"] | CssVars | CssProperties["scrollPaddingBlockStart"] | AnyString>
- /**
+  scrollPaddingBlockStart?: ConditionalValue<
+    | UtilityValues["scrollPaddingBlockStart"]
+    | CssVars
+    | CssProperties["scrollPaddingBlockStart"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-block-end` property defines offsets for the end edge in the block dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5073,8 +6003,13 @@ scrollPaddingBlockStart?: ConditionalValue<UtilityValues["scrollPaddingBlockStar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block-end
    */
-scrollPaddingBlockEnd?: ConditionalValue<UtilityValues["scrollPaddingBlockEnd"] | CssVars | CssProperties["scrollPaddingBlockEnd"] | AnyString>
- /**
+  scrollPaddingBlockEnd?: ConditionalValue<
+    | UtilityValues["scrollPaddingBlockEnd"]
+    | CssVars
+    | CssProperties["scrollPaddingBlockEnd"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-bottom` property defines offsets for the bottom of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5087,8 +6022,13 @@ scrollPaddingBlockEnd?: ConditionalValue<UtilityValues["scrollPaddingBlockEnd"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-bottom
    */
-scrollPaddingBottom?: ConditionalValue<UtilityValues["scrollPaddingBottom"] | CssVars | CssProperties["scrollPaddingBottom"] | AnyString>
- /**
+  scrollPaddingBottom?: ConditionalValue<
+    | UtilityValues["scrollPaddingBottom"]
+    | CssVars
+    | CssProperties["scrollPaddingBottom"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-inline` shorthand property sets the scroll padding of an element in the inline dimension.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
@@ -5099,8 +6039,13 @@ scrollPaddingBottom?: ConditionalValue<UtilityValues["scrollPaddingBottom"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline
    */
-scrollPaddingInline?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars | CssProperties["scrollPaddingInline"] | AnyString>
- /**
+  scrollPaddingInline?: ConditionalValue<
+    | UtilityValues["scrollPaddingInline"]
+    | CssVars
+    | CssProperties["scrollPaddingInline"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-inline-start` property defines offsets for the start edge in the inline dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5113,8 +6058,13 @@ scrollPaddingInline?: ConditionalValue<UtilityValues["scrollPaddingInline"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline-start
    */
-scrollPaddingInlineStart?: ConditionalValue<UtilityValues["scrollPaddingInlineStart"] | CssVars | CssProperties["scrollPaddingInlineStart"] | AnyString>
- /**
+  scrollPaddingInlineStart?: ConditionalValue<
+    | UtilityValues["scrollPaddingInlineStart"]
+    | CssVars
+    | CssProperties["scrollPaddingInlineStart"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-inline-end` property defines offsets for the end edge in the inline dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5127,8 +6077,13 @@ scrollPaddingInlineStart?: ConditionalValue<UtilityValues["scrollPaddingInlineSt
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline-end
    */
-scrollPaddingInlineEnd?: ConditionalValue<UtilityValues["scrollPaddingInlineEnd"] | CssVars | CssProperties["scrollPaddingInlineEnd"] | AnyString>
- /**
+  scrollPaddingInlineEnd?: ConditionalValue<
+    | UtilityValues["scrollPaddingInlineEnd"]
+    | CssVars
+    | CssProperties["scrollPaddingInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-left` property defines offsets for the left of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5141,8 +6096,13 @@ scrollPaddingInlineEnd?: ConditionalValue<UtilityValues["scrollPaddingInlineEnd"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-left
    */
-scrollPaddingLeft?: ConditionalValue<UtilityValues["scrollPaddingLeft"] | CssVars | CssProperties["scrollPaddingLeft"] | AnyString>
- /**
+  scrollPaddingLeft?: ConditionalValue<
+    | UtilityValues["scrollPaddingLeft"]
+    | CssVars
+    | CssProperties["scrollPaddingLeft"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-right` property defines offsets for the right of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5155,8 +6115,13 @@ scrollPaddingLeft?: ConditionalValue<UtilityValues["scrollPaddingLeft"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-right
    */
-scrollPaddingRight?: ConditionalValue<UtilityValues["scrollPaddingRight"] | CssVars | CssProperties["scrollPaddingRight"] | AnyString>
- /**
+  scrollPaddingRight?: ConditionalValue<
+    | UtilityValues["scrollPaddingRight"]
+    | CssVars
+    | CssProperties["scrollPaddingRight"]
+    | AnyString
+  >;
+  /**
    * The **`scroll-padding-top`** property defines offsets for the top of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
    *
    * **Syntax**: `auto | <length-percentage>`
@@ -5169,8 +6134,13 @@ scrollPaddingRight?: ConditionalValue<UtilityValues["scrollPaddingRight"] | CssV
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-top
    */
-scrollPaddingTop?: ConditionalValue<UtilityValues["scrollPaddingTop"] | CssVars | CssProperties["scrollPaddingTop"] | AnyString>
- /**
+  scrollPaddingTop?: ConditionalValue<
+    | UtilityValues["scrollPaddingTop"]
+    | CssVars
+    | CssProperties["scrollPaddingTop"]
+    | AnyString
+  >;
+  /**
    * The `scroll-snap-align` property specifies the box's snap position as an alignment of its snap area (as the alignment subject) within its snap container's snapport (as the alignment container). The two values specify the snapping alignment in the block axis and inline axis, respectively. If only one value is specified, the second value defaults to the same value.
    *
    * **Syntax**: `[ none | start | end | center ]{1,2}`
@@ -5183,12 +6153,22 @@ scrollPaddingTop?: ConditionalValue<UtilityValues["scrollPaddingTop"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-snap-align
    */
-scrollSnapAlign?: ConditionalValue<CssProperties["scrollSnapAlign"] | AnyString>
- scrollSnapCoordinate?: ConditionalValue<CssProperties["scrollSnapCoordinate"] | AnyString>
- scrollSnapDestination?: ConditionalValue<CssProperties["scrollSnapDestination"] | AnyString>
- scrollSnapPointsX?: ConditionalValue<CssProperties["scrollSnapPointsX"] | AnyString>
- scrollSnapPointsY?: ConditionalValue<CssProperties["scrollSnapPointsY"] | AnyString>
- /**
+  scrollSnapAlign?: ConditionalValue<
+    CssProperties["scrollSnapAlign"] | AnyString
+  >;
+  scrollSnapCoordinate?: ConditionalValue<
+    CssProperties["scrollSnapCoordinate"] | AnyString
+  >;
+  scrollSnapDestination?: ConditionalValue<
+    CssProperties["scrollSnapDestination"] | AnyString
+  >;
+  scrollSnapPointsX?: ConditionalValue<
+    CssProperties["scrollSnapPointsX"] | AnyString
+  >;
+  scrollSnapPointsY?: ConditionalValue<
+    CssProperties["scrollSnapPointsY"] | AnyString
+  >;
+  /**
    * The **`scroll-snap-stop`** CSS property defines whether or not the scroll container is allowed to "pass over" possible snap positions.
    *
    * **Syntax**: `normal | always`
@@ -5201,8 +6181,10 @@ scrollSnapAlign?: ConditionalValue<CssProperties["scrollSnapAlign"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-snap-stop
    */
-scrollSnapStop?: ConditionalValue<CssProperties["scrollSnapStop"] | AnyString>
- /**
+  scrollSnapStop?: ConditionalValue<
+    CssProperties["scrollSnapStop"] | AnyString
+  >;
+  /**
    * The **`scroll-snap-type`** CSS property sets how strictly snap points are enforced on the scroll container in case there is one.
    *
    * **Syntax**: `none | [ x | y | block | inline | both ] [ mandatory | proximity ]?`
@@ -5216,10 +6198,19 @@ scrollSnapStop?: ConditionalValue<CssProperties["scrollSnapStop"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-snap-type
    */
-scrollSnapType?: ConditionalValue<UtilityValues["scrollSnapType"] | CssVars | CssProperties["scrollSnapType"] | AnyString>
- scrollSnapTypeX?: ConditionalValue<CssProperties["scrollSnapTypeX"] | AnyString>
- scrollSnapTypeY?: ConditionalValue<CssProperties["scrollSnapTypeY"] | AnyString>
- /**
+  scrollSnapType?: ConditionalValue<
+    | UtilityValues["scrollSnapType"]
+    | CssVars
+    | CssProperties["scrollSnapType"]
+    | AnyString
+  >;
+  scrollSnapTypeX?: ConditionalValue<
+    CssProperties["scrollSnapTypeX"] | AnyString
+  >;
+  scrollSnapTypeY?: ConditionalValue<
+    CssProperties["scrollSnapTypeY"] | AnyString
+  >;
+  /**
    * The **`scroll-timeline`** CSS shorthand property defines a name that can be used to identify the source element of a scroll timeline, along with the scrollbar axis that should provide the timeline.
    *
    * **Syntax**: `[ <'scroll-timeline-name'> <'scroll-timeline-axis'>? ]#`
@@ -5230,8 +6221,10 @@ scrollSnapType?: ConditionalValue<UtilityValues["scrollSnapType"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-timeline
    */
-scrollTimeline?: ConditionalValue<CssProperties["scrollTimeline"] | AnyString>
- /**
+  scrollTimeline?: ConditionalValue<
+    CssProperties["scrollTimeline"] | AnyString
+  >;
+  /**
    * The **`scroll-timeline-axis`** CSS property can be used to specify the scrollbar that will be used to provide the timeline for a scroll-timeline animation.
    *
    * **Syntax**: `[ block | inline | x | y ]#`
@@ -5244,8 +6237,10 @@ scrollTimeline?: ConditionalValue<CssProperties["scrollTimeline"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-timeline-axis
    */
-scrollTimelineAxis?: ConditionalValue<CssProperties["scrollTimelineAxis"] | AnyString>
- /**
+  scrollTimelineAxis?: ConditionalValue<
+    CssProperties["scrollTimelineAxis"] | AnyString
+  >;
+  /**
    * The **`scroll-timeline-name`** CSS property defines a name that can be used to identify an element as the source of a scroll timeline for an animation.
    *
    * **Syntax**: `none | <dashed-ident>#`
@@ -5258,8 +6253,10 @@ scrollTimelineAxis?: ConditionalValue<CssProperties["scrollTimelineAxis"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-timeline-name
    */
-scrollTimelineName?: ConditionalValue<CssProperties["scrollTimelineName"] | AnyString>
- /**
+  scrollTimelineName?: ConditionalValue<
+    CssProperties["scrollTimelineName"] | AnyString
+  >;
+  /**
    * The **`shape-image-threshold`** CSS property sets the alpha channel threshold used to extract the shape using an image as the value for `shape-outside`.
    *
    * **Syntax**: `<alpha-value>`
@@ -5272,8 +6269,10 @@ scrollTimelineName?: ConditionalValue<CssProperties["scrollTimelineName"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/shape-image-threshold
    */
-shapeImageThreshold?: ConditionalValue<CssProperties["shapeImageThreshold"] | AnyString>
- /**
+  shapeImageThreshold?: ConditionalValue<
+    CssProperties["shapeImageThreshold"] | AnyString
+  >;
+  /**
    * The **`shape-margin`** CSS property sets a margin for a CSS shape created using `shape-outside`.
    *
    * **Syntax**: `<length-percentage>`
@@ -5286,8 +6285,8 @@ shapeImageThreshold?: ConditionalValue<CssProperties["shapeImageThreshold"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/shape-margin
    */
-shapeMargin?: ConditionalValue<CssProperties["shapeMargin"] | AnyString>
- /**
+  shapeMargin?: ConditionalValue<CssProperties["shapeMargin"] | AnyString>;
+  /**
    * The **`shape-outside`** CSS property defines a shape—which may be non-rectangular—around which adjacent inline content should wrap. By default, inline content wraps around its margin box; `shape-outside` provides a way to customize this wrapping, making it possible to wrap text around complex objects rather than simple boxes.
    *
    * **Syntax**: `none | [ <shape-box> || <basic-shape> ] | <image>`
@@ -5300,8 +6299,8 @@ shapeMargin?: ConditionalValue<CssProperties["shapeMargin"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/shape-outside
    */
-shapeOutside?: ConditionalValue<CssProperties["shapeOutside"] | AnyString>
- /**
+  shapeOutside?: ConditionalValue<CssProperties["shapeOutside"] | AnyString>;
+  /**
    * The **`tab-size`** CSS property is used to customize the width of tab characters (U+0009).
    *
    * **Syntax**: `<integer> | <length>`
@@ -5315,8 +6314,8 @@ shapeOutside?: ConditionalValue<CssProperties["shapeOutside"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/tab-size
    */
-tabSize?: ConditionalValue<CssProperties["tabSize"] | AnyString>
- /**
+  tabSize?: ConditionalValue<CssProperties["tabSize"] | AnyString>;
+  /**
    * The **`table-layout`** CSS property sets the algorithm used to lay out `<table>` cells, rows, and columns.
    *
    * **Syntax**: `auto | fixed`
@@ -5329,8 +6328,8 @@ tabSize?: ConditionalValue<CssProperties["tabSize"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/table-layout
    */
-tableLayout?: ConditionalValue<CssProperties["tableLayout"] | AnyString>
- /**
+  tableLayout?: ConditionalValue<CssProperties["tableLayout"] | AnyString>;
+  /**
    * The **`text-align`** CSS property sets the horizontal alignment of the inline-level content inside a block element or table-cell box. This means it works like `vertical-align` but in the horizontal direction.
    *
    * **Syntax**: `start | end | left | right | center | justify | match-parent`
@@ -5343,8 +6342,8 @@ tableLayout?: ConditionalValue<CssProperties["tableLayout"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-align
    */
-textAlign?: ConditionalValue<CssProperties["textAlign"] | AnyString>
- /**
+  textAlign?: ConditionalValue<CssProperties["textAlign"] | AnyString>;
+  /**
    * The **`text-align-last`** CSS property sets how the last line of a block or a line, right before a forced line break, is aligned.
    *
    * **Syntax**: `auto | start | end | left | right | center | justify`
@@ -5357,8 +6356,8 @@ textAlign?: ConditionalValue<CssProperties["textAlign"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-align-last
    */
-textAlignLast?: ConditionalValue<CssProperties["textAlignLast"] | AnyString>
- /**
+  textAlignLast?: ConditionalValue<CssProperties["textAlignLast"] | AnyString>;
+  /**
    * The **`text-combine-upright`** CSS property sets the combination of characters into the space of a single character. If the combined text is wider than 1em, the user agent must fit the contents within 1em. The resulting composition is treated as a single upright glyph for layout and decoration. This property only has an effect in vertical writing modes.
    *
    * **Syntax**: `none | all | [ digits <integer>? ]`
@@ -5372,8 +6371,10 @@ textAlignLast?: ConditionalValue<CssProperties["textAlignLast"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-combine-upright
    */
-textCombineUpright?: ConditionalValue<CssProperties["textCombineUpright"] | AnyString>
- /**
+  textCombineUpright?: ConditionalValue<
+    CssProperties["textCombineUpright"] | AnyString
+  >;
+  /**
    * The **`text-decoration`** shorthand CSS property sets the appearance of decorative lines on text. It is a shorthand for `text-decoration-line`, `text-decoration-color`, `text-decoration-style`, and the newer `text-decoration-thickness` property.
    *
    * **Syntax**: `<'text-decoration-line'> || <'text-decoration-style'> || <'text-decoration-color'> || <'text-decoration-thickness'>`
@@ -5384,8 +6385,10 @@ textCombineUpright?: ConditionalValue<CssProperties["textCombineUpright"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration
    */
-textDecoration?: ConditionalValue<CssProperties["textDecoration"] | AnyString>
- /**
+  textDecoration?: ConditionalValue<
+    CssProperties["textDecoration"] | AnyString
+  >;
+  /**
    * The **`text-decoration-color`** CSS property sets the color of decorations added to text by `text-decoration-line`.
    *
    * **Syntax**: `<color>`
@@ -5399,8 +6402,13 @@ textDecoration?: ConditionalValue<CssProperties["textDecoration"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-color
    */
-textDecorationColor?: ConditionalValue<UtilityValues["textDecorationColor"] | CssVars | CssProperties["textDecorationColor"] | AnyString>
- /**
+  textDecorationColor?: ConditionalValue<
+    | UtilityValues["textDecorationColor"]
+    | CssVars
+    | CssProperties["textDecorationColor"]
+    | AnyString
+  >;
+  /**
    * The **`text-decoration-line`** CSS property sets the kind of decoration that is used on text in an element, such as an underline or overline.
    *
    * **Syntax**: `none | [ underline || overline || line-through || blink ] | spelling-error | grammar-error`
@@ -5414,8 +6422,10 @@ textDecorationColor?: ConditionalValue<UtilityValues["textDecorationColor"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-line
    */
-textDecorationLine?: ConditionalValue<CssProperties["textDecorationLine"] | AnyString>
- /**
+  textDecorationLine?: ConditionalValue<
+    CssProperties["textDecorationLine"] | AnyString
+  >;
+  /**
    * The **`text-decoration-skip`** CSS property sets what parts of an element's content any text decoration affecting the element must skip over. It controls all text decoration lines drawn by the element and also any text decoration lines drawn by its ancestors.
    *
    * **Syntax**: `none | [ objects || [ spaces | [ leading-spaces || trailing-spaces ] ] || edges || box-decoration ]`
@@ -5429,8 +6439,10 @@ textDecorationLine?: ConditionalValue<CssProperties["textDecorationLine"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-skip
    */
-textDecorationSkip?: ConditionalValue<CssProperties["textDecorationSkip"] | AnyString>
- /**
+  textDecorationSkip?: ConditionalValue<
+    CssProperties["textDecorationSkip"] | AnyString
+  >;
+  /**
    * The **`text-decoration-skip-ink`** CSS property specifies how overlines and underlines are drawn when they pass over glyph ascenders and descenders.
    *
    * **Syntax**: `auto | all | none`
@@ -5443,8 +6455,10 @@ textDecorationSkip?: ConditionalValue<CssProperties["textDecorationSkip"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-skip-ink
    */
-textDecorationSkipInk?: ConditionalValue<CssProperties["textDecorationSkipInk"] | AnyString>
- /**
+  textDecorationSkipInk?: ConditionalValue<
+    CssProperties["textDecorationSkipInk"] | AnyString
+  >;
+  /**
    * The **`text-decoration-style`** CSS property sets the style of the lines specified by `text-decoration-line`. The style applies to all lines that are set with `text-decoration-line`.
    *
    * **Syntax**: `solid | double | dotted | dashed | wavy`
@@ -5458,8 +6472,10 @@ textDecorationSkipInk?: ConditionalValue<CssProperties["textDecorationSkipInk"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-style
    */
-textDecorationStyle?: ConditionalValue<CssProperties["textDecorationStyle"] | AnyString>
- /**
+  textDecorationStyle?: ConditionalValue<
+    CssProperties["textDecorationStyle"] | AnyString
+  >;
+  /**
    * The **`text-decoration-thickness`** CSS property sets the stroke thickness of the decoration line that is used on text in an element, such as a line-through, underline, or overline.
    *
    * **Syntax**: `auto | from-font | <length> | <percentage> `
@@ -5472,8 +6488,10 @@ textDecorationStyle?: ConditionalValue<CssProperties["textDecorationStyle"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-thickness
    */
-textDecorationThickness?: ConditionalValue<CssProperties["textDecorationThickness"] | AnyString>
- /**
+  textDecorationThickness?: ConditionalValue<
+    CssProperties["textDecorationThickness"] | AnyString
+  >;
+  /**
    * The **`text-emphasis`** CSS property applies emphasis marks to text (except spaces and control characters). It is a shorthand for `text-emphasis-style` and `text-emphasis-color`.
    *
    * **Syntax**: `<'text-emphasis-style'> || <'text-emphasis-color'>`
@@ -5485,8 +6503,8 @@ textDecorationThickness?: ConditionalValue<CssProperties["textDecorationThicknes
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis
    */
-textEmphasis?: ConditionalValue<CssProperties["textEmphasis"] | AnyString>
- /**
+  textEmphasis?: ConditionalValue<CssProperties["textEmphasis"] | AnyString>;
+  /**
    * The **`text-emphasis-color`** CSS property sets the color of emphasis marks. This value can also be set using the `text-emphasis` shorthand.
    *
    * **Syntax**: `<color>`
@@ -5500,8 +6518,13 @@ textEmphasis?: ConditionalValue<CssProperties["textEmphasis"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis-color
    */
-textEmphasisColor?: ConditionalValue<UtilityValues["textEmphasisColor"] | CssVars | CssProperties["textEmphasisColor"] | AnyString>
- /**
+  textEmphasisColor?: ConditionalValue<
+    | UtilityValues["textEmphasisColor"]
+    | CssVars
+    | CssProperties["textEmphasisColor"]
+    | AnyString
+  >;
+  /**
    * The **`text-emphasis-position`** CSS property sets where emphasis marks are drawn. Like ruby text, if there isn't enough room for emphasis marks, the line height is increased.
    *
    * **Syntax**: `[ over | under ] && [ right | left ]`
@@ -5515,8 +6538,10 @@ textEmphasisColor?: ConditionalValue<UtilityValues["textEmphasisColor"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis-position
    */
-textEmphasisPosition?: ConditionalValue<CssProperties["textEmphasisPosition"] | AnyString>
- /**
+  textEmphasisPosition?: ConditionalValue<
+    CssProperties["textEmphasisPosition"] | AnyString
+  >;
+  /**
    * The **`text-emphasis-style`** CSS property sets the appearance of emphasis marks. It can also be set, and reset, using the `text-emphasis` shorthand.
    *
    * **Syntax**: `none | [ [ filled | open ] || [ dot | circle | double-circle | triangle | sesame ] ] | <string>`
@@ -5530,8 +6555,10 @@ textEmphasisPosition?: ConditionalValue<CssProperties["textEmphasisPosition"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis-style
    */
-textEmphasisStyle?: ConditionalValue<CssProperties["textEmphasisStyle"] | AnyString>
- /**
+  textEmphasisStyle?: ConditionalValue<
+    CssProperties["textEmphasisStyle"] | AnyString
+  >;
+  /**
    * The **`text-indent`** CSS property sets the length of empty space (indentation) that is put before lines of text in a block.
    *
    * **Syntax**: `<length-percentage> && hanging? && each-line?`
@@ -5544,8 +6571,13 @@ textEmphasisStyle?: ConditionalValue<CssProperties["textEmphasisStyle"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-indent
    */
-textIndent?: ConditionalValue<UtilityValues["textIndent"] | CssVars | CssProperties["textIndent"] | AnyString>
- /**
+  textIndent?: ConditionalValue<
+    | UtilityValues["textIndent"]
+    | CssVars
+    | CssProperties["textIndent"]
+    | AnyString
+  >;
+  /**
    * The **`text-justify`** CSS property sets what type of justification should be applied to text when `text-align``: justify;` is set on an element.
    *
    * **Syntax**: `auto | inter-character | inter-word | none`
@@ -5558,8 +6590,8 @@ textIndent?: ConditionalValue<UtilityValues["textIndent"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-justify
    */
-textJustify?: ConditionalValue<CssProperties["textJustify"] | AnyString>
- /**
+  textJustify?: ConditionalValue<CssProperties["textJustify"] | AnyString>;
+  /**
    * The **`text-orientation`** CSS property sets the orientation of the text characters in a line. It only affects text in vertical mode (when `writing-mode` is not `horizontal-tb`). It is useful for controlling the display of languages that use vertical script, and also for making vertical table headers.
    *
    * **Syntax**: `mixed | upright | sideways`
@@ -5573,8 +6605,10 @@ textJustify?: ConditionalValue<CssProperties["textJustify"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-orientation
    */
-textOrientation?: ConditionalValue<CssProperties["textOrientation"] | AnyString>
- /**
+  textOrientation?: ConditionalValue<
+    CssProperties["textOrientation"] | AnyString
+  >;
+  /**
    * The **`text-overflow`** CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis ('`…`'), or display a custom string.
    *
    * **Syntax**: `[ clip | ellipsis | <string> ]{1,2}`
@@ -5587,8 +6621,8 @@ textOrientation?: ConditionalValue<CssProperties["textOrientation"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-overflow
    */
-textOverflow?: ConditionalValue<CssProperties["textOverflow"] | AnyString>
- /**
+  textOverflow?: ConditionalValue<CssProperties["textOverflow"] | AnyString>;
+  /**
    * The **`text-rendering`** CSS property provides information to the rendering engine about what to optimize for when rendering text.
    *
    * **Syntax**: `auto | optimizeSpeed | optimizeLegibility | geometricPrecision`
@@ -5601,8 +6635,8 @@ textOverflow?: ConditionalValue<CssProperties["textOverflow"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-rendering
    */
-textRendering?: ConditionalValue<CssProperties["textRendering"] | AnyString>
- /**
+  textRendering?: ConditionalValue<CssProperties["textRendering"] | AnyString>;
+  /**
    * The **`text-shadow`** CSS property adds shadows to text. It accepts a comma-separated list of shadows to be applied to the text and any of its `decorations`. Each shadow is described by some combination of X and Y offsets from the element, blur radius, and color.
    *
    * **Syntax**: `none | <shadow-t>#`
@@ -5615,8 +6649,13 @@ textRendering?: ConditionalValue<CssProperties["textRendering"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-shadow
    */
-textShadow?: ConditionalValue<UtilityValues["textShadow"] | CssVars | CssProperties["textShadow"] | AnyString>
- /**
+  textShadow?: ConditionalValue<
+    | UtilityValues["textShadow"]
+    | CssVars
+    | CssProperties["textShadow"]
+    | AnyString
+  >;
+  /**
    * The **`text-size-adjust`** CSS property controls the text inflation algorithm used on some smartphones and tablets. Other browsers will ignore this property.
    *
    * **Syntax**: `none | auto | <percentage>`
@@ -5629,8 +6668,10 @@ textShadow?: ConditionalValue<UtilityValues["textShadow"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-size-adjust
    */
-textSizeAdjust?: ConditionalValue<CssProperties["textSizeAdjust"] | AnyString>
- /**
+  textSizeAdjust?: ConditionalValue<
+    CssProperties["textSizeAdjust"] | AnyString
+  >;
+  /**
    * The **`text-transform`** CSS property specifies how to capitalize an element's text. It can be used to make text appear in all-uppercase or all-lowercase, or with each word capitalized. It also can help improve legibility for ruby.
    *
    * **Syntax**: `none | capitalize | uppercase | lowercase | full-width | full-size-kana`
@@ -5643,8 +6684,8 @@ textSizeAdjust?: ConditionalValue<CssProperties["textSizeAdjust"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-transform
    */
-textTransform?: ConditionalValue<CssProperties["textTransform"] | AnyString>
- /**
+  textTransform?: ConditionalValue<CssProperties["textTransform"] | AnyString>;
+  /**
    * The **`text-underline-offset`** CSS property sets the offset distance of an underline text decoration line (applied using `text-decoration`) from its original position.
    *
    * **Syntax**: `auto | <length> | <percentage> `
@@ -5657,8 +6698,10 @@ textTransform?: ConditionalValue<CssProperties["textTransform"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-underline-offset
    */
-textUnderlineOffset?: ConditionalValue<CssProperties["textUnderlineOffset"] | AnyString>
- /**
+  textUnderlineOffset?: ConditionalValue<
+    CssProperties["textUnderlineOffset"] | AnyString
+  >;
+  /**
    * The **`text-underline-position`** CSS property specifies the position of the underline which is set using the `text-decoration` property's `underline` value.
    *
    * **Syntax**: `auto | from-font | [ under || [ left | right ] ]`
@@ -5672,8 +6715,10 @@ textUnderlineOffset?: ConditionalValue<CssProperties["textUnderlineOffset"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-underline-position
    */
-textUnderlinePosition?: ConditionalValue<CssProperties["textUnderlinePosition"] | AnyString>
- /**
+  textUnderlinePosition?: ConditionalValue<
+    CssProperties["textUnderlinePosition"] | AnyString
+  >;
+  /**
    * The **`text-wrap`** CSS property controls how text inside an element is wrapped. The different values provide:
    *
    * **Syntax**: `wrap | nowrap | balance | stable | pretty`
@@ -5686,8 +6731,10 @@ textUnderlinePosition?: ConditionalValue<CssProperties["textUnderlinePosition"] 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/text-wrap
    */
-textWrap?: ConditionalValue<UtilityValues["textWrap"] | CssVars | CssProperties["textWrap"] | AnyString>
- /**
+  textWrap?: ConditionalValue<
+    UtilityValues["textWrap"] | CssVars | CssProperties["textWrap"] | AnyString
+  >;
+  /**
    * The **`timeline-scope`** CSS property modifies the scope of a named animation timeline.
    *
    * **Syntax**: `none | <dashed-ident>#`
@@ -5700,8 +6747,8 @@ textWrap?: ConditionalValue<UtilityValues["textWrap"] | CssVars | CssProperties[
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/timeline-scope
    */
-timelineScope?: ConditionalValue<CssProperties["timelineScope"] | AnyString>
- /**
+  timelineScope?: ConditionalValue<CssProperties["timelineScope"] | AnyString>;
+  /**
    * The **`top`** CSS property participates in specifying the vertical position of a positioned element. It has no effect on non-positioned elements.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -5714,8 +6761,10 @@ timelineScope?: ConditionalValue<CssProperties["timelineScope"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/top
    */
-top?: ConditionalValue<UtilityValues["top"] | CssVars | CssProperties["top"] | AnyString>
- /**
+  top?: ConditionalValue<
+    UtilityValues["top"] | CssVars | CssProperties["top"] | AnyString
+  >;
+  /**
    * The **`touch-action`** CSS property sets how an element's region can be manipulated by a touchscreen user (for example, by zooming features built into the browser).
    *
    * **Syntax**: `auto | none | [ [ pan-x | pan-left | pan-right ] || [ pan-y | pan-up | pan-down ] || pinch-zoom ] | manipulation`
@@ -5729,8 +6778,10 @@ top?: ConditionalValue<UtilityValues["top"] | CssVars | CssProperties["top"] | A
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/touch-action
    */
-touchAction?: ConditionalValue<CssVars | CssProperties["touchAction"] | AnyString>
- /**
+  touchAction?: ConditionalValue<
+    CssVars | CssProperties["touchAction"] | AnyString
+  >;
+  /**
    * The **`transform`** CSS property lets you rotate, scale, skew, or translate an element. It modifies the coordinate space of the CSS visual formatting model.
    *
    * **Syntax**: `none | <transform-list>`
@@ -5744,8 +6795,8 @@ touchAction?: ConditionalValue<CssVars | CssProperties["touchAction"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transform
    */
-transform?: ConditionalValue<CssProperties["transform"] | AnyString>
- /**
+  transform?: ConditionalValue<CssProperties["transform"] | AnyString>;
+  /**
    * The **`transform-box`** CSS property defines the layout box to which the `transform`, individual transform properties `translate`,`scale`, and `rotate`, and `transform-origin` properties relate.
    *
    * **Syntax**: `content-box | border-box | fill-box | stroke-box | view-box`
@@ -5758,8 +6809,10 @@ transform?: ConditionalValue<CssProperties["transform"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transform-box
    */
-transformBox?: ConditionalValue<CssVars | CssProperties["transformBox"] | AnyString>
- /**
+  transformBox?: ConditionalValue<
+    CssVars | CssProperties["transformBox"] | AnyString
+  >;
+  /**
    * The **`transform-origin`** CSS property sets the origin for an element's transformations.
    *
    * **Syntax**: `[ <length-percentage> | left | center | right | top | bottom ] | [ [ <length-percentage> | left | center | right ] && [ <length-percentage> | top | center | bottom ] ] <length>?`
@@ -5773,8 +6826,10 @@ transformBox?: ConditionalValue<CssVars | CssProperties["transformBox"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transform-origin
    */
-transformOrigin?: ConditionalValue<CssProperties["transformOrigin"] | AnyString>
- /**
+  transformOrigin?: ConditionalValue<
+    CssProperties["transformOrigin"] | AnyString
+  >;
+  /**
    * The **`transform-style`** CSS property sets whether children of an element are positioned in the 3D space or are flattened in the plane of the element.
    *
    * **Syntax**: `flat | preserve-3d`
@@ -5788,8 +6843,10 @@ transformOrigin?: ConditionalValue<CssProperties["transformOrigin"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transform-style
    */
-transformStyle?: ConditionalValue<CssVars | CssProperties["transformStyle"] | AnyString>
- /**
+  transformStyle?: ConditionalValue<
+    CssVars | CssProperties["transformStyle"] | AnyString
+  >;
+  /**
    * The **`transition`** CSS property is a shorthand property for `transition-property`, `transition-duration`, `transition-timing-function`, and `transition-delay`.
    *
    * **Syntax**: `<single-transition>#`
@@ -5801,8 +6858,13 @@ transformStyle?: ConditionalValue<CssVars | CssProperties["transformStyle"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transition
    */
-transition?: ConditionalValue<UtilityValues["transition"] | CssVars | CssProperties["transition"] | AnyString>
- /**
+  transition?: ConditionalValue<
+    | UtilityValues["transition"]
+    | CssVars
+    | CssProperties["transition"]
+    | AnyString
+  >;
+  /**
    * The **`transition-behavior`** CSS property specifies whether transitions will be started for properties whose animation behavior is discrete.
    *
    * **Syntax**: `<transition-behavior-value>#`
@@ -5815,8 +6877,10 @@ transition?: ConditionalValue<UtilityValues["transition"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transition-behavior
    */
-transitionBehavior?: ConditionalValue<CssProperties["transitionBehavior"] | AnyString>
- /**
+  transitionBehavior?: ConditionalValue<
+    CssProperties["transitionBehavior"] | AnyString
+  >;
+  /**
    * The **`transition-delay`** CSS property specifies the duration to wait before starting a property's transition effect when its value changes.
    *
    * **Syntax**: `<time>#`
@@ -5830,8 +6894,13 @@ transitionBehavior?: ConditionalValue<CssProperties["transitionBehavior"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transition-delay
    */
-transitionDelay?: ConditionalValue<UtilityValues["transitionDelay"] | CssVars | CssProperties["transitionDelay"] | AnyString>
- /**
+  transitionDelay?: ConditionalValue<
+    | UtilityValues["transitionDelay"]
+    | CssVars
+    | CssProperties["transitionDelay"]
+    | AnyString
+  >;
+  /**
    * The **`transition-duration`** CSS property sets the length of time a transition animation should take to complete. By default, the value is `0s`, meaning that no animation will occur.
    *
    * **Syntax**: `<time>#`
@@ -5845,8 +6914,13 @@ transitionDelay?: ConditionalValue<UtilityValues["transitionDelay"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transition-duration
    */
-transitionDuration?: ConditionalValue<UtilityValues["transitionDuration"] | CssVars | CssProperties["transitionDuration"] | AnyString>
- /**
+  transitionDuration?: ConditionalValue<
+    | UtilityValues["transitionDuration"]
+    | CssVars
+    | CssProperties["transitionDuration"]
+    | AnyString
+  >;
+  /**
    * The **`transition-property`** CSS property sets the CSS properties to which a transition effect should be applied.
    *
    * **Syntax**: `none | <single-transition-property>#`
@@ -5860,8 +6934,10 @@ transitionDuration?: ConditionalValue<UtilityValues["transitionDuration"] | CssV
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transition-property
    */
-transitionProperty?: ConditionalValue<CssProperties["transitionProperty"] | AnyString>
- /**
+  transitionProperty?: ConditionalValue<
+    CssProperties["transitionProperty"] | AnyString
+  >;
+  /**
    * The **`transition-timing-function`** CSS property sets how intermediate values are calculated for CSS properties being affected by a transition effect.
    *
    * **Syntax**: `<easing-function>#`
@@ -5875,8 +6951,13 @@ transitionProperty?: ConditionalValue<CssProperties["transitionProperty"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/transition-timing-function
    */
-transitionTimingFunction?: ConditionalValue<UtilityValues["transitionTimingFunction"] | CssVars | CssProperties["transitionTimingFunction"] | AnyString>
- /**
+  transitionTimingFunction?: ConditionalValue<
+    | UtilityValues["transitionTimingFunction"]
+    | CssVars
+    | CssProperties["transitionTimingFunction"]
+    | AnyString
+  >;
+  /**
    * The **`translate`** CSS property allows you to specify translation transforms individually and independently of the `transform` property. This maps better to typical user interface usage, and saves having to remember the exact order of transform functions to specify in the `transform` value.
    *
    * **Syntax**: `none | <length-percentage> [ <length-percentage> <length>? ]?`
@@ -5889,8 +6970,13 @@ transitionTimingFunction?: ConditionalValue<UtilityValues["transitionTimingFunct
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/translate
    */
-translate?: ConditionalValue<UtilityValues["translate"] | CssVars | CssProperties["translate"] | AnyString>
- /**
+  translate?: ConditionalValue<
+    | UtilityValues["translate"]
+    | CssVars
+    | CssProperties["translate"]
+    | AnyString
+  >;
+  /**
    * The **`unicode-bidi`** CSS property, together with the `direction` property, determines how bidirectional text in a document is handled. For example, if a block of content contains both left-to-right and right-to-left text, the user-agent uses a complex Unicode algorithm to decide how to display the text. The `unicode-bidi` property overrides this algorithm and allows the developer to control the text embedding.
    *
    * **Syntax**: `normal | embed | isolate | bidi-override | isolate-override | plaintext`
@@ -5903,8 +6989,8 @@ translate?: ConditionalValue<UtilityValues["translate"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/unicode-bidi
    */
-unicodeBidi?: ConditionalValue<CssProperties["unicodeBidi"] | AnyString>
- /**
+  unicodeBidi?: ConditionalValue<CssProperties["unicodeBidi"] | AnyString>;
+  /**
    * The **`user-select`** CSS property controls whether the user can select text. This doesn't have any effect on content loaded as part of a browser's user interface (its chrome), except in textboxes.
    *
    * **Syntax**: `auto | text | none | contain | all`
@@ -5918,8 +7004,10 @@ unicodeBidi?: ConditionalValue<CssProperties["unicodeBidi"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/user-select
    */
-userSelect?: ConditionalValue<CssVars | CssProperties["userSelect"] | AnyString>
- /**
+  userSelect?: ConditionalValue<
+    CssVars | CssProperties["userSelect"] | AnyString
+  >;
+  /**
    * The **`vertical-align`** CSS property sets vertical alignment of an inline, inline-block or table-cell box.
    *
    * **Syntax**: `baseline | sub | super | text-top | text-bottom | middle | top | bottom | <percentage> | <length>`
@@ -5932,8 +7020,8 @@ userSelect?: ConditionalValue<CssVars | CssProperties["userSelect"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/vertical-align
    */
-verticalAlign?: ConditionalValue<CssProperties["verticalAlign"] | AnyString>
- /**
+  verticalAlign?: ConditionalValue<CssProperties["verticalAlign"] | AnyString>;
+  /**
    * The **`view-timeline`** CSS shorthand property is used to define a _named view progress timeline_, which is progressed through based on the change in visibility of an element (known as the _subject_) inside a scrollable element (_scroller_). `view-timeline` is set on the subject.
    *
    * **Syntax**: `[ <'view-timeline-name'> <'view-timeline-axis'>? ]#`
@@ -5944,8 +7032,8 @@ verticalAlign?: ConditionalValue<CssProperties["verticalAlign"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline
    */
-viewTimeline?: ConditionalValue<CssProperties["viewTimeline"] | AnyString>
- /**
+  viewTimeline?: ConditionalValue<CssProperties["viewTimeline"] | AnyString>;
+  /**
    * The **`view-timeline-axis`** CSS property is used to specify the scrollbar direction that will be used to provide the timeline for a _named view progress timeline_ animation, which is progressed through based on the change in visibility of an element (known as the _subject_) inside a scrollable element (_scroller_). `view-timeline-axis` is set on the subject. See CSS scroll-driven animations for more details.
    *
    * **Syntax**: `[ block | inline | x | y ]#`
@@ -5958,8 +7046,10 @@ viewTimeline?: ConditionalValue<CssProperties["viewTimeline"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline-axis
    */
-viewTimelineAxis?: ConditionalValue<CssProperties["viewTimelineAxis"] | AnyString>
- /**
+  viewTimelineAxis?: ConditionalValue<
+    CssProperties["viewTimelineAxis"] | AnyString
+  >;
+  /**
    * The **`view-timeline-inset`** CSS property is used to specify one or two values representing an adjustment to the position of the scrollport (see Scroll container for more details) in which the subject element of a _named view progress timeline_ animation is deemed to be visible. Put another way, this allows you to specify start and/or end inset (or outset) values that offset the position of the timeline.
    *
    * **Syntax**: `[ [ auto | <length-percentage> ]{1,2} ]#`
@@ -5972,8 +7062,10 @@ viewTimelineAxis?: ConditionalValue<CssProperties["viewTimelineAxis"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline-inset
    */
-viewTimelineInset?: ConditionalValue<CssProperties["viewTimelineInset"] | AnyString>
- /**
+  viewTimelineInset?: ConditionalValue<
+    CssProperties["viewTimelineInset"] | AnyString
+  >;
+  /**
    * The **`view-timeline-name`** CSS property is used to define the name of a _named view progress timeline_, which is progressed through based on the change in visibility of an element (known as the _subject_) inside a scrollable element (_scroller_). `view-timeline` is set on the subject.
    *
    * **Syntax**: `none | <dashed-ident>#`
@@ -5986,8 +7078,10 @@ viewTimelineInset?: ConditionalValue<CssProperties["viewTimelineInset"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline-name
    */
-viewTimelineName?: ConditionalValue<CssProperties["viewTimelineName"] | AnyString>
- /**
+  viewTimelineName?: ConditionalValue<
+    CssProperties["viewTimelineName"] | AnyString
+  >;
+  /**
    * The **`view-transition-name`** CSS property provides the selected element with a distinct identifying name (a `<custom-ident>`) and causes it to participate in a separate view transition from the root view transition — or no view transition if the `none` value is specified.
    *
    * **Syntax**: `none | <custom-ident>`
@@ -6000,8 +7094,10 @@ viewTimelineName?: ConditionalValue<CssProperties["viewTimelineName"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/view-transition-name
    */
-viewTransitionName?: ConditionalValue<CssProperties["viewTransitionName"] | AnyString>
- /**
+  viewTransitionName?: ConditionalValue<
+    CssProperties["viewTransitionName"] | AnyString
+  >;
+  /**
    * The **`visibility`** CSS property shows or hides an element without changing the layout of a document. The property can also hide rows or columns in a `<table>`.
    *
    * **Syntax**: `visible | hidden | collapse`
@@ -6014,8 +7110,10 @@ viewTransitionName?: ConditionalValue<CssProperties["viewTransitionName"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/visibility
    */
-visibility?: ConditionalValue<CssVars | CssProperties["visibility"] | AnyString>
- /**
+  visibility?: ConditionalValue<
+    CssVars | CssProperties["visibility"] | AnyString
+  >;
+  /**
    * The **`white-space`** CSS property sets how white space inside an element is handled.
    *
    * **Syntax**: `normal | pre | nowrap | pre-wrap | pre-line | break-spaces | [ <'white-space-collapse'> || <'text-wrap'> || <'white-space-trim'> ]`
@@ -6028,8 +7126,8 @@ visibility?: ConditionalValue<CssVars | CssProperties["visibility"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/white-space
    */
-whiteSpace?: ConditionalValue<CssProperties["whiteSpace"] | AnyString>
- /**
+  whiteSpace?: ConditionalValue<CssProperties["whiteSpace"] | AnyString>;
+  /**
    * The **`white-space-collapse`** CSS property controls how white space inside an element is collapsed.
    *
    * **Syntax**: `collapse | discard | preserve | preserve-breaks | preserve-spaces | break-spaces`
@@ -6042,8 +7140,10 @@ whiteSpace?: ConditionalValue<CssProperties["whiteSpace"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/white-space-collapse
    */
-whiteSpaceCollapse?: ConditionalValue<CssProperties["whiteSpaceCollapse"] | AnyString>
- /**
+  whiteSpaceCollapse?: ConditionalValue<
+    CssProperties["whiteSpaceCollapse"] | AnyString
+  >;
+  /**
    * The **`widows`** CSS property sets the minimum number of lines in a block container that must be shown at the _top_ of a page, region, or column.
    *
    * **Syntax**: `<integer>`
@@ -6056,8 +7156,8 @@ whiteSpaceCollapse?: ConditionalValue<CssProperties["whiteSpaceCollapse"] | AnyS
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/widows
    */
-widows?: ConditionalValue<CssProperties["widows"] | AnyString>
- /**
+  widows?: ConditionalValue<CssProperties["widows"] | AnyString>;
+  /**
    * The **`width`** CSS property sets an element's width. By default, it sets the width of the content area, but if `box-sizing` is set to `border-box`, it sets the width of the border area.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -6070,8 +7170,10 @@ widows?: ConditionalValue<CssProperties["widows"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/width
    */
-width?: ConditionalValue<UtilityValues["width"] | CssVars | CssProperties["width"] | AnyString>
- /**
+  width?: ConditionalValue<
+    UtilityValues["width"] | CssVars | CssProperties["width"] | AnyString
+  >;
+  /**
    * The **`will-change`** CSS property hints to browsers how an element is expected to change. Browsers may set up optimizations before an element is actually changed. These kinds of optimizations can increase the responsiveness of a page by doing potentially expensive work before they are actually required.
    *
    * **Syntax**: `auto | <animateable-feature>#`
@@ -6084,8 +7186,8 @@ width?: ConditionalValue<UtilityValues["width"] | CssVars | CssProperties["width
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/will-change
    */
-willChange?: ConditionalValue<CssProperties["willChange"] | AnyString>
- /**
+  willChange?: ConditionalValue<CssProperties["willChange"] | AnyString>;
+  /**
    * The **`word-break`** CSS property sets whether line breaks appear wherever the text would otherwise overflow its content box.
    *
    * **Syntax**: `normal | break-all | keep-all | break-word`
@@ -6098,8 +7200,10 @@ willChange?: ConditionalValue<CssProperties["willChange"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/word-break
    */
-wordBreak?: ConditionalValue<CssVars | CssProperties["wordBreak"] | AnyString>
- /**
+  wordBreak?: ConditionalValue<
+    CssVars | CssProperties["wordBreak"] | AnyString
+  >;
+  /**
    * The **`word-spacing`** CSS property sets the length of space between words and between tags.
    *
    * **Syntax**: `normal | <length>`
@@ -6112,8 +7216,8 @@ wordBreak?: ConditionalValue<CssVars | CssProperties["wordBreak"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/word-spacing
    */
-wordSpacing?: ConditionalValue<CssProperties["wordSpacing"] | AnyString>
- /**
+  wordSpacing?: ConditionalValue<CssProperties["wordSpacing"] | AnyString>;
+  /**
    * The **`overflow-wrap`** CSS property applies to inline elements, setting whether the browser should insert line breaks within an otherwise unbreakable string to prevent text from overflowing its line box.
    *
    * **Syntax**: `normal | break-word`
@@ -6124,8 +7228,8 @@ wordSpacing?: ConditionalValue<CssProperties["wordSpacing"] | AnyString>
    * | :-----: | :-----: | :-------: | :-----: | :-: |
    * | **≤80** | **≤72** | **≤13.1** | **≤80** | No  |
    */
-wordWrap?: ConditionalValue<CssProperties["wordWrap"] | AnyString>
- /**
+  wordWrap?: ConditionalValue<CssProperties["wordWrap"] | AnyString>;
+  /**
    * The **`writing-mode`** CSS property sets whether lines of text are laid out horizontally or vertically, as well as the direction in which blocks progress. When set for an entire document, it should be set on the root element (`html` element for HTML documents).
    *
    * **Syntax**: `horizontal-tb | vertical-rl | vertical-lr | sideways-rl | sideways-lr`
@@ -6139,8 +7243,10 @@ wordWrap?: ConditionalValue<CssProperties["wordWrap"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/writing-mode
    */
-writingMode?: ConditionalValue<CssVars | CssProperties["writingMode"] | AnyString>
- /**
+  writingMode?: ConditionalValue<
+    CssVars | CssProperties["writingMode"] | AnyString
+  >;
+  /**
    * The **`z-index`** CSS property sets the z-order of a positioned element and its descendants or flex items. Overlapping elements with a larger z-index cover those with a smaller one.
    *
    * **Syntax**: `auto | <integer>`
@@ -6153,8 +7259,8 @@ writingMode?: ConditionalValue<CssVars | CssProperties["writingMode"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/z-index
    */
-zIndex?: ConditionalValue<CssProperties["zIndex"] | AnyString>
- /**
+  zIndex?: ConditionalValue<CssProperties["zIndex"] | AnyString>;
+  /**
    * The non-standard **`zoom`** CSS property can be used to control the magnification level of an element. `transform: scale()` should be used instead of this property, if possible. However, unlike CSS Transforms, `zoom` affects the layout size of the element.
    *
    * **Syntax**: `normal | reset | <number> | <percentage>`
@@ -6167,38 +7273,62 @@ zIndex?: ConditionalValue<CssProperties["zIndex"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/zoom
    */
-zoom?: ConditionalValue<CssProperties["zoom"] | AnyString>
- alignmentBaseline?: ConditionalValue<CssProperties["alignmentBaseline"] | AnyString>
- baselineShift?: ConditionalValue<CssProperties["baselineShift"] | AnyString>
- clipRule?: ConditionalValue<CssProperties["clipRule"] | AnyString>
- colorInterpolation?: ConditionalValue<CssProperties["colorInterpolation"] | AnyString>
- colorRendering?: ConditionalValue<CssProperties["colorRendering"] | AnyString>
- dominantBaseline?: ConditionalValue<CssProperties["dominantBaseline"] | AnyString>
- fill?: ConditionalValue<UtilityValues["fill"] | CssVars | CssProperties["fill"] | AnyString>
- fillOpacity?: ConditionalValue<CssProperties["fillOpacity"] | AnyString>
- fillRule?: ConditionalValue<CssProperties["fillRule"] | AnyString>
- floodColor?: ConditionalValue<CssProperties["floodColor"] | AnyString>
- floodOpacity?: ConditionalValue<CssProperties["floodOpacity"] | AnyString>
- glyphOrientationVertical?: ConditionalValue<CssProperties["glyphOrientationVertical"] | AnyString>
- lightingColor?: ConditionalValue<CssProperties["lightingColor"] | AnyString>
- marker?: ConditionalValue<CssProperties["marker"] | AnyString>
- markerEnd?: ConditionalValue<CssProperties["markerEnd"] | AnyString>
- markerMid?: ConditionalValue<CssProperties["markerMid"] | AnyString>
- markerStart?: ConditionalValue<CssProperties["markerStart"] | AnyString>
- shapeRendering?: ConditionalValue<CssProperties["shapeRendering"] | AnyString>
- stopColor?: ConditionalValue<CssProperties["stopColor"] | AnyString>
- stopOpacity?: ConditionalValue<CssProperties["stopOpacity"] | AnyString>
- stroke?: ConditionalValue<UtilityValues["stroke"] | CssVars | CssProperties["stroke"] | AnyString>
- strokeDasharray?: ConditionalValue<CssProperties["strokeDasharray"] | AnyString>
- strokeDashoffset?: ConditionalValue<CssProperties["strokeDashoffset"] | AnyString>
- strokeLinecap?: ConditionalValue<CssProperties["strokeLinecap"] | AnyString>
- strokeLinejoin?: ConditionalValue<CssProperties["strokeLinejoin"] | AnyString>
- strokeMiterlimit?: ConditionalValue<CssProperties["strokeMiterlimit"] | AnyString>
- strokeOpacity?: ConditionalValue<CssProperties["strokeOpacity"] | AnyString>
- strokeWidth?: ConditionalValue<CssProperties["strokeWidth"] | AnyString>
- textAnchor?: ConditionalValue<CssProperties["textAnchor"] | AnyString>
- vectorEffect?: ConditionalValue<CssProperties["vectorEffect"] | AnyString>
- /**
+  zoom?: ConditionalValue<CssProperties["zoom"] | AnyString>;
+  alignmentBaseline?: ConditionalValue<
+    CssProperties["alignmentBaseline"] | AnyString
+  >;
+  baselineShift?: ConditionalValue<CssProperties["baselineShift"] | AnyString>;
+  clipRule?: ConditionalValue<CssProperties["clipRule"] | AnyString>;
+  colorInterpolation?: ConditionalValue<
+    CssProperties["colorInterpolation"] | AnyString
+  >;
+  colorRendering?: ConditionalValue<
+    CssProperties["colorRendering"] | AnyString
+  >;
+  dominantBaseline?: ConditionalValue<
+    CssProperties["dominantBaseline"] | AnyString
+  >;
+  fill?: ConditionalValue<
+    UtilityValues["fill"] | CssVars | CssProperties["fill"] | AnyString
+  >;
+  fillOpacity?: ConditionalValue<CssProperties["fillOpacity"] | AnyString>;
+  fillRule?: ConditionalValue<CssProperties["fillRule"] | AnyString>;
+  floodColor?: ConditionalValue<CssProperties["floodColor"] | AnyString>;
+  floodOpacity?: ConditionalValue<CssProperties["floodOpacity"] | AnyString>;
+  glyphOrientationVertical?: ConditionalValue<
+    CssProperties["glyphOrientationVertical"] | AnyString
+  >;
+  lightingColor?: ConditionalValue<CssProperties["lightingColor"] | AnyString>;
+  marker?: ConditionalValue<CssProperties["marker"] | AnyString>;
+  markerEnd?: ConditionalValue<CssProperties["markerEnd"] | AnyString>;
+  markerMid?: ConditionalValue<CssProperties["markerMid"] | AnyString>;
+  markerStart?: ConditionalValue<CssProperties["markerStart"] | AnyString>;
+  shapeRendering?: ConditionalValue<
+    CssProperties["shapeRendering"] | AnyString
+  >;
+  stopColor?: ConditionalValue<CssProperties["stopColor"] | AnyString>;
+  stopOpacity?: ConditionalValue<CssProperties["stopOpacity"] | AnyString>;
+  stroke?: ConditionalValue<
+    UtilityValues["stroke"] | CssVars | CssProperties["stroke"] | AnyString
+  >;
+  strokeDasharray?: ConditionalValue<
+    CssProperties["strokeDasharray"] | AnyString
+  >;
+  strokeDashoffset?: ConditionalValue<
+    CssProperties["strokeDashoffset"] | AnyString
+  >;
+  strokeLinecap?: ConditionalValue<CssProperties["strokeLinecap"] | AnyString>;
+  strokeLinejoin?: ConditionalValue<
+    CssProperties["strokeLinejoin"] | AnyString
+  >;
+  strokeMiterlimit?: ConditionalValue<
+    CssProperties["strokeMiterlimit"] | AnyString
+  >;
+  strokeOpacity?: ConditionalValue<CssProperties["strokeOpacity"] | AnyString>;
+  strokeWidth?: ConditionalValue<CssProperties["strokeWidth"] | AnyString>;
+  textAnchor?: ConditionalValue<CssProperties["textAnchor"] | AnyString>;
+  vectorEffect?: ConditionalValue<CssProperties["vectorEffect"] | AnyString>;
+  /**
    * The **`position`** CSS property sets how an element is positioned in a document. The `top`, `right`, `bottom`, and `left` properties determine the final location of positioned elements.
    *
    * **Syntax**: `static | relative | absolute | sticky | fixed`
@@ -6211,8 +7341,8 @@ zoom?: ConditionalValue<CssProperties["zoom"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/position
    */
-pos?: ConditionalValue<CssProperties["position"] | AnyString>
- /**
+  pos?: ConditionalValue<CssProperties["position"] | AnyString>;
+  /**
    * The **`inset-inline`** CSS property defines the logical start and end offsets of an element in the inline direction, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>{1,2}`
@@ -6223,8 +7353,13 @@ pos?: ConditionalValue<CssProperties["position"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline
    */
-insetX?: ConditionalValue<UtilityValues["insetInline"] | CssVars | CssProperties["insetInline"] | AnyString>
- /**
+  insetX?: ConditionalValue<
+    | UtilityValues["insetInline"]
+    | CssVars
+    | CssProperties["insetInline"]
+    | AnyString
+  >;
+  /**
    * The **`inset-block`** CSS property defines the logical block start and end offsets of an element, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>{1,2}`
@@ -6235,8 +7370,13 @@ insetX?: ConditionalValue<UtilityValues["insetInline"] | CssVars | CssProperties
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-block
    */
-insetY?: ConditionalValue<UtilityValues["insetBlock"] | CssVars | CssProperties["insetBlock"] | AnyString>
- /**
+  insetY?: ConditionalValue<
+    | UtilityValues["insetBlock"]
+    | CssVars
+    | CssProperties["insetBlock"]
+    | AnyString
+  >;
+  /**
    * The **`inset-inline-end`** CSS property defines the logical inline end inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -6249,8 +7389,13 @@ insetY?: ConditionalValue<UtilityValues["insetBlock"] | CssVars | CssProperties[
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-end
    */
-insetEnd?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssProperties["insetInlineEnd"] | AnyString>
- /**
+  insetEnd?: ConditionalValue<
+    | UtilityValues["insetInlineEnd"]
+    | CssVars
+    | CssProperties["insetInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`inset-inline-end`** CSS property defines the logical inline end inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -6263,8 +7408,13 @@ insetEnd?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-end
    */
-end?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssProperties["insetInlineEnd"] | AnyString>
- /**
+  end?: ConditionalValue<
+    | UtilityValues["insetInlineEnd"]
+    | CssVars
+    | CssProperties["insetInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`inset-inline-start`** CSS property defines the logical inline start inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -6277,8 +7427,13 @@ end?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssProperties
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-start
    */
-insetStart?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssProperties["insetInlineStart"] | AnyString>
- /**
+  insetStart?: ConditionalValue<
+    | UtilityValues["insetInlineStart"]
+    | CssVars
+    | CssProperties["insetInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`inset-inline-start`** CSS property defines the logical inline start inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'top'>`
@@ -6291,8 +7446,13 @@ insetStart?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-start
    */
-start?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssProperties["insetInlineStart"] | AnyString>
- /**
+  start?: ConditionalValue<
+    | UtilityValues["insetInlineStart"]
+    | CssVars
+    | CssProperties["insetInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`flex-direction`** CSS property sets how flex items are placed in the flex container defining the main axis and the direction (normal or reversed).
    *
    * **Syntax**: `row | row-reverse | column | column-reverse`
@@ -6306,8 +7466,8 @@ start?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssProper
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/flex-direction
    */
-flexDir?: ConditionalValue<CssProperties["flexDirection"] | AnyString>
- /**
+  flexDir?: ConditionalValue<CssProperties["flexDirection"] | AnyString>;
+  /**
    * The **`padding`** CSS shorthand property sets the padding area on all four sides of an element at once.
    *
    * **Syntax**: `[ <length> | <percentage> ]{1,4}`
@@ -6318,8 +7478,10 @@ flexDir?: ConditionalValue<CssProperties["flexDirection"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding
    */
-p?: ConditionalValue<UtilityValues["padding"] | CssVars | CssProperties["padding"] | AnyString>
- /**
+  p?: ConditionalValue<
+    UtilityValues["padding"] | CssVars | CssProperties["padding"] | AnyString
+  >;
+  /**
    * The **`padding-left`** CSS property sets the width of the padding area to the left of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -6332,8 +7494,13 @@ p?: ConditionalValue<UtilityValues["padding"] | CssVars | CssProperties["padding
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-left
    */
-pl?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssProperties["paddingLeft"] | AnyString>
- /**
+  pl?: ConditionalValue<
+    | UtilityValues["paddingLeft"]
+    | CssVars
+    | CssProperties["paddingLeft"]
+    | AnyString
+  >;
+  /**
    * The **`padding-right`** CSS property sets the width of the padding area on the right of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -6346,8 +7513,13 @@ pl?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssProperties["pa
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-right
    */
-pr?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssProperties["paddingRight"] | AnyString>
- /**
+  pr?: ConditionalValue<
+    | UtilityValues["paddingRight"]
+    | CssVars
+    | CssProperties["paddingRight"]
+    | AnyString
+  >;
+  /**
    * The **`padding-top`** CSS property sets the height of the padding area on the top of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -6360,8 +7532,13 @@ pr?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssProperties["p
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-top
    */
-pt?: ConditionalValue<UtilityValues["paddingTop"] | CssVars | CssProperties["paddingTop"] | AnyString>
- /**
+  pt?: ConditionalValue<
+    | UtilityValues["paddingTop"]
+    | CssVars
+    | CssProperties["paddingTop"]
+    | AnyString
+  >;
+  /**
    * The **`padding-bottom`** CSS property sets the height of the padding area on the bottom of an element.
    *
    * **Syntax**: `<length> | <percentage>`
@@ -6374,8 +7551,13 @@ pt?: ConditionalValue<UtilityValues["paddingTop"] | CssVars | CssProperties["pad
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-bottom
    */
-pb?: ConditionalValue<UtilityValues["paddingBottom"] | CssVars | CssProperties["paddingBottom"] | AnyString>
- /**
+  pb?: ConditionalValue<
+    | UtilityValues["paddingBottom"]
+    | CssVars
+    | CssProperties["paddingBottom"]
+    | AnyString
+  >;
+  /**
    * The **`padding-block`** CSS shorthand property defines the logical block start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>{1,2}`
@@ -6386,8 +7568,13 @@ pb?: ConditionalValue<UtilityValues["paddingBottom"] | CssVars | CssProperties["
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-block
    */
-py?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssProperties["paddingBlock"] | AnyString>
- /**
+  py?: ConditionalValue<
+    | UtilityValues["paddingBlock"]
+    | CssVars
+    | CssProperties["paddingBlock"]
+    | AnyString
+  >;
+  /**
    * The **`padding-block`** CSS shorthand property defines the logical block start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>{1,2}`
@@ -6398,8 +7585,13 @@ py?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssProperties["p
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-block
    */
-paddingY?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssProperties["paddingBlock"] | AnyString>
- /**
+  paddingY?: ConditionalValue<
+    | UtilityValues["paddingBlock"]
+    | CssVars
+    | CssProperties["paddingBlock"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline`** CSS shorthand property defines the logical inline start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>{1,2}`
@@ -6410,8 +7602,13 @@ paddingY?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline
    */
-paddingX?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProperties["paddingInline"] | AnyString>
- /**
+  paddingX?: ConditionalValue<
+    | UtilityValues["paddingInline"]
+    | CssVars
+    | CssProperties["paddingInline"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline`** CSS shorthand property defines the logical inline start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>{1,2}`
@@ -6422,8 +7619,13 @@ paddingX?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProper
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline
    */
-px?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProperties["paddingInline"] | AnyString>
- /**
+  px?: ConditionalValue<
+    | UtilityValues["paddingInline"]
+    | CssVars
+    | CssProperties["paddingInline"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline-end`** CSS property defines the logical inline end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -6437,8 +7639,13 @@ px?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProperties["
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-end
    */
-pe?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssProperties["paddingInlineEnd"] | AnyString>
- /**
+  pe?: ConditionalValue<
+    | UtilityValues["paddingInlineEnd"]
+    | CssVars
+    | CssProperties["paddingInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline-end`** CSS property defines the logical inline end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -6452,8 +7659,13 @@ pe?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-end
    */
-paddingEnd?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssProperties["paddingInlineEnd"] | AnyString>
- /**
+  paddingEnd?: ConditionalValue<
+    | UtilityValues["paddingInlineEnd"]
+    | CssVars
+    | CssProperties["paddingInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline-start`** CSS property defines the logical inline start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -6467,8 +7679,13 @@ paddingEnd?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssP
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-start
    */
-ps?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | CssProperties["paddingInlineStart"] | AnyString>
- /**
+  ps?: ConditionalValue<
+    | UtilityValues["paddingInlineStart"]
+    | CssVars
+    | CssProperties["paddingInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`padding-inline-start`** CSS property defines the logical inline start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'padding-left'>`
@@ -6482,8 +7699,13 @@ ps?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | CssPropert
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-start
    */
-paddingStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | CssProperties["paddingInlineStart"] | AnyString>
- /**
+  paddingStart?: ConditionalValue<
+    | UtilityValues["paddingInlineStart"]
+    | CssVars
+    | CssProperties["paddingInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`margin-left`** CSS property sets the margin area on the left side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -6496,8 +7718,13 @@ paddingStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-left
    */
-ml?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssProperties["marginLeft"] | AnyString>
- /**
+  ml?: ConditionalValue<
+    | UtilityValues["marginLeft"]
+    | CssVars
+    | CssProperties["marginLeft"]
+    | AnyString
+  >;
+  /**
    * The **`margin-right`** CSS property sets the margin area on the right side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -6510,8 +7737,13 @@ ml?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssProperties["mar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-right
    */
-mr?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssProperties["marginRight"] | AnyString>
- /**
+  mr?: ConditionalValue<
+    | UtilityValues["marginRight"]
+    | CssVars
+    | CssProperties["marginRight"]
+    | AnyString
+  >;
+  /**
    * The **`margin-top`** CSS property sets the margin area on the top of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -6524,8 +7756,13 @@ mr?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssProperties["ma
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-top
    */
-mt?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssProperties["marginTop"] | AnyString>
- /**
+  mt?: ConditionalValue<
+    | UtilityValues["marginTop"]
+    | CssVars
+    | CssProperties["marginTop"]
+    | AnyString
+  >;
+  /**
    * The **`margin-bottom`** CSS property sets the margin area on the bottom of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
    *
    * **Syntax**: `<length> | <percentage> | auto`
@@ -6538,8 +7775,13 @@ mt?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssProperties["marg
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-bottom
    */
-mb?: ConditionalValue<UtilityValues["marginBottom"] | CssVars | CssProperties["marginBottom"] | AnyString>
- /**
+  mb?: ConditionalValue<
+    | UtilityValues["marginBottom"]
+    | CssVars
+    | CssProperties["marginBottom"]
+    | AnyString
+  >;
+  /**
    * The **`margin`** CSS shorthand property sets the margin area on all four sides of an element.
    *
    * **Syntax**: `[ <length> | <percentage> | auto ]{1,4}`
@@ -6550,8 +7792,10 @@ mb?: ConditionalValue<UtilityValues["marginBottom"] | CssVars | CssProperties["m
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin
    */
-m?: ConditionalValue<UtilityValues["margin"] | CssVars | CssProperties["margin"] | AnyString>
- /**
+  m?: ConditionalValue<
+    UtilityValues["margin"] | CssVars | CssProperties["margin"] | AnyString
+  >;
+  /**
    * The **`margin-block`** CSS shorthand property defines the logical block start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>{1,2}`
@@ -6562,8 +7806,13 @@ m?: ConditionalValue<UtilityValues["margin"] | CssVars | CssProperties["margin"]
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-block
    */
-my?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssProperties["marginBlock"] | AnyString>
- /**
+  my?: ConditionalValue<
+    | UtilityValues["marginBlock"]
+    | CssVars
+    | CssProperties["marginBlock"]
+    | AnyString
+  >;
+  /**
    * The **`margin-block`** CSS shorthand property defines the logical block start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>{1,2}`
@@ -6574,8 +7823,13 @@ my?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssProperties["ma
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-block
    */
-marginY?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssProperties["marginBlock"] | AnyString>
- /**
+  marginY?: ConditionalValue<
+    | UtilityValues["marginBlock"]
+    | CssVars
+    | CssProperties["marginBlock"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline`** CSS shorthand property is a shorthand property that defines both the logical inline start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>{1,2}`
@@ -6586,8 +7840,13 @@ marginY?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline
    */
-mx?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperties["marginInline"] | AnyString>
- /**
+  mx?: ConditionalValue<
+    | UtilityValues["marginInline"]
+    | CssVars
+    | CssProperties["marginInline"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline`** CSS shorthand property is a shorthand property that defines both the logical inline start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
    *
    * **Syntax**: `<'margin-left'>{1,2}`
@@ -6598,8 +7857,13 @@ mx?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperties["m
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline
    */
-marginX?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperties["marginInline"] | AnyString>
- /**
+  marginX?: ConditionalValue<
+    | UtilityValues["marginInline"]
+    | CssVars
+    | CssProperties["marginInline"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline-end`** CSS property defines the logical inline end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. In other words, it corresponds to the `margin-top`, `margin-right`, `margin-bottom` or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'margin-left'>`
@@ -6613,8 +7877,13 @@ marginX?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperti
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-end
    */
-me?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssProperties["marginInlineEnd"] | AnyString>
- /**
+  me?: ConditionalValue<
+    | UtilityValues["marginInlineEnd"]
+    | CssVars
+    | CssProperties["marginInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline-end`** CSS property defines the logical inline end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. In other words, it corresponds to the `margin-top`, `margin-right`, `margin-bottom` or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'margin-left'>`
@@ -6628,8 +7897,13 @@ me?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssProperties
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-end
    */
-marginEnd?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssProperties["marginInlineEnd"] | AnyString>
- /**
+  marginEnd?: ConditionalValue<
+    | UtilityValues["marginInlineEnd"]
+    | CssVars
+    | CssProperties["marginInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline-start`** CSS property defines the logical inline start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. It corresponds to the `margin-top`, `margin-right`, `margin-bottom`, or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'margin-left'>`
@@ -6643,8 +7917,13 @@ marginEnd?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-start
    */
-ms?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | CssProperties["marginInlineStart"] | AnyString>
- /**
+  ms?: ConditionalValue<
+    | UtilityValues["marginInlineStart"]
+    | CssVars
+    | CssProperties["marginInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`margin-inline-start`** CSS property defines the logical inline start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. It corresponds to the `margin-top`, `margin-right`, `margin-bottom`, or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'margin-left'>`
@@ -6658,8 +7937,13 @@ ms?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | CssProperti
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-start
    */
-marginStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | CssProperties["marginInlineStart"] | AnyString>
- /**
+  marginStart?: ConditionalValue<
+    | UtilityValues["marginInlineStart"]
+    | CssVars
+    | CssProperties["marginInlineStart"]
+    | AnyString
+  >;
+  /**
    * The CSS **`outline-width`** property sets the thickness of an element's outline. An outline is a line that is drawn around an element, outside the `border`.
    *
    * **Syntax**: `<line-width>`
@@ -6672,8 +7956,8 @@ marginStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline-width
    */
-ringWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>
- /**
+  ringWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>;
+  /**
    * The **`outline-color`** CSS property sets the color of an element's outline.
    *
    * **Syntax**: `<color> | invert`
@@ -6686,8 +7970,13 @@ ringWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline-color
    */
-ringColor?: ConditionalValue<UtilityValues["outlineColor"] | CssVars | CssProperties["outlineColor"] | AnyString>
- /**
+  ringColor?: ConditionalValue<
+    | UtilityValues["outlineColor"]
+    | CssVars
+    | CssProperties["outlineColor"]
+    | AnyString
+  >;
+  /**
    * The **`outline`** CSS shorthand property sets most of the outline properties in a single declaration.
    *
    * **Syntax**: `[ <'outline-color'> || <'outline-style'> || <'outline-width'> ]`
@@ -6698,8 +7987,10 @@ ringColor?: ConditionalValue<UtilityValues["outlineColor"] | CssVars | CssProper
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline
    */
-ring?: ConditionalValue<UtilityValues["outline"] | CssVars | CssProperties["outline"] | AnyString>
- /**
+  ring?: ConditionalValue<
+    UtilityValues["outline"] | CssVars | CssProperties["outline"] | AnyString
+  >;
+  /**
    * The **`outline-offset`** CSS property sets the amount of space between an outline and the edge or border of an element.
    *
    * **Syntax**: `<length>`
@@ -6712,8 +8003,13 @@ ring?: ConditionalValue<UtilityValues["outline"] | CssVars | CssProperties["outl
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/outline-offset
    */
-ringOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssProperties["outlineOffset"] | AnyString>
- /**
+  ringOffset?: ConditionalValue<
+    | UtilityValues["outlineOffset"]
+    | CssVars
+    | CssProperties["outlineOffset"]
+    | AnyString
+  >;
+  /**
    * The **`width`** CSS property sets an element's width. By default, it sets the width of the content area, but if `box-sizing` is set to `border-box`, it sets the width of the border area.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -6726,8 +8022,10 @@ ringOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssProp
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/width
    */
-w?: ConditionalValue<UtilityValues["width"] | CssVars | CssProperties["width"] | AnyString>
- /**
+  w?: ConditionalValue<
+    UtilityValues["width"] | CssVars | CssProperties["width"] | AnyString
+  >;
+  /**
    * The **`min-width`** CSS property sets the minimum width of an element. It prevents the used value of the `width` property from becoming smaller than the value specified for `min-width`.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -6740,8 +8038,10 @@ w?: ConditionalValue<UtilityValues["width"] | CssVars | CssProperties["width"] |
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/min-width
    */
-minW?: ConditionalValue<UtilityValues["minWidth"] | CssVars | CssProperties["minWidth"] | AnyString>
- /**
+  minW?: ConditionalValue<
+    UtilityValues["minWidth"] | CssVars | CssProperties["minWidth"] | AnyString
+  >;
+  /**
    * The **`max-width`** CSS property sets the maximum width of an element. It prevents the used value of the `width` property from becoming larger than the value specified by `max-width`.
    *
    * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -6754,8 +8054,10 @@ minW?: ConditionalValue<UtilityValues["minWidth"] | CssVars | CssProperties["min
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/max-width
    */
-maxW?: ConditionalValue<UtilityValues["maxWidth"] | CssVars | CssProperties["maxWidth"] | AnyString>
- /**
+  maxW?: ConditionalValue<
+    UtilityValues["maxWidth"] | CssVars | CssProperties["maxWidth"] | AnyString
+  >;
+  /**
    * The **`height`** CSS property specifies the height of an element. By default, the property defines the height of the content area. If `box-sizing` is set to `border-box`, however, it instead determines the height of the border area.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -6768,8 +8070,10 @@ maxW?: ConditionalValue<UtilityValues["maxWidth"] | CssVars | CssProperties["max
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/height
    */
-h?: ConditionalValue<UtilityValues["height"] | CssVars | CssProperties["height"] | AnyString>
- /**
+  h?: ConditionalValue<
+    UtilityValues["height"] | CssVars | CssProperties["height"] | AnyString
+  >;
+  /**
    * The **`min-height`** CSS property sets the minimum height of an element. It prevents the used value of the `height` property from becoming smaller than the value specified for `min-height`.
    *
    * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -6782,8 +8086,13 @@ h?: ConditionalValue<UtilityValues["height"] | CssVars | CssProperties["height"]
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/min-height
    */
-minH?: ConditionalValue<UtilityValues["minHeight"] | CssVars | CssProperties["minHeight"] | AnyString>
- /**
+  minH?: ConditionalValue<
+    | UtilityValues["minHeight"]
+    | CssVars
+    | CssProperties["minHeight"]
+    | AnyString
+  >;
+  /**
    * The **`max-height`** CSS property sets the maximum height of an element. It prevents the used value of the `height` property from becoming larger than the value specified for `max-height`.
    *
    * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
@@ -6796,9 +8105,16 @@ minH?: ConditionalValue<UtilityValues["minHeight"] | CssVars | CssProperties["mi
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/max-height
    */
-maxH?: ConditionalValue<UtilityValues["maxHeight"] | CssVars | CssProperties["maxHeight"] | AnyString>
- textShadowColor?: ConditionalValue<UtilityValues["textShadowColor"] | CssVars | AnyString>
- /**
+  maxH?: ConditionalValue<
+    | UtilityValues["maxHeight"]
+    | CssVars
+    | CssProperties["maxHeight"]
+    | AnyString
+  >;
+  textShadowColor?: ConditionalValue<
+    UtilityValues["textShadowColor"] | CssVars | AnyString
+  >;
+  /**
    * The **`background-position`** CSS property sets the initial position for each background image. The position is relative to the position layer set by `background-origin`.
    *
    * **Syntax**: `<bg-position>#`
@@ -6811,8 +8127,10 @@ maxH?: ConditionalValue<UtilityValues["maxHeight"] | CssVars | CssProperties["ma
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-position
    */
-bgPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyString>
- /**
+  bgPosition?: ConditionalValue<
+    CssProperties["backgroundPosition"] | AnyString
+  >;
+  /**
    * The **`background-position-x`** CSS property sets the initial horizontal position for each background image. The position is relative to the position layer set by `background-origin`.
    *
    * **Syntax**: `[ center | [ [ left | right | x-start | x-end ]? <length-percentage>? ]! ]#`
@@ -6825,8 +8143,10 @@ bgPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-position-x
    */
-bgPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | AnyString>
- /**
+  bgPositionX?: ConditionalValue<
+    CssProperties["backgroundPositionX"] | AnyString
+  >;
+  /**
    * The **`background-position-y`** CSS property sets the initial vertical position for each background image. The position is relative to the position layer set by `background-origin`.
    *
    * **Syntax**: `[ center | [ [ top | bottom | y-start | y-end ]? <length-percentage>? ]! ]#`
@@ -6839,8 +8159,10 @@ bgPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-position-y
    */
-bgPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | AnyString>
- /**
+  bgPositionY?: ConditionalValue<
+    CssProperties["backgroundPositionY"] | AnyString
+  >;
+  /**
    * The **`background-attachment`** CSS property sets whether a background image's position is fixed within the viewport, or scrolls with its containing block.
    *
    * **Syntax**: `<attachment>#`
@@ -6853,8 +8175,10 @@ bgPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-attachment
    */
-bgAttachment?: ConditionalValue<CssProperties["backgroundAttachment"] | AnyString>
- /**
+  bgAttachment?: ConditionalValue<
+    CssProperties["backgroundAttachment"] | AnyString
+  >;
+  /**
    * The **`background-clip`** CSS property sets whether an element's background extends underneath its border box, padding box, or content box.
    *
    * **Syntax**: `<box>#`
@@ -6868,8 +8192,8 @@ bgAttachment?: ConditionalValue<CssProperties["backgroundAttachment"] | AnyStrin
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-clip
    */
-bgClip?: ConditionalValue<CssProperties["backgroundClip"] | AnyString>
- /**
+  bgClip?: ConditionalValue<CssProperties["backgroundClip"] | AnyString>;
+  /**
    * The **`background`** shorthand CSS property sets all background style properties at once, such as color, image, origin and size, or repeat method.
    *
    * **Syntax**: `[ <bg-layer> , ]* <final-bg-layer>`
@@ -6880,8 +8204,13 @@ bgClip?: ConditionalValue<CssProperties["backgroundClip"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background
    */
-bg?: ConditionalValue<UtilityValues["background"] | CssVars | CssProperties["background"] | AnyString>
- /**
+  bg?: ConditionalValue<
+    | UtilityValues["background"]
+    | CssVars
+    | CssProperties["background"]
+    | AnyString
+  >;
+  /**
    * The **`background-color`** CSS property sets the background color of an element.
    *
    * **Syntax**: `<color>`
@@ -6894,8 +8223,13 @@ bg?: ConditionalValue<UtilityValues["background"] | CssVars | CssProperties["bac
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-color
    */
-bgColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | CssProperties["backgroundColor"] | AnyString>
- /**
+  bgColor?: ConditionalValue<
+    | UtilityValues["backgroundColor"]
+    | CssVars
+    | CssProperties["backgroundColor"]
+    | AnyString
+  >;
+  /**
    * The **`background-origin`** CSS property sets the background's origin: from the border start, inside the border, or inside the padding.
    *
    * **Syntax**: `<box>#`
@@ -6908,8 +8242,8 @@ bgColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-origin
    */
-bgOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyString>
- /**
+  bgOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyString>;
+  /**
    * The **`background-image`** CSS property sets one or more background images on an element.
    *
    * **Syntax**: `<bg-image>#`
@@ -6922,8 +8256,13 @@ bgOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-image
    */
-bgImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | CssProperties["backgroundImage"] | AnyString>
- /**
+  bgImage?: ConditionalValue<
+    | UtilityValues["backgroundImage"]
+    | CssVars
+    | CssProperties["backgroundImage"]
+    | AnyString
+  >;
+  /**
    * The **`background-repeat`** CSS property sets how background images are repeated. A background image can be repeated along the horizontal and vertical axes, or not repeated at all.
    *
    * **Syntax**: `<repeat-style>#`
@@ -6936,8 +8275,8 @@ bgImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | CssPrope
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-repeat
    */
-bgRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyString>
- /**
+  bgRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyString>;
+  /**
    * The **`background-blend-mode`** CSS property sets how an element's background images should blend with each other and with the element's background color.
    *
    * **Syntax**: `<blend-mode>#`
@@ -6950,8 +8289,10 @@ bgRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-blend-mode
    */
-bgBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | AnyString>
- /**
+  bgBlendMode?: ConditionalValue<
+    CssProperties["backgroundBlendMode"] | AnyString
+  >;
+  /**
    * The **`background-size`** CSS property sets the size of the element's background image. The image can be left to its natural size, stretched, or constrained to fit the available space.
    *
    * **Syntax**: `<bg-size>#`
@@ -6965,9 +8306,11 @@ bgBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/background-size
    */
-bgSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
- bgGradient?: ConditionalValue<UtilityValues["backgroundGradient"] | CssVars | AnyString>
- /**
+  bgSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>;
+  bgGradient?: ConditionalValue<
+    UtilityValues["backgroundGradient"] | CssVars | AnyString
+  >;
+  /**
    * The **`border-radius`** CSS property rounds the corners of an element's outer border edge. You can set a single radius to make circular corners, or two radii to make elliptical corners.
    *
    * **Syntax**: `<length-percentage>{1,4} [ / <length-percentage>{1,4} ]?`
@@ -6979,8 +8322,13 @@ bgSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-radius
    */
-rounded?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssProperties["borderRadius"] | AnyString>
- /**
+  rounded?: ConditionalValue<
+    | UtilityValues["borderRadius"]
+    | CssVars
+    | CssProperties["borderRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-top-left-radius`** CSS property rounds the top-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -6994,8 +8342,13 @@ rounded?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssProperti
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top-left-radius
    */
-roundedTopLeft?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | CssVars | CssProperties["borderTopLeftRadius"] | AnyString>
- /**
+  roundedTopLeft?: ConditionalValue<
+    | UtilityValues["borderTopLeftRadius"]
+    | CssVars
+    | CssProperties["borderTopLeftRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-top-right-radius`** CSS property rounds the top-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -7009,8 +8362,13 @@ roundedTopLeft?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | CssVars
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-top-right-radius
    */
-roundedTopRight?: ConditionalValue<UtilityValues["borderTopRightRadius"] | CssVars | CssProperties["borderTopRightRadius"] | AnyString>
- /**
+  roundedTopRight?: ConditionalValue<
+    | UtilityValues["borderTopRightRadius"]
+    | CssVars
+    | CssProperties["borderTopRightRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-bottom-right-radius`** CSS property rounds the bottom-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -7024,8 +8382,13 @@ roundedTopRight?: ConditionalValue<UtilityValues["borderTopRightRadius"] | CssVa
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-right-radius
    */
-roundedBottomRight?: ConditionalValue<UtilityValues["borderBottomRightRadius"] | CssVars | CssProperties["borderBottomRightRadius"] | AnyString>
- /**
+  roundedBottomRight?: ConditionalValue<
+    | UtilityValues["borderBottomRightRadius"]
+    | CssVars
+    | CssProperties["borderBottomRightRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-bottom-left-radius`** CSS property rounds the bottom-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -7039,12 +8402,25 @@ roundedBottomRight?: ConditionalValue<UtilityValues["borderBottomRightRadius"] |
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-left-radius
    */
-roundedBottomLeft?: ConditionalValue<UtilityValues["borderBottomLeftRadius"] | CssVars | CssProperties["borderBottomLeftRadius"] | AnyString>
- roundedTop?: ConditionalValue<UtilityValues["borderTopRadius"] | CssVars | AnyString>
- roundedRight?: ConditionalValue<UtilityValues["borderRightRadius"] | CssVars | AnyString>
- roundedBottom?: ConditionalValue<UtilityValues["borderBottomRadius"] | CssVars | AnyString>
- roundedLeft?: ConditionalValue<UtilityValues["borderLeftRadius"] | CssVars | AnyString>
- /**
+  roundedBottomLeft?: ConditionalValue<
+    | UtilityValues["borderBottomLeftRadius"]
+    | CssVars
+    | CssProperties["borderBottomLeftRadius"]
+    | AnyString
+  >;
+  roundedTop?: ConditionalValue<
+    UtilityValues["borderTopRadius"] | CssVars | AnyString
+  >;
+  roundedRight?: ConditionalValue<
+    UtilityValues["borderRightRadius"] | CssVars | AnyString
+  >;
+  roundedBottom?: ConditionalValue<
+    UtilityValues["borderBottomRadius"] | CssVars | AnyString
+  >;
+  roundedLeft?: ConditionalValue<
+    UtilityValues["borderLeftRadius"] | CssVars | AnyString
+  >;
+  /**
    * The **`border-start-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -7057,8 +8433,13 @@ roundedBottomLeft?: ConditionalValue<UtilityValues["borderBottomLeftRadius"] | C
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-start-start-radius
    */
-roundedStartStart?: ConditionalValue<UtilityValues["borderStartStartRadius"] | CssVars | CssProperties["borderStartStartRadius"] | AnyString>
- /**
+  roundedStartStart?: ConditionalValue<
+    | UtilityValues["borderStartStartRadius"]
+    | CssVars
+    | CssProperties["borderStartStartRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-start-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -7071,9 +8452,16 @@ roundedStartStart?: ConditionalValue<UtilityValues["borderStartStartRadius"] | C
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-start-end-radius
    */
-roundedStartEnd?: ConditionalValue<UtilityValues["borderStartEndRadius"] | CssVars | CssProperties["borderStartEndRadius"] | AnyString>
- roundedStart?: ConditionalValue<UtilityValues["borderStartRadius"] | CssVars | AnyString>
- /**
+  roundedStartEnd?: ConditionalValue<
+    | UtilityValues["borderStartEndRadius"]
+    | CssVars
+    | CssProperties["borderStartEndRadius"]
+    | AnyString
+  >;
+  roundedStart?: ConditionalValue<
+    UtilityValues["borderStartRadius"] | CssVars | AnyString
+  >;
+  /**
    * The **`border-end-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -7086,8 +8474,13 @@ roundedStartEnd?: ConditionalValue<UtilityValues["borderStartEndRadius"] | CssVa
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-end-start-radius
    */
-roundedEndStart?: ConditionalValue<UtilityValues["borderEndStartRadius"] | CssVars | CssProperties["borderEndStartRadius"] | AnyString>
- /**
+  roundedEndStart?: ConditionalValue<
+    | UtilityValues["borderEndStartRadius"]
+    | CssVars
+    | CssProperties["borderEndStartRadius"]
+    | AnyString
+  >;
+  /**
    * The **`border-end-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
    *
    * **Syntax**: `<length-percentage>{1,2}`
@@ -7100,9 +8493,16 @@ roundedEndStart?: ConditionalValue<UtilityValues["borderEndStartRadius"] | CssVa
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-end-end-radius
    */
-roundedEndEnd?: ConditionalValue<UtilityValues["borderEndEndRadius"] | CssVars | CssProperties["borderEndEndRadius"] | AnyString>
- roundedEnd?: ConditionalValue<UtilityValues["borderEndRadius"] | CssVars | AnyString>
- /**
+  roundedEndEnd?: ConditionalValue<
+    | UtilityValues["borderEndEndRadius"]
+    | CssVars
+    | CssProperties["borderEndEndRadius"]
+    | AnyString
+  >;
+  roundedEnd?: ConditionalValue<
+    UtilityValues["borderEndRadius"] | CssVars | AnyString
+  >;
+  /**
    * The **`border-inline`** CSS property is a shorthand property for setting the individual logical inline border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -7113,8 +8513,13 @@ roundedEndEnd?: ConditionalValue<UtilityValues["borderEndEndRadius"] | CssVars |
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline
    */
-borderX?: ConditionalValue<UtilityValues["borderInline"] | CssVars | CssProperties["borderInline"] | AnyString>
- /**
+  borderX?: ConditionalValue<
+    | UtilityValues["borderInline"]
+    | CssVars
+    | CssProperties["borderInline"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-width`** CSS property defines the width of the logical inline borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -7127,8 +8532,10 @@ borderX?: ConditionalValue<UtilityValues["borderInline"] | CssVars | CssProperti
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-width
    */
-borderXWidth?: ConditionalValue<CssProperties["borderInlineWidth"] | AnyString>
- /**
+  borderXWidth?: ConditionalValue<
+    CssProperties["borderInlineWidth"] | AnyString
+  >;
+  /**
    * The **`border-inline-color`** CSS property defines the color of the logical inline borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
@@ -7141,8 +8548,13 @@ borderXWidth?: ConditionalValue<CssProperties["borderInlineWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-color
    */
-borderXColor?: ConditionalValue<UtilityValues["borderInlineColor"] | CssVars | CssProperties["borderInlineColor"] | AnyString>
- /**
+  borderXColor?: ConditionalValue<
+    | UtilityValues["borderInlineColor"]
+    | CssVars
+    | CssProperties["borderInlineColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-block`** CSS property is a shorthand property for setting the individual logical block border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -7153,8 +8565,13 @@ borderXColor?: ConditionalValue<UtilityValues["borderInlineColor"] | CssVars | C
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block
    */
-borderY?: ConditionalValue<UtilityValues["borderBlock"] | CssVars | CssProperties["borderBlock"] | AnyString>
- /**
+  borderY?: ConditionalValue<
+    | UtilityValues["borderBlock"]
+    | CssVars
+    | CssProperties["borderBlock"]
+    | AnyString
+  >;
+  /**
    * The **`border-block-width`** CSS property defines the width of the logical block borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -7167,8 +8584,10 @@ borderY?: ConditionalValue<UtilityValues["borderBlock"] | CssVars | CssPropertie
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-width
    */
-borderYWidth?: ConditionalValue<CssProperties["borderBlockWidth"] | AnyString>
- /**
+  borderYWidth?: ConditionalValue<
+    CssProperties["borderBlockWidth"] | AnyString
+  >;
+  /**
    * The **`border-block-color`** CSS property defines the color of the logical block borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
@@ -7181,8 +8600,13 @@ borderYWidth?: ConditionalValue<CssProperties["borderBlockWidth"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-block-color
    */
-borderYColor?: ConditionalValue<UtilityValues["borderBlockColor"] | CssVars | CssProperties["borderBlockColor"] | AnyString>
- /**
+  borderYColor?: ConditionalValue<
+    | UtilityValues["borderBlockColor"]
+    | CssVars
+    | CssProperties["borderBlockColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-start`** CSS property is a shorthand property for setting the individual logical inline-start border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -7193,8 +8617,13 @@ borderYColor?: ConditionalValue<UtilityValues["borderBlockColor"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start
    */
-borderStart?: ConditionalValue<UtilityValues["borderInlineStart"] | CssVars | CssProperties["borderInlineStart"] | AnyString>
- /**
+  borderStart?: ConditionalValue<
+    | UtilityValues["borderInlineStart"]
+    | CssVars
+    | CssProperties["borderInlineStart"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-start-width`** CSS property defines the width of the logical inline-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -7207,8 +8636,10 @@ borderStart?: ConditionalValue<UtilityValues["borderInlineStart"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-width
    */
-borderStartWidth?: ConditionalValue<CssProperties["borderInlineStartWidth"] | AnyString>
- /**
+  borderStartWidth?: ConditionalValue<
+    CssProperties["borderInlineStartWidth"] | AnyString
+  >;
+  /**
    * The **`border-inline-start-color`** CSS property defines the color of the logical inline start border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>`
@@ -7222,8 +8653,13 @@ borderStartWidth?: ConditionalValue<CssProperties["borderInlineStartWidth"] | An
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-color
    */
-borderStartColor?: ConditionalValue<UtilityValues["borderInlineStartColor"] | CssVars | CssProperties["borderInlineStartColor"] | AnyString>
- /**
+  borderStartColor?: ConditionalValue<
+    | UtilityValues["borderInlineStartColor"]
+    | CssVars
+    | CssProperties["borderInlineStartColor"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-end`** CSS property is a shorthand property for setting the individual logical inline-end border property values in a single place in the style sheet.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
@@ -7234,8 +8670,13 @@ borderStartColor?: ConditionalValue<UtilityValues["borderInlineStartColor"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end
    */
-borderEnd?: ConditionalValue<UtilityValues["borderInlineEnd"] | CssVars | CssProperties["borderInlineEnd"] | AnyString>
- /**
+  borderEnd?: ConditionalValue<
+    | UtilityValues["borderInlineEnd"]
+    | CssVars
+    | CssProperties["borderInlineEnd"]
+    | AnyString
+  >;
+  /**
    * The **`border-inline-end-width`** CSS property defines the width of the logical inline-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-width'>`
@@ -7249,8 +8690,10 @@ borderEnd?: ConditionalValue<UtilityValues["borderInlineEnd"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-width
    */
-borderEndWidth?: ConditionalValue<CssProperties["borderInlineEndWidth"] | AnyString>
- /**
+  borderEndWidth?: ConditionalValue<
+    CssProperties["borderInlineEndWidth"] | AnyString
+  >;
+  /**
    * The **`border-inline-end-color`** CSS property defines the color of the logical inline-end border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
    *
    * **Syntax**: `<'border-top-color'>`
@@ -7264,8 +8707,13 @@ borderEndWidth?: ConditionalValue<CssProperties["borderInlineEndWidth"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-color
    */
-borderEndColor?: ConditionalValue<UtilityValues["borderInlineEndColor"] | CssVars | CssProperties["borderInlineEndColor"] | AnyString>
- /**
+  borderEndColor?: ConditionalValue<
+    | UtilityValues["borderInlineEndColor"]
+    | CssVars
+    | CssProperties["borderInlineEndColor"]
+    | AnyString
+  >;
+  /**
    * The **`box-shadow`** CSS property adds shadow effects around an element's frame. You can set multiple effects separated by commas. A box shadow is described by X and Y offsets relative to the element, blur and spread radius, and color.
    *
    * **Syntax**: `none | <shadow>#`
@@ -7279,12 +8727,19 @@ borderEndColor?: ConditionalValue<UtilityValues["borderInlineEndColor"] | CssVar
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/box-shadow
    */
-shadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssProperties["boxShadow"] | AnyString>
- shadowColor?: ConditionalValue<UtilityValues["boxShadowColor"] | CssVars | AnyString>
- x?: ConditionalValue<UtilityValues["translateX"] | CssVars | AnyString>
- y?: ConditionalValue<UtilityValues["translateY"] | CssVars | AnyString>
- z?: ConditionalValue<UtilityValues["translateZ"] | CssVars | AnyString>
- /**
+  shadow?: ConditionalValue<
+    | UtilityValues["boxShadow"]
+    | CssVars
+    | CssProperties["boxShadow"]
+    | AnyString
+  >;
+  shadowColor?: ConditionalValue<
+    UtilityValues["boxShadowColor"] | CssVars | AnyString
+  >;
+  x?: ConditionalValue<UtilityValues["translateX"] | CssVars | AnyString>;
+  y?: ConditionalValue<UtilityValues["translateY"] | CssVars | AnyString>;
+  z?: ConditionalValue<UtilityValues["translateZ"] | CssVars | AnyString>;
+  /**
    * The `scroll-margin-block` shorthand property sets the scroll margins of an element in the block dimension.
    *
    * **Syntax**: `<length>{1,2}`
@@ -7295,8 +8750,13 @@ shadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssProperties["
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block
    */
-scrollMarginY?: ConditionalValue<UtilityValues["scrollMarginBlock"] | CssVars | CssProperties["scrollMarginBlock"] | AnyString>
- /**
+  scrollMarginY?: ConditionalValue<
+    | UtilityValues["scrollMarginBlock"]
+    | CssVars
+    | CssProperties["scrollMarginBlock"]
+    | AnyString
+  >;
+  /**
    * The `scroll-margin-inline` shorthand property sets the scroll margins of an element in the inline dimension.
    *
    * **Syntax**: `<length>{1,2}`
@@ -7307,8 +8767,13 @@ scrollMarginY?: ConditionalValue<UtilityValues["scrollMarginBlock"] | CssVars | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline
    */
-scrollMarginX?: ConditionalValue<UtilityValues["scrollMarginInline"] | CssVars | CssProperties["scrollMarginInline"] | AnyString>
- /**
+  scrollMarginX?: ConditionalValue<
+    | UtilityValues["scrollMarginInline"]
+    | CssVars
+    | CssProperties["scrollMarginInline"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-block` shorthand property sets the scroll padding of an element in the block dimension.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
@@ -7319,8 +8784,13 @@ scrollMarginX?: ConditionalValue<UtilityValues["scrollMarginInline"] | CssVars |
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block
    */
-scrollPaddingY?: ConditionalValue<UtilityValues["scrollPaddingBlock"] | CssVars | CssProperties["scrollPaddingBlock"] | AnyString>
- /**
+  scrollPaddingY?: ConditionalValue<
+    | UtilityValues["scrollPaddingBlock"]
+    | CssVars
+    | CssProperties["scrollPaddingBlock"]
+    | AnyString
+  >;
+  /**
    * The `scroll-padding-inline` shorthand property sets the scroll padding of an element in the inline dimension.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
@@ -7331,64 +8801,117 @@ scrollPaddingY?: ConditionalValue<UtilityValues["scrollPaddingBlock"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline
    */
-scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars | CssProperties["scrollPaddingInline"] | AnyString>
- hideFrom?: ConditionalValue<UtilityValues["hideFrom"] | CssVars | AnyString>
- hideBelow?: ConditionalValue<UtilityValues["hideBelow"] | CssVars | AnyString>
- spaceX?: ConditionalValue<UtilityValues["spaceX"] | CssVars | AnyString>
- spaceY?: ConditionalValue<UtilityValues["spaceY"] | CssVars | AnyString>
- divideX?: ConditionalValue<string | number | AnyString>
- divideY?: ConditionalValue<string | number | AnyString>
- divideColor?: ConditionalValue<UtilityValues["divideColor"] | CssVars | AnyString>
- divideStyle?: ConditionalValue<UtilityValues["divideStyle"] | CssVars | AnyString>
- fontSmoothing?: ConditionalValue<UtilityValues["fontSmoothing"] | CssVars | AnyString>
- truncate?: ConditionalValue<UtilityValues["truncate"] | CssVars | AnyString>
- backgroundGradient?: ConditionalValue<UtilityValues["backgroundGradient"] | CssVars | AnyString>
- textGradient?: ConditionalValue<UtilityValues["textGradient"] | CssVars | AnyString>
- gradientFromPosition?: ConditionalValue<string | number | AnyString>
- gradientToPosition?: ConditionalValue<string | number | AnyString>
- gradientFrom?: ConditionalValue<UtilityValues["gradientFrom"] | CssVars | AnyString>
- gradientTo?: ConditionalValue<UtilityValues["gradientTo"] | CssVars | AnyString>
- gradientVia?: ConditionalValue<UtilityValues["gradientVia"] | CssVars | AnyString>
- gradientViaPosition?: ConditionalValue<string | number | AnyString>
- borderTopRadius?: ConditionalValue<UtilityValues["borderTopRadius"] | CssVars | AnyString>
- borderRightRadius?: ConditionalValue<UtilityValues["borderRightRadius"] | CssVars | AnyString>
- borderBottomRadius?: ConditionalValue<UtilityValues["borderBottomRadius"] | CssVars | AnyString>
- borderLeftRadius?: ConditionalValue<UtilityValues["borderLeftRadius"] | CssVars | AnyString>
- borderStartRadius?: ConditionalValue<UtilityValues["borderStartRadius"] | CssVars | AnyString>
- borderEndRadius?: ConditionalValue<UtilityValues["borderEndRadius"] | CssVars | AnyString>
- boxShadowColor?: ConditionalValue<UtilityValues["boxShadowColor"] | CssVars | AnyString>
- brightness?: ConditionalValue<string | number | AnyString>
- contrast?: ConditionalValue<string | number | AnyString>
- grayscale?: ConditionalValue<string | number | AnyString>
- hueRotate?: ConditionalValue<string | number | AnyString>
- invert?: ConditionalValue<string | number | AnyString>
- saturate?: ConditionalValue<string | number | AnyString>
- sepia?: ConditionalValue<string | number | AnyString>
- dropShadow?: ConditionalValue<string | number | AnyString>
- blur?: ConditionalValue<UtilityValues["blur"] | CssVars | AnyString>
- backdropBlur?: ConditionalValue<UtilityValues["backdropBlur"] | CssVars | AnyString>
- backdropBrightness?: ConditionalValue<string | number | AnyString>
- backdropContrast?: ConditionalValue<string | number | AnyString>
- backdropGrayscale?: ConditionalValue<string | number | AnyString>
- backdropHueRotate?: ConditionalValue<string | number | AnyString>
- backdropInvert?: ConditionalValue<string | number | AnyString>
- backdropOpacity?: ConditionalValue<string | number | AnyString>
- backdropSaturate?: ConditionalValue<string | number | AnyString>
- backdropSepia?: ConditionalValue<string | number | AnyString>
- borderSpacingX?: ConditionalValue<UtilityValues["borderSpacingX"] | CssVars | AnyString>
- borderSpacingY?: ConditionalValue<UtilityValues["borderSpacingY"] | CssVars | AnyString>
- animationState?: ConditionalValue<string | number | AnyString>
- rotateX?: ConditionalValue<UtilityValues["rotateX"] | CssVars | AnyString>
- rotateY?: ConditionalValue<UtilityValues["rotateY"] | CssVars | AnyString>
- rotateZ?: ConditionalValue<UtilityValues["rotateZ"] | CssVars | AnyString>
- scaleX?: ConditionalValue<string | number | AnyString>
- scaleY?: ConditionalValue<string | number | AnyString>
- translateX?: ConditionalValue<UtilityValues["translateX"] | CssVars | AnyString>
- translateY?: ConditionalValue<UtilityValues["translateY"] | CssVars | AnyString>
- translateZ?: ConditionalValue<UtilityValues["translateZ"] | CssVars | AnyString>
- scrollbar?: ConditionalValue<UtilityValues["scrollbar"] | CssVars | AnyString>
- scrollSnapStrictness?: ConditionalValue<UtilityValues["scrollSnapStrictness"] | CssVars | AnyString>
- /**
+  scrollPaddingX?: ConditionalValue<
+    | UtilityValues["scrollPaddingInline"]
+    | CssVars
+    | CssProperties["scrollPaddingInline"]
+    | AnyString
+  >;
+  hideFrom?: ConditionalValue<UtilityValues["hideFrom"] | CssVars | AnyString>;
+  hideBelow?: ConditionalValue<
+    UtilityValues["hideBelow"] | CssVars | AnyString
+  >;
+  spaceX?: ConditionalValue<UtilityValues["spaceX"] | CssVars | AnyString>;
+  spaceY?: ConditionalValue<UtilityValues["spaceY"] | CssVars | AnyString>;
+  divideX?: ConditionalValue<string | number | AnyString>;
+  divideY?: ConditionalValue<string | number | AnyString>;
+  divideColor?: ConditionalValue<
+    UtilityValues["divideColor"] | CssVars | AnyString
+  >;
+  divideStyle?: ConditionalValue<
+    UtilityValues["divideStyle"] | CssVars | AnyString
+  >;
+  fontSmoothing?: ConditionalValue<
+    UtilityValues["fontSmoothing"] | CssVars | AnyString
+  >;
+  truncate?: ConditionalValue<UtilityValues["truncate"] | CssVars | AnyString>;
+  backgroundGradient?: ConditionalValue<
+    UtilityValues["backgroundGradient"] | CssVars | AnyString
+  >;
+  textGradient?: ConditionalValue<
+    UtilityValues["textGradient"] | CssVars | AnyString
+  >;
+  gradientFromPosition?: ConditionalValue<string | number | AnyString>;
+  gradientToPosition?: ConditionalValue<string | number | AnyString>;
+  gradientFrom?: ConditionalValue<
+    UtilityValues["gradientFrom"] | CssVars | AnyString
+  >;
+  gradientTo?: ConditionalValue<
+    UtilityValues["gradientTo"] | CssVars | AnyString
+  >;
+  gradientVia?: ConditionalValue<
+    UtilityValues["gradientVia"] | CssVars | AnyString
+  >;
+  gradientViaPosition?: ConditionalValue<string | number | AnyString>;
+  borderTopRadius?: ConditionalValue<
+    UtilityValues["borderTopRadius"] | CssVars | AnyString
+  >;
+  borderRightRadius?: ConditionalValue<
+    UtilityValues["borderRightRadius"] | CssVars | AnyString
+  >;
+  borderBottomRadius?: ConditionalValue<
+    UtilityValues["borderBottomRadius"] | CssVars | AnyString
+  >;
+  borderLeftRadius?: ConditionalValue<
+    UtilityValues["borderLeftRadius"] | CssVars | AnyString
+  >;
+  borderStartRadius?: ConditionalValue<
+    UtilityValues["borderStartRadius"] | CssVars | AnyString
+  >;
+  borderEndRadius?: ConditionalValue<
+    UtilityValues["borderEndRadius"] | CssVars | AnyString
+  >;
+  boxShadowColor?: ConditionalValue<
+    UtilityValues["boxShadowColor"] | CssVars | AnyString
+  >;
+  brightness?: ConditionalValue<string | number | AnyString>;
+  contrast?: ConditionalValue<string | number | AnyString>;
+  grayscale?: ConditionalValue<string | number | AnyString>;
+  hueRotate?: ConditionalValue<string | number | AnyString>;
+  invert?: ConditionalValue<string | number | AnyString>;
+  saturate?: ConditionalValue<string | number | AnyString>;
+  sepia?: ConditionalValue<string | number | AnyString>;
+  dropShadow?: ConditionalValue<string | number | AnyString>;
+  blur?: ConditionalValue<UtilityValues["blur"] | CssVars | AnyString>;
+  backdropBlur?: ConditionalValue<
+    UtilityValues["backdropBlur"] | CssVars | AnyString
+  >;
+  backdropBrightness?: ConditionalValue<string | number | AnyString>;
+  backdropContrast?: ConditionalValue<string | number | AnyString>;
+  backdropGrayscale?: ConditionalValue<string | number | AnyString>;
+  backdropHueRotate?: ConditionalValue<string | number | AnyString>;
+  backdropInvert?: ConditionalValue<string | number | AnyString>;
+  backdropOpacity?: ConditionalValue<string | number | AnyString>;
+  backdropSaturate?: ConditionalValue<string | number | AnyString>;
+  backdropSepia?: ConditionalValue<string | number | AnyString>;
+  borderSpacingX?: ConditionalValue<
+    UtilityValues["borderSpacingX"] | CssVars | AnyString
+  >;
+  borderSpacingY?: ConditionalValue<
+    UtilityValues["borderSpacingY"] | CssVars | AnyString
+  >;
+  animationState?: ConditionalValue<string | number | AnyString>;
+  rotateX?: ConditionalValue<UtilityValues["rotateX"] | CssVars | AnyString>;
+  rotateY?: ConditionalValue<UtilityValues["rotateY"] | CssVars | AnyString>;
+  rotateZ?: ConditionalValue<UtilityValues["rotateZ"] | CssVars | AnyString>;
+  scaleX?: ConditionalValue<string | number | AnyString>;
+  scaleY?: ConditionalValue<string | number | AnyString>;
+  translateX?: ConditionalValue<
+    UtilityValues["translateX"] | CssVars | AnyString
+  >;
+  translateY?: ConditionalValue<
+    UtilityValues["translateY"] | CssVars | AnyString
+  >;
+  translateZ?: ConditionalValue<
+    UtilityValues["translateZ"] | CssVars | AnyString
+  >;
+  scrollbar?: ConditionalValue<
+    UtilityValues["scrollbar"] | CssVars | AnyString
+  >;
+  scrollSnapStrictness?: ConditionalValue<
+    UtilityValues["scrollSnapStrictness"] | CssVars | AnyString
+  >;
+  /**
    * The **`scroll-margin`** shorthand property sets all of the scroll margins of an element at once, assigning values much like the `margin` property does for margins of an element.
    *
    * **Syntax**: `<length>{1,4}`
@@ -7400,8 +8923,10 @@ scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin
    */
-scrollSnapMargin?: ConditionalValue<UtilityValues["scrollSnapMargin"] | CssVars | AnyString>
- /**
+  scrollSnapMargin?: ConditionalValue<
+    UtilityValues["scrollSnapMargin"] | CssVars | AnyString
+  >;
+  /**
    * The `scroll-margin-top` property defines the top margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -7415,8 +8940,10 @@ scrollSnapMargin?: ConditionalValue<UtilityValues["scrollSnapMargin"] | CssVars 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-top
    */
-scrollSnapMarginTop?: ConditionalValue<UtilityValues["scrollSnapMarginTop"] | CssVars | AnyString>
- /**
+  scrollSnapMarginTop?: ConditionalValue<
+    UtilityValues["scrollSnapMarginTop"] | CssVars | AnyString
+  >;
+  /**
    * The `scroll-margin-bottom` property defines the bottom margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -7430,8 +8957,10 @@ scrollSnapMarginTop?: ConditionalValue<UtilityValues["scrollSnapMarginTop"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-bottom
    */
-scrollSnapMarginBottom?: ConditionalValue<UtilityValues["scrollSnapMarginBottom"] | CssVars | AnyString>
- /**
+  scrollSnapMarginBottom?: ConditionalValue<
+    UtilityValues["scrollSnapMarginBottom"] | CssVars | AnyString
+  >;
+  /**
    * The `scroll-margin-left` property defines the left margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -7445,8 +8974,10 @@ scrollSnapMarginBottom?: ConditionalValue<UtilityValues["scrollSnapMarginBottom"
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-left
    */
-scrollSnapMarginLeft?: ConditionalValue<UtilityValues["scrollSnapMarginLeft"] | CssVars | AnyString>
- /**
+  scrollSnapMarginLeft?: ConditionalValue<
+    UtilityValues["scrollSnapMarginLeft"] | CssVars | AnyString
+  >;
+  /**
    * The `scroll-margin-right` property defines the right margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
    *
    * **Syntax**: `<length>`
@@ -7460,9 +8991,15 @@ scrollSnapMarginLeft?: ConditionalValue<UtilityValues["scrollSnapMarginLeft"] | 
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-right
    */
-scrollSnapMarginRight?: ConditionalValue<UtilityValues["scrollSnapMarginRight"] | CssVars | AnyString>
- srOnly?: ConditionalValue<UtilityValues["srOnly"] | CssVars | AnyString>
- debug?: ConditionalValue<UtilityValues["debug"] | CssVars | AnyString>
- colorPalette?: ConditionalValue<UtilityValues["colorPalette"] | CssVars | AnyString>
- textStyle?: ConditionalValue<UtilityValues["textStyle"] | CssVars | AnyString>
+  scrollSnapMarginRight?: ConditionalValue<
+    UtilityValues["scrollSnapMarginRight"] | CssVars | AnyString
+  >;
+  srOnly?: ConditionalValue<UtilityValues["srOnly"] | CssVars | AnyString>;
+  debug?: ConditionalValue<UtilityValues["debug"] | CssVars | AnyString>;
+  colorPalette?: ConditionalValue<
+    UtilityValues["colorPalette"] | CssVars | AnyString
+  >;
+  textStyle?: ConditionalValue<
+    UtilityValues["textStyle"] | CssVars | AnyString
+  >;
 }

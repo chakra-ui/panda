@@ -1,84 +1,111 @@
 import type { Context } from '@pandacss/core'
-import type { ArtifactFilters } from '@pandacss/types'
+import type { ArtifactFileId } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
+import { ArtifactFile, type ArtifactImports } from '../artifact-map'
 
-export function generateSolidJsxPattern(ctx: Context, filters?: ArtifactFilters) {
+export function generateSolidJsxPattern(ctx: Context) {
   const { typeName, factoryName, styleProps: jsxStyleProps } = ctx.jsx
 
-  const details = ctx.patterns.filterDetails(filters)
-
-  return details.map((pattern) => {
-    const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
+  return ctx.patterns.details.flatMap((pattern) => {
+    const { baseName, upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
     const { description, jsxElement = 'div', deprecated } = pattern.config
 
-    return {
-      name: dashName,
-      js: outdent`
-    import { createMemo, mergeProps, splitProps } from 'solid-js'
-    import { createComponent } from 'solid-js/web'
-    ${jsxStyleProps === 'minimal' ? ctx.file.import('mergeCss', '../css/css') : ''}
-    ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
-    ${ctx.file.import(factoryName, './factory')}
+    return [
+      new ArtifactFile({
+        id: `jsx/pattern/${dashName}.js` as ArtifactFileId,
+        fileName: dashName,
+        type: 'js',
+        dir: (ctx) => ctx.paths.jsx,
+        dependencies: [`patterns.${baseName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        imports: () => {
+          const conditionals = {} as ArtifactImports
+          if (jsxStyleProps === 'minimal') {
+            conditionals['css/css.js'] = ['mergeCss']
+          }
 
-    export const ${jsxName} = /* @__PURE__ */ function ${jsxName}(props) {
-      ${match(jsxStyleProps)
-        .with(
-          'none',
-          () => outdent`
-        const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
-        
-        const cssProps = createMemo(() => {
-          const styleProps = ${styleFnName}(patternProps)
-          return { css: styleProps }
-        })
-        
-        const mergedProps = mergeProps(restProps, cssProps)
+          return {
+            ...conditionals,
+            'jsx/factory.js': [factoryName],
+          }
+        },
+        computed(ctx) {
+          return { jsx: ctx.jsx }
+        },
+        code(params) {
+          const { factoryName } = params.computed.jsx
 
-        return createComponent(${factoryName}.${jsxElement}, mergedProps)
-        `,
-        )
-        .with(
-          'minimal',
-          () => outdent`
-        const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
-        
-        const cssProps = createMemo(() => {
-          const styleProps = ${styleFnName}(patternProps)
-          return { css: mergeCss(styleProps, props.css) }
-        })
+          return `
+          import { createMemo, mergeProps, splitProps } from 'solid-js'
+          import { createComponent } from 'solid-js/web'
+          ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
 
-        const mergedProps = mergeProps(restProps, cssProps)
+          export const ${jsxName} = /* @__PURE__ */ function ${jsxName}(props) {
+            ${match(jsxStyleProps)
+              .with(
+                'none',
+                () => outdent`
+              const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
-        return createComponent(${factoryName}.${jsxElement}, mergedProps)
-        `,
-        )
-        .with(
-          'all',
-          () => outdent`
-        const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
-        
-        const styleProps = ${styleFnName}(patternProps)        
-        const mergedProps = mergeProps(styleProps, restProps)
-        
-        return createComponent(${factoryName}.${jsxElement}, mergedProps)
-        `,
-        )
-        .exhaustive()}
-    }
-    `,
+              const mergedProps = mergeProps(restProps, cssProps)
 
-      dts: outdent`
-    import type { Component } from 'solid-js'
-    ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
-    ${ctx.file.importType(typeName, '../types/jsx')}
-    ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+              return createComponent(${factoryName}.${jsxElement}, mergedProps)
+              `,
+              )
+              .with(
+                'minimal',
+                () => outdent`
+              const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
 
-    export interface ${upperName}Props extends ${upperName}Properties, DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}> {}
+              const cssProps = createMemo(() => {
+                const styleProps = ${styleFnName}(patternProps)
+                return { css: mergeCss(styleProps, props.css) }
+              })
+              const mergedProps = mergeProps(restProps, cssProps)
 
-    ${ctx.file.jsDocComment(description, { deprecated })}
-    export declare const ${jsxName}: Component<${upperName}Props>
-    `,
-    }
+              return createComponent(${factoryName}.${jsxElement}, mergedProps)
+              `,
+              )
+              .with(
+                'all',
+                () => outdent`
+              const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
+
+              const styleProps = ${styleFnName}(patternProps)
+              const mergedProps = mergeProps(styleProps, restProps)
+
+              return createComponent(${factoryName}.${jsxElement}, mergedProps)
+              `,
+              )
+              .exhaustive()}
+          }
+          `
+        },
+      }),
+      new ArtifactFile({
+        id: `jsx/pattern/${dashName}.d.ts` as ArtifactFileId,
+        fileName: dashName,
+        type: 'dts',
+        dir: (ctx) => ctx.paths.jsx,
+        dependencies: [`patterns.${baseName}`, 'jsxFactory', 'jsxFramework', 'jsxStyleProps'],
+        importsType: {
+          'types/system-types.d.ts': ['Assign', 'DistributiveOmit'],
+          'types/jsx.d.ts': [typeName],
+        },
+        code() {
+          return `
+          import type { Component } from 'solid-js'
+          ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
+
+          export interface ${upperName}Props extends Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
+            blocklistType || '""'
+          }>> {}
+
+          ${ctx.file.jsDocComment(description, { deprecated })}
+          export declare const ${jsxName}: Component<${upperName}Props>
+          `
+        },
+      }),
+    ]
   })
 }

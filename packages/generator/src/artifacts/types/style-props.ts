@@ -1,28 +1,45 @@
-import type { Context } from '@pandacss/core'
 import { allCssProperties } from '@pandacss/is-valid-prop'
 import { unionType } from '@pandacss/shared'
-import outdent from 'outdent'
 
 import type { UserConfig } from '@pandacss/types'
+import { ArtifactFile } from '../artifact-map'
 import csstype from '../generated/csstype.d.ts.json' assert { type: 'json' }
 
-export function generateStyleProps(ctx: Context) {
-  const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
-  const propTypes = ctx.utility.getTypes()
+export const typesStylePropsArtifact = new ArtifactFile({
+  id: 'types/style-props.d.ts',
+  fileName: 'style-props',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.types,
+  dependencies: ['utilities', 'globalVars', 'shorthands'],
+  importsType: {
+    'types/conditions.d.ts': ['ConditionalValue'],
+    'types/prop-type.d.ts': ['OnlyKnown', 'UtilityValues', 'WithEscapeHatch'],
+    'types/system-types.d.ts': ['CssProperties'],
+    'tokens/index.d.ts': ['Token'],
+  },
+  computed(ctx) {
+    return {
+      strictTokens: ctx.config.strictTokens,
+      strictPropertyValues: ctx.config.strictPropertyValues,
+      utility: ctx.utility,
+      cssVars: unionType(ctx.globalVars.vars),
+      cssVarNames: unionType(ctx.globalVars.names),
+      hasCssVars: !ctx.globalVars.isEmpty(),
+      restrict: restrict,
+    }
+  },
+  code(params) {
+    const ctx = params.computed
+    const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
+    const propTypes = ctx.utility.getTypes()
+    const { cssVars, cssVarNames, hasCssVars } = params.computed
 
-  const cssVars = unionType(ctx.globalVars.vars)
-
-  return outdent`
-    ${ctx.file.importType('ConditionalValue', './conditions')}
-    ${ctx.file.importType('OnlyKnown, UtilityValues, WithEscapeHatch', './prop-type')}
-    ${ctx.file.importType('CssProperties', './system-types')}
-    ${ctx.file.importType('Token', '../tokens/index')}
-
+    return `
     type AnyString = (string & {})
     type CssVars = ${[cssVars || '`var(--${string})`'].filter(Boolean).join(' | ')}
-    type CssVarValue = ConditionalValue<Token${ctx.globalVars.isEmpty() ? '' : ' | CssVars'} | AnyString | (number & {})>
+    type CssVarValue = ConditionalValue<Token${hasCssVars ? ' | CssVars' : ''} | AnyString | (number & {})>
 
-    type CssVarName = ${unionType(ctx.globalVars.names)} | AnyString
+    type CssVarName = ${cssVarNames} | AnyString
     type CssVarKeys = \`--\${CssVarName}\`
 
     export type CssVarProperties = {
@@ -45,9 +62,7 @@ export function generateStyleProps(ctx: Context) {
             if (strictPropertyList.has(key)) {
               union.push([utilityValue, 'CssVars'].join(' | '))
             } else {
-              union.push(
-                [utilityValue, 'CssVars', ctx.config.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '),
-              )
+              union.push([utilityValue, 'CssVars', ctx.strictTokens ? '' : cssFallback].filter(Boolean).join(' | '))
             }
           } else {
             union.push([strictPropertyList.has(key) ? 'CssVars' : '', cssFallback].filter(Boolean).join(' | '))
@@ -65,14 +80,18 @@ export function generateStyleProps(ctx: Context) {
           }
 
           const value = filtered.filter(Boolean).join(' | ')
-          const line = `${key}?: ${restrict(prop, value, ctx.config)}`
+          const line = `${key}?: ${restrict(prop, value, {
+            strictTokens: ctx.strictTokens,
+            strictPropertyValues: ctx.strictPropertyValues,
+          })}`
 
           return ' ' + [comment, line].filter(Boolean).join('\n')
         })
         .join('\n')}
     }
     `
-}
+  },
+})
 
 const strictPropertyList = new Set([
   'alignContent',
@@ -139,7 +158,7 @@ const strictPropertyList = new Set([
   'writingMode',
 ])
 
-const restrict = (key: string, value: string, config: UserConfig) => {
+const restrict = (key: string, value: string, config: Pick<UserConfig, 'strictTokens' | 'strictPropertyValues'>) => {
   if (config.strictPropertyValues && strictPropertyList.has(key)) {
     return `ConditionalValue<WithEscapeHatch<OnlyKnown<"${key}", ${value}>>>`
   }

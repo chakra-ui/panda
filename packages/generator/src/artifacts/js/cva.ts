@@ -1,12 +1,22 @@
-import type { Context } from '@pandacss/core'
-import { outdent } from 'outdent'
+import { ArtifactFile } from '../artifact-map'
 
-export function generateCvaFn(ctx: Context) {
-  return {
-    js: outdent`
-    ${ctx.file.import('compact, mergeProps, memo, splitProps, uniq', '../helpers')}
-    ${ctx.file.import('css, mergeCss', './css')}
+export const cvaJsArtifact = new ArtifactFile({
+  id: 'css/cva.js',
+  fileName: 'cva',
+  type: 'js',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: ['syntax'],
+  imports: {
+    'helpers.js': ['compact', 'mergeProps', 'memo', 'splitProps', 'uniq'],
+    'css/css.js': ['css', 'mergeCss'],
+  },
+  computed(ctx) {
+    return { isTemplateLiteralSyntax: ctx.isTemplateLiteralSyntax }
+  },
+  code(params) {
+    if (params.computed.isTemplateLiteralSyntax) return
 
+    return `
     const defaults = (conf) => ({
       base: {},
       variants: {},
@@ -90,15 +100,24 @@ export function generateCvaFn(ctx: Context) {
       if (compoundVariants.length > 0 && typeof variants?.[prop] === 'object') {
         throw new Error(\`[recipe:\${name}:\${prop}] Conditions are not supported when using compound variants.\`)
       }
-    }
+    }`
+  },
+})
 
-    `,
-    dts: outdent`
-    ${ctx.file.importType('RecipeCreatorFn', '../types/recipe')}
-
+export const cvaDtsArtifact = new ArtifactFile({
+  id: 'css/cva.d.ts',
+  fileName: 'cva',
+  type: 'dts',
+  dir: (ctx) => ctx.paths.css,
+  dependencies: [],
+  importsType: {
+    'types/index.d.ts': ['RecipeCreatorFn'],
+  },
+  code(params) {
+    return `
     export declare const cva: RecipeCreatorFn
 
-    ${ctx.file.exportType('RecipeVariant, RecipeVariantProps', '../types/recipe')}
-    `,
-  }
-}
+    ${params.file.exportType('RecipeVariant, RecipeVariantProps', '../types/recipe')}
+    `
+  },
+})

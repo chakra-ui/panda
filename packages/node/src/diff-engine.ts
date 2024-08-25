@@ -28,13 +28,13 @@ export class DiffEngine {
    * Returns the list of affected artifacts/engines
    */
   refresh(conf: LoadConfigResult, fn?: (conf: LoadConfigResult) => void) {
-    const affected = diffConfigs(() => conf.deserialize(), this.prevConfig)
+    const result = diffConfigs(() => conf.deserialize(), this.prevConfig)
 
-    if (!affected.hasConfigChanged || !this.prevConfig) return affected
+    if (!result.hasConfigChanged || !this.prevConfig) return result
 
     fn?.(conf)
     this.prevConfig = conf.deserialize()
 
-    return affected
+    return result
   }
 }
