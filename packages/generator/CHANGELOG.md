@@ -1,5 +1,25 @@
 # @pandacss/generator
 
+## 0.45.2
+
+### Patch Changes
+
+- 8c276ff: make `WithEscapeHatch<T>` much more performant
+
+  This pull request is a follow-up pull request to #2466.
+
+  Make `WithEscapeHatch<T>` much more performant and typescript happy by updating the type signature of
+  `WithImportant<T>` and `WithColorOpacityModifier<T>` to use _branded type_ and _non-distributive conditional types_,
+  while keeping such tokens valid and also not appearing in autocompletions to prevent them from polluting
+  autocompletion result (which is the current behavior).
+
+  - @pandacss/core@0.45.2
+  - @pandacss/is-valid-prop@0.45.2
+  - @pandacss/logger@0.45.2
+  - @pandacss/shared@0.45.2
+  - @pandacss/token-dictionary@0.45.2
+  - @pandacss/types@0.45.2
+
 ## 0.45.1
 
 ### Patch Changes
