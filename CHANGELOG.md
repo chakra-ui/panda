@@ -6,6 +6,15 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.45.2] - 2024-08-29
+
+### Changed
+
+Make `WithEscapeHatch<T>` much more performant and typescript happy by updating the type signature of `WithImportant<T>`
+and `WithColorOpacityModifier<T>` to use _branded type_ and _non-distributive conditional types_, while keeping such
+tokens valid and also not appearing in autocompletions to prevent them from polluting autocompletion result (which is
+the current behavior).
+
 ## [0.45.1] - 2024-08-14
 
 ### Fixed
