@@ -42,7 +42,7 @@
     "cross-env": "7.0.3",
     "happy-dom": "13.3.8",
     "husky": "9.0.11",
-    "lint-staged": "15.2.8",
+    "lint-staged": "15.2.10",
     "mdx-local-link-checker": "2.1.1",
     "rimraf": "5.0.5",
     "ts-morph": "21.0.1",
