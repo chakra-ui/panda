@@ -134,7 +134,7 @@ export default defineConfig({
 })
 ```
 
-Get the snippets for the removal logic from our Github Sandbox in the [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) files.
+Get the snippets for the removal logic from our Github Sandbox in the [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-keyframes.ts) files.
 
 > note that using this means you can't use the JS function [`token.var`](/docs/guides/dynamic-styling#using-tokenvar) (or [token(xxx)](/docs/guides/dynamic-styling#using-token) where `xxx` is the path to a [semanticToken](/docs/theming/tokens#semantic-tokens)) from `styled-system/tokens` as the CSS variables will be removed based on the usage found in the generated CSS
 
