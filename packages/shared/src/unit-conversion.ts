@@ -4,11 +4,12 @@ const UNIT_PX = 'px'
 const UNIT_EM = 'em'
 const UNIT_REM = 'rem'
 
-export function getUnit(value = ''): string | undefined {
-  const DIGIT_REGEX = new RegExp(String.raw`-?\d+(?:\.\d+|\d*)`)
-  const UNIT_REGEX = new RegExp(`${UNIT_PX}|${UNIT_EM}|${UNIT_REM}`)
+const DIGIT_REGEX = new RegExp(String.raw`-?\d+(?:\.\d+|\d*)`)
+const UNIT_REGEX = new RegExp(`${UNIT_PX}|${UNIT_EM}|${UNIT_REM}`)
+const VALUE_REGEX = new RegExp(`${DIGIT_REGEX.source}(${UNIT_REGEX.source})`)
 
-  const unit = value.match(new RegExp(`${DIGIT_REGEX.source}(${UNIT_REGEX.source})`))
+export function getUnit(value = ''): string | undefined {
+  const unit = value.match(VALUE_REGEX)
   return unit?.[1]
 }
 
