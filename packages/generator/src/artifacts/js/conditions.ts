@@ -10,8 +10,10 @@ export function generateConditions(ctx: Context) {
     const conditionsStr = "${keys.join(',')}"
     const conditions = new Set(conditionsStr.split(','))
 
+    const conditionRegex = /^@|&|&$/
+
     export function isCondition(value){
-      return conditions.has(value) || /^@|&|&$/.test(value)
+      return conditions.has(value) || conditionRegex.test(value)
     }
 
     const underscoreRegex = /^_/

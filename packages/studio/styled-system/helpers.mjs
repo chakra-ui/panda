@@ -64,8 +64,9 @@ var memo = (fn) => {
 
 // src/merge-props.ts
 function mergeProps(...sources) {
-  const objects = sources.filter(Boolean);
-  return objects.reduce((prev, obj) => {
+  return sources.reduce((prev, obj) => {
+    if (!obj)
+      return prev;
     Object.keys(obj).forEach((key) => {
       const prevValue = prev[key];
       const value = obj[key];
@@ -165,9 +166,9 @@ function createCss(context) {
     const normalizedObject = normalizeStyleObject(styleObject, context);
     const classNames = /* @__PURE__ */ new Set();
     walkObject(normalizedObject, (value, paths) => {
-      const important = isImportant(value);
       if (value == null)
         return;
+      const important = isImportant(value);
       const [prop, ...allConditions] = conds.shift(paths);
       const conditions = filterBaseConditions(allConditions);
       const transformed = utility.transform(prop, withoutImportant(sanitize(value)));
