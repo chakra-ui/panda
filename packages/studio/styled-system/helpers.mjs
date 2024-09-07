@@ -279,7 +279,15 @@ function splitProps(props, ...keys) {
 }
 
 // src/uniq.ts
-var uniq = (...items) => items.filter(Boolean).reduce((acc, item) => Array.from(/* @__PURE__ */ new Set([...acc, ...item])), []);
+var uniq = (...items) => {
+  const set = items.reduce((acc, currItems) => {
+    if (currItems) {
+      currItems.forEach((item) => acc.add(item));
+    }
+    return acc;
+  }, /* @__PURE__ */ new Set([]));
+  return Array.from(set);
+};
 export {
   compact,
   createCss,
