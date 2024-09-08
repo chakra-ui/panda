@@ -42,8 +42,8 @@ const css_obj = createCss({
   },
 })
 
-const css = (str: any) => {
-  return css_obj(astish(str[0] as string))
+const css = (str: TemplateStringsArray) => {
+  return css_obj(astish(str[0]))
 }
 
 describe('string literal [shared]', () => {
