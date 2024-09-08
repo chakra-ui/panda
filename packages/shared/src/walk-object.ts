@@ -1,4 +1,4 @@
-import { isObject } from './assert'
+import { isObjectOrArray, isObject } from './assert'
 
 type Predicate<R = any> = (value: any, path: string[]) => R
 
@@ -28,7 +28,7 @@ export function walkObject<T, K>(
   const { stop, getKey } = options
 
   function inner(value: any, path: string[] = []): any {
-    if (isObject(value) || Array.isArray(value)) {
+    if (isObjectOrArray(value)) {
       const result: Record<string, string> = {}
       for (const [prop, child] of Object.entries(value)) {
         const key = getKey?.(prop, child) ?? prop
