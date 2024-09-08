@@ -96,12 +96,16 @@ export function stringify(
         }
 
         // This ensures a unique reference with `String("xxx")` even if the same string "xxx" is used multiple times
-        const usedName = Object(name)
+        let usedName = Object(name)
 
         let nextSelectors: typeof selectors
 
         // Nested condition
         if (isAtRuleLike) {
+          if (selectors.length && name.includes('@scope') && name.includes('&')) {
+            const resolvedSelectors = getResolvedSelectors(selectors, parseSelectors(name))
+            usedName = Object(resolvedSelectors[0])
+          }
           nextSelectors = selectors
           cssText += parse(data, nextSelectors, conditions.concat(usedName))
         } else {
