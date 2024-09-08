@@ -10,6 +10,7 @@ export const astish = (val: string, tree: any[] = [{}]): Record<string, any> => 
     if (block[4]) tree.shift()
     else if (block[3]) {
       left = block[3].replace(ruleNewline, empty).trim()
+      if (!left.includes('&') && !left.startsWith('@')) left = '& ' + left
       tree.unshift((tree[0][left] = tree[0][left] || {}))
     } else tree[0][block[1]] = block[2].replace(ruleNewline, empty).trim()
   }
