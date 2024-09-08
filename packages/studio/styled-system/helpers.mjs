@@ -2,6 +2,7 @@
 function isObject(value) {
   return typeof value === "object" && value != null && !Array.isArray(value);
 }
+var isObjectOrArray = (obj) => typeof obj === "object" && obj !== null;
 
 // src/compact.ts
 function compact(value) {
@@ -85,7 +86,7 @@ var isNotNullish = (element) => element != null;
 function walkObject(target, predicate, options = {}) {
   const { stop, getKey } = options;
   function inner(value, path = []) {
-    if (isObject(value) || Array.isArray(value)) {
+    if (isObjectOrArray(value)) {
       const result = {};
       for (const [prop, child] of Object.entries(value)) {
         const key = getKey?.(prop, child) ?? prop;
