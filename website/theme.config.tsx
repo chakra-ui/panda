@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import { useFSRoute } from 'nextra/hooks'
 import seoConfig from './seo.config'
 import {
   Callout,
@@ -29,16 +30,27 @@ const config: DocsThemeConfig = {
   logo: <Icon icon="LogoWithText" />,
   project: { link: 'https://github.com/chakra-ui/panda' },
   useNextSeoProps() {
+    const { frontMatter } = useConfig()
+
     const { route } = useRouter()
     const { url, images } = seoConfig.openGraph
 
     if (route === '/') {
-      return { titleTemplate: 'Panda – %s' }
+      return { titleTemplate: 'Panda CSS - %s' }
     }
 
+    const fsRoute = useFSRoute()
+    const category = fsRoute.split('/')[2]
+
+    const ogUrl = new URL(`${url}${images}`)
+    ogUrl.searchParams.set('title', frontMatter.title)
+    if (category) ogUrl.searchParams.set('category', category)
+
     return {
+      title: frontMatter.title,
+      description: frontMatter.description,
       titleTemplate: seoConfig.title.template,
-      openGraph: { url, images: [{ url: `${url}${images}` }] }
+      openGraph: { url, images: [{ url: ogUrl.toString() }] }
     }
   },
   docsRepositoryBase: 'https://github.com/chakra-ui/panda/tree/main/website',

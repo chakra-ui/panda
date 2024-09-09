@@ -12,7 +12,7 @@ const seoConfig = defineMetadata({
   description: 'Build modern websites using build time and type-safe CSS-in-JS',
   themeColor: '#F6E458',
   openGraph: {
-    images: '/og-image.png',
+    images: '/og',
     url: 'https://panda-css.com'
   },
   manifest: '/site.webmanifest',
