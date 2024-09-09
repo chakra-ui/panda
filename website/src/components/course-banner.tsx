@@ -1,9 +1,8 @@
 import { css } from '@/styled-system/css'
 import { HStack } from '@/styled-system/jsx'
-import { circle, hstack } from '@/styled-system/patterns'
+import { circle } from '@/styled-system/patterns'
 import { ButtonIcon } from '@/theme/icons'
 import Link from 'next/link'
-import { FaPlay } from 'react-icons/fa'
 
 export const CourseMiniBanner = () => {
   return (
@@ -82,17 +81,6 @@ export const CourseBanner = () => {
   return (
     <Link href="https://www.pandamastery.com/?ref=course-banner">
       <HStack bg="yellow.300" pos="relative">
-        <div
-          className={css({
-            hideBelow: 'lg',
-            bg: 'linear-gradient(90deg, {colors.black/20} 0%, {colors.yellow.300} 28%, {colors.yellow.300} 72%, {colors.black/20})',
-            w: 'full',
-            h: '2',
-            pos: 'absolute',
-            top: '4',
-            zIndex: '0'
-          })}
-        />
         <HStack
           justify="center"
           px="2"
@@ -104,27 +92,12 @@ export const CourseBanner = () => {
           <MiniIcon />
           <p className={css({ color: 'black' })}>
             <span className={css({ fontWeight: 'medium' })}>
-              Introducing Panda Mastery.{' '}
+              Want to skip the docs? Check out pandamastery.com{' '}
             </span>
             <span className={css({ hideBelow: 'sm' })}>
-              An in-depth Panda CSS course
+              - the best way to learn Panda CSS
             </span>
           </p>
-          <div
-            className={hstack({
-              ms: '2',
-              px: '2',
-              py: '0.5',
-              gap: '1.5',
-              bg: 'black',
-              color: 'white',
-              rounded: 'sm',
-              fontSize: 'sm'
-            })}
-          >
-            <FaPlay className={css({ fontSize: '0.64em', opacity: '0.8' })} />{' '}
-            Watch now
-          </div>
         </HStack>
       </HStack>
     </Link>
