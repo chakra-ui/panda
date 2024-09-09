@@ -147,9 +147,9 @@ const className = cx(
 
 ## Merging within JSX component
 
-Using these techniques, you can apply them to a component to merge styles together.
+Using these techniques, you can apply them to a component by exposing a `css` prop and merge with local styles.
 
-> Tip: Panda extracts the `css` prop from the JSX component
+> **Note:** For this to work, Panda requires that you set `jsxFramework` config option to `react`
 
 ```jsx
 const cardStyles = css.raw({
