@@ -60,6 +60,7 @@ The available keys for a preset are:
 
 - [`conditions`](/docs/concepts/conditional-styles)
 - [`globalCss`](/docs/concepts/writing-styles#global-styles)
+- [`globalFontface`](/docs/guides/fonts#global-font-face)
 - [`patterns`](/docs/concepts/patterns)
 - [`staticCss`](/docs/guides/static)
 - [`theme`](/docs/customization/theme)
