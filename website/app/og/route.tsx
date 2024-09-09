@@ -16,7 +16,7 @@ interface Params {
 }
 
 const getFontSize = (title: string) => {
-  if (title.length < 10) return '120px'
+  if (title.length < 14) return '120px'
   if (title.length < 28) return '82px'
   return '64px'
 }
