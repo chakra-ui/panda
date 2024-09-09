@@ -140,18 +140,24 @@ export const SectionCssInJS = () => {
               gap="8"
             >
               {features.map(({ title, description, icon }) => (
-                  <Stack maxW="20ch" textStyle="xl" width="full" key={title}>
-                    <HStack>
-                      <Icon
-                        icon={icon}
-                        className={css({ color: 'yellow.300' })}
-                        />
-                      <panda.span fontWeight="semibold">{title}</panda.span>
-                    </HStack>
-                    <panda.span color="gray.200" maxW={{ lg: '256px' }}>
-                      {description}
-                    </panda.span>
-                  </Stack>
+                <Stack
+                  maxW={{ lg: '20ch' }}
+                  align={{ base: 'center', lg: 'flex-start' }}
+                  textStyle="xl"
+                  width="full"
+                  key={title}
+                >
+                  <HStack>
+                    <Icon
+                      icon={icon}
+                      className={css({ color: 'yellow.300' })}
+                    />
+                    <panda.span fontWeight="semibold">{title}</panda.span>
+                  </HStack>
+                  <panda.span color="gray.200" maxW={{ lg: '256px' }}>
+                    {description}
+                  </panda.span>
+                </Stack>
               ))}
             </Stack>
           </VStack>

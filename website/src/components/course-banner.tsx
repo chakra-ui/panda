@@ -18,10 +18,10 @@ export const CourseMiniBanner = () => {
         />
         <p>
           <span className={css({ fontWeight: 'medium' })}>
-            Introducing Panda Mastery.{' '}
+            Want to skip the docs?{' '}
           </span>
           <span className={css({ hideBelow: 'xl' })}>
-            An in-depth Panda CSS course
+            Watch the official Panda course
           </span>
         </p>
         <ButtonIcon icon="RightArrowIcon" />
