@@ -1,29 +1,29 @@
 ---
-title: Hooks
+title: Panda Integration Hooks
 description: Leveraging hooks in Panda to create custom functionality.
 ---
 
-# Hooks
+# Panda Integration Hooks
 
-Panda provides a set of callbacks that you can hook into for more advanced use cases.
+Panda hooks can be used to add new functionality or modify existing behavior during certian parts of the compiler lifecycle.
 
-You can use `hooks` to create custom functionality that can be shared with the community, either as a snippet or as a `preset`.
+Hooks are mostly callbacks that can be added to the panda config via the `hooks` property, or installed via plugins.
 
-With hooks you can:
+Here are some examples of what you can do with hooks:
 
-- modify the resolved config (`config:resolved`), this could be used to dynamically load all recipes from a folder
-- tweak some parts of the token or classname engine (`tokens:created`, `utility:created`), like prefixing token names, or customizing the hashing function
+- modify the resolved config (`config:resolved`), like strip out tokens or keyframes.
+- tweak the design token or classname engine (`tokens:created`, `utility:created`), like prefixing token names, or customizing the hashing function
 - transform a source file to a `tsx` friendly syntax before it's parsed (`parser:before`) so that Panda can automatically extract its styles usage
-- or create your own styles parser (`parser:before`, `parser:after`) using the file's content so that Panda could be used with any templating language
-- alter the generated `outdir` (styled-system) files (`codegen:prepare`)
-- tweak the final CSS generation (`cssgen:done`), allowing all kinds of customizations like removing the unused CSS variables, etc.
+- create your own styles parser (`parser:before`, `parser:after`) using the file's content so that Panda could be used with any templating language
+- alter the generated JS and DTS code (`codegen:prepare`)
+- modify the generated CSS (`cssgen:done`), allowing all kinds of customizations like removing the unused CSS variables, etc.
 - restrict `strictTokens` to a specific set of token categories, ex: only affect `colors` and `spacing` tokens and therefore allow any value for `fontSizes` and `lineHeights`
 
-## Usage example
+## Examples
 
 ### Prefixing token names
 
-> This is especially useful when migrating from other css-in-js libraries, [like Stitches.](/docs/migration/stitches)
+This is especially useful when migrating from other css-in-js libraries, [like Stitches.](/docs/migration/stitches)
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -40,9 +40,9 @@ export default defineConfig({
 })
 ```
 
-### Customizing the hashing function
+### Customizing the hash function
 
-When using the [`hash: true`](/docs/concepts/writing-styles) option in the config, you can customize the function used to hash the classnames.
+When using the [`hash: true`](/docs/concepts/writing-styles) config property, you can customize the function used to hash the classnames.
 
 ```ts
 export default defineConfig({
@@ -63,12 +63,9 @@ export default defineConfig({
 })
 ```
 
-### Tweak the config
+### Modifying the config
 
-Utils functions in the `config:resolved` hook, make it easy to apply transformations after all presets have been
-merged.
-
-In the example below, we remove the `stack` pattern from the final config.
+Here's an example of how to leveraging the provided `utils` functions in the `config:resolved` hook to remove the `stack` pattern from the resolved config.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -83,10 +80,11 @@ export default defineConfig({
 })
 ```
 
-### Configure how Panda extracts JSX
+### Configuring JSX extraction
 
-We can configure the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX. This can be especially useful when working with libraries that have properties that look like CSS properties but are not and should
-be ignored.
+Use the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX.
+
+This can be especially useful when working with libraries that have properties that look like CSS properties but are not and should be ignored.
 
 Let's see a Radix UI example where the `Select.Content` component has a `position` property that should be ignored:
 
@@ -99,11 +97,10 @@ Let's see a Radix UI example where the `Select.Content` component has a `positio
 export default defineConfig({
   // ...
   hooks: {
-    'parser:before': args => {
-      args.configure({
+    'parser:before': ({ configure }) => {
+      configure({
         // ignore the Select.Content entirely
         matchTag: tag => tag !== 'Select.Content',
-
         // ...or specifically ignore the `position` property
         matchTagProp: (tag, prop) =>
           tag === 'Select.Content' && prop !== 'position'
@@ -115,7 +112,7 @@ export default defineConfig({
 
 ### Remove unused variables from final css
 
-You can transform the final generated css in the `cssgen:done` hook.
+Here's an example of how to transform the generated css in the `cssgen:done` hook.
 
 ```ts file="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -136,13 +133,11 @@ export default defineConfig({
 
 Get the snippets for the removal logic from our Github Sandbox in the [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-keyframes.ts) files.
 
-> note that using this means you can't use the JS function [`token.var`](/docs/guides/dynamic-styling#using-tokenvar) (or [token(xxx)](/docs/guides/dynamic-styling#using-token) where `xxx` is the path to a [semanticToken](/docs/theming/tokens#semantic-tokens)) from `styled-system/tokens` as the CSS variables will be removed based on the usage found in the generated CSS
+> Note: Using this means you can't use the JS function [`token.var`](/docs/guides/dynamic-styling#using-tokenvar) (or [token(xxx)](/docs/guides/dynamic-styling#using-token) where `xxx` is the path to a [semanticToken](/docs/theming/tokens#semantic-tokens)) from `styled-system/tokens` as the CSS variables will be removed based on the usage found in the generated CSS
 
 ## Sharing hooks
 
-Hooks are a great way to create custom functionality. You can share hooks as a snippet or as a `plugin`:
-
-Plugins are currently simple objects that contain a `name` associated with a `hooks` object with the same structure as the `hooks` object in the config.
+Hooks can be shared as a snippet or as a `plugin`. Plugins are currently simple objects that contain a `name` associated with a `hooks` object with the same structure as the `hooks` object in the config.
 
 > Plugins differ from `presets` as they can't be extended, but they will be called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
 
