@@ -42,7 +42,7 @@ const config: DocsThemeConfig = {
     const fsRoute = useFSRoute()
     const category = fsRoute.split('/')[2]
 
-    const ogUrl = new URL(`${url}${images}`)
+    const ogUrl = new URL(images)
     ogUrl.searchParams.set('title', frontMatter.title)
     if (category) ogUrl.searchParams.set('category', category)
 

@@ -1,9 +1,12 @@
+import { getPublicUrl } from '@/public-url'
 import type { Metadata } from 'next'
 
 const defineMetadata = <T extends Metadata>(metadata: T) => metadata
 
+const publicUrl = getPublicUrl()
+
 const seoConfig = defineMetadata({
-  metadataBase: new URL('https://panda-css.com'),
+  metadataBase: new URL(publicUrl),
   title: {
     template: '%s - Panda CSS',
     default:
@@ -12,8 +15,8 @@ const seoConfig = defineMetadata({
   description: 'Build modern websites using build time and type-safe CSS-in-JS',
   themeColor: '#F6E458',
   openGraph: {
-    images: '/og',
-    url: 'https://panda-css.com'
+    images: `${publicUrl}/og`,
+    url: publicUrl
   },
   manifest: '/site.webmanifest',
   icons: [
