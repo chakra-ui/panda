@@ -1,5 +1,19 @@
 # @pandacss/generator
 
+## 0.46.0
+
+### Patch Changes
+
+- b7ed157: fix: use sizing tokens for flexBasis instead of spacing tokens
+- Updated dependencies [54426a2]
+- Updated dependencies [54426a2]
+  - @pandacss/core@0.46.0
+  - @pandacss/shared@0.46.0
+  - @pandacss/token-dictionary@0.46.0
+  - @pandacss/types@0.46.0
+  - @pandacss/is-valid-prop@0.46.0
+  - @pandacss/logger@0.46.0
+
 ## 0.45.2
 
 ### Patch Changes
