@@ -278,7 +278,9 @@ For example, to create a hover style, you can use the `_hover` pseudo prop.
 
 ## Global styles
 
-Sometimes you might want to insert global css like adding additional resets or font faces. Global styles in Panda can be added to the `panda.config.ts` using the `globalCss` property.
+Global styles are useful for applying additional global resets or font faces. Use the `globalCss` property in the `panda.config.ts` file to define global styles.
+
+Global styles are inserted at the top of the stylesheet and are scoped to the `@layer base` cascade layer.
 
 ```js filename="panda.config.ts"
 import { defineConfig, defineGlobalStyles } from '@pandacss/dev'
@@ -296,8 +298,6 @@ export default defineConfig({
 })
 ```
 
-Global styles are inserted at the top of the stylesheet and are scoped to the `@layer base` cascade layer.
-
 The styles generated at build time will look like this:
 
 ```css
@@ -308,6 +308,58 @@ The styles generated at build time will look like this:
     line-height: 1.5;
   }
 }
+```
+
+### Setting global font
+
+Set the `--global-font-body` and `--global-font-mono` CSS variables to set the body and monospace font-families.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  globalCss: {
+    html: {
+      '--global-font-body': 'Inter, sans-serif',
+      '--global-font-mono': 'Mononoki Nerd Font, monospace'
+    }
+  }
+})
+```
+
+### Setting the global placeholder color
+
+Set the `--global-color-placeholder` CSS variable to set the placeholder color for all input elements.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  globalCss: {
+    html: {
+      '--global-color-placeholder': 'red'
+    }
+  }
+})
+```
+
+### Setting the global border color
+
+Set the `--global-color-border` CSS variable to set the border color for all elements.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  globalCss: {
+    html: {
+      '--global-color-border': 'colors.gray.400'
+    }
+  }
+})
 ```
 
 ## Style Composition
