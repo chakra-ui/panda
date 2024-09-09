@@ -1,5 +1,12 @@
 # @pandacss/extractor
 
+## 0.46.0
+
+### Patch Changes
+
+- Updated dependencies [54426a2]
+  - @pandacss/shared@0.46.0
+
 ## 0.45.2
 
 ### Patch Changes

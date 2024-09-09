@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.46.0
+
+### Patch Changes
+
+- b7ed157: fix: use sizing tokens for flexBasis instead of spacing tokens
+  - @pandacss/types@0.46.0
+
 ## 0.45.2
 
 ### Patch Changes

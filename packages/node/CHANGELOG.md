@@ -1,5 +1,22 @@
 # @pandacss/node
 
+## 0.46.0
+
+### Patch Changes
+
+- Updated dependencies [b7ed157]
+- Updated dependencies [54426a2]
+- Updated dependencies [54426a2]
+  - @pandacss/generator@0.46.0
+  - @pandacss/core@0.46.0
+  - @pandacss/shared@0.46.0
+  - @pandacss/config@0.46.0
+  - @pandacss/parser@0.46.0
+  - @pandacss/extractor@0.46.0
+  - @pandacss/token-dictionary@0.46.0
+  - @pandacss/types@0.46.0
+  - @pandacss/logger@0.46.0
+
 ## 0.45.2
 
 ### Patch Changes
