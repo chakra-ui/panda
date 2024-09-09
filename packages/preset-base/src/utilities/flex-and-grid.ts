@@ -6,7 +6,7 @@ export const flexGrid: UtilityConfig = {
     group: 'Flex Layout',
     values(theme) {
       return {
-        ...theme('spacing'),
+        ...theme('sizes'),
         '1/2': '50%',
         '1/3': '33.333333%',
         '2/3': '66.666667%',
