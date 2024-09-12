@@ -2,6 +2,7 @@
   "cli": "CLI",
   "postcss": "PostCSS",
   "astro": "Astro",
+  "angular": "Angular",
   "nextjs": "Next.js",
   "remix": "Remix",
   "gatsby": "Gatsby",
