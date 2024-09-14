@@ -34,6 +34,40 @@ Properties to create a background gradient based on color stops.
 />
 ```
 
+You can provide also a string value to `bgGradient` or `textGradient` to use a gradient token. 
+```ts
+const theme = {
+  tokens: {
+    gradients: { 
+      // string value
+      simple: { value: 'linear-gradient(to right, red, blue)' },
+      // composite value
+      primary: {
+        value: {
+          type: 'linear',
+          placement: 'to right',
+          stops: ['red', 'blue']
+        }
+      }
+    }
+  }
+}
+```    
+
+```jsx
+<div
+  className={css({
+    bgGradient: "token(gradients.simple)",
+  })}
+/>
+
+<div
+  className={css({
+    bgGradient: "token(gradients.primary)",
+  })}
+/>
+```
+
 | Prop           | CSS Property       | Token Category |
 | -------------- | ------------------ | -------------- |
 | `bgGradient`   | `background-image` | `gradients`    |
