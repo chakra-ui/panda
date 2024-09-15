@@ -68,7 +68,7 @@ export function TOC({ headings, filePath }: TOCProps) {
         css({
           ms: '4',
           position: 'sticky',
-          top: '16',
+          top: '20',
           overflowY: 'auto',
           pe: '4',
           pt: '8',
