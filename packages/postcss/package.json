@@ -38,7 +38,7 @@
   ],
   "dependencies": {
     "@pandacss/node": "workspace:*",
-    "postcss": "8.4.45"
+    "postcss": "8.4.47"
   },
   "devDependencies": {
     "@pandacss/logger": "workspace:*"
