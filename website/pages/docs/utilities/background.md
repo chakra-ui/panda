@@ -34,7 +34,7 @@ Properties to create a background gradient based on color stops.
 />
 ```
 
-Background and text gradients can be connected to a design tokens. Here's how to define a gradient token in your theme.
+Background and text gradients can be connected to design tokens. Here's how to define a gradient token in your theme.
 
 ```ts
 const theme = {
@@ -55,7 +55,7 @@ const theme = {
 }
 ```
 
-To use a gradient token, provide a string value to `bgGradient` or `textGradient`.
+These tokens can be used in the `bgGradient` or `textGradient` properties.
 
 ```jsx
 <div
