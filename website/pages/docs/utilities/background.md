@@ -34,11 +34,12 @@ Properties to create a background gradient based on color stops.
 />
 ```
 
-You can provide also a string value to `bgGradient` or `textGradient` to use a gradient token. 
+Background and text gradients can be connected to a design tokens. Here's how to define a gradient token in your theme.
+
 ```ts
 const theme = {
   tokens: {
-    gradients: { 
+    gradients: {
       // string value
       simple: { value: 'linear-gradient(to right, red, blue)' },
       // composite value
@@ -52,18 +53,20 @@ const theme = {
     }
   }
 }
-```    
+```
+
+To use a gradient token, provide a string value to `bgGradient` or `textGradient`.
 
 ```jsx
 <div
   className={css({
-    bgGradient: "token(gradients.simple)",
+    bgGradient: "simple",
   })}
 />
 
 <div
   className={css({
-    bgGradient: "token(gradients.primary)",
+    bgGradient: "primary",
   })}
 />
 ```
