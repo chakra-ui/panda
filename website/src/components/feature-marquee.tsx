@@ -28,12 +28,12 @@ export const FeatureMarquee = () => {
         autoFill
       >
         {features.map((feature, index) => (
-          <panda.li key={index} mx="2">
+          <panda.div key={index} mx="2">
             <HStack gap="4">
               <panda.span letterSpacing="tight">{feature}</panda.span>
               <span>•</span>
             </HStack>
-          </panda.li>
+          </panda.div>
         ))}
       </Marquee>
     </panda.div>
