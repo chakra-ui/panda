@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.46.1] - 2024-09-09
+
+### Fixed
+
+Fix issue where using container query in static css results in empty styles.
+
 ## [0.46.0] - 2024-09-09
 
 ### Fixed

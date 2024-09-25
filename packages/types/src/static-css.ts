@@ -1,13 +1,16 @@
-interface WithConditions {
+interface ConditionOptions {
   /**
-   * The css conditions to generate for the rule.
+   * The conditions to generate for the rule.
    * @example ['hover', 'focus']
    */
   conditions?: string[]
+  /**
+   * Whether to generate responsive styles for the rule.
+   */
   responsive?: boolean
 }
 
-export interface CssRule extends WithConditions {
+export interface CssRule extends ConditionOptions {
   /**
    * The css properties to generate utilities for.
    * @example ['margin', 'padding']
@@ -21,7 +24,9 @@ interface RecipeRuleVariants {
   [variant: string]: boolean | string[]
 }
 
-export type RecipeRule = '*' | (RecipeRuleVariants & WithConditions)
+export type RecipeRuleObject = RecipeRuleVariants & ConditionOptions
+export type RecipeRule = '*' | RecipeRuleObject
+
 export type PatternRule = '*' | CssRule
 
 export interface StaticCssOptions {

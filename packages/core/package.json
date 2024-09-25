@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/core",
-  "version": "0.46.0",
+  "version": "0.46.1",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -51,7 +51,7 @@
     "postcss": "8.4.47",
     "postcss-discard-duplicates": "7.0.1",
     "postcss-discard-empty": "7.0.0",
-    "postcss-merge-rules": "7.0.2",
+    "postcss-merge-rules": "7.0.4",
     "postcss-minify-selectors": "7.0.2",
     "postcss-nested": "6.0.1",
     "postcss-normalize-whitespace": "7.0.0",

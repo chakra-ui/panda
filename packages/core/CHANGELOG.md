@@ -1,5 +1,16 @@
 # @pandacss/core
 
+## 0.46.1
+
+### Patch Changes
+
+- 9fbd2d8: Fix issue where using container query in static css results in empty styles.
+  - @pandacss/is-valid-prop@0.46.1
+  - @pandacss/logger@0.46.1
+  - @pandacss/shared@0.46.1
+  - @pandacss/token-dictionary@0.46.1
+  - @pandacss/types@0.46.1
+
 ## 0.46.0
 
 ### Minor Changes
