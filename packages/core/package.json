@@ -52,7 +52,7 @@
     "postcss-discard-duplicates": "7.0.1",
     "postcss-discard-empty": "7.0.0",
     "postcss-merge-rules": "7.0.4",
-    "postcss-minify-selectors": "7.0.2",
+    "postcss-minify-selectors": "7.0.4",
     "postcss-nested": "6.0.1",
     "postcss-normalize-whitespace": "7.0.0",
     "postcss-selector-parser": "6.1.2",
