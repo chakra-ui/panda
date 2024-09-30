@@ -613,8 +613,8 @@ importers:
         version: 1.6.18
     devDependencies:
       '@types/css':
-        specifier: 0.0.37
-        version: 0.0.37
+        specifier: 0.0.38
+        version: 0.0.38
 
   packages/preset-panda:
     dependencies:
@@ -6229,8 +6229,8 @@ packages:
   '@types/cross-spawn@6.0.6':
     resolution: {integrity: sha512-fXRhhUkG4H3TQk5dBhQ7m/JDdSNHKwR2BBia62lhwEIq9xGiQKLxd6LymNhn47SjXhsUEPmxi+PKw2OkW4LLjA==}
 
-  '@types/css@0.0.37':
-    resolution: {integrity: sha512-IVhWCNH1mw3VRjkOMHsxVAcnANhee9w//TX1fqmALP628Dzf6VMG1LRnOngpptnrilcWCkmcY1tj6QkKGUy0CA==}
+  '@types/css@0.0.38':
+    resolution: {integrity: sha512-FsAy4pBnrJb8qdKmIyDy582o4Xt8pHwpCwYRmIvXw4dslA7C4436oOM+8XNnMEsV/LSculbFNaZsBZmycDjARw==}
 
   '@types/d3-scale-chromatic@3.0.3':
     resolution: {integrity: sha512-laXM4+1o5ImZv3RpFAsTRn3TEkzqkytiOY0Dz0sq5cnd1dtNlk6sHLon4OvqaiJb28T0S/TdsBI3Sjsy+keJrw==}
@@ -23840,7 +23840,7 @@ snapshots:
     dependencies:
       '@types/node': 20.11.30
 
-  '@types/css@0.0.37': {}
+  '@types/css@0.0.38': {}
 
   '@types/d3-scale-chromatic@3.0.3': {}
 

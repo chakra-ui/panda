@@ -42,6 +42,6 @@
     "open-props": "1.6.18"
   },
   "devDependencies": {
-    "@types/css": "0.0.37"
+    "@types/css": "0.0.38"
   }
 }
