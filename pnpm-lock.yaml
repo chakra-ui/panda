@@ -868,8 +868,8 @@ importers:
         specifier: 2.8.3
         version: 2.8.3(@babel/core@7.23.9)(preact@10.19.5)(vite@5.4.6(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
       '@solidjs/testing-library':
-        specifier: 0.8.9
-        version: 0.8.9(solid-js@1.8.15)
+        specifier: 0.8.10
+        version: 0.8.10(solid-js@1.8.15)
       '@testing-library/jest-dom':
         specifier: 6.4.2
         version: 6.4.2(vitest@1.5.0(@types/node@20.11.30)(happy-dom@13.3.8)(jsdom@24.0.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
@@ -5503,8 +5503,8 @@ packages:
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
 
-  '@solidjs/testing-library@0.8.9':
-    resolution: {integrity: sha512-gcjTSHwzXqy8roTrDgHTasRkrUcWjVm/7T7wjUI5WNm2BdUTTi296CorTiIGQVFZg2BVYuwtJOzzNn71Y/QQfg==}
+  '@solidjs/testing-library@0.8.10':
+    resolution: {integrity: sha512-qdeuIerwyq7oQTIrrKvV0aL9aFeuwTd86VYD3afdq5HYEwoox1OBTJy4y8A3TFZr8oAR0nujYgCzY/8wgHGfeQ==}
     engines: {node: '>= 14'}
     peerDependencies:
       '@solidjs/router': '>=0.9.0'
@@ -22486,7 +22486,7 @@ snapshots:
 
   '@socket.io/component-emitter@3.1.2': {}
 
-  '@solidjs/testing-library@0.8.9(solid-js@1.8.15)':
+  '@solidjs/testing-library@0.8.10(solid-js@1.8.15)':
     dependencies:
       '@testing-library/dom': 10.4.0
       solid-js: 1.8.15
