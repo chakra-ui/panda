@@ -67,6 +67,7 @@ export interface Asset {
 }
 
 export interface TokenDataTypes {
+  cursor: string
   zIndex: string | number
   opacity: string | number
   colors: string
