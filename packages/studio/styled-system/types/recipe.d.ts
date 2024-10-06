@@ -6,6 +6,8 @@ type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
 export type RecipeVariantRecord = Record<any, Record<any, SystemStyleObject>>
 
+export type RecipeVariantNames<T extends Record<any, unknown>> = keyof T
+
 export type RecipeSelection<T extends RecipeVariantRecord> = keyof any extends keyof T
   ? {}
   : {
@@ -80,6 +82,10 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
    * The styles to apply when a combination of variants is selected.
    */
   compoundVariants?: Pretty<RecipeCompoundVariant<RecipeCompoundSelection<T>>>[]
+  /**
+   * The order of variants to be applied. Last one wins.
+   */
+  variantsPrecedence?: RecipeVariantNames<T>[]
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
@@ -169,6 +175,10 @@ export interface SlotRecipeDefinition<
    * The styles to apply when a combination of variants is selected.
    */
   compoundVariants?: Pretty<SlotRecipeCompoundVariant<S, RecipeCompoundSelection<T>>>[]
+  /**
+   * The order of variants to be applied. Last one wins.
+   */
+  variantsPrecedence?: RecipeVariantNames<T>[]
 }
 
 export type SlotRecipeCreatorFn = <S extends string, T extends SlotRecipeVariantRecord<S>>(

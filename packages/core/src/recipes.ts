@@ -220,6 +220,7 @@ export class Recipes {
       description = '',
       compoundVariants = [],
       staticCss = [],
+      variantsPrecedence = [],
     } = config
 
     const className = config.className ?? name
@@ -234,6 +235,7 @@ export class Recipes {
       defaultVariants,
       compoundVariants,
       staticCss,
+      variantsPrecedence,
     }
 
     recipe.base = transformStyles(this.context, base, name)

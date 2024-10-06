@@ -5,6 +5,7 @@ export const getSlotRecipes = (recipe: Record<string, any> = {}): Record<string,
     variants: {},
     defaultVariants: recipe.defaultVariants ?? {},
     compoundVariants: recipe.compoundVariants ? getSlotCompoundVariant(recipe.compoundVariants, slot) : [],
+    variantsPrecedence: recipe.variantsPrecedence ?? [],
   })
 
   const slots = recipe.slots ?? []

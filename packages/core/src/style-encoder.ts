@@ -61,6 +61,16 @@ export class StyleEncoder {
       recipes_base: this.recipes_base,
     }
   }
+
+  static orderCompare = (a: string, b: string, order: string[]) => {
+    const aIndex = order.indexOf(a)
+    const bIndex = order.indexOf(b)
+    if (aIndex === -1 && bIndex === -1) return 0
+    if (aIndex === -1) return -1
+    if (bIndex === -1) return 1
+    return aIndex - bIndex
+  }
+
   /**
    * Hashes a style object and adds the resulting hashes to a set.
    * @param set - The set to add the resulting hashes to.
@@ -71,6 +81,7 @@ export class StyleEncoder {
     set: Set<string>,
     obj: ResultItem['data'][number],
     baseEntry?: Partial<Omit<StyleEntry, 'prop' | 'value' | 'cond'>>,
+    ordering?: string[],
   ) => {
     const isCondition = this.context.conditions.isCondition
     const traverseOptions = { separator: StyleEncoder.conditionSeparator }
@@ -127,6 +138,22 @@ export class StyleEncoder {
         const hashed = hashStyleEntry(Object.assign(baseEntry ?? {}, { prop, value, cond: resolvedCondition }))
         set.add(hashed)
 
+        if (ordering && ordering.length > 0) {
+          const temp = Array.from(set)
+
+          temp.sort((a, b) => {
+            a = a.split(StyleEncoder.separator)[0]
+            b = b.split(StyleEncoder.separator)[0]
+            return StyleEncoder.orderCompare(a, b, ordering)
+          })
+
+          set.clear()
+
+          for (const item of temp) {
+            set.add(item)
+          }
+        }
+
         prevProp = prop
       },
       traverseOptions,
@@ -166,6 +193,10 @@ export class StyleEncoder {
     })
   }
 
+  static getOrdering = (precendence: string[]) => {
+    return Array.from(new Set(precendence.toReversed())).toReversed()
+  }
+
   processConfigSlotRecipe = (recipeName: string, variants: Record<string, any>) => {
     const config = this.context.recipes.getConfig(recipeName)
     if (!Recipes.isSlotRecipeConfig(config)) return
@@ -176,7 +207,12 @@ export class StyleEncoder {
     // process variants
     const set = getOrCreateSet(this.recipes, recipeName)
     const computedVariants = Object.assign({}, config.defaultVariants, variants)
-    this.hashStyleObject(set, computedVariants, { recipe: recipeName, variants: true })
+    this.hashStyleObject(
+      set,
+      computedVariants,
+      { recipe: recipeName, variants: true },
+      StyleEncoder.getOrdering(config.variantsPrecedence ?? []),
+    )
 
     // process compound variants
     if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
@@ -206,7 +242,12 @@ export class StyleEncoder {
     // process variants
     const set = getOrCreateSet(this.recipes, recipeName)
     const computedVariants = Object.assign({}, config.defaultVariants, variants)
-    this.hashStyleObject(set, computedVariants, { recipe: recipeName, variants: true })
+    this.hashStyleObject(
+      set,
+      computedVariants,
+      { recipe: recipeName, variants: true },
+      StyleEncoder.getOrdering(config.variantsPrecedence ?? []),
+    )
 
     // process compound variants
     if (!config.compoundVariants || this.compound_variants.has(recipeName)) return
