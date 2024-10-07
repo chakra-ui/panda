@@ -37,6 +37,7 @@
   "dependencies": {
     "@changesets/changelog-github": "0.5.0",
     "@changesets/cli": "2.27.8",
+    "@projectwallace/format-css": "^1.4.3",
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",
     "cross-env": "7.0.3",
