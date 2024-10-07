@@ -15,8 +15,8 @@ importers:
         specifier: 0.5.0
         version: 0.5.0
       '@changesets/cli':
-        specifier: 2.27.8
-        version: 2.27.8
+        specifier: 2.27.9
+        version: 2.27.9
       '@projectwallace/format-css':
         specifier: ^1.4.3
         version: 1.4.3
@@ -1114,7 +1114,7 @@ importers:
         version: link:../../packages/cli
       '@preact/preset-vite':
         specifier: 2.8.3
-        version: 2.8.3(@babel/core@7.25.2)(preact@10.19.5)(vite@5.4.6(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
+        version: 2.8.3(@babel/core@7.23.9)(preact@10.19.5)(vite@5.4.6(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
       typescript:
         specifier: 5.3.3
         version: 5.3.3
@@ -2463,8 +2463,8 @@ packages:
   '@changesets/changelog-github@0.5.0':
     resolution: {integrity: sha512-zoeq2LJJVcPJcIotHRJEEA2qCqX0AQIeFE+L21L8sRLPVqDhSXY8ZWAt2sohtBpFZkBwu+LUwMSKRr2lMy3LJA==}
 
-  '@changesets/cli@2.27.8':
-    resolution: {integrity: sha512-gZNyh+LdSsI82wBSHLQ3QN5J30P4uHKJ4fXgoGwQxfXwYFTJzDdvIJasZn8rYQtmKhyQuiBj4SSnLuKlxKWq4w==}
+  '@changesets/cli@2.27.9':
+    resolution: {integrity: sha512-q42a/ZbDnxPpCb5Wkm6tMVIxgeI9C/bexntzTeCFBrQEdpisQqk8kCHllYZMDjYtEc1ZzumbMJAG8H0Z4rdvjg==}
     hasBin: true
 
   '@changesets/config@3.0.3':
@@ -9859,11 +9859,13 @@ packages:
   eslint@7.32.0:
     resolution: {integrity: sha512-VHZ8gX+EDfz+97jGcgyGCyRia/dPOd6Xh9yPv8Bl1+SoaIwD+a/vlrOmGRUyOYu7MwUhc7CxqeaDZU13S4+EpA==}
     engines: {node: ^10.12.0 || >=12.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   eslint@8.56.0:
     resolution: {integrity: sha512-Go19xM6T9puCOWntie1/P997aXxFsOi37JIHRWI514Hc6ZnaHGKY9xFhrU65RT6CcBEzZoGG1e6Nq+DT04ZtZQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   esm-env@1.0.0:
@@ -18534,13 +18536,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/plugin-transform-react-jsx-development@7.24.7(@babel/core@7.25.2)':
-    dependencies:
-      '@babel/core': 7.25.2
-      '@babel/plugin-transform-react-jsx': 7.25.2(@babel/core@7.25.2)
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/plugin-transform-react-jsx-self@7.24.7(@babel/core@7.23.9)':
     dependencies:
       '@babel/core': 7.23.9
@@ -18558,17 +18553,6 @@ snapshots:
       '@babel/helper-module-imports': 7.24.7
       '@babel/helper-plugin-utils': 7.24.8
       '@babel/plugin-syntax-jsx': 7.24.7(@babel/core@7.23.9)
-      '@babel/types': 7.25.2
-    transitivePeerDependencies:
-      - supports-color
-
-  '@babel/plugin-transform-react-jsx@7.25.2(@babel/core@7.25.2)':
-    dependencies:
-      '@babel/core': 7.25.2
-      '@babel/helper-annotate-as-pure': 7.24.7
-      '@babel/helper-module-imports': 7.24.7
-      '@babel/helper-plugin-utils': 7.24.8
-      '@babel/plugin-syntax-jsx': 7.24.7(@babel/core@7.25.2)
       '@babel/types': 7.25.2
     transitivePeerDependencies:
       - supports-color
@@ -18927,7 +18911,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@changesets/cli@2.27.8':
+  '@changesets/cli@2.27.9':
     dependencies:
       '@changesets/apply-release-plan': 7.0.5
       '@changesets/assemble-release-plan': 6.0.4
@@ -18944,14 +18928,12 @@ snapshots:
       '@changesets/types': 6.0.0
       '@changesets/write': 0.3.2
       '@manypkg/get-packages': 1.1.3
-      '@types/semver': 7.5.8
       ansi-colors: 4.1.3
       ci-info: 3.9.0
       enquirer: 2.4.1
       external-editor: 3.1.0
       fs-extra: 7.0.1
       mri: 1.2.0
-      outdent: 0.5.0
       p-limit: 2.3.0
       package-manager-detector: 0.2.0
       picocolors: 1.1.0
@@ -20667,7 +20649,7 @@ snapshots:
       jest-haste-map: 29.7.0
       jest-regex-util: 29.6.3
       jest-util: 29.7.0
-      micromatch: 4.0.7
+      micromatch: 4.0.8
       pirates: 4.0.6
       slash: 3.0.0
       write-file-atomic: 4.0.2
@@ -21755,27 +21737,6 @@ snapshots:
       '@prefresh/vite': 2.4.6(preact@10.19.5)(vite@5.4.6(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
       '@rollup/pluginutils': 4.2.1
       babel-plugin-transform-hook-names: 1.0.2(@babel/core@7.23.9)
-      debug: 4.3.6
-      kolorist: 1.8.0
-      magic-string: 0.30.5
-      node-html-parser: 6.1.13
-      resolve: 1.22.8
-      source-map: 0.7.4
-      stack-trace: 1.0.0-pre2
-      vite: 5.4.6(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3)
-    transitivePeerDependencies:
-      - preact
-      - supports-color
-
-  '@preact/preset-vite@2.8.3(@babel/core@7.25.2)(preact@10.19.5)(vite@5.4.6(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))':
-    dependencies:
-      '@babel/code-frame': 7.24.7
-      '@babel/core': 7.25.2
-      '@babel/plugin-transform-react-jsx': 7.25.2(@babel/core@7.25.2)
-      '@babel/plugin-transform-react-jsx-development': 7.24.7(@babel/core@7.25.2)
-      '@prefresh/vite': 2.4.6(preact@10.19.5)(vite@5.4.6(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
-      '@rollup/pluginutils': 4.2.1
-      babel-plugin-transform-hook-names: 1.0.2(@babel/core@7.25.2)
       debug: 4.3.6
       kolorist: 1.8.0
       magic-string: 0.30.5
@@ -23285,7 +23246,7 @@ snapshots:
       endent: 2.1.0
       find-cache-dir: 3.3.2
       flat-cache: 3.2.0
-      micromatch: 4.0.7
+      micromatch: 4.0.8
       react-docgen-typescript: 2.2.2(typescript@5.3.3)
       tslib: 2.6.2
       typescript: 5.3.3
@@ -26388,10 +26349,6 @@ snapshots:
     dependencies:
       '@babel/core': 7.23.9
 
-  babel-plugin-transform-hook-names@1.0.2(@babel/core@7.25.2):
-    dependencies:
-      '@babel/core': 7.25.2
-
   babel-plugin-transform-react-remove-prop-types@0.4.24: {}
 
   babel-preset-fbjs@3.4.0(@babel/core@7.23.9):
@@ -28908,7 +28865,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.56.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.56.0))(eslint@8.56.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.0.1(eslint@8.56.0)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.0.1(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1)(eslint@8.56.0))(eslint@8.56.0)
       hasown: 2.0.2
       is-core-module: 2.15.0
       is-glob: 4.0.3
@@ -31531,7 +31488,7 @@ snapshots:
       chalk: 4.1.2
       flow-parser: 0.242.1
       graceful-fs: 4.2.11
-      micromatch: 4.0.7
+      micromatch: 4.0.8
       neo-async: 2.6.2
       node-dir: 0.1.17
       recast: 0.23.9
