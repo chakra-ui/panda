@@ -568,7 +568,7 @@ Whether to watch for changes in the project
 
 Related: [`config.watch`](/docs/references/config#watch)
 
-#### `--poll`
+#### `--poll, -p`
 
 Whether to poll for file changes
 
@@ -580,13 +580,13 @@ Emit package.json with entrypoints, can be used to create a workspace package de
 
 ### Flags
 
-#### `--outdir [dir]`
+#### `--outdir <dir>`
 
 The output directory for the generated CSS utilities
 
 Related: [`config.outdir`](/docs/references/config#outdir)
 
-#### `--base [path]`
+#### `--base <path>`
 
 The base directory of the package.json entrypoints
 
@@ -596,7 +596,7 @@ Whether to suppress all output
 
 Related: [`config.logLevel`](/docs/references/config#log-level)
 
-#### `--cwd`
+#### `--cwd <path>`
 
 Current working directory
 
