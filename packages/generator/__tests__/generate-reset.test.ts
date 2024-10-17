@@ -173,7 +173,7 @@ describe('generate reset', () => {
           outline: auto;
       }
 
-        [hidden] {
+        [hidden]:where(:not([hidden='until-found'])) {
           display: none !important;
       }
       }"
@@ -325,7 +325,7 @@ describe('generate reset', () => {
           outline: auto;
       }
 
-        .pd-reset [hidden] {
+        .pd-reset [hidden]:where(:not([hidden='until-found'])) {
           display: none !important;
       }
 
@@ -517,7 +517,7 @@ describe('generate reset', () => {
           outline: auto;
       }
 
-        [hidden].pd-reset {
+        [hidden]:where(:not([hidden='until-found'])).pd-reset {
           display: none !important;
       }
       }"
