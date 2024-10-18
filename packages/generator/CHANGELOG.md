@@ -1,5 +1,49 @@
 # @pandacss/generator
 
+## 0.47.0
+
+### Minor Changes
+
+- 5e683ee: Add support for cursor token types. Useful for tokenizing cursor types for interactive components.
+
+  Here's an example of how to define a cursor token in your `panda.config.ts` file:
+
+  ```ts
+  // panda.config.ts
+  export default defineConfig({
+    theme: {
+      extend: {
+        tokens: {
+          cursor: {
+            button: { value: 'pointer' },
+            checkbox: { value: 'default' },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  Then you can use the cursor token in your styles or recipes.
+
+  ```tsx
+  <button className={css({ cursor: 'button' })}>Click me</button>
+  ```
+
+  This makes it easy to manage cursor styles across your application.
+
+### Patch Changes
+
+- ff8602f: Improve preflight css such that elements with `hidden=until-found` are visible. Previously, we always hide
+  all elements with the `hidden` attribute
+- Updated dependencies [5e683ee]
+  - @pandacss/token-dictionary@0.47.0
+  - @pandacss/types@0.47.0
+  - @pandacss/core@0.47.0
+  - @pandacss/logger@0.47.0
+  - @pandacss/is-valid-prop@0.47.0
+  - @pandacss/shared@0.47.0
+
 ## 0.46.1
 
 ### Patch Changes
