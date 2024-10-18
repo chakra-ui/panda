@@ -66,9 +66,6 @@ Use the `inset{Start|End}` utilities to set the position of an element based on 
 
 You can define container names and sizes in your theme configuration and use them in your styles. [Read more.](/docs/concepts/conditional-styles#container-queries)
 
-```jsx
-
 | Prop            | CSS Property    | Token Category   |
 | --------------- | --------------- | ---------------- |
 | `containerName` | `containerName` | `containerNames` |
-```
