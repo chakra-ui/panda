@@ -3,9 +3,9 @@ import postcss from 'postcss'
 import { existsSync } from 'fs'
 import { rm } from 'fs/promises'
 import { logger } from '@pandacss/logger'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 
-import pandacss, { type PluginOptions } from '../src/index'
+import pandacss, { builder, type PluginOptions } from '../src/index'
 
 async function run(input: string, options: PluginOptions, from?: string) {
   const result = await postcss([pandacss(options)]).process(input, { from: from || '/foo.css' })
@@ -90,4 +90,22 @@ describe('PostCSS plugin', () => {
       ]),
     )
   })
+
+  test.sequential(
+    '`Builder` instance race condition when postcss invokes panda processing simultaneously',
+    async () => {
+      builder.context = undefined
+      const spy = vi.spyOn(builder, 'setupContext')
+      try {
+        const input = '@layer reset, base, tokens, recipes, utilities;'
+        const configPath = join(__dirname, 'samples', 'panda.config.cjs')
+
+        await Promise.all([1, 2, 3, 4].map(() => run(input, { configPath })))
+
+        expect(spy).toHaveBeenCalledTimes(1)
+      } finally {
+        spy.mockRestore()
+      }
+    },
+  )
 })
