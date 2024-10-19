@@ -7,6 +7,7 @@
     "prepare": "panda codegen",
     "dev": "rimraf .next && next dev",
     "build": "next build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "start": "next start"
   },
   "dependencies": {
