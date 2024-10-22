@@ -1,5 +1,12 @@
 # @pandacss/postcss
 
+## 0.47.1
+
+### Patch Changes
+
+- 50fc8ef: fix(postcss): race condition on builder instance for simultaneous plugin invocations
+  - @pandacss/node@0.47.1
+
 ## 0.47.0
 
 ### Patch Changes
