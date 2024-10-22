@@ -106,9 +106,9 @@ export interface Conditions {
 	"_indeterminate": string
 	/** `&:is(:required, [data-required], [aria-required=true])` */
 	"_required": string
-	/** `&:is(:valid, [data-valid])` */
+	/** `&:is(:valid, [data-valid], [aria-invalid="false"])` */
 	"_valid": string
-	/** `&:is(:invalid, [data-invalid])` */
+	/** `&:is(:invalid, [data-invalid], [aria-invalid="true"])` */
 	"_invalid": string
 	/** `&:autofill` */
 	"_autofill": string
@@ -178,6 +178,14 @@ export interface Conditions {
 	"_horizontal": string
 	/** `&[data-orientation=vertical]` */
 	"_vertical": string
+	/** `&[data-placement^="top"]` */
+	"_top": string
+	/** `&[data-placement^="right"]` */
+	"_right": string
+	/** `&[data-placement^="bottom"]` */
+	"_bottom": string
+	/** `&[data-placement^="left"]` */
+	"_left": string
 	/** `@starting-style` */
 	"_starting": string
 	/** `@media screen and (min-width: 40rem)` */
