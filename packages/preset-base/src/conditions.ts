@@ -57,8 +57,8 @@ export const conditions = {
 
   indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate"])',
   required: '&:is(:required, [data-required], [aria-required=true])',
-  valid: '&:is(:valid, [data-valid])',
-  invalid: '&:is(:invalid, [data-invalid])',
+  valid: '&:is(:valid, [data-valid], [aria-invalid="false"])',
+  invalid: '&:is(:invalid, [data-invalid], [aria-invalid="true"])',
   autofill: '&:autofill',
   inRange: '&:in-range',
   outOfRange: '&:out-of-range',
@@ -101,6 +101,11 @@ export const conditions = {
 
   horizontal: '&[data-orientation=horizontal]',
   vertical: '&[data-orientation=vertical]',
+
+  top: '&[data-placement^="top"]',
+  right: '&[data-placement^="right"]',
+  bottom: '&[data-placement^="bottom"]',
+  left: '&[data-placement^="left"]',
 
   starting: '@starting-style',
 }
