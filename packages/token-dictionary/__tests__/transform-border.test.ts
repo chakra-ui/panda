@@ -8,11 +8,15 @@ test('transform / border', () => {
       colors: {
         red: { value: '#ff0000' },
       },
+      borderWidths: {
+        thick: { value: '2px' },
+      },
       borders: {
         sm: { value: '1px solid {colors.red}' },
         md: { value: { width: 2, style: 'solid', color: '{colors.red}' } },
         lg: { value: { width: '2px', style: 'solid', color: 'pink' } },
         xl: { value: { width: '2', style: 'dashed', color: 'green' } },
+        brand: { value: { width: '{borderWidths.thick}', color: '#fff', style: 'solid' } },
       },
     },
     semanticTokens: {
@@ -52,6 +56,25 @@ test('transform / border', () => {
         ],
         "type": "color",
         "value": "#ff0000",
+      },
+      Token {
+        "deprecated": undefined,
+        "description": undefined,
+        "extensions": {
+          "category": "borderWidths",
+          "condition": "base",
+          "prop": "thick",
+          "var": "--border-widths-thick",
+          "varRef": "var(--border-widths-thick)",
+        },
+        "name": "borderWidths.thick",
+        "originalValue": "2px",
+        "path": [
+          "borderWidths",
+          "thick",
+        ],
+        "type": "borderWidth",
+        "value": "2px",
       },
       Token {
         "deprecated": undefined,
@@ -128,6 +151,25 @@ test('transform / border', () => {
         ],
         "type": "border",
         "value": "2px dashed green",
+      },
+      Token {
+        "deprecated": undefined,
+        "description": undefined,
+        "extensions": {
+          "category": "borders",
+          "condition": "base",
+          "prop": "brand",
+          "var": "--borders-brand",
+          "varRef": "var(--borders-brand)",
+        },
+        "name": "borders.brand",
+        "originalValue": "{borderWidths.thick} solid #fff",
+        "path": [
+          "borders",
+          "brand",
+        ],
+        "type": "border",
+        "value": "var(--border-widths-thick) solid #fff",
       },
       Token {
         "deprecated": undefined,

@@ -5,10 +5,10 @@ import type { TokenTransformer } from './dictionary'
 import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-composite'
 import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
-import { expandReferences, getReferences } from './utils'
+import { expandReferences, getReferences, hasReference } from './utils'
 
 function toUnit(v: string | number) {
-  return isCssUnit(v) ? v : `${v}px`
+  return isCssUnit(v) || hasReference(v.toString()) ? v : `${v}px`
 }
 
 /* -----------------------------------------------------------------------------
