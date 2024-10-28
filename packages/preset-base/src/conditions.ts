@@ -102,10 +102,5 @@ export const conditions = {
   horizontal: '&[data-orientation=horizontal]',
   vertical: '&[data-orientation=vertical]',
 
-  top: '&[data-placement^="top"]',
-  right: '&[data-placement^="right"]',
-  bottom: '&[data-placement^="bottom"]',
-  left: '&[data-placement^="left"]',
-
   starting: '@starting-style',
 }

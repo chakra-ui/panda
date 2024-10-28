@@ -607,10 +607,6 @@ Here's a list of all the condition shortcuts you can use in Panda:
 | \_scrollbarTrack       | `&::-webkit-scrollbar-track`                                                                     |
 | \_horizontal           | `&[data-orientation=horizontal]`                                                                 |
 | \_vertical             | `&[data-orientation=vertical]`                                                                   |
-| \_top                  | `&[data-placement^="top"]`                                                                       |
-| \_right                | `&[data-placement^="right"]`                                                                     |
-| \_bottom               | `&[data-placement^="bottom"]`                                                                    |
-| \_left                 | `&[data-placement^="left"]`                                                                      |
 | \_starting             | `@starting-style`                                                                                |
 
 
