@@ -907,8 +907,8 @@ importers:
         specifier: 4.6.0
         version: 4.6.0(eslint@8.56.0)
       eslint-plugin-react-refresh:
-        specifier: 0.4.13
-        version: 0.4.13(eslint@8.56.0)
+        specifier: 0.4.14
+        version: 0.4.14(eslint@8.56.0)
       happy-dom:
         specifier: 13.3.8
         version: 13.3.8
@@ -9815,8 +9815,8 @@ packages:
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
 
-  eslint-plugin-react-refresh@0.4.13:
-    resolution: {integrity: sha512-f1EppwrpJRWmqDTyvAyomFVDYRtrS7iTEqv3nokETnMiMzs2SSTmKRTACce4O2p4jYyowiSMvpdwC/RLcMFhuQ==}
+  eslint-plugin-react-refresh@0.4.14:
+    resolution: {integrity: sha512-aXvzCTK7ZBv1e7fahFuR3Z/fyQQSIQ711yPgYRj+Oj64tyTgO4iQIDmYXDBqvSWQ/FA4OSCsXOStlF+noU0/NA==}
     peerDependencies:
       eslint: '>=7'
 
@@ -29169,7 +29169,7 @@ snapshots:
     dependencies:
       eslint: 8.56.0
 
-  eslint-plugin-react-refresh@0.4.13(eslint@8.56.0):
+  eslint-plugin-react-refresh@0.4.14(eslint@8.56.0):
     dependencies:
       eslint: 8.56.0
 
