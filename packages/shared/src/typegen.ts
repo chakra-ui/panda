@@ -1,5 +1,10 @@
+const startsWithZero = /^0\d+$/
 export function unionType(values: IterableIterator<string> | string[] | readonly string[] | Set<string>) {
-  return Array.from(values)
-    .map((value) => JSON.stringify(value))
-    .join(' | ')
+  const union: string[] = []
+  for (const value of values) {
+    const isNumber = !Number.isNaN(Number(value))
+    if (isNumber && !startsWithZero.test(value)) union.push(value)
+    union.push(JSON.stringify(value))
+  }
+  return union.join(' | ')
 }
