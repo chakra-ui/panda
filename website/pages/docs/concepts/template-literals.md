@@ -11,7 +11,7 @@ This provides a similar experience to [styled-components](https://styled-compone
 
 > Emitting atomic class names allows Panda to generate smaller CSS bundles.
 
-Panda provides two function to write template literal styles, `css` and `styled`.
+Panda provides two functions to write template literal styles: `css` and `styled`.
 
 ## Getting started
 

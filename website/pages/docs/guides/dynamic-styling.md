@@ -104,7 +104,7 @@ const App = () => {
 
 ### Using `token.var()`
 
-You could also directly use the `token.var()` function to get a reference to the underling CSS custom property for a given token:
+You could also directly use the `token.var()` function to get a reference to the underlying CSS custom property for a given token:
 
 ```tsx filename="App.tsx"
 import { useState } from 'react'
