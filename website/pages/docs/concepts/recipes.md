@@ -189,7 +189,7 @@ const button = cva({
     },
     // apply when both small or medium size, and secondary color variants are applied
     {
-      size: ['small', ' medium'],
+      size: ['small', 'medium'],
       color: 'secondary',
       css: {
         fontWeight: 'extrabold'
