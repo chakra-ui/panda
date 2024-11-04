@@ -35,7 +35,7 @@
     "monaco-editor": "0.46.0",
     "monaco-editor-auto-typings": "0.4.5",
     "monaco-jsx-syntax-highlight": "1.2.0",
-    "nanoid": "5.0.7",
+    "nanoid": "5.0.8",
     "next": "14.2.3",
     "next-themes": "0.3.0",
     "os-browserify": "0.3.0",
