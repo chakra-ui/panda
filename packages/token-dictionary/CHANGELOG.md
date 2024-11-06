@@ -1,5 +1,14 @@
 # @pandacss/token-dictionary
 
+## 0.47.1
+
+### Patch Changes
+
+- 144113f: Fix issue where token reference in composite border token generates incorrect css.
+  - @pandacss/logger@0.47.1
+  - @pandacss/shared@0.47.1
+  - @pandacss/types@0.47.1
+
 ## 0.47.0
 
 ### Minor Changes
