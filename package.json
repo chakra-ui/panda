@@ -41,7 +41,7 @@
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",
     "cross-env": "7.0.3",
-    "happy-dom": "13.3.8",
+    "happy-dom": "15.10.2",
     "husky": "9.0.11",
     "lint-staged": "15.2.10",
     "mdx-local-link-checker": "2.1.1",
