@@ -6,6 +6,13 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.47.1] - 2024-11-06
+
+### Fixed
+
+- Fix postcss; race condition on builder instance for simultaneous plugin invocations
+- Fix issue where token reference in composite border token generates incorrect css.
+
 ## [0.47.0] - 2024-10-18
 
 ### Added
