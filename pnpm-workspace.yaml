@@ -2,5 +2,6 @@ packages:
   - 'packages/**'
   - 'sandbox/*'
   - 'sandbox/component-lib/**'
+  - 'sandbox/custom-conditions/**'
   - 'playground'
   - 'website'

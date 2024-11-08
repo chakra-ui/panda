@@ -8,7 +8,7 @@ type ExtendableConfig = Extendable<Config>
 /**
  * Recursively merge all presets into a single config (depth-first using stack)
  */
-export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
+export async function getResolvedConfig(config: ExtendableConfig, cwd: string, customConditions: string[] = []) {
   const stack: ExtendableConfig[] = [config]
   const configs: ExtendableConfig[] = []
 
@@ -18,7 +18,7 @@ export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
     const subPresets = current.presets ?? []
     for (const subPreset of subPresets) {
       if (typeof subPreset === 'string') {
-        const presetModule = await bundle(subPreset, cwd)
+        const presetModule = await bundle(subPreset, cwd, customConditions)
         stack.push(presetModule.config)
       } else {
         stack.push(await subPreset)

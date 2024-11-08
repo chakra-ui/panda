@@ -7,5 +7,5 @@ import type { ConfigFileOptions } from './types'
  */
 export async function loadConfig(options: ConfigFileOptions) {
   const result = await bundleConfig(options)
-  return resolveConfig(result, options.cwd)
+  return resolveConfig(result, options.cwd, options.customConditions)
 }

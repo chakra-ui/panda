@@ -1,0 +1,20 @@
+{
+  "name": "sandbox-custom-conditions-lib",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "custom": "./custom-condition.ts",
+      "default": "./default.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@pandacss/dev": "workspace:*"
+  }
+}

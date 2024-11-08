@@ -8,7 +8,8 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
   const { config, configPath } = options
 
   const cwd = options.cwd ?? options?.config?.cwd ?? process.cwd()
-  const conf = await loadConfig({ cwd, file: configPath })
+  const tsConfResult = await loadTsConfig(cwd)
+  const conf = await loadConfig({ cwd, file: configPath, customConditions: tsConfResult?.customConditions ?? [] })
 
   if (config) {
     Object.assign(conf.config, config)
@@ -21,8 +22,6 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
   if (conf.config.lightningcss && !conf.config.browserslist) {
     conf.config.browserslist ||= browserslist.findConfig(cwd)?.defaults
   }
-
-  const tsConfResult = await loadTsConfig(conf, cwd)
 
   if (tsConfResult) {
     Object.assign(conf, tsConfResult)

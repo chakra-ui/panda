@@ -16,7 +16,11 @@ const hookUtils = {
  * @pandacss/preset-base: ALWAYS included if NOT using eject: true
  * @pandacss/preset-panda: only included by default if no presets
  */
-export async function resolveConfig(result: BundleConfigResult, cwd: string): Promise<LoadConfigResult> {
+export async function resolveConfig(
+  result: BundleConfigResult,
+  cwd: string,
+  customConditions: string[] = [],
+): Promise<LoadConfigResult> {
   const presets = new Set<any>()
 
   if (!result.config.eject) {
@@ -35,7 +39,7 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
 
   result.config.presets = Array.from(presets)
 
-  const mergedConfig = await getResolvedConfig(result.config, cwd)
+  const mergedConfig = await getResolvedConfig(result.config, cwd, customConditions)
   const hooks = mergedConfig.hooks ?? {}
 
   if (mergedConfig.logLevel) {

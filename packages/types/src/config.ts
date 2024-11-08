@@ -472,6 +472,7 @@ export interface LoadTsConfigResult {
   tsconfig?: TSConfig
   tsOptions?: ConfigTsOptions
   tsconfigFile?: string
+  customConditions: string[]
 }
 
 export interface LoadConfigResult extends LoadTsConfigResult {

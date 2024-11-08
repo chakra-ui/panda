@@ -7,6 +7,7 @@ export interface AddError {
 export interface ConfigFileOptions {
   cwd: string
   file?: string
+  customConditions?: string[]
 }
 
 export interface TokensData {
