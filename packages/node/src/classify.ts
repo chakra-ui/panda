@@ -243,7 +243,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
         return componentReportItem
       }
 
-      if (box.isMap(item.box) && item.box.value.size) {
+      if (box.isMap(item.box)) {
         addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
 
         processMap(item.box, [], componentReportItem)

@@ -27,6 +27,7 @@ export interface PropertyReportItem {
   componentIndex: ComponentReportItem['componentIndex']
   componentName: ComponentReportItem['componentName']
   reportItemKind: 'token' | 'utility'
+  reportItemType: ReportItemType
 
   path: string[]
   conditionName?: string | undefined

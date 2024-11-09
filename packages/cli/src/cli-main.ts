@@ -18,7 +18,7 @@ import {
   type CssGenOptions,
 } from '@pandacss/node'
 import { PandaError, compact } from '@pandacss/shared'
-import type { CssArtifactType } from '@pandacss/types'
+import type { ComponentReportItem, CssArtifactType, PropertyReportItem, TokenDataTypes } from '@pandacss/types'
 import { cac } from 'cac'
 import { join, resolve } from 'path'
 import { version } from '../package.json'
@@ -391,6 +391,174 @@ export async function main() {
       }
 
       logger.info('cli', `Found ${result.propByIndex.size} token used in ${result.derived.byFilePathMaps.size} files`)
+      interface TokenTableEntry {
+        tokenCategory: string
+        usedInXFiles: number
+        usedCount: number
+        totalTokenInCategory: number
+        percentUsed: number
+        percentUnused: number
+        hardcoded: number
+        mostUsedNames: string[]
+      }
+
+      const tokenTable: TokenTableEntry[] = Array.from(result.derived.globalMaps.byTokenType.entries()).map(
+        ([category, categoryIds]) => {
+          const knownTokens = Array.from(categoryIds)
+            .filter((id) => result.propByIndex.get(id)?.isKnownValue)
+            .map((id) => result.propByIndex.get(id))
+          const distinctTokenNames = Array.from(
+            new Set(knownTokens.map((item) => item?.value!).filter(Boolean)),
+          ) as string[]
+
+          const usedCount = distinctTokenNames.length
+          const tokens = ctx.tokens.view.categoryMap.get(category as keyof TokenDataTypes)
+          const totalTokenInCategory = tokens?.size ?? 0
+          const percentUsed = Math.ceil((usedCount / (totalTokenInCategory || 1)) * 10_000) / 100
+
+          return {
+            tokenCategory: category,
+            // usedTokenNames: distinctTokenNames,
+            totalTokenInCategory: totalTokenInCategory,
+            usedInXFiles: Array.from(result.derived.byFilepath.values()).reduce((acc, usedInFile) => {
+              return acc + (Array.from(usedInFile).filter((idInFile) => categoryIds.has(idInFile)).length ? 1 : 0)
+            }, 0),
+            usedCount,
+            percentUsed: percentUsed,
+            percentUnused: 100 - percentUsed,
+            hardcoded: Array.from(categoryIds).reduce(
+              (acc, id) => acc + (result.propByIndex.get(id)?.isKnownValue ? 0 : 1),
+              0,
+            ),
+            mostUsedNames: Array.from(distinctTokenNames).sort(
+              (a, b) =>
+                (result.derived.globalMaps.byTokenName.get(b)?.size ?? 0) -
+                (result.derived.globalMaps.byTokenName.get(a)?.size ?? 0),
+            ),
+          }
+        },
+      )
+      console.table(
+        tokenTable
+          .filter((v) => v.usedCount)
+          .map((entry) => ({
+            Type: `${entry.tokenCategory} (${entry.totalTokenInCategory} tokens)`,
+            'Used in X files': entry.usedInXFiles,
+            '% used': `${entry.percentUsed}% (${entry.usedCount} instances)`,
+            '% unused': `${100 - entry.percentUsed}%`,
+            Hardcoded: entry.hardcoded,
+            'Most Used': entry.mostUsedNames,
+          })),
+      )
+
+      interface RecipeTableEntry {
+        recipeName: string
+        usedInXFiles: number
+        usedCount: number
+        variantCount: number
+        usedCombinations: number
+        percentUsed: number
+        jsxPercentUsed: number
+        fnPercentUsed: number
+        possibleCombinations: string[]
+        unusedCombinations: number
+        mostUsedCombinations: string[]
+      }
+
+      const recipesReportItems = Array.from(result.componentByIndex.entries())
+        .filter(
+          ([_index, reportItem]) =>
+            reportItem.reportItemType === 'recipe' || reportItem.reportItemType === 'jsx-recipe',
+        )
+        .map(([_index, reportItem]) => reportItem)
+      const recipesReportItemsGroupedByRecipeName = new Map<string, Set<ComponentReportItem>>()
+      recipesReportItems.forEach((reportItem) => {
+        const recipeName = ctx.recipes.find(reportItem.componentName)?.baseName
+        if (!recipeName) return
+
+        if (!recipesReportItemsGroupedByRecipeName.has(recipeName)) {
+          recipesReportItemsGroupedByRecipeName.set(recipeName, new Set())
+        }
+        recipesReportItemsGroupedByRecipeName.get(recipeName)!.add(reportItem)
+      })
+
+      const recipeTable: RecipeTableEntry[] = Array.from(recipesReportItemsGroupedByRecipeName.entries()).map(
+        ([recipeName, reportItems]) => {
+          const usedCombinations = Array.from(reportItems)
+            .map((component) =>
+              component.contains
+                .map((id) => {
+                  const reportItem = result.propByIndex.get(id)!
+                  const recipe = ctx.recipes.getRecipe(recipeName)
+                  if (!recipe?.variantKeys.includes(reportItem.propName)) return
+                  return reportItem.propName + '.' + reportItem.value
+                })
+                .filter(Boolean),
+            )
+            .flat() as string[]
+          const distinctUsedCombinations = Array.from(new Set(usedCombinations))
+          const usedCount = reportItems.size
+
+          const recipe = ctx.recipes.getRecipe(recipeName)!
+          const variantMap = recipe.variantKeyMap ?? {}
+          const possibleCombinations = Object.keys(variantMap).reduce((acc, variantName) => {
+            return acc.concat(variantMap[variantName].map((value) => `${variantName}.${value}`))
+          }, [] as string[])
+
+          const variantCount = recipe.variantKeys.length
+          const percentUsed =
+            Math.ceil((distinctUsedCombinations.length / (possibleCombinations.length || 1)) * 10_000) / 100
+          // console.log({
+          //   reportItems,
+          //   usedCombinations,
+          //   distinctUsedCombinations,
+          //   possibleCombinations,
+          //   variantCount,
+          //   percentUsed,
+          //   possibleVariantCombinations: possibleCombinations,
+          // })
+
+          const jsxUsage = Array.from(reportItems).filter(
+            (component) => component.reportItemType === 'jsx-recipe',
+          ).length
+          const fnUsage = Array.from(reportItems).filter((component) => component.reportItemType === 'recipe').length
+
+          const jsxPercentUsed = Math.ceil((jsxUsage / (reportItems.size || 1)) * 100)
+          const fnPercentUsed = Math.ceil((fnUsage / (reportItems.size || 1)) * 100)
+
+          const usedInXFiles = new Set(Array.from(reportItems).flatMap((component) => component.filepath)).size
+
+          return {
+            recipeName: recipeName,
+            usedInXFiles: usedInXFiles,
+            usedCount,
+            variantCount,
+            possibleCombinations,
+            usedCombinations: distinctUsedCombinations.length,
+            percentUsed,
+            jsxPercentUsed,
+            fnPercentUsed, // TODO fix ?
+            unusedCombinations: possibleCombinations.length - distinctUsedCombinations.length,
+            // TODO sort
+            mostUsedCombinations: distinctUsedCombinations,
+          }
+        },
+      )
+
+      console.table(
+        recipeTable
+          .filter((v) => v.usedCount)
+          .map((entry) => ({
+            Recipe: `${entry.recipeName} (${entry.variantCount} variants)`,
+            'Used in X files': entry.usedInXFiles,
+            'Variants combinations': `${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
+            '% used': `${entry.percentUsed}%`,
+            '% jsx': `${entry.jsxPercentUsed}%`,
+            '% fn': `${entry.fnPercentUsed}%`,
+            Unused: entry.unusedCombinations,
+            'Most Used': entry.mostUsedCombinations,
+          })),
+      )
     })
 
   cli
