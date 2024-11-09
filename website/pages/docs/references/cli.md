@@ -55,7 +55,7 @@ Whether to run the codegen process
 
 The extension of the generated js files (default: 'mjs')
 
-Related: [`config.outExtension`](/docs/references/config#outExtension)
+Related: [`config.outExtension`](/docs/references/config#outextension)
 
 #### `--outdir <dir>`
 
@@ -67,7 +67,7 @@ Related: [`config.outdir`](/docs/references/config#outdir)
 
 The jsx framework to use
 
-Related: [`config.jsxFramework`](/docs/references/config#jsxFramework)
+Related: [`config.jsxFramework`](/docs/references/config#jsxframework)
 
 #### `--syntax <syntax>`
 
@@ -79,7 +79,7 @@ Related: [`config.syntax`](/docs/references/config#syntax)
 
 Set strictTokens to true
 
-Related: [`config.strictTokens`](/docs/references/config#strictTokens)
+Related: [`config.strictTokens`](/docs/references/config#stricttokens)
 
 #### `--logfile <file>`
 
