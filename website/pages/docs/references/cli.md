@@ -187,7 +187,7 @@ Related: [`config.polyfill`](/docs/references/config#polyfill)
 
 Whether to only emit the `tokens` directory
 
-Related: [`config.emitTokensOnly`](/docs/references/config#emitTokensOnly)
+Related: [`config.emitTokensOnly`](/docs/references/config#emittokensonly)
 
 #### `--cpu-prof`
 
