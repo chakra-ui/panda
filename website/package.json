@@ -39,7 +39,7 @@
     "@types/react": "18.2.55",
     "@types/react-dom": "18.2.19",
     "autoprefixer": "10.4.20",
-    "postcss": "8.4.47",
+    "postcss": "8.4.49",
     "prettier": "3.2.5"
   }
 }
