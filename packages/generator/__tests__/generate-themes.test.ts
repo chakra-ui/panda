@@ -55,7 +55,7 @@ describe('generate themes', () => {
         "id": "panda-theme-default",
         "css": " [data-panda-theme=default] {\\n    --colors-primary: blue;\\n    --colors-simple: var(--colors-red-600);\\n    --colors-text: var(--colors-blue-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=default] {\\n        --colors-text: var(--colors-blue-400)\\n            }\\n        }"
       }",
-          "name": "default",
+          "name": "theme-default",
         },
         {
           "json": "{
@@ -63,7 +63,7 @@ describe('generate themes', () => {
         "id": "panda-theme-pink",
         "css": " [data-panda-theme=pink] {\\n    --colors-primary: pink;\\n    --colors-text: var(--colors-pink-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=pink] {\\n        --colors-text: var(--colors-pink-400)\\n            }\\n        }"
       }",
-          "name": "pink",
+          "name": "theme-pink",
         },
       ]
     `)
@@ -71,7 +71,7 @@ describe('generate themes', () => {
     expect(generateThemesIndex(ctx, files)).toMatchInlineSnapshot(`
       [
         {
-          "code": "export const getTheme = (themeName) => import('./' + themeName + '.json').then((m) => m.default)
+          "code": "export const getTheme = (themeName) => import(\`./theme-\${themeName}.json\`).then((m) => m.default)
 
       export function injectTheme(el, theme) {
         const doc = el.ownerDocument || document
