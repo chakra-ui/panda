@@ -14,8 +14,8 @@
     "css:dev": "panda -w"
   },
   "dependencies": {
-    "@astrojs/solid-js": "4.0.1",
-    "astro": "4.16.6",
+    "@astrojs/solid-js": "4.4.2",
+    "astro": "4.16.12",
     "solid-js": "1.8.15"
   },
   "devDependencies": {
