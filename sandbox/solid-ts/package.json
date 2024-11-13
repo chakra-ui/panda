@@ -15,7 +15,7 @@
     "@pandacss/dev": "workspace:*",
     "typescript": "5.3.3",
     "vite": "5.4.11",
-    "vite-plugin-solid": "2.10.1"
+    "vite-plugin-solid": "2.10.2"
   },
   "dependencies": {
     "solid-js": "1.8.15"
