@@ -1,5 +1,26 @@
 # @pandacss/generator
 
+## 0.48.0
+
+### Patch Changes
+
+- 2bc12d2: Fix multi-theme issue where calling the `getTheme` function throws a Vite error due to invalid dynamic import
+  format.
+
+  ```js
+  import { getTheme } from 'styled-system/themes'
+
+  getTheme('default')
+  // -> The above dynamic import cannot be analyzed by Vite.
+  ```
+
+  - @pandacss/core@0.48.0
+  - @pandacss/is-valid-prop@0.48.0
+  - @pandacss/logger@0.48.0
+  - @pandacss/shared@0.48.0
+  - @pandacss/token-dictionary@0.48.0
+  - @pandacss/types@0.48.0
+
 ## 0.47.1
 
 ### Patch Changes
