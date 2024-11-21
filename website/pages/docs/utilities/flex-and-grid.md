@@ -46,17 +46,15 @@ Grid utilities offer control over various grid layout properties, providing a po
 ### Grid Template Columns
 
 The `gridTemplateColumns` utility defines the columns of a grid container.
-It accepts numerical values from `1` to `12` where each value maps to `repeat(<value>, minmax(0, 1fr))`
 
 ```jsx
-<div className={css({ gridTemplateColumns: '3' })} />
+<div className={css({ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' })} />
 ```
 
 ### Grid Template Rows
 
 The `gridTemplateRows` utility defines the rows of a grid container.
-It accepts numerical values from `1` to `12` where each value maps to `repeat(<value>, minmax(0, 1fr))`
 
 ```jsx
-<div className={css({ gridTemplateRows: '3' })} />
+<div className={css({ gridTemplateRows: 'repeat(3, minmax(0, 1fr))' })} />
 ```
