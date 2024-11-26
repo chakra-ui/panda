@@ -89,10 +89,10 @@ pnpm add @fontsource-variable/fira-code
 Next, import the font into your project:
 
 ```jsx
-import '@fontsource-variable//fira-code'
+import '@fontsource-variable/fira-code'
 ```
 
-Lastly, import the CSS styles for the specific weight and subset you intend to use:
+Lastly, create a variable to use it as a token in the panda config
 
 ```css filename="styles/font.css"
 :root {
