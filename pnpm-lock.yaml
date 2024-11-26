@@ -95,8 +95,8 @@ importers:
         version: 2.1.0
     devDependencies:
       astro:
-        specifier: 4.16.13
-        version: 4.16.13(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.15
+        version: 4.16.15(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       vite:
         specifier: 5.4.11
         version: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
@@ -630,8 +630,8 @@ importers:
   packages/studio:
     dependencies:
       '@astrojs/react':
-        specifier: 3.6.2
-        version: 3.6.2(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))
+        specifier: 3.6.3
+        version: 3.6.3(@types/node@22.9.0)(@types/react-dom@18.2.19)(@types/react@18.2.55)(less@4.2.0)(lightningcss@1.25.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(terser@5.36.0)
       '@pandacss/astro-plugin-studio':
         specifier: workspace:*
         version: link:../astro-plugin-studio
@@ -651,8 +651,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       astro:
-        specifier: 4.16.13
-        version: 4.16.13(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.15
+        version: 4.16.15(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -839,11 +839,11 @@ importers:
   sandbox/astro:
     dependencies:
       '@astrojs/solid-js':
-        specifier: 4.4.3
-        version: 4.4.3(@testing-library/jest-dom@6.5.0)(solid-js@1.8.15)(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))
+        specifier: 4.4.4
+        version: 4.4.4(@testing-library/jest-dom@6.5.0)(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(solid-js@1.8.15)(terser@5.36.0)
       astro:
-        specifier: 4.16.13
-        version: 4.16.13(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.15
+        version: 4.16.15(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       solid-js:
         specifier: 1.8.15
         version: 1.8.15
@@ -1679,8 +1679,8 @@ packages:
     resolution: {integrity: sha512-Z9IYjuXSArkAUx3N6xj6+Bnvx8OdUSHA8YoOgyepp3+zJmtVYJIl/I18GozdJVW1p5u/CNpl3Km7/gwTJK85cw==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
 
-  '@astrojs/react@3.6.2':
-    resolution: {integrity: sha512-fK29lYI7zK/KG4ZBy956x4dmauZcZ18osFkuyGa8r3gmmCQa2NZ9XNu9WaVYEUm0j89f4Gii4tbxLoyM8nk2MA==}
+  '@astrojs/react@3.6.3':
+    resolution: {integrity: sha512-5ihLQDH5Runddug5AZYlnp/Q5T81QxhwnWJXA9rchBAdh11c6UhBbv9Kdk7b2PkXoEU70CGWBP9hSh0VCR58eA==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
     peerDependencies:
       '@types/react': ^17.0.50 || ^18.0.21
@@ -1688,8 +1688,8 @@ packages:
       react: ^17.0.2 || ^18.0.0 || ^19.0.0-beta
       react-dom: ^17.0.2 || ^18.0.0 || ^19.0.0-beta
 
-  '@astrojs/solid-js@4.4.3':
-    resolution: {integrity: sha512-9yNVQsyerz6T+jiAT8bqBGrhvPpMjweKUHdRp9FACKTHnqR3oLDUzCRf0/Lejh6dEkLT9XVAMhy9INgVYU87CA==}
+  '@astrojs/solid-js@4.4.4':
+    resolution: {integrity: sha512-6zu9gFWEb+4V8SumlzMG3UbnXP2tVSy3eLI8cKNNPoMjcMMHK39efxHP38EPiCD0NnlTfyFh3KqaXp/2hmWh6Q==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
     peerDependencies:
       solid-devtools: ^0.30.1
@@ -7765,8 +7765,8 @@ packages:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
 
-  astro@4.16.13:
-    resolution: {integrity: sha512-Mtd76+BC0zLWqoXpf9xc731AhdH4MNh5JFHYdLRvSH0Nqn48hA64dPGh/cWsJvh/DZFmC0NTZusM1Qq2gyNaVg==}
+  astro@4.16.15:
+    resolution: {integrity: sha512-usybZ7nEUiwYKT7r47l4VbkqjKfaE+BgWV/ed4PT3mE3vFRTBWFsXLnkzrN7awfN6+/ekZTAcE+MAkdA551Umw==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
 
@@ -17636,7 +17636,7 @@ snapshots:
     dependencies:
       prismjs: 1.29.0
 
-  '@astrojs/react@3.6.2(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))':
+  '@astrojs/react@3.6.3(@types/node@22.9.0)(@types/react-dom@18.2.19)(@types/react@18.2.55)(less@4.2.0)(lightningcss@1.25.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(terser@5.36.0)':
     dependencies:
       '@types/react': 18.2.55
       '@types/react-dom': 18.2.19
@@ -17644,18 +17644,34 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       ultrahtml: 1.5.3
+      vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
     transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
       - supports-color
-      - vite
+      - terser
 
-  '@astrojs/solid-js@4.4.3(@testing-library/jest-dom@6.5.0)(solid-js@1.8.15)(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))':
+  '@astrojs/solid-js@4.4.4(@testing-library/jest-dom@6.5.0)(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(solid-js@1.8.15)(terser@5.36.0)':
     dependencies:
       solid-js: 1.8.15
+      vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
       vite-plugin-solid: 2.10.2(@testing-library/jest-dom@6.5.0)(solid-js@1.8.15)(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))
     transitivePeerDependencies:
       - '@testing-library/jest-dom'
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
       - supports-color
-      - vite
+      - terser
 
   '@astrojs/telemetry@3.1.0':
     dependencies:
@@ -25822,7 +25838,7 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro@4.16.13(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3):
+  astro@4.16.15(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.1
