@@ -89,13 +89,13 @@ pnpm add @fontsource-variable/fira-code
 Next, import the font into your project:
 
 ```jsx
-import '@fontsource/fira-code'
+import '@fontsource-variable//fira-code'
 ```
 
 Lastly, import the CSS styles for the specific weight and subset you intend to use:
 
 ```css filename="styles/font.css"
-import '@fontsource-variable/fira-code' :root {
+:root {
   --font-fira-code: 'Fira Code Variable', monospace;
 }
 ```
