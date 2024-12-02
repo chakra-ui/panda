@@ -33,7 +33,7 @@
     "lightningcss-wasm": "1.23.0",
     "merge-anything": "5.1.7",
     "monaco-editor": "0.46.0",
-    "monaco-editor-auto-typings": "0.4.5",
+    "monaco-editor-auto-typings": "0.4.6",
     "monaco-jsx-syntax-highlight": "1.2.0",
     "nanoid": "5.0.8",
     "next": "14.2.3",
