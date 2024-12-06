@@ -4840,7 +4840,7 @@ scrollbarColor?: ConditionalValue<UtilityValues["scrollbarColor"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-gutter
    */
-scrollbarGutter?: ConditionalValue<UtilityValues["scrollbarGutter"] | CssVars | CssProperties["scrollbarGutter"] | AnyString>
+scrollbarGutter?: ConditionalValue<CssProperties["scrollbarGutter"] | AnyString>
  /**
    * The **`scrollbar-width`** property allows the author to set the maximum thickness of an element's scrollbars when they are shown.
    *

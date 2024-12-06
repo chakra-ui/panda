@@ -165,7 +165,6 @@ describe('generate property types', () => {
       	caretColor: Tokens["colors"];
       	scrollbar: "visible" | "hidden";
       	scrollbarColor: Tokens["colors"];
-      	scrollbarGutter: Tokens["spacing"];
       	scrollbarWidth: Tokens["sizes"];
       	scrollMargin: Tokens["spacing"];
       	scrollMarginLeft: Tokens["spacing"];
