@@ -6,6 +6,14 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.48.1] - 2024-12-07
+
+### Fixed
+
+- Fix issue where `staticCss` artifacts were not included in the build info json.
+- Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are `auto`,
+  `stable`, and `both-edges`.
+
 ## [0.48.0] - 2024-11-13
 
 ### Fixed
