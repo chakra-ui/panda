@@ -1,5 +1,21 @@
 # @pandacss/node
 
+## 0.48.1
+
+### Patch Changes
+
+- fd87f3a: Fix issue where `staticCss` artifacts were not included in the build info json.
+- Updated dependencies [af9715a]
+  - @pandacss/generator@0.48.1
+  - @pandacss/config@0.48.1
+  - @pandacss/parser@0.48.1
+  - @pandacss/core@0.48.1
+  - @pandacss/extractor@0.48.1
+  - @pandacss/logger@0.48.1
+  - @pandacss/shared@0.48.1
+  - @pandacss/token-dictionary@0.48.1
+  - @pandacss/types@0.48.1
+
 ## 0.48.0
 
 ### Patch Changes

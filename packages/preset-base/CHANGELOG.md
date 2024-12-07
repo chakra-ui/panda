@@ -1,5 +1,13 @@
 # @pandacss/preset-base
 
+## 0.48.1
+
+### Patch Changes
+
+- af9715a: Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are
+  `auto`, `stable`, and `both-edges`.
+  - @pandacss/types@0.48.1
+
 ## 0.48.0
 
 ### Minor Changes
