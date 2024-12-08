@@ -279,12 +279,12 @@ export class Context {
   }
 
   setupCompositions = (theme: Theme): void => {
-    const { textStyles, layerStyles, motionStyles } = theme
+    const { textStyles, layerStyles, animationStyles } = theme
 
     const compositions = compact({
       textStyle: textStyles,
       layerStyle: layerStyles,
-      motionStyle: motionStyles,
+      animationStyle: animationStyles,
     })
 
     const stylesheetCtx = {

@@ -1,4 +1,4 @@
-import type { LayerStyles, MotionStyles, TextStyles } from './composition'
+import type { AnimationStyles, LayerStyles, TextStyles } from './composition'
 import type { RecipeConfig, SlotRecipeConfig } from './recipe'
 import type { CssKeyframes } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
@@ -31,7 +31,7 @@ export interface Theme {
   /**
    * The animation styles for your project.
    */
-  motionStyles?: MotionStyles
+  animationStyles?: AnimationStyles
   /**
    * Multi-variant style definitions for your project.
    * Useful for defining component styles.

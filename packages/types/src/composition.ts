@@ -135,7 +135,7 @@ export type LayerStyles = Recursive<Token<LayerStyle>>
  * Motion styles
  * -----------------------------------------------------------------------------*/
 
-type MotionStyleProperty =
+type AnimationStyleProperty =
   | 'animation'
   | 'animationComposition'
   | 'animationDelay'
@@ -152,12 +152,12 @@ type MotionStyleProperty =
   | 'animationTimeline'
   | 'transformOrigin'
 
-export type MotionStyle = CompositionStyleObject<MotionStyleProperty>
+export type AnimationStyle = CompositionStyleObject<AnimationStyleProperty>
 
-export type MotionStyles = Recursive<Token<MotionStyle>>
+export type AnimationStyles = Recursive<Token<AnimationStyle>>
 
 export interface CompositionStyles {
   textStyles: TextStyles
   layerStyles: LayerStyles
-  motionStyles: MotionStyles
+  animationStyles: AnimationStyles
 }
