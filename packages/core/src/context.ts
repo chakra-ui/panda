@@ -279,9 +279,13 @@ export class Context {
   }
 
   setupCompositions = (theme: Theme): void => {
-    const { textStyles, layerStyles } = theme
+    const { textStyles, layerStyles, animationStyles } = theme
 
-    const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
+    const compositions = compact({
+      textStyle: textStyles,
+      layerStyle: layerStyles,
+      animationStyle: animationStyles,
+    })
 
     const stylesheetCtx = {
       ...this.baseSheetContext,
