@@ -1,5 +1,85 @@
 # @pandacss/logger
 
+## 0.48.1
+
+### Patch Changes
+
+- @pandacss/types@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @pandacss/types@0.48.0
+
+## 0.47.1
+
+### Patch Changes
+
+- @pandacss/types@0.47.1
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [5e683ee]
+  - @pandacss/types@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @pandacss/types@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @pandacss/types@0.46.0
+
+## 0.45.2
+
+### Patch Changes
+
+- @pandacss/types@0.45.2
+
+## 0.45.1
+
+### Patch Changes
+
+- @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- Updated dependencies [dcc9053]
+  - @pandacss/types@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [c99cb75]
+  - @pandacss/types@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/types@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [17a1932]
+  - @pandacss/types@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

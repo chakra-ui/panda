@@ -29,13 +29,13 @@ Whether to overwrite existing files
 
 Whether to emit a [postcss](https://postcss.org/) config file
 
-#### `--config, -c`
+#### `--config, -c <path>`
 
 Path to Panda config file
 
 Related: [`config`](/docs/references/config)
 
-#### `--cwd`
+#### `--cwd <dir>`
 
 Path to current working direcory
 
@@ -47,19 +47,29 @@ Whether to suppress all output
 
 Whether to update gitignorew with the output directory
 
-#### `--out-extension`
+#### `--no-codegen`
+
+Whether to run the codegen process
+
+#### `--out-extension <ext>`
 
 The extension of the generated js files (default: 'mjs')
 
-Related: [`config.outExtension`](/docs/references/config#outExtension)
+Related: [`config.outExtension`](/docs/references/config#outextension)
 
-#### `--jsx-framework`
+#### `--outdir <dir>`
+
+The output directory for the generated files
+
+Related: [`config.outdir`](/docs/references/config#outdir)
+
+#### `--jsx-framework <framework>`
 
 The jsx framework to use
 
-Related: [`config.jsxFramework`](/docs/references/config#jsxFramework)
+Related: [`config.jsxFramework`](/docs/references/config#jsxframework)
 
-#### `--syntax`
+#### `--syntax <syntax>`
 
 The css syntax preference
 
@@ -69,20 +79,9 @@ Related: [`config.syntax`](/docs/references/config#syntax)
 
 Set strictTokens to true
 
-Related: [`config.strictTokens`](/docs/references/config#strictTokens)
+Related: [`config.strictTokens`](/docs/references/config#stricttokens)
 
-#### `--cpu-prof`
-
-This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
-the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
-
-```bash
-pnpm panda --cpu-prof
-```
-
-Related: [Debugging](/docs/guides/debugging)
-
-#### `--logfile`
+#### `--logfile <file>`
 
 Outputs logs to a file
 
@@ -94,15 +93,25 @@ Related: [Debugging](/docs/guides/debugging)
 
 Run the extract process to generate static CSS from your project.
 
+By default it will scan and generate CSS for the entire project depending on your include and exclude options from your config file.
+
+```bash
+pnpm panda
+# You can also scan a specific file or folder
+# using the optional glob argument
+pnpm panda src/components/Button.tsx
+pnpm panda "./src/components/**"
+```
+
 ### Flags
 
-#### `--outdir`
+#### `--outdir, -o [dir]`
 
 The output directory for the generated CSS utilities
 
 Related: [`config.outdir`](/docs/references/config#outdir)
 
-#### `--minify`
+#### `--minify, -m`
 
 Whether to minify the generated CSS
 
@@ -120,13 +129,13 @@ Whether to poll for file changes
 
 Related: [`config.poll`](/docs/references/config#poll)
 
-#### `--config, -c`
+#### `--config, -c <path>`
 
 The path to the config file
 
 Related: [`config`](/docs/references/config.md)
 
-#### `--cwd`
+#### `--cwd <path>`
 
 The current working directory
 
@@ -144,7 +153,7 @@ Whether to suppress all output
 
 Related: [`config.logLevel`](/docs/references/config#log-level)
 
-#### `--exclude, -e`
+#### `--exclude, -e <files>`
 
 Files to exclude from the extract process
 
@@ -178,7 +187,7 @@ Related: [`config.polyfill`](/docs/references/config#polyfill)
 
 Whether to only emit the `tokens` directory
 
-Related: [`config.emitTokensOnly`](/docs/references/config#emitTokensOnly)
+Related: [`config.emitTokensOnly`](/docs/references/config#emittokensonly)
 
 #### `--cpu-prof`
 
@@ -191,7 +200,7 @@ pnpm panda --cpu-prof
 
 Related: [Debugging](/docs/guides/debugging)
 
-#### `--logfile`
+#### `--logfile <file>`
 
 Outputs logs to a file
 
@@ -215,7 +224,7 @@ Whether to clean the output directory before emitting
 
 Related: [`config.clean`](/docs/references/config#clean)
 
-#### `--config, -c`
+#### `--config, -c <path>`
 
 Path to Panda config file
 
@@ -227,13 +236,13 @@ Whether to watch for changes in the project
 
 Related: [`config.watch`](/docs/references/config#watch)
 
-#### `--poll`
+#### `--poll, -p`
 
 Whether to poll for file changes
 
 Related: [`config.poll`](/docs/references/config#poll)
 
-#### `--cwd`
+#### `--cwd <path>`
 
 Current working directory
 
@@ -250,7 +259,7 @@ pnpm panda --cpu-prof
 
 Related: [Debugging](/docs/guides/debugging)
 
-#### `--logfile`
+#### `--logfile <file>`
 
 Outputs logs to a file
 
@@ -282,7 +291,7 @@ panda cssgen "static" --outfile dist/static.css
 
 ### Flags
 
-#### `--outfile`
+#### `--outfile, -o <file>`
 
 Output file for extracted css, default to './styled-system/styles.css'
 
@@ -292,7 +301,7 @@ Whether to suppress all output
 
 Related: [`config.logLevel`](/docs/references/config#log-level)
 
-#### `--minify`
+#### `--minify, -m`
 
 Whether to minify the generated CSS
 
@@ -304,7 +313,7 @@ Whether to clean the output directory before emitting
 
 Related: [`config.clean`](/docs/references/config#clean)
 
-#### `--config, -c`
+#### `--config, -c <path>`
 
 Path to Panda config file
 
@@ -333,13 +342,13 @@ Use it like this:
 panda cssgen "src/**/pages/*.css" --minimal --outfile dist/pages.css
 ```
 
-#### `--poll`
+#### `--poll, -p`
 
 Whether to poll for file changes
 
 Related: [`config.poll`](/docs/references/config#poll)
 
-#### `--cwd`
+#### `--cwd <path>`
 
 Current working directory
 
@@ -368,7 +377,7 @@ pnpm panda --cpu-prof
 
 Related: [Debugging](/docs/guides/debugging)
 
-#### `--logfile`
+#### `--logfile <file>`
 
 Outputs logs to a file
 
@@ -388,7 +397,7 @@ Build
 
 Preview
 
-#### `--port`
+#### `--port <port>`
 
 Use custom port
 
@@ -396,33 +405,47 @@ Use custom port
 
 Expose to custom host
 
-#### `--config, -c`
+#### `--config, -c <path>`
 
 Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
-#### `--cwd`
+#### `--cwd <path>`
 
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
 
-#### `--outdir`
+#### `--outdir <dir>`
 
 Output directory for static files
+
+#### `--base <path>`
+
+Base path of project
 
 ## `panda analyze`
 
 Analyze design token usage in glob.
 
+By default it will analyze the entire project depending on your include and exclude options from your config file.
+
+```bash
+pnpm panda analyze
+# You can also analyze a specific file or folder
+# using the optional glob argument
+pnpm panda analyze src/components/Button.tsx
+pnpm panda analyze "./src/components/**"
+```
+
 ### Flags
 
-#### `--json [filepath]`
+#### `--outfile <filepath>`
 
 Output analyze report in given JSON filepath
 
-> `panda analyze --json report.json`
+> `panda analyze --outfile report.json`
 
 #### `--silent`
 
@@ -430,13 +453,13 @@ Whether to suppress all output
 
 Related: [`config.logLevel`](/docs/references/config#log-level)
 
-#### `--config, -c`
+#### `--config, -c <path>`
 
 Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
-#### `--cwd`
+#### `--cwd <path>`
 
 Current working directory
 
@@ -445,6 +468,8 @@ Related: [`config.cwd`](/docs/references/config#cwd)
 ## `panda debug`
 
 Debug design token extraction & CSS generated from files in glob.
+
+More details in [Debugging](/docs/guides/debugging) docs.
 
 ### Flags
 
@@ -456,7 +481,7 @@ Whether to suppress all output
 
 Output debug files in stdout without writing to disk
 
-#### `--outdir [dir]`
+#### `--outdir <dir>`
 
 Output directory for debug files, defaults to `../styled-system/debug`
 
@@ -464,21 +489,17 @@ Output directory for debug files, defaults to `../styled-system/debug`
 
 Should only output the config file, default to 'false'
 
-#### `--config, -c`
+#### `--config, -c <path>`
 
 Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
-#### `--cwd`
+#### `--cwd <path>`
 
 Current working directory
 
 Related: [`config.cwd`](/docs/references/config#cwd)
-
-## `panda emit-pkg`
-
-Emit package.json with entrypoints, can be used to create a workspace package dedicated to the [`config.outdir`](/docs/references/config#outdir), in combination with [`config.importMap`](/docs/references/config#importMap)
 
 #### `--cpu-prof`
 
@@ -487,18 +508,96 @@ the current working directory, which can be opened in tools like [Speedscope](ht
 
 ```bash
 pnpm panda --cpu-prof
+```
 
-#### `--logfile`
+Related: [Debugging](/docs/guides/debugging#performance-profiling)
+
+#### `--logfile <file>`
 
 Outputs logs to a file
 
+Related: [Debugging](/docs/guides/debugging)
+
+## `panda ship`
+
+Ship extract result from files in glob.
+
+By default it will extract from the entire project depending on your include and exclude options from your config file.
+
+```bash
+pnpm panda ship
+# You can also analyze a specific file or folder
+# using the optional glob argument
+pnpm panda ship src/components/Button.tsx
+pnpm panda ship "./src/components/**"
+```
+
 ### Flags
+
+#### `--outfile <filepath>`
+
+Output path for the JSON build info file, default to './styled-system/panda.buildinfo.json'
+
+> `panda ship --outfile report.json`
 
 #### `--silent`
 
 Whether to suppress all output
 
-#### `--outdir`
+Related: [`config.logLevel`](/docs/references/config#log-level)
 
-Output directory
-```
+#### `--minify, -m`
+
+Whether to minify the generated JSON
+
+#### `--config, -c <path>`
+
+Path to Panda config file
+
+Related: [`config`](/docs/references/config.md)
+
+#### `--cwd <path>`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config#cwd)
+
+#### `--watch, -w`
+
+Whether to watch for changes in the project
+
+Related: [`config.watch`](/docs/references/config#watch)
+
+#### `--poll, -p`
+
+Whether to poll for file changes
+
+Related: [`config.poll`](/docs/references/config#poll)
+
+## `panda emit-pkg`
+
+Emit package.json with entrypoints, can be used to create a workspace package dedicated to the [`config.outdir`](/docs/references/config#outdir), in combination with [`config.importMap`](/docs/references/config#importmap)
+
+### Flags
+
+#### `--outdir <dir>`
+
+The output directory for the generated CSS utilities
+
+Related: [`config.outdir`](/docs/references/config#outdir)
+
+#### `--base <path>`
+
+The base directory of the package.json entrypoints
+
+#### `--silent`
+
+Whether to suppress all output
+
+Related: [`config.logLevel`](/docs/references/config#log-level)
+
+#### `--cwd <path>`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config#cwd)

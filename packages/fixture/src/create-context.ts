@@ -31,17 +31,13 @@ export const fixtureDefaults = {
 } as LoadConfigResult
 
 export const createGeneratorContext = (userConfig?: Config) => {
-  const resolvedConfig = (
-    userConfig ? mergeConfigs([userConfig, fixtureDefaults.config]) : fixtureDefaults.config
-  ) as UserConfig
+  const resolvedConfig = mergeConfigs([userConfig?.eject ? {} : fixtureDefaults.config, userConfig ?? {}]) as UserConfig
 
   return new Generator({ ...fixtureDefaults, config: resolvedConfig })
 }
 
 export const createContext = (userConfig?: Config & Pick<Partial<LoadConfigResult>, 'tsconfig'>) => {
-  let resolvedConfig = (
-    userConfig ? mergeConfigs([userConfig, userConfig.eject ? {} : fixtureDefaults.config]) : fixtureDefaults.config
-  ) as UserConfig
+  let resolvedConfig = mergeConfigs([userConfig?.eject ? {} : fixtureDefaults.config, userConfig ?? {}]) as UserConfig
 
   const hooks = userConfig?.hooks ?? {}
 

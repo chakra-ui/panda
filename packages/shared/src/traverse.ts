@@ -1,3 +1,5 @@
+import { isObjectOrArray } from './assert'
+
 type CallbackFn = (args: CallbackItem) => void
 
 interface CallbackItem {
@@ -8,8 +10,6 @@ interface CallbackItem {
   parent: any[] | Record<string, unknown>
   key: string
 }
-
-export const isObjectOrArray = (obj: unknown) => typeof obj === 'object' && obj !== null
 
 const defaultOptions = {
   separator: '.',

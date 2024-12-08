@@ -10,7 +10,7 @@ ${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
+import type { ComponentPropsWithoutRef, ElementType, ElementRef, JSX, Ref } from 'react'
 ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
 interface Dict {

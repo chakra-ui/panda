@@ -9,6 +9,13 @@ export default defineConfig({
   include: ['./app/routes/**/*.{tsx,jsx}', './app/components/**/*.{tsx,jsx}'],
   exclude: [],
   outdir: 'styled-system',
+  globalFontface: {
+    Dosis: {
+      src: "url(/Dosis-VariableFont_wght.ttf) format('truetype')",
+      fontWeight: '100 800',
+      fontDisplay: 'swap',
+    },
+  },
   theme: {
     semanticTokens: {
       colors: {

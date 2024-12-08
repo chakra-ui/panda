@@ -1,2 +1,9 @@
-export const uniq = <T>(...items: T[][]): T[] =>
-  items.filter(Boolean).reduce<T[]>((acc, item) => Array.from(new Set([...acc, ...item])), [])
+export const uniq = <T>(...items: T[][]): T[] => {
+  const set = items.reduce<Set<T>>((acc, currItems) => {
+    if (currItems) {
+      currItems.forEach((item) => acc.add(item))
+    }
+    return acc
+  }, new Set([]))
+  return Array.from(set)
+}

@@ -19,9 +19,9 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@builder.io/qwik": "1.4.5",
+    "@builder.io/qwik": "1.7.3",
     "@preact/preset-vite": "2.8.3",
-    "@solidjs/testing-library": "0.8.8",
+    "@solidjs/testing-library": "0.8.10",
     "@testing-library/jest-dom": "6.4.2",
     "@testing-library/preact": "3.2.3",
     "@testing-library/react": "14.2.2",
@@ -33,16 +33,16 @@
     "@vitejs/plugin-vue-jsx": "3.1.0",
     "cac": "6.7.14",
     "eslint-plugin-react-hooks": "4.6.0",
-    "eslint-plugin-react-refresh": "0.4.7",
-    "happy-dom": "13.3.8",
+    "eslint-plugin-react-refresh": "0.4.14",
+    "happy-dom": "15.10.2",
     "jsdom": "24.0.0",
     "preact": "10.19.5",
     "solid-js": "1.8.15",
     "tsx": "4.7.1",
     "typescript": "5.3.3",
-    "vite": "5.2.13",
+    "vite": "5.4.11",
     "vitest": "1.5.0",
-    "vite-plugin-solid": "2.9.1",
+    "vite-plugin-solid": "2.10.2",
     "vue": "3.4.19"
   }
 }

@@ -13,4 +13,21 @@ describe('stringify', () => {
       "
     `)
   })
+
+  test('convert @scope in nesting', () => {
+    expect(
+      stringify({
+        '.parent': {
+          color: 'blue',
+          '@scope (& > .scope) to (& .limit)': { '& .content': { color: 'red' } },
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      ".parent {color: blue;
+      }@scope (.parent > .scope) to (.parent .limit) {.parent .content {color: red;
+      }
+      }
+      "
+    `)
+  })
 })

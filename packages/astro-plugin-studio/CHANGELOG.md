@@ -1,5 +1,82 @@
 # @pandacss/astro-plugin-studio
 
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [fd87f3a]
+  - @pandacss/node@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @pandacss/node@0.48.0
+
+## 0.47.1
+
+### Patch Changes
+
+- @pandacss/node@0.47.1
+
+## 0.47.0
+
+### Patch Changes
+
+- @pandacss/node@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @pandacss/node@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @pandacss/node@0.46.0
+
+## 0.45.2
+
+### Patch Changes
+
+- @pandacss/node@0.45.2
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [26924c7]
+  - @pandacss/node@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @pandacss/node@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- @pandacss/node@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- @pandacss/node@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- Updated dependencies [19c3a2c]
+- Updated dependencies [ec64819]
+- Updated dependencies [17a1932]
+  - @pandacss/node@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

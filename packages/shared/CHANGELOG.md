@@ -1,5 +1,61 @@
 # @pandacss/shared
 
+## 0.48.1
+
+## 0.48.0
+
+## 0.47.1
+
+## 0.47.0
+
+## 0.46.1
+
+## 0.46.0
+
+### Minor Changes
+
+- 54426a2: Add support native css nesting in template literal mode. Prior to this change, you need to add `&` to all
+  nested selectors.
+
+  Before:
+
+  ```ts
+  css`
+    & p {
+      color: red;
+    }
+  `
+  ```
+
+  After:
+
+  ```ts
+  css`
+    p {
+      color: red;
+    }
+  `
+  ```
+
+  > **Good to know**: Internally, this will still convert to `p` to `& p`, but the generated css will work as expected.
+
+## 0.45.2
+
+## 0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- 552dd4b: Fix issue where `divideY` and `divideColor` utilities, used together in a recipe, doesn't generate the
+  correct css.
+
+## 0.44.0
+
+## 0.43.0
+
+## 0.42.0
+
 ## 0.41.0
 
 ## 0.40.1

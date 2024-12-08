@@ -53,7 +53,6 @@ export const interactivity: UtilityConfig = {
   },
   scrollbarGutter: {
     className: 'scr-bar-g',
-    values: 'spacing',
     group: 'Scroll',
   },
   scrollbarWidth: {

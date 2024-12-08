@@ -61,9 +61,9 @@ export function createCss(context: CreateCssContext) {
     const classNames = new Set<string>()
 
     walkObject(normalizedObject, (value, paths) => {
-      const important = isImportant(value)
-
       if (value == null) return
+
+      const important = isImportant(value)
 
       const [prop, ...allConditions] = conds.shift(paths)
       const conditions = filterBaseConditions(allConditions)

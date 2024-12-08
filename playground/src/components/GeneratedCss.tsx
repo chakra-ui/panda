@@ -3,13 +3,10 @@ import { css } from '@/styled-system/css'
 import { Stack } from '@/styled-system/jsx'
 import { SegmentGroup } from '@ark-ui/react'
 import MonacoEditor from '@monaco-editor/react'
-import prettier from 'prettier'
-import prettierPluginBabel from 'prettier/plugins/babel'
-import prettierPluginHtml from 'prettier/plugins/html'
-import prettierPluginPostcss from 'prettier/plugins/postcss'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useReadLocalStorage } from 'usehooks-ts'
 import { CssFileArtifact } from '../hooks/usePanda'
+import { format } from '@projectwallace/format-css'
 
 export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileArtifact[]; visible: boolean }) => {
   const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')
@@ -18,27 +15,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
 
   const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
 
-  const [pretty, setPretty] = useState(content)
-  const formatCode = (code: string) => {
-    try {
-      return prettier.format(code, {
-        parser: 'css',
-        plugins: [prettierPluginHtml, prettierPluginBabel, prettierPluginPostcss],
-      })
-    } catch (e) {
-      console.log('e', e)
-      return code
-    }
-  }
-
-  useEffect(() => {
-    const run = async () => {
-      const code = await formatCode(content)
-      setPretty(code)
-    }
-
-    run()
-  }, [content])
+  const pretty = format(content)
 
   return (
     <Stack

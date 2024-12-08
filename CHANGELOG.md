@@ -6,6 +6,419 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.48.1] - 2024-12-07
+
+### Fixed
+
+- Fix issue where `staticCss` artifacts were not included in the build info json.
+- Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are `auto`,
+  `stable`, and `both-edges`.
+
+## [0.48.0] - 2024-11-13
+
+### Fixed
+
+Fix multi-theme issue where calling the `getTheme` function throws a Vite error due to invalid dynamic import format.
+
+```js
+import { getTheme } from 'styled-system/themes'
+
+getTheme('default')
+// -> The above dynamic import cannot be analyzed by Vite.
+```
+
+### Changed
+
+[Breaking] Remove default utility values for `gridTemplateColumns`, `gridTemplateRows`, `gridColumn` and `gridRow` to
+prevent interference with native css values.
+
+For example `1` or `2` is a valid native value for `gridColumn` or `gridRow`, and should not be overridden by the
+utility.
+
+Find the previous default values below, you can add them back to your config if you need them.
+
+```ts
+const utilities = {
+  gridTemplateColumns: {
+    className: 'grid-tc',
+    group: 'Grid Layout',
+    values: {
+      '1': 'repeat(1, minmax(0, 1fr))',
+      '2': 'repeat(2, minmax(0, 1fr))',
+      '3': 'repeat(3, minmax(0, 1fr))',
+      '4': 'repeat(4, minmax(0, 1fr))',
+      '5': 'repeat(5, minmax(0, 1fr))',
+      '6': 'repeat(6, minmax(0, 1fr))',
+      '7': 'repeat(7, minmax(0, 1fr))',
+      '8': 'repeat(8, minmax(0, 1fr))',
+      '9': 'repeat(9, minmax(0, 1fr))',
+      '10': 'repeat(10, minmax(0, 1fr))',
+      '11': 'repeat(11, minmax(0, 1fr))',
+      '12': 'repeat(12, minmax(0, 1fr))',
+    },
+  },
+  gridTemplateRows: {
+    className: 'grid-tr',
+    group: 'Grid Layout',
+    values: {
+      '1': 'repeat(1, minmax(0, 1fr))',
+      '2': 'repeat(2, minmax(0, 1fr))',
+      '3': 'repeat(3, minmax(0, 1fr))',
+      '4': 'repeat(4, minmax(0, 1fr))',
+      '5': 'repeat(5, minmax(0, 1fr))',
+      '6': 'repeat(6, minmax(0, 1fr))',
+      '7': 'repeat(7, minmax(0, 1fr))',
+      '8': 'repeat(8, minmax(0, 1fr))',
+      '9': 'repeat(9, minmax(0, 1fr))',
+      '10': 'repeat(10, minmax(0, 1fr))',
+      '11': 'repeat(11, minmax(0, 1fr))',
+      '12': 'repeat(12, minmax(0, 1fr))',
+    },
+  },
+  gridColumn: {
+    className: 'grid-c',
+    group: 'Grid Layout',
+    values: {
+      full: '1 / -1',
+      '1': 'span 1 / span 1',
+      '2': 'span 2 / span 2',
+      '3': 'span 3 / span 3',
+      '4': 'span 4 / span 4',
+      '5': 'span 5 / span 5',
+      '6': 'span 6 / span 6',
+      '7': 'span 7 / span 7',
+      '8': 'span 8 / span 8',
+      '9': 'span 9 / span 9',
+      '10': 'span 10 / span 10',
+      '11': 'span 11 / span 11',
+      '12': 'span 12 / span 12',
+    },
+  },
+  gridRow: {
+    className: 'grid-r',
+    group: 'Grid Layout',
+    values: {
+      full: '1 / -1',
+      '1': 'span 1 / span 1',
+      '2': 'span 2 / span 2',
+      '3': 'span 3 / span 3',
+      '4': 'span 4 / span 4',
+      '5': 'span 5 / span 5',
+      '6': 'span 6 / span 6',
+      '7': 'span 7 / span 7',
+      '8': 'span 8 / span 8',
+      '9': 'span 9 / span 9',
+      '10': 'span 10 / span 10',
+      '11': 'span 11 / span 11',
+      '12': 'span 12 / span 12',
+    },
+  },
+}
+```
+
+## [0.47.1] - 2024-11-06
+
+### Fixed
+
+- Fix postcss; race condition on builder instance for simultaneous plugin invocations
+- Fix issue where token reference in composite border token generates incorrect css.
+
+## [0.47.0] - 2024-10-18
+
+### Added
+
+Add support for cursor token types. Useful for tokenizing cursor types for interactive components.
+
+Here's an example of how to define a cursor token in your `panda.config.ts` file:
+
+```ts
+// panda.config.ts
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        cursor: {
+          button: { value: 'pointer' },
+          checkbox: { value: 'default' },
+        },
+      },
+    },
+  },
+})
+```
+
+Then you can use the cursor token in your styles or recipes.
+
+```tsx
+<button className={css({ cursor: 'button' })}>Click me</button>
+```
+
+This makes it easy to manage cursor styles across your application.
+
+### Changed
+
+Improve preflight css such that elements with `hidden=until-found` are visible. Previously, we always hide all elements
+with the `hidden` attribute
+
+## [0.46.1] - 2024-09-09
+
+### Fixed
+
+Fix issue where using container query in static css results in empty styles.
+
+## [0.46.0] - 2024-09-09
+
+### Fixed
+
+- Fix: use sizing tokens for flexBasis instead of spacing tokens
+- Fix issue where nesting `@scope` rule that use the `&` don't expand correctly
+
+### Added
+
+Add support native css nesting in template literal mode. Prior to this change, you need to add `&` to all nested
+selectors.
+
+Before:
+
+```ts
+css`
+  & p {
+    color: red;
+  }
+`
+```
+
+After:
+
+```ts
+css`
+  p {
+    color: red;
+  }
+`
+```
+
+> **Good to know**: Internally, this will still convert to `p` to `& p`, but the generated css will work as expected.
+
+## [0.45.2] - 2024-08-29
+
+### Changed
+
+Make `WithEscapeHatch<T>` much more performant and typescript happy by updating the type signature of `WithImportant<T>`
+and `WithColorOpacityModifier<T>` to use _branded type_ and _non-distributive conditional types_, while keeping such
+tokens valid and also not appearing in autocompletions to prevent them from polluting autocompletion result (which is
+the current behavior).
+
+## [0.45.1] - 2024-08-14
+
+### Fixed
+
+Fix issue where shadow token with color opacity modifier produces incorrect css value
+
+### Changed
+
+[Internal] switch to package-manager-detector to reduce dependencies
+
+## [0.45.0] - 2024-08-06
+
+### Fixed
+
+- Fix issue where composite border token with `width: 1px` renders `1pxpx` in CSS
+- Fix issue where `divideY` and `divideColor` utilities, used together in a recipe, doesn't generate the correct css.
+
+### Added
+
+Add support resolving `DEFAULT` in textStyles and layerStyles, just like tokens.
+
+```jsx
+export default defineConfig({
+  theme: {
+    textStyles: {
+      display: {
+        // 'display'
+        DEFAULT: {
+          value: {
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+          },
+        },
+        // 'display.large'
+        large: {
+          value: {
+            fontSize: '2rem',
+            fontWeight: 'bold',
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+In case, you can use `textStyles: display` to reference the DEFAULT display value.
+
+```jsx
+css({ textStyle: 'display' })
+```
+
+### Changed
+
+Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or conditional
+styles.
+
+**Before**
+
+```jsx
+hstack({
+  // ❌ doesn't work
+  base: {
+    background: 'red.400',
+    p: '11',
+  },
+  display: 'flex',
+  flexDirection: 'column',
+})
+```
+
+**After**
+
+```jsx
+hstack({
+  // ✅ works
+  background: 'red.400',
+  p: '11',
+  display: 'flex',
+  flexDirection: 'column',
+})
+```
+
+## [0.44.0] - 2024-07-22
+
+### Fixed
+
+- Ensure `globalFontface` definitions are merged correctly
+
+### Added
+
+- Add a `name` mandatory key in `Preset` to make it easy to target one specifically
+
+### Changed
+
+- Replace `JSX` with `React.JSX` for better React 19 support
+
+## [0.43.0] - 2024-07-19
+
+### Added
+
+Add support for defining global font face in config and preset
+
+```ts
+// pandacss.config.js
+export default defineConfig({
+  globalFontface: {
+    Roboto: {
+      src: 'url(/fonts/roboto.woff2) format("woff2")',
+      fontWeight: '400',
+      fontStyle: 'normal',
+    },
+  },
+})
+```
+
+You can also add multiple font `src` for the same weight
+
+```ts
+// pandacss.config.js
+
+export default defineConfig({
+  globalFontface: {
+    Roboto: {
+      // multiple src
+      src: ['url(/fonts/roboto.woff2) format("woff2")', 'url(/fonts/roboto.woff) format("woff")'],
+      fontWeight: '400',
+      fontStyle: 'normal',
+    },
+  },
+})
+```
+
+You can also define multiple font weights
+
+```ts
+// pandacss.config.js
+
+export default defineConfig({
+  globalFontface: {
+    // multiple font weights
+    Roboto: [
+      {
+        src: 'url(/fonts/roboto.woff2) format("woff2")',
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+      {
+        src: 'url(/fonts/roboto-bold.woff2) format("woff2")',
+        fontWeight: '700',
+        fontStyle: 'normal',
+      },
+    ],
+  },
+})
+```
+
+## [0.42.0] - 2024-07-08
+
+### Added
+
+- Add support for `4xl` border radius token
+
+### Changed
+
+- Ensure classnames are unique across utilities to prevent potential clash
+- Change recipes `className` to be optional, both for `recipes` and `slotRecipes`, with a fallback to its name.
+- Minor changes to the format of the `panda analyze --output coverage.json` file
+
+```ts
+import { defineConfig } from '@pandacss/core'
+
+export default defineConfig({
+  recipes: {
+    button: {
+      className: 'button', // 👈 was mandatory, is now optional
+      variants: {
+        size: {
+          sm: { padding: '2', borderRadius: 'sm' },
+          md: { padding: '4', borderRadius: 'md' },
+        },
+      },
+    },
+  },
+})
+```
+
+- [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the generated
+  CSS where possible.
+- BREAKING: Remove `emitPackage` config option,
+
+  tldr: use `importMap` instead for absolute paths (e.g can be used for component libraries)
+
+  `emitPackage` is deprecated, it's known for causing several issues:
+
+  - bundlers sometimes eagerly cache the `node_modules`, leading to `panda codegen` updates to the `styled-system` not
+    visible in the browser
+  - auto-imports are not suggested in your IDE.
+  - in some IDE the typings are not always reflected properly
+
+  As alternatives, you can use:
+
+  - relative paths instead of absolute paths (e.g. `../styled-system/css` instead of `styled-system/css`)
+  - use package.json #imports and/or tsconfig path aliases (prefer package.json#imports when possible, TS 5.4 supports
+    them by default) like `#styled-system/css` instead of `styled-system/css`
+    https://nodejs.org/api/packages.html#subpath-imports
+  - for a component library, use a dedicated workspace package (e.g. `@acme/styled-system`) and use
+    `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to extract, e.g.
+    `import { css } from '@acme/styled-system/css'` https://panda-css.com/docs/guides/component-library
+
 ## [0.41.0] - 2024-06-16
 
 ### Fixed

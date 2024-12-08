@@ -219,4 +219,25 @@ describe('serialize - with token()', () => {
       }
     `)
   })
+
+  test('serialize divide utility', () => {
+    const result = css({
+      html: {
+        divideY: '1px',
+        divideColor: 'red',
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "html": {
+          "& > :not([hidden]) ~ :not([hidden])": {
+            "borderBottomWidth": "0px",
+            "borderColor": "red",
+            "borderTopWidth": "1px",
+          },
+        },
+      }
+    `)
+  })
 })

@@ -14,6 +14,7 @@ const categories = [
   'lineHeights',
   'letterSpacings',
   'sizes',
+  'cursor',
   'shadows',
   'spacing',
   'radii',

@@ -133,7 +133,7 @@ interface FileSizes {
 export interface ReportSnapshot {
   schemaVersion: string
   details: ReportDetails
-  config: Omit<Config, 'globalCss'>
+  config: Omit<Config, 'globalCss' | 'globalFontface'>
 
   propByIndex: Map<PropertyReportItem['index'], PropertyReportItem>
   componentByIndex: Map<ComponentReportItem['componentIndex'], ComponentReportItem>

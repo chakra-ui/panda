@@ -1,5 +1,6 @@
 import { FeatureMarquee } from '@/components/feature-marquee'
 import { SectionCommunity } from '@/components/sections/community'
+import { SectionCourse } from '@/components/sections/course'
 import { SectionCssInJS } from '@/components/sections/css-in-js'
 import { SectionDesignTokens } from '@/components/sections/design-tokens'
 import { SectionHero } from '@/components/sections/hero'
@@ -16,6 +17,7 @@ export default function Page() {
       <SectionHero />
       <FeatureMarquee />
       <SectionCssInJS />
+      <SectionCourse />
       <SectionModernCss />
       <SectionDesignTokens />
       <SectionRecipes />

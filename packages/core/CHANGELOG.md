@@ -1,5 +1,309 @@
 # @pandacss/core
 
+## 0.48.1
+
+### Patch Changes
+
+- @pandacss/is-valid-prop@0.48.1
+- @pandacss/logger@0.48.1
+- @pandacss/shared@0.48.1
+- @pandacss/token-dictionary@0.48.1
+- @pandacss/types@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @pandacss/is-valid-prop@0.48.0
+- @pandacss/logger@0.48.0
+- @pandacss/shared@0.48.0
+- @pandacss/token-dictionary@0.48.0
+- @pandacss/types@0.48.0
+
+## 0.47.1
+
+### Patch Changes
+
+- Updated dependencies [144113f]
+  - @pandacss/token-dictionary@0.47.1
+  - @pandacss/is-valid-prop@0.47.1
+  - @pandacss/logger@0.47.1
+  - @pandacss/shared@0.47.1
+  - @pandacss/types@0.47.1
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [5e683ee]
+  - @pandacss/token-dictionary@0.47.0
+  - @pandacss/types@0.47.0
+  - @pandacss/logger@0.47.0
+  - @pandacss/is-valid-prop@0.47.0
+  - @pandacss/shared@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- 9fbd2d8: Fix issue where using container query in static css results in empty styles.
+  - @pandacss/is-valid-prop@0.46.1
+  - @pandacss/logger@0.46.1
+  - @pandacss/shared@0.46.1
+  - @pandacss/token-dictionary@0.46.1
+  - @pandacss/types@0.46.1
+
+## 0.46.0
+
+### Minor Changes
+
+- 54426a2: Add support native css nesting in template literal mode. Prior to this change, you need to add `&` to all
+  nested selectors.
+
+  Before:
+
+  ```ts
+  css`
+    & p {
+      color: red;
+    }
+  `
+  ```
+
+  After:
+
+  ```ts
+  css`
+    p {
+      color: red;
+    }
+  `
+  ```
+
+  > **Good to know**: Internally, this will still convert to `p` to `& p`, but the generated css will work as expected.
+
+### Patch Changes
+
+- 54426a2: Fix issue where nesting `@scope` rule that use the `&` don't expand correctly
+- Updated dependencies [54426a2]
+  - @pandacss/shared@0.46.0
+  - @pandacss/token-dictionary@0.46.0
+  - @pandacss/types@0.46.0
+  - @pandacss/is-valid-prop@0.46.0
+  - @pandacss/logger@0.46.0
+
+## 0.45.2
+
+### Patch Changes
+
+- @pandacss/is-valid-prop@0.45.2
+- @pandacss/logger@0.45.2
+- @pandacss/shared@0.45.2
+- @pandacss/token-dictionary@0.45.2
+- @pandacss/types@0.45.2
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [3439ecf]
+  - @pandacss/token-dictionary@0.45.1
+  - @pandacss/is-valid-prop@0.45.1
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Minor Changes
+
+- 1e4da63: Add support resolving `DEFAULT` in textStyles and layerStyles, just like tokens.
+
+  ```jsx
+  export default defineConfig({
+    theme: {
+      textStyles: {
+        display: {
+          // 'display'
+          DEFAULT: {
+            value: {
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+            },
+          },
+          // 'display.large'
+          large: {
+            value: {
+              fontSize: '2rem',
+              fontWeight: 'bold',
+            },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  In case, you can use `textStyles: display` to reference the DEFAULT display value.
+
+  ```jsx
+  css({ textStyle: 'display' })
+  ```
+
+### Patch Changes
+
+- 552dd4b: Fix issue where `divideY` and `divideColor` utilities, used together in a recipe, doesn't generate the
+  correct css.
+- Updated dependencies [dcc9053]
+- Updated dependencies [a21fcfe]
+- Updated dependencies [552dd4b]
+  - @pandacss/types@0.45.0
+  - @pandacss/token-dictionary@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/logger@0.45.0
+  - @pandacss/is-valid-prop@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [c99cb75]
+  - @pandacss/types@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/token-dictionary@0.44.0
+  - @pandacss/is-valid-prop@0.44.0
+  - @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Minor Changes
+
+- e952f82: Add support for defining global font face in config and preset
+
+  ```ts
+  // pandacss.config.js
+  export default defineConfig({
+    globalFontface: {
+      Roboto: {
+        src: 'url(/fonts/roboto.woff2) format("woff2")',
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+    },
+  })
+  ```
+
+  You can also add multiple font `src` for the same weight
+
+  ```ts
+  // pandacss.config.js
+
+  export default defineConfig({
+    globalFontface: {
+      Roboto: {
+        // multiple src
+        src: ['url(/fonts/roboto.woff2) format("woff2")', 'url(/fonts/roboto.woff) format("woff")'],
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+    },
+  })
+  ```
+
+  You can also define multiple font weights
+
+  ```ts
+  // pandacss.config.js
+
+  export default defineConfig({
+    globalFontface: {
+      // multiple font weights
+      Roboto: [
+        {
+          src: 'url(/fonts/roboto.woff2) format("woff2")',
+          fontWeight: '400',
+          fontStyle: 'normal',
+        },
+        {
+          src: 'url(/fonts/roboto-bold.woff2) format("woff2")',
+          fontWeight: '700',
+          fontStyle: 'normal',
+        },
+      ],
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/types@0.43.0
+  - @pandacss/logger@0.43.0
+  - @pandacss/token-dictionary@0.43.0
+  - @pandacss/is-valid-prop@0.43.0
+  - @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- e157dd1: - Ensure classnames are unique across utilities to prevent potential clash
+  - Add support for `4xl` border radius token
+- f00ff88: BREAKING: Remove `emitPackage` config option,
+
+  tldr: use `importMap` instead for absolute paths (e.g can be used for component libraries)
+
+  `emitPackage` is deprecated, it's known for causing several issues:
+
+  - bundlers sometimes eagerly cache the `node_modules`, leading to `panda codegen` updates to the `styled-system` not
+    visible in the browser
+  - auto-imports are not suggested in your IDE.
+  - in some IDE the typings are not always reflected properly
+
+  As alternatives, you can use:
+
+  - relative paths instead of absolute paths (e.g. `../styled-system/css` instead of `styled-system/css`)
+  - use package.json #imports and/or tsconfig path aliases (prefer package.json#imports when possible, TS 5.4 supports
+    them by default) like `#styled-system/css` instead of `styled-system/css`
+    https://nodejs.org/api/packages.html#subpath-imports
+  - for a component library, use a dedicated workspace package (e.g. `@acme/styled-system`) and use
+    `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to extract, e.g.
+    `import { css } from '@acme/styled-system/css'` https://panda-css.com/docs/guides/component-library
+
+### Patch Changes
+
+- ec64819: Change recipes `className` to be optional, both for `recipes` and `slotRecipes`, with a fallback to its name.
+
+  ```ts
+  import { defineConfig } from '@pandacss/core'
+
+  export default defineConfig({
+    recipes: {
+      button: {
+        className: 'button', // 👈 was mandatory, is now optional
+        variants: {
+          size: {
+            sm: { padding: '2', borderRadius: 'sm' },
+            md: { padding: '4', borderRadius: 'md' },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+  generated CSS where possible.
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [17a1932]
+  - @pandacss/types@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/token-dictionary@0.42.0
+  - @pandacss/is-valid-prop@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

@@ -110,7 +110,10 @@ const shorthandProperties = {
   transition: ['transitionProperty', 'transitionDuration', 'transitionTimingFunction', 'transitionDelay'],
 }
 
-const longhands = Object.values(shorthandProperties).reduce((a, b) => [...a, ...b], [])
+const longhands = Object.values(shorthandProperties).reduce<Set<string>>((a, b) => {
+  b.forEach((val) => a.add(val))
+  return a
+}, new Set<string>([]))
 
 /**
  * Get the property priority: the higher the priority, the higher the resulting
@@ -133,5 +136,5 @@ const longhands = Object.values(shorthandProperties).reduce((a, b) => [...a, ...
  */
 export function getPropertyPriority(property: string) {
   if (property === 'all') return 0
-  return longhands.includes(property) ? 2 : 1
+  return longhands.has(property) ? 2 : 1
 }

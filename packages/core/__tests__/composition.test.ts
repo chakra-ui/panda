@@ -63,4 +63,17 @@ describe('compositions', () => {
       }"
     `)
   })
+
+  test('should resolve DEFAULT', () => {
+    expect(css({ textStyle: 'headline' })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @layer compositions {
+          .textStyle_headline {
+            font-size: 1.5rem;
+            font-weight: var(--font-weights-bold);
+      }
+          }
+      }"
+    `)
+  })
 })

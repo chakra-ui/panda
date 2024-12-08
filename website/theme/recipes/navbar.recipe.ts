@@ -97,7 +97,7 @@ export const navbarRecipe = defineRecipe({
       rounded: 'sm',
       p: '2',
       _active: { bg: 'rgb(156 163 175 / 0.2)' },
-      md: { display: 'none' },
+      sm: { display: 'none' },
       '& svg': {
         '& g': {
           transformOrigin: 'center',

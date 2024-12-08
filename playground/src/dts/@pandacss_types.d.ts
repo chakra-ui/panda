@@ -2,6 +2,7 @@
 
 import { Difference } from 'microdiff';
 import { TSConfig } from 'pkg-types';
+import { Node as Node$1 } from 'ts-morph';
 
 export type Fallback<T> = {
 	[P in keyof T]: T[P] | readonly NonNullable<T[P]>[];
@@ -9725,6 +9726,169 @@ declare namespace Property {
 	export type TextAnchor = Globals | "end" | "middle" | "start";
 	export type VectorEffect = Globals | "non-scaling-stroke" | "none";
 }
+declare namespace AtRule {
+	export interface CounterStyle<TLength = (string & {}) | 0, TTime = string & {}> {
+		additiveSymbols?: string | undefined;
+		fallback?: string | undefined;
+		negative?: string | undefined;
+		pad?: string | undefined;
+		prefix?: string | undefined;
+		range?: Range | undefined;
+		speakAs?: SpeakAs | undefined;
+		suffix?: string | undefined;
+		symbols?: string | undefined;
+		system?: System | undefined;
+	}
+	export interface CounterStyleHyphen<TLength = (string & {}) | 0, TTime = string & {}> {
+		"additive-symbols"?: string | undefined;
+		fallback?: string | undefined;
+		negative?: string | undefined;
+		pad?: string | undefined;
+		prefix?: string | undefined;
+		range?: Range | undefined;
+		"speak-as"?: SpeakAs | undefined;
+		suffix?: string | undefined;
+		symbols?: string | undefined;
+		system?: System | undefined;
+	}
+	export type CounterStyleFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<CounterStyle<TLength, TTime>>;
+	export type CounterStyleHyphenFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<CounterStyleHyphen<TLength, TTime>>;
+	export interface FontFace<TLength = (string & {}) | 0, TTime = string & {}> {
+		MozFontFeatureSettings?: FontFeatureSettings | undefined;
+		ascentOverride?: AscentOverride | undefined;
+		descentOverride?: DescentOverride | undefined;
+		fontDisplay?: FontDisplay | undefined;
+		fontFamily?: string | undefined;
+		fontFeatureSettings?: FontFeatureSettings | undefined;
+		fontStretch?: FontStretch | undefined;
+		fontStyle?: FontStyle | undefined;
+		fontVariant?: FontVariant | undefined;
+		fontVariationSettings?: FontVariationSettings | undefined;
+		fontWeight?: FontWeight | undefined;
+		lineGapOverride?: LineGapOverride | undefined;
+		sizeAdjust?: string | undefined;
+		src?: string | undefined;
+		unicodeRange?: string | undefined;
+	}
+	export interface FontFaceHyphen<TLength = (string & {}) | 0, TTime = string & {}> {
+		"-moz-font-feature-settings"?: FontFeatureSettings | undefined;
+		"ascent-override"?: AscentOverride | undefined;
+		"descent-override"?: DescentOverride | undefined;
+		"font-display"?: FontDisplay | undefined;
+		"font-family"?: string | undefined;
+		"font-feature-settings"?: FontFeatureSettings | undefined;
+		"font-stretch"?: FontStretch | undefined;
+		"font-style"?: FontStyle | undefined;
+		"font-variant"?: FontVariant | undefined;
+		"font-variation-settings"?: FontVariationSettings | undefined;
+		"font-weight"?: FontWeight | undefined;
+		"line-gap-override"?: LineGapOverride | undefined;
+		"size-adjust"?: string | undefined;
+		src?: string | undefined;
+		"unicode-range"?: string | undefined;
+	}
+	export type FontFaceFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<FontFace<TLength, TTime>>;
+	export type FontFaceHyphenFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<FontFaceHyphen<TLength, TTime>>;
+	export interface FontPaletteValues<TLength = (string & {}) | 0, TTime = string & {}> {
+		basePalette?: BasePalette | undefined;
+		fontFamily?: string | undefined;
+		overrideColors?: string | undefined;
+	}
+	export interface FontPaletteValuesHyphen<TLength = (string & {}) | 0, TTime = string & {}> {
+		"base-palette"?: BasePalette | undefined;
+		"font-family"?: string | undefined;
+		"override-colors"?: string | undefined;
+	}
+	export type FontPaletteValuesFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<FontPaletteValues<TLength, TTime>>;
+	export type FontPaletteValuesHyphenFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<FontPaletteValuesHyphen<TLength, TTime>>;
+	export interface Page<TLength = (string & {}) | 0, TTime = string & {}> {
+		bleed?: Bleed<TLength> | undefined;
+		marks?: Marks | undefined;
+		pageOrientation?: PageOrientation | undefined;
+		size?: Size<TLength> | undefined;
+	}
+	export interface PageHyphen<TLength = (string & {}) | 0, TTime = string & {}> {
+		bleed?: Bleed<TLength> | undefined;
+		marks?: Marks | undefined;
+		"page-orientation"?: PageOrientation | undefined;
+		size?: Size<TLength> | undefined;
+	}
+	export type PageFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<Page<TLength, TTime>>;
+	export type PageHyphenFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<PageHyphen<TLength, TTime>>;
+	export interface Property<TLength = (string & {}) | 0, TTime = string & {}> {
+		inherits?: Inherits | undefined;
+		initialValue?: string | undefined;
+		syntax?: string | undefined;
+	}
+	export interface PropertyHyphen<TLength = (string & {}) | 0, TTime = string & {}> {
+		inherits?: Inherits | undefined;
+		"initial-value"?: string | undefined;
+		syntax?: string | undefined;
+	}
+	export type PropertyFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<Property<TLength, TTime>>;
+	export type PropertyHyphenFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<PropertyHyphen<TLength, TTime>>;
+	export interface Viewport<TLength = (string & {}) | 0, TTime = string & {}> {
+		height?: Height<TLength> | undefined;
+		maxHeight?: MaxHeight<TLength> | undefined;
+		maxWidth?: MaxWidth<TLength> | undefined;
+		maxZoom?: MaxZoom | undefined;
+		minHeight?: MinHeight<TLength> | undefined;
+		minWidth?: MinWidth<TLength> | undefined;
+		minZoom?: MinZoom | undefined;
+		orientation?: Orientation | undefined;
+		userZoom?: UserZoom | undefined;
+		viewportFit?: ViewportFit | undefined;
+		width?: Width<TLength> | undefined;
+		zoom?: Zoom | undefined;
+	}
+	export interface ViewportHyphen<TLength = (string & {}) | 0, TTime = string & {}> {
+		height?: Height<TLength> | undefined;
+		"max-height"?: MaxHeight<TLength> | undefined;
+		"max-width"?: MaxWidth<TLength> | undefined;
+		"max-zoom"?: MaxZoom | undefined;
+		"min-height"?: MinHeight<TLength> | undefined;
+		"min-width"?: MinWidth<TLength> | undefined;
+		"min-zoom"?: MinZoom | undefined;
+		orientation?: Orientation | undefined;
+		"user-zoom"?: UserZoom | undefined;
+		"viewport-fit"?: ViewportFit | undefined;
+		width?: Width<TLength> | undefined;
+		zoom?: Zoom | undefined;
+	}
+	export type ViewportFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<Viewport<TLength, TTime>>;
+	export type ViewportHyphenFallback<TLength = (string & {}) | 0, TTime = string & {}> = Fallback<ViewportHyphen<TLength, TTime>>;
+	type Range = "auto" | (string & {});
+	type SpeakAs = "auto" | "bullets" | "numbers" | "spell-out" | "words" | (string & {});
+	type System = "additive" | "alphabetic" | "cyclic" | "fixed" | "numeric" | "symbolic" | (string & {});
+	type FontFeatureSettings = "normal" | (string & {});
+	type AscentOverride = "normal" | (string & {});
+	type DescentOverride = "normal" | (string & {});
+	type FontDisplay = "auto" | "block" | "fallback" | "optional" | "swap";
+	type FontStretch = DataType.FontStretchAbsolute | (string & {});
+	type FontStyle = "italic" | "normal" | "oblique" | (string & {});
+	type FontVariant = DataType.EastAsianVariantValues | "all-petite-caps" | "all-small-caps" | "common-ligatures" | "contextual" | "diagonal-fractions" | "discretionary-ligatures" | "full-width" | "historical-forms" | "historical-ligatures" | "lining-nums" | "no-common-ligatures" | "no-contextual" | "no-discretionary-ligatures" | "no-historical-ligatures" | "none" | "normal" | "oldstyle-nums" | "ordinal" | "petite-caps" | "proportional-nums" | "proportional-width" | "ruby" | "slashed-zero" | "small-caps" | "stacked-fractions" | "tabular-nums" | "titling-caps" | "unicase" | (string & {});
+	type FontVariationSettings = "normal" | (string & {});
+	type FontWeight = DataType.FontWeightAbsolute | (string & {});
+	type LineGapOverride = "normal" | (string & {});
+	type BasePalette = "dark" | "light" | (number & {}) | (string & {});
+	type Bleed<TLength> = TLength | "auto";
+	type Marks = "crop" | "cross" | "none" | (string & {});
+	type PageOrientation = "rotate-left" | "rotate-right" | "upright";
+	type Size<TLength> = DataType.PageSize | TLength | "auto" | "landscape" | "portrait" | (string & {});
+	type Inherits = "false" | "true";
+	type Height<TLength> = DataType.ViewportLength<TLength> | (string & {});
+	type MaxHeight<TLength> = DataType.ViewportLength<TLength>;
+	type MaxWidth<TLength> = DataType.ViewportLength<TLength>;
+	type MaxZoom = "auto" | (string & {}) | (number & {});
+	type MinHeight<TLength> = DataType.ViewportLength<TLength>;
+	type MinWidth<TLength> = DataType.ViewportLength<TLength>;
+	type MinZoom = "auto" | (string & {}) | (number & {});
+	type Orientation = "auto" | "landscape" | "portrait";
+	type UserZoom = "fixed" | "zoom";
+	type ViewportFit = "auto" | "contain" | "cover";
+	type Width<TLength> = DataType.ViewportLength<TLength> | (string & {});
+	type Zoom = "auto" | (string & {}) | (number & {});
+}
 declare namespace DataType {
 	type AbsoluteSize = "large" | "medium" | "small" | "x-large" | "x-small" | "xx-large" | "xx-small" | "xxx-large";
 	type AnimateableFeature = "contents" | "scroll-position" | (string & {});
@@ -9782,34 +9946,43 @@ export type AriaAttributes = "[aria-disabled]" | "[aria-hidden]" | "[aria-invali
 export type DataAttributes = "[data-selected]" | "[data-highlighted]" | "[data-hover]" | "[data-active]" | "[data-checked]" | "[data-disabled]" | "[data-readonly]" | "[data-focus]" | "[data-focus-visible]" | "[data-focus-visible-added]" | "[data-invalid]" | "[data-pressed]" | "[data-expanded]" | "[data-grabbed]" | "[data-dragged]" | "[data-orientation=horizontal]" | "[data-orientation=vertical]" | "[data-in-range]" | "[data-out-of-range]" | "[data-placeholder-shown]" | `[data-part=${string}]` | `[data-attr=${string}]` | `[data-placement=${string}]` | `[data-theme=${string}]` | `[data-size=${string}]` | `[data-state=${string}]` | "[data-empty]" | "[data-loading]" | "[data-loaded]" | "[data-enter]" | "[data-entering]" | "[data-exited]" | "[data-exiting]";
 export type AttributeSelector = `&${Pseudos | DataAttributes | AriaAttributes}`;
 export type ParentSelector = `${DataAttributes | AriaAttributes} &`;
-export type AtRuleType = "media" | "layer" | "container" | "supports" | "page";
+export type AtRuleType = "media" | "layer" | "container" | "supports" | "page" | "scope" | "starting-style";
 export type AnySelector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`;
 export type Selectors = AttributeSelector | ParentSelector;
-export type ConditionType = "at-rule" | "parent-nesting" | "self-nesting" | "combinator-nesting";
-export interface ConditionDetails {
-	type: ConditionType;
+export type ConditionType = "at-rule" | "parent-nesting" | "self-nesting" | "combinator-nesting" | "mixed";
+export type ConditionDetails = AtRuleCondition | SelectorCondition | MixedCondition;
+export interface AtRuleCondition {
+	type: "at-rule";
 	value: string;
-	name?: string;
-	rawValue?: string;
-}
-export interface RawCondition extends ConditionDetails {
 	raw: string;
+	name: string;
+	params: string;
+}
+export interface SelectorCondition {
+	type: "self-nesting" | "parent-nesting" | "combinator-nesting";
+	value: string;
+	raw: string;
+}
+export interface MixedCondition {
+	type: "mixed";
+	value: ConditionDetails[];
+	raw: string[];
 }
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE
  * -----------------------------------------------------------------------------*/
+export type ConditionQuery = string | string[];
 export interface Conditions {
-	[condition: string]: string;
+	[condition: string]: ConditionQuery;
 }
 export interface ExtendableConditions {
-	[condition: string]: string | Conditions | undefined;
+	[condition: string]: ConditionQuery | Conditions | undefined;
 	extend?: Conditions | undefined;
 }
 export type Condition = string;
-export type Conditional<V> = V | Array<V | null> | {
-	[K in keyof Conditions]?: Conditional<V>;
+export type ConditionalValue<V> = V | Array<V | null> | {
+	[K in keyof Conditions]?: ConditionalValue<V>;
 };
-export type ConditionalValue<T> = Conditional<T>;
 export type Nested<P> = (P & {
 	[K in Selectors]?: Nested<P>;
 } & {
@@ -9821,7 +9994,7 @@ export interface ArtifactContent {
 	file: string;
 	code: string | undefined;
 }
-export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-patterns-index" | "css-index" | "package.json" | (string & {});
+export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-patterns-index" | "css-index" | "themes" | "package.json" | "types-jsx" | "types-entry" | "types-styles" | "types-conditions" | "types-gen" | "types-gen-system" | `recipes.${string}` | `patterns.${string}`;
 export type CssArtifactType = "preflight" | "tokens" | "static" | "global" | "keyframes";
 export type Artifact = {
 	id: ArtifactId;
@@ -9880,6 +10053,10 @@ export interface StaticCssOptions {
 	patterns?: {
 		[pattern: string]: PatternRule[];
 	};
+	/**
+	 * The CSS themes to generate
+	 */
+	themes?: string[];
 }
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE
@@ -9925,9 +10102,6 @@ export interface CssKeyframes {
 /* -----------------------------------------------------------------------------
  * Conditional css properties
  * -----------------------------------------------------------------------------*/
-export type MinimalNested<P> = {
-	[K in keyof Conditions]?: Nested<P>;
-};
 export interface GenericProperties {
 	[key: string]: ConditionalValue<String$1 | Number$1 | boolean>;
 }
@@ -9943,18 +10117,32 @@ export interface ExtendableGlobalStyleObject {
 	[selector: string]: SystemStyleObject | undefined;
 	extend?: GlobalStyleObject | undefined;
 }
+/* -----------------------------------------------------------------------------
+ * Composition (text styles, layer styles)
+ * -----------------------------------------------------------------------------*/
 export type FilterStyleObject<P extends string> = {
 	[K in P]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown;
 };
 export type CompositionStyleObject<Property extends string> = Nested<FilterStyleObject<Property> & CssVarProperties>;
 /* -----------------------------------------------------------------------------
+ * Font face
+ * -----------------------------------------------------------------------------*/
+export type GlobalFontfaceRule = Omit<AtRule.FontFaceFallback, "src"> & Required<Pick<AtRule.FontFaceFallback, "src">>;
+export type FontfaceRule = Omit<GlobalFontfaceRule, "fontFamily">;
+export interface GlobalFontface {
+	[name: string]: FontfaceRule | FontfaceRule[];
+}
+export interface ExtendableGlobalFontface {
+	[name: string]: FontfaceRule | FontfaceRule[] | GlobalFontface | undefined;
+	extend?: GlobalFontface | undefined;
+}
+/* -----------------------------------------------------------------------------
  * Jsx style props
  * -----------------------------------------------------------------------------*/
 export interface WithCss {
-	css?: SystemStyleObject;
+	css?: SystemStyleObject | SystemStyleObject[];
 }
-export type StyleProps = SystemProperties & MinimalNested<SystemStyleObject>;
-export type JsxStyleProps = StyleProps & WithCss;
+export type JsxStyleProps = SystemStyleObject & WithCss;
 export interface PatchedHTMLProps {
 	htmlWidth?: string | number;
 	htmlHeight?: string | number;
@@ -9995,6 +10183,7 @@ export interface RecipeRuntimeFn<T extends RecipeVariantRecord> extends RecipeVa
 		RecipeSelection<T>,
 		Pretty<DistributiveOmit<Props, keyof T>>
 	];
+	getVariantProps: (props?: RecipeSelection<T>) => RecipeSelection<T>;
 }
 export type OneOrMore<T> = T | Array<T>;
 export type RecipeCompoundSelection<T> = {
@@ -10009,6 +10198,10 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
 	 */
 	base?: SystemStyleObject;
 	/**
+	 * Whether the recipe is deprecated.
+	 */
+	deprecated?: boolean | string;
+	/**
 	 * The multi-variant styles of the recipe.
 	 */
 	variants?: T;
@@ -10020,15 +10213,11 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
 	 * The styles to apply when a combination of variants is selected.
 	 */
 	compoundVariants?: Pretty<RecipeCompoundVariant<RecipeCompoundSelection<T>>>[];
-	/**
-	 * Variants to pre-generate, will be include in the final `config.staticCss`
-	 */
-	staticCss?: RecipeRule[];
 }
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>;
 export interface RecipeConfigMeta {
 	/**
-	 * The name of the recipe.
+	 * The class name of the recipe.
 	 */
 	className: string;
 	/**
@@ -10042,6 +10231,10 @@ export interface RecipeConfigMeta {
 	 * @example ['Button', 'Link', /Button$/]
 	 */
 	jsx?: Array<string | RegExp>;
+	/**
+	 * Variants to pre-generate, will be include in the final `config.staticCss`
+	 */
+	staticCss?: RecipeRule[];
 }
 export interface RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord> extends RecipeDefinition<T>, RecipeConfigMeta {
 }
@@ -10057,13 +10250,22 @@ export interface SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVaria
 	variantMap: RecipeVariantMap<T>;
 	splitVariantProps<Props extends RecipeSelection<T>>(props: Props): [
 		RecipeSelection<T>,
-		Pretty<Omit<Props, keyof T>>
+		Pretty<DistributiveOmit<Props, keyof T>>
 	];
+	getVariantProps: (props?: RecipeSelection<T>) => RecipeSelection<T>;
 }
 export type SlotRecipeCompoundVariant<S extends string, T> = T & {
 	css: SlotRecord<S, SystemStyleObject>;
 };
 export interface SlotRecipeDefinition<S extends string = string, T extends SlotRecipeVariantRecord<S> = SlotRecipeVariantRecord<S>> {
+	/**
+	 * An optional class name that can be used to target slots in the DOM.
+	 */
+	className?: string;
+	/**
+	 * Whether the recipe is deprecated.
+	 */
+	deprecated?: boolean | string;
 	/**
 	 * The parts/slots of the recipe.
 	 */
@@ -10084,17 +10286,13 @@ export interface SlotRecipeDefinition<S extends string = string, T extends SlotR
 	 * The styles to apply when a combination of variants is selected.
 	 */
 	compoundVariants?: Pretty<SlotRecipeCompoundVariant<S, RecipeCompoundSelection<T>>>[];
-	/**
-	 * Variants to pre-generate, will be include in the final `config.staticCss`
-	 */
-	staticCss?: RecipeRule[];
 }
 export type SlotRecipeCreatorFn = <S extends string, T extends SlotRecipeVariantRecord<S>>(config: SlotRecipeDefinition<S, T>) => SlotRecipeRuntimeFn<S, T>;
 export type SlotRecipeConfig<S extends string = string, T extends SlotRecipeVariantRecord<S> = SlotRecipeVariantRecord<S>> = SlotRecipeDefinition<S, T> & RecipeConfigMeta;
 export interface StyleResultObject {
 	[key: string]: any;
 }
-interface StyleProps$1 extends StyleResultObject {
+export interface StyleProps extends StyleResultObject {
 	css?: StyleResultObject;
 }
 export interface StyleEntry {
@@ -10106,15 +10304,12 @@ export interface StyleEntry {
 	layer?: string;
 	variants?: boolean;
 }
-export interface ExpandedCondition extends RawCondition {
-	params?: string;
-}
 export interface AtomicStyleResult {
 	result: StyleResultObject;
 	entry: StyleEntry;
 	hash: string;
 	className: string;
-	conditions?: ExpandedCondition[];
+	conditions?: ConditionDetails[];
 	layer?: string;
 }
 export interface GroupedResult extends Pick<AtomicStyleResult, "result" | "className"> {
@@ -10195,6 +10390,111 @@ export interface LoggerInterface {
 	};
 	isDebug: boolean;
 }
+export interface WithNode {
+	node: Node$1;
+	stack: Node$1[];
+}
+export interface ObjectType extends WithNode {
+	type: "object";
+	value: EvaluatedObjectResult;
+	isEmpty?: boolean;
+}
+export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
+export interface LiteralType extends WithNode {
+	type: "literal";
+	value: PrimitiveType;
+	kind: LiteralKind;
+}
+export interface MapType extends WithNode {
+	type: "map";
+	value: MapTypeValue;
+}
+export interface ArrayType extends WithNode {
+	type: "array";
+	value: BoxNode[];
+}
+export interface UnresolvableType extends WithNode {
+	type: "unresolvable";
+}
+export interface ConditionalType extends WithNode {
+	type: "conditional";
+	whenTrue: BoxNode;
+	whenFalse: BoxNode;
+}
+/** -> Jsx boolean attribute <Box flex /> */
+export interface EmptyInitializerType extends WithNode {
+	type: "empty-initializer";
+}
+export type BoxNodeDefinition = ObjectType | LiteralType | MapType | ArrayType | UnresolvableType | ConditionalType | EmptyInitializerType;
+export type BoxNode = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray | BoxNodeUnresolvable | BoxNodeConditional | BoxNodeEmptyInitializer;
+export type MapTypeValue = Map<string, BoxNode>;
+declare abstract class BoxNodeType$1<Definition extends BoxNodeDefinition = BoxNodeDefinition> {
+	readonly type: Definition["type"];
+	private readonly stack;
+	private readonly node;
+	constructor(definition: Definition);
+	getNode(): Node$1;
+	getStack(): Node$1[];
+	getRange: () => {
+		startPosition: number;
+		startLineNumber: number;
+		startColumn: number;
+		endPosition: number;
+		endLineNumber: number;
+		endColumn: number;
+	};
+	toJSON(): {
+		type: Definition["type"];
+		value: any;
+		node: string;
+		line: number;
+		column: number;
+	};
+	toString(): string;
+}
+declare class BoxNodeObject extends BoxNodeType$1<ObjectType> {
+	value: ObjectType["value"];
+	isEmpty: ObjectType["isEmpty"];
+	constructor(definition: ObjectType);
+}
+declare class BoxNodeLiteral extends BoxNodeType$1<LiteralType> {
+	value: LiteralType["value"];
+	kind: LiteralType["kind"];
+	constructor(definition: LiteralType);
+}
+declare class BoxNodeMap extends BoxNodeType$1<MapType> {
+	value: MapType["value"];
+	spreadConditions?: BoxNodeConditional[];
+	constructor(definition: MapType);
+	isRecipe: () => boolean;
+}
+declare class BoxNodeArray extends BoxNodeType$1<ArrayType> {
+	value: ArrayType["value"];
+	constructor(definition: ArrayType);
+}
+declare class BoxNodeUnresolvable extends BoxNodeType$1<UnresolvableType> {
+}
+declare class BoxNodeConditional extends BoxNodeType$1<ConditionalType> {
+	whenTrue: ConditionalType["whenTrue"];
+	whenFalse: ConditionalType["whenFalse"];
+	constructor(definition: ConditionalType);
+}
+declare class BoxNodeEmptyInitializer extends BoxNodeType$1<EmptyInitializerType> {
+}
+export type PrimitiveType = string | number | boolean | null | undefined;
+export interface LiteralObject {
+	[key: string]: any;
+}
+export type SingleLiteralValue = PrimitiveType | LiteralObject;
+export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
+export interface EvaluatedObjectResult {
+	[key: string]: LiteralValue;
+}
+export interface Unboxed {
+	raw: LiteralObject;
+	conditions: LiteralObject[];
+	spreadConditions: LiteralObject[];
+}
 export interface ResultItem {
 	name?: string;
 	data: Array<Unboxed["raw"]>;
@@ -10212,6 +10512,13 @@ export interface ParserResultInterface {
 	filePath: string | undefined;
 	isEmpty: () => boolean;
 	toArray: () => Array<ResultItem>;
+	set: (name: "cva" | "css" | "sva", result: ResultItem) => void;
+	setCss: (result: ResultItem) => void;
+	setCva: (result: ResultItem) => void;
+	setSva: (result: ResultItem) => void;
+	setJsx: (result: ResultItem) => void;
+	setPattern: (name: string, result: ResultItem) => void;
+	setRecipe: (name: string, result: ResultItem) => void;
 }
 export interface EncoderJson {
 	schemaVersion: string;
@@ -10251,6 +10558,10 @@ export interface PandaHooks {
 	 */
 	"parser:before": (args: ParserResultBeforeHookArgs) => string | void;
 	/**
+	 * @private USE IT ONLY IF YOU KNOW WHAT YOU ARE DOING
+	 */
+	"parser:preprocess": JsxFactoryResultTransform["transform"];
+	/**
 	 * Called after the file styles are extracted and processed into the resulting ParserResult object.
 	 * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
 	 */
@@ -10259,14 +10570,7 @@ export interface PandaHooks {
 	 * Called right before writing the codegen files to disk.
 	 * You can use this hook to tweak the codegen files before they are written to disk.
 	 */
-	"codegen:prepare": (args: {
-		artifacts: Artifact[];
-		/**
-		 * The original state of the artifacts, as it was generated by Panda, without any modification from other preset hooks
-		 */
-		original?: Artifact[];
-		changed: ArtifactId[] | undefined;
-	}) => MaybeAsyncReturn<Artifact[]>;
+	"codegen:prepare": (args: CodegenPrepareHookArgs) => MaybeAsyncReturn<void | Artifact[]>;
 	/**
 	 * Called after the codegen is completed
 	 */
@@ -10334,6 +10638,7 @@ export interface ConfigResolvedHookArgs {
 	path: string;
 	dependencies: string[];
 	utils: ConfigResolvedHookUtils;
+	original?: LoadConfigResult["config"];
 }
 export interface ConfigChangeHookArgs {
 	config: UserConfig;
@@ -10350,6 +10655,13 @@ export interface ParserResultBeforeHookArgs {
 	filePath: string;
 	content: string;
 	configure: (opts: ParserResultConfigureOptions) => void;
+	original?: string;
+}
+export interface JsxFactoryResultTransform {
+	transform: (result: {
+		type: "jsx-factory";
+		data: ResultItem["data"];
+	}) => ResultItem["data"];
 }
 export interface ParserResultAfterHookArgs {
 	filePath: string;
@@ -10360,6 +10672,10 @@ export interface ParserResultAfterHookArgs {
  * -----------------------------------------------------------------------------*/
 export interface CodegenPrepareHookArgs {
 	artifacts: Artifact[];
+	/**
+	 * The original state of the artifacts, as it was generated by Panda, without any modification from other preset hooks
+	 */
+	original?: Artifact[];
 	changed: ArtifactId[] | undefined;
 }
 export interface CodegenDoneHookArgs {
@@ -10407,13 +10723,12 @@ export type Paths<T, Prefix extends string = "", Depth extends number = 0> = {
 }[keyof T];
 export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never;
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-export type TokenStatus = "deprecated" | "experimental" | "new";
 export interface Token<Value = any> {
 	value: Value;
 	description?: string;
 	type?: string;
+	deprecated?: boolean | string;
 	extensions?: {
-		status?: TokenStatus;
 		[key: string]: any;
 	};
 }
@@ -10532,6 +10847,10 @@ export interface PatternConfig<T extends PatternProperties = PatternProperties> 
 	 */
 	transform?: (props: InferProps<T>, helpers: PatternHelpers) => SystemStyleObject;
 	/**
+	 * Whether the pattern is deprecated.
+	 */
+	deprecated?: boolean | string;
+	/**
 	 * The jsx element name this pattern will generate.
 	 */
 	jsxName?: string;
@@ -10563,7 +10882,7 @@ interface Recursive$1<T> {
 /* -----------------------------------------------------------------------------
  * Text styles
  * -----------------------------------------------------------------------------*/
-export type TextStyleProperty = "fontSize" | "fontSizeAdjust" | "fontVariationSettings" | "fontVariantPosition" | "fontVariantCaps" | "fontVariantNumeric" | "fontVariantAlternates" | "fontVariantLigatures" | "fontFamily" | "fontWeight" | "fontSynthesis" | "fontStyle" | "fontVariant" | "lineHeight" | "letterSpacing" | "textDecoration" | "textTransform" | "textIndent" | "textDecorationColor" | "textDecorationLine" | "textDecorationStyle" | "textEmphasisColor" | "textEmphasisPosition" | "textEmphasisStyle" | "hyphenateCharacter" | "textOrientation" | "textOverflow" | "textRendering";
+export type TextStyleProperty = "font" | "fontFamily" | "fontFeatureSettings" | "fontKerning" | "fontLanguageOverride" | "fontOpticalSizing" | "fontPalette" | "fontSize" | "fontSizeAdjust" | "fontStretch" | "fontStyle" | "fontSynthesis" | "fontVariant" | "fontVariantAlternates" | "fontVariantCaps" | "fontVariantLigatures" | "fontVariantNumeric" | "fontVariantPosition" | "fontVariationSettings" | "fontWeight" | "hypens" | "hyphenateCharacter" | "hyphenateLimitChars" | "letterSpacing" | "lineBreak" | "lineHeight" | "quotes" | "overflowWrap" | "textCombineUpright" | "textDecoration" | "textDecorationColor" | "textDecorationLine" | "textDecorationSkipInk" | "textDecorationStyle" | "textDecorationThickness" | "textEmphasis" | "textEmphasisColor" | "textEmphasisPosition" | "textEmphasisStyle" | "textIndent" | "textJustify" | "textOrientation" | "textOverflow" | "textRendering" | "textShadow" | "textTransform" | "textUnderlineOffset" | "textUnderlinePosition" | "textWrap" | "textWrapMode" | "textWrapStyle" | "verticalAlign" | "whiteSpace" | "wordBreak" | "wordSpacing";
 export type TextStyle = CompositionStyleObject<TextStyleProperty>;
 export type TextStyles = Recursive$1<Token$1<TextStyle>>;
 /* -----------------------------------------------------------------------------
@@ -10640,7 +10959,7 @@ export interface TokenFn {
 	raw: (path: string) => Token | undefined;
 }
 export type ThemeFn = (token: (path: string) => any) => Record<string, string>;
-export type PropertyValues = LiteralUnion<TokenCategory> | string[] | {
+export type PropertyValues = LiteralUnion<TokenCategory | "keyframes"> | string[] | {
 	type: string;
 } | Record<string, string> | ThemeFn;
 export interface ColorMixResult {
@@ -10683,7 +11002,16 @@ export interface PropertyConfig {
 	 * The shorthand of the property.
 	 */
 	shorthand?: string | string[];
+	/**
+	 * The CSS semantic group this property belongs
+	 */
+	group?: CssSemanticGroup;
+	/**
+	 * Whether this utility is deprecated or not.
+	 */
+	deprecated?: boolean;
 }
+export type CssSemanticGroup = "Animation" | "Background Gradient" | "Background" | "Border Radius" | "Border" | "Color" | "Container" | "Display" | "Effect" | "Flex Layout" | "Grid Layout" | "Height" | "Interactivity" | "Layout" | "List" | "Margin" | "Other" | "Padding" | "Position" | "Scroll" | "Shadow" | "System" | "Table" | "Transform" | "Transition" | "Typography" | "Visibility" | "Width";
 export type UtilityConfig = {
 	[property in LiteralUnion<CssProperty>]?: PropertyConfig;
 };
@@ -10732,6 +11060,10 @@ export interface PresetCore {
 	 */
 	globalCss: GlobalStyleObject;
 	/**
+	 * The global fontface for your project.
+	 */
+	globalFontface?: GlobalFontface;
+	/**
 	 * Used to generate css utility classes for your project.
 	 */
 	staticCss: StaticCssOptions;
@@ -10747,6 +11079,10 @@ export interface PresetCore {
 	 * Common styling or layout patterns for your project.
 	 */
 	patterns: Record<string, PatternConfig>;
+	/**
+	 * Multiple themes for your project.
+	 */
+	themes?: ThemeVariantsMap;
 }
 export interface ExtendablePatterns {
 	[pattern: string]: PatternConfig | Patterns | undefined;
@@ -10754,6 +11090,40 @@ export interface ExtendablePatterns {
 }
 export interface ExtendableStaticCssOptions extends StaticCssOptions {
 	extend?: StaticCssOptions | undefined;
+}
+export type CssPropertySyntax = "*" | "<length>" | "<number>" | "<percentage>" | "<length-percentage>" | "<color>" | "<image>" | "<url>" | "<integer>" | "<angle>" | "<time>" | "<resolution>" | "<transform-function>" | "<length> | <percentage>";
+export interface CssPropertyDefinition {
+	/**
+	 * Controls whether the custom property registration specified by @property inherits by default.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/inherits
+	 */
+	inherits: boolean;
+	/**
+	 * Sets the initial value for the property.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/initial-value
+	 */
+	initialValue?: string;
+	/**
+	 * Describes the allowable syntax for the property.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax
+	 */
+	syntax: LiteralUnion<CssPropertySyntax>;
+}
+export interface GlobalVarsDefinition {
+	[key: string]: string | CssPropertyDefinition;
+}
+export interface ExtendableGlobalVars {
+	[key: string]: string | CssPropertyDefinition | GlobalVarsDefinition | undefined;
+	extend?: GlobalVarsDefinition;
+}
+export interface ThemeVariant extends Pick<Theme, "tokens" | "semanticTokens"> {
+}
+export interface ThemeVariantsMap {
+	[name: string]: ThemeVariant;
+}
+export interface ExtendableThemeVariantsMap {
+	[name: string]: ThemeVariantsMap | ThemeVariant | undefined;
+	extend?: ThemeVariantsMap | undefined;
 }
 export interface ExtendableOptions {
 	/**
@@ -10765,6 +11135,10 @@ export interface ExtendableOptions {
 	 * The global styles for your project.
 	 */
 	globalCss?: ExtendableGlobalStyleObject;
+	/**
+	 * The global fontface for your project.
+	 */
+	globalFontface?: ExtendableGlobalFontface;
 	/**
 	 * Used to generate css utility classes for your project.
 	 */
@@ -10781,19 +11155,28 @@ export interface ExtendableOptions {
 	 * Common styling or layout patterns for your project.
 	 */
 	patterns?: ExtendablePatterns;
+	/**
+	 * The css variables for your project.
+	 */
+	globalVars?: ExtendableGlobalVars;
+	/**
+	 * The theme variants for your project.
+	 */
+	themes?: ExtendableThemeVariantsMap;
 }
 export interface ImportMapInput {
-	css: string;
-	recipes: string;
-	patterns: string;
-	jsx?: string;
+	css?: string | string[];
+	recipes?: string | string[];
+	patterns?: string | string[];
+	jsx?: string | string[];
 }
-export interface ImportMapOutput<T = string[]> {
-	css: T;
-	recipe: T;
-	pattern: T;
-	jsx: T;
+export interface ImportMapOutput<T = string> {
+	css: T[];
+	recipe: T[];
+	pattern: T[];
+	jsx: T[];
 }
+export type ImportMapOption = string | ImportMapInput;
 export interface FileSystemOptions {
 	/**
 	 * Whether to clean the output directory before generating the css.
@@ -10817,7 +11200,7 @@ export interface FileSystemOptions {
 	 * }
 	 * ```
 	 */
-	importMap?: string | ImportMapInput;
+	importMap?: ImportMapOption | Array<ImportMapOption>;
 	/**
 	 * List of files glob to watch for changes.
 	 * @default []
@@ -10861,7 +11244,7 @@ export interface JsxOptions {
 	/**
 	 * The framework to use for generating supercharged elements.
 	 */
-	jsxFramework?: JsxFramework;
+	jsxFramework?: JsxFramework | (string & {});
 	/**
 	 * The factory name of the element
 	 * @default 'styled'
@@ -10900,10 +11283,11 @@ export interface JsxOptions {
 export interface CssgenOptions {
 	/**
 	 * Whether to include css reset styles in the generated css.
-	 * @default true
+	 * @default false
 	 */
 	preflight?: boolean | {
 		scope: string;
+		level?: "element" | "parent";
 	};
 	/**
 	 * The namespace prefix for the generated css classes and css variables.
@@ -10918,11 +11302,6 @@ export interface CssgenOptions {
 	 * @default '_'
 	 */
 	separator?: "_" | "=" | "-";
-	/**
-	 * Whether to optimize the generated css.
-	 * @default true
-	 */
-	optimize?: boolean;
 	/**
 	 * Whether to minify the generated css.
 	 * @default false
@@ -10961,11 +11340,6 @@ export interface CssgenOptions {
 	polyfill?: boolean;
 }
 export interface CodegenOptions {
-	/**
-	 * Whether to emit the artifacts to `node_modules` as a package.
-	 * @default false
-	 */
-	emitPackage?: boolean;
 	/**
 	 * Whether to only emit the `tokens` directory
 	 * @default false
@@ -11042,6 +11416,7 @@ export interface Config extends StudioOptions, ExtendableOptions, CssgenOptions,
 	validation?: "none" | "warn" | "error";
 }
 export interface Preset extends ExtendableOptions, PresetOptions {
+	name: string;
 }
 export interface UserConfig extends Partial<PresetCore>, RequiredBy<Omit<Config, keyof PresetCore>, "outdir" | "cwd" | "include"> {
 }
@@ -11077,43 +11452,55 @@ export interface PrefixOptions {
 }
 export type ReqConf = Required<UserConfig>;
 export type ConfigPath = Exclude<Exclude<NonNullable<Keys<ReqConf>>, "theme"> | PathIn<ReqConf, "theme"> | PathIn<ReqConf, "patterns"> | PathIn<ReqConf, "staticCss"> | (string & {}), undefined>;
-export type ReportItemType = "object" | "cva" | "pattern" | "recipe" | "jsx" | "jsx-factory";
-export interface ReportItem {
-	id: number;
-	from: string;
-	type: ReportItemType;
-	filepath: string;
-	kind: "function" | "component";
+export type ReportItemType = "css" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
+export type ComponentKind = "component" | "function";
+type Range$1 = {
+	startPosition: number;
+	startLineNumber: number;
+	startColumn: number;
+	endPosition: number;
+	endLineNumber: number;
+	endColumn: number;
+};
+export interface PropertyReportItem {
+	index: string;
+	componentIndex: ComponentReportItem["componentIndex"];
+	componentName: ComponentReportItem["componentName"];
+	reportItemKind: "token" | "utility";
 	path: string[];
-	propName: string;
 	conditionName?: string | undefined;
-	value: string | number | true;
-	category: string;
-	isKnown: boolean;
-	box: BoxNodeLiteral | BoxNodeEmptyInitializer;
+	propName: string;
+	value: string | number | boolean;
+	tokenType?: string;
+	isKnownValue: boolean;
+	range: Range$1;
+	filepath: string;
 }
 /**
- * An instance is either a component usage or a function usage
- * @example an instance name could be 'Button', 'css', 'panda.div', 'vstack', ...
+ * An component is either a component usage or a function usage
+ * @example an component name could be 'Button', 'css', 'panda.div', 'vstack', ...
  */
-export interface ReportInstanceItem extends Pick<ReportItem, "from" | "type" | "kind" | "filepath"> {
-	instanceId: number;
-	contains: Array<ReportItem["id"]>;
+export interface ComponentReportItem extends Pick<PropertyReportItem, "filepath"> {
+	componentIndex: string;
+	componentName: string;
+	reportItemType: ReportItemType;
+	kind: ComponentKind;
+	contains: Array<PropertyReportItem["index"]>;
 	value: Record<string, any>;
-	box: BoxNodeMap;
+	range: Range$1;
 }
-export interface ReportMaps {
-	byInstanceOfKind: Map<"function" | "component", Set<ReportInstanceItem["instanceId"]>>;
-	byPropertyName: Map<string, Set<ReportItem["id"]>>;
-	byCategory: Map<string, Set<ReportItem["id"]>>;
-	byConditionName: Map<string, Set<ReportItem["id"]>>;
-	byShorthand: Map<string, Set<ReportItem["id"]>>;
-	byTokenName: Map<string, Set<ReportItem["id"]>>;
-	byPropertyPath: Map<string, Set<ReportItem["id"]>>;
-	fromKind: Map<"function" | "component", Set<ReportItem["id"]>>;
-	byType: Map<string, Set<ReportItem["id"]>>;
-	byInstanceName: Map<string, Set<ReportItem["id"]>>;
-	colorsUsed: Map<string, Set<ReportItem["id"]>>;
+export interface ReportDerivedMaps {
+	byComponentOfKind: Map<ComponentKind, Set<ComponentReportItem["componentIndex"]>>;
+	byPropertyName: Map<string, Set<PropertyReportItem["index"]>>;
+	byTokenType: Map<string, Set<PropertyReportItem["index"]>>;
+	byConditionName: Map<string, Set<PropertyReportItem["index"]>>;
+	byShorthand: Map<string, Set<PropertyReportItem["index"]>>;
+	byTokenName: Map<string, Set<PropertyReportItem["index"]>>;
+	byPropertyPath: Map<string, Set<PropertyReportItem["index"]>>;
+	fromKind: Map<ComponentKind, Set<PropertyReportItem["index"]>>;
+	byType: Map<string, Set<PropertyReportItem["index"]>>;
+	byComponentName: Map<string, Set<PropertyReportItem["index"]>>;
+	colorsUsed: Map<string, Set<PropertyReportItem["index"]>>;
 }
 export interface ReportCounts {
 	filesWithTokens: number;
@@ -11122,9 +11509,9 @@ export interface ReportCounts {
 	shorthandUsed: number;
 	propertyPathUsed: number;
 	typeUsed: number;
-	instanceNameUsed: number;
+	componentNameUsed: number;
 	kindUsed: number;
-	instanceOfKindUsed: number;
+	componentOfKindUsed: number;
 	colorsUsed: number;
 }
 export interface MostUsedItem {
@@ -11132,8 +11519,7 @@ export interface MostUsedItem {
 	count: number;
 }
 export interface ReportStats {
-	filesWithMostInstance: Record<string, number>;
-	filesWithMostPropValueCombinations: Record<string, number>;
+	filesWithMostComponent: Record<string, number>;
 	mostUseds: {
 		propNames: Array<MostUsedItem>;
 		tokens: Array<MostUsedItem>;
@@ -11142,22 +11528,24 @@ export interface ReportStats {
 		conditions: Array<MostUsedItem>;
 		propertyPaths: Array<MostUsedItem>;
 		types: Array<MostUsedItem>;
-		instanceNames: Array<MostUsedItem>;
+		componentNames: Array<MostUsedItem>;
 		fromKinds: Array<MostUsedItem>;
-		instanceOfKinds: Array<MostUsedItem>;
+		componentOfKinds: Array<MostUsedItem>;
 		colors: Array<MostUsedItem>;
 	};
 }
 export interface ReportDetails {
 	counts: ReportCounts;
 	stats: ReportStats;
-	details: {
-		byId: Map<ReportItem["id"], ReportItem>;
-		byInstanceId: Map<ReportInstanceItem["instanceId"], ReportInstanceItem>;
-		byFilepath: Map<string, Set<ReportItem["id"]>>;
-		byInstanceInFilepath: Map<string, Set<ReportInstanceItem["instanceId"]>>;
-		globalMaps: ReportMaps;
-		byFilePathMaps: Map<string, ReportMaps>;
+	fileSizes: FileSizes;
+	duration: {
+		classify: number;
+		cssMs: number;
+		cssMinifyMs: number;
+		extractTotal: number;
+		extractTimeByFiles: Record<string, number>;
+		lightningCssMs?: number;
+		lightningCssMinifiedMs?: number;
 	};
 }
 export interface FileSizes {
@@ -11167,91 +11555,45 @@ export interface FileSizes {
 		normal: string;
 		minified: string;
 	};
-}
-export interface AnalysisReport extends ReportDetails {
-	fileSizes: FileSizes;
-}
-export interface ReportMapsJSON {
-	byInstanceOfKind: Record<"function" | "component", Array<ReportInstanceItem["instanceId"]>>;
-	byPropertyName: Record<string, Array<ReportItem["id"]>>;
-	byCategory: Record<string, Array<ReportItem["id"]>>;
-	byConditionName: Record<string, Array<ReportItem["id"]>>;
-	byShorthand: Record<string, Array<ReportItem["id"]>>;
-	byTokenName: Record<string, Array<ReportItem["id"]>>;
-	byPropertyPath: Record<string, Array<ReportItem["id"]>>;
-	fromKind: Record<"function" | "component", Array<ReportItem["id"]>>;
-	byType: Record<string, Array<ReportItem["id"]>>;
-	byInstanceName: Record<string, Array<ReportItem["id"]>>;
-	colorsUsed: Record<string, Array<ReportItem["id"]>>;
-}
-export interface ReportItemJSON {
-	id: number;
-	from: string;
-	type: ReportItemType;
-	filepath: string;
-	kind: "function" | "component";
-	path: string[];
-	propName: string;
-	conditionName?: string | undefined;
-	value: string | number | true;
-	category: string;
-	isKnown: boolean;
-	box: {
-		type: "literal" | "empty-initializer";
-		value: string | number | boolean | undefined | null;
-		node: string;
-		stack: string[];
-		line: number;
-		column: number;
+	lightningCss?: {
+		normal: string;
+		minified: string;
 	};
 }
-export interface ReportInstanceItemJSON extends Pick<ReportItem, "from" | "type" | "kind" | "filepath"> {
-	instanceId: number;
-	contains: Array<ReportItem["id"]>;
-	value: Record<string, any>;
-	box: {
-		type: "map";
-		value: Record<string, any>;
-		node: string;
-		stack: string[];
-		line: number;
-		column: number;
+export interface ReportSnapshot {
+	schemaVersion: string;
+	details: ReportDetails;
+	config: Omit<Config, "globalCss" | "globalFontface">;
+	propByIndex: Map<PropertyReportItem["index"], PropertyReportItem>;
+	componentByIndex: Map<ComponentReportItem["componentIndex"], ComponentReportItem>;
+	derived: {
+		byFilepath: Map<string, Set<PropertyReportItem["index"]>>;
+		byComponentInFilepath: Map<string, Set<ComponentReportItem["componentIndex"]>>;
+		globalMaps: ReportDerivedMaps;
+		byFilePathMaps: Map<string, ReportDerivedMaps>;
 	};
 }
-export interface AnalysisReportJSON {
-	counts: ReportCounts;
-	stats: ReportStats;
-	details: {
-		byId: Record<ReportItemJSON["id"], ReportItemJSON>;
-		byInstanceId: Record<ReportInstanceItemJSON["instanceId"], ReportInstanceItemJSON>;
-		byFilepath: Record<string, Array<ReportItemJSON["id"]>>;
-		byInstanceInFilepath: Record<string, Array<ReportInstanceItemJSON["instanceId"]>>;
-		globalMaps: ReportMapsJSON;
-		byFilePathMaps: Record<string, ReportMapsJSON>;
-	};
-	fileSizes: FileSizes;
-	cwd: Config["cwd"];
-	theme: Config["theme"];
-	utilities: Config["utilities"];
-	conditions: Config["conditions"];
-	shorthands: Record<string, string>;
-	// Generator["parserOptions""]
-	parserOptions: {
-		importMap: {
-			css: string;
-			recipe: string;
-			pattern: string;
-			jsx: string;
-		};
-		jsx: {
-			factory: string;
-			nodes: Array<{
-				type: "string";
-				name: string;
-				props: string[];
-				baseName: string;
-			}>;
-		};
+export interface ReportDerivedMapsJSON {
+	byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem["componentIndex"]>>;
+	byPropertyName: Record<string, Array<PropertyReportItem["index"]>>;
+	byTokenType: Record<string, Array<PropertyReportItem["index"]>>;
+	byConditionName: Record<string, Array<PropertyReportItem["index"]>>;
+	byShorthand: Record<string, Array<PropertyReportItem["index"]>>;
+	byTokenName: Record<string, Array<PropertyReportItem["index"]>>;
+	byPropertyPath: Record<string, Array<PropertyReportItem["index"]>>;
+	fromKind: Record<ComponentKind, Array<PropertyReportItem["index"]>>;
+	byType: Record<string, Array<PropertyReportItem["index"]>>;
+	byComponentName: Record<string, Array<PropertyReportItem["index"]>>;
+	colorsUsed: Record<string, Array<PropertyReportItem["index"]>>;
+}
+export interface ReportSnapshotJSON extends Omit<ReportSnapshot, "propByIndex" | "componentByIndex" | "derived"> {
+	propByIndex: Record<PropertyReportItem["index"], PropertyReportItem>;
+	componentByIndex: Record<ComponentReportItem["componentIndex"], ComponentReportItem>;
+	derived: {
+		byFilepath: Record<string, Array<PropertyReportItem["index"]>>;
+		byComponentInFilepath: Record<string, Array<ComponentReportItem["componentIndex"]>>;
+		globalMaps: ReportDerivedMapsJSON;
+		byFilePathMaps: Record<string, ReportDerivedMapsJSON>;
 	};
 }
 export interface Part {
@@ -11309,9 +11651,9 @@ export {
 	LiteralUnion$1 as LiteralUnion,
 	Number$1 as Number,
 	Primitive$1 as Primitive,
+	Range$1 as Range,
 	Recursive$1 as Recursive,
 	String$1 as String,
-	StyleProps$1 as StyleProps,
 	TSConfig,
 	Token$1 as Token,
 };

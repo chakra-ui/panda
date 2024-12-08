@@ -3449,6 +3449,7 @@ describe('extract to css output pipeline', () => {
     const result = parseAndExtract(code, {
       presets: [
         {
+          name: 'preset',
           theme: {
             extend: {
               tokens: {
@@ -3884,6 +3885,99 @@ describe('extract to css output pipeline', () => {
         .li-t_decimal {
           list-style-type: decimal;
       }
+      }"
+    `)
+  })
+
+  test('recipes default className based on key', () => {
+    const code = `
+    import { testRecipe } from "styled-system/recipes";
+
+   export const App = () => {
+     return <div className={testRecipe()} />
+   }
+
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        extend: {
+          recipes: {
+            testRecipe: {
+              base: {
+                display: 'flex',
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "testRecipe",
+          "type": "recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .testRecipe {
+            display: flex;
+      }
+          }
+      }"
+    `)
+  })
+
+  test('slotRecipes default className based on key', () => {
+    const code = `
+    import { testSlotRecipe } from "styled-system/recipes";
+
+   export const App = () => {
+     return <div className={testSlotRecipe()} />
+   }
+
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        extend: {
+          slotRecipes: {
+            testSlotRecipe: {
+              slots: ['root'],
+              base: {
+                root: {
+                  display: 'flex',
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "testSlotRecipe",
+          "type": "recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        @layer _base {
+          .testSlotRecipe__root {
+            display: flex;
+      }
+          }
       }"
     `)
   })

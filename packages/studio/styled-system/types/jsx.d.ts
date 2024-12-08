@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
+import type { ComponentPropsWithoutRef, ElementType, ElementRef, JSX, Ref } from 'react'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';
 import type { Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty } from './system-types';
 

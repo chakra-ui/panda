@@ -2158,4 +2158,196 @@ describe('static-css', () => {
       }
     `)
   })
+
+  test('container query', () => {
+    const ctx = new Context({
+      ...conf,
+      config: {
+        ...conf.config,
+        theme: {
+          ...conf.config?.theme,
+          containerNames: ['pb'],
+        },
+      },
+    })
+
+    const getStaticCss = (options: StaticCssOptions) => {
+      const engine = ctx.staticCss.clone().process(options)
+      return { results: engine.results, css: engine.sheet.toCss() }
+    }
+
+    const result = getStaticCss({
+      css: [
+        {
+          properties: {
+            fontSize: ['7xl', '8xl'],
+            fontWeight: ['*'],
+          },
+          conditions: ['@pb/sm', '@pb/md'],
+        },
+      ],
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .fs_7xl {
+          font-size: var(--font-sizes-7xl);
+      }
+
+        .fs_8xl {
+          font-size: var(--font-sizes-8xl);
+      }
+
+        .fw_thin {
+          font-weight: var(--font-weights-thin);
+      }
+
+        .fw_extralight {
+          font-weight: var(--font-weights-extralight);
+      }
+
+        .fw_light {
+          font-weight: var(--font-weights-light);
+      }
+
+        .fw_normal {
+          font-weight: var(--font-weights-normal);
+      }
+
+        .fw_medium {
+          font-weight: var(--font-weights-medium);
+      }
+
+        .fw_semibold {
+          font-weight: var(--font-weights-semibold);
+      }
+
+        .fw_bold {
+          font-weight: var(--font-weights-bold);
+      }
+
+        .fw_extrabold {
+          font-weight: var(--font-weights-extrabold);
+      }
+
+        .fw_black {
+          font-weight: var(--font-weights-black);
+      }
+
+        @container pb (min-width: 24rem) {
+          .\\@pb\\/sm\\:fs_7xl {
+            font-size: var(--font-sizes-7xl);
+      }
+          .\\@pb\\/sm\\:fs_8xl {
+            font-size: var(--font-sizes-8xl);
+      }
+          .\\@pb\\/sm\\:fw_thin {
+            font-weight: var(--font-weights-thin);
+      }
+          .\\@pb\\/sm\\:fw_extralight {
+            font-weight: var(--font-weights-extralight);
+      }
+          .\\@pb\\/sm\\:fw_light {
+            font-weight: var(--font-weights-light);
+      }
+          .\\@pb\\/sm\\:fw_normal {
+            font-weight: var(--font-weights-normal);
+      }
+          .\\@pb\\/sm\\:fw_medium {
+            font-weight: var(--font-weights-medium);
+      }
+          .\\@pb\\/sm\\:fw_semibold {
+            font-weight: var(--font-weights-semibold);
+      }
+          .\\@pb\\/sm\\:fw_bold {
+            font-weight: var(--font-weights-bold);
+      }
+          .\\@pb\\/sm\\:fw_extrabold {
+            font-weight: var(--font-weights-extrabold);
+      }
+          .\\@pb\\/sm\\:fw_black {
+            font-weight: var(--font-weights-black);
+      }
+      }
+
+        @container pb (min-width: 28rem) {
+          .\\@pb\\/md\\:fs_7xl {
+            font-size: var(--font-sizes-7xl);
+      }
+          .\\@pb\\/md\\:fs_8xl {
+            font-size: var(--font-sizes-8xl);
+      }
+          .\\@pb\\/md\\:fw_thin {
+            font-weight: var(--font-weights-thin);
+      }
+          .\\@pb\\/md\\:fw_extralight {
+            font-weight: var(--font-weights-extralight);
+      }
+          .\\@pb\\/md\\:fw_light {
+            font-weight: var(--font-weights-light);
+      }
+          .\\@pb\\/md\\:fw_normal {
+            font-weight: var(--font-weights-normal);
+      }
+          .\\@pb\\/md\\:fw_medium {
+            font-weight: var(--font-weights-medium);
+      }
+          .\\@pb\\/md\\:fw_semibold {
+            font-weight: var(--font-weights-semibold);
+      }
+          .\\@pb\\/md\\:fw_bold {
+            font-weight: var(--font-weights-bold);
+      }
+          .\\@pb\\/md\\:fw_extrabold {
+            font-weight: var(--font-weights-extrabold);
+      }
+          .\\@pb\\/md\\:fw_black {
+            font-weight: var(--font-weights-black);
+      }
+      }
+      }"
+    `)
+  })
+
+  test('arbitrary condition or selector', () => {
+    const result = getStaticCss({
+      css: [
+        {
+          properties: {
+            fontSize: ['7xl', '8xl'],
+          },
+          conditions: ['@media (min-width: 24rem)', '.mobile &'],
+        },
+      ],
+    })
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .fs_7xl {
+          font-size: var(--font-sizes-7xl);
+      }
+
+        .fs_8xl {
+          font-size: var(--font-sizes-8xl);
+      }
+
+        .mobile .\\[\\.mobile_\\&\\]\\:fs_7xl {
+          font-size: var(--font-sizes-7xl);
+      }
+
+        .mobile .\\[\\.mobile_\\&\\]\\:fs_8xl {
+          font-size: var(--font-sizes-8xl);
+      }
+
+        @media (min-width: 24rem) {
+          .\\[\\@media_\\(min-width\\:_24rem\\)\\]\\:fs_7xl {
+            font-size: var(--font-sizes-7xl);
+      }
+          .\\[\\@media_\\(min-width\\:_24rem\\)\\]\\:fs_8xl {
+            font-size: var(--font-sizes-8xl);
+      }
+      }
+      }"
+    `)
+  })
 })

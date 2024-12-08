@@ -1,5 +1,144 @@
 # @pandacss/token-dictionary
 
+## 0.48.1
+
+### Patch Changes
+
+- @pandacss/logger@0.48.1
+- @pandacss/shared@0.48.1
+- @pandacss/types@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @pandacss/logger@0.48.0
+- @pandacss/shared@0.48.0
+- @pandacss/types@0.48.0
+
+## 0.47.1
+
+### Patch Changes
+
+- 144113f: Fix issue where token reference in composite border token generates incorrect css.
+  - @pandacss/logger@0.47.1
+  - @pandacss/shared@0.47.1
+  - @pandacss/types@0.47.1
+
+## 0.47.0
+
+### Minor Changes
+
+- 5e683ee: Add support for cursor token types. Useful for tokenizing cursor types for interactive components.
+
+  Here's an example of how to define a cursor token in your `panda.config.ts` file:
+
+  ```ts
+  // panda.config.ts
+  export default defineConfig({
+    theme: {
+      extend: {
+        tokens: {
+          cursor: {
+            button: { value: 'pointer' },
+            checkbox: { value: 'default' },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  Then you can use the cursor token in your styles or recipes.
+
+  ```tsx
+  <button className={css({ cursor: 'button' })}>Click me</button>
+  ```
+
+  This makes it easy to manage cursor styles across your application.
+
+### Patch Changes
+
+- Updated dependencies [5e683ee]
+  - @pandacss/types@0.47.0
+  - @pandacss/logger@0.47.0
+  - @pandacss/shared@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @pandacss/logger@0.46.1
+- @pandacss/shared@0.46.1
+- @pandacss/types@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- Updated dependencies [54426a2]
+  - @pandacss/shared@0.46.0
+  - @pandacss/types@0.46.0
+  - @pandacss/logger@0.46.0
+
+## 0.45.2
+
+### Patch Changes
+
+- @pandacss/logger@0.45.2
+- @pandacss/shared@0.45.2
+- @pandacss/types@0.45.2
+
+## 0.45.1
+
+### Patch Changes
+
+- 3439ecf: Fix issue where shadow token with color opacity modifier produces incorrect css value
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- a21fcfe: Fix issue where composite border token with `width: 1px` renders `1pxpx` in CSS
+- Updated dependencies [dcc9053]
+- Updated dependencies [552dd4b]
+  - @pandacss/types@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/logger@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [c99cb75]
+  - @pandacss/types@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/types@0.43.0
+  - @pandacss/logger@0.43.0
+  - @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [17a1932]
+  - @pandacss/types@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

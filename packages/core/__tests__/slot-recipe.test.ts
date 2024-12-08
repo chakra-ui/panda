@@ -41,6 +41,7 @@ describe('slot recipe ruleset', () => {
     expect(createGeneratorContext().recipes.details.find((r) => r.baseName === 'checkbox')).toMatchInlineSnapshot(`
       {
         "baseName": "checkbox",
+        "className": "checkbox",
         "config": {
           "base": {
             "control": {

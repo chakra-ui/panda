@@ -1,5 +1,182 @@
 # @pandacss/dev
 
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [fd87f3a]
+  - @pandacss/node@0.48.1
+  - @pandacss/postcss@0.48.1
+  - @pandacss/config@0.48.1
+  - @pandacss/logger@0.48.1
+  - @pandacss/preset-panda@0.48.1
+  - @pandacss/shared@0.48.1
+  - @pandacss/token-dictionary@0.48.1
+  - @pandacss/types@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @pandacss/config@0.48.0
+- @pandacss/node@0.48.0
+- @pandacss/postcss@0.48.0
+- @pandacss/logger@0.48.0
+- @pandacss/preset-panda@0.48.0
+- @pandacss/shared@0.48.0
+- @pandacss/token-dictionary@0.48.0
+- @pandacss/types@0.48.0
+
+## 0.47.1
+
+### Patch Changes
+
+- Updated dependencies [50fc8ef]
+- Updated dependencies [144113f]
+  - @pandacss/postcss@0.47.1
+  - @pandacss/token-dictionary@0.47.1
+  - @pandacss/node@0.47.1
+  - @pandacss/config@0.47.1
+  - @pandacss/logger@0.47.1
+  - @pandacss/preset-panda@0.47.1
+  - @pandacss/shared@0.47.1
+  - @pandacss/types@0.47.1
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [5e683ee]
+  - @pandacss/token-dictionary@0.47.0
+  - @pandacss/types@0.47.0
+  - @pandacss/node@0.47.0
+  - @pandacss/config@0.47.0
+  - @pandacss/logger@0.47.0
+  - @pandacss/preset-panda@0.47.0
+  - @pandacss/postcss@0.47.0
+  - @pandacss/shared@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @pandacss/node@0.46.1
+- @pandacss/postcss@0.46.1
+- @pandacss/config@0.46.1
+- @pandacss/logger@0.46.1
+- @pandacss/preset-panda@0.46.1
+- @pandacss/shared@0.46.1
+- @pandacss/token-dictionary@0.46.1
+- @pandacss/types@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- Updated dependencies [54426a2]
+  - @pandacss/shared@0.46.0
+  - @pandacss/config@0.46.0
+  - @pandacss/node@0.46.0
+  - @pandacss/token-dictionary@0.46.0
+  - @pandacss/postcss@0.46.0
+  - @pandacss/types@0.46.0
+  - @pandacss/logger@0.46.0
+  - @pandacss/preset-panda@0.46.0
+
+## 0.45.2
+
+### Patch Changes
+
+- @pandacss/node@0.45.2
+- @pandacss/postcss@0.45.2
+- @pandacss/config@0.45.2
+- @pandacss/logger@0.45.2
+- @pandacss/preset-panda@0.45.2
+- @pandacss/shared@0.45.2
+- @pandacss/token-dictionary@0.45.2
+- @pandacss/types@0.45.2
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [26924c7]
+- Updated dependencies [3439ecf]
+  - @pandacss/node@0.45.1
+  - @pandacss/token-dictionary@0.45.1
+  - @pandacss/postcss@0.45.1
+  - @pandacss/config@0.45.1
+  - @pandacss/logger@0.45.1
+  - @pandacss/preset-panda@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- Updated dependencies [dcc9053]
+- Updated dependencies [a21fcfe]
+- Updated dependencies [552dd4b]
+  - @pandacss/types@0.45.0
+  - @pandacss/token-dictionary@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/node@0.45.0
+  - @pandacss/config@0.45.0
+  - @pandacss/logger@0.45.0
+  - @pandacss/preset-panda@0.45.0
+  - @pandacss/postcss@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [d7f5cab]
+- Updated dependencies [c99cb75]
+  - @pandacss/config@0.44.0
+  - @pandacss/types@0.44.0
+  - @pandacss/node@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/preset-panda@0.44.0
+  - @pandacss/token-dictionary@0.44.0
+  - @pandacss/postcss@0.44.0
+  - @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/types@0.43.0
+  - @pandacss/node@0.43.0
+  - @pandacss/config@0.43.0
+  - @pandacss/logger@0.43.0
+  - @pandacss/preset-panda@0.43.0
+  - @pandacss/token-dictionary@0.43.0
+  - @pandacss/postcss@0.43.0
+  - @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- 19c3a2c: Minor changes to the format of the `panda analyze --output coverage.json` file
+- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+  generated CSS where possible.
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [ec64819]
+- Updated dependencies [17a1932]
+  - @pandacss/preset-panda@0.42.0
+  - @pandacss/types@0.42.0
+  - @pandacss/node@0.42.0
+  - @pandacss/config@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/token-dictionary@0.42.0
+  - @pandacss/postcss@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Patch Changes

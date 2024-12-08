@@ -1,5 +1,325 @@
 # @pandacss/generator
 
+## 0.48.1
+
+### Patch Changes
+
+- af9715a: Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are
+  `auto`, `stable`, and `both-edges`.
+  - @pandacss/core@0.48.1
+  - @pandacss/is-valid-prop@0.48.1
+  - @pandacss/logger@0.48.1
+  - @pandacss/shared@0.48.1
+  - @pandacss/token-dictionary@0.48.1
+  - @pandacss/types@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- 2bc12d2: Fix multi-theme issue where calling the `getTheme` function throws a Vite error due to invalid dynamic import
+  format.
+
+  ```js
+  import { getTheme } from 'styled-system/themes'
+
+  getTheme('default')
+  // -> The above dynamic import cannot be analyzed by Vite.
+  ```
+
+  - @pandacss/core@0.48.0
+  - @pandacss/is-valid-prop@0.48.0
+  - @pandacss/logger@0.48.0
+  - @pandacss/shared@0.48.0
+  - @pandacss/token-dictionary@0.48.0
+  - @pandacss/types@0.48.0
+
+## 0.47.1
+
+### Patch Changes
+
+- Updated dependencies [144113f]
+  - @pandacss/token-dictionary@0.47.1
+  - @pandacss/core@0.47.1
+  - @pandacss/is-valid-prop@0.47.1
+  - @pandacss/logger@0.47.1
+  - @pandacss/shared@0.47.1
+  - @pandacss/types@0.47.1
+
+## 0.47.0
+
+### Minor Changes
+
+- 5e683ee: Add support for cursor token types. Useful for tokenizing cursor types for interactive components.
+
+  Here's an example of how to define a cursor token in your `panda.config.ts` file:
+
+  ```ts
+  // panda.config.ts
+  export default defineConfig({
+    theme: {
+      extend: {
+        tokens: {
+          cursor: {
+            button: { value: 'pointer' },
+            checkbox: { value: 'default' },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  Then you can use the cursor token in your styles or recipes.
+
+  ```tsx
+  <button className={css({ cursor: 'button' })}>Click me</button>
+  ```
+
+  This makes it easy to manage cursor styles across your application.
+
+### Patch Changes
+
+- ff8602f: Improve preflight css such that elements with `hidden=until-found` are visible. Previously, we always hide
+  all elements with the `hidden` attribute
+- Updated dependencies [5e683ee]
+  - @pandacss/token-dictionary@0.47.0
+  - @pandacss/types@0.47.0
+  - @pandacss/core@0.47.0
+  - @pandacss/logger@0.47.0
+  - @pandacss/is-valid-prop@0.47.0
+  - @pandacss/shared@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- Updated dependencies [9fbd2d8]
+  - @pandacss/core@0.46.1
+  - @pandacss/is-valid-prop@0.46.1
+  - @pandacss/logger@0.46.1
+  - @pandacss/shared@0.46.1
+  - @pandacss/token-dictionary@0.46.1
+  - @pandacss/types@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- b7ed157: fix: use sizing tokens for flexBasis instead of spacing tokens
+- Updated dependencies [54426a2]
+- Updated dependencies [54426a2]
+  - @pandacss/core@0.46.0
+  - @pandacss/shared@0.46.0
+  - @pandacss/token-dictionary@0.46.0
+  - @pandacss/types@0.46.0
+  - @pandacss/is-valid-prop@0.46.0
+  - @pandacss/logger@0.46.0
+
+## 0.45.2
+
+### Patch Changes
+
+- 8c276ff: make `WithEscapeHatch<T>` much more performant
+
+  This pull request is a follow-up pull request to #2466.
+
+  Make `WithEscapeHatch<T>` much more performant and typescript happy by updating the type signature of
+  `WithImportant<T>` and `WithColorOpacityModifier<T>` to use _branded type_ and _non-distributive conditional types_,
+  while keeping such tokens valid and also not appearing in autocompletions to prevent them from polluting
+  autocompletion result (which is the current behavior).
+
+  - @pandacss/core@0.45.2
+  - @pandacss/is-valid-prop@0.45.2
+  - @pandacss/logger@0.45.2
+  - @pandacss/shared@0.45.2
+  - @pandacss/token-dictionary@0.45.2
+  - @pandacss/types@0.45.2
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [3439ecf]
+  - @pandacss/token-dictionary@0.45.1
+  - @pandacss/core@0.45.1
+  - @pandacss/is-valid-prop@0.45.1
+  - @pandacss/logger@0.45.1
+  - @pandacss/shared@0.45.1
+  - @pandacss/types@0.45.1
+
+## 0.45.0
+
+### Minor Changes
+
+- dcc9053: Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or
+  conditional styles.
+
+  **Before**
+
+  ```jsx
+  hstack({
+    // ❌ doesn't work
+    base: {
+      background: 'red.400',
+      p: '11',
+    },
+    display: 'flex',
+    flexDirection: 'column',
+  })
+  ```
+
+  **After**
+
+  ```jsx
+  hstack({
+    // ✅ works
+    background: 'red.400',
+    p: '11',
+    display: 'flex',
+    flexDirection: 'column',
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [dcc9053]
+- Updated dependencies [a21fcfe]
+- Updated dependencies [1e4da63]
+- Updated dependencies [552dd4b]
+  - @pandacss/types@0.45.0
+  - @pandacss/token-dictionary@0.45.0
+  - @pandacss/core@0.45.0
+  - @pandacss/shared@0.45.0
+  - @pandacss/logger@0.45.0
+  - @pandacss/is-valid-prop@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- a8c0cde: Replace `JSX` with `React.JSX` for better React 19 support
+- Updated dependencies [c99cb75]
+  - @pandacss/types@0.44.0
+  - @pandacss/core@0.44.0
+  - @pandacss/logger@0.44.0
+  - @pandacss/token-dictionary@0.44.0
+  - @pandacss/is-valid-prop@0.44.0
+  - @pandacss/shared@0.44.0
+
+## 0.43.0
+
+### Minor Changes
+
+- e952f82: Add support for defining global font face in config and preset
+
+  ```ts
+  // pandacss.config.js
+  export default defineConfig({
+    globalFontface: {
+      Roboto: {
+        src: 'url(/fonts/roboto.woff2) format("woff2")',
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+    },
+  })
+  ```
+
+  You can also add multiple font `src` for the same weight
+
+  ```ts
+  // pandacss.config.js
+
+  export default defineConfig({
+    globalFontface: {
+      Roboto: {
+        // multiple src
+        src: ['url(/fonts/roboto.woff2) format("woff2")', 'url(/fonts/roboto.woff) format("woff")'],
+        fontWeight: '400',
+        fontStyle: 'normal',
+      },
+    },
+  })
+  ```
+
+  You can also define multiple font weights
+
+  ```ts
+  // pandacss.config.js
+
+  export default defineConfig({
+    globalFontface: {
+      // multiple font weights
+      Roboto: [
+        {
+          src: 'url(/fonts/roboto.woff2) format("woff2")',
+          fontWeight: '400',
+          fontStyle: 'normal',
+        },
+        {
+          src: 'url(/fonts/roboto-bold.woff2) format("woff2")',
+          fontWeight: '700',
+          fontStyle: 'normal',
+        },
+      ],
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [e952f82]
+  - @pandacss/types@0.43.0
+  - @pandacss/core@0.43.0
+  - @pandacss/logger@0.43.0
+  - @pandacss/token-dictionary@0.43.0
+  - @pandacss/is-valid-prop@0.43.0
+  - @pandacss/shared@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- e157dd1: - Ensure classnames are unique across utilities to prevent potential clash
+  - Add support for `4xl` border radius token
+- f00ff88: BREAKING: Remove `emitPackage` config option,
+
+  tldr: use `importMap` instead for absolute paths (e.g can be used for component libraries)
+
+  `emitPackage` is deprecated, it's known for causing several issues:
+
+  - bundlers sometimes eagerly cache the `node_modules`, leading to `panda codegen` updates to the `styled-system` not
+    visible in the browser
+  - auto-imports are not suggested in your IDE.
+  - in some IDE the typings are not always reflected properly
+
+  As alternatives, you can use:
+
+  - relative paths instead of absolute paths (e.g. `../styled-system/css` instead of `styled-system/css`)
+  - use package.json #imports and/or tsconfig path aliases (prefer package.json#imports when possible, TS 5.4 supports
+    them by default) like `#styled-system/css` instead of `styled-system/css`
+    https://nodejs.org/api/packages.html#subpath-imports
+  - for a component library, use a dedicated workspace package (e.g. `@acme/styled-system`) and use
+    `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to extract, e.g.
+    `import { css } from '@acme/styled-system/css'` https://panda-css.com/docs/guides/component-library
+
+### Patch Changes
+
+- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+  generated CSS where possible.
+- Updated dependencies [e157dd1]
+- Updated dependencies [19c3a2c]
+- Updated dependencies [f00ff88]
+- Updated dependencies [ec64819]
+- Updated dependencies [17a1932]
+  - @pandacss/types@0.42.0
+  - @pandacss/core@0.42.0
+  - @pandacss/logger@0.42.0
+  - @pandacss/token-dictionary@0.42.0
+  - @pandacss/is-valid-prop@0.42.0
+  - @pandacss/shared@0.42.0
+
 ## 0.41.0
 
 ### Minor Changes

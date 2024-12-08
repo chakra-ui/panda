@@ -3,7 +3,7 @@ title: Effects
 description: Panda provides utilities or style properties for applying various visual effects to elements.
 ---
 
-# Background
+# Effects
 
 Panda offers a range of utilities or style properties for applying visual effects to elements. These effects include opacity, shadows, blending modes, filters, and more.
 

@@ -56,9 +56,9 @@ Use the `minWidth` or `minW` property to set the minimum width of an element.
 
 | Prop               | CSS Property | Token Category |
 | ------------------ | ------------ | -------------- |
-| `w`, `width`       | `width`      | `sizing`       |
-| `maxW`, `maxWidth` | `max-width`  | `sizing`       |
-| `minW`, `minWidth` | `min-width`  | `sizing`       |
+| `w`, `width`       | `width`      | `sizes`        |
+| `maxW`, `maxWidth` | `max-width`  | `sizes`        |
+| `minW`, `minWidth` | `min-width`  | `sizes`        |
 
 ## Height
 
@@ -114,6 +114,6 @@ Use the `minHeight` or `minH` property to set the minimum height of an element.
 
 | Prop                | CSS Property | Token Category |
 | ------------------- | ------------ | -------------- |
-| `h`, `height`       | `height`     | `sizing`       |
-| `maxH`, `maxHeight` | `max-height` | `sizing`       |
-| `minH`, `minHeight` | `min-height` | `sizing`       |
+| `h`, `height`       | `height`     | `sizes`        |
+| `maxH`, `maxHeight` | `max-height` | `sizes`        |
+| `minH`, `minHeight` | `min-height` | `sizes`        |
