@@ -907,8 +907,8 @@ importers:
         specifier: 4.6.0
         version: 4.6.0(eslint@8.56.0)
       eslint-plugin-react-refresh:
-        specifier: 0.4.14
-        version: 0.4.14(eslint@8.56.0)
+        specifier: 0.4.16
+        version: 0.4.16(eslint@8.56.0)
       happy-dom:
         specifier: 15.10.2
         version: 15.10.2
@@ -9829,10 +9829,10 @@ packages:
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
 
-  eslint-plugin-react-refresh@0.4.14:
-    resolution: {integrity: sha512-aXvzCTK7ZBv1e7fahFuR3Z/fyQQSIQ711yPgYRj+Oj64tyTgO4iQIDmYXDBqvSWQ/FA4OSCsXOStlF+noU0/NA==}
+  eslint-plugin-react-refresh@0.4.16:
+    resolution: {integrity: sha512-slterMlxAhov/DZO8NScf6mEeMBBXodFUolijDvrtTxyezyLoTQaa73FyYus/VbTdftd8wBgBxPMRk3poleXNQ==}
     peerDependencies:
-      eslint: '>=7'
+      eslint: '>=8.40'
 
   eslint-plugin-react@7.33.2:
     resolution: {integrity: sha512-73QQMKALArI8/7xGLNI/3LylrEYrlKZSb5C9+q3OtOewTnMQi5cT+aE9E41sLCmli3I9PGGmD1yiZydyo4FEPw==}
@@ -16767,14 +16767,6 @@ packages:
       vite:
         optional: true
 
-  vitefu@1.0.3:
-    resolution: {integrity: sha512-iKKfOMBHob2WxEJbqbJjHAkmYgvFDPhuqrO82om83S8RLk+17FtyMBfcyeH8GqD0ihShtkMW/zzJgiA51hCNCQ==}
-    peerDependencies:
-      vite: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0-beta.0
-    peerDependenciesMeta:
-      vite:
-        optional: true
-
   vitefu@1.0.4:
     resolution: {integrity: sha512-y6zEE3PQf6uu/Mt6DTJ9ih+kyJLr4XcSgHR2zUkM8SWDhuixEJxfJ6CZGMHh1Ec3vPLoEA0IHU5oWzVqw8ulow==}
     peerDependencies:
@@ -23164,7 +23156,7 @@ snapshots:
       magic-string: 0.30.14
       svelte: 4.2.19
       vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
-      vitefu: 1.0.3(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))
+      vitefu: 1.0.4(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -28648,7 +28640,7 @@ snapshots:
     dependencies:
       eslint: 8.56.0
 
-  eslint-plugin-react-refresh@0.4.14(eslint@8.56.0):
+  eslint-plugin-react-refresh@0.4.16(eslint@8.56.0):
     dependencies:
       eslint: 8.56.0
 
@@ -37618,10 +37610,6 @@ snapshots:
       terser: 5.36.0
 
   vitefu@0.2.5(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)):
-    optionalDependencies:
-      vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
-
-  vitefu@1.0.3(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)):
     optionalDependencies:
       vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
 
