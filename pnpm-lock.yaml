@@ -95,8 +95,8 @@ importers:
         version: 2.1.0
     devDependencies:
       astro:
-        specifier: 4.16.16
-        version: 4.16.16(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.17
+        version: 4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       vite:
         specifier: 5.4.11
         version: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
@@ -651,8 +651,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       astro:
-        specifier: 4.16.16
-        version: 4.16.16(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.17
+        version: 4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -842,8 +842,8 @@ importers:
         specifier: 4.4.4
         version: 4.4.4(@testing-library/jest-dom@6.5.0)(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(solid-js@1.8.15)(terser@5.36.0)
       astro:
-        specifier: 4.16.16
-        version: 4.16.16(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.17
+        version: 4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       solid-js:
         specifier: 1.8.15
         version: 1.8.15
@@ -7765,8 +7765,8 @@ packages:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
 
-  astro@4.16.16:
-    resolution: {integrity: sha512-H1CttrV6+JFrDBQx0Mcbq5i5AeLhCbztB786+9wEu3svWL/QPNeCGqF0dgNORAYmP+rODGCPu/y9qKSh87iLuA==}
+  astro@4.16.17:
+    resolution: {integrity: sha512-OuD+BP7U6OqQLKtZ/FJkU2S+TOlifxS/OKUbZOb5p6y+LLBa1J3zHRJrIl7DUSq6eXY+9wSWwbJpD9JS+lqhxA==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
 
@@ -16767,14 +16767,6 @@ packages:
       vite:
         optional: true
 
-  vitefu@1.0.3:
-    resolution: {integrity: sha512-iKKfOMBHob2WxEJbqbJjHAkmYgvFDPhuqrO82om83S8RLk+17FtyMBfcyeH8GqD0ihShtkMW/zzJgiA51hCNCQ==}
-    peerDependencies:
-      vite: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0-beta.0
-    peerDependenciesMeta:
-      vite:
-        optional: true
-
   vitefu@1.0.4:
     resolution: {integrity: sha512-y6zEE3PQf6uu/Mt6DTJ9ih+kyJLr4XcSgHR2zUkM8SWDhuixEJxfJ6CZGMHh1Ec3vPLoEA0IHU5oWzVqw8ulow==}
     peerDependencies:
@@ -23164,7 +23156,7 @@ snapshots:
       magic-string: 0.30.14
       svelte: 4.2.19
       vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
-      vitefu: 1.0.3(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))
+      vitefu: 1.0.4(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -25859,7 +25851,7 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro@4.16.16(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3):
+  astro@4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.1
@@ -37618,10 +37610,6 @@ snapshots:
       terser: 5.36.0
 
   vitefu@0.2.5(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)):
-    optionalDependencies:
-      vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
-
-  vitefu@1.0.3(vite@5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)):
     optionalDependencies:
       vite: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
 
