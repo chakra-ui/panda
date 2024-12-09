@@ -1,4 +1,5 @@
 import type { Config } from './config'
+import type { ParserResultInterface } from './parser'
 
 export type ReportItemType =
   | 'css'
@@ -13,7 +14,7 @@ export type ReportItemType =
 
 type ComponentKind = 'component' | 'function'
 
-type Range = {
+interface PropertyLocationRange {
   startPosition: number
   startLineNumber: number
   startColumn: number
@@ -37,7 +38,7 @@ export interface PropertyReportItem {
   tokenType?: string
   isKnownValue: boolean
 
-  range: Range
+  range: PropertyLocationRange
   filepath: string
 }
 
@@ -52,7 +53,7 @@ export interface ComponentReportItem extends Pick<PropertyReportItem, 'filepath'
   kind: ComponentKind
   contains: Array<PropertyReportItem['index']>
   value: Record<string, any>
-  range: Range
+  range: PropertyLocationRange
 }
 
 export interface ReportDerivedMaps {
@@ -67,6 +68,20 @@ export interface ReportDerivedMaps {
   byType: Map<string, Set<PropertyReportItem['index']>>
   byComponentName: Map<string, Set<PropertyReportItem['index']>>
   colorsUsed: Map<string, Set<PropertyReportItem['index']>>
+}
+
+interface ReportDerivedMapsJSON {
+  byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem['componentIndex']>>
+  byPropertyName: Record<string, Array<PropertyReportItem['index']>>
+  byTokenType: Record<string, Array<PropertyReportItem['index']>>
+  byConditionName: Record<string, Array<PropertyReportItem['index']>>
+  byShorthand: Record<string, Array<PropertyReportItem['index']>>
+  byTokenName: Record<string, Array<PropertyReportItem['index']>>
+  byPropertyPath: Record<string, Array<PropertyReportItem['index']>>
+  fromKind: Record<ComponentKind, Array<PropertyReportItem['index']>>
+  byType: Record<string, Array<PropertyReportItem['index']>>
+  byComponentName: Record<string, Array<PropertyReportItem['index']>>
+  colorsUsed: Record<string, Array<PropertyReportItem['index']>>
 }
 
 export interface ReportCounts {
@@ -86,6 +101,7 @@ export interface MostUsedItem {
   key: string
   count: number
 }
+
 export interface ReportStats {
   filesWithMostComponent: Record<string, number>
   mostUseds: {
@@ -118,20 +134,23 @@ export interface ReportDetails {
   }
 }
 
+interface FileSizeReport {
+  normal: string
+  minified: string
+}
+
 interface FileSizes {
   normal: string
   minified: string
-  gzip: {
-    normal: string
-    minified: string
-  }
-  lightningCss?: {
-    normal: string
-    minified: string
-  }
+  gzip: FileSizeReport
+  lightningCss?: FileSizeReport
 }
 
-export interface ReportSnapshot {
+export interface AnalysisOptions {
+  onResult?: (file: string, result: ParserResultInterface) => void
+}
+
+export interface AnalysisReport {
   schemaVersion: string
   details: ReportDetails
   config: Omit<Config, 'globalCss' | 'globalFontface'>
@@ -147,24 +166,9 @@ export interface ReportSnapshot {
   }
 }
 
-interface ReportDerivedMapsJSON {
-  byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem['componentIndex']>>
-  byPropertyName: Record<string, Array<PropertyReportItem['index']>>
-  byTokenType: Record<string, Array<PropertyReportItem['index']>>
-  byConditionName: Record<string, Array<PropertyReportItem['index']>>
-  byShorthand: Record<string, Array<PropertyReportItem['index']>>
-  byTokenName: Record<string, Array<PropertyReportItem['index']>>
-  byPropertyPath: Record<string, Array<PropertyReportItem['index']>>
-  fromKind: Record<ComponentKind, Array<PropertyReportItem['index']>>
-  byType: Record<string, Array<PropertyReportItem['index']>>
-  byComponentName: Record<string, Array<PropertyReportItem['index']>>
-  colorsUsed: Record<string, Array<PropertyReportItem['index']>>
-}
-
-export interface ReportSnapshotJSON extends Omit<ReportSnapshot, 'propByIndex' | 'componentByIndex' | 'derived'> {
+export interface ReportSnapshotJSON extends Omit<AnalysisReport, 'propByIndex' | 'componentByIndex' | 'derived'> {
   propByIndex: Record<PropertyReportItem['index'], PropertyReportItem>
   componentByIndex: Record<ComponentReportItem['componentIndex'], ComponentReportItem>
-
   derived: {
     byFilepath: Record<string, Array<PropertyReportItem['index']>>
     byComponentInFilepath: Record<string, Array<ComponentReportItem['componentIndex']>>
