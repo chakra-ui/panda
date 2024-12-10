@@ -2,6 +2,8 @@ import { findConfig } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
   PandaContext,
+  analyze,
+  analyzeRecipes,
   analyzeTokens,
   buildInfo,
   codegen,
@@ -378,11 +380,7 @@ export async function main() {
         configPath,
       })
 
-      const result = analyzeTokens(ctx, {
-        onResult(file) {
-          logger.info('cli', `Analyzed ${colors.bold(file)}`)
-        },
-      })
+      const result = analyze(ctx)
 
       if (flags?.outfile && typeof flags.outfile === 'string') {
         await writeAnalyzeJSON(flags.outfile, result, ctx)
@@ -390,7 +388,42 @@ export async function main() {
         return
       }
 
-      logger.info('cli', `Found ${result.propByIndex.size} token used in ${result.derived.byFilePathMaps.size} files`)
+      logger.info(
+        'analyze',
+        `Found ${result.propByIndex.size} token used in ${result.derived.byFilePathMaps.size} files`,
+      )
+
+      const tokenAnalysis = analyzeTokens(ctx, result)
+
+      console.table(
+        tokenAnalysis
+          .filter((v) => v.usedCount)
+          .map((entry) => ({
+            Type: `${entry.tokenCategory} (${entry.totalTokenInCategory} tokens)`,
+            'Used in X files': entry.usedInXFiles,
+            '% used': `${entry.percentUsed}% (${entry.usedCount} instances)`,
+            '% unused': `${100 - entry.percentUsed}%`,
+            Hardcoded: entry.hardcoded,
+            'Most Used': entry.mostUsedNames,
+          })),
+      )
+
+      const recipeAnalysis = analyzeRecipes(ctx, result)
+
+      console.table(
+        recipeAnalysis
+          .filter((v) => v.usedCount)
+          .map((entry) => ({
+            Recipe: `${entry.recipeName} (${entry.variantCount} variants)`,
+            'Used in X files': entry.usedInXFiles,
+            'Variants combinations': `${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
+            '% used': `${entry.percentUsed}%`,
+            '% jsx': `${entry.jsxPercentUsed}%`,
+            '% fn': `${entry.fnPercentUsed}%`,
+            Unused: entry.unusedCombinations,
+            'Most Used': entry.mostUsedCombinations,
+          })),
+      )
     })
 
   cli
