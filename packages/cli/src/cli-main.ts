@@ -3,8 +3,6 @@ import { colors, logger } from '@pandacss/logger'
 import {
   PandaContext,
   analyze,
-  analyzeRecipes,
-  analyzeTokens,
   buildInfo,
   codegen,
   cssgen,
@@ -16,7 +14,6 @@ import {
   setupGitIgnore,
   setupPostcss,
   startProfiling,
-  writeAnalyzeJSON,
   type CssGenOptions,
 } from '@pandacss/node'
 import { PandaError, compact } from '@pandacss/shared'
@@ -383,17 +380,12 @@ export async function main() {
       const result = analyze(ctx)
 
       if (flags?.outfile && typeof flags.outfile === 'string') {
-        await writeAnalyzeJSON(flags.outfile, result, ctx)
+        await result.writeReport(flags.outfile)
         logger.info('cli', `JSON report saved to ${resolve(flags.outfile)}`)
         return
       }
 
-      logger.info(
-        'analyze',
-        `Found ${result.propByIndex.size} token used in ${result.derived.byFilePathMaps.size} files`,
-      )
-
-      const tokenAnalysis = analyzeTokens(ctx, result)
+      const tokenAnalysis = result.getTokenReport()
 
       console.table(
         tokenAnalysis
@@ -402,13 +394,12 @@ export async function main() {
             Type: `${entry.tokenCategory} (${entry.totalTokenInCategory} tokens)`,
             'Used in X files': entry.usedInXFiles,
             '% used': `${entry.percentUsed}% (${entry.usedCount} instances)`,
-            '% unused': `${100 - entry.percentUsed}%`,
             Hardcoded: entry.hardcoded,
             'Most Used': entry.mostUsedNames,
           })),
       )
 
-      const recipeAnalysis = analyzeRecipes(ctx, result)
+      const recipeAnalysis = result.getRecipeReport()
 
       console.table(
         recipeAnalysis

@@ -1,67 +1,37 @@
+import type { ParserOptions } from '@pandacss/core'
+import { BoxNodeMap, box } from '@pandacss/extractor'
 import type {
-  ParserResultInterface,
+  ClassifyReport,
   ComponentReportItem,
+  CssSemanticGroup,
+  ParserResultInterface,
   PropertyReportItem,
   ReportDerivedMaps,
-  CssSemanticGroup,
+  ResultItem,
 } from '@pandacss/types'
-import { BoxNodeMap, box } from '@pandacss/extractor'
-import type { PandaContext } from './create-context'
-import type { ResultItem } from '@pandacss/types'
 
-const createReportMaps = () => {
-  const byComponentOfKind = new Map<'function' | 'component', Set<ComponentReportItem['componentIndex']>>()
-  const byPropertyName = new Map<string, Set<PropertyReportItem['index']>>()
-  const byTokenType = new Map<string, Set<PropertyReportItem['index']>>()
-  const byConditionName = new Map<string, Set<PropertyReportItem['index']>>()
-  const byShorthand = new Map<string, Set<PropertyReportItem['index']>>()
-  const byTokenName = new Map<string, Set<PropertyReportItem['index']>>()
-  const byPropertyPath = new Map<string, Set<PropertyReportItem['index']>>()
-  const fromKind = new Map<'function' | 'component', Set<PropertyReportItem['index']>>()
-  const byType = new Map<string, Set<PropertyReportItem['index']>>()
-  const byComponentName = new Map<string, Set<PropertyReportItem['index']>>()
-  const colorsUsed = new Map<string, Set<PropertyReportItem['index']>>()
+type ParserResultMap = Map<string, ParserResultInterface>
 
-  return {
-    byComponentOfKind,
-    byPropertyName,
-    byTokenType,
-    byConditionName,
-    byShorthand,
-    byTokenName,
-    byPropertyPath,
-    fromKind,
-    byType,
-    byComponentName,
-    colorsUsed,
-  }
-}
-
-export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<string, ParserResultInterface>) => {
+export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResultMap): ClassifyReport {
   const byId = new Map<PropertyReportItem['index'], PropertyReportItem>()
   const byComponentIndex = new Map<ComponentReportItem['componentIndex'], ComponentReportItem>()
-
   const byFilepath = new Map<string, Set<PropertyReportItem['index']>>()
   const byComponentInFilepath = new Map<string, Set<ComponentReportItem['componentIndex']>>()
-
   const globalMaps = createReportMaps()
   const byFilePathMaps = new Map<string, ReportDerivedMaps>()
-
   const conditions = new Map(Object.entries(ctx.conditions.values))
+
   const { groupByProp } = getPropertyGroupMap(ctx)
 
-  let id = 0,
-    componentIndex = 0
+  let id = 0
+  let componentIndex = 0
 
   const isKnownUtility = (reportItem: PropertyReportItem, componentReportItem: ComponentReportItem) => {
     const { propName, value } = reportItem
 
-    const utility = ctx.config.utilities?.[propName]
-    if (utility) {
-      if (!utility.shorthand) {
-        return Boolean(ctx.tokens.getByName(`${utility.values}.${value}`))
-      }
+    const utility = ctx.utility.config[propName]
 
+    if (utility) {
       return Boolean(ctx.tokens.getByName(`${utility.values}.${value}`))
     }
 
@@ -75,7 +45,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       }
 
       if (patternProp.type === 'property' && patternProp.value) {
-        return Boolean(ctx.config.utilities?.[patternProp.value])
+        return Boolean(ctx.utility.config[patternProp.value])
       }
 
       if (patternProp.type === 'enum' && patternProp.value) {
@@ -89,11 +59,10 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       return false
     }
 
-    // console.log(reportItem)
     return false
   }
 
-  parserResultByFilepath.forEach((parserResult, filepath) => {
+  resultMap.forEach((parserResult, filepath) => {
     if (parserResult.isEmpty()) return
 
     const localMaps = createReportMaps()
@@ -148,7 +117,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
             const propName = ctx.utility.shorthands.get(attrName) ?? attrName
             propReportItem.propName = propName
 
-            const utility = ctx.config.utilities?.[propName]
+            const utility = ctx.utility.config[propName]
             propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
 
             const tokenType = typeof utility?.values === 'string' ? utility?.values : undefined
@@ -377,16 +346,17 @@ const defaultGroupNames: CssSemanticGroup[] = [
   'Other',
 ]
 
-const getPropertyGroupMap = (context: PandaContext) => {
+function getPropertyGroupMap(ctx: ParserOptions) {
   const groups = new Map<CssSemanticGroup, Set<string>>(defaultGroupNames.map((name) => [name, new Set()]))
   const groupByProp = new Map<string, CssSemanticGroup>()
+
   const systemGroup = groups.get('System')!
   systemGroup.add('base')
   systemGroup.add('colorPalette')
 
   const otherStyleProps = groups.get('Other')!
 
-  Object.entries(context.utility.config).map(([key, value]) => {
+  Object.entries(ctx.utility.config).map(([key, value]) => {
     const group = value?.group
     if (!group) {
       otherStyleProps.add(key)
@@ -416,4 +386,23 @@ const getPropertyGroupMap = (context: PandaContext) => {
   })
 
   return { groups, groupByProp }
+}
+
+type PropertyIndexSet = Set<PropertyReportItem['index']>
+type ComponentIndexSet = Set<ComponentReportItem['componentIndex']>
+
+function createReportMaps() {
+  return {
+    byComponentOfKind: new Map<'function' | 'component', ComponentIndexSet>(),
+    byPropertyName: new Map<string, PropertyIndexSet>(),
+    byTokenType: new Map<string, PropertyIndexSet>(),
+    byConditionName: new Map<string, PropertyIndexSet>(),
+    byShorthand: new Map<string, PropertyIndexSet>(),
+    byTokenName: new Map<string, PropertyIndexSet>(),
+    byPropertyPath: new Map<string, PropertyIndexSet>(),
+    fromKind: new Map<'function' | 'component', PropertyIndexSet>(),
+    byType: new Map<string, PropertyIndexSet>(),
+    byComponentName: new Map<string, PropertyIndexSet>(),
+    colorsUsed: new Map<string, PropertyIndexSet>(),
+  }
 }

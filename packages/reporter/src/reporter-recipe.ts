@@ -1,7 +1,7 @@
+import type { ParserOptions } from '@pandacss/core'
 import type { AnalysisReport, ComponentReportItem } from '@pandacss/types'
-import type { PandaContext } from './create-context'
 
-interface RecipeTableEntry {
+export interface RecipeReportEntry {
   recipeName: string
   usedInXFiles: number
   usedCount: number
@@ -15,7 +15,7 @@ interface RecipeTableEntry {
   mostUsedCombinations: string[]
 }
 
-export function analyzeRecipes(ctx: PandaContext, result: AnalysisReport) {
+export function analyzeRecipes(ctx: ParserOptions, result: AnalysisReport): RecipeReportEntry[] {
   const recipesReportItems = Array.from(result.componentByIndex.values()).filter(
     (reportItem) => reportItem.reportItemType === 'recipe' || reportItem.reportItemType === 'jsx-recipe',
   )
@@ -43,7 +43,7 @@ export function analyzeRecipes(ctx: PandaContext, result: AnalysisReport) {
     ([recipeName, reportItems]) => [recipeName, Array.from(reportItems)] as const,
   )
 
-  return normalizedReportMap.map(([recipeName, reportItems]): RecipeTableEntry => {
+  return normalizedReportMap.map(([recipeName, reportItems]): RecipeReportEntry => {
     const usedCombinations = reportItems
       .map((component) =>
         component.contains

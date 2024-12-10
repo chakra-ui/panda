@@ -1,5 +1,5 @@
+import type { ParserOptions } from '@pandacss/core'
 import type { AnalysisReport, PropertyReportItem, TokenDataTypes } from '@pandacss/types'
-import type { PandaContext } from './create-context'
 
 interface TokenAnalysisItem {
   tokenCategory: string
@@ -36,7 +36,7 @@ function countHardcodedTokens(result: AnalysisReport, categoryIds: Set<CategoryI
   }, 0)
 }
 
-export function analyzeTokens(ctx: PandaContext, result: AnalysisReport) {
+export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): TokenReportEntry[] {
   const categoryMap = result.derived.globalMaps.byTokenType
   const categoryEntries = Array.from(categoryMap.entries())
 
@@ -64,4 +64,14 @@ export function analyzeTokens(ctx: PandaContext, result: AnalysisReport) {
       ),
     }
   })
+}
+
+export interface TokenReportEntry {
+  tokenCategory: string
+  usedInXFiles: number
+  usedCount: number
+  totalTokenInCategory: number
+  percentUsed: number
+  hardcoded: number
+  mostUsedNames: string[]
 }

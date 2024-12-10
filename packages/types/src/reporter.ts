@@ -140,6 +140,7 @@ interface FileSizeReport {
 }
 
 interface FileSizes {
+  lineCount: number
   normal: string
   minified: string
   gzip: FileSizeReport
@@ -150,6 +151,20 @@ export interface AnalysisOptions {
   onResult?: (file: string, result: ParserResultInterface) => void
 }
 
+interface ReportDerivedMap {
+  byFilepath: Map<string, Set<PropertyReportItem['index']>>
+  byComponentInFilepath: Map<string, Set<ComponentReportItem['componentIndex']>>
+  globalMaps: ReportDerivedMaps
+  byFilePathMaps: Map<string, ReportDerivedMaps>
+}
+
+interface ReportDerivedMapJSON {
+  byFilepath: Record<string, Array<PropertyReportItem['index']>>
+  byComponentInFilepath: Record<string, Array<ComponentReportItem['componentIndex']>>
+  globalMaps: ReportDerivedMapsJSON
+  byFilePathMaps: Record<string, ReportDerivedMapsJSON>
+}
+
 export interface AnalysisReport {
   schemaVersion: string
   details: ReportDetails
@@ -158,21 +173,18 @@ export interface AnalysisReport {
   propByIndex: Map<PropertyReportItem['index'], PropertyReportItem>
   componentByIndex: Map<ComponentReportItem['componentIndex'], ComponentReportItem>
 
-  derived: {
-    byFilepath: Map<string, Set<PropertyReportItem['index']>>
-    byComponentInFilepath: Map<string, Set<ComponentReportItem['componentIndex']>>
-    globalMaps: ReportDerivedMaps
-    byFilePathMaps: Map<string, ReportDerivedMaps>
-  }
+  derived: ReportDerivedMap
 }
 
 export interface ReportSnapshotJSON extends Omit<AnalysisReport, 'propByIndex' | 'componentByIndex' | 'derived'> {
   propByIndex: Record<PropertyReportItem['index'], PropertyReportItem>
   componentByIndex: Record<ComponentReportItem['componentIndex'], ComponentReportItem>
-  derived: {
-    byFilepath: Record<string, Array<PropertyReportItem['index']>>
-    byComponentInFilepath: Record<string, Array<ComponentReportItem['componentIndex']>>
-    globalMaps: ReportDerivedMapsJSON
-    byFilePathMaps: Record<string, ReportDerivedMapsJSON>
-  }
+  derived: ReportDerivedMapJSON
+}
+
+export interface ClassifyReport {
+  propById: Map<string, PropertyReportItem>
+  componentById: Map<ComponentReportItem['componentIndex'], ComponentReportItem>
+  details: Pick<ReportDetails, 'counts' | 'stats'>
+  derived: ReportDerivedMap
 }
