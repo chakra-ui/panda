@@ -1,5 +1,6 @@
 import type { ParserOptions } from '@pandacss/core'
-import { BoxNodeMap, box } from '@pandacss/extractor'
+import { BoxNodeMap, box, type BoxNode } from '@pandacss/extractor'
+import { compact, patternFns } from '@pandacss/shared'
 import type {
   ClassifyReport,
   ComponentReportItem,
@@ -71,6 +72,25 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
       const set = map.get(key) ?? new Set()
       set.add(value)
       map.set(key, set)
+    }
+
+    const processPattern = (
+      boxNode: BoxNode,
+      data: Record<string, any> | undefined,
+      item: ComponentReportItem,
+    ): ComponentReportItem | undefined => {
+      const name = item.componentName
+      const pattern = ctx.patterns.details.find((p) => p.match.test(name) || p.baseName === name)
+      if (!pattern) return
+      const cssObj = pattern.config.transform?.(data || {}, patternFns) ?? {}
+      const newItem: ResultItem = {
+        name: 'css',
+        type: 'css',
+        box: box.objectToMap(compact(cssObj), boxNode.getNode(), boxNode.getStack()),
+        data: [cssObj],
+      }
+      Object.assign(newItem, { debug: true })
+      return processResultItem(newItem, 'function')
     }
 
     const processMap = (map: BoxNodeMap, current: string[], componentReportItem: ComponentReportItem) => {
@@ -191,7 +211,6 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
       }
 
       if (!item.data) {
-        console.log('no data', item)
         return
       }
 
@@ -204,7 +223,12 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
         value: item.data,
         range: item.box.getRange(),
         contains: [],
+        debug: Reflect.has(item, 'debug'),
       } satisfies ComponentReportItem
+
+      if (item.type === 'pattern' || item.type === 'jsx-pattern') {
+        return processPattern(item.box, item.data[0], componentReportItem)
+      }
 
       if (box.isArray(item.box)) {
         addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
@@ -223,25 +247,18 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
       }
     }
 
-    const processComponentResultItem = (item: ResultItem) => {
-      const componentReportItem = processResultItem(item, 'component')
+    const processResultItemFn = (type: 'component' | 'function') => (item: ResultItem) => {
+      const componentReportItem = processResultItem(item, type)
       if (!componentReportItem) return
 
-      addTo(globalMaps.byComponentOfKind, 'component', componentReportItem.componentIndex)
-      addTo(localMaps.byComponentOfKind, 'component', componentReportItem.componentIndex)
+      addTo(globalMaps.byComponentOfKind, type, componentReportItem.componentIndex)
+      addTo(localMaps.byComponentOfKind, type, componentReportItem.componentIndex)
 
       byComponentIndex.set(componentReportItem.componentIndex, componentReportItem)
     }
 
-    const processFunctionResultItem = (item: ResultItem) => {
-      const componentReportItem = processResultItem(item, 'function')
-      if (!componentReportItem) return
-
-      addTo(globalMaps.byComponentOfKind, 'function', componentReportItem.componentIndex)
-      addTo(localMaps.byComponentOfKind, 'function', componentReportItem.componentIndex)
-
-      byComponentIndex.set(componentReportItem.componentIndex, componentReportItem)
-    }
+    const processComponentResultItem = processResultItemFn('component')
+    const processFunctionResultItem = processResultItemFn('function')
 
     parserResult.jsx.forEach(processComponentResultItem)
 

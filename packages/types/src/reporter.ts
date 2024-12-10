@@ -53,6 +53,7 @@ export interface ComponentReportItem extends Pick<PropertyReportItem, 'filepath'
   contains: Array<PropertyReportItem['index']>
   value: Record<string, any>
   range: PropertyLocationRange
+  debug?: boolean
 }
 
 export interface ReportDerivedMaps {
