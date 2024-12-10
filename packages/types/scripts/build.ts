@@ -19,7 +19,7 @@ export const main = () => {
   files.forEach((file) => {
     const destFile = path.join('dist', file.endsWith('.d.ts') ? file : toDts(file))
     getOrCreateDir('dist')
-    const content = fs.readFileSync(path.join('src', file))
+    const content = fs.readFileSync(path.join('src', file as string))
     fs.writeFileSync(destFile, content)
   })
 }
