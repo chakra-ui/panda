@@ -1,7 +1,6 @@
 import type { ParserOptions, Stylesheet } from '@pandacss/core'
 import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
-import { omit } from '@pandacss/shared'
 import type { AnalysisReport, ClassifyReport, ParserResultInterface } from '@pandacss/types'
 import { version } from '../package.json'
 import { getFileSize, getZipFileSize } from './file-size'
@@ -131,7 +130,6 @@ export class Reporter {
       propByIndex: classify.result.propById,
       componentByIndex: classify.result.componentById,
       derived: classify.result.derived,
-      config: omit(this.ctx.config, ['globalCss', 'globalFontface']),
     }
   }
 

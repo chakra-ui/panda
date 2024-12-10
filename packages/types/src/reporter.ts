@@ -1,4 +1,3 @@
-import type { Config } from './config'
 import type { ParserResultInterface } from './parser'
 
 export type ReportItemType =
@@ -168,7 +167,6 @@ interface ReportDerivedMapJSON {
 export interface AnalysisReport {
   schemaVersion: string
   details: ReportDetails
-  config: Omit<Config, 'globalCss' | 'globalFontface'>
 
   propByIndex: Map<PropertyReportItem['index'], PropertyReportItem>
   componentByIndex: Map<ComponentReportItem['componentIndex'], ComponentReportItem>

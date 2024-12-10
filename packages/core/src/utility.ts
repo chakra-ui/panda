@@ -548,4 +548,18 @@ export class Utility {
   isDeprecated = (prop: string) => {
     return this.deprecated.has(prop)
   }
+
+  /**
+   * Returns the token type for a given property
+   */
+  getTokenType = (prop: string) => {
+    const set = this.types.get(prop)
+    if (!set) return
+    for (const type of set) {
+      const match = type.match(TOKEN_TYPE_PATTERN)
+      if (match) return match[1]
+    }
+  }
 }
+
+const TOKEN_TYPE_PATTERN = /type:Tokens\["([^"]+)"\]/

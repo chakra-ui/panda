@@ -27,12 +27,12 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
   let componentIndex = 0
 
   const isKnownUtility = (reportItem: PropertyReportItem, componentReportItem: ComponentReportItem) => {
-    const { propName, value } = reportItem
+    const { propName, value, tokenType } = reportItem
 
     const utility = ctx.utility.config[propName]
 
     if (utility) {
-      return Boolean(ctx.tokens.getByName(`${utility.values}.${value}`))
+      return Boolean(ctx.tokens.getByName(`${tokenType}.${value}`))
     }
 
     if (componentReportItem.reportItemType === 'pattern') {
@@ -80,6 +80,7 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
       map.value.forEach((attrNode, attrName) => {
         if (box.isLiteral(attrNode) || box.isEmptyInitializer(attrNode)) {
           const value = box.isLiteral(attrNode) ? (attrNode.value as string) : true
+
           const propReportItem = {
             index: String(id++),
             componentIndex: String(componentReportItem.componentIndex),
@@ -95,6 +96,7 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
             isKnownValue: false,
             range: map.getRange(),
           } as PropertyReportItem
+
           componentReportItem.contains.push(propReportItem.index)
 
           if (conditions.has(attrName)) {
@@ -114,17 +116,15 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
               addTo(localMaps.byConditionName, current[0], propReportItem.index)
             }
 
-            const propName = ctx.utility.shorthands.get(attrName) ?? attrName
-            propReportItem.propName = propName
-
-            const utility = ctx.utility.config[propName]
-            propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
-
-            const tokenType = typeof utility?.values === 'string' ? utility?.values : undefined
+            const propName = ctx.utility.resolveShorthand(attrName)
+            const tokenType = ctx.utility.getTokenType(propName)
             if (tokenType) {
               propReportItem.reportItemKind = 'token'
               propReportItem.tokenType = tokenType
             }
+
+            propReportItem.propName = propName
+            propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
 
             addTo(globalMaps.byPropertyName, propName, propReportItem.index)
             addTo(localMaps.byPropertyName, propName, propReportItem.index)
@@ -208,14 +208,17 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
 
       if (box.isArray(item.box)) {
         addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
-
         return componentReportItem
       }
 
       if (box.isMap(item.box)) {
         addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
-
         processMap(item.box, [], componentReportItem)
+        return componentReportItem
+      }
+
+      if (item.type === 'recipe') {
+        addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
         return componentReportItem
       }
     }
