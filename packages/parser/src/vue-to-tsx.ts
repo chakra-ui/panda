@@ -40,7 +40,7 @@ const NodeTypes = {
 export const vueToTsx = (code: string) => {
   try {
     const parsed = parse(code)
-    const fileStr = new MagicString(`<template>${parsed.descriptor.template?.content}</template>` ?? '')
+    const fileStr = new MagicString(`<template>${parsed.descriptor.template?.content}</template>`)
 
     const rewriteProp = (prop: BaseElementNode['props'][number]) => {
       if (
