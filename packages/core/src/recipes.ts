@@ -53,6 +53,10 @@ export class Recipes {
 
   private context!: SerializeContext
 
+  get config() {
+    return this.recipes
+  }
+
   constructor(private recipes: RecipeRecord = {}) {
     this.prune()
   }

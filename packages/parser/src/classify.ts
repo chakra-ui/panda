@@ -9,9 +9,40 @@ import type {
   PropertyReportItem,
   ReportDerivedMaps,
   ResultItem,
+  SlotRecipeConfig,
 } from '@pandacss/types'
 
 type ParserResultMap = Map<string, ParserResultInterface>
+
+function addTo(map: Map<string, Set<any>>, key: string, value: any) {
+  const set = map.get(key) ?? new Set()
+  set.add(value)
+  map.set(key, set)
+}
+
+interface ProcessPatternOpts {
+  item: ComponentReportItem
+  localMaps: ReportDerivedMaps
+  filepath: string
+  boxNode: BoxNode
+  data: Record<string, any> | undefined
+}
+
+interface ProcessResultItemOpts {
+  item: ResultItem
+  localMaps: ReportDerivedMaps
+  filepath: string
+  kind: ComponentReportItem['kind']
+}
+
+interface ProcessMapOpts {
+  map: BoxNodeMap
+  current: string[]
+  componentReportItem: ComponentReportItem
+  filepath: string
+  localMaps: ReportDerivedMaps
+  skipRange?: boolean
+}
 
 export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResultMap): ClassifyReport {
   const byId = new Map<PropertyReportItem['index'], PropertyReportItem>()
@@ -33,7 +64,10 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
     const utility = ctx.utility.config[propName]
 
     if (utility) {
-      return Boolean(ctx.tokens.getByName(`${tokenType}.${value}`))
+      if (ctx.tokens.getByName(`${tokenType}.${value}`)) return true
+      if (ctx.tokens.getReferences(String(value)).length > 0) return true
+      if (ctx.utility.resolveColorMix(String(value)).color) return true
+      return false
     }
 
     if (componentReportItem.reportItemType === 'pattern') {
@@ -63,213 +97,222 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
     return false
   }
 
+  const processPattern = (opts: ProcessPatternOpts): ComponentReportItem | undefined => {
+    const { boxNode, data, item, filepath, localMaps } = opts
+    const name = item.componentName
+    const pattern = ctx.patterns.details.find((p) => p.match.test(name) || p.baseName === name)
+    if (!pattern) return
+    const cssObj = pattern.config.transform?.(data || {}, patternFns) ?? {}
+    const newItem: ResultItem = {
+      name: 'css',
+      type: 'css',
+      box: box.objectToMap(compact(cssObj), boxNode.getNode(), boxNode.getStack()),
+      data: [cssObj],
+    }
+    Object.assign(newItem, { debug: true })
+    return processResultItem({ item: newItem, kind: 'function', localMaps, filepath })
+  }
+
+  const processResultItem = (opts: ProcessResultItemOpts) => {
+    const { item, kind, filepath, localMaps } = opts
+
+    if (!item.box || box.isUnresolvable(item.box)) {
+      // TODO store that in the report (unresolved values)
+      // console.log('no box', filepath, item.name, item.type, item.box?.getRange())
+      return
+    }
+
+    if (!item.data) {
+      return
+    }
+
+    const componentReportItem = {
+      componentIndex: String(componentIndex++),
+      componentName: item.name!,
+      reportItemType: item.type!,
+      kind,
+      filepath,
+      value: item.data,
+      range: item.box.getRange(),
+      contains: [],
+      debug: Reflect.has(item, 'debug'),
+    } satisfies ComponentReportItem
+
+    if (item.type === 'pattern' || item.type === 'jsx-pattern') {
+      return processPattern({ boxNode: item.box, data: item.data[0], item: componentReportItem, filepath, localMaps })
+    }
+
+    if (box.isArray(item.box)) {
+      addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
+      return componentReportItem
+    }
+
+    if (box.isMap(item.box)) {
+      addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
+      processMap({ map: item.box, current: [], componentReportItem, filepath, localMaps })
+      return componentReportItem
+    }
+
+    if (item.type === 'recipe') {
+      addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
+      return componentReportItem
+    }
+  }
+
+  const processResultItemFn = (opts: {
+    item: ResultItem
+    filepath: string
+    localMaps: ReportDerivedMaps
+    type: 'component' | 'function'
+  }) => {
+    const { item, filepath, localMaps, type } = opts
+
+    const componentReportItem = processResultItem({ item, kind: type, filepath, localMaps })
+    if (!componentReportItem) return
+
+    addTo(globalMaps.byComponentOfKind, type, componentReportItem.componentIndex)
+    addTo(localMaps.byComponentOfKind, type, componentReportItem.componentIndex)
+    byComponentIndex.set(componentReportItem.componentIndex, componentReportItem)
+  }
+
+  const processMap = (opts: ProcessMapOpts) => {
+    const { map, current, componentReportItem, filepath, localMaps, skipRange } = opts
+    const { reportItemType: type, kind, componentName: name } = componentReportItem
+
+    map.value.forEach((attrNode, attrName) => {
+      if (box.isLiteral(attrNode) || box.isEmptyInitializer(attrNode)) {
+        const value = box.isLiteral(attrNode) ? (attrNode.value as string) : true
+
+        const propReportItem = {
+          index: String(id++),
+          componentIndex: String(componentReportItem.componentIndex),
+          componentName: name,
+          tokenType: undefined,
+          propName: attrName,
+          reportItemKind: 'utility',
+          reportItemType: type,
+          kind,
+          filepath,
+          path: current.concat(attrName),
+          value,
+          isKnownValue: false,
+          range: skipRange ? {} : map.getRange(),
+        } as PropertyReportItem
+
+        componentReportItem.contains.push(propReportItem.index)
+
+        if (conditions.has(attrName)) {
+          addTo(globalMaps.byConditionName, attrName, propReportItem.index)
+          addTo(localMaps.byConditionName, attrName, propReportItem.index)
+          propReportItem.propName = current[0] ?? attrName
+          propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
+          propReportItem.conditionName = attrName
+        } else {
+          if (current.length && conditions.has(current[0])) {
+            propReportItem.conditionName = current[0]
+
+            // TODO: when using nested conditions
+            // should we add the reportItem.id for each of them or just the first one?
+            // (currently just the first one)
+            addTo(globalMaps.byConditionName, current[0], propReportItem.index)
+            addTo(localMaps.byConditionName, current[0], propReportItem.index)
+          }
+
+          // TODO: Split this to new function
+          const propName = ctx.utility.resolveShorthand(attrName)
+          const tokenType = ctx.utility.getTokenType(propName)
+          if (tokenType) {
+            propReportItem.reportItemKind = 'token'
+            propReportItem.tokenType = tokenType
+          }
+
+          propReportItem.propName = propName
+          propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
+
+          addTo(globalMaps.byPropertyName, propName, propReportItem.index)
+          addTo(localMaps.byPropertyName, propName, propReportItem.index)
+
+          if (tokenType) {
+            addTo(globalMaps.byTokenType, tokenType, propReportItem.index)
+            addTo(localMaps.byTokenType, tokenType, propReportItem.index)
+          }
+
+          if (
+            propName.toLowerCase().includes('color') ||
+            groupByProp.get(propName) === 'Color' ||
+            tokenType === 'colors'
+          ) {
+            addTo(globalMaps.colorsUsed, value as string, propReportItem.index)
+            addTo(localMaps.colorsUsed, value as string, propReportItem.index)
+          }
+
+          if (ctx.utility.shorthands.has(attrName)) {
+            addTo(globalMaps.byShorthand, attrName, propReportItem.index)
+            addTo(localMaps.byShorthand, attrName, propReportItem.index)
+          }
+        }
+
+        if (current.length) {
+          addTo(globalMaps.byPropertyPath, propReportItem.path.join('.'), propReportItem.index)
+          addTo(localMaps.byPropertyPath, propReportItem.path.join('.'), propReportItem.index)
+        }
+
+        //
+        addTo(globalMaps.byTokenName, String(value), propReportItem.index)
+        addTo(localMaps.byTokenName, String(value), propReportItem.index)
+
+        //
+        addTo(globalMaps.byType, type, propReportItem.index)
+        addTo(localMaps.byType, type, propReportItem.index)
+
+        //
+        addTo(globalMaps.byComponentName, name, propReportItem.index)
+        addTo(localMaps.byComponentName, name, propReportItem.index)
+
+        //
+        addTo(globalMaps.fromKind, kind, propReportItem.index)
+        addTo(localMaps.fromKind, kind, propReportItem.index)
+
+        //
+        addTo(byFilepath, filepath, propReportItem.index)
+        byId.set(propReportItem.index, propReportItem)
+
+        return
+      }
+
+      if (box.isMap(attrNode) && attrNode.value.size) {
+        return processMap({
+          map: attrNode,
+          current: current.concat(attrName),
+          componentReportItem,
+          filepath,
+          localMaps,
+        })
+      }
+    })
+  }
+
   resultMap.forEach((parserResult, filepath) => {
     if (parserResult.isEmpty()) return
 
     const localMaps = createReportMaps()
 
-    const addTo = (map: Map<string, Set<any>>, key: string, value: any) => {
-      const set = map.get(key) ?? new Set()
-      set.add(value)
-      map.set(key, set)
+    const componentFn = (item: ResultItem) => {
+      processResultItemFn({ item, filepath, localMaps, type: 'component' })
     }
 
-    const processPattern = (
-      boxNode: BoxNode,
-      data: Record<string, any> | undefined,
-      item: ComponentReportItem,
-    ): ComponentReportItem | undefined => {
-      const name = item.componentName
-      const pattern = ctx.patterns.details.find((p) => p.match.test(name) || p.baseName === name)
-      if (!pattern) return
-      const cssObj = pattern.config.transform?.(data || {}, patternFns) ?? {}
-      const newItem: ResultItem = {
-        name: 'css',
-        type: 'css',
-        box: box.objectToMap(compact(cssObj), boxNode.getNode(), boxNode.getStack()),
-        data: [cssObj],
-      }
-      Object.assign(newItem, { debug: true })
-      return processResultItem(newItem, 'function')
+    const functionFn = (item: ResultItem) => {
+      processResultItemFn({ item, filepath, localMaps, type: 'function' })
     }
 
-    const processMap = (map: BoxNodeMap, current: string[], componentReportItem: ComponentReportItem) => {
-      const { reportItemType: type, kind } = componentReportItem
-      const name = componentReportItem.componentName
-
-      map.value.forEach((attrNode, attrName) => {
-        if (box.isLiteral(attrNode) || box.isEmptyInitializer(attrNode)) {
-          const value = box.isLiteral(attrNode) ? (attrNode.value as string) : true
-
-          const propReportItem = {
-            index: String(id++),
-            componentIndex: String(componentReportItem.componentIndex),
-            componentName: name,
-            tokenType: undefined,
-            propName: attrName,
-            reportItemKind: 'utility',
-            reportItemType: type,
-            kind,
-            filepath,
-            path: current.concat(attrName),
-            value,
-            isKnownValue: false,
-            range: map.getRange(),
-          } as PropertyReportItem
-
-          componentReportItem.contains.push(propReportItem.index)
-
-          if (conditions.has(attrName)) {
-            addTo(globalMaps.byConditionName, attrName, propReportItem.index)
-            addTo(localMaps.byConditionName, attrName, propReportItem.index)
-            propReportItem.propName = current[0] ?? attrName
-            propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
-            propReportItem.conditionName = attrName
-          } else {
-            if (current.length && conditions.has(current[0])) {
-              propReportItem.conditionName = current[0]
-
-              // TODO: when using nested conditions
-              // should we add the reportItem.id for each of them or just the first one?
-              // (currently just the first one)
-              addTo(globalMaps.byConditionName, current[0], propReportItem.index)
-              addTo(localMaps.byConditionName, current[0], propReportItem.index)
-            }
-
-            const propName = ctx.utility.resolveShorthand(attrName)
-            const tokenType = ctx.utility.getTokenType(propName)
-            if (tokenType) {
-              propReportItem.reportItemKind = 'token'
-              propReportItem.tokenType = tokenType
-            }
-
-            propReportItem.propName = propName
-            propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
-
-            addTo(globalMaps.byPropertyName, propName, propReportItem.index)
-            addTo(localMaps.byPropertyName, propName, propReportItem.index)
-
-            if (tokenType) {
-              addTo(globalMaps.byTokenType, tokenType, propReportItem.index)
-              addTo(localMaps.byTokenType, tokenType, propReportItem.index)
-            }
-
-            if (
-              propName.toLowerCase().includes('color') ||
-              groupByProp.get(propName) === 'Color' ||
-              tokenType === 'colors'
-            ) {
-              addTo(globalMaps.colorsUsed, value as string, propReportItem.index)
-              addTo(localMaps.colorsUsed, value as string, propReportItem.index)
-            }
-
-            if (ctx.utility.shorthands.has(attrName)) {
-              addTo(globalMaps.byShorthand, attrName, propReportItem.index)
-              addTo(localMaps.byShorthand, attrName, propReportItem.index)
-            }
-          }
-
-          if (current.length) {
-            addTo(globalMaps.byPropertyPath, propReportItem.path.join('.'), propReportItem.index)
-            addTo(localMaps.byPropertyPath, propReportItem.path.join('.'), propReportItem.index)
-          }
-
-          //
-          addTo(globalMaps.byTokenName, String(value), propReportItem.index)
-          addTo(localMaps.byTokenName, String(value), propReportItem.index)
-
-          //
-          addTo(globalMaps.byType, type, propReportItem.index)
-          addTo(localMaps.byType, type, propReportItem.index)
-
-          //
-          addTo(globalMaps.byComponentName, name, propReportItem.index)
-          addTo(localMaps.byComponentName, name, propReportItem.index)
-
-          //
-          addTo(globalMaps.fromKind, kind, propReportItem.index)
-          addTo(localMaps.fromKind, kind, propReportItem.index)
-
-          //
-          addTo(byFilepath, filepath, propReportItem.index)
-          byId.set(propReportItem.index, propReportItem)
-
-          return
-        }
-
-        if (box.isMap(attrNode) && attrNode.value.size) {
-          return processMap(attrNode, current.concat(attrName), componentReportItem)
-        }
-      })
-    }
-
-    const processResultItem = (item: ResultItem, kind: ComponentReportItem['kind']) => {
-      if (!item.box || box.isUnresolvable(item.box)) {
-        // TODO store that in the report (unresolved values)
-        // console.log('no box', filepath, item.name, item.type, item.box?.getRange())
-        return
-      }
-
-      if (!item.data) {
-        return
-      }
-
-      const componentReportItem = {
-        componentIndex: String(componentIndex++),
-        componentName: item.name!,
-        reportItemType: item.type!,
-        kind,
-        filepath,
-        value: item.data,
-        range: item.box.getRange(),
-        contains: [],
-        debug: Reflect.has(item, 'debug'),
-      } satisfies ComponentReportItem
-
-      if (item.type === 'pattern' || item.type === 'jsx-pattern') {
-        return processPattern(item.box, item.data[0], componentReportItem)
-      }
-
-      if (box.isArray(item.box)) {
-        addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
-        return componentReportItem
-      }
-
-      if (box.isMap(item.box)) {
-        addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
-        processMap(item.box, [], componentReportItem)
-        return componentReportItem
-      }
-
-      if (item.type === 'recipe') {
-        addTo(byComponentInFilepath, filepath, componentReportItem.componentIndex)
-        return componentReportItem
-      }
-    }
-
-    const processResultItemFn = (type: 'component' | 'function') => (item: ResultItem) => {
-      const componentReportItem = processResultItem(item, type)
-      if (!componentReportItem) return
-
-      addTo(globalMaps.byComponentOfKind, type, componentReportItem.componentIndex)
-      addTo(localMaps.byComponentOfKind, type, componentReportItem.componentIndex)
-
-      byComponentIndex.set(componentReportItem.componentIndex, componentReportItem)
-    }
-
-    const processComponentResultItem = processResultItemFn('component')
-    const processFunctionResultItem = processResultItemFn('function')
-
-    parserResult.jsx.forEach(processComponentResultItem)
-
-    parserResult.css.forEach(processFunctionResultItem)
-    parserResult.cva.forEach(processFunctionResultItem)
-
+    parserResult.jsx.forEach(componentFn)
+    parserResult.css.forEach(functionFn)
+    parserResult.cva.forEach(functionFn)
     parserResult.pattern.forEach((itemList) => {
-      itemList.forEach(processFunctionResultItem)
+      itemList.forEach(functionFn)
     })
     parserResult.recipe.forEach((itemList) => {
-      itemList.forEach(processFunctionResultItem)
+      itemList.forEach(functionFn)
     })
 
     byFilePathMaps.set(filepath, localMaps)
@@ -282,6 +325,56 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
       .sort((a, b) => b[1] - a[1])
       .slice(0, pickCount),
   )
+
+  Object.entries(ctx.recipes.config).forEach(([key, recipe]) => {
+    const localMaps = createReportMaps()
+
+    const functionFn = (styleObject: Record<string, any> | undefined) => {
+      if (!styleObject) return
+
+      const componentReportItem: ComponentReportItem = {
+        componentIndex: '0',
+        componentName: `recipes.${key}.base`,
+        reportItemType: 'css',
+        kind: 'function',
+        filepath: `theme/recipes/${key}`,
+        value: styleObject,
+        // @ts-expect-error
+        range: {},
+        contains: [],
+      }
+
+      processMap({
+        // @ts-expect-error
+        map: box.objectToMap(styleObject, null, []),
+        current: [],
+        filepath: `theme/recipes/${key}`,
+        skipRange: true,
+        localMaps,
+        componentReportItem,
+      })
+    }
+
+    const isSlotRecipe = (v: any): v is SlotRecipeConfig => ctx.recipes.isSlotRecipe(key)
+
+    if (isSlotRecipe(recipe)) {
+      Object.values(recipe.base ?? {}).forEach(functionFn)
+      Object.values(recipe.variants ?? {}).forEach((variants) => {
+        Object.values(variants).forEach((v) => {
+          Object.values(v).forEach(functionFn)
+        })
+      })
+      recipe.compoundVariants?.forEach((v) => {
+        Object.values(v.css).forEach(functionFn)
+      })
+    } else {
+      functionFn(recipe.base)
+      Object.values(recipe.variants ?? {}).forEach((variants) => {
+        Object.values(variants).forEach(functionFn)
+      })
+      recipe.compoundVariants?.forEach((v) => functionFn(v.css))
+    }
+  })
 
   return {
     propById: byId,

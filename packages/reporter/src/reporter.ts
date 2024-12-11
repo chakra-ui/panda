@@ -3,9 +3,8 @@ import type { Generator } from '@pandacss/generator'
 import { logger } from '@pandacss/logger'
 import type { AnalysisReport, ClassifyReport, ParserResultInterface } from '@pandacss/types'
 import { version } from '../package.json'
-import { getFileSize, getZipFileSize } from './file-size'
-import { analyzeTokens, type TokenReportEntry } from './reporter-token'
 import { analyzeRecipes, type RecipeReportEntry } from './reporter-recipe'
+import { analyzeTokens, type TokenReportEntry } from './reporter-token'
 
 export class Reporter {
   #parserResults = new Map<string, ParserResultInterface>()
@@ -32,14 +31,6 @@ export class Reporter {
 
   get report() {
     return this.#report
-  }
-
-  private getCss = (minify: boolean): ResultWithMs => {
-    const startMs = performance.now()
-    this.ctx.config.minify = minify
-    const result = this.ctx.getCss(this.#sheet)
-    const ms = performance.now() - startMs
-    return { result, ms }
   }
 
   private parseFiles = (): void => {
@@ -72,64 +63,18 @@ export class Reporter {
     }
   }
 
-  private classify = (): ResultWithMs<ClassifyReport> => {
-    const { project } = this.options
-    const start = performance.now()
-    const result = project.classify(this.#parserResults)
-    const ms = performance.now() - start
-    return { result, ms }
-  }
-
   init = (): void => {
+    const { project } = this.options
+
     this.setup()
-    const classify = this.classify()
-
-    const css = this.getCss(false)
-    const minifiedCss = this.getCss(true)
-
-    let lightningCss: ResultWithMs<string> = { result: '', ms: 0 }
-    let lightningCssMinified: ResultWithMs<string> = { result: '', ms: 0 }
-
-    const lightningCssEnabled = this.ctx.config.lightningcss
-
-    if (!lightningCssEnabled) {
-      this.#sheet['context'].lightningcss = true
-      lightningCss = this.getCss(false)
-      lightningCssMinified = this.getCss(true)
-    }
-
-    const details: AnalysisReport['details'] = {
-      ...classify.result.details,
-      duration: {
-        classify: classify.ms,
-        cssMs: css.ms,
-        cssMinifyMs: minifiedCss.ms,
-        ...(!lightningCssEnabled
-          ? { lightningCssMs: lightningCss.ms, lightningCssMinifiedMs: lightningCssMinified.ms }
-          : {}),
-        extractTotal: this.totalExtractTime,
-        extractTimeByFiles: Object.fromEntries(this.#extractTimes.entries()),
-      },
-      fileSizes: {
-        lineCount: css.result.split('\n').length,
-        normal: getFileSize(css.result),
-        minified: getFileSize(minifiedCss.result),
-        gzip: {
-          normal: getZipFileSize(css.result),
-          minified: getZipFileSize(minifiedCss.result),
-        },
-        lightningCss: !lightningCssEnabled
-          ? { normal: getFileSize(lightningCss.result), minified: getFileSize(lightningCssMinified.result) }
-          : undefined,
-      },
-    }
+    const classify = project.classify(this.#parserResults)
 
     this.#report = {
       schemaVersion: version,
-      details,
-      propByIndex: classify.result.propById,
-      componentByIndex: classify.result.componentById,
-      derived: classify.result.derived,
+      details: classify.details,
+      propByIndex: classify.propById,
+      componentByIndex: classify.componentById,
+      derived: classify.derived,
     }
   }
 
@@ -145,11 +90,6 @@ export class Reporter {
 }
 
 const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
-
-interface ResultWithMs<T = string> {
-  result: T
-  ms: number
-}
 
 export interface ReporterOptions {
   onResult?: (file: string, result: ParserResultInterface) => void

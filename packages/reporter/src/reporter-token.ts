@@ -1,16 +1,6 @@
 import type { ParserOptions } from '@pandacss/core'
 import type { AnalysisReport, PropertyReportItem, TokenDataTypes } from '@pandacss/types'
 
-interface TokenAnalysisItem {
-  tokenCategory: string
-  usedInXFiles: number
-  usedCount: number
-  totalTokenInCategory: number
-  percentUsed: number
-  hardcoded: number
-  mostUsedNames: string[]
-}
-
 type CategoryId = PropertyReportItem['index']
 
 function getFileUsage(result: AnalysisReport, categoryIds: Set<CategoryId>) {
@@ -40,19 +30,18 @@ export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): Token
   const categoryMap = result.derived.globalMaps.byTokenType
   const categoryEntries = Array.from(categoryMap.entries())
 
-  return categoryEntries.map(([category, categoryIds]): TokenAnalysisItem => {
+  return categoryEntries.map(([category, categoryIds]): TokenReportEntry => {
     //
     const uniqueTokenNames = getUniqueTokenNames(result, categoryIds)
     const usedCount = uniqueTokenNames.size
 
     const tokens = ctx.tokens.view.categoryMap.get(category as keyof TokenDataTypes)
-    const totalTokenInCategory = tokens?.size ?? 0
-    const percentUsed = Math.ceil((usedCount / (totalTokenInCategory || 1)) * 10_000) / 100
+    const count = tokens?.size ?? 0
+    const percentUsed = Math.ceil((usedCount / (count || 1)) * 10_000) / 100
 
     return {
-      tokenCategory: category,
-      // usedTokenNames: distinctTokenNames,
-      totalTokenInCategory: totalTokenInCategory,
+      category,
+      count,
       usedInXFiles: getFileUsage(result, categoryIds),
       usedCount,
       percentUsed,
@@ -67,10 +56,10 @@ export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): Token
 }
 
 export interface TokenReportEntry {
-  tokenCategory: string
+  category: string
   usedInXFiles: number
   usedCount: number
-  totalTokenInCategory: number
+  count: number
   percentUsed: number
   hardcoded: number
   mostUsedNames: string[]

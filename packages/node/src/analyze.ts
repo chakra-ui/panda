@@ -1,4 +1,4 @@
-import { Reporter } from '@pandacss/reporter'
+import { Reporter, formatRecipeReport, formatTokenReport, type ReportFormat } from '@pandacss/reporter'
 import type { AnalysisOptions } from '@pandacss/types'
 import type { PandaContext } from './create-context'
 
@@ -13,9 +13,15 @@ export function analyze(ctx: PandaContext, options: AnalysisOptions = {}) {
   reporter.init()
 
   return {
-    getRecipeReport: () => reporter.getRecipeReport(),
-    getTokenReport: () => reporter.getTokenReport(),
-    writeReport: (filePath: string) => {
+    getRecipeReport(format: ReportFormat = 'table') {
+      const report = reporter.getRecipeReport()
+      return { report, formatted: formatRecipeReport(report, format) }
+    },
+    getTokenReport(format: ReportFormat = 'table') {
+      const report = reporter.getTokenReport()
+      return { report, formatted: formatTokenReport(report, format) }
+    },
+    writeReport(filePath: string) {
       const dirname = ctx.runtime.path.dirname(filePath)
       ctx.runtime.fs.ensureDirSync(dirname)
       const str = JSON.stringify(reporter.report, replacer, 2)

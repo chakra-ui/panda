@@ -386,38 +386,13 @@ export async function main() {
       }
 
       const tokenAnalysis = result.getTokenReport()
-
-      if (tokenAnalysis.length) {
-        console.table(
-          tokenAnalysis.map((entry) => ({
-            Type: `${entry.tokenCategory} (${entry.totalTokenInCategory} tokens)`,
-            'Used in X files': entry.usedInXFiles,
-            '% used': `${entry.percentUsed}% (${entry.usedCount} instances)`,
-            Hardcoded: entry.hardcoded,
-            'Most Used': entry.mostUsedNames,
-          })),
-        )
-      } else {
-        logger.info('analyze', 'No token usage found')
+      if (tokenAnalysis.report.length) {
+        console.log(tokenAnalysis.formatted)
       }
 
       const recipeAnalysis = result.getRecipeReport()
-
-      if (recipeAnalysis.length) {
-        console.table(
-          recipeAnalysis.map((entry) => ({
-            Recipe: `${entry.recipeName} (${entry.variantCount} variants)`,
-            'Used in X files': entry.usedInXFiles,
-            'Variants combinations': `${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
-            '% used': `${entry.percentUsed}%`,
-            '% jsx': `${entry.jsxPercentUsed}%`,
-            '% fn': `${entry.fnPercentUsed}%`,
-            Unused: entry.unusedCombinations,
-            'Most Used': entry.mostUsedCombinations,
-          })),
-        )
-      } else {
-        logger.info('analyze', 'No recipe usage found')
+      if (recipeAnalysis.report.length) {
+        console.log(recipeAnalysis.formatted)
       }
     })
 

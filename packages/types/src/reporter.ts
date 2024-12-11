@@ -122,29 +122,6 @@ export interface ReportStats {
 export interface ReportDetails {
   counts: ReportCounts
   stats: ReportStats
-  fileSizes: FileSizes
-  duration: {
-    classify: number
-    cssMs: number
-    cssMinifyMs: number
-    extractTotal: number
-    extractTimeByFiles: Record<string, number>
-    lightningCssMs?: number
-    lightningCssMinifiedMs?: number
-  }
-}
-
-interface FileSizeReport {
-  normal: string
-  minified: string
-}
-
-interface FileSizes {
-  lineCount: number
-  normal: string
-  minified: string
-  gzip: FileSizeReport
-  lightningCss?: FileSizeReport
 }
 
 export interface AnalysisOptions {

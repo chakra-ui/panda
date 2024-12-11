@@ -42,8 +42,10 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@types/pako": "2.0.3",
-    "filesize": "10.1.6",
-    "pako": "2.1.0"
+    "table": "6.9.0",
+    "wordwrapjs": "5.1.0"
+  },
+  "devDependencies": {
+    "markdown-table": "3.0.4"
   }
 }
