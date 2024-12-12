@@ -33,9 +33,14 @@ export function formatTokenReport(result: TokenReportEntry[], format: ReportForm
     case 'csv': {
       return [
         'Token,Usage %,Hardcoded,Most Used,Found in',
-        ...result.map(
-          (entry) =>
-            `"${entry.category} (${entry.count} tokens)",${entry.percentUsed}%,${entry.hardcoded},"${entry.mostUsedNames}","${plural(entry.usedInXFiles, 'file')}"`,
+        ...result.map((entry) =>
+          [
+            `"${entry.category} (${entry.count} tokens)"`,
+            `${entry.percentUsed}%`,
+            entry.hardcoded,
+            `"${entry.mostUsedNames}"`,
+            `"${plural(entry.usedInXFiles, 'file')}"`,
+          ].join(','),
         ),
       ].join('\n')
     }
@@ -95,9 +100,17 @@ export function formatRecipeReport(result: RecipeReportEntry[], format: ReportFo
     case 'csv': {
       return [
         'Recipe,Variant Combinations,Usage %,JSX %,Function %,Unused,Most Used,Found in',
-        ...result.map(
-          (entry) =>
-            `"${entry.recipeName} (${entry.variantCount} variants)",${entry.usedCombinations} / ${entry.possibleCombinations.length},${entry.percentUsed}%,${entry.jsxPercentUsed}%,${entry.fnPercentUsed}%,"${entry.unusedCombinations}","${entry.mostUsedCombinations}","${plural(entry.usedInXFiles, 'file')}"`,
+        ...result.map((entry) =>
+          [
+            `"${entry.recipeName} (${entry.variantCount} variants)"`,
+            `${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
+            `${entry.percentUsed}%`,
+            `${entry.jsxPercentUsed}%`,
+            `${entry.fnPercentUsed}%`,
+            `"${entry.unusedCombinations}"`,
+            `"${entry.mostUsedCombinations}"`,
+            `"${plural(entry.usedInXFiles, 'file')}"`,
+          ].join(','),
         ),
       ].join('\n')
     }
