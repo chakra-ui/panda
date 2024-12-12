@@ -14,7 +14,7 @@ import {
   Project as TsProject,
   type ProjectOptions as TsProjectOptions,
 } from 'ts-morph'
-import { classifyParserResult } from './classify'
+import { classifyProject } from './classify'
 import { createParser } from './parser'
 import { ParserResult } from './parser-result'
 import { svelteToTsx } from './svelte-to-tsx'
@@ -186,6 +186,6 @@ export class Project {
 
   classify = (fileMap: Map<string, ParserResultInterface>) => {
     const { parserOptions } = this.options
-    return classifyParserResult(parserOptions, fileMap)
+    return classifyProject(parserOptions, fileMap)
   }
 }

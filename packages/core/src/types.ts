@@ -117,7 +117,7 @@ export interface ParserOptions {
   hash: HashOptions
   imports: ImportMap
   jsx: JsxEngine
-  syntax: Config['syntax']
+  config: Config
   recipes: Recipes
   tokens: TokenDictionary
   patterns: Patterns

@@ -360,10 +360,14 @@ export async function main() {
     .command('analyze [glob]', 'Analyze design token usage in glob')
     .option('--outfile [filepath]', 'Output analyze report in JSON')
     .option('--silent', "Don't print any logs")
+    .option('--scope <type>', 'Select analysis scope (token or recipe)')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (maybeGlob?: string, flags: AnalyzeCommandFlags = {}) => {
-      const { silent, config: configPath } = flags
+      const { silent, config: configPath, scope } = flags
+
+      const tokenScope = scope == null || scope === 'token'
+      const recipeScope = scope == null || scope === 'recipe'
 
       const cwd = resolve(flags.cwd!)
 
@@ -385,14 +389,18 @@ export async function main() {
         return
       }
 
-      const tokenAnalysis = result.getTokenReport()
-      if (tokenAnalysis.report.length) {
-        console.log(tokenAnalysis.formatted)
+      if (tokenScope) {
+        const tokenAnalysis = result.getTokenReport()
+        if (tokenAnalysis.report.length) {
+          logger.info('anaylze:tokens', `Token usage report 🎨 \n${tokenAnalysis.formatted}`)
+        }
       }
 
-      const recipeAnalysis = result.getRecipeReport()
-      if (recipeAnalysis.report.length) {
-        console.log(recipeAnalysis.formatted)
+      if (recipeScope) {
+        const recipeAnalysis = result.getRecipeReport()
+        if (recipeAnalysis.report.length) {
+          logger.info('anaylze:recipes', `Recipe usage report 🎛️ \n${recipeAnalysis.formatted}`)
+        }
       }
     })
 

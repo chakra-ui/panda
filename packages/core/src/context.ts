@@ -204,7 +204,7 @@ export class Context {
       recipes: this.recipes,
       patterns: this.patterns,
       jsx: this.jsx,
-      syntax: config.syntax,
+      config: this.config,
       tokens: this.tokens,
       conditions: this.conditions,
       utility: this.utility,

@@ -44,7 +44,7 @@ interface ProcessMapOpts {
   skipRange?: boolean
 }
 
-export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResultMap): ClassifyReport {
+export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap): ClassifyReport {
   const byId = new Map<PropertyReportItem['index'], PropertyReportItem>()
   const byComponentIndex = new Map<ComponentReportItem['componentIndex'], ComponentReportItem>()
   const byFilepath = new Map<string, Set<PropertyReportItem['index']>>()
@@ -326,6 +326,7 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
       .slice(0, pickCount),
   )
 
+  // process recipes
   Object.entries(ctx.recipes.config).forEach(([key, recipe]) => {
     const localMaps = createReportMaps()
 
@@ -348,7 +349,7 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
         // @ts-expect-error
         map: box.objectToMap(styleObject, null, []),
         current: [],
-        filepath: `theme/recipes/${key}`,
+        filepath: `@config/theme/recipes/${key}`,
         skipRange: true,
         localMaps,
         componentReportItem,
@@ -374,6 +375,30 @@ export function classifyParserResult(ctx: ParserOptions, resultMap: ParserResult
       })
       recipe.compoundVariants?.forEach((v) => functionFn(v.css))
     }
+  })
+
+  // process global css
+  Object.values(ctx.config.globalCss ?? {}).forEach((styleObject) => {
+    if (!styleObject) return
+    processMap({
+      // @ts-expect-error
+      map: box.objectToMap(styleObject, null, []),
+      current: [],
+      filepath: '@config/globalCss',
+      skipRange: true,
+      localMaps: createReportMaps(),
+      componentReportItem: {
+        componentIndex: '0',
+        componentName: 'global',
+        reportItemType: 'css',
+        kind: 'function',
+        filepath: 'global',
+        value: styleObject,
+        // @ts-expect-error
+        range: {},
+        contains: [],
+      },
+    })
   })
 
   return {
