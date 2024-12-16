@@ -594,8 +594,8 @@ importers:
         version: link:../types
     devDependencies:
       '@atlaskit/tokens':
-        specifier: 1.37.1
-        version: 1.37.1(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)
+        specifier: 1.61.0
+        version: 1.61.0(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)
 
   packages/preset-base:
     dependencies:
@@ -1707,16 +1707,13 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
-  '@atlaskit/platform-feature-flags@0.2.6':
-    resolution: {integrity: sha512-jcTEix5NdW7buYOdEABjH9F7CAHHXGL4Gy+Aod52VpI4yi5CBZ/0Wa1yeTZ2CExkmwuJUowLDB6ES79kEI0SzQ==}
-
   '@atlaskit/platform-feature-flags@0.3.0':
     resolution: {integrity: sha512-/0u5fFJ0Rw2j4M5wzsXgaHO6Ey12oekPCDTRvmmAIp4GO9T2Swbl80bavLAPSOmSHMhHTSuvRxiJveZXfQ21IQ==}
 
-  '@atlaskit/tokens@1.37.1':
-    resolution: {integrity: sha512-6GZ0bAlOtTSeuQzFhwXNOaEyuSNiL8S/110gea2XnsjzInmsKA/TeROFaMQGEPAHLc57WzsTx9OnnwmZGGXsfg==}
+  '@atlaskit/tokens@1.61.0':
+    resolution: {integrity: sha512-gRkBDZOaQffJHg9g+hYFgPjQ0Hz4XIDaK5WEttIGyhi2USsGsvDvUeED8liqcQNwssH/5UFxIFp3FmEwo0DoFA==}
     peerDependencies:
-      react: ^16.8.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   '@babel/code-frame@7.12.11':
     resolution: {integrity: sha512-Zt1yodBx1UcyiePMSkWnU4hPqhwq7hGi2nFL1LeA3EUl+q2LQx16MISgJ0+z7dnmgvP9QtIleuETGOiOH1RcIw==}
@@ -7983,9 +7980,6 @@ packages:
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
-
-  bind-event-listener@2.1.1:
-    resolution: {integrity: sha512-O+a5c0D2se/u2VlBJmPRn45IB6R4mYMh1ok3dWxrIZ2pmLqzggBhb875mbq73508ylzofc0+hT9W41x4Y2s8lg==}
 
   bind-event-listener@3.0.0:
     resolution: {integrity: sha512-PJvH288AWQhKs2v9zyfYdPzlPqf5bXbGMmhmUIY9x4dAUGIWgomO771oBQNwJnMQSnUIXhKu6sgzpBRXTlvb8Q==}
@@ -17708,22 +17702,18 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@atlaskit/platform-feature-flags@0.2.6':
-    dependencies:
-      '@babel/runtime': 7.26.0
-
   '@atlaskit/platform-feature-flags@0.3.0':
     dependencies:
       '@babel/runtime': 7.26.0
 
-  '@atlaskit/tokens@1.37.1(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)':
+  '@atlaskit/tokens@1.61.0(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)':
     dependencies:
       '@atlaskit/ds-lib': 2.7.0(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)
-      '@atlaskit/platform-feature-flags': 0.2.6
+      '@atlaskit/platform-feature-flags': 0.3.0
       '@babel/runtime': 7.26.0
       '@babel/traverse': 7.25.9
       '@babel/types': 7.26.0
-      bind-event-listener: 2.1.1
+      bind-event-listener: 3.0.0
       react: 18.3.0-canary-14fd9630e-20240213
     transitivePeerDependencies:
       - '@types/react'
@@ -26201,8 +26191,6 @@ snapshots:
   big.js@5.2.2: {}
 
   binary-extensions@2.3.0: {}
-
-  bind-event-listener@2.1.1: {}
 
   bind-event-listener@3.0.0: {}
 
