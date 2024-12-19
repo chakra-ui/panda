@@ -95,8 +95,8 @@ importers:
         version: 2.1.0
     devDependencies:
       astro:
-        specifier: 4.16.17
-        version: 4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.18
+        version: 4.16.18(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       vite:
         specifier: 5.4.11
         version: 5.4.11(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.36.0)
@@ -651,8 +651,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       astro:
-        specifier: 4.16.17
-        version: 4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.18
+        version: 4.16.18(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -842,8 +842,8 @@ importers:
         specifier: 4.4.4
         version: 4.4.4(@testing-library/jest-dom@6.5.0)(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(solid-js@1.8.15)(terser@5.36.0)
       astro:
-        specifier: 4.16.17
-        version: 4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
+        specifier: 4.16.18
+        version: 4.16.18(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3)
       solid-js:
         specifier: 1.8.15
         version: 1.8.15
@@ -7765,8 +7765,8 @@ packages:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
 
-  astro@4.16.17:
-    resolution: {integrity: sha512-OuD+BP7U6OqQLKtZ/FJkU2S+TOlifxS/OKUbZOb5p6y+LLBa1J3zHRJrIl7DUSq6eXY+9wSWwbJpD9JS+lqhxA==}
+  astro@4.16.18:
+    resolution: {integrity: sha512-G7zfwJt9BDHEZwlaLNvjbInIw2hPryyD654314KV/XT34pJU6SfN1S+mWa8RAkALcZNJnJXCJmT3JXLQStD3Lw==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
 
@@ -15667,6 +15667,7 @@ packages:
 
   sudo-prompt@8.2.5:
     resolution: {integrity: sha512-rlBo3HU/1zAJUrkY6jNxDOC9eVYliG6nS4JA8u8KAshITd07tafMc/Br7xQwCSseXwJ2iCcHCE8SNWX3q8Z+kw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   superjson@2.2.1:
     resolution: {integrity: sha512-8iGv75BYOa0xRJHK5vRLEjE2H/i4lulTjzpUXic3Eg8akftYjkmQDa8JARQ42rlczXyFR3IeRoeFCc7RxHsYZA==}
@@ -25851,7 +25852,7 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro@4.16.17(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3):
+  astro@4.16.18(@types/node@22.9.0)(less@4.2.0)(lightningcss@1.25.1)(rollup@4.26.0)(terser@5.36.0)(typescript@5.3.3):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.1
