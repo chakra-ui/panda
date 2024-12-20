@@ -3,6 +3,7 @@ import { EmberLogo } from '@/icons/ember'
 import { GatsbyLogo } from '@/icons/gatsby'
 import { NextjsLogo } from '@/icons/nextjs'
 import { PreactLogo } from '@/icons/preact'
+import { ReactRouterLogo } from '@/icons/react-router'
 import { QwikLogo } from '@/icons/qwik'
 import { RedwoodLogo } from '@/icons/redwood'
 import { RemixLogo } from '@/icons/remix'
@@ -55,6 +56,11 @@ const logoMap = {
     name: 'Remix',
     logo: RemixLogo,
     href: '/docs/installation/remix'
+  },
+  reactrouter: {
+    name: 'React Router',
+    logo: ReactRouterLogo,
+    href: '/docs/installation/react-router'
   },
   qwik: {
     name: 'Qwik',
