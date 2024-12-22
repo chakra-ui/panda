@@ -1,11 +1,18 @@
 import { defineConfig } from 'vitest/config'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import virtual from 'vite-plugin-virtual'
 
 const resolve = (val: string) => new URL(val, import.meta.url).pathname
 
+function virtualPanda() {
+  return virtual({
+    'virtual:panda': 'export const config = {}',
+  })
+}
+
 export default defineConfig({
   root: process.cwd(),
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths(), virtualPanda()],
   test: {
     globals: true,
     setupFiles: ['tests-setup.ts'],

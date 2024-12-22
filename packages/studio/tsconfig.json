@@ -1,6 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": ["src"],
+  "include": ["src", "__tests__"],
   "compilerOptions": {
     "jsx": "preserve",
     "customConditions": ["source"]

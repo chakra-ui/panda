@@ -1,0 +1,1820 @@
+[
+  [
+    "bg.canvas",
+    {
+      "_light": { "value": "var(--colors-gray-1)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-1)", "_dark": "var(--colors-gray-1)" },
+        "prop": "bg.canvas",
+        "var": "--colors-bg-canvas",
+        "varRef": "var(--colors-bg-canvas)",
+        "colorPalette": "bg",
+        "colorPaletteRoots": [["bg"]],
+        "colorPaletteTokenKeys": [["canvas"]]
+      },
+      "_dark": { "value": "var(--colors-gray-1)", "isReference": false }
+    }
+  ],
+  [
+    "bg.default",
+    {
+      "_light": { "value": "white", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "white", "_dark": "var(--colors-gray-2)" },
+        "prop": "bg.default",
+        "var": "--colors-bg-default",
+        "varRef": "var(--colors-bg-default)",
+        "colorPalette": "bg",
+        "colorPaletteRoots": [["bg"]],
+        "colorPaletteTokenKeys": [["default"]]
+      },
+      "_dark": { "value": "var(--colors-gray-2)", "isReference": false }
+    }
+  ],
+  [
+    "bg.subtle",
+    {
+      "_light": { "value": "var(--colors-gray-2)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-2)", "_dark": "var(--colors-gray-3)" },
+        "prop": "bg.subtle",
+        "var": "--colors-bg-subtle",
+        "varRef": "var(--colors-bg-subtle)",
+        "colorPalette": "bg",
+        "colorPaletteRoots": [["bg"]],
+        "colorPaletteTokenKeys": [["subtle"]]
+      },
+      "_dark": { "value": "var(--colors-gray-3)", "isReference": false }
+    }
+  ],
+  [
+    "bg.muted",
+    {
+      "_light": { "value": "var(--colors-gray-3)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-3)", "_dark": "var(--colors-gray-4)" },
+        "prop": "bg.muted",
+        "var": "--colors-bg-muted",
+        "varRef": "var(--colors-bg-muted)",
+        "colorPalette": "bg",
+        "colorPaletteRoots": [["bg"]],
+        "colorPaletteTokenKeys": [["muted"]]
+      },
+      "_dark": { "value": "var(--colors-gray-4)", "isReference": false }
+    }
+  ],
+  [
+    "bg.emphasized",
+    {
+      "_light": { "value": "var(--colors-gray-4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-4)", "_dark": "var(--colors-gray-5)" },
+        "prop": "bg.emphasized",
+        "var": "--colors-bg-emphasized",
+        "varRef": "var(--colors-bg-emphasized)",
+        "colorPalette": "bg",
+        "colorPaletteRoots": [["bg"]],
+        "colorPaletteTokenKeys": [["emphasized"]]
+      },
+      "_dark": { "value": "var(--colors-gray-5)", "isReference": false }
+    }
+  ],
+  [
+    "bg.disabled",
+    {
+      "_light": { "value": "var(--colors-gray-5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-5)", "_dark": "var(--colors-gray-6)" },
+        "prop": "bg.disabled",
+        "var": "--colors-bg-disabled",
+        "varRef": "var(--colors-bg-disabled)",
+        "colorPalette": "bg",
+        "colorPaletteRoots": [["bg"]],
+        "colorPaletteTokenKeys": [["disabled"]]
+      },
+      "_dark": { "value": "var(--colors-gray-6)", "isReference": false }
+    }
+  ],
+  [
+    "border.default",
+    {
+      "_light": { "value": "var(--colors-gray-7)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-7)", "_dark": "var(--colors-gray-7)" },
+        "prop": "border.default",
+        "var": "--colors-border-default",
+        "varRef": "var(--colors-border-default)",
+        "colorPalette": "border",
+        "colorPaletteRoots": [["border"]],
+        "colorPaletteTokenKeys": [["default"]]
+      },
+      "_dark": { "value": "var(--colors-gray-7)", "isReference": false }
+    }
+  ],
+  [
+    "border.muted",
+    {
+      "_light": { "value": "var(--colors-gray-6)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-6)", "_dark": "var(--colors-gray-6)" },
+        "prop": "border.muted",
+        "var": "--colors-border-muted",
+        "varRef": "var(--colors-border-muted)",
+        "colorPalette": "border",
+        "colorPaletteRoots": [["border"]],
+        "colorPaletteTokenKeys": [["muted"]]
+      },
+      "_dark": { "value": "var(--colors-gray-6)", "isReference": false }
+    }
+  ],
+  [
+    "border.subtle",
+    {
+      "_light": { "value": "var(--colors-gray-4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-4)", "_dark": "var(--colors-gray-4)" },
+        "prop": "border.subtle",
+        "var": "--colors-border-subtle",
+        "varRef": "var(--colors-border-subtle)",
+        "colorPalette": "border",
+        "colorPaletteRoots": [["border"]],
+        "colorPaletteTokenKeys": [["subtle"]]
+      },
+      "_dark": { "value": "var(--colors-gray-4)", "isReference": false }
+    }
+  ],
+  [
+    "border.disabled",
+    {
+      "_light": { "value": "var(--colors-gray-5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-5)", "_dark": "var(--colors-gray-5)" },
+        "prop": "border.disabled",
+        "var": "--colors-border-disabled",
+        "varRef": "var(--colors-border-disabled)",
+        "colorPalette": "border",
+        "colorPaletteRoots": [["border"]],
+        "colorPaletteTokenKeys": [["disabled"]]
+      },
+      "_dark": { "value": "var(--colors-gray-5)", "isReference": false }
+    }
+  ],
+  [
+    "border.outline",
+    {
+      "_light": { "value": "var(--colors-gray-a9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-a9)", "_dark": "var(--colors-gray-a9)" },
+        "prop": "border.outline",
+        "var": "--colors-border-outline",
+        "varRef": "var(--colors-border-outline)",
+        "colorPalette": "border",
+        "colorPaletteRoots": [["border"]],
+        "colorPaletteTokenKeys": [["outline"]]
+      },
+      "_dark": { "value": "var(--colors-gray-a9)", "isReference": false }
+    }
+  ],
+  [
+    "border.error",
+    {
+      "_light": { "value": "var(--colors-red-9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-9)", "_dark": "var(--colors-red-9)" },
+        "prop": "border.error",
+        "var": "--colors-border-error",
+        "varRef": "var(--colors-border-error)",
+        "colorPalette": "border",
+        "colorPaletteRoots": [["border"]],
+        "colorPaletteTokenKeys": [["error"]]
+      },
+      "_dark": { "value": "var(--colors-red-9)", "isReference": false }
+    }
+  ],
+  [
+    "red.1",
+    {
+      "_light": { "value": "var(--colors-red-light-1)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-1)", "_dark": "var(--colors-red-dark-1)" },
+        "prop": "red.1",
+        "var": "--colors-red-1",
+        "varRef": "var(--colors-red-1)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["1"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-1)", "isReference": false }
+    }
+  ],
+  [
+    "red.2",
+    {
+      "_light": { "value": "var(--colors-red-light-2)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-2)", "_dark": "var(--colors-red-dark-2)" },
+        "prop": "red.2",
+        "var": "--colors-red-2",
+        "varRef": "var(--colors-red-2)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["2"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-2)", "isReference": false }
+    }
+  ],
+  [
+    "red.3",
+    {
+      "_light": { "value": "var(--colors-red-light-3)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-3)", "_dark": "var(--colors-red-dark-3)" },
+        "prop": "red.3",
+        "var": "--colors-red-3",
+        "varRef": "var(--colors-red-3)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["3"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-3)", "isReference": false }
+    }
+  ],
+  [
+    "red.4",
+    {
+      "_light": { "value": "var(--colors-red-light-4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-4)", "_dark": "var(--colors-red-dark-4)" },
+        "prop": "red.4",
+        "var": "--colors-red-4",
+        "varRef": "var(--colors-red-4)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["4"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-4)", "isReference": false }
+    }
+  ],
+  [
+    "red.5",
+    {
+      "_light": { "value": "var(--colors-red-light-5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-5)", "_dark": "var(--colors-red-dark-5)" },
+        "prop": "red.5",
+        "var": "--colors-red-5",
+        "varRef": "var(--colors-red-5)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["5"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-5)", "isReference": false }
+    }
+  ],
+  [
+    "red.6",
+    {
+      "_light": { "value": "var(--colors-red-light-6)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-6)", "_dark": "var(--colors-red-dark-6)" },
+        "prop": "red.6",
+        "var": "--colors-red-6",
+        "varRef": "var(--colors-red-6)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["6"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-6)", "isReference": false }
+    }
+  ],
+  [
+    "red.7",
+    {
+      "_light": { "value": "var(--colors-red-light-7)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-7)", "_dark": "var(--colors-red-dark-7)" },
+        "prop": "red.7",
+        "var": "--colors-red-7",
+        "varRef": "var(--colors-red-7)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["7"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-7)", "isReference": false }
+    }
+  ],
+  [
+    "red.8",
+    {
+      "_light": { "value": "var(--colors-red-light-8)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-8)", "_dark": "var(--colors-red-dark-8)" },
+        "prop": "red.8",
+        "var": "--colors-red-8",
+        "varRef": "var(--colors-red-8)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["8"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-8)", "isReference": false }
+    }
+  ],
+  [
+    "red.9",
+    {
+      "_light": { "value": "var(--colors-red-light-9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-9)", "_dark": "var(--colors-red-dark-9)" },
+        "prop": "red.9",
+        "var": "--colors-red-9",
+        "varRef": "var(--colors-red-9)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["9"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-9)", "isReference": false }
+    }
+  ],
+  [
+    "red.10",
+    {
+      "_light": { "value": "var(--colors-red-light-10)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-10)", "_dark": "var(--colors-red-dark-10)" },
+        "prop": "red.10",
+        "var": "--colors-red-10",
+        "varRef": "var(--colors-red-10)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["10"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-10)", "isReference": false }
+    }
+  ],
+  [
+    "red.11",
+    {
+      "_light": { "value": "var(--colors-red-light-11)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-11)", "_dark": "var(--colors-red-dark-11)" },
+        "prop": "red.11",
+        "var": "--colors-red-11",
+        "varRef": "var(--colors-red-11)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["11"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-11)", "isReference": false }
+    }
+  ],
+  [
+    "red.12",
+    {
+      "_light": { "value": "var(--colors-red-light-12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-12)", "_dark": "var(--colors-red-dark-12)" },
+        "prop": "red.12",
+        "var": "--colors-red-12",
+        "varRef": "var(--colors-red-12)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["12"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-12)", "isReference": false }
+    }
+  ],
+  [
+    "red.a1",
+    {
+      "_light": { "value": "var(--colors-red-light-a1)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a1)", "_dark": "var(--colors-red-dark-a1)" },
+        "prop": "red.a1",
+        "var": "--colors-red-a1",
+        "varRef": "var(--colors-red-a1)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a1"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a1)", "isReference": false }
+    }
+  ],
+  [
+    "red.a2",
+    {
+      "_light": { "value": "var(--colors-red-light-a2)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a2)", "_dark": "var(--colors-red-dark-a2)" },
+        "prop": "red.a2",
+        "var": "--colors-red-a2",
+        "varRef": "var(--colors-red-a2)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a2"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a2)", "isReference": false }
+    }
+  ],
+  [
+    "red.a3",
+    {
+      "_light": { "value": "var(--colors-red-light-a3)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a3)", "_dark": "var(--colors-red-dark-a3)" },
+        "prop": "red.a3",
+        "var": "--colors-red-a3",
+        "varRef": "var(--colors-red-a3)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a3"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a3)", "isReference": false }
+    }
+  ],
+  [
+    "red.a4",
+    {
+      "_light": { "value": "var(--colors-red-light-a4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a4)", "_dark": "var(--colors-red-dark-a4)" },
+        "prop": "red.a4",
+        "var": "--colors-red-a4",
+        "varRef": "var(--colors-red-a4)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a4"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a4)", "isReference": false }
+    }
+  ],
+  [
+    "red.a5",
+    {
+      "_light": { "value": "var(--colors-red-light-a5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a5)", "_dark": "var(--colors-red-dark-a5)" },
+        "prop": "red.a5",
+        "var": "--colors-red-a5",
+        "varRef": "var(--colors-red-a5)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a5"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a5)", "isReference": false }
+    }
+  ],
+  [
+    "red.a6",
+    {
+      "_light": { "value": "var(--colors-red-light-a6)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a6)", "_dark": "var(--colors-red-dark-a6)" },
+        "prop": "red.a6",
+        "var": "--colors-red-a6",
+        "varRef": "var(--colors-red-a6)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a6"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a6)", "isReference": false }
+    }
+  ],
+  [
+    "red.a7",
+    {
+      "_light": { "value": "var(--colors-red-light-a7)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a7)", "_dark": "var(--colors-red-dark-a7)" },
+        "prop": "red.a7",
+        "var": "--colors-red-a7",
+        "varRef": "var(--colors-red-a7)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a7"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a7)", "isReference": false }
+    }
+  ],
+  [
+    "red.a8",
+    {
+      "_light": { "value": "var(--colors-red-light-a8)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a8)", "_dark": "var(--colors-red-dark-a8)" },
+        "prop": "red.a8",
+        "var": "--colors-red-a8",
+        "varRef": "var(--colors-red-a8)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a8"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a8)", "isReference": false }
+    }
+  ],
+  [
+    "red.a9",
+    {
+      "_light": { "value": "var(--colors-red-light-a9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a9)", "_dark": "var(--colors-red-dark-a9)" },
+        "prop": "red.a9",
+        "var": "--colors-red-a9",
+        "varRef": "var(--colors-red-a9)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a9"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a9)", "isReference": false }
+    }
+  ],
+  [
+    "red.a10",
+    {
+      "_light": { "value": "var(--colors-red-light-a10)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a10)", "_dark": "var(--colors-red-dark-a10)" },
+        "prop": "red.a10",
+        "var": "--colors-red-a10",
+        "varRef": "var(--colors-red-a10)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a10"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a10)", "isReference": false }
+    }
+  ],
+  [
+    "red.a11",
+    {
+      "_light": { "value": "var(--colors-red-light-a11)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a11)", "_dark": "var(--colors-red-dark-a11)" },
+        "prop": "red.a11",
+        "var": "--colors-red-a11",
+        "varRef": "var(--colors-red-a11)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a11"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a11)", "isReference": false }
+    }
+  ],
+  [
+    "red.a12",
+    {
+      "_light": { "value": "var(--colors-red-light-a12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a12)", "_dark": "var(--colors-red-dark-a12)" },
+        "prop": "red.a12",
+        "var": "--colors-red-a12",
+        "varRef": "var(--colors-red-a12)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["a12"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a12)", "isReference": false }
+    }
+  ],
+  [
+    "red.default",
+    {
+      "_light": { "value": "var(--colors-red-light-9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-9)", "_dark": "var(--colors-red-dark-9)" },
+        "prop": "red.default",
+        "var": "--colors-red-default",
+        "varRef": "var(--colors-red-default)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["default"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-9)", "isReference": false }
+    }
+  ],
+  [
+    "red.emphasized",
+    {
+      "_light": { "value": "var(--colors-red-light-10)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-10)", "_dark": "var(--colors-red-dark-10)" },
+        "prop": "red.emphasized",
+        "var": "--colors-red-emphasized",
+        "varRef": "var(--colors-red-emphasized)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["emphasized"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-10)", "isReference": false }
+    }
+  ],
+  [
+    "red.fg",
+    {
+      "_light": { "value": "white", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "white", "_dark": "white" },
+        "prop": "red.fg",
+        "var": "--colors-red-fg",
+        "varRef": "var(--colors-red-fg)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["fg"]]
+      },
+      "_dark": { "value": "white", "isReference": false }
+    }
+  ],
+  [
+    "red.text",
+    {
+      "_light": { "value": "var(--colors-red-light-a11)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-light-a11)", "_dark": "var(--colors-red-dark-a11)" },
+        "prop": "red.text",
+        "var": "--colors-red-text",
+        "varRef": "var(--colors-red-text)",
+        "colorPalette": "red",
+        "colorPaletteRoots": [["red"]],
+        "colorPaletteTokenKeys": [["text"]]
+      },
+      "_dark": { "value": "var(--colors-red-dark-a11)", "isReference": false }
+    }
+  ],
+  [
+    "gray.1",
+    {
+      "_light": { "value": "var(--colors-gray-light-1)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-1)", "_dark": "var(--colors-gray-dark-1)" },
+        "prop": "gray.1",
+        "var": "--colors-gray-1",
+        "varRef": "var(--colors-gray-1)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["1"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-1)", "isReference": false }
+    }
+  ],
+  [
+    "gray.2",
+    {
+      "_light": { "value": "var(--colors-gray-light-2)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-2)", "_dark": "var(--colors-gray-dark-2)" },
+        "prop": "gray.2",
+        "var": "--colors-gray-2",
+        "varRef": "var(--colors-gray-2)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["2"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-2)", "isReference": false }
+    }
+  ],
+  [
+    "gray.3",
+    {
+      "_light": { "value": "var(--colors-gray-light-3)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-3)", "_dark": "var(--colors-gray-dark-3)" },
+        "prop": "gray.3",
+        "var": "--colors-gray-3",
+        "varRef": "var(--colors-gray-3)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["3"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-3)", "isReference": false }
+    }
+  ],
+  [
+    "gray.4",
+    {
+      "_light": { "value": "var(--colors-gray-light-4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-4)", "_dark": "var(--colors-gray-dark-4)" },
+        "prop": "gray.4",
+        "var": "--colors-gray-4",
+        "varRef": "var(--colors-gray-4)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["4"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-4)", "isReference": false }
+    }
+  ],
+  [
+    "gray.5",
+    {
+      "_light": { "value": "var(--colors-gray-light-5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-5)", "_dark": "var(--colors-gray-dark-5)" },
+        "prop": "gray.5",
+        "var": "--colors-gray-5",
+        "varRef": "var(--colors-gray-5)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["5"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-5)", "isReference": false }
+    }
+  ],
+  [
+    "gray.6",
+    {
+      "_light": { "value": "var(--colors-gray-light-6)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-6)", "_dark": "var(--colors-gray-dark-6)" },
+        "prop": "gray.6",
+        "var": "--colors-gray-6",
+        "varRef": "var(--colors-gray-6)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["6"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-6)", "isReference": false }
+    }
+  ],
+  [
+    "gray.7",
+    {
+      "_light": { "value": "var(--colors-gray-light-7)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-7)", "_dark": "var(--colors-gray-dark-7)" },
+        "prop": "gray.7",
+        "var": "--colors-gray-7",
+        "varRef": "var(--colors-gray-7)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["7"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-7)", "isReference": false }
+    }
+  ],
+  [
+    "gray.8",
+    {
+      "_light": { "value": "var(--colors-gray-light-8)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-8)", "_dark": "var(--colors-gray-dark-8)" },
+        "prop": "gray.8",
+        "var": "--colors-gray-8",
+        "varRef": "var(--colors-gray-8)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["8"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-8)", "isReference": false }
+    }
+  ],
+  [
+    "gray.9",
+    {
+      "_light": { "value": "var(--colors-gray-light-9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-9)", "_dark": "var(--colors-gray-dark-9)" },
+        "prop": "gray.9",
+        "var": "--colors-gray-9",
+        "varRef": "var(--colors-gray-9)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["9"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-9)", "isReference": false }
+    }
+  ],
+  [
+    "gray.10",
+    {
+      "_light": { "value": "var(--colors-gray-light-10)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-10)", "_dark": "var(--colors-gray-dark-10)" },
+        "prop": "gray.10",
+        "var": "--colors-gray-10",
+        "varRef": "var(--colors-gray-10)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["10"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-10)", "isReference": false }
+    }
+  ],
+  [
+    "gray.11",
+    {
+      "_light": { "value": "var(--colors-gray-light-11)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-11)", "_dark": "var(--colors-gray-dark-11)" },
+        "prop": "gray.11",
+        "var": "--colors-gray-11",
+        "varRef": "var(--colors-gray-11)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["11"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-11)", "isReference": false }
+    }
+  ],
+  [
+    "gray.12",
+    {
+      "_light": { "value": "var(--colors-gray-light-12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-12)", "_dark": "var(--colors-gray-dark-12)" },
+        "prop": "gray.12",
+        "var": "--colors-gray-12",
+        "varRef": "var(--colors-gray-12)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["12"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-12)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a1",
+    {
+      "_light": { "value": "var(--colors-gray-light-a1)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a1)", "_dark": "var(--colors-gray-dark-a1)" },
+        "prop": "gray.a1",
+        "var": "--colors-gray-a1",
+        "varRef": "var(--colors-gray-a1)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a1"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a1)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a2",
+    {
+      "_light": { "value": "var(--colors-gray-light-a2)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a2)", "_dark": "var(--colors-gray-dark-a2)" },
+        "prop": "gray.a2",
+        "var": "--colors-gray-a2",
+        "varRef": "var(--colors-gray-a2)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a2"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a2)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a3",
+    {
+      "_light": { "value": "var(--colors-gray-light-a3)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a3)", "_dark": "var(--colors-gray-dark-a3)" },
+        "prop": "gray.a3",
+        "var": "--colors-gray-a3",
+        "varRef": "var(--colors-gray-a3)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a3"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a3)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a4",
+    {
+      "_light": { "value": "var(--colors-gray-light-a4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a4)", "_dark": "var(--colors-gray-dark-a4)" },
+        "prop": "gray.a4",
+        "var": "--colors-gray-a4",
+        "varRef": "var(--colors-gray-a4)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a4"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a4)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a5",
+    {
+      "_light": { "value": "var(--colors-gray-light-a5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a5)", "_dark": "var(--colors-gray-dark-a5)" },
+        "prop": "gray.a5",
+        "var": "--colors-gray-a5",
+        "varRef": "var(--colors-gray-a5)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a5"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a5)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a6",
+    {
+      "_light": { "value": "var(--colors-gray-light-a6)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a6)", "_dark": "var(--colors-gray-dark-a6)" },
+        "prop": "gray.a6",
+        "var": "--colors-gray-a6",
+        "varRef": "var(--colors-gray-a6)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a6"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a6)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a7",
+    {
+      "_light": { "value": "var(--colors-gray-light-a7)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a7)", "_dark": "var(--colors-gray-dark-a7)" },
+        "prop": "gray.a7",
+        "var": "--colors-gray-a7",
+        "varRef": "var(--colors-gray-a7)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a7"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a7)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a8",
+    {
+      "_light": { "value": "var(--colors-gray-light-a8)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a8)", "_dark": "var(--colors-gray-dark-a8)" },
+        "prop": "gray.a8",
+        "var": "--colors-gray-a8",
+        "varRef": "var(--colors-gray-a8)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a8"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a8)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a9",
+    {
+      "_light": { "value": "var(--colors-gray-light-a9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a9)", "_dark": "var(--colors-gray-dark-a9)" },
+        "prop": "gray.a9",
+        "var": "--colors-gray-a9",
+        "varRef": "var(--colors-gray-a9)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a9"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a9)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a10",
+    {
+      "_light": { "value": "var(--colors-gray-light-a10)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a10)", "_dark": "var(--colors-gray-dark-a10)" },
+        "prop": "gray.a10",
+        "var": "--colors-gray-a10",
+        "varRef": "var(--colors-gray-a10)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a10"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a10)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a11",
+    {
+      "_light": { "value": "var(--colors-gray-light-a11)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a11)", "_dark": "var(--colors-gray-dark-a11)" },
+        "prop": "gray.a11",
+        "var": "--colors-gray-a11",
+        "varRef": "var(--colors-gray-a11)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a11"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a11)", "isReference": false }
+    }
+  ],
+  [
+    "gray.a12",
+    {
+      "_light": { "value": "var(--colors-gray-light-a12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-light-a12)", "_dark": "var(--colors-gray-dark-a12)" },
+        "prop": "gray.a12",
+        "var": "--colors-gray-a12",
+        "varRef": "var(--colors-gray-a12)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["a12"]]
+      },
+      "_dark": { "value": "var(--colors-gray-dark-a12)", "isReference": false }
+    }
+  ],
+  [
+    "gray.default",
+    {
+      "_light": { "value": "black", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "black", "_dark": "white" },
+        "prop": "gray.default",
+        "var": "--colors-gray-default",
+        "varRef": "var(--colors-gray-default)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["default"]]
+      },
+      "_dark": { "value": "white", "isReference": false }
+    }
+  ],
+  [
+    "gray.emphasized",
+    {
+      "_light": { "value": "var(--colors-gray-12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-12)", "_dark": "var(--colors-gray-12)" },
+        "prop": "gray.emphasized",
+        "var": "--colors-gray-emphasized",
+        "varRef": "var(--colors-gray-emphasized)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["emphasized"]]
+      },
+      "_dark": { "value": "var(--colors-gray-12)", "isReference": false }
+    }
+  ],
+  [
+    "gray.fg",
+    {
+      "_light": { "value": "white", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "white", "_dark": "black" },
+        "prop": "gray.fg",
+        "var": "--colors-gray-fg",
+        "varRef": "var(--colors-gray-fg)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["fg"]]
+      },
+      "_dark": { "value": "black", "isReference": false }
+    }
+  ],
+  [
+    "gray.text",
+    {
+      "_light": { "value": "black", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "black", "_dark": "white" },
+        "prop": "gray.text",
+        "var": "--colors-gray-text",
+        "varRef": "var(--colors-gray-text)",
+        "colorPalette": "gray",
+        "colorPaletteRoots": [["gray"]],
+        "colorPaletteTokenKeys": [["text"]]
+      },
+      "_dark": { "value": "white", "isReference": false }
+    }
+  ],
+  [
+    "neutral.1",
+    {
+      "_light": { "value": "var(--colors-neutral-light-1)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-1)", "_dark": "var(--colors-neutral-dark-1)" },
+        "prop": "neutral.1",
+        "var": "--colors-neutral-1",
+        "varRef": "var(--colors-neutral-1)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["1"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-1)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.2",
+    {
+      "_light": { "value": "var(--colors-neutral-light-2)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-2)", "_dark": "var(--colors-neutral-dark-2)" },
+        "prop": "neutral.2",
+        "var": "--colors-neutral-2",
+        "varRef": "var(--colors-neutral-2)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["2"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-2)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.3",
+    {
+      "_light": { "value": "var(--colors-neutral-light-3)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-3)", "_dark": "var(--colors-neutral-dark-3)" },
+        "prop": "neutral.3",
+        "var": "--colors-neutral-3",
+        "varRef": "var(--colors-neutral-3)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["3"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-3)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.4",
+    {
+      "_light": { "value": "var(--colors-neutral-light-4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-4)", "_dark": "var(--colors-neutral-dark-4)" },
+        "prop": "neutral.4",
+        "var": "--colors-neutral-4",
+        "varRef": "var(--colors-neutral-4)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["4"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-4)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.5",
+    {
+      "_light": { "value": "var(--colors-neutral-light-5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-5)", "_dark": "var(--colors-neutral-dark-5)" },
+        "prop": "neutral.5",
+        "var": "--colors-neutral-5",
+        "varRef": "var(--colors-neutral-5)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["5"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-5)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.6",
+    {
+      "_light": { "value": "var(--colors-neutral-light-6)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-6)", "_dark": "var(--colors-neutral-dark-6)" },
+        "prop": "neutral.6",
+        "var": "--colors-neutral-6",
+        "varRef": "var(--colors-neutral-6)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["6"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-6)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.7",
+    {
+      "_light": { "value": "var(--colors-neutral-light-7)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-7)", "_dark": "var(--colors-neutral-dark-7)" },
+        "prop": "neutral.7",
+        "var": "--colors-neutral-7",
+        "varRef": "var(--colors-neutral-7)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["7"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-7)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.8",
+    {
+      "_light": { "value": "var(--colors-neutral-light-8)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-8)", "_dark": "var(--colors-neutral-dark-8)" },
+        "prop": "neutral.8",
+        "var": "--colors-neutral-8",
+        "varRef": "var(--colors-neutral-8)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["8"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-8)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.9",
+    {
+      "_light": { "value": "var(--colors-neutral-light-9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-9)", "_dark": "var(--colors-neutral-dark-9)" },
+        "prop": "neutral.9",
+        "var": "--colors-neutral-9",
+        "varRef": "var(--colors-neutral-9)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["9"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-9)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.10",
+    {
+      "_light": { "value": "var(--colors-neutral-light-10)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-10)", "_dark": "var(--colors-neutral-dark-10)" },
+        "prop": "neutral.10",
+        "var": "--colors-neutral-10",
+        "varRef": "var(--colors-neutral-10)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["10"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-10)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.11",
+    {
+      "_light": { "value": "var(--colors-neutral-light-11)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-11)", "_dark": "var(--colors-neutral-dark-11)" },
+        "prop": "neutral.11",
+        "var": "--colors-neutral-11",
+        "varRef": "var(--colors-neutral-11)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["11"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-11)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.12",
+    {
+      "_light": { "value": "var(--colors-neutral-light-12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-12)", "_dark": "var(--colors-neutral-dark-12)" },
+        "prop": "neutral.12",
+        "var": "--colors-neutral-12",
+        "varRef": "var(--colors-neutral-12)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["12"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-12)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a1",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a1)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a1)", "_dark": "var(--colors-neutral-dark-a1)" },
+        "prop": "neutral.a1",
+        "var": "--colors-neutral-a1",
+        "varRef": "var(--colors-neutral-a1)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a1"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a1)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a2",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a2)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a2)", "_dark": "var(--colors-neutral-dark-a2)" },
+        "prop": "neutral.a2",
+        "var": "--colors-neutral-a2",
+        "varRef": "var(--colors-neutral-a2)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a2"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a2)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a3",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a3)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a3)", "_dark": "var(--colors-neutral-dark-a3)" },
+        "prop": "neutral.a3",
+        "var": "--colors-neutral-a3",
+        "varRef": "var(--colors-neutral-a3)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a3"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a3)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a4",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a4)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a4)", "_dark": "var(--colors-neutral-dark-a4)" },
+        "prop": "neutral.a4",
+        "var": "--colors-neutral-a4",
+        "varRef": "var(--colors-neutral-a4)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a4"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a4)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a5",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a5)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a5)", "_dark": "var(--colors-neutral-dark-a5)" },
+        "prop": "neutral.a5",
+        "var": "--colors-neutral-a5",
+        "varRef": "var(--colors-neutral-a5)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a5"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a5)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a6",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a6)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a6)", "_dark": "var(--colors-neutral-dark-a6)" },
+        "prop": "neutral.a6",
+        "var": "--colors-neutral-a6",
+        "varRef": "var(--colors-neutral-a6)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a6"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a6)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a7",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a7)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a7)", "_dark": "var(--colors-neutral-dark-a7)" },
+        "prop": "neutral.a7",
+        "var": "--colors-neutral-a7",
+        "varRef": "var(--colors-neutral-a7)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a7"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a7)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a8",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a8)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a8)", "_dark": "var(--colors-neutral-dark-a8)" },
+        "prop": "neutral.a8",
+        "var": "--colors-neutral-a8",
+        "varRef": "var(--colors-neutral-a8)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a8"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a8)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a9",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a9)", "_dark": "var(--colors-neutral-dark-a9)" },
+        "prop": "neutral.a9",
+        "var": "--colors-neutral-a9",
+        "varRef": "var(--colors-neutral-a9)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a9"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a9)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a10",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a10)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a10)", "_dark": "var(--colors-neutral-dark-a10)" },
+        "prop": "neutral.a10",
+        "var": "--colors-neutral-a10",
+        "varRef": "var(--colors-neutral-a10)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a10"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a10)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a11",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a11)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a11)", "_dark": "var(--colors-neutral-dark-a11)" },
+        "prop": "neutral.a11",
+        "var": "--colors-neutral-a11",
+        "varRef": "var(--colors-neutral-a11)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a11"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a11)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.a12",
+    {
+      "_light": { "value": "var(--colors-neutral-light-a12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-neutral-light-a12)", "_dark": "var(--colors-neutral-dark-a12)" },
+        "prop": "neutral.a12",
+        "var": "--colors-neutral-a12",
+        "varRef": "var(--colors-neutral-a12)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["a12"]]
+      },
+      "_dark": { "value": "var(--colors-neutral-dark-a12)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.default",
+    {
+      "_light": { "value": "black", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "black", "_dark": "white" },
+        "prop": "neutral.default",
+        "var": "--colors-neutral-default",
+        "varRef": "var(--colors-neutral-default)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["default"]]
+      },
+      "_dark": { "value": "white", "isReference": false }
+    }
+  ],
+  [
+    "neutral.emphasized",
+    {
+      "_light": { "value": "var(--colors-gray-12)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-12)", "_dark": "var(--colors-gray-12)" },
+        "prop": "neutral.emphasized",
+        "var": "--colors-neutral-emphasized",
+        "varRef": "var(--colors-neutral-emphasized)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["emphasized"]]
+      },
+      "_dark": { "value": "var(--colors-gray-12)", "isReference": false }
+    }
+  ],
+  [
+    "neutral.fg",
+    {
+      "_light": { "value": "white", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "white", "_dark": "black" },
+        "prop": "neutral.fg",
+        "var": "--colors-neutral-fg",
+        "varRef": "var(--colors-neutral-fg)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["fg"]]
+      },
+      "_dark": { "value": "black", "isReference": false }
+    }
+  ],
+  [
+    "neutral.text",
+    {
+      "_light": { "value": "black", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "black", "_dark": "white" },
+        "prop": "neutral.text",
+        "var": "--colors-neutral-text",
+        "varRef": "var(--colors-neutral-text)",
+        "colorPalette": "neutral",
+        "colorPaletteRoots": [["neutral"]],
+        "colorPaletteTokenKeys": [["text"]]
+      },
+      "_dark": { "value": "white", "isReference": false }
+    }
+  ],
+  [
+    "fg.disabled",
+    {
+      "_light": { "value": "var(--colors-gray-9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-gray-9)", "_dark": "var(--colors-gray-9)" },
+        "prop": "fg.disabled",
+        "var": "--colors-fg-disabled",
+        "varRef": "var(--colors-fg-disabled)",
+        "colorPalette": "fg",
+        "colorPaletteRoots": [["fg"]],
+        "colorPaletteTokenKeys": [["disabled"]]
+      },
+      "_dark": { "value": "var(--colors-gray-9)", "isReference": false }
+    }
+  ],
+  [
+    "fg.error",
+    {
+      "_light": { "value": "var(--colors-red-9)", "isReference": false },
+      "extensions": {
+        "condition": "_dark",
+        "category": "colors",
+        "conditions": { "_light": "var(--colors-red-9)", "_dark": "var(--colors-red-9)" },
+        "prop": "fg.error",
+        "var": "--colors-fg-error",
+        "varRef": "var(--colors-fg-error)",
+        "colorPalette": "fg",
+        "colorPaletteRoots": [["fg"]],
+        "colorPaletteTokenKeys": [["error"]]
+      },
+      "_dark": { "value": "var(--colors-red-9)", "isReference": false }
+    }
+  ],
+  [
+    "fg.default",
+    {
+      "_dark": { "value": "rgba(255, 255, 255, 0.87)", "isReference": false },
+      "extensions": {
+        "condition": "_light",
+        "category": "colors",
+        "conditions": { "_dark": "rgba(255, 255, 255, 0.87)", "_light": "rgba(0, 0, 0, 0.87)" },
+        "prop": "fg.default",
+        "var": "--colors-fg-default",
+        "varRef": "var(--colors-fg-default)",
+        "colorPalette": "fg",
+        "colorPaletteRoots": [["fg"]],
+        "colorPaletteTokenKeys": [["default"]]
+      },
+      "_light": { "value": "rgba(0, 0, 0, 0.87)", "isReference": false }
+    }
+  ],
+  [
+    "fg.subtle",
+    {
+      "_dark": { "value": "rgba(255, 255, 255, 0.60)", "isReference": false },
+      "extensions": {
+        "condition": "_light",
+        "category": "colors",
+        "conditions": { "_dark": "rgba(255, 255, 255, 0.60)", "_light": "rgba(0, 0, 0, 0.60)" },
+        "prop": "fg.subtle",
+        "var": "--colors-fg-subtle",
+        "varRef": "var(--colors-fg-subtle)",
+        "colorPalette": "fg",
+        "colorPaletteRoots": [["fg"]],
+        "colorPaletteTokenKeys": [["subtle"]]
+      },
+      "_light": { "value": "rgba(0, 0, 0, 0.60)", "isReference": false }
+    }
+  ],
+  [
+    "fg.muted",
+    {
+      "_dark": { "value": "rgba(255, 255, 255, 0.38)", "isReference": false },
+      "extensions": {
+        "condition": "_light",
+        "category": "colors",
+        "conditions": { "_dark": "rgba(255, 255, 255, 0.38)", "_light": "rgba(0, 0, 0, 0.38)" },
+        "prop": "fg.muted",
+        "var": "--colors-fg-muted",
+        "varRef": "var(--colors-fg-muted)",
+        "colorPalette": "fg",
+        "colorPaletteRoots": [["fg"]],
+        "colorPaletteTokenKeys": [["muted"]]
+      },
+      "_light": { "value": "rgba(0, 0, 0, 0.38)", "isReference": false }
+    }
+  ]
+]
