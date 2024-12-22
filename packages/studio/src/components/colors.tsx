@@ -4,7 +4,7 @@ import { Grid, HStack, Stack, panda } from '../../styled-system/jsx'
 import { ColorWrapper } from '../components/color-wrapper'
 import { TokenContent } from '../components/token-content'
 import { TokenGroup } from '../components/token-group'
-import { useColorDocs } from '../lib/use-color-docs'
+import { useColorDocs, type ColorToken } from '../lib/use-color-docs'
 import { Input } from './input'
 import { SemanticColorDisplay } from './semantic-color'
 import { StickyTop } from './sticky-top'
@@ -15,27 +15,46 @@ function getColorFromReference(reference: string) {
   return reference.match(/{colors\.(.*?)}/)?.[1]
 }
 
+const SEMANTIC_TOKEN_PRIORITY = ['base', 'light', 'dark', '_light', '_dark']
+
+export function sortSemanticTokens(tokens: string[]) {
+  const ret = tokens.slice()
+  ret.sort((a, b) => {
+    const _a = SEMANTIC_TOKEN_PRIORITY.indexOf(a)
+    const _b = SEMANTIC_TOKEN_PRIORITY.indexOf(b)
+    if (_a !== -1 && _b !== -1) return _a - _b
+    if (_a !== -1) return -1
+    if (_b !== -1) return 1
+    return a.localeCompare(b)
+  })
+
+  return ret
+}
+
 export interface SemanticTokenProps {
   name: string
-  tokens: Record<string, TokenExtensions>
+  tokens: Record<string, ColorToken>
 }
 
 export function SemanticToken(props: SemanticTokenProps) {
   const { name, tokens } = props
 
+  const conditions: string[] = []
+  if (tokens.extensions.conditions) {
+    conditions.push(...sortSemanticTokens(Object.keys(tokens.extensions.conditions)))
+  }
+
   return (
     <Stack gap="2" width="full">
       <HStack gap="1">
-        <SemanticColorDisplay
-          value={tokens.base.value}
-          condition="base"
-          token={getColorFromReference(tokens.extensions.conditions!.base)}
-        />
-        <SemanticColorDisplay
-          value={tokens[tokens.extensions.condition!].value}
-          condition={tokens.extensions.condition!}
-          token={getColorFromReference(tokens.extensions.conditions![tokens.extensions.condition!])}
-        />
+        {conditions.map((cond) => (
+          <SemanticColorDisplay
+            key={cond}
+            value={tokens[cond].value}
+            condition={cond}
+            token={getColorFromReference(tokens.extensions.conditions![cond])}
+          />
+        ))}
       </HStack>
       <panda.span fontWeight="semibold">{name}</panda.span>
     </Stack>
