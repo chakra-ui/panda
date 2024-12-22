@@ -1,4 +1,4 @@
-import type { Token } from '@pandacss/token-dictionary'
+import type { Token, TokenExtensions } from '@pandacss/token-dictionary'
 import * as React from 'react'
 import { Grid, HStack, Stack, panda } from '../../styled-system/jsx'
 import { ColorWrapper } from '../components/color-wrapper'
@@ -15,32 +15,36 @@ function getColorFromReference(reference: string) {
   return reference.match(/{colors\.(.*?)}/)?.[1]
 }
 
+export interface SemanticTokenProps {
+  name: string
+  tokens: Record<string, TokenExtensions>
+}
+
+export function SemanticToken(props: SemanticTokenProps) {
+  const { name, tokens } = props
+
+  return (
+    <Stack gap="2" width="full">
+      <HStack gap="1">
+        <SemanticColorDisplay
+          value={tokens.base.value}
+          condition="base"
+          token={getColorFromReference(tokens.extensions.conditions!.base)}
+        />
+        <SemanticColorDisplay
+          value={tokens[tokens.extensions.condition!].value}
+          condition={tokens.extensions.condition!}
+          token={getColorFromReference(tokens.extensions.conditions![tokens.extensions.condition!])}
+        />
+      </HStack>
+      <panda.span fontWeight="semibold">{name}</panda.span>
+    </Stack>
+  )
+}
+
 export default function Colors() {
   const { filterQuery, setFilterQuery, semanticTokens, hasResults, uncategorizedColors, categorizedColors } =
     useColorDocs()
-
-  const renderSemanticTokens = () => {
-    return semanticTokens.map(([name, colors], i) => {
-      return (
-        <Stack gap="2" key={i} width="full">
-          <HStack gap="1">
-            <SemanticColorDisplay
-              value={colors.base.value}
-              condition="base"
-              token={getColorFromReference(colors.extensions.conditions!.base)}
-            />
-            <SemanticColorDisplay
-              value={colors[colors.extensions.condition!].value}
-              condition={colors.extensions.condition!}
-              token={getColorFromReference(colors.extensions.conditions![colors.extensions.condition!])}
-            />
-          </HStack>
-
-          <panda.span fontWeight="semibold">{name}</panda.span>
-        </Stack>
-      )
-    })
-  }
 
   return (
     <TokenGroup>
@@ -60,7 +64,13 @@ export default function Colors() {
 
           <ColorGroup title={UNCATEGORIZED_ID} colors={uncategorizedColors} />
 
-          {!!semanticTokens.length && <ColorGroup title="Semantic Tokens">{renderSemanticTokens()}</ColorGroup>}
+          {!!semanticTokens.length && (
+            <ColorGroup title="Semantic Tokens">
+              {semanticTokens.map(([name, colors], i) => (
+                <SemanticToken key={i} name={name} tokens={colors} />
+              ))}
+            </ColorGroup>
+          )}
 
           {!hasResults && <div>No result found! 🐼</div>}
         </Stack>

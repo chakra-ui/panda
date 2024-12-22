@@ -68,6 +68,7 @@
   },
   "devDependencies": {
     "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19"
+    "@types/react-dom": "18.2.19",
+    "@testing-library/react": "14.2.2"
   }
 }
