@@ -15,7 +15,7 @@ function getColorFromReference(reference: string) {
   return reference.match(/{colors\.(.*?)}/)?.[1]
 }
 
-const SEMANTIC_TOKEN_PRIORITY = ['base', 'light', 'dark', '_light', '_dark']
+const SEMANTIC_TOKEN_PRIORITY = ['base', 'light', '_light', 'dark', '_dark']
 
 export function sortSemanticTokens(tokens: string[]) {
   const ret = tokens.slice()
