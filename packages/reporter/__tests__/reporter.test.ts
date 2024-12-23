@@ -8,8 +8,12 @@ const ctx = createContext({
       colors: {
         red: { 200: { value: 'red' } },
         green: { 200: { value: 'green' } },
+        blue: { 200: { value: 'blue' } },
+        yellow: { 200: { value: 'yellow' } },
+        custom: { value: 'custom' },
       },
       fontSizes: { lg: { value: '12px' } },
+      spacing: { 1: { value: '10px' }, 2: { value: '20px' } },
     },
   },
 })
@@ -35,21 +39,11 @@ describe('reporter', () => {
     const baseStyle = css({
         color: 'red.200',
         fontSize: '12px',
+        bg: 'red.200',
     })
     `
     expect(tokenReport(code)).toMatchInlineSnapshot(`
       [
-        {
-          "category": "colors",
-          "count": 16,
-          "hardcoded": 7,
-          "mostUsedNames": [
-            "red.200",
-          ],
-          "percentUsed": 6.25,
-          "usedCount": 1,
-          "usedInXFiles": 3,
-        },
         {
           "category": "fontSizes",
           "count": 1,
@@ -59,25 +53,38 @@ describe('reporter', () => {
           ],
           "percentUsed": 100,
           "usedCount": 1,
-          "usedInXFiles": 3,
+          "usedInXFiles": 1,
+        },
+        {
+          "category": "spacing",
+          "count": 6,
+          "hardcoded": 3,
+          "mostUsedNames": [
+            "2",
+          ],
+          "percentUsed": 16.67,
+          "usedCount": 1,
+          "usedInXFiles": 0,
+        },
+        {
+          "category": "colors",
+          "count": 19,
+          "hardcoded": 6,
+          "mostUsedNames": [
+            "red.200",
+          ],
+          "percentUsed": 5.26,
+          "usedCount": 1,
+          "usedInXFiles": 1,
         },
         {
           "category": "sizes",
           "count": 5,
-          "hardcoded": 10,
-          "mostUsedNames": [],
-          "percentUsed": 0,
-          "usedCount": 0,
-          "usedInXFiles": 2,
-        },
-        {
-          "category": "spacing",
-          "count": 2,
           "hardcoded": 5,
           "mostUsedNames": [],
           "percentUsed": 0,
           "usedCount": 0,
-          "usedInXFiles": 3,
+          "usedInXFiles": 0,
         },
       ]
     `)

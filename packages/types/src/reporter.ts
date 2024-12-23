@@ -37,7 +37,7 @@ export interface PropertyReportItem {
   tokenType?: string
   isKnownValue: boolean
 
-  range: PropertyLocationRange
+  range: PropertyLocationRange | null
   filepath: string
 }
 
@@ -52,7 +52,7 @@ export interface ComponentReportItem extends Pick<PropertyReportItem, 'filepath'
   kind: ComponentKind
   contains: Array<PropertyReportItem['index']>
   value: Record<string, any>
-  range: PropertyLocationRange
+  range: PropertyLocationRange | null
   debug?: boolean
 }
 

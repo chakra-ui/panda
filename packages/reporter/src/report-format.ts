@@ -8,7 +8,7 @@ export type ReportFormat = 'json' | 'markdown' | 'csv' | 'text' | 'table'
 
 const plural = (count: number, singular: string) => {
   const pr = new Intl.PluralRules('en-US').select(count)
-  const plural = pr === 'one' ? singular : `${singular}s`
+  const plural = pr === 'one' || count === 0 ? singular : `${singular}s`
   return `${count} ${plural}`
 }
 

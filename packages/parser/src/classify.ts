@@ -196,7 +196,7 @@ export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap):
           path: current.concat(attrName),
           value,
           isKnownValue: false,
-          range: skipRange ? {} : map.getRange(),
+          range: skipRange ? null : map.getRange(),
         } as PropertyReportItem
 
         componentReportItem.contains.push(propReportItem.index)
@@ -340,8 +340,7 @@ export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap):
         kind: 'function',
         filepath: `theme/recipes/${key}`,
         value: styleObject,
-        // @ts-expect-error
-        range: {},
+        range: null,
         contains: [],
       }
 
@@ -394,8 +393,7 @@ export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap):
         kind: 'function',
         filepath: 'global',
         value: styleObject,
-        // @ts-expect-error
-        range: {},
+        range: null,
         contains: [],
       },
     })

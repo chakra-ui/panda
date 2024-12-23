@@ -25,10 +25,6 @@ export class Reporter {
     this.ctx.appendParserCss(this.#sheet)
   }
 
-  private get totalExtractTime(): number {
-    return sum(Array.from(this.#extractTimes.values()))
-  }
-
   get report() {
     return this.#report
   }
@@ -88,8 +84,6 @@ export class Reporter {
     return analyzeRecipes(project.parserOptions, this.#report)
   }
 }
-
-const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
 
 export interface ReporterOptions {
   onResult?: (file: string, result: ParserResultInterface) => void
