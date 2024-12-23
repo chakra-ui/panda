@@ -19,12 +19,13 @@ export function formatTokenReport(result: TokenReportEntry[], format: ReportForm
 
     case 'markdown': {
       return markdownTable([
-        ['Token', 'Usage %', 'Hardcoded', 'Most Used', 'Found in'],
+        ['Token', 'Usage %', 'Most Used', 'Unused %', 'Hardcoded', 'Found in'],
         ...result.map((entry) => [
           `${entry.category} (${entry.count} tokens)`,
-          `${entry.percentUsed}% (${entry.usedCount})`,
-          entry.hardcoded.toString(),
+          `${entry.percentUsed}% (${entry.usedCount} tokens)`,
           entry.mostUsedNames.join(', '),
+          `${(100 - entry.percentUsed).toFixed(2)}%`,
+          entry.hardcoded.toString(),
           plural(entry.usedInXFiles, 'file'),
         ]),
       ])
@@ -32,14 +33,15 @@ export function formatTokenReport(result: TokenReportEntry[], format: ReportForm
 
     case 'csv': {
       return [
-        'Token,Usage %,Hardcoded,Most Used,Found in',
+        'Token,Usage %,Most Used,Unused %,Hardcoded,Found in',
         ...result.map((entry) =>
           [
-            `"${entry.category} (${entry.count} tokens)"`,
-            `${entry.percentUsed}%`,
-            entry.hardcoded,
-            `"${entry.mostUsedNames}"`,
-            `"${plural(entry.usedInXFiles, 'file')}"`,
+            `${entry.category} (${entry.count} tokens)`,
+            `${entry.percentUsed}% (${entry.usedCount} tokens)`,
+            entry.mostUsedNames.join(', '),
+            `${(100 - entry.percentUsed).toFixed(2)}%`,
+            entry.hardcoded.toString(),
+            plural(entry.usedInXFiles, 'file'),
           ].join(','),
         ),
       ].join('\n')
@@ -47,12 +49,13 @@ export function formatTokenReport(result: TokenReportEntry[], format: ReportForm
 
     case 'table': {
       return table([
-        ['Token', 'Usage %', 'Hardcoded', 'Most Used', 'Found in'],
+        ['Token', 'Usage %', 'Most Used', 'Unused %', 'Hardcoded', 'Found in'],
         ...result.map((entry) => [
           `${entry.category} (${entry.count} tokens)`,
           `${entry.percentUsed}% (${entry.usedCount} tokens)`,
-          entry.hardcoded,
           Wordwrap.wrap(entry.mostUsedNames.join(', '), { width: 20 }),
+          `${(100 - entry.percentUsed).toFixed(2)}%`,
+          entry.hardcoded,
           plural(entry.usedInXFiles, 'file'),
         ]),
       ])
@@ -64,9 +67,10 @@ export function formatTokenReport(result: TokenReportEntry[], format: ReportForm
         .map((entry) =>
           [
             `Token: ${entry.category} (${entry.count} tokens)`,
-            `Usage: ${entry.percentUsed}% (${entry.usedCount} instances)`,
-            `Hardcoded: ${entry.hardcoded}`,
+            `Usage: ${entry.percentUsed}% (${entry.usedCount} tokens)`,
             `Most Used: ${entry.mostUsedNames}`,
+            `Unused: ${(100 - entry.percentUsed).toFixed(2)}%`,
+            `Hardcoded: ${entry.hardcoded}`,
             `Found in: ${plural(entry.usedInXFiles, 'file')}`,
             '',
           ].join('\n'),
