@@ -4,7 +4,7 @@ import { logger } from '@pandacss/logger'
 import type { AnalysisReport, ClassifyReport, ParserResultInterface } from '@pandacss/types'
 import { version } from '../package.json'
 import { analyzeRecipes, type RecipeReportEntry } from './reporter-recipe'
-import { analyzeTokens, type TokenReportEntry } from './reporter-token'
+import { analyzeTokens, type TokenAnalysisReport } from './reporter-token'
 
 export class Reporter {
   #parserResults = new Map<string, ParserResultInterface>()
@@ -74,7 +74,7 @@ export class Reporter {
     }
   }
 
-  getTokenReport = (): TokenReportEntry[] => {
+  getTokenReport = (): TokenAnalysisReport => {
     const { project } = this.options
     return analyzeTokens(project.parserOptions, this.#report)
   }

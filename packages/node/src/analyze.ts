@@ -19,7 +19,7 @@ export function analyze(ctx: PandaContext, options: AnalysisOptions = {}) {
     },
     getTokenReport(format: ReportFormat = 'table') {
       const report = reporter.getTokenReport()
-      return { report, formatted: formatTokenReport(report, format) }
+      return { report, formatted: formatTokenReport(report.getSummary(), format) }
     },
     writeReport(filePath: string) {
       const dirname = ctx.runtime.path.dirname(filePath)

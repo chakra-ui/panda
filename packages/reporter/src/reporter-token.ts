@@ -11,7 +11,7 @@ const getPercent = (used: number, total: number) => {
   return Number(formatter.format((used / (total || 1)) * 100))
 }
 
-export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): TokenReportEntry[] {
+export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): TokenAnalysisReport {
   const categoryMap = result.derived.globalMaps.byTokenType
   const categoryEntries = Array.from(categoryMap.entries())
 
@@ -60,7 +60,7 @@ export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): Token
     })
   }, new Map<string, { total: number; used: number; unused: number; percent: number }>())
 
-  const tokenNames = usageEntries.reduce((map, [category, usage]) => {
+  const tokenNameMap = usageEntries.reduce((map, [category, usage]) => {
     const existing = map.get(category) ?? []
     usage.forEach(({ value, type }) => {
       if (type === 'token') existing.push(value)
@@ -73,7 +73,7 @@ export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): Token
     return map.set(category, sorted)
   }, new Map<string, string[]>())
 
-  const fileUsage = usageEntries.reduce((map, [category, usage]) => {
+  const fileUsageMap = usageEntries.reduce((map, [category, usage]) => {
     const existing = map.get(category) ?? new Set()
     usage.forEach(({ filePath }) => {
       if (filePath.startsWith('@config')) return
@@ -82,7 +82,7 @@ export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): Token
     return map.set(category, existing)
   }, new Map<string, Set<string>>())
 
-  const hardcodedToken = usageEntries.reduce((map, [category, usage]) => {
+  const hardcodedTokenMap = usageEntries.reduce((map, [category, usage]) => {
     const items = new Set<string>()
     usage.forEach(({ type, value }) => {
       if (type === 'nonToken') items.add(value)
@@ -90,20 +90,29 @@ export function analyzeTokens(ctx: ParserOptions, result: AnalysisReport): Token
     return map.set(category, items.size)
   }, new Map<string, number>())
 
-  return categoryEntries
-    .map(([category]) => {
-      const percent = percentMap.get(category)
-      return {
-        category,
-        count: percent?.total ?? 0,
-        usedInXFiles: fileUsage.get(category)?.size ?? 0,
-        usedCount: percent?.used ?? 0,
-        percentUsed: percent?.percent ?? 0,
-        hardcoded: hardcodedToken.get(category) ?? 0,
-        mostUsedNames: tokenNames.get(category)?.slice(0, 5) ?? [],
-      }
-    })
-    .sort((a, b) => b.percentUsed - a.percentUsed)
+  return {
+    usageMap,
+    percentMap,
+    tokenNameMap,
+    fileUsageMap,
+    hardcodedTokenMap,
+    totalMap,
+    getSummary() {
+      const summary = categoryEntries.map(([category]) => {
+        const percent = percentMap.get(category)
+        return {
+          category,
+          count: percent?.total ?? 0,
+          usedInXFiles: fileUsageMap.get(category)?.size ?? 0,
+          usedCount: percent?.used ?? 0,
+          percentUsed: percent?.percent ?? 0,
+          hardcoded: hardcodedTokenMap.get(category) ?? 0,
+          mostUsedNames: tokenNameMap.get(category)?.slice(0, 5) ?? [],
+        }
+      })
+      return summary.sort((a, b) => b.percentUsed - a.percentUsed)
+    },
+  }
 }
 
 export interface TokenUsageItem {
@@ -122,4 +131,14 @@ export interface TokenReportEntry {
   percentUsed: number
   hardcoded: number
   mostUsedNames: string[]
+}
+
+export interface TokenAnalysisReport {
+  usageMap: Map<string, TokenUsageItem[]>
+  percentMap: Map<string, { total: number; used: number; unused: number; percent: number }>
+  tokenNameMap: Map<string, string[]>
+  fileUsageMap: Map<string, Set<string>>
+  hardcodedTokenMap: Map<string, number>
+  totalMap: Map<string, number>
+  getSummary(): TokenReportEntry[]
 }

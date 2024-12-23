@@ -28,7 +28,8 @@ const tokenReport = (code: string) => {
 
   reporter.init()
 
-  return reporter.getTokenReport()
+  const report = reporter.getTokenReport()
+  return report.getSummary()
 }
 
 describe('reporter', () => {
