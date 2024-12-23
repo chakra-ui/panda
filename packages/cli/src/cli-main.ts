@@ -389,18 +389,14 @@ export async function main() {
         return
       }
 
-      if (tokenScope) {
+      if (tokenScope && !ctx.tokens.isEmpty) {
         const tokenAnalysis = result.getTokenReport()
-        if (tokenAnalysis.report.length) {
-          logger.info('anaylze:tokens', `Token usage report 🎨 \n${tokenAnalysis.formatted}`)
-        }
+        logger.info('analyze:tokens', `Token usage report 🎨 \n${tokenAnalysis.formatted}`)
       }
 
-      if (recipeScope) {
+      if (recipeScope && !ctx.recipes.isEmpty()) {
         const recipeAnalysis = result.getRecipeReport()
-        if (recipeAnalysis.report.length) {
-          logger.info('anaylze:recipes', `Recipe usage report 🎛️ \n${recipeAnalysis.formatted}`)
-        }
+        logger.info('analyze:recipes', `Recipe usage report 🎛️ \n${recipeAnalysis.formatted}`)
       }
     })
 
