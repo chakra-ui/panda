@@ -43,52 +43,55 @@ export function analyzeRecipes(ctx: ParserOptions, result: AnalysisReport): Reci
     ([recipeName, reportItems]) => [recipeName, Array.from(reportItems)] as const,
   )
 
-  return normalizedReportMap.map(([recipeName, reportItems]): RecipeReportEntry => {
-    const usedCombinations = reportItems
-      .map((component) =>
-        component.contains
-          .map((id) => {
-            const reportItem = result.propByIndex.get(id)!
-            const recipe = ctx.recipes.getRecipe(recipeName)
-            if (!recipe?.variantKeys.includes(reportItem.propName)) return
-            return reportItem.propName + '.' + reportItem.value
-          })
-          .filter(Boolean),
-      )
-      .flat() as string[]
+  return normalizedReportMap
+    .map(([recipeName, reportItems]): RecipeReportEntry => {
+      const usedCombinations = reportItems
+        .map((component) =>
+          component.contains
+            .map((id) => {
+              const reportItem = result.propByIndex.get(id)!
+              const recipe = ctx.recipes.getRecipe(recipeName)
+              if (!recipe?.variantKeys.includes(reportItem.propName)) return
+              return reportItem.propName + '.' + reportItem.value
+            })
+            .filter(Boolean),
+        )
+        .flat() as string[]
 
-    const distinctUsedCombinations = Array.from(new Set(usedCombinations)).sort()
-    const usedCount = reportItems.length
+      const distinctUsedCombinations = Array.from(new Set(usedCombinations)).sort()
+      const usedCount = reportItems.length
 
-    const recipe = ctx.recipes.getRecipe(recipeName)!
-    const variantMap = recipe.variantKeyMap ?? {}
-    const possibleCombinations = Object.keys(variantMap).reduce((acc, variantName) => {
-      return acc.concat(variantMap[variantName].map((value) => `${variantName}.${value}`))
-    }, [] as string[])
+      const recipe = ctx.recipes.getRecipe(recipeName)!
+      const variantMap = recipe.variantKeyMap ?? {}
+      const possibleCombinations = Object.keys(variantMap).reduce((acc, variantName) => {
+        return acc.concat(variantMap[variantName].map((value) => `${variantName}.${value}`))
+      }, [] as string[])
 
-    const variantCount = recipe.variantKeys.length
-    const percentUsed = Math.ceil((distinctUsedCombinations.length / (possibleCombinations.length || 1)) * 10_000) / 100
+      const variantCount = recipe.variantKeys.length
+      const percentUsed =
+        Math.ceil((distinctUsedCombinations.length / (possibleCombinations.length || 1)) * 10_000) / 100
 
-    const jsxUsage = reportItems.filter((component) => component.reportItemType === 'jsx-recipe')
-    const fnUsage = reportItems.filter((component) => component.reportItemType === 'recipe')
+      const jsxUsage = reportItems.filter((component) => component.reportItemType === 'jsx-recipe')
+      const fnUsage = reportItems.filter((component) => component.reportItemType === 'recipe')
 
-    const jsxPercentUsed = Math.ceil((jsxUsage.length / (reportItems.length || 1)) * 100)
-    const fnPercentUsed = Math.ceil((fnUsage.length / (reportItems.length || 1)) * 100)
+      const jsxPercentUsed = Math.ceil((jsxUsage.length / (reportItems.length || 1)) * 100)
+      const fnPercentUsed = Math.ceil((fnUsage.length / (reportItems.length || 1)) * 100)
 
-    const usedInXFiles = new Set(reportItems.flatMap((component) => component.filepath)).size
+      const usedInXFiles = new Set(reportItems.flatMap((component) => component.filepath)).size
 
-    return {
-      recipeName,
-      usedInXFiles,
-      usedCount,
-      variantCount,
-      possibleCombinations,
-      usedCombinations: distinctUsedCombinations.length,
-      percentUsed,
-      jsxPercentUsed,
-      fnPercentUsed,
-      unusedCombinations: possibleCombinations.length - distinctUsedCombinations.length,
-      mostUsedCombinations: distinctUsedCombinations,
-    }
-  })
+      return {
+        recipeName,
+        usedInXFiles,
+        usedCount,
+        variantCount,
+        possibleCombinations,
+        usedCombinations: distinctUsedCombinations.length,
+        percentUsed,
+        jsxPercentUsed,
+        fnPercentUsed,
+        unusedCombinations: possibleCombinations.length - distinctUsedCombinations.length,
+        mostUsedCombinations: distinctUsedCombinations.slice(0, 5),
+      }
+    })
+    .sort((a, b) => b.percentUsed - a.percentUsed)
 }
