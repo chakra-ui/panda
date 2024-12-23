@@ -1,5 +1,106 @@
 # @pandacss/generator
 
+## 0.49.0
+
+### Minor Changes
+
+- 97a0e4d: Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate
+  animation properties.
+
+  > Pairing animation styles with text styles and layer styles can make your styles a lot cleaner.
+
+  Here's an example of this:
+
+  ```jsx
+  import { defineAnimationStyles } from '@pandacss/dev'
+
+  export const animationStyles = defineAnimationStyles({
+    'slide-fade-in': {
+      value: {
+        transformOrigin: 'var(--transform-origin)',
+        animationDuration: 'fast',
+        '&[data-placement^=top]': {
+          animationName: 'slide-from-top, fade-in',
+        },
+        '&[data-placement^=bottom]': {
+          animationName: 'slide-from-bottom, fade-in',
+        },
+        '&[data-placement^=left]': {
+          animationName: 'slide-from-left, fade-in',
+        },
+        '&[data-placement^=right]': {
+          animationName: 'slide-from-right, fade-in',
+        },
+      },
+    },
+  })
+  ```
+
+  With that defined, I can use it in my recipe or css like so:
+
+  ```js
+  export const popoverSlotRecipe = defineSlotRecipe({
+    slots: anatomy.keys(),
+    base: {
+      content: {
+        _open: {
+          animationStyle: 'scale-fade-in',
+        },
+        _closed: {
+          animationStyle: 'scale-fade-out',
+        },
+      },
+    },
+  })
+  ```
+
+  This feature will drive consumers to lean in towards CSS for animations rather than JS. Composing animation names is a
+  powerful feature we should encourage consumers to use.
+
+### Patch Changes
+
+- Updated dependencies [97a0e4d]
+  - @pandacss/types@0.49.0
+  - @pandacss/core@0.49.0
+  - @pandacss/logger@0.49.0
+  - @pandacss/token-dictionary@0.49.0
+  - @pandacss/is-valid-prop@0.49.0
+  - @pandacss/shared@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- af9715a: Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are
+  `auto`, `stable`, and `both-edges`.
+  - @pandacss/core@0.48.1
+  - @pandacss/is-valid-prop@0.48.1
+  - @pandacss/logger@0.48.1
+  - @pandacss/shared@0.48.1
+  - @pandacss/token-dictionary@0.48.1
+  - @pandacss/types@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- 2bc12d2: Fix multi-theme issue where calling the `getTheme` function throws a Vite error due to invalid dynamic import
+  format.
+
+  ```js
+  import { getTheme } from 'styled-system/themes'
+
+  getTheme('default')
+  // -> The above dynamic import cannot be analyzed by Vite.
+  ```
+
+  - @pandacss/core@0.48.0
+  - @pandacss/is-valid-prop@0.48.0
+  - @pandacss/logger@0.48.0
+  - @pandacss/shared@0.48.0
+  - @pandacss/token-dictionary@0.48.0
+  - @pandacss/types@0.48.0
+
 ## 0.47.1
 
 ### Patch Changes

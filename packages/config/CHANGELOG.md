@@ -1,5 +1,38 @@
 # @pandacss/config
 
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [97a0e4d]
+  - @pandacss/preset-panda@0.49.0
+  - @pandacss/types@0.49.0
+  - @pandacss/logger@0.49.0
+  - @pandacss/preset-base@0.49.0
+  - @pandacss/shared@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [af9715a]
+  - @pandacss/preset-base@0.48.1
+  - @pandacss/logger@0.48.1
+  - @pandacss/preset-panda@0.48.1
+  - @pandacss/shared@0.48.1
+  - @pandacss/types@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- Updated dependencies [cff19aa]
+  - @pandacss/preset-base@0.48.0
+  - @pandacss/logger@0.48.0
+  - @pandacss/preset-panda@0.48.0
+  - @pandacss/shared@0.48.0
+  - @pandacss/types@0.48.0
+
 ## 0.47.1
 
 ### Patch Changes

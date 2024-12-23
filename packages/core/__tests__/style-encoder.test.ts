@@ -737,4 +737,44 @@ describe('style encoder', () => {
       }
     `)
   })
+
+  test('static css - recipes', () => {
+    const ctx = createGeneratorContext()
+    ctx.staticCss.process({ recipes: '*' })
+    expect(ctx.encoder.toJSON()).toMatchInlineSnapshot(`
+      {
+        "schemaVersion": "x.x.x",
+        "styles": {
+          "atomic": [
+            "color]___[value:ButtonHighlight",
+          ],
+          "recipes": {
+            "badge": [
+              "size]___[value:sm]___[recipe:badge",
+              "raised]___[value:true]___[recipe:badge",
+            ],
+            "buttonStyle": [
+              "size]___[value:md]___[recipe:buttonStyle",
+              "variant]___[value:solid]___[recipe:buttonStyle",
+              "size]___[value:sm]___[recipe:buttonStyle",
+              "variant]___[value:outline]___[recipe:buttonStyle",
+            ],
+            "cardStyle": [
+              "rounded]___[value:true]___[recipe:cardStyle",
+            ],
+            "checkbox": [
+              "size]___[value:sm]___[recipe:checkbox",
+              "size]___[value:md]___[recipe:checkbox",
+              "size]___[value:lg]___[recipe:checkbox",
+            ],
+            "textStyle": [
+              "size]___[value:h1]___[recipe:textStyle",
+              "size]___[value:h2]___[recipe:textStyle",
+            ],
+            "tooltipStyle": [],
+          },
+        },
+      }
+    `)
+  })
 })

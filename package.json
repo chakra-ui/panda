@@ -36,7 +36,7 @@
   "license": "MIT",
   "dependencies": {
     "@changesets/changelog-github": "0.5.0",
-    "@changesets/cli": "2.27.9",
+    "@changesets/cli": "2.27.10",
     "@projectwallace/format-css": "^1.4.3",
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",

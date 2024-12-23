@@ -4,7 +4,26 @@ import { describe, expect, test } from 'vitest'
 import { createRuleProcessor } from './fixture'
 
 function css(styles: SystemStyleObject) {
-  return createRuleProcessor().css(styles).toCss()
+  return createRuleProcessor({
+    theme: {
+      animationStyles: {
+        'scale-fade-in': {
+          value: {
+            transformOrigin: 'var(--transform-origin)',
+            animationName: 'scale-in, fade-in',
+          },
+        },
+        'scale-fade-out': {
+          value: {
+            transformOrigin: 'var(--transform-origin)',
+            animationName: 'scale-out, fade-out',
+          },
+        },
+      },
+    },
+  })
+    .css(styles)
+    .toCss()
 }
 
 describe('compositions', () => {
@@ -26,11 +45,11 @@ describe('compositions', () => {
     `)
 
     expect(ctx.utility.transform('textStyle', 'headline.h5')).toMatchInlineSnapshot(`
-    {
-      "className": "textStyle_headline.h5",
-      "layer": "compositions",
-      "styles": {},
-    }
+      {
+        "className": "textStyle_headline.h5",
+        "layer": "compositions",
+        "styles": {},
+      }
     `)
   })
 
@@ -71,6 +90,19 @@ describe('compositions', () => {
           .textStyle_headline {
             font-size: 1.5rem;
             font-weight: var(--font-weights-bold);
+      }
+          }
+      }"
+    `)
+  })
+
+  test('should resolve animation styles', () => {
+    expect(css({ animationStyle: 'scale-fade-in' })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @layer compositions {
+          .animationStyle_scale-fade-in {
+            transform-origin: var(--transform-origin);
+            animation-name: scale-in, fade-in;
       }
           }
       }"

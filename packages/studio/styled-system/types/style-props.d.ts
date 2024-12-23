@@ -2793,7 +2793,7 @@ gridAutoRows?: ConditionalValue<UtilityValues["gridAutoRows"] | CssVars | CssPro
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-column
    */
-gridColumn?: ConditionalValue<UtilityValues["gridColumn"] | CssVars | CssProperties["gridColumn"] | AnyString>
+gridColumn?: ConditionalValue<CssProperties["gridColumn"] | AnyString>
  /**
    * The **`grid-column-end`** CSS property specifies a grid item's end position within the grid column by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the block-end edge of its grid area.
    *
@@ -2835,7 +2835,7 @@ gridColumnStart?: ConditionalValue<CssProperties["gridColumnStart"] | AnyString>
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-row
    */
-gridRow?: ConditionalValue<UtilityValues["gridRow"] | CssVars | CssProperties["gridRow"] | AnyString>
+gridRow?: ConditionalValue<CssProperties["gridRow"] | AnyString>
  /**
    * The **`grid-row-end`** CSS property specifies a grid item's end position within the grid row by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-end edge of its grid area.
    *
@@ -2904,7 +2904,7 @@ gridTemplateAreas?: ConditionalValue<CssProperties["gridTemplateAreas"] | AnyStr
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-columns
    */
-gridTemplateColumns?: ConditionalValue<UtilityValues["gridTemplateColumns"] | CssVars | CssProperties["gridTemplateColumns"] | AnyString>
+gridTemplateColumns?: ConditionalValue<CssProperties["gridTemplateColumns"] | AnyString>
  /**
    * The **`grid-template-rows`** CSS property defines the line names and track sizing functions of the grid rows.
    *
@@ -2918,7 +2918,7 @@ gridTemplateColumns?: ConditionalValue<UtilityValues["gridTemplateColumns"] | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-rows
    */
-gridTemplateRows?: ConditionalValue<UtilityValues["gridTemplateRows"] | CssVars | CssProperties["gridTemplateRows"] | AnyString>
+gridTemplateRows?: ConditionalValue<CssProperties["gridTemplateRows"] | AnyString>
  /**
    * The **`hanging-punctuation`** CSS property specifies whether a punctuation mark should hang at the start or end of a line of text. Hanging punctuation may be placed outside the line box.
    *
@@ -4840,7 +4840,7 @@ scrollbarColor?: ConditionalValue<UtilityValues["scrollbarColor"] | CssVars | Cs
    *
    * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-gutter
    */
-scrollbarGutter?: ConditionalValue<UtilityValues["scrollbarGutter"] | CssVars | CssProperties["scrollbarGutter"] | AnyString>
+scrollbarGutter?: ConditionalValue<CssProperties["scrollbarGutter"] | AnyString>
  /**
    * The **`scrollbar-width`** property allows the author to set the maximum thickness of an element's scrollbars when they are shown.
    *

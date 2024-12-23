@@ -22,10 +22,10 @@
     "@types/react": "18.2.55",
     "@types/react-dom": "18.2.19",
     "@vitejs/plugin-react": "4.2.1",
-    "postcss": "8.4.47",
+    "postcss": "8.4.49",
     "source-map-explorer": "2.5.3",
     "typescript": "5.3.3",
-    "vite": "5.4.9",
+    "vite": "5.4.11",
     "vite-bundle-visualizer": "1.0.1"
   }
 }

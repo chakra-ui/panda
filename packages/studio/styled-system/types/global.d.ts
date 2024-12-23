@@ -13,6 +13,7 @@ declare module '@pandacss/dev' {
   export function defineStyles(definition: SystemStyleObject): SystemStyleObject
   export function defineGlobalStyles(definition: GlobalStyleObject): Panda.GlobalStyleObject
   export function defineTextStyles(definition: CompositionStyles['textStyles']): Panda.TextStyles
+  export function defineAnimationStyles(definition: CompositionStyles['animationStyles']): Panda.AnimationStyles
   export function defineLayerStyles(definition: CompositionStyles['layerStyles']): Panda.LayerStyles
   export function definePattern<T extends PatternProperties>(config: PatternConfig<T>): Panda.PatternConfig
   export function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => Partial<Record<keyof T, SystemStyleObject>>

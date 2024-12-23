@@ -576,12 +576,29 @@ const theme = {
 
 Aspect ratio tokens represent the aspect ratio of an element. Its value is defined as a string.
 
-```jsx
+```js
 const theme = {
   tokens: {
     aspectRatios: {
       '1:1': { value: '1 / 1' },
       '16:9': { value: '16 / 9' }
+    }
+  }
+}
+```
+
+### Cursors
+
+Cursor tokens define the style of the mouse pointer when it hovers over a specific element or area. These tokens represent the visual behavior of interactions, indicating actions such as clickable areas, draggable elements, or loading states. Their value is defined as a string.
+
+```js
+const theme = {
+  tokens: {
+    cursors: {
+      click: { value: 'pointer' },
+      disabled: { value: 'not-allowed' },
+      // custom value
+      custom: { value: 'url(cursor.svg), auto' }
     }
   }
 }

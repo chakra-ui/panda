@@ -26,7 +26,7 @@ export function generateThemes(ctx: Context) {
     }
 
     return {
-      name,
+      name: `theme-${name}`,
       json: JSON.stringify(
         compact({
           name,
@@ -51,7 +51,7 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
     {
       file: ctx.file.ext('index'),
       code: outdent`
-  export const getTheme = (themeName) => import('./' + themeName + '.json').then((m) => m.default)
+  export const getTheme = (themeName) => import(\`./theme-\$\{themeName}.json\`).then((m) => m.default)
 
   export function injectTheme(el, theme) {
     const doc = el.ownerDocument || document
@@ -86,9 +86,9 @@ export function generateThemesIndex(ctx: Context, files: ReturnType<typeof gener
       .map((f) => {
         const theme = JSON.parse(f.json) as GeneratedTheme
         if (!theme.css) return ''
-        return `'${f.name}': {
+        return `'${theme.name}': {
           id: string,
-          name: '${f.name}',
+          name: '${theme.name}',
           css: string
         }`
       })
