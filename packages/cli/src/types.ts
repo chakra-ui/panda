@@ -42,6 +42,7 @@ export interface AnalyzeCommandFlags {
   outfile?: string
   cwd?: string
   config?: string
+  scope?: 'token' | 'recipe'
 }
 
 export interface DebugCommandFlags {

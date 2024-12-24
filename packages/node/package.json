@@ -39,8 +39,8 @@
   "dependencies": {
     "@pandacss/config": "workspace:*",
     "@pandacss/core": "workspace:*",
-    "@pandacss/extractor": "workspace:*",
     "@pandacss/generator": "workspace:*",
+    "@pandacss/reporter": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/parser": "workspace:*",
     "@pandacss/shared": "workspace:*",
@@ -49,8 +49,6 @@
     "browserslist": "4.23.3",
     "chokidar": "3.6.0",
     "fast-glob": "3.3.2",
-    "file-size": "1.0.0",
-    "filesize": "10.1.6",
     "fs-extra": "11.2.0",
     "glob-parent": "6.0.2",
     "is-glob": "4.0.3",

@@ -1,10 +1,11 @@
 import type { ParserOptions } from '@pandacss/core'
 import type {
   ConfigTsOptions,
+  JsxFactoryResultTransform,
   PandaHooks,
   ParserResultConfigureOptions,
+  ParserResultInterface,
   Runtime,
-  JsxFactoryResultTransform,
 } from '@pandacss/types'
 import {
   FileSystemRefreshResult,
@@ -13,6 +14,7 @@ import {
   Project as TsProject,
   type ProjectOptions as TsProjectOptions,
 } from 'ts-morph'
+import { classifyProject } from './classify'
 import { createParser } from './parser'
 import { ParserResult } from './parser-result'
 import { svelteToTsx } from './svelte-to-tsx'
@@ -43,6 +45,10 @@ export interface ProjectOptions extends TsProjectOptions {
 export class Project {
   project: TsProject
   parser: ReturnType<typeof createParser>
+
+  get parserOptions() {
+    return this.options.parserOptions
+  }
 
   constructor(private options: ProjectOptions) {
     const { parserOptions } = options
@@ -176,5 +182,10 @@ export class Project {
     }
 
     return content
+  }
+
+  classify = (fileMap: Map<string, ParserResultInterface>) => {
+    const { parserOptions } = this.options
+    return classifyProject(parserOptions, fileMap)
   }
 }
