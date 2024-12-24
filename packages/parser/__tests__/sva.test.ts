@@ -267,4 +267,30 @@ describe('ast parser / sva', () => {
       }"
     `)
   })
+
+  test('unresolvable + concat - spread', () => {
+    const code = `
+      import { anatomy } from '@/slots'
+      import { sva } from 'styled-system/css'
+
+      const card = sva({
+        slots: [...anatomy().keys(), 'slots', 'here'],
+        className: 'tt',
+        base: {
+          a: {
+            backgroundColor: 'red',
+          },
+        },
+      })
+     `
+
+    const result = parseAndExtract(code)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg-c_red {
+          background-color: red;
+      }
+      }"
+    `)
+  })
 })

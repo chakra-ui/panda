@@ -300,6 +300,13 @@ export class Recipes {
       })
     })
 
+    recipe.compoundVariants?.forEach((compoundVariant) => {
+      if (!compoundVariant) return
+      Object.keys(compoundVariant.css ?? {}).forEach((name) => {
+        slots.add(name)
+      })
+    })
+
     return Array.from(slots)
   }
 
