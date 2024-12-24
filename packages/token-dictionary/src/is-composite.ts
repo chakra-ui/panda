@@ -2,10 +2,10 @@ import { P, isMatching } from 'ts-pattern'
 
 export const isCompositeShadow = isMatching({
   inset: P.optional(P.boolean),
-  offsetX: P.number,
-  offsetY: P.number,
-  blur: P.number,
-  spread: P.number,
+  offsetX: P.union(P.number, P.string),
+  offsetY: P.union(P.number, P.string),
+  blur: P.union(P.number, P.string),
+  spread: P.union(P.number, P.string),
   color: P.string,
 })
 

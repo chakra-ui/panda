@@ -53,6 +53,10 @@ export class Recipes {
 
   private context!: SerializeContext
 
+  get config() {
+    return this.recipes
+  }
+
   constructor(private recipes: RecipeRecord = {}) {
     this.prune()
   }
@@ -292,6 +296,13 @@ export class Recipes {
 
     Object.values(recipe.variants ?? {}).forEach((variants) => {
       Object.keys(variants).forEach((name) => {
+        slots.add(name)
+      })
+    })
+
+    recipe.compoundVariants?.forEach((compoundVariant) => {
+      if (!compoundVariant) return
+      Object.keys(compoundVariant.css ?? {}).forEach((name) => {
         slots.add(name)
       })
     })

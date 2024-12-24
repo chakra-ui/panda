@@ -42,10 +42,10 @@ export interface Border {
 }
 
 export interface Shadow {
-  offsetX: number
-  offsetY: number
-  blur: number
-  spread: number
+  offsetX: number | string
+  offsetY: number | string
+  blur: number | string
+  spread: number | string
   color: string
   inset?: boolean
 }

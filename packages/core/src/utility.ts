@@ -413,17 +413,24 @@ export class Utility {
     return this
   }
 
-  private getTransformArgs = (raw: string): TransformArgs => {
-    const token = Object.assign(this.getToken.bind(this), {
+  private getTokenFn = () => {
+    return Object.assign(this.getToken.bind(this), {
       raw: (path: string) => this.tokens.getByName(path),
     })
+  }
 
-    const _colorMix = (value: string) => colorMix(value, token)
+  resolveColorMix = (value: string) => {
+    const token = this.getTokenFn()
+    return colorMix(value, token)
+  }
 
+  private getTransformArgs = (raw: string): TransformArgs => {
     return {
-      token,
+      token: this.getTokenFn(),
       raw,
-      utils: { colorMix: _colorMix },
+      utils: {
+        colorMix: this.resolveColorMix.bind(this),
+      },
     }
   }
 
@@ -548,4 +555,18 @@ export class Utility {
   isDeprecated = (prop: string) => {
     return this.deprecated.has(prop)
   }
+
+  /**
+   * Returns the token type for a given property
+   */
+  getTokenType = (prop: string) => {
+    const set = this.types.get(prop)
+    if (!set) return
+    for (const type of set) {
+      const match = type.match(TOKEN_TYPE_PATTERN)
+      if (match) return match[1]
+    }
+  }
 }
+
+const TOKEN_TYPE_PATTERN = /type:Tokens\["([^"]+)"\]/

@@ -1,4 +1,4 @@
-import type { Config } from './config'
+import type { ParserResultInterface } from './parser'
 
 export type ReportItemType =
   | 'css'
@@ -13,7 +13,7 @@ export type ReportItemType =
 
 type ComponentKind = 'component' | 'function'
 
-type Range = {
+interface PropertyLocationRange {
   startPosition: number
   startLineNumber: number
   startColumn: number
@@ -27,6 +27,7 @@ export interface PropertyReportItem {
   componentIndex: ComponentReportItem['componentIndex']
   componentName: ComponentReportItem['componentName']
   reportItemKind: 'token' | 'utility'
+  reportItemType: ReportItemType
 
   path: string[]
   conditionName?: string | undefined
@@ -36,7 +37,7 @@ export interface PropertyReportItem {
   tokenType?: string
   isKnownValue: boolean
 
-  range: Range
+  range: PropertyLocationRange | null
   filepath: string
 }
 
@@ -51,7 +52,8 @@ export interface ComponentReportItem extends Pick<PropertyReportItem, 'filepath'
   kind: ComponentKind
   contains: Array<PropertyReportItem['index']>
   value: Record<string, any>
-  range: Range
+  range: PropertyLocationRange | null
+  debug?: boolean
 }
 
 export interface ReportDerivedMaps {
@@ -66,6 +68,20 @@ export interface ReportDerivedMaps {
   byType: Map<string, Set<PropertyReportItem['index']>>
   byComponentName: Map<string, Set<PropertyReportItem['index']>>
   colorsUsed: Map<string, Set<PropertyReportItem['index']>>
+}
+
+interface ReportDerivedMapsJSON {
+  byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem['componentIndex']>>
+  byPropertyName: Record<string, Array<PropertyReportItem['index']>>
+  byTokenType: Record<string, Array<PropertyReportItem['index']>>
+  byConditionName: Record<string, Array<PropertyReportItem['index']>>
+  byShorthand: Record<string, Array<PropertyReportItem['index']>>
+  byTokenName: Record<string, Array<PropertyReportItem['index']>>
+  byPropertyPath: Record<string, Array<PropertyReportItem['index']>>
+  fromKind: Record<ComponentKind, Array<PropertyReportItem['index']>>
+  byType: Record<string, Array<PropertyReportItem['index']>>
+  byComponentName: Record<string, Array<PropertyReportItem['index']>>
+  colorsUsed: Record<string, Array<PropertyReportItem['index']>>
 }
 
 export interface ReportCounts {
@@ -85,6 +101,7 @@ export interface MostUsedItem {
   key: string
   count: number
 }
+
 export interface ReportStats {
   filesWithMostComponent: Record<string, number>
   mostUseds: {
@@ -105,69 +122,45 @@ export interface ReportStats {
 export interface ReportDetails {
   counts: ReportCounts
   stats: ReportStats
-  fileSizes: FileSizes
-  duration: {
-    classify: number
-    cssMs: number
-    cssMinifyMs: number
-    extractTotal: number
-    extractTimeByFiles: Record<string, number>
-    lightningCssMs?: number
-    lightningCssMinifiedMs?: number
-  }
 }
 
-interface FileSizes {
-  normal: string
-  minified: string
-  gzip: {
-    normal: string
-    minified: string
-  }
-  lightningCss?: {
-    normal: string
-    minified: string
-  }
+export interface AnalysisOptions {
+  onResult?: (file: string, result: ParserResultInterface) => void
 }
 
-export interface ReportSnapshot {
+interface ReportDerivedMap {
+  byFilepath: Map<string, Set<PropertyReportItem['index']>>
+  byComponentInFilepath: Map<string, Set<ComponentReportItem['componentIndex']>>
+  globalMaps: ReportDerivedMaps
+  byFilePathMaps: Map<string, ReportDerivedMaps>
+}
+
+interface ReportDerivedMapJSON {
+  byFilepath: Record<string, Array<PropertyReportItem['index']>>
+  byComponentInFilepath: Record<string, Array<ComponentReportItem['componentIndex']>>
+  globalMaps: ReportDerivedMapsJSON
+  byFilePathMaps: Record<string, ReportDerivedMapsJSON>
+}
+
+export interface AnalysisReport {
   schemaVersion: string
   details: ReportDetails
-  config: Omit<Config, 'globalCss' | 'globalFontface'>
 
   propByIndex: Map<PropertyReportItem['index'], PropertyReportItem>
   componentByIndex: Map<ComponentReportItem['componentIndex'], ComponentReportItem>
 
-  derived: {
-    byFilepath: Map<string, Set<PropertyReportItem['index']>>
-    byComponentInFilepath: Map<string, Set<ComponentReportItem['componentIndex']>>
-    globalMaps: ReportDerivedMaps
-    byFilePathMaps: Map<string, ReportDerivedMaps>
-  }
+  derived: ReportDerivedMap
 }
 
-interface ReportDerivedMapsJSON {
-  byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem['componentIndex']>>
-  byPropertyName: Record<string, Array<PropertyReportItem['index']>>
-  byTokenType: Record<string, Array<PropertyReportItem['index']>>
-  byConditionName: Record<string, Array<PropertyReportItem['index']>>
-  byShorthand: Record<string, Array<PropertyReportItem['index']>>
-  byTokenName: Record<string, Array<PropertyReportItem['index']>>
-  byPropertyPath: Record<string, Array<PropertyReportItem['index']>>
-  fromKind: Record<ComponentKind, Array<PropertyReportItem['index']>>
-  byType: Record<string, Array<PropertyReportItem['index']>>
-  byComponentName: Record<string, Array<PropertyReportItem['index']>>
-  colorsUsed: Record<string, Array<PropertyReportItem['index']>>
-}
-
-export interface ReportSnapshotJSON extends Omit<ReportSnapshot, 'propByIndex' | 'componentByIndex' | 'derived'> {
+export interface ReportSnapshotJSON extends Omit<AnalysisReport, 'propByIndex' | 'componentByIndex' | 'derived'> {
   propByIndex: Record<PropertyReportItem['index'], PropertyReportItem>
   componentByIndex: Record<ComponentReportItem['componentIndex'], ComponentReportItem>
+  derived: ReportDerivedMapJSON
+}
 
-  derived: {
-    byFilepath: Record<string, Array<PropertyReportItem['index']>>
-    byComponentInFilepath: Record<string, Array<ComponentReportItem['componentIndex']>>
-    globalMaps: ReportDerivedMapsJSON
-    byFilePathMaps: Record<string, ReportDerivedMapsJSON>
-  }
+export interface ClassifyReport {
+  propById: Map<string, PropertyReportItem>
+  componentById: Map<ComponentReportItem['componentIndex'], ComponentReportItem>
+  details: Pick<ReportDetails, 'counts' | 'stats'>
+  derived: ReportDerivedMap
 }

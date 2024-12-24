@@ -6,6 +6,7 @@ import {
   normalizeStyleObject,
   toResponsiveObject,
   traverse,
+  uniq,
 } from '@pandacss/shared'
 import type {
   Dict,
@@ -268,7 +269,9 @@ export class StyleEncoder {
   }
 
   processAtomicSlotRecipe = (recipe: PartialBy<SlotRecipeDefinition, 'slots'>) => {
-    if (!recipe.slots?.filter(Boolean).length) recipe.slots = Recipes.inferSlots(recipe)
+    const inferredSlots = Recipes.inferSlots(recipe)
+    recipe.slots = uniq([...(recipe.slots ?? []), ...inferredSlots].filter(Boolean))
+
     const slots = getSlotRecipes(recipe)
 
     for (const slotRecipe of Object.values(slots)) {

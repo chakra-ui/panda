@@ -45,6 +45,43 @@ describe('generator', () => {
     `)
   })
 
+  test('shadow tokens - composite', () => {
+    const css = tokenCss({
+      eject: true,
+      theme: {
+        tokens: {
+          spacing: {
+            '3': { value: '1rem' },
+          },
+          colors: {
+            red: { value: '#ff0000' },
+          },
+          shadows: {
+            sm: {
+              value: {
+                offsetX: '{spacing.3}',
+                offsetY: '{spacing.3}',
+                blur: '1rem',
+                spread: '{spacing.3}',
+                color: '{colors.red}',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(html) {
+          --spacing-3: 1rem;
+          --colors-red: #ff0000;
+          --shadows-sm: var(--spacing-3) var(--spacing-3) 1rem var(--spacing-3) var(--colors-red);
+      }
+      }"
+    `)
+  })
+
   test('[css] should generate css', () => {
     expect(tokenCss()).toMatchInlineSnapshot(`
       "@layer tokens {
