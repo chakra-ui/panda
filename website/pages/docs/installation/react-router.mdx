@@ -117,7 +117,7 @@ export default defineConfig({
  preflight: true,
 
  // Where to look for your css declarations
- include: ["./app/**/*.{ts,tsx,js,jsx}"],
+ include: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
 
  // Files to exclude
  exclude: [],
@@ -127,7 +127,9 @@ export default defineConfig({
 })
 ```
 
-Next replace the built-in TailwindCSS plugin with PandaCSS.
+### Replace TailwindCSS with PandaCSS
+
+Update the `vite.config.ts` file to use PandaCSS instead of TailwindCSS.
 
 ```ts {3, 10} filename="vite.config.ts"
 import { reactRouter } from "@react-router/dev/vite";
@@ -144,23 +146,24 @@ export default defineConfig({
   },
   plugins: [reactRouter(), tsconfigPaths()],
 });
-
 ```
 
 ### Configure the entry CSS with layers
 
-Create a new file `app/index.css` and add the following content:
+Create a new file `app/app.css` and add the following content:
 
-```css filename="app/index.css"
+```css filename="app/app.css"
 @layer reset, base, tokens, recipes, utilities;
 ```
 
-Import the `index.css` file in your `app/root.tsx` file and add the `styles` variable to the `links` function.
+### Update the root component
+
+Import the `app.css` file in your `app/root.tsx` file and add the `styles` variable to the `links` function.
 
 Please note the `?url` query parameter in the `import` statement. This is required by Vite to generate the correct path
 to the CSS file.
 
-```ts {11, 15} filename="app/root.tsx"
+```tsx {11, 15} filename="app/root.tsx"
 import {
   isRouteErrorResponse,
   Links,
@@ -171,11 +174,11 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import styles from "./index.css?url";
+import stylesheet from "./app.css?url";
 
 export const links: LinksFunction = () => [
   // ...
-  { rel: "stylesheet", href: styles },
+  { rel: "stylesheet", href: stylesheet },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -227,15 +230,27 @@ Run the following command to start your development server.
 ### Start using Panda
 
 Now you can start using Panda CSS in your project.
-Here is the snippet of code that you can use in your `app/routes/_index.tsx` file.
+Here is the snippet of code that you can use in your `app/routes/home.tsx` file.
 
-```tsx filename="app/welcome/welcome.tsx"
-import { css } from "styled-system/css";
+```tsx filename="app/routes/home.tsx"
+import type { Route } from "./+types/home"
+import { css } from "styled-system/css"
 
-export function Welcome() {
-  return(
-    <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
-  );
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "New React Router App" },
+    { name: "description", content: "Welcome to React Router!" },
+  ]
+}
+
+export default function Home() {
+  return (
+    <div>
+      <h1 className={css({ fontSize: "2xl", fontWeight: "bold" })}>
+        Welcome to the home page
+      </h1>
+    </div>
+  )
 }
 ```
 </Steps>
