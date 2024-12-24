@@ -1,7 +1,7 @@
 import { useClipboard } from '@/mdx/use-clipboard'
 import { css, cva } from '@/styled-system/css'
 import { grid, hstack, square } from '@/styled-system/patterns'
-import { Token } from '@pandacss/token-dictionary'
+import type { Token } from '@pandacss/token-dictionary'
 
 export const ColorGrid = ({ tokens }: { tokens: Token[] }) => (
   <div className={grid({ minChildWidth: '11rem', gap: '2', fontSize: 'sm' })}>
