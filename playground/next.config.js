@@ -19,7 +19,7 @@ const nextConfig = {
         ...config.resolve.fallback,
         perf_hooks: false,
         fs: false,
-        module: false,
+        module: require.resolve('./module.shim.ts'),
         os: require.resolve('os-browserify/browser'),
         path: require.resolve('path-browserify'),
         util: require.resolve('util'),
