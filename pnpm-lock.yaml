@@ -1186,8 +1186,8 @@ importers:
         specifier: 2.6.0
         version: 2.6.0(typescript@5.3.3)
       isbot:
-        specifier: 5.1.17
-        version: 5.1.17
+        specifier: 5.1.18
+        version: 5.1.18
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -11548,8 +11548,8 @@ packages:
   isarray@2.0.5:
     resolution: {integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==}
 
-  isbot@5.1.17:
-    resolution: {integrity: sha512-/wch8pRKZE+aoVhRX/hYPY1C7dMCeeMyhkQLNLNlYAbGQn9bkvMB8fOUXNnk5I0m4vDYbBJ9ciVtkr9zfBJ7qA==}
+  isbot@5.1.18:
+    resolution: {integrity: sha512-df9RdChv1DheItzN5pNKtblc9/otzJYmxjf9GhCZG/f0TCcGCbQFmtM3e+SD0e8EI3/O2tIXPYVaG4FUaIIa6Q==}
     engines: {node: '>=18'}
 
   isexe@2.0.0:
@@ -15655,6 +15655,7 @@ packages:
 
   sudo-prompt@8.2.5:
     resolution: {integrity: sha512-rlBo3HU/1zAJUrkY6jNxDOC9eVYliG6nS4JA8u8KAshITd07tafMc/Br7xQwCSseXwJ2iCcHCE8SNWX3q8Z+kw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   superjson@2.2.1:
     resolution: {integrity: sha512-8iGv75BYOa0xRJHK5vRLEjE2H/i4lulTjzpUXic3Eg8akftYjkmQDa8JARQ42rlczXyFR3IeRoeFCc7RxHsYZA==}
@@ -31238,7 +31239,7 @@ snapshots:
 
   isarray@2.0.5: {}
 
-  isbot@5.1.17: {}
+  isbot@5.1.18: {}
 
   isexe@2.0.0: {}
 
