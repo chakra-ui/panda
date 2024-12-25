@@ -588,8 +588,8 @@ importers:
         version: link:../types
     devDependencies:
       '@atlaskit/tokens':
-        specifier: 1.37.1
-        version: 1.37.1(react@18.3.0-canary-14fd9630e-20240213)
+        specifier: 1.61.0
+        version: 1.61.0(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)
 
   packages/preset-base:
     dependencies:
@@ -1672,18 +1672,18 @@ packages:
     resolution: {integrity: sha512-/ca/+D8MIKEC8/A9cSaPUqQNZm+Es/ZinRv0ZAzvu2ios7POQSsVD+VOj7/hypWNsNM3T7RpfgNq7H2TU1KEHA==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
 
-  '@atlaskit/ds-lib@2.3.1':
-    resolution: {integrity: sha512-DVUE3hYLhdEZy4NnsxqiCqKC5Ym3CM/DGRQlnSPcABFNL0N0FfTXso3pLpkJnMZBtEnd2pn13mPJ2VQlSISRuw==}
+  '@atlaskit/ds-lib@2.7.0':
+    resolution: {integrity: sha512-+U4aPE2dBRFUBYWCM9vkrwJGrLAYVcK30ZpEiQDNpM2D7K41223TfEijC8azaN4VM3tsCgwSKBWwniloNxqYbA==}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ~18.2.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
-  '@atlaskit/platform-feature-flags@0.2.6':
-    resolution: {integrity: sha512-jcTEix5NdW7buYOdEABjH9F7CAHHXGL4Gy+Aod52VpI4yi5CBZ/0Wa1yeTZ2CExkmwuJUowLDB6ES79kEI0SzQ==}
+  '@atlaskit/platform-feature-flags@0.3.0':
+    resolution: {integrity: sha512-/0u5fFJ0Rw2j4M5wzsXgaHO6Ey12oekPCDTRvmmAIp4GO9T2Swbl80bavLAPSOmSHMhHTSuvRxiJveZXfQ21IQ==}
 
-  '@atlaskit/tokens@1.37.1':
-    resolution: {integrity: sha512-6GZ0bAlOtTSeuQzFhwXNOaEyuSNiL8S/110gea2XnsjzInmsKA/TeROFaMQGEPAHLc57WzsTx9OnnwmZGGXsfg==}
+  '@atlaskit/tokens@1.61.0':
+    resolution: {integrity: sha512-gRkBDZOaQffJHg9g+hYFgPjQ0Hz4XIDaK5WEttIGyhi2USsGsvDvUeED8liqcQNwssH/5UFxIFp3FmEwo0DoFA==}
     peerDependencies:
-      react: ^16.8.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   '@babel/code-frame@7.12.11':
     resolution: {integrity: sha512-Zt1yodBx1UcyiePMSkWnU4hPqhwq7hGi2nFL1LeA3EUl+q2LQx16MISgJ0+z7dnmgvP9QtIleuETGOiOH1RcIw==}
@@ -7918,9 +7918,6 @@ packages:
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
-
-  bind-event-listener@2.1.1:
-    resolution: {integrity: sha512-O+a5c0D2se/u2VlBJmPRn45IB6R4mYMh1ok3dWxrIZ2pmLqzggBhb875mbq73508ylzofc0+hT9W41x4Y2s8lg==}
 
   bind-event-listener@3.0.0:
     resolution: {integrity: sha512-PJvH288AWQhKs2v9zyfYdPzlPqf5bXbGMmhmUIY9x4dAUGIWgomO771oBQNwJnMQSnUIXhKu6sgzpBRXTlvb8Q==}
@@ -14443,6 +14440,16 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
 
+  react-uid@2.3.3:
+    resolution: {integrity: sha512-iNpDovcb9qBpBTo8iUgqRSQOS8GV3bWoNaTaUptHkXtAooXSo0OWe7vN6TqqB8x3x0bNBbQx96kkmSltQ5h9kQ==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
   react@18.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
     engines: {node: '>=0.10.0'}
@@ -17493,26 +17500,31 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@atlaskit/ds-lib@2.3.1(react@18.3.0-canary-14fd9630e-20240213)':
+  '@atlaskit/ds-lib@2.7.0(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)':
     dependencies:
+      '@atlaskit/platform-feature-flags': 0.3.0
       '@babel/runtime': 7.25.0
       bind-event-listener: 3.0.0
       react: 18.3.0-canary-14fd9630e-20240213
+      react-uid: 2.3.3(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)
+    transitivePeerDependencies:
+      - '@types/react'
 
-  '@atlaskit/platform-feature-flags@0.2.6':
+  '@atlaskit/platform-feature-flags@0.3.0':
     dependencies:
       '@babel/runtime': 7.25.0
 
-  '@atlaskit/tokens@1.37.1(react@18.3.0-canary-14fd9630e-20240213)':
+  '@atlaskit/tokens@1.61.0(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)':
     dependencies:
-      '@atlaskit/ds-lib': 2.3.1(react@18.3.0-canary-14fd9630e-20240213)
-      '@atlaskit/platform-feature-flags': 0.2.6
+      '@atlaskit/ds-lib': 2.7.0(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213)
+      '@atlaskit/platform-feature-flags': 0.3.0
       '@babel/runtime': 7.25.0
-      '@babel/traverse': 7.25.3
-      '@babel/types': 7.25.2
-      bind-event-listener: 2.1.1
+      '@babel/traverse': 7.26.4
+      '@babel/types': 7.26.3
+      bind-event-listener: 3.0.0
       react: 18.3.0-canary-14fd9630e-20240213
     transitivePeerDependencies:
+      - '@types/react'
       - supports-color
 
   '@babel/code-frame@7.12.11':
@@ -17742,7 +17754,7 @@ snapshots:
       '@babel/helper-module-imports': 7.24.7
       '@babel/helper-simple-access': 7.24.7
       '@babel/helper-validator-identifier': 7.24.7
-      '@babel/traverse': 7.25.3
+      '@babel/traverse': 7.26.4
     transitivePeerDependencies:
       - supports-color
 
@@ -18030,7 +18042,7 @@ snapshots:
   '@babel/plugin-syntax-jsx@7.24.7(@babel/core@7.26.0)':
     dependencies:
       '@babel/core': 7.26.0
-      '@babel/helper-plugin-utils': 7.25.9
+      '@babel/helper-plugin-utils': 7.24.8
 
   '@babel/plugin-syntax-jsx@7.25.9(@babel/core@7.23.9)':
     dependencies:
@@ -18522,9 +18534,9 @@ snapshots:
   '@babel/plugin-transform-typescript@7.25.2(@babel/core@7.26.0)':
     dependencies:
       '@babel/core': 7.26.0
-      '@babel/helper-annotate-as-pure': 7.25.9
+      '@babel/helper-annotate-as-pure': 7.24.7
       '@babel/helper-create-class-features-plugin': 7.25.0(@babel/core@7.26.0)
-      '@babel/helper-plugin-utils': 7.25.9
+      '@babel/helper-plugin-utils': 7.24.8
       '@babel/helper-skip-transparent-expression-wrappers': 7.24.7
       '@babel/plugin-syntax-typescript': 7.24.7(@babel/core@7.26.0)
     transitivePeerDependencies:
@@ -24125,7 +24137,7 @@ snapshots:
       '@babel/helper-plugin-utils': 7.24.8
       '@babel/plugin-syntax-jsx': 7.24.7(@babel/core@7.23.9)
       '@babel/template': 7.25.0
-      '@babel/traverse': 7.25.3
+      '@babel/traverse': 7.26.4
       '@babel/types': 7.26.3
       '@vue/babel-helper-vue-transform-on': 1.2.2
       '@vue/babel-plugin-resolve-type': 1.2.2(@babel/core@7.23.9)
@@ -24143,7 +24155,7 @@ snapshots:
       '@babel/helper-plugin-utils': 7.24.8
       '@babel/plugin-syntax-jsx': 7.24.7(@babel/core@7.26.0)
       '@babel/template': 7.25.0
-      '@babel/traverse': 7.25.3
+      '@babel/traverse': 7.26.4
       '@babel/types': 7.26.3
       '@vue/babel-helper-vue-transform-on': 1.2.2
       '@vue/babel-plugin-resolve-type': 1.2.2(@babel/core@7.26.0)
@@ -25963,8 +25975,6 @@ snapshots:
   big.js@5.2.2: {}
 
   binary-extensions@2.3.0: {}
-
-  bind-event-listener@2.1.1: {}
 
   bind-event-listener@3.0.0: {}
 
@@ -29210,7 +29220,7 @@ snapshots:
   gatsby-plugin-page-creator@5.13.1(gatsby@5.13.7(@swc/core@1.7.6)(babel-eslint@10.1.0(eslint@7.32.0))(esbuild@0.19.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(type-fest@4.26.1)(typescript@5.3.3)(webpack-dev-server@4.15.2(webpack@5.93.0(@swc/core@1.7.6)(esbuild@0.19.12)))(webpack-hot-middleware@2.26.1))(graphql@16.9.0):
     dependencies:
       '@babel/runtime': 7.25.0
-      '@babel/traverse': 7.25.3
+      '@babel/traverse': 7.26.4
       '@sindresorhus/slugify': 1.1.2
       chokidar: 3.6.0
       fs-exists-cached: 1.0.0
@@ -34606,6 +34616,13 @@ snapshots:
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
+
+  react-uid@2.3.3(@types/react@18.2.55)(react@18.3.0-canary-14fd9630e-20240213):
+    dependencies:
+      react: 18.3.0-canary-14fd9630e-20240213
+      tslib: 2.6.2
+    optionalDependencies:
+      '@types/react': 18.2.55
 
   react@18.2.0:
     dependencies:
