@@ -1,5 +1,44 @@
 # @pandacss/token-dictionary
 
+## 0.50.0
+
+### Minor Changes
+
+- ad89b90: Add support for semantic tokens in composite shadow `blur`, `offsetX`, `offsetY` and `spread` properties.
+
+  This enables the use of semantic tokens in composite shadow properties.
+
+  ```ts
+  // panda.config.ts
+
+  export default defineConfig({
+    theme: {
+      tokens: {
+        // ...
+        shadows: {
+          sm: {
+            value: {
+              offsetX: '{spacing.3}',
+              offsetY: '{spacing.3}',
+              blur: '1rem',
+              spread: '{spacing.3}',
+              color: '{colors.red}',
+            },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [fea78c7]
+- Updated dependencies [ad89b90]
+  - @pandacss/types@0.50.0
+  - @pandacss/logger@0.50.0
+  - @pandacss/shared@0.50.0
+
 ## 0.49.0
 
 ### Patch Changes
