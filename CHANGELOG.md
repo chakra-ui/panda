@@ -6,6 +6,65 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.50.0] - 2024-12-27
+
+### Added
+
+- Add support for semantic tokens in composite shadow `blur`, `offsetX`, `offsetY` and `spread` properties.
+
+This enables the use of semantic tokens in composite shadow properties.
+
+```ts
+// panda.config.ts
+
+export default defineConfig({
+  theme: {
+    tokens: {
+      // ...
+      shadows: {
+        sm: {
+          value: {
+            offsetX: '{spacing.3}',
+            offsetY: '{spacing.3}',
+            blur: '1rem',
+            spread: '{spacing.3}',
+            color: '{colors.red}',
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+- Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how your
+  design system is used and answers the following questions:
+
+- What tokens are most used?
+- What recipe variants are most used?
+- How many hardcoded values vs tokens do we have?
+
+```sh
+panda analyze --scope=<token|recipe>
+```
+
+> Still work in progress but we're excited to get your feedback!
+
+### Changed
+
+Improve inference of slots in slot recipes when spreading and concatenating slot names.
+
+This handles the following case gracefully:
+
+```ts
+const styles = sva({
+  className: 'foo',
+  slots: [...componentAnatomy.keys(), 'additional', 'slots', 'here'],
+})
+```
+
+Panda will now infer the slots from the anatomy and add them to the recipe.
+
 ## [0.49.0] - 2024-12-08
 
 Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate animation
