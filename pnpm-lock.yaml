@@ -1468,8 +1468,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/token-dictionary
       bright:
-        specifier: 0.8.5
-        version: 0.8.5(react@18.2.0)
+        specifier: 0.8.6
+        version: 0.8.6(react@18.2.0)
       flexsearch:
         specifier: 0.7.43
         version: 0.7.43
@@ -7917,10 +7917,10 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  bright@0.8.5:
-    resolution: {integrity: sha512-LOhh3jk8KLFMqhX67TSGP1kCb3qGXbiRLbyBToVOfrrrEa3omXHT44r0/L4/OOlKluaFcO7+11KLOM5xI50XvA==}
+  bright@0.8.6:
+    resolution: {integrity: sha512-WnuP+TTMUOhPpM6aRQOwKaEPk2s6sTauDwF8spDh+D+5ug78uj2YJY/zovCCJ4IR8ohZFtaDjcAgSWR9OzZmng==}
     peerDependencies:
-      react: ^18
+      react: ^18 || ^19
 
   browser-assert@1.2.1:
     resolution: {integrity: sha512-nfulgvOR6S4gt9UKCeGJOuSGBPGiFT6oQ/2UBnvTY/5aQ1PnksW72fhZkM30DzoRRv2WpwZf1vHHEr3mtuXIWQ==}
@@ -19147,7 +19147,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.25.2
       '@babel/core': 7.26.0
-      '@babel/helper-compilation-targets': 7.25.9
+      '@babel/helper-compilation-targets': 7.25.2
       '@babel/helper-plugin-utils': 7.24.8
       '@babel/helper-validator-option': 7.24.8
       '@babel/plugin-bugfix-firefox-class-in-computed-class-key': 7.25.3(@babel/core@7.26.0)
@@ -23535,7 +23535,7 @@ snapshots:
   '@sveltejs/vite-plugin-svelte-inspector@2.1.0(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3)))(svelte@4.2.19)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))':
     dependencies:
       '@sveltejs/vite-plugin-svelte': 3.1.1(svelte@4.2.19)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
-      debug: 4.3.7
+      debug: 4.4.0
       svelte: 4.2.19
       vite: 5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3)
     transitivePeerDependencies:
@@ -23544,7 +23544,7 @@ snapshots:
   '@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))':
     dependencies:
       '@sveltejs/vite-plugin-svelte-inspector': 2.1.0(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3)))(svelte@4.2.19)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.31.3))
-      debug: 4.3.7
+      debug: 4.4.0
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.17
@@ -26426,7 +26426,7 @@ snapshots:
 
   babel-plugin-polyfill-corejs2@0.4.11(@babel/core@7.26.0):
     dependencies:
-      '@babel/compat-data': 7.26.3
+      '@babel/compat-data': 7.25.2
       '@babel/core': 7.26.0
       '@babel/helper-define-polyfill-provider': 0.6.2(@babel/core@7.26.0)
       semver: 6.3.1
@@ -26726,7 +26726,7 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  bright@0.8.5(react@18.2.0):
+  bright@0.8.6(react@18.2.0):
     dependencies:
       '@code-hike/lighter': 0.8.1
       react: 18.2.0
