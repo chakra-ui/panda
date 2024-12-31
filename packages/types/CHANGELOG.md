@@ -1,5 +1,14 @@
 # @pandacss/types
 
+## 0.51.0
+
+### Minor Changes
+
+- d68ad1f: **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
+  internal `ts-morph` and userland `typescript`.
+
+  > The current version of TS supported is `5.6.2`
+
 ## 0.50.0
 
 ### Minor Changes
