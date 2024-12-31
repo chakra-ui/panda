@@ -1,6 +1,6 @@
+import { cx } from '@/styled-system/css'
 import { Fira_Code } from 'next/font/google'
 import localFont from 'next/font/local'
-import { cx } from '../styled-system/css'
 
 export const MonaSans = localFont({
   src: '../styles/Mona-Sans.woff2',

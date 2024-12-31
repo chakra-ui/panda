@@ -1,7 +1,7 @@
+import { css } from '@/styled-system/css'
+import { Box, Container, VStack, panda } from '@/styled-system/jsx'
 import Image from 'next/image'
 import Link from 'next/link'
-import { css } from '../styled-system/css'
-import { Box, Container, VStack, panda } from '../styled-system/jsx'
 
 export default function Page() {
   return (
