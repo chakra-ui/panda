@@ -1,5 +1,30 @@
 # @pandacss/core
 
+## 0.50.0
+
+### Patch Changes
+
+- 7c85ac7: Improve inference of slots in slot recipes when spreading and concatenating slot names.
+
+  This handles the following case gracefully:
+
+  ```ts
+  const styles = sva({
+    className: 'foo',
+    slots: [...componentAnatomy.keys(), 'additional', 'slots', 'here'],
+  })
+  ```
+
+  Panda will now infer the slots from the anatomy and add them to the recipe.
+
+- Updated dependencies [fea78c7]
+- Updated dependencies [ad89b90]
+  - @pandacss/types@0.50.0
+  - @pandacss/token-dictionary@0.50.0
+  - @pandacss/logger@0.50.0
+  - @pandacss/is-valid-prop@0.50.0
+  - @pandacss/shared@0.50.0
+
 ## 0.49.0
 
 ### Minor Changes
