@@ -6,4 +6,7 @@
 '@pandacss/node': minor
 ---
 
-BREAKING: Update ts-morph to v24.0.0 to support TS 5.6.2
+**[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between internal
+`ts-morph` and userland `typescript`.
+
+> The current version of TS supported is `5.6.2`
