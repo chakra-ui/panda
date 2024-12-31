@@ -1,5 +1,5 @@
-const path = require('path')
 const isViz = process.env.ANALYZE === 'true'
+
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: isViz,
 })
@@ -10,19 +10,20 @@ const nextConfig = {
     // aliases for resolving packages in the project
     config.resolve.alias = {
       ...config.resolve.alias,
-      process: 'process/browser',
-      os: 'os-browserify',
-      path: 'path-browserify',
-      util: 'util',
-      module: path.join(__dirname, './module.shim.ts'),
-      fs: path.join(__dirname, './fs.shim.ts'),
       '@vue/compiler-sfc': '@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js',
       lightningcss: 'lightningcss-wasm',
     }
 
     if (!isServer) {
       config.resolve.fallback = {
+        ...config.resolve.fallback,
         perf_hooks: false,
+        fs: false,
+        module: require.resolve('./module.shim.ts'),
+        os: require.resolve('os-browserify/browser'),
+        path: require.resolve('path-browserify'),
+        util: require.resolve('util'),
+        process: require.resolve('process/browser'),
       }
     }
 

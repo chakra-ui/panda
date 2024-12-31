@@ -45,17 +45,17 @@ export function traverse(obj: any, callback: CallbackFn, options: TraverseOption
       const keys = Object.keys(currentItem.value)
       for (let i = keys.length - 1; i >= 0; i--) {
         const key = keys[i]
-        const value = currentItem.value[key]
+        const value = (currentItem.value as Record<string, unknown>)[key]
 
         const path = currentItem.path ? currentItem.path + separator + key : key
         const paths = currentItem.paths.concat(key)
 
         stack.push({
-          value,
+          value: value as Record<string, unknown>,
           path,
           paths,
           depth: currentItem.depth + 1,
-          parent: currentItem.value,
+          parent: currentItem.value as Record<string, unknown>,
           key,
         })
       }
