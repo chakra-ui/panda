@@ -6,6 +6,11 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.51.0] - 2024-12-31
+
+**[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between internal
+`ts-morph` and userland `typescript`.
+
 ## [0.50.0] - 2024-12-27
 
 ### Added
