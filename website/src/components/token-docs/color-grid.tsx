@@ -4,7 +4,6 @@ import { grid, hstack, square } from '@/styled-system/patterns'
 import type { Token } from '@pandacss/token-dictionary'
 
 interface ColorGridProps {
-  //@ts-ignore
   tokens: Token[]
 }
 
@@ -20,7 +19,6 @@ export const ColorGrid = (props: ColorGridProps) => {
 }
 
 interface ColorGridTokenProps {
-  //@ts-ignore
   token: Token
 }
 
