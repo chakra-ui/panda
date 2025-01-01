@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/reporter",
-  "version": "0.51.0",
+  "version": "0.51.1",
   "description": "Track and report usage of tokens and recipes",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
