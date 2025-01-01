@@ -12,146 +12,82 @@ const plural = (count: number, singular: string) => {
   return `${count} ${plural}`
 }
 
+const createWrapFn = (enabled: boolean) => (str: string) => (enabled ? Wordwrap.wrap(str, { width: 20 }) : str)
+
 export function formatTokenReport(result: TokenReportEntry[], format: ReportFormat): string {
+  const headers = ['Token', 'Usage %', 'Most used', 'Hardcoded', 'Found in']
+
+  function getFormatted(entry: TokenReportEntry, wrap: boolean) {
+    const wrapFn = createWrapFn(wrap)
+    return [
+      `${entry.category} (${plural(entry.count, 'token')})`,
+      `${entry.percentUsed}% (${plural(entry.usedCount, 'token')})`,
+      wrapFn(entry.mostUsedNames.join(', ')),
+      entry.hardcoded.toString(),
+      `${plural(entry.usedInXFiles, 'file')}`,
+    ]
+  }
+
   switch (format) {
     case 'json':
       return JSON.stringify(result, null, 2)
 
     case 'markdown': {
-      return markdownTable([
-        ['Token', 'Usage %', 'Most Used', 'Unused %', 'Hardcoded', 'Found in'],
-        ...result.map((entry) => [
-          `${entry.category} (${entry.count} tokens)`,
-          `${entry.percentUsed}% (${entry.usedCount} tokens)`,
-          entry.mostUsedNames.join(', '),
-          `${(100 - entry.percentUsed).toFixed(2)}%`,
-          entry.hardcoded.toString(),
-          plural(entry.usedInXFiles, 'file'),
-        ]),
-      ])
+      return markdownTable([headers, ...result.map((entry) => getFormatted(entry, true))])
     }
 
     case 'csv': {
-      return [
-        'Token,Usage %,Most Used,Unused %,Hardcoded,Found in',
-        ...result.map((entry) =>
-          [
-            `${entry.category} (${entry.count} tokens)`,
-            `${entry.percentUsed}% (${entry.usedCount} tokens)`,
-            entry.mostUsedNames.join(', '),
-            `${(100 - entry.percentUsed).toFixed(2)}%`,
-            entry.hardcoded.toString(),
-            plural(entry.usedInXFiles, 'file'),
-          ].join(','),
-        ),
-      ].join('\n')
+      return [headers.join(','), ...result.map((entry) => getFormatted(entry, false).join(','))].join('\n')
     }
 
     case 'table': {
-      return table([
-        ['Token', 'Usage %', 'Most Used', 'Unused %', 'Hardcoded', 'Found in'],
-        ...result.map((entry) => [
-          `${entry.category} (${entry.count} tokens)`,
-          `${entry.percentUsed}% (${entry.usedCount} tokens)`,
-          Wordwrap.wrap(entry.mostUsedNames.join(', '), { width: 20 }),
-          `${(100 - entry.percentUsed).toFixed(2)}%`,
-          entry.hardcoded,
-          plural(entry.usedInXFiles, 'file'),
-        ]),
-      ])
+      return table([headers, ...result.map((entry) => getFormatted(entry, true))])
     }
 
     case 'text':
-    default:
-      return result
-        .map((entry) =>
-          [
-            `Token: ${entry.category} (${entry.count} tokens)`,
-            `Usage: ${entry.percentUsed}% (${entry.usedCount} tokens)`,
-            `Most Used: ${entry.mostUsedNames}`,
-            `Unused: ${(100 - entry.percentUsed).toFixed(2)}%`,
-            `Hardcoded: ${entry.hardcoded}`,
-            `Found in: ${plural(entry.usedInXFiles, 'file')}`,
-            '',
-          ].join('\n'),
-        )
-        .join('\n')
+    default: {
+      const formatted = result.map((entry) => getFormatted(entry, false))
+      return headers.map((header, index) => `${header}: ${formatted[index]}`).join('\n')
+    }
   }
 }
 
 export function formatRecipeReport(result: RecipeReportEntry[], format: ReportFormat): string {
+  function getFormatted(entry: RecipeReportEntry, wrap: boolean) {
+    const wrapFn = createWrapFn(wrap)
+    return [
+      `${entry.recipeName} (${plural(entry.variantCount, 'variant')})`,
+      `${plural(entry.possibleCombinations.length, 'value')}`,
+      `${entry.percentUsed}% (${plural(entry.usedCombinations, 'value')})`,
+      wrapFn(entry.mostUsedCombinations.join(', ')),
+      `${plural(entry.usedInXFiles, 'file')}`,
+      `jsx: ${entry.jsxPercentUsed}%\nfn: ${entry.fnPercentUsed}%`,
+    ]
+  }
+
+  const headers = ['Recipe', 'Variant values', 'Usage %', 'Most used', 'Found in', 'Used as']
+
   switch (format) {
     case 'json': {
       return JSON.stringify(result, null, 2)
     }
 
     case 'markdown': {
-      return table([
-        ['Recipe', 'Variant Combinations', 'Usage %', 'JSX %', 'Function %', 'Unused', 'Most Used', 'Found in'],
-        ...result.map((entry) => [
-          `${entry.recipeName} (${entry.variantCount} variants)`,
-          `${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
-          `${entry.percentUsed}%`,
-          `${entry.jsxPercentUsed}%`,
-          `${entry.fnPercentUsed}%`,
-          entry.unusedCombinations,
-          entry.mostUsedCombinations,
-          plural(entry.usedInXFiles, 'file'),
-        ]),
-      ])
+      return table([headers, ...result.map((entry) => getFormatted(entry, true))])
     }
 
     case 'csv': {
-      return [
-        'Recipe,Variant Combinations,Usage %,JSX %,Function %,Unused,Most Used,Found in',
-        ...result.map((entry) =>
-          [
-            `"${entry.recipeName} (${entry.variantCount} variants)"`,
-            `${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
-            `${entry.percentUsed}%`,
-            `${entry.jsxPercentUsed}%`,
-            `${entry.fnPercentUsed}%`,
-            `"${entry.unusedCombinations}"`,
-            `"${entry.mostUsedCombinations}"`,
-            `"${plural(entry.usedInXFiles, 'file')}"`,
-          ].join(','),
-        ),
-      ].join('\n')
+      return [headers.join(','), ...result.map((entry) => getFormatted(entry, false).join(','))].join('\n')
     }
 
     case 'table': {
-      return table([
-        ['Recipe', 'Variant Combinations', 'Usage %', 'JSX %', 'Function %', 'Unused', 'Most Used', 'Found in'],
-        ...result.map((entry) => [
-          `${entry.recipeName} (${entry.variantCount} variants)`,
-          `${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
-          `${entry.percentUsed}%`,
-          `${entry.jsxPercentUsed}%`,
-          `${entry.fnPercentUsed}%`,
-          entry.unusedCombinations,
-          Wordwrap.wrap(entry.mostUsedCombinations.join(', '), { width: 20 }),
-          plural(entry.usedInXFiles, 'file'),
-        ]),
-      ])
+      return table([headers, ...result.map((entry) => getFormatted(entry, true))])
     }
 
     case 'text':
     default: {
-      return result
-        .map((entry) =>
-          [
-            `Recipe: ${entry.recipeName} (${entry.variantCount} variants)`,
-            `Variant Combinations: ${entry.usedCombinations} / ${entry.possibleCombinations.length}`,
-            `Usage: ${entry.percentUsed}%`,
-            `JSX Usage: ${entry.jsxPercentUsed}%`,
-            `Function Usage: ${entry.fnPercentUsed}%`,
-            `Unused: ${entry.unusedCombinations}`,
-            `Most Used: ${entry.mostUsedCombinations}`,
-            `Found in: ${plural(entry.usedInXFiles, 'file')}`,
-            '',
-          ].join('\n'),
-        )
-        .join('\n')
+      const formatted = result.map((entry) => getFormatted(entry, false))
+      return headers.map((header, index) => `${header}: ${formatted[index]}`).join('\n')
     }
   }
 }

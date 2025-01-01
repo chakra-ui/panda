@@ -389,14 +389,22 @@ export async function main() {
         return
       }
 
-      if (tokenScope && !ctx.tokens.isEmpty) {
-        const tokenAnalysis = result.getTokenReport()
-        logger.info('analyze:tokens', `Token usage report 🎨 \n${tokenAnalysis.formatted}`)
+      if (tokenScope) {
+        if (!ctx.tokens.isEmpty) {
+          const tokenAnalysis = result.getTokenReport()
+          logger.info('analyze:tokens', `Token usage report 🎨 \n${tokenAnalysis.formatted}`)
+        } else {
+          logger.info('analyze:tokens', 'No tokens found')
+        }
       }
 
-      if (recipeScope && !ctx.recipes.isEmpty()) {
-        const recipeAnalysis = result.getRecipeReport()
-        logger.info('analyze:recipes', `Recipe usage report 🎛️ \n${recipeAnalysis.formatted}`)
+      if (recipeScope) {
+        if (!ctx.recipes.isEmpty()) {
+          const recipeAnalysis = result.getRecipeReport()
+          logger.info('analyze:recipes', `Config recipes usage report 🎛️ \n${recipeAnalysis.formatted}`)
+        } else {
+          logger.info('analyze:recipes', 'No config recipes found')
+        }
       }
     })
 
