@@ -48,7 +48,7 @@
     "@pandacss/types": "workspace:*",
     "browserslist": "4.23.3",
     "chokidar": "3.6.0",
-    "fast-glob": "3.3.2",
+    "fast-glob": "3.3.3",
     "fs-extra": "11.2.0",
     "glob-parent": "6.0.2",
     "is-glob": "4.0.3",
