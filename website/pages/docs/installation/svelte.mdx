@@ -301,3 +301,30 @@ const config = {
 
 export default config;
 ```
+
+### Storybook
+
+If a story does not load with SvelteKit and there is output from Storybook that says `[vite] Pre-transform error: Failed to load url /styled-system/css/index.mjs`, add a `viteFinal` section to `.storybook/main.js`:
+
+```js filename="main.js"
+import { defineConfig, mergeConfig } from 'vite';
+
+/** @type { import('@storybook/sveltekit').StorybookConfig } */
+
+const config = {
+  // ...
+  viteFinal: async (config) => {
+    return mergeConfig(
+      config,
+      defineConfig({
+        server: {
+          fs: {
+            allow: ['styled-system']
+          }
+        }
+      })
+    );
+  }
+};
+export default config;
+```
