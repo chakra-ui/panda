@@ -210,6 +210,31 @@ export default defineConfig({
 })
 ```
 
+If you’re using Storybook for a SvelteKit project, you need to replicate the same Vite server config changes. In your .storybook folder, you likely have a `main.js` (or `vite.config.js` in older Storybook versions). Update it as follows:
+
+```js filename="main.js"
+import { defineConfig, mergeConfig } from 'vite';
+
+/** @type { import('@storybook/sveltekit').StorybookConfig } */
+
+const config = {
+  // other Storybook config...
+  viteFinal: async (config) => {
+    return mergeConfig(
+      config,
+      defineConfig({
+        server: {
+          fs: {
+            allow: ['styled-system']
+          }
+        }
+      })
+    );
+  }
+};
+export default config;
+```
+
 ### Configure the entry CSS with layers
 
 Create the `app.css` file in the `src` directory and add the following content:
