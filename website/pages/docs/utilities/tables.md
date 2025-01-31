@@ -36,7 +36,7 @@ Control the horizontal border-spacing property of a table.
 Control the vertical border-spacing property of a table.
 
 ```jsx
-<table className={css({ borderSpacingX: '2' })} />
+<table className={css({ borderSpacingY: '2' })} />
 ```
 
 | Prop             | CSS Property     | Token Category |
