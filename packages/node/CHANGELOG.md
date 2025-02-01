@@ -1,5 +1,20 @@
 # @pandacss/node
 
+## 0.52.0
+
+### Patch Changes
+
+- 2f1165c: Security: Update chokidar to remove vulnerability
+  - @pandacss/config@0.52.0
+  - @pandacss/parser@0.52.0
+  - @pandacss/core@0.52.0
+  - @pandacss/generator@0.52.0
+  - @pandacss/logger@0.52.0
+  - @pandacss/reporter@0.52.0
+  - @pandacss/shared@0.52.0
+  - @pandacss/token-dictionary@0.52.0
+  - @pandacss/types@0.52.0
+
 ## 0.51.1
 
 ### Patch Changes
