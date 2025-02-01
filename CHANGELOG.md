@@ -6,6 +6,33 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.52.0] - 2025-01-02
+
+### Added
+
+- Add support for new conditions:
+
+- `current` -> `&:is([aria-current=true], [data-current])`
+- `today` -> `&[data-today]`
+- `unavailable` -> `&[data-unavailable]`
+- `rangeStart` -> `&[data-range-start]`
+- `rangeEnd` -> `&[data-range-end]`
+- `now` -> `&[data-now]`
+- `topmost` -> `&[data-topmost]`
+- `icon` -> `& :where(svg)`
+- `complete` -> `&[data-complete]`
+- `incomplete` -> `&[data-incomplete]`
+- `dragging` -> `&[data-dragging]`
+- `grabbed` -> `&[data-grabbed]`
+- `underValue` -> `&[data-state=under-value]`
+- `overValue` -> `&[data-state=over-value]`
+- `atValue` -> `&[data-state=at-value]`
+- `hidden` -> `&:is([hidden], [data-hidden])`
+
+### Fixed
+
+Security: Update chokidar to remove vulnerability
+
 ## [0.51.1] - 2025-01-01
 
 ### Fixed
