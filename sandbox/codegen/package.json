@@ -41,7 +41,7 @@
     "tsx": "4.7.1",
     "typescript": "5.6.2",
     "vite": "5.4.11",
-    "vitest": "1.5.0",
+    "vitest": "1.6.1",
     "vite-plugin-solid": "2.10.2",
     "vue": "3.4.19"
   }
