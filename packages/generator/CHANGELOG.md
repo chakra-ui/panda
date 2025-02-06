@@ -1,5 +1,26 @@
 # @pandacss/generator
 
+## 0.53.0
+
+### Minor Changes
+
+- 5286731: Add support for recent baseline and experimental css properties:
+
+  - **Size interpolation:** fieldSizing, interpolateSize
+  - **Text rendering:** textWrapMode, textWrapStyle and textSpacingTrim
+  - **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
+    positionTryFallback, positionTryOrder, positionVisibility
+
+### Patch Changes
+
+- Updated dependencies [5286731]
+  - @pandacss/is-valid-prop@0.53.0
+  - @pandacss/types@0.53.0
+  - @pandacss/core@0.53.0
+  - @pandacss/logger@0.53.0
+  - @pandacss/token-dictionary@0.53.0
+  - @pandacss/shared@0.53.0
+
 ## 0.52.0
 
 ### Patch Changes
