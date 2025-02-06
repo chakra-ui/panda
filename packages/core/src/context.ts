@@ -18,6 +18,8 @@ import type {
 } from '@pandacss/types'
 import { Conditions } from './conditions'
 import { FileEngine } from './file'
+import { GlobalFontface } from './global-fontface'
+import { GlobalPositionTry } from './global-position-try'
 import { GlobalVars } from './global-vars'
 import { HooksApi } from './hooks-api'
 import { ImportMap } from './import-map'
@@ -34,7 +36,6 @@ import { StyleEncoder } from './style-encoder'
 import { Stylesheet } from './stylesheet'
 import type { ParserOptions, StylesheetContext } from './types'
 import { Utility } from './utility'
-import { GlobalFontface } from './global-fontface'
 
 const defaults = (config: UserConfig): UserConfig => ({
   cssVarRoot: ':where(:root, :host)',
@@ -71,6 +72,7 @@ export class Context {
 
   globalVars: GlobalVars
   globalFontface: GlobalFontface
+  globalPositionTry: GlobalPositionTry
 
   encoder: StyleEncoder
   decoder: StyleDecoder
@@ -187,6 +189,10 @@ export class Context {
 
     this.globalFontface = new GlobalFontface({
       globalFontface: this.config.globalFontface,
+    })
+
+    this.globalPositionTry = new GlobalPositionTry({
+      globalPositionTry: this.config.globalPositionTry,
     })
 
     this.messages = getMessages({
@@ -343,6 +349,7 @@ export class Context {
       helpers: patternFns,
       globalVars: this.globalVars,
       globalFontface: this.globalFontface,
+      globalPositionTry: this.globalPositionTry,
     } satisfies Omit<StylesheetContext, 'layers'>
   }
 

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import type {  ConditionalValue, Nested  } from './conditions';
-import type {  AtRule, PropertiesFallback  } from './csstype';
+import type {  AtRule, Globals, PropertiesFallback  } from './csstype';
 import type {  SystemProperties, CssVarProperties  } from './style-props';
 
 type String = string & {}
@@ -22,9 +22,93 @@ export type Assign<T, U> = {
  * Native css properties
  * -----------------------------------------------------------------------------*/
 
+type DashedIdent = `--${string}`
+
+type StringToMultiple<T extends string> = T | `${T}, ${T}`
+
+export type PositionAreaAxis =
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'x-start'
+  | 'x-end'
+  | 'span-x-start'
+  | 'span-x-end'
+  | 'x-self-start'
+  | 'x-self-end'
+  | 'span-x-self-start'
+  | 'span-x-self-end'
+  | 'span-all'
+  | 'top'
+  | 'bottom'
+  | 'span-top'
+  | 'span-bottom'
+  | 'y-start'
+  | 'y-end'
+  | 'span-y-start'
+  | 'span-y-end'
+  | 'y-self-start'
+  | 'y-self-end'
+  | 'span-y-self-start'
+  | 'span-y-self-end'
+  | 'block-start'
+  | 'block-end'
+  | 'span-block-start'
+  | 'span-block-end'
+  | 'inline-start'
+  | 'inline-end'
+  | 'span-inline-start'
+  | 'span-inline-end'
+  | 'self-block-start'
+  | 'self-block-end'
+  | 'span-self-block-start'
+  | 'span-self-block-end'
+  | 'self-inline-start'
+  | 'self-inline-end'
+  | 'span-self-inline-start'
+  | 'span-self-inline-end'
+  | 'start'
+  | 'end'
+  | 'span-start'
+  | 'span-end'
+  | 'self-start'
+  | 'self-end'
+  | 'span-self-start'
+  | 'span-self-end'
+
+type PositionTry =
+  | 'normal'
+  | 'flip-block'
+  | 'flip-inline'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'block-start'
+  | 'block-end'
+  | 'inline-start'
+  | 'inline-end'
+  | DashedIdent
+
+export interface ModernCssProperties {
+  anchorName?: Globals | 'none' | DashedIdent | StringToMultiple<DashedIdent>
+  anchorScope?: Globals | 'none' | 'all' | DashedIdent | StringToMultiple<DashedIdent>
+  fieldSizing?: Globals | 'fixed' | 'content'
+  interpolateSize?: Globals | 'allow-keywords' | 'numeric-only'
+  positionAnchor?: Globals | 'auto' | DashedIdent
+  positionArea?: Globals | 'auto' | PositionAreaAxis | `${PositionAreaAxis} ${PositionAreaAxis}` | String
+  positionTry?: Globals | StringToMultiple<PositionTry> | String
+  positionTryFallback?: Globals | 'none' | StringToMultiple<PositionTry> | String
+  positionTryOrder?: Globals | 'normal' | 'most-width' | 'most-height' | 'most-block-size' | 'most-inline-size'
+  positionVisibility?: Globals | 'always' | 'anchors-visible' | 'no-overflow'
+  textWrapMode?: Globals | 'wrap' | 'nowrap'
+  textSpacingTrim?: Globals | 'normal' | 'space-all' | 'space-first' | 'trim-start'
+  textWrapStyle?: Globals | 'auto' | 'balance' | 'pretty' | 'stable'
+}
+
 export type CssProperty = keyof PropertiesFallback
 
-export interface CssProperties extends PropertiesFallback<String | Number>, CssVarProperties {}
+export interface CssProperties extends PropertiesFallback<String | Number>, CssVarProperties, ModernCssProperties {}
 
 export interface CssKeyframes {
   [name: string]: {

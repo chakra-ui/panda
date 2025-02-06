@@ -29,7 +29,15 @@ export interface TransformResult {
 export interface StylesheetContext
   extends Pick<
     Context,
-    'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks' | 'globalVars' | 'globalFontface'
+    | 'utility'
+    | 'conditions'
+    | 'encoder'
+    | 'decoder'
+    | 'isValidProperty'
+    | 'hooks'
+    | 'globalVars'
+    | 'globalFontface'
+    | 'globalPositionTry'
   > {
   layers: Layers
   helpers: PatternHelpers

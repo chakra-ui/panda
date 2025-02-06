@@ -9,6 +9,7 @@ import type {
   ExtendableGlobalStyleObject,
   GlobalFontface,
   GlobalStyleObject,
+  SystemStyleObject,
 } from './system-types'
 import type { ExtendableTheme, Theme } from './theme'
 import type { ExtendableUtilityConfig, UtilityConfig } from './utility'
@@ -61,6 +62,10 @@ export interface PresetCore {
    * The global fontface for your project.
    */
   globalFontface?: GlobalFontface
+  /**
+   * The global custom position try fallback option
+   */
+  globalPositionTry?: GlobalPositionTry
   /**
    * Used to generate css utility classes for your project.
    */
@@ -135,6 +140,15 @@ interface ExtendableGlobalVars {
   extend?: GlobalVarsDefinition
 }
 
+export interface GlobalPositionTry {
+  [key: string]: SystemStyleObject
+}
+
+interface ExtendableGlobalPositionTry {
+  [key: string]: SystemStyleObject | GlobalPositionTry | undefined
+  extend?: GlobalPositionTry | undefined
+}
+
 export interface ThemeVariant extends Pick<Theme, 'tokens' | 'semanticTokens'> {}
 
 export interface ThemeVariantsMap {
@@ -160,6 +174,10 @@ export interface ExtendableOptions {
    * The global fontface for your project.
    */
   globalFontface?: ExtendableGlobalFontface
+  /**
+   * The global custom position try fallback option
+   */
+  globalPositionTry?: ExtendableGlobalPositionTry
   /**
    * Used to generate css utility classes for your project.
    */
