@@ -57,8 +57,8 @@ importers:
         specifier: 5.6.2
         version: 5.6.2
       vite-tsconfig-paths:
-        specifier: 5.1.4
-        version: 5.1.4(typescript@5.6.2)(vite@5.4.11(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1))
+        specifier: 4.3.1
+        version: 4.3.1(typescript@5.6.2)(vite@5.4.11(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1))
       vitest:
         specifier: 1.5.0
         version: 1.5.0(@types/node@20.11.30)(happy-dom@15.10.2)(jsdom@24.0.0)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)
@@ -1144,8 +1144,8 @@ importers:
         specifier: 5.4.11
         version: 5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)
       vite-tsconfig-paths:
-        specifier: 5.1.4
-        version: 5.1.4(typescript@5.6.2)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1))
+        specifier: 4.3.1
+        version: 4.3.1(typescript@5.6.2)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1))
 
   sandbox/qwik-ts:
     devDependencies:
@@ -1171,8 +1171,8 @@ importers:
         specifier: 5.4.11
         version: 5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)
       vite-tsconfig-paths:
-        specifier: 5.1.4
-        version: 5.1.4(typescript@5.6.2)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1))
+        specifier: 4.3.1
+        version: 4.3.1(typescript@5.6.2)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1))
 
   sandbox/remix:
     dependencies:
@@ -16726,8 +16726,8 @@ packages:
   vite-prerender-plugin@0.5.5:
     resolution: {integrity: sha512-WUXn08rPL8CkbEeLYQI/O/IAD2ggsy5Fp5tA5QMDOpiGi7J4vNBZW/gqYRmCd1ap3XdeobFCFBYEA5mqv39lAQ==}
 
-  vite-tsconfig-paths@5.1.4:
-    resolution: {integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==}
+  vite-tsconfig-paths@4.3.1:
+    resolution: {integrity: sha512-cfgJwcGOsIxXOLU/nELPny2/LUD/lcf1IbfyeKTv2bsupVbTH/xpFtdQlBmIP1GEK2CjjLxYhFfB+QODFAx5aw==}
     peerDependencies:
       vite: '*'
     peerDependenciesMeta:
@@ -38667,22 +38667,22 @@ snapshots:
       source-map: 0.7.4
       stack-trace: 1.0.0-pre2
 
-  vite-tsconfig-paths@5.1.4(typescript@5.6.2)(vite@5.4.11(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)):
+  vite-tsconfig-paths@4.3.1(typescript@5.6.2)(vite@5.4.11(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)):
     dependencies:
       debug: 4.4.0
       globrex: 0.1.2
-      tsconfck: 3.1.4(typescript@5.6.2)
+      tsconfck: 3.0.2(typescript@5.6.2)
     optionalDependencies:
       vite: 5.4.11(@types/node@20.11.30)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite-tsconfig-paths@5.1.4(typescript@5.6.2)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)):
+  vite-tsconfig-paths@4.3.1(typescript@5.6.2)(vite@5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)):
     dependencies:
       debug: 4.4.0
       globrex: 0.1.2
-      tsconfck: 3.1.4(typescript@5.6.2)
+      tsconfck: 3.0.2(typescript@5.6.2)
     optionalDependencies:
       vite: 5.4.11(@types/node@22.10.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.38.1)
     transitivePeerDependencies:
