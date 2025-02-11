@@ -105,7 +105,7 @@ describe('file matcher', () => {
     expect(file.isValidPattern('stack')).toMatchInlineSnapshot('true')
 
     expect(file.isValidPattern('__vstack')).toMatchInlineSnapshot('true')
-    expect(file.isValidPattern('vstack')).toMatchInlineSnapshot('true')
+    expect(file.isValidPattern('vstack')).toMatchInlineSnapshot('false') // This shouldnt match vstack is aliased as __vstack
   })
 
   test('is valid recipe', () => {
@@ -126,10 +126,10 @@ describe('file matcher', () => {
     ])
 
     expect(file.isValidRecipe('randxxx')).toMatchInlineSnapshot('false')
-    expect(file.isValidRecipe('button')).toMatchInlineSnapshot('true')
+    expect(file.isValidRecipe('button')).toMatchInlineSnapshot('false') // this shouldnt match button is aliased as buttonStyle
 
     expect(file.isValidRecipe('buttonStyle')).toMatchInlineSnapshot('true')
-    expect(file.isValidRecipe('button')).toMatchInlineSnapshot('true')
+    expect(file.isValidRecipe('button')).toMatchInlineSnapshot('false') // Redundant test?
     expect(file.isValidRecipe('xxxbutton')).toMatchInlineSnapshot('false')
   })
 
@@ -137,16 +137,23 @@ describe('file matcher', () => {
     const ctx = createContext()
 
     const file = ctx.imports.file([
+      { mod: 'other-system/css', name: 'css', alias: 'css' },
       { mod: 'styled-system/css', name: 'css', alias: 'xcss' },
       { mod: 'styled-system/css', name: 'cva', alias: 'cva' },
       { mod: 'styled-system/patterns', name: 'stack', alias: 'stack' },
+      { mod: 'styled-system/patterns', name: 'grid', alias: 'aliasedGrid' },
     ])
 
-    expect(file.isRawFn('css')).toMatchInlineSnapshot('true')
-    expect(file.isRawFn('xcss')).toMatchInlineSnapshot('false')
+    expect(file.isRawFn('css')).toMatchInlineSnapshot('false')
+    expect(file.isRawFn('xcss')).toMatchInlineSnapshot('true')
 
-    expect(file.isRawFn('css.raw')).toMatchInlineSnapshot('true')
+    expect(file.isRawFn('css.raw')).toMatchInlineSnapshot('false')
+    expect(file.isRawFn('xcss.raw')).toMatchInlineSnapshot('true')
+
     expect(file.isRawFn('stack.raw')).toMatchInlineSnapshot('true')
+
+    expect(file.isRawFn('card.raw')).toMatchInlineSnapshot('false')
+    expect(file.isRawFn('aliasedGrid.raw')).toMatchInlineSnapshot('true')
 
     expect(file.isRawFn('cva.raw')).toMatchInlineSnapshot('false')
   })
