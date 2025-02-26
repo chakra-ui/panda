@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@ark-ui/anatomy": "2.2.0",
-    "@ark-ui/react": "2.1.1",
+    "@ark-ui/react": "2.2.3",
     "@monaco-editor/react": "4.6.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/generator": "workspace:*",
