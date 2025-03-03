@@ -6,6 +6,17 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.0] - 2025-02-10
+
+### Added
+
+Add support for recent baseline and experimental css properties:
+
+- **Size interpolation:** fieldSizing, interpolateSize
+- **Text rendering:** textWrapMode, textWrapStyle and textSpacingTrim
+- **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
+  positionTryFallback, positionTryOrder, positionVisibility
+
 ## [0.52.0] - 2025-01-02
 
 ### Added
