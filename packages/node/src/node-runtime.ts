@@ -50,12 +50,12 @@ export const nodeRuntime: Runtime = {
     watch(options) {
       const { include, exclude, cwd, poll } = options
       const coalesce = poll || process.platform === 'win32'
-      const watcher = chokidar.watch(include, {
+      const files = glob.sync(include, { cwd, ignore: exclude })
+      const watcher = chokidar.watch(files, {
         usePolling: poll,
         cwd,
         ignoreInitial: true,
         ignorePermissionErrors: true,
-        ignored: exclude,
         awaitWriteFinish: coalesce ? { stabilityThreshold: 50, pollInterval: 10 } : false,
       })
 
