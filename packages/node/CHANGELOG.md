@@ -1,5 +1,20 @@
 # @pandacss/node
 
+## 0.53.1
+
+### Patch Changes
+
+- b67a2a5: Fix issue where file watching doesn't work due the recent security upgrade of the `chokidar` package.
+  - @pandacss/config@0.53.1
+  - @pandacss/core@0.53.1
+  - @pandacss/generator@0.53.1
+  - @pandacss/logger@0.53.1
+  - @pandacss/parser@0.53.1
+  - @pandacss/reporter@0.53.1
+  - @pandacss/shared@0.53.1
+  - @pandacss/token-dictionary@0.53.1
+  - @pandacss/types@0.53.1
+
 ## 0.53.0
 
 ### Patch Changes
