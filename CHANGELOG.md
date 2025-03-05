@@ -10,7 +10,7 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ### Added
 
-- Add support for new conditions:
+Add support for new conditions:
 
 - `current` -> `&:is([aria-current=true], [data-current])`
 - `today` -> `&[data-today]`
