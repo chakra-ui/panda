@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.1] - 2025-03-04
+
+### Fixed
+
+Fix issue where file watching doesn't work due the recent security upgrade of the `chokidar` package.
+
 ## [0.53.0] - 2025-02-10
 
 ### Added
