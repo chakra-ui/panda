@@ -56,7 +56,7 @@ export const conditions = {
   groupDisabled: '.group:is(:disabled, [disabled], [data-disabled]) &',
   groupChecked: '.group:is(:checked, [data-checked], [aria-checked=true], [data-state="checked"]) &',
   groupExpanded: '.group:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) &',
-  groupInvalid: '.group:invalid &',
+  groupInvalid: '.group:is(:invalid, [data-invalid]) &',
 
   indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate"])',
   required: '&:is(:required, [data-required], [aria-required=true])',
