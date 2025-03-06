@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "css": "PANDA_DEBUG=* panda",
-    "css:dev": "PANDA_DEBUG=* panda -w"
+    "css:dev": "PANDA_DEBUG=* panda cssgen -w"
   },
   "dependencies": {
     "preact": "10.19.5"
