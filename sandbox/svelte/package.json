@@ -19,7 +19,7 @@
     "@pandacss/dev": "workspace:*",
     "@sveltejs/adapter-auto": "3.1.1",
     "@sveltejs/kit": "2.8.3",
-    "autoprefixer": "10.4.20",
+    "autoprefixer": "10.4.21",
     "eslint-plugin-svelte3": "4.0.0",
     "postcss": "8.4.49",
     "postcss-load-config": "5.1.0",
