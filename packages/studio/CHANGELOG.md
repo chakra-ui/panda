@@ -1,5 +1,20 @@
 # @pandacss/studio
 
+## 0.54.0
+
+### Minor Changes
+
+- 01d72ad: update groupInvalid selector according to other group selector implementations
+
+### Patch Changes
+
+- @pandacss/config@0.54.0
+- @pandacss/astro-plugin-studio@0.54.0
+- @pandacss/logger@0.54.0
+- @pandacss/shared@0.54.0
+- @pandacss/token-dictionary@0.54.0
+- @pandacss/types@0.54.0
+
 ## 0.53.1
 
 ### Patch Changes
