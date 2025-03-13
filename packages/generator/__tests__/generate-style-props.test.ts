@@ -14,8 +14,8 @@ describe('generate property types', () => {
       type CssVars = \`var(--\${string})\`
       type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
-      type CssVarName =  | AnyString
-      type CssVarKeys = \`--\${CssVarName}\`
+      type CssVarName = AnyString
+      type CssVarKeys = \`--\${CssVarName}\` | \`--\${string}\` & {}
 
       export type CssVarProperties = {
         [key in CssVarKeys]?: CssVarValue
@@ -7510,8 +7510,8 @@ describe('generate property types', () => {
       type CssVars = \`var(--\${string})\`
       type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
-      type CssVarName =  | AnyString
-      type CssVarKeys = \`--\${CssVarName}\`
+      type CssVarName = AnyString
+      type CssVarKeys = \`--\${CssVarName}\` | \`--\${string}\` & {}
 
       export type CssVarProperties = {
         [key in CssVarKeys]?: CssVarValue
@@ -15024,8 +15024,8 @@ describe('generate property types', () => {
       type CssVars = "var(--random-color)" | "var(--button-color)"
       type CssVarValue = ConditionalValue<Token | CssVars | AnyString | (number & {})>
 
-      type CssVarName = "random-color" | "button-color" | AnyString
-      type CssVarKeys = \`--\${CssVarName}\`
+      type CssVarName = "random-color" | "button-color"
+      type CssVarKeys = \`--\${CssVarName}\` | \`--\${string}\` & {}
 
       export type CssVarProperties = {
         [key in CssVarKeys]?: CssVarValue

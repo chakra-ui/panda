@@ -8,8 +8,8 @@ type AnyString = (string & {})
 type CssVars = `var(--${string})`
 type CssVarValue = ConditionalValue<Token | AnyString | (number & {})>
 
-type CssVarName =  | AnyString
-type CssVarKeys = `--${CssVarName}`
+type CssVarName = 
+type CssVarKeys = `--${CssVarName}` | `--${string}` & {}
 
 export type CssVarProperties = {
   [key in CssVarKeys]?: CssVarValue
