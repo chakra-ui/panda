@@ -106,7 +106,7 @@ export interface Conditions {
 	"_groupChecked": string
 	/** `.group:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) &` */
 	"_groupExpanded": string
-	/** `.group:invalid &` */
+	/** `.group:is(:invalid, [data-invalid]) &` */
 	"_groupInvalid": string
 	/** `&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate"])` */
 	"_indeterminate": string
