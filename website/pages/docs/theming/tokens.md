@@ -587,14 +587,14 @@ const theme = {
 }
 ```
 
-### Cursors
+### Cursor
 
 Cursor tokens define the style of the mouse pointer when it hovers over a specific element or area. These tokens represent the visual behavior of interactions, indicating actions such as clickable areas, draggable elements, or loading states. Their value is defined as a string.
 
 ```js
 const theme = {
   tokens: {
-    cursors: {
+    cursor: {
       click: { value: 'pointer' },
       disabled: { value: 'not-allowed' },
       // custom value
