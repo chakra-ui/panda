@@ -131,7 +131,7 @@ export class ImportMap {
       const resolvedMod = resolveTsPath?.(result.mod)
 
       for (const mod of mods) {
-        const absMod = [this.context.config.cwd, mod].join('/')
+        const absMod = [this.context.config.cwd, mod].join('/').replaceAll('\\', '/')
 
         if (resolvedMod?.includes(absMod) || resolvedMod === mod) {
           result.importMapValue = resolvedMod
