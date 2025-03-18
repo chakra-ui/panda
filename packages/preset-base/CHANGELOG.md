@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.53.2
+
+### Patch Changes
+
+- 01d72ad: - Update `groupInvalid` condition according to other group selector implementations
+  - @pandacss/types@0.53.2
+
 ## 0.53.1
 
 ### Patch Changes
