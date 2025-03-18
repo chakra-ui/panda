@@ -1,6 +1,5 @@
 ---
-'@pandacss/preset-base': minor
-'@pandacss/studio': minor
+'@pandacss/preset-base': fix
 ---
 
-update groupInvalid selector according to other group selector implementations
+Update `groupInvalid` condition according to other group selector implementations
