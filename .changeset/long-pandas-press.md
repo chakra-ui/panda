@@ -1,5 +1,5 @@
 ---
-'@pandacss/preset-base': fix
+'@pandacss/preset-base': patch
 ---
 
-Update `groupInvalid` condition according to other group selector implementations
+- Update `groupInvalid` condition according to other group selector implementations
