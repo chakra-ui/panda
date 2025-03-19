@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 0.53.2
+
+### Patch Changes
+
+- cde9a0b: - Fix security issue due to stale version of `esbuild` used in `bundle-n-require`
+- Updated dependencies [01d72ad]
+  - @pandacss/preset-base@0.53.2
+  - @pandacss/logger@0.53.2
+  - @pandacss/preset-panda@0.53.2
+  - @pandacss/shared@0.53.2
+  - @pandacss/types@0.53.2
+
 ## 0.53.1
 
 ### Patch Changes
