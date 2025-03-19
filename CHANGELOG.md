@@ -6,6 +6,16 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.2] - 2025-03-18
+
+### Fixed
+
+- Fix security issue due to stale version of `esbuild` used in `bundle-n-require`
+
+### Changed
+
+- Update `groupInvalid` condition according to other group selector implementations
+
 ## [0.53.1] - 2025-03-04
 
 ### Fixed
