@@ -1,5 +1,17 @@
 # @pandacss/studio
 
+## 0.53.3
+
+### Patch Changes
+
+- 00aa868: Add cursor utility config
+  - @pandacss/config@0.53.3
+  - @pandacss/astro-plugin-studio@0.53.3
+  - @pandacss/logger@0.53.3
+  - @pandacss/shared@0.53.3
+  - @pandacss/token-dictionary@0.53.3
+  - @pandacss/types@0.53.3
+
 ## 0.53.2
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.53.3
+
+### Patch Changes
+
+- 00aa868: Add cursor utility config
+  - @pandacss/types@0.53.3
+
 ## 0.53.2
 
 ### Patch Changes
