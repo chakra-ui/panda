@@ -91,7 +91,7 @@ In Panda, you add the style object to the `base` key of the style object. The `s
 ```jsx
 import { styled } from '../styled-system/jsx'
 
-const Button = styled('div', {
+const Button = styled('button', {
   base: {
     backgroundColor: '#fff',
     border: '1px solid #000',
@@ -446,7 +446,7 @@ export default defineConfig({
 // usage
 import { styled } from '../styled-system/jsx'
 
-const style = styled.button`
+const Button = styled.button`
   &:hover {
     animation: rotate 200ms;
   }
