@@ -54,7 +54,7 @@ const Demo = () => {
   return (
     <p
       className={css({ bg: 'red.300', backgroundRepeat: 'repeat' })}
-      style={{ backgroundImage: myImageBackground }}
+      style={{ backgroundImage: `url("${myImageBackground}")` }}
     >
       Hello World
     </p>
