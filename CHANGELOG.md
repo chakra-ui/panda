@@ -6,6 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.3] - 2025-03-24
+
+### Added
+
+- Add cursor utility config.
+
 ## [0.53.2] - 2025-03-18
 
 ### Fixed
