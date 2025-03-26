@@ -24,7 +24,7 @@ Change the fill color of an SVG element.
 Change the stroke color of an SVG element.
 
 ```jsx
-<div className={css({ stroke: 'blue.500' })} />
+<svg className={css({ stroke: 'blue.500' })} />
 ```
 
 | Prop     | CSS Property | Token Category |
@@ -36,9 +36,9 @@ Change the stroke color of an SVG element.
 Change the stroke width of an SVG element.
 
 ```jsx
-<div className={css({ strokeWidth: '1px' })} />
+<svg className={css({ strokeWidth: '1px' })} />
 ```
 
-| Prop          | CSS Property | Token Category |
-| ------------- | ------------ | -------------- |
-| `strokeWidth` | `stroke-width`     | borderWidths   |
+| Prop          | CSS Property   | Token Category |
+| ------------- | -------------- | -------------- |
+| `strokeWidth` | `stroke-width` | borderWidths   |
