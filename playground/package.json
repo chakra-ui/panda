@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ark-ui/anatomy": "2.2.0",
+    "@ark-ui/anatomy": "3.5.0",
     "@ark-ui/react": "2.1.1",
     "@monaco-editor/react": "4.6.0",
     "@pandacss/config": "workspace:*",
