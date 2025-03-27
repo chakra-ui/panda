@@ -11,7 +11,7 @@ import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 import { compareAtRuleOrMixed } from './sort-style-rules'
 
-const order: ConditionType[] = ['at-rule', 'self-nesting', 'combinator-nesting', 'parent-nesting']
+const order: ConditionType[] = ['at-rule', 'self-nesting', 'combinator-nesting', 'parent-nesting', 'mixed']
 
 interface Options {
   conditions?: ConditionsConfig
