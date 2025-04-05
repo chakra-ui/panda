@@ -1171,8 +1171,8 @@ importers:
         specifier: 5.6.2
         version: 5.6.2
       undici:
-        specifier: 7.4.0
-        version: 7.4.0
+        specifier: 7.7.0
+        version: 7.7.0
       vite:
         specifier: 6.2.5
         version: 6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)
@@ -17245,8 +17245,8 @@ packages:
     resolution: {integrity: sha512-uROZWze0R0itiAKVPsYhFov9LxrPMHLMEQFszeI2gCN6bnIIZ8twzBCJcN2LJrBBLfrP0t1FW0g+JmKVl8Vk1g==}
     engines: {node: '>=18.17'}
 
-  undici@7.4.0:
-    resolution: {integrity: sha512-PUQM3/es3noM24oUn10u3kNNap0AbxESOmnssmW+dOi9yGwlUSi5nTNYl3bNbTkWOF8YZDkx2tCmj9OtQ3iGGw==}
+  undici@7.7.0:
+    resolution: {integrity: sha512-tZ6+5NBq4KH35rr46XJ2JPFKxfcBlYNaqLF/wyWIO9RMHqqU/gx/CLB1Y2qMcgB8lWw/bKHa7qzspqCN7mUHvA==}
     engines: {node: '>=20.18.1'}
 
   unenv@2.0.0-rc.15:
@@ -20772,7 +20772,7 @@ snapshots:
       '@types/mdx': 2.0.13
       source-map: 0.7.4
       svgo: 3.3.2
-      undici: 7.4.0
+      undici: 7.7.0
       valibot: 1.0.0(typescript@5.6.2)
       vfile: 6.0.2
       vite: 6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)
@@ -24181,7 +24181,7 @@ snapshots:
 
   '@radix-ui/react-select@1.2.2(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
-      '@babel/runtime': 7.25.0
+      '@babel/runtime': 7.26.9
       '@radix-ui/number': 1.0.1
       '@radix-ui/primitive': 1.0.1
       '@radix-ui/react-collection': 1.0.3(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -39345,7 +39345,7 @@ snapshots:
 
   undici@6.21.2: {}
 
-  undici@7.4.0: {}
+  undici@7.7.0: {}
 
   unenv@2.0.0-rc.15:
     dependencies:
