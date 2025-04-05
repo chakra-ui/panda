@@ -36,31 +36,31 @@
   "license": "MIT",
   "dependencies": {
     "@changesets/changelog-github": "0.5.1",
-    "@changesets/cli": "2.27.12",
+    "@changesets/cli": "2.28.1",
     "@projectwallace/format-css": "^1.4.3",
     "chokidar": "4.0.3",
     "concurrently": "8.2.2",
     "cross-env": "7.0.3",
-    "happy-dom": "15.10.2",
-    "husky": "9.0.11",
-    "lint-staged": "15.2.11",
+    "happy-dom": "15.11.7",
+    "husky": "9.1.7",
+    "lint-staged": "15.5.0",
     "mdx-local-link-checker": "2.1.1",
     "rimraf": "5.0.10",
     "ts-morph": "24.0.0",
-    "tsup": "8.0.2",
-    "tsx": "4.7.1",
-    "typescript": "5.6.2",
-    "vite-tsconfig-paths": "4.3.1",
+    "tsup": "8.4.0",
+    "tsx": "4.19.3",
+    "typescript": "5.8.3",
+    "vite-tsconfig-paths": "4.3.2",
     "vitest": "1.6.1"
   },
   "devDependencies": {
     "@types/eslint": "8.56.12",
-    "@types/node": "20.11.30",
-    "@typescript-eslint/eslint-plugin": "7.0.1",
-    "@typescript-eslint/parser": "7.0.1",
-    "eslint": "8.56.0",
+    "@types/node": "20.17.30",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
+    "eslint": "8.57.1",
     "eslint-config-prettier": "9.1.0",
-    "prettier": "3.2.5"
+    "prettier": "3.5.3"
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
@@ -69,10 +69,10 @@
       "git add --all packages/studio/"
     ]
   },
-  "packageManager": "pnpm@9.1.0",
+  "packageManager": "pnpm@9.15.9",
   "pnpm": {
     "overrides": {
-      "@swc/helpers@~0.4": "0.4.36"
+      "@swc/helpers@~0.4": "0.5.15"
     }
   }
 }

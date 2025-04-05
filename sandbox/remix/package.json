@@ -12,28 +12,28 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@remix-run/css-bundle": "2.6.0",
-    "@remix-run/node": "2.6.0",
-    "@remix-run/react": "2.6.0",
-    "@remix-run/serve": "2.6.0",
-    "isbot": "5.1.23",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "@remix-run/css-bundle": "2.16.4",
+    "@remix-run/node": "2.16.4",
+    "@remix-run/react": "2.16.4",
+    "@remix-run/serve": "2.16.4",
+    "isbot": "5.1.25",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:^",
-    "@remix-run/dev": "2.6.0",
-    "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19",
-    "@typescript-eslint/eslint-plugin": "7.0.1",
-    "eslint": "8.56.0",
+    "@remix-run/dev": "2.16.4",
+    "@types/react": "18.3.20",
+    "@types/react-dom": "18.3.6",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "eslint": "8.57.1",
     "eslint-config-prettier": "9.1.0",
-    "eslint-import-resolver-typescript": "3.6.3",
-    "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-jsx-a11y": "6.8.0",
-    "eslint-plugin-react": "7.33.2",
-    "eslint-plugin-react-hooks": "4.6.0",
-    "typescript": "5.6.2"
+    "eslint-import-resolver-typescript": "3.10.0",
+    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "4.6.2",
+    "typescript": "5.8.3"
   },
   "engines": {
     "node": ">=18.0.0"
