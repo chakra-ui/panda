@@ -52,7 +52,7 @@ const pandaStudio = (): AstroIntegration => ({
 
       updateConfig({
         vite: {
-          // @ts-expect-error
+          // @ts-ignore
           plugins: [vitePlugin(configPath!)],
         },
       })
