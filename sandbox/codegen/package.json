@@ -19,7 +19,7 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@builder.io/qwik": "1.12.1",
+    "@builder.io/qwik": "1.13.0",
     "@preact/preset-vite": "2.10.1",
     "@solidjs/testing-library": "0.8.10",
     "@testing-library/jest-dom": "6.4.2",
