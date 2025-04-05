@@ -4,7 +4,7 @@ import Vue from '@vitejs/plugin-vue'
 import preact from '@preact/preset-vite'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import { UserConfig } from 'vite'
-import type { UserConfig as TestUserConfig } from 'vitest/node'
+import { UserConfig as TestUserConfig } from 'vitest'
 
 import { createRequire } from 'module'
 
