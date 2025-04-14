@@ -36,4 +36,43 @@ describe('merge props', () => {
         }
       `)
   })
+
+  test('should prevent prototype pollution', () => {
+    const maliciousPayload = { __proto__: { polluted: true } }
+    const result = mergeProps<any>({ safe: 'value' }, maliciousPayload)
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "safe": "value",
+      }
+    `)
+    expect(({} as any).polluted).toBeUndefined()
+  })
+
+  test('should prevent constructor pollution', () => {
+    const maliciousPayload = { constructor: { polluted: true } }
+    const result = mergeProps<any>({ safe: 'value' }, maliciousPayload)
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "safe": "value",
+      }
+    `)
+    expect(({} as any).polluted).toBeUndefined()
+  })
+
+  test('should prevent prototype chain pollution', () => {
+    const maliciousPayload = { nested: { __proto__: { polluted: true } } }
+    const result = mergeProps<any>({ safe: 'value', nested: { ok: true } }, maliciousPayload)
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "nested": {
+          "ok": true,
+        },
+        "safe": "value",
+      }
+    `)
+    expect(({} as any).polluted).toBeUndefined()
+  })
 })

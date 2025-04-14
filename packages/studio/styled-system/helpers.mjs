@@ -64,11 +64,14 @@ var memo = (fn) => {
 };
 
 // src/merge-props.ts
+var MERGE_OMIT = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
 function mergeProps(...sources) {
   return sources.reduce((prev, obj) => {
     if (!obj)
       return prev;
     Object.keys(obj).forEach((key) => {
+      if (MERGE_OMIT.has(key))
+        return;
       const prevValue = prev[key];
       const value = obj[key];
       if (isObject(prevValue) && isObject(value)) {
