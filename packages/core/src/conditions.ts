@@ -11,7 +11,7 @@ import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 import { compareAtRuleOrMixed } from './sort-style-rules'
 
-const order: ConditionType[] = ['at-rule', 'self-nesting', 'combinator-nesting', 'parent-nesting']
+const order: ConditionType[] = ['at-rule', 'self-nesting', 'combinator-nesting', 'parent-nesting', 'mixed']
 
 interface Options {
   conditions?: ConditionsConfig
@@ -76,7 +76,7 @@ export class Conditions {
     const themeVariants: Record<string, ConditionDetails> = {}
     Object.entries(themes).forEach(([theme, _themeVariant]) => {
       const condName = this.getThemeName(theme)
-      const cond = parseCondition('& ' + this.getThemeSelector(theme))
+      const cond = parseCondition(this.getThemeSelector(theme) + ' &')
       if (!cond) return
 
       themeVariants[condName] = cond
