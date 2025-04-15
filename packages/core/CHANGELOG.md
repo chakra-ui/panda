@@ -1,5 +1,18 @@
 # @pandacss/core
 
+## 0.53.4
+
+### Patch Changes
+
+- 57343c1: - Fix issue where conditions generated from `themes` lead to incorrect css when used directly in style
+  objects.
+  - Improve handling of mixed conditions defined in the config.
+  - @pandacss/is-valid-prop@0.53.4
+  - @pandacss/logger@0.53.4
+  - @pandacss/shared@0.53.4
+  - @pandacss/token-dictionary@0.53.4
+  - @pandacss/types@0.53.4
+
 ## 0.53.3
 
 ### Patch Changes
