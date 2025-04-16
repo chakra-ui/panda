@@ -10,7 +10,7 @@ interface Color {
   path: string[]
 }
 
-type ColorToken = Token & Color & TokenExtensions
+export type ColorToken = Token & Color & TokenExtensions
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
