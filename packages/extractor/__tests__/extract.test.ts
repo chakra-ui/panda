@@ -8,7 +8,7 @@ import { default as ExtractSample } from './samples/ExtractSample?raw'
 
 const project = createProject()
 
-let sourceFile: SourceFile
+let sourceFile: SourceFile | undefined
 afterEach(() => {
   if (!sourceFile) return
 

@@ -6,6 +6,172 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.3] - 2025-03-24
+
+### Added
+
+- Add cursor utility config.
+
+## [0.53.2] - 2025-03-18
+
+### Fixed
+
+- Fix security issue due to stale version of `esbuild` used in `bundle-n-require`
+
+### Changed
+
+- Update `groupInvalid` condition according to other group selector implementations
+
+## [0.53.1] - 2025-03-04
+
+### Fixed
+
+Fix issue where file watching doesn't work due the recent security upgrade of the `chokidar` package.
+
+## [0.53.0] - 2025-02-10
+
+### Added
+
+Add support for recent baseline and experimental css properties:
+
+- **Size interpolation:** fieldSizing, interpolateSize
+- **Text rendering:** textWrapMode, textWrapStyle and textSpacingTrim
+- **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
+  positionTryFallback, positionTryOrder, positionVisibility
+
+## [0.52.0] - 2025-01-02
+
+### Added
+
+Add support for new conditions:
+
+- `current` -> `&:is([aria-current=true], [data-current])`
+- `today` -> `&[data-today]`
+- `unavailable` -> `&[data-unavailable]`
+- `rangeStart` -> `&[data-range-start]`
+- `rangeEnd` -> `&[data-range-end]`
+- `now` -> `&[data-now]`
+- `topmost` -> `&[data-topmost]`
+- `icon` -> `& :where(svg)`
+- `complete` -> `&[data-complete]`
+- `incomplete` -> `&[data-incomplete]`
+- `dragging` -> `&[data-dragging]`
+- `grabbed` -> `&[data-grabbed]`
+- `underValue` -> `&[data-state=under-value]`
+- `overValue` -> `&[data-state=over-value]`
+- `atValue` -> `&[data-state=at-value]`
+- `hidden` -> `&:is([hidden], [data-hidden])`
+
+### Fixed
+
+Security: Update chokidar to remove vulnerability
+
+## [0.51.1] - 2025-01-01
+
+### Fixed
+
+Redesigned the recipe report to be more readable and easier to understand. We simplified the `JSX` and `Function`
+columns to be more concise.
+
+**BEFORE**
+
+```sh
+╔════════════════════════╤══════════════════════╤═════════╤═══════╤════════════╤═══════════════════╤══════════╗
+║ Recipe                 │ Variant Combinations │ Usage % │ JSX % │ Function % │ Most Used         │ Found in ║
+╟────────────────────────┼──────────────────────┼─────────┼───────┼────────────┼───────────────────┼──────────╢
+║ someRecipe (1 variant) │ 1 / 1                │ 100%    │ 100%  │ 0%         │ size.small        │ 1 file   ║
+╟────────────────────────┼──────────────────────┼─────────┼───────┼────────────┼───────────────────┼──────────╢
+║ button (4 variants)    │ 7 / 9                │ 77.78%  │ 63%   │ 38%        │ size.md, size.sm, │ 2 files  ║
+║                        │                      │         │       │            │ state.focused,    │          ║
+║                        │                      │         │       │            │ variant.danger,   │          ║
+║                        │                      │         │       │            │ variant.primary   │          ║
+╚════════════════════════╧══════════════════════╧═════════╧═══════╧════════════╧═══════════════════╧══════════╝
+```
+
+**AFTER**
+
+```sh
+╔════════════════════════╤════════════════╤═══════════════════╤═══════════════════╤══════════╤═══════════╗
+║ Recipe                 │ Variant values │ Usage %           │ Most used         │ Found in │ Used as   ║
+╟────────────────────────┼────────────────┼───────────────────┼───────────────────┼──────────┼───────────╢
+║ someRecipe (1 variant) │ 1 value        │ 100% (1 value)    │ size.small        │ 1 file   │ jsx: 100% ║
+║                        │                │                   │                   │          │ fn: 0%    ║
+╟────────────────────────┼────────────────┼───────────────────┼───────────────────┼──────────┼───────────╢
+║ button (4 variants)    │ 9 values       │ 77.78% (7 values) │ size.md, size.sm, │ 2 files  │ jsx: 63%  ║
+║                        │                │                   │ state.focused,    │          │ fn: 38%   ║
+║                        │                │                   │ variant.danger,   │          │           ║
+║                        │                │                   │ variant.primary   │          │           ║
+╚════════════════════════╧════════════════╧═══════════════════╧═══════════════════╧══════════╧═══════════╝
+```
+
+### Added
+
+- Add support for `panda analyze --output <file>.json` to output the analysis results to a file.
+
+## [0.51.0] - 2024-12-31
+
+**[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between internal
+`ts-morph` and userland `typescript`.
+
+## [0.50.0] - 2024-12-27
+
+### Added
+
+- Add support for semantic tokens in composite shadow `blur`, `offsetX`, `offsetY` and `spread` properties.
+
+This enables the use of semantic tokens in composite shadow properties.
+
+```ts
+// panda.config.ts
+
+export default defineConfig({
+  theme: {
+    tokens: {
+      // ...
+      shadows: {
+        sm: {
+          value: {
+            offsetX: '{spacing.3}',
+            offsetY: '{spacing.3}',
+            blur: '1rem',
+            spread: '{spacing.3}',
+            color: '{colors.red}',
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+- Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how your
+  design system is used and answers the following questions:
+
+- What tokens are most used?
+- What recipe variants are most used?
+- How many hardcoded values vs tokens do we have?
+
+```sh
+panda analyze --scope=<token|recipe>
+```
+
+> Still work in progress but we're excited to get your feedback!
+
+### Changed
+
+Improve inference of slots in slot recipes when spreading and concatenating slot names.
+
+This handles the following case gracefully:
+
+```ts
+const styles = sva({
+  className: 'foo',
+  slots: [...componentAnatomy.keys(), 'additional', 'slots', 'here'],
+})
+```
+
+Panda will now infer the slots from the anatomy and add them to the recipe.
+
 ## [0.49.0] - 2024-12-08
 
 Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate animation

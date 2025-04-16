@@ -4,14 +4,18 @@
   "extends": ["config:base", ":semanticCommitTypeAll(chore)", "schedule:earlyMondays"],
   "rebaseWhen": "conflicted",
   "timezone": "UTC",
+  "labels": ["dependencies"],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true
-    },
-    {
-      "groupName": "astro",
-      "matchPackagePatterns": ["astro*"]
+      "automerge": true,
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
     }
   ]
 }

@@ -1,5 +1,80 @@
 # @pandacss/preset-base
 
+## 0.53.3
+
+### Patch Changes
+
+- 00aa868: Add cursor utility config
+  - @pandacss/types@0.53.3
+
+## 0.53.2
+
+### Patch Changes
+
+- 01d72ad: - Update `groupInvalid` condition according to other group selector implementations
+  - @pandacss/types@0.53.2
+
+## 0.53.1
+
+### Patch Changes
+
+- @pandacss/types@0.53.1
+
+## 0.53.0
+
+### Patch Changes
+
+- Updated dependencies [5286731]
+  - @pandacss/types@0.53.0
+
+## 0.52.0
+
+### Minor Changes
+
+- bb37d2b: Add support for new conditions
+
+  - `current` -> `&:is([aria-current=true], [data-current])`
+  - `today` -> `&[data-today]`
+  - `unavailable` -> `&[data-unavailable]`
+  - `rangeStart` -> `&[data-range-start]`
+  - `rangeEnd` -> `&[data-range-end]`
+  - `now` -> `&[data-now]`
+  - `topmost` -> `&[data-topmost]`
+  - `icon` -> `& :where(svg)`
+  - `complete` -> `&[data-complete]`
+  - `incomplete` -> `&[data-incomplete]`
+  - `dragging` -> `&[data-dragging]`
+  - `grabbed` -> `&[data-grabbed]`
+  - `underValue` -> `&[data-state=under-value]`
+  - `overValue` -> `&[data-state=over-value]`
+  - `atValue` -> `&[data-state=at-value]`
+  - `hidden` -> `&:is([hidden], [data-hidden])`
+
+### Patch Changes
+
+- @pandacss/types@0.52.0
+
+## 0.51.1
+
+### Patch Changes
+
+- @pandacss/types@0.51.1
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [d68ad1f]
+  - @pandacss/types@0.51.0
+
+## 0.50.0
+
+### Patch Changes
+
+- Updated dependencies [fea78c7]
+- Updated dependencies [ad89b90]
+  - @pandacss/types@0.50.0
+
 ## 0.49.0
 
 ### Patch Changes

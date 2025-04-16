@@ -31,6 +31,15 @@ export const box = {
     return new BoxNodeConditional({ type: 'conditional', whenTrue, whenFalse, node, stack })
   },
   from: toBoxNode,
+  objectToMap: (value: Record<string, unknown>, node: Node, stack: Node[]) => {
+    const map = new Map(
+      Object.entries(value).map(([k, v]: [string, any]) => {
+        const boxed = box.from(v, node, stack)
+        return [k, boxed || null]
+      }),
+    )
+    return new BoxNodeMap({ type: 'map', value: map, node, stack })
+  },
   //
   emptyObject: (node: Node, stack: Node[]) => {
     return new BoxNodeObject({ type: 'object', value: {}, isEmpty: true, node, stack })

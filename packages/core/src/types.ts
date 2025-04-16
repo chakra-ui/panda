@@ -1,3 +1,4 @@
+import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type {
   Config,
   Dict,
@@ -9,13 +10,15 @@ import type {
   TSConfig,
   UserConfig,
 } from '@pandacss/types'
+import type { Conditions } from './conditions'
+import type { Context } from './context'
 import type { ImportMap } from './import-map'
 import type { JsxEngine } from './jsx'
 import type { Layers } from './layers'
 import type { Patterns } from './patterns'
 import type { Recipes } from './recipes'
 import type { StyleEncoder } from './style-encoder'
-import type { Context } from './context'
+import type { Utility } from './utility'
 
 export interface TransformResult {
   layer?: string
@@ -26,7 +29,15 @@ export interface TransformResult {
 export interface StylesheetContext
   extends Pick<
     Context,
-    'utility' | 'conditions' | 'encoder' | 'decoder' | 'isValidProperty' | 'hooks' | 'globalVars' | 'globalFontface'
+    | 'utility'
+    | 'conditions'
+    | 'encoder'
+    | 'decoder'
+    | 'isValidProperty'
+    | 'hooks'
+    | 'globalVars'
+    | 'globalFontface'
+    | 'globalPositionTry'
   > {
   layers: Layers
   helpers: PatternHelpers
@@ -114,9 +125,12 @@ export interface ParserOptions {
   hash: HashOptions
   imports: ImportMap
   jsx: JsxEngine
-  syntax: Config['syntax']
+  config: Config
   recipes: Recipes
+  tokens: TokenDictionary
   patterns: Patterns
+  utility: Utility
+  conditions: Conditions
   encoder: StyleEncoder
   join: (...paths: string[]) => string
   compilerOptions: TSConfig['compilerOptions']

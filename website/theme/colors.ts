@@ -125,5 +125,5 @@ export const colors = defineTokens.colors({
     700: { value: 'rgba(255, 255, 255, 0.64)' },
     800: { value: 'rgba(255, 255, 255, 0.80)' },
     900: { value: 'rgba(255, 255, 255, 0.92)' }
-  },
+  }
 })

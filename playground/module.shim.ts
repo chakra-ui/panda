@@ -1,3 +1,3 @@
-// Empty implementation for Rollup alias
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-export const createRequire = () => {};
+export const createRequire = () => {
+  void 0
+}

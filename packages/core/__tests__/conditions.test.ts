@@ -203,4 +203,28 @@ describe('Conditions', () => {
 
     expect(compareAtRuleOrMixed(m, n)).toBe(0)
   })
+
+  test('theme conditions', () => {
+    const css = new Conditions({
+      themes: {
+        primary: { tokens: { colors: { brand: { value: 'blue' } } } },
+        secondary: { tokens: { colors: { brand: { value: 'red' } } } },
+      },
+    })
+
+    expect(css.values).toMatchInlineSnapshot(`
+      {
+        "_themePrimary": {
+          "raw": "[data-panda-theme=primary] &",
+          "type": "parent-nesting",
+          "value": "[data-panda-theme=primary] &",
+        },
+        "_themeSecondary": {
+          "raw": "[data-panda-theme=secondary] &",
+          "type": "parent-nesting",
+          "value": "[data-panda-theme=secondary] &",
+        },
+      }
+    `)
+  })
 })

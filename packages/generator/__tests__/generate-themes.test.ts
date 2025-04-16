@@ -53,7 +53,7 @@ describe('generate themes', () => {
           "json": "{
         "name": "default",
         "id": "panda-theme-default",
-        "css": " [data-panda-theme=default] {\\n    --colors-primary: blue;\\n    --colors-simple: var(--colors-red-600);\\n    --colors-text: var(--colors-blue-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=default] {\\n        --colors-text: var(--colors-blue-400)\\n            }\\n        }"
+        "css": "[data-panda-theme=default] {\\n    --colors-primary: blue;\\n    --colors-simple: var(--colors-red-600);\\n    --colors-text: var(--colors-blue-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=default] {\\n        --colors-text: var(--colors-blue-400)\\n            }\\n        }"
       }",
           "name": "theme-default",
         },
@@ -61,7 +61,7 @@ describe('generate themes', () => {
           "json": "{
         "name": "pink",
         "id": "panda-theme-pink",
-        "css": " [data-panda-theme=pink] {\\n    --colors-primary: pink;\\n    --colors-text: var(--colors-pink-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=pink] {\\n        --colors-text: var(--colors-pink-400)\\n            }\\n        }"
+        "css": "[data-panda-theme=pink] {\\n    --colors-primary: pink;\\n    --colors-text: var(--colors-pink-600)\\n}\\n\\n@media (prefers-color-scheme: dark) {\\n      [data-panda-theme=pink] {\\n        --colors-text: var(--colors-pink-400)\\n            }\\n        }"
       }",
           "name": "theme-pink",
         },

@@ -2,6 +2,7 @@ import type { UtilityConfig } from '@pandacss/types'
 import { background } from './background'
 import { border } from './border'
 import { container } from './container'
+import { cursor } from './cursor'
 import { display } from './display'
 import { divide } from './divide'
 import { effects } from './effects'
@@ -44,4 +45,5 @@ export const utilities: UtilityConfig = Object.assign(
   helpers,
   polyfill,
   container,
+  cursor,
 )

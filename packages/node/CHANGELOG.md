@@ -1,5 +1,149 @@
 # @pandacss/node
 
+## 0.53.3
+
+### Patch Changes
+
+- Updated dependencies [00aa868]
+  - @pandacss/generator@0.53.3
+  - @pandacss/config@0.53.3
+  - @pandacss/parser@0.53.3
+  - @pandacss/reporter@0.53.3
+  - @pandacss/core@0.53.3
+  - @pandacss/logger@0.53.3
+  - @pandacss/shared@0.53.3
+  - @pandacss/token-dictionary@0.53.3
+  - @pandacss/types@0.53.3
+
+## 0.53.2
+
+### Patch Changes
+
+- Updated dependencies [cde9a0b]
+  - @pandacss/config@0.53.2
+  - @pandacss/parser@0.53.2
+  - @pandacss/core@0.53.2
+  - @pandacss/generator@0.53.2
+  - @pandacss/logger@0.53.2
+  - @pandacss/reporter@0.53.2
+  - @pandacss/shared@0.53.2
+  - @pandacss/token-dictionary@0.53.2
+  - @pandacss/types@0.53.2
+
+## 0.53.1
+
+### Patch Changes
+
+- b67a2a5: Fix issue where file watching doesn't work due the recent security upgrade of the `chokidar` package.
+  - @pandacss/config@0.53.1
+  - @pandacss/core@0.53.1
+  - @pandacss/generator@0.53.1
+  - @pandacss/logger@0.53.1
+  - @pandacss/parser@0.53.1
+  - @pandacss/reporter@0.53.1
+  - @pandacss/shared@0.53.1
+  - @pandacss/token-dictionary@0.53.1
+  - @pandacss/types@0.53.1
+
+## 0.53.0
+
+### Patch Changes
+
+- Updated dependencies [5286731]
+  - @pandacss/generator@0.53.0
+  - @pandacss/types@0.53.0
+  - @pandacss/core@0.53.0
+  - @pandacss/parser@0.53.0
+  - @pandacss/reporter@0.53.0
+  - @pandacss/config@0.53.0
+  - @pandacss/logger@0.53.0
+  - @pandacss/token-dictionary@0.53.0
+  - @pandacss/shared@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- 2f1165c: Security: Update chokidar to remove vulnerability
+  - @pandacss/config@0.52.0
+  - @pandacss/parser@0.52.0
+  - @pandacss/core@0.52.0
+  - @pandacss/generator@0.52.0
+  - @pandacss/logger@0.52.0
+  - @pandacss/reporter@0.52.0
+  - @pandacss/shared@0.52.0
+  - @pandacss/token-dictionary@0.52.0
+  - @pandacss/types@0.52.0
+
+## 0.51.1
+
+### Patch Changes
+
+- Updated dependencies [9c1327e]
+  - @pandacss/reporter@0.51.1
+  - @pandacss/config@0.51.1
+  - @pandacss/core@0.51.1
+  - @pandacss/generator@0.51.1
+  - @pandacss/logger@0.51.1
+  - @pandacss/parser@0.51.1
+  - @pandacss/shared@0.51.1
+  - @pandacss/token-dictionary@0.51.1
+  - @pandacss/types@0.51.1
+
+## 0.51.0
+
+### Minor Changes
+
+- d68ad1f: **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
+  internal `ts-morph` and userland `typescript`.
+
+  > The current version of TS supported is `5.6.2`
+
+### Patch Changes
+
+- Updated dependencies [d68ad1f]
+  - @pandacss/config@0.51.0
+  - @pandacss/parser@0.51.0
+  - @pandacss/types@0.51.0
+  - @pandacss/core@0.51.0
+  - @pandacss/generator@0.51.0
+  - @pandacss/logger@0.51.0
+  - @pandacss/reporter@0.51.0
+  - @pandacss/token-dictionary@0.51.0
+  - @pandacss/shared@0.51.0
+
+## 0.50.0
+
+### Minor Changes
+
+- fea78c7: Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how
+  your design system is used and answers the following questions:
+
+  - What tokens are most used?
+  - What recipe variants are most used?
+  - How many hardcoded values vs tokens do we have?
+
+  ```sh
+  panda analyze --scope=<token|recipe>
+  ```
+
+  > Still work in progress but we're excited to get your feedback!
+
+### Patch Changes
+
+- Updated dependencies [fea78c7]
+- Updated dependencies [ad89b90]
+- Updated dependencies [7c85ac7]
+  - @pandacss/types@0.50.0
+  - @pandacss/reporter@0.50.0
+  - @pandacss/token-dictionary@0.50.0
+  - @pandacss/generator@0.50.0
+  - @pandacss/parser@0.50.0
+  - @pandacss/core@0.50.0
+  - @pandacss/config@0.50.0
+  - @pandacss/logger@0.50.0
+  - @pandacss/shared@0.50.0
+
 ## 0.49.0
 
 ### Patch Changes

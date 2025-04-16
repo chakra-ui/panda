@@ -89,6 +89,7 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
       globalCss: mergeExtensions(reversed.map((config) => config.globalCss ?? {})),
       globalVars: mergeExtensions(reversed.map((config) => config.globalVars ?? {})),
       globalFontface: mergeExtensions(reversed.map((config) => config.globalFontface ?? {})),
+      globalPositionTry: mergeExtensions(reversed.map((config) => config.globalPositionTry ?? {})),
       staticCss: mergeExtensions(reversed.map((config) => config.staticCss ?? {})),
       themes: mergeExtensions(reversed.map((config) => config.themes ?? {})),
       hooks: mergeHooks(pluginHooks),

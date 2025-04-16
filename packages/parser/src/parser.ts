@@ -23,7 +23,8 @@ const evaluateOptions: EvaluateOptions = {
 }
 
 export function createParser(context: ParserOptions) {
-  const { jsx, imports, recipes, syntax } = context
+  const { jsx, imports, recipes, config } = context
+  const syntax = config.syntax
 
   return function parse(
     sourceFile: SourceFile | undefined,

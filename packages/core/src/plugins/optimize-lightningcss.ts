@@ -15,7 +15,8 @@ export default function optimizeLightCss(code: string | Root, options: OptimizeO
 
   const codeStr = typeof code === 'string' ? code : code.toString()
   const result = transform({
-    code: Buffer.from(codeStr),
+    // https://stackoverflow.com/questions/78790943/in-typescript-5-6-buffer-is-not-assignable-to-arraybufferview-or-uint8arr
+    code: Buffer.from(codeStr) as any as Uint8Array,
     minify,
     sourceMap: false,
     filename: 'styles.css',

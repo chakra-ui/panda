@@ -1,5 +1,79 @@
 # @pandacss/types
 
+## 0.53.3
+
+## 0.53.2
+
+## 0.53.1
+
+## 0.53.0
+
+### Minor Changes
+
+- 5286731: Add support for recent baseline and experimental css properties:
+
+  - **Size interpolation:** fieldSizing, interpolateSize
+  - **Text rendering:** textWrapMode, textWrapStyle and textSpacingTrim
+  - **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
+    positionTryFallback, positionTryOrder, positionVisibility
+
+## 0.52.0
+
+## 0.51.1
+
+## 0.51.0
+
+### Minor Changes
+
+- d68ad1f: **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
+  internal `ts-morph` and userland `typescript`.
+
+  > The current version of TS supported is `5.6.2`
+
+## 0.50.0
+
+### Minor Changes
+
+- fea78c7: Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how
+  your design system is used and answers the following questions:
+
+  - What tokens are most used?
+  - What recipe variants are most used?
+  - How many hardcoded values vs tokens do we have?
+
+  ```sh
+  panda analyze --scope=<token|recipe>
+  ```
+
+  > Still work in progress but we're excited to get your feedback!
+
+- ad89b90: Add support for semantic tokens in composite shadow `blur`, `offsetX`, `offsetY` and `spread` properties.
+
+  This enables the use of semantic tokens in composite shadow properties.
+
+  ```ts
+  // panda.config.ts
+
+  export default defineConfig({
+    theme: {
+      tokens: {
+        // ...
+        shadows: {
+          sm: {
+            value: {
+              offsetX: '{spacing.3}',
+              offsetY: '{spacing.3}',
+              blur: '1rem',
+              spread: '{spacing.3}',
+              color: '{colors.red}',
+            },
+          },
+        },
+      },
+    },
+  })
+  ```
+
 ## 0.49.0
 
 ### Minor Changes

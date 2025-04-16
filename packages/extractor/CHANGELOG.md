@@ -1,5 +1,60 @@
 # @pandacss/extractor
 
+## 0.53.3
+
+### Patch Changes
+
+- @pandacss/shared@0.53.3
+
+## 0.53.2
+
+### Patch Changes
+
+- @pandacss/shared@0.53.2
+
+## 0.53.1
+
+### Patch Changes
+
+- @pandacss/shared@0.53.1
+
+## 0.53.0
+
+### Patch Changes
+
+- @pandacss/shared@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @pandacss/shared@0.52.0
+
+## 0.51.1
+
+### Patch Changes
+
+- @pandacss/shared@0.51.1
+
+## 0.51.0
+
+### Minor Changes
+
+- d68ad1f: **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
+  internal `ts-morph` and userland `typescript`.
+
+  > The current version of TS supported is `5.6.2`
+
+### Patch Changes
+
+- @pandacss/shared@0.51.0
+
+## 0.50.0
+
+### Patch Changes
+
+- @pandacss/shared@0.50.0
+
 ## 0.49.0
 
 ### Patch Changes

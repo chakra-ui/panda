@@ -1,5 +1,30 @@
 # @pandacss/is-valid-prop
 
+## 0.53.3
+
+## 0.53.2
+
+## 0.53.1
+
+## 0.53.0
+
+### Minor Changes
+
+- 5286731: Add support for recent baseline and experimental css properties:
+
+  - **Size interpolation:** fieldSizing, interpolateSize
+  - **Text rendering:** textWrapMode, textWrapStyle and textSpacingTrim
+  - **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
+    positionTryFallback, positionTryOrder, positionVisibility
+
+## 0.52.0
+
+## 0.51.1
+
+## 0.51.0
+
+## 0.50.0
+
 ## 0.49.0
 
 ## 0.48.1

@@ -1,5 +1,119 @@
 # @pandacss/parser
 
+## 0.53.3
+
+### Patch Changes
+
+- @pandacss/config@0.53.3
+- @pandacss/core@0.53.3
+- @pandacss/extractor@0.53.3
+- @pandacss/logger@0.53.3
+- @pandacss/shared@0.53.3
+- @pandacss/types@0.53.3
+
+## 0.53.2
+
+### Patch Changes
+
+- Updated dependencies [cde9a0b]
+  - @pandacss/config@0.53.2
+  - @pandacss/core@0.53.2
+  - @pandacss/extractor@0.53.2
+  - @pandacss/logger@0.53.2
+  - @pandacss/shared@0.53.2
+  - @pandacss/types@0.53.2
+
+## 0.53.1
+
+### Patch Changes
+
+- @pandacss/config@0.53.1
+- @pandacss/core@0.53.1
+- @pandacss/extractor@0.53.1
+- @pandacss/logger@0.53.1
+- @pandacss/shared@0.53.1
+- @pandacss/types@0.53.1
+
+## 0.53.0
+
+### Patch Changes
+
+- Updated dependencies [5286731]
+  - @pandacss/types@0.53.0
+  - @pandacss/core@0.53.0
+  - @pandacss/config@0.53.0
+  - @pandacss/logger@0.53.0
+  - @pandacss/extractor@0.53.0
+  - @pandacss/shared@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @pandacss/config@0.52.0
+- @pandacss/core@0.52.0
+- @pandacss/extractor@0.52.0
+- @pandacss/logger@0.52.0
+- @pandacss/shared@0.52.0
+- @pandacss/types@0.52.0
+
+## 0.51.1
+
+### Patch Changes
+
+- @pandacss/config@0.51.1
+- @pandacss/core@0.51.1
+- @pandacss/extractor@0.51.1
+- @pandacss/logger@0.51.1
+- @pandacss/shared@0.51.1
+- @pandacss/types@0.51.1
+
+## 0.51.0
+
+### Minor Changes
+
+- d68ad1f: **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
+  internal `ts-morph` and userland `typescript`.
+
+  > The current version of TS supported is `5.6.2`
+
+### Patch Changes
+
+- Updated dependencies [d68ad1f]
+  - @pandacss/extractor@0.51.0
+  - @pandacss/config@0.51.0
+  - @pandacss/types@0.51.0
+  - @pandacss/core@0.51.0
+  - @pandacss/logger@0.51.0
+  - @pandacss/shared@0.51.0
+
+## 0.50.0
+
+### Patch Changes
+
+- 7c85ac7: Improve inference of slots in slot recipes when spreading and concatenating slot names.
+
+  This handles the following case gracefully:
+
+  ```ts
+  const styles = sva({
+    className: 'foo',
+    slots: [...componentAnatomy.keys(), 'additional', 'slots', 'here'],
+  })
+  ```
+
+  Panda will now infer the slots from the anatomy and add them to the recipe.
+
+- Updated dependencies [fea78c7]
+- Updated dependencies [ad89b90]
+- Updated dependencies [7c85ac7]
+  - @pandacss/types@0.50.0
+  - @pandacss/core@0.50.0
+  - @pandacss/config@0.50.0
+  - @pandacss/logger@0.50.0
+  - @pandacss/extractor@0.50.0
+  - @pandacss/shared@0.50.0
+
 ## 0.49.0
 
 ### Patch Changes

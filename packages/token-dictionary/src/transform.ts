@@ -11,6 +11,10 @@ function toUnit(v: string | number) {
   return isCssUnit(v) || hasReference(v.toString()) ? v : `${v}px`
 }
 
+function px(v: string | number) {
+  return isString(v) ? v : `${v}px`
+}
+
 /* -----------------------------------------------------------------------------
  * Shadow token transform
  * -----------------------------------------------------------------------------*/
@@ -29,7 +33,7 @@ export const transformShadow: TokenTransformer = {
 
     if (isCompositeShadow(token.value)) {
       const { offsetX, offsetY, blur, spread, color, inset } = token.value
-      return `${inset ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${spread}px ${color}`
+      return [inset ? 'inset ' : '', px(offsetX), px(offsetY), px(blur), px(spread), color].filter(Boolean).join(' ')
     }
 
     return token.value

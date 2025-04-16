@@ -23,7 +23,7 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
       boxSizing: 'border-box',
       borderWidth: '0px',
       borderStyle: 'solid',
-      borderColor: 'var(--global-color-border, currentColor)',
+      borderColor: 'var(--global-color-border, currentcolor)',
     },
     hr: {
       height: '0px',
@@ -69,8 +69,12 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
     },
     '::placeholder': {
       opacity: 1,
-      '--placeholder-fallback': 'color-mix(in srgb, currentColor 50%, transparent)',
+      '--placeholder-fallback': 'rgba(0, 0, 0, 0.5)',
       color: 'var(--global-color-placeholder, var(--placeholder-fallback))',
+      // Safari issues with color-mix(...) https://github.com/chakra-ui/panda/issues/3194
+      '@supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px)': {
+        '--placeholder-fallback': 'color-mix(in oklab, currentcolor 50%, transparent)',
+      },
     },
     textarea: {
       resize: 'vertical',

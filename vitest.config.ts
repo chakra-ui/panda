@@ -15,6 +15,7 @@ export default defineConfig({
   plugins: [tsconfigPaths(), virtualPanda()],
   test: {
     globals: true,
+    testTimeout: 15_000,
     setupFiles: ['tests-setup.ts'],
     hideSkippedTests: true,
     environment: 'happy-dom',

@@ -33,7 +33,7 @@ describe('generate reset', () => {
           box-sizing: border-box;
           border-width: 0px;
           border-style: solid;
-          border-color: var(--global-color-border, currentColor);
+          border-color: var(--global-color-border, currentcolor);
       }
 
         hr {
@@ -91,8 +91,14 @@ describe('generate reset', () => {
 
         ::placeholder {
           opacity: 1;
-          --placeholder-fallback: color-mix(in srgb, currentColor 50%, transparent);
+          --placeholder-fallback: rgba(0, 0, 0, 0.5);
           color: var(--global-color-placeholder, var(--placeholder-fallback));
+      }
+
+        @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+          ::placeholder {
+            --placeholder-fallback: color-mix(in oklab, currentcolor 50%, transparent);
+      }
       }
 
         textarea {
@@ -205,7 +211,7 @@ describe('generate reset', () => {
           box-sizing: border-box;
           border-width: 0px;
           border-style: solid;
-          border-color: var(--global-color-border, currentColor);
+          border-color: var(--global-color-border, currentcolor);
       }
 
         .pd-reset hr {
@@ -259,7 +265,7 @@ describe('generate reset', () => {
 
         .pd-reset ::placeholder {
           opacity: 1;
-          --placeholder-fallback: color-mix(in srgb, currentColor 50%, transparent);
+          --placeholder-fallback: rgba(0, 0, 0, 0.5);
           color: var(--global-color-placeholder, var(--placeholder-fallback));
       }
 
@@ -348,6 +354,12 @@ describe('generate reset', () => {
         .pd-reset b,.pd-reset strong {
           font-weight: bolder;
       }
+
+        @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+          .pd-reset ::placeholder {
+            --placeholder-fallback: color-mix(in oklab, currentcolor 50%, transparent);
+      }
+      }
       }"
     `)
   })
@@ -377,7 +389,7 @@ describe('generate reset', () => {
           box-sizing: border-box;
           border-width: 0px;
           border-style: solid;
-          border-color: var(--global-color-border, currentColor);
+          border-color: var(--global-color-border, currentcolor);
       }
 
         hr.pd-reset {
@@ -435,8 +447,14 @@ describe('generate reset', () => {
 
         ::placeholder.pd-reset {
           opacity: 1;
-          --placeholder-fallback: color-mix(in srgb, currentColor 50%, transparent);
+          --placeholder-fallback: rgba(0, 0, 0, 0.5);
           color: var(--global-color-placeholder, var(--placeholder-fallback));
+      }
+
+        @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+          ::placeholder.pd-reset {
+            --placeholder-fallback: color-mix(in oklab, currentcolor 50%, transparent);
+      }
       }
 
         textarea.pd-reset {

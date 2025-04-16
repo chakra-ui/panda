@@ -427,16 +427,18 @@ Base path of project
 
 ## `panda analyze`
 
-Analyze design token usage in glob.
+Analyze design token and recipe usage.
 
-By default it will analyze the entire project depending on your include and exclude options from your config file.
+By default, it will analyze your project based on the `include` and `exclude` config options.
 
 ```bash
 pnpm panda analyze
-# You can also analyze a specific file or folder
-# using the optional glob argument
+
+# analyze a specific file
 pnpm panda analyze src/components/Button.tsx
-pnpm panda analyze "./src/components/**"
+
+# analyze a specific glob
+pnpm panda analyze "src/components/**"
 ```
 
 ### Flags

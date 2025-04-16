@@ -2,7 +2,7 @@ import { findConfig } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
   PandaContext,
-  analyzeTokens,
+  analyze,
   buildInfo,
   codegen,
   cssgen,
@@ -14,7 +14,6 @@ import {
   setupGitIgnore,
   setupPostcss,
   startProfiling,
-  writeAnalyzeJSON,
   type CssGenOptions,
 } from '@pandacss/node'
 import { PandaError, compact } from '@pandacss/shared'
@@ -361,10 +360,14 @@ export async function main() {
     .command('analyze [glob]', 'Analyze design token usage in glob')
     .option('--outfile [filepath]', 'Output analyze report in JSON')
     .option('--silent', "Don't print any logs")
+    .option('--scope <type>', 'Select analysis scope (token or recipe)')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (maybeGlob?: string, flags: AnalyzeCommandFlags = {}) => {
-      const { silent, config: configPath } = flags
+      const { silent, config: configPath, scope } = flags
+
+      const tokenScope = scope == null || scope === 'token'
+      const recipeScope = scope == null || scope === 'recipe'
 
       const cwd = resolve(flags.cwd!)
 
@@ -378,19 +381,31 @@ export async function main() {
         configPath,
       })
 
-      const result = analyzeTokens(ctx, {
-        onResult(file) {
-          logger.info('cli', `Analyzed ${colors.bold(file)}`)
-        },
-      })
+      const result = analyze(ctx)
 
       if (flags?.outfile && typeof flags.outfile === 'string') {
-        await writeAnalyzeJSON(flags.outfile, result, ctx)
+        await result.writeReport(flags.outfile)
         logger.info('cli', `JSON report saved to ${resolve(flags.outfile)}`)
         return
       }
 
-      logger.info('cli', `Found ${result.propByIndex.size} token used in ${result.derived.byFilePathMaps.size} files`)
+      if (tokenScope) {
+        if (!ctx.tokens.isEmpty) {
+          const tokenAnalysis = result.getTokenReport()
+          logger.info('analyze:tokens', `Token usage report 🎨 \n${tokenAnalysis.formatted}`)
+        } else {
+          logger.info('analyze:tokens', 'No tokens found')
+        }
+      }
+
+      if (recipeScope) {
+        if (!ctx.recipes.isEmpty()) {
+          const recipeAnalysis = result.getRecipeReport()
+          logger.info('analyze:recipes', `Config recipes usage report 🎛️ \n${recipeAnalysis.formatted}`)
+        } else {
+          logger.info('analyze:recipes', 'No config recipes found')
+        }
+      }
     })
 
   cli

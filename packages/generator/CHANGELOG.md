@@ -1,5 +1,137 @@
 # @pandacss/generator
 
+## 0.53.3
+
+### Patch Changes
+
+- 00aa868: Add cursor utility config
+  - @pandacss/core@0.53.3
+  - @pandacss/is-valid-prop@0.53.3
+  - @pandacss/logger@0.53.3
+  - @pandacss/shared@0.53.3
+  - @pandacss/token-dictionary@0.53.3
+  - @pandacss/types@0.53.3
+
+## 0.53.2
+
+### Patch Changes
+
+- @pandacss/core@0.53.2
+- @pandacss/is-valid-prop@0.53.2
+- @pandacss/logger@0.53.2
+- @pandacss/shared@0.53.2
+- @pandacss/token-dictionary@0.53.2
+- @pandacss/types@0.53.2
+
+## 0.53.1
+
+### Patch Changes
+
+- @pandacss/core@0.53.1
+- @pandacss/is-valid-prop@0.53.1
+- @pandacss/logger@0.53.1
+- @pandacss/shared@0.53.1
+- @pandacss/token-dictionary@0.53.1
+- @pandacss/types@0.53.1
+
+## 0.53.0
+
+### Minor Changes
+
+- 5286731: Add support for recent baseline and experimental css properties:
+
+  - **Size interpolation:** fieldSizing, interpolateSize
+  - **Text rendering:** textWrapMode, textWrapStyle and textSpacingTrim
+  - **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
+    positionTryFallback, positionTryOrder, positionVisibility
+
+### Patch Changes
+
+- Updated dependencies [5286731]
+  - @pandacss/is-valid-prop@0.53.0
+  - @pandacss/types@0.53.0
+  - @pandacss/core@0.53.0
+  - @pandacss/logger@0.53.0
+  - @pandacss/token-dictionary@0.53.0
+  - @pandacss/shared@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @pandacss/core@0.52.0
+- @pandacss/is-valid-prop@0.52.0
+- @pandacss/logger@0.52.0
+- @pandacss/shared@0.52.0
+- @pandacss/token-dictionary@0.52.0
+- @pandacss/types@0.52.0
+
+## 0.51.1
+
+### Patch Changes
+
+- @pandacss/core@0.51.1
+- @pandacss/is-valid-prop@0.51.1
+- @pandacss/logger@0.51.1
+- @pandacss/shared@0.51.1
+- @pandacss/token-dictionary@0.51.1
+- @pandacss/types@0.51.1
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [d68ad1f]
+  - @pandacss/types@0.51.0
+  - @pandacss/core@0.51.0
+  - @pandacss/logger@0.51.0
+  - @pandacss/token-dictionary@0.51.0
+  - @pandacss/is-valid-prop@0.51.0
+  - @pandacss/shared@0.51.0
+
+## 0.50.0
+
+### Minor Changes
+
+- ad89b90: Add support for semantic tokens in composite shadow `blur`, `offsetX`, `offsetY` and `spread` properties.
+
+  This enables the use of semantic tokens in composite shadow properties.
+
+  ```ts
+  // panda.config.ts
+
+  export default defineConfig({
+    theme: {
+      tokens: {
+        // ...
+        shadows: {
+          sm: {
+            value: {
+              offsetX: '{spacing.3}',
+              offsetY: '{spacing.3}',
+              blur: '1rem',
+              spread: '{spacing.3}',
+              color: '{colors.red}',
+            },
+          },
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [fea78c7]
+- Updated dependencies [ad89b90]
+- Updated dependencies [7c85ac7]
+  - @pandacss/types@0.50.0
+  - @pandacss/token-dictionary@0.50.0
+  - @pandacss/core@0.50.0
+  - @pandacss/logger@0.50.0
+  - @pandacss/is-valid-prop@0.50.0
+  - @pandacss/shared@0.50.0
+
 ## 0.49.0
 
 ### Minor Changes

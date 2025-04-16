@@ -1776,12 +1776,12 @@ describe('js to css', () => {
           color: blue;
       }
 
-        .hover\\:mixed\\:c_green[data-attr="custom"]:is(:hover, [data-hover]) {
+        .hover\\:mixed\\:c_green:is(:hover, [data-hover])[data-attr="custom"] {
           color: green;
       }
 
         @media screen and (min-width: 48em) {
-          .hover\\:mixedMd\\:c_6px[data-attr="custom"]:is(:hover, [data-hover]) {
+          .hover\\:mixedMd\\:c_6px:is(:hover, [data-hover])[data-attr="custom"] {
             color: 6px;
       }
       }
@@ -2093,7 +2093,7 @@ describe('js to css', () => {
           color: red;
       }
 
-        .hover\\:custom\\:c_blue[data-attr="custom"]:is(:hover, [data-hover]) {
+        .hover\\:custom\\:c_blue:is(:hover, [data-hover])[data-attr="custom"] {
           color: blue;
       }
 

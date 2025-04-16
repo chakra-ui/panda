@@ -1,4 +1,4 @@
-export { analyzeTokens, writeAnalyzeJSON } from './analyze-tokens'
+export { analyze } from './analyze'
 export { buildInfo } from './build-info'
 export { Builder } from './builder'
 export { codegen } from './codegen'
