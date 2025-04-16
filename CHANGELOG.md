@@ -6,6 +6,15 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.4] - 2025-04-15
+
+### Fixed
+
+- Fix issue where conditions generated from `themes` lead to incorrect css when used directly in style objects.
+- Improve handling of mixed conditions defined in the config.
+- Fix issue where input placeholder styles cause crash in Safari `16.5`
+- Fix issue where `mergeProps` can cause DoS due to prototype pollution
+
 ## [0.53.3] - 2025-03-24
 
 ### Added
