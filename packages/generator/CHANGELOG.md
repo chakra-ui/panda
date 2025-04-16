@@ -1,5 +1,19 @@
 # @pandacss/generator
 
+## 0.53.4
+
+### Patch Changes
+
+- a2bc49d: - Fix issue where input placeholder styles cause crash in Safari `16.5`
+  - Fix issue where `mergeProps` can cause DoS due to prototype pollution
+- Updated dependencies [57343c1]
+  - @pandacss/core@0.53.4
+  - @pandacss/is-valid-prop@0.53.4
+  - @pandacss/logger@0.53.4
+  - @pandacss/shared@0.53.4
+  - @pandacss/token-dictionary@0.53.4
+  - @pandacss/types@0.53.4
+
 ## 0.53.3
 
 ### Patch Changes
