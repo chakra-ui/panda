@@ -2615,7 +2615,7 @@ describe('staticCss', () => {
           --thickness: breakpoint-2xl;
       }
 
-        .border-block-end-width_var\\(--thickness\\) {
+        .bd-be-w_var\\(--thickness\\) {
           border-block-end-width: var(--thickness);
       }
 
