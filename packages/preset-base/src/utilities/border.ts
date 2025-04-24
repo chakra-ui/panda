@@ -167,6 +167,16 @@ export const border: UtilityConfig = {
     values: 'borderWidths',
     group: 'Border',
   },
+  borderBlockStartWidth: {
+    className: 'bd-bs-w',
+    values: 'borderWidths',
+    group: 'Border Radius',
+  },
+  borderBlockEndWidth: {
+    className: 'bd-be-w',
+    values: 'borderWidths',
+    group: 'Border Radius',
+  },
   borderColor: {
     className: 'bd-c',
     values: 'colors',
