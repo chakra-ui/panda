@@ -2,9 +2,10 @@ import { FormatCode, LoaderIcon, WrapText } from '@/src/components/icons'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
-import { SegmentGroup } from '@ark-ui/react'
+import { SegmentGroup } from '@ark-ui/react/segment-group'
 import MonacoEditor, { DiffEditor } from '@monaco-editor/react'
 import { PandaEditorProps, defaultEditorOptions, useEditor } from '../hooks/useEditor'
+import { memo } from 'react'
 
 const tabs = [
   { id: 'code', label: 'Code' },
@@ -12,7 +13,13 @@ const tabs = [
   { id: 'config', label: 'Config' },
 ]
 
-export const Editor = (props: PandaEditorProps) => {
+const editorPaths = {
+  code: 'code.tsx',
+  css: 'custom.css',
+  config: 'config.ts',
+}
+
+export const Editor = memo(function Editor(props: PandaEditorProps) {
   const {
     activeTab,
     setActiveTab,
@@ -23,12 +30,6 @@ export const Editor = (props: PandaEditorProps) => {
     wordWrap,
     onToggleWrap,
   } = useEditor(props)
-
-  const editorPaths = {
-    code: 'code.tsx',
-    css: 'custom.css',
-    config: 'config.ts',
-  }
 
   return (
     <Flex flex="1" direction="column" align="flex-start" minW="0">
@@ -57,6 +58,7 @@ export const Editor = (props: PandaEditorProps) => {
             <SegmentGroup.Item key={id} value={option.id} aria-label={option.label}>
               <SegmentGroup.ItemControl />
               <SegmentGroup.ItemText className={css({ px: 2 })}>{option.label}</SegmentGroup.ItemText>
+              <SegmentGroup.ItemHiddenInput />
             </SegmentGroup.Item>
           ))}
 
@@ -116,7 +118,7 @@ export const Editor = (props: PandaEditorProps) => {
       </div>
     </Flex>
   )
-}
+})
 
 const actionButton = cva({
   base: {

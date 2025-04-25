@@ -4,8 +4,9 @@ import { usePanda } from '@/src/hooks/usePanda'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex, panda } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
-import { SegmentGroup, Splitter } from '@ark-ui/react'
-import React from 'react'
+import { SegmentGroup } from '@ark-ui/react/segment-group'
+import { Splitter } from '@ark-ui/react/splitter'
+import * as React from 'react'
 import { ChevronUpIcon } from './icons'
 
 type ArtifactsPanelType = {
@@ -23,7 +24,7 @@ const tabs = [
   },
 ]
 
-export function ArtifactsPanel(props: ArtifactsPanelType) {
+export const ArtifactsPanel = React.memo(function ArtifactsPanel(props: ArtifactsPanelType) {
   const [open, setOpen] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState<'ast' | 'generated'>('ast')
 
@@ -94,6 +95,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
                   {option.label}
                 </SegmentGroup.ItemText>
                 <SegmentGroup.ItemControl />
+                <SegmentGroup.ItemHiddenInput />
               </SegmentGroup.Item>
             ))}
           </SegmentGroup.Root>
@@ -112,7 +114,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
       </Splitter.Panel>
     </>
   )
-}
+})
 
 const artifactsPanel = cva({
   base: {

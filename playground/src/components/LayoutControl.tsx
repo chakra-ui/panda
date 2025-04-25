@@ -3,9 +3,10 @@ import { HorizontalSplit, PreviewLayout, ResponsiveLayout, VerticalSplit } from 
 import { UseResponsiveView } from '@/src/hooks/useResponsiveView'
 import { css, cx } from '@/styled-system/css'
 import { button, segmentGroup } from '@/styled-system/recipes'
-import { SegmentGroup } from '@ark-ui/react'
+import { SegmentGroup } from '@ark-ui/react/segment-group'
 
 export type Layout = 'horizontal' | 'vertical' | 'preview' | 'responsive'
+
 export type LayoutControlProps = {
   value: Layout
   onChange: (layout: Layout) => void
@@ -14,13 +15,14 @@ export type LayoutControlProps = {
   isResponsive: boolean
 }
 
+const options = [
+  { id: 'horizontal', label: 'Horizontal', icon: <HorizontalSplit /> },
+  { id: 'vertical', label: 'Vertical', icon: <VerticalSplit /> },
+  { id: 'preview', label: 'Preview', icon: <PreviewLayout /> },
+]
+
 export const LayoutControl = (props: LayoutControlProps) => {
   const { value, onChange, setResponsiveSize, breakpoints, isResponsive } = props
-  const options = [
-    { id: 'horizontal', label: 'Horizontal', icon: <HorizontalSplit /> },
-    { id: 'vertical', label: 'Vertical', icon: <VerticalSplit /> },
-    { id: 'preview', label: 'Preview', icon: <PreviewLayout /> },
-  ]
   return (
     <SegmentGroup.Root
       className={cx(
@@ -55,6 +57,7 @@ export const LayoutControl = (props: LayoutControlProps) => {
         >
           <SegmentGroup.ItemText>{option.icon}</SegmentGroup.ItemText>
           <SegmentGroup.ItemControl />
+          <SegmentGroup.ItemHiddenInput />
         </SegmentGroup.Item>
       ))}
       <div

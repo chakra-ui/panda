@@ -9,9 +9,11 @@ import type { ZodError } from 'zod'
 import { MenuProvider } from './menu'
 
 type Config<FrontMatterType = FrontMatter> = DocsThemeConfig &
-  Pick<
-    PageOpts<FrontMatterType>,
-    'flexsearch' | 'newNextLinkBehavior' | 'title' | 'frontMatter'
+  Partial<
+    Pick<
+      PageOpts<FrontMatterType>,
+      'flexsearch' | 'newNextLinkBehavior' | 'title' | 'frontMatter'
+    >
   >
 
 const ConfigContext = createContext<Config>({
@@ -21,7 +23,6 @@ const ConfigContext = createContext<Config>({
 })
 
 export function useConfig<FrontMatterType = FrontMatter>() {
-  // @ts-expect-error TODO: fix Type 'Config<{ [key: string]: any; }>' is not assignable to type 'Config<FrontMatterType>'.
   return useContext<Config<FrontMatterType>>(ConfigContext)
 }
 

@@ -25,6 +25,6 @@ export const useTabs = ({ items }: IUseTabsProps) => {
 
   return {
     value: selectedTab,
-    onChange: event => setStorage(tabsUniqueId, event.value)
+    onChange: (value: string) => setStorage(tabsUniqueId, value)
   }
 }

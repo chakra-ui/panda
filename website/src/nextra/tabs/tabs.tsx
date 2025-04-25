@@ -1,6 +1,6 @@
 import { cx } from '@/styled-system/css'
 import { nextraTabs } from '@/styled-system/recipes'
-import { Tabs } from '@ark-ui/react'
+import { Tabs } from '@ark-ui/react/tabs'
 import { Children, cloneElement } from 'react'
 import { IUseTabsProps, useTabs } from './use-tabs'
 
@@ -15,7 +15,7 @@ function _Tabs(props: ITabProps) {
   return (
     <Tabs.Root
       value={value}
-      onChange={onChange}
+      onValueChange={e => onChange(e.value)}
       className={cx('nextra-scrollbar', nextraTabs())}
     >
       <Tabs.List>

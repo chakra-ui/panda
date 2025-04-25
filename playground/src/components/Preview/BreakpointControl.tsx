@@ -2,7 +2,7 @@ import { ChevronDownIcon } from '@/src/components/icons'
 import { UseResponsiveView } from '@/src/hooks/useResponsiveView'
 import { css, cx } from '@/styled-system/css'
 import { button, menu } from '@/styled-system/recipes'
-import { Menu, MenuContent, MenuItem, MenuPositioner, MenuTrigger } from '@ark-ui/react'
+import { Menu } from '@ark-ui/react/menu'
 
 type BreakpointControlProps = {
   setResponsiveSize: UseResponsiveView['setResponsiveSize']
@@ -16,7 +16,7 @@ export const BreakpointControl = ({ setResponsiveSize, breakpoints }: Breakpoint
 
   return (
     <Menu.Root positioning={{ placement: 'bottom-end' }} onSelect={({ value }) => onSelectBreakpoint(value)}>
-      <MenuTrigger asChild>
+      <Menu.Trigger asChild>
         <button
           title="Select a breakpoint"
           className={cx(
@@ -32,22 +32,22 @@ export const BreakpointControl = ({ setResponsiveSize, breakpoints }: Breakpoint
         >
           <ChevronDownIcon />
         </button>
-      </MenuTrigger>
-      <MenuPositioner className={menu()}>
-        <MenuContent>
+      </Menu.Trigger>
+      <Menu.Positioner className={menu()}>
+        <Menu.Content>
           {Object.keys(breakpoints).map((breakpoint) => (
-            <MenuItem
+            <Menu.Item
               className={css({
                 color: 'text.complementary',
               })}
               key={breakpoint}
-              id={breakpoint}
+              value={breakpoint}
             >
               {breakpoint}
-            </MenuItem>
+            </Menu.Item>
           ))}
-        </MenuContent>
-      </MenuPositioner>
+        </Menu.Content>
+      </Menu.Positioner>
     </Menu.Root>
   )
 }

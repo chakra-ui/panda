@@ -6,7 +6,7 @@ import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 import { css, cx } from '@/styled-system/css'
 import { flex } from '@/styled-system/patterns'
 import { button, splitter } from '@/styled-system/recipes'
-import { Splitter } from '@ark-ui/react'
+import { Splitter } from '@ark-ui/react/splitter'
 import { ArtifactsPanel } from './ArtifactsPanel'
 import { Editor } from './Editor'
 import { Examples } from './Examples'
@@ -112,13 +112,11 @@ export const PlaygroundContent = (props: Props) => {
           isResponsive={isResponsive}
         />
       </Toolbar>
-      <Splitter.Root size={panels} onSizeChange={onResizePanels} orientation={layout} className={splitter()}>
+      <Splitter.Root panels={panels} onResize={onResizePanels} orientation={layout} className={splitter()}>
         <Splitter.Panel id="left">
           <Splitter.Root
-            size={[
-              { id: 'editor', size: 50, minSize: 5 },
-              { id: 'artifacts', size: 50 },
-            ]}
+            panels={[{ id: 'editor', minSize: 5 }, { id: 'artifacts' }]}
+            defaultSize={[50, 50]}
             orientation="vertical"
             className={splitter()}
           >

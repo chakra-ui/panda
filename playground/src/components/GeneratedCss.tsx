@@ -1,21 +1,29 @@
 import { defaultEditorOptions } from '@/src/hooks/useEditor'
 import { css } from '@/styled-system/css'
 import { Stack } from '@/styled-system/jsx'
-import { SegmentGroup } from '@ark-ui/react'
+import { SegmentGroup } from '@ark-ui/react/segment-group'
 import MonacoEditor from '@monaco-editor/react'
+import { format } from '@projectwallace/format-css'
+import * as React from 'react'
 import { useState } from 'react'
 import { useReadLocalStorage } from 'usehooks-ts'
-import { CssFileArtifact } from '../hooks/usePanda'
-import { format } from '@projectwallace/format-css'
+import type { CssFileArtifact } from '../hooks/usePanda'
 
-export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileArtifact[]; visible: boolean }) => {
+export const GeneratedCss = React.memo(function GeneratedCss({
+  cssArtifacts,
+  visible,
+}: {
+  cssArtifacts: CssFileArtifact[]
+  visible: boolean
+}) {
   const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')
 
   const wordWrap = useReadLocalStorage<'off' | 'on' | undefined>('wordWrap') ?? undefined
 
-  const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
-
-  const pretty = format(content)
+  const pretty = React.useMemo(() => {
+    const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
+    return format(content)
+  }, [cssArtifacts, activeTab])
 
   return (
     <Stack
@@ -23,7 +31,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
       overflow="auto"
       hidden={!visible}
       css={{
-        '&[hidden]': { display: 'none ' },
+        '&[hidden]': { display: 'none' },
       }}
     >
       <SegmentGroup.Root
@@ -82,6 +90,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
               {artifact.file === 'index.css' ? artifact.dir?.slice(1).concat(artifact.file)?.join('/') : artifact.file}
             </SegmentGroup.ItemText>
             <SegmentGroup.ItemControl />
+            <SegmentGroup.ItemHiddenInput />
           </SegmentGroup.Item>
         ))}
       </SegmentGroup.Root>
@@ -94,4 +103,4 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
       />
     </Stack>
   )
-}
+})

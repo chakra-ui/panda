@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { LiveProvider, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { createPortal } from 'react-dom'
@@ -18,7 +18,7 @@ export type PreviewProps = {
   error: Error | null
 }
 
-export const Preview = (props: PreviewProps) => {
+export const Preview = memo(function Preview(props: PreviewProps) {
   const { source, isResponsive, responsiveView, panda, error } = props
   const { previewCss = '', previewJs } = panda
 
@@ -199,7 +199,7 @@ export const Preview = (props: PreviewProps) => {
       </div>
     </div>
   )
-}
+})
 
 function LiveError(props: { error: Error | null }) {
   const { error } = useLiveContext()

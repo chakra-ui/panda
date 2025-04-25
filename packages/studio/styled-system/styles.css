@@ -19,7 +19,7 @@
     box-sizing: border-box;
     border-width: 0px;
     border-style: solid;
-    border-color: var(--global-color-border, currentColor);
+    border-color: var(--global-color-border, currentcolor);
 }
 
   hr {
@@ -77,8 +77,14 @@
 
   ::placeholder {
     opacity: 1;
-    --placeholder-fallback: color-mix(in srgb, currentColor 50%, transparent);
+    --placeholder-fallback: rgba(0, 0, 0, 0.5);
     color: var(--global-color-placeholder, var(--placeholder-fallback));
+}
+
+  @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+    ::placeholder {
+      --placeholder-fallback: color-mix(in oklab, currentcolor 50%, transparent);
+}
 }
 
   textarea {

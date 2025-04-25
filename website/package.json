@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@ark-ui/anatomy": "2.2.0",
-    "@ark-ui/react": "2.1.1",
+    "@ark-ui/react": "5.7.0",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "bright": "0.8.6",

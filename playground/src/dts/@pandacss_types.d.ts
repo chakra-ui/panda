@@ -4,6 +4,303 @@ import { Difference } from 'microdiff';
 import { TSConfig } from 'pkg-types';
 import { Node as Node$1 } from 'ts-morph';
 
+export interface WithNode {
+	node: Node$1;
+	stack: Node$1[];
+}
+export interface ObjectType extends WithNode {
+	type: "object";
+	value: EvaluatedObjectResult;
+	isEmpty?: boolean;
+}
+export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
+export interface LiteralType extends WithNode {
+	type: "literal";
+	value: PrimitiveType;
+	kind: LiteralKind;
+}
+export interface MapType extends WithNode {
+	type: "map";
+	value: MapTypeValue;
+}
+export interface ArrayType extends WithNode {
+	type: "array";
+	value: BoxNode[];
+}
+export interface UnresolvableType extends WithNode {
+	type: "unresolvable";
+}
+export interface ConditionalType extends WithNode {
+	type: "conditional";
+	whenTrue: BoxNode;
+	whenFalse: BoxNode;
+}
+/** -> Jsx boolean attribute <Box flex /> */
+export interface EmptyInitializerType extends WithNode {
+	type: "empty-initializer";
+}
+export type BoxNodeDefinition = ObjectType | LiteralType | MapType | ArrayType | UnresolvableType | ConditionalType | EmptyInitializerType;
+export type BoxNode = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray | BoxNodeUnresolvable | BoxNodeConditional | BoxNodeEmptyInitializer;
+export type MapTypeValue = Map<string, BoxNode>;
+declare abstract class BoxNodeType$1<Definition extends BoxNodeDefinition = BoxNodeDefinition> {
+	readonly type: Definition["type"];
+	private readonly stack;
+	private readonly node;
+	constructor(definition: Definition);
+	getNode(): Node$1;
+	getStack(): Node$1[];
+	getRange: () => {
+		startPosition: number;
+		startLineNumber: number;
+		startColumn: number;
+		endPosition: number;
+		endLineNumber: number;
+		endColumn: number;
+	};
+	toJSON(): {
+		type: Definition["type"];
+		value: any;
+		node: string;
+		line: number;
+		column: number;
+	};
+	toString(): string;
+}
+declare class BoxNodeObject extends BoxNodeType$1<ObjectType> {
+	value: ObjectType["value"];
+	isEmpty: ObjectType["isEmpty"];
+	constructor(definition: ObjectType);
+}
+declare class BoxNodeLiteral extends BoxNodeType$1<LiteralType> {
+	value: LiteralType["value"];
+	kind: LiteralType["kind"];
+	constructor(definition: LiteralType);
+}
+declare class BoxNodeMap extends BoxNodeType$1<MapType> {
+	value: MapType["value"];
+	spreadConditions?: BoxNodeConditional[];
+	constructor(definition: MapType);
+	isRecipe: () => boolean;
+}
+declare class BoxNodeArray extends BoxNodeType$1<ArrayType> {
+	value: ArrayType["value"];
+	constructor(definition: ArrayType);
+}
+declare class BoxNodeUnresolvable extends BoxNodeType$1<UnresolvableType> {
+}
+declare class BoxNodeConditional extends BoxNodeType$1<ConditionalType> {
+	whenTrue: ConditionalType["whenTrue"];
+	whenFalse: ConditionalType["whenFalse"];
+	constructor(definition: ConditionalType);
+}
+declare class BoxNodeEmptyInitializer extends BoxNodeType$1<EmptyInitializerType> {
+}
+export type PrimitiveType = string | number | boolean | null | undefined;
+export interface LiteralObject {
+	[key: string]: any;
+}
+export type SingleLiteralValue = PrimitiveType | LiteralObject;
+export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
+export interface EvaluatedObjectResult {
+	[key: string]: LiteralValue;
+}
+export interface Unboxed {
+	raw: LiteralObject;
+	conditions: LiteralObject[];
+	spreadConditions: LiteralObject[];
+}
+export interface ResultItem {
+	name?: string;
+	data: Array<Unboxed["raw"]>;
+	type?: "css" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
+	box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
+}
+export interface ParserResultInterface {
+	all: Array<ResultItem>;
+	jsx: Set<ResultItem>;
+	css: Set<ResultItem>;
+	cva: Set<ResultItem>;
+	sva: Set<ResultItem>;
+	recipe: Map<string, Set<ResultItem>>;
+	pattern: Map<string, Set<ResultItem>>;
+	filePath: string | undefined;
+	isEmpty: () => boolean;
+	toArray: () => Array<ResultItem>;
+	set: (name: "cva" | "css" | "sva", result: ResultItem) => void;
+	setCss: (result: ResultItem) => void;
+	setCva: (result: ResultItem) => void;
+	setSva: (result: ResultItem) => void;
+	setJsx: (result: ResultItem) => void;
+	setPattern: (name: string, result: ResultItem) => void;
+	setRecipe: (name: string, result: ResultItem) => void;
+}
+export interface EncoderJson {
+	schemaVersion: string;
+	styles: {
+		atomic?: string[];
+		recipes?: {
+			[name: string]: string[];
+		};
+	};
+}
+export type ReportItemType = "css" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
+export type ComponentKind = "component" | "function";
+export interface PropertyLocationRange {
+	startPosition: number;
+	startLineNumber: number;
+	startColumn: number;
+	endPosition: number;
+	endLineNumber: number;
+	endColumn: number;
+}
+export interface PropertyReportItem {
+	index: string;
+	componentIndex: ComponentReportItem["componentIndex"];
+	componentName: ComponentReportItem["componentName"];
+	reportItemKind: "token" | "utility";
+	reportItemType: ReportItemType;
+	path: string[];
+	conditionName?: string | undefined;
+	propName: string;
+	value: string | number | boolean;
+	tokenType?: string;
+	isKnownValue: boolean;
+	range: PropertyLocationRange | null;
+	filepath: string;
+}
+/**
+ * An component is either a component usage or a function usage
+ * @example an component name could be 'Button', 'css', 'panda.div', 'vstack', ...
+ */
+export interface ComponentReportItem extends Pick<PropertyReportItem, "filepath"> {
+	componentIndex: string;
+	componentName: string;
+	reportItemType: ReportItemType;
+	kind: ComponentKind;
+	contains: Array<PropertyReportItem["index"]>;
+	value: Record<string, any>;
+	range: PropertyLocationRange | null;
+	debug?: boolean;
+}
+export interface ReportDerivedMaps {
+	byComponentOfKind: Map<ComponentKind, Set<ComponentReportItem["componentIndex"]>>;
+	byPropertyName: Map<string, Set<PropertyReportItem["index"]>>;
+	byTokenType: Map<string, Set<PropertyReportItem["index"]>>;
+	byConditionName: Map<string, Set<PropertyReportItem["index"]>>;
+	byShorthand: Map<string, Set<PropertyReportItem["index"]>>;
+	byTokenName: Map<string, Set<PropertyReportItem["index"]>>;
+	byPropertyPath: Map<string, Set<PropertyReportItem["index"]>>;
+	fromKind: Map<ComponentKind, Set<PropertyReportItem["index"]>>;
+	byType: Map<string, Set<PropertyReportItem["index"]>>;
+	byComponentName: Map<string, Set<PropertyReportItem["index"]>>;
+	colorsUsed: Map<string, Set<PropertyReportItem["index"]>>;
+}
+export interface ReportDerivedMapsJSON {
+	byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem["componentIndex"]>>;
+	byPropertyName: Record<string, Array<PropertyReportItem["index"]>>;
+	byTokenType: Record<string, Array<PropertyReportItem["index"]>>;
+	byConditionName: Record<string, Array<PropertyReportItem["index"]>>;
+	byShorthand: Record<string, Array<PropertyReportItem["index"]>>;
+	byTokenName: Record<string, Array<PropertyReportItem["index"]>>;
+	byPropertyPath: Record<string, Array<PropertyReportItem["index"]>>;
+	fromKind: Record<ComponentKind, Array<PropertyReportItem["index"]>>;
+	byType: Record<string, Array<PropertyReportItem["index"]>>;
+	byComponentName: Record<string, Array<PropertyReportItem["index"]>>;
+	colorsUsed: Record<string, Array<PropertyReportItem["index"]>>;
+}
+export interface ReportCounts {
+	filesWithTokens: number;
+	propNameUsed: number;
+	tokenUsed: number;
+	shorthandUsed: number;
+	propertyPathUsed: number;
+	typeUsed: number;
+	componentNameUsed: number;
+	kindUsed: number;
+	componentOfKindUsed: number;
+	colorsUsed: number;
+}
+export interface MostUsedItem {
+	key: string;
+	count: number;
+}
+export interface ReportStats {
+	filesWithMostComponent: Record<string, number>;
+	mostUseds: {
+		propNames: Array<MostUsedItem>;
+		tokens: Array<MostUsedItem>;
+		shorthands: Array<MostUsedItem>;
+		categories: Array<MostUsedItem>;
+		conditions: Array<MostUsedItem>;
+		propertyPaths: Array<MostUsedItem>;
+		types: Array<MostUsedItem>;
+		componentNames: Array<MostUsedItem>;
+		fromKinds: Array<MostUsedItem>;
+		componentOfKinds: Array<MostUsedItem>;
+		colors: Array<MostUsedItem>;
+	};
+}
+export interface ReportDetails {
+	counts: ReportCounts;
+	stats: ReportStats;
+}
+export interface AnalysisOptions {
+	onResult?: (file: string, result: ParserResultInterface) => void;
+}
+export interface ReportDerivedMap {
+	byFilepath: Map<string, Set<PropertyReportItem["index"]>>;
+	byComponentInFilepath: Map<string, Set<ComponentReportItem["componentIndex"]>>;
+	globalMaps: ReportDerivedMaps;
+	byFilePathMaps: Map<string, ReportDerivedMaps>;
+}
+export interface ReportDerivedMapJSON {
+	byFilepath: Record<string, Array<PropertyReportItem["index"]>>;
+	byComponentInFilepath: Record<string, Array<ComponentReportItem["componentIndex"]>>;
+	globalMaps: ReportDerivedMapsJSON;
+	byFilePathMaps: Record<string, ReportDerivedMapsJSON>;
+}
+export interface AnalysisReport {
+	schemaVersion: string;
+	details: ReportDetails;
+	propByIndex: Map<PropertyReportItem["index"], PropertyReportItem>;
+	componentByIndex: Map<ComponentReportItem["componentIndex"], ComponentReportItem>;
+	derived: ReportDerivedMap;
+}
+export interface ReportSnapshotJSON extends Omit<AnalysisReport, "propByIndex" | "componentByIndex" | "derived"> {
+	propByIndex: Record<PropertyReportItem["index"], PropertyReportItem>;
+	componentByIndex: Record<ComponentReportItem["componentIndex"], ComponentReportItem>;
+	derived: ReportDerivedMapJSON;
+}
+export interface ClassifyReport {
+	propById: Map<string, PropertyReportItem>;
+	componentById: Map<ComponentReportItem["componentIndex"], ComponentReportItem>;
+	details: Pick<ReportDetails, "counts" | "stats">;
+	derived: ReportDerivedMap;
+}
+export interface ArtifactContent {
+	file: string;
+	code: string | undefined;
+}
+export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-patterns-index" | "css-index" | "themes" | "package.json" | "types-jsx" | "types-entry" | "types-styles" | "types-conditions" | "types-gen" | "types-gen-system" | `recipes.${string}` | `patterns.${string}`;
+export type CssArtifactType = "preflight" | "tokens" | "static" | "global" | "keyframes";
+export type Artifact = {
+	id: ArtifactId;
+	dir?: string[];
+	files: ArtifactContent[];
+};
+export interface AffectedArtifacts {
+	recipes: string[];
+	patterns: string[];
+}
+export interface ArtifactFilters {
+	ids?: ArtifactId[];
+	affecteds?: AffectedArtifacts;
+}
+export interface DiffConfigResult {
+	hasConfigChanged: boolean;
+	artifacts: Set<ArtifactId>;
+	diffs: Difference[];
+}
 export type Fallback<T> = {
 	[P in keyof T]: T[P] | readonly NonNullable<T[P]>[];
 };
@@ -9990,74 +10287,6 @@ export type Nested<P> = (P & {
 }) | {
 	[K in Condition]?: Nested<P>;
 };
-export interface ArtifactContent {
-	file: string;
-	code: string | undefined;
-}
-export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-patterns-index" | "css-index" | "themes" | "package.json" | "types-jsx" | "types-entry" | "types-styles" | "types-conditions" | "types-gen" | "types-gen-system" | `recipes.${string}` | `patterns.${string}`;
-export type CssArtifactType = "preflight" | "tokens" | "static" | "global" | "keyframes";
-export type Artifact = {
-	id: ArtifactId;
-	dir?: string[];
-	files: ArtifactContent[];
-};
-export interface AffectedArtifacts {
-	recipes: string[];
-	patterns: string[];
-}
-export interface ArtifactFilters {
-	ids?: ArtifactId[];
-	affecteds?: AffectedArtifacts;
-}
-export interface DiffConfigResult {
-	hasConfigChanged: boolean;
-	artifacts: Set<ArtifactId>;
-	diffs: Difference[];
-}
-export interface WithConditions {
-	/**
-	 * The css conditions to generate for the rule.
-	 * @example ['hover', 'focus']
-	 */
-	conditions?: string[];
-	responsive?: boolean;
-}
-export interface CssRule extends WithConditions {
-	/**
-	 * The css properties to generate utilities for.
-	 * @example ['margin', 'padding']
-	 */
-	properties: {
-		[property: string]: Array<string | number>;
-	};
-}
-export interface RecipeRuleVariants {
-	[variant: string]: boolean | string[];
-}
-export type RecipeRule = "*" | (RecipeRuleVariants & WithConditions);
-export type PatternRule = "*" | CssRule;
-export interface StaticCssOptions {
-	/**
-	 * The css utility classes to generate.
-	 */
-	css?: CssRule[];
-	/**
-	 * The css recipes to generate.
-	 */
-	recipes?: "*" | {
-		[recipe: string]: RecipeRule[];
-	};
-	/**
-	 * The css patterns to generate.
-	 */
-	patterns?: {
-		[pattern: string]: PatternRule[];
-	};
-	/**
-	 * The CSS themes to generate
-	 */
-	themes?: string[];
-}
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE
  * -----------------------------------------------------------------------------*/
@@ -10091,8 +10320,27 @@ export type Assign<T, U> = {
 /* -----------------------------------------------------------------------------
  * Native css properties
  * -----------------------------------------------------------------------------*/
+export type DashedIdent = `--${string}`;
+export type StringToMultiple<T extends string> = T | `${T}, ${T}`;
+export type PositionAreaAxis = "left" | "center" | "right" | "x-start" | "x-end" | "span-x-start" | "span-x-end" | "x-self-start" | "x-self-end" | "span-x-self-start" | "span-x-self-end" | "span-all" | "top" | "bottom" | "span-top" | "span-bottom" | "y-start" | "y-end" | "span-y-start" | "span-y-end" | "y-self-start" | "y-self-end" | "span-y-self-start" | "span-y-self-end" | "block-start" | "block-end" | "span-block-start" | "span-block-end" | "inline-start" | "inline-end" | "span-inline-start" | "span-inline-end" | "self-block-start" | "self-block-end" | "span-self-block-start" | "span-self-block-end" | "self-inline-start" | "self-inline-end" | "span-self-inline-start" | "span-self-inline-end" | "start" | "end" | "span-start" | "span-end" | "self-start" | "self-end" | "span-self-start" | "span-self-end";
+export type PositionTry = "normal" | "flip-block" | "flip-inline" | "top" | "bottom" | "left" | "right" | "block-start" | "block-end" | "inline-start" | "inline-end" | DashedIdent;
+export interface ModernCssProperties {
+	anchorName?: Globals | "none" | DashedIdent | StringToMultiple<DashedIdent>;
+	anchorScope?: Globals | "none" | "all" | DashedIdent | StringToMultiple<DashedIdent>;
+	fieldSizing?: Globals | "fixed" | "content";
+	interpolateSize?: Globals | "allow-keywords" | "numeric-only";
+	positionAnchor?: Globals | "auto" | DashedIdent;
+	positionArea?: Globals | "auto" | PositionAreaAxis | `${PositionAreaAxis} ${PositionAreaAxis}` | String$1;
+	positionTry?: Globals | StringToMultiple<PositionTry> | String$1;
+	positionTryFallback?: Globals | "none" | StringToMultiple<PositionTry> | String$1;
+	positionTryOrder?: Globals | "normal" | "most-width" | "most-height" | "most-block-size" | "most-inline-size";
+	positionVisibility?: Globals | "always" | "anchors-visible" | "no-overflow";
+	textWrapMode?: Globals | "wrap" | "nowrap";
+	textSpacingTrim?: Globals | "normal" | "space-all" | "space-first" | "trim-start";
+	textWrapStyle?: Globals | "auto" | "balance" | "pretty" | "stable";
+}
 export type CssProperty = keyof PropertiesFallback;
-interface CssProperties$1 extends PropertiesFallback<String$1 | Number$1>, CssVarProperties {
+interface CssProperties$1 extends PropertiesFallback<String$1 | Number$1>, CssVarProperties, ModernCssProperties {
 }
 export interface CssKeyframes {
 	[name: string]: {
@@ -10152,6 +10400,86 @@ export interface PatchedHTMLProps {
 export type OmittedHTMLProps = "color" | "translate" | "transition" | "width" | "height" | "content";
 export type WithHTMLProps<T> = DistributiveOmit<T, OmittedHTMLProps> & PatchedHTMLProps;
 export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Assign<WithHTMLProps<T>, P>;
+export interface Token<T> {
+	value: T;
+	description?: string;
+}
+export interface Recursive<T> {
+	[key: string]: Recursive<T> | T;
+}
+/* -----------------------------------------------------------------------------
+ * Text styles
+ * -----------------------------------------------------------------------------*/
+export type TextStyleProperty = "font" | "fontFamily" | "fontFeatureSettings" | "fontKerning" | "fontLanguageOverride" | "fontOpticalSizing" | "fontPalette" | "fontSize" | "fontSizeAdjust" | "fontStretch" | "fontStyle" | "fontSynthesis" | "fontVariant" | "fontVariantAlternates" | "fontVariantCaps" | "fontVariantLigatures" | "fontVariantNumeric" | "fontVariantPosition" | "fontVariationSettings" | "fontWeight" | "hypens" | "hyphenateCharacter" | "hyphenateLimitChars" | "letterSpacing" | "lineBreak" | "lineHeight" | "quotes" | "overflowWrap" | "textCombineUpright" | "textDecoration" | "textDecorationColor" | "textDecorationLine" | "textDecorationSkipInk" | "textDecorationStyle" | "textDecorationThickness" | "textEmphasis" | "textEmphasisColor" | "textEmphasisPosition" | "textEmphasisStyle" | "textIndent" | "textJustify" | "textOrientation" | "textOverflow" | "textRendering" | "textShadow" | "textTransform" | "textUnderlineOffset" | "textUnderlinePosition" | "textWrap" | "textWrapMode" | "textWrapStyle" | "verticalAlign" | "whiteSpace" | "wordBreak" | "wordSpacing";
+export type TextStyle = CompositionStyleObject<TextStyleProperty>;
+export type TextStyles = Recursive<Token<TextStyle>>;
+/* -----------------------------------------------------------------------------
+ * Layer styles
+ * -----------------------------------------------------------------------------*/
+export type Placement = "Top" | "Right" | "Bottom" | "Left" | "Inline" | "Block" | "InlineStart" | "InlineEnd" | "BlockStart" | "BlockEnd";
+export type Radius = `Top${"Right" | "Left"}` | `Bottom${"Right" | "Left"}` | `Start${"Start" | "End"}` | `End${"Start" | "End"}`;
+export type LayerStyleProperty = "background" | "backgroundColor" | "backgroundImage" | "borderRadius" | "border" | "borderWidth" | "borderColor" | "borderStyle" | "boxShadow" | "filter" | "backdropFilter" | "transform" | "color" | "opacity" | "backgroundBlendMode" | "backgroundAttachment" | "backgroundClip" | "backgroundOrigin" | "backgroundPosition" | "backgroundRepeat" | "backgroundSize" | `border${Placement}` | `border${Placement}Width` | "borderRadius" | `border${Radius}Radius` | `border${Placement}Color` | `border${Placement}Style` | "padding" | `padding${Placement}`;
+export type LayerStyle = CompositionStyleObject<LayerStyleProperty>;
+export type LayerStyles = Recursive<Token<LayerStyle>>;
+/* -----------------------------------------------------------------------------
+ * Motion styles
+ * -----------------------------------------------------------------------------*/
+export type AnimationStyleProperty = "animation" | "animationComposition" | "animationDelay" | "animationDirection" | "animationDuration" | "animationFillMode" | "animationIterationCount" | "animationName" | "animationPlayState" | "animationTimingFunction" | "animationRange" | "animationRangeStart" | "animationRangeEnd" | "animationTimeline" | "transformOrigin";
+export type AnimationStyle = CompositionStyleObject<AnimationStyleProperty>;
+export type AnimationStyles = Recursive<Token<AnimationStyle>>;
+export interface CompositionStyles {
+	textStyles: TextStyles;
+	layerStyles: LayerStyles;
+	animationStyles: AnimationStyles;
+}
+export interface ConditionOptions {
+	/**
+	 * The conditions to generate for the rule.
+	 * @example ['hover', 'focus']
+	 */
+	conditions?: string[];
+	/**
+	 * Whether to generate responsive styles for the rule.
+	 */
+	responsive?: boolean;
+}
+export interface CssRule extends ConditionOptions {
+	/**
+	 * The css properties to generate utilities for.
+	 * @example ['margin', 'padding']
+	 */
+	properties: {
+		[property: string]: Array<string | number>;
+	};
+}
+export interface RecipeRuleVariants {
+	[variant: string]: boolean | string[];
+}
+export type RecipeRuleObject = RecipeRuleVariants & ConditionOptions;
+export type RecipeRule = "*" | RecipeRuleObject;
+export type PatternRule = "*" | CssRule;
+export interface StaticCssOptions {
+	/**
+	 * The css utility classes to generate.
+	 */
+	css?: CssRule[];
+	/**
+	 * The css recipes to generate.
+	 */
+	recipes?: "*" | {
+		[recipe: string]: RecipeRule[];
+	};
+	/**
+	 * The css patterns to generate.
+	 */
+	patterns?: {
+		[pattern: string]: PatternRule[];
+	};
+	/**
+	 * The CSS themes to generate
+	 */
+	themes?: string[];
+}
 export type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 export type RecipeVariantRecord = Record<any, Record<any, SystemStyleObject>>;
 export type RecipeSelection<T extends RecipeVariantRecord> = keyof any extends keyof T ? {} : {
@@ -10390,145 +10718,6 @@ export interface LoggerInterface {
 	};
 	isDebug: boolean;
 }
-export interface WithNode {
-	node: Node$1;
-	stack: Node$1[];
-}
-export interface ObjectType extends WithNode {
-	type: "object";
-	value: EvaluatedObjectResult;
-	isEmpty?: boolean;
-}
-export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
-export interface LiteralType extends WithNode {
-	type: "literal";
-	value: PrimitiveType;
-	kind: LiteralKind;
-}
-export interface MapType extends WithNode {
-	type: "map";
-	value: MapTypeValue;
-}
-export interface ArrayType extends WithNode {
-	type: "array";
-	value: BoxNode[];
-}
-export interface UnresolvableType extends WithNode {
-	type: "unresolvable";
-}
-export interface ConditionalType extends WithNode {
-	type: "conditional";
-	whenTrue: BoxNode;
-	whenFalse: BoxNode;
-}
-/** -> Jsx boolean attribute <Box flex /> */
-export interface EmptyInitializerType extends WithNode {
-	type: "empty-initializer";
-}
-export type BoxNodeDefinition = ObjectType | LiteralType | MapType | ArrayType | UnresolvableType | ConditionalType | EmptyInitializerType;
-export type BoxNode = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray | BoxNodeUnresolvable | BoxNodeConditional | BoxNodeEmptyInitializer;
-export type MapTypeValue = Map<string, BoxNode>;
-declare abstract class BoxNodeType$1<Definition extends BoxNodeDefinition = BoxNodeDefinition> {
-	readonly type: Definition["type"];
-	private readonly stack;
-	private readonly node;
-	constructor(definition: Definition);
-	getNode(): Node$1;
-	getStack(): Node$1[];
-	getRange: () => {
-		startPosition: number;
-		startLineNumber: number;
-		startColumn: number;
-		endPosition: number;
-		endLineNumber: number;
-		endColumn: number;
-	};
-	toJSON(): {
-		type: Definition["type"];
-		value: any;
-		node: string;
-		line: number;
-		column: number;
-	};
-	toString(): string;
-}
-declare class BoxNodeObject extends BoxNodeType$1<ObjectType> {
-	value: ObjectType["value"];
-	isEmpty: ObjectType["isEmpty"];
-	constructor(definition: ObjectType);
-}
-declare class BoxNodeLiteral extends BoxNodeType$1<LiteralType> {
-	value: LiteralType["value"];
-	kind: LiteralType["kind"];
-	constructor(definition: LiteralType);
-}
-declare class BoxNodeMap extends BoxNodeType$1<MapType> {
-	value: MapType["value"];
-	spreadConditions?: BoxNodeConditional[];
-	constructor(definition: MapType);
-	isRecipe: () => boolean;
-}
-declare class BoxNodeArray extends BoxNodeType$1<ArrayType> {
-	value: ArrayType["value"];
-	constructor(definition: ArrayType);
-}
-declare class BoxNodeUnresolvable extends BoxNodeType$1<UnresolvableType> {
-}
-declare class BoxNodeConditional extends BoxNodeType$1<ConditionalType> {
-	whenTrue: ConditionalType["whenTrue"];
-	whenFalse: ConditionalType["whenFalse"];
-	constructor(definition: ConditionalType);
-}
-declare class BoxNodeEmptyInitializer extends BoxNodeType$1<EmptyInitializerType> {
-}
-export type PrimitiveType = string | number | boolean | null | undefined;
-export interface LiteralObject {
-	[key: string]: any;
-}
-export type SingleLiteralValue = PrimitiveType | LiteralObject;
-export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
-export interface EvaluatedObjectResult {
-	[key: string]: LiteralValue;
-}
-export interface Unboxed {
-	raw: LiteralObject;
-	conditions: LiteralObject[];
-	spreadConditions: LiteralObject[];
-}
-export interface ResultItem {
-	name?: string;
-	data: Array<Unboxed["raw"]>;
-	type?: "css" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
-	box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
-}
-export interface ParserResultInterface {
-	all: Array<ResultItem>;
-	jsx: Set<ResultItem>;
-	css: Set<ResultItem>;
-	cva: Set<ResultItem>;
-	sva: Set<ResultItem>;
-	recipe: Map<string, Set<ResultItem>>;
-	pattern: Map<string, Set<ResultItem>>;
-	filePath: string | undefined;
-	isEmpty: () => boolean;
-	toArray: () => Array<ResultItem>;
-	set: (name: "cva" | "css" | "sva", result: ResultItem) => void;
-	setCss: (result: ResultItem) => void;
-	setCva: (result: ResultItem) => void;
-	setSva: (result: ResultItem) => void;
-	setJsx: (result: ResultItem) => void;
-	setPattern: (name: string, result: ResultItem) => void;
-	setRecipe: (name: string, result: ResultItem) => void;
-}
-export interface EncoderJson {
-	schemaVersion: string;
-	styles: {
-		atomic?: string[];
-		recipes?: {
-			[name: string]: string[];
-		};
-	};
-}
 export interface PandaHooks {
 	/**
 	 * Called when the config is resolved, after all the presets are loaded and merged.
@@ -10705,8 +10894,8 @@ export interface ContextCreatedHookArgs {
 }
 export type Primitive = string | number | boolean | null | undefined;
 export type LiteralUnion<T, K extends Primitive = string> = T | (K & Record<never, never>);
-export interface Recursive<T> {
-	[key: string]: T | Recursive<T>;
+interface Recursive$1<T> {
+	[key: string]: T | Recursive$1<T>;
 }
 export type Dict<T = any> = Record<string, T>;
 export type RequiredBy<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>;
@@ -10723,7 +10912,7 @@ export type Paths<T, Prefix extends string = "", Depth extends number = 0> = {
 }[keyof T];
 export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never;
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-export interface Token<Value = any> {
+interface Token$1<Value = any> {
 	value: Value;
 	description?: string;
 	type?: string;
@@ -10735,7 +10924,7 @@ export interface Token<Value = any> {
 export type RecursiveToken<C extends string, V> = V | {
 	[K in C]: RecursiveToken<C, V>;
 };
-export interface SemanticToken<Value = string, Condition extends string = string> extends Token<RecursiveToken<Condition, Value>> {
+export interface SemanticToken<Value = string, Condition extends string = string> extends Token$1<RecursiveToken<Condition, Value>> {
 }
 /* -----------------------------------------------------------------------------
  * Token data types
@@ -10747,10 +10936,10 @@ export interface Border {
 	style: BorderStyle;
 }
 export interface Shadow {
-	offsetX: number;
-	offsetY: number;
-	blur: number;
-	spread: number;
+	offsetX: number | string;
+	offsetY: number | string;
+	blur: number | string;
+	spread: number | string;
 	color: string;
 	inset?: boolean;
 }
@@ -10767,6 +10956,7 @@ export interface Asset {
 	value: string;
 }
 export interface TokenDataTypes {
+	cursor: string;
 	zIndex: string | number;
 	opacity: string | number;
 	colors: string;
@@ -10791,10 +10981,10 @@ export interface TokenDataTypes {
 	containerNames: string;
 }
 export type Tokens = {
-	[key in keyof TokenDataTypes]?: Recursive<Token<TokenDataTypes[key]>>;
+	[key in keyof TokenDataTypes]?: Recursive$1<Token$1<TokenDataTypes[key]>>;
 };
 export type SemanticTokens<ConditionKey extends string = string> = {
-	[key in keyof TokenDataTypes]?: Recursive<SemanticToken<TokenDataTypes[key], ConditionKey>>;
+	[key in keyof TokenDataTypes]?: Recursive$1<SemanticToken<TokenDataTypes[key], ConditionKey>>;
 };
 export type TokenCategory = keyof TokenDataTypes;
 type Primitive$1 = string | number | boolean | null | undefined;
@@ -10872,31 +11062,6 @@ export interface PatternConfig<T extends PatternProperties = PatternProperties> 
 	 */
 	blocklist?: LiteralUnion$1<CssProperty>[];
 }
-interface Token$1<T> {
-	value: T;
-	description?: string;
-}
-interface Recursive$1<T> {
-	[key: string]: Recursive$1<T> | T;
-}
-/* -----------------------------------------------------------------------------
- * Text styles
- * -----------------------------------------------------------------------------*/
-export type TextStyleProperty = "font" | "fontFamily" | "fontFeatureSettings" | "fontKerning" | "fontLanguageOverride" | "fontOpticalSizing" | "fontPalette" | "fontSize" | "fontSizeAdjust" | "fontStretch" | "fontStyle" | "fontSynthesis" | "fontVariant" | "fontVariantAlternates" | "fontVariantCaps" | "fontVariantLigatures" | "fontVariantNumeric" | "fontVariantPosition" | "fontVariationSettings" | "fontWeight" | "hypens" | "hyphenateCharacter" | "hyphenateLimitChars" | "letterSpacing" | "lineBreak" | "lineHeight" | "quotes" | "overflowWrap" | "textCombineUpright" | "textDecoration" | "textDecorationColor" | "textDecorationLine" | "textDecorationSkipInk" | "textDecorationStyle" | "textDecorationThickness" | "textEmphasis" | "textEmphasisColor" | "textEmphasisPosition" | "textEmphasisStyle" | "textIndent" | "textJustify" | "textOrientation" | "textOverflow" | "textRendering" | "textShadow" | "textTransform" | "textUnderlineOffset" | "textUnderlinePosition" | "textWrap" | "textWrapMode" | "textWrapStyle" | "verticalAlign" | "whiteSpace" | "wordBreak" | "wordSpacing";
-export type TextStyle = CompositionStyleObject<TextStyleProperty>;
-export type TextStyles = Recursive$1<Token$1<TextStyle>>;
-/* -----------------------------------------------------------------------------
- * Layer styles
- * -----------------------------------------------------------------------------*/
-export type Placement = "Top" | "Right" | "Bottom" | "Left" | "Inline" | "Block" | "InlineStart" | "InlineEnd" | "BlockStart" | "BlockEnd";
-export type Radius = `Top${"Right" | "Left"}` | `Bottom${"Right" | "Left"}` | `Start${"Start" | "End"}` | `End${"Start" | "End"}`;
-export type LayerStyleProperty = "background" | "backgroundColor" | "backgroundImage" | "borderRadius" | "border" | "borderWidth" | "borderColor" | "borderStyle" | "boxShadow" | "filter" | "backdropFilter" | "transform" | "color" | "opacity" | "backgroundBlendMode" | "backgroundAttachment" | "backgroundClip" | "backgroundOrigin" | "backgroundPosition" | "backgroundRepeat" | "backgroundSize" | `border${Placement}` | `border${Placement}Width` | "borderRadius" | `border${Radius}Radius` | `border${Placement}Color` | `border${Placement}Style` | "padding" | `padding${Placement}`;
-export type LayerStyle = CompositionStyleObject<LayerStyleProperty>;
-export type LayerStyles = Recursive$1<Token$1<LayerStyle>>;
-export interface CompositionStyles {
-	textStyles: TextStyles;
-	layerStyles: LayerStyles;
-}
 export interface Theme {
 	/**
 	 * The breakpoints for your project.
@@ -10922,6 +11087,10 @@ export interface Theme {
 	 * The layer styles for your project.
 	 */
 	layerStyles?: LayerStyles;
+	/**
+	 * The animation styles for your project.
+	 */
+	animationStyles?: AnimationStyles;
 	/**
 	 * Multi-variant style definitions for your project.
 	 * Useful for defining component styles.
@@ -10956,7 +11125,7 @@ export interface ExtendableTheme extends Theme {
 }
 export interface TokenFn {
 	(path: string): string | undefined;
-	raw: (path: string) => Token | undefined;
+	raw: (path: string) => Token$1 | undefined;
 }
 export type ThemeFn = (token: (path: string) => any) => Record<string, string>;
 export type PropertyValues = LiteralUnion<TokenCategory | "keyframes"> | string[] | {
@@ -11064,6 +11233,10 @@ export interface PresetCore {
 	 */
 	globalFontface?: GlobalFontface;
 	/**
+	 * The global custom position try fallback option
+	 */
+	globalPositionTry?: GlobalPositionTry;
+	/**
 	 * Used to generate css utility classes for your project.
 	 */
 	staticCss: StaticCssOptions;
@@ -11116,6 +11289,13 @@ export interface ExtendableGlobalVars {
 	[key: string]: string | CssPropertyDefinition | GlobalVarsDefinition | undefined;
 	extend?: GlobalVarsDefinition;
 }
+export interface GlobalPositionTry {
+	[key: string]: SystemStyleObject;
+}
+export interface ExtendableGlobalPositionTry {
+	[key: string]: SystemStyleObject | GlobalPositionTry | undefined;
+	extend?: GlobalPositionTry | undefined;
+}
 export interface ThemeVariant extends Pick<Theme, "tokens" | "semanticTokens"> {
 }
 export interface ThemeVariantsMap {
@@ -11139,6 +11319,10 @@ export interface ExtendableOptions {
 	 * The global fontface for your project.
 	 */
 	globalFontface?: ExtendableGlobalFontface;
+	/**
+	 * The global custom position try fallback option
+	 */
+	globalPositionTry?: ExtendableGlobalPositionTry;
 	/**
 	 * Used to generate css utility classes for your project.
 	 */
@@ -11452,150 +11636,6 @@ export interface PrefixOptions {
 }
 export type ReqConf = Required<UserConfig>;
 export type ConfigPath = Exclude<Exclude<NonNullable<Keys<ReqConf>>, "theme"> | PathIn<ReqConf, "theme"> | PathIn<ReqConf, "patterns"> | PathIn<ReqConf, "staticCss"> | (string & {}), undefined>;
-export type ReportItemType = "css" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
-export type ComponentKind = "component" | "function";
-type Range$1 = {
-	startPosition: number;
-	startLineNumber: number;
-	startColumn: number;
-	endPosition: number;
-	endLineNumber: number;
-	endColumn: number;
-};
-export interface PropertyReportItem {
-	index: string;
-	componentIndex: ComponentReportItem["componentIndex"];
-	componentName: ComponentReportItem["componentName"];
-	reportItemKind: "token" | "utility";
-	path: string[];
-	conditionName?: string | undefined;
-	propName: string;
-	value: string | number | boolean;
-	tokenType?: string;
-	isKnownValue: boolean;
-	range: Range$1;
-	filepath: string;
-}
-/**
- * An component is either a component usage or a function usage
- * @example an component name could be 'Button', 'css', 'panda.div', 'vstack', ...
- */
-export interface ComponentReportItem extends Pick<PropertyReportItem, "filepath"> {
-	componentIndex: string;
-	componentName: string;
-	reportItemType: ReportItemType;
-	kind: ComponentKind;
-	contains: Array<PropertyReportItem["index"]>;
-	value: Record<string, any>;
-	range: Range$1;
-}
-export interface ReportDerivedMaps {
-	byComponentOfKind: Map<ComponentKind, Set<ComponentReportItem["componentIndex"]>>;
-	byPropertyName: Map<string, Set<PropertyReportItem["index"]>>;
-	byTokenType: Map<string, Set<PropertyReportItem["index"]>>;
-	byConditionName: Map<string, Set<PropertyReportItem["index"]>>;
-	byShorthand: Map<string, Set<PropertyReportItem["index"]>>;
-	byTokenName: Map<string, Set<PropertyReportItem["index"]>>;
-	byPropertyPath: Map<string, Set<PropertyReportItem["index"]>>;
-	fromKind: Map<ComponentKind, Set<PropertyReportItem["index"]>>;
-	byType: Map<string, Set<PropertyReportItem["index"]>>;
-	byComponentName: Map<string, Set<PropertyReportItem["index"]>>;
-	colorsUsed: Map<string, Set<PropertyReportItem["index"]>>;
-}
-export interface ReportCounts {
-	filesWithTokens: number;
-	propNameUsed: number;
-	tokenUsed: number;
-	shorthandUsed: number;
-	propertyPathUsed: number;
-	typeUsed: number;
-	componentNameUsed: number;
-	kindUsed: number;
-	componentOfKindUsed: number;
-	colorsUsed: number;
-}
-export interface MostUsedItem {
-	key: string;
-	count: number;
-}
-export interface ReportStats {
-	filesWithMostComponent: Record<string, number>;
-	mostUseds: {
-		propNames: Array<MostUsedItem>;
-		tokens: Array<MostUsedItem>;
-		shorthands: Array<MostUsedItem>;
-		categories: Array<MostUsedItem>;
-		conditions: Array<MostUsedItem>;
-		propertyPaths: Array<MostUsedItem>;
-		types: Array<MostUsedItem>;
-		componentNames: Array<MostUsedItem>;
-		fromKinds: Array<MostUsedItem>;
-		componentOfKinds: Array<MostUsedItem>;
-		colors: Array<MostUsedItem>;
-	};
-}
-export interface ReportDetails {
-	counts: ReportCounts;
-	stats: ReportStats;
-	fileSizes: FileSizes;
-	duration: {
-		classify: number;
-		cssMs: number;
-		cssMinifyMs: number;
-		extractTotal: number;
-		extractTimeByFiles: Record<string, number>;
-		lightningCssMs?: number;
-		lightningCssMinifiedMs?: number;
-	};
-}
-export interface FileSizes {
-	normal: string;
-	minified: string;
-	gzip: {
-		normal: string;
-		minified: string;
-	};
-	lightningCss?: {
-		normal: string;
-		minified: string;
-	};
-}
-export interface ReportSnapshot {
-	schemaVersion: string;
-	details: ReportDetails;
-	config: Omit<Config, "globalCss" | "globalFontface">;
-	propByIndex: Map<PropertyReportItem["index"], PropertyReportItem>;
-	componentByIndex: Map<ComponentReportItem["componentIndex"], ComponentReportItem>;
-	derived: {
-		byFilepath: Map<string, Set<PropertyReportItem["index"]>>;
-		byComponentInFilepath: Map<string, Set<ComponentReportItem["componentIndex"]>>;
-		globalMaps: ReportDerivedMaps;
-		byFilePathMaps: Map<string, ReportDerivedMaps>;
-	};
-}
-export interface ReportDerivedMapsJSON {
-	byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem["componentIndex"]>>;
-	byPropertyName: Record<string, Array<PropertyReportItem["index"]>>;
-	byTokenType: Record<string, Array<PropertyReportItem["index"]>>;
-	byConditionName: Record<string, Array<PropertyReportItem["index"]>>;
-	byShorthand: Record<string, Array<PropertyReportItem["index"]>>;
-	byTokenName: Record<string, Array<PropertyReportItem["index"]>>;
-	byPropertyPath: Record<string, Array<PropertyReportItem["index"]>>;
-	fromKind: Record<ComponentKind, Array<PropertyReportItem["index"]>>;
-	byType: Record<string, Array<PropertyReportItem["index"]>>;
-	byComponentName: Record<string, Array<PropertyReportItem["index"]>>;
-	colorsUsed: Record<string, Array<PropertyReportItem["index"]>>;
-}
-export interface ReportSnapshotJSON extends Omit<ReportSnapshot, "propByIndex" | "componentByIndex" | "derived"> {
-	propByIndex: Record<PropertyReportItem["index"], PropertyReportItem>;
-	componentByIndex: Record<ComponentReportItem["componentIndex"], ComponentReportItem>;
-	derived: {
-		byFilepath: Record<string, Array<PropertyReportItem["index"]>>;
-		byComponentInFilepath: Record<string, Array<ComponentReportItem["componentIndex"]>>;
-		globalMaps: ReportDerivedMapsJSON;
-		byFilePathMaps: Record<string, ReportDerivedMapsJSON>;
-	};
-}
 export interface Part {
 	selector: string;
 }
@@ -11651,11 +11691,8 @@ export {
 	LiteralUnion$1 as LiteralUnion,
 	Number$1 as Number,
 	Primitive$1 as Primitive,
-	Range$1 as Range,
-	Recursive$1 as Recursive,
 	String$1 as String,
 	TSConfig,
-	Token$1 as Token,
 };
 
 export {};

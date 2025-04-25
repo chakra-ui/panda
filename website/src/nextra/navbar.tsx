@@ -1,7 +1,8 @@
 import { CourseBanner } from '@/components/course-banner'
 import { css, cx } from '@/styled-system/css'
 import { navbar } from '@/styled-system/recipes'
-import { Menu, Portal } from '@ark-ui/react'
+import { Menu } from '@ark-ui/react/menu'
+import { Portal } from '@ark-ui/react/portal'
 import { useFSRoute } from 'nextra/hooks'
 import { ArrowRightIcon, MenuIcon } from 'nextra/icons'
 import type {
@@ -86,7 +87,7 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
               tabIndex={0}
             >
               {Object.entries(items || {}).map(([key, item]) => (
-                <Menu.Item id={key} key={key}>
+                <Menu.Item value={key} key={key}>
                   <Anchor
                     href={
                       item.href || routes[key]?.route || menu.route + '/' + key

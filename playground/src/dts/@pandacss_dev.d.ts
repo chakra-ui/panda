@@ -1,4 +1,4 @@
-import { Config, RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig, Parts, SystemStyleObject, PatternConfig, PatternProperties, Preset, CssKeyframes, GlobalStyleObject, GlobalFontface, PropertyConfig, PandaPlugin, ThemeVariant, Tokens, SemanticTokens, CompositionStyles, TextStyles, LayerStyles } from '@pandacss/types';
+import { Config, RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig, Parts, SystemStyleObject, PatternConfig, Preset, CssKeyframes, GlobalStyleObject, GlobalFontface, PropertyConfig, PandaPlugin, ThemeVariant, Tokens, SemanticTokens, CompositionStyles, TextStyles, LayerStyles } from '@pandacss/types';
 export { CompositionStyles, Config, CssKeyframes, GlobalStyleObject, HooksApiInterface, LayerStyles, PatternConfig, PatternProperties, Preset, PropertyConfig, RecipeConfig, RecipeVariantRecord, SemanticTokens, SlotRecipeConfig, SlotRecipeVariantRecord, SystemStyleObject, TextStyles, Tokens } from '@pandacss/types';
 
 declare function defineConfig(config: Config): Config & {
@@ -7,7 +7,7 @@ declare function defineConfig(config: Config): Config & {
 declare function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeConfig;
 declare function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRecord<S>>(config: SlotRecipeConfig<S, T>): SlotRecipeConfig;
 declare function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => Partial<Record<keyof T, SystemStyleObject>>;
-declare function definePattern<T extends PatternConfig>(config: T): PatternConfig<PatternProperties>;
+declare function definePattern<T extends PatternConfig>(config: T): PatternConfig;
 declare function definePreset(preset: Preset): Preset;
 declare function defineKeyframes(keyframes: CssKeyframes): CssKeyframes;
 declare function defineGlobalStyles(definition: GlobalStyleObject): GlobalStyleObject;
@@ -26,5 +26,6 @@ declare const defineSemanticTokens: ProxyValue<SemanticTokens>;
 declare function defineTextStyles(definition: CompositionStyles['textStyles']): TextStyles;
 declare function defineLayerStyles(definition: CompositionStyles['layerStyles']): LayerStyles;
 declare function defineStyles(definition: SystemStyleObject): SystemStyleObject;
+declare function defineAnimationStyles(definition: CompositionStyles['animationStyles']): _pandacss_types.AnimationStyles;
 
-export { defineConfig, defineGlobalFontface, defineGlobalStyles, defineKeyframes, defineLayerStyles, defineParts, definePattern, definePlugin, definePreset, defineRecipe, defineSemanticTokens, defineSlotRecipe, defineStyles, defineTextStyles, defineThemeContract, defineThemeVariant, defineTokens, defineUtility };
+export { defineAnimationStyles, defineConfig, defineGlobalFontface, defineGlobalStyles, defineKeyframes, defineLayerStyles, defineParts, definePattern, definePlugin, definePreset, defineRecipe, defineSemanticTokens, defineSlotRecipe, defineStyles, defineTextStyles, defineThemeContract, defineThemeVariant, defineTokens, defineUtility };

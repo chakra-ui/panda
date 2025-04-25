@@ -4,12 +4,14 @@ import { hstack } from '@/styled-system/patterns'
 import type { ResultItem } from '@pandacss/types'
 import { useTheme } from 'next-themes'
 import { usePanda } from '../hooks/usePanda'
-
+import * as React from 'react'
 import dynamic from 'next/dynamic'
 
 const ResultItemRowJson = dynamic(() => import('./ASTViewer-row'))
 
-export const ASTViewer = (props: { parserResult: ReturnType<typeof usePanda>['parserResult'] }) => {
+export const ASTViewer = React.memo(function ASTViewer(props: {
+  parserResult: ReturnType<typeof usePanda>['parserResult']
+}) {
   if (!props.parserResult) return null
 
   return (
@@ -19,7 +21,7 @@ export const ASTViewer = (props: { parserResult: ReturnType<typeof usePanda>['pa
       })}
     </Stack>
   )
-}
+})
 
 const resultType = cva({
   base: {

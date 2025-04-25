@@ -1,6 +1,8 @@
 import { css, cx } from '@/styled-system/css'
-import { Portal, Select } from '@ark-ui/react'
+import { Portal } from '@ark-ui/react/portal'
+import { createListCollection, Select } from '@ark-ui/react/select'
 import { CheckIcon } from 'nextra/icons'
+import { useMemo } from 'react'
 
 interface Item {
   value: string
@@ -16,11 +18,15 @@ interface Props {
 }
 
 function _Select({ options, selected, onChange, title, className }: Props) {
+  const collection = useMemo(() => {
+    return createListCollection({ items: options })
+  }, [options])
+
   return (
     <Select.Root
       lazyMount
-      items={options}
-      onValueChange={details => onChange(details.items[0] ?? null)}
+      collection={collection}
+      onValueChange={e => onChange(e.items[0] ?? null)}
     >
       <Select.Trigger
         className={cx(

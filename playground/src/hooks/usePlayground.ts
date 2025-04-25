@@ -1,9 +1,10 @@
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
 import { parseState } from '@/src/lib/parse-state'
-import { SplitterRootProps } from '@ark-ui/react'
-import { startTransition, useDeferredValue, useRef, useState } from 'react'
+import { SplitterRootProps } from '@ark-ui/react/splitter'
+import { startTransition, useDeferredValue, useMemo, useRef, useState } from 'react'
 import { Layout } from '../components/LayoutControl'
-import { toast } from '../components/ToastProvider'
+import { toaster } from '../components/ToastProvider'
+import { flushSync } from 'react-dom'
 
 export interface State {
   code: string
@@ -23,24 +24,22 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   const [isSharing, setIsSharing] = useState(false)
   const [isResponsive, setIsResponsive] = useState(false)
 
-  const [panels, setPanels] = useState([
-    { id: 'left', size: 50, minSize: 15 },
-    { id: 'preview', size: 50 },
-  ])
+  const panels = useMemo(() => {
+    return [{ id: 'left', minSize: 15 }, { id: 'preview' }]
+  }, [])
 
-  const isPreviewMode = panels.find((panel) => panel.id === 'left')?.size === 0
+  const [panelSize, setPanelSizeImpl] = useState([50, 50])
+  const isPreviewMode = panelSize[0] === 0
 
   const layoutValue = isPreviewMode ? ('preview' as const) : layout
 
-  const onResizePanels: SplitterRootProps['onSizeChange'] = (e) => setPanels(e.size as any)
-
-  function setPanelSize(id: string, size: number) {
-    setPanels((prevPanels) => {
-      return prevPanels.map((panel) => {
-        return panel.id === id ? { ...panel, size } : panel
-      })
+  const setPanelSize = (size: number[]) => {
+    flushSync(() => {
+      setPanelSizeImpl(size)
     })
   }
+
+  const onResizePanels: SplitterRootProps['onResize'] = (e) => setPanelSize(e.size)
 
   const switchLayout = (layout: Layout) => {
     if (layout === 'responsive') {
@@ -50,14 +49,13 @@ export const usePlayground = (props: UsePlayGroundProps) => {
 
     if (layout === 'preview') {
       setLayout('horizontal')
-      setPanelSize('left', 0)
+      setPanelSize([0, 100])
       return
     }
 
     setLayout(layout)
     if (isPreviewMode) {
-      setPanelSize('preview', 50)
-      setPanelSize('left', 50)
+      setPanelSize([50, 50])
     }
   }
 
@@ -91,7 +89,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
       .then(({ data }) => {
         onDone(data.id)
         copyCurrentURI()
-        toast.success({
+        toaster.success({
           title: 'Playground saved.',
           description: 'Link copied to clipboard.',
           duration: 3000,
@@ -100,7 +98,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
         setIsSharing(false)
       })
       .catch(() => {
-        toast.error({
+        toaster.error({
           title: 'Could not save playground.',
           description: 'Please try again.',
           duration: 3000,
@@ -150,6 +148,8 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     layoutValue,
     isPreviewMode,
     panels,
+    panelSize,
+    setPanelSize,
     onResizePanels,
     switchLayout,
     state: deferredState,

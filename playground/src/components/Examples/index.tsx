@@ -1,6 +1,6 @@
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
 import { button, menu } from '@/styled-system/recipes'
-import { Menu, MenuContent, MenuItem, MenuPositioner, MenuTrigger } from '@ark-ui/react'
+import { Menu } from '@ark-ui/react/menu'
 
 type ExamplesProps = {
   setExample: (_example: Example) => void
@@ -14,20 +14,20 @@ export const Examples = (props: ExamplesProps) => {
         props.setExample(value as Example)
       }}
     >
-      <MenuTrigger asChild>
+      <Menu.Trigger asChild>
         <button title="Try out some examples" className={button()}>
           Examples
         </button>
-      </MenuTrigger>
-      <MenuPositioner className={menu()}>
-        <MenuContent>
+      </Menu.Trigger>
+      <Menu.Positioner className={menu()}>
+        <Menu.Content>
           {EXAMPLES.map((example) => (
-            <MenuItem key={example.id} id={example.id}>
+            <Menu.Item key={example.id} value={example.id}>
               {example.label}
-            </MenuItem>
+            </Menu.Item>
           ))}
-        </MenuContent>
-      </MenuPositioner>
+        </Menu.Content>
+      </Menu.Positioner>
     </Menu.Root>
   )
 }
