@@ -1,5 +1,18 @@
 # @pandacss/generator
 
+## 0.53.5
+
+### Patch Changes
+
+- fe3e943: - **React, Preact, Qwik, Solid**: Improve style composition when creating multiple styled instances
+  - **Vue**: Fix issue where template literal syntax doesn't work
+  - @pandacss/core@0.53.5
+  - @pandacss/is-valid-prop@0.53.5
+  - @pandacss/logger@0.53.5
+  - @pandacss/shared@0.53.5
+  - @pandacss/token-dictionary@0.53.5
+  - @pandacss/types@0.53.5
+
 ## 0.53.4
 
 ### Patch Changes
