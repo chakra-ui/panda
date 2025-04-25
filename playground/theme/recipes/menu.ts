@@ -1,5 +1,5 @@
 import { defineParts, defineRecipe } from '@pandacss/dev'
-import { menuAnatomy } from '@ark-ui/anatomy'
+import { menuAnatomy } from '@ark-ui/react/menu'
 
 const parts = defineParts(menuAnatomy.build())
 
@@ -61,7 +61,6 @@ export const menu = defineRecipe({
       flexDirection: 'column',
     },
     item: itemStyle,
-    optionItem: itemStyle,
     triggerItem: itemStyle,
   }),
 })
