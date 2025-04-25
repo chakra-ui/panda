@@ -45,7 +45,7 @@
     "@pandacss/types": "workspace:*",
     "browserslist": "4.23.3",
     "hookable": "5.5.3",
-    "lightningcss": "1.25.1",
+    "lightningcss": "1.29.3",
     "lodash.merge": "4.6.2",
     "outdent": "0.8.0",
     "postcss": "8.4.49",
