@@ -11,11 +11,12 @@ ${ctx.file.import('getDisplayName', './factory-helper')}
 ${ctx.file.import('css, cx', '../css/index')}
 
 function createStyled(element) {
+  const __base__ = element.__base__ || element
   return function styledFn(template) {
-    const styles = css.raw(template)
+    const styles = css.raw(element.__styles__, template)
 
     const ${componentName} = (props) => {
-      const mergedProps = mergeProps({ as: element.__base__ || element }, props)
+      const mergedProps = mergeProps({ as: __base__ }, props)
       const [localProps, elementProps] = splitProps(mergedProps, ['as', 'class'])
       
       return createComponent(
@@ -26,7 +27,7 @@ function createStyled(element) {
               return localProps.as
             },
             get class() {
-              return cx(css(element.__styles__, styles), localProps.class)
+              return cx(css(styles), localProps.class)
             },
           },
           elementProps,
@@ -34,11 +35,11 @@ function createStyled(element) {
       )
     }
 
-    const name = getDisplayName(element)
+    const name = getDisplayName(__base__)
 
     ${componentName}.displayName = \`${factoryName}.\${name}\`
     ${componentName}.__styles__ = styles
-    ${componentName}.__base__ = element
+    ${componentName}.__base__ = __base__
 
     return ${componentName}
   }

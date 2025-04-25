@@ -6,26 +6,27 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
 
   return {
     js: outdent`
-    import { defineComponent, h, computed } from 'vue'
-    ${ctx.file.import('getDisplayName', './factory-helper')}
-    ${ctx.file.import('css, cx', '../css/index')}
+  import { defineComponent, h, computed } from 'vue'
+  ${ctx.file.import('getDisplayName', './factory-helper')}
+  ${ctx.file.import('css, cx', '../css/index')}
 
   function createStyled(Dynamic) {
     const name = getDisplayName(Dynamic)
+    const __base__ = Dynamic.__base__ || Dynamic
 
     function styledFn(template) {
-      const styles = css.raw(template)
+      const styles = css.raw(Dynamic.__styles__, template)
       
       const ${componentName} = defineComponent({
         name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
         props: {
           modelValue: null,
-          as: { type: [String, Object], default: Dynamic }
+          as: { type: [String, Object], default: __base__ }
         },
         setup(props, { slots, attrs, emit }) {
           const classes = computed(() => {
-            return cx(css(Dynamic.__styles__, styles), elementProps.className)
+            return cx(css(styles), attrs.className)
           })
 
           const vModelProps = computed(() => {
@@ -62,7 +63,7 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
               props.as,
               {
                 class: classes.value,
-                ...elementProps,
+                ...attrs,
                 ...vModelProps.value,
               },
              slots
@@ -72,18 +73,20 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
       })
 
       ${componentName}.__styles__ = styles
-      ${componentName}.__base__ = element
+      ${componentName}.__base__ = __base__
 
       return ${componentName}
     }
+
+    return styledFn
   }
 
   const tags = 'a, abbr, address, area, article, aside, audio, b, base, bdi, bdo, big, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, data, datalist, dd, del, details, dfn, dialog, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, head, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, main, map, mark, marquee, menu, menuitem, meta, meter, nav, noscript, object, ol, optgroup, option, output, p, param, picture, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, summary, sup, table, tbody, td, textarea, tfoot, th, thead, time, title, tr, track, u, ul, var, video, wbr, circle, clipPath, defs, ellipse, foreignObject, g, image, line, linearGradient, mask, path, pattern, polygon, polyline, radialGradient, rect, stop, svg, text, tspan';
 
-  export const ${factoryName} = /* @__PURE__ */ styledFn.bind();
+  export const ${factoryName} = /* @__PURE__ */ createStyled.bind();
 
   tags.split(', ').forEach((tag) => {
-    styled[tag] = styled(tag);
+    ${factoryName}[tag] = createStyled(tag);
   });
     `,
   }

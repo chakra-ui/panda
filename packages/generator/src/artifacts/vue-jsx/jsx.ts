@@ -26,16 +26,18 @@ export function generateVueJsxFactory(ctx: Context) {
         options.defaultProps,
       )
 
-      const name = getDisplayName(Dynamic)
       const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
       const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
+      
+      const __base__ = Dynamic.__base__ || Dynamic
+      const name = getDisplayName(__base__)
 
       const ${componentName} = defineComponent({
         name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
         props: {
           modelValue: null,
-          as: { type: [String, Object], default: Dynamic.__base__ || Dynamic }
+          as: { type: [String, Object], default: __base__ }
         },
         setup(props, { slots, attrs, emit }) {
           const combinedProps = computed(() => Object.assign({}, defaultProps, attrs))
@@ -109,7 +111,7 @@ export function generateVueJsxFactory(ctx: Context) {
 
       ${componentName}.displayName = \`${factoryName}.\${name}\`
       ${componentName}.__cva__ = __cvaFn__
-      ${componentName}.__base__ = Dynamic
+      ${componentName}.__base__ = __base__
       ${componentName}.__shouldForwardProps__ = shouldForwardProp
 
       return ${componentName}

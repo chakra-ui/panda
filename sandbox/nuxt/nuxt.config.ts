@@ -5,4 +5,5 @@ export default defineNuxtConfig({
     plugins: { '@pandacss/dev/postcss': {} },
   },
   css: ['~/assets/main.css'],
+  compatibilityDate: '2025-04-25',
 })

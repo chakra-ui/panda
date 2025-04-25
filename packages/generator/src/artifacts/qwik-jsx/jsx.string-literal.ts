@@ -13,13 +13,13 @@ export function generateQwikJsxStringLiteralFactory(ctx: Context) {
     function createStyledFn(Dynamic) {
       const __base__ = Dynamic.__base__ || Dynamic
       return function styledFn(template) {
-          const styles = css.raw(template)
+          const styles = css.raw(Dynamic.__styles__, template)
 
           const ${componentName} = (props) => {
             const { as: Element = __base__, ...elementProps } = props
 
             function classes() {
-              return cx(css(__base__.__styles__, styles), elementProps.className)
+              return cx(css(styles), elementProps.className)
             }
 
             return h(Element, {
