@@ -6,6 +6,10 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.6] - 2025-04-27
+
+Fix issue where generated type for `CssVarKeys` was incorrect resulting in partial autocompletion
+
 ## [0.53.5] - 2025-04-26
 
 ### Fixed
