@@ -22,8 +22,7 @@ export function generateStyleProps(ctx: Context) {
     type CssVars = ${[cssVars || '`var(--${string})`'].filter(Boolean).join(' | ')}
     type CssVarValue = ConditionalValue<Token${ctx.globalVars.isEmpty() ? '' : ' | CssVars'} | AnyString | (number & {})>
 
-    type CssVarName = ${unionType(ctx.globalVars.names)} | AnyString
-    type CssVarKeys = \`--\${CssVarName}\`
+    type CssVarKeys = ${[...ctx.globalVars.names.map((name) => `"--${name}"`), '`--${string}` & {}'].filter(Boolean).join(' | ')}
 
     export type CssVarProperties = {
       [key in CssVarKeys]?: CssVarValue
