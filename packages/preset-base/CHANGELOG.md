@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.53.5
+
+### Patch Changes
+
+- 6fb83a8: Add tokens for logical border widths
+  - @pandacss/types@0.53.5
+
 ## 0.53.4
 
 ### Patch Changes
