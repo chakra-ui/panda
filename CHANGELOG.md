@@ -6,6 +6,18 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.5] - 2025-04-26
+
+### Fixed
+
+- fix(studio): can't render semantic color token without base definition
+- **React, Preact, Qwik, Solid**: Improve style composition when creating multiple `styled` instances
+- **Vue**: Fix issue where template literal syntax doesn't work
+
+### Added
+
+- Add tokens for logical border widths
+
 ## [0.53.4] - 2025-04-15
 
 ### Fixed
