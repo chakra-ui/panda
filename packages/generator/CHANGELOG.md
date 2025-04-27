@@ -1,5 +1,17 @@
 # @pandacss/generator
 
+## 0.53.6
+
+### Patch Changes
+
+- a292e9a: Fix issue where generated type for `CssVarKeys` was incorrect resulting in partial autocompletion
+  - @pandacss/core@0.53.6
+  - @pandacss/is-valid-prop@0.53.6
+  - @pandacss/logger@0.53.6
+  - @pandacss/shared@0.53.6
+  - @pandacss/token-dictionary@0.53.6
+  - @pandacss/types@0.53.6
+
 ## 0.53.5
 
 ### Patch Changes
