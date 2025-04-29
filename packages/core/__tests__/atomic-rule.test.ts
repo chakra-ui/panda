@@ -670,4 +670,30 @@ describe('atomic / with direct nesting', () => {
       }"
     `)
   })
+
+  test('responsive helpers', () => {
+    expect(
+      css({
+        hideFrom: 'sm',
+      }),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 40rem) {
+          .hide_sm {
+            display: none;
+      }
+      }
+      }"
+    `)
+
+    expect(css({ hideBelow: 'lg' })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (max-width: 63.9975rem) {
+          .show_lg {
+            display: none;
+      }
+      }
+      }"
+    `)
+  })
 })

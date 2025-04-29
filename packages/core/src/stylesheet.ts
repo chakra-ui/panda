@@ -95,10 +95,13 @@ export class Stylesheet {
   }
 
   getLayerCss = (...layers: CascadeLayer[]) => {
+    const breakpoints = this.context.conditions.breakpoints
     return optimizeCss(
       layers
         .map((layer: CascadeLayer) => {
-          return this.context.layers.getLayerRoot(layer).toString()
+          const root = this.context.layers.getLayerRoot(layer)
+          breakpoints.expandScreenAtRule(root as postcss.Root)
+          return root.toString()
         })
         .join('\n'),
       {
