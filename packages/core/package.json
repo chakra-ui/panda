@@ -43,20 +43,20 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "browserslist": "4.23.3",
+    "browserslist": "4.24.4",
     "hookable": "5.5.3",
-    "lightningcss": "1.25.1",
+    "lightningcss": "1.29.3",
     "lodash.merge": "4.6.2",
     "outdent": "0.8.0",
-    "postcss": "8.4.49",
+    "postcss": "8.5.3",
     "postcss-discard-duplicates": "7.0.1",
     "postcss-discard-empty": "7.0.0",
     "postcss-merge-rules": "7.0.4",
     "postcss-minify-selectors": "7.0.4",
-    "postcss-nested": "6.0.1",
+    "postcss-nested": "6.2.0",
     "postcss-normalize-whitespace": "7.0.0",
     "postcss-selector-parser": "6.1.2",
-    "ts-pattern": "5.0.8"
+    "ts-pattern": "5.7.0"
   },
   "devDependencies": {
     "@types/lodash.merge": "4.6.9"
