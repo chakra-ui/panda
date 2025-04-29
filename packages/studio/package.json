@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/studio",
-  "version": "0.53.6",
+  "version": "0.53.7",
   "description": "The automated token documentation for Panda CSS",
   "main": "dist/studio.js",
   "module": "dist/studio.mjs",
