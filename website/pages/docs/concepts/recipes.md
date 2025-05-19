@@ -618,6 +618,8 @@ export const Demo = {
 
   **When you change the name of the variant prop in the JSX component**
 
+  In below example, the `size` prop is renamed to `buttonSize`
+
   ```tsx
   const Button = ({ buttonSize, children }) => {
     return (
@@ -628,7 +630,9 @@ export const Demo = {
   }
   ```
 
-  **When you use the recipe in a custom component that is not a JSX component, Panda won't be able to track the usage of the recipe variants.**
+  **When you use the recipe in a custom component that is not named as per the recipe name, Panda won't be able to track the usage of the recipe variants.**
+
+  In below example, the component name `Button` is renamed to `Random` and we are using `button` recipe.
 
   ```tsx
   const Random = ({ size, children }) => {
