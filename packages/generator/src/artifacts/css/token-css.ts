@@ -24,7 +24,8 @@ export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
   const themePrefix = ctx.conditions.getThemeName('')
 
   for (const [key, values] of tokens.view.vars.entries()) {
-    const isThemeSkipped = key.startsWith(themePrefix) && !themeConds.some((condName) => key === condName || key.startsWith(condName + ':'))
+    const isThemeSkipped =
+      key.startsWith(themePrefix) && !themeConds.some((condName) => key === condName || key.startsWith(condName + ':'))
     if (isThemeSkipped) {
       continue
     }
