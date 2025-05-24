@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/extractor",
-  "version": "0.53.6",
+  "version": "0.53.7",
   "description": "The css extractor for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

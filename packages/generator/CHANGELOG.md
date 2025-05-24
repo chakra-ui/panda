@@ -1,5 +1,20 @@
 # @pandacss/generator
 
+## 0.53.7
+
+### Patch Changes
+
+- a67f920: This change fixes a issue where if two themes had shared a similar start name, both would be outputted in the
+  token generation process
+- Updated dependencies [5e5af6b]
+- Updated dependencies [9453c9b]
+  - @pandacss/core@0.53.7
+  - @pandacss/is-valid-prop@0.53.7
+  - @pandacss/logger@0.53.7
+  - @pandacss/shared@0.53.7
+  - @pandacss/token-dictionary@0.53.7
+  - @pandacss/types@0.53.7
+
 ## 0.53.6
 
 ### Patch Changes
