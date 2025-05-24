@@ -1,5 +1,17 @@
 # @pandacss/core
 
+## 0.53.7
+
+### Patch Changes
+
+- 5e5af6b: Fix import detection in Windows
+- 9453c9b: Fix issue where `@breakpoint` from `hideBelow` or `hideFrom` might not be compiled to media query correctly
+  - @pandacss/is-valid-prop@0.53.7
+  - @pandacss/logger@0.53.7
+  - @pandacss/shared@0.53.7
+  - @pandacss/token-dictionary@0.53.7
+  - @pandacss/types@0.53.7
+
 ## 0.53.6
 
 ### Patch Changes
