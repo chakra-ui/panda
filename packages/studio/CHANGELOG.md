@@ -1,5 +1,16 @@
 # @pandacss/studio
 
+## 0.53.7
+
+### Patch Changes
+
+- @pandacss/astro-plugin-studio@0.53.7
+- @pandacss/config@0.53.7
+- @pandacss/logger@0.53.7
+- @pandacss/shared@0.53.7
+- @pandacss/token-dictionary@0.53.7
+- @pandacss/types@0.53.7
+
 ## 0.53.6
 
 ### Patch Changes

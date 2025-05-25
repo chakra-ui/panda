@@ -1,5 +1,11 @@
 # @pandacss/preset-atlaskit
 
+## 0.53.7
+
+### Patch Changes
+
+- @pandacss/types@0.53.7
+
 ## 0.53.6
 
 ### Patch Changes
