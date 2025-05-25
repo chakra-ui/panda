@@ -6,6 +6,14 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.53.7] - 2025-05-24
+
+### Fixed
+
+- Fix import detection in Windows
+- Fix issue where `@breakpoint` from `hideBelow` or `hideFrom` might not be compiled to media query correctly
+- Fix issue where if two themes had shared a similar start name, both would be outputted in the token generation process
+
 ## [0.53.6] - 2025-04-27
 
 Fix issue where generated type for `CssVarKeys` was incorrect resulting in partial autocompletion
