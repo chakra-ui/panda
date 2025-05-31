@@ -9,7 +9,6 @@ export interface CenterProperties {
    inline?: ConditionalValue<boolean>
 }
 
-
 interface CenterStyles extends CenterProperties, DistributiveOmit<SystemStyleObject, keyof CenterProperties > {}
 
 interface CenterPatternFn {

@@ -13,7 +13,6 @@ export interface GridProperties {
 	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
 }
 
-
 interface GridStyles extends GridProperties, DistributiveOmit<SystemStyleObject, keyof GridProperties > {}
 
 interface GridPatternFn {

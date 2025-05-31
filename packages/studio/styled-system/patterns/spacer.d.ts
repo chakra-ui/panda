@@ -9,7 +9,6 @@ export interface SpacerProperties {
    size?: ConditionalValue<Tokens["spacing"]>
 }
 
-
 interface SpacerStyles extends SpacerProperties, DistributiveOmit<SystemStyleObject, keyof SpacerProperties > {}
 
 interface SpacerPatternFn {

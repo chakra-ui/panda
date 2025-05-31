@@ -9,7 +9,6 @@ export interface ContainerProperties {
    
 }
 
-
 interface ContainerStyles extends ContainerProperties, DistributiveOmit<SystemStyleObject, keyof ContainerProperties > {}
 
 interface ContainerPatternFn {

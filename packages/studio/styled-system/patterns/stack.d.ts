@@ -12,7 +12,6 @@ export interface StackProperties {
 	gap?: SystemProperties["gap"]
 }
 
-
 interface StackStyles extends StackProperties, DistributiveOmit<SystemStyleObject, keyof StackProperties > {}
 
 interface StackPatternFn {

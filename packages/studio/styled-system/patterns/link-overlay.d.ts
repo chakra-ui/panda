@@ -9,7 +9,6 @@ export interface LinkOverlayProperties {
    
 }
 
-
 interface LinkOverlayStyles extends LinkOverlayProperties, DistributiveOmit<SystemStyleObject, keyof LinkOverlayProperties > {}
 
 interface LinkOverlayPatternFn {

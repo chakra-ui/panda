@@ -9,7 +9,6 @@ export interface VisuallyHiddenProperties {
    
 }
 
-
 interface VisuallyHiddenStyles extends VisuallyHiddenProperties, DistributiveOmit<SystemStyleObject, keyof VisuallyHiddenProperties > {}
 
 interface VisuallyHiddenPatternFn {

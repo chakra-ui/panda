@@ -9,7 +9,6 @@ export interface BoxProperties {
    
 }
 
-
 interface BoxStyles extends BoxProperties, DistributiveOmit<SystemStyleObject, keyof BoxProperties > {}
 
 interface BoxPatternFn {

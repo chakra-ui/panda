@@ -12,7 +12,6 @@ export interface FloatProperties {
 	placement?: ConditionalValue<"bottom-end" | "bottom-start" | "top-end" | "top-start" | "bottom-center" | "top-center" | "middle-center" | "middle-end" | "middle-start">
 }
 
-
 interface FloatStyles extends FloatProperties, DistributiveOmit<SystemStyleObject, keyof FloatProperties > {}
 
 interface FloatPatternFn {

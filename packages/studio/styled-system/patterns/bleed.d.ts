@@ -10,7 +10,6 @@ export interface BleedProperties {
 	block?: SystemProperties["marginBlock"]
 }
 
-
 interface BleedStyles extends BleedProperties, DistributiveOmit<SystemStyleObject, keyof BleedProperties > {}
 
 interface BleedPatternFn {

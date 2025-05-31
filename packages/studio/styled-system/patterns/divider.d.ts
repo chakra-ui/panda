@@ -11,7 +11,6 @@ export interface DividerProperties {
 	color?: ConditionalValue<Tokens["colors"] | Properties["borderColor"]>
 }
 
-
 interface DividerStyles extends DividerProperties, DistributiveOmit<SystemStyleObject, keyof DividerProperties > {}
 
 interface DividerPatternFn {

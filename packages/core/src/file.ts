@@ -69,7 +69,7 @@ export class FileEngine {
     }
 
     comments.push(' */')
-    return comments.join('\n')
+    return comments.filter((c) => c.trim().length).join('\n')
   }
 
   /**

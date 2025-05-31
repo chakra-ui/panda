@@ -23,7 +23,6 @@ test('should generate pattern', () => {
        
     }
 
-
     interface BoxStyles extends BoxProperties, DistributiveOmit<SystemStyleObject, keyof BoxProperties > {}
 
     interface BoxPatternFn {
@@ -67,7 +66,6 @@ test('should generate pattern', () => {
     	grow?: SystemProperties["flexGrow"]
     	shrink?: SystemProperties["flexShrink"]
     }
-
 
     interface FlexStyles extends FlexProperties, DistributiveOmit<SystemStyleObject, keyof FlexProperties > {}
 
@@ -121,7 +119,6 @@ test('should generate pattern', () => {
     	gap?: SystemProperties["gap"]
     }
 
-
     interface StackStyles extends StackProperties, DistributiveOmit<SystemStyleObject, keyof StackProperties > {}
 
     interface StackPatternFn {
@@ -169,7 +166,6 @@ test('should generate pattern', () => {
        justify?: SystemProperties["justifyContent"]
     	gap?: SystemProperties["gap"]
     }
-
 
     interface VstackStyles extends VstackProperties, DistributiveOmit<SystemStyleObject, keyof VstackProperties > {}
 
@@ -219,7 +215,6 @@ test('should generate pattern', () => {
     	gap?: SystemProperties["gap"]
     }
 
-
     interface HstackStyles extends HstackProperties, DistributiveOmit<SystemStyleObject, keyof HstackProperties > {}
 
     interface HstackPatternFn {
@@ -267,7 +262,6 @@ test('should generate pattern', () => {
        size?: ConditionalValue<Tokens["spacing"]>
     }
 
-
     interface SpacerStyles extends SpacerProperties, DistributiveOmit<SystemStyleObject, keyof SpacerProperties > {}
 
     interface SpacerPatternFn {
@@ -311,7 +305,6 @@ test('should generate pattern', () => {
     export interface SquareProperties {
        size?: SystemProperties["width"]
     }
-
 
     interface SquareStyles extends SquareProperties, DistributiveOmit<SystemStyleObject, keyof SquareProperties > {}
 
@@ -359,7 +352,6 @@ test('should generate pattern', () => {
     export interface CircleProperties {
        size?: SystemProperties["width"]
     }
-
 
     interface CircleStyles extends CircleProperties, DistributiveOmit<SystemStyleObject, keyof CircleProperties > {}
 
@@ -409,7 +401,6 @@ test('should generate pattern', () => {
        inline?: ConditionalValue<boolean>
     }
 
-
     interface CenterStyles extends CenterProperties, DistributiveOmit<SystemStyleObject, keyof CenterProperties > {}
 
     interface CenterPatternFn {
@@ -453,7 +444,6 @@ test('should generate pattern', () => {
     export interface LinkOverlayProperties {
        
     }
-
 
     interface LinkOverlayStyles extends LinkOverlayProperties, DistributiveOmit<SystemStyleObject, keyof LinkOverlayProperties > {}
 
@@ -501,7 +491,6 @@ test('should generate pattern', () => {
     export interface AspectRatioProperties {
        ratio?: ConditionalValue<number>
     }
-
 
     interface AspectRatioStyles extends AspectRatioProperties, DistributiveOmit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'> {}
 
@@ -568,7 +557,6 @@ test('should generate pattern', () => {
     	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
     }
 
-
     interface GridStyles extends GridProperties, DistributiveOmit<SystemStyleObject, keyof GridProperties > {}
 
     interface GridPatternFn {
@@ -624,7 +612,6 @@ test('should generate pattern', () => {
     	rowEnd?: ConditionalValue<number>
     }
 
-
     interface GridItemStyles extends GridItemProperties, DistributiveOmit<SystemStyleObject, keyof GridItemProperties > {}
 
     interface GridItemPatternFn {
@@ -677,7 +664,6 @@ test('should generate pattern', () => {
     	justify?: SystemProperties["justifyContent"]
     }
 
-
     interface WrapStyles extends WrapProperties, DistributiveOmit<SystemStyleObject, keyof WrapProperties > {}
 
     interface WrapPatternFn {
@@ -726,7 +712,6 @@ test('should generate pattern', () => {
        
     }
 
-
     interface ContainerStyles extends ContainerProperties, DistributiveOmit<SystemStyleObject, keyof ContainerProperties > {}
 
     interface ContainerPatternFn {
@@ -772,7 +757,6 @@ test('should generate pattern', () => {
     	thickness?: ConditionalValue<Tokens["sizes"] | Properties["borderWidth"]>
     	color?: ConditionalValue<Tokens["colors"] | Properties["borderColor"]>
     }
-
 
     interface DividerStyles extends DividerProperties, DistributiveOmit<SystemStyleObject, keyof DividerProperties > {}
 
@@ -824,7 +808,6 @@ test('should generate pattern', () => {
     	offset?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
     	placement?: ConditionalValue<"bottom-end" | "bottom-start" | "top-end" | "top-start" | "bottom-center" | "top-center" | "middle-center" | "middle-end" | "middle-start">
     }
-
 
     interface FloatStyles extends FloatProperties, DistributiveOmit<SystemStyleObject, keyof FloatProperties > {}
 
@@ -902,7 +885,6 @@ test('should generate pattern', () => {
     	block?: SystemProperties["marginBlock"]
     }
 
-
     interface BleedStyles extends BleedProperties, DistributiveOmit<SystemStyleObject, keyof BleedProperties > {}
 
     interface BleedPatternFn {
@@ -950,7 +932,6 @@ test('should generate pattern', () => {
        
     }
 
-
     interface VisuallyHiddenStyles extends VisuallyHiddenProperties, DistributiveOmit<SystemStyleObject, keyof VisuallyHiddenProperties > {}
 
     interface VisuallyHiddenPatternFn {
@@ -992,7 +973,6 @@ test('should generate pattern', () => {
        name?: ConditionalValue<Tokens["containerNames"] | Properties["containerName"]>
     	type?: SystemProperties["containerType"]
     }
-
 
     interface CqStyles extends CqProperties, DistributiveOmit<SystemStyleObject, keyof CqProperties > {}
 

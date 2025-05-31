@@ -10,7 +10,6 @@ export interface VstackProperties {
 	gap?: SystemProperties["gap"]
 }
 
-
 interface VstackStyles extends VstackProperties, DistributiveOmit<SystemStyleObject, keyof VstackProperties > {}
 
 interface VstackPatternFn {

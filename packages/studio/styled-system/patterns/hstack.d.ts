@@ -10,7 +10,6 @@ export interface HstackProperties {
 	gap?: SystemProperties["gap"]
 }
 
-
 interface HstackStyles extends HstackProperties, DistributiveOmit<SystemStyleObject, keyof HstackProperties > {}
 
 interface HstackPatternFn {

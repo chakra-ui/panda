@@ -60,9 +60,18 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
 
       ${
         strict
-          ? outdent`export declare function ${baseName}(styles: ${upperName}Properties): string`
-          : outdent`
+          ? outdent`
+          interface ${upperName}Styles extends ${upperName}Properties {}
 
+          interface ${upperName}PatternFn {
+            (styles?: ${upperName}Styles): string
+            raw: (styles?: ${upperName}Styles) => SystemStyleObject
+          }
+
+          ${ctx.file.jsDocComment(description, { deprecated })}
+          export declare const ${baseName}: ${upperName}PatternFn;
+          `
+          : outdent`
           interface ${upperName}Styles extends ${upperName}Properties, DistributiveOmit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}> {}
 
           interface ${upperName}PatternFn {

@@ -13,7 +13,6 @@ export interface WrapProperties {
 	justify?: SystemProperties["justifyContent"]
 }
 
-
 interface WrapStyles extends WrapProperties, DistributiveOmit<SystemStyleObject, keyof WrapProperties > {}
 
 interface WrapPatternFn {

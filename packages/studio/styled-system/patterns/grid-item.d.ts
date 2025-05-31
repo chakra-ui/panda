@@ -14,7 +14,6 @@ export interface GridItemProperties {
 	rowEnd?: ConditionalValue<number>
 }
 
-
 interface GridItemStyles extends GridItemProperties, DistributiveOmit<SystemStyleObject, keyof GridItemProperties > {}
 
 interface GridItemPatternFn {

@@ -10,7 +10,6 @@ export interface CqProperties {
 	type?: SystemProperties["containerType"]
 }
 
-
 interface CqStyles extends CqProperties, DistributiveOmit<SystemStyleObject, keyof CqProperties > {}
 
 interface CqPatternFn {

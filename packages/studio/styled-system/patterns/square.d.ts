@@ -9,7 +9,6 @@ export interface SquareProperties {
    size?: SystemProperties["width"]
 }
 
-
 interface SquareStyles extends SquareProperties, DistributiveOmit<SystemStyleObject, keyof SquareProperties > {}
 
 interface SquarePatternFn {

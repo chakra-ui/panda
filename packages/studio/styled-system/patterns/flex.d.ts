@@ -15,7 +15,6 @@ export interface FlexProperties {
 	shrink?: SystemProperties["flexShrink"]
 }
 
-
 interface FlexStyles extends FlexProperties, DistributiveOmit<SystemStyleObject, keyof FlexProperties > {}
 
 interface FlexPatternFn {
