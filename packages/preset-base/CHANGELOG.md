@@ -1,5 +1,11 @@
 # @pandacss/preset-base
 
+## 0.53.8
+
+### Patch Changes
+
+- @pandacss/types@0.53.8
+
 ## 0.53.7
 
 ### Patch Changes

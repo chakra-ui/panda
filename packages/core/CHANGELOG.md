@@ -1,5 +1,15 @@
 # @pandacss/core
 
+## 0.53.8
+
+### Patch Changes
+
+- @pandacss/is-valid-prop@0.53.8
+- @pandacss/logger@0.53.8
+- @pandacss/shared@0.53.8
+- @pandacss/token-dictionary@0.53.8
+- @pandacss/types@0.53.8
+
 ## 0.53.7
 
 ### Patch Changes
