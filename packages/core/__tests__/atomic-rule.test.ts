@@ -359,7 +359,7 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         @media screen and (min-width: 40rem) {
-          .hover\\:disabled\\:sm\\:bg_red\\.300:is(:hover, [data-hover]):is(:disabled, [disabled], [data-disabled]) {
+          .hover\\:disabled\\:sm\\:bg_red\\.300:is(:hover, [data-hover]):is(:disabled, [disabled], [data-disabled], [aria-disabled=true]) {
             background: var(--colors-red-300);
       }
       }
