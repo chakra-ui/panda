@@ -1,5 +1,18 @@
 # @pandacss/core
 
+## 0.54.0
+
+### Patch Changes
+
+- Updated dependencies [efa060d]
+- Updated dependencies [d2aede5]
+- Updated dependencies [fdf5142]
+  - @pandacss/shared@0.54.0
+  - @pandacss/token-dictionary@0.54.0
+  - @pandacss/types@0.54.0
+  - @pandacss/is-valid-prop@0.54.0
+  - @pandacss/logger@0.54.0
+
 ## 0.53.7
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @pandacss/token-dictionary
 
+## 0.54.0
+
+### Patch Changes
+
+- fdf5142: Fix issue where `borderWidth` token reference adds an extra `px` to the generated css value
+- Updated dependencies [efa060d]
+- Updated dependencies [d2aede5]
+  - @pandacss/shared@0.54.0
+  - @pandacss/types@0.54.0
+  - @pandacss/logger@0.54.0
+
 ## 0.53.7
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/dev",
-  "version": "0.53.7",
+  "version": "0.54.0",
   "description": "The user facing package for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
