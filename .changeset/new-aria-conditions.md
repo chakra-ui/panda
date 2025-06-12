@@ -1,5 +1,5 @@
 ---
-'@pandacss/preset-base': patch
+'@pandacss/preset-base': minor
 ---
 
 Adds more `aria` attributes to conditions for better accessibility and styling hooks.
