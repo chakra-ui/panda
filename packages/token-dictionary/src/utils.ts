@@ -26,7 +26,7 @@ export function getReferences(value: string) {
   return matches.map((match) => match.replace(curlyBracketRegex, '')).map((value) => value.trim())
 }
 
-export const hasReference = (value: string) => REFERENCE_REGEX.test(value)
+export const hasReference = (value: string) => getReferences(value).length > 0
 
 const tokenFunctionRegex = /token\(([^)]+)\)/g
 const closingParenthesisRegex = /\)$/g
