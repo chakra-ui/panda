@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { layerStyles } from 'virtual:panda'
 import { panda } from '../../styled-system/jsx'
 import * as context from '../lib/panda-context'
 import { EmptyState } from './empty-state'
@@ -7,24 +8,24 @@ import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
 
 export default function LayerStyles() {
-  const values = Object.entries(context.layerStyles)
+  const keys = Object.keys(context.layerStyles)
 
   return (
     <TokenGroup>
       <TokenContent divideY="1px" divideColor="card">
-        {values && values?.length !== 0 ? (
-          values.map(([name, styles]) => (
+        {keys && keys?.length !== 0 ? (
+          keys.map((name) => (
             <panda.div px="1" py="2.5" key={name}>
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
-                <panda.div fontSize="small" flex="auto" marginTop="1.5">
-                  {Object.entries(styles).map(([attr, value], i, arr) => (
-                    <span key={attr}>{`${attr}: ${value}${i === arr.length - 1 ? '' : ', '}`}</span>
-                  ))}
-                </panda.div>
               </panda.div>
               <panda.div px="4" py="2" background="card" marginTop="5">
-                <panda.div flex="auto" my="3" height="20" style={styles} />
+                <panda.div flex="auto" my="3" height="20" className={`virtual-layer-style-${name}`} />
+                <style
+                  dangerouslySetInnerHTML={{
+                    __html: `.virtual-layer-style-${name} { ${layerStyles[name]} }`,
+                  }}
+                />
               </panda.div>
             </panda.div>
           ))
