@@ -6,6 +6,8 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.54.0] - 2025-06-12
+
 ### Fixed
 
 - Fix issue where `borderWidth` token reference adds an extra `px` to the generated css value
