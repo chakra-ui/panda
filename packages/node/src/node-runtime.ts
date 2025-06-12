@@ -1,7 +1,7 @@
 import { logger } from '@pandacss/logger'
 import type { Runtime } from '@pandacss/types'
 import chokidar from 'chokidar'
-import { globSync } from 'fast-glob'
+import glob from 'fast-glob'
 import fsExtra from 'fs-extra'
 import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import picomatch from 'picomatch'
@@ -39,7 +39,7 @@ export const nodeRuntime: Runtime = {
         ignore.push('**/*.d.ts')
       }
 
-      return globSync(opts.include, { cwd: opts.cwd, ignore, absolute: true })
+      return glob.sync(opts.include, { cwd: opts.cwd, ignore, absolute: true })
     },
     writeFile: fsExtra.writeFile,
     writeFileSync: fsExtra.writeFileSync,
