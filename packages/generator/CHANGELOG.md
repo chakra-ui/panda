@@ -1,5 +1,39 @@
 # @pandacss/generator
 
+## 0.54.0
+
+### Patch Changes
+
+- 941a208: Fix TS generated pattern dts code when `strict: true` is set.
+- d2aede5: Reduce the size of the generated `Token` type by referencing category tokens.
+
+  **Before:**
+
+  ```ts
+  export type Token = 'colors.green.400' | 'colors.red.400'
+
+  export type ColorToken = 'green.400' | 'red.400'
+  ```
+
+  **After:**
+
+  ```ts
+  export type Token = `colors.${ColorToken}`
+
+  export type ColorToken = 'green.400' | 'red.400'
+  ```
+
+- fdf5142: Fix issue where `borderWidth` token reference adds an extra `px` to the generated css value
+- Updated dependencies [efa060d]
+- Updated dependencies [d2aede5]
+- Updated dependencies [fdf5142]
+  - @pandacss/shared@0.54.0
+  - @pandacss/token-dictionary@0.54.0
+  - @pandacss/core@0.54.0
+  - @pandacss/types@0.54.0
+  - @pandacss/is-valid-prop@0.54.0
+  - @pandacss/logger@0.54.0
+
 ## 0.53.7
 
 ### Patch Changes

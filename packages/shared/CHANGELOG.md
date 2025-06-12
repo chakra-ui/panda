@@ -1,5 +1,58 @@
 # @pandacss/shared
 
+## 0.54.0
+
+### Patch Changes
+
+- efa060d: Improve algorithm for deterministic property order.
+
+  - Longhand (`padding`, `margin`, `inset`)
+  - Shorthand of longhands (`padding-inline`, `margin-inline`)
+  - Shorthand of shorthands (`padding-inline-start`, `margin-inline-start`)
+
+  ```tsx
+  css({
+    p: '4',
+    pr: '2',
+    px: '10',
+  })
+  ```
+
+  Will result in the following css regardless of the order of the properties:
+
+  ```css
+  .p-4 {
+    padding: 4px;
+  }
+
+  .px-10 {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .pr-2 {
+    padding-right: 2px;
+  }
+  ```
+
+- d2aede5: Reduce the size of the generated `Token` type by referencing category tokens.
+
+  **Before:**
+
+  ```ts
+  export type Token = 'colors.green.400' | 'colors.red.400'
+
+  export type ColorToken = 'green.400' | 'red.400'
+  ```
+
+  **After:**
+
+  ```ts
+  export type Token = `colors.${ColorToken}`
+
+  export type ColorToken = 'green.400' | 'red.400'
+  ```
+
 ## 0.53.7
 
 ## 0.53.6

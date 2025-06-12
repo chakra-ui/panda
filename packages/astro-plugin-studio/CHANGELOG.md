@@ -1,5 +1,14 @@
 # @pandacss/astro-plugin-studio
 
+## 0.54.0
+
+### Patch Changes
+
+- cd9361e: Fix issue where text (or layer) styles that use conditions don't render correctly.
+- Updated dependencies [76c4e61]
+  - @pandacss/node@0.54.0
+  - @pandacss/core@0.54.0
+
 ## 0.53.7
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @pandacss/preset-base
 
+## 0.54.0
+
+### Minor Changes
+
+- 654ed5c: Adds more `aria` attributes to conditions for better accessibility and styling hooks.
+
+  - `[aria-disabled=true]` was added to `disabled`, `peerDisabled`, and `groupDisabled` conditions.
+  - `[aria-readonly=true]` was added to the `readOnly` condition.
+  - `[aria-invalid=true]` was added to `invalid` and `groupInvalid` conditions.
+
+### Patch Changes
+
+- @pandacss/types@0.54.0
+
 ## 0.53.7
 
 ### Patch Changes

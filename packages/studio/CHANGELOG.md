@@ -1,5 +1,21 @@
 # @pandacss/studio
 
+## 0.54.0
+
+### Patch Changes
+
+- cd9361e: Fix issue where text (or layer) styles that use conditions don't render correctly.
+- Updated dependencies [efa060d]
+- Updated dependencies [cd9361e]
+- Updated dependencies [d2aede5]
+- Updated dependencies [fdf5142]
+  - @pandacss/shared@0.54.0
+  - @pandacss/astro-plugin-studio@0.54.0
+  - @pandacss/token-dictionary@0.54.0
+  - @pandacss/config@0.54.0
+  - @pandacss/types@0.54.0
+  - @pandacss/logger@0.54.0
+
 ## 0.53.7
 
 ### Patch Changes
