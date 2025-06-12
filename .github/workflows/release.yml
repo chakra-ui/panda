@@ -37,6 +37,7 @@ jobs:
         if: steps.changesets.outputs.published == 'true'
         uses: slackapi/slack-github-action@v2
         with:
+          webhook-type: webhook-trigger
           payload: |
             {
               "package_name": "@pandacss/dev",
