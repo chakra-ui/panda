@@ -45,24 +45,24 @@ describe('Atomic recipe', () => {
           padding: var(--spacing-2);
       }
 
-        .bdr_sm {
-          border-radius: var(--radii-sm);
-      }
-
         .p_4 {
           padding: var(--spacing-4);
+      }
+
+        .bdr_sm {
+          border-radius: var(--radii-sm);
       }
 
         .bdr_md {
           border-radius: var(--radii-md);
       }
 
-        .c_white {
-          color: var(--colors-white);
-      }
-
         .fs_lg {
           font-size: var(--font-sizes-lg);
+      }
+
+        .c_white {
+          color: var(--colors-white);
       }
 
         .bg-c_blue\\.500 {

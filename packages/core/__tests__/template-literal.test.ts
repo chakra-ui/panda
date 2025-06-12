@@ -18,16 +18,16 @@ describe('css template literal', () => {
       }
     `).toMatchInlineSnapshot(`
       "@layer utilities {
+        .background_red {
+          background: red;
+      }
+
         .width_500px {
           width: 500px;
       }
 
         .height_500px {
           height: 500px;
-      }
-
-        .background_red {
-          background: red;
       }
 
         @media (min-width: 700px) {
@@ -85,12 +85,12 @@ describe('css template literal', () => {
       }
     `).toMatchInlineSnapshot(`
       "@layer utilities {
-        .justify-content_center {
-          justify-content: center;
-      }
-
         .\\--test_4px {
           --test: 4px;
+      }
+
+        .justify-content_center {
+          justify-content: center;
       }
 
         .\\[\\&_\\:is\\(\\.content\\,_footer\\)\\]\\:padding_16px :is(.content, footer) {

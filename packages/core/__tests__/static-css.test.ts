@@ -79,9 +79,9 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: white;
       }
 
           [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
@@ -90,19 +90,19 @@ describe('static-css', () => {
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: white;
           background-color: blue;
+          color: white;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: black;
           background-color: gray;
+          color: black;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -111,34 +111,34 @@ describe('static-css', () => {
       }
 
         .buttonStyle--size_sm {
+          padding: 0 0.5rem;
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem;
       }
 
         @media screen and (min-width: 40rem) {
           .sm\\:buttonStyle--size_sm {
+            padding: 0 0.5rem;
             height: 2.5rem;
             min-width: 2.5rem;
-            padding: 0 0.5rem;
       }
           .sm\\:buttonStyle--size_md {
+            padding: 0 0.75rem;
             height: 3rem;
             min-width: 3rem;
-            padding: 0 0.75rem;
       }
       }
 
         @media screen and (min-width: 48rem) {
           .md\\:buttonStyle--size_sm {
+            padding: 0 0.5rem;
             height: 2.5rem;
             min-width: 2.5rem;
-            padding: 0 0.5rem;
       }
           .md\\:buttonStyle--size_md {
+            padding: 0 0.75rem;
             height: 3rem;
             min-width: 3rem;
-            padding: 0 0.75rem;
       }
       }
       }
@@ -359,26 +359,26 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: white;
       }
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: white;
           background-color: blue;
+          color: white;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: black;
           background-color: gray;
+          color: black;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -387,26 +387,26 @@ describe('static-css', () => {
       }
 
         .buttonStyle--size_sm {
+          padding: 0 0.5rem;
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_outline {
           border: 1px solid blue;
-          color: blue;
           background-color: transparent;
+          color: blue;
       }
 
         .buttonStyle--variant_outline[data-disabled] {
           border: 1px solid gray;
-          color: gray;
           background-color: transparent;
+          color: gray;
       }
 
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
-          color: white;
           background-color: blue;
+          color: white;
       }
       }",
         "results": {
@@ -681,26 +681,26 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: white;
       }
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: white;
           background-color: blue;
+          color: white;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: black;
           background-color: gray;
+          color: black;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -710,9 +710,9 @@ describe('static-css', () => {
 
         @media screen and (min-width: 48rem) {
           .md\\:buttonStyle--size_md {
+            padding: 0 0.75rem;
             height: 3rem;
             min-width: 3rem;
-            padding: 0 0.75rem;
       }
       }
       }",
@@ -749,14 +749,14 @@ describe('static-css', () => {
         "css": "@layer recipes.slots {
         @layer _base {
           .checkbox__root {
-            display: flex;
             gap: 2px;
+            display: flex;
             align-items: center;
       }
 
           .checkbox__control {
-            border-radius: var(--radii-sm);
             border-width: 1px;
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {
@@ -837,72 +837,12 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": "@layer utilities {
-        .pos_relative {
-          position: relative;
-      }
-
-        .flex_0_0_sm {
-          flex: 0 0 sm;
-      }
-
-        .flex_0_0_md {
-          flex: 0 0 md;
-      }
-
-        .flex_0_0_lg {
-          flex: 0 0 lg;
-      }
-
-        .d_flex {
-          display: flex;
-      }
-
-        .flex_0_0_auto {
-          flex: 0 0 auto;
-      }
-
-        .w_sm {
-          width: sm;
-      }
-
-        .h_sm {
-          height: sm;
-      }
-
-        .bdr_9999px {
-          border-radius: 9999px;
-      }
-
-        .w_md {
-          width: md;
-      }
-
-        .h_md {
-          height: md;
-      }
-
-        .w_lg {
-          width: lg;
-      }
-
-        .h_lg {
-          height: lg;
-      }
-
         .\\--bleed-x_token\\(spacing\\.20\\,_20\\) {
           --bleed-x: var(--spacing-20, 20);
       }
 
         .\\--bleed-y_token\\(spacing\\.0\\,_0\\) {
           --bleed-y: 0;
-      }
-
-        .mx_calc\\(var\\(--bleed-x\\,_0\\)_\\*_-1\\) {
-          margin-inline: calc(var(--bleed-x, 0) * -1);
-      }
-
-        .my_calc\\(var\\(--bleed-y\\,_0\\)_\\*_-1\\) {
-          margin-block: calc(var(--bleed-y, 0) * -1);
       }
 
         .\\--bleed-x_token\\(spacing\\.40\\,_40\\) {
@@ -931,14 +871,6 @@ describe('static-css', () => {
 
         .\\--thickness_1px {
           --thickness: 1px;
-      }
-
-        .w_100\\% {
-          width: 100%;
-      }
-
-        .h_100\\% {
-          height: 100%;
       }
 
         .\\--thickness_20 {
@@ -971,6 +903,66 @@ describe('static-css', () => {
 
         .\\--thickness_breakpoint-2xl {
           --thickness: breakpoint-2xl;
+      }
+
+        .flex_0_0_sm {
+          flex: 0 0 sm;
+      }
+
+        .flex_0_0_md {
+          flex: 0 0 md;
+      }
+
+        .flex_0_0_lg {
+          flex: 0 0 lg;
+      }
+
+        .flex_0_0_auto {
+          flex: 0 0 auto;
+      }
+
+        .bdr_9999px {
+          border-radius: 9999px;
+      }
+
+        .mx_calc\\(var\\(--bleed-x\\,_0\\)_\\*_-1\\) {
+          margin-inline: calc(var(--bleed-x, 0) * -1);
+      }
+
+        .my_calc\\(var\\(--bleed-y\\,_0\\)_\\*_-1\\) {
+          margin-block: calc(var(--bleed-y, 0) * -1);
+      }
+
+        .pos_relative {
+          position: relative;
+      }
+
+        .as_stretch {
+          align-self: stretch;
+      }
+
+        .justify-self_stretch {
+          justify-self: stretch;
+      }
+
+        .d_flex {
+          display: flex;
+      }
+
+        .ai_center {
+          align-items: center;
+      }
+
+        .jc_center {
+          justify-content: center;
+      }
+
+        .bd-be-w_var\\(--thickness\\) {
+          border-block-end-width: var(--thickness);
+      }
+
+        .bd-e-w_var\\(--thickness\\) {
+          border-inline-end-width: var(--thickness);
       }
 
         .d_inline-flex {
@@ -1093,72 +1085,56 @@ describe('static-css', () => {
           inset-block-end: 50%;
       }
 
-        .as_stretch {
-          align-self: stretch;
+        .w_sm {
+          width: sm;
       }
 
-        .justify-self_stretch {
-          justify-self: stretch;
+        .h_sm {
+          height: sm;
       }
 
-        .ai_center {
-          align-items: center;
+        .w_md {
+          width: md;
       }
 
-        .jc_center {
-          justify-content: center;
+        .h_md {
+          height: md;
       }
 
-        .bd-be-w_var\\(--thickness\\) {
-          border-block-end-width: var(--thickness);
+        .w_lg {
+          width: lg;
       }
 
-        .bd-e-w_var\\(--thickness\\) {
-          border-inline-end-width: var(--thickness);
+        .h_lg {
+          height: lg;
       }
 
-        .before\\:d_block::before {
-          display: block;
+        .w_100\\% {
+          width: 100%;
       }
 
-        .before\\:h_0::before {
-          height: 0;
-      }
-
-        .\\[\\&\\>\\*\\]\\:d_flex>* {
-          display: flex;
-      }
-
-        .\\[\\&\\>\\*\\]\\:ov_hidden>* {
-          overflow: hidden;
-      }
-
-        .\\[\\&\\>\\*\\]\\:pos_absolute>* {
-          position: absolute;
+        .h_100\\% {
+          height: 100%;
       }
 
         .\\[\\&\\>\\*\\]\\:inset_0>* {
           inset: 0;
       }
 
-        .\\[\\&\\>\\*\\]\\:w_100\\%>* {
-          width: 100%;
-      }
-
-        .\\[\\&\\>\\*\\]\\:h_100\\%>* {
-          height: 100%;
-      }
-
-        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>video {
-          object-fit: cover;
+        .\\[\\&\\>\\*\\]\\:ov_hidden>* {
+          overflow: hidden;
       }
 
         .before\\:content_\\"\\"::before {
           content: "";
       }
 
-        .before\\:pb_NaN\\%::before {
-          padding-bottom: NaN%;
+        .before\\:d_block::before {
+          display: block;
+      }
+
+        .\\[\\&\\>\\*\\]\\:d_flex>* {
+          display: flex;
       }
 
         .\\[\\&\\>\\*\\]\\:jc_center>* {
@@ -1169,48 +1145,72 @@ describe('static-css', () => {
           align-items: center;
       }
 
+        .\\[\\&\\>\\*\\]\\:pos_absolute>* {
+          position: absolute;
+      }
+
+        .\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>img,.\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>video {
+          object-fit: cover;
+      }
+
+        .before\\:h_0::before {
+          height: 0;
+      }
+
+        .before\\:pb_NaN\\%::before {
+          padding-bottom: NaN%;
+      }
+
+        .\\[\\&\\>\\*\\]\\:w_100\\%>* {
+          width: 100%;
+      }
+
+        .\\[\\&\\>\\*\\]\\:h_100\\%>* {
+          height: 100%;
+      }
+
         @media screen and (min-width: 48rem) {
           .md\\:pos_relative {
             position: relative;
       }
-          .md\\:before\\:d_block::before {
-            display: block;
-      }
-          .md\\:before\\:h_0::before {
-            height: 0;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:d_flex>* {
-            display: flex;
+          .md\\:\\[\\&\\>\\*\\]\\:inset_0>* {
+            inset: 0;
       }
           .md\\:\\[\\&\\>\\*\\]\\:ov_hidden>* {
             overflow: hidden;
       }
-          .md\\:\\[\\&\\>\\*\\]\\:pos_absolute>* {
-            position: absolute;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:inset_0>* {
-            inset: 0;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:w_100\\%>* {
-            width: 100%;
-      }
-          .md\\:\\[\\&\\>\\*\\]\\:h_100\\%>* {
-            height: 100%;
-      }
-          .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>video {
-            object-fit: cover;
-      }
           .md\\:before\\:content_\\"\\"::before {
             content: "";
       }
-          .md\\:before\\:pb_NaN\\%::before {
-            padding-bottom: NaN%;
+          .md\\:before\\:d_block::before {
+            display: block;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:d_flex>* {
+            display: flex;
       }
           .md\\:\\[\\&\\>\\*\\]\\:jc_center>* {
             justify-content: center;
       }
           .md\\:\\[\\&\\>\\*\\]\\:ai_center>* {
             align-items: center;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:pos_absolute>* {
+            position: absolute;
+      }
+          .md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>img,.md\\:\\[\\&\\>img\\,_\\&\\>video\\]\\:obj-f_cover>video {
+            object-fit: cover;
+      }
+          .md\\:before\\:h_0::before {
+            height: 0;
+      }
+          .md\\:before\\:pb_NaN\\%::before {
+            padding-bottom: NaN%;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:w_100\\%>* {
+            width: 100%;
+      }
+          .md\\:\\[\\&\\>\\*\\]\\:h_100\\%>* {
+            height: 100%;
       }
       }
       }",
@@ -1802,13 +1802,13 @@ describe('static-css', () => {
       {
         "css": "@layer recipes {
         @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
-      }
-
-          .textStyle {
-            font-family: var(--fonts-mono);
       }
 
           [data-theme=dark] .tooltipStyle[data-tooltip],.dark .tooltipStyle[data-tooltip],.tooltipStyle[data-tooltip].dark,.tooltipStyle[data-tooltip][data-theme=dark],[data-theme=dark] .tooltipStyle [data-tooltip],.dark .tooltipStyle [data-tooltip],.tooltipStyle [data-tooltip].dark,.tooltipStyle [data-tooltip][data-theme=dark] {
@@ -1822,9 +1822,9 @@ describe('static-css', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: white;
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: white;
       }
       }
 
@@ -1835,10 +1835,10 @@ describe('static-css', () => {
       }
 
         .textStyle--size_h2 {
-          letter-spacing: -0.03em;
           font-size: 3rem;
           line-height: 1.2em;
           font-weight: 700;
+          letter-spacing: -0.03em;
       }
 
         .card--rounded_true {
@@ -1846,19 +1846,19 @@ describe('static-css', () => {
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: white;
           background-color: blue;
+          color: white;
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: black;
           background-color: gray;
+          color: black;
           font-size: var(--font-sizes-2xl);
       }
 
@@ -1867,40 +1867,40 @@ describe('static-css', () => {
       }
 
         .buttonStyle--size_sm {
+          padding: 0 0.5rem;
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem;
       }
 
         .buttonStyle--variant_outline {
           border: 1px solid blue;
-          color: blue;
           background-color: transparent;
+          color: blue;
       }
 
         .buttonStyle--variant_outline[data-disabled] {
           border: 1px solid gray;
-          color: gray;
           background-color: transparent;
+          color: gray;
       }
 
         .buttonStyle--variant_outline:is(:hover, [data-hover]) {
-          color: white;
           background-color: blue;
+          color: white;
       }
       }
 
       @layer recipes.slots {
         @layer _base {
           .checkbox__root {
-            display: flex;
             gap: 2px;
+            display: flex;
             align-items: center;
       }
 
           .checkbox__control {
-            border-radius: var(--radii-sm);
             border-width: 1px;
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {

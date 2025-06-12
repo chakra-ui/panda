@@ -163,10 +163,10 @@ describe('Global css', () => {
       }
 
         .content-dark::-webkit-scrollbar-thumb {
-          border-radius: 9px;
           border: 2px solid;
-          background-color: var(--colors-bg, #000) !important;
           border-color: var(--colors-fg, #333) !important;
+          border-radius: 9px;
+          background-color: var(--colors-bg, #000) !important;
       }
 
         #corner {

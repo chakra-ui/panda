@@ -27,12 +27,12 @@ describe('extract namespace', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .d_flex {
-          display: flex;
-      }
-
         .gap_10px {
           gap: 10px;
+      }
+
+        .d_flex {
+          display: flex;
       }
 
         .flex-d_column {
@@ -190,6 +190,10 @@ describe('extract namespace', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .gap_10px {
+          gap: 10px;
+      }
+
         .c_red {
           color: red;
       }
@@ -198,8 +202,8 @@ describe('extract namespace', () => {
           display: flex;
       }
 
-        .gap_10px {
-          gap: 10px;
+        .flex-d_column {
+          flex-direction: column;
       }
 
         .c_blue {
@@ -212,10 +216,6 @@ describe('extract namespace', () => {
 
         .c_green {
           color: green;
-      }
-
-        .flex-d_column {
-          flex-direction: column;
       }
       }"
     `)

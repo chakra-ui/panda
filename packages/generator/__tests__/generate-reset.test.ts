@@ -17,34 +17,34 @@ describe('generate reset', () => {
       "@layer reset {
         html,:host {
           --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+          line-height: 1.5;
           -webkit-text-size-adjust: 100%;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           -moz-tab-size: 4;
           tab-size: 4;
-          -webkit-tap-highlight-color: transparent;
-          line-height: 1.5;
           font-family: var(--global-font-body, var(--font-fallback));
+          -webkit-tap-highlight-color: transparent;
       }
 
         *,::before,::after,::backdrop,::file-selector-button {
           margin: 0px;
           padding: 0px;
-          box-sizing: border-box;
           border-width: 0px;
           border-style: solid;
           border-color: var(--global-color-border, currentcolor);
+          box-sizing: border-box;
       }
 
         hr {
-          height: 0px;
           color: inherit;
+          height: 0px;
           border-top-width: 1px;
       }
 
         body {
-          height: 100%;
           line-height: inherit;
+          height: 100%;
       }
 
         img {
@@ -82,16 +82,16 @@ describe('generate reset', () => {
 
         button,input,optgroup,select,textarea,::file-selector-button {
           font: inherit;
+          background: var(--colors-transparent);
           font-feature-settings: inherit;
           font-variation-settings: inherit;
           letter-spacing: inherit;
           color: inherit;
-          background: var(--colors-transparent);
       }
 
         ::placeholder {
-          opacity: 1;
           --placeholder-fallback: rgba(0, 0, 0, 0.5);
+          opacity: 1;
           color: var(--global-color-placeholder, var(--placeholder-fallback));
       }
 
@@ -106,9 +106,9 @@ describe('generate reset', () => {
       }
 
         table {
+          border-color: inherit;
           text-indent: 0px;
           border-collapse: collapse;
-          border-color: inherit;
       }
 
         summary {
@@ -120,10 +120,10 @@ describe('generate reset', () => {
       }
 
         sub,sup {
-          position: relative;
-          vertical-align: baseline;
           font-size: 75%;
           line-height: 0;
+          position: relative;
+          vertical-align: baseline;
       }
 
         sub {
@@ -139,8 +139,8 @@ describe('generate reset', () => {
       }
 
         a {
-          color: inherit;
           text-decoration: inherit;
+          color: inherit;
       }
 
         abbr:where([title]) {
@@ -153,10 +153,10 @@ describe('generate reset', () => {
 
         code,kbd,samp,pre {
           --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
-          font-feature-settings: normal;
-          font-variation-settings: normal;
           font-family: var(--global-font-mono, var(--font-mono-fallback));
           font-size: 1em;
+          font-feature-settings: normal;
+          font-variation-settings: normal;
       }
 
         progress {
@@ -195,44 +195,54 @@ describe('generate reset', () => {
       "@layer reset {
         .pd-reset {
           --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+          line-height: 1.5;
           -webkit-text-size-adjust: 100%;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           -moz-tab-size: 4;
           tab-size: 4;
-          -webkit-tap-highlight-color: transparent;
-          line-height: 1.5;
           font-family: var(--global-font-body, var(--font-fallback));
+          -webkit-tap-highlight-color: transparent;
+      }
+
+        .pd-reset ::placeholder {
+          --placeholder-fallback: rgba(0, 0, 0, 0.5);
+          opacity: 1;
+          color: var(--global-color-placeholder, var(--placeholder-fallback));
+      }
+
+        .pd-reset code,.pd-reset kbd,.pd-reset samp,.pd-reset pre {
+          --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
+          font-family: var(--global-font-mono, var(--font-mono-fallback));
+          font-size: 1em;
+          font-feature-settings: normal;
+          font-variation-settings: normal;
       }
 
         .pd-reset *,.pd-reset ::before,.pd-reset ::after,.pd-reset ::backdrop,.pd-reset ::file-selector-button {
           margin: 0px;
           padding: 0px;
-          box-sizing: border-box;
           border-width: 0px;
           border-style: solid;
           border-color: var(--global-color-border, currentcolor);
+          box-sizing: border-box;
       }
 
-        .pd-reset hr {
-          height: 0px;
+        .pd-reset button,.pd-reset input,.pd-reset optgroup,.pd-reset select,.pd-reset textarea,.pd-reset ::file-selector-button {
+          font: inherit;
+          background: var(--colors-transparent);
+          font-feature-settings: inherit;
+          font-variation-settings: inherit;
+          letter-spacing: inherit;
           color: inherit;
-          border-top-width: 1px;
       }
 
-        .pd-reset body {
-          height: 100%;
-          line-height: inherit;
+        .pd-reset dialog {
+          padding: 0px;
       }
 
-        .pd-reset img,.pd-reset svg,.pd-reset video,.pd-reset canvas,.pd-reset audio,.pd-reset iframe,.pd-reset embed,.pd-reset object {
-          display: block;
-          vertical-align: middle;
-      }
-
-        .pd-reset img,.pd-reset video {
-          max-width: 100%;
-          height: auto;
+        .pd-reset img {
+          border-style: none;
       }
 
         .pd-reset h1,.pd-reset h2,.pd-reset h3,.pd-reset h4,.pd-reset h5,.pd-reset h6 {
@@ -241,12 +251,47 @@ describe('generate reset', () => {
           font-weight: inherit;
       }
 
-        .pd-reset p,.pd-reset h1,.pd-reset h2,.pd-reset h3,.pd-reset h4,.pd-reset h5,.pd-reset h6 {
-          overflow-wrap: break-word;
-      }
-
         .pd-reset ol,.pd-reset ul,.pd-reset menu {
           list-style: none;
+      }
+
+        .pd-reset table {
+          border-color: inherit;
+          text-indent: 0px;
+          border-collapse: collapse;
+      }
+
+        .pd-reset a {
+          text-decoration: inherit;
+          color: inherit;
+      }
+
+        .pd-reset abbr:where([title]) {
+          text-decoration: underline dotted;
+      }
+
+        .pd-reset :-moz-focusring {
+          outline: auto;
+      }
+
+        .pd-reset hr {
+          color: inherit;
+          height: 0px;
+          border-top-width: 1px;
+      }
+
+        .pd-reset body {
+          line-height: inherit;
+          height: 100%;
+      }
+
+        .pd-reset img,.pd-reset svg,.pd-reset video,.pd-reset canvas,.pd-reset audio,.pd-reset iframe,.pd-reset embed,.pd-reset object {
+          display: block;
+          vertical-align: middle;
+      }
+
+        .pd-reset p,.pd-reset h1,.pd-reset h2,.pd-reset h3,.pd-reset h4,.pd-reset h5,.pd-reset h6 {
+          overflow-wrap: break-word;
       }
 
         .pd-reset button,.pd-reset input:where([type='button'], [type='reset'], [type='submit']),.pd-reset ::file-selector-button {
@@ -254,61 +299,27 @@ describe('generate reset', () => {
           -webkit-appearance: button;
       }
 
-        .pd-reset button,.pd-reset input,.pd-reset optgroup,.pd-reset select,.pd-reset textarea,.pd-reset ::file-selector-button {
-          font: inherit;
-          font-feature-settings: inherit;
-          font-variation-settings: inherit;
-          letter-spacing: inherit;
-          color: inherit;
-          background: var(--colors-transparent);
-      }
-
-        .pd-reset ::placeholder {
-          opacity: 1;
-          --placeholder-fallback: rgba(0, 0, 0, 0.5);
-          color: var(--global-color-placeholder, var(--placeholder-fallback));
-      }
-
         .pd-reset textarea {
           resize: vertical;
-      }
-
-        .pd-reset table {
-          text-indent: 0px;
-          border-collapse: collapse;
-          border-color: inherit;
       }
 
         .pd-reset summary {
           display: list-item;
       }
 
+        .pd-reset small {
+          font-size: 80%;
+      }
+
         .pd-reset sub,.pd-reset sup {
-          position: relative;
-          vertical-align: baseline;
           font-size: 75%;
           line-height: 0;
+          position: relative;
+          vertical-align: baseline;
       }
 
-        .pd-reset dialog {
-          padding: 0px;
-      }
-
-        .pd-reset a {
-          color: inherit;
-          text-decoration: inherit;
-      }
-
-        .pd-reset abbr:where([title]) {
-          text-decoration: underline dotted;
-      }
-
-        .pd-reset code,.pd-reset kbd,.pd-reset samp,.pd-reset pre {
-          --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
-          font-feature-settings: normal;
-          font-variation-settings: normal;
-          font-family: var(--global-font-mono, var(--font-mono-fallback));
-          font-size: 1em;
+        .pd-reset b,.pd-reset strong {
+          font-weight: bolder;
       }
 
         .pd-reset progress {
@@ -319,28 +330,17 @@ describe('generate reset', () => {
           -webkit-appearance: none;
       }
 
-        .pd-reset ::-webkit-inner-spin-button,.pd-reset ::-webkit-outer-spin-button {
-          height: auto;
-      }
-
         .pd-reset :-moz-ui-invalid {
           box-shadow: none;
-      }
-
-        .pd-reset :-moz-focusring {
-          outline: auto;
       }
 
         .pd-reset [hidden]:where(:not([hidden='until-found'])) {
           display: none !important;
       }
 
-        .pd-reset img {
-          border-style: none;
-      }
-
-        .pd-reset small {
-          font-size: 80%;
+        .pd-reset img,.pd-reset video {
+          max-width: 100%;
+          height: auto;
       }
 
         .pd-reset sub {
@@ -351,8 +351,8 @@ describe('generate reset', () => {
           top: -0.5em;
       }
 
-        .pd-reset b,.pd-reset strong {
-          font-weight: bolder;
+        .pd-reset ::-webkit-inner-spin-button,.pd-reset ::-webkit-outer-spin-button {
+          height: auto;
       }
 
         @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
@@ -373,34 +373,34 @@ describe('generate reset', () => {
       "@layer reset {
         .pd-reset {
           --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+          line-height: 1.5;
           -webkit-text-size-adjust: 100%;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           -moz-tab-size: 4;
           tab-size: 4;
-          -webkit-tap-highlight-color: transparent;
-          line-height: 1.5;
           font-family: var(--global-font-body, var(--font-fallback));
+          -webkit-tap-highlight-color: transparent;
       }
 
         *.pd-reset,::before.pd-reset,::after.pd-reset,::backdrop.pd-reset,::file-selector-button.pd-reset {
           margin: 0px;
           padding: 0px;
-          box-sizing: border-box;
           border-width: 0px;
           border-style: solid;
           border-color: var(--global-color-border, currentcolor);
+          box-sizing: border-box;
       }
 
         hr.pd-reset {
-          height: 0px;
           color: inherit;
+          height: 0px;
           border-top-width: 1px;
       }
 
         body.pd-reset {
-          height: 100%;
           line-height: inherit;
+          height: 100%;
       }
 
         img.pd-reset {
@@ -438,16 +438,16 @@ describe('generate reset', () => {
 
         button.pd-reset,input.pd-reset,optgroup.pd-reset,select.pd-reset,textarea.pd-reset,::file-selector-button.pd-reset {
           font: inherit;
+          background: var(--colors-transparent);
           font-feature-settings: inherit;
           font-variation-settings: inherit;
           letter-spacing: inherit;
           color: inherit;
-          background: var(--colors-transparent);
       }
 
         ::placeholder.pd-reset {
-          opacity: 1;
           --placeholder-fallback: rgba(0, 0, 0, 0.5);
+          opacity: 1;
           color: var(--global-color-placeholder, var(--placeholder-fallback));
       }
 
@@ -462,9 +462,9 @@ describe('generate reset', () => {
       }
 
         table.pd-reset {
+          border-color: inherit;
           text-indent: 0px;
           border-collapse: collapse;
-          border-color: inherit;
       }
 
         summary.pd-reset {
@@ -476,10 +476,10 @@ describe('generate reset', () => {
       }
 
         sub.pd-reset,sup.pd-reset {
-          position: relative;
-          vertical-align: baseline;
           font-size: 75%;
           line-height: 0;
+          position: relative;
+          vertical-align: baseline;
       }
 
         sub.pd-reset {
@@ -495,8 +495,8 @@ describe('generate reset', () => {
       }
 
         a.pd-reset {
-          color: inherit;
           text-decoration: inherit;
+          color: inherit;
       }
 
         abbr:where([title]).pd-reset {
@@ -509,10 +509,10 @@ describe('generate reset', () => {
 
         code.pd-reset,kbd.pd-reset,samp.pd-reset,pre.pd-reset {
           --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
-          font-feature-settings: normal;
-          font-variation-settings: normal;
           font-family: var(--global-font-mono, var(--font-mono-fallback));
           font-size: 1em;
+          font-feature-settings: normal;
+          font-variation-settings: normal;
       }
 
         progress.pd-reset {

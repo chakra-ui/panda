@@ -470,10 +470,6 @@ describe('atomic / with direct nesting', () => {
           border-radius: $button;
       }
 
-        .cursor_pointer {
-          cursor: pointer;
-      }
-
         .bg-c_red {
           background-color: red;
       }
@@ -482,16 +478,20 @@ describe('atomic / with direct nesting', () => {
           font-size: $xsmall;
       }
 
+        .cursor_pointer {
+          cursor: pointer;
+      }
+
+        .test .\\[\\.test_\\&\\]\\:bg-c_blue {
+          background-color: blue;
+      }
+
         .\\[\\&_\\.my-class\\]\\:c_red .my-class,.\\[\\&_span\\]\\:c_red span {
           color: red;
       }
 
         .\\[\\&_\\+_span\\]\\:ml_\\$2 + span {
           margin-left: $2;
-      }
-
-        .test .\\[\\.test_\\&\\]\\:bg-c_blue {
-          background-color: blue;
       }
 
         .\\[\\&\\:focus\\,_\\&\\:hover\\]\\:bx-sh_none:focus,.\\[\\&\\:focus\\,_\\&\\:hover\\]\\:bx-sh_none:hover {

@@ -8,14 +8,14 @@ describe('slot recipe ruleset', () => {
       "@layer recipes.slots {
         @layer _base {
           .checkbox__root {
-            display: flex;
             gap: var(--spacing-2);
+            display: flex;
             align-items: center;
       }
 
           .checkbox__control {
-            border-radius: var(--radii-sm);
             border-width: 1px;
+            border-radius: var(--radii-sm);
       }
 
           .checkbox__label {

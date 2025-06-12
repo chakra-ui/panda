@@ -89,20 +89,20 @@ describe('jsx pattern', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .d_grid {
-          display: grid;
-      }
-
         .gap_4 {
           gap: var(--spacing-4);
       }
 
-        .d_flex {
-          display: flex;
-      }
-
         .gap_2 {
           gap: var(--spacing-2);
+      }
+
+        .d_grid {
+          display: grid;
+      }
+
+        .d_flex {
+          display: flex;
       }
 
         .flex-d_column {

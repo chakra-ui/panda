@@ -192,20 +192,20 @@ describe('ast parser / sva', () => {
           margin: var(--spacing-4);
       }
 
-        .w_md {
-          width: var(--sizes-md);
+        .bdr_md {
+          border-radius: var(--radii-md);
       }
 
         .bx-sh_md {
           box-shadow: var(--shadows-md);
       }
 
-        .bdr_md {
-          border-radius: var(--radii-md);
-      }
-
         .fw_semibold {
           font-weight: var(--font-weights-semibold);
+      }
+
+        .w_md {
+          width: var(--sizes-md);
       }
 
         .pb_2 {

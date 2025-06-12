@@ -7,13 +7,13 @@ describe('recipe ruleset', () => {
     expect(processRecipe('textStyle', { size: 'h1' })).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
-      }
-
-          .textStyle {
-            font-family: var(--fonts-mono);
       }
       }
 
@@ -28,13 +28,13 @@ describe('recipe ruleset', () => {
     expect(processRecipe('textStyle', {})).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
-      }
-
-          .textStyle {
-            font-family: var(--fonts-mono);
       }
           }
       }"
@@ -43,13 +43,13 @@ describe('recipe ruleset', () => {
     expect(processRecipe('textStyle', { size: { base: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
-      }
-
-          .textStyle {
-            font-family: var(--fonts-mono);
       }
       }
 
@@ -61,10 +61,10 @@ describe('recipe ruleset', () => {
 
         @media screen and (min-width: 48rem) {
           .md\\:textStyle--size_h2 {
-            letter-spacing: -0.03em;
             font-size: 3rem;
             line-height: 1.2em;
             font-weight: 700;
+            letter-spacing: -0.03em;
       }
       }
       }"
@@ -194,26 +194,26 @@ describe('recipe ruleset', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: var(--colors-white);
           background-color: blue;
+          color: var(--colors-white);
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: var(--colors-black);
           background-color: gray;
+          color: var(--colors-black);
           font-size: var(--font-sizes-2xl);
       }
 
@@ -233,26 +233,26 @@ describe('recipe ruleset', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: var(--colors-white);
           background-color: blue;
+          color: var(--colors-white);
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: var(--colors-black);
           background-color: gray;
+          color: var(--colors-black);
           font-size: var(--font-sizes-2xl);
       }
 
@@ -263,19 +263,19 @@ describe('recipe ruleset', () => {
         @media screen and (min-width: 64rem) {
           .lg\\:buttonStyle--variant_outline {
             border: 1px solid blue;
-            color: blue;
             background-color: var(--colors-transparent);
+            color: blue;
       }
 
           .lg\\:buttonStyle--variant_outline[data-disabled] {
             border: 1px solid gray;
-            color: gray;
             background-color: var(--colors-transparent);
+            color: gray;
       }
 
           .lg\\:buttonStyle--variant_outline:is(:hover, [data-hover]) {
-            color: var(--colors-white);
             background-color: blue;
+            color: var(--colors-white);
       }
       }
       }"

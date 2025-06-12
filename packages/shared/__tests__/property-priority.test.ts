@@ -1,18 +1,11 @@
 import { expect, test } from 'vitest'
 import { getPropertyPriority } from '../src'
 
-test('property priotity', () => {
-  expect(getPropertyPriority('all')).toMatchInlineSnapshot(`0`)
-  expect(getPropertyPriority('paddingTop')).toMatchInlineSnapshot(`2`)
-  expect(getPropertyPriority('background')).toMatchInlineSnapshot(`1`)
-  expect(getPropertyPriority('backgroundColor')).toMatchInlineSnapshot(`2`)
-  expect(getPropertyPriority('padding')).toMatchInlineSnapshot(`1`)
+const sort = (properties: string[]) => properties.sort((a, b) => getPropertyPriority(a) - getPropertyPriority(b))
 
-  expect(
-    ['backgroundColor', 'padding', 'background', 'all', 'paddingTop'].sort(
-      (a, b) => getPropertyPriority(a) - getPropertyPriority(b),
-    ),
-  ).toMatchInlineSnapshot(`
+describe('property priority', () => {
+  test('mixed properties w/ all', () => {
+    expect(sort(['backgroundColor', 'padding', 'background', 'all', 'paddingTop'])).toMatchInlineSnapshot(`
     [
       "all",
       "padding",
@@ -21,4 +14,69 @@ test('property priotity', () => {
       "paddingTop",
     ]
   `)
+  })
+
+  test('padding', () => {
+    expect(
+      sort([
+        'paddingTop',
+        'padding',
+        'paddingBlock',
+        'paddingBlockStart',
+        'paddingInlineStart',
+        'paddingLeft',
+        'paddingRight',
+        'paddingBottom',
+        'paddingInline',
+        'paddingBlockEnd',
+        'paddingInlineEnd',
+      ]),
+    ).toMatchInlineSnapshot(`
+    [
+      "padding",
+      "paddingBlock",
+      "paddingInline",
+      "paddingBlockStart",
+      "paddingInlineStart",
+      "paddingBlockEnd",
+      "paddingInlineEnd",
+      "paddingTop",
+      "paddingLeft",
+      "paddingRight",
+      "paddingBottom",
+    ]
+  `)
+  })
+
+  test('margin', () => {
+    expect(
+      sort([
+        'marginTop',
+        'margin',
+        'marginBlock',
+        'marginBlockStart',
+        'marginInlineStart',
+        'marginLeft',
+        'marginRight',
+        'marginBottom',
+        'marginInline',
+        'marginBlockEnd',
+        'marginInlineEnd',
+      ]),
+    ).toMatchInlineSnapshot(`
+      [
+        "margin",
+        "marginBlock",
+        "marginInline",
+        "marginBlockStart",
+        "marginInlineStart",
+        "marginBlockEnd",
+        "marginInlineEnd",
+        "marginTop",
+        "marginLeft",
+        "marginRight",
+        "marginBottom",
+      ]
+    `)
+  })
 })
