@@ -11,6 +11,7 @@ dist
 dist-ssr
 out
 build
+.astro
 **/buil
 tsconfig.tsbuildinfo
 .DS_Store
