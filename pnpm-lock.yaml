@@ -463,6 +463,9 @@ importers:
       chokidar:
         specifier: 4.0.3
         version: 4.0.3
+      fast-glob:
+        specifier: 3.3.3
+        version: 3.3.3
       fs-extra:
         specifier: 11.2.0
         version: 11.2.0
@@ -502,9 +505,6 @@ importers:
       prettier:
         specifier: 3.2.5
         version: 3.2.5
-      tinyglobby:
-        specifier: 0.2.12
-        version: 0.2.12
       ts-morph:
         specifier: 24.0.0
         version: 24.0.0
@@ -903,7 +903,7 @@ importers:
         version: 1.13.0(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
       '@preact/preset-vite':
         specifier: 2.10.1
-        version: 2.10.1(@babel/core@7.26.10)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
+        version: 2.10.1(@babel/core@7.23.9)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
       '@solidjs/testing-library':
         specifier: 0.8.10
         version: 0.8.10(solid-js@1.9.5)
@@ -19376,6 +19376,11 @@ snapshots:
       '@babel/core': 7.26.10
       '@babel/helper-plugin-utils': 7.25.9
 
+  '@babel/plugin-syntax-jsx@7.25.9(@babel/core@7.23.9)':
+    dependencies:
+      '@babel/core': 7.23.9
+      '@babel/helper-plugin-utils': 7.26.5
+
   '@babel/plugin-syntax-jsx@7.25.9(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -19986,6 +19991,13 @@ snapshots:
       '@babel/core': 7.26.10
       '@babel/helper-plugin-utils': 7.26.5
 
+  '@babel/plugin-transform-react-jsx-development@7.24.7(@babel/core@7.23.9)':
+    dependencies:
+      '@babel/core': 7.23.9
+      '@babel/plugin-transform-react-jsx': 7.25.9(@babel/core@7.23.9)
+    transitivePeerDependencies:
+      - supports-color
+
   '@babel/plugin-transform-react-jsx-development@7.24.7(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -20028,6 +20040,17 @@ snapshots:
       '@babel/helper-plugin-utils': 7.25.7
       '@babel/plugin-syntax-jsx': 7.25.7(@babel/core@7.26.10)
       '@babel/types': 7.27.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@babel/plugin-transform-react-jsx@7.25.9(@babel/core@7.23.9)':
+    dependencies:
+      '@babel/core': 7.23.9
+      '@babel/helper-annotate-as-pure': 7.25.9
+      '@babel/helper-module-imports': 7.25.9
+      '@babel/helper-plugin-utils': 7.25.9
+      '@babel/plugin-syntax-jsx': 7.25.9(@babel/core@7.23.9)
+      '@babel/types': 7.26.5
     transitivePeerDependencies:
       - supports-color
 
@@ -23714,6 +23737,22 @@ snapshots:
 
   '@poppinss/exception@1.2.1': {}
 
+  '@preact/preset-vite@2.10.1(@babel/core@7.23.9)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))':
+    dependencies:
+      '@babel/core': 7.23.9
+      '@babel/plugin-transform-react-jsx': 7.25.9(@babel/core@7.23.9)
+      '@babel/plugin-transform-react-jsx-development': 7.24.7(@babel/core@7.23.9)
+      '@prefresh/vite': 2.4.6(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
+      '@rollup/pluginutils': 4.2.1
+      babel-plugin-transform-hook-names: 1.0.2(@babel/core@7.23.9)
+      debug: 4.4.0(supports-color@9.4.0)
+      kolorist: 1.8.0
+      vite: 6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)
+      vite-prerender-plugin: 0.5.5
+    transitivePeerDependencies:
+      - preact
+      - supports-color
+
   '@preact/preset-vite@2.10.1(@babel/core@7.26.10)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))':
     dependencies:
       '@babel/core': 7.26.10
@@ -25433,7 +25472,7 @@ snapshots:
   '@testing-library/dom@10.4.0':
     dependencies:
       '@babel/code-frame': 7.24.7
-      '@babel/runtime': 7.25.0
+      '@babel/runtime': 7.27.6
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       chalk: 4.1.2
@@ -25444,7 +25483,7 @@ snapshots:
   '@testing-library/dom@8.20.1':
     dependencies:
       '@babel/code-frame': 7.24.7
-      '@babel/runtime': 7.25.0
+      '@babel/runtime': 7.27.6
       '@types/aria-query': 5.0.4
       aria-query: 5.1.3
       chalk: 4.1.2
@@ -27717,6 +27756,10 @@ snapshots:
       gatsby-core-utils: 4.14.0
 
   babel-plugin-syntax-trailing-function-commas@7.0.0-beta.0: {}
+
+  babel-plugin-transform-hook-names@1.0.2(@babel/core@7.23.9):
+    dependencies:
+      '@babel/core': 7.23.9
 
   babel-plugin-transform-hook-names@1.0.2(@babel/core@7.26.10):
     dependencies:

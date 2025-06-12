@@ -1,10 +1,10 @@
 import { logger } from '@pandacss/logger'
 import type { Runtime } from '@pandacss/types'
 import chokidar from 'chokidar'
+import { globSync } from 'fast-glob'
 import fsExtra from 'fs-extra'
 import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import picomatch from 'picomatch'
-import { globSync } from 'tinyglobby'
 import { globDirname } from './glob-dirname'
 
 export const nodeRuntime: Runtime = {
