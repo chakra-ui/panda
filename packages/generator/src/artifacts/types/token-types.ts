@@ -34,7 +34,7 @@ export function generateTokenTypes(ctx: Context) {
 
   const set = new Set<string>()
 
-  set.add(`export type Token = ${tokens.isEmpty ? 'string' : unionType(Array.from(tokens.byName.keys()))}`)
+  const tokenSet = new Set<string>()
 
   const result = new Set<string>(['export type Tokens = {'])
 
@@ -48,8 +48,10 @@ export function generateTokenTypes(ctx: Context) {
 
     for (const [key, value] of tokens.view.categoryMap.entries()) {
       const typeName = capitalize(pluralize.singular(key))
-      set.add(`export type ${typeName}Token = ${unionType(value.keys())}`)
-      result.add(`\t\t${key}: ${typeName}Token`)
+      const categoryName = `${typeName}Token`
+      set.add(`export type ${categoryName} = ${unionType(value.keys())}`)
+      tokenSet.add(`${key}.$\{${categoryName}}`)
+      result.add(`\t\t${key}: ${categoryName}`)
     }
   }
 
@@ -59,5 +61,13 @@ export function generateTokenTypes(ctx: Context) {
 
   set.add(`export type TokenCategory = ${unionType(categories)}`)
 
-  return outdent.string(Array.from(set).join('\n\n'))
+  const arr = Array.from(set)
+  arr.unshift(
+    `export type Token = ${unionType(tokenSet, {
+      stringify: (t) => `\`${t}\``,
+      fallback: 'string',
+    })}`,
+  )
+
+  return outdent.string(arr.join('\n\n'))
 }
