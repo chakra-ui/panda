@@ -1230,4 +1230,37 @@ describe('generator', () => {
       }"
     `)
   })
+
+  test('border widths', () => {
+    const css = tokenCss({
+      eject: true,
+      theme: {
+        tokens: {
+          borderWidths: {
+            sm: { value: '1px' },
+            md: { value: '2px' },
+          },
+          borders: {
+            netural: {
+              value: { width: '{borderWidths.sm}', color: 'blue', style: 'solid' },
+            },
+            success: {
+              value: { width: '{borderWidths.md}', color: 'green', style: 'solid' },
+            },
+          },
+        },
+      },
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(html) {
+          --border-widths-sm: 1px;
+          --border-widths-md: 2px;
+          --borders-netural: var(--border-widths-sm) solid blue;
+          --borders-success: var(--border-widths-md) solid green;
+      }
+      }"
+    `)
+  })
 })
