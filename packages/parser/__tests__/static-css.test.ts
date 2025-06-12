@@ -21,13 +21,13 @@ describe('static css', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer _base {
+          .textStyle {
+            font-family: var(--fonts-mono);
+      }
+
           .textStyle > :not([hidden]) ~ :not([hidden]) {
             border-inline-start-width: 20px;
             border-inline-end-width: 0px;
-      }
-
-          .textStyle {
-            font-family: var(--fonts-mono);
       }
       }
 

@@ -162,21 +162,6 @@ describe('style decoder', () => {
       `
       Set {
         {
-          "className": "c_red",
-          "conditions": undefined,
-          "entry": {
-            "prop": "color",
-            "value": "red !important",
-          },
-          "hash": "color]___[value:red !important",
-          "layer": undefined,
-          "result": {
-            ".c_red\\!": {
-              "color": "red !important",
-            },
-          },
-        },
-        {
           "className": "bd_1px_solid_token\\(colors\\.red\\.100\\)",
           "conditions": undefined,
           "entry": {
@@ -207,6 +192,21 @@ describe('style decoder', () => {
           },
         },
         {
+          "className": "c_red",
+          "conditions": undefined,
+          "entry": {
+            "prop": "color",
+            "value": "red !important",
+          },
+          "hash": "color]___[value:red !important",
+          "layer": undefined,
+          "result": {
+            ".c_red\\!": {
+              "color": "red !important",
+            },
+          },
+        },
+        {
           "className": "textStyle_headline\\.h1",
           "conditions": undefined,
           "entry": {
@@ -219,21 +219,6 @@ describe('style decoder', () => {
             ".textStyle_headline\\.h1": {
               "fontSize": "2rem",
               "fontWeight": "var(--font-weights-bold)",
-            },
-          },
-        },
-        {
-          "className": "w_1",
-          "conditions": undefined,
-          "entry": {
-            "prop": "width",
-            "value": 1,
-          },
-          "hash": "width]___[value:1",
-          "layer": undefined,
-          "result": {
-            ".w_1": {
-              "width": "var(--sizes-1)",
             },
           },
         },
@@ -253,26 +238,17 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green",
-          "conditions": [
-            {
-              "raw": "&[data-attr='test']",
-              "type": "self-nesting",
-              "value": "&[data-attr='test']",
-            },
-          ],
+          "className": "w_1",
+          "conditions": undefined,
           "entry": {
-            "cond": "&[data-attr='test']",
-            "prop": "color",
-            "value": "green",
+            "prop": "width",
+            "value": 1,
           },
-          "hash": "color]___[value:green]___[cond:&[data-attr='test']",
+          "hash": "width]___[value:1",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green": {
-              "&[data-attr='test']": {
-                "color": "green",
-              },
+            ".w_1": {
+              "width": "var(--sizes-1)",
             },
           },
         },
@@ -296,6 +272,30 @@ describe('style decoder', () => {
             ".dark\\:fs_2xl": {
               "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]": {
                 "fontSize": "var(--font-sizes-2xl)",
+              },
+            },
+          },
+        },
+        {
+          "className": "\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green",
+          "conditions": [
+            {
+              "raw": "&[data-attr='test']",
+              "type": "self-nesting",
+              "value": "&[data-attr='test']",
+            },
+          ],
+          "entry": {
+            "cond": "&[data-attr='test']",
+            "prop": "color",
+            "value": "green",
+          },
+          "hash": "color]___[value:green]___[cond:&[data-attr='test']",
+          "layer": undefined,
+          "result": {
+            ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:c_green": {
+              "&[data-attr='test']": {
+                "color": "green",
               },
             },
           },
@@ -470,7 +470,7 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:w_2",
+          "className": "sm\\:fs_sm",
           "conditions": [
             {
               "name": "breakpoint",
@@ -482,15 +482,15 @@ describe('style decoder', () => {
           ],
           "entry": {
             "cond": "sm",
-            "prop": "width",
-            "value": 2,
+            "prop": "fontSize",
+            "value": "sm",
           },
-          "hash": "width]___[value:2]___[cond:sm",
+          "hash": "fontSize]___[value:sm]___[cond:sm",
           "layer": undefined,
           "result": {
-            ".sm\\:w_2": {
+            ".sm\\:fs_sm": {
               "@media screen and (min-width: 40rem)": {
-                "width": "var(--sizes-2)",
+                "fontSize": "var(--font-sizes-sm)",
               },
             },
           },
@@ -522,32 +522,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "sm\\:fs_sm",
-          "conditions": [
-            {
-              "name": "breakpoint",
-              "params": "screen and (min-width: 40rem)",
-              "raw": "@media screen and (min-width: 40rem)",
-              "type": "at-rule",
-              "value": "sm",
-            },
-          ],
-          "entry": {
-            "cond": "sm",
-            "prop": "fontSize",
-            "value": "sm",
-          },
-          "hash": "fontSize]___[value:sm]___[cond:sm",
-          "layer": undefined,
-          "result": {
-            ".sm\\:fs_sm": {
-              "@media screen and (min-width: 40rem)": {
-                "fontSize": "var(--font-sizes-sm)",
-              },
-            },
-          },
-        },
-        {
           "className": "sm\\:bg-c_red",
           "conditions": [
             {
@@ -569,6 +543,32 @@ describe('style decoder', () => {
             ".sm\\:bg-c_red": {
               "@media screen and (min-width: 40rem)": {
                 "backgroundColor": "red",
+              },
+            },
+          },
+        },
+        {
+          "className": "sm\\:w_2",
+          "conditions": [
+            {
+              "name": "breakpoint",
+              "params": "screen and (min-width: 40rem)",
+              "raw": "@media screen and (min-width: 40rem)",
+              "type": "at-rule",
+              "value": "sm",
+            },
+          ],
+          "entry": {
+            "cond": "sm",
+            "prop": "width",
+            "value": 2,
+          },
+          "hash": "width]___[value:2]___[cond:sm",
+          "layer": undefined,
+          "result": {
+            ".sm\\:w_2": {
+              "@media screen and (min-width: 40rem)": {
+                "width": "var(--sizes-2)",
               },
             },
           },
@@ -982,67 +982,6 @@ describe('style decoder', () => {
     expect(buttonStyle).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "d_inline-flex",
-          "conditions": undefined,
-          "entry": {
-            "prop": "display",
-            "value": "inline-flex",
-          },
-          "hash": "display]___[value:inline-flex",
-          "layer": undefined,
-          "result": {
-            ".d_inline-flex": {
-              "display": "inline-flex",
-            },
-          },
-        },
-        {
-          "className": "textStyle_headline\\.h1",
-          "conditions": undefined,
-          "entry": {
-            "prop": "textStyle",
-            "value": "headline.h1",
-          },
-          "hash": "textStyle]___[value:headline.h1",
-          "layer": "compositions",
-          "result": {
-            ".textStyle_headline\\.h1": {
-              "fontSize": "2rem",
-              "fontWeight": "var(--font-weights-bold)",
-            },
-          },
-        },
-        {
-          "className": "h_2\\.5rem",
-          "conditions": undefined,
-          "entry": {
-            "prop": "height",
-            "value": "2.5rem",
-          },
-          "hash": "height]___[value:2.5rem",
-          "layer": undefined,
-          "result": {
-            ".h_2\\.5rem": {
-              "height": "2.5rem",
-            },
-          },
-        },
-        {
-          "className": "min-w_2\\.5rem",
-          "conditions": undefined,
-          "entry": {
-            "prop": "minWidth",
-            "value": "2.5rem",
-          },
-          "hash": "minWidth]___[value:2.5rem",
-          "layer": undefined,
-          "result": {
-            ".min-w_2\\.5rem": {
-              "minWidth": "2.5rem",
-            },
-          },
-        },
-        {
           "className": "p_0_0\\.5rem",
           "conditions": undefined,
           "entry": {
@@ -1054,36 +993,6 @@ describe('style decoder', () => {
           "result": {
             ".p_0_0\\.5rem": {
               "padding": "0 0.5rem",
-            },
-          },
-        },
-        {
-          "className": "h_3rem",
-          "conditions": undefined,
-          "entry": {
-            "prop": "height",
-            "value": "3rem",
-          },
-          "hash": "height]___[value:3rem",
-          "layer": undefined,
-          "result": {
-            ".h_3rem": {
-              "height": "3rem",
-            },
-          },
-        },
-        {
-          "className": "min-w_3rem",
-          "conditions": undefined,
-          "entry": {
-            "prop": "minWidth",
-            "value": "3rem",
-          },
-          "hash": "minWidth]___[value:3rem",
-          "layer": undefined,
-          "result": {
-            ".min-w_3rem": {
-              "minWidth": "3rem",
             },
           },
         },
@@ -1103,21 +1012,6 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "c_white",
-          "conditions": undefined,
-          "entry": {
-            "prop": "color",
-            "value": "white",
-          },
-          "hash": "color]___[value:white",
-          "layer": undefined,
-          "result": {
-            ".c_white": {
-              "color": "var(--colors-white)",
-            },
-          },
-        },
-        {
           "className": "bd_1px_solid_blue",
           "conditions": undefined,
           "entry": {
@@ -1133,17 +1027,17 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "c_blue",
+          "className": "d_inline-flex",
           "conditions": undefined,
           "entry": {
-            "prop": "color",
-            "value": "blue",
+            "prop": "display",
+            "value": "inline-flex",
           },
-          "hash": "color]___[value:blue",
+          "hash": "display]___[value:inline-flex",
           "layer": undefined,
           "result": {
-            ".c_blue": {
-              "color": "blue",
+            ".d_inline-flex": {
+              "display": "inline-flex",
             },
           },
         },
@@ -1178,6 +1072,22 @@ describe('style decoder', () => {
           },
         },
         {
+          "className": "textStyle_headline\\.h1",
+          "conditions": undefined,
+          "entry": {
+            "prop": "textStyle",
+            "value": "headline.h1",
+          },
+          "hash": "textStyle]___[value:headline.h1",
+          "layer": "compositions",
+          "result": {
+            ".textStyle_headline\\.h1": {
+              "fontSize": "2rem",
+              "fontWeight": "var(--font-weights-bold)",
+            },
+          },
+        },
+        {
           "className": "bg-c_blue",
           "conditions": undefined,
           "entry": {
@@ -1189,6 +1099,21 @@ describe('style decoder', () => {
           "result": {
             ".bg-c_blue": {
               "backgroundColor": "blue",
+            },
+          },
+        },
+        {
+          "className": "c_white",
+          "conditions": undefined,
+          "entry": {
+            "prop": "color",
+            "value": "white",
+          },
+          "hash": "color]___[value:white",
+          "layer": undefined,
+          "result": {
+            ".c_white": {
+              "color": "var(--colors-white)",
             },
           },
         },
@@ -1208,26 +1133,77 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:c_black",
-          "conditions": [
-            {
-              "raw": "&[data-disabled]",
-              "type": "self-nesting",
-              "value": "&[data-disabled]",
-            },
-          ],
+          "className": "c_blue",
+          "conditions": undefined,
           "entry": {
-            "cond": "&[data-disabled]",
             "prop": "color",
-            "value": "black",
+            "value": "blue",
           },
-          "hash": "color]___[value:black]___[cond:&[data-disabled]",
+          "hash": "color]___[value:blue",
           "layer": undefined,
           "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:c_black": {
-              "&[data-disabled]": {
-                "color": "var(--colors-black)",
-              },
+            ".c_blue": {
+              "color": "blue",
+            },
+          },
+        },
+        {
+          "className": "h_2\\.5rem",
+          "conditions": undefined,
+          "entry": {
+            "prop": "height",
+            "value": "2.5rem",
+          },
+          "hash": "height]___[value:2.5rem",
+          "layer": undefined,
+          "result": {
+            ".h_2\\.5rem": {
+              "height": "2.5rem",
+            },
+          },
+        },
+        {
+          "className": "min-w_2\\.5rem",
+          "conditions": undefined,
+          "entry": {
+            "prop": "minWidth",
+            "value": "2.5rem",
+          },
+          "hash": "minWidth]___[value:2.5rem",
+          "layer": undefined,
+          "result": {
+            ".min-w_2\\.5rem": {
+              "minWidth": "2.5rem",
+            },
+          },
+        },
+        {
+          "className": "h_3rem",
+          "conditions": undefined,
+          "entry": {
+            "prop": "height",
+            "value": "3rem",
+          },
+          "hash": "height]___[value:3rem",
+          "layer": undefined,
+          "result": {
+            ".h_3rem": {
+              "height": "3rem",
+            },
+          },
+        },
+        {
+          "className": "min-w_3rem",
+          "conditions": undefined,
+          "entry": {
+            "prop": "minWidth",
+            "value": "3rem",
+          },
+          "hash": "minWidth]___[value:3rem",
+          "layer": undefined,
+          "result": {
+            ".min-w_3rem": {
+              "minWidth": "3rem",
             },
           },
         },
@@ -1251,30 +1227,6 @@ describe('style decoder', () => {
             ".\\[\\&\\[data-disabled\\]\\]\\:bd_1px_solid_gray": {
               "&[data-disabled]": {
                 "border": "1px solid gray",
-              },
-            },
-          },
-        },
-        {
-          "className": "\\[\\&\\[data-disabled\\]\\]\\:c_gray",
-          "conditions": [
-            {
-              "raw": "&[data-disabled]",
-              "type": "self-nesting",
-              "value": "&[data-disabled]",
-            },
-          ],
-          "entry": {
-            "cond": "&[data-disabled]",
-            "prop": "color",
-            "value": "gray",
-          },
-          "hash": "color]___[value:gray]___[cond:&[data-disabled]",
-          "layer": undefined,
-          "result": {
-            ".\\[\\&\\[data-disabled\\]\\]\\:c_gray": {
-              "&[data-disabled]": {
-                "color": "gray",
               },
             },
           },
@@ -1304,6 +1256,30 @@ describe('style decoder', () => {
           },
         },
         {
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:c_black",
+          "conditions": [
+            {
+              "raw": "&[data-disabled]",
+              "type": "self-nesting",
+              "value": "&[data-disabled]",
+            },
+          ],
+          "entry": {
+            "cond": "&[data-disabled]",
+            "prop": "color",
+            "value": "black",
+          },
+          "hash": "color]___[value:black]___[cond:&[data-disabled]",
+          "layer": undefined,
+          "result": {
+            ".\\[\\&\\[data-disabled\\]\\]\\:c_black": {
+              "&[data-disabled]": {
+                "color": "var(--colors-black)",
+              },
+            },
+          },
+        },
+        {
           "className": "\\[\\&\\[data-disabled\\]\\]\\:bg-c_transparent",
           "conditions": [
             {
@@ -1328,25 +1304,25 @@ describe('style decoder', () => {
           },
         },
         {
-          "className": "hover\\:c_white",
+          "className": "\\[\\&\\[data-disabled\\]\\]\\:c_gray",
           "conditions": [
             {
-              "raw": "&:is(:hover, [data-hover])",
+              "raw": "&[data-disabled]",
               "type": "self-nesting",
-              "value": "&:is(:hover, [data-hover])",
+              "value": "&[data-disabled]",
             },
           ],
           "entry": {
-            "cond": "_hover",
+            "cond": "&[data-disabled]",
             "prop": "color",
-            "value": "white",
+            "value": "gray",
           },
-          "hash": "color]___[value:white]___[cond:_hover",
+          "hash": "color]___[value:gray]___[cond:&[data-disabled]",
           "layer": undefined,
           "result": {
-            ".hover\\:c_white": {
-              "&:is(:hover, [data-hover])": {
-                "color": "var(--colors-white)",
+            ".\\[\\&\\[data-disabled\\]\\]\\:c_gray": {
+              "&[data-disabled]": {
+                "color": "gray",
               },
             },
           },
@@ -1395,6 +1371,30 @@ describe('style decoder', () => {
             ".hover\\:bg-c_blue": {
               "&:is(:hover, [data-hover])": {
                 "backgroundColor": "blue",
+              },
+            },
+          },
+        },
+        {
+          "className": "hover\\:c_white",
+          "conditions": [
+            {
+              "raw": "&:is(:hover, [data-hover])",
+              "type": "self-nesting",
+              "value": "&:is(:hover, [data-hover])",
+            },
+          ],
+          "entry": {
+            "cond": "_hover",
+            "prop": "color",
+            "value": "white",
+          },
+          "hash": "color]___[value:white]___[cond:_hover",
+          "layer": undefined,
+          "result": {
+            ".hover\\:c_white": {
+              "&:is(:hover, [data-hover])": {
+                "color": "var(--colors-white)",
               },
             },
           },
@@ -1719,21 +1719,6 @@ describe('style decoder', () => {
     expect(checkbox).toMatchInlineSnapshot(`
       Set {
         {
-          "className": "d_flex",
-          "conditions": undefined,
-          "entry": {
-            "prop": "display",
-            "value": "flex",
-          },
-          "hash": "display]___[value:flex",
-          "layer": undefined,
-          "result": {
-            ".d_flex": {
-              "display": "flex",
-            },
-          },
-        },
-        {
           "className": "gap_2",
           "conditions": undefined,
           "entry": {
@@ -1749,6 +1734,21 @@ describe('style decoder', () => {
           },
         },
         {
+          "className": "bd-w_1px",
+          "conditions": undefined,
+          "entry": {
+            "prop": "borderWidth",
+            "value": "1px",
+          },
+          "hash": "borderWidth]___[value:1px",
+          "layer": undefined,
+          "result": {
+            ".bd-w_1px": {
+              "borderWidth": "1px",
+            },
+          },
+        },
+        {
           "className": "bdr_sm",
           "conditions": undefined,
           "entry": {
@@ -1760,6 +1760,96 @@ describe('style decoder', () => {
           "result": {
             ".bdr_sm": {
               "borderRadius": "var(--radii-sm)",
+            },
+          },
+        },
+        {
+          "className": "d_flex",
+          "conditions": undefined,
+          "entry": {
+            "prop": "display",
+            "value": "flex",
+          },
+          "hash": "display]___[value:flex",
+          "layer": undefined,
+          "result": {
+            ".d_flex": {
+              "display": "flex",
+            },
+          },
+        },
+        {
+          "className": "ai_center",
+          "conditions": undefined,
+          "entry": {
+            "prop": "alignItems",
+            "value": "center",
+          },
+          "hash": "alignItems]___[value:center",
+          "layer": undefined,
+          "result": {
+            ".ai_center": {
+              "alignItems": "center",
+            },
+          },
+        },
+        {
+          "className": "ms_2",
+          "conditions": undefined,
+          "entry": {
+            "prop": "marginInlineStart",
+            "value": 2,
+          },
+          "hash": "marginInlineStart]___[value:2",
+          "layer": undefined,
+          "result": {
+            ".ms_2": {
+              "marginInlineStart": "var(--spacing-2)",
+            },
+          },
+        },
+        {
+          "className": "fs_sm",
+          "conditions": undefined,
+          "entry": {
+            "prop": "fontSize",
+            "value": "sm",
+          },
+          "hash": "fontSize]___[value:sm",
+          "layer": undefined,
+          "result": {
+            ".fs_sm": {
+              "fontSize": "var(--font-sizes-sm)",
+            },
+          },
+        },
+        {
+          "className": "fs_md",
+          "conditions": undefined,
+          "entry": {
+            "prop": "fontSize",
+            "value": "md",
+          },
+          "hash": "fontSize]___[value:md",
+          "layer": undefined,
+          "result": {
+            ".fs_md": {
+              "fontSize": "var(--font-sizes-md)",
+            },
+          },
+        },
+        {
+          "className": "fs_lg",
+          "conditions": undefined,
+          "entry": {
+            "prop": "fontSize",
+            "value": "lg",
+          },
+          "hash": "fontSize]___[value:lg",
+          "layer": undefined,
+          "result": {
+            ".fs_lg": {
+              "fontSize": "var(--font-sizes-lg)",
             },
           },
         },
@@ -1850,96 +1940,6 @@ describe('style decoder', () => {
           "result": {
             ".h_12": {
               "height": "var(--sizes-12)",
-            },
-          },
-        },
-        {
-          "className": "ms_2",
-          "conditions": undefined,
-          "entry": {
-            "prop": "marginInlineStart",
-            "value": 2,
-          },
-          "hash": "marginInlineStart]___[value:2",
-          "layer": undefined,
-          "result": {
-            ".ms_2": {
-              "marginInlineStart": "var(--spacing-2)",
-            },
-          },
-        },
-        {
-          "className": "ai_center",
-          "conditions": undefined,
-          "entry": {
-            "prop": "alignItems",
-            "value": "center",
-          },
-          "hash": "alignItems]___[value:center",
-          "layer": undefined,
-          "result": {
-            ".ai_center": {
-              "alignItems": "center",
-            },
-          },
-        },
-        {
-          "className": "bd-w_1px",
-          "conditions": undefined,
-          "entry": {
-            "prop": "borderWidth",
-            "value": "1px",
-          },
-          "hash": "borderWidth]___[value:1px",
-          "layer": undefined,
-          "result": {
-            ".bd-w_1px": {
-              "borderWidth": "1px",
-            },
-          },
-        },
-        {
-          "className": "fs_sm",
-          "conditions": undefined,
-          "entry": {
-            "prop": "fontSize",
-            "value": "sm",
-          },
-          "hash": "fontSize]___[value:sm",
-          "layer": undefined,
-          "result": {
-            ".fs_sm": {
-              "fontSize": "var(--font-sizes-sm)",
-            },
-          },
-        },
-        {
-          "className": "fs_md",
-          "conditions": undefined,
-          "entry": {
-            "prop": "fontSize",
-            "value": "md",
-          },
-          "hash": "fontSize]___[value:md",
-          "layer": undefined,
-          "result": {
-            ".fs_md": {
-              "fontSize": "var(--font-sizes-md)",
-            },
-          },
-        },
-        {
-          "className": "fs_lg",
-          "conditions": undefined,
-          "entry": {
-            "prop": "fontSize",
-            "value": "lg",
-          },
-          "hash": "fontSize]___[value:lg",
-          "layer": undefined,
-          "result": {
-            ".fs_lg": {
-              "fontSize": "var(--font-sizes-lg)",
             },
           },
         },
@@ -2212,36 +2212,6 @@ describe('style decoder', () => {
       {
         "atomic": Set {
           {
-            "className": "d_none",
-            "conditions": undefined,
-            "entry": {
-              "prop": "display",
-              "value": "none",
-            },
-            "hash": "display]___[value:none",
-            "layer": undefined,
-            "result": {
-              ".d_none": {
-                "display": "none",
-              },
-            },
-          },
-          {
-            "className": "h_100\\%",
-            "conditions": undefined,
-            "entry": {
-              "prop": "height",
-              "value": "100%",
-            },
-            "hash": "height]___[value:100%",
-            "layer": undefined,
-            "result": {
-              ".h_100\\%": {
-                "height": "100%",
-              },
-            },
-          },
-          {
             "className": "trs_all_\\.3s_ease-in-out",
             "conditions": undefined,
             "entry": {
@@ -2253,6 +2223,21 @@ describe('style decoder', () => {
             "result": {
               ".trs_all_\\.3s_ease-in-out": {
                 "transition": "all .3s ease-in-out",
+              },
+            },
+          },
+          {
+            "className": "d_none",
+            "conditions": undefined,
+            "entry": {
+              "prop": "display",
+              "value": "none",
+            },
+            "hash": "display]___[value:none",
+            "layer": undefined,
+            "result": {
+              ".d_none": {
+                "display": "none",
               },
             },
           },
@@ -2287,21 +2272,6 @@ describe('style decoder', () => {
             },
           },
           {
-            "className": "h_10px",
-            "conditions": undefined,
-            "entry": {
-              "prop": "height",
-              "value": "10px",
-            },
-            "hash": "height]___[value:10px",
-            "layer": undefined,
-            "result": {
-              ".h_10px": {
-                "height": "10px",
-              },
-            },
-          },
-          {
             "className": "bg-grad_to-b",
             "conditions": undefined,
             "entry": {
@@ -2330,6 +2300,36 @@ describe('style decoder', () => {
             "result": {
               ".grad-from_rgb\\(200_200_200_\\/_\\.4\\)": {
                 "--gradient-from": "rgb(200 200 200 / .4)",
+              },
+            },
+          },
+          {
+            "className": "h_100\\%",
+            "conditions": undefined,
+            "entry": {
+              "prop": "height",
+              "value": "100%",
+            },
+            "hash": "height]___[value:100%",
+            "layer": undefined,
+            "result": {
+              ".h_100\\%": {
+                "height": "100%",
+              },
+            },
+          },
+          {
+            "className": "h_10px",
+            "conditions": undefined,
+            "entry": {
+              "prop": "height",
+              "value": "10px",
+            },
+            "hash": "height]___[value:10px",
+            "layer": undefined,
+            "result": {
+              ".h_10px": {
+                "height": "10px",
               },
             },
           },

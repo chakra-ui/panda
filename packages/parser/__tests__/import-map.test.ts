@@ -89,12 +89,8 @@ describe('config.importMap', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .pos_relative {
-          position: relative;
-      }
-
-        .max-w_8xl {
-          max-width: var(--sizes-8xl);
+        .m_auto {
+          margin: auto;
       }
 
         .mx_auto {
@@ -105,22 +101,6 @@ describe('config.importMap', () => {
           padding-inline: var(--spacing-4);
       }
 
-        .page_A4 {
-          page: A4;
-      }
-
-        .h_600px {
-          height: 600px;
-      }
-
-        .d_flex {
-          display: flex;
-      }
-
-        .m_auto {
-          margin: auto;
-      }
-
         .flex_2 {
           flex: 2;
       }
@@ -129,8 +109,28 @@ describe('config.importMap', () => {
           flex: 1 1 0%;
       }
 
+        .pos_relative {
+          position: relative;
+      }
+
+        .page_A4 {
+          page: A4;
+      }
+
+        .d_flex {
+          display: flex;
+      }
+
         .flex-d_column {
           flex-direction: column;
+      }
+
+        .max-w_8xl {
+          max-width: var(--sizes-8xl);
+      }
+
+        .h_600px {
+          height: 600px;
       }
 
         @media screen and (min-width: 40rem) {
@@ -152,14 +152,14 @@ describe('config.importMap', () => {
       }
 
         @media print {
+          .print\\:flex-d_row {
+            flex-direction: row;
+      }
           .print\\:w_210mm {
             width: 210mm;
       }
           .print\\:h_297mm {
             height: 297mm;
-      }
-          .print\\:flex-d_row {
-            flex-direction: row;
       }
       }
       }"
@@ -225,26 +225,26 @@ describe('config.importMap', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: var(--colors-white);
           background-color: blue;
+          color: var(--colors-white);
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: var(--colors-black);
           background-color: gray;
+          color: var(--colors-black);
           font-size: var(--font-sizes-2xl);
       }
 

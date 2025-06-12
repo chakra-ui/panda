@@ -477,12 +477,12 @@ describe('jsx', () => {
           color: var(--colors-blue-300);
       }
 
-        .c_yellow\\.300 {
-          color: var(--colors-yellow-300);
-      }
-
         .bg-c_green\\.300 {
           background-color: var(--colors-green-300);
+      }
+
+        .c_yellow\\.300 {
+          color: var(--colors-yellow-300);
       }
       }"
     `)

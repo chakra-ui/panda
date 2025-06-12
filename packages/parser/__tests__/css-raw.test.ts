@@ -122,26 +122,26 @@ describe('{fn}.raw', () => {
       }
 
           .buttonStyle:is(:hover, [data-hover]) {
-            color: var(--colors-white);
             background-color: var(--colors-red-200);
             font-size: var(--font-sizes-3xl);
+            color: var(--colors-white);
       }
       }
 
         .buttonStyle--size_md {
+          padding: 0 0.75rem;
           height: 3rem;
           min-width: 3rem;
-          padding: 0 0.75rem;
       }
 
         .buttonStyle--variant_solid {
-          color: var(--colors-white);
           background-color: blue;
+          color: var(--colors-white);
       }
 
         .buttonStyle--variant_solid[data-disabled] {
-          color: var(--colors-black);
           background-color: gray;
+          color: var(--colors-black);
           font-size: var(--font-sizes-2xl);
       }
 
@@ -150,47 +150,39 @@ describe('{fn}.raw', () => {
       }
 
         .buttonStyle--size_sm {
+          padding: 0 0.5rem;
           height: 2.5rem;
           min-width: 2.5rem;
-          padding: 0 0.5rem;
       }
       }
 
       @layer utilities {
-        .mx_3 {
-          margin-inline: var(--spacing-3);
+        .bg_red\\.400 {
+          background: var(--colors-red-400);
       }
 
-        .c_amber\\.100 {
-          color: var(--colors-amber-100);
+        .mx_3 {
+          margin-inline: var(--spacing-3);
       }
 
         .mx_10 {
           margin-inline: var(--spacing-10);
       }
 
-        .c_blue\\.950 {
-          color: var(--colors-blue-950);
-      }
-
-        .bg_red\\.400 {
-          background: var(--colors-red-400);
-      }
-
-        .d_flex {
-          display: flex;
-      }
-
         .gap_10px {
           gap: 10px;
       }
 
-        .pt_4 {
-          padding-top: var(--spacing-4);
+        .c_amber\\.100 {
+          color: var(--colors-amber-100);
       }
 
-        .pt_6 {
-          padding-top: var(--spacing-6);
+        .c_blue\\.950 {
+          color: var(--colors-blue-950);
+      }
+
+        .d_flex {
+          display: flex;
       }
 
         .flex-d_column {
@@ -199,6 +191,14 @@ describe('{fn}.raw', () => {
 
         .flex-d_row {
           flex-direction: row;
+      }
+
+        .pt_4 {
+          padding-top: var(--spacing-4);
+      }
+
+        .pt_6 {
+          padding-top: var(--spacing-6);
       }
       }"
     `)
