@@ -903,7 +903,7 @@ importers:
         version: 1.13.0(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
       '@preact/preset-vite':
         specifier: 2.10.1
-        version: 2.10.1(@babel/core@7.23.9)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
+        version: 2.10.1(@babel/core@7.26.10)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
       '@solidjs/testing-library':
         specifier: 0.8.10
         version: 0.8.10(solid-js@1.9.5)
@@ -1361,8 +1361,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/cli
       '@sveltejs/adapter-auto':
-        specifier: 3.1.1
-        version: 3.1.1(@sveltejs/kit@2.8.3(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))
+        specifier: 6.0.1
+        version: 6.0.1(@sveltejs/kit@2.8.3(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))
       '@sveltejs/kit':
         specifier: 2.8.3
         version: 2.8.3(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
@@ -3085,6 +3085,7 @@ packages:
 
   '@builder.io/partytown@0.7.6':
     resolution: {integrity: sha512-snXIGNiZpqjno3XYQN2lbBB+05hsQR/LSttbtIW1c0gmZ7Kh/DIo0YrxlDxCDulAMFPFM8J+4voLwvYepSj3sw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     hasBin: true
 
   '@builder.io/qwik-city@1.13.0':
@@ -6759,8 +6760,8 @@ packages:
   '@storybook/types@7.6.20':
     resolution: {integrity: sha512-GncdY3x0LpbhmUAAJwXYtJDUQEwfF175gsjH0/fxPkxPoV7Sef9TM41jQLJW/5+6TnZoCZP/+aJZTJtq3ni23Q==}
 
-  '@sveltejs/adapter-auto@3.1.1':
-    resolution: {integrity: sha512-6LeZft2Fo/4HfmLBi5CucMYmgRxgcETweQl/yQoZo/895K3S9YWYN4Sfm/IhwlIpbJp3QNvhKmwCHbsqQNYQpw==}
+  '@sveltejs/adapter-auto@6.0.1':
+    resolution: {integrity: sha512-mcWud3pYGPWM2Pphdj8G9Qiq24nZ8L4LB7coCUckUEy5Y7wOWGJ/enaZ4AtJTcSm5dNK1rIkBRoqt+ae4zlxcQ==}
     peerDependencies:
       '@sveltejs/kit': ^2.0.0
 
@@ -13429,6 +13430,7 @@ packages:
   multer@1.4.5-lts.1:
     resolution: {integrity: sha512-ywPWvcDMeH+z9gQq5qYHCCy+ethsk4goepZ45GLD63fOu0YcNecQxi64nDs3qluZB+murG3/D4dJ7+dGctcCQQ==}
     engines: {node: '>= 6.0.0'}
+    deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
 
   multicast-dns@7.2.5:
     resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
@@ -19376,11 +19378,6 @@ snapshots:
       '@babel/core': 7.26.10
       '@babel/helper-plugin-utils': 7.25.9
 
-  '@babel/plugin-syntax-jsx@7.25.9(@babel/core@7.23.9)':
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/helper-plugin-utils': 7.26.5
-
   '@babel/plugin-syntax-jsx@7.25.9(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -19991,13 +19988,6 @@ snapshots:
       '@babel/core': 7.26.10
       '@babel/helper-plugin-utils': 7.26.5
 
-  '@babel/plugin-transform-react-jsx-development@7.24.7(@babel/core@7.23.9)':
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/plugin-transform-react-jsx': 7.25.9(@babel/core@7.23.9)
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/plugin-transform-react-jsx-development@7.24.7(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -20040,17 +20030,6 @@ snapshots:
       '@babel/helper-plugin-utils': 7.25.7
       '@babel/plugin-syntax-jsx': 7.25.7(@babel/core@7.26.10)
       '@babel/types': 7.27.0
-    transitivePeerDependencies:
-      - supports-color
-
-  '@babel/plugin-transform-react-jsx@7.25.9(@babel/core@7.23.9)':
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/helper-annotate-as-pure': 7.25.9
-      '@babel/helper-module-imports': 7.25.9
-      '@babel/helper-plugin-utils': 7.25.9
-      '@babel/plugin-syntax-jsx': 7.25.9(@babel/core@7.23.9)
-      '@babel/types': 7.26.5
     transitivePeerDependencies:
       - supports-color
 
@@ -23737,22 +23716,6 @@ snapshots:
 
   '@poppinss/exception@1.2.1': {}
 
-  '@preact/preset-vite@2.10.1(@babel/core@7.23.9)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))':
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/plugin-transform-react-jsx': 7.25.9(@babel/core@7.23.9)
-      '@babel/plugin-transform-react-jsx-development': 7.24.7(@babel/core@7.23.9)
-      '@prefresh/vite': 2.4.6(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
-      '@rollup/pluginutils': 4.2.1
-      babel-plugin-transform-hook-names: 1.0.2(@babel/core@7.23.9)
-      debug: 4.4.0(supports-color@9.4.0)
-      kolorist: 1.8.0
-      vite: 6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)
-      vite-prerender-plugin: 0.5.5
-    transitivePeerDependencies:
-      - preact
-      - supports-color
-
   '@preact/preset-vite@2.10.1(@babel/core@7.26.10)(preact@10.19.5)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))':
     dependencies:
       '@babel/core': 7.26.10
@@ -25196,10 +25159,9 @@ snapshots:
       '@types/express': 4.17.21
       file-system-cache: 2.3.0
 
-  '@sveltejs/adapter-auto@3.1.1(@sveltejs/kit@2.8.3(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))':
+  '@sveltejs/adapter-auto@6.0.1(@sveltejs/kit@2.8.3(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))':
     dependencies:
       '@sveltejs/kit': 2.8.3(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))
-      import-meta-resolve: 4.1.0
 
   '@sveltejs/kit@2.8.3(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0)))(svelte@4.2.19)(vite@6.2.5(@types/node@22.10.2)(jiti@2.4.2)(less@4.2.0)(lightningcss@1.25.1)(terser@5.39.0)(tsx@4.7.1)(yaml@2.7.0))':
     dependencies:
@@ -27756,10 +27718,6 @@ snapshots:
       gatsby-core-utils: 4.14.0
 
   babel-plugin-syntax-trailing-function-commas@7.0.0-beta.0: {}
-
-  babel-plugin-transform-hook-names@1.0.2(@babel/core@7.23.9):
-    dependencies:
-      '@babel/core': 7.23.9
 
   babel-plugin-transform-hook-names@1.0.2(@babel/core@7.26.10):
     dependencies:
