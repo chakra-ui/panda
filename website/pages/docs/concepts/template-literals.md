@@ -1,11 +1,11 @@
 ---
-title: Template Literals
-description: Panda allows you to write styles using template literals.
+title: Template/Object Literals
+description: Panda allows you to write styles using template or object literals.
 ---
 
-# Template Literals
+# Template/Object Literals
 
-Panda allows you use the [template literal syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) as an alternative to the object literal syntax.
+Panda allows you use both [template literal syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) and object literal syntax.
 
 This provides a similar experience to [styled-components](https://styled-components.com/) and [emotion](https://emotion.sh/), except that Panda generates atomic class names instead of a single unique class name.
 
@@ -23,6 +23,16 @@ export default defineConfig({
   // ...
   syntax: 'template-literal', // required
   jsxFramework: 'react' // optional
+})
+```
+
+For object literals, you just have to set `jsxFramework` in your `panda.config.ts` file to `react`:
+
+```ts
+// panda.config.ts
+export default defineConfig({
+  // ...
+  jsxFramework: 'react' // required
 })
 ```
 
