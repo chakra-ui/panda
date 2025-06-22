@@ -123,7 +123,7 @@ export type SlotRecipeVariantFn<S extends string, T extends RecipeVariantRecord>
 
 export interface SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVariantRecord<S>>
   extends SlotRecipeVariantFn<S, T> {
-  raw: (props?: RecipeSelection<T>) => Record<S, SystemStyleObject>
+  raw: (props?: RecipeSelection<T>) => RecipeSelection<T>
   variantKeys: (keyof T)[]
   variantMap: RecipeVariantMap<T>
   splitVariantProps<Props extends RecipeSelection<T>>(
