@@ -773,8 +773,8 @@ importers:
         specifier: 5.9.1
         version: 5.9.1(prisma@5.9.1)
       '@textea/json-viewer':
-        specifier: 3.4.1
-        version: 3.4.1(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@mui/material@5.16.6(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.55)(immer@9.0.21)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        specifier: 4.0.1
+        version: 4.0.1(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@mui/material@5.16.6(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.55)(immer@9.0.21)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       lightningcss-wasm:
         specifier: 1.23.0
         version: 1.23.0
@@ -7106,12 +7106,12 @@ packages:
       '@vue/compiler-sfc':
         optional: true
 
-  '@textea/json-viewer@3.4.1':
-    resolution: {integrity: sha512-8cLptaqOZVw025/iF5Cb+4nX2jjLRlGfKxGd8D6Gm9pOzB/ZDgih+xl9zoWcVXwVlRj85uLae5oorKV8Yc+vog==}
+  '@textea/json-viewer@4.0.1':
+    resolution: {integrity: sha512-7FH4ti3kVNyKhe/gl85w+8KllXJY9XQalY2KZnBn9ST1CjhqZQCWJLkYf24aX2FOv2D/8cvAllYkFX46A7C9KQ==}
     peerDependencies:
       '@emotion/react': ^11
       '@emotion/styled': ^11
-      '@mui/material': ^5
+      '@mui/material': ^6
       react: ^17 || ^18
       react-dom: ^17 || ^18
 
@@ -17467,10 +17467,10 @@ packages:
       '@types/react':
         optional: true
 
-  use-sync-external-store@1.2.0:
-    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+  use-sync-external-store@1.5.0:
+    resolution: {integrity: sha512-Rb46I4cGGVBmjamjphe8L/UnvJD+uPPtTkNvX5mZgqdbavhI4EbgIWJiIHXJ8bc/i9EQGPRh4DwEURJ552Do0A==}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   usehooks-ts@2.14.0:
     resolution: {integrity: sha512-jnhrjTRJoJS7cFxz63tRYc5mzTKf/h+Ii8P0PDHymT9qDe4ZA2/gzDRmDR4WGausg5X8wMIdghwi3BBCN9JKow==}
@@ -18348,8 +18348,8 @@ packages:
   zod@3.24.2:
     resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
-  zustand@4.5.4:
-    resolution: {integrity: sha512-/BPMyLKJPtFEvVL0E9E9BTUM63MNyhPGlvxk1XjrfWTUlV+BR8jufjsovHzrtR6YNcBEcL7cMHovL1n9xHawEg==}
+  zustand@4.5.7:
+    resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
       '@types/react': '>=16.8'
@@ -25513,7 +25513,7 @@ snapshots:
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.13
 
-  '@textea/json-viewer@3.4.1(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@mui/material@5.16.6(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.55)(immer@9.0.21)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@textea/json-viewer@4.0.1(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@mui/material@5.16.6(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@emotion/styled@11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.55)(immer@9.0.21)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@emotion/react': 11.13.0(@types/react@18.2.55)(react@18.2.0)
       '@emotion/styled': 11.13.0(@emotion/react@11.13.0(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0)
@@ -25522,7 +25522,7 @@ snapshots:
       copy-to-clipboard: 3.3.3
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      zustand: 4.5.4(@types/react@18.2.55)(immer@9.0.21)(react@18.2.0)
+      zustand: 4.5.7(@types/react@18.2.55)(immer@9.0.21)(react@18.2.0)
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -39138,7 +39138,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.2.55
 
-  use-sync-external-store@1.2.0(react@18.2.0):
+  use-sync-external-store@1.5.0(react@18.2.0):
     dependencies:
       react: 18.2.0
 
@@ -40245,9 +40245,9 @@ snapshots:
 
   zod@3.24.2: {}
 
-  zustand@4.5.4(@types/react@18.2.55)(immer@9.0.21)(react@18.2.0):
+  zustand@4.5.7(@types/react@18.2.55)(immer@9.0.21)(react@18.2.0):
     dependencies:
-      use-sync-external-store: 1.2.0(react@18.2.0)
+      use-sync-external-store: 1.5.0(react@18.2.0)
     optionalDependencies:
       '@types/react': 18.2.55
       immer: 9.0.21
