@@ -18,8 +18,8 @@ When you combine shorthand and longhand properties, Panda will resolve the style
 import { css } from '../styled-system/css'
 
 const styles = css({
-  paddingTop: '20px'
-  padding: "10px",
+  paddingTop: '20px',
+  padding: '10px',
 })
 ```
 
