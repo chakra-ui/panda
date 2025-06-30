@@ -136,6 +136,8 @@ describe('setup-artifacts', () => {
         [
           "tokens/index.d.ts",
           "tokens/index.mjs",
+          "tokens/tokens-entry.d.ts",
+          "tokens/tokens-entry.mjs",
           "tokens/tokens.d.ts",
         ],
         [
