@@ -21,6 +21,7 @@ import { generatePropTypes } from './types/prop-types'
 import { generateStyleProps } from './types/style-props'
 import { generateTokenTypes } from './types/token-types'
 import { generateThemes, generateThemesIndex } from './js/themes'
+import { generateTokensEntryJs } from './js/tokens-entry'
 
 function setupHelpers(ctx: Context): Artifact {
   const code = generateHelpers(ctx)
@@ -32,6 +33,7 @@ function setupHelpers(ctx: Context): Artifact {
 
 export function setupDesignTokens(ctx: Context): Artifact | undefined {
   const code = generateTokenJs(ctx)
+  const entryCode = generateTokensEntryJs(ctx)
 
   return {
     id: 'design-tokens',
@@ -39,6 +41,8 @@ export function setupDesignTokens(ctx: Context): Artifact | undefined {
     files: [
       { file: ctx.file.extDts('index'), code: code.dts },
       { file: ctx.file.ext('index'), code: code.js },
+      { file: ctx.file.extDts('tokens-entry'), code: entryCode.dts },
+      { file: ctx.file.ext('tokens-entry'), code: entryCode.js },
       { file: ctx.file.extDts('tokens'), code: generateTokenTypes(ctx) },
     ],
   }
