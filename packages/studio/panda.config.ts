@@ -66,10 +66,6 @@ export default {
     ':root': {
       '--global-color-border': 'colors.border',
       '--global-color-placeholder': 'colors.neutral.500',
-      fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
-      fontSize: '0.84em',
-      lineHeight: 'normal',
-      fontWeight: 'normal',
       colorScheme: 'light dark',
     },
     body: {
@@ -77,6 +73,10 @@ export default {
       minHeight: '100dvh',
       background: 'bg',
       color: 'text',
+      fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
+      fontSize: '0.84em',
+      lineHeight: 'normal',
+      fontWeight: 'normal',
     },
     a: {
       color: 'unset',
