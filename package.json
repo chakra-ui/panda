@@ -27,7 +27,7 @@
     "prepare-studio": "pnpm --filter=./packages/studio codegen",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
-    "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
+    "serve-studio": "npx serve ./sandbox/vite-ts/styled-system-studio",
     "website": "pnpm --filter=./website",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },
