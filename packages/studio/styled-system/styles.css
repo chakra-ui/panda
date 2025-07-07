@@ -175,10 +175,6 @@
     --made-with-panda: '🐼';
     --global-color-border: var(--colors-border);
     --global-color-placeholder: var(--colors-neutral-500);
-    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-    font-size: 0.84em;
-    line-height: var(--line-heights-normal);
-    font-weight: var(--font-weights-normal);
     color-scheme: light dark;
 }
 
@@ -186,6 +182,10 @@
     margin: var(--spacing-0);
     background: var(--colors-bg);
     color: var(--colors-text);
+    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+    font-size: 0.84em;
+    line-height: var(--line-heights-normal);
+    font-weight: var(--font-weights-normal);
     min-height: 100dvh;
 }
 
