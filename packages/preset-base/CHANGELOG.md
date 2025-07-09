@@ -1,5 +1,16 @@
 # @pandacss/preset-base
 
+## 1.0.0
+
+### Major Changes
+
+- a3bcbea: Stable release of PandaCSS
+
+### Patch Changes
+
+- Updated dependencies [a3bcbea]
+  - @pandacss/types@1.0.0
+
 ## 0.54.0
 
 ### Minor Changes

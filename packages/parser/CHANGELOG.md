@@ -1,5 +1,21 @@
 # @pandacss/parser
 
+## 1.0.0
+
+### Major Changes
+
+- a3bcbea: Stable release of PandaCSS
+
+### Patch Changes
+
+- Updated dependencies [a3bcbea]
+  - @pandacss/config@1.0.0
+  - @pandacss/core@1.0.0
+  - @pandacss/extractor@1.0.0
+  - @pandacss/logger@1.0.0
+  - @pandacss/shared@1.0.0
+  - @pandacss/types@1.0.0
+
 ## 0.54.0
 
 ### Patch Changes
