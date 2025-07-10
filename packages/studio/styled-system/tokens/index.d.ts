@@ -1,5 +1,6 @@
 /* eslint-disable */
 import type { Token } from './tokens';
+export * as tokens from './tokens-entry.d.ts'
 
 export declare const token: {
   (path: Token, fallback?: string): string
