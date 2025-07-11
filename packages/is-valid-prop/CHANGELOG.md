@@ -1,5 +1,11 @@
 # @pandacss/is-valid-prop
 
+## 1.0.0
+
+### Major Changes
+
+- a3bcbea: Stable release of PandaCSS
+
 ## 0.54.0
 
 ## 0.53.7

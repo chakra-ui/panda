@@ -1,5 +1,17 @@
 # @pandacss/astro-plugin-studio
 
+## 1.0.0
+
+### Major Changes
+
+- a3bcbea: Stable release of PandaCSS
+
+### Patch Changes
+
+- Updated dependencies [a3bcbea]
+  - @pandacss/core@1.0.0
+  - @pandacss/node@1.0.0
+
 ## 0.54.0
 
 ### Patch Changes
