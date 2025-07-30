@@ -307,7 +307,7 @@ In Panda, you can use the pseudo props API to define responsive styles.
 ```tsx
 import { styled } from '../styled-system/jsx'
 
-const Button = styled.button({
+const Button = styled('button', {
   base: {
     backgroundColor: '#fff',
     border: '1px solid #000',
