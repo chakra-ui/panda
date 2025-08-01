@@ -1,5 +1,6 @@
 export * from './factory.mjs';
 export * from './is-valid-prop.mjs';
+export * from './create-style-context.mjs';
 export * from './box.mjs';
 export * from './flex.mjs';
 export * from './stack.mjs';
