@@ -343,12 +343,13 @@ function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
 
   const isStyleProp = !ctx.isTemplateLiteralSyntax
   const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
+  const styleContextExclude = ['qwik', 'svelte']
 
   const index = {
     js: outdent`
   ${ctx.file.exportStar('./factory')}
   ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
-  ${isStyleProp ? ctx.file.exportStar('./create-style-context') : ''}
+  ${isStyleProp && !styleContextExclude.includes(ctx.jsx.framework) ? ctx.file.exportStar('./create-style-context') : ''}
   ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
   `,
     dts: outdent`
