@@ -1,3 +1,5 @@
+'use client'
+
 import { cx, css, sva } from '../css/index.mjs';
 import { panda } from './factory.mjs';
 import { createContext, useContext, createElement, forwardRef } from 'react'

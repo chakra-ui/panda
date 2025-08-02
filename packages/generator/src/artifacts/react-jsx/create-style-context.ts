@@ -6,7 +6,7 @@ export function generateReactCreateStyleContext(ctx: Context) {
   const { factoryName } = ctx.jsx
 
   return {
-    js: outdent`
+    js: outdent`'use client'\n
     ${ctx.file.import('cx, css, sva', '../css/index')}
     ${ctx.file.import(factoryName, './factory')}
     import { createContext, useContext, createElement, forwardRef } from 'react'
