@@ -15,7 +15,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
     
     export function createStyleContext(recipe) {
       const StyleContext = Symbol('StyleContext')
-      const isConfigRecipe = "__recipe__" in recipe
+      const isConfigRecipe = '__recipe__' in recipe
       const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
  
       const getResolvedProps = (props, slotStyles) => {

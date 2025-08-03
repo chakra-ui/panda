@@ -15,7 +15,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     
     export function createStyleContext(recipe) {
       const StyleContext = createContext({})
-      const isConfigRecipe = "__recipe__" in recipe
+      const isConfigRecipe = '__recipe__' in recipe
       const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
 
       const getResolvedProps = (props, slotStyles) => {
