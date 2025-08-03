@@ -6998,6 +6998,9 @@ describe('generate property types', () => {
          */
       bgSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
        bgGradient?: ConditionalValue<UtilityValues["backgroundGradient"] | CssVars | AnyString>
+       bgLinear?: ConditionalValue<UtilityValues["backgroundLinear"] | CssVars | AnyString>
+       bgRadial?: ConditionalValue<string | number | AnyString>
+       bgConic?: ConditionalValue<string | number | AnyString>
        /**
          * The **\`border-radius\`** CSS property rounds the corners of an element's outer border edge. You can set a single radius to make circular corners, or two radii to make elliptical corners.
          *
@@ -7369,9 +7372,13 @@ describe('generate property types', () => {
        divideY?: ConditionalValue<string | number | AnyString>
        divideColor?: ConditionalValue<UtilityValues["divideColor"] | CssVars | AnyString>
        divideStyle?: ConditionalValue<UtilityValues["divideStyle"] | CssVars | AnyString>
+       boxSize?: ConditionalValue<UtilityValues["boxSize"] | CssVars | AnyString>
        fontSmoothing?: ConditionalValue<UtilityValues["fontSmoothing"] | CssVars | AnyString>
        truncate?: ConditionalValue<UtilityValues["truncate"] | CssVars | AnyString>
        backgroundGradient?: ConditionalValue<UtilityValues["backgroundGradient"] | CssVars | AnyString>
+       backgroundLinear?: ConditionalValue<UtilityValues["backgroundLinear"] | CssVars | AnyString>
+       backgroundRadial?: ConditionalValue<string | number | AnyString>
+       backgroundConic?: ConditionalValue<string | number | AnyString>
        textGradient?: ConditionalValue<UtilityValues["textGradient"] | CssVars | AnyString>
        gradientFromPosition?: ConditionalValue<string | number | AnyString>
        gradientToPosition?: ConditionalValue<string | number | AnyString>
@@ -14493,6 +14500,9 @@ describe('generate property types', () => {
          */
       bgSize?: ConditionalValue<WithEscapeHatch<CssProperties["backgroundSize"]>>
        bgGradient?: ConditionalValue<WithEscapeHatch<UtilityValues["backgroundGradient"] | CssVars>>
+       bgLinear?: ConditionalValue<WithEscapeHatch<UtilityValues["backgroundLinear"] | CssVars>>
+       bgRadial?: ConditionalValue<WithEscapeHatch<string | number>>
+       bgConic?: ConditionalValue<WithEscapeHatch<string | number>>
        /**
          * The **\`border-radius\`** CSS property rounds the corners of an element's outer border edge. You can set a single radius to make circular corners, or two radii to make elliptical corners.
          *
@@ -14864,9 +14874,13 @@ describe('generate property types', () => {
        divideY?: ConditionalValue<WithEscapeHatch<string | number>>
        divideColor?: ConditionalValue<WithEscapeHatch<UtilityValues["divideColor"] | CssVars>>
        divideStyle?: ConditionalValue<WithEscapeHatch<string | number>>
+       boxSize?: ConditionalValue<WithEscapeHatch<UtilityValues["boxSize"] | CssVars>>
        fontSmoothing?: ConditionalValue<WithEscapeHatch<UtilityValues["fontSmoothing"] | CssVars>>
        truncate?: ConditionalValue<WithEscapeHatch<UtilityValues["truncate"] | CssVars>>
        backgroundGradient?: ConditionalValue<WithEscapeHatch<UtilityValues["backgroundGradient"] | CssVars>>
+       backgroundLinear?: ConditionalValue<WithEscapeHatch<UtilityValues["backgroundLinear"] | CssVars>>
+       backgroundRadial?: ConditionalValue<WithEscapeHatch<string | number>>
+       backgroundConic?: ConditionalValue<WithEscapeHatch<string | number>>
        textGradient?: ConditionalValue<WithEscapeHatch<UtilityValues["textGradient"] | CssVars>>
        gradientFromPosition?: ConditionalValue<WithEscapeHatch<string | number>>
        gradientToPosition?: ConditionalValue<WithEscapeHatch<string | number>>
