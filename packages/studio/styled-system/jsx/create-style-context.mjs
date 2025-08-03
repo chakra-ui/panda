@@ -65,8 +65,8 @@ export function createStyleContext(recipe) {
     return WithProvider
   }
 
-  const withContext = (Component, slot) => {
-    const StyledComponent = panda(Component)
+  const withContext = (Component, slot, options) => {
+    const StyledComponent = panda(Component, {}, options)
     
     const WithContext = forwardRef((props, ref) => {
       const slotStyles = useContext(StyleContext)

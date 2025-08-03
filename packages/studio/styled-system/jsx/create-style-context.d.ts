@@ -1,10 +1,12 @@
 /* eslint-disable */
 import type { SlotRecipeRuntimeFn, RecipeVariantProps } from '../types/recipe';
 import type { JsxHTMLProps, JsxStyleProps, Assign } from '../types/system-types';
+import type { JsxFactoryOptions } from '../types/jsx';
 import type { ComponentType, ElementType, ComponentPropsWithoutRef, ElementRef, Ref } from 'react'
 
-type Options = { forwardProps?: string[] }
-type UnstyledProps = { unstyled?: boolean }
+interface UnstyledProps {
+  unstyled?: boolean
+}
 
 type SvaFn<S extends string = any> = SlotRecipeRuntimeFn<S, any>
 interface SlotRecipeFn {
@@ -33,11 +35,12 @@ export interface StyleContext<R extends SlotRecipe> {
   withProvider: <T extends ElementType>(
     Component: T,
     slot: InferSlot<R>,
-    options?: Options
+    options?: JsxFactoryOptions<ComponentProps<T>>
   ) => StyleContextProvider<T, R>
   withContext: <T extends ElementType>(
     Component: T,
-    slot: InferSlot<R>
+    slot: InferSlot<R>,
+    options?: JsxFactoryOptions<ComponentProps<T>>
   ) => StyleContextConsumer<T>
 }
 

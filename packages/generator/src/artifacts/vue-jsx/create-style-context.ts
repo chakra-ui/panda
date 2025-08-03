@@ -123,10 +123,12 @@ export function generateVueCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
+    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
     import type { Component, FunctionalComponent, NativeElements } from 'vue'
 
-    type Options = { forwardProps?: string[] }
-    type UnstyledProps = { unstyled?: boolean }
+    interface UnstyledProps {
+      unstyled?: boolean
+    }
 
     type SvaFn<S extends string = any> = SlotRecipeRuntimeFn<S, any>
     interface SlotRecipeFn {
@@ -160,11 +162,12 @@ export function generateVueCreateStyleContext(ctx: Context) {
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: Options
+        options?: JsxFactoryOptions<ComponentProps<T>>
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
-        slot: InferSlot<R>
+        slot: InferSlot<R>,
+        options?: JsxFactoryOptions<ComponentProps<T>>
       ) => StyleContextConsumer<T>
     }
 

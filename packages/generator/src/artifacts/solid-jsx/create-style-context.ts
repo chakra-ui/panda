@@ -134,10 +134,12 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
+    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
     import type { Component, JSX, ComponentProps } from 'solid-js'
 
-    type Options = { forwardProps?: string[] }
-    type UnstyledProps = { unstyled?: boolean }
+    interface UnstyledProps {
+      unstyled?: boolean
+    }
     type ElementType<P extends Record<string, any> = {}> = keyof JSX.IntrinsicElements | Component<P>
 
     type SvaFn<S extends string = any> = SlotRecipeRuntimeFn<S, any>
@@ -163,11 +165,12 @@ export function generateSolidCreateStyleContext(ctx: Context) {
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: Options
+        options?: JsxFactoryOptions<ComponentProps<T>>
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
-        slot: InferSlot<R>
+        slot: InferSlot<R>,
+        options?: JsxFactoryOptions<ComponentProps<T>>
       ) => StyleContextConsumer<T>
     }
 
