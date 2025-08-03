@@ -129,6 +129,7 @@ export const sizing: UtilityConfig = {
     values: heightValues,
   },
   boxSize: {
+    className: 'size',
     group: 'Width',
     values: widthValues,
     transform(value) {
