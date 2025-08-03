@@ -2,9 +2,8 @@
 
 import { cx, css, sva } from '../css/index.mjs';
 import { panda } from './factory.mjs';
+import { getDisplayName } from './factory-helper.mjs';
 import { createContext, useContext, createElement, forwardRef } from 'react'
-
-const getDisplayName = (Component) => Component.displayName || Component.name || typeof Component === 'string' ? Component : 'Component'
 
 export function createStyleContext(recipe) {
   const StyleContext = createContext({})

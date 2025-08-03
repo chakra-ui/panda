@@ -9,9 +9,8 @@ export function generateReactCreateStyleContext(ctx: Context) {
     js: outdent`'use client'\n
     ${ctx.file.import('cx, css, sva', '../css/index')}
     ${ctx.file.import(factoryName, './factory')}
+    ${ctx.file.import('getDisplayName', './factory-helper')}
     import { createContext, useContext, createElement, forwardRef } from 'react'
-
-    const getDisplayName = (Component) => Component.displayName || Component.name || typeof Component === 'string' ? Component : 'Component'
     
     export function createStyleContext(recipe) {
       const StyleContext = createContext({})

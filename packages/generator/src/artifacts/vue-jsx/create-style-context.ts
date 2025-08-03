@@ -9,9 +9,8 @@ export function generateVueCreateStyleContext(ctx: Context) {
     js: outdent`
     ${ctx.file.import('cx, css, sva', '../css/index')}
     ${ctx.file.import(factoryName, './factory')}
+    ${ctx.file.import('getDisplayName', './factory-helper')}
     import { defineComponent, provide, inject, computed, h } from 'vue'
-
-    const getDisplayName = (Component) => Component.displayName || Component.name || typeof Component === 'string' ? Component : 'Component'
     
     export function createStyleContext(recipe) {
       const StyleContext = Symbol('StyleContext')

@@ -9,11 +9,10 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     js: outdent`
     ${ctx.file.import('cx, css, sva', '../css/index')}
     ${ctx.file.import(factoryName, './factory')}
+    ${ctx.file.import('getDisplayName', './factory-helper')}
     import { createComponent, mergeProps } from 'solid-js/web'
     import { createContext, useContext, createMemo } from 'solid-js'
 
-    const getDisplayName = (Component) => Component.displayName || Component.name || typeof Component === 'string' ? Component : 'Component'
-    
     export function createStyleContext(recipe) {
       const StyleContext = createContext({})
       const isConfigRecipe = '__recipe__' in recipe
