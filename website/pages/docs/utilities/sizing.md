@@ -117,3 +117,15 @@ Use the `minHeight` or `minH` property to set the minimum height of an element.
 | `h`, `height`       | `height`     | `sizes`        |
 | `maxH`, `maxHeight` | `max-height` | `sizes`        |
 | `minH`, `minHeight` | `min-height` | `sizes`        |
+
+### Size
+
+Use the `boxSize` property to set the width and height of an element.
+
+```jsx
+<div className={css({ boxSize: '24' })} />
+```
+
+| Prop      | CSS Property    | Token Category |
+| --------- | --------------- | -------------- |
+| `boxSize` | `width, height` | `sizes`        |
