@@ -1,21 +1,39 @@
 import type { Context } from '@pandacss/core'
 import type { ArtifactFilters, JsxFramework } from '@pandacss/types'
-import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
+import {
+  generatePreactJsxFactory,
+  generatePreactJsxPattern,
+  generatePreactJsxTypes,
+  generatePreactCreateStyleContext,
+} from './preact-jsx'
 import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
 import { generatePreactJsxStringLiteralTypes } from './preact-jsx/types.string-literal'
 import { generateQwikJsxFactory, generateQwikJsxPattern, generateQwikJsxTypes } from './qwik-jsx'
 import { generateQwikJsxStringLiteralFactory } from './qwik-jsx/jsx.string-literal'
 import { generateQwikJsxStringLiteralTypes } from './qwik-jsx/types.string-literal'
-import { generateReactJsxFactory, generateReactJsxPattern, generateReactJsxTypes } from './react-jsx'
+import {
+  generateReactJsxFactory,
+  generateReactJsxPattern,
+  generateReactJsxTypes,
+  generateReactCreateStyleContext,
+} from './react-jsx'
 import { generateReactJsxStringLiteralFactory } from './react-jsx/jsx.string-literal'
 import { generateReactJsxStringLiteralTypes } from './react-jsx/types.string-literal'
-import { generateSolidJsxFactory, generateSolidJsxPattern, generateSolidJsxTypes } from './solid-jsx'
+import {
+  generateSolidJsxFactory,
+  generateSolidJsxPattern,
+  generateSolidJsxTypes,
+  generateSolidCreateStyleContext,
+} from './solid-jsx'
 import { generateSolidJsxStringLiteralFactory } from './solid-jsx/jsx.string-literal'
 import { generateSolidJsxStringLiteralTypes } from './solid-jsx/types.string-literal'
-import { generateVueJsxFactory } from './vue-jsx/jsx'
+import {
+  generateVueJsxFactory,
+  generateVueJsxPattern,
+  generateVueJsxTypes,
+  generateVueCreateStyleContext,
+} from './vue-jsx'
 import { generateVueJsxStringLiteralFactory } from './vue-jsx/jsx.string-literal'
-import { generateVueJsxPattern } from './vue-jsx/pattern'
-import { generateVueJsxTypes } from './vue-jsx/types'
 import { generateVueJsxStringLiteralTypes } from './vue-jsx/types.string-literal'
 
 /* -----------------------------------------------------------------------------
@@ -92,4 +110,22 @@ export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {
   if (ctx.isTemplateLiteralSyntax || ctx.patterns.isEmpty() || !ctx.jsx.framework) return []
   if (!isKnownFramework(ctx.jsx.framework)) return
   return patternMap[ctx.jsx.framework!](ctx, filters)
+}
+
+/* -----------------------------------------------------------------------------
+ * Create Style Context JSX
+ * -----------------------------------------------------------------------------*/
+
+const createStyleContextMap = {
+  react: generateReactCreateStyleContext,
+  preact: generatePreactCreateStyleContext,
+  solid: generateSolidCreateStyleContext,
+  vue: generateVueCreateStyleContext,
+}
+
+export function generateJsxCreateStyleContext(ctx: Context) {
+  if (ctx.isTemplateLiteralSyntax || !ctx.jsx.framework) return
+  if (!isKnownFramework(ctx.jsx.framework)) return
+  const generator = (createStyleContextMap as any)[ctx.jsx.framework]
+  return generator?.(ctx)
 }

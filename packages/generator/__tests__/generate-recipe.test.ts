@@ -120,11 +120,14 @@ describe('generate recipes', () => {
         [key in keyof TextStyleVariant]: Array<TextStyleVariant[key]>
       }
 
+
+
       export type TextStyleVariantProps = {
         [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]> | undefined
       }
 
       export interface TextStyleRecipe {
+        
         __type: TextStyleVariantProps
         (props?: TextStyleVariantProps): string
         raw: (props?: TextStyleVariantProps) => TextStyleVariantProps
@@ -179,11 +182,14 @@ describe('generate recipes', () => {
         [key in keyof TooltipStyleVariant]: Array<TooltipStyleVariant[key]>
       }
 
+
+
       export type TooltipStyleVariantProps = {
         [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]> | undefined
       }
 
       export interface TooltipStyleRecipe {
+        
         __type: TooltipStyleVariantProps
         (props?: TooltipStyleVariantProps): string
         raw: (props?: TooltipStyleVariantProps) => TooltipStyleVariantProps
@@ -233,11 +239,14 @@ describe('generate recipes', () => {
         [key in keyof CardStyleVariant]: Array<CardStyleVariant[key]>
       }
 
+
+
       export type CardStyleVariantProps = {
         [key in keyof CardStyleVariant]?: ConditionalValue<CardStyleVariant[key]> | undefined
       }
 
       export interface CardStyleRecipe {
+        
         __type: CardStyleVariantProps
         (props?: CardStyleVariantProps): string
         raw: (props?: CardStyleVariantProps) => CardStyleVariantProps
@@ -298,11 +307,14 @@ describe('generate recipes', () => {
         [key in keyof ButtonStyleVariant]: Array<ButtonStyleVariant[key]>
       }
 
+
+
       export type ButtonStyleVariantProps = {
         [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]> | undefined
       }
 
       export interface ButtonStyleRecipe {
+        
         __type: ButtonStyleVariantProps
         (props?: ButtonStyleVariantProps): string
         raw: (props?: ButtonStyleVariantProps) => ButtonStyleVariantProps
@@ -367,13 +379,16 @@ describe('generate recipes', () => {
         [key in keyof CheckboxVariant]: Array<CheckboxVariant[key]>
       }
 
+      type CheckboxSlot = "root" | "control" | "label"
+
       export type CheckboxVariantProps = {
         [key in keyof CheckboxVariant]?: ConditionalValue<CheckboxVariant[key]> | undefined
       }
 
       export interface CheckboxRecipe {
+        __slot: CheckboxSlot
         __type: CheckboxVariantProps
-        (props?: CheckboxVariantProps): Pretty<Record<"root" | "control" | "label", string>>
+        (props?: CheckboxVariantProps): Pretty<Record<CheckboxSlot, string>>
         raw: (props?: CheckboxVariantProps) => CheckboxVariantProps
         variantMap: CheckboxVariantMap
         variantKeys: Array<keyof CheckboxVariant>
@@ -420,6 +435,7 @@ describe('generate recipes', () => {
         __recipe__: false,
         __name__: 'checkbox',
         raw: (props) => props,
+        classNameMap: {},
         variantKeys: checkboxVariantKeys,
         variantMap: {
         "size": [
@@ -448,13 +464,16 @@ describe('generate recipes', () => {
         [key in keyof BadgeVariant]: Array<BadgeVariant[key]>
       }
 
+      type BadgeSlot = "title" | "body"
+
       export type BadgeVariantProps = {
         [key in keyof BadgeVariant]?: BadgeVariant[key] | undefined
       }
 
       export interface BadgeRecipe {
+        __slot: BadgeSlot
         __type: BadgeVariantProps
-        (props?: BadgeVariantProps): Pretty<Record<"title" | "body", string>>
+        (props?: BadgeVariantProps): Pretty<Record<BadgeSlot, string>>
         raw: (props?: BadgeVariantProps) => BadgeVariantProps
         variantMap: BadgeVariantMap
         variantKeys: Array<keyof BadgeVariant>
@@ -506,6 +525,7 @@ describe('generate recipes', () => {
         __recipe__: false,
         __name__: 'badge',
         raw: (props) => props,
+        classNameMap: {},
         variantKeys: badgeVariantKeys,
         variantMap: {
         "size": [

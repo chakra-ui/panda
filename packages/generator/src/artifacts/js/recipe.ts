@@ -156,6 +156,7 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           __recipe__: false,
           __name__: '${baseName}',
           raw: (props) => props,
+          classNameMap: {},
           variantKeys: ${baseName}VariantKeys,
           variantMap: ${stringify(variantKeyMap)},
           splitVariantProps(props) {
@@ -219,6 +220,8 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
           [key in keyof ${upperName}Variant]: Array<${upperName}Variant[key]>
         }
 
+        ${Recipes.isSlotRecipeConfig(config) ? `type ${upperName}Slot = ${unionType(config.slots)}` : ''}
+
         export type ${upperName}VariantProps = {
           [key in keyof ${upperName}Variant]?: ${
             compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
@@ -226,9 +229,10 @@ export function generateRecipes(ctx: Context, filters?: ArtifactFilters) {
         }
 
         export interface ${upperName}Recipe {
+          ${Recipes.isSlotRecipeConfig(config) ? `__slot: ${upperName}Slot` : ''}
           __type: ${upperName}VariantProps
           (props?: ${upperName}VariantProps): ${
-            Recipes.isSlotRecipeConfig(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'
+            Recipes.isSlotRecipeConfig(config) ? `Pretty<Record<${upperName}Slot, string>>` : 'string'
           }
           raw: (props?: ${upperName}VariantProps) => ${upperName}VariantProps
           variantMap: ${upperName}VariantMap

@@ -302,6 +302,10 @@ describe('setup-artifacts', () => {
           "jsx/cq.d.ts",
         ],
         [
+          "jsx/create-style-context.mjs",
+          "jsx/create-style-context.d.ts",
+        ],
+        [
           "jsx/index.mjs",
           "jsx/index.d.ts",
         ],

@@ -23,6 +23,7 @@ export type ArtifactId =
   | 'jsx-helpers'
   | 'jsx-factory'
   | 'jsx-patterns'
+  | 'jsx-create-style-context'
   | 'jsx-patterns-index'
   | 'css-index'
   | 'themes'

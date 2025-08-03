@@ -1,6 +1,7 @@
 /* eslint-disable */
 export * from './factory';
 export * from './is-valid-prop';
+export * from './create-style-context';
 export * from './box';
 export * from './flex';
 export * from './stack';

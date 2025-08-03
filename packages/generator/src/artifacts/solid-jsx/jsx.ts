@@ -22,7 +22,10 @@ export function generateSolidJsxFactory(ctx: Context) {
           : cva(configOrCva)
 
       const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
-      const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
+      const shouldForwardProp = (prop) => {
+        if (options.forwardProps?.includes(prop)) return true
+        return forwardFn(prop, cvaFn.variantKeys)
+      }
 
       const defaultProps = Object.assign(
         options.dataAttr && configOrCva.__name__

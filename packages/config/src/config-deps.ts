@@ -61,6 +61,7 @@ const artifactConfigDeps: Record<ArtifactId, ConfigPath[]> = {
   'jsx-helpers': jsx,
   'jsx-patterns': jsx.concat('patterns'),
   'jsx-patterns-index': jsx.concat('patterns'),
+  'jsx-create-style-context': jsx,
   'css-index': ['syntax'],
   'package.json': ['forceConsistentTypeExtension', 'outExtension'],
   'types-styles': ['shorthands'],

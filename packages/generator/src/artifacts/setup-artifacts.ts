@@ -14,7 +14,7 @@ import { generatePattern } from './js/pattern'
 import { generateCreateRecipe, generateRecipes } from './js/recipe'
 import { generateSvaFn } from './js/sva'
 import { generateTokenJs } from './js/token'
-import { generateJsxFactory, generateJsxPatterns, generateJsxTypes } from './jsx'
+import { generateJsxFactory, generateJsxPatterns, generateJsxTypes, generateJsxCreateStyleContext } from './jsx'
 import { getGeneratedSystemTypes, getGeneratedTypes } from './types/generated'
 import { generateTypesEntry } from './types/main'
 import { generatePropTypes } from './types/prop-types'
@@ -322,21 +322,40 @@ function setupJsxPatterns(ctx: Context, filters?: ArtifactFilters): Artifact | u
   }
 }
 
+function setupJsxCreateStyleContext(ctx: Context): Artifact | undefined {
+  if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
+
+  const createStyleContext = generateJsxCreateStyleContext(ctx)
+  if (!createStyleContext) return
+
+  return {
+    id: 'jsx-create-style-context',
+    dir: ctx.paths.jsx,
+    files: [
+      { file: ctx.file.ext('create-style-context'), code: createStyleContext.js },
+      { file: ctx.file.extDts('create-style-context'), code: createStyleContext.dts },
+    ],
+  }
+}
+
 function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
   const isStyleProp = !ctx.isTemplateLiteralSyntax
   const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
+  const styleContextExclude = ['qwik', 'svelte']
 
   const index = {
     js: outdent`
   ${ctx.file.exportStar('./factory')}
   ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
+  ${isStyleProp && !styleContextExclude.includes(ctx.jsx.framework) ? ctx.file.exportStar('./create-style-context') : ''}
   ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
   `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./factory')}
   ${isStyleProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
+  ${isStyleProp ? ctx.file.exportTypeStar('./create-style-context') : ''}
   ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')) : ''}
   ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
     `,
@@ -472,6 +491,7 @@ const entries: ArtifactEntry[] = [
   ['jsx-factory', setupJsxFactory],
   ['jsx-helpers', setupJsxHelpers],
   ['jsx-patterns', setupJsxPatterns],
+  ['jsx-create-style-context', setupJsxCreateStyleContext],
   ['jsx-patterns-index', setupJsxPatternsIndex],
   ['css-index', setupCssIndex],
   ['themes', setupThemes],

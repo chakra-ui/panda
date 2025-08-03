@@ -1,4 +1,5 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
-  "eslint.workingDirectories": ["./packages/**", "./sandbox/**", "./sandbox/next-js"]
+  "eslint.workingDirectories": ["./packages/**", "./sandbox/**", "./sandbox/next-js"],
+  "biome.enabled": false
 }
