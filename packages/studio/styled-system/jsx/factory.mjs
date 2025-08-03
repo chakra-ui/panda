@@ -8,8 +8,11 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
   const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
   const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
-  const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
-
+  const shouldForwardProp = (prop) => {
+    if (options.forwardProps?.includes(prop)) return true
+    return forwardFn(prop, cvaFn.variantKeys)
+  }
+  
   const defaultProps = Object.assign(
     options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
     options.defaultProps,

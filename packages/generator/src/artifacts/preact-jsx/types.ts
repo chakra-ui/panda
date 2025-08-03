@@ -35,7 +35,8 @@ interface RecipeFn {
 export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
   defaultProps?: TProps
-  shouldForwardProp?(prop: string, variantKeys: string[]): boolean
+  shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
+  forwardProps?: string[]
 }
 
 export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>
