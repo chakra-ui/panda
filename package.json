@@ -41,26 +41,26 @@
     "chokidar": "4.0.3",
     "concurrently": "8.2.2",
     "cross-env": "7.0.3",
-    "happy-dom": "15.10.2",
-    "husky": "9.0.11",
-    "lint-staged": "15.2.11",
+    "happy-dom": "15.11.7",
+    "husky": "9.1.7",
+    "lint-staged": "15.5.2",
     "mdx-local-link-checker": "2.1.1",
     "rimraf": "5.0.10",
     "ts-morph": "26.0.0",
     "tsup": "8.5.0",
     "tsx": "4.20.3",
-    "typescript": "5.8.3",
+    "typescript": "5.9.2",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.2.4"
   },
   "devDependencies": {
     "@types/eslint": "8.56.12",
-    "@types/node": "20.11.30",
-    "@typescript-eslint/eslint-plugin": "7.0.1",
-    "@typescript-eslint/parser": "7.0.1",
-    "eslint": "8.56.0",
-    "eslint-config-prettier": "9.1.0",
-    "prettier": "3.2.5",
+    "@types/node": "20.19.9",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "9.1.2",
+    "prettier": "3.6.2",
     "vite-plugin-virtual": "^0.4.0"
   },
   "lint-staged": {
@@ -73,7 +73,7 @@
   "packageManager": "pnpm@10.14.0",
   "pnpm": {
     "overrides": {
-      "@swc/helpers@~0.4": "0.4.36"
+      "@swc/helpers@~0.4": "0.5.17"
     }
   }
 }

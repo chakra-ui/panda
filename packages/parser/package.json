@@ -39,14 +39,14 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@vue/compiler-sfc": "3.4.19",
+    "@vue/compiler-sfc": "3.5.18",
     "magic-string": "0.30.17",
     "ts-morph": "26.0.0",
     "ts-pattern": "5.8.0"
   },
   "devDependencies": {
     "@pandacss/generator": "workspace:*",
-    "@vue/compiler-core": "3.4.19"
+    "@vue/compiler-core": "3.5.18"
   },
   "files": [
     "dist"
