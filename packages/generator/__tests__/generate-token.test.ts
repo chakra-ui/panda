@@ -152,13 +152,16 @@ describe('generator', () => {
           --font-sizes-7xl: 4.5rem;
           --font-sizes-8xl: 6rem;
           --font-sizes-9xl: 8rem;
+          --shadows-2xs: 0 1px rgb(0 0 0 / 0.05);
           --shadows-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
           --shadows-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
           --shadows-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
           --shadows-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
           --shadows-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
           --shadows-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-          --shadows-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+          --shadows-inset-2xs: inset 0 1px rgb(0 0 0 / 0.05);
+          --shadows-inset-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);
+          --shadows-inset-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);
           --colors-current: currentColor;
           --colors-black: #000;
           --colors-white: #fff;
@@ -408,8 +411,8 @@ describe('generator', () => {
           --colors-deep-test-yam: %555;
           --colors-deep-test-pool-poller: #fff;
           --colors-deep-test-pool-tall: $dfdf;
-          --blurs-sm: 4px;
-          --blurs-base: 8px;
+          --blurs-xs: 4px;
+          --blurs-sm: 8px;
           --blurs-md: 12px;
           --blurs-lg: 16px;
           --blurs-xl: 24px;

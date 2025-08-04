@@ -103,12 +103,12 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-        [dir=rtl] .rtl\\:ml_-4 {
+        :where([dir=rtl], :dir(rtl)) .rtl\\:ml_-4 {
           margin-left: calc(var(--spacing-4) * -1);
       }
 
         @media screen and (min-width: 40rem) {
-          [dir=ltr] .ltr\\:sm\\:ml_4 {
+          :where([dir=ltr], :dir(ltr)) .ltr\\:sm\\:ml_4 {
             margin-left: var(--spacing-4);
       }
       }
@@ -147,7 +147,7 @@ describe('atomic / with basic style object', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         @media screen and (min-width: 40rem) {
-          [dir=rtl] .sm\\:rtl\\:top_20px {
+          :where([dir=rtl], :dir(rtl)) .sm\\:rtl\\:top_20px {
             top: 20px;
       }
       }
@@ -212,12 +212,12 @@ describe('atomic / with nesting scope', () => {
           background: green500;
       }
 
-        [dir=rtl] .\\[\\&_\\>_p\\]\\:rtl\\:font_sans > p {
+        :where([dir=rtl], :dir(rtl)) .\\[\\&_\\>_p\\]\\:rtl\\:font_sans > p {
           font: sans;
       }
 
         @media screen and (min-width: 40rem) {
-          [dir=ltr] [data-theme=dark] .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),[dir=ltr] .dark .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),[dir=ltr] .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]).dark,[dir=ltr] .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover])[data-theme=dark] {
+          :where([dir=ltr], :dir(ltr)) [data-theme=dark] .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),:where([dir=ltr], :dir(ltr)) .dark .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),:where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]).dark,:where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover])[data-theme=dark] {
             font: serif;
       }
       }

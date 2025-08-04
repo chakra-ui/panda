@@ -87,49 +87,49 @@ export const textStyles: TextStyles = {
   xs: {
     value: {
       fontSize: '0.75rem',
-      lineHeight: '1rem',
+      lineHeight: 'calc(1 / 0.75)',
     },
   },
   sm: {
     value: {
       fontSize: '0.875rem',
-      lineHeight: '1.25rem',
+      lineHeight: 'calc(1.25 / 0.875)',
     },
   },
   md: {
     value: {
       fontSize: '1rem',
-      lineHeight: '1.5rem',
+      lineHeight: 'calc(1.5 / 1)',
     },
   },
   lg: {
     value: {
       fontSize: '1.125rem',
-      lineHeight: '1.75rem',
+      lineHeight: 'calc(1.75 / 1.125)',
     },
   },
   xl: {
     value: {
       fontSize: '1.25rem',
-      lineHeight: '1.75rem',
+      lineHeight: 'calc(1.75 / 1.25)',
     },
   },
   '2xl': {
     value: {
       fontSize: '1.5rem',
-      lineHeight: '2rem',
+      lineHeight: 'calc(2 / 1.5)',
     },
   },
   '3xl': {
     value: {
       fontSize: '1.875rem',
-      lineHeight: '2.25rem',
+      lineHeight: 'calc(2.25 / 1.875)',
     },
   },
   '4xl': {
     value: {
       fontSize: '2.25rem',
-      lineHeight: '2.5rem',
+      lineHeight: 'calc(2.5 / 2.25)',
     },
   },
   '5xl': {

@@ -60,6 +60,6 @@ function stringifyProperty(key: string, config: CssPropertyDefinition) {
   return outdent`@property ${key} {
     syntax: '${config.syntax}';
     inherits: ${config.inherits};
-    ${config.initialValue == null ? '' : `initial-value: ${config.initialValue};`}
+    initial-value: ${config.initialValue ?? 'initial'};
   }`
 }

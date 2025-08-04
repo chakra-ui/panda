@@ -263,6 +263,10 @@ const tokens = {
     "value": "8rem",
     "variable": "var(--font-sizes-9xl)"
   },
+  "shadows.2xs": {
+    "value": "0 1px rgb(0 0 0 / 0.05)",
+    "variable": "var(--shadows-2xs)"
+  },
   "shadows.xs": {
     "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
     "variable": "var(--shadows-xs)"
@@ -287,17 +291,25 @@ const tokens = {
     "value": "0 25px 50px -12px rgb(0 0 0 / 0.25)",
     "variable": "var(--shadows-2xl)"
   },
-  "shadows.inner": {
-    "value": "inset 0 2px 4px 0 rgb(0 0 0 / 0.05)",
-    "variable": "var(--shadows-inner)"
+  "shadows.inset-2xs": {
+    "value": "inset 0 1px rgb(0 0 0 / 0.05)",
+    "variable": "var(--shadows-inset-2xs)"
+  },
+  "shadows.inset-xs": {
+    "value": "inset 0 1px 1px rgb(0 0 0 / 0.05)",
+    "variable": "var(--shadows-inset-xs)"
+  },
+  "shadows.inset-sm": {
+    "value": "inset 0 2px 4px rgb(0 0 0 / 0.05)",
+    "variable": "var(--shadows-inset-sm)"
+  },
+  "blurs.xs": {
+    "value": "4px",
+    "variable": "var(--blurs-xs)"
   },
   "blurs.sm": {
-    "value": "4px",
-    "variable": "var(--blurs-sm)"
-  },
-  "blurs.base": {
     "value": "8px",
-    "variable": "var(--blurs-base)"
+    "variable": "var(--blurs-sm)"
   },
   "blurs.md": {
     "value": "12px",

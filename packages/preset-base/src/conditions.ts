@@ -22,7 +22,7 @@ export const conditions = {
   after: '&::after',
   firstLetter: '&::first-letter',
   firstLine: '&::first-line',
-  marker: '&::marker',
+  marker: '&:is(::marker, ::-webkit-details-marker)',
   selection: '&::selection',
   file: '&::file-selector-button',
   backdrop: '&::backdrop',
@@ -76,7 +76,7 @@ export const conditions = {
 
   default: '&:default',
   optional: '&:optional',
-  open: '&:is([open], [data-open], [data-state="open"])',
+  open: '&:is([open], [data-open], [data-state="open"], :popover-open)',
   closed: '&:is([closed], [data-closed], [data-state="closed"])',
   fullscreen: '&:is(:fullscreen, [data-fullscreen])',
   loading: '&:is([data-loading], [aria-busy=true])',
@@ -107,8 +107,8 @@ export const conditions = {
   lessContrast: '@media (prefers-contrast: less)',
   moreContrast: '@media (prefers-contrast: more)',
 
-  ltr: '[dir=ltr] &',
-  rtl: '[dir=rtl] &',
+  ltr: ':where([dir=ltr], :dir(ltr)) &',
+  rtl: ':where([dir=rtl], :dir(rtl)) &',
 
   scrollbar: '&::-webkit-scrollbar',
   scrollbarThumb: '&::-webkit-scrollbar-thumb',
@@ -119,4 +119,6 @@ export const conditions = {
 
   icon: '& :where(svg)',
   starting: '@starting-style',
+  noscript: '@media (scripting: none)',
+  invertedColors: '@media (inverted-colors: inverted)',
 }

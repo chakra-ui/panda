@@ -48,8 +48,8 @@ export const tokens = defineTokens({
   shadows,
   colors,
   blurs: {
-    sm: { value: '4px' },
-    base: { value: '8px' },
+    xs: { value: '4px' },
+    sm: { value: '8px' },
     md: { value: '12px' },
     lg: { value: '16px' },
     xl: { value: '24px' },

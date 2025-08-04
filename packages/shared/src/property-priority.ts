@@ -162,6 +162,7 @@ longHandLogical.add('justifySelf')
 
 // CSS Box Model
 longHandLogical.add('boxSizing')
+longHandLogical.add('fieldSizing')
 
 longHandLogical.add('blockSize')
 longHandPhysical.add('height')
