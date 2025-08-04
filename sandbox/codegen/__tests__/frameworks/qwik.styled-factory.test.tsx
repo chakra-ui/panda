@@ -1,4 +1,5 @@
 /** @jsxImportSource @builder.io/qwik */
+import React from 'react'
 import { createDOM } from '@builder.io/qwik/testing'
 import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-qwik/jsx'
@@ -382,8 +383,6 @@ describe('styled factory - button recipe', async () => {
     )
 
     const container = screen.querySelector('div')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<div class="c_blue.300 bg-c_green.300">array css prop</div>"`,
-    )
+    expect(container.outerHTML).toMatchInlineSnapshot(`"<div class="c_blue.300 bg-c_green.300">array css prop</div>"`)
   })
 })

@@ -110,6 +110,7 @@ const buttonWithCompoundVariantsRecipe = defineRecipe({
 })
 
 export default definePreset({
+  name: 'codegen',
   // Useful for theme customization
   theme: {
     extend: {
