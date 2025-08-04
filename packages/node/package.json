@@ -57,14 +57,14 @@
     "outdent": " ^0.8.0",
     "package-manager-detector": "0.1.0",
     "perfect-debounce": "1.0.0",
-    "pkg-types": "1.0.3",
-    "picomatch": "4.0.2",
+    "pkg-types": "2.2.0",
+    "picomatch": "4.0.3",
     "pluralize": "8.0.0",
     "postcss": "8.4.49",
     "prettier": "3.2.5",
     "ts-morph": "24.0.0",
-    "ts-pattern": "5.0.8",
-    "tsconfck": "3.0.2"
+    "ts-pattern": "5.8.0",
+    "tsconfck": "3.1.6"
   },
   "devDependencies": {
     "@types/picomatch": "3.0.2",

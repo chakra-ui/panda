@@ -56,7 +56,7 @@
     "postcss-nested": "6.0.1",
     "postcss-normalize-whitespace": "7.0.0",
     "postcss-selector-parser": "6.1.2",
-    "ts-pattern": "5.0.8"
+    "ts-pattern": "5.8.0"
   },
   "devDependencies": {
     "@types/lodash.merge": "4.6.9"

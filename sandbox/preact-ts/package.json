@@ -11,7 +11,7 @@
     "css:dev": "PANDA_DEBUG=* panda cssgen -w"
   },
   "dependencies": {
-    "preact": "10.19.5"
+    "preact": "10.27.0"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",

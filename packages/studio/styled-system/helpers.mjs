@@ -22,14 +22,12 @@ function toChar(code) {
 function toName(code) {
   let name = "";
   let x;
-  for (x = Math.abs(code); x > 52; x = x / 52 | 0)
-    name = toChar(x % 52) + name;
+  for (x = Math.abs(code); x > 52; x = x / 52 | 0) name = toChar(x % 52) + name;
   return toChar(x % 52) + name;
 }
 function toPhash(h, x) {
   let i = x.length;
-  while (i)
-    h = h * 33 ^ x.charCodeAt(--i);
+  while (i) h = h * 33 ^ x.charCodeAt(--i);
   return h;
 }
 function toHash(value) {
@@ -67,11 +65,9 @@ var memo = (fn) => {
 var MERGE_OMIT = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
 function mergeProps(...sources) {
   return sources.reduce((prev, obj) => {
-    if (!obj)
-      return prev;
+    if (!obj) return prev;
     Object.keys(obj).forEach((key) => {
-      if (MERGE_OMIT.has(key))
-        return;
+      if (MERGE_OMIT.has(key)) return;
       const prevValue = prev[key];
       const value = obj[key];
       if (isObject(prevValue) && isObject(value)) {
@@ -109,10 +105,8 @@ function walkObject(target, predicate, options = {}) {
   return inner(target);
 }
 function mapObject(obj, fn) {
-  if (Array.isArray(obj))
-    return obj.map((value) => fn(value));
-  if (!isObject(obj))
-    return fn(obj);
+  if (Array.isArray(obj)) return obj.map((value) => fn(value));
+  if (!isObject(obj)) return fn(obj);
   return walkObject(obj, (value) => fn(value));
 }
 
@@ -170,15 +164,13 @@ function createCss(context) {
     const normalizedObject = normalizeStyleObject(styleObject, context);
     const classNames = /* @__PURE__ */ new Set();
     walkObject(normalizedObject, (value, paths) => {
-      if (value == null)
-        return;
+      if (value == null) return;
       const important = isImportant(value);
       const [prop, ...allConditions] = conds.shift(paths);
       const conditions = filterBaseConditions(allConditions);
       const transformed = utility.transform(prop, withoutImportant(sanitize(value)));
       let className = hashFn(conditions, transformed.className);
-      if (important)
-        className = `${className}!`;
+      if (important) className = `${className}!`;
       classNames.add(className);
     });
     return Array.from(classNames).join(" ");
@@ -190,8 +182,7 @@ function compactStyles(...styles) {
 function createMergeCss(context) {
   function resolve(styles) {
     const allStyles = compactStyles(...styles);
-    if (allStyles.length === 1)
-      return allStyles;
+    if (allStyles.length === 1) return allStyles;
     return allStyles.map((style) => normalizeStyleObject(style, context));
   }
   function mergeCss(...styles) {
@@ -207,8 +198,7 @@ function createMergeCss(context) {
 var wordRegex = /([A-Z])/g;
 var msRegex = /^ms-/;
 var hypenateProperty = memo((property) => {
-  if (property.startsWith("--"))
-    return property;
+  if (property.startsWith("--")) return property;
   return property.replace(wordRegex, "-$1").replace(msRegex, "-ms-").toLowerCase();
 });
 
@@ -234,8 +224,7 @@ var patternFns = {
   isCssUnit
 };
 var getPatternStyles = (pattern, styles) => {
-  if (!pattern?.defaultValues)
-    return styles;
+  if (!pattern?.defaultValues) return styles;
   const defaults = typeof pattern.defaultValues === "function" ? pattern.defaultValues(styles) : pattern.defaultValues;
   return Object.assign({}, defaults, compact(styles));
 };

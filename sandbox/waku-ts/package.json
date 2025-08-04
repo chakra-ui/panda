@@ -9,8 +9,8 @@
     "start": "waku start --with-ssr"
   },
   "dependencies": {
-    "react": "18.3.0-canary-14fd9630e-20240213",
-    "react-dom": "18.3.0-canary-14fd9630e-20240213",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
     "react-server-dom-webpack": "18.3.0-canary-14fd9630e-20240213",
     "waku": "0.19.3"
   },

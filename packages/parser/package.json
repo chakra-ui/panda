@@ -42,7 +42,7 @@
     "@vue/compiler-sfc": "3.4.19",
     "magic-string": "0.30.17",
     "ts-morph": "24.0.0",
-    "ts-pattern": "5.0.8"
+    "ts-pattern": "5.8.0"
   },
   "devDependencies": {
     "@pandacss/generator": "workspace:*",
