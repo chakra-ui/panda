@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "astro": "5.5.5",
-    "vite": "6.2.5"
+    "vite": "7.0.6"
   },
   "peerDependencies": {
     "astro": ">=4"

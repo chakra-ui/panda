@@ -43,6 +43,6 @@
   "dependencies": {
     "@pandacss/shared": "workspace:*",
     "ts-evaluator": "1.2.0",
-    "ts-morph": "24.0.0"
+    "ts-morph": "26.0.0"
   }
 }

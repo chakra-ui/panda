@@ -47,8 +47,8 @@
     "react-live-runner": "1.0.7",
     "sucrase": "3.35.0",
     "ts-pattern": "5.8.0",
-    "typescript": "5.6.2",
-    "usehooks-ts": "2.14.0",
+    "typescript": "5.8.3",
+    "usehooks-ts": "3.1.1",
     "util": "0.12.5",
     "zod": "3.22.4"
   },
@@ -61,7 +61,7 @@
     "dts-bundle-generator": "9.3.1",
     "eslint-config-next": "14.1.0",
     "raw-loader": "4.0.2",
-    "tsx": "4.7.1"
+    "tsx": "4.20.3"
   },
   "browserslist": [
     "Chrome 118"
