@@ -2,6 +2,7 @@
   "name": "panda",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "The repository of css panda",
   "scripts": {
     "playground": "pnpm --filter=./playground",
