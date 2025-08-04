@@ -1,3 +1,4 @@
+import * as _pandacss_types from '@pandacss/types';
 import { Config, RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig, Parts, SystemStyleObject, PatternConfig, Preset, CssKeyframes, GlobalStyleObject, GlobalFontface, PropertyConfig, PandaPlugin, ThemeVariant, Tokens, SemanticTokens, CompositionStyles, TextStyles, LayerStyles } from '@pandacss/types';
 export { CompositionStyles, Config, CssKeyframes, GlobalStyleObject, HooksApiInterface, LayerStyles, PatternConfig, PatternProperties, Preset, PropertyConfig, RecipeConfig, RecipeVariantRecord, SemanticTokens, SlotRecipeConfig, SlotRecipeVariantRecord, SystemStyleObject, TextStyles, Tokens } from '@pandacss/types';
 

@@ -48,7 +48,7 @@
     "sucrase": "3.35.0",
     "ts-pattern": "5.8.0",
     "typescript": "5.8.3",
-    "usehooks-ts": "3.1.1",
+    "usehooks-ts": "2.14.0",
     "util": "0.12.5",
     "zod": "3.22.4"
   },
