@@ -1,5 +1,68 @@
 # @pandacss/postcss
 
+## 1.0.0
+
+### Major Changes
+
+- a3bcbea: Stable release of PandaCSS
+
+  ### Style Context
+
+  Add `createStyleContext` function to framework artifacts for React, Preact, Solid, and Vue frameworks
+
+  ```tsx
+  import { sva } from 'styled-system/css'
+  import { createStyleContext } from 'styled-system/jsx'
+
+  const card = sva({
+    slots: ['root', 'label'],
+    base: {
+      root: {
+        color: 'red',
+        bg: 'red.300',
+      },
+      label: {
+        fontWeight: 'medium',
+      },
+    },
+    variants: {
+      size: {
+        sm: {
+          root: {
+            padding: '10px',
+          },
+        },
+        md: {
+          root: {
+            padding: '20px',
+          },
+        },
+      },
+    },
+    defaultVariants: {
+      size: 'sm',
+    },
+  })
+
+  const { withProvider, withContext } = createStyleContext(card)
+
+  const CardRoot = withProvider('div', 'root')
+  const CardLabel = withContext('label', 'label')
+  ```
+
+  Then, use like this:
+
+  ```tsx
+  <CardRoot size="sm">
+    <CardLabel>Hello</CardLabel>
+  </CardRoot>
+  ```
+
+### Patch Changes
+
+- Updated dependencies [a3bcbea]
+  - @pandacss/node@1.0.0
+
 ## 0.54.0
 
 ### Patch Changes

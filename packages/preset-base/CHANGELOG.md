@@ -1,5 +1,125 @@
 # @pandacss/preset-base
 
+## 1.0.0
+
+### Major Changes
+
+- a20811c: - Fix issue where `rtl` and `ltr` variants does not work with `[dir=auto]`
+  - Add `::-webkit-details-marker` to `marker` condition
+  - Add new `inset-2xs`, `inset-xs` and `inset-sm` shadows
+  - Add new `noscript` and `inverted-colors` conditions
+  - Add `:popover-open` to `open` condition
+  - Removed `inner` shadow in favor of `inset-sm`
+  - Remap blur tokens:
+    - `blurs.sm` -> `blurs.xs`
+    - `blurs.base` -> `blurs.sm`
+- a3bcbea: Stable release of PandaCSS
+
+  ### Style Context
+
+  Add `createStyleContext` function to framework artifacts for React, Preact, Solid, and Vue frameworks
+
+  ```tsx
+  import { sva } from 'styled-system/css'
+  import { createStyleContext } from 'styled-system/jsx'
+
+  const card = sva({
+    slots: ['root', 'label'],
+    base: {
+      root: {
+        color: 'red',
+        bg: 'red.300',
+      },
+      label: {
+        fontWeight: 'medium',
+      },
+    },
+    variants: {
+      size: {
+        sm: {
+          root: {
+            padding: '10px',
+          },
+        },
+        md: {
+          root: {
+            padding: '20px',
+          },
+        },
+      },
+    },
+    defaultVariants: {
+      size: 'sm',
+    },
+  })
+
+  const { withProvider, withContext } = createStyleContext(card)
+
+  const CardRoot = withProvider('div', 'root')
+  const CardLabel = withContext('label', 'label')
+  ```
+
+  Then, use like this:
+
+  ```tsx
+  <CardRoot size="sm">
+    <CardLabel>Hello</CardLabel>
+  </CardRoot>
+  ```
+
+### Minor Changes
+
+- 860cc7d: Add support for `bgLinear`, `bgRadial` and `bgConic` properties.
+
+  ### `bgLinear`
+
+  ```tsx
+  <div
+    className={css({
+      bgLinear: 'to-r',
+      gradientFrom: 'cyan.500',
+      gradientTo: 'blue.500',
+    })}
+  />
+  ```
+
+  ### `bgRadial`
+
+  ```tsx
+  <div
+    className={css({
+      bgRadial: 'in srgb',
+      gradientFrom: 'pink.400',
+      gradientFromPosition: '40%',
+      gradientTo: 'fuchsia.700',
+    })}
+  />
+  ```
+
+  ### `bgConic`
+
+  ```tsx
+  <div
+    className={css({
+      bgConic: 'in srgb',
+      gradientFrom: 'blue.600',
+      gradientTo: 'sky.400',
+      gradientToPosition: '50%',
+    })}
+  />
+  ```
+
+  Add support for `boxSize` property that maps to `width` and `height` properties.
+
+  ```tsx
+  <div className={css({ boxSize: '24' })} />
+  ```
+
+### Patch Changes
+
+- Updated dependencies [a3bcbea]
+  - @pandacss/types@1.0.0
+
 ## 0.54.0
 
 ### Minor Changes
