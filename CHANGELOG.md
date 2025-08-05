@@ -6,6 +6,8 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-08-04
+
 ### Fixed
 
 - Fix issue where `rtl` and `ltr` variants does not work with `[dir=auto]`
