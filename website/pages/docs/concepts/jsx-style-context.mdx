@@ -1,0 +1,210 @@
+---
+title: JSX Style Context
+description: JSX Style Context provides an ergonomic way to style compound components with slot recipes.
+---
+
+# JSX Style Context
+
+JSX Style Context is a powerful feature that allows you to create compound components from slot recipes.
+
+It uses a context-based approach to distribute recipe styles across multiple child components, making it easier to style headless UI libraries like Ark UI, and Radix UI.
+
+## Atomic Slot Recipe
+
+- Create a slot recipe using the `sva` function
+- Pass the slot recipe to the `createStyleContext` function
+- Use the `withProvider` and `withContext` functions to create compound components
+
+```tsx
+// components/ui/card.tsx
+
+import { sva } from 'styled-system/css'
+import { createStyleContext } from 'styled-system/jsx'
+
+const card = sva({
+  slots: ['root', 'label'],
+  base: {
+    root: {},
+    label: {}
+  },
+  variants: {
+    size: {
+      sm: { root: {} },
+      md: { root: {} }
+    }
+  },
+  defaultVariants: {
+    size: 'sm'
+  }
+})
+
+const { withProvider, withContext } = createStyleContext(card)
+
+const Root = withProvider('div', 'root')
+const Label = withContext('label', 'label')
+
+export const Card = {
+  Root,
+  Label
+}
+```
+
+Then you can use the `Root` and `Label` components to create a card.
+
+```tsx
+// app/page.tsx
+
+import { Card } from './components/ui/card'
+
+export default function App() {
+  return (
+    <Card.Root>
+      <Card.Label>Hello</Card.Label>
+    </Card.Root>
+  )
+}
+```
+
+## Config Slot Recipe
+
+The `createStyleContext` function can also be used with slot recipes defined in the `panda.config.ts` file.
+
+- Pass the config recipe to the `createStyleContext` function
+- Use the `withProvider` and `withContext` functions to create compound components
+
+```tsx
+// components/ui/card.tsx
+
+import { card } from '../styled-system/recipes'
+import { createStyleContext } from 'styled-system/jsx'
+
+const { withProvider, withContext } = createStyleContext(card)
+
+const Root = withProvider('div', 'root')
+const Label = withContext('label', 'label')
+
+export const Card = {
+  Root,
+  Label
+}
+```
+
+Then you can use the `Root` and `Label` components to create a card.
+
+```tsx
+// app/page.tsx
+
+import { Card } from './components/ui/card'
+
+export default function App() {
+  return (
+    <Card.Root>
+      <Card.Label>Hello</Card.Label>
+    </Card.Root>
+  )
+}
+```
+
+## createStyleContext
+
+This function is a factory function that returns three functions: `withRootProvider`, `withProvider`, and `withContext`.
+
+### withRootProvider
+
+Creates the root component that provides the style context. Use this when the root component **does not render an underling DOM element**.
+
+```tsx
+import { Dialog } from '@ark-ui/react'
+
+//...
+
+const DialogRoot = withRootProvider(Dialog.Root)
+```
+
+### withProvider
+
+Creates a component that both provides context and applies the root slot styles. Use this when the root component **renders an underling DOM element**.
+
+> **Note:** It requires the root `slot` parameter to be passed.
+
+```tsx
+import { Avatar } from '@ark-ui/react'
+
+//...
+
+const AvatarRoot = withProvider(Avatar.Root, 'root')
+```
+
+### withContext
+
+Creates a component that consumes the style context and applies slot styles. It does not accept variant props directly, but gets them from context.
+
+```tsx
+import { Avatar } from '@ark-ui/react'
+
+//...
+
+const AvatarImage = withContext(Avatar.Image, 'image')
+const AvatarFallback = withContext(Avatar.Fallback, 'fallback')
+```
+
+### unstyled prop
+
+Every component created with `createStyleContext` supports the `unstyled` prop to disable styling. It is useful when you want to opt-out of the recipe styles.
+
+- When applied the root component, will disable all styles
+- When applied to a child component, will disable the styles for that specific slot
+
+```tsx
+// Removes all styles
+<AvatarRoot unstyled>
+  <AvatarImage />
+  <AvatarFallback />
+</AvatarRoot>
+
+// Removes only the styles for the image slot
+<AvatarRoot>
+  <AvatarImage unstyled css={{ bg: 'red' }} />
+  <AvatarFallback />
+</AvatarRoot>
+```
+
+## Guides
+
+### Config Recipes
+
+The rules of config recipes still applies when using `createStyleContext`. Ensure the name of the final component matches the name of the recipe.
+
+> If you want to use a custom name, you can configure the recipe's `jsx` property in the `panda.config.ts` file.
+
+```tsx
+// recipe name is "card"
+import { card } from '../styled-system/recipes'
+
+const { withRootProvider, withContext } = createStyleContext(card)
+
+const Root = withRootProvider('div')
+const Header = withContext('header', 'header')
+const Body = withContext('body', 'body')
+
+// The final component name must be "Card"
+export const Card = {
+  Root,
+  Header,
+  Body
+}
+```
+
+### Default Props
+
+Use `defaultProps` option to provide default props to the component.
+
+```tsx
+const { withContext } = createStyleContext(card)
+
+export const CardHeader = withContext('header', 'header', {
+  defaultProps: {
+    role: 'banner'
+  }
+})
+```
