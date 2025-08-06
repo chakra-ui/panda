@@ -3,12 +3,6 @@ import { createColorMixTransform } from '../color-mix-transform'
 
 const gradientVia = createColorMixTransform('--gradient-via')
 
-const union = (values: Iterable<string>) => {
-  return Array.from(values)
-    .map((value) => `'${value}'`)
-    .join(' | ')
-}
-
 const linearGradientDirectionMap = new Map([
   ['to-t', 'to top'],
   ['to-tr', 'to top right'],
@@ -20,8 +14,11 @@ const linearGradientDirectionMap = new Map([
   ['to-tl', 'to top left'],
 ])
 
-const linearGradientValues: PropertyValues = {
-  type: union(linearGradientDirectionMap.keys()),
+const linearGradientValues: PropertyValues = (theme) => {
+  return {
+    ...theme('gradients'),
+    ...Object.fromEntries(linearGradientDirectionMap.entries()),
+  }
 }
 
 const gradientStops =
@@ -36,7 +33,11 @@ export const backgroundGradients: UtilityConfig = {
     className: 'bg-grad',
     group: 'Background Gradient',
     values: linearGradientValues,
-    transform(value) {
+    transform(_value, { raw: value, token }) {
+      const tokenValue = token(`gradients.${value}`)
+      if (tokenValue) {
+        return { backgroundImage: tokenValue }
+      }
       return {
         '--gradient-stops': gradientStops,
         '--gradient-position': linearGradientDirectionMap.get(value) || value,
@@ -50,7 +51,11 @@ export const backgroundGradients: UtilityConfig = {
     className: 'bg-linear',
     group: 'Background Gradient',
     values: linearGradientValues,
-    transform(value) {
+    transform(_value, { raw: value, token }) {
+      const tokenValue = token(`gradients.${value}`)
+      if (tokenValue) {
+        return { backgroundImage: tokenValue }
+      }
       return {
         '--gradient-stops': gradientStops,
         '--gradient-position': linearGradientDirectionMap.get(value) || value,
@@ -63,7 +68,12 @@ export const backgroundGradients: UtilityConfig = {
     shorthand: 'bgRadial',
     className: 'bg-radial',
     group: 'Background Gradient',
-    transform(value) {
+    values: 'gradients',
+    transform(_value, { raw: value, token }) {
+      const tokenValue = token(`gradients.${value}`)
+      if (tokenValue) {
+        return { backgroundImage: tokenValue }
+      }
       return {
         '--gradient-stops': gradientStops,
         '--gradient-position': value,
@@ -89,7 +99,15 @@ export const backgroundGradients: UtilityConfig = {
     className: 'txt-grad',
     group: 'Background Gradient',
     values: linearGradientValues,
-    transform(value) {
+    transform(_value, { raw: value, token }) {
+      const tokenValue = token(`gradients.${value}`)
+      if (tokenValue) {
+        return {
+          backgroundImage: tokenValue,
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+        }
+      }
       return {
         '--gradient-stops': gradientStops,
         '--gradient-position': linearGradientDirectionMap.get(value) || value,

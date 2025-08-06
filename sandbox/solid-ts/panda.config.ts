@@ -7,6 +7,16 @@ export default defineConfig({
   theme: {
     extend: {
       tokens: {
+        gradients: {
+          simple: { value: 'linear-gradient(to right, red, blue)' },
+          primary: {
+            value: {
+              type: 'linear',
+              placement: 'to right',
+              stops: ['pink', 'green'],
+            },
+          },
+        },
         colors: {
           black: { value: 'black' },
           white: { value: 'white' },

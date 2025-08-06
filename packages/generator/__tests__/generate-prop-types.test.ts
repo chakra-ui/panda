@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
 
 describe('generate property types', () => {
-  test('should ', () => {
+  test('should work', () => {
     expect(generatePropTypes(createContext())).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types';
@@ -93,9 +93,9 @@ describe('generate property types', () => {
       	truncate: boolean;
       	background: Tokens["colors"];
       	backgroundColor: Tokens["colors"];
-      	backgroundGradient: 'to-t' | 'to-tr' | 'to-r' | 'to-br' | 'to-b' | 'to-bl' | 'to-l' | 'to-tl';
-      	backgroundLinear: 'to-t' | 'to-tr' | 'to-r' | 'to-br' | 'to-b' | 'to-bl' | 'to-l' | 'to-tl';
-      	textGradient: 'to-t' | 'to-tr' | 'to-r' | 'to-br' | 'to-b' | 'to-bl' | 'to-l' | 'to-tl';
+      	backgroundGradient: "to-t" | "to-tr" | "to-r" | "to-br" | "to-b" | "to-bl" | "to-l" | "to-tl";
+      	backgroundLinear: "to-t" | "to-tr" | "to-r" | "to-br" | "to-b" | "to-bl" | "to-l" | "to-tl";
+      	textGradient: "to-t" | "to-tr" | "to-r" | "to-br" | "to-b" | "to-bl" | "to-l" | "to-tl";
       	gradientFrom: Tokens["colors"];
       	gradientTo: Tokens["colors"];
       	gradientVia: Tokens["colors"];
