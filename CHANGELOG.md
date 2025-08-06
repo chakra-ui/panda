@@ -6,6 +6,14 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-08-05
+
+### Fixed
+
+- **createStyleContext**: Ensure the `defaultProps.className` is applied correctly when no explicit `class` prop is
+  provided
+- Fix issue where `bgGradient` did not respect the gradient token.
+
 ## [1.0.0] - 2025-08-04
 
 ### Fixed
