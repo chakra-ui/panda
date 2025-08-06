@@ -1,5 +1,18 @@
 # @pandacss/generator
 
+## 1.0.1
+
+### Patch Changes
+
+- d236e21: - **createStyleContext**: Ensure the `defaultProps.className` is applied correctly when no explicit `class`
+  prop is provided
+  - @pandacss/core@1.0.1
+  - @pandacss/is-valid-prop@1.0.1
+  - @pandacss/logger@1.0.1
+  - @pandacss/shared@1.0.1
+  - @pandacss/token-dictionary@1.0.1
+  - @pandacss/types@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

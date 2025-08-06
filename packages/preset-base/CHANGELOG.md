@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 1.0.1
+
+### Patch Changes
+
+- 0019184: Fix issue where `bgGradient` did not respect the gradient token.
+  - @pandacss/types@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
