@@ -1,9 +1,11 @@
-import { Gradient } from './scenarios/gradient'
+import * as Custom from './custom'
 
 export function App() {
   return (
     <div>
-      <Gradient />
+      <Custom.Root>
+        <Custom.Label>Hello</Custom.Label>
+      </Custom.Root>
     </div>
   )
 }

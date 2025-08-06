@@ -35,6 +35,6 @@ const _custom = sva({
 
 const { withProvider, withContext } = createStyleContext(custom)
 
-export const Root = withProvider('div', 'root')
-export const Label = withContext('label', 'label')
-export const Input = withContext('input', 'label')
+export const Root = withProvider('div', 'root', { defaultProps: { class: 'group' } })
+export const Label = withContext('label', 'label', { defaultProps: { class: 'group__item' } })
+export const Input = withContext('input', 'label', { defaultProps: { class: 'group__item' } })

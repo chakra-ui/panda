@@ -76,7 +76,8 @@ export function generateSolidCreateStyleContext(ctx: Context) {
             const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
             slotStyles._classNameMap = svaFn.classNameMap
 
-            const resolvedProps = getResolvedProps(restProps, slotStyles[slot])
+            const propsWithClass = { ...restProps, class: restProps.class ?? options?.defaultProps?.class }
+            const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
             resolvedProps.class = cx(resolvedProps.class, slotStyles._classNameMap[slot])
             
             return { slotStyles, resolvedProps }
@@ -103,14 +104,15 @@ export function generateSolidCreateStyleContext(ctx: Context) {
         return WithProvider
       }
 
-      const withContext = (Component, slot) => {
-        const StyledComponent = ${factoryName}(Component)
+      const withContext = (Component, slot, options) => {
+        const StyledComponent = ${factoryName}(Component, {}, options)
         
         const WithContext = (props) => {
           const slotStyles = useContext(StyleContext)
           const finalProps = createMemo(() => {
-            const resolvedProps = getResolvedProps(props, slotStyles[slot])
-            resolvedProps.class = cx(resolvedProps.class, resolvedProps.className, slotStyles._classNameMap?.[slot])
+            const propsWithClass = { ...props, class: props.class ?? options?.defaultProps?.class }
+            const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
+            resolvedProps.class = cx(resolvedProps.class, slotStyles._classNameMap?.[slot])
             return resolvedProps
           })
 

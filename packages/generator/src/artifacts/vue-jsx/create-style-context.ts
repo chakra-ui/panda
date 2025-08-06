@@ -21,13 +21,13 @@ export function generateVueCreateStyleContext(ctx: Context) {
         const { unstyled, ...restProps } = props
         if (unstyled) return restProps
         if (isConfigRecipe) {
-           return { ...restProps, className: cx(slotStyles, restProps.className) }
+           return { ...restProps, class: cx(slotStyles, restProps.class) }
         }
         ${outdent.string(
           match(ctx.config.jsxStyleProps)
             .with('all', () => `return { ...slotStyles, ...restProps }`)
             .with('minimal', () => `return { ...restProps, css: css.raw(slotStyles, restProps.css) }`)
-            .with('none', () => `return { ...restProps, className: cx(css(slotStyles), restProps.className) }`)
+            .with('none', () => `return { ...restProps, class: cx(css(slotStyles), restProps.class) }`)
             .otherwise(() => `return restProps`),
         )}
       }
@@ -61,8 +61,13 @@ export function generateVueCreateStyleContext(ctx: Context) {
         
         const WithProvider = defineComponent({
           props: ["unstyled", ...svaFn.variantKeys],
+          inheritAttrs: false,
           setup(inProps, { slots, attrs }) {
-            const props = computed(() => Object.assign({}, inProps, attrs))
+            const props = computed(() => {
+              const propsWithClass = { ...inProps, ...attrs }
+              propsWithClass.class = propsWithClass.class ?? options?.defaultProps?.class
+              return propsWithClass
+            })
             const res = computed(() => {
               const [variantProps, restProps] = svaFn.splitVariantProps(props.value)
               return { variantProps, restProps }
@@ -90,16 +95,22 @@ export function generateVueCreateStyleContext(ctx: Context) {
         return WithProvider
       }
 
-      const withContext = (Component, slot) => {
-        const StyledComponent = ${factoryName}(Component)
+      const withContext = (Component, slot, options) => {
+        const StyledComponent = ${factoryName}(Component, {}, options)
         
         const WithContext = defineComponent({
           props: ["unstyled"],
-          setup(props, { slots, attrs }) {
+          inheritAttrs: false,
+          setup(inProps, { slots, attrs }) {
+            const props = computed(() => {
+              const propsWithClass = { ...inProps, ...attrs }
+              propsWithClass.class = propsWithClass.class ?? options?.defaultProps?.class
+              return propsWithClass
+            })
             const slotStyles = inject(StyleContext)
 
             return () => {
-              const resolvedProps = getResolvedProps(props, slotStyles.value[slot])
+              const resolvedProps = getResolvedProps(props.value, slotStyles.value[slot])
               resolvedProps.class = cx(resolvedProps.class, slotStyles.value._classNameMap[slot], attrs.class)
               return h(StyledComponent, resolvedProps, slots)
             }
@@ -129,6 +140,12 @@ export function generateVueCreateStyleContext(ctx: Context) {
       unstyled?: boolean
     }
 
+    // Add v-model support types
+    interface VModelProps {
+      modelValue?: any
+      'onUpdate:modelValue'?: (value: any) => void
+    }
+
     type SvaFn<S extends string = any> = SlotRecipeRuntimeFn<S, any>
     interface SlotRecipeFn {
       __type: any
@@ -149,11 +166,11 @@ export function generateVueCreateStyleContext(ctx: Context) {
       : never
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = FunctionalComponent<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
     
     type StyleContextConsumer<T extends ElementType> = FunctionalComponent<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {

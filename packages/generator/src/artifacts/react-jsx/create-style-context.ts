@@ -60,7 +60,8 @@ export function generateReactCreateStyleContext(ctx: Context) {
           const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
           slotStyles._classNameMap = svaFn.classNameMap
 
-          const resolvedProps = getResolvedProps(restProps, slotStyles[slot])
+          const propsWithClass = { ...restProps, className: restProps.className ?? options?.defaultProps?.className }
+          const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
           return createElement(StyleContext.Provider, {
             value: slotStyles,
             children: createElement(StyledComponent, {
@@ -83,7 +84,8 @@ export function generateReactCreateStyleContext(ctx: Context) {
         const WithContext = forwardRef((props, ref) => {
           const slotStyles = useContext(StyleContext)
   
-          const resolvedProps = getResolvedProps(props, slotStyles[slot])
+          const propsWithClass = { ...props, className: props.className ?? options?.defaultProps?.className }
+          const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
           return createElement(StyledComponent, {
             ...resolvedProps,
             className: cx(resolvedProps.className, slotStyles._classNameMap[slot]),
