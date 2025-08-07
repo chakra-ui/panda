@@ -145,8 +145,11 @@ export class FileMatcher {
         if (mod.kind === 'namespace') {
           return keys.includes(id.replace(`${mod.alias}.`, ''))
         }
-
-        return mod.alias === id || mod.name === id
+        // prefer alias
+        if (mod.alias) {
+          return mod.alias === id
+        }
+        return mod.name === id
       })
     })
   }
@@ -177,9 +180,16 @@ export class FileMatcher {
     return this._recipesMatcher(id)
   }
 
+  private _cssMatcher: ReturnType<typeof this.createMatch> | undefined
+
+  isValidCss = (id: string) => {
+    this._cssMatcher ||= this.createMatch(this.importMap.css, ['css'])
+    return this._cssMatcher(id)
+  }
+
   isRawFn = (fnName: string) => {
     const name = fnName.split('.raw')[0] ?? ''
-    return name === 'css' || this.isValidPattern(name) || this.isValidRecipe(name)
+    return this.isValidCss(name) || this.isValidPattern(name) || this.isValidRecipe(name)
   }
 
   isNamespaced = (fnName: string) => {
