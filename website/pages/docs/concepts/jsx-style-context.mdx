@@ -111,7 +111,7 @@ This function is a factory function that returns three functions: `withRootProvi
 
 ### withRootProvider
 
-Creates the root component that provides the style context. Use this when the root component **does not render an underling DOM element**.
+Creates the root component that provides the style context. Use this when the root component **does not render an underlying DOM element**.
 
 ```tsx
 import { Dialog } from '@ark-ui/react'
@@ -123,7 +123,7 @@ const DialogRoot = withRootProvider(Dialog.Root)
 
 ### withProvider
 
-Creates a component that both provides context and applies the root slot styles. Use this when the root component **renders an underling DOM element**.
+Creates a component that both provides context and applies the root slot styles. Use this when the root component **renders an underlying DOM element**.
 
 > **Note:** It requires the root `slot` parameter to be passed.
 
