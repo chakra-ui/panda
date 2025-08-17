@@ -1,13 +1,15 @@
 import { logger } from '@pandacss/logger'
-import { PANDA_CONFIG_NAME, omit, parseJson, stringifyJson, traverse } from '@pandacss/shared'
+import { PANDA_CONFIG_NAME, omit, parseJson, pick, stringifyJson, traverse } from '@pandacss/shared'
 import type { LoadConfigResult, UserConfig } from '@pandacss/types'
 import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { getResolvedConfig } from './get-resolved-config'
+import { mergeHooks } from './merge-hooks'
 import type { BundleConfigResult } from './types'
 import { validateConfig } from './validate-config'
 
 const hookUtils = {
   omit,
+  pick,
   traverse,
 }
 
@@ -35,7 +37,17 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
 
   result.config.presets = Array.from(presets)
 
-  const mergedConfig = await getResolvedConfig(result.config, cwd)
+  // Get hooks from user config and plugins to use during preset resolution
+  const userConfig = result.config
+  const pluginHooks = userConfig.plugins ?? []
+  if (userConfig.hooks) {
+    pluginHooks.push({ name: PANDA_CONFIG_NAME, hooks: userConfig.hooks })
+  }
+
+  // Import mergeHooks to get hooks before merging
+  const earlyHooks = mergeHooks(pluginHooks)
+
+  const mergedConfig = await getResolvedConfig(result.config, cwd, earlyHooks)
   const hooks = mergedConfig.hooks ?? {}
 
   if (mergedConfig.logLevel) {

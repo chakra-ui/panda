@@ -112,6 +112,20 @@ const reducers = {
 
     return artifacts
   }),
+  'preset:resolved': createReducer<'preset:resolved'>((fns) => async (_args) => {
+    const args = Object.assign({}, _args)
+    const original = _args.preset
+    let preset = args.preset
+
+    for (const hookFn of fns) {
+      const result = await hookFn(Object.assign(args, { preset, original }))
+      if (result !== undefined) {
+        preset = result
+      }
+    }
+
+    return preset
+  }),
 }
 
 const syncHooks: Array<keyof PandaHooks> = [

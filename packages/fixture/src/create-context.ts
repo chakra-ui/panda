@@ -2,13 +2,14 @@ import { mergeConfigs } from '@pandacss/config'
 import { RuleProcessor } from '@pandacss/core'
 import { Generator } from '@pandacss/generator'
 import { PandaContext } from '@pandacss/node'
-import { omit, parseJson, stringifyJson, traverse } from '@pandacss/shared'
+import { omit, parseJson, pick, stringifyJson, traverse } from '@pandacss/shared'
 import type { Config, LoadConfigResult, UserConfig } from '@pandacss/types'
 import { fixturePreset } from './config'
 
 const hookUtils = {
-  omit: omit,
-  traverse: traverse,
+  omit,
+  pick,
+  traverse,
 }
 
 const defaults: UserConfig = {

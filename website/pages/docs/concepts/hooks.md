@@ -12,6 +12,7 @@ Hooks are mostly callbacks that can be added to the panda config via the `hooks`
 Here are some examples of what you can do with hooks:
 
 - modify the resolved config (`config:resolved`), like strip out tokens or keyframes.
+- modify presets after they are resolved (`preset:resolved`), like removing specific tokens or theme properties from a preset.
 - tweak the design token or classname engine (`tokens:created`, `utility:created`), like prefixing token names, or customizing the hashing function
 - transform a source file to a `tsx` friendly syntax before it's parsed (`parser:before`) so that Panda can automatically extract its styles usage
 - create your own styles parser (`parser:before`, `parser:after`) using the file's content so that Panda could be used with any templating language
@@ -77,6 +78,26 @@ export default defineConfig({
       return utils.omit(config, ['patterns.stack'])
     }
   }
+})
+```
+
+### Modifying presets
+
+You can use the `preset:resolved` hook to modify presets after they are resolved. This is useful for customizing or filtering out parts of a preset.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'preset:resolved': ({ utils, preset, name }) => {
+      if (name === '@pandacss/preset-panda') {
+        return utils.omit(preset, ['theme.tokens.colors', 'theme.semanticTokens.colors'])
+      }
+      return preset
+    },
+  },
 })
 ```
 
@@ -172,6 +193,12 @@ export interface PandaHooks {
   'config:resolved': (
     args: ConfigResolvedHookArgs
   ) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
+  /**
+   * Called when a preset is resolved, allowing you to modify it before it's merged into the config.
+   */
+  'preset:resolved': (
+    args: PresetResolvedHookArgs
+  ) => MaybeAsyncReturn<void | PresetResolvedHookArgs['preset']>
   /**
    * Called when the token engine has been created
    */

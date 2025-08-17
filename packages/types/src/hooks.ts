@@ -11,6 +11,11 @@ export interface PandaHooks {
    */
   'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
   /**
+   * Called when each preset is resolved, allowing modification of individual presets.
+   * This hook is called for each preset during the resolution process, before they are merged together.
+   */
+  'preset:resolved': (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | PresetResolvedHookArgs['preset']>
+  /**
    * Called when the token engine has been created
    */
   'tokens:created': (args: TokenCreatedHookArgs) => MaybeAsyncReturn
@@ -121,6 +126,7 @@ interface TraverseFn {
 
 interface ConfigResolvedHookUtils {
   omit: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Omit<T, K>
+  pick: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Partial<T>
   traverse: TraverseFn
 }
 
@@ -135,6 +141,13 @@ export interface ConfigResolvedHookArgs {
 export interface ConfigChangeHookArgs {
   config: UserConfig
   changes: DiffConfigResult
+}
+
+export interface PresetResolvedHookArgs {
+  preset: LoadConfigResult['config']
+  name: string
+  utils: ConfigResolvedHookUtils
+  original?: LoadConfigResult['config']
 }
 
 /* -----------------------------------------------------------------------------
