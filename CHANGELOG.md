@@ -6,6 +6,8 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-08-18
+
 ### Added
 
 - Add support for `preset:resolved` hook to pick/omit specific preset properties.
