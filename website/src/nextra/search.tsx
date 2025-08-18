@@ -41,8 +41,8 @@ export function Search({
   const router = useRouter()
   const { setMenu } = useMenu()
 
-  const input = useRef<HTMLInputElement>(null)
-  const ulRef = useRef<HTMLUListElement>(null)
+  const input = useRef<HTMLInputElement | null>(null)
+  const ulRef = useRef<HTMLUListElement | null>(null)
 
   useEffect(() => {
     setActive(0)

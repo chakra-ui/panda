@@ -43,7 +43,7 @@ export const Heading = (props: Props) => {
   const setActiveAnchor = useSetActiveAnchor()
   const slugs = useSlugs()
   const observer = useIntersectionObserver()
-  const obRef = useRef<HTMLAnchorElement>(null)
+  const obRef = useRef<HTMLAnchorElement | null>(null)
 
   useEffect(() => {
     if (!id) return

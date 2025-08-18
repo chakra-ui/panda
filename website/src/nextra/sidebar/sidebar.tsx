@@ -80,8 +80,8 @@ export function Sidebar({
   const [showToggleAnimation, setToggleAnimation] = useState(false)
 
   const anchors = useMemo(() => headings.filter(v => v.depth === 2), [headings])
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const sidebarRef = useRef<HTMLDivElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -97,10 +97,15 @@ export function Sidebar({
   useEffect(() => {
     const activeElements = sidebarRef.current?.querySelectorAll('li.active')
 
-    if (activeElements?.length && (window.innerWidth > 767 || isMobileMenuOpen)) {
+    if (
+      activeElements?.length &&
+      (window.innerWidth > 767 || isMobileMenuOpen)
+    ) {
       // there is two menus in the DOM, first one rendered is desktop and second one is mobile
       // so we need to get active element from the right menu
-      const activeElement = isMobileMenuOpen ? activeElements[1] : activeElements[0];
+      const activeElement = isMobileMenuOpen
+        ? activeElements[1]
+        : activeElements[0]
 
       const scroll = () => {
         scrollIntoView(activeElement, {
@@ -132,7 +137,10 @@ export function Sidebar({
   return (
     <>
       {includePlaceholder && asPopover ? <SidebarPlaceholder /> : null}
-      <SidebarBackdrop isMobileMenuOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
+      <SidebarBackdrop
+        isMobileMenuOpen={isMobileMenuOpen}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
       <SidebarContainer
         ref={containerRef}
         showSidebar={showSidebar}

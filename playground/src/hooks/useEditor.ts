@@ -105,8 +105,8 @@ export function useEditor(props: PandaEditorProps) {
   const initialTab = searchParams?.get('tab') as Tab | null
   const [activeTab, setActiveTab] = useState<Tab>(initialTab ?? 'code')
 
-  const monacoEditorRef = useRef<Parameters<OnMount>[0]>()
-  const monacoRef = useRef<Parameters<OnMount>[1]>()
+  const monacoEditorRef = useRef<Parameters<OnMount>[0] | undefined>(undefined)
+  const monacoRef = useRef<Parameters<OnMount>[1] | undefined>(undefined)
 
   const [wordWrap, setWordwrap] = useLocalStorage<'on' | 'off'>('editor_wordWrap', 'off')
 

@@ -11,8 +11,8 @@ type Props = {
 export const Collapse = (props: Props) => {
   const { children, className, isOpen, horizontal = false } = props
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const innerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const innerRef = useRef<HTMLDivElement | null>(null)
   const animationRef = useRef(0)
   const initialOpen = useRef(isOpen)
   const initialRender = useRef(true)

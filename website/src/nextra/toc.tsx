@@ -14,7 +14,7 @@ export type TOCProps = {
 export function TOC({ headings, filePath }: TOCProps) {
   const activeAnchor = useActiveAnchor()
   const config = useConfig()
-  const tocRef = useRef<HTMLDivElement>(null)
+  const tocRef = useRef<HTMLDivElement | null>(null)
 
   const items = useMemo(
     () => headings.filter(heading => heading.depth > 1),

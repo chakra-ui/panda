@@ -19,10 +19,13 @@ export function useResponsiveView(_breakpoints: Record<string, string> = {}) {
   const ASPECT_RATIO = 4 / 5
   const breakpoints = Object.assign(
     { base: { width: 320, height: 670 } },
-    Object.entries(_breakpoints).reduce((acc, nxt) => {
-      const width = parseInt(nxt[1].replace('px', ''))
-      return { ...acc, [nxt[0]]: { width, height: width / ASPECT_RATIO } }
-    }, {} as Record<string, Record<'width' | 'height', number>>),
+    Object.entries(_breakpoints).reduce(
+      (acc, nxt) => {
+        const width = parseInt(nxt[1].replace('px', ''))
+        return { ...acc, [nxt[0]]: { width, height: width / ASPECT_RATIO } }
+      },
+      {} as Record<string, Record<'width' | 'height', number>>,
+    ),
   )
 
   const [responsiveSize, setResponsiveSize] = useState(breakpoints[Object.keys(breakpoints)[0]])
@@ -42,7 +45,7 @@ export function useResponsiveView(_breakpoints: Record<string, string> = {}) {
     startX?: number
     startY?: number
   }>()
-  const timeout = useRef<number>()
+  const timeout = useRef<number | undefined>(undefined)
   const constrainedResponsiveSize = constrainSize(responsiveSize.width, responsiveSize.height)
 
   function constrainWidth(desiredWidth: number) {
