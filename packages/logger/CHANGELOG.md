@@ -1,5 +1,13 @@
 # @pandacss/logger
 
+## 1.1.0
+
+### Patch Changes
+
+- Updated dependencies [47a0011]
+- Updated dependencies [e8ec0aa]
+  - @pandacss/types@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes

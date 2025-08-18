@@ -1,5 +1,21 @@
 # @pandacss/types
 
+## 1.1.0
+
+### Minor Changes
+
+- 47a0011: Add missing WebKit CSS properties to resolve TypeScript errors. Adds support for:
+
+  - `WebkitUserDrag` / `-webkit-user-drag` - Controls element drag behavior
+  - `WebkitAppRegion` / `-webkit-app-region` - For Electron window controls
+  - `WebkitBorderHorizontalSpacing` / `-webkit-border-horizontal-spacing` - Table border spacing
+  - `WebkitBorderVerticalSpacing` / `-webkit-border-vertical-spacing` - Table border spacing
+  - `WebkitTextSecurity` / `-webkit-text-security` - Text obscuring for passwords
+
+  Fixes TypeScript errors when using these vendor-prefixed properties in Panda CSS.
+
+- e8ec0aa: Add support for `preset:resolved` hook to pick/omit specific preset properties.
+
 ## 1.0.1
 
 ## 1.0.0
