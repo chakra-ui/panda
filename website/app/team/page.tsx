@@ -7,16 +7,19 @@ import { FaGithub, FaGlobe, FaTwitter } from 'react-icons/fa'
 
 export const metadata: Metadata = {
   title: 'Team',
-  description: 'Meet the passionate developers and designers who make Panda CSS possible. Get to know the core team behind the modern CSS-in-JS framework.',
+  description:
+    'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
   openGraph: {
-    title: 'Meet the Panda CSS Team',
-    description: 'Meet the passionate developers and designers who make Panda CSS possible. Get to know the core team behind the modern CSS-in-JS framework.',
-    type: 'website',
+    title: 'Meet the passionate engineers who make Panda CSS possible',
+    description:
+      'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
+    type: 'website'
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Meet the Panda CSS Team',
-    description: 'Meet the passionate developers and designers who make Panda CSS possible. Get to know the core team behind the modern CSS-in-JS framework.',
+    description:
+      'Meet the passionate developers and designers who make Panda CSS possible. Get to know the core team behind the modern CSS-in-JS framework.'
   }
 }
 
@@ -194,8 +197,8 @@ export default async function TeamPage() {
               maxW="2xl"
               lineHeight="relaxed"
             >
-              The passionate developers and designers who make Panda CSS
-              possible.
+              Panda CSS is maintained by a passionate team of engineers. It also
+              receives contributions from engineers around the world.
             </panda.p>
           </Stack>
 
