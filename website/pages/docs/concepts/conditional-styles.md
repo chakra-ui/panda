@@ -568,7 +568,7 @@ Here's a list of all the condition shortcuts you can use in Panda:
 | \_groupDisabled        | `.group:is(:disabled, [disabled], [data-disabled]) &`              |
 | \_groupChecked         | `.group:is(:checked, [data-checked], [aria-checked=true]) &`       |
 | \_groupExpanded        | `.group:is([aria-expanded=true], [data-expanded]) &`               |
-| \_groupInvalid         | `.group:is(:invalid, [data-invalid]) &`                                                 |
+| \_groupInvalid         | `.group:is(:invalid, [data-invalid]) &`                            |
 | \_indeterminate        | `&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed])` |
 | \_required             | `&:is(:required, [data-required], [aria-required=true])`           |
 | \_valid                | `&:is(:valid, [data-valid])`                                       |

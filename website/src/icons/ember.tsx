@@ -1,5 +1,10 @@
 export const EmberLogo = () => (
-  <svg viewBox="0 0 156 156" height="32" width="32" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    viewBox="0 0 156 156"
+    height="32"
+    width="32"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g>
       <g id="svg_1" fillRule="evenodd" fill="none">
         <path

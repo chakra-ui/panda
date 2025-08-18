@@ -4,7 +4,6 @@ import { FiraCode, MonaSans } from 'styles/fonts'
 import '../styles/global.css'
 import '../styles/panda.css'
 
-
 export default function MyApp({ Component, pageProps }) {
   return (
     <>

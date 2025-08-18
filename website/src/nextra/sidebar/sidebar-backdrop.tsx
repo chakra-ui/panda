@@ -18,8 +18,7 @@ const sidebarBackdropStyles = cva({
     isOpen: {
       true: {
         opacity: 1,
-        pointerEvents: 'auto',
-
+        pointerEvents: 'auto'
       },
       false: {
         opacity: 0,

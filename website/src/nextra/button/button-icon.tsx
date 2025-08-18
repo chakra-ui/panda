@@ -12,9 +12,5 @@ export const ButtonIcon = (props: HTMLPandaProps<'span'>) => {
       })
     : children
 
-  return (
-    <panda.span {...rest}>
-      {_children}
-    </panda.span>
-  )
+  return <panda.span {...rest}>{_children}</panda.span>
 }

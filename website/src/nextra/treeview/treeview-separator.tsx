@@ -10,7 +10,7 @@ import { renderComponent } from '@/nextra/lib'
 
 const threeViewSeparatorContainerStyles = cva({
   base: {
-    wordBreak: 'break-word',
+    wordBreak: 'break-word'
   },
   variants: {
     withTitle: {
@@ -36,7 +36,10 @@ const threeViewSeparatorContainerStyles = cva({
   }
 })
 
-const TreeViewSeparatorContainer = panda('li', threeViewSeparatorContainerStyles)
+const TreeViewSeparatorContainer = panda(
+  'li',
+  threeViewSeparatorContainerStyles
+)
 
 /* -----------------------------------------------------------------------------
  * TreeView Separator Hr

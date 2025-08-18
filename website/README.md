@@ -1,6 +1,7 @@
 # Nextra Example
 
 An Nextra example that contains:
+
 - SASS
 - Global styles
 - CSS Modules

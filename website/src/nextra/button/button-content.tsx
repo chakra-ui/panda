@@ -13,9 +13,7 @@ export const ButtonContent = (props: PropsWithChildren<ButtonContentProps>) => {
     <>
       {leftIcon && <ButtonIcon>{leftIcon}</ButtonIcon>}
       {children}
-      {rightIcon && (
-        <ButtonIcon>{rightIcon}</ButtonIcon>
-      )}
+      {rightIcon && <ButtonIcon>{rightIcon}</ButtonIcon>}
     </>
   )
 }

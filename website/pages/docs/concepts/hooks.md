@@ -93,11 +93,14 @@ export default defineConfig({
   hooks: {
     'preset:resolved': ({ utils, preset, name }) => {
       if (name === '@pandacss/preset-panda') {
-        return utils.omit(preset, ['theme.tokens.colors', 'theme.semanticTokens.colors'])
+        return utils.omit(preset, [
+          'theme.tokens.colors',
+          'theme.semanticTokens.colors'
+        ])
       }
       return preset
-    },
-  },
+    }
+  }
 })
 ```
 

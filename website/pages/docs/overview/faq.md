@@ -19,7 +19,7 @@ import { css } from '../styled-system/css'
 
 const styles = css({
   paddingTop: '20px',
-  padding: '10px',
+  padding: '10px'
 })
 ```
 
