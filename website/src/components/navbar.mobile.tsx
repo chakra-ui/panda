@@ -72,6 +72,7 @@ export const MobileNavBar = () => {
             >
               <Stack align="flex-start">
                 <NavLink href="/docs">Docs</NavLink>
+                <NavLink href="/team">Team</NavLink>
                 <NavLink href="/learn">Learn</NavLink>
                 <NavLink href="https://play.panda-css.com/" isExternal>
                   <HStack>

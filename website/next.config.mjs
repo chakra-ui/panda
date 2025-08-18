@@ -39,7 +39,10 @@ export default withNextra({
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    remotePatterns: [{ hostname: 'images.unsplash.com' }]
+    remotePatterns: [
+      { hostname: 'images.unsplash.com' },
+      { hostname: 'avatars.githubusercontent.com' }
+    ]
   }
 })
 

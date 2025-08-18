@@ -17,7 +17,7 @@ export const NavLink = (props: Props) => {
       className={css({
         px: '2',
         py: '1',
-        textStyle: 'xl',
+        textStyle: 'lg',
         fontWeight: 'semibold',
         letterSpacing: 'tight',
         _hover: {

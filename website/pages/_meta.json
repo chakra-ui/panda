@@ -11,6 +11,11 @@
     "type": "page",
     "href": "/docs"
   },
+  "team": {
+    "title": "Team",
+    "type": "page",
+    "href": "/team"
+  },
   "playground": {
     "title": "Playground",
     "type": "page",
