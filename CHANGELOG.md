@@ -6,6 +6,37 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+### Added
+
+- Add support for `preset:resolved` hook to pick/omit specific preset properties.
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    hooks: {
+      'preset:resolved': ({ utils, preset, name }) => {
+        if (name === '@pandacss/preset-panda') {
+          return utils.omit(preset, ['theme.tokens.colors', 'theme.semanticTokens.colors'])
+        }
+        return preset
+      },
+    },
+  })
+  ```
+
+- Add missing WebKit CSS properties to resolve TypeScript errors. Adds support for:
+  - `WebkitUserDrag` / `-webkit-user-drag` - Controls element drag behavior
+  - `WebkitAppRegion` / `-webkit-app-region` - For Electron window controls
+  - `WebkitBorderHorizontalSpacing` / `-webkit-border-horizontal-spacing` - Table border spacing
+  - `WebkitBorderVerticalSpacing` / `-webkit-border-vertical-spacing` - Table border spacing
+  - `WebkitTextSecurity` / `-webkit-text-security` - Text obscuring for passwords
+
+### Fixed
+
+- Fixes TypeScript errors when using vendor-prefixed properties in Panda CSS.
+
 ## [1.0.1] - 2025-08-05
 
 ### Fixed
