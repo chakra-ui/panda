@@ -1,5 +1,11 @@
 # @pandacss/shared
 
+## 1.1.0
+
+### Minor Changes
+
+- e8ec0aa: Add support for `preset:resolved` hook to pick/omit specific preset properties.
+
 ## 1.0.1
 
 ## 1.0.0
