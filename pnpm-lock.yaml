@@ -18,8 +18,8 @@ importers:
         specifier: 2.29.5
         version: 2.29.5
       '@projectwallace/format-css':
-        specifier: ^1.4.3
-        version: 1.5.4
+        specifier: ^2.0.0
+        version: 2.1.1
       chokidar:
         specifier: 4.0.3
         version: 4.0.3
@@ -5258,8 +5258,9 @@ packages:
   '@prisma/get-platform@5.9.1':
     resolution: {integrity: sha512-6OQsNxTyhvG+T2Ksr8FPFpuPeL4r9u0JF0OZHUBI/Uy9SS43sPyAIutt4ZEAyqWQt104ERh70EZedkHZKsnNbg==}
 
-  '@projectwallace/format-css@1.5.4':
-    resolution: {integrity: sha512-AO+eVm6UmA7H15ZaYrH1XIRgXxvXHgU4SmkOnFT8ewzYMJaJxsYLV4crU3GBrl3bT2rhkGQUQktPiP4tmbvNyw==}
+  '@projectwallace/format-css@2.1.1':
+    resolution: {integrity: sha512-CgcNIWbxxNYsQptpWZVn3oCjrq7RUM/CKflAsK2yO8tffgu/OK0INbZKmLtehlmbI8L6xDGyL0dg/4eogaGGTg==}
+    engines: {node: '>=18.0.0'}
 
   '@radix-ui/number@1.0.1':
     resolution: {integrity: sha512-T5gIdVO2mmPW3NNhjNgEP3cqMXjXL9UbO0BzWcXfvdBs+BohbQxvd/K5hSVKmn9/lbTdsQVKbUcP5WLCwvUbBg==}
@@ -23276,7 +23277,7 @@ snapshots:
     dependencies:
       '@prisma/debug': 5.9.1
 
-  '@projectwallace/format-css@1.5.4':
+  '@projectwallace/format-css@2.1.1':
     dependencies:
       css-tree: 3.1.0
 
