@@ -480,6 +480,7 @@ const defaultGroupNames: CssSemanticGroup[] = [
   'Transition',
   'Effect',
   'Other',
+  'Focus Ring',
 ]
 
 function getPropertyGroupMap(ctx: ParserOptions) {

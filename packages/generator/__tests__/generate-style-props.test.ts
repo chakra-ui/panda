@@ -7368,6 +7368,12 @@ describe('generate property types', () => {
        hideBelow?: ConditionalValue<UtilityValues["hideBelow"] | CssVars | AnyString>
        spaceX?: ConditionalValue<UtilityValues["spaceX"] | CssVars | AnyString>
        spaceY?: ConditionalValue<UtilityValues["spaceY"] | CssVars | AnyString>
+       focusRing?: ConditionalValue<UtilityValues["focusRing"] | CssVars | AnyString>
+       focusVisibleRing?: ConditionalValue<UtilityValues["focusVisibleRing"] | CssVars | AnyString>
+       focusRingColor?: ConditionalValue<UtilityValues["focusRingColor"] | CssVars | AnyString>
+       focusRingOffset?: ConditionalValue<UtilityValues["focusRingOffset"] | CssVars | AnyString>
+       focusRingWidth?: ConditionalValue<UtilityValues["focusRingWidth"] | CssVars | AnyString>
+       focusRingStyle?: ConditionalValue<UtilityValues["focusRingStyle"] | CssVars | AnyString>
        divideX?: ConditionalValue<string | number | AnyString>
        divideY?: ConditionalValue<string | number | AnyString>
        divideColor?: ConditionalValue<UtilityValues["divideColor"] | CssVars | AnyString>
@@ -14870,6 +14876,12 @@ describe('generate property types', () => {
        hideBelow?: ConditionalValue<WithEscapeHatch<UtilityValues["hideBelow"] | CssVars>>
        spaceX?: ConditionalValue<WithEscapeHatch<UtilityValues["spaceX"] | CssVars>>
        spaceY?: ConditionalValue<WithEscapeHatch<UtilityValues["spaceY"] | CssVars>>
+       focusRing?: ConditionalValue<WithEscapeHatch<UtilityValues["focusRing"] | CssVars>>
+       focusVisibleRing?: ConditionalValue<WithEscapeHatch<UtilityValues["focusVisibleRing"] | CssVars>>
+       focusRingColor?: ConditionalValue<WithEscapeHatch<UtilityValues["focusRingColor"] | CssVars>>
+       focusRingOffset?: ConditionalValue<WithEscapeHatch<UtilityValues["focusRingOffset"] | CssVars>>
+       focusRingWidth?: ConditionalValue<WithEscapeHatch<string | number>>
+       focusRingStyle?: ConditionalValue<WithEscapeHatch<string | number>>
        divideX?: ConditionalValue<WithEscapeHatch<string | number>>
        divideY?: ConditionalValue<WithEscapeHatch<string | number>>
        divideColor?: ConditionalValue<WithEscapeHatch<UtilityValues["divideColor"] | CssVars>>

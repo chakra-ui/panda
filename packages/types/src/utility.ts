@@ -79,6 +79,7 @@ export type CssSemanticGroup =
   | 'Color'
   | 'Container'
   | 'Display'
+  | 'Focus Ring'
   | 'Effect'
   | 'Flex Layout'
   | 'Grid Layout'

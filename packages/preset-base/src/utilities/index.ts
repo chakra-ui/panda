@@ -7,6 +7,7 @@ import { display } from './display'
 import { divide } from './divide'
 import { effects } from './effects'
 import { flexGrid } from './flex-and-grid'
+import { focusRing } from './focus-ring'
 import { backgroundGradients } from './gradient'
 import { helpers } from './helpers'
 import { interactivity } from './interactivity'
@@ -29,6 +30,7 @@ export const utilities: UtilityConfig = Object.assign(
   flexGrid,
   spacing,
   outline,
+  focusRing,
   divide,
   sizing,
   typography,
