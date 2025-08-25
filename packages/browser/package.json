@@ -1,0 +1,42 @@
+{
+  "name": "@pandacss/browser",
+  "version": "0.0.1",
+  "description": "PandaCSS for the browser without a build step.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "generate-mappings": "tsx scripts/generate-mappings.ts"
+  },
+  "keywords": [
+    "css-in-js",
+    "pandacss",
+    "browser",
+    "runtime"
+  ],
+  "author": "Segun Adebayo",
+  "license": "MIT",
+  "dependencies": {
+    "@pandacss/config": "workspace:*",
+    "@pandacss/core": "workspace:*",
+    "@pandacss/generator": "workspace:*",
+    "@pandacss/parser": "workspace:*",
+    "@pandacss/shared": "workspace:*",
+    "@pandacss/token-dictionary": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/is-valid-prop": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "@pandacss/types": "workspace:*",
+    "vitest": "^2.0.0",
+    "happy-dom": "^15.10.2",
+    "tsx": "^4.0.0"
+  }
+}
