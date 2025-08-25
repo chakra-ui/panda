@@ -1,5 +1,55 @@
 import { PROPERTY_TO_TOKEN_CATEGORY, DEFAULT_TOKENS } from './mappings'
 
+/**
+ * CSS properties that should remain unitless when given numeric values
+ * Based on React's behavior for unitless properties
+ */
+const UNITLESS_PROPERTIES = new Set([
+  'animationIterationCount',
+  'aspectRatio',
+  'borderImageOutset',
+  'borderImageSlice',
+  'borderImageWidth',
+  'boxFlex',
+  'boxFlexGroup',
+  'boxOrdinalGroup',
+  'columnCount',
+  'columns',
+  'flex',
+  'flexGrow',
+  'flexPositive',
+  'flexShrink',
+  'flexNegative',
+  'flexOrder',
+  'gridArea',
+  'gridRow',
+  'gridRowEnd',
+  'gridRowSpan',
+  'gridRowStart',
+  'gridColumn',
+  'gridColumnEnd',
+  'gridColumnSpan',
+  'gridColumnStart',
+  'fontWeight',
+  'lineClamp',
+  'lineHeight',
+  'opacity',
+  'order',
+  'orphans',
+  'tabSize',
+  'widows',
+  'zIndex',
+  'zoom',
+  'fillOpacity',
+  'floodOpacity',
+  'stopOpacity',
+  'strokeDasharray',
+  'strokeDashoffset',
+  'strokeMiterlimit',
+  'strokeOpacity',
+  'strokeWidth',
+])
+
 export interface TokenCategories {
   colors: Record<string, string>
   spacing: Record<string, string>
@@ -80,31 +130,43 @@ export function generateCSSVariables(state: TokenResolverState): string {
  * Resolve a token value to CSS variable or direct value
  */
 export function resolveToken(state: TokenResolverState, property: string, value: string | number): string {
-  // Handle numeric values
-  if (typeof value === 'number') {
-    return value.toString()
-  }
+  // Handle string values first (tokens, CSS keywords, arbitrary values)
+  if (typeof value === 'string') {
+    // Handle CSS keywords and units
+    if (isCSSValue(value)) {
+      return value
+    }
 
-  // Handle CSS keywords and units
-  if (isCSSValue(value)) {
+    // Try to resolve from tokens
+    const category = PROPERTY_TO_TOKEN_CATEGORY[property] as keyof TokenCategories
+    if (category && state.tokens[category]?.[value]) {
+      const cssVariableName = formatCSSVariableName(value)
+      const prefix = state.prefix ? `${state.prefix}-` : ''
+      return `var(--${prefix}${category}-${cssVariableName})`
+    }
+
+    // Check if it's an arbitrary value pattern
+    if (isArbitraryValue(value)) {
+      return parseArbitraryValue(value)
+    }
+
+    // Return as-is for unknown string values
     return value
   }
 
-  // Try to resolve from tokens
-  const category = PROPERTY_TO_TOKEN_CATEGORY[property] as keyof TokenCategories
-  if (category && state.tokens[category]?.[value]) {
-    const cssVariableName = formatCSSVariableName(value)
-    const prefix = state.prefix ? `${state.prefix}-` : ''
-    return `var(--${prefix}${category}-${cssVariableName})`
+  // Handle numeric values (not tokens)
+  if (typeof value === 'number') {
+    // Check if this property should remain unitless
+    if (UNITLESS_PROPERTIES.has(property)) {
+      return value.toString()
+    }
+
+    // If not unitless, add 'px' suffix (React-like behavior)
+    return `${value}px`
   }
 
-  // Check if it's an arbitrary value pattern
-  if (isArbitraryValue(value)) {
-    return parseArbitraryValue(value)
-  }
-
-  // Return as-is for unknown values
-  return value
+  // Fallback for other types
+  return String(value)
 }
 
 /**

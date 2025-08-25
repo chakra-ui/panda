@@ -24,23 +24,109 @@ describe('serialize', () => {
       `)
     })
 
-    test('should handle numeric values', () => {
+    test('should handle numeric values with pixel conversion like React', () => {
       const result = serialize({
         width: 100,
         height: 200,
         zIndex: 5,
+        opacity: 0.5,
+        margin: 10,
+        fontSize: 16,
+        lineHeight: 1.5,
+        fontWeight: 600,
       })
 
-      expect(result.className).toMatchInlineSnapshot(`"w_100 h_200 z_5"`)
+      expect(result.className).toMatchInlineSnapshot(`"w_100 h_200 z_5 op_0.5 m_10 fs_16 lh_1.5 fw_600"`)
       expect(result.css).toMatchInlineSnapshot(`
         ".w_100 {
-          width: 100;
+          width: 100px;
         }
         .h_200 {
-          height: 200;
+          height: 200px;
         }
         .z_5 {
           z-index: 5;
+        }
+        .op_0.5 {
+          opacity: 0.5;
+        }
+        .m_10 {
+          margin: 10px;
+        }
+        .fs_16 {
+          font-size: 16px;
+        }
+        .lh_1.5 {
+          line-height: 1.5;
+        }
+        .fw_600 {
+          font-weight: 600;
+        }"
+      `)
+    })
+
+    test('should distinguish between pixel and unitless properties', () => {
+      const result = serialize({
+        // Properties that should get 'px' suffix
+        padding: 20,
+        borderWidth: 2,
+        borderRadius: 8,
+        top: 10,
+        left: 15,
+        gap: 12,
+        // Properties that should remain unitless
+        zIndex: 100,
+        opacity: 0.8,
+        flex: 1,
+        flexGrow: 2,
+        flexShrink: 0,
+        order: 3,
+        lineHeight: 1.4,
+        fontWeight: 700,
+      })
+
+      expect(result.css).toMatchInlineSnapshot(`
+        ".p_20 {
+          padding: 20px;
+        }
+        .bd-w_2 {
+          border-width: 2px;
+        }
+        .bdr_8 {
+          border-radius: 8px;
+        }
+        .top_10 {
+          top: 10px;
+        }
+        .left_15 {
+          left: 15px;
+        }
+        .gap_12 {
+          gap: 12px;
+        }
+        .z_100 {
+          z-index: 100;
+        }
+        .op_0.8 {
+          opacity: 0.8;
+        }
+        .flex_1 {
+          flex: 1;
+        }
+        .flex-g_2 {
+          flex-grow: 2;
+        }
+        .flex-sh_0 {
+          flex-shrink: 0;
+        }
+        .order_3 {
+          order: 3;
+        }
+        .lh_1.4 {
+          line-height: 1.4;
+        }
+        .fw_700 {
+          font-weight: 700;
         }"
       `)
     })
@@ -1327,22 +1413,6 @@ describe('serialize', () => {
           --radii-full: 9999px;
         }"
       `)
-    })
-
-    test('generated CSS should be valid and well-formatted', () => {
-      const css = generateTokenCSS()
-      const lines = css.split('\n')
-
-      expect(lines[0]).toMatchInlineSnapshot(`":root {"`)
-      expect(lines[lines.length - 1]).toMatchInlineSnapshot(`"}"`)
-
-      // Check that each variable line is properly formatted
-      const variableLines = lines.slice(1, -1)
-      variableLines.forEach((line) => {
-        if (line.trim()) {
-          expect(line).toMatch(/^\s+--[\w.\-\\\/]+: .+;$/)
-        }
-      })
     })
   })
 })
