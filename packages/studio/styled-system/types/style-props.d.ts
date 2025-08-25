@@ -7362,6 +7362,12 @@ scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars
  hideBelow?: ConditionalValue<UtilityValues["hideBelow"] | CssVars | AnyString>
  spaceX?: ConditionalValue<UtilityValues["spaceX"] | CssVars | AnyString>
  spaceY?: ConditionalValue<UtilityValues["spaceY"] | CssVars | AnyString>
+ focusRing?: ConditionalValue<UtilityValues["focusRing"] | CssVars | AnyString>
+ focusVisibleRing?: ConditionalValue<UtilityValues["focusVisibleRing"] | CssVars | AnyString>
+ focusRingColor?: ConditionalValue<UtilityValues["focusRingColor"] | CssVars | AnyString>
+ focusRingOffset?: ConditionalValue<UtilityValues["focusRingOffset"] | CssVars | AnyString>
+ focusRingWidth?: ConditionalValue<UtilityValues["focusRingWidth"] | CssVars | AnyString>
+ focusRingStyle?: ConditionalValue<UtilityValues["focusRingStyle"] | CssVars | AnyString>
  divideX?: ConditionalValue<string | number | AnyString>
  divideY?: ConditionalValue<string | number | AnyString>
  divideColor?: ConditionalValue<UtilityValues["divideColor"] | CssVars | AnyString>

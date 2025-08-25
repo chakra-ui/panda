@@ -102,7 +102,7 @@ describe('generate reset', () => {
       }
 
         ::selection {
-          background-color: var(--global-color-selection, revert);
+          background-color: var(--global-color-selection, rgba(0, 115, 255, 0.3));
       }
 
         textarea {
@@ -304,7 +304,7 @@ describe('generate reset', () => {
       }
 
         .pd-reset ::selection {
-          background-color: var(--global-color-selection, revert);
+          background-color: var(--global-color-selection, rgba(0, 115, 255, 0.3));
       }
 
         .pd-reset textarea {
@@ -453,20 +453,20 @@ describe('generate reset', () => {
           color: inherit;
       }
 
-        ::placeholder.pd-reset {
+        .pd-reset ::placeholder {
           --placeholder-fallback: rgba(0, 0, 0, 0.5);
           opacity: 1;
           color: var(--global-color-placeholder, var(--placeholder-fallback));
       }
 
         @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
-          ::placeholder.pd-reset {
+          .pd-reset ::placeholder {
             --placeholder-fallback: color-mix(in oklab, currentcolor 50%, transparent);
       }
       }
 
-        ::selection.pd-reset {
-          background-color: var(--global-color-selection, revert);
+        .pd-reset ::selection {
+          background-color: var(--global-color-selection, rgba(0, 115, 255, 0.3));
       }
 
         textarea.pd-reset {

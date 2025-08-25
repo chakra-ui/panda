@@ -1,5 +1,5 @@
 import type { Stylesheet } from '@pandacss/core'
-import { type Context } from '@pandacss/core'
+import { type Context, extractTrailingPseudos } from '@pandacss/core'
 import { isObject, mapEntries } from '@pandacss/shared'
 import type { GlobalStyleObject } from '@pandacss/types'
 
@@ -77,7 +77,7 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
       },
     },
     '::selection': {
-      backgroundColor: 'var(--global-color-selection, revert)',
+      backgroundColor: 'var(--global-color-selection, rgba(0, 115, 255, 0.3))',
     },
     textarea: {
       resize: 'vertical',
@@ -161,7 +161,21 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
   }
 
   if (level === 'element') {
-    const modified = mapEntries(scoped, (k, v) => [k, { [selector]: v }])
+    const modified = mapEntries(scoped, (k, v) => {
+      const [trailingPseudo, rebuiltSelector] = extractTrailingPseudos(k.toString())
+
+      if (trailingPseudo) {
+        // For selectors with trailing pseudo-elements, we need to restructure them
+        // from "::selection.pd-reset" to ".pd-reset ::selection"
+        const scopeClass = selector.replace('&', '')
+        const newSelector = rebuiltSelector
+          ? `${scopeClass} ${rebuiltSelector}${trailingPseudo}`
+          : `${scopeClass} ${trailingPseudo}`
+        return [newSelector, v]
+      }
+
+      return [k, { [selector]: v }]
+    })
     Object.assign(reset, modified)
   } else if (selector) {
     reset[selector] = scoped
