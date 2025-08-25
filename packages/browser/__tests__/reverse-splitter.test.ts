@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { reverseSplitter } from './reverse-splitter'
+import { reverseSplitter } from '../src/reverse-splitter'
 
 describe('reverseSplitter - Real World Scenarios', () => {
   test('should handle the example from user description', () => {
