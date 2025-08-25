@@ -95,87 +95,87 @@ export interface ModernCssProperties {
    * Defines a name for the anchor element that can be referenced by positioned elements.
    */
   anchorName?: Globals | 'none' | DashedIdent | StringToMultiple<DashedIdent>
-  
+
   /**
    * Defines the scope of anchor names within the element.
    */
   anchorScope?: Globals | 'none' | 'all' | DashedIdent | StringToMultiple<DashedIdent>
-  
+
   /**
    * Controls how form elements size themselves.
    */
   fieldSizing?: Globals | 'fixed' | 'content'
-  
+
   /**
    * Controls whether interpolation of size values should allow keywords.
    */
   interpolateSize?: Globals | 'allow-keywords' | 'numeric-only'
-  
+
   /**
    * Specifies the anchor element that this positioned element should be positioned relative to.
    */
   positionAnchor?: Globals | 'auto' | DashedIdent
-  
+
   /**
    * Specifies the area within the anchor element where this positioned element should be placed.
    */
   positionArea?: Globals | 'auto' | PositionAreaAxis | `${PositionAreaAxis} ${PositionAreaAxis}` | String
-  
+
   /**
    * Specifies the position try options for the element.
    */
   positionTry?: Globals | StringToMultiple<PositionTry> | String
-  
+
   /**
    * Specifies fallback position try options when the primary position fails.
    */
   positionTryFallback?: Globals | 'none' | StringToMultiple<PositionTry> | String
-  
+
   /**
    * Specifies the order in which position try options should be attempted.
    */
   positionTryOrder?: Globals | 'normal' | 'most-width' | 'most-height' | 'most-block-size' | 'most-inline-size'
-  
+
   /**
    * Controls when the positioned element should be visible.
    */
   positionVisibility?: Globals | 'always' | 'anchors-visible' | 'no-overflow'
-  
+
   /**
    * Controls whether text should wrap or not.
    */
   textWrapMode?: Globals | 'wrap' | 'nowrap'
-  
+
   /**
    * Controls trimming of spacing in text.
    */
   textSpacingTrim?: Globals | 'normal' | 'space-all' | 'space-first' | 'trim-start'
-  
+
   /**
    * Controls the style of text wrapping.
    */
   textWrapStyle?: Globals | 'auto' | 'balance' | 'pretty' | 'stable'
-  
+
   /**
    * Controls whether the entire element should be draggable instead of its contents.
    */
   WebkitUserDrag?: Globals | 'auto' | 'element' | 'none'
-  
+
   /**
    * Specifies whether an element can be used to drag the entire app window (Electron).
    */
   WebkitAppRegion?: Globals | 'drag' | 'no-drag'
-  
+
   /**
    * Sets the horizontal spacing between table borders.
    */
   WebkitBorderHorizontalSpacing?: Globals | String | Number
-  
+
   /**
    * Sets the vertical spacing between table borders.
    */
   WebkitBorderVerticalSpacing?: Globals | String | Number
-  
+
   /**
    * Controls the display of text content for security purposes (e.g., password fields).
    */

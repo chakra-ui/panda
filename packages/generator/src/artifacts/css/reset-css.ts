@@ -76,6 +76,9 @@ export function generateResetCss(ctx: Context, sheet: Stylesheet) {
         '--placeholder-fallback': 'color-mix(in oklab, currentcolor 50%, transparent)',
       },
     },
+    '::selection': {
+      backgroundColor: 'var(--global-color-selection, revert)',
+    },
     textarea: {
       resize: 'vertical',
     },

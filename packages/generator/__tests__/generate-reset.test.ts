@@ -101,6 +101,10 @@ describe('generate reset', () => {
       }
       }
 
+        ::selection {
+          background-color: var(--global-color-selection, revert);
+      }
+
         textarea {
           resize: vertical;
       }
@@ -299,6 +303,10 @@ describe('generate reset', () => {
           -webkit-appearance: button;
       }
 
+        .pd-reset ::selection {
+          background-color: var(--global-color-selection, revert);
+      }
+
         .pd-reset textarea {
           resize: vertical;
       }
@@ -455,6 +463,10 @@ describe('generate reset', () => {
           ::placeholder.pd-reset {
             --placeholder-fallback: color-mix(in oklab, currentcolor 50%, transparent);
       }
+      }
+
+        ::selection.pd-reset {
+          background-color: var(--global-color-selection, revert);
       }
 
         textarea.pd-reset {
