@@ -697,6 +697,26 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "18px",
+          "prop": "4.5",
+          "var": "--spacing-4\\.5",
+          "varRef": "var(--spacing-4\\.5)",
+        },
+        "name": "spacing.4.5",
+        "originalValue": "1.125rem",
+        "path": [
+          "spacing",
+          "4.5",
+        ],
+        "type": "dimension",
+        "value": "1.125rem",
+      },
+      Token {
+        "deprecated": undefined,
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
           "conditions": {
             "base": "var(--spacing-4)",
             "lg": "var(--spacing-5)",
@@ -1513,6 +1533,30 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "isNegative": true,
+          "originalPath": [
+            "spacing",
+            "4.5",
+          ],
+          "prop": "-4.5",
+          "var": "--spacing-4\\.5",
+          "varRef": "var(--spacing-4\\.5)",
+        },
+        "name": "spacing.-4.5",
+        "originalValue": "1.125rem",
+        "path": [
+          "spacing",
+          "-4.5",
+        ],
+        "type": "dimension",
+        "value": "calc(var(--spacing-4\\.5) * -1)",
+      },
+      Token {
+        "deprecated": undefined,
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
           "conditions": {
             "base": "var(--spacing-4)",
             "lg": "var(--spacing-5)",
@@ -1958,6 +2002,7 @@ test('should work with default fixture', () => {
       "spacing.1.5" => "var(--spacing-1\\.5)",
       "spacing.2.5" => "var(--spacing-2\\.5)",
       "spacing.3.5" => "var(--spacing-3\\.5)",
+      "spacing.4.5" => "var(--spacing-4\\.5)",
       "sizes.0" => "var(--sizes-0)",
       "sizes.1" => "var(--sizes-1)",
       "sizes.2" => "var(--sizes-2)",
@@ -1992,6 +2037,7 @@ test('should work with default fixture', () => {
       "sizes.1.5" => "var(--sizes-1\\.5)",
       "sizes.2.5" => "var(--sizes-2\\.5)",
       "sizes.3.5" => "var(--sizes-3\\.5)",
+      "sizes.4.5" => "var(--sizes-4\\.5)",
       "sizes.xs" => "var(--sizes-xs)",
       "sizes.sm" => "var(--sizes-sm)",
       "sizes.md" => "var(--sizes-md)",
@@ -2053,6 +2099,7 @@ test('should work with default fixture', () => {
       "spacing.-1.5" => "calc(var(--spacing-1\\.5) * -1)",
       "spacing.-2.5" => "calc(var(--spacing-2\\.5) * -1)",
       "spacing.-3.5" => "calc(var(--spacing-3\\.5) * -1)",
+      "spacing.-4.5" => "calc(var(--spacing-4\\.5) * -1)",
       "spacing.-gutter" => "calc(var(--spacing-gutter) * -1)",
       "colors.surface" => "var(--colors-surface)",
       "colors.colorPalette" => "var(--colors-color-palette)",

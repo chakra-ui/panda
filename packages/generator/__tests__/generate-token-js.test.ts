@@ -1476,6 +1476,10 @@ test('[dts] should generate package', () => {
         "value": "0.875rem",
         "variable": "var(--spacing-3\\\\.5)"
       },
+      "spacing.4.5": {
+        "value": "1.125rem",
+        "variable": "var(--spacing-4\\\\.5)"
+      },
       "sizes.0": {
         "value": "0rem",
         "variable": "var(--sizes-0)"
@@ -1611,6 +1615,10 @@ test('[dts] should generate package', () => {
       "sizes.3.5": {
         "value": "0.875rem",
         "variable": "var(--sizes-3\\\\.5)"
+      },
+      "sizes.4.5": {
+        "value": "1.125rem",
+        "variable": "var(--sizes-4\\\\.5)"
       },
       "sizes.xs": {
         "value": "20rem",
@@ -1895,6 +1903,10 @@ test('[dts] should generate package', () => {
       "spacing.-3.5": {
         "value": "calc(var(--spacing-3\\\\.5) * -1)",
         "variable": "var(--spacing-3\\\\.5)"
+      },
+      "spacing.-4.5": {
+        "value": "calc(var(--spacing-4\\\\.5) * -1)",
+        "variable": "var(--spacing-4\\\\.5)"
       },
       "spacing.-gutter": {
         "value": "var(--spacing-gutter)",
@@ -3497,6 +3509,10 @@ test('with formatTokenName', () => {
         "value": "0.875rem",
         "variable": "var(--spacing-3\\\\.5)"
       },
+      "$spacing-4.5": {
+        "value": "1.125rem",
+        "variable": "var(--spacing-4\\\\.5)"
+      },
       "$sizes-0": {
         "value": "0rem",
         "variable": "var(--sizes-0)"
@@ -3632,6 +3648,10 @@ test('with formatTokenName', () => {
       "$sizes-3.5": {
         "value": "0.875rem",
         "variable": "var(--sizes-3\\\\.5)"
+      },
+      "$sizes-4.5": {
+        "value": "1.125rem",
+        "variable": "var(--sizes-4\\\\.5)"
       },
       "$sizes-xs": {
         "value": "20rem",
@@ -3916,6 +3936,10 @@ test('with formatTokenName', () => {
       "$spacing--3.5": {
         "value": "calc(var(--spacing-3\\\\.5) * -1)",
         "variable": "var(--spacing-3\\\\.5)"
+      },
+      "$spacing--4.5": {
+        "value": "calc(var(--spacing-4\\\\.5) * -1)",
+        "variable": "var(--spacing-4\\\\.5)"
       },
       "$spacing--gutter": {
         "value": "var(--spacing-gutter)",

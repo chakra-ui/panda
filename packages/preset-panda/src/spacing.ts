@@ -8,6 +8,7 @@ export const spacing = {
   3: { value: '0.75rem' },
   3.5: { value: '0.875rem' },
   4: { value: '1rem' },
+  4.5: { value: '1.125rem' },
   5: { value: '1.25rem' },
   6: { value: '1.5rem' },
   7: { value: '1.75rem' },

@@ -60,6 +60,8 @@ See the [Changesets](./.changeset) for the latest changes.
   - `focusRingColor`, `focusRingWidth`, `focusRingStyle`, and `focusRingOffset` for fine-tuned control
   - Configure the global focus ring color with `--global-color-focus-ring` in global CSS
 
+- **Theme**: Add `4.5` spacing and sizing tokens to the `@pandacss/preset-panda` preset.
+
 ## [1.1.0] - 2025-08-18
 
 ### Added

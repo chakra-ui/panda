@@ -214,6 +214,9 @@ describe('Utility', () => {
         "(margin = 3.5)" => {
           "margin": "var(--spacing-3\\.5)",
         },
+        "(margin = 4.5)" => {
+          "margin": "var(--spacing-4\\.5)",
+        },
         "(margin = -1)" => {
           "margin": "calc(var(--spacing-1) * -1)",
         },
@@ -313,6 +316,9 @@ describe('Utility', () => {
         "(margin = -3.5)" => {
           "margin": "calc(var(--spacing-3\\.5) * -1)",
         },
+        "(margin = -4.5)" => {
+          "margin": "calc(var(--spacing-4\\.5) * -1)",
+        },
       }
     `)
 
@@ -352,6 +358,7 @@ describe('Utility', () => {
         "(margin = 1.5)" => "m_1.5",
         "(margin = 2.5)" => "m_2.5",
         "(margin = 3.5)" => "m_3.5",
+        "(margin = 4.5)" => "m_4.5",
         "(margin = -1)" => "m_-1",
         "(margin = -2)" => "m_-2",
         "(margin = -3)" => "m_-3",
@@ -385,6 +392,7 @@ describe('Utility', () => {
         "(margin = -1.5)" => "m_-1.5",
         "(margin = -2.5)" => "m_-2.5",
         "(margin = -3.5)" => "m_-3.5",
+        "(margin = -4.5)" => "m_-4.5",
       }
     `)
   })
@@ -799,6 +807,7 @@ describe('Utility', () => {
         "(margin = 1.5)" => "m_1.5",
         "(margin = 2.5)" => "m_2.5",
         "(margin = 3.5)" => "m_3.5",
+        "(margin = 4.5)" => "m_4.5",
         "(margin = gutter)" => "m_gutter",
         "(margin = -1)" => "m_-1",
         "(margin = -2)" => "m_-2",
@@ -833,6 +842,7 @@ describe('Utility', () => {
         "(margin = -1.5)" => "m_-1.5",
         "(margin = -2.5)" => "m_-2.5",
         "(margin = -3.5)" => "m_-3.5",
+        "(margin = -4.5)" => "m_-4.5",
         "(margin = -gutter)" => "m_-gutter",
         "(marginX = sm)" => "mx_sm",
         "(marginX = md)" => "mx_md",
@@ -1827,6 +1837,9 @@ describe('Utility', () => {
         "(margin = 3.5)" => {
           "margin": "var(--spacing-3\\.5)",
         },
+        "(margin = 4.5)" => {
+          "margin": "var(--spacing-4\\.5)",
+        },
         "(margin = gutter)" => {
           "margin": "var(--spacing-gutter)",
         },
@@ -1928,6 +1941,9 @@ describe('Utility', () => {
         },
         "(margin = -3.5)" => {
           "margin": "calc(var(--spacing-3\\.5) * -1)",
+        },
+        "(margin = -4.5)" => {
+          "margin": "calc(var(--spacing-4\\.5) * -1)",
         },
         "(margin = -gutter)" => {
           "margin": "calc(var(--spacing-gutter) * -1)",
