@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/token-dictionary",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Common error messages for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

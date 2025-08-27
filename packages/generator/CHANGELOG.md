@@ -1,5 +1,34 @@
 # @pandacss/generator
 
+## 1.2.0
+
+### Patch Changes
+
+- a1f5c64: - Add reset styles for `::selection` pseudo element that maps to `var(--global-color-selection, revert)`.
+
+  - Add support for `unstyled` prop in the `styled` factory. This makes it possible to opt out recipe styles as needed.
+
+  ```tsx
+  const Notice = styled('div', {
+    base: {
+      bg: 'red',
+      color: 'white',
+    },
+  })
+
+  // This will remove the recipe styles and only apply the inline styles
+  <Notice unstyled bg="pink" color="green">
+    Hello
+  </Notice>
+  ```
+
+  - @pandacss/core@1.2.0
+  - @pandacss/is-valid-prop@1.2.0
+  - @pandacss/logger@1.2.0
+  - @pandacss/shared@1.2.0
+  - @pandacss/token-dictionary@1.2.0
+  - @pandacss/types@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes
