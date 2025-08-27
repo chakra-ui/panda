@@ -1,5 +1,33 @@
 # @pandacss/preset-base
 
+## 1.2.0
+
+### Minor Changes
+
+- 9964772: Add new utilities for managing focus rings with `focusRing` and `focusVisibleRing` properties
+
+  - `focusRing`: Style focus states using `&:is(:focus, [data-focus])` selector with `outside`, `inside`, `mixed`, or
+    `none` values
+  - `focusVisibleRing`: Style keyboard-only focus using `&:is(:focus-visible, [data-focus-visible])` selector
+  - `focusRingColor`, `focusRingWidth`, `focusRingStyle`, and `focusRingOffset` for fine-tuned control
+  - Configure the global focus ring color with `--global-color-focus-ring` in global CSS
+
+  ```tsx
+  <div
+    className={css({
+      focusRing: 'outside',
+      focusVisibleRing: 'inside',
+      focusRingColor: 'blue.300',
+    })}
+  >
+    Click me
+  </div>
+  ```
+
+### Patch Changes
+
+- @pandacss/types@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @pandacss/preset-panda
 
+## 1.2.0
+
+### Patch Changes
+
+- ae7cc8d: Add `4.5` to spacing and sizing scales which maps to `18px`
+  - @pandacss/types@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes
