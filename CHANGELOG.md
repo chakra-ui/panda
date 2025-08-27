@@ -6,6 +6,8 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-08-27
+
 ### Added
 
 - **Global CSS**: Added reset styles for `::selection` pseudo element that maps to `--global-color-selection` css
