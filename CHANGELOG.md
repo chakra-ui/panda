@@ -6,6 +6,60 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+### Added
+
+- **Global CSS**: Added reset styles for `::selection` pseudo element that maps to `--global-color-selection` css
+  variable. You can configure it in the `globalCss` config.
+
+  ```ts
+  // panda.config.ts
+  export default defineConfig({
+    globalCss: {
+      html: {
+        '--global-color-selection': 'colors.gray.300',
+      },
+    },
+  })
+  ```
+
+- **JSX Styled Factory**: Added support for `unstyled` prop in the `styled` factory, allowing users to opt out of recipe
+  styles as needed.
+
+  ```tsx
+  const Notice = styled('div', {
+    base: {
+      bg: 'red',
+      color: 'white',
+    },
+  })
+
+  // This will remove the recipe styles and only apply the inline styles
+  <Notice unstyled bg="pink" color="green">
+    Hello
+  </Notice>
+  ```
+
+- **Focus Ring Utilities**: Introduced new utilities for managing focus rings with `focusRing` and `focusVisibleRing`
+  properties to the `@pandacss/preset-base` preset.
+
+  ```tsx
+  <div
+    className={css({
+      focusRing: 'outside',
+      focusVisibleRing: 'inside',
+      focusRingColor: 'blue.300',
+    })}
+  >
+    Click me
+  </div>
+  ```
+
+  - `focusRing`: Style focus states using `&:is(:focus, [data-focus])` selector with `outside`, `inside`, `mixed`, or
+    `none` values.
+  - `focusVisibleRing`: Style keyboard-only focus using `&:is(:focus-visible, [data-focus-visible])` selector
+  - `focusRingColor`, `focusRingWidth`, `focusRingStyle`, and `focusRingOffset` for fine-tuned control
+  - Configure the global focus ring color with `--global-color-focus-ring` in global CSS
+
 ## [1.1.0] - 2025-08-18
 
 ### Added
