@@ -34,7 +34,7 @@ export function generateReactJsxFactory(ctx: Context) {
       const __base__ = Dynamic.__base__ || Dynamic
 
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
-        const { as: Element = __base__, children, ...restProps } = props
+        const { as: Element = __base__, unstyled, children, ...restProps } = props
 
         const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
 
@@ -54,7 +54,13 @@ export function generateReactJsxFactory(ctx: Context) {
           return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.className)
         }
 
-        const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
+        const classes = () => {
+          if (unstyled) {
+            const { css: cssStyles, ...propStyles } = styleProps
+            return cx(css(propStyles, cssStyles), combinedProps.className)
+          }
+          return configOrCva.__recipe__ ? recipeClass() : cvaClass()
+        }
 
         return createElement(Element, {
           ref,

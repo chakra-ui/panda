@@ -29,7 +29,14 @@ interface Dict {
   [k: string]: unknown
 }
 
-export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T>, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
+export interface UnstyledProps {
+  /**
+   * Whether to remove recipe styles
+   */
+  unstyled?: boolean | undefined
+}
+
+export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T> & UnstyledProps, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
 
 interface RecipeFn {
   __type: any
@@ -42,7 +49,7 @@ export interface JsxFactoryOptions<TProps extends Dict> {
   forwardProps?: string[]
 }
 
-export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T>, P>;
+export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps, P>;
 
 export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
   ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
@@ -63,7 +70,7 @@ export type JsxElements = {
 
 export type ${upperName} = JsxFactory & JsxElements
 
-export type ${typeName}<T extends ElementType> = Assign<ComponentProps<T>, JsxStyleProps>
+export type ${typeName}<T extends ElementType> = Assign<ComponentProps<T> & UnstyledProps, JsxStyleProps>
 
 export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
   `,

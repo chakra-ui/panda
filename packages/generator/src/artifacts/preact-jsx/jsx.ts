@@ -36,7 +36,7 @@ export function generatePreactJsxFactory(ctx: Context) {
       const __base__ = Dynamic.__base__ || Dynamic
 
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
-        const { as: Element = __base__, children, ...restProps } = props
+        const { as: Element = __base__, unstyled, children, ...restProps } = props
 
 
         const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
@@ -57,7 +57,13 @@ export function generatePreactJsxFactory(ctx: Context) {
           return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, combinedProps.className)
         }
 
-        const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
+        const classes = () => {
+          if (unstyled) {
+            const { css: cssStyles, ...propStyles } = styleProps
+            return cx(css(propStyles, cssStyles), combinedProps.class, combinedProps.className)
+          }
+          return configOrCva.__recipe__ ? recipeClass() : cvaClass()
+        }
 
         return h(Element, {
           ...forwardedProps,

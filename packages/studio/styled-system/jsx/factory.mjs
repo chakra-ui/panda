@@ -23,7 +23,7 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
   const __base__ = Dynamic.__base__ || Dynamic
 
   const PandaComponent = /* @__PURE__ */ forwardRef(function PandaComponent(props, ref) {
-    const { as: Element = __base__, children, ...restProps } = props
+    const { as: Element = __base__, unstyled, children, ...restProps } = props
 
     const combinedProps = useMemo(() => Object.assign({}, defaultProps, restProps), [restProps])
 
@@ -43,7 +43,13 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
       return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.className)
     }
 
-    const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
+    const classes = () => {
+      if (unstyled) {
+        const { css: cssStyles, ...propStyles } = styleProps
+        return cx(css(propStyles, cssStyles), combinedProps.className)
+      }
+      return configOrCva.__recipe__ ? recipeClass() : cvaClass()
+    }
 
     return createElement(Element, {
       ref,

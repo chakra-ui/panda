@@ -34,7 +34,7 @@ export function generateQwikJsxFactory(ctx: Context) {
       const __base__ = Dynamic.__base__ || Dynamic
 
       const ${componentName} = function ${componentName}(props) {
-        const { as: Element = __base__, children, className, ...restProps } = props
+        const { as: Element = __base__, unstyled, children, className, ...restProps } = props
 
         const combinedProps = Object.assign({}, defaultProps, restProps)
 
@@ -55,7 +55,13 @@ export function generateQwikJsxFactory(ctx: Context) {
           return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, className)
         }
 
-        const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
+        const classes = () => {
+          if (unstyled) {
+            const { css: cssStyles, ...propStyles } = styleProps
+            return cx(css(propStyles, cssStyles), combinedProps.class, className)
+          }
+          return configOrCva.__recipe__ ? recipeClass() : cvaClass()
+        }
 
         return h(Element, {
           ...forwardedProps,

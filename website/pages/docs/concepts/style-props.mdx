@@ -283,6 +283,30 @@ const StyledMotion = styled(
 )
 ```
 
+### Unstyled prop
+
+All styled components accept an `unstyled` prop that allows you to disable the recipe styles. This is useful when you want to use a component's structure but apply completely custom styling.
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+
+const Button = styled('button', button)
+
+const App = () => (
+  <>
+    {/* With recipe styles */}
+    <Button>Styled Button</Button>
+    
+    {/* Without recipe styles, but inline styles still work */}
+    <Button unstyled bg="red.500" color="white">
+      Unstyled Button
+    </Button>
+  </>
+)
+```
+
+
 ### Reducing the allowed style props
 
 You can reduce the allowed JSX properties on the factory using [`config.jsxStyleProps`](/docs/references/config#jsxstyleprops):

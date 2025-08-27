@@ -49,6 +49,7 @@ export function generateSolidJsxFactory(ctx: Context) {
 
         const [localProps, restProps] = splitProps(mergedProps, [
           'as',
+          'unstyled',
           'class',
           'className',
         ])
@@ -91,7 +92,13 @@ export function generateSolidJsxFactory(ctx: Context) {
           )
         }
 
-        const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
+        const classes = () => {
+          if (localProps.unstyled) {
+            const { css: cssStyles, ...propStyles } = styleProps
+            return cx(css(propStyles, cssStyles), localProps.class, localProps.className)
+          }
+          return configOrCva.__recipe__ ? recipeClass() : cvaClass()
+        }
 
         if (forwardedProps.className) {
           delete forwardedProps.className
