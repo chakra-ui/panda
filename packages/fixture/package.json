@@ -16,6 +16,6 @@
     "@pandacss/shared": "workspace:^",
     "@pandacss/token-dictionary": "workspace:^",
     "@pandacss/types": "workspace:*",
-    "postcss": "8.4.49"
+    "postcss": "8.5.6"
   }
 }
