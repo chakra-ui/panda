@@ -229,6 +229,15 @@ export const addColorPalette: TokenTransformer = {
     return token.extensions.category === 'colors' && !token.extensions.isVirtual
   },
   transform(token, dict) {
+    // Check colorPalette configuration
+    const colorPaletteConfig = dict.colorPalette
+    const enabled = colorPaletteConfig?.enabled ?? true
+    const include = colorPaletteConfig?.include
+    const exclude = colorPaletteConfig?.exclude
+
+    // If disabled, don't add colorPalette extensions
+    if (!enabled) return {}
+
     let tokenPathClone = [...token.path]
     tokenPathClone.pop()
     tokenPathClone.shift()
@@ -242,6 +251,11 @@ export const addColorPalette: TokenTransformer = {
     if (tokenPathClone.length === 0) {
       return {}
     }
+
+    // Check include/exclude filters
+    const colorName = token.path[1] // e.g., 'blue' from ['colors', 'blue', '500']
+    if (include && !include.includes(colorName)) return {}
+    if (exclude && exclude.includes(colorName)) return {}
 
     /**
      * If this is the nested color palette:
