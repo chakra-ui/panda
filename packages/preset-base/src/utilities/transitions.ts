@@ -11,11 +11,22 @@ const transitionMap: Record<string, any> = {
   common: createTransition(
     'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
   ),
-  background: createTransition('background, background-color'),
+  size: createTransition('width, height, min-width, max-width, min-height, max-height'),
+  position: createTransition('left, right, top, bottom, inset, inset-inline, inset-block'),
+  background: createTransition('background, background-color, background-image, background-position'),
   colors: createTransition('color, background-color, border-color, outline-color, text-decoration-color, fill, stroke'),
   opacity: createTransition('opacity'),
   shadow: createTransition('box-shadow'),
   transform: createTransition('transform'),
+}
+
+const transitionPropertyMap: Record<string, string> = {
+  common:
+    'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
+  colors: 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke',
+  size: 'width, height, min-width, max-width, min-height, max-height',
+  position: 'left, right, top, bottom, inset, inset-inline, inset-block',
+  background: 'background, background-color, background-image, background-position',
 }
 
 export const transitions: UtilityConfig = {
@@ -49,6 +60,7 @@ export const transitions: UtilityConfig = {
   transitionProperty: {
     className: 'trs-prop',
     group: 'Transition',
+    values: transitionPropertyMap,
     transform(value) {
       return {
         '--transition-prop': value,

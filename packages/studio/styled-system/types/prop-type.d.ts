@@ -150,7 +150,8 @@ export interface UtilityValues {
 	transitionTimingFunction: Tokens["easings"];
 	transitionDelay: Tokens["durations"];
 	transitionDuration: Tokens["durations"];
-	transition: "all" | "common" | "background" | "colors" | "opacity" | "shadow" | "transform";
+	transitionProperty: "common" | "colors" | "size" | "position" | "background";
+	transition: "all" | "common" | "size" | "position" | "background" | "colors" | "opacity" | "shadow" | "transform";
 	animation: Tokens["animations"];
 	animationName: "spin" | "ping" | "pulse" | "bounce";
 	animationTimingFunction: Tokens["easings"];
