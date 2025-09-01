@@ -64,6 +64,12 @@ export const addPixelUnit: TokenMiddleware = {
 export const addVirtualPalette: TokenMiddleware = {
   enforce: 'post',
   transform(dictionary: TokenDictionary) {
+    const colorPaletteConfig = dictionary.colorPalette
+    const enabled = colorPaletteConfig?.enabled ?? true
+
+    // If disabled, skip generating color palettes
+    if (!enabled) return
+
     const tokens = dictionary.filter({ extensions: { category: 'colors' } })
 
     const keys = new Map<string, string[]>()
