@@ -1,5 +1,18 @@
 # @pandacss/generator
 
+## 1.3.0
+
+### Patch Changes
+
+- 43be051: Fix TypeScript types for `defaultProps` in `withProvider` and `withContext` to be partial
+- Updated dependencies [70efd73]
+  - @pandacss/types@1.3.0
+  - @pandacss/core@1.3.0
+  - @pandacss/logger@1.3.0
+  - @pandacss/token-dictionary@1.3.0
+  - @pandacss/is-valid-prop@1.3.0
+  - @pandacss/shared@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes
