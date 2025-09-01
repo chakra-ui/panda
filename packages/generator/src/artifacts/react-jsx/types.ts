@@ -43,7 +43,7 @@ interface RecipeFn {
 
 interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
-  defaultProps?: TProps
+  defaultProps?: Partial<TProps>
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: string[]
 }
