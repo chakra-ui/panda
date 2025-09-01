@@ -6,6 +6,7 @@ import { PreactLogo } from '@/icons/preact'
 import { ReactRouterLogo } from '@/icons/react-router'
 import { QwikLogo } from '@/icons/qwik'
 import { RedwoodLogo } from '@/icons/redwood'
+import { RsbuildLogo } from '@/icons/rsbuild'
 import { RemixLogo } from '@/icons/remix'
 import { SolidjsLogo } from '@/icons/solid'
 import { StorybookLogo } from '@/icons/storybook'
@@ -71,6 +72,11 @@ const logoMap = {
     name: 'Redwood',
     logo: RedwoodLogo,
     href: '/docs/installation/redwood'
+  },
+  rsbuild: {
+    name: 'Rsbuild',
+    logo: RsbuildLogo,
+    href: '/docs/installation/rsbuild'
   },
   vue: {
     name: 'Vue',
