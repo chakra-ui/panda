@@ -61,14 +61,14 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@pandacss/astro-plugin-studio": "workspace:*",
-    "astro": "5.5.5",
+    "astro": "5.13.5",
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "vite": "7.0.6"
+    "vite": "7.1.4"
   },
   "devDependencies": {
-    "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19",
+    "@types/react": "18.3.24",
+    "@types/react-dom": "18.3.7",
     "@testing-library/react": "16.3.0"
   }
 }
