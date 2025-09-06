@@ -14,13 +14,20 @@ export interface UnstyledProps {
   unstyled?: boolean | undefined
 }
 
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
 export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
 }
 
 export interface PandaComponent<T extends ElementType, P extends Dict = {}> {
-  (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<JsxStyleProps, P>>): JSX.Element
-  displayName?: string
+  (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>): JSX.Element
+  displayName?: string | undefined
 }
 
 interface RecipeFn {
@@ -34,7 +41,7 @@ interface JsxFactoryOptions<TProps extends Dict> {
   forwardProps?: string[]
 }
 
-export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps, P>;
+export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>;
 
 export type JsxElement<T extends ElementType, P extends Dict> = T extends PandaComponent<infer A, infer B>
   ? PandaComponent<A, Pretty<DistributiveUnion<P, B>>>
@@ -55,6 +62,6 @@ export type JsxElements = {
 
 export type Panda = JsxFactory & JsxElements
 
-export type HTMLPandaProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+export type HTMLPandaProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
 
 export type PandaVariantProps<T extends PandaComponent<any, any>> = T extends PandaComponent<any, infer Props> ? Props : never

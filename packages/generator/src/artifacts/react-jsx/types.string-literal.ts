@@ -17,13 +17,20 @@ interface Dict {
   [k: string]: unknown
 }
 
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
 export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
-}
+} & AsProps
 
 export type ${componentName}<T extends ElementType> = {
   (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
-  displayName?: string
+  displayName?: string | undefined
 }
 
 export interface JsxFactory {

@@ -23,8 +23,15 @@ export type ComponentProps<T extends ElementType> = T extends IntrinsicElement
   ? Props
   : never
 
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
 export type ${componentName}<T extends ElementType> = {
-  (args: { raw: readonly string[] | ArrayLike<string> }): FunctionalComponent<ComponentProps<T>>
+  (args: { raw: readonly string[] | ArrayLike<string> }): FunctionalComponent<ComponentProps<T> & AsProps>
 }
 
 export interface JsxFactory {

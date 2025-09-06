@@ -16,11 +16,18 @@ interface Dict {
   [k: string]: unknown
 }
 
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
 export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
 
 export type ${componentName}<T extends ElementType> = {
-    (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element
-    displayName?: string
+    (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T> & AsProps) => JSX.Element
+    displayName?: string | undefined
 }
 
 export interface JsxFactory {
