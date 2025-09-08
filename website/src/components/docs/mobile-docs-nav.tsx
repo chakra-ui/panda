@@ -5,13 +5,13 @@ import { css } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import { Portal } from '@ark-ui/react/portal'
 import { useState } from 'react'
-import { DocsSidebar } from './sidebar'
+import { Sidebar } from './sidebar'
 
-interface MobileDocsNavProps {
-  currentSlug?: string
+interface Props {
+  slug?: string
 }
 
-export function MobileDocsNav({ currentSlug }: MobileDocsNavProps) {
+export const MobileDocsNav = ({ slug }: Props) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -95,7 +95,7 @@ export function MobileDocsNav({ currentSlug }: MobileDocsNavProps) {
 
               {/* Sidebar content */}
               <Box pt="16" pb="8">
-                <DocsSidebar currentSlug={currentSlug} />
+                <Sidebar slug={slug} />
               </Box>
             </div>
           </div>

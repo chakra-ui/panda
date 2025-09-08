@@ -5,7 +5,7 @@ import { css } from '@/styled-system/css'
 import { Box, Flex } from '@/styled-system/jsx'
 import { useState } from 'react'
 
-export function DocsSearch() {
+export const SearchInput = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (

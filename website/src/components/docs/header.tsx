@@ -3,11 +3,11 @@ import { css } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { CopyMdxWidget } from './copy-mdx-widget'
 
-interface DocProps {
+interface Props {
   doc: Docs
 }
 
-export function DocsHeader({ doc }: DocProps) {
+export const Header = ({ doc }: Props) => {
   return (
     <Flex justify="space-between" align="flex-start" gap="4" mb="12">
       <div>
@@ -23,11 +23,7 @@ export function DocsHeader({ doc }: DocProps) {
         </h1>
         {doc.description && (
           <p
-            className={css({
-              fontSize: 'lg',
-              color: 'fg.muted',
-              maxW: '3xl'
-            })}
+            className={css({ fontSize: 'lg', color: 'fg.muted', maxW: '3xl' })}
           >
             {doc.description}
           </p>

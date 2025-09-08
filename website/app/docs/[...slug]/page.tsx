@@ -1,10 +1,10 @@
 import { docs } from '.velite'
 import { Toc } from '@/components/ui/toc'
-import { DocsBreadcrumb } from '@/components/docs/breadcrumb'
-import { DocsHeader } from '@/components/docs/header'
+import { Breadcrumb } from '@/components/docs/breadcrumb'
+import { Header } from '@/components/docs/header'
 import { MDXContent } from '@/components/docs/mdx-content'
 import { MobileDocsNav } from '@/components/docs/mobile-docs-nav'
-import { DocsSidebar } from '@/components/docs/sidebar'
+import { Sidebar } from '@/components/docs/sidebar'
 import { css } from '@/styled-system/css'
 import { Box, Container, Flex } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
@@ -51,13 +51,13 @@ export default function DocsPage(props: DocsPageProps) {
             maxH="calc(100vh - 5rem)"
             overflowY="auto"
           >
-            <DocsSidebar currentSlug={slug} />
+            <Sidebar slug={slug} />
           </Box>
 
           {/* Main Content */}
           <Box flex="1" minW="0">
-            <DocsBreadcrumb slug={slug} />
-            <DocsHeader doc={doc} />
+            <Breadcrumb slug={slug} />
+            <Header doc={doc} />
             <div
               className={css({
                 '& > *:first-child': { mt: 0 },
@@ -83,7 +83,7 @@ export default function DocsPage(props: DocsPageProps) {
       </Container>
 
       {/* Mobile Navigation */}
-      <MobileDocsNav currentSlug={slug} />
+      <MobileDocsNav slug={slug} />
     </>
   )
 }

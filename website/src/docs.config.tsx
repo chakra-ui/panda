@@ -70,6 +70,7 @@ export const docsConfig: DocsConfig = {
       title: 'Playground',
       type: 'page',
       href: 'https://play.panda-css.com/',
+      external: true,
       newWindow: true
     },
     {

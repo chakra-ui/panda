@@ -1,21 +1,16 @@
 'use client'
 
-import { css } from '@/styled-system/css'
-import { Box, Flex } from '@/styled-system/jsx'
-import * as React from 'react'
-import * as runtime from 'react/jsx-runtime'
-
-// Import all available MDX components
-import { Anchor } from '@/components/ui/anchor'
 import { Callout } from '@/mdx/callout'
 import { Card, Cards } from '@/mdx/cards'
 import { Code } from '@/mdx/code'
+import { CodeBlock } from '@/mdx/code-block'
 import { Collapse } from '@/mdx/collapse'
 import { Details } from '@/mdx/details'
 import { Divider } from '@/mdx/divider'
 import { FileTree } from '@/mdx/file-tree'
 import { FrameworkCards } from '@/mdx/framework-card'
 import { createHeadings } from '@/mdx/heading'
+import { Link } from '@/mdx/link'
 import { ListItem, OrderedList, UnorderedList } from '@/mdx/list'
 import { Pre } from '@/mdx/pre'
 import {
@@ -29,7 +24,10 @@ import { Table, Td, Th, Tr } from '@/mdx/table'
 import { Tab, Tabs } from '@/mdx/tabs'
 import { Text } from '@/mdx/text'
 import { TokenDocs } from '@/mdx/token-docs'
-import { CodeBlock } from '@/mdx/code-block'
+import { css } from '@/styled-system/css'
+import { Box, Flex } from '@/styled-system/jsx'
+import * as React from 'react'
+import * as runtime from 'react/jsx-runtime'
 
 // Create heading components
 const headings = createHeadings({ index: 0 })
@@ -40,16 +38,7 @@ const sharedComponents = {
   Box,
   Flex,
 
-  a: (props: any) => (
-    <Anchor
-      className={css({
-        textDecoration: 'underline',
-        fontWeight: 'semibold',
-        textUnderlineOffset: '2px'
-      })}
-      {...props}
-    />
-  ),
+  a: Link,
   blockquote: Callout,
   img: (props: any) => (
     <img

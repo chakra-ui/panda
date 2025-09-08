@@ -7,18 +7,21 @@ import { Box, Stack } from '@/styled-system/jsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { LuArrowUpRight } from 'react-icons/lu'
 
 interface SidebarItem {
   title: string
   slug: string
+  external?: boolean
+  href?: string
   children?: SidebarItem[]
 }
 
-interface DocsSidebarProps {
-  currentSlug?: string
+interface Props {
+  slug?: string
 }
 
-export function DocsSidebar({ currentSlug }: DocsSidebarProps) {
+export function Sidebar({ slug: currentSlug }: Props) {
   const pathname = usePathname()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
@@ -31,7 +34,9 @@ export function DocsSidebar({ currentSlug }: DocsSidebarProps) {
       slug: section.url || '',
       children: section.items?.map((item: NavItem) => ({
         title: item.title,
-        slug: `${section.url}/${item.url}`
+        slug: item.external ? item.href || '' : `${section.url}/${item.url}`,
+        external: item.external,
+        href: item.href
       }))
     })) || []
 
@@ -97,35 +102,52 @@ export function DocsSidebar({ currentSlug }: DocsSidebarProps) {
 
               {isExpanded && section.children && (
                 <Stack gap="0.5" mt="1" ml="2">
-                  {section.children.map(item => (
-                    <Link
-                      key={item.slug}
-                      href={`/docs/${item.slug}`}
-                      className={css({
-                        display: 'block',
-                        px: 3,
-                        py: 1.5,
-                        rounded: 'md',
-                        fontSize: 'sm',
-                        color: isActive(item.slug)
-                          ? 'accent.default'
-                          : 'fg.muted',
-                        bg: isActive(item.slug)
-                          ? 'accent.subtle'
-                          : 'transparent',
-                        fontWeight: isActive(item.slug) ? 'medium' : 'normal',
-                        transition: 'all',
-                        _hover: {
-                          color: isActive(item.slug) ? 'accent.default' : 'fg',
-                          bg: isActive(item.slug)
-                            ? 'accent.subtle'
-                            : 'bg.subtle'
-                        }
-                      })}
-                    >
-                      {item.title}
-                    </Link>
-                  ))}
+                  {section.children.map(item => {
+                    const linkStyles = css({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2',
+                      px: '3',
+                      py: '1.5',
+                      rounded: 'md',
+                      fontSize: 'sm',
+                      color: isActive(item.slug)
+                        ? 'accent.default'
+                        : 'fg.muted',
+                      bg: isActive(item.slug) ? 'accent.subtle' : 'transparent',
+                      fontWeight: isActive(item.slug) ? 'medium' : 'normal',
+                      transition: 'all',
+                      _hover: {
+                        color: isActive(item.slug) ? 'accent.default' : 'fg',
+                        bg: isActive(item.slug) ? 'accent.subtle' : 'bg.subtle'
+                      }
+                    })
+
+                    if (item.external) {
+                      return (
+                        <a
+                          key={item.slug}
+                          href={item.href || item.slug}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={linkStyles}
+                        >
+                          {item.title}
+                          <LuArrowUpRight />
+                        </a>
+                      )
+                    }
+
+                    return (
+                      <Link
+                        key={item.slug}
+                        href={`/docs/${item.slug}`}
+                        className={linkStyles}
+                      >
+                        {item.title}
+                      </Link>
+                    )
+                  })}
                 </Stack>
               )}
             </div>
