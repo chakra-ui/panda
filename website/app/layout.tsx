@@ -23,7 +23,7 @@ export default function RootLayout(props: Props) {
       lang="en"
       className={cx(
         fontClassName,
-        css({ overflowX: 'hidden', fontFamily: 'body', fontSize: '0.9em' })
+        css({ fontFamily: 'body', fontSize: '0.9em' })
       )}
       suppressHydrationWarning
     >
@@ -34,7 +34,7 @@ export default function RootLayout(props: Props) {
           src="https://plausible.io/js/script.js"
         />
       </head>
-      <body className={css({ overflowX: 'hidden', overflowY: 'auto' })}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>

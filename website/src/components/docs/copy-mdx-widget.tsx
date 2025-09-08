@@ -84,7 +84,9 @@ const ActionMenu = (props: { doc: Docs }) => {
               minW: '200px',
               bg: 'white',
               _dark: { bg: 'neutral.800' },
-              p: '1'
+              p: '1',
+              borderWidth: '1px',
+              outline: '0'
             })}
           >
             {items.map(item => (
@@ -98,9 +100,18 @@ const ActionMenu = (props: { doc: Docs }) => {
                   px: '2',
                   py: '1',
                   minH: '8',
+                  textStyle: 'sm',
+                  fontWeight: 'medium',
                   textDecoration: 'underline',
                   textDecorationColor: 'border',
-                  textUnderlineOffset: '4px'
+                  textUnderlineOffset: '4px',
+                  _icon: {
+                    boxSize: '3'
+                  },
+                  _highlighted: {
+                    bg: 'gray.100',
+                    _dark: { bg: 'gray.800' }
+                  }
                 })}
               >
                 <NextLink href={item.href}>

@@ -39,48 +39,53 @@ export default function DocsPage(props: DocsPageProps) {
 
   return (
     <>
-      <Container maxW="8xl" py="8">
-        <Flex gap="8">
-          {/* Sidebar */}
+      <Box maxW="90rem" mx="auto" display="flex" position="relative">
+        {/* Sidebar */}
+        <Box
+          display={{ base: 'none', lg: 'block' }}
+          flexShrink="0"
+          w="64"
+          position="sticky"
+          top="calc(var(--navbar-height) + var(--banner-height) + 1rem)"
+          height="calc(100vh - var(--navbar-height) - var(--banner-height) - 1rem)"
+        >
           <Box
-            display={{ base: 'none', lg: 'block' }}
-            flexShrink="0"
-            w="64"
-            position="sticky"
-            top="20"
-            maxH="calc(100vh - 5rem)"
             overflowY="auto"
+            height="100%"
+            className="nextra-scrollbar"
+            p="4"
           >
             <Sidebar slug={slug} />
           </Box>
+        </Box>
 
-          {/* Main Content */}
-          <Box flex="1" minW="0">
-            <Breadcrumb slug={slug} />
-            <Header doc={doc} />
-            <div
-              className={css({
-                '& > *:first-child': { mt: 0 },
-                '& > *:last-child': { mb: 0 }
-              })}
-            >
-              <MDXContent code={doc.code} />
-            </div>
-          </Box>
-
-          {/* Table of Contents */}
-          <Box
-            display={{ base: 'none', xl: 'block' }}
-            flexShrink="0"
-            w="56"
-            position="sticky"
-            top="20"
-            maxH="calc(100vh - 5rem)"
+        {/* Main Content */}
+        <Box flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="10">
+          <Breadcrumb slug={slug} />
+          <Header doc={doc} />
+          <div
+            className={css({
+              '& > *:first-child': { mt: 0 },
+              '& > *:last-child': { mb: 0 }
+            })}
           >
-            <Toc data={doc.toc} />
-          </Box>
-        </Flex>
-      </Container>
+            <MDXContent code={doc.code} />
+          </div>
+        </Box>
+
+        {/* Table of Contents */}
+        <Box
+          display={{ base: 'none', xl: 'block' }}
+          flexShrink="0"
+          w="56"
+          position="sticky"
+          top="calc(var(--navbar-height) + var(--banner-height) + 1rem)"
+          pt="10"
+          maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - 1rem)"
+        >
+          <Toc data={doc.toc} />
+        </Box>
+      </Box>
 
       {/* Mobile Navigation */}
       <MobileDocsNav slug={slug} />

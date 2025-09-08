@@ -5,7 +5,8 @@ import { css, cx } from '@/styled-system/css'
 const EXTERNAL_HREF_REGEX = /https?:\/\//
 
 const styles = css({
-  fontWeight: 'semibold',
+  color: 'primary.600',
+  fontWeight: 'medium',
   textUnderlineOffset: '2px',
   textDecorationLine: 'underline',
   textDecorationThickness: 'from-font',

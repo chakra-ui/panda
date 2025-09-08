@@ -1,21 +1,18 @@
 import { defineGlobalStyles } from '@pandacss/dev'
 
 export const globalCss = defineGlobalStyles({
-  // nextra specific styles
   '*, *::before, *::after': {
     borderColor: { base: 'neutral.200', _dark: 'neutral.800' }
   },
   html: {
     fontFamily: 'sans',
     fontSize: '0.9em',
-    '--nextra-primary-hue': '212deg',
-    '--nextra-navbar-height': '4rem',
-    '--nextra-menu-height': '3.75rem',
-    '--nextra-banner-height': '2.5rem'
+    '--nextra-primary-hue': '212deg'
   },
   body: {
     bg: 'white',
-    _dark: { bg: 'dark', color: 'gray.100' }
+    _dark: { bg: 'dark', color: 'gray.100' },
+    minHeight: '100vh'
   },
   "a, summary, button, input, [tabindex]:not([tabindex='-1'])": {
     outline: 'none',
@@ -26,16 +23,6 @@ export const globalCss = defineGlobalStyles({
       outlineStyle: 'solid',
       _dark: {
         outlineColor: 'primary.800'
-      }
-    }
-  },
-  'a, summary': {
-    rounded: 'md'
-  },
-  'article:before': {
-    _motionReduce: {
-      mdDown: {
-        transition: 'none'
       }
     }
   },

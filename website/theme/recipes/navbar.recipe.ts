@@ -23,7 +23,7 @@ export const navbarRecipe = defineRecipe({
   jsx: ['Navbar'],
   base: parts({
     root: {
-      position: 'sticky',
+      position: 'fixed',
       top: 0,
       zIndex: 20,
       w: 'full',
@@ -53,7 +53,7 @@ export const navbarRecipe = defineRecipe({
     nav: {
       mx: 'auto',
       display: 'flex',
-      h: 'var(--nextra-navbar-height)',
+      h: 'var(--navbar-height, 4rem)',
       maxW: '90rem',
       alignItems: 'center',
       justifyContent: 'flex-end',

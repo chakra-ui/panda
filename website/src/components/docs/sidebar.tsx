@@ -61,99 +61,97 @@ export function Sidebar({ slug: currentSlug }: Props) {
   }
 
   return (
-    <Box as="nav" pe="4">
-      <Stack gap="1">
-        {sidebarStructure.map(section => {
-          const isExpanded =
-            expandedSections.has(section.slug) || isSectionActive(section)
+    <Stack as="nav" gap="1">
+      {sidebarStructure.map(section => {
+        const isExpanded =
+          expandedSections.has(section.slug) || isSectionActive(section)
 
-          return (
-            <div key={section.slug}>
-              <button
-                onClick={() => toggleSection(section.slug)}
-                className={css({
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  w: 'full',
-                  px: 3,
-                  py: 2,
-                  rounded: 'md',
-                  fontWeight: 'semibold',
-                  fontSize: 'sm',
-                  color: 'fg',
-                  transition: 'colors',
-                  _hover: {
-                    bg: 'bg.subtle'
-                  },
-                  cursor: 'pointer'
-                })}
-              >
-                <span>{section.title}</span>
-                {section.children && (
-                  <Box
-                    as={isExpanded ? ChevronDownIcon : ChevronRightIcon}
-                    w="4"
-                    h="4"
-                    color="fg.muted"
-                  />
-                )}
-              </button>
+        return (
+          <div key={section.slug}>
+            <button
+              onClick={() => toggleSection(section.slug)}
+              className={css({
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                w: 'full',
+                px: 3,
+                py: 2,
+                rounded: 'md',
+                fontWeight: 'semibold',
+                fontSize: 'sm',
+                color: 'fg',
+                transitionProperty: 'background',
+                transitionDuration: '200ms',
+                _hover: {
+                  bg: 'bg.subtle'
+                },
+                cursor: 'pointer'
+              })}
+            >
+              <span>{section.title}</span>
+              {section.children && (
+                <Box
+                  as={isExpanded ? ChevronDownIcon : ChevronRightIcon}
+                  w="4"
+                  h="4"
+                  color="fg.muted"
+                />
+              )}
+            </button>
 
-              {isExpanded && section.children && (
-                <Stack gap="0.5" mt="1" ml="2">
-                  {section.children.map(item => {
-                    const linkStyles = css({
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '2',
-                      px: '3',
-                      py: '1.5',
-                      rounded: 'md',
-                      fontSize: 'sm',
-                      color: isActive(item.slug)
-                        ? 'accent.default'
-                        : 'fg.muted',
-                      bg: isActive(item.slug) ? 'accent.subtle' : 'transparent',
-                      fontWeight: isActive(item.slug) ? 'medium' : 'normal',
-                      transition: 'all',
-                      _hover: {
-                        color: isActive(item.slug) ? 'accent.default' : 'fg',
-                        bg: isActive(item.slug) ? 'accent.subtle' : 'bg.subtle'
-                      }
-                    })
-
-                    if (item.external) {
-                      return (
-                        <a
-                          key={item.slug}
-                          href={item.href || item.slug}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={linkStyles}
-                        >
-                          {item.title}
-                          <LuArrowUpRight />
-                        </a>
-                      )
+            {isExpanded && section.children && (
+              <Stack gap="0.5" mt="1">
+                {section.children.map(item => {
+                  const linkStyles = css({
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2',
+                    px: '4',
+                    py: '1.5',
+                    rounded: 'md',
+                    fontSize: 'sm',
+                    color: isActive(item.slug) ? 'accent.default' : 'fg.muted',
+                    bg: isActive(item.slug) ? 'accent.subtle' : 'transparent',
+                    fontWeight: isActive(item.slug) ? 'medium' : 'normal',
+                    transitionProperty: 'background, color',
+                    transitionDuration: '200ms',
+                    _hover: {
+                      color: isActive(item.slug) ? 'accent.default' : 'fg',
+                      bg: isActive(item.slug) ? 'accent.subtle' : 'bg.subtle'
                     }
+                  })
 
+                  if (item.external) {
                     return (
-                      <Link
+                      <a
                         key={item.slug}
-                        href={`/docs/${item.slug}`}
+                        href={item.href || item.slug}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className={linkStyles}
                       >
                         {item.title}
-                      </Link>
+                        <LuArrowUpRight />
+                      </a>
                     )
-                  })}
-                </Stack>
-              )}
-            </div>
-          )
-        })}
-      </Stack>
-    </Box>
+                  }
+
+                  return (
+                    <Link
+                      key={item.slug}
+                      href={`/docs/${item.slug}`}
+                      className={linkStyles}
+                    >
+                      {item.title}
+                    </Link>
+                  )
+                })}
+              </Stack>
+            )}
+          </div>
+        )
+      })}
+    </Stack>
   )
 }

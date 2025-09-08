@@ -1,22 +1,17 @@
 'use client'
 
 import { CourseBanner } from '@/components/course-banner'
+import { Anchor } from '@/components/ui/anchor'
+import { SearchInput } from '@/components/ui/search-input'
 import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { renderComponent } from '@/lib/render'
-import { Anchor } from '@/components/ui/anchor'
 import { useMenu } from '@/mdx/contexts'
 import { css, cx } from '@/styled-system/css'
 import { navbar } from '@/styled-system/recipes'
 import { Icon } from '@/theme/icons'
 import { usePathname } from 'next/navigation'
 import { ThemeSwitch } from './theme-switch'
-import { SearchInput } from '@/components/ui/search-input'
-
-export interface DocsNavBarProps {
-  flatDirectories: any[]
-  items: any[]
-}
 
 const classes = {
   link: css({ textStyle: 'sm' }),
@@ -30,22 +25,14 @@ const classes = {
   })
 }
 
-export const DocsNavbar = () => {
+export const Navbar = () => {
   const pathname = usePathname()
   const { menu, setMenu } = useMenu()
   const items = docsConfig.navigation
 
   return (
-    <div
-      data-scope="navbar"
-      data-part="root"
-      className={cx('docs-nav-container', navbar())}
-    >
-      <div
-        data-scope="navbar"
-        data-part="blur"
-        className={cx('docs-nav-container-blur')}
-      />
+    <div data-scope="navbar" data-part="root" className={navbar()}>
+      <div data-scope="navbar" data-part="blur" />
 
       <CourseBanner />
 

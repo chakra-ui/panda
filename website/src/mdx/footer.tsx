@@ -2,7 +2,7 @@ import { docsConfig } from '@/docs.config'
 import { renderComponent } from '@/lib/render'
 import { css, cx } from '@/styled-system/css'
 
-export const DocsFooter = () => {
+export const Footer = () => {
   return (
     <footer
       className={css({
