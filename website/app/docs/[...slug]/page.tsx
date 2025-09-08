@@ -42,6 +42,7 @@ export default function DocsPage(props: DocsPageProps) {
       <Box maxW="90rem" mx="auto" display="flex" position="relative">
         {/* Sidebar */}
         <Box
+          as="aside"
           display={{ base: 'none', lg: 'block' }}
           flexShrink="0"
           w="64"
@@ -60,7 +61,13 @@ export default function DocsPage(props: DocsPageProps) {
         </Box>
 
         {/* Main Content */}
-        <Box flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="10">
+        <Box
+          as="article"
+          flex="1"
+          minW="0"
+          px={{ base: '4', lg: '10' }}
+          pt="10"
+        >
           <Breadcrumb slug={slug} />
           <Header doc={doc} />
           <div

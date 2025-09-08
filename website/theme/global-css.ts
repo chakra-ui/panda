@@ -7,12 +7,14 @@ export const globalCss = defineGlobalStyles({
   html: {
     fontFamily: 'sans',
     fontSize: '0.9em',
-    '--nextra-primary-hue': '212deg'
+    '--nextra-primary-hue': '212deg',
+    scrollPaddingTop: 'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + 1rem)'
   },
   body: {
     bg: 'bg',
     color: 'fg',
-    minHeight: '100vh'
+    minHeight: '100vh',
+    scrollMarginTop: '80px'
   },
   "a, summary, button, input, [tabindex]:not([tabindex='-1'])": {
     outline: 'none',

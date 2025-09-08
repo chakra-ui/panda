@@ -12,7 +12,8 @@ export default function DocsLayout(props: React.PropsWithChildren) {
           '--navbar-height': '4rem',
           '--menu-height': '3.75rem',
           '--banner-height': '2.5rem',
-          pt: 'calc(var(--navbar-height) + var(--banner-height))'
+          pt: 'calc(var(--navbar-height) + var(--banner-height))',
+          pb: '32'
         })}
       >
         {children}

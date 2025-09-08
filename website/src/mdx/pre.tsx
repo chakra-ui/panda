@@ -61,7 +61,11 @@ export const Pre = (props: Props) => {
     <div className={containerStyles}>
       {filename && <CodeFilename filename={filename} />}
       <pre
-        className={cx(preStyles({ hasFilename: !!filename }), className)}
+        className={cx(
+          preStyles({ hasFilename: !!filename }),
+          'nextra-scrollbar',
+          className
+        )}
         ref={preRef}
         {...rest}
       >
