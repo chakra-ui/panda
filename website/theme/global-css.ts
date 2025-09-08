@@ -8,7 +8,8 @@ export const globalCss = defineGlobalStyles({
     fontFamily: 'sans',
     fontSize: '0.9em',
     '--nextra-primary-hue': '212deg',
-    scrollPaddingTop: 'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + 1rem)'
+    scrollPaddingTop:
+      'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + 1rem)'
   },
   body: {
     bg: 'bg',
@@ -20,7 +21,7 @@ export const globalCss = defineGlobalStyles({
     outline: 'none',
     _focusVisible: {
       outline: '2px',
-      outlineColor: 'accent.subtle',
+      outlineColor: 'blue.400',
       outlineOffset: '1px',
       outlineStyle: 'solid'
     }
