@@ -28,7 +28,7 @@ const styles = cva({
   },
   variants: {
     hasFilename: {
-      true: { top: '9' },
+      true: { top: '20' },
       false: { top: '0' }
     }
   }

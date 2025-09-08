@@ -1,6 +1,8 @@
+'use client'
+
+import { CheckIcon, CopyIcon } from '@/icons'
 import { css } from '@/styled-system/css'
-import { CheckIcon, CopyIcon } from '../icons'
-import { useClipboard } from './use-clipboard'
+import { useClipboard } from '@ark-ui/react/clipboard'
 
 const buttonStyles = css({
   bg: 'yellow.300',
@@ -21,9 +23,13 @@ type Props = React.ComponentProps<'button'> & {
 
 export const CopyToClipboard = (props: Props) => {
   const { getValue, ...rest } = props
-  const { isCopied, copy } = useClipboard({ getValue })
+  const { copied, copy } = useClipboard({
+    get value() {
+      return getValue()
+    }
+  })
 
-  const Icon = isCopied ? CheckIcon : CopyIcon
+  const Icon = copied ? CheckIcon : CopyIcon
 
   return (
     <button

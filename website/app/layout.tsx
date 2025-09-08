@@ -1,10 +1,8 @@
-import { Navbar } from '@/components/navbar'
 import { Providers } from '@/components/providers'
-import { SectionFooter } from '@/components/sections/footer'
 import { css, cx } from '@/styled-system/css'
-import { Flex } from '@/styled-system/jsx'
 import { fontClassName } from 'styles/fonts'
 import seoConfig from '../seo.config'
+import '../styles/global.css'
 import '../styles/panda.css'
 
 interface Props {
@@ -37,11 +35,7 @@ export default function RootLayout(props: Props) {
         />
       </head>
       <body className={css({ overflowX: 'hidden', overflowY: 'auto' })}>
-        <Providers>
-          <Navbar />
-          <Flex direction="column">{children}</Flex>
-          <SectionFooter />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

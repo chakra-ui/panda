@@ -13,8 +13,7 @@ export default defineConfig({
   include: [
     './src/**/*.{tsx,ts,jsx}',
     './pages/**/*.{jsx,tsx}',
-    './app/**/*.{jsx,tsx}',
-    './theme.config.tsx'
+    './app/**/*.{jsx,tsx}'
   ],
   exclude: [],
   outdir: 'styled-system',

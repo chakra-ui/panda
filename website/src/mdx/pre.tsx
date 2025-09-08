@@ -11,9 +11,12 @@ type Props = React.ComponentProps<'pre'> & {
 const preStyles = cva({
   base: {
     bg: { base: 'gray.100', _dark: 'gray.800' },
-    mb: '4',
     overflowX: 'auto',
-    rounded: 'xl'
+    rounded: 'xl',
+    contain: 'paint',
+    '& code[data-language] .line': {
+      px: '4'
+    }
   },
   variants: {
     hasFilename: {
@@ -34,16 +37,23 @@ const containerStyles = css({
 })
 
 export const Pre = (props: Props) => {
-  const { children, className = '', hasCopyCode, filename, ...rest } = props
+  const {
+    children,
+    className = '',
+    hasCopyCode,
+    filename,
+    style: _,
+    ...rest
+  } = props
   const preRef = useRef<HTMLPreElement | null>(null)
 
   const toggleWordWrap = useCallback(() => {
     const htmlDataset = document.documentElement.dataset
-    const hasWordWrap = 'nextraWordWrap' in htmlDataset
+    const hasWordWrap = 'docsWordWrap' in htmlDataset
     if (hasWordWrap) {
-      delete htmlDataset.nextraWordWrap
+      delete htmlDataset.docsWordWrap
     } else {
-      htmlDataset.nextraWordWrap = ''
+      htmlDataset.docsWordWrap = ''
     }
   }, [])
 

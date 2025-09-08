@@ -1,0 +1,136 @@
+---
+title: Using Qwik
+description: Easily use Panda with Qwik with our dedicated integration.
+---
+
+# Using Panda CSS with Qwik
+
+Setting up Panda CSS in a Qwik project using PostCSS.
+
+## Start a new project
+
+<Steps>
+
+### Create Qwik project
+
+To get started, we will need to create a new Qwik project using `typescript` template.
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    npm create qwik@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm create qwik@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn create qwik
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun create qwik@latest
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Install and Configure Panda
+
+Qwik provies an official script that installs panda and configures it for you.
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    npm run qwik add pandacss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm qwik add pandacss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn qwik add pandacss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun qwik add pandacss
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+## Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+
+```tsx filename="src/routes/layout.tsx"
+import { component$, Slot } from '@builder.io/qwik'
+import { routeLoader$ } from '@builder.io/qwik-city'
+import { css } from 'styled-system/css'
+
+export const useServerTimeLoader = routeLoader$(() => {
+  return {
+    date: new Date().toISOString()
+  }
+})
+
+export default component$(() => {
+  return (
+    <div class={css({ p: '10', bg: 'gray.900', h: 'dvh' })}>
+      <Slot />
+    </div>
+  )
+})
+```
+
+</Steps>
+
+## Troubleshooting
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
+
+```json filename="tsconfig.json"
+{
+  // ...
+  "include": ["src", "styled-system"]
+}
+```

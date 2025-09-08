@@ -1,0 +1,255 @@
+---
+title: Debugging
+description: How can I debug my styles or profile the extraction process?
+---
+
+# Debugging
+
+## panda debug
+
+Panda comes with a built-in debug command to help you debug your app. This can be useful to see which files are being processed, what styles are being generated for each of your source files, and what your final config looks like.
+
+By default it will scan and output debug files for the entire project depending on your `include` and `exclude` options
+from your config file.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm panda debug
+    # You can also debug a specific file or folder
+    # using the optional glob argument
+    pnpm panda debug src/components/Button.tsx
+    pnpm panda debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx panda debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    npx panda debug src/components/Button.tsx
+    npx panda debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn panda debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    yarn panda debug src/components/Button.tsx
+    yarn panda debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun panda debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    bun panda debug src/components/Button.tsx
+    bun panda debug "./src/components/**"
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+This would generate a `debug` folder in your `config.outdir` folder with the following structure:
+
+<FileTree>
+  <FileTree.Folder name="styled-system" defaultOpen>
+    <FileTree.Folder name="debug" defaultOpen>
+      <FileTree.File name="config.json" />
+      <FileTree.File name="src__components__Button.ast.json" />
+      <FileTree.File name="src__components__Button.css" />
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+The `config.json` file will contain the resolved config result, meaning the output after merging config presets in your own specific options.
+
+It can be useful to check if your config contains everything you expect for your app to be working, such as tokens or recipes.
+
+`*.ast.json` files will look like:
+
+```json
+[
+  {
+    "name": "css",
+    "type": "object",
+    "data": [
+      {
+        "transitionProperty": "all",
+        "opacity": "0.5",
+        "border": "1px solid",
+        "borderColor": "black",
+        "color": "gray.600",
+        "_hover": {
+          "color": "gray.900"
+        },
+        "rounded": "md",
+        "p": "1.5",
+        "_dark": {
+          "borderColor": "rgba(255, 255, 255, 0.1)",
+          "color": "gray.400",
+          "_hover": {
+            "color": "gray.50"
+          }
+        }
+      }
+    ],
+    "kind": "CallExpression",
+    "line": 13,
+    "column": 9
+  }
+]
+```
+
+And the `.css` file associated would just contain the styles generated from the extraction process on that file only.
+
+## PANDA_DEBUG env variable
+
+You can prefix any of the Panda CLI command with the `PANDA_DEBUG` environment variable to show debug logs.
+
+```bash
+PANDA_DEBUG=* pnpm panda
+```
+
+This can be useful to check if a specific file is being processed or not, or if a specific function/component has been extracted.
+
+```
+❯ PANDA_DEBUG=* pnpm panda cssgen
+🐼 debug [config:path] /Users/astahmer/dev/open-source/panda-clone/website/panda.config.ts
+🐼 debug [ast:import] Found import { css } in /Users/astahmer/dev/open-source/panda-clone/website/theme.config.tsx
+🐼 debug [ast:Icon] { kind: 'component' }
+🐼 debug [ast:css] { kind: 'function' }
+🐼 debug [hrtime] Parsed /Users/astahmer/dev/open-source/panda-clone/website/theme.config.tsx (9.66ms)
+🐼 debug [ast:import] Found import { css } in /Users/astahmer/dev/open-source/panda-clone/website/src/DEFAULT_THEME.tsx
+🐼 debug [ast:DiscordIcon] { kind: 'component' }
+🐼 debug [ast:css] { kind: 'function' }
+🐼 debug [ast:Anchor] { kind: 'component' }
+🐼 debug [ast:GitHubIcon] { kind: 'component' }
+🐼 debug [ast:Flexsearch] { kind: 'component' }
+🐼 debug [ast:MatchSorterSearch] { kind: 'component' }
+🐼 debug [hrtime] Parsed /Users/astahmer/dev/open-source/panda-clone/website/src/DEFAULT_THEME.tsx (4.51ms)
+🐼 debug [ast:import] No import found in /Users/astahmer/dev/open-source/panda-clone/website/src/constants.tsx
+🐼 debug [hrtime] Parsed /Users/astahmer/dev/open-source/panda-clone/website/src/constants.tsx (4.23ms)
+🐼 debug [ast:import] Found import { css } in /Users/astahmer/dev/open-source/panda-clone/website/src/index.tsx
+🐼 debug [ast:css] { kind: 'function' }
+```
+
+## Performance profiling
+
+If Panda is taking too long to process your files, you can use the `--cpu-prof` with the `panda`, `panda cssgen`, `panda codegen` and `panda debug` commands to generate a flamegraph of the whole process, which will allow you (or us as maintainers) to see which part of the process is taking the most time.
+
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
+the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+
+```bash
+pnpm panda --cpu-prof
+```
+
+## FAQ
+
+### Why are my styles not applied?
+
+Check that the [`@layer` rules](/docs/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported and that the `panda` command has been run (or is running with `--watch`).
+
+### Some CSS is missing when using absolute imports
+
+This can happen when `tsconfig` (with `paths` or `baseUrl`) or with package.json [`#imports`](https://nodejs.org/api/packages.html#subpath-imports).
+Panda tries to automatically infer and read the custom paths defined in `tsconfig.json` file. However, there might be scenarios that won't work.
+
+To fix this add the `importMap` option to your `panda.config.js` file, setting it's value to match the way you import the `outdir` modules.
+
+```app.tsx
+// app.tsx
+
+import { css } from "~/styled-system/css"
+// tsconfig.json paths
+// -> importMap: "~/styled-system"
+
+import { css } from "styled-system/css"
+// tsconfig.json baseUrl
+// -> importMap: "styled-system"
+
+import { css } from "@my-monorepo/ui-kit/css"
+// monorepo workspace package
+// -> importMap: "@my-monorepo/ui-kit"
+
+import { css } from "#styled-system/css"
+// package.json#imports
+// -> importMap: "#styled-system
+
+```
+
+```js
+// panda.config.js
+
+export default defineConfig({
+  importMap: '~/styled-system'
+})
+```
+
+This will ensure that the paths are resolved correctly, and HMR works as expected.
+
+---
+
+### How can I debug the styles?
+
+You can use the `panda debug` to debug design token extraction & css generated from files.
+
+If the issue persists, you can try looking for it in the [issues](https://github.com/chakra-ui/panda/issues) or in the [discord](https://discord.gg/VQrkpsgSx7). If you can't find it, please create a minimal reproduction and submit [a new github issue](https://github.com/chakra-ui/panda/issues/new/choose) so we can help you.
+
+---
+
+### Why is my IDE not showing `styled-system` imports?
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your tsconfig.json file.
+
+### HMR does not work when I use `tsconfig` paths?
+
+Panda tries to automatically infer and read the custom paths defined in `tsconfig.json` file. However, there might be scenarios where the hot module replacement doesn't work.
+
+To fix this add the `importMap` option to your `panda.config.js` file, setting it's value to the specified `paths` in your `tsconfig.json` file.
+
+```json
+// tsconfig.json
+
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@my-path/*": ["./styled-system/*"]
+    }
+  }
+}
+```
+
+```js
+// panda.config.js
+
+module.exports = {
+  importMap: '@my-path'
+}
+```
+
+This will ensure that the paths are resolved correctly, and HMR works as expected.
+
+---
+
+## The postcss plugin sometimes seems slow or runs too frequently
+
+This is mostly specific to the host bundler (`vite`, `webpack` etc) you're using, it is up to them to decide when to run the postcss plugin again, and sometimes it can be more than needed for your usage.
+We do our best to cache the results of the postcss plugin by checking if the filesystem or your config have actually changed, but sometimes it might not be enough.
+
+In those rare cases, you might want to swap to using the [CLI](/docs/installation/cli) instead, as it will always be more performant than the postcss alternative since we directly watch for filesystem changes and only run the extract/codegen steps when needed.
+
+If you want to keep the convenience of having just one command to run, you can use something like `concurrently` for that:
+
+```json file="package.json"
+{
+  "scripts": {
+    "dev": "concurrently \"next dev\" \"panda --watch\""
+  }
+}
+```

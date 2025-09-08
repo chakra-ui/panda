@@ -1,0 +1,274 @@
+---
+title: Using React Router
+description: Easily use Panda with React Router with our dedicated integration.
+---
+
+# Using Panda CSS with React Router
+
+Setting up Panda CSS in a React Router project using PostCSS.
+
+## Start a new project
+
+<Steps>
+
+### Create React Router project
+
+To get started, we will need to create a new React Router project using the official
+[Create React Router](https://reactrouter.com/start/framework/installation) CLI. In this guide, we will use TypeScript.
+
+If you don't enter any parameter, the CLI will guide you through the process of creating a new React Router app.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm dlx create-react-router@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx create-react-router@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dlx create-react-router@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bunx create-react-router@latest
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+You will be asked a few questions, answer these as follows:
+
+```
+? Where should we create your new project? test-app
+? Install dependencies? No
+```
+
+> **Note:** You should decline the dependency installation step as we will install dependencies together with Panda CSS.
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev
+    pnpm panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init --postcss
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "build": "cross-env NODE_ENV=production react-router build",
+    "dev": "react-router dev",
+    "start": "cross-env NODE_ENV=production react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc"
+  },
+}
+```
+
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about
+  [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation.
+> So you can add the Panda CSS output directory to your `.gitignore` file and not worry about it.
+
+### Configure the content
+
+Make sure that all of the paths of your React Router components are included in the `include` section of
+the `panda.config.ts` file.
+
+```ts {5, 8, 11} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // Whether to use css reset
+  preflight: true,
+
+  // Where to look for your css declarations
+  include: ['./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}'],
+
+  // Files to exclude
+  exclude: [],
+
+  // The output directory for your css system
+  outdir: 'styled-system'
+})
+```
+
+### Replace TailwindCSS with PandaCSS
+
+Update the `vite.config.ts` file to use PandaCSS instead of TailwindCSS.
+
+```ts {3, 10} filename="vite.config.ts"
+import { reactRouter } from '@react-router/dev/vite'
+import autoprefixer from 'autoprefixer'
+import pandacss from '@pandacss/dev/postcss'
+import { defineConfig } from 'vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  css: {
+    postcss: {
+      plugins: [pandacss, autoprefixer]
+    }
+  },
+  plugins: [reactRouter(), tsconfigPaths()]
+})
+```
+
+### Configure the entry CSS with layers
+
+Create a new file `app/app.css` and add the following content:
+
+```css filename="app/app.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+### Update the root component
+
+Import the `app.css` file in your `app/root.tsx` file and add the `styles` variable to the `links` function.
+
+Please note the `?url` query parameter in the `import` statement. This is required by Vite to generate the correct path
+to the CSS file.
+
+```tsx {11, 15} filename="app/root.tsx"
+import {
+  isRouteErrorResponse,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration
+} from 'react-router'
+
+import type { Route } from './+types/root'
+import stylesheet from './app.css?url'
+
+export const links: LinksFunction = () => [
+  // ...
+  { rel: 'stylesheet', href: stylesheet }
+]
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  )
+}
+```
+
+### Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+Here is the snippet of code that you can use in your `app/routes/home.tsx` file.
+
+```tsx filename="app/routes/home.tsx"
+import type { Route } from './+types/home'
+import { css } from 'styled-system/css'
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: 'New React Router App' },
+    { name: 'description', content: 'Welcome to React Router!' }
+  ]
+}
+
+export default function Home() {
+  return (
+    <div>
+      <h1 className={css({ fontSize: '2xl', fontWeight: 'bold' })}>
+        Welcome to the home page
+      </h1>
+    </div>
+  )
+}
+```
+
+</Steps>
+
+## Troubleshooting
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system`
+directory in your `tsconfig.json` file:
+
+```json filename="tsconfig.json"
+{
+  // ...
+  "include": ["app", "styled-system"]
+}
+```

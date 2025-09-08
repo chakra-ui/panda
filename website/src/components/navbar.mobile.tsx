@@ -5,7 +5,7 @@ import { center } from '@/styled-system/patterns'
 import { ButtonIcon, Icon } from '@/theme/icons'
 import { Dialog } from '@ark-ui/react/dialog'
 import Link from 'next/link'
-import { MenuIcon } from 'nextra/icons'
+import { MenuIcon } from '@/icons'
 import { NavLink } from './nav-link'
 import { ThemeSwitchIconButton } from './theme-switch-button'
 

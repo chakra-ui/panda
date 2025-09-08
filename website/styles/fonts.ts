@@ -1,18 +1,19 @@
 import { cx } from '@/styled-system/css'
-import { Fira_Code } from 'next/font/google'
-import localFont from 'next/font/local'
+import { Fira_Code, Onest } from 'next/font/google'
 
-export const MonaSans = localFont({
-  src: '../styles/Mona-Sans.woff2',
+const BodyFont = Onest({
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  style: 'normal',
   display: 'swap',
-  variable: '--font-mona-sans'
+  subsets: ['latin'],
+  variable: '--font-sans'
 })
 
-export const FiraCode = Fira_Code({
+export const MonoFont = Fira_Code({
   weight: ['400', '500', '700'],
   display: 'swap',
   subsets: ['latin'],
-  variable: '--font-fira-code'
+  variable: '--font-mono'
 })
 
-export const fontClassName = cx(MonaSans.variable, FiraCode.variable)
+export const fontClassName = cx(MonoFont.variable, BodyFont.variable)

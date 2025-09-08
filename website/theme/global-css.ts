@@ -6,7 +6,12 @@ export const globalCss = defineGlobalStyles({
     borderColor: { base: 'neutral.200', _dark: 'neutral.800' }
   },
   html: {
-    fontFamily: 'sans'
+    fontFamily: 'sans',
+    fontSize: '0.9em',
+    '--nextra-primary-hue': '212deg',
+    '--nextra-navbar-height': '4rem',
+    '--nextra-menu-height': '3.75rem',
+    '--nextra-banner-height': '2.5rem'
   },
   body: {
     bg: 'white',
@@ -146,7 +151,6 @@ export const globalCss = defineGlobalStyles({
     }
   },
   pre: {
-    contain: 'paint',
     '& code': {
       display: 'grid',
       minW: 'full',
@@ -163,9 +167,6 @@ export const globalCss = defineGlobalStyles({
       '& .line': {
         px: 4
       }
-    },
-    '&:not([data-theme])': {
-      px: 4
     },
     'html[data-nextra-word-wrap] &': {
       wordBreak: 'break-word',

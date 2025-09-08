@@ -16,7 +16,7 @@ export const Table = ({
   ...props
 }: React.ComponentProps<'table'>) => (
   <table
-    className={cx('nextra-scrollbar', tableStyles, className)}
+    className={cx('docs-scrollbar', tableStyles, className)}
     {...props}
   />
 )

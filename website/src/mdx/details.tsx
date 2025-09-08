@@ -1,8 +1,8 @@
+import { Collapse } from '@/mdx/collapse'
+import { DetailsProvider } from '@/mdx/contexts'
+import { findSummary } from '@/mdx/find-summary'
 import { css } from '@/styled-system/css'
 import { useEffect, useState } from 'react'
-import { Collapse } from '../nextra'
-import { DetailsProvider } from '../nextra/contexts'
-import { findSummary } from './find-summary'
 
 const styles = css({
   mt: { base: '4', _first: '0' },

@@ -1,7 +1,9 @@
+'use client'
+
 import { css, cva } from '@/styled-system/css'
 import { flex } from '@/styled-system/patterns'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
+import { useSearchParams } from 'next/navigation'
 import { createContext, useContext, useId } from 'react'
 
 /* -----------------------------------------------------------------------------
@@ -40,7 +42,8 @@ export interface RouteSwitchProps {
 export const RouteSwitch = (props: RouteSwitchProps) => {
   const { children, values } = props
   const rootId = useId()
-  const value = (useRouter().query.value as string) || values[0]
+  const searchParams = useSearchParams()
+  const value = searchParams?.get('value') || values[0]
   return (
     <RouteSwitchProvider
       value={{
@@ -90,17 +93,17 @@ const RouteSwitchLink = (props: {
   children: React.ReactNode
 }) => {
   const { value, children } = props
-  const router = useRouter()
+  const searchParams = useSearchParams()
   const { isActive, rootId } = useRouteSwitch()
   const active = isActive(value)
 
+  // Create new search params with the value
+  const params = new URLSearchParams(searchParams?.toString() || '')
+  params.set('value', value)
+
   return (
     <Link
-      href={{
-        pathname: router.pathname,
-        query: router.isReady ? { value } : undefined,
-        hash: router.isReady ? router.asPath.split('#')[1] : undefined
-      }}
+      href={`?${params.toString()}`}
       scroll={false}
       aria-selected={active ? true : undefined}
       role="tab"
