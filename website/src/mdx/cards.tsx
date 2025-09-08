@@ -1,10 +1,18 @@
 import { css, cx } from '@/styled-system/css'
 import { HStack, Stack, panda } from '@/styled-system/jsx'
 import { grid } from '@/styled-system/patterns'
+import { LuChevronRight } from 'react-icons/lu'
 import { Anchor } from '../components/ui/anchor'
 
 const Arrow = () => (
-  <span className={css({ opacity: { base: '0', _groupHover: '1' } })}>→</span>
+  <span
+    className={css({
+      transition: 'opacity',
+      opacity: { base: '0', _groupHover: '1' }
+    })}
+  >
+    <LuChevronRight />
+  </span>
 )
 
 type Props = {

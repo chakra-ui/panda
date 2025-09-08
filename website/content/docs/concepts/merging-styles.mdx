@@ -1,11 +1,7 @@
 ---
 title: Merging Styles
-description: Learn how to merge multiple styles together in Panda CSS.
+description: Learn how to merge multiple styles without conflicts.
 ---
-
-# Merging Styles
-
-Panda CSS provides a few ways to efficiently merge styles together without conflicts.
 
 ## Merging `css` objects
 
@@ -26,9 +22,11 @@ const style2 = {
 const className = css(style1, style2) // => 'bg_blue text_white'
 ```
 
-In some cases though, the style object might not be colocated in the same file as the component. In this case, you can use the `css.raw` function to preserve the original style object.
+In some cases though, the style object might not be colocated in the same file as the component. In this case, you can
+use the `css.raw` function to preserve the original style object.
 
-> All `.raw(...)` signatures are identity functions that return the same value as the input, but > serve as a hint to the compiler that the value is a style object.
+> All `.raw(...)` signatures are identity functions that return the same value as the input, but > serve as a hint to
+> the compiler that the value is a style object.
 
 ```js
 // style.js
@@ -127,7 +125,8 @@ const className = css(
 
 ## Merging config recipe and style object
 
-Due to the fact that the generated styles of a config recipe are saved in the `@layer recipe` cascade layer, they can be overridden with any atomic styles. Use the `cx` function to achieve that.
+Due to the fact that the generated styles of a config recipe are saved in the `@layer recipe` cascade layer, they can be
+overridden with any atomic styles. Use the `cx` function to achieve that.
 
 > The `utilties` layer has more precedence than the `recipe` layer.
 
@@ -169,17 +168,12 @@ function Card({ title, description, css: cssProp }) {
 
 // usage
 function Demo() {
-  return (
-    <Card
-      title="Hello World"
-      description="This is a card component"
-      css={{ bg: 'blue' }}
-    />
-  )
+  return <Card title="Hello World" description="This is a card component" css={{ bg: 'blue' }} />
 }
 ```
 
-If you use any other prop name other than `css`, then you must use the `css.raw(...)` function to ensure Panda extracts the style object.
+If you use any other prop name other than `css`, then you must use the `css.raw(...)` function to ensure Panda extracts
+the style object.
 
 ```jsx
 const cardStyles = css.raw({

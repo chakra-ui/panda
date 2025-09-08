@@ -91,7 +91,7 @@ export const MobileNavBar = () => {
               <Dialog.CloseTrigger
                 className={css({ position: 'absolute', top: '4', right: '4' })}
               >
-                <Center width="5" height="5" color="text.main">
+                <Center width="5" height="5" color="fg">
                   <Icon
                     icon="Close"
                     className={css({ width: '1em', height: 'auto' })}

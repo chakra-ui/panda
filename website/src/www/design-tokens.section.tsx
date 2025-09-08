@@ -92,15 +92,10 @@ export const DesignTokensSection = () => {
             boxShadowColor="bg.dark"
             className={button({ color: 'yellow', shape: 'circle' })}
             position="relative"
-            color="text.headline"
+            color="fg.headline"
           >
             <Icon icon="DesignTokenBox" />
-            <panda.div
-              position="absolute"
-              top="-15px"
-              right="-30px"
-              color="text.main"
-            >
+            <panda.div position="absolute" top="-15px" right="-30px" color="fg">
               <Icon icon="Sparks2" className={css({ w: '48px', h: '48px' })} />
             </panda.div>
           </Circle>
@@ -113,7 +108,7 @@ export const DesignTokensSection = () => {
               <panda.h4
                 textStyle="panda.h4"
                 fontWeight="medium"
-                color="text.muted"
+                color="fg.muted"
               >
                 Specify base and semantic tokens with ease using the W3C working
                 token spec.

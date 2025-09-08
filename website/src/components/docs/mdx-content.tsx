@@ -40,8 +40,16 @@ const sharedComponents = {
   Box,
   Flex,
 
-  // HTML elements
-  a: Anchor,
+  a: (props: any) => (
+    <Anchor
+      className={css({
+        textDecoration: 'underline',
+        fontWeight: 'semibold',
+        textUnderlineOffset: '2px'
+      })}
+      {...props}
+    />
+  ),
   blockquote: Callout,
   img: (props: any) => (
     <img

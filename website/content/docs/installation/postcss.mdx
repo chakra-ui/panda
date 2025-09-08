@@ -3,9 +3,8 @@ title: Using PostCSS
 description: Installing Panda as a PostCSS plugin is the recommended way to integrate it with your project.
 ---
 
-# Using PostCSS
-
-Installing Panda as a PostCSS plugin is the recommended way to integrate it with your project.
+This guide shows you how to install Panda as a PostCSS plugin, which is the recommended way to integrate it with your
+project.
 
 <Steps>
 ### Install Panda
@@ -80,9 +79,11 @@ Open your `package.json` file and update the `scripts` section as follows:
 }
 ```
 
-The `prepare` script will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+The `prepare` script will run codegen after dependency installation. Read more about
+[codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
+> the output directory to your `.gitignore` file and not worry about it.
 
 ### Configure the entry CSS with layers
 
@@ -121,7 +122,8 @@ Run your build process by feeding the [root css](#configure-the-entry-css-with-l
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-> If you're using a framework, PostCSS is probably already integrated with your build process. Check our other guides or the documentation of your framework to see how to configure PostCSS.
+> If you're using a framework, PostCSS is probably already integrated with your build process. Check our other guides or
+> the documentation of your framework to see how to configure PostCSS.
 
 ### Start using Panda
 
@@ -139,7 +141,8 @@ export function App() {
 
 ## Troubleshooting
 
-If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
+`tsconfig.json` file:
 
 ```json filename="tsconfig.json"
 {

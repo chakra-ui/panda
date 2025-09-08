@@ -3,10 +3,9 @@ title: Color opacity modifier
 description: How to dynamically set the opacity of a raw color or color token
 ---
 
-# Color opacity modifier
-
 Every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default) can use the
-[`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function. This means for example: `background`, `backgroundColor`, `color`, `border`, `borderColor`, etc.
+[`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function. This means for
+example: `background`, `backgroundColor`, `color`, `border`, `borderColor`, etc.
 
 This function allows you to mix two colors together, and we use it to change the opacity of a color using the
 `{color}/{opacity}` syntax.
@@ -25,11 +24,7 @@ This will generate:
 ```css
 @layer utilities {
   .bg_red\.300\/40 {
-    --mix-background: color-mix(
-      in srgb,
-      var(--colors-red-300) 40%,
-      transparent
-    );
+    --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
     background: var(--mix-background, var(--colors-red-300));
   }
 
@@ -46,8 +41,8 @@ This will generate:
 
 ---
 
-The `utilities` transform function also receives a `utils` object that contains the `colorMix` function, so you can
-also use it on your own utilities:
+The `utilities` transform function also receives a `utils` object that contains the `colorMix` function, so you can also
+use it on your own utilities:
 
 ```ts
 export default defineConfig({

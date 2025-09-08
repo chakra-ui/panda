@@ -3,9 +3,8 @@ title: Focus Ring
 description: Style focus states with accessibility-first focus ring utilities.
 ---
 
-# Focus Ring
-
-Focus rings are essential for accessibility, helping users identify which element currently has keyboard focus. Panda provides comprehensive focus ring utilities that work with both regular focus and focus-visible states.
+Focus rings are essential for accessibility, helping users identify which element currently has keyboard focus. Panda
+provides comprehensive focus ring utilities that work with both regular focus and focus-visible states.
 
 ## Focus Ring Variants
 
@@ -35,19 +34,20 @@ The `focusRing` utility applies focus styles using the `&:is(:focus, [data-focus
 
 ## Focus Visible Ring
 
-The `focusVisibleRing` utility only applies focus styles during keyboard navigation using the `&:is(:focus-visible, [data-focus-visible])` selector:
+The `focusVisibleRing` utility only applies focus styles during keyboard navigation using the
+`&:is(:focus-visible, [data-focus-visible])` selector:
 
 ```jsx
-<button className={css({ focusVisibleRing: 'outside' })}>
-  Only shows focus ring on keyboard navigation
-</button>
+<button className={css({ focusVisibleRing: 'outside' })}>Only shows focus ring on keyboard navigation</button>
 ```
 
 ### Focus Ring vs. Focus Visible Ring
 
-The Focus Visible Ring functions similarly to the Focus Ring, but with a key difference: it only applies focus indicator styles when an element receives keyboard focus.
+The Focus Visible Ring functions similarly to the Focus Ring, but with a key difference: it only applies focus indicator
+styles when an element receives keyboard focus.
 
-This ensures that the focus ring is visible only when navigating via keyboard, improving accessibility without affecting mouse interactions.
+This ensures that the focus ring is visible only when navigating via keyboard, improving accessibility without affecting
+mouse interactions.
 
 ## Customization
 
@@ -81,9 +81,7 @@ You can customize focus ring appearance with additional utilities:
 To change the focus ring color for a specific component, use the `focusRingColor` prop:
 
 ```jsx
-<button className={css({ focusRing: 'outside', focusRingColor: 'red.500' })}>
-  Red focus ring
-</button>
+<button className={css({ focusRing: 'outside', focusRingColor: 'red.500' })}>Red focus ring</button>
 ```
 
 ## Global Ring Color
@@ -108,9 +106,7 @@ export default defineConfig({
 To change the focus ring width for a specific component, use the `focusRingWidth` prop:
 
 ```jsx
-<button className={css({ focusRing: 'outside', focusRingWidth: '4px' })}>
-  Thick focus ring
-</button>
+<button className={css({ focusRing: 'outside', focusRingWidth: '4px' })}>Thick focus ring</button>
 ```
 
 ### Ring Style
@@ -118,9 +114,7 @@ To change the focus ring width for a specific component, use the `focusRingWidth
 To change the focus ring style for a specific component, use the `focusRingStyle` prop:
 
 ```jsx
-<button className={css({ focusRing: 'outside', focusRingStyle: 'dashed' })}>
-  Dashed focus ring
-</button>
+<button className={css({ focusRing: 'outside', focusRingStyle: 'dashed' })}>Dashed focus ring</button>
 ```
 
 This color will be used as the default for all focus rings unless overridden by the `focusRingColor` prop.

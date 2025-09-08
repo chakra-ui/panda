@@ -3,9 +3,8 @@ title: The extend keyword
 description: What is and how to to use the extend keyword
 ---
 
-# The extend keyword
-
-The `extend` keyword allows you to extend the default Panda configuration. It is useful when you want to add your own customizations to Panda, without erasing the default `presets` values (`conditions`, `tokens`, `utilities`, etc).
+The `extend` keyword allows you to extend the default Panda configuration. It is useful when you want to add your own
+customizations to Panda, without erasing the default `presets` values (`conditions`, `tokens`, `utilities`, etc).
 
 It will (deeply) merge your customizations with the default ones, instead of replacing them.
 
@@ -78,7 +77,8 @@ export default defineConfig({
 })
 ```
 
-What if this utility was coming from a preset (`@acme/my-preset`) ? You can extend any specific part, as it will be deeply merged with the existing one:
+What if this utility was coming from a preset (`@acme/my-preset`) ? You can extend any specific part, as it will be
+deeply merged with the existing one:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -145,10 +145,12 @@ export default defineConfig({
 
 ## Minimal setup
 
-If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it [here](/docs/guides/minimal-setup)
+If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
+[here](/docs/guides/minimal-setup)
 
 ## FAQ
 
 ### Why is my preset overriding the base one, even after adding it to the array?
 
-You might have forgotten to include the `extend` keyword in your config. Without `extend`, your preset will completely replace the base one, instead of merging with it.
+You might have forgotten to include the `extend` keyword in your config. Without `extend`, your preset will completely
+replace the base one, instead of merging with it.

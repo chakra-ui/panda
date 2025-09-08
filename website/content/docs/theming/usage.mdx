@@ -3,9 +3,7 @@ title: Using Tokens
 description: There are various ways to consume Panda tokens depending on your need at that point in time.
 ---
 
-# Using Tokens
-
-There are various ways to consume Panda tokens depending on your need at that point in time.
+Learn the various ways to consume Panda tokens in your project.
 
 ## Style Properties
 
@@ -26,9 +24,12 @@ const App = () => (
 
 ## Composite values
 
-Some CSS properties like `border`, `box-shadow` allow you to specify multiple properties in its value. Panda allows you to reference tokens in these composite values by using either the `token()` string function (similar to the JS equivalent) or the token reference syntax `{path.to.token}` (similar to the semantic tokens equivalent).
+Some CSS properties like `border`, `box-shadow` allow you to specify multiple properties in its value. Panda allows you
+to reference tokens in these composite values by using either the `token()` string function (similar to the JS
+equivalent) or the token reference syntax `{path.to.token}` (similar to the semantic tokens equivalent).
 
-The `token()` function is useful when you need to provide a fallback value. The token reference syntax is useful when you don't need a fallback value or prefer using a more concise syntax.
+The `token()` function is useful when you need to provide a fallback value. The token reference syntax is useful when
+you don't need a fallback value or prefer using a more concise syntax.
 
 <Tabs items={['token', 'reference syntax']}>
   {/* <!-- prettier-ignore-start --> */}
@@ -92,9 +93,12 @@ You can also use it in media queries or any other CSS at-rule.
 
 ## Vanilla JS
 
-Use the generated `token` function to query design tokens in your project. This is useful if you need direct access to your design tokens in the `style` attribute or when using CSS-in-JS libraries like `styled-components` or `@emotion/styled`
+Use the generated `token` function to query design tokens in your project. This is useful if you need direct access to
+your design tokens in the `style` attribute or when using CSS-in-JS libraries like `styled-components` or
+`@emotion/styled`
 
-> This approach is useful for incrementally adopting Panda in existing projects or [dynamic styling](/docs/guides/dynamic-styling#using-token)
+> This approach is useful for incrementally adopting Panda in existing projects or
+> [dynamic styling](/docs/guides/dynamic-styling#using-token)
 
 ### Style Attribute
 

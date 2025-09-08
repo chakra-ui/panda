@@ -3,9 +3,7 @@ title: Using Ember
 description: Easily use Panda with Ember with our dedicated integration.
 ---
 
-# Using Panda CSS with Ember
-
-Setting up Panda CSS in a Ember project using PostCSS.
+This guide shows you how to set up Panda CSS in an Ember project using PostCSS.
 
 ## Start a new project
 
@@ -13,7 +11,8 @@ Setting up Panda CSS in a Ember project using PostCSS.
 
 ### Create Ember project
 
-To get started, we will need to create a new Ember project using the `embroider` build system. We will name our project `test-app` but you can name it whatever you want.
+To get started, we will need to create a new Ember project using the `embroider` build system. We will name our project
+`test-app` but you can name it whatever you want.
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']} variant="code">
   {/* <!-- prettier-ignore-start --> */}
@@ -48,7 +47,8 @@ cd test-app
 
 ### Install Panda
 
-Install panda and its peer dependencies, as well as `postcss-loader`. Run the init command to generate the `panda.config.ts` and `postcss.config.js` file.
+Install panda and its peer dependencies, as well as `postcss-loader`. Run the init command to generate the
+`panda.config.ts` and `postcss.config.js` file.
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
@@ -139,13 +139,17 @@ Open the `package.json` file and update the `scripts` section as follows:
 }
 ```
 
-- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about
+  [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
+> the output directory to your `.gitignore` file and not worry about it.
 
 ### Configure the content
 
-Make sure that all of the paths of your Ember components are included in the `include` section of the `panda.config.ts` file. Set the `outdir` to the app folder so the code can be imported in your Ember app. Adjust the `importMap` accordingly to reflect your app name.
+Make sure that all of the paths of your Ember components are included in the `include` section of the `panda.config.ts`
+file. Set the `outdir` to the app folder so the code can be imported in your Ember app. Adjust the `importMap`
+accordingly to reflect your app name.
 
 ```js {8,19-22} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -255,13 +259,16 @@ export default class HelloPanda extends Component {
 {{outlet}}
 ```
 
-> For the best developer experience, set up [template tag component authoring format](https://guides.emberjs.com/release/components/template-tag-format/) in Ember.
+> For the best developer experience, set up
+> [template tag component authoring format](https://guides.emberjs.com/release/components/template-tag-format/) in
+> Ember.
 
 </Steps>
 
 ## Troubleshooting
 
-If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
+`tsconfig.json` file:
 
 ```json filename="tsconfig.json"
 {

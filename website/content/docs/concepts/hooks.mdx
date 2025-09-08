@@ -3,22 +3,27 @@ title: Panda Integration Hooks
 description: Leveraging hooks in Panda to create custom functionality.
 ---
 
-# Panda Integration Hooks
+Panda hooks can be used to add new functionality or modify existing behavior during certian parts of the compiler
+lifecycle.
 
-Panda hooks can be used to add new functionality or modify existing behavior during certian parts of the compiler lifecycle.
-
-Hooks are mostly callbacks that can be added to the panda config via the `hooks` property, or installed via plugins.
+Hooks are mostly callbacks that can be added to the panda config via the `hooks` property, or installed via `plugins`.
 
 Here are some examples of what you can do with hooks:
 
 - modify the resolved config (`config:resolved`), like strip out tokens or keyframes.
-- modify presets after they are resolved (`preset:resolved`), like removing specific tokens or theme properties from a preset.
-- tweak the design token or classname engine (`tokens:created`, `utility:created`), like prefixing token names, or customizing the hashing function
-- transform a source file to a `tsx` friendly syntax before it's parsed (`parser:before`) so that Panda can automatically extract its styles usage
-- create your own styles parser (`parser:before`, `parser:after`) using the file's content so that Panda could be used with any templating language
+- modify presets after they are resolved (`preset:resolved`), like removing specific tokens or theme properties from a
+  preset.
+- tweak the design token or classname engine (`tokens:created`, `utility:created`), like prefixing token names, or
+  customizing the hashing function
+- transform a source file to a `tsx` friendly syntax before it's parsed (`parser:before`) so that Panda can
+  automatically extract its styles usage
+- create your own styles parser (`parser:before`, `parser:after`) using the file's content so that Panda could be used
+  with any templating language
 - alter the generated JS and DTS code (`codegen:prepare`)
-- modify the generated CSS (`cssgen:done`), allowing all kinds of customizations like removing the unused CSS variables, etc.
-- restrict `strictTokens` to a specific set of token categories, ex: only affect `colors` and `spacing` tokens and therefore allow any value for `fontSizes` and `lineHeights`
+- modify the generated CSS (`cssgen:done`), allowing all kinds of customizations like removing the unused CSS variables,
+  etc.
+- restrict `strictTokens` to a specific set of token categories, ex: only affect `colors` and `spacing` tokens and
+  therefore allow any value for `fontSizes` and `lineHeights`
 
 ## Examples
 
@@ -43,7 +48,8 @@ export default defineConfig({
 
 ### Customizing the hash function
 
-When using the [`hash: true`](/docs/concepts/writing-styles) config property, you can customize the function used to hash the classnames.
+When using the [`hash: true`](/docs/concepts/writing-styles) config property, you can customize the function used to
+hash the classnames.
 
 ```ts
 export default defineConfig({
@@ -66,7 +72,8 @@ export default defineConfig({
 
 ### Modifying the config
 
-Here's an example of how to leveraging the provided `utils` functions in the `config:resolved` hook to remove the `stack` pattern from the resolved config.
+Here's an example of how to leveraging the provided `utils` functions in the `config:resolved` hook to remove the
+`stack` pattern from the resolved config.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -83,7 +90,8 @@ export default defineConfig({
 
 ### Modifying presets
 
-You can use the `preset:resolved` hook to modify presets after they are resolved. This is useful for customizing or filtering out parts of a preset.
+You can use the `preset:resolved` hook to modify presets after they are resolved. This is useful for customizing or
+filtering out parts of a preset.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -93,10 +101,7 @@ export default defineConfig({
   hooks: {
     'preset:resolved': ({ utils, preset, name }) => {
       if (name === '@pandacss/preset-panda') {
-        return utils.omit(preset, [
-          'theme.tokens.colors',
-          'theme.semanticTokens.colors'
-        ])
+        return utils.omit(preset, ['theme.tokens.colors', 'theme.semanticTokens.colors'])
       }
       return preset
     }
@@ -108,7 +113,8 @@ export default defineConfig({
 
 Use the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX.
 
-This can be especially useful when working with libraries that have properties that look like CSS properties but are not and should be ignored.
+This can be especially useful when working with libraries that have properties that look like CSS properties but are not
+and should be ignored.
 
 Let's see a Radix UI example where the `Select.Content` component has a `position` property that should be ignored:
 
@@ -126,8 +132,7 @@ export default defineConfig({
         // ignore the Select.Content entirely
         matchTag: tag => tag !== 'Select.Content',
         // ...or specifically ignore the `position` property
-        matchTagProp: (tag, prop) =>
-          tag === 'Select.Content' && prop !== 'position'
+        matchTagProp: (tag, prop) => tag === 'Select.Content' && prop !== 'position'
       })
     }
   }
@@ -155,15 +160,23 @@ export default defineConfig({
 })
 ```
 
-Get the snippets for the removal logic from our Github Sandbox in the [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-keyframes.ts) files.
+Get the snippets for the removal logic from our Github Sandbox in the
+[remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-css-vars.ts) and
+[remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-keyframes.ts)
+files.
 
-> Note: Using this means you can't use the JS function [`token.var`](/docs/guides/dynamic-styling#using-tokenvar) (or [token(xxx)](/docs/guides/dynamic-styling#using-token) where `xxx` is the path to a [semanticToken](/docs/theming/tokens#semantic-tokens)) from `styled-system/tokens` as the CSS variables will be removed based on the usage found in the generated CSS
+> Note: Using this means you can't use the JS function [`token.var`](/docs/guides/dynamic-styling#using-tokenvar) (or
+> [token(xxx)](/docs/guides/dynamic-styling#using-token) where `xxx` is the path to a
+> [semanticToken](/docs/theming/tokens#semantic-tokens)) from `styled-system/tokens` as the CSS variables will be
+> removed based on the usage found in the generated CSS
 
 ## Sharing hooks
 
-Hooks can be shared as a snippet or as a `plugin`. Plugins are currently simple objects that contain a `name` associated with a `hooks` object with the same structure as the `hooks` object in the config.
+Hooks can be shared as a snippet or as a `plugin`. Plugins are currently simple objects that contain a `name` associated
+with a `hooks` object with the same structure as the `hooks` object in the config.
 
-> Plugins differ from `presets` as they can't be extended, but they will be called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
+> Plugins differ from `presets` as they can't be extended, but they will be called in sequence in the order they are
+> defined in the `plugins` array, with the user's config called last.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -193,15 +206,11 @@ export interface PandaHooks {
    * Called when the config is resolved, after all the presets are loaded and merged.
    * This is the first hook called, you can use it to tweak the config before the context is created.
    */
-  'config:resolved': (
-    args: ConfigResolvedHookArgs
-  ) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
+  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
   /**
    * Called when a preset is resolved, allowing you to modify it before it's merged into the config.
    */
-  'preset:resolved': (
-    args: PresetResolvedHookArgs
-  ) => MaybeAsyncReturn<void | PresetResolvedHookArgs['preset']>
+  'preset:resolved': (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | PresetResolvedHookArgs['preset']>
   /**
    * Called when the token engine has been created
    */
@@ -233,9 +242,7 @@ export interface PandaHooks {
    * Called right before writing the codegen files to disk.
    * You can use this hook to tweak the codegen files before they are written to disk.
    */
-  'codegen:prepare': (
-    args: CodegenPrepareHookArgs
-  ) => MaybeAsyncReturn<Artifact[]>
+  'codegen:prepare': (args: CodegenPrepareHookArgs) => MaybeAsyncReturn<Artifact[]>
   /**
    * Called after the codegen is completed
    */

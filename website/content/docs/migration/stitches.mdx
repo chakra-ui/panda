@@ -3,18 +3,19 @@ title: Migrating from Stitches
 description: Migrate your project from Stitches to Panda.
 ---
 
-# Migrating from Stitches
+This guide helps you migrate from Stitches to Panda and understand the design differences between the libraries.
 
-This guide outlines the steps needed to migrate your project from Stitches to Panda, and some design differences between the two libraries.
-
-> **Disclaimer:** This isn't about comparing which one is best. Panda and Stitches are two different CSS-in-JS solutions with design decisions.
+> **Disclaimer:** This isn't about comparing which one is best. Panda and Stitches are two different CSS-in-JS solutions
+> with design decisions.
 
 Here are some similarities between the two libraries.
 
-- Panda uses the object literal syntax to define styles. It also supports the shorthand syntax for the `margin` and `padding` properties.
+- Panda uses the object literal syntax to define styles. It also supports the shorthand syntax for the `margin` and
+  `padding` properties.
 - Panda supports the `variants`, `defaultVariants` and `compoundVariants` APIs.
 - Panda supports design tokens and themes.
-- Panda supports all the variants of nested selectors (attribute, class, pseudo, descendant, child, sibling selectors and more). It also requires the use of the `&` to chain selectors.
+- Panda supports all the variants of nested selectors (attribute, class, pseudo, descendant, child, sibling selectors
+  and more). It also requires the use of the `&` to chain selectors.
 
 Below are some of the differences between the two libraries.
 
@@ -41,7 +42,8 @@ const styles = css({
 <button className={styles({ variant: 'primary' })} />
 ```
 
-In Panda, the `css` function is only used to author atomic styles, and the `cva` function to create variant style objects.
+In Panda, the `css` function is only used to author atomic styles, and the `cva` function to create variant style
+objects.
 
 **The css function**
 
@@ -82,7 +84,8 @@ const styles = cva({
 
 ## styled function
 
-In Stitches, the `styled` function can be used to create components that are bound to both regular and variant styles objects.
+In Stitches, the `styled` function can be used to create components that are bound to both regular and variant styles
+objects.
 
 ```tsx
 import { styled } from '@stitches/react'
@@ -140,7 +143,8 @@ const Button = styled('button', {
 // => <button class="bg_gainsboro rounded_999px">Button</button>
 ```
 
-- **Selector classes** by defining the recipe in the `panda.config.ts` file. This approach only generates the classes and css for the variants that are used in the project.
+- **Selector classes** by defining the recipe in the `panda.config.ts` file. This approach only generates the classes
+  and css for the variants that are used in the project.
 
 ```ts
 import { defineConfig, defineRecipe } from '@pandacss/dev'
@@ -184,7 +188,8 @@ const Button = styled('button', buttonStyle)
 
 ## Responsive Styles
 
-In Stitches, you configure breakpoints in the `media` key of the `createStitches` method, and use it via the `@<breakpoint>` syntax.
+In Stitches, you configure breakpoints in the `media` key of the `createStitches` method, and use it via the
+`@<breakpoint>` syntax.
 
 ```ts
 import { createStitches } from '@stitches/react'
@@ -292,7 +297,8 @@ const styles = css({
 })
 ```
 
-Notice that in Panda, you don't need to use the `$` prefix to access the tokens. If you really want to use the `$` prefix, you can either update the name of the token:
+Notice that in Panda, you don't need to use the `$` prefix to access the tokens. If you really want to use the `$`
+prefix, you can either update the name of the token:
 
 ```diff
 export default defineConfig({
@@ -345,7 +351,8 @@ const darkTheme = createTheme({
 </div>
 ```
 
-In Panda, themes are designed as semantic tokens. You can define the semantic tokens in the `semanticTokens` key of the `panda.config` function.
+In Panda, themes are designed as semantic tokens. You can define the semantic tokens in the `semanticTokens` key of the
+`panda.config` function.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -379,8 +386,8 @@ const Button = styled('button', {
 })
 ```
 
-In Panda, there's no special syntax, you need to use the css variable syntax.
-CSS variables are able to query the theme tokens directly using dot notation
+In Panda, there's no special syntax, you need to use the css variable syntax. CSS variables are able to query the theme
+tokens directly using dot notation
 
 ```ts
 import { styled } from '../styled-system/jsx'
@@ -457,8 +464,8 @@ const { styled, css } = createStitches({
 })
 ```
 
-In Panda, you get a lot of built-in utilities (like mx, marginX, my, py, etc.) that you can use out of the box.
-You can also create custom utilites using the `utilities` key in the `panda.config` function.
+In Panda, you get a lot of built-in utilities (like mx, marginX, my, py, etc.) that you can use out of the box. You can
+also create custom utilites using the `utilities` key in the `panda.config` function.
 
 The utilities API allows you define the connected token scale, generated className, and transform function.
 
@@ -582,10 +589,7 @@ export default class Document extends NextDocument {
     return (
       <Html lang="en">
         <Head>
-          <style
-            id="stitches"
-            dangerouslySetInnerHTML={{ __html: getCssText() }}
-          />
+          <style id="stitches" dangerouslySetInnerHTML={{ __html: getCssText() }} />
         </Head>
         <body>
           <Main />
@@ -597,8 +601,10 @@ export default class Document extends NextDocument {
 }
 ```
 
-In Panda, you don't need to configure anything. Panda automatically extracts the styles and injects them at build time using PostCSS.
+In Panda, you don't need to configure anything. Panda automatically extracts the styles and injects them at build time
+using PostCSS.
 
 ## Conclusion
 
-Before choosing your preferred CSS-in-JS library, be sure to consider your engineering and design goals. Both Stitches and Panda are capable of achieving many of the same styling goals, but they have different approaches.
+Before choosing your preferred CSS-in-JS library, be sure to consider your engineering and design goals. Both Stitches
+and Panda are capable of achieving many of the same styling goals, but they have different approaches.

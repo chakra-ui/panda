@@ -34,18 +34,16 @@ export const semanticTokens = defineSemanticTokens({
         }
       }
     },
-    text: {
-      main: {
+
+    fg: {
+      DEFAULT: {
         value: { base: '{colors.black}', _dark: '{colors.white}' }
+      },
+      muted: {
+        value: { base: '{colors.gray.600}', _dark: '{colors.gray.400}' }
       },
       headline: {
         value: { base: '{colors.black}', _dark: '{colors.yellow.300}' }
-      },
-      muted: {
-        value: {
-          base: '{colors.gray.800}',
-          _dark: '{colors.gray.50}'
-        }
       }
     }
   }

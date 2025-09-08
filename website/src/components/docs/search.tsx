@@ -26,7 +26,7 @@ export function DocsSearch() {
           transition: 'colors',
           _hover: {
             bg: 'bg.muted',
-            color: 'fg.default'
+            color: 'fg'
           }
         })}
       >

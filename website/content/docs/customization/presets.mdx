@@ -3,10 +3,8 @@ title: Presets
 description: Creating your own reusable preset for utilities and theme
 ---
 
-# Presets
-
 By default, any configuration you add in your own `panda.config.js` file is smartly merged with the
-[default configuration](#), allowing your override or extend specific parts of the configuration.
+[default configuration](#), allowing you to override or extend specific parts of the configuration.
 
 You can specify a preset in your `panda.config.js` file by using the `presets` option:
 
@@ -20,7 +18,8 @@ export default defineConfig({
 
 ## Creating a preset
 
-Presets are also valid Panda configuration objects, taking a similar shape to the configuration you would add in your `panda.config.ts` file.
+Presets are also valid Panda configuration objects, taking a similar shape to the configuration you would add in your
+`panda.config.ts` file.
 
 > **Note:** Every preset must have a unique name.
 
@@ -68,7 +67,8 @@ The available keys for a preset are:
 
 ### Asynchronous presets
 
-There are cases where you need to perform logic to determine the content of your preset, you'd call functions to do this. In cases where they're asynchronous; panda allows promises, given that they resolve to a valid preset object.
+There are cases where you need to perform logic to determine the content of your preset, you'd call functions to do
+this. In cases where they're asynchronous; panda allows promises, given that they resolve to a valid preset object.
 
 ```js
 // my-preset.js
@@ -104,11 +104,10 @@ export default defineConfig({
 
 ![Visual helper](/stately-presets-merging.png)
 
-- `@pandacss/preset-base`:
-  ALWAYS included if NOT using `eject: true`
+- `@pandacss/preset-base`: ALWAYS included if NOT using `eject: true`
 
-- `@pandacss/preset-panda`:
-  only included by default if you haven't specified the `presets` config option, otherwise you'll have to include that preset by yourself like so:
+- `@pandacss/preset-panda`: only included by default if you haven't specified the `presets` config option, otherwise
+  you'll have to include that preset by yourself like so:
 
 ```ts
 import pandaPreset from '@pandacss/preset-panda'
@@ -122,4 +121,5 @@ export default defineConfig({
 
 ## Minimal setup
 
-If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it [here](/docs/guides/minimal-setup)
+If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
+[here](/docs/guides/minimal-setup)

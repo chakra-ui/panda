@@ -1,8 +1,9 @@
 import React, { createContext, useContext, ReactNode } from 'react'
-import { sharedComponents } from '@/docs-layout/mdx-content'
+import { sharedComponents } from '@/components/docs/mdx-content'
 
 // Context for MDX components
-const MDXContext = createContext<Record<string, React.ComponentType>>(sharedComponents)
+const MDXContext =
+  createContext<Record<string, React.ComponentType>>(sharedComponents)
 
 interface MDXProviderProps {
   components?: Record<string, React.ComponentType>
@@ -15,7 +16,7 @@ interface MDXProviderProps {
  */
 export function MDXProvider({ components = {}, children }: MDXProviderProps) {
   const mergedComponents = { ...sharedComponents, ...components }
-  
+
   return (
     <MDXContext.Provider value={mergedComponents}>
       {children}
@@ -26,7 +27,9 @@ export function MDXProvider({ components = {}, children }: MDXProviderProps) {
 /**
  * Hook to get MDX components
  */
-export function useMDXComponents(components?: Record<string, React.ComponentType>): Record<string, React.ComponentType> {
+export function useMDXComponents(
+  components?: Record<string, React.ComponentType>
+): Record<string, React.ComponentType> {
   const contextComponents = useContext(MDXContext)
   return { ...contextComponents, ...components }
 }

@@ -3,9 +3,7 @@ title: Recipes
 description: Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability.
 ---
 
-# Recipes
-
-Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability. One of its key features is the ability to create multi-variant styles with a type-safe runtime API.
+Recipes are a way to create multi-variant styles with a type-safe runtime API.
 
 A recipe consists of four properties:
 
@@ -14,7 +12,8 @@ A recipe consists of four properties:
 - `compoundVariants`: The different combinations of variants for the component
 - `defaultVariants`: The default variant values for the component
 
-> **Credit:** This API was inspired by [Stitches](https://stitches.dev/), [Vanilla Extract](https://vanilla-extract.style/), and [Class Variance Authority](https://cva.style/).
+> **Credit:** This API was inspired by [Stitches](https://stitches.dev/),
+> [Vanilla Extract](https://vanilla-extract.style/), and [Class Variance Authority](https://cva.style/).
 
 [Comparison table between the different types of recipes here: "Should I use atomic or config recipes ?"](/docs/concepts/recipes#should-i-use-atomic-or-config-recipes-)
 
@@ -22,9 +21,11 @@ A recipe consists of four properties:
 
 Atomic recipes are a way to create multi-variant atomic styles with a type-safe runtime API.
 
-They are defined using the `cva` function which was inspired by [Class Variance Authority](https://cva.style/). The `cva` function which takes an object as its argument.
+They are defined using the `cva` function which was inspired by [Class Variance Authority](https://cva.style/). The
+`cva` function which takes an object as its argument.
 
-> **Note:** `cva` is not the same as [Class Variance Authority](https://cva.style/). The `cva` from Panda is a purpose-built function for creating atomic recipes that are connected to your design tokens and utilities.
+> **Note:** `cva` is not the same as [Class Variance Authority](https://cva.style/). The `cva` from Panda is a
+> purpose-built function for creating atomic recipes that are connected to your design tokens and utilities.
 
 ### Defining the recipe
 
@@ -57,15 +58,12 @@ example of how to use the `button` recipe:
 import { button } from './button'
 
 const Button = () => {
-  return (
-    <button className={button({ visual: 'solid', size: 'lg' })}>
-      Click Me
-    </button>
-  )
+  return <button className={button({ visual: 'solid', size: 'lg' })}>Click Me</button>
 }
 ```
 
-When a recipe is created, Panda will extract and generate CSS for every variant and compoundVariant `css` ahead of time, as atomic classes.
+When a recipe is created, Panda will extract and generate CSS for every variant and compoundVariant `css` ahead of time,
+as atomic classes.
 
 ```css
 @layer utilities {
@@ -90,7 +88,8 @@ When a recipe is created, Panda will extract and generate CSS for every variant 
 
 ### Setting the default variants
 
-The `defaultVariants` property is used to set the default variant values for the recipe. This is useful when you want to apply a variant by default. Here's an example of how to use `defaultVariants`:
+The `defaultVariants` property is used to set the default variant values for the recipe. This is useful when you want to
+apply a variant by default. Here's an example of how to use `defaultVariants`:
 
 ```jsx
 import { cva } from '../styled-system/css'
@@ -118,7 +117,9 @@ const button = cva({
 
 ### Compound Variants
 
-Compound variants are a way to combine multiple variants together to create more complex sets of styles. They are defined using the `compoundVariants` property , which takes an array of objects as its argument. Each object in the array represents a set of conditions that must be met in order for the corresponding styles to be applied.
+Compound variants are a way to combine multiple variants together to create more complex sets of styles. They are
+defined using the `compoundVariants` property , which takes an array of objects as its argument. Each object in the
+array represents a set of conditions that must be met in order for the corresponding styles to be applied.
 
 Here's an example of how to use `compoundVariants` in Panda:
 
@@ -206,17 +207,15 @@ import { button } from './button'
 
 const Button = () => {
   // will apply size: small, color: primary, css: { border: '2px solid blue' }
-  return (
-    <button className={button({ size: 'small', color: 'primary' })}>
-      Click Me
-    </button>
-  )
+  return <button className={button({ size: 'small', color: 'primary' })}>Click Me</button>
 }
 ```
 
-Overall, using compound variants allows you to create more complex sets of styles that can be applied to your components based on multiple conditions.
+Overall, using compound variants allows you to create more complex sets of styles that can be applied to your components
+based on multiple conditions.
 
-By combining simple variants together in this way, you can create a wide range of visual styles without cluttering up your code with lots of conditional logic.
+By combining simple variants together in this way, you can create a wide range of visual styles without cluttering up
+your code with lots of conditional logic.
 
 ### TypeScript Guide
 
@@ -252,11 +251,13 @@ export const Button = styled('button', buttonStyle)
 
 ### Usage in JSX
 
-You can create a JSX component from any existing atomic recipe by using the `styled` function from the `/jsx` entrypoint.
+You can create a JSX component from any existing atomic recipe by using the `styled` function from the `/jsx`
+entrypoint.
 
 The `styled` function takes the element type as its first argument, and the recipe as its second argument.
 
-> Make sure to add the `jsxFramework` option to your `panda.config` file, and run `panda codegen` to generate the JSX entrypoint.
+> Make sure to add the `jsxFramework` option to your `panda.config` file, and run `panda codegen` to generate the JSX
+> entrypoint.
 
 ```js
 import { cva } from '../styled-system/css'
@@ -290,7 +291,8 @@ Then you can use the component in JSX
 
 ## Config Recipe
 
-Config recipes are extracted and generated just in time, this means regardless of the number of recipes in the config, only the recipes and variants you use will exist in the generated CSS.
+Config recipes are extracted and generated just in time, this means regardless of the number of recipes in the config,
+only the recipes and variants you use will exist in the generated CSS.
 
 The config recipe takes the following additional properties:
 
@@ -381,7 +383,8 @@ function App() {
 }
 ```
 
-The generated css is registered under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx) with the class name that matches the recipe-variant name pattern `<recipe-className>--<variant-name>`.
+The generated css is registered under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx) with the class
+name that matches the recipe-variant name pattern `<recipe-className>--<variant-name>`.
 
 > **Technical Notes 📝:** Only the recipe and variants used in your application are generated. Not more!
 
@@ -407,7 +410,8 @@ The generated css is registered under the `recipe` [cascade layer](/docs/concept
 
 ### Responsive and Conditional variants
 
-Recipes created in the config have a **special** feature; they can be applied based on a specific breakpoints or conditions.
+Recipes created in the config have a **special** feature; they can be applied based on a specific breakpoints or
+conditions.
 
 Here's how to tweak the size variant of the button recipe based on breakpoints.
 
@@ -417,19 +421,19 @@ import { button } from '../styled-system/recipes'
 function App() {
   return (
     <div>
-      <button className={button({ size: { base: 'sm', md: 'lg' } })}>
-        Click me
-      </button>
+      <button className={button({ size: { base: 'sm', md: 'lg' } })}>Click me</button>
     </div>
   )
 }
 ```
 
-> In most cases, we don't recommend applying conditional variants inline. Ideally, you might want to render different views for your responsive breakpoints.
+> In most cases, we don't recommend applying conditional variants inline. Ideally, you might want to render different
+> views for your responsive breakpoints.
 
 ### TypeScript Guide
 
-Every recipe ships a type interface for its accepted variants. You can import them from the `styled-system/recipes` entrypoint.
+Every recipe ships a type interface for its accepted variants. You can import them from the `styled-system/recipes`
+entrypoint.
 
 For the button recipe, we can import the `ButtonVariants` type like so:
 
@@ -444,9 +448,11 @@ type ButtonProps = ButtonVariants & {
 
 ### Usage in JSX
 
-Layer recipes can be consumed directly in your custom JSX components. Panda will automatically track the usage of the recipe if the component name matches the recipe name.
+Layer recipes can be consumed directly in your custom JSX components. Panda will automatically track the usage of the
+recipe if the component name matches the recipe name.
 
-For example, if your recipe is called `button` and you create a `Button` component from it, Panda will automatically track the usage of the variant properties.
+For example, if your recipe is called `button` and you create a `Button` component from it, Panda will automatically
+track the usage of the variant properties.
 
 ```tsx
 import React from 'react'
@@ -476,7 +482,8 @@ const App = () => {
 
 ### Advanced JSX Tracking
 
-We recommend that you use the recipe functions in most cases, in design systems there might be a need to compose existing components (like Button) to create new components.
+We recommend that you use the recipe functions in most cases, in design systems there might be a need to compose
+existing components (like Button) to create new components.
 
 To track the usage of the recipes in these cases, you'll need to add the `jsx` hint for the recipe config
 
@@ -496,7 +503,8 @@ const button = defineRecipe({
 })
 ```
 
-Then you can create a new component that uses the `Button` component and Panda will track the usage of the `button` recipe as well.
+Then you can create a new component that uses the `Button` component and Panda will track the usage of the `button`
+recipe as well.
 
 ```tsx
 const PageButton = (props: ButtonProps) => {
@@ -543,11 +551,13 @@ Learn more about the [extend](/docs/concepts/extend.md) keyword.
 
 ## Methods and Properties
 
-Both atomic and config recipe ships a helper methods and properties that can be used to get information about the recipe.
+Both atomic and config recipe ships a helper methods and properties that can be used to get information about the
+recipe.
 
 - `variantKeys`: An array of the recipe variant keys
 - `variantMap`: An object of the recipe variant keys and their values
-- `splitVariantProps`: A function that takes an object as its argument and returns an array containing the recipe variant props and the rest of the props
+- `splitVariantProps`: A function that takes an object as its argument and returns an array containing the recipe
+  variant props and the rest of the props
 
 ```js
 import { cva } from '../styled-system/css'
@@ -612,9 +622,11 @@ export const Demo = {
 
 ## Limitations
 
-- Recipes created from `cva` cannot have responsive or conditional values. Only layer recipes can have responsive or conditional values.
+- Recipes created from `cva` cannot have responsive or conditional values. Only layer recipes can have responsive or
+  conditional values.
 
-- Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases. Here are some of use cases that Panda won't be able to track the usage of the recipe variants:
+- Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases. Here are some of use
+  cases that Panda won't be able to track the usage of the recipe variants:
 
   **When you change the name of the variant prop in the JSX component**
 
@@ -630,7 +642,8 @@ export const Demo = {
   }
   ```
 
-  **When you use the recipe in a custom component that is not named as per the recipe name, Panda won't be able to track the usage of the recipe variants.**
+  **When you use the recipe in a custom component that is not named as per the recipe name, Panda won't be able to track
+  the usage of the recipe variants.**
 
   In below example, the component name `Button` is renamed to `Random` and we are using `button` recipe.
 
@@ -684,19 +697,26 @@ const button = defineRecipe({
 
 ## Static CSS
 
-Panda provides a way to generate `static CSS` for your recipes. This is useful when you want to generate CSS for a recipe without using the recipe in your code or if you use dynamic styling that Panda can't keep track of.
+Panda provides a way to generate `static CSS` for your recipes. This is useful when you want to generate CSS for a
+recipe without using the recipe in your code or if you use dynamic styling that Panda can't keep track of.
 
 More information about static CSS can be found [here](/docs/guides/static.md#generating-recipes).
 
 ## Should I use atomic or config recipes ?
 
-[Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
+[Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and
+variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
 
-This contrasts with [Atomic recipes](/docs/concepts/recipes#atomic-recipe-or-cva) (cva), which generates all of the variants regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the start of the panda process when we evaluate your config.
+This contrasts with [Atomic recipes](/docs/concepts/recipes#atomic-recipe-or-cva) (cva), which generates all of the
+variants regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known
+at the start of the panda process when we evaluate your config.
 
-In contrast, the CVA recipes are scattered throughout your code. To get all of them and find their usage across your code, we would need to scan your app code multiple times, which would not be ideal performance-wise.
+In contrast, the CVA recipes are scattered throughout your code. To get all of them and find their usage across your
+code, we would need to scan your app code multiple times, which would not be ideal performance-wise.
 
-When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS with only the styles used. Choose according to your component needs.
+When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes
+shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS
+with only the styles used. Choose according to your component needs.
 
 |                                                        | Config recipe                                                                                                                                                                                                             | Atomic recipe (cva)                                                                                                                                                                                                  |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

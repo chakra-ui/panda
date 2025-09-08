@@ -3,11 +3,9 @@ title: Template Literals
 description: Panda allows you to write styles using template literals.
 ---
 
-# Template Literals
-
-Panda allows you use the [template literal syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates) as an alternative to the object literal syntax.
-
-This provides a similar experience to [styled-components](https://styled-components.com/) and [emotion](https://emotion.sh/), except that Panda generates atomic class names instead of a single unique class name.
+Writing styles using template literals provides a similar experience to
+[styled-components](https://styled-components.com/) and [emotion](https://emotion.sh/), except that Panda generates
+atomic class names instead of a single unique class name.
 
 > Emitting atomic class names allows Panda to generate smaller CSS bundles.
 
@@ -34,7 +32,8 @@ panda codegen --clean
 
 ## The `css` function
 
-This the basic way of writing template styles. It converts the template literal into a set of atomic class name which you can pass to the `className` prop of an element.
+This the basic way of writing template styles. It converts the template literal into a set of atomic class name which
+you can pass to the `className` prop of an element.
 
 ```js
 import { css } from '../styled-system/css'
@@ -65,7 +64,8 @@ Here's what the emitted atomic CSS looks like:
 
 ## The `styled` tag
 
-The `styled` tag allows you to create a component with encapsulated styles. It's similar to the `styled-components` or `emotion` library.
+The `styled` tag allows you to create a component with encapsulated styles. It's similar to the `styled-components` or
+`emotion` library.
 
 ```js
 import { styled } from '../styled-system/jsx'
@@ -152,7 +152,8 @@ const Demo = styled.div`
 
 ## Hashing class names
 
-In some cases, it might be useful to shorten the class names by hashing them. Set the `hash: true` option in your `panda.config.ts` file to enable this. This will generate shorter class names but will make it harder to debug.
+In some cases, it might be useful to shorten the class names by hashing them. Set the `hash: true` option in your
+`panda.config.ts` file to enable this. This will generate shorter class names but will make it harder to debug.
 
 To achieve this, set the `hash` option in your `panda.config.ts` file to `true`:
 
@@ -193,7 +194,8 @@ To a unique six character hash regardless of the length of the selector or the n
 
 ## Using tokens
 
-Use the `token()` function or `{}` syntax in your template literals to reference design tokens in your styles. Panda will automatically generate the corresponding CSS variables.
+Use the `token()` function or `{}` syntax in your template literals to reference design tokens in your styles. Panda
+will automatically generate the corresponding CSS variables.
 
 ```js
 import { css } from '../styled-system/css'
@@ -206,10 +208,12 @@ const className = css`
 
 ## Caveats
 
-The object literal syntax is the recommended way of writing styles. But, if you stick with the template literal syntax, there are some caveats to be aware of:
+The object literal syntax is the recommended way of writing styles. But, if you stick with the template literal syntax,
+there are some caveats to be aware of:
 
 - Patterns and recipes are not generated
 - Dynamic interpolation or component targeting is not supported
-- Lack of autocompletion for tokens within the template literal
-  Our [Eslint plugin](https://github.com/chakra-ui/eslint-plugin-panda/blob/main/docs/rules/no-invalid-token-paths.md) can help you overcome this by detecting invalid tokens
+- Lack of autocompletion for tokens within the template literal Our
+  [Eslint plugin](https://github.com/chakra-ui/eslint-plugin-panda/blob/main/docs/rules/no-invalid-token-paths.md) can
+  help you overcome this by detecting invalid tokens
 - JSX Style props are not supported

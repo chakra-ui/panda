@@ -1,12 +1,11 @@
 ---
 title: CLI Reference
-description: You can use the Command-Line Interface (CLI) provided by Panda to develop, build, and preview your project from a terminal window.
+description:
+  You can use the Command-Line Interface (CLI) provided by Panda to develop, build, and preview your project from a
+  terminal window.
 ---
 
-# CLI Reference
-
-You can use the Command-Line Interface (CLI) provided by Panda to develop, build, and preview your project from a
-terminal window.
+Use Panda's Command-Line Interface (CLI) to develop, build, and preview your project from a terminal.
 
 ## `panda init`
 
@@ -93,7 +92,8 @@ Related: [Debugging](/docs/guides/debugging)
 
 Run the extract process to generate static CSS from your project.
 
-By default it will scan and generate CSS for the entire project depending on your include and exclude options from your config file.
+By default it will scan and generate CSS for the entire project depending on your include and exclude options from your
+config file.
 
 ```bash
 pnpm panda
@@ -191,8 +191,8 @@ Related: [`config.emitTokensOnly`](/docs/references/config#emittokensonly)
 
 #### `--cpu-prof`
 
-This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
-the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in the current working directory, which can be opened
+in tools like [Speedscope](https://www.speedscope.app/)
 
 ```bash
 pnpm panda --cpu-prof
@@ -250,8 +250,8 @@ Related: [`config.cwd`](/docs/references/config#cwd)
 
 #### `--cpu-prof`
 
-This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
-the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in the current working directory, which can be opened
+in tools like [Speedscope](https://www.speedscope.app/)
 
 ```bash
 pnpm panda --cpu-prof
@@ -368,8 +368,8 @@ Related: [`config.polyfill`](/docs/references/config#polyfill)
 
 #### `--cpu-prof`
 
-This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
-the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in the current working directory, which can be opened
+in tools like [Speedscope](https://www.speedscope.app/)
 
 ```bash
 pnpm panda --cpu-prof
@@ -505,8 +505,8 @@ Related: [`config.cwd`](/docs/references/config#cwd)
 
 #### `--cpu-prof`
 
-This will generate a `panda-{command}-{timestamp}.cpuprofile` file in
-the current working directory, which can be opened in tools like [Speedscope](https://www.speedscope.app/)
+This will generate a `panda-{command}-{timestamp}.cpuprofile` file in the current working directory, which can be opened
+in tools like [Speedscope](https://www.speedscope.app/)
 
 ```bash
 pnpm panda --cpu-prof
@@ -578,7 +578,9 @@ Related: [`config.poll`](/docs/references/config#poll)
 
 ## `panda emit-pkg`
 
-Emit package.json with entrypoints, can be used to create a workspace package dedicated to the [`config.outdir`](/docs/references/config#outdir), in combination with [`config.importMap`](/docs/references/config#importmap)
+Emit package.json with entrypoints, can be used to create a workspace package dedicated to the
+[`config.outdir`](/docs/references/config#outdir), in combination with
+[`config.importMap`](/docs/references/config#importmap)
 
 ### Flags
 

@@ -1,6 +1,6 @@
 import { Docs } from '.velite'
 import { css } from '@/styled-system/css'
-import { Box, Flex } from '@/styled-system/jsx'
+import { Flex } from '@/styled-system/jsx'
 import { CopyMdxWidget } from './copy-mdx-widget'
 
 interface DocProps {
@@ -9,7 +9,7 @@ interface DocProps {
 
 export function DocsHeader({ doc }: DocProps) {
   return (
-    <Flex justify="space-between" align="flex-start" gap="4" mb="8">
+    <Flex justify="space-between" align="flex-start" gap="4" mb="12">
       <div>
         <h1
           className={css({

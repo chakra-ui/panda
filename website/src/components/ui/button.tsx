@@ -9,7 +9,7 @@ const buttonRecipe = cva({
     justifyContent: 'center',
     fontWeight: 600,
     flexShrink: 0,
-    transition: 'all'
+    transition: 'background'
   },
 
   variants: {
@@ -60,19 +60,19 @@ const buttonRecipe = cva({
       },
       yellow: {
         bg: 'bg.main',
-        color: 'text.main'
+        color: 'fg'
       },
       border: {
         bg: 'transparent',
-        color: 'text.main',
-        borderColor: 'text.headline',
-        boxShadowColor: 'text.headline'
+        color: 'fg',
+        borderColor: 'fg.headline',
+        boxShadowColor: 'fg.headline'
       },
       ghost: {
         bg: 'transparent',
         border: 'none',
         shadow: 'none',
-        color: 'text.main'
+        color: 'fg'
       },
       'ghost.white': {
         bg: 'transparent',

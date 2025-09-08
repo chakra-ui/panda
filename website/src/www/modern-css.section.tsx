@@ -49,12 +49,7 @@ export const ModernCssSection = () => {
               position="relative"
             >
               <Icon icon="Css3" />
-              <panda.div
-                position="absolute"
-                top="-2"
-                right="-5"
-                color="text.main"
-              >
+              <panda.div position="absolute" top="-2" right="-5" color="fg">
                 <Icon
                   icon="Sparks2"
                   className={css({ w: '22px', h: '22px' })}
@@ -69,7 +64,7 @@ export const ModernCssSection = () => {
               <panda.h4
                 textStyle="panda.h4"
                 fontWeight="medium"
-                color="text.muted"
+                color="fg.muted"
               >
                 Panda uses modern features like cascade layers, :where selectors
                 and css variables to give you best-in-class css output.

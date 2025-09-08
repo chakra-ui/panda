@@ -52,12 +52,7 @@ export const RecipesSection = () => {
               position="relative"
             >
               <Icon icon="Recipe" />
-              <panda.div
-                position="absolute"
-                top="-2"
-                right="-5"
-                color="text.main"
-              >
+              <panda.div position="absolute" top="-2" right="-5" color="fg">
                 <Icon
                   icon="Sparks2"
                   className={css({ w: '22px', h: '22px' })}
@@ -72,7 +67,7 @@ export const RecipesSection = () => {
               <panda.h4
                 textStyle="panda.h4"
                 fontWeight="medium"
-                color="text.muted"
+                color="fg.muted"
               >
                 Panda gives you a robust functions to define recipes and even
                 “cva” to help you design composable component styles.

@@ -56,7 +56,7 @@ export function DocsSidebar({ currentSlug }: DocsSidebarProps) {
   }
 
   return (
-    <Box as="nav" px="4">
+    <Box as="nav" pe="4">
       <Stack gap="1">
         {sidebarStructure.map(section => {
           const isExpanded =
@@ -76,7 +76,7 @@ export function DocsSidebar({ currentSlug }: DocsSidebarProps) {
                   rounded: 'md',
                   fontWeight: 'semibold',
                   fontSize: 'sm',
-                  color: 'fg.default',
+                  color: 'fg',
                   transition: 'colors',
                   _hover: {
                     bg: 'bg.subtle'
@@ -116,9 +116,7 @@ export function DocsSidebar({ currentSlug }: DocsSidebarProps) {
                         fontWeight: isActive(item.slug) ? 'medium' : 'normal',
                         transition: 'all',
                         _hover: {
-                          color: isActive(item.slug)
-                            ? 'accent.default'
-                            : 'fg.default',
+                          color: isActive(item.slug) ? 'accent.default' : 'fg',
                           bg: isActive(item.slug)
                             ? 'accent.subtle'
                             : 'bg.subtle'

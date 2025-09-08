@@ -3,10 +3,7 @@ title: Virtual Color
 description: Panda allows you to create a virtual color or color placeholder in your project.
 ---
 
-# Virtual Color
-
-Panda allows you to create a virtual color or color placeholder in your project. The `colorPalette` property is how you
-create virtual color.
+The `colorPalette` property is how you create virtual colors.
 
 ```js
 import { css } from '../styled-system/css'
@@ -71,26 +68,14 @@ export const App = () => {
   return (
     <>
       <div className="light">
-        <button className={cx(css({ colorPalette: 'blue' }), someButton())}>
-          Click me
-        </button>
-        <button className={cx(css({ colorPalette: 'green' }), someButton())}>
-          Click me
-        </button>
-        <button className={cx(css({ colorPalette: 'red' }), someButton())}>
-          Click me
-        </button>
+        <button className={cx(css({ colorPalette: 'blue' }), someButton())}>Click me</button>
+        <button className={cx(css({ colorPalette: 'green' }), someButton())}>Click me</button>
+        <button className={cx(css({ colorPalette: 'red' }), someButton())}>Click me</button>
       </div>
       <div className="dark">
-        <button className={cx(css({ colorPalette: 'blue' }), someButton())}>
-          Click me
-        </button>
-        <button className={cx(css({ colorPalette: 'green' }), someButton())}>
-          Click me
-        </button>
-        <button className={cx(css({ colorPalette: 'red' }), someButton())}>
-          Click me
-        </button>
+        <button className={cx(css({ colorPalette: 'blue' }), someButton())}>Click me</button>
+        <button className={cx(css({ colorPalette: 'green' }), someButton())}>Click me</button>
+        <button className={cx(css({ colorPalette: 'red' }), someButton())}>Click me</button>
       </div>
     </>
   )
@@ -203,10 +188,7 @@ function ButtonShowcase() {
   const [colorPalette, setColorPalette] = useState('red')
   return (
     <div>
-      <select
-        value={colorPalette}
-        onChange={e => setColorPalette(e.currentTarget.value)}
-      >
+      <select value={colorPalette} onChange={e => setColorPalette(e.currentTarget.value)}>
         <option value="red">Red</option>
         <option value="blue">Blue</option>
       </select>

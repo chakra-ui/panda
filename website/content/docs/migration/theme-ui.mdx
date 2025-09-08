@@ -3,9 +3,8 @@ title: Migrating from Theme UI
 description: Migrate your project from Theme UI to Panda.
 ---
 
-# Migrating from Theme UI
-
-This guide outlines the steps needed to migrate your project from Theme UI to Panda, and some design differences between the two libraries.
+This guide outlines the steps needed to migrate your project from Theme UI to Panda and highlights key design
+differences between the two libraries.
 
 Here are some similarities between the two libraries.
 
@@ -17,13 +16,16 @@ Below are some of the differences between the two libraries.
 
 ## Performance
 
-Theme UI relies on `@emotion/styled` to style components. This means that every time you use the `sx` prop, runtime CSS-in-JS is required to compute the styles in the browser. This can lead to performance issues in larger applications.
+Theme UI relies on `@emotion/styled` to style components. This means that every time you use the `sx` prop, runtime
+CSS-in-JS is required to compute the styles in the browser. This can lead to performance issues in larger applications.
 
-Panda relies on `postcss` and converts CSS-in-JS styles to static CSS at build-time, leading to better performance in larger applications.
+Panda relies on `postcss` and converts CSS-in-JS styles to static CSS at build-time, leading to better performance in
+larger applications.
 
 ## Theming
 
-In Theme UI, you need to wrap your application in a `ThemeProvider` component which is a wrapper around `@emotion/react` theme context.
+In Theme UI, you need to wrap your application in a `ThemeProvider` component which is a wrapper around `@emotion/react`
+theme context.
 
 ```jsx
 import { ThemeProvider } from 'theme-ui'
@@ -48,9 +50,11 @@ export default function App({ Component, pageProps }) {
 }
 ```
 
-In Panda, you don't need to wrap your application in a `ThemeProvider` component. Instead, you can pass the theme object to the `panda.config.js` file.
+In Panda, you don't need to wrap your application in a `ThemeProvider` component. Instead, you can pass the theme object
+to the `panda.config.js` file.
 
-The theme object in Panda is broken down into multiple parts, `tokens` and `semanticTokens`. The theme specification also required passing the tokens as `{ value: XX }`
+The theme object in Panda is broken down into multiple parts, `tokens` and `semanticTokens`. The theme specification
+also required passing the tokens as `{ value: XX }`
 
 ```js
 // panda.config.js
@@ -76,7 +80,8 @@ export default defineConfig({
 
 ## The `sx` prop
 
-In Theme UI, you can use the `sx` prop to style any component when you add the `jsxImportSource` pragma to the top of your file.
+In Theme UI, you can use the `sx` prop to style any component when you add the `jsxImportSource` pragma to the top of
+your file.
 
 ```jsx
 /** @jsxImportSource theme-ui */
@@ -93,7 +98,8 @@ export const Demo = props => (
 )
 ```
 
-Panda offers three similar ways to style components. The first approach is to use the `styled` element syntax and rename `sx` to `css`
+Panda offers three similar ways to style components. The first approach is to use the `styled` element syntax and rename
+`sx` to `css`
 
 ```jsx
 import { styled } from 'styled-system/jsx'
@@ -110,7 +116,8 @@ export const Demo = props => (
 )
 ```
 
-The second approach is to create styled components using the `styled` function. This approach allows you to create style variants.
+The second approach is to create styled components using the `styled` function. This approach allows you to create style
+variants.
 
 ```jsx
 import { styled } from 'styled-system/jsx'
@@ -143,7 +150,8 @@ export const Demo = props => (
 
 ## Variants
 
-In Theme UI, variants are used to create groups of styles based on the theme. It offers variant groups in the theme for several components.
+In Theme UI, variants are used to create groups of styles based on the theme. It offers variant groups in the theme for
+several components.
 
 - `Grid` maps to `theme.grids`
 - `Button`, `IconButton` maps to `theme.buttons`
@@ -180,9 +188,11 @@ export default {
 <button sx={{ variant: 'buttons.primary' }} />
 ```
 
-In Panda, multi-variant styles are referred to as recipes. Recipes are a collection of styles that can be applied to any component.
+In Panda, multi-variant styles are referred to as recipes. Recipes are a collection of styles that can be applied to any
+component.
 
-There are two ways to define recipes in Panda. The first approach is to use the `cva` function which produces atomic classnames.
+There are two ways to define recipes in Panda. The first approach is to use the `cva` function which produces atomic
+classnames.
 
 ```js
 import { cva } from 'styled-system/css'
@@ -218,7 +228,8 @@ const Demo = () => (
 )
 ```
 
-The second approach is to define the recipe in the `theme.recipes` property of the panda config. This is referred to as 'Config recipes' in Panda and allows for sharing recipes across components and projects.
+The second approach is to define the recipe in the `theme.recipes` property of the panda config. This is referred to as
+'Config recipes' in Panda and allows for sharing recipes across components and projects.
 
 ```js
 // panda.config.js
@@ -252,7 +263,8 @@ const Demo = () => <button className={button({ variant: 'accent' })} />
 
 ## Color Modes
 
-In Theme UI, colors modes can be used to create a user-configurable light and dark mode values that are automatically applied to components depending on color mode.
+In Theme UI, colors modes can be used to create a user-configurable light and dark mode values that are automatically
+applied to components depending on color mode.
 
 ```jsx
 // theme.js
@@ -271,7 +283,8 @@ const theme = {
 const Demo = () => <button sx={{ color: 'primary' }} />
 ```
 
-In Panda, color modes related values are defined as `semanticTokens` in the theme. Semantic tokens are tokens that change depending on the color mode.
+In Panda, color modes related values are defined as `semanticTokens` in the theme. Semantic tokens are tokens that
+change depending on the color mode.
 
 ```js
 // panda.config.js
@@ -357,7 +370,8 @@ const Demo = () => (
 )
 ```
 
-In Panda, these are called "layout patterns", or "patterns" for short. Panda provides similar patterns that can be used as a function or JSX element just like Theme UI.
+In Panda, these are called "layout patterns", or "patterns" for short. Panda provides similar patterns that can be used
+as a function or JSX element just like Theme UI.
 
 ```jsx
 import { Box, Grid } from 'styled-system/jsx'

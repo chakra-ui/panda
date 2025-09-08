@@ -3,9 +3,7 @@ title: Panda CLI
 description: An alternative way to use Panda is by running the Panda CLI tool.
 ---
 
-# Panda CLI
-
-An alternative way to use Panda is by running the Panda CLI tool.
+This guide shows you how to use Panda as an alternative approach by running the Panda CLI tool.
 
 <Steps>
 
@@ -67,13 +65,16 @@ Open your `package.json` file and update the `scripts` section as follows:
 }
 ```
 
-The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+The `prepare` script that will run codegen after dependency installation. Read more about
+[codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
+> the output directory to your `.gitignore` file and not worry about it.
 
 ### Import the generated CSS
 
-For each Panda run, it emits the generated CSS at the `styled-system/styles.css` file path. Import this file at the root component of your project.
+For each Panda run, it emits the generated CSS at the `styled-system/styles.css` file path. Import this file at the root
+component of your project.
 
 ```jsx {1}
 import './styled-system/styles.css'
@@ -134,7 +135,8 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
 
 ### Start using Panda
 
-Use the generated style utilities in your code and panda will extract them to the generated CSS file. Then run your build process.
+Use the generated style utilities in your code and panda will extract them to the generated CSS file. Then run your
+build process.
 
 ```jsx
 import { css } from './styled-system/css'
@@ -148,7 +150,8 @@ export function App() {
 
 ## Troubleshooting
 
-If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
+`tsconfig.json` file:
 
 ```json filename="tsconfig.json"
 {

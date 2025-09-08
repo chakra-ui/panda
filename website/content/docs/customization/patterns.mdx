@@ -1,22 +1,21 @@
 ---
 title: Customizing Patterns
-description: Panda provides the ability to customize the built-in patterns, as well as creating your own custom patterns. This is useful to create your own layout pattern abstractions that can be used in your application.
+description:
+  Panda provides the ability to customize the built-in patterns, as well as creating your own custom patterns. This is
+  useful to create your own layout pattern abstractions that can be used in your application.
 ---
 
-# Pattern Configuration
-
-Panda provides the ability to customize the built-in patterns, as well as creating your own custom patterns. This is
-useful to create your own layout pattern abstractions that can be used in your application.
+Panda allows you to customize built-in patterns and create custom patterns for reusable layout abstractions.
 
 A pattern accepts the following parameters:
 
 - `description` - The description of the pattern.
 - `properties` - The list of properties that the pattern accepts.
-- `defaultValues` - The default values for the properties. This is useful when you want to provide a default value for
-  a property.
+- `defaultValues` - The default values for the properties. This is useful when you want to provide a default value for a
+  property.
 - `transform` - The function that accepts the properties and returns a css object.
-- `jsx` - The name of the JSX component that will be generated (when `jsxFramework` is set). Defaults to the pascal-case version of
-  the pattern name.
+- `jsx` - The name of the JSX component that will be generated (when `jsxFramework` is set). Defaults to the pascal-case
+  version of the pattern name.
 - `jsxElement` - The actual JSX element that will be rendered (when `jsxFramework` is set). Defaults to `div`.
 - `blocklist` - The list of properties that are not allowed to be used in the pattern. Can be used to ensure strict
   typings when using the pattern.
@@ -108,8 +107,8 @@ const App = () => {
 
 ## Customizing Built-in Patterns
 
-You can extend the [default patterns](/docs/concepts/patterns#predefined-patterns) by using the `patterns.extend` property in the config.
-
+You can extend the [default patterns](/docs/concepts/patterns#predefined-patterns) by using the `patterns.extend`
+property in the config.
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -121,13 +120,13 @@ export default defineConfig({
       flex: {
         properties: {
           // only allow row and column
-          direction: { type: "enum", value: ["row", "column"] },
+          direction: { type: 'enum', value: ['row', 'column'] },
           jsx: ['Flex', 'CustomFlex'] // 👈 match the `CustomFlex` component to this pattern
-        },
-      },
-    },
-  },
-});
+        }
+      }
+    }
+  }
+})
 ```
 
 Then you can run the following command to update the pattern JS code:
@@ -159,4 +158,5 @@ Then you can run the following command to update the pattern JS code:
 
 ## Minimal setup
 
-If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it [here](/docs/guides/minimal-setup)
+If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
+[here](/docs/guides/minimal-setup)

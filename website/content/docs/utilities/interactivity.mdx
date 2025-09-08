@@ -1,11 +1,12 @@
 ---
 title: Interactivity
-description: Panda CSS provides a variety of utility classes to enhance interactivity and user experience on your web applications.
+description:
+  Panda CSS provides a variety of utility classes to enhance interactivity and user experience on your web applications.
 ---
 
-# Interactivity
-
-Panda CSS provides a variety of utility classes to enhance interactivity and user experience on your web applications. These utilities cover aspects such as accent color, caret color, scrolling behavior, scrollbar customization, scroll margins and paddings, scroll snapping, touch actions, and user selection.
+Panda CSS provides a variety of utility classes to enhance interactivity and user experience on your web applications.
+These utilities cover aspects such as accent color, caret color, scrolling behavior, scrollbar customization, scroll
+margins and paddings, scroll snapping, touch actions, and user selection.
 
 ## Accent Color
 
@@ -17,7 +18,8 @@ The `accentColor` utility class sets the accent color of an element. It supports
 
 ## Caret Color
 
-The `caretColor` utility class sets the color of the text cursor (caret) in an input or textarea. It supports `colors` tokens.
+The `caretColor` utility class sets the color of the text cursor (caret) in an input or textarea. It supports `colors`
+tokens.
 
 ```jsx
 <input className={css({ caretColor: 'red.400' })} />
@@ -25,7 +27,8 @@ The `caretColor` utility class sets the color of the text cursor (caret) in an i
 
 ## Scrollbar
 
-The `scrollbar` utility allows customization of scrollbar appearance. It supports `visible` and `hidden` values which respectively show or hide the scrollbar.
+The `scrollbar` utility allows customization of scrollbar appearance. It supports `visible` and `hidden` values which
+respectively show or hide the scrollbar.
 
 ```jsx
 <div className={css({ scrollbar: 'hidden' })}>Scrollbar hidden</div>
@@ -36,9 +39,7 @@ The `scrollbar` utility allows customization of scrollbar appearance. It support
 Scroll margin utilities set margins around scroll containers.
 
 ```jsx
-<div className={css({ scrollMarginX: '2' })}>
-  Scrollbar Container with Inline padding
-</div>
+<div className={css({ scrollMarginX: '2' })}>Scrollbar Container with Inline padding</div>
 ```
 
 | Prop                                  | CSS Property                 | Token Category |
@@ -59,9 +60,7 @@ Scroll margin utilities set margins around scroll containers.
 Scroll padding utilities set padding inside scroll containers.
 
 ```jsx
-<div className={css({ scrollPaddingY: '2' })}>
-  Scrollbar Container with block padding
-</div>
+<div className={css({ scrollPaddingY: '2' })}>Scrollbar Container with block padding</div>
 ```
 
 | Prop                                     | CSS Property                  | Token Category |
@@ -96,9 +95,7 @@ Scroll snapping utilities provide control over the scroll snap behavior.
 It's values can be `mandatory` or `proximity` values, and maps to `var(--scroll-snap-strictness)`.
 
 ```jsx
-<div className={css({ scrollSnapStrictness: 'proximity' })}>
-  Scroll container with proximity scroll snap
-</div>
+<div className={css({ scrollSnapStrictness: 'proximity' })}>Scroll container with proximity scroll snap</div>
 ```
 
 ### Scroll Snap Type

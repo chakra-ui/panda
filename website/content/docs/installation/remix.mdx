@@ -3,9 +3,7 @@ title: Using Remix
 description: Easily use Panda with Remix with our dedicated integration.
 ---
 
-# Using Panda CSS with Remix
-
-Setting up Panda CSS in a Remix project using PostCSS.
+This guide will show you how to set up Panda CSS in a Remix project using PostCSS.
 
 ## Start a new project
 
@@ -104,13 +102,13 @@ Open your `package.json` file and update the `scripts` section as follows:
 - `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about
   [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
-> This step ensures that the panda output directory is regenerated after each dependency installation.
-> So you can add the Panda CSS output directory to your `.gitignore` file and not worry about it.
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
+> the Panda CSS output directory to your `.gitignore` file and not worry about it.
 
 ### Configure the content
 
-Make sure that all of the paths of your Remix components are included in the `include` section of
-the `panda.config.ts` file.
+Make sure that all of the paths of your Remix components are included in the `include` section of the `panda.config.ts`
+file.
 
 ```js {5, 11} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -120,10 +118,7 @@ export default defineConfig({
   preflight: true,
 
   // Where to look for your css declarations
-  include: [
-    './app/routes/**/*.{ts,tsx,js,jsx}',
-    './app/components/**/*.{ts,tsx,js,jsx}'
-  ],
+  include: ['./app/routes/**/*.{ts,tsx,js,jsx}', './app/components/**/*.{ts,tsx,js,jsx}'],
 
   // Files to exclude
   exclude: [],
@@ -148,14 +143,7 @@ to the CSS file.
 
 ```tsx filename="app/root.tsx" {11,13}
 import type { LinksFunction } from '@remix-run/node'
-import {
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration
-} from '@remix-run/react'
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react'
 
 import styles from './index.css?url'
 
@@ -212,26 +200,19 @@ Run the following command to start your development server.
 
 ### Start using Panda
 
-Now you can start using Panda CSS in your project.
-Here is the snippet of code that you can use in your `app/routes/_index.tsx` file.
+Now you can start using Panda CSS in your project. Here is the snippet of code that you can use in your
+`app/routes/_index.tsx` file.
 
 ```tsx filename="app/routes/_index.tsx"
 import type { MetaFunction } from '@remix-run/node'
 import { css } from 'styled-system/css'
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: 'New Remix App' },
-    { name: 'description', content: 'Welcome to Remix!' }
-  ]
+  return [{ title: 'New Remix App' }, { name: 'description', content: 'Welcome to Remix!' }]
 }
 
 export default function Index() {
-  return (
-    <div className={css({ fontSize: '2xl', fontWeight: 'bold' })}>
-      Hello 🐼!
-    </div>
-  )
+  return <div className={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
 }
 ```
 
@@ -239,8 +220,8 @@ export default function Index() {
 
 ## Troubleshooting
 
-If you're not getting import autocomplete in your IDE, you may need to include the `styled-system`
-directory in your `tsconfig.json` file:
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
+`tsconfig.json` file:
 
 ```json filename="tsconfig.json"
 {
@@ -249,8 +230,8 @@ directory in your `tsconfig.json` file:
 }
 ```
 
-If your app doesn't reload when making changes to the `panda.config.ts` file, consider
-adding `watchPaths` in your remix config file.
+If your app doesn't reload when making changes to the `panda.config.ts` file, consider adding `watchPaths` in your remix
+config file.
 
 ```js filename="remix.config.js"
 export default {

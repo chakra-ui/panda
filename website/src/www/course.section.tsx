@@ -166,7 +166,7 @@ export const CourseSection = () => {
             className={css({
               textStyle: '2xl',
               fontWeight: 'medium',
-              color: 'text.muted'
+              color: 'fg.muted'
             })}
           >
             Panda Mastery - Created by the Panda team

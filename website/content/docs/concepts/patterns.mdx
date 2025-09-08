@@ -1,14 +1,12 @@
 ---
 title: Patterns
-description: Patterns are layout primitives that can be used to create robust and responsive layouts with ease. Panda comes with predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be used as functions or JSX elements.
+description:
+  Patterns are layout primitives that can be used to create robust and responsive layouts with ease. Panda comes with
+  predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be used as functions or JSX elements.
 ---
 
-# Patterns
-
-Patterns are layout primitives that can be used to create robust and responsive layouts with ease. Panda comes with
-predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be used as functions or JSX elements.
-
-> Think of patterns as a set of predefined styles to reduce repetition and improve readability. You can override the properties as needed, just like in the `css` function.
+Think of patterns as a set of predefined styles to reduce repetition and improve readability. You can override the
+properties as needed, just like in the `css` function.
 
 ## Creating Patterns
 
@@ -18,7 +16,9 @@ To learn how to create patterns, check out the [customization](/docs/customizati
 
 ### Box
 
-The Box pattern does not contain any additional styles. With its function form it's the equivalent of the `css` function. It can be useful with its JSX form and is the equivalent of a `styled.div` component, serving mostly to get style props available in JSX.
+The Box pattern does not contain any additional styles. With its function form it's the equivalent of the `css`
+function. It can be useful with its JSX form and is the equivalent of a `styled.div` component, serving mostly to get
+style props available in JSX.
 
 ```tsx
 import { Box } from '../styled-system/jsx'
@@ -175,7 +175,6 @@ function App() {
 The VStack pattern is a wrapper around the `stack` pattern that sets the `direction` property to `vertical`, and centers
 the elements horizontally.
 
-
 <Tabs items={['Function', 'JSX']}>
 <Tab>
 
@@ -212,7 +211,6 @@ function App() {
 
   </Tab>
 </Tabs>
-
 
 ### Wrap
 
@@ -283,11 +281,7 @@ import { aspectRatio } from '../styled-system/patterns'
 function App() {
   return (
     <div className={aspectRatio({ ratio: 16 / 9 })}>
-      <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m1"
-        title="Google map"
-        frameBorder="0"
-      />
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m1" title="Google map" frameBorder="0" />
     </div>
   )
 }
@@ -302,11 +296,7 @@ import { AspectRatio } from '../styled-system/jsx'
 function App() {
   return (
     <AspectRatio ratio={16 / 9}>
-      <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m1"
-        title="Google map"
-        frameBorder="0"
-      />
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m1" title="Google map" frameBorder="0" />
     </AspectRatio>
   )
 }
@@ -415,7 +405,6 @@ The link overlay pattern is used to expand a link's clickable area to its neares
 
 > We recommend using this pattern when the relative parent contains at most one clickable link.
 
-
 <Tabs items={['Function', 'JSX']}>
 <Tab>
 
@@ -425,7 +414,7 @@ import { linkOverlay } from '../styled-system/patterns'
 
 function App() {
   return (
-    <div className={css({ pos: "relative" })}>
+    <div className={css({ pos: 'relative' })}>
       <img src="https://via.placeholder.com/150" alt="placeholder" />
       <a href="#" className={linkOverlay()}>
         View more
@@ -434,6 +423,7 @@ function App() {
   )
 }
 ```
+
 </Tab>
 
 <Tab>
@@ -445,13 +435,12 @@ function App() {
   return (
     <Box pos="relative">
       <img src="https://via.placeholder.com/150" alt="placeholder" />
-      <LinkOverlay href="#">
-        View more
-      </LinkOverlay>
+      <LinkOverlay href="#">View more</LinkOverlay>
     </Box>
   )
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -745,7 +734,7 @@ The `bleed` function accepts the following properties:
 - `block`: The amount of padding to negate on the vertical axis. Should match the parent's padding.
 
 <Tabs items={['Function', 'JSX']}>
-<Tab>
+  <Tab>
 
 ```tsx
 import { css } from '../styled-system/css'
@@ -781,12 +770,16 @@ export function Page() {
 
 ### cq (Container Query)
 
-To make it easier to use container queries, we've added a new `cq` pattern to `@pandacss/preset-base`. It is used to apply styles based on the width of the container.
+To make it easier to use container queries, we've added a new `cq` pattern to `@pandacss/preset-base`. It is used to
+apply styles based on the width of the container.
 
 The `cq` function accepts the following properties:
 
-- `name`: The name of the container query, Maps to the [`containerName` CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/container-name).
-- `type`: The type of the container query. Maps to the [`containerType` CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/container-type). Defaults to `inline-size`.
+- `name`: The name of the container query, Maps to the
+  [`containerName` CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/container-name).
+- `type`: The type of the container query. Maps to the
+  [`containerType` CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/container-type). Defaults to
+  `inline-size`.
 
 ```ts
 import { cq } from 'styled-system/patterns'
@@ -816,9 +809,9 @@ export default defineConfig({
     containerSizes: {
       xs: '40em',
       sm: '60em',
-      md: '80em',
-    },
-  },
+      md: '80em'
+    }
+  }
 })
 ```
 
@@ -834,7 +827,7 @@ function Demo() {
         className={css({
           // When the sidebar container reaches the `sm` size
           // change font size to `md`
-          fontSize: { base: 'lg', '@sidebar/sm': 'md' },
+          fontSize: { base: 'lg', '@sidebar/sm': 'md' }
         })}
       />
     </nav>
@@ -850,7 +843,8 @@ To use the pattern in JSX, you need to set the `jsxFramework` property in the co
 files for JSX elements based on the framework.
 
 Every pattern can be used as a JSX element and imported from the `/jsx` entrypoint. By default, the pattern name is the
-function name in PascalCase. You can override both the component name (with the `jsx` config property) and the element rendered (with the `jsxElement` config property).
+function name in PascalCase. You can override both the component name (with the `jsx` config property) and the element
+rendered (with the `jsxElement` config property).
 
 Learn more about pattern customization [here](/docs/customization/patterns).
 
@@ -871,7 +865,8 @@ function App() {
 
 ### Advanced JSX Tracking
 
-We recommend that you use the pattern functions in most cases, in design systems there might be a need to compose existing components to create new components.
+We recommend that you use the pattern functions in most cases, in design systems there might be a need to compose
+existing components to create new components.
 
 To track the usage of the patterns in these cases, you'll need to add the `jsx` hint for the pattern config
 
@@ -885,7 +880,8 @@ const scrollable = definePattern({
 })
 ```
 
-Then you can create a new component that uses the `PageScrollable` component and Panda will track the usage of the `scrollable` pattern as well.
+Then you can create a new component that uses the `PageScrollable` component and Panda will track the usage of the
+`scrollable` pattern as well.
 
 ```tsx
 const PageScrollable = (props: ButtonProps) => {

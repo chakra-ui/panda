@@ -3,9 +3,8 @@ title: Tokens
 description: Design tokens are the platform-agnostic way to manage design decisions in your application or website.
 ---
 
-# Design Tokens
-
-Design tokens are the platform-agnostic way to manage design decisions in your application or website. It is a collection of attributes that describe any fundamental/atomic visual style. Each attribute is a key-value pair.
+Design tokens provide a platform-agnostic way to manage design decisions through key-value pairs that describe
+fundamental visual styles.
 
 > Design tokens in Panda are largely influenced by the [W3C Token Format](https://tr.designtokens.org/format/).
 
@@ -39,8 +38,8 @@ export default defineConfig({
 })
 ```
 
-> ⚠️ Token values need to be nested in an object with a `value` key.
-> This is to allow for additional properties like `description` and more in the future.
+> ⚠️ Token values need to be nested in an object with a `value` key. This is to allow for additional properties like
+> `description` and more in the future.
 
 After defining tokens, you can use them in authoring components and styles.
 
@@ -82,7 +81,8 @@ export default defineConfig({
 
 ## Semantic Tokens
 
-Semantic tokens are tokens that are designed to be used in a specific context. In most cases, the value of a semantic token references to an existing token.
+Semantic tokens are tokens that are designed to be used in a specific context. In most cases, the value of a semantic
+token references to an existing token.
 
 > To reference a value in a semantic token, use the `{}` syntax.
 
@@ -112,10 +112,11 @@ export default defineConfig({
 })
 ```
 
-> ⚠️ Semantic Token values need to be nested in an object with a `value` key.
-> This is to allow for additional properties like `description` and more in the future.
+> ⚠️ Semantic Token values need to be nested in an object with a `value` key. This is to allow for additional properties
+> like `description` and more in the future.
 
-Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles) like light and dark modes.
+Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles) like light and dark
+modes.
 
 For example, if you want a color to change automatically based on light or dark mode.
 
@@ -139,7 +140,8 @@ export default defineConfig({
 })
 ```
 
-> NOTE 🚨: The conditions used in semantic tokens must be an at-rule or parent selector [condition](/docs/concepts/conditional-styles#reference).
+> NOTE 🚨: The conditions used in semantic tokens must be an at-rule or parent selector
+> [condition](/docs/concepts/conditional-styles#reference).
 
 ## Token Nesting
 
@@ -413,8 +415,8 @@ const theme = {
 
 ### Shadows
 
-Shadow tokens represent the shadow of an element. Its value is defined as single or multiple values containing a
-string or a composite value.
+Shadow tokens represent the shadow of an element. Its value is defined as single or multiple values containing a string
+or a composite value.
 
 ```ts
 type CompositeShadow = {
@@ -447,10 +449,7 @@ const theme = {
       },
       // multiple string values
       realistic: {
-        value: [
-          '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-          '0 1px 4px 0 rgba(0, 0, 0, 0.1)'
-        ]
+        value: ['0 1px 2px 0 rgba(0, 0, 0, 0.05)', '0 1px 4px 0 rgba(0, 0, 0, 0.1)']
       }
     }
   }
@@ -589,7 +588,9 @@ const theme = {
 
 ### Cursor
 
-Cursor tokens define the style of the mouse pointer when it hovers over a specific element or area. These tokens represent the visual behavior of interactions, indicating actions such as clickable areas, draggable elements, or loading states. Their value is defined as a string.
+Cursor tokens define the style of the mouse pointer when it hovers over a specific element or area. These tokens
+represent the visual behavior of interactions, indicating actions such as clickable areas, draggable elements, or
+loading states. Their value is defined as a string.
 
 ```js
 const theme = {
@@ -606,7 +607,8 @@ const theme = {
 
 ## Token Helpers
 
-To help defining tokens in a type-safe way, you can use the tokens [Config Functions](/docs/customization/config-functions#token-creators).
+To help defining tokens in a type-safe way, you can use the tokens
+[Config Functions](/docs/customization/config-functions#token-creators).
 
 ## CSS variables
 
