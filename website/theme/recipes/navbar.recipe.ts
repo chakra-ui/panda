@@ -36,11 +36,7 @@ export const navbarRecipe = defineRecipe({
       zIndex: -1,
       h: 'full',
       w: 'full',
-      bg: 'white',
-      _dark: {
-        bg: 'dark',
-        shadow: '0 -1px 0 rgba(255,255,255,.1) inset'
-      },
+      bg: 'bg.surface',
       shadow: '0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)',
       _supportsBackdrop: {
         backdropFilter: 'blur(8px)',

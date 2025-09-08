@@ -137,7 +137,7 @@ const tocRecipe = sva({
     link: {
       display: 'inline-block',
       textStyle: 'sm',
-      color: 'gray.500',
+      color: 'fg.subtle',
       fontWeight: 'normal',
       ps: 'var(--padding-left)',
       py: '0.5',
@@ -145,10 +145,10 @@ const tocRecipe = sva({
       borderColor: 'transparent',
       transition: 'all',
       _current: {
-        color: 'primary.600'
+        color: 'accent'
       },
       _hover: {
-        color: { base: 'gray.900', _dark: 'gray.300' }
+        color: 'fg'
       }
     }
   }

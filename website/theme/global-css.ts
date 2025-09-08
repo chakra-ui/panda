@@ -2,7 +2,7 @@ import { defineGlobalStyles } from '@pandacss/dev'
 
 export const globalCss = defineGlobalStyles({
   '*, *::before, *::after': {
-    borderColor: { base: 'neutral.200', _dark: 'neutral.800' }
+    borderColor: 'border'
   },
   html: {
     fontFamily: 'sans',
@@ -10,20 +10,17 @@ export const globalCss = defineGlobalStyles({
     '--nextra-primary-hue': '212deg'
   },
   body: {
-    bg: 'white',
-    _dark: { bg: 'dark', color: 'gray.100' },
+    bg: 'bg',
+    color: 'fg',
     minHeight: '100vh'
   },
   "a, summary, button, input, [tabindex]:not([tabindex='-1'])": {
     outline: 'none',
     _focusVisible: {
       outline: '2px',
-      outlineColor: 'primary.200',
+      outlineColor: 'accent.subtle',
       outlineOffset: '1px',
-      outlineStyle: 'solid',
-      _dark: {
-        outlineColor: 'primary.800'
-      }
+      outlineStyle: 'solid'
     }
   },
   /* Content Typography */
@@ -116,7 +113,7 @@ export const globalCss = defineGlobalStyles({
         pr: 4,
         textAlign: 'right',
         minW: '2.6rem',
-        color: 'gray.500'
+        color: 'fg.subtle'
       }
     },
     '& .line': {
@@ -182,15 +179,9 @@ export const globalCss = defineGlobalStyles({
     '&:after': {
       content: "'#'",
       px: 1,
-      color: 'gray.300',
-      _dark: {
-        color: 'neutral.700'
-      },
+      color: 'fg.subtle',
       'span:target + &': {
-        color: 'gray.400',
-        _dark: {
-          color: 'neutral.500'
-        }
+        color: 'fg.muted'
       }
     }
   }

@@ -19,9 +19,8 @@ const classes = {
     fontWeight: 'medium'
   }),
   inactive: css({
-    color: 'gray.600',
-    _hover: { color: 'gray.800' },
-    _dark: { color: 'gray.400', _hover: { color: 'gray.200' } }
+    color: 'fg.muted',
+    _hover: { color: 'fg' }
   })
 }
 

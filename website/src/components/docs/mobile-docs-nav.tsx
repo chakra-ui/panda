@@ -28,7 +28,7 @@ export const MobileDocsNav = ({ slug }: Props) => {
           justifyContent: 'center',
           w: 14,
           h: 14,
-          bg: 'accent.default',
+          bg: 'accent',
           color: 'white',
           rounded: 'full',
           shadow: 'lg',

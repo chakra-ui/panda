@@ -18,15 +18,15 @@ export const cardRecipe = defineRecipe({
         overflow: 'hidden',
         borderRadius: 'lg',
         borderWidth: '1px',
-        borderColor: 'gray.200',
+        borderColor: 'border',
         color: 'currentColor',
         textDecorationLine: 'none',
         boxShadow: 'md',
-        boxShadowColor: 'gray.100',
+        boxShadowColor: 'border.muted',
         transition: 'all',
         _hover: {
-          boxShadowColor: 'gray.100',
-          borderColor: 'gray.300'
+          boxShadowColor: 'border.muted',
+          borderColor: 'border'
         },
         _active: {
           boxShadow: 'sm',
@@ -43,8 +43,8 @@ export const cardRecipe = defineRecipe({
         alignItems: 'flex-start',
         gap: 2,
         p: 4,
-        color: { base: 'gray.700', _dark: 'gray.200' },
-        _hover: { color: 'gray.900', _dark: { color: 'neutral.50' } }
+        color: 'fg.muted',
+        _hover: { color: 'fg' }
       }
     }),
     '& img': {

@@ -94,7 +94,7 @@ export const SearchInput = () => {
                   mt: 4,
                   px: 4,
                   py: 2,
-                  bg: 'accent.default',
+                  bg: 'accent',
                   color: 'white',
                   rounded: 'md',
                   fontSize: 'sm',

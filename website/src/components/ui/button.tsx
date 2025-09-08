@@ -31,19 +31,14 @@ const buttonRecipe = cva({
       outline: {
         borderRadius: 'sm',
         borderWidth: '1px',
-        borderColor: 'gray.200'
+        borderColor: 'border'
       }
     },
 
     color: {
       www: {
         color: { base: 'black', _hover: 'white' },
-        bg: { base: 'yellow.300', _hover: 'gray.400' },
-        _dark: {
-          _hover: {
-            shadowColor: 'gray.200'
-          }
-        }
+        bg: { base: 'yellow.300', _hover: 'gray.400' }
       },
       main: {
         bg: 'bg.emphasized',

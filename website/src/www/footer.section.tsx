@@ -7,7 +7,7 @@ import Image from 'next/image'
 export const FooterSection = () => {
   const { twitterUrl, discordUrl, docsRepositoryBase } = docsConfig
   return (
-    <panda.footer bg={{ base: 'black', _dark: 'gray.700' }}>
+    <panda.footer bg="bg.inverted">
       <Container py="10">
         <Flex
           gap="6"

@@ -9,8 +9,8 @@ const styles = css({
   mb: '4',
   rounded: 'md',
   borderWidth: '1px',
-  bg: { base: 'white', _dark: 'neutral.800' },
-  borderColor: { base: 'inherit', _dark: 'neutral.900' },
+  bg: 'bg.surface',
+  borderColor: 'border',
   p: '2',
   shadow: 'sm'
 })

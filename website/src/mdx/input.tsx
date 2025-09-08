@@ -8,8 +8,7 @@ const styles = {
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    color: 'gray.900',
-    _dark: { color: 'gray.300' }
+    color: 'fg'
   }),
 
   input: css({
@@ -22,17 +21,12 @@ const styles = {
     transition: 'shadow',
     textStyle: { base: 'md', md: 'sm' },
     lineHeight: 'tight',
-    bg: 'rgb(0 0 0 / 0.05)',
-    _dark: {
-      color: 'gray.400',
-      bg: 'rgb(249 250 251 / 0.1)',
-      _focus: { bg: 'black' }
-    },
+    bg: 'bg.subtle',
     _focus: {
-      bg: 'white'
+      bg: 'bg.surface'
     },
     _placeholder: {
-      color: 'gray.500'
+      color: 'fg.muted'
     }
   })
 }

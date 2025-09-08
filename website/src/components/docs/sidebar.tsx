@@ -110,15 +110,16 @@ export function Sidebar({ slug: currentSlug }: Props) {
                     px: '4',
                     py: '1.5',
                     rounded: 'md',
-                    fontSize: 'sm',
-                    color: isActive(item.slug) ? 'accent.default' : 'fg.muted',
-                    bg: isActive(item.slug) ? 'accent.subtle' : 'transparent',
-                    fontWeight: isActive(item.slug) ? 'medium' : 'normal',
+                    textStyle: 'sm',
+                    color: 'fg.muted',
+                    bg: 'transparent',
+                    fontWeight: 'normal',
                     transitionProperty: 'background, color',
                     transitionDuration: '200ms',
-                    _hover: {
-                      color: isActive(item.slug) ? 'accent.default' : 'fg',
-                      bg: isActive(item.slug) ? 'accent.subtle' : 'bg.subtle'
+                    _current: {
+                      color: 'fg',
+                      bg: 'accent.subtle',
+                      fontWeight: 'semibold'
                     }
                   })
 
@@ -127,6 +128,7 @@ export function Sidebar({ slug: currentSlug }: Props) {
                       <a
                         key={item.slug}
                         href={item.href || item.slug}
+                        data-current={isActive(item.slug) || undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={linkStyles}
@@ -141,6 +143,7 @@ export function Sidebar({ slug: currentSlug }: Props) {
                     <Link
                       key={item.slug}
                       href={`/docs/${item.slug}`}
+                      data-current={isActive(item.slug) || undefined}
                       className={linkStyles}
                     >
                       {item.title}
