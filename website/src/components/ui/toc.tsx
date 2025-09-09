@@ -6,20 +6,18 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 
+interface HeadingState {
+  index: number
+  aboveHalfViewport: boolean
+  insideHalfViewport: boolean
+  isActive: boolean
+}
+
 function useTocState() {
   const [headingStates, setHeadingStates] = useState<
-    Record<
-      string,
-      {
-        index: number
-        aboveHalfViewport: boolean
-        insideHalfViewport: boolean
-        isActive: boolean
-      }
-    >
+    Record<string, HeadingState>
   >({})
   const observerRef = useRef<IntersectionObserver | null>(null)
-  const rootRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     // Get all headings
@@ -35,100 +33,100 @@ function useTocState() {
       elementMap.set(el, [el.id, index])
     })
 
-    // Set up intersection observer with sophisticated tracking
-    if (!observerRef.current) {
-      observerRef.current = new IntersectionObserver(
-        entries => {
-          setHeadingStates(prevStates => {
-            const newStates = { ...prevStates }
-
-            // Update states based on intersection entries
-            for (const entry of entries) {
-              if (entry?.rootBounds && elementMap.has(entry.target)) {
-                const [id, index] = elementMap.get(entry.target)
-                const aboveHalfViewport =
-                  entry.boundingClientRect.y +
-                    entry.boundingClientRect.height <=
-                  entry.rootBounds.y + entry.rootBounds.height
-                const insideHalfViewport = entry.intersectionRatio > 0
-
-                newStates[id] = {
-                  index,
-                  aboveHalfViewport,
-                  insideHalfViewport,
-                  isActive: false
-                }
-              }
-            }
-
-            // Determine which headings should be active
-            const activeIds = new Set<string>()
-
-            // First, mark all visible headings as active
-            for (const id in newStates) {
-              newStates[id].isActive = false
-
-              if (newStates[id].insideHalfViewport) {
-                activeIds.add(id)
-              }
-            }
-
-            // If no headings are visible, find the most relevant one
-            if (activeIds.size === 0) {
-              let fallbackId = ''
-              let largestIndexAboveViewport = -1
-
-              // Look for the last heading that passed above the viewport
-              for (const id in newStates) {
-                if (
-                  newStates[id].aboveHalfViewport &&
-                  newStates[id].index > largestIndexAboveViewport
-                ) {
-                  largestIndexAboveViewport = newStates[id].index
-                  fallbackId = id
-                }
-              }
-
-              // If still no heading found and we're near the bottom, activate the last heading
-              if (!fallbackId) {
-                const isNearBottom =
-                  window.innerHeight + window.scrollY >=
-                  document.documentElement.scrollHeight - 100
-
-                if (isNearBottom) {
-                  const allIds = Object.keys(newStates)
-                  if (allIds.length > 0) {
-                    fallbackId = allIds.reduce((maxId, id) =>
-                      newStates[id].index > newStates[maxId].index ? id : maxId
-                    )
-                  }
-                }
-              }
-
-              if (fallbackId) {
-                activeIds.add(fallbackId)
-              }
-            }
-
-            // Mark all active headings
-            for (const id of activeIds) {
-              if (newStates[id]) {
-                newStates[id].isActive = true
-              }
-            }
-
-            // Debug active headings
-            console.log('Active headings:', Array.from(activeIds))
-
-            return newStates
-          })
-        },
-        {
-          rootMargin: '0px 0px -20%',
-          threshold: [0, 0.1]
-        }
-      )
+    // Clean up existing observer before creating a new one
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+      observerRef.current = null
     }
+
+    // Set up intersection observer with sophisticated tracking
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        setHeadingStates(prevStates => {
+          const newStates = { ...prevStates }
+
+          // Update states based on intersection entries
+          for (const entry of entries) {
+            if (entry?.rootBounds && elementMap.has(entry.target)) {
+              const [id, index] = elementMap.get(entry.target)
+              const aboveHalfViewport =
+                entry.boundingClientRect.y + entry.boundingClientRect.height <=
+                entry.rootBounds.y + entry.rootBounds.height
+              const insideHalfViewport = entry.intersectionRatio > 0
+
+              newStates[id] = {
+                index,
+                aboveHalfViewport,
+                insideHalfViewport,
+                isActive: false
+              }
+            }
+          }
+
+          // Determine which headings should be active
+          const activeIds = new Set<string>()
+
+          // First, mark all visible headings as active
+          for (const id in newStates) {
+            newStates[id].isActive = false
+
+            if (newStates[id].insideHalfViewport) {
+              activeIds.add(id)
+            }
+          }
+
+          // If no headings are visible, find the most relevant one
+          if (activeIds.size === 0) {
+            let fallbackId = ''
+            let largestIndexAboveViewport = -1
+
+            // Look for the last heading that passed above the viewport
+            for (const id in newStates) {
+              if (
+                newStates[id].aboveHalfViewport &&
+                newStates[id].index > largestIndexAboveViewport
+              ) {
+                largestIndexAboveViewport = newStates[id].index
+                fallbackId = id
+              }
+            }
+
+            // If still no heading found and we're near the bottom, activate the last heading
+            if (!fallbackId) {
+              const isNearBottom =
+                window.innerHeight + window.scrollY >=
+                document.documentElement.scrollHeight - 100
+
+              if (isNearBottom) {
+                const allIds = Object.keys(newStates)
+                if (allIds.length > 0) {
+                  fallbackId = allIds.reduce((maxId, id) =>
+                    newStates[id].index > newStates[maxId].index ? id : maxId
+                  )
+                }
+              }
+            }
+
+            if (fallbackId) {
+              activeIds.add(fallbackId)
+            }
+          }
+
+          // Mark all active headings
+          for (const id of activeIds) {
+            if (newStates[id]) {
+              newStates[id].isActive = true
+            }
+          }
+
+          return newStates
+        })
+      },
+      {
+        rootMargin: '0px 0px -20%',
+        threshold: [0, 0.1]
+      }
+    )
 
     elements.forEach(el => observerRef.current?.observe(el))
 
@@ -147,21 +145,28 @@ function useTocState() {
     )
     if (!activeId) return
 
-    const anchor = document.querySelector(`li > a[href="#${activeId}"]`)
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      const anchor = document.querySelector(`li > a[href="#${activeId}"]`)
 
-    if (anchor) {
-      scrollIntoView(anchor, {
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center',
-        scrollMode: 'always',
-        boundary: rootRef.current
-      })
-    }
+      if (anchor) {
+        // Find the scrollable container (parent with overflow-y auto)
+        const scrollContainer = anchor.closest('.scroll-area')
+
+        if (scrollContainer) {
+          scrollIntoView(anchor, {
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center',
+            scrollMode: 'if-needed',
+            boundary: scrollContainer
+          })
+        }
+      }
+    })
   }, [headingStates])
 
   return {
-    rootRef,
     isCurrent: (id: string) => headingStates[id]?.isActive || false,
     onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
       e.preventDefault()
@@ -180,7 +185,7 @@ export interface TocProps {
 
 export const Toc = (props: TocProps) => {
   const { data } = props
-  const { isCurrent, onLinkClick, rootRef } = useTocState()
+  const { isCurrent, onLinkClick } = useTocState()
 
   if (data.length === 0) {
     return null
@@ -189,7 +194,7 @@ export const Toc = (props: TocProps) => {
   const classes = tocRecipe()
 
   return (
-    <nav ref={rootRef} className={classes.root} aria-label="Table of contents">
+    <nav className={classes.root} aria-label="Table of contents">
       <h3 className={classes.title}>On this page</h3>
       <ul>
         {data.map(item => (
@@ -214,8 +219,6 @@ const tocRecipe = sva({
   slots: ['root', 'title', 'link', 'item'],
   base: {
     root: {
-      position: 'sticky',
-      top: '20',
       ps: '4'
     },
     title: {

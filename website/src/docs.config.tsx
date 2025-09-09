@@ -31,6 +31,7 @@ export const docsConfig: DocsConfig = {
   title: 'Panda CSS',
   description: 'Build modern websites using build-time and type-safe CSS-in-JS',
   url: 'https://panda-css.com',
+  logoUrl: '/',
   docsRepositoryBase: 'https://github.com/chakra-ui/panda',
   gitTimestamp: 'Last updated on',
   twitterUrl: 'https://twitter.com/panda__css',

@@ -80,7 +80,9 @@ const docs = defineCollection({
       title: s.string(),
       description: s.string().optional(),
       metadata: s.metadata(),
-      content: s.markdown(),
+      llm: s.custom().transform((_data, { meta }) => {
+        return (meta.content as string) ?? ''
+      }),
       slug: s.path(),
       category: s.string().optional(),
       code: s.mdx(),

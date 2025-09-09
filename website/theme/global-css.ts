@@ -39,24 +39,6 @@ export const globalCss = defineGlobalStyles({
     }
   },
 
-  '.nextra-search ul': {
-    _supportsBackdrop: {
-      backdropFilter: 'blur(12px)',
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
-      _dark: {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)'
-      }
-    }
-  },
-  '.nextra-button': {
-    _supportsBackdrop: {
-      backdropFilter: 'blur(8px)',
-      backgroundColor: 'rgba(255, 255, 255, 0.85)',
-      _dark: {
-        backgroundColor: 'rgba(0, 0, 0, 0.85)'
-      }
-    }
-  },
   "input[type='search']": {
     '&::-webkit-search-decoration, &::-webkit-search-cancel-button, &::-webkit-search-results-button, &::-webkit-search-results-decoration':
       {
@@ -70,10 +52,10 @@ export const globalCss = defineGlobalStyles({
       mr: 1
     }
   },
-  '.nextra-scrollbar': {
+  '.scroll-area': {
     scrollbarWidth: 'thin',
     scrollbarColor: 'oklch(55.55% 0 0 / 40%) transparent',
-    scrollbarGutter: 'stable',
+    scrollbarGutter: 'auto',
     '&::-webkit-scrollbar': {
       w: '3',
       h: '3'
@@ -83,23 +65,6 @@ export const globalCss = defineGlobalStyles({
     },
     '&::-webkit-scrollbar-thumb': {
       rounded: '10px'
-    },
-    '&:hover::-webkit-scrollbar-thumb': {
-      border: '3px solid transparent',
-      backgroundColor: 'neutral.500',
-      backgroundClip: 'content-box',
-      mdDown: {
-        '.nextra-container &': {
-          scrollbarGutter: 'auto'
-        }
-      }
-    }
-  },
-  '.no-scrollbar': {
-    scrollbarWidth: 'none',
-    msOverflowStyle: 'none',
-    '&::-webkit-scrollbar': {
-      display: 'none'
     }
   },
   code: {
@@ -120,8 +85,9 @@ export const globalCss = defineGlobalStyles({
       }
     },
     '& .line': {
+      px: 4,
       '&.highlighted': {
-        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.1)',
+        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.15)',
         color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)',
         shadow: '2px 0 currentColor inset'
       },
@@ -150,9 +116,6 @@ export const globalCss = defineGlobalStyles({
       color: 'currentcolor',
       _dark: {
         bg: 'transparent!'
-      },
-      '& .line': {
-        px: 4
       }
     },
     'html[data-nextra-word-wrap] &': {

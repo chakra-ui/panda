@@ -75,7 +75,7 @@ export const semanticTokens = defineSemanticTokens({
     // Border tokens
     border: {
       DEFAULT: {
-        value: { base: '{colors.neutral.200}', _dark: '{colors.neutral.800}' }
+        value: { base: '{colors.neutral.200}', _dark: '{colors.neutral.700}' }
       },
       muted: {
         value: { base: '{colors.neutral.100}', _dark: '{colors.neutral.900}' }

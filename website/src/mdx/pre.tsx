@@ -10,7 +10,7 @@ type Props = React.ComponentProps<'pre'> & {
 
 const preStyles = cva({
   base: {
-    bg: { base: 'gray.100', _dark: 'gray.800' },
+    bg: 'bg.muted',
     overflowX: 'auto',
     rounded: 'xl',
     contain: 'paint',
@@ -63,7 +63,7 @@ export const Pre = (props: Props) => {
       <pre
         className={cx(
           preStyles({ hasFilename: !!filename }),
-          'nextra-scrollbar',
+          'scroll-area',
           className
         )}
         ref={preRef}

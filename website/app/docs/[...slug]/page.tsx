@@ -50,12 +50,7 @@ export default function DocsPage(props: DocsPageProps) {
           top="calc(var(--navbar-height) + var(--banner-height) + 1rem)"
           height="calc(100vh - var(--navbar-height) - var(--banner-height) - 1rem)"
         >
-          <Box
-            overflowY="auto"
-            height="100%"
-            className="nextra-scrollbar"
-            p="4"
-          >
+          <Box overflowY="auto" height="100%" className="scroll-area" p="4">
             <Sidebar slug={slug} />
           </Box>
         </Box>
@@ -86,11 +81,13 @@ export default function DocsPage(props: DocsPageProps) {
           flexShrink="0"
           w="56"
           position="sticky"
-          top="calc(var(--navbar-height) + var(--banner-height) + 1rem)"
+          top="calc(var(--navbar-height) + var(--banner-height))"
           pt="10"
           maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - 1rem)"
         >
-          <Toc data={doc.toc} />
+          <Box overflowY="auto" height="100%" className="scroll-area">
+            <Toc data={doc.toc} />
+          </Box>
         </Box>
       </Box>
 
