@@ -1,3 +1,4 @@
+import Script from 'next/script'
 import { Providers } from '@/components/providers'
 import { css, cx } from '@/styled-system/css'
 import { fontClassName } from 'styles/fonts'
@@ -27,13 +28,12 @@ export default function RootLayout(props: Props) {
       suppressHydrationWarning
     >
       <head>
-        <script
-          defer
+        <Script
           data-domain="panda-css.com"
           src="https://plausible.io/js/script.js"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>
