@@ -140,7 +140,7 @@ export default async function TeamPage() {
   return (
     <>
       <Navbar />
-      <panda.div bg="bg.muted" pt="20" minH="100dvh">
+      <panda.div bg="bg.muted" pt="20" minH="80dvh">
         <Container py="20">
           <Stack gap="16" align="center">
             <Stack gap="6" align="center" textAlign="center">
