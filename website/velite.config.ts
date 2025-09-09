@@ -93,7 +93,6 @@ const docs = defineCollection({
     })
     .transform(data => ({
       ...data,
-      slug: data.slug.split('/').slice(1).join('/'),
       toc: flattenToc(data.toc)
     }))
 })
