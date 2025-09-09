@@ -1,8 +1,9 @@
 'use client'
 
 import { CourseBanner } from '@/components/course-banner'
+import { CommandMenu } from '@/components/docs/command-menu'
+import { SearchButton } from '@/components/docs/search'
 import { Anchor } from '@/components/ui/anchor'
-import { SearchInput } from '@/components/ui/search-input'
 import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { renderComponent } from '@/lib/render'
@@ -12,8 +13,6 @@ import { navbar } from '@/styled-system/recipes'
 import { Icon } from '@/theme/icons'
 import { usePathname } from 'next/navigation'
 import { ThemeSwitch } from './theme-switch'
-import { CommandMenu } from '@/components/docs/command-menu'
-import { SearchButton } from '@/components/docs/search'
 
 const classes = {
   link: css({ textStyle: 'sm' }),
