@@ -3,15 +3,20 @@
 import { CourseBanner } from '@/components/course-banner'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
+import { Sidebar } from '@/components/docs/sidebar'
 import { Anchor } from '@/components/ui/anchor'
+import { drawerSlotRecipe } from '@/components/ui/drawer'
 import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { renderComponent } from '@/lib/render'
-import { useMenu } from '@/mdx/contexts'
+import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
+import { Center } from '@/styled-system/jsx'
 import { navbar } from '@/styled-system/recipes'
 import { Icon } from '@/theme/icons'
+import { Dialog, useDialog } from '@ark-ui/react/dialog'
 import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import { ThemeSwitch } from './theme-switch'
 
 const classes = {
@@ -27,7 +32,6 @@ const classes = {
 
 export const Navbar = () => {
   const pathname = usePathname()
-  const { menu, setMenu } = useMenu()
   const items = docsConfig.navigation
 
   return (
@@ -92,7 +96,7 @@ export const Navbar = () => {
             className={css({
               p: 2,
               color: 'currentColor',
-              '& svg': { width: '4' }
+              _icon: { width: '4' }
             })}
             href={docsConfig.docsRepositoryBase}
             newWindow
@@ -101,20 +105,69 @@ export const Navbar = () => {
           </Anchor>
         ) : null}
 
-        <button
-          type="button"
-          aria-label="Menu"
-          data-scope="navbar"
-          data-part="mobile-menu"
-          onClick={() => setMenu(!menu)}
-        >
-          <MenuIcon className={cx(menu && 'open')} />
-        </button>
+        <ThemeSwitch />
 
-        <div className={css({ hideBelow: 'sm' })}>
-          <ThemeSwitch lite />
-        </div>
+        <MobileNavDrawer
+          trigger={
+            <button
+              type="button"
+              aria-label="Menu"
+              data-scope="navbar"
+              data-part="mobile-menu"
+            >
+              <MenuIcon />
+            </button>
+          }
+        >
+          <div className={css({ pt: '8' })}>
+            <Sidebar slug={pathname} />
+          </div>
+        </MobileNavDrawer>
       </nav>
     </div>
+  )
+}
+
+interface MobileNavDrawerProps {
+  trigger: React.ReactNode
+  children: React.ReactNode
+}
+
+const MobileNavDrawer = (props: MobileNavDrawerProps) => {
+  const { trigger, children } = props
+  const dialog = useDialog()
+  const classes = drawerSlotRecipe({ size: 'md', placement: 'start' })
+  const pathname = usePathname()
+
+  const isLgUp = useMatchMedia('(min-width: 1024px)')
+
+  useEffect(() => {
+    if (isLgUp && dialog.open) {
+      dialog.setOpen(false)
+    }
+  }, [isLgUp, dialog.open])
+
+  useEffect(() => {
+    dialog.setOpen(false)
+  }, [pathname])
+
+  return (
+    <Dialog.RootProvider value={dialog}>
+      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+      <Dialog.Backdrop className={classes.backdrop} />
+      <Dialog.Positioner className={classes.positioner}>
+        <Dialog.Content className={classes.content}>
+          <div className={cx(classes.body, 'scroll-area')}>{children}</div>
+          <Dialog.CloseTrigger className={classes.closeTrigger}>
+            <Center width="5" height="5" color="fg">
+              <Icon
+                icon="Close"
+                className={css({ width: '1em', height: 'auto' })}
+              />
+            </Center>
+          </Dialog.CloseTrigger>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.RootProvider>
   )
 }

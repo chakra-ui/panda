@@ -19,6 +19,7 @@ export const dialogSlotRecipe = sva({
       width: '100dvw',
       height: '100dvh',
       position: 'fixed',
+      p: '2',
       left: 0,
       top: 0,
       '--dialog-z-index': '200',

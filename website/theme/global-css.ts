@@ -128,9 +128,6 @@ export const globalCss = defineGlobalStyles({
       '& .line': {
         display: 'inline-block'
       }
-    },
-    '& .nextra-copy-icon': {
-      animation: 'fadein 0.3s ease forwards'
     }
   },
   '.subheading-anchor': {

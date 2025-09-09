@@ -5,7 +5,7 @@ import {
   filterSearchItems,
   getSearchIndex
 } from '@/lib/search-index'
-import { useMediaQuery } from '@/lib/use-media-query'
+import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
 import { createListCollection } from '@ark-ui/react/collection'
 import { Combobox } from '@ark-ui/react/combobox'
@@ -57,7 +57,7 @@ export const CommandMenu = (props: Props) => {
     [filteredItems]
   )
 
-  const isMobile = useMediaQuery(mediaQuery)
+  const isMobile = useMatchMedia(mediaQuery)
   useHotkey({ enabled: !isMobile, setOpen })
 
   const dialogStyles = dialogSlotRecipe({ size: 'lg' })
@@ -89,9 +89,7 @@ export const CommandMenu = (props: Props) => {
                 })
               }}
               onInputValueChange={({ inputValue }) => {
-                startTransition(() => {
-                  setInputValue(inputValue)
-                })
+                setInputValue(inputValue)
               }}
             >
               <Combobox.Control

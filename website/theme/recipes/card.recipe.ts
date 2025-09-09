@@ -53,7 +53,7 @@ export const cardRecipe = defineRecipe({
     '&:hover svg': {
       color: 'currentColor'
     },
-    '& svg': {
+    _icon: {
       width: '1.5rem',
       color: '#00000033',
       _dark: { color: '#ffffff66', _hover: { color: 'currentColor' } },

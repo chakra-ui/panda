@@ -5,11 +5,10 @@ import { css } from '@/styled-system/css'
 import { useTheme } from 'next-themes'
 
 interface ThemeSwitchProps {
-  lite?: boolean
   className?: string
 }
 
-export function ThemeSwitch({ lite, className }: ThemeSwitchProps) {
+export function ThemeSwitch({ className }: ThemeSwitchProps) {
   const { setTheme, resolvedTheme, theme = '' } = useTheme()
   const mounted = useMounted()
 
@@ -40,11 +39,6 @@ export function ThemeSwitch({ lite, className }: ThemeSwitchProps) {
             })}
           >
             <IconToUse />
-            <span
-              className={lite ? css({ md: { display: 'none' } }) : undefined}
-            >
-              {mounted ? theme : 'Light'}
-            </span>
           </div>
         )
       }}

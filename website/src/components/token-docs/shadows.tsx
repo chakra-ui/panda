@@ -5,9 +5,9 @@ import { hstack, stack } from '@/styled-system/patterns'
 export const Shadows = () => {
   return (
     <div className={stack({ gap: '8' })}>
-      {defaultShadows.map(token => {
+      {defaultShadows.map((token, index) => {
         return (
-          <div className={hstack({ gap: '4' })}>
+          <div className={hstack({ gap: '4' })} key={index}>
             <div className={css({ width: '20' })}>{token.extensions.prop}</div>
             <div className={css({ width: '32' })}>
               <div

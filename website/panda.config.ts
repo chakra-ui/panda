@@ -6,6 +6,7 @@ import { recipes } from './theme/recipes'
 import { textStyles } from './theme/text-styles'
 import { layerStyles } from './theme/layer-styles'
 import { globalCss } from './theme/global-css'
+import { keyframes } from './theme/keyframes'
 
 export default defineConfig({
   preflight: true,
@@ -49,20 +50,7 @@ export default defineConfig({
       recipes,
       textStyles,
       layerStyles,
-      keyframes: {
-        fadein: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' }
-        },
-        fadein2: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' }
-        },
-        fadeout: {
-          '0%': { opacity: '1' },
-          '100%': { opacity: '0' }
-        }
-      }
+      keyframes
     }
   },
   globalCss
