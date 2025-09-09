@@ -78,6 +78,7 @@ export default function DocsPage(props: DocsPageProps) {
 
         {/* Table of Contents */}
         <Box
+          visibility={doc.hideToc ? 'hidden' : 'visible'}
           display={{ base: 'none', xl: 'block' }}
           flexShrink="0"
           w="56"
