@@ -3,15 +3,15 @@ title: Custom Font
 description: How to use custom fonts in your project.
 ---
 
-# Custom Font
-
-Adding custom fonts to your application or website is a typical requirement for projects. Panda recommends using custom fonts through CSS variables for consistency.
+Adding custom fonts to your application or website is a typical requirement for projects. Panda recommends using custom
+fonts through CSS variables for consistency.
 
 ## Setup
 
 ### Next.js
 
-Next.js provides a built-in automatic self-hosting for any font file by using the `next/font` module. It allows you to conveniently use all Google Fonts and any local font with performance and privacy in mind.
+Next.js provides a built-in automatic self-hosting for any font file by using the `next/font` module. It allows you to
+conveniently use all Google Fonts and any local font with performance and privacy in mind.
 
 Here's an example of how to load a local "Mona Sans" font and a Google Font "Fira Code" in your Next.js project.
 
@@ -35,7 +35,8 @@ export const FiraCode = Fira_Code({
 
 > Ideally, you should load the font in the layout file.
 
-Next, you need to add the font variables to your HTML document. You can do this using either the App Router or the Pages Router.
+Next, you need to add the font variables to your HTML document. You can do this using either the App Router or the Pages
+Router.
 
 #### App Router
 
@@ -52,7 +53,8 @@ export default function Layout(props) {
 }
 ```
 
-> **Note 🚨:** By default, Next.js attaches the className for the fonts to the `<body>` element, for panda to appropriately load fonts, update the code to attach the `className` to the `<html>` element.
+> **Note 🚨:** By default, Next.js attaches the className for the fonts to the `<body>` element, for panda to
+> appropriately load fonts, update the code to attach the `className` to the `<html>` element.
 
 #### Pages Router
 
@@ -145,10 +147,7 @@ You can also define multiple font sources for the same weight.
 export default defineConfig({
   globalFontface: {
     Fira: {
-      src: [
-        'url(/fonts/fira.woff2) format("woff2")',
-        'url(/fonts/fira.woff) format("woff")'
-      ],
+      src: ['url(/fonts/fira.woff2) format("woff2")', 'url(/fonts/fira.woff) format("woff")'],
       fontWeight: 400,
       fontStyle: 'normal',
       fontDisplay: 'swap'

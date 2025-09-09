@@ -3,9 +3,8 @@ title: Using Panda in a Component Library
 description: How to set up Panda in a component library
 ---
 
-# Using Panda in a Component Library
-
-When creating a component library that uses Panda which can be used in a variety of different projects, you have four options:
+When creating a component library that uses Panda which can be used in a variety of different projects, you have four
+options:
 
 1. Ship a Panda [preset](/docs/customization/presets)
 2. Ship a static CSS file
@@ -16,16 +15,20 @@ When creating a component library that uses Panda which can be used in a variety
 
 ## Recommendations
 
-- If your library code shouldn't be published on npm and App code uses Panda, use [ship build info](#ship-the-build-info-file) approach
+- If your library code shouldn't be published on npm and App code uses Panda, use
+  [ship build info](#ship-the-build-info-file) approach
 - If your app code doesn't use Panda, use the [static css](#ship-a-static-css-file) file approach
 - If your app code lives in a monorepo, use the [include src files](#include-the-src-files) approach
-- If your library code doesn't ship components but only ships tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
+- If your library code doesn't ship components but only ships tokens, patterns or recipes, use the
+  [ship preset](#ship-a-panda-preset) approach
 
-> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your library code has any custom tokens, patterns or recipes.
+> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your
+> library code has any custom tokens, patterns or recipes.
 
 ## Ship a Panda Preset
 
-This is the simplest approach. You can include the token, semantic tokens, text styles, etc. within a preset and consume them in your projects.
+This is the simplest approach. You can include the token, semantic tokens, text styles, etc. within a preset and consume
+them in your projects.
 
 **Library code**
 
@@ -61,11 +64,13 @@ export default defineConfig({
 })
 ```
 
-> Adding a preset will remove the default theme from Panda. To add it back, you need to include the `@pandacss/dev/presets` preset.
+> Adding a preset will remove the default theme from Panda. To add it back, you need to include the
+> `@pandacss/dev/presets` preset.
 
 ## Ship a Static CSS File
 
-This approach involves extracting the static css of your library at build time. Then you can import the CSS file in your app code.
+This approach involves extracting the static css of your library at build time. Then you can import the CSS file in your
+app code.
 
 **Library code**
 
@@ -133,8 +138,10 @@ This approach comes with a few downsides:
 
 ### Summary
 
-- create a Panda [preset](/docs/customization/presets) so that you (and your users) can share the same design system tokens
-- create a workspace package for your outdir (`@acme-org/styled-system`) and use that package name as the `importMap` in your app code
+- create a Panda [preset](/docs/customization/presets) so that you (and your users) can share the same design system
+  tokens
+- create a workspace package for your outdir (`@acme-org/styled-system`) and use that package name as the `importMap` in
+  your app code
 - have your component library (`@acme-org/components`) use the `@acme-org/styled-system` package as external
 
 ---
@@ -143,9 +150,12 @@ Let's make a dedicated workspace package for your `outdir`:
 
 1. Create a new directory `packages/styled-system` (or any other name)
 2. Install `@pandacss/dev` as a dev dependency
-3. Run the `panda init` command in there to generate a `panda.config.ts` file, don't forget to set the `jsxFramework` if needed
-4. [optional] you might want to install and import your [preset](/docs/customization/presets) in this `panda.config.ts` file as well
-5. Run the [`panda emit-pkg`](/docs/references/cli#emit-pkg) command to set the entrypoints in [`exports`](https://nodejs.org/api/packages.html#exports)
+3. Run the `panda init` command in there to generate a `panda.config.ts` file, don't forget to set the `jsxFramework` if
+   needed
+4. [optional] you might want to install and import your [preset](/docs/customization/presets) in this `panda.config.ts`
+   file as well
+5. Run the [`panda emit-pkg`](/docs/references/cli#emit-pkg) command to set the entrypoints in
+   [`exports`](https://nodejs.org/api/packages.html#exports)
 
 This should look similar to this:
 
@@ -214,7 +224,8 @@ Install the newly created `@acme-org/styled-system` package in your app code.
 pnpm add @acme-org/styled-system
 ```
 
-Configure the `importMap` in your `panda.config.ts` to match the `name` field of your outdir `package.json`. This will inform Panda which imports belong to the `styled-system`.
+Configure the `importMap` in your `panda.config.ts` to match the `name` field of your outdir `package.json`. This will
+inform Panda which imports belong to the `styled-system`.
 
 ```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -226,7 +237,8 @@ export default defineConfig({
 })
 ```
 
-Mark the `@acme-org/styled-system` as an external package in your library build tool. This ensures that the generated JS runtime code is imported only once, avoiding duplication.
+Mark the `@acme-org/styled-system` as an external package in your library build tool. This ensures that the generated JS
+runtime code is imported only once, avoiding duplication.
 
 ```bash
 tsup src/index.tsx --external @acme-org/styled-system
@@ -249,9 +261,13 @@ export default defineConfig({
 
 ### Ship the build info file
 
-This approach is similar to the previous one, but instead of shipping the source code, you ship the Panda build info file. This will have **the exact same end-result** as adding the sources files in the `include`, but it will allow you not to ship the source code.
+This approach is similar to the previous one, but instead of shipping the source code, you ship the Panda build info
+file. This will have **the exact same end-result** as adding the sources files in the `include`, but it will allow you
+not to ship the source code.
 
-The build info file is a JSON file that **only** contains the information about the static extraction result, you still need to ship your app build/dist by yourself. It can be used by Panda to generate CSS classes without the need for parsing the source code.
+The build info file is a JSON file that **only** contains the information about the static extraction result, you still
+need to ship your app build/dist by yourself. It can be used by Panda to generate CSS classes without the need for
+parsing the source code.
 
 Generate the build info file:
 
@@ -267,7 +283,8 @@ Install the newly created `@acme-org/styled-system` package in your app code.
 pnpm add @acme-org/styled-system
 ```
 
-Configure the `importMap` in your `panda.config.ts` to match the `name` field of your outdir `package.json`. This will inform Panda which imports belong to the `styled-system`.
+Configure the `importMap` in your `panda.config.ts` to match the `name` field of your outdir `package.json`. This will
+inform Panda which imports belong to the `styled-system`.
 
 ```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -293,10 +310,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   //...
-  include: [
-    './node_modules/@acme-org/design-system/dist/panda.buildinfo.json',
-    './src/**/*.{ts,tsx}'
-  ],
+  include: ['./node_modules/@acme-org/design-system/dist/panda.buildinfo.json', './src/**/*.{ts,tsx}'],
   importMap: '@acme-org/styled-system',
   outdir: 'styled-system'
 })
@@ -306,17 +320,15 @@ export default defineConfig({
 
 ### Why should my component library use an external package `styled-system`?
 
-By de-coupling the component library from the `styled-system`, your users can share the same runtime code between your library and their app code.
+By de-coupling the component library from the `styled-system`, your users can share the same runtime code between your
+library and their app code.
 
 ```tsx filename="component-lib/src/button.tsx"
 import { css } from '@acme-org/styled-system/css'
 
 export function Button({ children, css: cssProp }) {
   return (
-    <button
-      type="button"
-      className={css({ bg: 'red.300', px: '2', py: '3' }, cssProp)}
-    >
+    <button type="button" className={css({ bg: 'red.300', px: '2', py: '3' }, cssProp)}>
       {children}
     </button>
   )
@@ -332,17 +344,20 @@ export function App() {
 }
 ```
 
-Marking the `styled-system` as an external package in your build tool means that the generated JS runtime code (the `css` function is the example above) is imported only once, avoiding duplication.
+Marking the `styled-system` as an external package in your build tool means that the generated JS runtime code (the
+`css` function is the example above) is imported only once, avoiding duplication.
 
 ### How do I use the `@acme-org/styled-system` package ?
 
-You can use your monorepo workspace package `@acme-org/styled-system` just like any other dependency in your app or component library code.
+You can use your monorepo workspace package `@acme-org/styled-system` just like any other dependency in your app or
+component library code.
 
 ```bash
 pnpm add @acme-org/styled-system
 ```
 
-Set the `importMap` in your `panda.config.ts` to that same package name. This will inform Panda which imports belong to the `styled-system`.
+Set the `importMap` in your `panda.config.ts` to that same package name. This will inform Panda which imports belong to
+the `styled-system`.
 
 ```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -369,7 +384,8 @@ export function Button({ children }) {
 
 ### How to override tokens used by the `@acme-org/styled-system` package?
 
-You can override the tokens used by the `@acme-org/styled-system` package by extending the `theme` in your `panda.config.ts` file.
+You can override the tokens used by the `@acme-org/styled-system` package by extending the `theme` in your
+`panda.config.ts` file.
 
 ```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -389,6 +405,8 @@ export default defineConfig({
 
 ## Troubleshooting
 
-- When using `tsup` or any other build tool for your component library, if you run into a module resolution error that looks similar to `ERROR: Could not resolve "../styled-system/xxx"`. Consider setting the `outExtension`in the panda config to`js`
+- When using `tsup` or any other build tool for your component library, if you run into a module resolution error that
+  looks similar to `ERROR: Could not resolve "../styled-system/xxx"`. Consider setting the `outExtension`in the panda
+  config to`js`
 
 - If you use Yarn PnP, you might need to set the `nodeLinker: node-modules` in the `.yarnrc.yml` file.

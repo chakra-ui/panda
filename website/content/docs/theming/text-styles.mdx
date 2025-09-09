@@ -1,13 +1,9 @@
 ---
 title: Text Styles
-description: Typography forms the core of any interface design, making it important to establish patterns for consistent and legible typography early in the development process. This will also help you avoid duplicating typography properties.
+description: Define reusable typography css properties.
 ---
 
-# Text Styles
-
-Typography forms the core of any interface design, making it important to establish patterns for consistent and legible typography early in the development process. This will also help you avoid duplicating typography properties.
-
-Text styles allows you to define textual css properties. The common peoperties are:
+Text styles allows you to define textual css properties. The common properties are:
 
 - The font family, weight, size
 - Line height
@@ -59,7 +55,8 @@ export default defineConfig({
 })
 ```
 
-This should automatically update the generated theme the specified `textStyles`. If this doesn't happen, you can run the `panda codegen` command.
+This should automatically update the generated theme the specified `textStyles`. If this doesn't happen, you can run the
+`panda codegen` command.
 
 ## Using text styles
 
@@ -69,11 +66,7 @@ Now we can use `textStyle` property in our components.
 import { css } from '../styled-system/css'
 
 function App() {
-  return (
-    <p className={css({ textStyle: 'body' })}>
-      This is a paragraph from Panda with the body text style.
-    </p>
-  )
+  return <p className={css({ textStyle: 'body' })}>This is a paragraph from Panda with the body text style.</p>
 }
 ```
 
@@ -81,12 +74,15 @@ function App() {
 
 ### Avoid layout properties
 
-To ensure the consistency of your design system, avoid applying layout properties (like margin, padding, etc.) or color properties (background, colors, etc.) to the text styles.
+To ensure the consistency of your design system, avoid applying layout properties (like margin, padding, etc.) or color
+properties (background, colors, etc.) to the text styles.
 
 ### Naming conventions
 
-We recommend using the same text style names used by designers on your team. Here are common ideas on how to name text styles:
+We recommend using the same text style names used by designers on your team. Here are common ideas on how to name text
+styles:
 
 - Sized-based naming system (`xs`, `sm`, `md`, `lg`, `xl`)
 - Semantic naming system that corresponds to respective html tags in production (`caption`, `paragraph`, `h1`, `h2`)
-- Descriptive or functional naming system that explains the style's intended use (`alert`, `modal-header`, `button-label`)
+- Descriptive or functional naming system that explains the style's intended use (`alert`, `modal-header`,
+  `button-label`)

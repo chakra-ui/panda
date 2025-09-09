@@ -1,11 +1,9 @@
 ---
 title: Animation Styles
-description: Animation styles focus solely on animations, allowing you to orchestrate animation properties. Pairing animation styles with text styles and layer styles can make your styles cleaner and more maintainable.
+description: Define reusable animation css properties.
 ---
 
-# Animation Styles
-
-Animation styles focus solely on animations, allowing you to orchestrate animation properties. Pairing animation styles with text styles and layer styles can make your styles cleaner and more maintainable.
+Animation styles focus solely on animations, allowing you to orchestrate animation properties.
 
 ## Defining Animation Styles
 
@@ -57,7 +55,8 @@ export default defineConfig({
 })
 ```
 
-This should automatically update the generated theme with the specified `animationStyles`. If this doesn't happen, you can run the `panda codegen` command.
+This should automatically update the generated theme with the specified `animationStyles`. If this doesn't happen, you
+can run the `panda codegen` command.
 
 ## Using Animation Styles
 
@@ -97,11 +96,13 @@ export const popoverSlotRecipe = defineSlotRecipe({
 
 ### Avoid Overuse
 
-To ensure the performance and readability of your design system, avoid overusing animations. Use them sparingly to enhance user experience without overwhelming the user.
+To ensure the performance and readability of your design system, avoid overusing animations. Use them sparingly to
+enhance user experience without overwhelming the user.
 
 ### Consistent Naming Conventions
 
-We recommend using consistent naming conventions for animation styles. Here are common ideas on how to name animation styles:
+We recommend using consistent naming conventions for animation styles. Here are common ideas on how to name animation
+styles:
 
 - Based on the type of animation (`slide`, `fade`, `bounce`)
 - Based on the direction or trigger (`slide-from-top`, `fade-in`, `bounce-on-click`)
