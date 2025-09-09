@@ -64,7 +64,8 @@ Enable preflight:
 }
 ```
 
-You can also scope the preflight; Especially useful for being able to scope the CSS reset to only a part of the app for some reason.
+You can also scope the preflight; Especially useful for being able to scope the CSS reset to only a part of the app for
+some reason.
 
 Enable preflight and customize the scope:
 
@@ -89,7 +90,8 @@ The resulting `reset` css would look like this:
 }
 ```
 
-You can also set the level to `element` (defaults to `parent`) to only reset the elements that have the scope class assigned.
+You can also set the level to `element` (defaults to `parent`) to only reset the elements that have the scope class
+assigned.
 
 ```json
 {
@@ -244,7 +246,8 @@ Whether to minify the generated css. This can be set to `true` to reduce the siz
 
 **Default**: `false`
 
-Whether to hash the generated class names / css variables. This is useful if want to shorten the class names or css variables.
+Whether to hash the generated class names / css variables. This is useful if want to shorten the class names or css
+variables.
 
 Hash the class names and css variables:
 
@@ -324,7 +327,7 @@ Whether to update the .gitignore file.
 
 Will add the following to your `.gitignore` file:
 
-```.gitignore
+```txt
 # Panda
 styled-system
 styled-system-static
@@ -376,7 +379,8 @@ The output directory for the generated css.
 
 **Type**: `string | Partial<OutdirImportMap>`
 
-**Default**: `{ "css": "styled-system/css", "recipes": "styled-system/recipes", "patterns": "styled-system/patterns", "jsx": "styled-system/jsx" }`
+**Default**:
+`{ "css": "styled-system/css", "recipes": "styled-system/recipes", "patterns": "styled-system/patterns", "jsx": "styled-system/jsx" }`
 
 Allows you to customize the import paths for the generated outdir.
 
@@ -412,7 +416,8 @@ is the equivalent of:
 }
 ```
 
-Check out the [Component Library](/docs/guides/component-library) guide for more information on how to use the `importMap` option.
+Check out the [Component Library](/docs/guides/component-library) guide for more information on how to use the
+`importMap` option.
 
 ### include
 
@@ -509,7 +514,8 @@ File extension for generated javascript files.
 
 Whether to force consistent type extensions for generated typescript .d.ts files.
 
-If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension `.d.mts`.
+If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension
+`.d.mts`.
 
 ```json
 {
@@ -838,7 +844,8 @@ Used to generate css utility classes for your project.
 
 **Default**: `false`
 
-Only allow token values and prevent custom or raw CSS values. Will only affect properties that have config tokens, such as `color`, `bg`, `borderColor`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
+Only allow token values and prevent custom or raw CSS values. Will only affect properties that have config tokens, such
+as `color`, `bg`, `borderColor`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
 
 ```json
 {
@@ -852,8 +859,9 @@ Only allow token values and prevent custom or raw CSS values. Will only affect p
 
 **Default**: `false`
 
-Only use valid CSS values for properties that do have a predefined list of values. Will throw for properties that do not have config tokens, such as
-`display`, `content`, `willChange`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
+Only use valid CSS values for properties that do have a predefined list of values. Will throw for properties that do not
+have config tokens, such as `display`, `content`, `willChange`, etc.
+[Learn more.](/docs/concepts/writing-styles#type-safety)
 
 ```json
 {
@@ -886,7 +894,8 @@ Global font face definitions.
 }
 ```
 
-Check out the [Custom Fonts](/docs/guides/fonts#global-font-face) guide for more information on how to use the `globalFontface` option.
+Check out the [Custom Fonts](/docs/guides/fonts#global-font-face) guide for more information on how to use the
+`globalFontface` option.
 
 ## JSX options
 
@@ -1009,15 +1018,18 @@ The validation strictness to use when validating the config.
 
 **Type**: `PandaHooks`
 
-Panda provides a set of callbacks that you can hook into for more advanced use cases. Check the [Hooks](/docs/concepts/hooks) docs for more information.
+Panda provides a set of callbacks that you can hook into for more advanced use cases. Check the
+[Hooks](/docs/concepts/hooks) docs for more information.
 
 ### Plugins
 
 **Type**: `PandaPlugin[]`
 
-Plugins are currently simple objects that contain a `name` and a `hooks` object with the same structure as the `hooks` object in the config.
+Plugins are currently simple objects that contain a `name` and a `hooks` object with the same structure as the `hooks`
+object in the config.
 
-They will be called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
+They will be called in sequence in the order they are defined in the `plugins` array, with the user's config called
+last.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'

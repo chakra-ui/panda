@@ -1490,15 +1490,15 @@ importers:
       focus-visible:
         specifier: 5.2.1
         version: 5.2.1
+      fuse.js:
+        specifier: ^7.1.0
+        version: 7.1.0
       git-url-parse:
         specifier: 16.1.0
         version: 16.1.0
       intersection-observer:
         specifier: 0.12.2
         version: 0.12.2
-      match-sorter:
-        specifier: 6.3.4
-        version: 6.3.4
       next:
         specifier: 14.2.26
         version: 14.2.26(@babel/core@7.12.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -12478,9 +12478,6 @@ packages:
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
 
-  match-sorter@6.3.4:
-    resolution: {integrity: sha512-jfZW7cWS5y/1xswZo8VBOdudUiSd9nifYRWphc9M5D/ee4w4AoXLgBEdRbgVaxbMuagBPeUC5y2Hi8DO6o9aDg==}
-
   matcher-collection@2.0.1:
     resolution: {integrity: sha512-daE62nS2ZQsDg9raM0IlZzLmI2u+7ZapXBwdoeBUKAYERPDDIc0qNqA8E0Rp2D+gspKR7BgIFP52GeujaGXWeQ==}
     engines: {node: 6.* || 8.* || >= 10.*}
@@ -15360,9 +15357,6 @@ packages:
 
   remark-stringify@11.0.0:
     resolution: {integrity: sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw==}
-
-  remove-accents@0.5.0:
-    resolution: {integrity: sha512-8g3/Otx1eJaVD12e31UbJj1YzdtVvzH85HV7t+9MJYk/u3XmkOUJ5Ys9wQrf9PCPK8+xn4ymzqYCiZl6QWKn+A==}
 
   remove-trailing-separator@1.1.0:
     resolution: {integrity: sha512-/hS+Y0u3aOfIETiaiirUFwDBDzmXPvO+jAfKTitUngIPzdKc6Z0LoFjM/CK5PL4C+eKwHohlHAb6H0VFfmmUsw==}
@@ -32560,11 +32554,6 @@ snapshots:
 
   markdown-table@3.0.4: {}
 
-  match-sorter@6.3.4:
-    dependencies:
-      '@babel/runtime': 7.25.0
-      remove-accents: 0.5.0
-
   matcher-collection@2.0.1:
     dependencies:
       '@types/minimatch': 3.0.5
@@ -36638,8 +36627,6 @@ snapshots:
       mdast-util-to-markdown: 2.1.0
       unified: 11.0.5
 
-  remove-accents@0.5.0: {}
-
   remove-trailing-separator@1.1.0: {}
 
   renderkid@2.0.7:
@@ -38157,7 +38144,7 @@ snapshots:
 
   tsx@4.20.3:
     dependencies:
-      esbuild: 0.25.1
+      esbuild: 0.25.9
       get-tsconfig: 4.7.6
     optionalDependencies:
       fsevents: 2.3.3

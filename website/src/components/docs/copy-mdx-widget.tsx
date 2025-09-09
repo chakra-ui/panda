@@ -32,7 +32,7 @@ const CopyPageButton = (props: { doc: Docs }) => {
   const { doc } = props
 
   const clipboard = useClipboard({
-    value: doc.content,
+    value: doc.llm,
     timeout: 1000
   })
 
@@ -82,8 +82,7 @@ const ActionMenu = (props: { doc: Docs }) => {
           <Menu.Content
             className={css({
               minW: '200px',
-              bg: 'white',
-              _dark: { bg: 'neutral.800' },
+              bg: 'bg',
               p: '1',
               borderWidth: '1px',
               outline: '0'
@@ -109,8 +108,7 @@ const ActionMenu = (props: { doc: Docs }) => {
                     boxSize: '3'
                   },
                   _highlighted: {
-                    bg: 'gray.100',
-                    _dark: { bg: 'gray.800' }
+                    bg: 'bg.muted'
                   }
                 })}
               >
