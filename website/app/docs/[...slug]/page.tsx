@@ -1,12 +1,12 @@
 import { docs } from '.velite'
-import { Toc } from '@/components/ui/toc'
 import { Breadcrumb } from '@/components/docs/breadcrumb'
 import { Header } from '@/components/docs/header'
 import { MDXContent } from '@/components/docs/mdx-content'
 import { MobileDocsNav } from '@/components/docs/mobile-docs-nav'
 import { Sidebar } from '@/components/docs/sidebar'
+import { Toc } from '@/components/ui/toc'
 import { css } from '@/styled-system/css'
-import { Box, Container, Flex } from '@/styled-system/jsx'
+import { Box } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
 
 interface DocsPageProps {

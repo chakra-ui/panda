@@ -26,7 +26,7 @@ export const navbarRecipe = defineRecipe({
       position: 'fixed',
       top: 0,
       zIndex: 20,
-      w: 'full',
+      w: 'calc(100% - var(--scrollbar-width, 0px))',
       bg: 'transparent',
       _print: { display: 'none' }
     },
