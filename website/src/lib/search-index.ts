@@ -92,17 +92,6 @@ function createSearchId(baseSlug: string, headingId?: string): string {
 }
 
 /**
- * Generate breadcrumb for better context
- */
-function generateBreadcrumb(doc: Doc, heading?: Doc['toc'][0]): string[] {
-  const breadcrumb = ['Docs', doc.title]
-  if (heading) {
-    breadcrumb.push(heading.title)
-  }
-  return breadcrumb
-}
-
-/**
  * Transform Velite docs to search-optimized records
  */
 export function getSearchIndex(docs: Doc[]): SearchIndex {
@@ -120,7 +109,7 @@ export function getSearchIndex(docs: Doc[]): SearchIndex {
       content: doc.llm,
       type: 'page',
       description: doc.description || doc.llm.slice(0, 150) + '...',
-      breadcrumb: generateBreadcrumb(doc)
+      breadcrumb: [doc.title]
     }
     searchRecords.push(pageRecord)
 
@@ -140,7 +129,7 @@ export function getSearchIndex(docs: Doc[]): SearchIndex {
           pageTitle: doc.title,
           headingLevel: heading.depth,
           description: sectionContent.slice(0, 150) + '...',
-          breadcrumb: generateBreadcrumb(doc, heading)
+          breadcrumb: [doc.title]
         }
         searchRecords.push(headingRecord)
       }

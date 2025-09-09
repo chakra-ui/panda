@@ -13,33 +13,41 @@ import { Dialog } from '@ark-ui/react/dialog'
 import { useEnvironmentContext } from '@ark-ui/react/environment'
 import { Portal } from '@ark-ui/react/portal'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import {
+  startTransition,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Box, Center, Stack } from 'styled-system/jsx'
 import { dialogSlotRecipe } from '../ui/dialog'
 
 interface Props {
   mediaQuery: string
   trigger: React.ReactNode
+  limit?: number
 }
 
 export const CommandMenu = (props: Props) => {
-  const { mediaQuery, trigger } = props
+  const { mediaQuery, trigger, limit = 10 } = props
 
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
+  const inputValueState = useDeferredValue(inputValue)
 
   const searchIndex = useMemo(() => getSearchIndex(docs), [])
   const items = useMemo(() => convertToSearchItems(searchIndex), [searchIndex])
 
   // Filter items based on input
   const matches = useMemo(
-    () => filterSearchItems(items, searchIndex, inputValue),
-    [items, searchIndex, inputValue]
+    () => filterSearchItems(items, searchIndex, inputValueState),
+    [items, searchIndex, inputValueState]
   )
 
   const filteredItems = useMemo(
-    () => Object.values(matches).flat().slice(0, 10),
-    [matches]
+    () => Object.values(matches).flat().slice(0, limit),
+    [matches, limit]
   )
 
   const router = useRouter()
@@ -80,7 +88,11 @@ export const CommandMenu = (props: Props) => {
                   setOpen(false)
                 })
               }}
-              onInputValueChange={({ inputValue }) => setInputValue(inputValue)}
+              onInputValueChange={({ inputValue }) => {
+                startTransition(() => {
+                  setInputValue(inputValue)
+                })
+              }}
             >
               <Combobox.Control
                 className={css({
@@ -177,7 +189,7 @@ export const CommandMenu = (props: Props) => {
                                   opacity="0.8"
                                   borderWidth="1px"
                                   fontWeight="medium"
-                                  px="2"
+                                  px="1"
                                   ms="2"
                                   rounded="sm"
                                   bg="bg"

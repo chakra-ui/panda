@@ -7,14 +7,12 @@ description:
 
 Use Panda's Command-Line Interface (CLI) to develop, build, and preview your project from a terminal.
 
-## `panda init`
+## init
 
 Initialize Panda in a project. This process will:
 
 - Create a `panda.config.ts` file in your project with the default settings and presets.
 - Emit CSS utilities for your project in the specified `output` directory.
-
-### Flags
 
 | Flag                          | Description                                                   | Related                                                       |
 | ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- |
@@ -35,7 +33,7 @@ Initialize Panda in a project. This process will:
 
 ---
 
-## `panda`
+## panda
 
 Run the extract process to generate static CSS from your project.
 
@@ -49,8 +47,6 @@ pnpm panda
 pnpm panda src/components/Button.tsx
 pnpm panda "./src/components/**"
 ```
-
-### Flags
 
 | Flag                    | Description                                                            | Related                                                           |
 | ----------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
@@ -73,11 +69,9 @@ pnpm panda "./src/components/**"
 
 ---
 
-## `panda codegen`
+## codegen
 
 Generate new CSS utilities for your project based on the configuration file.
-
-### Flags
 
 | Flag                  | Description                                                            | Related                                                |
 | --------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
@@ -90,7 +84,7 @@ Generate new CSS utilities for your project based on the configuration file.
 | `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/guides/debugging)                    |
 | `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/guides/debugging)                    |
 
-## `panda cssgen`
+## cssgen
 
 Generate the CSS from files.
 
@@ -114,8 +108,6 @@ You can use it like this:
 panda cssgen "static" --outfile dist/static.css
 ```
 
-### Flags
-
 | Flag                   | Description                                                                       | Related                                                       |
 | ---------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | `--outfile, -o <file>` | Output file for extracted css, default to './styled-system/styles.css'            | -                                                             |
@@ -132,11 +124,9 @@ panda cssgen "static" --outfile dist/static.css
 | `--cpu-prof`           | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling            | [Debugging](/docs/guides/debugging)                           |
 | `--logfile <file>`     | Outputs logs to a file                                                            | [Debugging](/docs/guides/debugging)                           |
 
-## `panda studio`
+## studio
 
 Realtime documentation for your design tokens.
-
-### Flags
 
 | Flag                  | Description                       | Related                                     |
 | --------------------- | --------------------------------- | ------------------------------------------- |
@@ -149,7 +139,7 @@ Realtime documentation for your design tokens.
 | `--outdir <dir>`      | Output directory for static files | -                                           |
 | `--base <path>`       | Base path of project              | -                                           |
 
-## `panda analyze`
+## analyze
 
 Analyze design token and recipe usage.
 
@@ -165,8 +155,6 @@ pnpm panda analyze src/components/Button.tsx
 pnpm panda analyze "src/components/**"
 ```
 
-### Flags
-
 | Flag                   | Description                                  | Related                                                |
 | ---------------------- | -------------------------------------------- | ------------------------------------------------------ |
 | `--outfile <filepath>` | Output analyze report in given JSON filepath | -                                                      |
@@ -174,13 +162,11 @@ pnpm panda analyze "src/components/**"
 | `--config, -c <path>`  | Path to Panda config file                    | [`config`](/docs/references/config.md)                 |
 | `--cwd <path>`         | Current working directory                    | [`config.cwd`](/docs/references/config#cwd)            |
 
-## `panda debug`
+## debug
 
 Debug design token extraction & CSS generated from files in glob.
 
 More details in [Debugging](/docs/guides/debugging) docs.
-
-### Flags
 
 | Flag                  | Description                                                            | Related                                                   |
 | --------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -193,7 +179,7 @@ More details in [Debugging](/docs/guides/debugging) docs.
 | `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/guides/debugging#performance-profiling) |
 | `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/guides/debugging)                       |
 
-## `panda ship`
+## ship
 
 Ship extract result from files in glob.
 
@@ -207,8 +193,6 @@ pnpm panda ship src/components/Button.tsx
 pnpm panda ship "./src/components/**"
 ```
 
-### Flags
-
 | Flag                   | Description                                                                                 | Related                                                |
 | ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `--outfile <filepath>` | Output path for the JSON build info file, default to './styled-system/panda.buildinfo.json' | -                                                      |
@@ -219,13 +203,11 @@ pnpm panda ship "./src/components/**"
 | `--watch, -w`          | Whether to watch for changes in the project                                                 | [`config.watch`](/docs/references/config#watch)        |
 | `--poll, -p`           | Whether to poll for file changes                                                            | [`config.poll`](/docs/references/config#poll)          |
 
-## `panda emit-pkg`
+## emit-pkg
 
 Emit package.json with entrypoints, can be used to create a workspace package dedicated to the
 [`config.outdir`](/docs/references/config#outdir), in combination with
 [`config.importMap`](/docs/references/config#importmap)
-
-### Flags
 
 | Flag             | Description                                          | Related                                                |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------ |
