@@ -3,7 +3,7 @@ import { Logo } from './logo'
 import { Yums } from './mascot'
 
 const monaSans = fetch(
-  new URL('../../styles/Mona-Sans-Bold.ttf', import.meta.url)
+  new URL('../../styles/Onest-Bold.ttf', import.meta.url)
 ).then(res => res.arrayBuffer())
 
 const upperFirst = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)

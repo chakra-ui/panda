@@ -1,4 +1,4 @@
-import { docs } from '.velite'
+import { getPublicUrl } from '@/lib/public-url'
 
 export const dynamic = 'force-static'
 

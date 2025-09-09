@@ -86,7 +86,13 @@ const sharedComponents = {
   FileTree,
   Steps,
   TokenDocs,
-  RouteSwitch,
+  RouteSwitch: (props: any) => {
+    return (
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <RouteSwitch {...props} />
+      </React.Suspense>
+    )
+  },
   RouteSwitchTrigger,
   RouteSwitchContent,
   FrameworkCards,
