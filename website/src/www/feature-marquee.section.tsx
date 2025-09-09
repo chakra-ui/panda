@@ -16,7 +16,7 @@ const recipe = sva({
   slots: ['root', 'marquee', 'item', 'itemText'],
   base: {
     root: {
-      bg: 'bg.inverted',
+      bg: 'bg',
       py: '5',
       textStyle: '2xl',
       fontWeight: 'semibold'

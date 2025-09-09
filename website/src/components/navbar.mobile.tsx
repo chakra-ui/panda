@@ -12,7 +12,7 @@ import { ThemeSwitchIconButton } from './theme-switch-button'
 export const MobileNavBar = () => {
   return (
     <HStack
-      bg="bg.inverted"
+      bg="bg"
       height="16"
       shadow="lg"
       py="5"
@@ -47,9 +47,9 @@ export const MobileNavBar = () => {
             className={css({
               position: 'fixed',
               inset: '0',
-              bg: '#0f172acc',
+              bg: 'blackAlpha.600',
               backdropFilter: 'auto',
-              backdropBlur: 'sm'
+              backdropBlur: 'md'
             })}
           />
           <Dialog.Positioner
@@ -64,7 +64,7 @@ export const MobileNavBar = () => {
             <Dialog.Content
               className={css({
                 padding: '6',
-                bg: 'bg.inverted',
+                bg: 'bg',
                 rounded: 'lg',
                 position: 'relative',
                 width: 'full'

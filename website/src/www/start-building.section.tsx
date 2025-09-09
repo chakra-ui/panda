@@ -42,6 +42,7 @@ export const StartBuildingSection = () => {
                 href="/docs"
                 size="lg"
                 color="main"
+                variant="funky"
                 w={{ base: 'full', sm: '240px' }}
               >
                 Get Started
@@ -50,6 +51,7 @@ export const StartBuildingSection = () => {
                 href="/learn"
                 size="lg"
                 color="black"
+                variant="funky"
                 w={{ base: 'full', sm: '240px' }}
               >
                 Learn Panda

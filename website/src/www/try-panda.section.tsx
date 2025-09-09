@@ -21,7 +21,7 @@ const installSteps = [
 
 export const TryPandaSection = () => {
   return (
-    <panda.section bg={{ base: 'black', _dark: 'gray.700' }}>
+    <panda.section bg={{ base: 'black', _dark: 'neutral.700' }}>
       <Container pt="28" pb="24">
         <HStack gap="12">
           <panda.div

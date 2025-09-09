@@ -44,7 +44,7 @@ export const SearchInput = () => {
             className={css({
               px: 1.5,
               py: 0.5,
-              bg: 'bg.default',
+              bg: 'bg',
               rounded: 'sm',
               fontSize: 'xs',
               fontFamily: 'mono'
@@ -74,14 +74,7 @@ export const SearchInput = () => {
             p="4"
             onClick={e => e.stopPropagation()}
           >
-            <Box
-              bg="bg.default"
-              rounded="lg"
-              shadow="xl"
-              maxW="2xl"
-              w="full"
-              p="6"
-            >
+            <Box bg="bg" rounded="lg" shadow="xl" maxW="2xl" w="full" p="6">
               <p className={css({ textAlign: 'center', color: 'fg.muted' })}>
                 Search functionality will be implemented here.
                 <br />

@@ -79,7 +79,7 @@ const CodePanel = (props: {
 
 export const DesignTokensSection = () => {
   return (
-    <panda.section bg="bg.inverted">
+    <panda.section bg="bg">
       <Container pt={{ base: '20', lg: '40' }} pb={{ base: '16', lg: '32' }}>
         <Stack
           gap="20"
@@ -89,7 +89,7 @@ export const DesignTokensSection = () => {
         >
           <Circle
             size="173px"
-            boxShadowColor="bg.dark"
+            boxShadowColor="bg.subtle"
             className={button({ color: 'yellow', shape: 'circle' })}
             position="relative"
             color="fg.headline"

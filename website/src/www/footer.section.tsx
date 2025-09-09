@@ -35,7 +35,7 @@ export const FooterSection = () => {
             Docs
           </ButtonLink>
           <ButtonLink href={twitterUrl} color="ghost.white">
-            Twitter
+            Twitter (X)
             <Icon icon="ExternalLink" />
           </ButtonLink>
           <ButtonLink href={discordUrl} color="ghost.white">

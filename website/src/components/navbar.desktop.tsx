@@ -11,7 +11,7 @@ import { ThemeSwitchIconButton } from './theme-switch-button'
 export const DesktopNavBar = () => {
   return (
     <HStack
-      bg="bg.inverted"
+      bg="bg"
       shadow="lg"
       height="16"
       py="5"

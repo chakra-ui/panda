@@ -5,7 +5,7 @@ import Image from 'next/image'
 
 export const CommunitySection = () => {
   return (
-    <panda.section position="relative" bg="bg.inverted" overflow="hidden">
+    <panda.section position="relative" bg="bg" overflow="hidden">
       <panda.div
         display={{ base: 'none', md: 'block' }}
         position="absolute"
@@ -24,7 +24,7 @@ export const CommunitySection = () => {
 
       <Container pt="32" pb="40">
         <Stack gap="10" align="flex-start" maxWidth="580px">
-          <Stack gap="6" bg="bg.inverted">
+          <Stack gap="6" bg="bg">
             <panda.h3 textStyle="panda.h3" fontWeight="bold">
               Join our community
             </panda.h3>
@@ -42,6 +42,7 @@ export const CommunitySection = () => {
             href="https://discord.gg/VQrkpsgSx7"
             size="lg"
             color="www"
+            variant="funky"
           >
             Join our Discord
             <Icon icon="ExternalLink" />

@@ -31,7 +31,7 @@ const testimonials: Array<{
 
 export const TestimonialsSection = () => {
   return (
-    <panda.section bg="bg.inverted">
+    <panda.section bg="bg">
       <Container pt="20" pb="32">
         <Icon
           icon="DoubleHeart"
@@ -59,6 +59,7 @@ export const TestimonialsSection = () => {
               key={testimonial.username}
               gap="8"
               layerStyle="offShadow"
+              bg="bg.subtle"
               shadowColor={{ base: 'black', _dark: 'yellow.300' }}
               rounded="xl"
               px="6"

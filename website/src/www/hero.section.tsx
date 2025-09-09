@@ -10,7 +10,7 @@ export const HeroSection = () => {
       <Box maxW="8xl" mx="auto" px={{ base: '4', md: '6', lg: '8' }}>
         <Box pt="40" pb="24" position="relative">
           <panda.h4
-            color="fg.muted"
+            color="fg/80"
             fontSize="2xl"
             letterSpacing="tight"
             fontWeight="medium"
@@ -54,6 +54,7 @@ export const HeroSection = () => {
                   href="/docs"
                   size="lg"
                   color="main"
+                  variant="funky"
                   w={{ base: 'full', sm: '240px' }}
                 >
                   Get Started
@@ -62,6 +63,7 @@ export const HeroSection = () => {
                   href="/learn"
                   size="lg"
                   color="black"
+                  variant="funky"
                   w={{ base: 'full', sm: '240px' }}
                 >
                   Learn Panda

@@ -72,7 +72,7 @@ export const MobileDocsNav = ({ slug }: Props) => {
                 bottom: 0,
                 w: 80,
                 maxW: 'full',
-                bg: 'bg.default',
+                bg: 'bg',
                 shadow: 'xl',
                 overflowY: 'auto'
               })}
