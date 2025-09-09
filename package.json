@@ -75,9 +75,6 @@
   "pnpm": {
     "overrides": {
       "@swc/helpers@~0.4": "0.4.36"
-    },
-    "patchedDependencies": {
-      "velite@0.3.0": "patches/velite@0.3.0.patch"
     }
   }
 }

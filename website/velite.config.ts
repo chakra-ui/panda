@@ -70,11 +70,9 @@ const transformerEmptyLineSpace: ShikiTransformer = {
   }
 }
 
-const cwd = process.cwd()
-
 const docs = defineCollection({
   name: 'Docs',
-  pattern: ['content/docs/**/*.mdx'],
+  pattern: ['docs/**/*.mdx'],
   schema: s
     .object({
       title: s.string(),
@@ -101,7 +99,7 @@ const docs = defineCollection({
 })
 
 export default defineConfig({
-  root: cwd,
+  root: 'content',
   collections: {
     docs
   },

@@ -7,11 +7,6 @@ settings:
 overrides:
   '@swc/helpers@~0.4': 0.4.36
 
-patchedDependencies:
-  velite@0.3.0:
-    hash: 4d5e3eed67a2ccb0df3358e577d892c3c225035254eebd4dd2a3536cf0a6be53
-    path: patches/velite@0.3.0.patch
-
 importers:
 
   .:
@@ -1574,7 +1569,7 @@ importers:
         version: 5.0.0
       velite:
         specifier: 0.3.0
-        version: 0.3.0(patch_hash=4d5e3eed67a2ccb0df3358e577d892c3c225035254eebd4dd2a3536cf0a6be53)
+        version: 0.3.0
 
 packages:
 
@@ -38722,7 +38717,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  velite@0.3.0(patch_hash=4d5e3eed67a2ccb0df3358e577d892c3c225035254eebd4dd2a3536cf0a6be53):
+  velite@0.3.0:
     dependencies:
       '@mdx-js/mdx': 3.1.1
       esbuild: 0.25.9
