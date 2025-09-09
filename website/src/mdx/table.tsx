@@ -6,7 +6,7 @@ import { css, cx } from '@/styled-system/css'
 
 const tableStyles = css({
   display: 'block',
-  overflowX: 'scroll',
+  overflowX: 'auto',
   mt: { base: '6', _first: '0' },
   p: '0'
 })
@@ -15,10 +15,7 @@ export const Table = ({
   className = '',
   ...props
 }: React.ComponentProps<'table'>) => (
-  <table
-    className={cx('docs-scrollbar', tableStyles, className)}
-    {...props}
-  />
+  <table className={cx('scroll-area', tableStyles, className)} {...props} />
 )
 
 /* -----------------------------------------------------------------------------
