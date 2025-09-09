@@ -1,16 +1,10 @@
-import { useCallback, useRef } from 'react'
-import { css, cva, cx } from '@/styled-system/css'
-import { CodeActions } from './code-actions'
-import { CodeFilename } from './code-filename'
-
-type Props = React.ComponentProps<'pre'> & {
-  filename?: string
-  hasCopyCode?: boolean
-}
+import { cva, cx } from '@/styled-system/css'
 
 const preStyles = cva({
   base: {
-    bg: 'bg.muted',
+    position: 'relative',
+    mt: { base: '6', _first: '0' },
+    bg: 'bg.muted!',
     overflowX: 'auto',
     rounded: 'xl',
     contain: 'paint',
@@ -31,54 +25,16 @@ const preStyles = cva({
   }
 })
 
-const containerStyles = css({
-  position: 'relative',
-  mt: { base: '6', _first: '0' }
-})
-
-export const Pre = (props: Props) => {
-  const {
-    children,
-    className = '',
-    hasCopyCode,
-    filename,
-    style: _,
-    ...rest
-  } = props
-  const preRef = useRef<HTMLPreElement | null>(null)
-
-  const toggleWordWrap = useCallback(() => {
-    const htmlDataset = document.documentElement.dataset
-    const hasWordWrap = 'docsWordWrap' in htmlDataset
-    if (hasWordWrap) {
-      delete htmlDataset.docsWordWrap
-    } else {
-      htmlDataset.docsWordWrap = ''
-    }
-  }, [])
-
+export const Pre = (props: React.ComponentProps<'pre'>) => {
+  const { className = '', ...rest } = props
   return (
-    <div className={containerStyles}>
-      {filename && <CodeFilename filename={filename} />}
-      <pre
-        className={cx(
-          preStyles({ hasFilename: !!filename }),
-          'scroll-area',
-          className
-        )}
-        ref={preRef}
-        {...rest}
-      >
-        {children}
-      </pre>
-      <CodeActions
-        hasCopyCode={hasCopyCode}
-        filename={filename}
-        onClickWrap={toggleWordWrap}
-        getClipboardValue={() =>
-          preRef.current?.querySelector('code')?.textContent || ''
-        }
-      />
-    </div>
+    <pre
+      className={cx(
+        preStyles({ hasFilename: false }),
+        'scroll-area',
+        className
+      )}
+      {...rest}
+    />
   )
 }

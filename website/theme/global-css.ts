@@ -70,15 +70,16 @@ export const globalCss = defineGlobalStyles({
   code: {
     boxDecorationBreak: 'clone',
     fontFeatureSettings: "'rlig' 1, 'calt' 1, 'ss01' 1",
+    px: '0.3em',
     '&[data-line-numbers] > .line': {
       display: 'inline-flex',
-      pl: 2,
+      ps: 2,
       '&::before': {
         counterIncrement: 'line',
         content: 'counter(line)',
         h: 'full',
         float: 'left',
-        pr: 4,
+        pe: 4,
         textAlign: 'right',
         minW: '2.6rem',
         color: 'fg.subtle'
@@ -110,7 +111,7 @@ export const globalCss = defineGlobalStyles({
       rounded: 'none',
       border: 'none',
       bg: 'transparent!',
-      p: 0,
+      p: '0!',
       textStyle: 'sm',
       lineHeight: '1.25rem',
       color: 'currentcolor',
@@ -118,7 +119,7 @@ export const globalCss = defineGlobalStyles({
         bg: 'transparent!'
       }
     },
-    'html[data-nextra-word-wrap] &': {
+    'html[data-word-wrap] &': {
       wordBreak: 'break-word',
       whiteSpace: 'pre-wrap',
       md: {

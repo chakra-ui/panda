@@ -12,6 +12,8 @@ import { navbar } from '@/styled-system/recipes'
 import { Icon } from '@/theme/icons'
 import { usePathname } from 'next/navigation'
 import { ThemeSwitch } from './theme-switch'
+import { CommandMenu } from '@/components/docs/command-menu'
+import { SearchButton } from '@/components/docs/search'
 
 const classes = {
   link: css({ textStyle: 'sm' }),
@@ -82,7 +84,7 @@ export const Navbar = () => {
           )
         })}
 
-        <SearchInput />
+        <CommandMenu trigger={<SearchButton />} mediaQuery="max-width: 640px" />
 
         {docsConfig.docsRepositoryBase ? (
           <Anchor

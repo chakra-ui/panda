@@ -2,7 +2,6 @@ import { Providers } from '@/components/providers'
 import { css, cx } from '@/styled-system/css'
 import { fontClassName } from 'styles/fonts'
 import seoConfig from '../seo.config'
-import '../styles/global.css'
 import '../styles/panda.css'
 
 interface Props {

@@ -1,6 +1,19 @@
 import { css } from '@/styled-system/css'
 import { Icon } from '@/theme/icons'
 
+export interface TeamMember {
+  login: string
+  role: string
+}
+
+export const teamMembers: TeamMember[] = [
+  { login: 'segunadebayo', role: 'Creator & Maintainer' },
+  { login: 'astahmer', role: 'Creator' },
+  { login: 'cschroeter', role: 'Creator @ Park UI' },
+  { login: 'anubra266', role: 'Creator @ Tark UI' },
+  { login: 'estheragbaje', role: 'Developer Marketing' }
+]
+
 export interface NavItem {
   title: string
   url?: string

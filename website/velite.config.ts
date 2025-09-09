@@ -7,9 +7,9 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight
 } from '@shikijs/transformers'
-import type { ShikiTransformer } from 'shiki'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeSlug from 'rehype-slug'
+import type { ShikiTransformer } from 'shiki'
 import { visit } from 'unist-util-visit'
 import { defineCollection, defineConfig, s } from 'velite'
 import { flattenToc } from './src/lib/flatten-toc'
@@ -80,9 +80,13 @@ const docs = defineCollection({
       title: s.string(),
       description: s.string().optional(),
       metadata: s.metadata(),
-      llm: s.custom().transform((_data, { meta }) => {
-        return (meta.content as string) ?? ''
-      }),
+      llm: s
+        .custom<string | undefined>(
+          i => i === undefined || typeof i === 'string'
+        )
+        .transform((_data, { meta }) => {
+          return (meta.content as string) ?? ''
+        }),
       slug: s.path(),
       category: s.string().optional(),
       code: s.mdx(),
@@ -129,7 +133,8 @@ export default defineConfig({
           themes: {
             light: 'github-light',
             dark: 'github-dark'
-          }
+          },
+          defaultColor: false
         }
       ]
     ]

@@ -21,7 +21,7 @@ const styles = {
     transition: 'shadow',
     textStyle: { base: 'md', md: 'sm' },
     lineHeight: 'tight',
-    bg: 'bg.subtle',
+    bg: 'bg.muted',
     _focus: {
       bg: 'bg.surface'
     },
