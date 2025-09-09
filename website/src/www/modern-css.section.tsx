@@ -5,7 +5,7 @@ import { token } from '@/styled-system/tokens'
 import { Icon } from '@/theme/icons'
 import { outdent } from 'outdent'
 import { Code, codeStyle } from '@/components/code-highlight/code'
-import { LearnMore } from '@/components/learn-more'
+import { LearnMore } from '@/www/learn-more'
 
 const codeSnippet = outdent`
 @layer reset, base, tokens, recipes, utilities;

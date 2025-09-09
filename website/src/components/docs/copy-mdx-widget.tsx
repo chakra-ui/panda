@@ -17,6 +17,7 @@ export const CopyMdxWidget = (props: { doc: Docs }) => {
   return (
     <div
       className={flex({
+        flexShrink: '0',
         spaceX: '-1px',
         '& > :first-child': { borderEndRadius: '0' },
         '& > :last-child': { borderStartRadius: '0' }

@@ -1,4 +1,3 @@
-import { Kbd } from '@/mdx/kbd'
 import { css, cx } from '@/styled-system/css'
 import { useEffect, useState } from 'react'
 
@@ -23,6 +22,28 @@ const styles = {
     textStyle: { base: 'md', md: 'sm' },
     lineHeight: 'tight',
     bg: 'bg.muted'
+  }),
+
+  kbd: css({
+    transition: 'opacity',
+    position: 'absolute',
+    my: '1.5',
+    userSelect: 'none',
+    insetEnd: '1.5',
+    height: '5',
+    rounded: 'sm',
+    bg: { base: 'white', _dark: 'rgb(17 17 17 / 0.2)' },
+    color: 'gray.500',
+    px: '1.5',
+    fontFamily: 'mono',
+    fontSize: '10px',
+    fontWeight: 'medium',
+    borderWidth: '1px',
+    alignItems: 'center',
+    opacity: 0,
+    '&[data-mounted]': {
+      opacity: 1
+    }
   })
 }
 
@@ -38,7 +59,9 @@ export const SearchButton = (props: React.ComponentProps<'button'>) => {
       >
         Search docs...
       </button>
-      <Kbd mounted={!!key}>{key}</Kbd>
+      <kbd data-mounted={!!key || undefined} className={styles.kbd}>
+        {key}
+      </kbd>
     </div>
   )
 }

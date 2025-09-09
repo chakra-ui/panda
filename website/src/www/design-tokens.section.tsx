@@ -1,5 +1,5 @@
 import { Code, codeStyle } from '@/components/code-highlight/code'
-import { LearnMore } from '@/components/learn-more'
+import { LearnMore } from '@/www/learn-more'
 import { css } from '@/styled-system/css'
 import { Box, Circle, Container, Stack, panda } from '@/styled-system/jsx'
 import { button } from '@/styled-system/recipes'
