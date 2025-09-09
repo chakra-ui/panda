@@ -152,7 +152,7 @@ const MobileNavDrawer = (props: MobileNavDrawerProps) => {
   }, [pathname])
 
   return (
-    <Dialog.RootProvider value={dialog}>
+    <Dialog.RootProvider value={dialog} lazyMount>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Backdrop className={classes.backdrop} />
       <Dialog.Positioner className={classes.positioner}>

@@ -2,6 +2,7 @@ import { docs } from '.velite'
 import { Breadcrumb } from '@/components/docs/breadcrumb'
 import { Header } from '@/components/docs/header'
 import { MDXContent } from '@/components/docs/mdx-content'
+import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
 import { css } from '@/styled-system/css'
@@ -72,6 +73,7 @@ export default function DocsPage(props: DocsPageProps) {
           >
             <MDXContent code={doc.code} />
           </div>
+          <Pagination slug={slug} />
         </Box>
 
         {/* Table of Contents */}

@@ -71,7 +71,7 @@ const ActionMenu = (props: { doc: Docs }) => {
   ]
 
   return (
-    <Menu.Root positioning={{ placement: 'bottom-end' }}>
+    <Menu.Root lazyMount positioning={{ placement: 'bottom-end' }}>
       <Menu.Trigger asChild className={css({ borderStartRadius: '0' })}>
         <Button size="icon">
           <LuChevronDown />

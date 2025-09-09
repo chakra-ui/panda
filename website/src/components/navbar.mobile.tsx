@@ -68,7 +68,7 @@ const MobileNavDrawer = (props: MobileNavDrawerProps) => {
   const { trigger, children } = props
   const classes = drawerSlotRecipe({ size: 'md', placement: 'bottom' })
   return (
-    <Dialog.Root>
+    <Dialog.Root lazyMount>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Backdrop className={classes.backdrop} />
       <Dialog.Positioner className={classes.positioner}>
