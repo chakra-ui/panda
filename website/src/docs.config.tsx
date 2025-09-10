@@ -19,6 +19,7 @@ export interface NavItem {
   status?: 'new' | 'beta'
   type?: 'page'
   newWindow?: boolean
+  tag?: string
   items?: NavItem[]
 }
 
@@ -82,6 +83,7 @@ export const docsNavigation: NavItem = {
         { title: 'Why Panda?', url: 'why-panda' },
         { title: 'FAQs', url: 'faq' },
         { title: 'Browser Support', url: 'browser-support' },
+        { title: 'LLMs.txt', url: 'llms-txt', tag: 'new' },
         {
           title: 'Roadmap',
           href: 'https://panda-css.canny.io/',

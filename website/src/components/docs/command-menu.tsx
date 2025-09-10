@@ -1,5 +1,7 @@
 'use client'
 import { docs } from '.velite'
+import { Badge } from '@/components/ui/badge'
+import { dialogSlotRecipe } from '@/components/ui/dialog'
 import {
   convertToSearchItems,
   filterSearchItems,
@@ -15,7 +17,6 @@ import { Portal } from '@ark-ui/react/portal'
 import { useRouter } from 'next/navigation'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { Box, Center, Stack } from 'styled-system/jsx'
-import { dialogSlotRecipe } from '../ui/dialog'
 
 interface Props {
   mediaQuery: string
@@ -180,18 +181,7 @@ export const CommandMenu = (props: Props) => {
                             <Box fontWeight="semibold">
                               {item.label}
                               {item.type === 'heading' && (
-                                <Box
-                                  as="span"
-                                  opacity="0.8"
-                                  borderWidth="1px"
-                                  fontWeight="medium"
-                                  px="1"
-                                  ms="2"
-                                  rounded="sm"
-                                  bg="bg"
-                                >
-                                  {item.category}
-                                </Box>
+                                <Badge>{item.category}</Badge>
                               )}
                             </Box>
                             <Box textStyle="sm" color="fg.muted" lineClamp={2}>

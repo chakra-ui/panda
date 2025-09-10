@@ -1,0 +1,50 @@
+---
+title: LLMs.txt
+description: Help AI tools understand Panda CSS with LLMs.txt support.
+---
+
+# LLMs.txt
+
+## What is LLMs.txt?
+
+We support [LLMs.txt](https://llmstxt.org/) files for making the Panda CSS documentation available to large language
+models (LLMs). This feature helps AI tools better understand our styling engine, its APIs, and usage patterns.
+
+## Available Routes
+
+We provide several LLMs.txt routes to help AI tools access our documentation:
+
+- [/llms.txt](/llms.txt) - Contains a structured overview of all concepts and their documentation links
+- [/llms-full.txt](/llms-full.txt) - Provides comprehensive documentation including implementation details and examples
+
+## Access Individual Pages
+
+You can also access the raw markdown content for any documentation page by adding `.mdx` to the end of the URL. For
+example:
+
+- [`/docs/overview/getting-started.mdx`](/docs/overview/getting-started.mdx) - Raw markdown for the getting started page
+- [`/docs/concepts/recipes.mdx`](/docs/concepts/recipes.mdx) - Raw markdown for the recipes documentation
+- [`/docs/theming/tokens.mdx`](/docs/theming/tokens.mdx) - Raw markdown for the tokens documentation
+
+This is useful for AI tools that need to access specific documentation sections directly.
+
+## Usage with AI Tools
+
+### Cursor
+
+Use the `@Docs` feature in Cursor to include the LLMs.txt files in your project. This helps Cursor provide more accurate
+code suggestions and documentation for Panda CSS.
+
+[Read more about @Docs in Cursor](https://docs.cursor.com/context/@-symbols/@-docs)
+
+### Windsurf
+
+Reference the LLMs.txt files using `@` or in your `.windsurfrules` files to enhance Windsurf's understanding of Panda
+CSS.
+
+[Read more about Windsurf Memories](https://docs.codeium.com/windsurf/memories#memories-and-rules)
+
+### Other AI Tools
+
+Any AI tool that supports LLMs.txt can use these routes to better understand Panda CSS. Simply point your tool to any of
+the routes above to get comprehensive documentation about our styling engine.

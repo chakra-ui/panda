@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { docsNavigation, type NavItem } from '@/docs.config'
 import { ChevronDownIcon, ChevronRightIcon } from '@/icons'
 import { css } from '@/styled-system/css'
@@ -14,6 +15,7 @@ interface SidebarItem {
   slug: string
   external?: boolean
   href?: string
+  tag?: string
   children?: SidebarItem[]
 }
 
@@ -36,7 +38,8 @@ export function Sidebar({ slug: currentSlug }: Props) {
         title: item.title,
         slug: item.external ? item.href || '' : `${section.url}/${item.url}`,
         external: item.external,
-        href: item.href
+        href: item.href,
+        tag: item.tag
       }))
     })) || []
 
@@ -146,7 +149,8 @@ export function Sidebar({ slug: currentSlug }: Props) {
                       data-current={isActive(item.slug) || undefined}
                       className={linkStyles}
                     >
-                      {item.title}
+                      <span>{item.title}</span>
+                      {item.tag && <Badge variant="solid">{item.tag}</Badge>}
                     </Link>
                   )
                 })}
