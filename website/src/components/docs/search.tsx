@@ -1,5 +1,7 @@
 import { css, cx } from '@/styled-system/css'
 import { useEffect, useState } from 'react'
+import { SearchIcon } from '@/icons'
+import { center } from '@/styled-system/patterns'
 
 const styles = {
   container: css({
@@ -7,7 +9,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     color: 'fg',
-    minW: '200px'
+    minW: { md: '200px' }
   }),
 
   input: css({
@@ -51,18 +53,30 @@ export const SearchButton = (props: React.ComponentProps<'button'>) => {
   const { className, ...rest } = props
   const key = useCommandOrControl()
   return (
-    <div className={styles.container}>
+    <>
+      <div className={cx(styles.container, css({ hideBelow: 'sm' }))}>
+        <button
+          spellCheck={false}
+          className={cx(className, styles.input)}
+          {...rest}
+        >
+          Search docs...
+        </button>
+        <kbd data-mounted={!!key || undefined} className={styles.kbd}>
+          {key}
+        </kbd>
+      </div>
       <button
-        spellCheck={false}
-        className={cx(className, styles.input)}
         {...rest}
+        className={center({
+          boxSize: '7',
+          hideFrom: 'sm',
+          _icon: { boxSize: '5' }
+        })}
       >
-        Search docs...
+        <SearchIcon />
       </button>
-      <kbd data-mounted={!!key || undefined} className={styles.kbd}>
-        {key}
-      </kbd>
-    </div>
+    </>
   )
 }
 
