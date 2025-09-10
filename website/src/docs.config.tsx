@@ -1,6 +1,3 @@
-import { css } from '@/styled-system/css'
-import { Icon } from '@/theme/icons'
-
 export interface TeamMember {
   login: string
   role: string
@@ -32,8 +29,6 @@ export interface DocsConfig {
   docsRepositoryBase: string
   gitTimestamp: string
   logoUrl?: string
-  logo: React.ReactNode
-  footer: React.ReactNode
   navigation: NavItem[]
 
   twitterUrl: string
@@ -49,26 +44,6 @@ export const docsConfig: DocsConfig = {
   gitTimestamp: 'Last updated on',
   twitterUrl: 'https://twitter.com/panda__css',
   discordUrl: 'https://discord.gg/VQrkpsgSx7',
-  logo: <Icon icon="LogoWithText" />,
-  footer: (
-    <div
-      className={css({
-        display: 'flex',
-        justifyContent: 'space-between',
-        gap: '4',
-        width: '100%',
-        fontSize: 'sm'
-      })}
-    >
-      <span>Copyright © {new Date().getFullYear()}</span>
-      <a
-        className={css({ color: 'current', textDecoration: 'none' })}
-        href="https://www.adebayosegun.com/"
-      >
-        Proudly made by the Chakra team
-      </a>
-    </div>
-  ),
   navigation: [
     {
       title: 'Docs',

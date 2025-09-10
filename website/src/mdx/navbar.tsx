@@ -8,7 +8,6 @@ import { Anchor } from '@/components/ui/anchor'
 import { drawerSlotRecipe } from '@/components/ui/drawer'
 import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
-import { renderComponent } from '@/lib/render'
 import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
 import { Center } from '@/styled-system/jsx'
@@ -52,7 +51,7 @@ export const Navbar = () => {
               _hover: { opacity: 0.75 }
             })}
           >
-            {renderComponent(docsConfig.logo)}
+            <Icon icon="LogoWithText" />
           </Anchor>
         ) : (
           <div data-scope="navbar" data-part="logo-link">

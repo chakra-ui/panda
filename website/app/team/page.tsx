@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/navbar'
 import { teamMembers } from '@/docs.config'
-import { fetchGitHubUser, type GitHubUser } from '@/lib/team'
+import { generateOgImageUrl } from '@/lib/og-image'
+import { fetchGithubUsers, type GitHubUser } from '@/lib/github-utils'
 import { css } from '@/styled-system/css'
 import { Container, Grid, HStack, panda, Stack } from '@/styled-system/jsx'
 import { FooterSection } from '@/www/footer.section'
@@ -9,21 +10,37 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FaGithub, FaGlobe, FaTwitter } from 'react-icons/fa'
 
+const ogTitle = 'Meet the Panda CSS Team'
+const ogDescription =
+  'Get to know the passionate engineers who make Panda CSS possible'
+
 export const metadata: Metadata = {
   title: 'Team',
   description:
     'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
   openGraph: {
-    title: 'Meet the passionate engineers who make Panda CSS possible',
-    description:
-      'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
-    type: 'website'
+    title: ogTitle,
+    description: ogDescription,
+    type: 'website',
+    images: [
+      generateOgImageUrl({
+        title: ogTitle,
+        description: ogDescription,
+        category: 'Team'
+      })
+    ]
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Meet the Panda CSS Team',
-    description:
-      'Meet the passionate developers and designers who make Panda CSS possible. Get to know the core team behind the modern CSS-in-JS framework.'
+    title: ogTitle,
+    description: ogDescription,
+    images: [
+      generateOgImageUrl({
+        title: ogTitle,
+        description: ogDescription,
+        category: 'Team'
+      })
+    ]
   }
 }
 
@@ -131,12 +148,7 @@ const toHttps = (url: string) => {
 }
 
 export default async function TeamPage() {
-  const userPromises = teamMembers.map(member => fetchGitHubUser(member.login))
-  const users = await Promise.all(userPromises)
-  const teamMembersWithDetails = users.filter(
-    (user): user is GitHubUser => user !== null
-  )
-
+  const data = await fetchGithubUsers(teamMembers.map(member => member.login))
   return (
     <>
       <Navbar />
@@ -168,8 +180,8 @@ export default async function TeamPage() {
               w="full"
               maxW="6xl"
             >
-              {teamMembersWithDetails.length > 0 ? (
-                teamMembersWithDetails.map(member => (
+              {data.length > 0 ? (
+                data.map(member => (
                   <TeamMemberCard key={member.login} member={member} />
                 ))
               ) : (

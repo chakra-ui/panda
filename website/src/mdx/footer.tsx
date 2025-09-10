@@ -1,5 +1,3 @@
-import { docsConfig } from '@/docs.config'
-import { renderComponent } from '@/lib/render'
 import { css, cx } from '@/styled-system/css'
 
 export const Footer = () => {
@@ -30,7 +28,23 @@ export const Footer = () => {
           })
         )}
       >
-        {renderComponent(docsConfig.footer)}
+        <div
+          className={css({
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '4',
+            width: '100%',
+            fontSize: 'sm'
+          })}
+        >
+          <span>Copyright © {new Date().getFullYear()}</span>
+          <a
+            className={css({ color: 'current', textDecoration: 'none' })}
+            href="https://www.adebayosegun.com/"
+          >
+            Proudly made by the Chakra team
+          </a>
+        </div>
       </div>
     </footer>
   )

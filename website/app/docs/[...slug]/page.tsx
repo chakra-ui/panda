@@ -5,6 +5,7 @@ import { MDXContent } from '@/components/docs/mdx-content'
 import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
+import { generateOgImageUrl } from '@/lib/og-image'
 import { css } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
@@ -21,9 +22,35 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: DocsPageProps) {
   const doc = docs.find(doc => doc.slug.endsWith(params.slug.join('/')))
+  
+  if (!doc) {
+    return {
+      title: 'Panda CSS',
+      description: 'Build modern websites using build time and type-safe CSS-in-JS'
+    }
+  }
+
+  const ogImage = generateOgImageUrl({
+    title: doc.title,
+    description: doc.description,
+    category: 'Docs'
+  })
+
   return {
-    title: doc ? `${doc.title} | Panda CSS` : 'Panda CSS',
-    description: doc?.description
+    title: `${doc.title} | Panda CSS`,
+    description: doc.description,
+    openGraph: {
+      title: doc.title,
+      description: doc.description,
+      type: 'article',
+      images: [ogImage]
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: doc.title,
+      description: doc.description,
+      images: [ogImage]
+    }
   }
 }
 
