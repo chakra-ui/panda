@@ -1,5 +1,19 @@
 # @pandacss/reporter
 
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [7eaeb3c]
+- Updated dependencies [70efd73]
+- Updated dependencies [2e683fa]
+- Updated dependencies [43be051]
+  - @pandacss/generator@1.3.0
+  - @pandacss/types@1.3.0
+  - @pandacss/core@1.3.0
+  - @pandacss/logger@1.3.0
+  - @pandacss/shared@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes
