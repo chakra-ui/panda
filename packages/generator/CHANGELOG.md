@@ -1,5 +1,28 @@
 # @pandacss/generator
 
+## 1.3.0
+
+### Patch Changes
+
+- 7eaeb3c: Added `as` prop to JSX types for polymorphic component support to enable basic polymorphic components.
+
+  **Note:** The `as` prop does not infer types of the target element.
+
+- 2e683fa: Fix issue where specifying `defaultProps.children` in the `styled` or `createStyleContext` factories makes it
+  impossible to override children.
+
+  The fix ensures that explicitly passed children take precedence over default children in React, Preact, and Qwik JSX
+  factories.
+
+- 43be051: Fix TypeScript types for `defaultProps` in `withProvider` and `withContext` to be partial
+- Updated dependencies [70efd73]
+  - @pandacss/types@1.3.0
+  - @pandacss/core@1.3.0
+  - @pandacss/logger@1.3.0
+  - @pandacss/token-dictionary@1.3.0
+  - @pandacss/is-valid-prop@1.3.0
+  - @pandacss/shared@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes

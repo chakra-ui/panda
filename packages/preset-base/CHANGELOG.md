@@ -1,5 +1,30 @@
 # @pandacss/preset-base
 
+## 1.3.0
+
+### Minor Changes
+
+- 1c36121: Added new transition values and enhanced transition property utilities
+
+  - `size` → `width, height, min-width, max-width, min-height, max-height`
+  - `position` → `left, right, top, bottom, inset, inset-inline, inset-block`
+  - `background` → `background, background-color, background-image, background-position`
+
+  ```tsx
+  import { css } from 'styled-system/css'
+
+  // Transition shorthand values
+  css({ transition: 'size' })
+
+  // Property groups
+  css({ transitionProperty: 'size', transitionDuration: '300ms' })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [70efd73]
+  - @pandacss/types@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes
