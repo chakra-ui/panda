@@ -6,7 +6,12 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-09-10
+
 ### Added
+
+- **LLM Text Support**: The Panda docs now has support for llms.txt standard, making the documentation accessible and
+  optimized for AI agents as Cursor, GitHub Copilot, ChatGPT, Perplexity, and Anthropic’s Claude.
 
 - **Transition Utilities**: Added new transition values and enhanced transition property utilities in
   `@pandacss/preset-base`
