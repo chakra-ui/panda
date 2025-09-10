@@ -6,6 +6,33 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+### Added
+
+- **Transition Utilities**: Added new transition values and enhanced transition property utilities in
+  `@pandacss/preset-base`
+
+  - `size` → `width, height, min-width, max-width, min-height, max-height`
+  - `position` → `left, right, top, bottom, inset, inset-inline, inset-block`
+  - `background` → `background, background-color, background-image, background-position`
+
+- **Composition Types**: Add more properties to the `textStyles` and `layerStyles` config
+
+  - Added text style properties: `color`, text layout (`direction`, `textAlign`, `writingMode`), and advanced text
+    properties
+  - Added layer style properties: layout (`position`, `zIndex`, `display`), visual effects (`clipPath`, `mixBlendMode`),
+    and modern properties (`aspectRatio`, `objectFit`)
+
+- **JSX Polymorphic Support**: Added `as` prop to JSX types for **basic** polymorphic component support. We don't infer
+  the type of the target element.
+
+### Fixed
+
+- **Style Context**: Fixed TypeScript types for `defaultProps` in `withProvider` and `withContext` to be partial in
+  `@pandacss/generator`
+
+- **JSX Factory**: Fixed issue where specifying `defaultProps.children` in `styled` or `createStyleContext` factories
+  prevented overriding children in `@pandacss/generator`
+
 ## [1.2.0] - 2025-08-27
 
 ### Added
