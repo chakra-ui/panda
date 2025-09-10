@@ -5,14 +5,15 @@ import { center } from '@/styled-system/patterns'
 import { ButtonIcon, Icon } from '@/theme/icons'
 import { Dialog } from '@ark-ui/react/dialog'
 import Link from 'next/link'
-import { MenuIcon } from 'nextra/icons'
+import { MenuIcon } from '@/icons'
 import { NavLink } from './nav-link'
 import { ThemeSwitchIconButton } from './theme-switch-button'
+import { drawerSlotRecipe } from './ui/drawer'
 
 export const MobileNavBar = () => {
   return (
     <HStack
-      bg="bg.inverted"
+      bg="bg"
       height="16"
       shadow="lg"
       py="5"
@@ -28,80 +29,61 @@ export const MobileNavBar = () => {
 
       <HStack gap="4">
         <ThemeSwitchIconButton />
-        <Dialog.Root>
-          <Dialog.Trigger asChild>
-            <button
-              type="button"
-              className={css({
-                px: '1',
-                py: '1',
-                _hover: {
-                  bg: 'bg.emphasized.hover'
-                }
-              })}
-            >
+        <MobileNavDrawer
+          trigger={
+            <button className={css({ px: '1', py: '1' })}>
               <MenuIcon />
             </button>
-          </Dialog.Trigger>
-          <Dialog.Backdrop
-            className={css({
-              position: 'fixed',
-              inset: '0',
-              bg: '#0f172acc',
-              backdropFilter: 'auto',
-              backdropBlur: 'sm'
-            })}
-          />
-          <Dialog.Positioner
-            className={css({
-              position: 'absolute',
-              zIndex: '10',
-              width: '320px',
-              top: '6',
-              right: '6'
-            })}
-          >
-            <Dialog.Content
-              className={css({
-                padding: '6',
-                bg: 'bg.inverted',
-                rounded: 'lg',
-                position: 'relative',
-                width: 'full'
-              })}
-            >
-              <Stack align="flex-start">
-                <NavLink href="/docs">Docs</NavLink>
-                <NavLink href="/team">Team</NavLink>
-                <NavLink href="/learn">Learn</NavLink>
-                <NavLink href="https://play.panda-css.com/" isExternal>
-                  <HStack>
-                    <span>Playground</span>
-                    <ButtonIcon icon="ExternalLink" />
-                  </HStack>
-                </NavLink>
-                <NavLink href="https://github.com/chakra-ui/panda" isExternal>
-                  <HStack>
-                    <span>Github</span>
-                    <ButtonIcon icon="ExternalLink" />
-                  </HStack>
-                </NavLink>
-              </Stack>
-
-              <Dialog.CloseTrigger
-                className={css({ position: 'absolute', top: '4', right: '4' })}
-              >
-                <Center width="5" height="5" color="text.main">
-                  <Icon
-                    icon="Close"
-                    className={css({ width: '1em', height: 'auto' })}
-                  />
-                </Center>
-              </Dialog.CloseTrigger>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Dialog.Root>
+          }
+        >
+          <Stack>
+            <NavLink href="/docs">Docs</NavLink>
+            <NavLink href="/team">Team</NavLink>
+            <NavLink href="/learn">Learn</NavLink>
+            <NavLink href="https://play.panda-css.com/" isExternal>
+              <HStack>
+                <span>Playground</span>
+                <ButtonIcon icon="ExternalLink" />
+              </HStack>
+            </NavLink>
+            <NavLink href="https://github.com/chakra-ui/panda" isExternal>
+              <HStack>
+                <span>Github</span>
+                <ButtonIcon icon="ExternalLink" />
+              </HStack>
+            </NavLink>
+          </Stack>
+        </MobileNavDrawer>
       </HStack>
     </HStack>
+  )
+}
+
+interface MobileNavDrawerProps {
+  trigger: React.ReactNode
+  children: React.ReactNode
+}
+
+const MobileNavDrawer = (props: MobileNavDrawerProps) => {
+  const { trigger, children } = props
+  const classes = drawerSlotRecipe({ size: 'md', placement: 'bottom' })
+  return (
+    <Dialog.Root lazyMount>
+      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+      <Dialog.Backdrop className={classes.backdrop} />
+      <Dialog.Positioner className={classes.positioner}>
+        <Dialog.Content className={classes.content}>
+          <div className={classes.body}>{children}</div>
+          <Dialog.CloseTrigger className={classes.closeTrigger}>
+            <Center width="5" height="5" color="fg">
+              <Icon
+                icon="Close"
+                className={css({ width: '1em', height: 'auto' })}
+              />
+            </Center>
+          </Dialog.CloseTrigger>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   )
 }

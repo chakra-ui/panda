@@ -1,16 +1,16 @@
+import { Collapse } from '@/mdx/collapse'
+import { DetailsProvider } from '@/mdx/contexts'
+import { findSummary } from '@/mdx/find-summary'
 import { css } from '@/styled-system/css'
 import { useEffect, useState } from 'react'
-import { Collapse } from '../nextra'
-import { DetailsProvider } from '../nextra/contexts'
-import { findSummary } from './find-summary'
 
 const styles = css({
   mt: { base: '4', _first: '0' },
   mb: '4',
   rounded: 'md',
   borderWidth: '1px',
-  bg: { base: 'white', _dark: 'neutral.800' },
-  borderColor: { base: 'inherit', _dark: 'neutral.900' },
+  bg: 'bg.surface',
+  borderColor: 'border',
   p: '2',
   shadow: 'sm'
 })

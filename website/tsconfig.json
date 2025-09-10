@@ -24,7 +24,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@/styled-system/*": ["styled-system/*"],
-      "@/theme/*": ["theme/*"]
+      "@/theme/*": ["theme/*"],
+      ".velite": ["./.velite"]
     }
   },
   "include": [
@@ -32,8 +33,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "theme.config.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".velite"
   ],
   "exclude": ["node_modules"]
 }

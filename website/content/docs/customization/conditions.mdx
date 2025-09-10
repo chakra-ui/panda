@@ -1,0 +1,179 @@
+---
+title: Conditions
+description: Learn how to customize conditions in your Panda config
+---
+
+Conditions allow you to apply different styles and behaviors based on specific conditions or states. They provide a way
+to target specific elements or apply styles in response to certain events or conditions.
+
+## Creating a condition
+
+To create a condition, you can use the conditions property in the config. Let's say we want to create a `groupHover`
+pseudo condition that applies styles to an element when a parent container with the `group` role is hovered.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      groupHover: '[role=group]:where(:hover, [data-hover]) &'
+    }
+  }
+})
+```
+
+> ⚠️ The `&` character is mandatory, it is a placeholder for the current selector. It will be replaced with the actual
+> selector when the condition is used. It has to be used either at the beginning or at the end of the condition.
+
+Then you can run the following command to generate the conditions JS code:
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun panda codegen
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+Now, we can use the `groupHover` condition in our components.
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return (
+    <div role="group">
+      <span
+        className={css({
+          color: { base: 'blue.400', _groupHover: 'blue.600' }
+        })}
+      />
+    </div>
+  )
+}
+```
+
+## Customizing Built-in Conditions
+
+You can extend the [default conditions](/docs/concepts/conditional-styles#reference) by using the `conditions.extend`
+property in the config.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      // Extend the default `dark` condition
+      dark: '.dark &, [data-theme="dark"] &'
+    }
+  }
+})
+```
+
+Then you can run the following command to update the conditions JS code:
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun panda codegen
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+## Using tokens
+
+You can also use tokens in your conditions, and they will be resolved to their actual values:
+
+```tsx
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      mq: '@media (min-width: token(sizes.4xl))',
+      size2: '&[data-size=token(spacing.2)]'
+    }
+  }
+})
+```
+
+## Mixed conditions
+
+You can also use mixed conditions (nested at-rules/selectors) under a single condition name:
+
+```tsx
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover']
+    }
+  }
+})
+```
+
+```ts
+import { css } from '../styled-system/css'
+
+css({
+  _supportHover: {
+    color: 'red'
+  }
+})
+```
+
+will generate the following CSS:
+
+```css
+@media (hover: hover) and (pointer: fine) {
+  &:hover {
+    color: red;
+  }
+}
+```
+
+## Container queries
+
+Read more about how to define type-safe container queries [here](/docs/concepts/conditional-styles#container-queries)
+
+## Minimal setup
+
+If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
+[here](/docs/guides/minimal-setup)

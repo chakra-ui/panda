@@ -1,68 +1,47 @@
+import { Navbar } from '@/components/navbar'
+import { teamMembers } from '@/docs.config'
+import { generateOgImageUrl } from '@/lib/og-image'
+import { fetchGithubUsers, type GitHubUser } from '@/lib/github-utils'
 import { css } from '@/styled-system/css'
 import { Container, Grid, HStack, panda, Stack } from '@/styled-system/jsx'
+import { FooterSection } from '@/www/footer.section'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FaGithub, FaGlobe, FaTwitter } from 'react-icons/fa'
+
+const ogTitle = 'Meet the Panda CSS Team'
+const ogDescription =
+  'Get to know the passionate engineers who make Panda CSS possible'
 
 export const metadata: Metadata = {
   title: 'Team',
   description:
     'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
   openGraph: {
-    title: 'Meet the passionate engineers who make Panda CSS possible',
-    description:
-      'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
-    type: 'website'
+    title: ogTitle,
+    description: ogDescription,
+    type: 'website',
+    images: [
+      generateOgImageUrl({
+        title: ogTitle,
+        description: ogDescription,
+        category: 'Team'
+      })
+    ]
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Meet the Panda CSS Team',
-    description:
-      'Meet the passionate developers and designers who make Panda CSS possible. Get to know the core team behind the modern CSS-in-JS framework.'
+    title: ogTitle,
+    description: ogDescription,
+    images: [
+      generateOgImageUrl({
+        title: ogTitle,
+        description: ogDescription,
+        category: 'Team'
+      })
+    ]
   }
-}
-
-interface GitHubUser {
-  login: string
-  name: string | null
-  avatar_url: string
-  bio: string | null
-  company: string | null
-  blog: string | null
-  twitter_username: string | null
-  public_repos: number
-  followers: number
-  html_url: string
-}
-
-const ROLE_MAPPING = new Map([
-  ['segunadebayo', 'Creator & Maintainer'],
-  ['astahmer', 'Creator'],
-  ['cschroeter', 'Creator @ Park UI'],
-  ['anubra266', 'Creator @ Tark UI'],
-  ['estheragbaje', 'Developer Marketing']
-])
-
-async function fetchGitHubUser(username: string): Promise<GitHubUser | null> {
-  try {
-    const response = await fetch(`https://api.github.com/users/${username}`, {
-      next: { revalidate: 3600 } // Revalidate every hour
-    })
-    if (!response.ok) return null
-    return await response.json()
-  } catch (error) {
-    console.error(`Failed to fetch GitHub user ${username}:`, error)
-    return null
-  }
-}
-
-async function fetchTeamMembers(): Promise<GitHubUser[]> {
-  const userPromises = Array.from(ROLE_MAPPING.keys()).map(username =>
-    fetchGitHubUser(username)
-  )
-  const users = await Promise.all(userPromises)
-  return users.filter((user): user is GitHubUser => user !== null)
 }
 
 const iconMap = {
@@ -93,12 +72,12 @@ const SocialIcon = ({ platform, url }: { platform: string; url: string }) => {
 }
 
 const TeamMemberCard = ({ member }: { member: GitHubUser }) => {
-  const role = ROLE_MAPPING.get(member.login) || 'Contributor'
+  const teamMember = teamMembers.find(tm => tm.login === member.login)
+  const role = teamMember?.role || 'Contributor'
 
   return (
     <panda.div
-      bg="white"
-      _dark={{ bg: 'gray.800', borderColor: 'gray.700' }}
+      bg="bg"
       borderRadius="xl"
       p="8"
       textAlign="center"
@@ -169,57 +148,57 @@ const toHttps = (url: string) => {
 }
 
 export default async function TeamPage() {
-  const teamMembers = await fetchTeamMembers()
-
+  const data = await fetchGithubUsers(teamMembers.map(member => member.login))
   return (
-    <panda.div
-      bg="gray.50"
-      pt="20"
-      _dark={{ bg: 'gray.900' }}
-      minH="100vh"
-      css={{
-        '--fg-muted': { base: '{colors.gray.600}', _dark: '{colors.gray.400}' }
-      }}
-    >
-      <Container py="20">
-        <Stack gap="16" align="center">
-          <Stack gap="6" align="center" textAlign="center">
-            <panda.h1
-              fontSize={{ base: '3xl', md: '5xl' }}
-              fontWeight="bold"
-              letterSpacing="tight"
-            >
-              Meet our team
-            </panda.h1>
-            <panda.p
-              fontSize={{ base: 'lg', md: 'xl' }}
-              color="var(--fg-muted)"
-              maxW="2xl"
-              lineHeight="relaxed"
-            >
-              Panda CSS is maintained by a passionate team of engineers. It also
-              receives contributions from engineers around the world.
-            </panda.p>
-          </Stack>
-
-          <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="8" w="full" maxW="6xl">
-            {teamMembers.length > 0 ? (
-              teamMembers.map(member => (
-                <TeamMemberCard key={member.login} member={member} />
-              ))
-            ) : (
-              <panda.div
-                gridColumn="1 / -1"
-                textAlign="center"
-                p="8"
-                color="gray.500"
+    <>
+      <Navbar />
+      <panda.div bg="bg.muted" pt="20" minH="80dvh">
+        <Container py="20">
+          <Stack gap="16" align="center">
+            <Stack gap="6" align="center" textAlign="center">
+              <panda.h1
+                fontSize={{ base: '3xl', md: '5xl' }}
+                fontWeight="bold"
+                letterSpacing="tight"
               >
-                Unable to load team members
-              </panda.div>
-            )}
-          </Grid>
-        </Stack>
-      </Container>
-    </panda.div>
+                Meet our team
+              </panda.h1>
+              <panda.p
+                fontSize={{ base: 'lg', md: 'xl' }}
+                color="fg.muted"
+                maxW="2xl"
+                lineHeight="relaxed"
+              >
+                Panda CSS is maintained by a passionate team of engineers. It
+                also receives contributions from engineers around the world.
+              </panda.p>
+            </Stack>
+
+            <Grid
+              columns={{ base: 1, md: 2, lg: 3 }}
+              gap="8"
+              w="full"
+              maxW="6xl"
+            >
+              {data.length > 0 ? (
+                data.map(member => (
+                  <TeamMemberCard key={member.login} member={member} />
+                ))
+              ) : (
+                <panda.div
+                  gridColumn="1 / -1"
+                  textAlign="center"
+                  p="8"
+                  color="fg.muted"
+                >
+                  Unable to load team members
+                </panda.div>
+              )}
+            </Grid>
+          </Stack>
+        </Container>
+      </panda.div>
+      <FooterSection />
+    </>
   )
 }

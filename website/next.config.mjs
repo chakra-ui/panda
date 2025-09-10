@@ -1,17 +1,13 @@
-import nextra from 'nextra'
-
-const withNextra = nextra({
-  // Tell Nextra to use the custom theme as the layout
-  theme: './src/index.tsx',
-  themeConfig: './theme.config.tsx',
-  defaultShowCopyCode: true,
-  flexsearch: {
-    codeblocks: true
+/** @type {import('next').NextConfig} */
+const config = {
+  async rewrites() {
+    return [
+      {
+        source: '/docs/:path*.mdx',
+        destination: '/llms.txt/:path*.mdx'
+      }
+    ]
   },
-  codeHighlight: true
-})
-
-export default withNextra({
   async redirects() {
     return [
       {
@@ -44,8 +40,6 @@ export default withNextra({
       { hostname: 'avatars.githubusercontent.com' }
     ]
   }
-})
+}
 
-process.on('unhandledRejection', error => {
-  console.log('unhandledRejection', error)
-})
+export default config

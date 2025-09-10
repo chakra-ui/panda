@@ -1,8 +1,6 @@
-import { Navbar } from '@/components/navbar'
+import Script from 'next/script'
 import { Providers } from '@/components/providers'
-import { SectionFooter } from '@/components/sections/footer'
 import { css, cx } from '@/styled-system/css'
-import { Flex } from '@/styled-system/jsx'
 import { fontClassName } from 'styles/fonts'
 import seoConfig from '../seo.config'
 import '../styles/panda.css'
@@ -25,23 +23,18 @@ export default function RootLayout(props: Props) {
       lang="en"
       className={cx(
         fontClassName,
-        css({ overflowX: 'hidden', fontFamily: 'body', fontSize: '0.9em' })
+        css({ fontFamily: 'body', fontSize: '0.9em' })
       )}
       suppressHydrationWarning
     >
       <head>
-        <script
-          defer
+        <Script
           data-domain="panda-css.com"
           src="https://plausible.io/js/script.js"
         />
       </head>
-      <body className={css({ overflowX: 'hidden', overflowY: 'auto' })}>
-        <Providers>
-          <Navbar />
-          <Flex direction="column">{children}</Flex>
-          <SectionFooter />
-        </Providers>
+      <body suppressHydrationWarning>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

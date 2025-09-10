@@ -22,10 +22,9 @@ const styles = css({
       content: 'counter(step)',
       borderRadius: 'lg',
       mt: '1px',
-      ml: '-41px',
-      fontSize: 'md',
-      fontWeight: 'bold',
-      lineHeight: 'relaxed'
+      ml: '-36px',
+      textStyle: 'md',
+      fontWeight: 'bold'
     }
   }
 })
@@ -33,7 +32,7 @@ const styles = css({
 export const Steps = (props: React.ComponentProps<'div'>) => {
   const { children, className, ...rest } = props
   return (
-    <div className={cx('nextra-steps', styles, className)} {...rest}>
+    <div className={cx(styles, className)} {...rest}>
       {children}
     </div>
   )

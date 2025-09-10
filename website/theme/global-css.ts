@@ -1,37 +1,29 @@
 import { defineGlobalStyles } from '@pandacss/dev'
 
 export const globalCss = defineGlobalStyles({
-  // nextra specific styles
   '*, *::before, *::after': {
-    borderColor: { base: 'neutral.200', _dark: 'neutral.800' }
+    borderColor: 'border'
   },
   html: {
-    fontFamily: 'sans'
+    fontFamily: 'sans',
+    fontSize: '0.9em',
+    '--nextra-primary-hue': '212deg',
+    scrollPaddingTop:
+      'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + 1rem)'
   },
   body: {
-    bg: 'white',
-    _dark: { bg: 'dark', color: 'gray.100' }
+    bg: 'bg',
+    color: 'fg',
+    minHeight: '100vh',
+    scrollMarginTop: '80px'
   },
   "a, summary, button, input, [tabindex]:not([tabindex='-1'])": {
     outline: 'none',
     _focusVisible: {
       outline: '2px',
-      outlineColor: 'primary.200',
+      outlineColor: 'blue.400',
       outlineOffset: '1px',
-      outlineStyle: 'solid',
-      _dark: {
-        outlineColor: 'primary.800'
-      }
-    }
-  },
-  'a, summary': {
-    rounded: 'md'
-  },
-  'article:before': {
-    _motionReduce: {
-      mdDown: {
-        transition: 'none'
-      }
+      outlineStyle: 'solid'
     }
   },
   /* Content Typography */
@@ -47,24 +39,6 @@ export const globalCss = defineGlobalStyles({
     }
   },
 
-  '.nextra-search ul': {
-    _supportsBackdrop: {
-      backdropFilter: 'blur(12px)',
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
-      _dark: {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)'
-      }
-    }
-  },
-  '.nextra-button': {
-    _supportsBackdrop: {
-      backdropFilter: 'blur(8px)',
-      backgroundColor: 'rgba(255, 255, 255, 0.85)',
-      _dark: {
-        backgroundColor: 'rgba(0, 0, 0, 0.85)'
-      }
-    }
-  },
   "input[type='search']": {
     '&::-webkit-search-decoration, &::-webkit-search-cancel-button, &::-webkit-search-results-button, &::-webkit-search-results-decoration':
       {
@@ -78,10 +52,10 @@ export const globalCss = defineGlobalStyles({
       mr: 1
     }
   },
-  '.nextra-scrollbar': {
+  '.scroll-area': {
     scrollbarWidth: 'thin',
     scrollbarColor: 'oklch(55.55% 0 0 / 40%) transparent',
-    scrollbarGutter: 'stable',
+    scrollbarGutter: 'auto',
     '&::-webkit-scrollbar': {
       w: '3',
       h: '3'
@@ -91,45 +65,30 @@ export const globalCss = defineGlobalStyles({
     },
     '&::-webkit-scrollbar-thumb': {
       rounded: '10px'
-    },
-    '&:hover::-webkit-scrollbar-thumb': {
-      border: '3px solid transparent',
-      backgroundColor: 'neutral.500',
-      backgroundClip: 'content-box',
-      mdDown: {
-        '.nextra-container &': {
-          scrollbarGutter: 'auto'
-        }
-      }
-    }
-  },
-  '.no-scrollbar': {
-    scrollbarWidth: 'none',
-    msOverflowStyle: 'none',
-    '&::-webkit-scrollbar': {
-      display: 'none'
     }
   },
   code: {
     boxDecorationBreak: 'clone',
     fontFeatureSettings: "'rlig' 1, 'calt' 1, 'ss01' 1",
+    px: '0.3em',
     '&[data-line-numbers] > .line': {
       display: 'inline-flex',
-      pl: 2,
+      ps: 2,
       '&::before': {
         counterIncrement: 'line',
         content: 'counter(line)',
         h: 'full',
         float: 'left',
-        pr: 4,
+        pe: 4,
         textAlign: 'right',
         minW: '2.6rem',
-        color: 'gray.500'
+        color: 'fg.subtle'
       }
     },
     '& .line': {
+      px: 4,
       '&.highlighted': {
-        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.1)',
+        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.15)',
         color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)',
         shadow: '2px 0 currentColor inset'
       },
@@ -146,28 +105,21 @@ export const globalCss = defineGlobalStyles({
     }
   },
   pre: {
-    contain: 'paint',
     '& code': {
       display: 'grid',
       minW: 'full',
       rounded: 'none',
       border: 'none',
       bg: 'transparent!',
-      p: 0,
+      p: '0!',
       textStyle: 'sm',
       lineHeight: '1.25rem',
       color: 'currentcolor',
       _dark: {
         bg: 'transparent!'
-      },
-      '& .line': {
-        px: 4
       }
     },
-    '&:not([data-theme])': {
-      px: 4
-    },
-    'html[data-nextra-word-wrap] &': {
+    'html[data-word-wrap] &': {
       wordBreak: 'break-word',
       whiteSpace: 'pre-wrap',
       md: {
@@ -176,9 +128,6 @@ export const globalCss = defineGlobalStyles({
       '& .line': {
         display: 'inline-block'
       }
-    },
-    '& .nextra-copy-icon': {
-      animation: 'fadein 0.3s ease forwards'
     }
   },
   '.subheading-anchor': {
@@ -194,15 +143,9 @@ export const globalCss = defineGlobalStyles({
     '&:after': {
       content: "'#'",
       px: 1,
-      color: 'gray.300',
-      _dark: {
-        color: 'neutral.700'
-      },
+      color: 'fg.subtle',
       'span:target + &': {
-        color: 'gray.400',
-        _dark: {
-          color: 'neutral.500'
-        }
+        color: 'fg.muted'
       }
     }
   }

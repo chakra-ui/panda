@@ -2,5 +2,14 @@
   "semi": false,
   "singleQuote": true,
   "trailingComma": "none",
-  "arrowParens": "avoid"
+  "arrowParens": "avoid",
+  "overrides": [
+    {
+      "files": "*.mdx",
+      "options": {
+        "proseWrap": "always",
+        "printWidth": 120
+      }
+    }
+  ]
 }

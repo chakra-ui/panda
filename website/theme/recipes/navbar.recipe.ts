@@ -23,10 +23,10 @@ export const navbarRecipe = defineRecipe({
   jsx: ['Navbar'],
   base: parts({
     root: {
-      position: 'sticky',
+      position: 'fixed',
       top: 0,
       zIndex: 20,
-      w: 'full',
+      w: 'calc(100% - var(--scrollbar-width, 0px))',
       bg: 'transparent',
       _print: { display: 'none' }
     },
@@ -36,11 +36,7 @@ export const navbarRecipe = defineRecipe({
       zIndex: -1,
       h: 'full',
       w: 'full',
-      bg: 'white',
-      _dark: {
-        bg: 'dark',
-        shadow: '0 -1px 0 rgba(255,255,255,.1) inset'
-      },
+      bg: 'bg.surface',
       shadow: '0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)',
       _supportsBackdrop: {
         backdropFilter: 'blur(8px)',
@@ -53,7 +49,7 @@ export const navbarRecipe = defineRecipe({
     nav: {
       mx: 'auto',
       display: 'flex',
-      h: 'var(--nextra-navbar-height)',
+      h: 'var(--navbar-height, 4rem)',
       maxW: '90rem',
       alignItems: 'center',
       justifyContent: 'flex-end',
@@ -96,45 +92,8 @@ export const navbarRecipe = defineRecipe({
       mr: '-2',
       rounded: 'sm',
       p: '2',
-      _active: { bg: 'rgb(156 163 175 / 0.2)' },
-      sm: { display: 'none' },
-      '& svg': {
-        '& g': {
-          transformOrigin: 'center',
-          transition: 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)'
-        },
-        '& path': {
-          opacity: 1,
-          transition:
-            'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) 0.2s, opacity 0.2s ease 0.2s'
-        },
-        '&.open': {
-          '& path': {
-            transition:
-              'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease'
-          },
-          '& g': {
-            transition: 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) 0.2s'
-          }
-        },
-        '&.open >': {
-          '& path': {
-            opacity: 0
-          },
-          '& g:nth-of-type(1)': {
-            transform: 'rotate(45deg)',
-            '& path': {
-              transform: 'translate3d(0, 6px, 0)'
-            }
-          },
-          '& g:nth-of-type(2)': {
-            transform: 'rotate(-45deg)',
-            '& path': {
-              transform: 'translate3d(0, -6px, 0)'
-            }
-          }
-        }
-      }
+      hideFrom: 'lg',
+      _icon: { boxSize: '5' }
     }
   })
 })

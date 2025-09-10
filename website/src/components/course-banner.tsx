@@ -11,7 +11,7 @@ export const CourseMiniBanner = () => {
         bg={{ base: 'gray.100', _dark: 'gray.800' }}
         px="2"
         rounded="sm"
-        css={{ '& svg': { width: '3' } }}
+        css={{ _icon: { width: '3' } }}
       >
         <span
           className={circle({ size: '1.5', bg: '#32aef2', flexShrink: '0' })}

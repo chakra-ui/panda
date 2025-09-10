@@ -1,0 +1,111 @@
+---
+title: Animation Styles
+description: Define reusable animation css properties.
+---
+
+Animation styles focus solely on animations, allowing you to orchestrate animation properties.
+
+## Defining Animation Styles
+
+Animation styles are defined in the `animationStyles` property of the theme.
+
+Here's an example of an animation style:
+
+```js filename="animation-styles.ts"
+import { defineAnimationStyles } from '@pandacss/dev'
+
+export const animationStyles = defineAnimationStyles({
+  'slide-fade-in': {
+    value: {
+      transformOrigin: 'var(--transform-origin)',
+      animationDuration: 'fast',
+      '&[data-placement^=top]': {
+        animationName: 'slide-from-top, fade-in'
+      },
+      '&[data-placement^=bottom]': {
+        animationName: 'slide-from-bottom, fade-in'
+      },
+      '&[data-placement^=left]': {
+        animationName: 'slide-from-left, fade-in'
+      },
+      '&[data-placement^=right]': {
+        animationName: 'slide-from-right, fade-in'
+      }
+    }
+  }
+})
+```
+
+> **Good to know:** The `value` property maps to style objects that will be applied to the element.
+
+## Update the Config
+
+To use the animation styles, we need to update the `config` object in the `panda.config.ts` file.
+
+```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { animationStyles } from './animation-styles'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      animationStyles
+    }
+  }
+})
+```
+
+This should automatically update the generated theme with the specified `animationStyles`. If this doesn't happen, you
+can run the `panda codegen` command.
+
+## Using Animation Styles
+
+Now we can use the `animationStyle` property in our components.
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return (
+    <div className={css({ animationStyle: 'slide-fade-in' })}>
+      This is an element with slide-fade-in animation style.
+    </div>
+  )
+}
+```
+
+Take advantage of it in your conditions:
+
+```ts
+export const popoverSlotRecipe = defineSlotRecipe({
+  slots: anatomy.keys(),
+  base: {
+    content: {
+      _open: {
+        animationStyle: 'scale-fade-in'
+      },
+      _closed: {
+        animationStyle: 'scale-fade-out'
+      }
+    }
+  }
+})
+```
+
+## Best Practices
+
+### Avoid Overuse
+
+To ensure the performance and readability of your design system, avoid overusing animations. Use them sparingly to
+enhance user experience without overwhelming the user.
+
+### Consistent Naming Conventions
+
+We recommend using consistent naming conventions for animation styles. Here are common ideas on how to name animation
+styles:
+
+- Based on the type of animation (`slide`, `fade`, `bounce`)
+- Based on the direction or trigger (`slide-from-top`, `fade-in`, `bounce-on-click`)
+- Descriptive or functional names that explain the style's intended use (`modal-open`, `button-hover`, `alert-show`)
+
+By following these guidelines, you can create a clear and maintainable animation system in your design.

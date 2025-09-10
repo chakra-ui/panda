@@ -1,10 +1,10 @@
 import { css, cva } from '@/styled-system/css'
 import { useEffect, useRef } from 'react'
-import { useSetActiveAnchor } from '../nextra/contexts'
+import { useSetActiveAnchor } from '../mdx/contexts'
 import {
   useIntersectionObserver,
   useSlugs
-} from '../nextra/contexts/active-anchor'
+} from '../mdx/contexts/active-anchor'
 
 type HeadingTag = `h${1 | 2 | 3 | 4 | 5 | 6}`
 
@@ -64,18 +64,8 @@ export const Heading = (props: Props) => {
   }, [id, context, slugs, observer, setActiveAnchor])
 
   return (
-    <Tag className={styles({ tag: Tag })} {...rest}>
+    <Tag className={styles({ tag: Tag })} id={id} {...rest}>
       {children}
-      <span
-        className={css({ position: 'absolute', mt: -20 })}
-        id={id}
-        ref={obRef}
-      />
-      <a
-        href={`#${id}`}
-        className="subheading-anchor"
-        aria-label="Permalink for this section"
-      />
     </Tag>
   )
 }

@@ -1,0 +1,163 @@
+---
+title: Using Astro
+description: Easily use Panda with Astro with our dedicated integration.
+---
+
+This guide shows you how to set up Panda CSS in an Astro project using our dedicated integration.
+
+## Setup
+
+<Steps>
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev
+    pnpm panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init --postcss
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3}
+{
+  "scripts": {
++   "prepare": "panda codegen",
+    "dev": "astro dev",
+    "start": "astro start",
+    "build": "astro build",
+    "preview": "astro preview"
+  }
+}
+```
+
+    The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
+> the output directory to your `.gitignore` file and not worry about it.
+
+### Configure the content
+
+Add your panda config to your `panda.config.js` file, or wherever panda is configured in your project.
+
+```js {6}
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  // define the content to scan 👇🏻
+  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
+  exclude: [],
+  outdir: 'styled-system'
+})
+```
+
+### Configure the entry CSS with layers
+
+Add the layer css code to the `src/index.css` file
+
+```css filename="src/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+Then, import the `src/index.css` file in your page or layout file
+
+```md filename="src/pages/index.astro"
+---
+import '../index.css';
+---
+```
+
+### Update the postcss config
+
+Astro requires a little change for the `postcss.config.[c]js`:
+
+```diff {3} filename="postcss.config.js"
+module.exports = {
+-  plugins: {
+-   '@pandacss/dev/postcss': {}
+-  }
++  plugins: [require('@pandacss/dev/postcss')()]
+}
+```
+
+### Start your build process
+
+Run your build process with `npm run dev` or whatever command is configured in your package.json file.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Start using Panda
+
+Use the generated style utilities in your code, and panda will extract them to the generated CSS file.
+
+```jsx
+---
+import { css } from '../../styled-system/css';
+---
+<div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello !</div>
+```
+
+</Steps>
+
+## Troubleshooting
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
+`tsconfig.json` file:
+
+```json filename="tsconfig.json"
+{
+  // ...
+  "include": ["src", "styled-system"]
+}
+```

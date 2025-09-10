@@ -6,7 +6,7 @@ import { css, cx } from '@/styled-system/css'
 
 const tableStyles = css({
   display: 'block',
-  overflowX: 'scroll',
+  overflowX: 'auto',
   mt: { base: '6', _first: '0' },
   p: '0'
 })
@@ -15,10 +15,7 @@ export const Table = ({
   className = '',
   ...props
 }: React.ComponentProps<'table'>) => (
-  <table
-    className={cx('nextra-scrollbar', tableStyles, className)}
-    {...props}
-  />
+  <table className={cx('scroll-area', tableStyles, className)} {...props} />
 )
 
 /* -----------------------------------------------------------------------------
@@ -28,7 +25,7 @@ export const Table = ({
 const thStyles = css({
   m: '0',
   borderWidth: '1px',
-  borderColor: { base: 'gray.300', _dark: 'gray.600' },
+  borderColor: 'border',
   px: '4',
   py: '2',
   fontWeight: 'semibold'
@@ -49,9 +46,9 @@ const trStyles = css({
   m: '0',
   p: '0',
   borderWidth: '1px',
-  borderColor: { base: 'gray.300', _dark: 'gray.600' },
+  borderColor: 'border',
   _even: {
-    bg: { base: 'gray.100', _dark: 'gray.700' }
+    bg: 'bg.subtle'
   }
 })
 
@@ -69,7 +66,7 @@ export const Tr = ({
 const tdStyles = css({
   m: '0',
   borderWidth: '1px',
-  borderColor: { base: 'gray.300', _dark: 'gray.600' },
+  borderColor: 'border',
   px: '4',
   py: '2'
 })
