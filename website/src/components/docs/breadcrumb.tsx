@@ -10,7 +10,7 @@ export const Breadcrumb = ({ slug }: Props) => {
   const parts = slug.split('/')
 
   const breadcrumbs = parts.map((part, index) => ({
-    label: part,
+    label: part.replace(/-/g, ' '),
     isLast: index === parts.length - 1
   }))
 
