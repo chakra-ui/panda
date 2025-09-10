@@ -33,10 +33,10 @@ export const semanticTokens = defineSemanticTokens({
     // Foreground tokens
     fg: {
       DEFAULT: {
-        value: { base: '{colors.neutral.900}', _dark: '{colors.neutral.100}' }
+        value: { base: '{colors.neutral.900}', _dark: '{colors.neutral.50}' }
       },
       muted: {
-        value: { base: '{colors.neutral.600}', _dark: '{colors.neutral.400}' }
+        value: { base: '{colors.neutral.600}', _dark: '{colors.neutral.300}' }
       },
       subtle: {
         value: { base: '{colors.neutral.500}', _dark: '{colors.neutral.500}' }

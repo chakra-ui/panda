@@ -12,7 +12,7 @@ export const Badge = panda('span', {
       outline: {
         borderWidth: '1px',
         bg: 'bg',
-        color: 'black'
+        color: 'fg'
       },
       solid: {
         bg: 'primary.600',

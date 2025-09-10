@@ -6,7 +6,7 @@ export const dialogSlotRecipe = sva({
   className: 'chakra-dialog',
   base: {
     backdrop: {
-      bg: 'blackAlpha.500',
+      bg: 'blackAlpha.800',
       pos: 'fixed',
       left: 0,
       top: 0,

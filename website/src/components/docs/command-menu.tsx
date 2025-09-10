@@ -25,7 +25,7 @@ interface Props {
 }
 
 export const CommandMenu = (props: Props) => {
-  const { mediaQuery, trigger, limit = 10 } = props
+  const { mediaQuery, trigger, limit = 8 } = props
 
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
