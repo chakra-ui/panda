@@ -9,7 +9,14 @@ interface Props {
 
 export const Header = ({ doc }: Props) => {
   return (
-    <Flex justify="space-between" align="flex-start" gap="4" mb="12" mt="8">
+    <Flex
+      direction={{ base: 'column', md: 'row' }}
+      justify={{ md: 'space-between' }}
+      align="flex-start"
+      gap="4"
+      mb="12"
+      mt="8"
+    >
       <div>
         <h1
           className={css({

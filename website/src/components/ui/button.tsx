@@ -77,6 +77,12 @@ const buttonRecipe = cva({
         _icon: {
           color: 'yellow.400'
         }
+      },
+      neutral: {
+        bg: 'bg',
+        _hover: {
+          bg: 'bg.subtle'
+        }
       }
     },
 

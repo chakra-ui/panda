@@ -9,7 +9,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     color: 'fg',
-    minW: { md: '200px' }
+    minW: { sm: '200px' }
   }),
 
   input: css({
@@ -18,10 +18,11 @@ const styles = {
     textAlign: 'start',
     color: 'fg.muted',
     rounded: 'lg',
-    px: 3,
-    py: 2,
+    py: '2',
+    ps: '3',
+    pe: '12',
     transition: 'shadow',
-    textStyle: { base: 'md', md: 'sm' },
+    textStyle: 'sm',
     lineHeight: 'tight',
     bg: 'bg.muted'
   }),

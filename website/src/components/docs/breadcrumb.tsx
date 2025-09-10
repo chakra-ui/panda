@@ -10,7 +10,7 @@ export const Breadcrumb = ({ slug }: Props) => {
   const parts = slug.split('/')
 
   const breadcrumbs = parts.map((part, index) => ({
-    label: part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' '),
+    label: part,
     isLast: index === parts.length - 1
   }))
 
@@ -19,13 +19,13 @@ export const Breadcrumb = ({ slug }: Props) => {
       {breadcrumbs.map((crumb, index) => (
         <HStack
           key={`${crumb.label}-${index}`}
-          textStyle="0.9em"
-          textTransform="capitalize"
+          textStyle="sm"
+          fontWeight="semibold"
+          textTransform="uppercase"
+          letterSpacing="wide"
         >
           {crumb.isLast ? (
-            <span className={css({ color: 'fg', fontWeight: 'medium' })}>
-              {crumb.label}
-            </span>
+            <span className={css({ color: 'fg' })}>{crumb.label}</span>
           ) : (
             <span className={css({ color: 'fg.muted' })}>{crumb.label}</span>
           )}

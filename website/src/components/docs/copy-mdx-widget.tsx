@@ -38,7 +38,7 @@ const CopyPageButton = (props: { doc: Docs }) => {
   })
 
   return (
-    <Button onClick={clipboard.copy} size="xs">
+    <Button onClick={clipboard.copy} size="xs" color="neutral">
       {clipboard.copied ? <LuCheck /> : <BsMarkdown />} Copy Page
     </Button>
   )
@@ -73,7 +73,7 @@ const ActionMenu = (props: { doc: Docs }) => {
   return (
     <Menu.Root lazyMount positioning={{ placement: 'bottom-end' }}>
       <Menu.Trigger asChild className={css({ borderStartRadius: '0' })}>
-        <Button size="icon">
+        <Button size="icon" color="neutral">
           <LuChevronDown />
         </Button>
       </Menu.Trigger>
@@ -86,7 +86,8 @@ const ActionMenu = (props: { doc: Docs }) => {
               bg: 'bg',
               p: '1',
               borderWidth: '1px',
-              outline: '0'
+              outline: '0',
+              borderRadius: 'md'
             })}
           >
             {items.map(item => (

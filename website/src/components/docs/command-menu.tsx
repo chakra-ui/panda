@@ -13,13 +13,7 @@ import { Dialog } from '@ark-ui/react/dialog'
 import { useEnvironmentContext } from '@ark-ui/react/environment'
 import { Portal } from '@ark-ui/react/portal'
 import { useRouter } from 'next/navigation'
-import {
-  startTransition,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { Box, Center, Stack } from 'styled-system/jsx'
 import { dialogSlotRecipe } from '../ui/dialog'
 
@@ -60,7 +54,10 @@ export const CommandMenu = (props: Props) => {
   const isMobile = useMatchMedia(mediaQuery)
   useHotkey({ enabled: !isMobile, setOpen })
 
-  const dialogStyles = dialogSlotRecipe({ size: 'lg' })
+  const dialogStyles = dialogSlotRecipe({
+    size: 'lg',
+    placement: isMobile ? 'bottom' : 'top'
+  })
 
   return (
     <Dialog.Root
@@ -82,6 +79,7 @@ export const CommandMenu = (props: Props) => {
               selectionBehavior="clear"
               loopFocus={false}
               collection={collection}
+              composite={false}
               onValueChange={e => {
                 router.push(e.value[0])
                 requestAnimationFrame(() => {
