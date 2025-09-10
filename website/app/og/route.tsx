@@ -11,9 +11,9 @@ const upperFirst = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 export const runtime = 'edge'
 
 const getFontSize = (title: string) => {
-  if (title.length < 14) return '100px'
-  if (title.length < 28) return '72px'
-  return '60px'
+  if (title.length < 14) return '104px'
+  if (title.length < 28) return '84px'
+  return '64px'
 }
 
 export async function GET(request: Request) {
