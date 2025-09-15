@@ -59,7 +59,7 @@ describe('reporter', () => {
         {
           "category": "spacing",
           "count": 6,
-          "hardcoded": 3,
+          "hardcoded": 4,
           "mostUsedNames": [
             "2",
           ],
@@ -81,7 +81,7 @@ describe('reporter', () => {
         {
           "category": "sizes",
           "count": 5,
-          "hardcoded": 5,
+          "hardcoded": 8,
           "mostUsedNames": [],
           "percentUsed": 0,
           "usedCount": 0,

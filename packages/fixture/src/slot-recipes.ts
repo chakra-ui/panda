@@ -58,4 +58,39 @@ export const slotRecipes: Record<string, SlotRecipeConfig> = {
       },
     ],
   },
+  popover: {
+    className: 'popover',
+    slots: ['root', 'content'],
+    base: {
+      content: {
+        bg: 'white',
+        boxShadow: 'md',
+      },
+    },
+    variants: {
+      size: {
+        sm: {
+          content: {
+            padding: '2',
+            fontSize: 'sm',
+            maxWidth: '200px',
+          },
+        },
+        md: {
+          content: {
+            padding: '4',
+            fontSize: 'md',
+            maxWidth: '300px',
+          },
+        },
+        lg: {
+          content: {
+            padding: '6',
+            fontSize: 'lg',
+            maxWidth: '400px',
+          },
+        },
+      },
+    },
+  },
 }

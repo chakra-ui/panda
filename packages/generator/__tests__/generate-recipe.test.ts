@@ -542,6 +542,84 @@ describe('generate recipes', () => {
       })",
           "name": "badge",
         },
+        {
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { DistributiveOmit, Pretty } from '../types/system-types';
+
+      interface PopoverVariant {
+        size: "sm" | "md" | "lg"
+      }
+
+      type PopoverVariantMap = {
+        [key in keyof PopoverVariant]: Array<PopoverVariant[key]>
+      }
+
+      type PopoverSlot = "root" | "content"
+
+      export type PopoverVariantProps = {
+        [key in keyof PopoverVariant]?: ConditionalValue<PopoverVariant[key]> | undefined
+      }
+
+      export interface PopoverRecipe {
+        __slot: PopoverSlot
+        __type: PopoverVariantProps
+        (props?: PopoverVariantProps): Pretty<Record<PopoverSlot, string>>
+        raw: (props?: PopoverVariantProps) => PopoverVariantProps
+        variantMap: PopoverVariantMap
+        variantKeys: Array<keyof PopoverVariant>
+        splitVariantProps<Props extends PopoverVariantProps>(props: Props): [PopoverVariantProps, Pretty<DistributiveOmit<Props, keyof PopoverVariantProps>>]
+        getVariantProps: (props?: PopoverVariantProps) => PopoverVariantProps
+      }
+
+
+      export declare const popover: PopoverRecipe",
+          "js": "import { compact, getSlotCompoundVariant, memo, splitProps } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
+
+      const popoverDefaultVariants = {}
+      const popoverCompoundVariants = []
+
+      const popoverSlotNames = [
+        [
+          "root",
+          "popover__root"
+        ],
+        [
+          "content",
+          "popover__content"
+        ]
+      ]
+      const popoverSlotFns = /* @__PURE__ */ popoverSlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, popoverDefaultVariants, getSlotCompoundVariant(popoverCompoundVariants, slotName))])
+
+      const popoverFn = memo((props = {}) => {
+        return Object.fromEntries(popoverSlotFns.map(([slotName, slotFn]) => [slotName, slotFn.recipeFn(props)]))
+      })
+
+      const popoverVariantKeys = [
+        "size"
+      ]
+      const getVariantProps = (variants) => ({ ...popoverDefaultVariants, ...compact(variants) })
+
+      export const popover = /* @__PURE__ */ Object.assign(popoverFn, {
+        __recipe__: false,
+        __name__: 'popover',
+        raw: (props) => props,
+        classNameMap: {},
+        variantKeys: popoverVariantKeys,
+        variantMap: {
+        "size": [
+          "sm",
+          "md",
+          "lg"
+        ]
+      },
+        splitVariantProps(props) {
+          return splitProps(props, popoverVariantKeys)
+        },
+        getVariantProps
+      })",
+          "name": "popover",
+        },
       ]
     `)
   })

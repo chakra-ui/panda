@@ -46,6 +46,8 @@ describe('setup-artifacts', () => {
           "recipes/checkbox.d.ts",
           "recipes/badge.mjs",
           "recipes/badge.d.ts",
+          "recipes/popover.mjs",
+          "recipes/popover.d.ts",
         ],
       ]
     `)
@@ -201,6 +203,8 @@ describe('setup-artifacts', () => {
           "recipes/checkbox.d.ts",
           "recipes/badge.mjs",
           "recipes/badge.d.ts",
+          "recipes/popover.mjs",
+          "recipes/popover.d.ts",
         ],
         [
           "patterns/index.mjs",

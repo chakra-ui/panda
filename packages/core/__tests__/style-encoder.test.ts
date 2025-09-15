@@ -767,6 +767,11 @@ describe('style encoder', () => {
               "size]___[value:md]___[recipe:checkbox",
               "size]___[value:lg]___[recipe:checkbox",
             ],
+            "popover": [
+              "size]___[value:sm]___[recipe:popover",
+              "size]___[value:md]___[recipe:popover",
+              "size]___[value:lg]___[recipe:popover",
+            ],
             "textStyle": [
               "size]___[value:h1]___[recipe:textStyle",
               "size]___[value:h2]___[recipe:textStyle",

@@ -1911,6 +1911,11 @@ describe('static-css', () => {
             background: red.300;
             border-radius: var(--radii-sm);
       }
+
+          .popover__content {
+            background: white;
+            box-shadow: var(--shadows-md);
+      }
       }
 
         .checkbox__control--size_sm {
@@ -1952,6 +1957,24 @@ describe('static-css', () => {
 
         .badge__title--raised_true {
           box-shadow: var(--shadows-md);
+      }
+
+        .popover__content--size_sm {
+          padding: 2px;
+          font-size: var(--font-sizes-sm);
+          max-width: 200px;
+      }
+
+        .popover__content--size_md {
+          padding: 4px;
+          font-size: var(--font-sizes-md);
+          max-width: 300px;
+      }
+
+        .popover__content--size_lg {
+          padding: 6px;
+          font-size: var(--font-sizes-lg);
+          max-width: 400px;
       }
       }
 
@@ -2044,6 +2067,24 @@ describe('static-css', () => {
             {
               "badge": {
                 "raised": "true",
+              },
+            },
+            {
+              "popover": {},
+            },
+            {
+              "popover": {
+                "size": "sm",
+              },
+            },
+            {
+              "popover": {
+                "size": "md",
+              },
+            },
+            {
+              "popover": {
+                "size": "lg",
               },
             },
           ],
