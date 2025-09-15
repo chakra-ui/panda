@@ -96,3 +96,8 @@ export interface EmitPackageCommandFlags {
   cwd: string
   base?: string
 }
+
+export interface McpCommandFlags {
+  cwd?: string
+  config?: string
+}

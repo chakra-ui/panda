@@ -30,6 +30,7 @@ import type {
   EmitPackageCommandFlags,
   InitCommandFlags,
   MainCommandFlags,
+  McpCommandFlags,
   ShipCommandFlags,
   StudioCommandFlags,
 } from './types'
@@ -602,6 +603,15 @@ export async function main() {
       }
 
       logger.info('cli', `Emit package.json to ${pkgPath}`)
+    })
+
+  cli
+    .command('mcp', 'Start MCP server for AI assistants')
+    .option('-c, --config <path>', 'Path to panda config file')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .action(async (mcpFlags: McpCommandFlags) => {
+      const { startMcpServer } = await import('./mcp')
+      await startMcpServer(mcpFlags)
     })
 
   cli.help()

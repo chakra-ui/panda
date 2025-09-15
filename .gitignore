@@ -30,3 +30,4 @@ ts-import-map-outdir
 
 !packages/studio/styled-system
 packages/studio/src/lib/analysis.json
+.cursor/mcp.json
