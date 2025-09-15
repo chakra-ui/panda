@@ -32,7 +32,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
         )}
       }
 
-      const withRootProvider = (Component) => {
+      const withRootProvider = (Component, options) => {
         const WithRootProvider = defineComponent({
           props: svaFn.variantKeys,
           setup(props, { slots }) {
@@ -46,7 +46,12 @@ export function generateVueCreateStyleContext(ctx: Context) {
 
             provide(StyleContext, slotStyles)
 
-            return () => h(Component, otherProps, slots)
+            const mergedProps = computed(() => {
+              if (!options?.defaultProps) return otherProps
+              return { ...options.defaultProps, ...otherProps }
+            })
+
+            return () => h(Component, mergedProps.value, slots)
           },
         })
         
@@ -137,7 +142,11 @@ export function generateVueCreateStyleContext(ctx: Context) {
     import type { Component, FunctionalComponent, NativeElements } from 'vue'
 
     interface UnstyledProps {
-      unstyled?: boolean
+      unstyled?: boolean | undefined
+    }
+
+    interface WithProviderOptions<P = {}> {
+      defaultProps?: Partial<P> | undefined
     }
 
     // Add v-model support types
@@ -174,16 +183,19 @@ export function generateVueCreateStyleContext(ctx: Context) {
     >
 
     export interface StyleContext<R extends SlotRecipe> {
-      withRootProvider: <T extends ElementType>(Component: T) => StyleContextProvider<T, R>
+      withRootProvider: <T extends ElementType>(
+        Component: T,
+        options?: WithProviderOptions<ComponentProps<T>> | undefined
+      ) => StyleContextProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextConsumer<T>
     }
 

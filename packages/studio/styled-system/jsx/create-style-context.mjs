@@ -19,16 +19,20 @@ export function createStyleContext(recipe) {
     return { ...slotStyles, ...restProps }
   }
 
-  const withRootProvider = (Component) => {
+  const withRootProvider = (Component, options) => {
     const WithRootProvider = (props) => {
       const [variantProps, otherProps] = svaFn.splitVariantProps(props)
       
       const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
       slotStyles._classNameMap = svaFn.classNameMap
 
+      const mergedProps = options?.defaultProps 
+        ? { ...options.defaultProps, ...otherProps } 
+        : otherProps
+
       return createElement(StyleContext.Provider, {
         value: slotStyles,
-        children: createElement(Component, otherProps)
+        children: createElement(Component, mergedProps)
       })
     }
     

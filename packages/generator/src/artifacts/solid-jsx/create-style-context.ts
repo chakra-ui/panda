@@ -34,15 +34,17 @@ export function generateSolidCreateStyleContext(ctx: Context) {
       }
       
 
-      const withRootProvider = (Component) => {
+      const withRootProvider = (Component, options) => {
         const WithRootProvider = (props) => {
           const finalProps = createMemo(() => {
             const [variantProps, restProps] = svaFn.splitVariantProps(props)
             
             const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
             slotStyles._classNameMap = svaFn.classNameMap
+            
+            const mergedProps = options?.defaultProps ? mergeProps(options.defaultProps, restProps) : restProps
       
-            return { restProps, slotStyles }
+            return { mergedProps, slotStyles }
           })
 
           return createComponent(StyleContext.Provider, {
@@ -50,7 +52,7 @@ export function generateSolidCreateStyleContext(ctx: Context) {
             get children() {
               return createComponent(
                 Component,
-                mergeProps(finalProps().restProps, {
+                mergeProps(finalProps().mergedProps, {
                   get children() {
                     return props.children
                   },
@@ -139,7 +141,11 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     import type { Component, JSX, ComponentProps } from 'solid-js'
 
     interface UnstyledProps {
-      unstyled?: boolean
+      unstyled?: boolean | undefined
+    }
+
+    interface WithProviderOptions<P = {}> {
+      defaultProps?: Partial<P> | undefined
     }
     type ElementType<P extends Record<string, any> = {}> = keyof JSX.IntrinsicElements | Component<P>
 
@@ -162,16 +168,19 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     >
 
     export interface StyleContext<R extends SlotRecipe> {
-      withRootProvider: <T extends ElementType>(Component: T) => StyleContextProvider<T, R>
+      withRootProvider: <T extends ElementType>(
+        Component: T,
+        options?: WithProviderOptions<ComponentProps<T>> | undefined
+      ) => StyleContextProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextConsumer<T>
     }
 

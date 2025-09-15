@@ -33,16 +33,20 @@ export function generatePreactCreateStyleContext(ctx: Context) {
         )}
       }
 
-      const withRootProvider = (Component) => {
+      const withRootProvider = (Component, options) => {
         const WithRootProvider = (props) => {
           const [variantProps, otherProps] = svaFn.splitVariantProps(props)
           
           const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
           slotStyles._classNameMap = svaFn.classNameMap
 
+          const mergedProps = options?.defaultProps 
+            ? { ...options.defaultProps, ...otherProps } 
+            : otherProps
+
           return createElement(StyleContext.Provider, {
             value: slotStyles,
-            children: createElement(Component, otherProps)
+            children: createElement(Component, mergedProps)
           })
         }
         
@@ -114,7 +118,11 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     import type { ComponentType, ComponentProps, JSX } from 'preact/compat'
 
     interface UnstyledProps {
-      unstyled?: boolean
+      unstyled?: boolean | undefined
+    }
+
+    interface WithProviderOptions<P = {}> {
+      defaultProps?: Partial<P> | undefined
     }
 
     type ElementType = JSX.ElementType
@@ -138,16 +146,19 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     >
 
     export interface StyleContext<R extends SlotRecipe> {
-      withRootProvider: <T extends ElementType>(Component: T) => StyleContextProvider<T, R>
+      withRootProvider: <T extends ElementType>(
+        Component: T,
+        options?: WithProviderOptions<ComponentProps<T>> | undefined
+      ) => StyleContextProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextConsumer<T>
     }
 
