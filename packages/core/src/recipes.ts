@@ -121,22 +121,30 @@ export class Recipes {
     sharedState.styles.delete(name)
   }
 
+  inferJsxSlots = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
+    const capitalized = capitalize(name)
+    const jsx = Array.from(recipe.jsx ?? [capitalized])
+
+    const ROOT_SLOT = 'root'
+
+    if ('slots' in recipe && recipe.slots.includes(ROOT_SLOT)) {
+      const jsxRootName = capitalize(ROOT_SLOT)
+      const rootNames: string[] = [`${capitalized}.${jsxRootName}`, `${capitalized}${jsxRootName}`]
+      jsx.push(...rootNames)
+    }
+
+    return jsx
+  }
+
   private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
     if (recipe.deprecated) this.deprecated.add(name)
 
     const variantKeys = Object.keys(recipe.variants ?? {})
-    const capitalized = capitalize(name)
-    const jsx = Array.from(recipe.jsx ?? [capitalized])
-    if ('slots' in recipe) {
-      jsx.push(...recipe.slots.map((slot) => capitalized + '.' + capitalize(slot)))
-    }
-
-    const match = createRegex(jsx)
-    const className = recipe.className ?? name
+    const jsx = this.inferJsxSlots(name, recipe)
 
     sharedState.nodes.set(name, {
       ...this.getNames(name),
-      className,
+      className: recipe.className ?? name,
       jsx,
       type: 'recipe' as const,
       variantKeys,
@@ -145,7 +153,7 @@ export class Recipes {
           return [key, Object.keys(value)]
         }),
       ),
-      match,
+      match: createRegex(jsx),
       config: recipe,
       splitProps: (props) => {
         return splitProps(props, variantKeys) as [Dict, Dict]

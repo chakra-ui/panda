@@ -212,35 +212,35 @@ describe('recipe jsx', () => {
             {},
           ],
           "name": "Tabs.List",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Trigger",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Trigger",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Trigger",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Indicator",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
       ]
     `)

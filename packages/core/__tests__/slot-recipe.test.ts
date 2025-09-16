@@ -103,11 +103,10 @@ describe('slot recipe ruleset', () => {
         "jsx": [
           "Checkbox",
           "Checkbox.Root",
-          "Checkbox.Control",
-          "Checkbox.Label",
+          "CheckboxRoot",
         ],
         "jsxName": "Checkbox",
-        "match": /\\^Checkbox\\$\\|\\^Checkbox\\.Root\\$\\|\\^Checkbox\\.Control\\$\\|\\^Checkbox\\.Label\\$/,
+        "match": /\\^Checkbox\\$\\|\\^Checkbox\\.Root\\$\\|\\^CheckboxRoot\\$/,
         "props": [
           "size",
         ],
