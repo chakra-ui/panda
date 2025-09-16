@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { ComponentPropsWithoutRef, ElementType, ElementRef, JSX, Ref } from 'react'
+import type { ElementType, JSX, ComponentPropsWithRef, ComponentType, Component } from 'react'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';
 import type { Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty } from './system-types';
 
@@ -21,9 +21,9 @@ export interface AsProps {
   as?: ElementType | undefined
 }
 
-export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
-  ref?: Ref<ElementRef<T>>
-}
+export type ComponentProps<T extends ElementType> = T extends ComponentType<infer P> | Component<infer P>
+  ? JSX.LibraryManagedAttributes<T, P>
+  : ComponentPropsWithRef<T>
 
 export interface PandaComponent<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>): JSX.Element

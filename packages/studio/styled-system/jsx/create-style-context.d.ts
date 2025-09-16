@@ -1,8 +1,8 @@
 /* eslint-disable */
 import type { SlotRecipeRuntimeFn, RecipeVariantProps } from '../types/recipe';
 import type { JsxHTMLProps, JsxStyleProps, Assign } from '../types/system-types';
-import type { JsxFactoryOptions } from '../types/jsx';
-import type { ComponentType, ElementType, ComponentPropsWithoutRef, ElementRef, Ref } from 'react'
+import type { JsxFactoryOptions, ComponentProps } from '../types/jsx';
+import type { ComponentType, ElementType } from 'react'
 
 interface UnstyledProps {
   unstyled?: boolean | undefined
@@ -17,10 +17,6 @@ interface SlotRecipeFn {
 type SlotRecipe = SvaFn | SlotRecipeFn
 
 type InferSlot<R extends SlotRecipe> = R extends SlotRecipeFn ? R['__slot'] : R extends SvaFn<infer S> ? S : never
-
-type ComponentProps<T extends ElementType> = Omit<ComponentPropsWithoutRef<T>, 'ref'> & {
-  ref?: Ref<ElementRef<T>> | undefined
-}
 
 interface WithProviderOptions<P = {}> {
   defaultProps?: Partial<P> | undefined
