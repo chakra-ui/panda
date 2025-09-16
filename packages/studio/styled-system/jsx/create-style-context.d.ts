@@ -30,6 +30,10 @@ type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = Compone
   JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
 >
 
+type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
+  ComponentProps<T> & UnstyledProps & RecipeVariantProps<R>
+>
+
 type StyleContextConsumer<T extends ElementType> = ComponentType<
   JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
 >
@@ -38,7 +42,7 @@ export interface StyleContext<R extends SlotRecipe> {
   withRootProvider: <T extends ElementType>(
     Component: T,
     options?: WithProviderOptions<ComponentProps<T>> | undefined
-  ) => StyleContextProvider<T, R>
+  ) => StyleContextRootProvider<T, R>
   withProvider: <T extends ElementType>(
     Component: T,
     slot: InferSlot<R>,

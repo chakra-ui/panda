@@ -177,7 +177,11 @@ export function generateVueCreateStyleContext(ctx: Context) {
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = FunctionalComponent<
       JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
-    
+
+    type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = FunctionalComponent<
+      ComponentProps<T> & UnstyledProps & VModelProps & RecipeVariantProps<R>
+    >
+
     type StyleContextConsumer<T extends ElementType> = FunctionalComponent<
       JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, JsxStyleProps>
     >
@@ -186,7 +190,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
       withRootProvider: <T extends ElementType>(
         Component: T,
         options?: WithProviderOptions<ComponentProps<T>> | undefined
-      ) => StyleContextProvider<T, R>
+      ) => StyleContextRootProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
