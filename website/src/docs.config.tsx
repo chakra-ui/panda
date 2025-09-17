@@ -57,16 +57,16 @@ export const docsConfig: DocsConfig = {
       href: '/team'
     },
     {
+      title: 'Showcase',
+      type: 'page',
+      href: '/showcase'
+    },
+    {
       title: 'Playground',
       type: 'page',
       href: 'https://play.panda-css.com/',
       external: true,
       newWindow: true
-    },
-    {
-      title: 'Learn',
-      type: 'page',
-      href: '/learn'
     }
   ]
 }
