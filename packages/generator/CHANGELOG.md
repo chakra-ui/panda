@@ -1,5 +1,36 @@
 # @pandacss/generator
 
+## 1.3.1
+
+### Patch Changes
+
+- e0fca65: Fixes issue where `defaultProps` was not supported in `withRootProvider` across all framework implementations
+  (React, Preact, Vue, Solid)
+
+  ```tsx
+  const RootProvider = withRootProvider(Component, {
+    defaultProps: {
+      className: 'root-provider',
+      // other default props
+    },
+  })
+  ```
+
+- ff9afbc: - **Style Context**: Fix type issue where `withRootProvider` from style context incorrectly allowed JSX style
+  props to be passed through to the root component.
+
+  - **React**: Fix issue where combining wrapping a style context component with `styled` caused `ref` to be incorrectly
+    typed
+
+- 5bfaef3: Correct exposed type from the generator that was causing errors in the generated .d.ts files.
+- Updated dependencies [7fcd100]
+  - @pandacss/core@1.3.1
+  - @pandacss/is-valid-prop@1.3.1
+  - @pandacss/logger@1.3.1
+  - @pandacss/shared@1.3.1
+  - @pandacss/token-dictionary@1.3.1
+  - @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

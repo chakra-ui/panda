@@ -1,5 +1,18 @@
 # @pandacss/dev
 
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/node@1.3.1
+- @pandacss/postcss@1.3.1
+- @pandacss/config@1.3.1
+- @pandacss/logger@1.3.1
+- @pandacss/preset-panda@1.3.1
+- @pandacss/shared@1.3.1
+- @pandacss/token-dictionary@1.3.1
+- @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes
