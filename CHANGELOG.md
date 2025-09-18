@@ -4,9 +4,46 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
-## [Unreleased]
+## [1.3.1](#1.3.1) - 2025-09-18
 
-## [1.3.0] - 2025-09-10
+### Fixed
+
+- **JSX Style Context**
+
+  - Fix type issue where `withRootProvider` from style context incorrectly allowed JSX style props to be passed through
+    to the root component.
+
+  - Fix issue where `defaultProps` was not supported in `withRootProvider` across all framework implementations (React,
+    Preact, Vue, Solid).
+
+    ```tsx
+    const RootProvider = withRootProvider(Component, {
+      defaultProps: {
+        className: 'root-provider',
+        // other default props
+      },
+    })
+    ```
+
+  - Fix issue in React where combining wrapping a style context component with `styled` caused `ref` to be incorrectly
+    typed.
+
+- **JSX Recipe Tracking**: Fix issue where Panda eagerly tracks every JSX slot of a slot recipe when scanning for recipe
+  props. For example, assume you have a tabs recipe with the following slots:
+
+  ```jsx
+  <Tabs.Root>
+    <Tabs.List>
+      <Tabs.Trigger />
+    </Tabs.List>
+    <Tabs.Content />
+  </Tabs.Root>
+  ```
+
+  Panda tracks recipe props in `Tabs.Root`, `Tabs.List`, `Tabs.Trigger`, and `Tabs.Content`. This can lead to slightly
+  more works in the compiler. Now, Panda only tracks recipe props in the `Tabs.Root` slot.
+
+## [1.3.0](#1.3.0) - 2025-09-10
 
 ### Added
 
@@ -38,7 +75,7 @@ See the [Changesets](./.changeset) for the latest changes.
 - **JSX Factory**: Fixed issue where specifying `defaultProps.children` in `styled` or `createStyleContext` factories
   prevented overriding children in `@pandacss/generator`
 
-## [1.2.0] - 2025-08-27
+## [1.2.0](#1.2.0) - 2025-08-27
 
 ### Added
 
@@ -96,7 +133,7 @@ See the [Changesets](./.changeset) for the latest changes.
 
 - **Theme**: Add `4.5` spacing and sizing tokens to the `@pandacss/preset-panda` preset.
 
-## [1.1.0] - 2025-08-18
+## [1.1.0](#1.1.0) - 2025-08-18
 
 ### Added
 
@@ -129,7 +166,7 @@ See the [Changesets](./.changeset) for the latest changes.
 
 - Fixes TypeScript errors when using vendor-prefixed properties in Panda CSS.
 
-## [1.0.1] - 2025-08-05
+## [1.0.1](#1.0.1) - 2025-08-05
 
 ### Fixed
 
@@ -137,7 +174,7 @@ See the [Changesets](./.changeset) for the latest changes.
   provided
 - Fix issue where `bgGradient` did not respect the gradient token.
 
-## [1.0.0] - 2025-08-04
+## [1.0.0](#1.0.0) - 2025-08-04
 
 ### Fixed
 
@@ -248,7 +285,7 @@ Then, use like this:
 </CardRoot>
 ```
 
-## [0.54.0] - 2025-06-12
+## [0.54.0](#0.54.0) - 2025-06-12
 
 ### Fixed
 
@@ -315,7 +352,7 @@ Then, use like this:
   export type ColorToken = 'green.400' | 'red.400'
   ```
 
-## [0.53.7] - 2025-05-24
+## [0.53.7](#0.53.7) - 2025-05-24
 
 ### Fixed
 
@@ -323,11 +360,11 @@ Then, use like this:
 - Fix issue where `@breakpoint` from `hideBelow` or `hideFrom` might not be compiled to media query correctly
 - Fix issue where if two themes had shared a similar start name, both would be outputted in the token generation process
 
-## [0.53.6] - 2025-04-27
+## [0.53.6](#0.53.6) - 2025-04-27
 
 Fix issue where generated type for `CssVarKeys` was incorrect resulting in partial autocompletion
 
-## [0.53.5] - 2025-04-26
+## [0.53.5](#0.53.5) - 2025-04-26
 
 ### Fixed
 
@@ -339,7 +376,7 @@ Fix issue where generated type for `CssVarKeys` was incorrect resulting in parti
 
 - Add tokens for logical border widths
 
-## [0.53.4] - 2025-04-15
+## [0.53.4](#0.53.4) - 2025-04-15
 
 ### Fixed
 
@@ -348,13 +385,13 @@ Fix issue where generated type for `CssVarKeys` was incorrect resulting in parti
 - Fix issue where input placeholder styles cause crash in Safari `16.5`
 - Fix issue where `mergeProps` can cause DoS due to prototype pollution
 
-## [0.53.3] - 2025-03-24
+## [0.53.3](#0.53.3) - 2025-03-24
 
 ### Added
 
 - Add cursor utility config.
 
-## [0.53.2] - 2025-03-18
+## [0.53.2](#0.53.2) - 2025-03-18
 
 ### Fixed
 
@@ -364,13 +401,13 @@ Fix issue where generated type for `CssVarKeys` was incorrect resulting in parti
 
 - Update `groupInvalid` condition according to other group selector implementations
 
-## [0.53.1] - 2025-03-04
+## [0.53.1](#0.53.1) - 2025-03-04
 
 ### Fixed
 
 Fix issue where file watching doesn't work due the recent security upgrade of the `chokidar` package.
 
-## [0.53.0] - 2025-02-10
+## [0.53.0](#0.53.0) - 2025-02-10
 
 ### Added
 
@@ -381,7 +418,7 @@ Add support for recent baseline and experimental css properties:
 - **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
   positionTryFallback, positionTryOrder, positionVisibility
 
-## [0.52.0] - 2025-01-02
+## [0.52.0](#0.52.0) - 2025-01-02
 
 ### Added
 
@@ -408,7 +445,7 @@ Add support for new conditions:
 
 Security: Update chokidar to remove vulnerability
 
-## [0.51.1] - 2025-01-01
+## [0.51.1](#0.51.1) - 2025-01-01
 
 ### Fixed
 
@@ -450,12 +487,12 @@ columns to be more concise.
 
 - Add support for `panda analyze --output <file>.json` to output the analysis results to a file.
 
-## [0.51.0] - 2024-12-31
+## [0.51.0](#0.51.0) - 2024-12-31
 
 **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between internal
 `ts-morph` and userland `typescript`.
 
-## [0.50.0] - 2024-12-27
+## [0.50.0](#0.50.0) - 2024-12-27
 
 ### Added
 
@@ -514,7 +551,7 @@ const styles = sva({
 
 Panda will now infer the slots from the anatomy and add them to the recipe.
 
-## [0.49.0] - 2024-12-08
+## [0.49.0](#0.49.0) - 2024-12-08
 
 Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate animation
 properties.
@@ -571,7 +608,7 @@ powerful feature we should encourage consumers to use.
 
 ### Added
 
-## [0.48.1] - 2024-12-07
+## [0.48.1](#0.48.1) - 2024-12-07
 
 ### Fixed
 
@@ -579,7 +616,7 @@ powerful feature we should encourage consumers to use.
 - Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are `auto`,
   `stable`, and `both-edges`.
 
-## [0.48.0] - 2024-11-13
+## [0.48.0](#0.48.0) - 2024-11-13
 
 ### Fixed
 
@@ -681,14 +718,14 @@ const utilities = {
 }
 ```
 
-## [0.47.1] - 2024-11-06
+## [0.47.1](#0.47.1) - 2024-11-06
 
 ### Fixed
 
 - Fix postcss; race condition on builder instance for simultaneous plugin invocations
 - Fix issue where token reference in composite border token generates incorrect css.
 
-## [0.47.0] - 2024-10-18
+## [0.47.0](#0.47.0) - 2024-10-18
 
 ### Added
 
@@ -725,13 +762,13 @@ This makes it easy to manage cursor styles across your application.
 Improve preflight css such that elements with `hidden=until-found` are visible. Previously, we always hide all elements
 with the `hidden` attribute
 
-## [0.46.1] - 2024-09-09
+## [0.46.1](#0.46.1) - 2024-09-09
 
 ### Fixed
 
 Fix issue where using container query in static css results in empty styles.
 
-## [0.46.0] - 2024-09-09
+## [0.46.0](#0.46.0) - 2024-09-09
 
 ### Fixed
 
@@ -765,7 +802,7 @@ css`
 
 > **Good to know**: Internally, this will still convert to `p` to `& p`, but the generated css will work as expected.
 
-## [0.45.2] - 2024-08-29
+## [0.45.2](#0.45.2) - 2024-08-29
 
 ### Changed
 
@@ -774,7 +811,7 @@ and `WithColorOpacityModifier<T>` to use _branded type_ and _non-distributive co
 tokens valid and also not appearing in autocompletions to prevent them from polluting autocompletion result (which is
 the current behavior).
 
-## [0.45.1] - 2024-08-14
+## [0.45.1](#0.45.1) - 2024-08-14
 
 ### Fixed
 
@@ -784,7 +821,7 @@ Fix issue where shadow token with color opacity modifier produces incorrect css 
 
 [Internal] switch to package-manager-detector to reduce dependencies
 
-## [0.45.0] - 2024-08-06
+## [0.45.0](#0.45.0) - 2024-08-06
 
 ### Fixed
 
@@ -857,7 +894,7 @@ hstack({
 })
 ```
 
-## [0.44.0] - 2024-07-22
+## [0.44.0](#0.44.0) - 2024-07-22
 
 ### Fixed
 
@@ -871,7 +908,7 @@ hstack({
 
 - Replace `JSX` with `React.JSX` for better React 19 support
 
-## [0.43.0] - 2024-07-19
+## [0.43.0](#0.43.0) - 2024-07-19
 
 ### Added
 
@@ -931,7 +968,7 @@ export default defineConfig({
 })
 ```
 
-## [0.42.0] - 2024-07-08
+## [0.42.0](#0.42.0) - 2024-07-08
 
 ### Added
 
@@ -984,7 +1021,7 @@ export default defineConfig({
     `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to extract, e.g.
     `import { css } from '@acme/styled-system/css'` https://panda-css.com/docs/guides/component-library
 
-## [0.41.0] - 2024-06-16
+## [0.41.0](#0.41.0) - 2024-06-16
 
 ### Fixed
 
@@ -1009,7 +1046,7 @@ const card = sva({
 Annotate config recipe default variants with the `@default` js doc comment. This makes it easy to know the default value
 of a variant.
 
-## [0.40.1] - 2024-05-31
+## [0.40.1](#0.40.1) - 2024-05-31
 
 ### Fixed
 
@@ -1020,7 +1057,7 @@ of a variant.
 
 - Improve `panda init --outdir=<x>` command to reflect `outdir` in generated panda config file.
 
-## [0.40.0] - 2024-05-29
+## [0.40.0](#0.40.0) - 2024-05-29
 
 ### Added
 
@@ -1036,7 +1073,7 @@ Improve monorepo setup DX by exposing some cli flags
 - Added new `--base` flag to specify the base directory for the entrypoints in the generated `package.json#exports`
   field
 
-## [0.39.2] - 2024-05-25
+## [0.39.2](#0.39.2) - 2024-05-25
 
 ### Fixed
 
@@ -1050,14 +1087,14 @@ Improve monorepo setup DX by exposing some cli flags
 
 - Allow nesting (string) token references in the fallback argument
 
-## [0.39.1] - 2024-05-07
+## [0.39.1](#0.39.1) - 2024-05-07
 
 ### Fixed
 
 Fix `css.raw` typings after recent ([0.39.0](https://github.com/chakra-ui/panda/discussions/2560)) changes allowing
 arrays of `SystemStyleObject`
 
-## [0.39.0] - 2024-04-29
+## [0.39.0](#0.39.0) - 2024-04-29
 
 ### Fixed
 
@@ -1128,7 +1165,7 @@ const App = () => {
 }
 ```
 
-## [0.38.0] - 2024-04-29
+## [0.38.0](#0.38.0) - 2024-04-29
 
 ### Fixed
 
@@ -1233,7 +1270,7 @@ should render something like:
 </div>
 ```
 
-## [0.37.2] - 2024-04-05
+## [0.37.2](#0.37.2) - 2024-04-05
 
 ### Fixed
 
@@ -1287,7 +1324,7 @@ const buttonProps = button.getVariantProps({ size: "sm" })
 - Make `WithImportant<T>` more performant and ensure typescript is happy. This changes will make code autocompletion and
   ts-related linting much faster than before.
 
-## [0.37.1] - 2024-04-02
+## [0.37.1](#0.37.1) - 2024-04-02
 
 ### Fixed
 
@@ -1411,7 +1448,7 @@ Public changes: Some quality of life fixes for the Studio:
 - Added some exports in the `@pandacss/token-dictionary` package, mostly useful when building tooling around Panda
   (Prettier/ESLint/VSCode plugin etc)
 
-## [0.37.0] - 2024-04-01
+## [0.37.0](#0.37.0) - 2024-04-01
 
 ### Fixed
 
@@ -1494,7 +1531,7 @@ const conditions = {
 
 - Changed `divideX` and `divideY` now maps to the `borderWidths` token group.
 
-## [0.36.1] - 2024-03-19
+## [0.36.1](#0.36.1) - 2024-03-19
 
 ### Fixed
 
@@ -1546,7 +1583,7 @@ We introduced a bug in [v0.34.2](https://github.com/chakra-ui/panda/blob/main/CH
 `Tabs.Trigger` component was not being matched to the `tabs` slot recipe, due to the
 [new namespace import feature](https://github.com/chakra-ui/panda/pull/2371).
 
-## [0.36.0] - 2024-03-19
+## [0.36.0](#0.36.0) - 2024-03-19
 
 ### Fixed
 
@@ -2200,7 +2237,7 @@ export const App = () => {
 
 Allow color opacity modifier when using `strictTokens`, e.g `color: "blue.200/50"` will not throw a TS error anymore
 
-## [0.34.2] - 2024-03-08
+## [0.34.2](#0.34.2) - 2024-03-08
 
 ### Fixed
 
@@ -2280,7 +2317,7 @@ panda.cva({ base: { color: 'blue' } })
 panda.sva({ base: { root: { color: 'green' } } })
 ```
 
-## [0.34.1] - 2024-03-06
+## [0.34.1](#0.34.1) - 2024-03-06
 
 ### Fixed
 
@@ -2340,7 +2377,7 @@ will now correctly generate the following CSS:
 }
 ```
 
-## [0.34.0] - 2024-03-06
+## [0.34.0](#0.34.0) - 2024-03-06
 
 ### Fixed
 
@@ -2480,7 +2517,7 @@ It's known for causing several issues:
   (e.g. `@acme/styled-system`) and use `importMap: "@acme/styled-system"` so that Panda knows which entrypoint to
   extract, e.g. `import { css } from '@acme/styled-system/css'`
 
-## [0.33.0] - 2024-02-27
+## [0.33.0](#0.33.0) - 2024-02-27
 
 ### Fixed
 
@@ -2557,7 +2594,7 @@ Will now allow you to use the following syntax for token path:
 + token.var('$colors-black')
 ```
 
-## [0.32.1] - 2024-02-23
+## [0.32.1](#0.32.1) - 2024-02-23
 
 ### Fixed
 
@@ -2677,7 +2714,7 @@ css({
 })
 ```
 
-## [0.32.0] - 2024-02-19
+## [0.32.0](#0.32.0) - 2024-02-19
 
 ### Fixed
 
@@ -2705,7 +2742,7 @@ Now, in some cases like when using Svelte or Astro, the user might still to use 
 `jsxFramework` didn't have a way to specify that. This change allows the user to set `jsxFramework` to any string to
 enable extracting JSX components without generating any artifacts.
 
-## [0.31.0] - 2024-02-13
+## [0.31.0](#0.31.0) - 2024-02-13
 
 ### Fixed
 
@@ -2765,7 +2802,7 @@ Will now always generate the following css:
 }
 ```
 
-## [0.30.02] - 2024-02-08
+## [0.30.02](#0.30.02) - 2024-02-08
 
 ### Fixed
 
@@ -2808,14 +2845,14 @@ export default defineConfig({
 })
 ```
 
-## [0.30.01] - 2024-02-05
+## [0.30.01](#0.30.01) - 2024-02-05
 
 ### Fixed
 
 Fix the regression caused by the downstream bundle-n-require package, which tries to load custom conditions first. This
 led to a `could not resolve @pandacss/dev` error
 
-## [0.30.0] - 2024-02-05
+## [0.30.0](#0.30.0) - 2024-02-05
 
 ### Fixed
 
@@ -2929,13 +2966,13 @@ export default defineConfig({
 - Refactor the `--cpu-prof` profiler to use the `node:inspector` instead of relying on an external module
   (`v8-profiler-next`, which required `node-gyp`)
 
-## [0.29.1] - 2024-01-30
+## [0.29.1](#0.29.1) - 2024-01-30
 
 ### Fixed
 
 Fix an issue (introduced in v0.29) with `panda init` and add an assert on the new `colorMix` utility function
 
-## [0.29.0] - 2024-01-29
+## [0.29.0](#0.29.0) - 2024-01-29
 
 ### Fixed
 
@@ -3257,7 +3294,7 @@ defineConfig({
 })
 ```
 
-## [0.28.0] - 2024-01-24
+## [0.28.0](#0.28.0) - 2024-01-24
 
 ### Fixed
 
@@ -3406,26 +3443,26 @@ export interface PandaHooks {
 }
 ```
 
-## [0.27.3] - 2024-01-18
+## [0.27.3](#0.27.3) - 2024-01-18
 
 ### Fixed
 
 - Fix issue where HMR doesn't work when tsconfig paths is used.
 - Fix `prettier` parser warning in panda config setup.
 
-## [0.27.2] - 2024-01-17
+## [0.27.2](#0.27.2) - 2024-01-17
 
 ### Fixed
 
 Switch back to `node:path` from `pathe` to resolve issues with windows path in PostCSS + Webpack set up
 
-## [0.27.1] - 2024-01-15
+## [0.27.1](#0.27.1) - 2024-01-15
 
 ### Fixed
 
 Fix issue in windows environments where HMR doesn't work in webpack projects.
 
-## [0.27.0] - 2024-01-14
+## [0.27.0](#0.27.0) - 2024-01-14
 
 ### Added
 
@@ -3536,19 +3573,19 @@ This would not work before, but now it does.
 }
 ```
 
-## [0.26.2] - 2024-01-10
+## [0.26.2](#0.26.2) - 2024-01-10
 
 ### Fixed
 
 Fix `placeholder` condition in `preset-base`
 
-## [0.26.1] - 2024-01-09
+## [0.26.1](#0.26.1) - 2024-01-09
 
 ### Fixed
 
 Hotfix `strictTokens` after introducing `strictPropertyValues`
 
-## [0.26.0] - 2024-01-09
+## [0.26.0](#0.26.0) - 2024-01-09
 
 ### Fixed
 
@@ -3686,7 +3723,7 @@ type StrictableProps =
   | 'writingMode'
 ```
 
-## [0.25.0] - 2024-01-06
+## [0.25.0](#0.25.0) - 2024-01-06
 
 ### Fixed
 
@@ -3756,7 +3793,7 @@ const styles = css({
 })
 ```
 
-## [0.24.2] - 2024-01-04
+## [0.24.2](#0.24.2) - 2024-01-04
 
 ### Fixed
 
@@ -3765,7 +3802,7 @@ const styles = css({
 - Fix an issue with the `panda init` command which didn't update existing `.gitignore` to include the `styled-system`
 - Fix issue where config slot recipes with compound variants were not processed correctly
 
-## [0.24.1] - 2024-01-02
+## [0.24.1](#0.24.1) - 2024-01-02
 
 ### Fixed
 
@@ -3774,7 +3811,7 @@ const styles = css({
 - Fix an issue with `staticCss` where it was only generated when it was included in the config (we can generate it
   through the config recipes)
 
-## [0.24.0] - 2024-01-02
+## [0.24.0](#0.24.0) - 2024-01-02
 
 ### Fixed
 
@@ -3932,7 +3969,7 @@ Here's the diff in the generated CSS:
 }
 ```
 
-## [0.23.0] - 2023-12-15
+## [0.23.0](#0.23.0) - 2023-12-15
 
 ### Fixed
 
@@ -4042,7 +4079,7 @@ css({
 })
 ```
 
-## [0.22.0] - 2023-12-14
+## [0.22.0](#0.22.0) - 2023-12-14
 
 ### Fixed
 
@@ -4074,7 +4111,7 @@ css({
   If you use `hooks` in your `panda.config` file to listen for when css is extracted, we no longer return the `css`
   string for performance reasons. We might reconsider this in the future.
 
-## [0.21.0] - 2023-12-09
+## [0.21.0](#0.21.0) - 2023-12-09
 
 ### Fixed
 
@@ -4219,7 +4256,7 @@ export default defineConfig({
 
 - Add Open Props preset
 
-## [0.20.1] - 2023-12-01
+## [0.20.1](#0.20.1) - 2023-12-01
 
 ### Fixed
 
@@ -4271,7 +4308,7 @@ export default defineConfig({
 })
 ```
 
-## [0.19.0] - 2023-11-24
+## [0.19.0](#0.19.0) - 2023-11-24
 
 ### Fixed
 
@@ -4306,20 +4343,20 @@ css({ display: 'block' }) // OK, didn't throw
 css({ display: 'abc' }) // ✅ will throw since 'abc' is not a valid value for 'display'
 ```
 
-## [0.18.3] - 2023-11-15
+## [0.18.3](#0.18.3) - 2023-11-15
 
 ### Fixed
 
 - Fix issue with `forceConsistentTypeExtension` where the `composition.d.mts` had an incorrect type import
 - Fix issue in studio here userland `@ark-ui/react` version could interfere with studio version
 
-## [0.18.2] - 2023-11-10
+## [0.18.2](#0.18.2) - 2023-11-10
 
 ### Fixed
 
 - Fix regression in grid pattern where `columns` doesn't not work as expected.
 
-## [0.18.1] - 2023-11-09
+## [0.18.1](#0.18.1) - 2023-11-09
 
 ### Fixed
 
@@ -4370,7 +4407,7 @@ css({ hideFrom: '800px' })
 
 - Make `_required`condition target `[data-required]` and `[aria-required=true]` attributes
 
-## [0.18.0] - 2023-11-06
+## [0.18.0](#0.18.0) - 2023-11-06
 
 ### Fixed
 
@@ -4409,7 +4446,7 @@ function App() {
 
 - Perf: use raw `if` instead of ts-pattern in the extractor (hot path)
 
-## [0.17.5] - 2023-10-31
+## [0.17.5](#0.17.5) - 2023-10-31
 
 ### Fixed
 
@@ -4423,14 +4460,14 @@ function App() {
 - Ensure dir exists before writing file for the `panda cssgen` / `panda ship` / `panda analyze` commands when specifying
   an outfile.
 
-## [0.17.4] - 2023-10-30
+## [0.17.4](#0.17.4) - 2023-10-30
 
 ### Fixed
 
 - Display semantic colors correctly in studio.
 - Fix issue where types package was not built correctly.
 
-## [0.17.3] - 2023-10-28
+## [0.17.3](#0.17.3) - 2023-10-28
 
 ### Fixed
 
@@ -4443,7 +4480,7 @@ function App() {
 - Mark `defineTokens` and `defineSemanticTokens` with pure annotation to treeshake from bundle when using within
   component library.
 
-## [0.17.2] - 2023-10-27
+## [0.17.2](#0.17.2) - 2023-10-27
 
 ### Fixed
 
@@ -4459,7 +4496,7 @@ This resolves the following errors:
 Error: Cannot find module './src/cli-main'
 ```
 
-## [0.17.1] - 2023-10-26
+## [0.17.1](#0.17.1) - 2023-10-26
 
 ### Fixed
 
@@ -4506,7 +4543,7 @@ src/config.ts(21,14): error TS2742: The inferred type of 'tokens' cannot be name
 > These changes are only relevant if you are directly using **other** Panda `@pandacss/xxx` packages than the
 > `@pandacss/dev`.
 
-## [0.17.0] - 2023-10-20
+## [0.17.0](#0.17.0) - 2023-10-20
 
 ### Fixed
 
@@ -4586,7 +4623,7 @@ type ButtonVariantProps = StyledVariantProps<typeof Button>
 //   ^ { state?: 'error' | 'success' | undefined }
 ```
 
-## [0.16.0] - 2023-10-15
+## [0.16.0](#0.16.0) - 2023-10-15
 
 ### Fixed
 
@@ -4629,7 +4666,7 @@ You can use it like this:
 panda cssgen "static" --outfile dist/static.css
 ```
 
-## [0.15.5] - 2023-10-4
+## [0.15.5](#0.15.5) - 2023-10-4
 
 ### Fixed
 
@@ -4640,7 +4677,7 @@ panda cssgen "static" --outfile dist/static.css
 - **Vue**: Fix regression in generated types
 - **Preact**: Fix regression in generated types
 
-## [0.15.4] - 2023-09-29
+## [0.15.4](#0.15.4) - 2023-09-29
 
 ### Fixed
 
@@ -4787,7 +4824,7 @@ const StyledMotion = styled(
 )
 ```
 
-## [0.15.3] - 2023-09-27
+## [0.15.3](#0.15.3) - 2023-09-27
 
 ### Fixed
 
@@ -4885,7 +4922,7 @@ function App() {
 - Before: `btn btn--size_small text_blue text_red.100`
 - After: `btn btn--size_small text_red.100`
 
-## [0.15.2] - 2023-09-26
+## [0.15.2](#0.15.2) - 2023-09-26
 
 ### Fixed
 
@@ -5003,7 +5040,7 @@ Here's the difference between the old and new behavior:
 }
 ```
 
-## [0.15.1] - 2023-09-19
+## [0.15.1](#0.15.1) - 2023-09-19
 
 ### Fixed
 
@@ -5083,7 +5120,7 @@ const baseStyle = cva({
 })
 ```
 
-## [0.15.0] - 2023-09-13
+## [0.15.0](#0.15.0) - 2023-09-13
 
 ### Fixed
 
@@ -5114,7 +5151,7 @@ const className = css({
 - Move slot recipes styles to new `recipes.slots` layer so that classic config recipes will have a higher specificity
 - Make the types suggestion faster (updated `DeepPartial`)
 
-## [0.14.0] - 2023-09-05
+## [0.14.0](#0.14.0) - 2023-09-05
 
 ### Fixed
 
@@ -5239,7 +5276,7 @@ export const App = () => {
 - Change the `css.raw` function signature to match the one from [`css()`](https://github.com/chakra-ui/panda/pull/1264),
   to allow passing multiple style objects that will be smartly merged.
 
-## [0.13.1] - 2023-08-29
+## [0.13.1](#0.13.1) - 2023-08-29
 
 ### Fixed
 
@@ -5255,7 +5292,7 @@ export const App = () => {
   > If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension
   > `.d.mts`.
 
-## [0.13.0] - 2023-08-26
+## [0.13.0](#0.13.0) - 2023-08-26
 
 ### Fixed
 
@@ -5267,7 +5304,7 @@ export const App = () => {
 
 - Add support for minification in `cssgen` command.
 
-## [0.12.2] - 2023-08-25
+## [0.12.2](#0.12.2) - 2023-08-25
 
 ### Fixed
 
@@ -5376,13 +5413,13 @@ export const Button = ({ css: cssProp = {}, children }) => {
 }
 ```
 
-## [0.12.1] - 2023-08-24
+## [0.12.1](#0.12.1) - 2023-08-24
 
 ### Fixed
 
 - Fix issue where `AnimationName` type was generated wrongly if no keyframes were resolved in the config.
 
-## [0.12.0] - 2023-08-24
+## [0.12.0](#0.12.0) - 2023-08-24
 
 ### Fixed
 
@@ -5420,7 +5457,7 @@ export default defineConfig({
 
 - Add `animationName` utility. This utility connects to your keyframes.
 
-## [0.11.1] - 2023-08-16
+## [0.11.1](#0.11.1) - 2023-08-16
 
 ### Fixed
 
@@ -5487,7 +5524,7 @@ export function Page() {
 }
 ```
 
-## [0.11.0] - 2023-08-11
+## [0.11.0](#0.11.0) - 2023-08-11
 
 ### Fixed
 
@@ -5564,7 +5601,7 @@ export function Page() {
 - Removed the `@pandacss/dev/astro` entrypoint in favor of installing `@pandacss/astro` package
 - Automatically inject the entry css `@layer` in `@pandacss/astro` removing the need to manually setup a css file.
 
-## [0.10.0] - 2023-08-07
+## [0.10.0](#0.10.0) - 2023-08-07
 
 ### Fixed
 
@@ -5745,7 +5782,7 @@ Update Panda preset conditions:
 - `_indeterminate` now supports `[data-state=indeterminate]`
 - `_open` now supports `[data-open]` and `[data-state=open]`
 
-## [0.9.0] - 2023-07-28
+## [0.9.0](#0.9.0) - 2023-07-28
 
 ### Fixed
 
@@ -5808,7 +5845,7 @@ const hstack = definePattern({
 
 > Update your config to use the new `jsxName` property and run `panda codegen --clean` to update the generated code.
 
-## [0.8.0] - 2023-07-25
+## [0.8.0](#0.8.0) - 2023-07-25
 
 ### Fixed
 
@@ -5851,7 +5888,7 @@ export const Funky: Story = {
 - Improve generated react jsx types to remove legacy ref
 - Temporarily disable VSCode extension in `.svelte` or `.vue` files
 
-## [0.7.0] - 2023-07-17
+## [0.7.0](#0.7.0) - 2023-07-17
 
 ### Fixed
 
@@ -5881,7 +5918,7 @@ This will generate the following css:
 }
 ```
 
-## [0.6.0] - 2023-07-08
+## [0.6.0](#0.6.0) - 2023-07-08
 
 ### Fixed
 
@@ -5902,7 +5939,7 @@ This will generate the following css:
 
 ### Changed
 
-## [0.5.1] - 2023-07-02
+## [0.5.1](#0.5.1) - 2023-07-02
 
 ### Fixed
 
@@ -5936,7 +5973,7 @@ staticCss: {
 
 - Refactored all conditions to use `:is` selector to improve specificity and reduce the reliance on css order.
 
-## [0.5.0] - 2023-06-26
+## [0.5.0](#0.5.0) - 2023-06-26
 
 ### Fixed
 
@@ -5974,7 +6011,7 @@ To get autocomplete for token variables, consider using the
 
 - Update the default color palette to match Tailwind's new palette.
 
-## [0.4.0] - 2023-06-19
+## [0.4.0](#0.4.0) - 2023-06-19
 
 ### Fixed
 
@@ -6011,7 +6048,7 @@ To get autocomplete for token variables, consider using the
 - Add `auto` value where neccessary to base utilities.
 - Add `0` value to default spacing tokens to allow for `strictTokens` mode.
 
-## [0.3.2] - 2023-06-16
+## [0.3.2](#0.3.2) - 2023-06-16
 
 ### Added
 
@@ -6037,6 +6074,6 @@ To get autocomplete for token variables, consider using the
 
 - Remove `bundledDependencies` from `package.json` to fix NPM resolution
 
-## [0.3.1] - 2023-06-16
+## [0.3.1](#0.3.1) - 2023-06-16
 
 Baseline Release 🎉
