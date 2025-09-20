@@ -42,8 +42,8 @@
     "javascript-stringify": "2.1.0"
   },
   "devDependencies": {
-    "astro": "5.5.5",
-    "vite": "7.0.6"
+    "astro": "5.13.9",
+    "vite": "7.1.6"
   },
   "peerDependencies": {
     "astro": ">=4"

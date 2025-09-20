@@ -46,7 +46,7 @@
     "javascript-stringify": "2.1.0",
     "outdent": " ^0.8.0",
     "pluralize": "8.0.0",
-    "postcss": "8.4.49",
+    "postcss": "8.5.6",
     "ts-pattern": "5.8.0"
   },
   "devDependencies": {
