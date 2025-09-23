@@ -127,7 +127,7 @@ export class Recipes {
 
     const ROOT_SLOT = 'root'
 
-    if ('slots' in recipe && recipe.slots.includes(ROOT_SLOT)) {
+    if (Recipes.isSlotRecipeConfig(recipe) && recipe.slots.includes(ROOT_SLOT)) {
       const jsxRootName = capitalize(ROOT_SLOT)
       const rootNames: string[] = [`${capitalized}.${jsxRootName}`, `${capitalized}${jsxRootName}`]
       jsx.push(...rootNames)

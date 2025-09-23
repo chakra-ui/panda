@@ -10,7 +10,7 @@ import type { CompositionStyles } from './composition';
 declare module '@pandacss/dev' {
   export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): Panda.RecipeConfig
   export function defineSlotRecipe<S extends string, V extends SlotRecipeVariantRecord<S>>(config: SlotRecipeConfig<S, V>): Panda.SlotRecipeConfig
-  export function defineStyles(definition: SystemStyleObject): SystemStyleObject
+  export function defineStyles<T extends SystemStyleObject>(definition: T): T
   export function defineGlobalStyles(definition: GlobalStyleObject): Panda.GlobalStyleObject
   export function defineTextStyles(definition: CompositionStyles['textStyles']): Panda.TextStyles
   export function defineAnimationStyles(definition: CompositionStyles['animationStyles']): Panda.AnimationStyles
