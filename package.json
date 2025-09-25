@@ -55,7 +55,7 @@
     "vitest": "3.2.4"
   },
   "devDependencies": {
-    "@types/eslint": "8.56.12",
+    "@types/eslint": "9.6.1",
     "@types/node": "20.11.30",
     "@typescript-eslint/eslint-plugin": "7.0.1",
     "@typescript-eslint/parser": "7.0.1",
