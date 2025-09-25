@@ -1,5 +1,11 @@
 # @pandacss/logger
 
+## 1.4.0
+
+### Patch Changes
+
+- @pandacss/types@1.4.0
+
 ## 1.3.1
 
 ### Patch Changes

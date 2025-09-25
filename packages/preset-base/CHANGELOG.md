@@ -1,5 +1,17 @@
 # @pandacss/preset-base
 
+## 1.4.0
+
+### Minor Changes
+
+- 29cf719: - **Preset Base**: Change default spacing from `10px` and `8px`
+  - **Preset Panda**: Add `5.5` to spacing scale to cover more minor scales
+
+### Patch Changes
+
+- 1bca361: Fix regression in `_marker` condition due to the use of `:is()` which doesn't work for pseudo elements.
+  - @pandacss/types@1.4.0
+
 ## 1.3.1
 
 ### Patch Changes
