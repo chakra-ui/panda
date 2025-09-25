@@ -370,7 +370,7 @@ describe('styled factory - button recipe', async () => {
 
     const container = screen.querySelector('div')!
     expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<div class="d_flex flex-d_column gap_10px c_red.400">Click me</div>"`,
+      `"<div class="d_flex flex-d_column gap_8px c_red.400">Click me</div>"`,
     )
   })
 

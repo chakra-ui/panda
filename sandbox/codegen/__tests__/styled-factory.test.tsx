@@ -350,7 +350,7 @@ describe('styled factory - button recipe', () => {
     expect(container.firstChild).toMatchInlineSnapshot(
       `
       <div
-        class="d_flex flex-d_column gap_10px c_red.400"
+        class="d_flex flex-d_column gap_8px c_red.400"
       >
         Click me
       </div>
