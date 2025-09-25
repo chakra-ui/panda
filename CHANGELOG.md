@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.4.0](#1.4.0) - 2025-09-25
+
+### Added
+
+- **Preset Panda**: Add `5.5` to spacing scale to cover more minor scales
+
+### Changed
+
+- **Preset Base**: Change default spacing for stack and grid patterns from `10px` to `8px`
+
+### Fixed
+
+- **JSX Recipe Tracking**: Always track the `<component>.Root` for recipe variant props. This is a generally resilient
+  default and prevents the need for manual jsx hints.
+
+- **Preset Base**: Fix regression in `_marker` condition due to the use of `:is()` which doesn't work for pseudo
+  elements.
+
 ## [1.3.1](#1.3.1) - 2025-09-18
 
 ### Fixed
