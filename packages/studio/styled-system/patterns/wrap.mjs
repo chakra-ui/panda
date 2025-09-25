@@ -3,7 +3,7 @@ import { css } from '../css/index.mjs';
 
 const wrapConfig = {
 transform(props) {
-  const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "10px", align, justify, ...rest } = props;
+  const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "8px", align, justify, ...rest } = props;
   return {
     display: "flex",
     flexWrap: "wrap",

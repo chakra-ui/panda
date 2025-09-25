@@ -1273,8 +1273,8 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .d_flex {
@@ -1350,8 +1350,8 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .d_flex {
@@ -1776,8 +1776,8 @@ describe('extract to css output pipeline', () => {
       }
 
       @layer utilities {
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .z_100 {
@@ -2212,8 +2212,8 @@ describe('extract to css output pipeline', () => {
           margin-inline: var(--spacing-3);
       }
 
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .d_flex {
@@ -2338,8 +2338,8 @@ describe('extract to css output pipeline', () => {
           margin-inline: var(--spacing-3);
       }
 
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .d_flex {
@@ -3110,8 +3110,8 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .d_flex {
@@ -3189,8 +3189,8 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-4);
       }
 
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .d_flex {
