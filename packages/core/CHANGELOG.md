@@ -1,5 +1,16 @@
 # @pandacss/core
 
+## 1.4.1
+
+### Patch Changes
+
+- db237b6: Improve recipe variant props tracking in JSX
+  - @pandacss/is-valid-prop@1.4.1
+  - @pandacss/logger@1.4.1
+  - @pandacss/shared@1.4.1
+  - @pandacss/token-dictionary@1.4.1
+  - @pandacss/types@1.4.1
+
 ## 1.4.0
 
 ### Patch Changes
