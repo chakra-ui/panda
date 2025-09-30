@@ -1,5 +1,20 @@
 # @pandacss/node
 
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [db237b6]
+  - @pandacss/core@1.4.1
+  - @pandacss/generator@1.4.1
+  - @pandacss/reporter@1.4.1
+  - @pandacss/parser@1.4.1
+  - @pandacss/config@1.4.1
+  - @pandacss/logger@1.4.1
+  - @pandacss/shared@1.4.1
+  - @pandacss/token-dictionary@1.4.1
+  - @pandacss/types@1.4.1
+
 ## 1.4.0
 
 ### Patch Changes
