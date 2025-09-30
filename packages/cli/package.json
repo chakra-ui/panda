@@ -43,8 +43,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src --format=esm,cjs --dts --no-splitting --shims",
-    "build-fast": "tsup src --format=esm,cjs --no-dts --no-splitting --shims",
+    "build": "tsup --dts",
+    "build-fast": "tsup",
     "dev": "pnpm build-fast --watch src"
   },
   "files": [
@@ -57,6 +57,7 @@
   ],
   "dependencies": {
     "@clack/prompts": "0.9.1",
+    "@modelcontextprotocol/sdk": "^0.6.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
@@ -65,7 +66,8 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "cac": "6.7.14"
+    "cac": "6.7.14",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.8",
