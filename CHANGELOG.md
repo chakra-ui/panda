@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.4.1](#1.4.1) - 2025-09-29
+
+- **JSX Recipe Tracking**: Improve recipe variant props tracking in JSX by always tracking the `<component>.Root` for
+  slot recipes.
+
 ## [1.4.0](#1.4.0) - 2025-09-25
 
 ### Added
