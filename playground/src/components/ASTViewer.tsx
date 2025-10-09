@@ -42,6 +42,7 @@ const resultType = cva({
       'jsx-pattern': { bg: { base: 'indigo.400', _dark: 'indigo.500' }, color: 'white' },
       recipe: { bg: { base: 'yellow.300', _dark: 'yellow.500' }, color: { _dark: 'black' } },
       'jsx-recipe': { bg: { base: 'yellow.300', _dark: 'yellow.500' }, color: { _dark: 'black' } },
+      token: { bg: { base: 'green.300', _dark: 'green.500' }, color: { _dark: 'black' } },
     },
     name: {
       cva: { bg: { base: 'teal.500', _dark: 'teal.700' }, color: 'white' },
