@@ -107,6 +107,13 @@ export type MatchTaggedTemplate = (tag: MatchTaggedTemplateArgs) => boolean
 export interface BoxContext {
   getEvaluateOptions?: (node: Expression, stack: Node[]) => Omit<EvaluateOptions, 'node' | 'policy'> | void
   canEval?: (node: Expression, stack: Node[]) => boolean
+  tokens?: {
+    view: {
+      get: (path: string, fallback?: string | number) => string | undefined
+      getVar: (path: string, fallback?: string | number) => string | undefined
+    }
+    isTokenFn?: (fnName: string) => boolean
+  }
   flags?: {
     skipEvaluate?: boolean
     skipTraverseFiles?: boolean

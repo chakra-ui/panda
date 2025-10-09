@@ -19,6 +19,9 @@ describe('import map', () => {
         "recipe": [
           "styled-system/recipes",
         ],
+        "tokens": [
+          "styled-system/tokens",
+        ],
       }
     `)
   })
@@ -44,6 +47,9 @@ describe('import map', () => {
         "recipe": [
           "styled-system/recipes",
         ],
+        "tokens": [
+          "styled-system/tokens",
+        ],
       }
     `)
   })
@@ -63,6 +69,9 @@ describe('import map', () => {
         ],
         "recipe": [
           "@acme/org/recipes",
+        ],
+        "tokens": [
+          "@acme/org/tokens",
         ],
       }
     `)
@@ -92,6 +101,11 @@ describe('import map', () => {
           "@foo/org/recipes",
           "@bar/org/recipes",
         ],
+        "tokens": [
+          "@acme/org/tokens",
+          "@foo/org/tokens",
+          "@bar/org/tokens",
+        ],
       }
     `)
   })
@@ -119,6 +133,9 @@ describe('import map', () => {
         ],
         "recipe": [
           "@acme/org/recipes",
+        ],
+        "tokens": [
+          "styled-system/tokens",
         ],
       }
     `)

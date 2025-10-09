@@ -259,7 +259,7 @@ export class Utility {
   }
 
   getToken = (path: string) => {
-    return this.tokens.view.get(path)
+    return this.tokens.view.getVar(path)
   }
 
   getTokenCategoryValues = (category: string) => {
@@ -397,7 +397,7 @@ export class Utility {
     const isCssVar = prop.startsWith('--')
 
     if (isCssVar) {
-      const tokenValue = this.tokens.view.get(value)
+      const tokenValue = this.tokens.view.getVar(value)
       value = typeof tokenValue === 'string' ? tokenValue : value
     }
 

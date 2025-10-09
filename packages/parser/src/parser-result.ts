@@ -9,6 +9,7 @@ export class ParserResult implements ParserResultInterface {
   css = new Set<ResultItem>()
   cva = new Set<ResultItem>()
   sva = new Set<ResultItem>()
+  token = new Set<ResultItem>()
 
   recipe = new Map<string, Set<ResultItem>>()
   pattern = new Map<string, Set<ResultItem>>()
@@ -28,7 +29,7 @@ export class ParserResult implements ParserResultInterface {
     return result
   }
 
-  set(name: 'cva' | 'css' | 'sva', result: ResultItem) {
+  set(name: 'cva' | 'css' | 'sva' | 'token', result: ResultItem) {
     switch (name) {
       case 'css':
         this.setCss(result)
@@ -38,6 +39,9 @@ export class ParserResult implements ParserResultInterface {
         break
       case 'sva':
         this.setSva(result)
+        break
+      case 'token':
+        this.setToken(result)
         break
       default:
         throw new PandaError('UNKNOWN_TYPE', `Unknown result type ${name}`)
@@ -63,6 +67,12 @@ export class ParserResult implements ParserResultInterface {
 
     const encoder = this.encoder
     result.data.forEach((data) => encoder.processAtomicSlotRecipe(data))
+  }
+
+  setToken(result: ResultItem) {
+    this.token.add(this.append(Object.assign({ type: 'token' }, result)))
+    // Token calls are tracked but don't need encoding like CSS/CVA/SVA
+    // They're runtime functions that reference design tokens
   }
 
   setJsx(result: ResultItem) {
@@ -120,6 +130,7 @@ export class ParserResult implements ParserResultInterface {
     result.css.forEach((item) => this.css.add(this.append(item)))
     result.cva.forEach((item) => this.cva.add(this.append(item)))
     result.sva.forEach((item) => this.sva.add(this.append(item)))
+    result.token.forEach((item) => this.token.add(this.append(item)))
     result.jsx.forEach((item) => this.jsx.add(this.append(item)))
 
     result.recipe.forEach((items, name) => {
@@ -143,6 +154,7 @@ export class ParserResult implements ParserResultInterface {
       css: Array.from(this.css),
       cva: Array.from(this.cva),
       sva: Array.from(this.sva),
+      token: Array.from(this.token),
       jsx: Array.from(this.jsx),
       recipe: Object.fromEntries(Array.from(this.recipe.entries()).map(([key, value]) => [key, Array.from(value)])),
       pattern: Object.fromEntries(Array.from(this.pattern.entries()).map(([key, value]) => [key, Array.from(value)])),

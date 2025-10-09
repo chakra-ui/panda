@@ -193,6 +193,53 @@ export function maybeBoxNode(
 
   // <ColorBox color={fn()} />
   if (Node.isCallExpression(node)) {
+    // Check if this is a token() call and resolve it to the actual token value
+    if (ctx.tokens) {
+      const expr = node.getExpression()
+      let fnName = ''
+      let isVarMethod = false
+
+      if (Node.isIdentifier(expr)) {
+        fnName = expr.getText()
+      } else if (Node.isPropertyAccessExpression(expr)) {
+        // Check if this is token.var('path') or just token()
+        const exprName = expr.getExpression()
+        const propertyName = expr.getName()
+
+        if (Node.isIdentifier(exprName)) {
+          fnName = exprName.getText()
+          // Check if the property access is .var (e.g., token.var())
+          isVarMethod = propertyName === 'var'
+        }
+      }
+
+      // Check if this function is a token function (either 'token' or an alias like 't')
+      const isTokenFunction = ctx.tokens.isTokenFn ? ctx.tokens.isTokenFn(fnName) : fnName === 'token'
+
+      if (isTokenFunction) {
+        const args = node.getArguments()
+        const tokenPathArg = args[0]
+
+        if (tokenPathArg && Node.isStringLiteral(tokenPathArg)) {
+          const tokenPath = tokenPathArg.getLiteralValue()
+          const fallbackArg = args[1]
+          const fallbackValue =
+            fallbackArg && Node.isStringLiteral(fallbackArg) ? fallbackArg.getLiteralValue() : undefined
+
+          // Use getVar() for token.var(), get() for token()
+          // token() returns raw values (e.g., "#9ca3af")
+          // token.var() returns CSS variables (e.g., "var(--colors-gray-400)")
+          const resolvedValue = isVarMethod
+            ? ctx.tokens.view.getVar(tokenPath, fallbackValue)
+            : ctx.tokens.view.get(tokenPath, fallbackValue)
+
+          if (resolvedValue) {
+            return cache(box.literal(resolvedValue, node, stack))
+          }
+        }
+      }
+    }
+
     const value = safeEvaluateNode<PrimitiveType | EvaluatedObjectResult>(node, stack, ctx)
     if (!value) return
     return cache(box.from(value, node, stack))

@@ -209,6 +209,7 @@ export interface ImportMapInput {
   recipes?: string | string[]
   patterns?: string | string[]
   jsx?: string | string[]
+  tokens?: string | string[]
 }
 
 export interface ImportMapOutput<T = string> {
@@ -216,6 +217,7 @@ export interface ImportMapOutput<T = string> {
   recipe: T[]
   pattern: T[]
   jsx: T[]
+  tokens: T[]
 }
 
 type ImportMapOption = string | ImportMapInput

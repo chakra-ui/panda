@@ -4,6 +4,7 @@ export type ReportItemType =
   | 'css'
   | 'cva'
   | 'sva'
+  | 'token'
   | 'pattern'
   | 'recipe'
   | 'jsx-factory'
