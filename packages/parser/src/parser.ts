@@ -52,6 +52,12 @@ export function createParser(context: ParserOptions) {
 
     const extractResultByName = extract({
       ast: sourceFile,
+      tokens: context.tokens
+        ? {
+            view: context.tokens.view,
+            isTokenFn: (fnName) => file.isTokenAlias(fnName),
+          }
+        : undefined,
       components: jsx.isEnabled
         ? {
             matchTag: (prop) => {
@@ -152,6 +158,18 @@ export function createParser(context: ParserOptions) {
                   name,
                   box: query.box ?? box.fallback(query.box),
                   data: [obj],
+                })
+              }
+            })
+          })
+          // token('...', '...')
+          .when(imports.matchers.tokens.match, (name: 'token') => {
+            result.queryList.forEach((query) => {
+              if (query.kind === 'call-expression') {
+                parserResult.setToken({
+                  name,
+                  box: (query.box.value[0] as BoxNodeMap) ?? box.fallback(query.box),
+                  data: combineResult(unbox(query.box.value[0])),
                 })
               }
             })
