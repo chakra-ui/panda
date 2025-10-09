@@ -1,4 +1,4 @@
-import { isCssUnit, isString } from '@pandacss/shared'
+import { isCssUnit, isString, PandaError } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
 import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
@@ -156,7 +156,7 @@ export const transformColorMix: TokenTransformer = {
 
       const mix = dict.colorMix(path, tokenFn)
       if (mix.invalid) {
-        throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+        throw new PandaError('INVALID_TOKEN', 'Invalid color mix at ' + path + ': ' + mix.value)
       }
 
       return mix.value
@@ -212,7 +212,7 @@ export const addConditionalCssVariables: TokenTransformer = {
       token.value = expandReferences(token.value, (path) => {
         const mix = dictionary.colorMix(path, tokenFn)
         if (mix.invalid) {
-          throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+          throw new PandaError('INVALID_TOKEN', 'Invalid color mix at ' + path + ': ' + mix.value)
         }
         return mix.value
       })

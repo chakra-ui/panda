@@ -1,4 +1,5 @@
 import { Context, type StyleDecoder, type Stylesheet } from '@pandacss/core'
+import { PandaError } from '@pandacss/shared'
 import type { ArtifactId, CssArtifactType, LoadConfigResult } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
@@ -26,7 +27,10 @@ export class Generator extends Context {
       .with('global', () => generateGlobalCss(this, sheet))
       .with('keyframes', () => generateKeyframeCss(this, sheet))
       .otherwise(() => {
-        throw new Error(`Unknown css artifact type <${type}>`)
+        throw new PandaError(
+          'UNKNOWN_ARTIFACT',
+          `Unknown CSS artifact type: "${type}". Expected one of: preflight, tokens, static, global, keyframes`,
+        )
       })
   }
 

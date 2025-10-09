@@ -6,6 +6,7 @@ import {
   isString,
   mapObject,
   memo,
+  PandaError,
   walkObject,
   type CssVar,
   type CssVarOptions,
@@ -396,7 +397,7 @@ export class TokenDictionary {
       if (path.includes('/')) {
         const mix = this.colorMix(path, this.view.getVar.bind(this.view))
         if (mix.invalid) {
-          throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+          throw new PandaError('INVALID_TOKEN', 'Invalid color mix at ' + path + ': ' + mix.value)
         }
 
         return mix.value

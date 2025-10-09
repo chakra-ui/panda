@@ -613,12 +613,16 @@ export async function main() {
   try {
     await cli.runMatchedCommand()
   } catch (error) {
-    logger.error('cli', error)
+    if (error instanceof PandaError) {
+      logger.error('cli', error)
 
-    if (logger.isDebug) {
-      console.error(error)
+      if (logger.isDebug) {
+        console.error(error)
+      }
+
+      process.exit(1)
     }
 
-    process.exit(1)
+    throw error
   }
 }

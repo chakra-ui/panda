@@ -44,7 +44,10 @@ export class ParserResult implements ParserResultInterface {
         this.setToken(result)
         break
       default:
-        throw new PandaError('UNKNOWN_TYPE', `Unknown result type ${name}`)
+        throw new PandaError(
+          'UNKNOWN_RESULT_TYPE',
+          `Unknown parser result type: "${name}". Expected one of: css, cva, sva, token`,
+        )
     }
   }
 
