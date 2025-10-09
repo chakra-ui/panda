@@ -293,6 +293,65 @@ describe('DiffEngine affecteds', () => {
     `)
   })
 
+  test('add first theme.recipe (from zero recipes)', () => {
+    // Start with a config that has NO recipes (eject to skip preset recipes, but provide theme object with tokens to keep theme from being removed)
+    const emptyConfig = (): Config => ({
+      eject: true,
+      outdir: 'styled-system',
+      cwd: '',
+      theme: {
+        tokens: {
+          // Add a token to prevent theme object from being removed entirely
+          colors: { primary: { value: '#000' } },
+        },
+      },
+    })
+
+    const config = emptyConfig() as UserConfig
+    let generator = new Generator(createConfigResult(config))
+    const diffEngine = new DiffEngine(generator)
+
+    expect(generator.recipes.isEmpty()).toBe(true)
+
+    const nextConfig = mergeConfigs([
+      {},
+      config,
+      {
+        theme: {
+          extend: {
+            recipes: {
+              firstRecipe: {
+                className: 'firstRecipe',
+                base: { color: 'blue.100' },
+              },
+            },
+          },
+        },
+      },
+    ])
+
+    const affecteds = diffEngine.refresh(createConfigResult(nextConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
+
+    // The key assertion: create-recipe should be in the affected artifacts!
+    expect(affecteds.artifacts.has('create-recipe')).toBe(true)
+    expect(affecteds.artifacts.has('recipes')).toBe(true)
+    expect(affecteds.artifacts.has('recipes-index')).toBe(true)
+
+    // Now remove the recipe (going back to zero)
+    const resetConfig = mergeConfigs([{}, emptyConfig()])
+
+    const affectedsAfterReset = diffEngine.refresh(createConfigResult(resetConfig), (conf) => {
+      generator = new Generator({ ...conf, hooks: generator.hooks })
+    })
+
+    // The key assertion: create-recipe should be in the affected artifacts when removing all recipes!
+    expect(affectedsAfterReset.artifacts.has('create-recipe')).toBe(true)
+    expect(affectedsAfterReset.artifacts.has('recipes')).toBe(true)
+    expect(affectedsAfterReset.artifacts.has('recipes-index')).toBe(true)
+  })
+
   test('add theme.recipes', () => {
     const defaultConfig = (): Config => ({ ...fixtureDefaults.config })
 
