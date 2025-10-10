@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/generator",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "The css generator for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

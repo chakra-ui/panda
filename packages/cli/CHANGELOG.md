@@ -1,5 +1,23 @@
 # @pandacss/dev
 
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- Updated dependencies [0679f6f]
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/config@1.4.2
+  - @pandacss/shared@1.4.2
+  - @pandacss/token-dictionary@1.4.2
+  - @pandacss/node@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/postcss@1.4.2
+  - @pandacss/logger@1.4.2
+  - @pandacss/preset-panda@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes

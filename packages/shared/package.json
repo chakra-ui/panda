@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/shared",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Shared utilities for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -1,5 +1,40 @@
 # @pandacss/token-dictionary
 
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- 70420dd: Fix issue where using `token()` or `token.var()` function from `styled-system/tokens` doesn't get resolved by
+  the compiler.
+
+  ```tsx
+  import { token } from 'styled-system/tokens'
+  import { css } from 'styled-system/css'
+
+  css({
+    // This didn't work before, but now it does
+    outline: `2px solid ${token('colors.gray.500')}`,
+
+    // This has always worked
+    outline: `2px solid token('colors.gray.500')`,
+  })
+  ```
+
+  This also supports fallback values.
+
+  ```tsx
+  css({
+    color: token('colors.brand.primary', '#3b82f6'),
+  })
+  ```
+
+- Updated dependencies [1290a27]
+  - @pandacss/shared@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes
