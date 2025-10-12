@@ -1,5 +1,18 @@
 # @pandacss/config
 
+## 1.4.2
+
+### Patch Changes
+
+- 0679f6f: Fix issue where `create-recipe.mjs` helper was not generated when adding the first recipe to a project that
+  previously had no recipes.
+- Updated dependencies [1290a27]
+  - @pandacss/shared@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+  - @pandacss/preset-base@1.4.2
+  - @pandacss/preset-panda@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes
