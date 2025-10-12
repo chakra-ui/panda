@@ -6,6 +6,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
   "sideEffects": false,
   "homepage": "https://panda-css.com",
   "repository": {
