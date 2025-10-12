@@ -3,6 +3,7 @@
   "version": "1.4.1",
   "description": "Vite plugin for Pandacss Studio",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
