@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.4.2](#1.4.2) - 2025-10-12
+
+### Fixed
+
+- Fix issue where `create-recipe.mjs` helper was not generated when adding the first recipe to a project that previously
+  had no recipes.
+- Fix issue where using `token()` or `token.var()` function from `styled-system/tokens` doesn't get resolved by the
+  compiler.
+
+```tsx
+import { token } from 'styled-system/tokens'
+import { css } from 'styled-system/css'
+
+css({
+  // This didn't work before, but now it does
+  outline: `2px solid ${token('colors.gray.500')}`,
+
+  // This has always worked
+  outline: `2px solid token('colors.gray.500')`,
+})
+```
+
+This also supports fallback values.
+
+```tsx
+css({
+  color: token('colors.brand.primary', '#3b82f6'),
+})
+```
+
+### Changed
+
+Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from being
+logged during development.
+
 ## [1.4.1](#1.4.1) - 2025-09-29
 
 - **JSX Recipe Tracking**: Improve recipe variant props tracking in JSX by always tracking the `<component>.Root` for
