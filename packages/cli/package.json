@@ -62,6 +62,7 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
     "@pandacss/postcss": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
