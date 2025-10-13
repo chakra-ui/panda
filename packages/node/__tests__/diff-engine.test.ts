@@ -58,6 +58,7 @@ describe('DiffEngine affecteds', () => {
         "css-fn",
         "jsx-is-valid-prop",
         "themes",
+        "static-css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -120,6 +121,7 @@ describe('DiffEngine affecteds', () => {
         "css-fn",
         "jsx-is-valid-prop",
         "themes",
+        "static-css",
       }
     `)
     expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
@@ -238,6 +240,7 @@ describe('DiffEngine affecteds', () => {
         "css-fn",
         "jsx-is-valid-prop",
         "themes",
+        "static-css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -384,6 +387,7 @@ describe('DiffEngine affecteds', () => {
         "recipes-index",
         "recipes.new-recipe",
         "recipes",
+        "static-css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -415,6 +419,7 @@ describe('DiffEngine affecteds', () => {
         "recipes-index",
         "recipes.new-recipe",
         "recipes",
+        "static-css",
       }
     `)
     expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
@@ -467,6 +472,7 @@ describe('DiffEngine affecteds', () => {
         "recipes-index",
         "recipes.button-style",
         "recipes",
+        "static-css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -526,6 +532,7 @@ describe('DiffEngine affecteds', () => {
         "patterns",
         "jsx-patterns",
         "jsx-patterns-index",
+        "static-css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`
@@ -569,6 +576,7 @@ describe('DiffEngine affecteds', () => {
         "patterns",
         "jsx-patterns",
         "jsx-patterns-index",
+        "static-css",
       }
     `)
     expect(affectedsChangeTransform.diffs).toMatchInlineSnapshot(`
@@ -600,6 +608,7 @@ describe('DiffEngine affecteds', () => {
         "patterns",
         "jsx-patterns",
         "jsx-patterns-index",
+        "static-css",
       }
     `)
     expect(affectedsAfterReset.diffs).toMatchInlineSnapshot(`
@@ -646,6 +655,7 @@ describe('DiffEngine affecteds', () => {
         "patterns",
         "jsx-patterns",
         "jsx-patterns-index",
+        "static-css",
       }
     `)
     expect(affecteds.diffs).toMatchInlineSnapshot(`

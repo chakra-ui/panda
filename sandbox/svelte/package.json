@@ -17,8 +17,9 @@
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "@sveltejs/adapter-auto": "6.0.1",
-    "@sveltejs/kit": "2.8.3",
+    "@sveltejs/adapter-auto": "6.1.1",
+    "@sveltejs/kit": "2.46.4",
+    "@sveltejs/vite-plugin-svelte": "6.2.1",
     "autoprefixer": "10.4.21",
     "eslint-plugin-svelte3": "4.0.0",
     "postcss": "8.4.49",
@@ -26,7 +27,7 @@
     "prettier-plugin-svelte": "3.2.8",
     "svelte": "5.37.3",
     "svelte-check": "4.3.1",
-    "svelte-preprocess": "5.1.4",
+    "svelte-preprocess": "6.0.3",
     "tslib": "2.8.1",
     "typescript": "5.8.3",
     "vite": "7.0.6"
