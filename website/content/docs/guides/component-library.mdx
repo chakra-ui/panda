@@ -198,9 +198,19 @@ This should look similar to this:
       "import": "./jsx/index.mjs"
     },
     "./styles.css": "./styles.css"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "react": "^19.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=19"
   }
 }
 ```
+
+> Notice that we've included the `react` and its corresponding `@types/react` in the `devDependencies` and
+> `peerDependencies`. This is to ensure the types are correctly set up in the `styled-system` package.
 
 Going forward, you'll now import the functions from the `@acme-org/styled-system` monorepo package.
 
