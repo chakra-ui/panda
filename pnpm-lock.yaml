@@ -531,8 +531,8 @@ importers:
         specifier: 4.6.9
         version: 4.6.9
       '@types/picomatch':
-        specifier: 3.0.2
-        version: 3.0.2
+        specifier: 4.0.2
+        version: 4.0.2
       '@types/pluralize':
         specifier: 0.0.33
         version: 0.0.33
@@ -7240,8 +7240,8 @@ packages:
   '@types/parse5@5.0.3':
     resolution: {integrity: sha512-kUNnecmtkunAoQ3CnjmMkzNU/gtxG8guhi+Fk2U/kOpIKjIMKnXGp4IJCgQJrXSgMsWYimYG4TGjz/UzbGEBTw==}
 
-  '@types/picomatch@3.0.2':
-    resolution: {integrity: sha512-n0i8TD3UDB7paoMMxA3Y65vUncFJXjcUf7lQY7YyKGl6031FNjfsLs6pdLFCy2GNFxItPJG8GvvpbZc2skH7WA==}
+  '@types/picomatch@4.0.2':
+    resolution: {integrity: sha512-qHHxQ+P9PysNEGbALT8f8YOSHW0KJu6l2xU8DYY0fu/EmGxXdVnuTLvFUvBgPJMSqXq29SYHveejeAha+4AYgA==}
 
   '@types/pluralize@0.0.33':
     resolution: {integrity: sha512-JOqsl+ZoCpP4e8TDke9W79FDcSgPAR0l6pixx2JHkhnRjvShyYiAYw2LVsnA7K08Y6DeOnaU6ujmENO4os/cYg==}
@@ -25238,7 +25238,7 @@ snapshots:
 
   '@types/parse5@5.0.3': {}
 
-  '@types/picomatch@3.0.2': {}
+  '@types/picomatch@4.0.2': {}
 
   '@types/pluralize@0.0.33': {}
 
