@@ -35,7 +35,7 @@ export interface AsProps {
   as?: ElementType | undefined
 }
 
-export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
+export type ElementType = keyof JSX.IntrinsicElements | Component<any>
 
 export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>): JSX.Element
