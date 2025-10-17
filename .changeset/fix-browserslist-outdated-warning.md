@@ -1,7 +1,6 @@
 ---
 '@pandacss/core': patch
 '@pandacss/node': patch
-'@pandacss/fixture': patch
 '@pandacss/generator': patch
 '@pandacss/postcss': patch
 ---
