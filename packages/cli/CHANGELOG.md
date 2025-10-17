@@ -1,5 +1,23 @@
 # @pandacss/dev
 
+## 1.4.3
+
+### Patch Changes
+
+- 65aed7b: Fix `Cannot find module '@pandacss/preset-base'` error when using Bun or other package managers that use flat
+  `node_modules` structures.
+- Updated dependencies [bb32028]
+- Updated dependencies [84a0de9]
+  - @pandacss/node@1.4.3
+  - @pandacss/postcss@1.4.3
+  - @pandacss/config@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/preset-base@1.4.3
+  - @pandacss/preset-panda@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/token-dictionary@1.4.3
+  - @pandacss/types@1.4.3
+
 ## 1.4.2
 
 ### Patch Changes
