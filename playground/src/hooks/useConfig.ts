@@ -38,7 +38,6 @@ export const useConfig = (configStr: string) => {
     return () => {
       compileWorkerRef.current?.terminate()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useUpdateEffect(() => {

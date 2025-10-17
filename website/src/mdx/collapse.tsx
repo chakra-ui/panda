@@ -1,5 +1,5 @@
 import { css, cx } from '@/styled-system/css'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Props = {
   children: React.ReactNode
@@ -14,7 +14,7 @@ export const Collapse = (props: Props) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const innerRef = useRef<HTMLDivElement | null>(null)
   const animationRef = useRef(0)
-  const initialOpen = useRef(isOpen)
+  const [initialOpenValue] = useState(isOpen)
   const initialRender = useRef(true)
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export const Collapse = (props: Props) => {
           transition: 'none'
         }
       })}
-      style={initialOpen.current || horizontal ? undefined : { height: 0 }}
+      style={initialOpenValue || horizontal ? undefined : { height: 0 }}
     >
       <div
         ref={innerRef}

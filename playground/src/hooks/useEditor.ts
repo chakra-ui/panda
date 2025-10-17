@@ -112,7 +112,6 @@ export function useEditor(props: PandaEditorProps) {
 
   const onToggleWrap = useCallback(() => {
     setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -147,7 +146,7 @@ export function useEditor(props: PandaEditorProps) {
         registerKeybindings()
       })
 
-      //@ts-expect-error
+      //@ts-expect-error - monaco types are not fully compatible with the latest version
       monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
 
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
@@ -183,7 +182,6 @@ export function useEditor(props: PandaEditorProps) {
     [artifacts],
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const getPandaTypes = useCallback(async () => {}, [])
 
   const onBeforeMount: BeforeMount = (monaco) => {
@@ -243,7 +241,6 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
         monaco.languages.typescript.typescriptDefaults.addExtraLib(src.content, src.filePath)
       })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [configureEditor, setupLibs, getPandaTypes],
   )
 

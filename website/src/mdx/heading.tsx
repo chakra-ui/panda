@@ -1,4 +1,4 @@
-import { css, cva } from '@/styled-system/css'
+import { cva } from '@/styled-system/css'
 import { useEffect, useRef } from 'react'
 import { useSetActiveAnchor } from '../mdx/contexts'
 import {
@@ -44,12 +44,15 @@ export const Heading = (props: Props) => {
   const slugs = useSlugs()
   const observer = useIntersectionObserver()
   const obRef = useRef<HTMLAnchorElement | null>(null)
+  const indexRef = useRef(context.index)
 
   useEffect(() => {
     if (!id) return
     const heading = obRef.current
     if (!heading) return
-    slugs.set(heading, [id, (context.index += 1)])
+    const currentIndex = indexRef.current
+    indexRef.current += 1
+    slugs.set(heading, [id, currentIndex])
     observer?.observe(heading)
 
     return () => {
@@ -61,7 +64,7 @@ export const Heading = (props: Props) => {
         return ret
       })
     }
-  }, [id, context, slugs, observer, setActiveAnchor])
+  }, [id, slugs, observer, setActiveAnchor])
 
   return (
     <Tag className={styles({ tag: Tag })} id={id} {...rest}>
