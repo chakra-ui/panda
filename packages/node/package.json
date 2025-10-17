@@ -58,7 +58,7 @@
     "outdent": " ^0.8.0",
     "package-manager-detector": "0.1.0",
     "perfect-debounce": "1.0.0",
-    "pkg-types": "2.2.0",
+    "pkg-types": "2.3.0",
     "picomatch": "4.0.3",
     "pluralize": "8.0.0",
     "postcss": "8.4.49",

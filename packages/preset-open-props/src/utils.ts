@@ -29,7 +29,7 @@ export const cssKeyframesToObj = (_css: string) => {
     .map((keyframe) => {
       const key = keyframe.values.join(', ')
       const value = keyframe.declarations
-        ?.map((decl: css.Declaration) => ({
+        ?.map((decl: any) => ({
           [decl.property!]: decl.value,
         }))
         .reduce((acc, nxt) => Object.assign({}, acc, nxt), {})

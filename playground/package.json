@@ -56,12 +56,12 @@
     "@next/bundle-analyzer": "14.1.0",
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
     "dts-bundle-generator": "9.3.1",
     "eslint-config-next": "14.1.0",
     "raw-loader": "4.0.2",
-    "tsx": "4.20.3"
+    "tsx": "4.20.6"
   },
   "browserslist": [
     "Chrome 118"

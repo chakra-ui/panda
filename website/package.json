@@ -39,16 +39,16 @@
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@pandacss/postcss": "workspace:^",
-    "@shikijs/rehype": "^3.12.2",
-    "@shikijs/transformers": "^3.12.2",
+    "@shikijs/rehype": "^3.13.0",
+    "@shikijs/transformers": "^3.13.0",
     "@types/git-url-parse": "16.0.2",
-    "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
     "postcss": "8.4.49",
     "prettier": "3.2.5",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-slug": "^6.0.0",
-    "shiki": "^3.12.2",
+    "shiki": "^3.13.0",
     "unist-util-visit": "^5.0.0",
     "velite": "0.3.0"
   }

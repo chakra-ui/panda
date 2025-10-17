@@ -70,7 +70,7 @@ export const vueToTsx = (code: string) => {
     const transformed = new MagicString(`${scriptContent}\nconst render = ${fileStr.toString()}`)
 
     return transformed.toString()
-  } catch (err) {
+  } catch {
     return ''
   }
 }
