@@ -171,10 +171,21 @@ export function useEditor(props: PandaEditorProps) {
     (monaco: Parameters<OnMount>[1]) => {
       const libs = artifacts.flatMap((artifact) => {
         if (!artifact) return []
-        return artifact.files.map((file) => ({
-          filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
-          content: file.code ?? '',
-        }))
+        return artifact.files.map((file) => {
+          // Patch FunctionComponent types for React 19 compatibility in Monaco
+          let content = file.code ?? ''
+          if (file.file.endsWith('.d.ts')) {
+            content = content.replace(
+              /export declare const (\w+): FunctionComponent<(\w+)>/g,
+              'export declare const $1: (props: $2) => JSX.Element',
+            )
+          }
+
+          return {
+            filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
+            content,
+          }
+        })
       })
 
       return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
