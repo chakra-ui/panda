@@ -35,7 +35,7 @@
     "monaco-editor-auto-typings": "0.4.6",
     "monaco-jsx-syntax-highlight": "1.2.0",
     "nanoid": "5.1.5",
-    "next": "14.2.26",
+    "next": "15.5.6",
     "next-themes": "0.4.6",
     "os-browserify": "0.3.0",
     "outdent": " ^0.8.0",
@@ -53,13 +53,13 @@
     "zod": "3.22.4"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "14.1.0",
+    "@next/bundle-analyzer": "15.5.6",
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "dts-bundle-generator": "9.3.1",
-    "eslint-config-next": "14.1.0",
+    "eslint-config-next": "15.5.6",
     "raw-loader": "4.0.2",
     "tsx": "4.20.6"
   },

@@ -10,32 +10,31 @@ export const showcases: Showcase[] = [
     name: 'CoinMarketCap',
     description: 'Leading crypto data platform',
     url: 'https://coinmarketcap.com/',
-    image:
-      'https://s2.coinmarketcap.com/static/cloud/img/splash_600x315_1.png?_=d3bfca8'
+    image: '/showcase/coinmarketcap.png'
   },
   {
     name: 'Magic Labs',
-    description: 'A web3 infrastructure company',
+    description: 'Web3 Wallet Infrastructure',
     url: 'https://magic.link/',
-    image: 'https://magic.link/images/og-img.png'
+    image: '/showcase/magic-labs.png'
   },
   {
     name: 'Novu',
     description: 'Open-source notification infrastructure',
     url: 'https://novu.co/',
-    image: 'https://novu.co/images/social-preview.jpg'
+    image: '/showcase/novuhq.png'
   },
   {
     name: 'Ark UI',
     description: 'A library of unstyled components',
     url: 'https://ark-ui.com/',
-    image: 'https://ark-ui.com/opengraph-image.png?0b173734bffff5ac'
+    image: '/showcase/ark-ui.png'
   },
   {
-    name: 'Cool Contrast',
-    description: 'Customize how your content appears',
-    url: 'https://coolcontrast.vercel.app/',
-    image: 'https://coolcontrast.vercel.app/seo-og-image.webp'
+    name: 'Visio (French Government)',
+    description: 'Simple and Secure Video Conferencing',
+    url: 'https://visio.numerique.gouv.fr/',
+    image: '/showcase/visio.png'
   },
   {
     name: 'Panda Mastery',
@@ -51,15 +50,21 @@ export const showcases: Showcase[] = [
     image: '/showcase/liquity.png'
   },
   {
-    name: 'Baseconnect',
-    description: 'Helps businesses with market intelligence',
-    url: 'https://baseconnect.in/',
-    image: '/showcase/base-connect.png'
-  },
-  {
     name: 'Park UI',
     description: 'Build design systems with Panda and Ark UI',
     url: 'https://park-ui.com',
     image: '/showcase/park-ui.png'
+  },
+  {
+    name: 'Porto',
+    description: 'Decentralized authentication',
+    url: 'https://porto.sh/',
+    image: '/showcase/porto.png'
+  },
+  {
+    name: 'Cool Contrast',
+    description: 'Customize how your content appears',
+    url: 'https://coolcontrast.vercel.app/',
+    image: '/showcase/cool-contrast.png'
   }
 ]

@@ -1,12 +1,12 @@
 import { Navbar } from '@/components/navbar'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { showcases } from '@/showcase'
 import { css } from '@/styled-system/css'
-import { Container, Grid, HStack, panda, Stack } from '@/styled-system/jsx'
+import { Container, Grid, panda, Stack } from '@/styled-system/jsx'
 import { FooterSection } from '@/www/footer.section'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { showcases } from '@/showcase'
 
 const ogTitle = 'See projects built with Panda CSS'
 const ogDescription =
@@ -84,13 +84,11 @@ const ShowcaseCard = ({ data }: { data: Showcase }) => {
           borderTopRadius: 'md'
         })}
       />
-      <Stack p="4" gap="2" bg="bg">
+      <Stack gap="0" p="4" bg="bg">
         <panda.h3 fontSize="lg" fontWeight="semibold">
           {name}
         </panda.h3>
-        <panda.p fontSize="md" color="fg.muted">
-          {description}
-        </panda.p>
+        <panda.p color="fg.muted">{description}</panda.p>
       </Stack>
     </Link>
   )

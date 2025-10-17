@@ -33,7 +33,6 @@ const config = {
     ]
   },
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     remotePatterns: [
       { hostname: 'images.unsplash.com' },

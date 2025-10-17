@@ -84,8 +84,6 @@ export const Pagination = ({ slug }: Props) => {
     return null
   }
 
-  console.log(prev, next)
-
   return (
     <HStack justify="space-between" mt="12" gap="4">
       {prev ? <PagationLink item={prev} type="prev" /> : <Box flex="1" />}
