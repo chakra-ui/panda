@@ -1,4 +1,5 @@
 import { cva, cx } from '@/styled-system/css'
+import type { JSX } from 'react'
 
 const styles = cva({
   base: {
