@@ -1,5 +1,33 @@
 # @pandacss/node
 
+## 1.4.3
+
+### Patch Changes
+
+- bb32028: Fix "Browserslist: caniuse-lite is outdated" warning by updating `browserslist` and PostCSS-related packages:
+
+  - Update `browserslist` from 4.23.3 to 4.24.4
+  - Update `postcss` from 8.4.49 to 8.5.6
+  - Update `postcss-nested` from 6.0.1 to 7.0.2
+  - Update `postcss-merge-rules` from 7.0.4 to 7.0.6
+  - Update other PostCSS plugins to latest patch versions
+
+  This resolves the outdated `caniuse-lite` warning that appeared when using lightningcss without affecting CSS output
+  or requiring snapshot updates.
+
+- Updated dependencies [bb32028]
+- Updated dependencies [58f492a]
+- Updated dependencies [84a0de9]
+  - @pandacss/core@1.4.3
+  - @pandacss/generator@1.4.3
+  - @pandacss/config@1.4.3
+  - @pandacss/reporter@1.4.3
+  - @pandacss/parser@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/token-dictionary@1.4.3
+  - @pandacss/types@1.4.3
+
 ## 1.4.2
 
 ### Patch Changes

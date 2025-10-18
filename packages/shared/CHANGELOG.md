@@ -1,5 +1,7 @@
 # @pandacss/shared
 
+## 1.4.3
+
 ## 1.4.2
 
 ### Patch Changes

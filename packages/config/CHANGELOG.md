@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 1.4.3
+
+### Patch Changes
+
+- 84a0de9: Improve static CSS generation performance with wildcard memoization. Token lookups for wildcard (`*`)
+  expansions are now cached, providing ~32% faster processing for large configs with wildcards.
+  - @pandacss/logger@1.4.3
+  - @pandacss/preset-base@1.4.3
+  - @pandacss/preset-panda@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/types@1.4.3
+
 ## 1.4.2
 
 ### Patch Changes
