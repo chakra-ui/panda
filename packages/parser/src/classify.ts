@@ -177,7 +177,6 @@ export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap):
 
   /**
    * Handles condition-specific property classification and map updates.
-   * Conditions are responsive/pseudo-class selectors like 'sm:', 'hover:', etc.
    */
   const handleConditionProperty = (
     propReportItem: PropertyReportItem,
