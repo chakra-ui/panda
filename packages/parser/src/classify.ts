@@ -175,6 +175,115 @@ export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap):
     byComponentIndex.set(componentReportItem.componentIndex, componentReportItem)
   }
 
+  /**
+   * Handles condition-specific property classification and map updates.
+   * Conditions are responsive/pseudo-class selectors like 'sm:', 'hover:', etc.
+   */
+  const handleConditionProperty = (
+    propReportItem: PropertyReportItem,
+    attrName: string,
+    current: string[],
+    componentReportItem: ComponentReportItem,
+    localMaps: ReportDerivedMaps,
+  ) => {
+    if (conditions.has(attrName)) {
+      addTo(globalMaps.byConditionName, attrName, propReportItem.index)
+      addTo(localMaps.byConditionName, attrName, propReportItem.index)
+      propReportItem.propName = current[0] ?? attrName
+      propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
+      propReportItem.conditionName = attrName
+      return true
+    }
+
+    if (current.length && conditions.has(current[0])) {
+      propReportItem.conditionName = current[0]
+
+      // TODO: when using nested conditions
+      // should we add the reportItem.id for each of them or just the first one?
+      // (currently just the first one)
+      addTo(globalMaps.byConditionName, current[0], propReportItem.index)
+      addTo(localMaps.byConditionName, current[0], propReportItem.index)
+    }
+
+    return false
+  }
+
+  /**
+   * Classifies a CSS property by resolving shorthands, detecting token types,
+   * and updating property-specific tracking maps.
+   */
+  const classifyProperty = (
+    propReportItem: PropertyReportItem,
+    attrName: string,
+    value: string | boolean,
+    componentReportItem: ComponentReportItem,
+    localMaps: ReportDerivedMaps,
+  ) => {
+    const propName = ctx.utility.resolveShorthand(attrName)
+    const tokenType = ctx.utility.getTokenType(propName)
+
+    if (tokenType) {
+      propReportItem.reportItemKind = 'token'
+      propReportItem.tokenType = tokenType
+    }
+
+    propReportItem.propName = propName
+    propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
+
+    addTo(globalMaps.byPropertyName, propName, propReportItem.index)
+    addTo(localMaps.byPropertyName, propName, propReportItem.index)
+
+    if (tokenType) {
+      addTo(globalMaps.byTokenType, tokenType, propReportItem.index)
+      addTo(localMaps.byTokenType, tokenType, propReportItem.index)
+    }
+
+    if (propName.toLowerCase().includes('color') || groupByProp.get(propName) === 'Color' || tokenType === 'colors') {
+      addTo(globalMaps.colorsUsed, value as string, propReportItem.index)
+      addTo(localMaps.colorsUsed, value as string, propReportItem.index)
+    }
+
+    if (ctx.utility.shorthands.has(attrName)) {
+      addTo(globalMaps.byShorthand, attrName, propReportItem.index)
+      addTo(localMaps.byShorthand, attrName, propReportItem.index)
+    }
+  }
+
+  /**
+   * Updates all tracking maps for a property report item.
+   * This includes component metadata, token tracking, and filepath associations.
+   */
+  const updatePropertyMaps = (
+    propReportItem: PropertyReportItem,
+    current: string[],
+    filepath: string,
+    localMaps: ReportDerivedMaps,
+    componentReportItem: ComponentReportItem,
+  ) => {
+    const { index, value, reportItemType: type } = propReportItem
+    const { kind, componentName: name } = componentReportItem
+
+    if (current.length) {
+      addTo(globalMaps.byPropertyPath, propReportItem.path.join('.'), index)
+      addTo(localMaps.byPropertyPath, propReportItem.path.join('.'), index)
+    }
+
+    addTo(globalMaps.byTokenName, String(value), index)
+    addTo(localMaps.byTokenName, String(value), index)
+
+    addTo(globalMaps.byType, type, index)
+    addTo(localMaps.byType, type, index)
+
+    addTo(globalMaps.byComponentName, name, index)
+    addTo(localMaps.byComponentName, name, index)
+
+    addTo(globalMaps.fromKind, kind, index)
+    addTo(localMaps.fromKind, kind, index)
+
+    addTo(byFilepath, filepath, index)
+    byId.set(index, propReportItem)
+  }
+
   const processMap = (opts: ProcessMapOpts) => {
     const { map, current, componentReportItem, filepath, localMaps, skipRange } = opts
     const { reportItemType: type, kind, componentName: name } = componentReportItem
@@ -201,81 +310,12 @@ export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap):
 
         componentReportItem.contains.push(propReportItem.index)
 
-        if (conditions.has(attrName)) {
-          addTo(globalMaps.byConditionName, attrName, propReportItem.index)
-          addTo(localMaps.byConditionName, attrName, propReportItem.index)
-          propReportItem.propName = current[0] ?? attrName
-          propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
-          propReportItem.conditionName = attrName
-        } else {
-          if (current.length && conditions.has(current[0])) {
-            propReportItem.conditionName = current[0]
-
-            // TODO: when using nested conditions
-            // should we add the reportItem.id for each of them or just the first one?
-            // (currently just the first one)
-            addTo(globalMaps.byConditionName, current[0], propReportItem.index)
-            addTo(localMaps.byConditionName, current[0], propReportItem.index)
-          }
-
-          // TODO: Split this to new function
-          const propName = ctx.utility.resolveShorthand(attrName)
-          const tokenType = ctx.utility.getTokenType(propName)
-          if (tokenType) {
-            propReportItem.reportItemKind = 'token'
-            propReportItem.tokenType = tokenType
-          }
-
-          propReportItem.propName = propName
-          propReportItem.isKnownValue = isKnownUtility(propReportItem, componentReportItem)
-
-          addTo(globalMaps.byPropertyName, propName, propReportItem.index)
-          addTo(localMaps.byPropertyName, propName, propReportItem.index)
-
-          if (tokenType) {
-            addTo(globalMaps.byTokenType, tokenType, propReportItem.index)
-            addTo(localMaps.byTokenType, tokenType, propReportItem.index)
-          }
-
-          if (
-            propName.toLowerCase().includes('color') ||
-            groupByProp.get(propName) === 'Color' ||
-            tokenType === 'colors'
-          ) {
-            addTo(globalMaps.colorsUsed, value as string, propReportItem.index)
-            addTo(localMaps.colorsUsed, value as string, propReportItem.index)
-          }
-
-          if (ctx.utility.shorthands.has(attrName)) {
-            addTo(globalMaps.byShorthand, attrName, propReportItem.index)
-            addTo(localMaps.byShorthand, attrName, propReportItem.index)
-          }
+        const isCondition = handleConditionProperty(propReportItem, attrName, current, componentReportItem, localMaps)
+        if (!isCondition) {
+          classifyProperty(propReportItem, attrName, value, componentReportItem, localMaps)
         }
 
-        if (current.length) {
-          addTo(globalMaps.byPropertyPath, propReportItem.path.join('.'), propReportItem.index)
-          addTo(localMaps.byPropertyPath, propReportItem.path.join('.'), propReportItem.index)
-        }
-
-        //
-        addTo(globalMaps.byTokenName, String(value), propReportItem.index)
-        addTo(localMaps.byTokenName, String(value), propReportItem.index)
-
-        //
-        addTo(globalMaps.byType, type, propReportItem.index)
-        addTo(localMaps.byType, type, propReportItem.index)
-
-        //
-        addTo(globalMaps.byComponentName, name, propReportItem.index)
-        addTo(localMaps.byComponentName, name, propReportItem.index)
-
-        //
-        addTo(globalMaps.fromKind, kind, propReportItem.index)
-        addTo(localMaps.fromKind, kind, propReportItem.index)
-
-        //
-        addTo(byFilepath, filepath, propReportItem.index)
-        byId.set(propReportItem.index, propReportItem)
+        updatePropertyMaps(propReportItem, current, filepath, localMaps, componentReportItem)
 
         return
       }
