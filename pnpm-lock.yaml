@@ -1507,8 +1507,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/token-dictionary
       bright:
-        specifier: 0.8.6
-        version: 0.8.6(react@19.1.1)
+        specifier: 1.0.0
+        version: 1.0.0(react@19.1.1)
       focus-visible:
         specifier: 5.2.1
         version: 5.2.1
@@ -2766,8 +2766,8 @@ packages:
     resolution: {integrity: sha512-+tv3z+SPp+gqTIcImN9o0hqE9xyfQjI1XD9pL6NuKjua9B1y7mNYv0S9cP+QEbA4ppVgGZEmKOvHX5G5Ei1CVA==}
     engines: {node: '>=18.0.0'}
 
-  '@code-hike/lighter@0.8.1':
-    resolution: {integrity: sha512-St4rPmB7C2EWmAK1sAbvD3lZeM7UDInVDMjQDzEDsu4Q3B3AqF25vXedQK51U0UO0MCOASgBBdTiNwvJAfIqMQ==}
+  '@code-hike/lighter@1.0.3':
+    resolution: {integrity: sha512-LU0TbZfu3L3fQZ7y9tZHttnxyFm7ewU96arGMFnjLbvFj+onYfVkznhQOmU1ZsQtv9rpQzZ313GRz6hCGDrlJQ==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -8400,6 +8400,9 @@ packages:
     resolution: {integrity: sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==}
     engines: {node: '>=12'}
 
+  ansi-sequence-parser@1.1.1:
+    resolution: {integrity: sha512-vJXt3yiaUL4UU546s3rPXlsry/RnM730G1+HkpKE012AN0sx1eOrxSu95oKDIonskeLTijMgqWZ3uDEe3NFvyg==}
+
   ansi-styles@3.2.1:
     resolution: {integrity: sha512-VT0ZI6kZRdTh8YyJw3SMbYm/u+NqfsAxEpWO0Pf9sq8/e94WxxOpPKx9FR1FlyCtOVDNOQ+8ntlqFxiRc+r5qA==}
     engines: {node: '>=4'}
@@ -8858,8 +8861,8 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  bright@0.8.6:
-    resolution: {integrity: sha512-WnuP+TTMUOhPpM6aRQOwKaEPk2s6sTauDwF8spDh+D+5ug78uj2YJY/zovCCJ4IR8ohZFtaDjcAgSWR9OzZmng==}
+  bright@1.0.0:
+    resolution: {integrity: sha512-AX93OXFCdQQrnCmyZ85gazHhKBfKcTLnj7Hx3DM3vJwuU7VONDlB58vh3hJZ9rKWLTULbScAmuapgNgzK4u4fQ==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -11979,6 +11982,7 @@ packages:
 
   intersection-observer@0.12.2:
     resolution: {integrity: sha512-7m1vEcPCxXYI8HqnL8CKI6siDyD+eIWSwgB3DZA+ZTogxk9I4CDnj4wilt9x/+/QbHI4YG5YZNmC6458/e9Ktg==}
+    deprecated: The Intersection Observer polyfill is no longer needed and can safely be removed. Intersection Observer has been Baseline since 2019.
 
   invariant@2.2.4:
     resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
@@ -17123,6 +17127,9 @@ packages:
   title-case@3.0.3:
     resolution: {integrity: sha512-e1zGYRvbffpcHIrnuqT0Dh+gEJtDaxDSoG4JAIpq4oDFyooziLBIiYQv0GBT4FUAnUop5uZ1hiIAj7oAF6sOCA==}
 
+  tm-grammars@1.25.1:
+    resolution: {integrity: sha512-MKxo2EZHO/DE5l0x3+RG+4gh92nYdb8ydtU6jC8q1XQNtKDjIB+is73dnvEqck0+WUBCQm4X9f8kjB7Po9a1Bw==}
+
   tmp@0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
     engines: {node: '>=0.6.0'}
@@ -20565,7 +20572,10 @@ snapshots:
     dependencies:
       mime: 3.0.0
 
-  '@code-hike/lighter@0.8.1': {}
+  '@code-hike/lighter@1.0.3':
+    dependencies:
+      ansi-sequence-parser: 1.1.1
+      tm-grammars: 1.25.1
 
   '@colors/colors@1.5.0':
     optional: true
@@ -27495,6 +27505,8 @@ snapshots:
 
   ansi-regex@6.0.1: {}
 
+  ansi-sequence-parser@1.1.1: {}
+
   ansi-styles@3.2.1:
     dependencies:
       color-convert: 1.9.3
@@ -28199,9 +28211,9 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  bright@0.8.6(react@19.1.1):
+  bright@1.0.0(react@19.1.1):
     dependencies:
-      '@code-hike/lighter': 0.8.1
+      '@code-hike/lighter': 1.0.3
       react: 19.1.1
       server-only: 0.0.1
 
@@ -38972,6 +38984,8 @@ snapshots:
   title-case@3.0.3:
     dependencies:
       tslib: 2.8.1
+
+  tm-grammars@1.25.1: {}
 
   tmp@0.0.33:
     dependencies:
