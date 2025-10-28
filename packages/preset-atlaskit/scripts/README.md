@@ -1,12 +1,14 @@
 # Atlaskit Preset Generation Scripts
 
-This directory contains scripts to automatically generate the Panda CSS preset from the official `@atlaskit/tokens` package.
+This directory contains scripts to automatically generate the Panda CSS preset from the official `@atlaskit/tokens`
+package.
 
 ## Scripts
 
 ### `generate-theme.mjs`
 
-Autogenerates the Panda CSS theme from `@atlaskit/tokens` package. This script reads the token data and converts it to Panda CSS format.
+Autogenerates the Panda CSS theme from `@atlaskit/tokens` package. This script reads the token data and converts it to
+Panda CSS format.
 
 **Usage:**
 
@@ -50,7 +52,8 @@ node scripts/generate-theme.mjs --clean
 
 ### `explore-tokens.mjs`
 
-Utility script to explore the structure of `@atlaskit/tokens` package. Useful for understanding the token format and debugging.
+Utility script to explore the structure of `@atlaskit/tokens` package. Useful for understanding the token format and
+debugging.
 
 **Usage:**
 
@@ -63,11 +66,13 @@ node scripts/explore-tokens.mjs
 When a new version of `@atlaskit/tokens` or `@atlaskit/motion` is released:
 
 1. Update dependencies:
+
    ```bash
    pnpm update @atlaskit/tokens @atlaskit/motion --ignore-scripts
    ```
 
 2. Regenerate the theme:
+
    ```bash
    pnpm generate:clean
    ```
@@ -75,6 +80,7 @@ When a new version of `@atlaskit/tokens` or `@atlaskit/motion` is released:
 3. Review the changes in `src/`
 
 4. Build the preset:
+
    ```bash
    pnpm build
    ```
@@ -88,6 +94,7 @@ When a new version of `@atlaskit/tokens` or `@atlaskit/motion` is released:
 The generation script uses raw token data from multiple sources:
 
 ### From `@atlaskit/tokens`:
+
 - **Light/Dark themes**: Colors, opacity, spacing, typography, shape, shadows
   - Semantic tokens use `_light`/`_dark` pattern (not `base`/`_dark`)
   - Regular tokens for values that are the same in both themes
@@ -98,14 +105,17 @@ The generation script uses raw token data from multiple sources:
 - **Shape tokens**: Only `radius.*` used; `border.width` excluded
 
 ### From `@atlaskit/motion`:
+
 - **Durations**: `@atlaskit/motion/dist/cjs/utils/durations.js` (none, small, medium, large)
 - **Easing curves**: `@atlaskit/motion/dist/cjs/utils/curves.js` (dynamically extracted cubic-bezier values)
   - Imports from CJS files to avoid CSS import issues
 
 ### From Atlassian Design System:
+
 - **Breakpoints**: Static values (30rem, 48rem, 64rem, 90rem, 110.5rem)
 
 ### Key Features:
+
 - **Type Safety**: All tokens include proper TypeScript types (`Tokens`, `SemanticTokens`, `Theme`)
 - **Dynamic Extraction**: Easing curves auto-detected by pattern matching `cubic-bezier(...)` strings
 - **Graceful Fallback**: Script continues if `@atlaskit/motion` is not installed (skips motion tokens)
@@ -115,10 +125,12 @@ The generation script uses raw token data from multiple sources:
 ### Version Compatibility
 
 This script was **built for and tested with**:
+
 - `@atlaskit/tokens` **v7.0.0**
 - `@atlaskit/motion` **v5.3.8**
 
 **Important:** The script uses internal paths:
+
 - `@atlaskit/tokens/dist/esm/artifacts/tokens-raw/atlassian-*.js`
 - `@atlaskit/motion/dist/cjs/utils/{durations,curves}.js`
 
@@ -127,6 +139,7 @@ These paths are **not part of the public API** and may change in future versions
 ### Breaking Change Risks
 
 The script may break if packages have:
+
 1. **Package structure changes** - Internal paths reorganized
 2. **Token format changes** - Different typography, shadow, or motion structures
 3. **New major versions** - Breaking changes in v8+ (@atlaskit/tokens) or v6+ (@atlaskit/motion)
@@ -142,12 +155,14 @@ The script may break if packages have:
 ### Recommendations
 
 1. **Pin versions** in `package.json`:
+
    ```json
    "@atlaskit/tokens": "7.0.0",
    "@atlaskit/motion": "5.3.8"
    ```
 
 2. **Test after updates**:
+
    ```bash
    pnpm generate:clean
    pnpm build
