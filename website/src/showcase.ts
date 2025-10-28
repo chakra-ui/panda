@@ -66,5 +66,11 @@ export const showcases: Showcase[] = [
     description: 'Customize how your content appears',
     url: 'https://coolcontrast.vercel.app/',
     image: '/showcase/cool-contrast.png'
+  },
+  {
+    name: 'Cerberus Design System',
+    description: 'Guarding brand integrity with a flexible design system',
+    url: 'https://cerberus.digitalu.design/',
+    image: '/showcase/cerberus.png'
   }
 ]
