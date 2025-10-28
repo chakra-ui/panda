@@ -30,6 +30,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "generate": "node scripts/generate-theme.mjs",
+    "generate:clean": "node scripts/generate-theme.mjs --clean",
     "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
     "dev": "pnpm build-fast --watch"
@@ -41,6 +43,7 @@
     "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
+    "@atlaskit/motion": "^5.3.8",
     "@atlaskit/tokens": "7.0.0"
   }
 }
