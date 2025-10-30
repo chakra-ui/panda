@@ -74,7 +74,7 @@
     "@types/is-glob": "4.0.4",
     "@types/lodash.merge": "4.6.9",
     "@types/pluralize": "0.0.33",
-    "boxen": "7.1.1",
+    "boxen": "8.0.1",
     "p-limit": "5.0.0"
   }
 }
