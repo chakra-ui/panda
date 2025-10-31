@@ -1,5 +1,11 @@
 # @pandacss/preset-base
 
+## 1.4.4
+
+### Patch Changes
+
+- @pandacss/types@1.4.4
+
 ## 1.4.3
 
 ### Patch Changes
