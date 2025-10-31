@@ -138,7 +138,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs', '../types/jsx')}
     import type { Component, FunctionalComponent, NativeElements } from 'vue'
 
     interface UnstyledProps {
@@ -146,7 +146,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
     }
 
     interface WithProviderOptions<P = {}> {
-      defaultProps?: Partial<P> | undefined
+      defaultProps?: (Partial<P> & DataAttrs) | undefined
     }
 
     // Add v-model support types

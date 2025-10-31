@@ -113,7 +113,7 @@ export function generateReactCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions, ComponentProps', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, ComponentProps, DataAttrs', '../types/jsx')}
     import type { ComponentType, ElementType } from 'react'
 
     interface UnstyledProps {
@@ -127,11 +127,11 @@ export function generateReactCreateStyleContext(ctx: Context) {
       (props?: any): any
     }
     type SlotRecipe = SvaFn | SlotRecipeFn
-    
+
     type InferSlot<R extends SlotRecipe> = R extends SlotRecipeFn ? R['__slot'] : R extends SvaFn<infer S> ? S : never
-    
+
     interface WithProviderOptions<P = {}> {
-      defaultProps?: Partial<P> | undefined
+      defaultProps?: (Partial<P> & DataAttrs) | undefined
     }
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<

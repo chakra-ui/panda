@@ -114,7 +114,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs', '../types/jsx')}
     import type { ComponentType, ComponentProps, JSX } from 'preact/compat'
 
     interface UnstyledProps {
@@ -122,7 +122,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     }
 
     interface WithProviderOptions<P = {}> {
-      defaultProps?: Partial<P> | undefined
+      defaultProps?: (Partial<P> & DataAttrs) | undefined
     }
 
     type ElementType = JSX.ElementType
