@@ -41,6 +41,6 @@
     "@pandacss/logger": "workspace:^",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "ts-pattern": "5.8.0"
+    "ts-pattern": "5.9.0"
   }
 }
