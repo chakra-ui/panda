@@ -14,8 +14,6 @@ create a new Next.js app, otherwise you can skip to the [Install Panda CSS](#ins
 
 You can chose between these two options to start a new project:
 
-{' '}
-
 <RouteSwitchTrigger values={['Using App Router', 'Using Pages Router']} />
 
   <Steps>
@@ -161,46 +159,40 @@ Make sure that all of the paths of your React components are included in the `in
 file.
 
 <RouteSwitchContent value="app-dir">
-{/* <!-- prettier-ignore-start --> */}
-```ts {8} filename="panda.config.ts"
-import { defineConfig } from "@pandacss/dev"
+
+```ts {7} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-// Whether to use css reset
-preflight: true,
+  // Whether to use css reset
+  preflight: true,
+  // Where to look for your css declarations
+  include: ['./src/components/**/*.{ts,tsx,js,jsx}', './src/app/**/*.{ts,tsx,js,jsx}'],
+  // Files to exclude
+  exclude: [],
+  // The output directory for your css system
+  outdir: 'styled-system'
+})
+```
 
-// Where to look for your css declarations include: ["./src/components/**/*.{ts,tsx,js,jsx}",
-"./src/app/**/*.{ts,tsx,js,jsx}"],
-
-// Files to exclude exclude: [],
-
-// The output directory for your css system outdir: "styled-system", })
-
-````
-{/* <!-- prettier-ignore-end --> */}
 </RouteSwitchContent>
 
 <RouteSwitchContent value="pages-dir">
-{/* <!-- prettier-ignore-start --> */}
-```js {8} filename="panda.config.ts"
-import { defineConfig } from "@pandacss/dev"
+
+```ts {7} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-// Whether to use css reset
-preflight: true,
-
-// Where to look for your css declarations
-include: ["./src/components/**/*.{ts,tsx,js,jsx}", "./src/pages/**/*.{ts,tsx,js,jsx}"],
-
-// Files to exclude
-exclude: [],
-
-// The output directory for your css system
-outdir: "styled-system",
+  // Whether to use css reset
+  preflight: true,
+  // Where to look for your css declarations
+  include: ['./src/components/**/*.{ts,tsx,js,jsx}', './src/pages/**/*.{ts,tsx,js,jsx}'],
+  // Files to exclude
+  exclude: [],
+  // The output directory for your css system
+  outdir: 'styled-system'
 })
-````
-
-{/* <!-- prettier-ignore-end --> */}
+```
 
 </RouteSwitchContent>
 
@@ -220,23 +212,22 @@ outdir: "styled-system",
 ```
 
 <RouteSwitchContent value="app-dir">
-  {/* <!-- prettier-ignore-start --> */}
+  
   > **Note:** Feel free to remove the `page.module.css` file as we don't need it
   anymore.
-  {/* <!-- prettier-ignore-end --> */}
+  
 </RouteSwitchContent>
 <RouteSwitchContent value="pages-dir">
-  {/* <!-- prettier-ignore-start --> */}
-  > **Note:** Feel free to remove the `Home.module.css` file as we don't need it
-  anymore.
-  {/* <!-- prettier-ignore-end --> */}
+
+> **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
+
 </RouteSwitchContent>
 
 ### Import the entry CSS in your app
 
-  <RouteSwitchContent value="app-dir">
-  {/* <!-- prettier-ignore-start --> */}
-  Make sure that you import the `globals.css` file in your `src/app/layout.tsx` file as follows:
+<RouteSwitchContent value="app-dir">
+  
+Make sure that you import the `globals.css` file in your `src/app/layout.tsx` file as follows:
 
 ```tsx {1} filename="./src/app/layout.tsx"
 import './globals.css'
@@ -272,12 +263,10 @@ export default function RootLayout({
 }
 ```
 
-{/* <!-- prettier-ignore-end --> */}
+</RouteSwitchContent>
+<RouteSwitchContent value="pages-dir">
 
-  </RouteSwitchContent>
-  <RouteSwitchContent value="pages-dir">
-  {/* <!-- prettier-ignore-start --> */}
-  Make sure that you import the `globals.css` file in your `src/pages/_app.tsx` file as follows:
+Make sure that you import the `globals.css` file in your `src/pages/_app.tsx` file as follows:
 
 ```tsx {1} filename="./src/pages/_app.tsx"
 import '../styles/globals.css'
@@ -288,9 +277,7 @@ export default function App({ Component, pageProps }: AppProps) {
 }
 ```
 
-{/* <!-- prettier-ignore-end --> */}
-
-  </RouteSwitchContent>
+</RouteSwitchContent>
 
 ### Start using Panda
 

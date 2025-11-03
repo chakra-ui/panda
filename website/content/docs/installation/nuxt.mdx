@@ -124,7 +124,7 @@ Open your `package.json` file and update the `scripts` section as follows:
 Make sure that all of the paths of your Vue components are included in the `include` section of the `panda.config.ts`
 file.
 
-```js {8, 17} filename="panda.config.ts"
+```js {8,17} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
@@ -154,7 +154,7 @@ Add this code to an `assets/css/global.css` file.
 
 Add the following configuration to the `nuxt.config.ts` file
 
-```js {1-2, 5-17}  filename="nuxt.config.ts"
+```js {1-2,5-17}  filename="nuxt.config.ts"
 import { createResolver } from '@nuxt/kit'
 const { resolve } = createResolver(import.meta.url)
 

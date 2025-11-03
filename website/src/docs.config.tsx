@@ -83,7 +83,7 @@ export const docsNavigation: NavItem = {
         { title: 'Why Panda?', url: 'why-panda' },
         { title: 'FAQs', url: 'faq' },
         { title: 'Browser Support', url: 'browser-support' },
-        { title: 'LLMs.txt', url: 'llms-txt', tag: 'new' },
+        { title: 'LLMs.txt', url: 'llms-txt' },
         {
           title: 'Roadmap',
           href: 'https://panda-css.canny.io/',
@@ -128,6 +128,7 @@ export const docsNavigation: NavItem = {
         { title: 'Cascade Layers', url: 'cascade-layers' },
         { title: 'Writing Styles', url: 'writing-styles' },
         { title: 'Merging Styles', url: 'merging-styles' },
+        { title: 'Global Styles', url: 'global-styles' },
         { title: 'Template Literals', url: 'template-literals' },
         { title: 'Conditional Styles', url: 'conditional-styles' },
         { title: 'Responsive Design', url: 'responsive-design' },
