@@ -25,18 +25,24 @@ describe('ast parser / sva', () => {
           {
             "box": {
               "column": 20,
+              "endColumn": 7,
+              "endLineNumber": 14,
               "line": 4,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "slots" => {
                   "column": 16,
+                  "endColumn": 33,
+                  "endLineNumber": 5,
                   "line": 5,
                   "node": "ArrayLiteralExpression",
                   "type": "array",
                   "value": [
                     {
                       "column": 17,
+                      "endColumn": 24,
+                      "endLineNumber": 5,
                       "line": 5,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -44,6 +50,8 @@ describe('ast parser / sva', () => {
                     },
                     {
                       "column": 26,
+                      "endColumn": 32,
+                      "endLineNumber": 5,
                       "line": 5,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -53,18 +61,24 @@ describe('ast parser / sva', () => {
                 },
                 "base" => {
                   "column": 15,
+                  "endColumn": 10,
+                  "endLineNumber": 13,
                   "line": 6,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "label" => {
                       "column": 20,
+                      "endColumn": 14,
+                      "endLineNumber": 9,
                       "line": 7,
                       "node": "ObjectLiteralExpression",
                       "type": "map",
                       "value": Map {
                         "color" => {
                           "column": 20,
+                          "endColumn": 25,
+                          "endLineNumber": 8,
                           "line": 8,
                           "node": "StringLiteral",
                           "type": "literal",
@@ -74,12 +88,16 @@ describe('ast parser / sva', () => {
                     },
                     "icon" => {
                       "column": 19,
+                      "endColumn": 14,
+                      "endLineNumber": 12,
                       "line": 10,
                       "node": "ObjectLiteralExpression",
                       "type": "map",
                       "value": Map {
                         "fontSize" => {
                           "column": 23,
+                          "endColumn": 27,
+                          "endLineNumber": 11,
                           "line": 11,
                           "node": "StringLiteral",
                           "type": "literal",

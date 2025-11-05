@@ -51,18 +51,24 @@ describe('ast parser / cva', () => {
           {
             "box": {
               "column": 23,
+              "endColumn": 7,
+              "endLineNumber": 40,
               "line": 4,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "base" => {
                   "column": 15,
+                  "endColumn": 10,
+                  "endLineNumber": 8,
                   "line": 5,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "color" => {
                       "column": 20,
+                      "endColumn": 25,
+                      "endLineNumber": 6,
                       "line": 6,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -70,6 +76,8 @@ describe('ast parser / cva', () => {
                     },
                     "fontSize" => {
                       "column": 23,
+                      "endColumn": 29,
+                      "endLineNumber": 7,
                       "line": 7,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -79,24 +87,32 @@ describe('ast parser / cva', () => {
                 },
                 "variants" => {
                   "column": 19,
+                  "endColumn": 10,
+                  "endLineNumber": 23,
                   "line": 9,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "color" => {
                       "column": 20,
+                      "endColumn": 14,
+                      "endLineNumber": 14,
                       "line": 10,
                       "node": "ObjectLiteralExpression",
                       "type": "map",
                       "value": Map {
                         "red" => {
                           "column": 22,
+                          "endColumn": 18,
+                          "endLineNumber": 13,
                           "line": 11,
                           "node": "ObjectLiteralExpression",
                           "type": "map",
                           "value": Map {
                             "background" => {
                               "column": 33,
+                              "endColumn": 38,
+                              "endLineNumber": 12,
                               "line": 12,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -108,18 +124,24 @@ describe('ast parser / cva', () => {
                     },
                     "size" => {
                       "column": 19,
+                      "endColumn": 14,
+                      "endLineNumber": 22,
                       "line": 15,
                       "node": "ObjectLiteralExpression",
                       "type": "map",
                       "value": Map {
                         "sm" => {
                           "column": 21,
+                          "endColumn": 18,
+                          "endLineNumber": 18,
                           "line": 16,
                           "node": "ObjectLiteralExpression",
                           "type": "map",
                           "value": Map {
                             "fontSize" => {
                               "column": 31,
+                              "endColumn": 37,
+                              "endLineNumber": 17,
                               "line": 17,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -129,12 +151,16 @@ describe('ast parser / cva', () => {
                         },
                         "md" => {
                           "column": 21,
+                          "endColumn": 18,
+                          "endLineNumber": 21,
                           "line": 19,
                           "node": "ObjectLiteralExpression",
                           "type": "map",
                           "value": Map {
                             "fontSize" => {
                               "column": 31,
+                              "endColumn": 37,
+                              "endLineNumber": 20,
                               "line": 20,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -148,18 +174,24 @@ describe('ast parser / cva', () => {
                 },
                 "compoundVariants" => {
                   "column": 27,
+                  "endColumn": 10,
+                  "endLineNumber": 39,
                   "line": 24,
                   "node": "ArrayLiteralExpression",
                   "type": "array",
                   "value": [
                     {
                       "column": 13,
+                      "endColumn": 14,
+                      "endLineNumber": 31,
                       "line": 25,
                       "node": "ObjectLiteralExpression",
                       "type": "map",
                       "value": Map {
                         "color" => {
                           "column": 24,
+                          "endColumn": 29,
+                          "endLineNumber": 26,
                           "line": 26,
                           "node": "StringLiteral",
                           "type": "literal",
@@ -167,6 +199,8 @@ describe('ast parser / cva', () => {
                         },
                         "size" => {
                           "column": 23,
+                          "endColumn": 27,
+                          "endLineNumber": 27,
                           "line": 27,
                           "node": "StringLiteral",
                           "type": "literal",
@@ -174,12 +208,16 @@ describe('ast parser / cva', () => {
                         },
                         "css" => {
                           "column": 22,
+                          "endColumn": 18,
+                          "endLineNumber": 30,
                           "line": 28,
                           "node": "ObjectLiteralExpression",
                           "type": "map",
                           "value": Map {
                             "fontWeight" => {
                               "column": 33,
+                              "endColumn": 39,
+                              "endLineNumber": 29,
                               "line": 29,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -191,18 +229,24 @@ describe('ast parser / cva', () => {
                     },
                     {
                       "column": 13,
+                      "endColumn": 14,
+                      "endLineNumber": 38,
                       "line": 32,
                       "node": "ObjectLiteralExpression",
                       "type": "map",
                       "value": Map {
                         "color" => {
                           "column": 24,
+                          "endColumn": 39,
+                          "endLineNumber": 33,
                           "line": 33,
                           "node": "ArrayLiteralExpression",
                           "type": "array",
                           "value": [
                             {
                               "column": 25,
+                              "endColumn": 30,
+                              "endLineNumber": 33,
                               "line": 33,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -210,6 +254,8 @@ describe('ast parser / cva', () => {
                             },
                             {
                               "column": 32,
+                              "endColumn": 38,
+                              "endLineNumber": 33,
                               "line": 33,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -219,12 +265,16 @@ describe('ast parser / cva', () => {
                         },
                         "size" => {
                           "column": 23,
+                          "endColumn": 35,
+                          "endLineNumber": 34,
                           "line": 34,
                           "node": "ArrayLiteralExpression",
                           "type": "array",
                           "value": [
                             {
                               "column": 24,
+                              "endColumn": 28,
+                              "endLineNumber": 34,
                               "line": 34,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -232,6 +282,8 @@ describe('ast parser / cva', () => {
                             },
                             {
                               "column": 30,
+                              "endColumn": 34,
+                              "endLineNumber": 34,
                               "line": 34,
                               "node": "StringLiteral",
                               "type": "literal",
@@ -241,12 +293,16 @@ describe('ast parser / cva', () => {
                         },
                         "css" => {
                           "column": 22,
+                          "endColumn": 18,
+                          "endLineNumber": 37,
                           "line": 35,
                           "node": "ObjectLiteralExpression",
                           "type": "map",
                           "value": Map {
                             "color" => {
                               "column": 28,
+                              "endColumn": 35,
+                              "endLineNumber": 36,
                               "line": 36,
                               "node": "StringLiteral",
                               "type": "literal",

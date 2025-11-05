@@ -4191,18 +4191,24 @@ test('unbox with unresolvable spread', () => {
   expect(css).toMatchInlineSnapshot(`
     {
       "column": 23,
+      "endColumn": 106,
+      "endLineNumber": 2,
       "line": 2,
       "node": "CallExpression",
       "type": "array",
       "value": [
         {
           "column": 23,
+          "endColumn": 106,
+          "endLineNumber": 2,
           "line": 2,
           "node": "CallExpression",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 36,
+              "endColumn": 41,
+              "endLineNumber": 2,
               "line": 2,
               "node": "StringLiteral",
               "type": "literal",
@@ -4210,6 +4216,8 @@ test('unbox with unresolvable spread', () => {
             },
             "backgroundColor" => {
               "column": 91,
+              "endColumn": 101,
+              "endLineNumber": 2,
               "line": 2,
               "node": "StringLiteral",
               "type": "literal",
@@ -4237,18 +4245,24 @@ test('unbox with unresolvable spread', () => {
   expect(HStack).toMatchInlineSnapshot(`
     {
       "column": 13,
+      "endColumn": 14,
+      "endLineNumber": 15,
       "line": 6,
       "node": "JsxOpeningElement",
       "type": "map",
       "value": Map {
         "style" => {
           "column": 20,
+          "endColumn": 14,
+          "endLineNumber": 9,
           "line": 7,
           "node": "ObjectLiteralExpression",
           "type": "map",
           "value": Map {
             "background" => {
               "column": 29,
+              "endColumn": 64,
+              "endLineNumber": 8,
               "line": 8,
               "node": "BinaryExpression",
               "type": "conditional",
@@ -4258,6 +4272,8 @@ test('unbox with unresolvable spread', () => {
         },
         "paddingInline" => {
           "column": 27,
+          "endColumn": 30,
+          "endLineNumber": 10,
           "line": 10,
           "node": "StringLiteral",
           "type": "literal",
