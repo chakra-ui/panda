@@ -529,12 +529,16 @@ it('minimal - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 5,
+          "endColumn": 33,
+          "endLineNumber": 2,
           "line": 2,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 30,
+              "endLineNumber": 2,
               "line": 2,
               "node": "StringLiteral",
               "type": "literal",
@@ -547,12 +551,16 @@ it('minimal - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 5,
+          "endColumn": 233,
+          "endLineNumber": 3,
           "line": 3,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 97,
+              "endColumn": 107,
+              "endLineNumber": 3,
               "line": 3,
               "node": "StringLiteral",
               "type": "literal",
@@ -560,6 +568,8 @@ it('minimal - groups extract props in parent component instance', () => {
             },
             "backgroundColor" => {
               "column": 50,
+              "endColumn": 66,
+              "endLineNumber": 3,
               "line": 3,
               "node": "StringLiteral",
               "type": "literal",
@@ -567,6 +577,8 @@ it('minimal - groups extract props in parent component instance', () => {
             },
             "display" => {
               "column": 82,
+              "endColumn": 88,
+              "endLineNumber": 3,
               "line": 3,
               "node": "StringLiteral",
               "type": "literal",
@@ -587,12 +599,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 39,
+          "endLineNumber": 72,
           "line": 72,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 27,
+              "endColumn": 36,
+              "endLineNumber": 72,
               "line": 72,
               "node": "StringLiteral",
               "type": "literal",
@@ -605,12 +621,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 73,
+          "endLineNumber": 75,
           "line": 75,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 27,
+              "endColumn": 39,
+              "endLineNumber": 75,
               "line": 75,
               "node": "StringLiteral",
               "type": "literal",
@@ -618,6 +638,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
             },
             "backgroundColor" => {
               "column": 56,
+              "endColumn": 72,
+              "endLineNumber": 75,
               "line": 75,
               "node": "StringLiteral",
               "type": "literal",
@@ -630,12 +652,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 63,
+          "endLineNumber": 78,
           "line": 78,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 28,
+              "endColumn": 61,
+              "endLineNumber": 78,
               "line": 78,
               "node": "ConditionalExpression",
               "type": "conditional",
@@ -648,12 +674,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 44,
+          "endLineNumber": 79,
           "line": 79,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 28,
+              "endColumn": 42,
+              "endLineNumber": 79,
               "line": 79,
               "node": "StringLiteral",
               "type": "literal",
@@ -666,12 +696,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 41,
+          "endLineNumber": 80,
           "line": 80,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -684,12 +718,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 69,
+          "endLineNumber": 81,
           "line": 81,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 38,
+              "endColumn": 52,
+              "endLineNumber": 81,
               "line": 81,
               "node": "StringLiteral",
               "type": "literal",
@@ -702,12 +740,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 69,
+          "endLineNumber": 82,
           "line": 82,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 28,
+              "endColumn": 67,
+              "endLineNumber": 82,
               "line": 82,
               "node": "ConditionalExpression",
               "type": "conditional",
@@ -720,12 +762,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 67,
+          "endLineNumber": 84,
           "line": 84,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 28,
+              "endColumn": 65,
+              "endLineNumber": 84,
               "line": 84,
               "node": "ConditionalExpression",
               "type": "conditional",
@@ -738,12 +784,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 50,
+          "endLineNumber": 86,
           "line": 86,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -756,12 +806,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 76,
+          "endLineNumber": 87,
           "line": 87,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 43,
+              "endColumn": 57,
+              "endLineNumber": 87,
               "line": 87,
               "node": "StringLiteral",
               "type": "literal",
@@ -774,12 +828,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 49,
+          "endLineNumber": 88,
           "line": 88,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 29,
+              "endColumn": 43,
+              "endLineNumber": 88,
               "line": 88,
               "node": "StringLiteral",
               "type": "literal",
@@ -792,12 +850,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 38,
+          "endLineNumber": 89,
           "line": 89,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 16,
+              "endColumn": 26,
+              "endLineNumber": 45,
               "line": 45,
               "node": "StringLiteral",
               "type": "literal",
@@ -810,12 +872,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 45,
+          "endLineNumber": 90,
           "line": 90,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 16,
+              "endColumn": 26,
+              "endLineNumber": 45,
               "line": 45,
               "node": "StringLiteral",
               "type": "literal",
@@ -828,12 +894,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 48,
+          "endLineNumber": 91,
           "line": 91,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 16,
+              "endColumn": 26,
+              "endLineNumber": 45,
               "line": 45,
               "node": "StringLiteral",
               "type": "literal",
@@ -846,12 +916,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 56,
+          "endLineNumber": 92,
           "line": 92,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 16,
+              "endColumn": 26,
+              "endLineNumber": 45,
               "line": 45,
               "node": "StringLiteral",
               "type": "literal",
@@ -864,12 +938,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 44,
+          "endLineNumber": 93,
           "line": 93,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 16,
+              "endColumn": 26,
+              "endLineNumber": 45,
               "line": 45,
               "node": "StringLiteral",
               "type": "literal",
@@ -882,12 +960,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 81,
+          "endLineNumber": 94,
           "line": 94,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 44,
+              "endColumn": 58,
+              "endLineNumber": 94,
               "line": 94,
               "node": "StringLiteral",
               "type": "literal",
@@ -900,12 +982,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 85,
+          "endLineNumber": 95,
           "line": 95,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 44,
+              "endColumn": 58,
+              "endLineNumber": 95,
               "line": 95,
               "node": "StringLiteral",
               "type": "literal",
@@ -918,12 +1004,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 92,
+          "endLineNumber": 96,
           "line": 96,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 45,
+              "endColumn": 59,
+              "endLineNumber": 96,
               "line": 96,
               "node": "StringLiteral",
               "type": "literal",
@@ -936,12 +1026,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 53,
+          "endLineNumber": 97,
           "line": 97,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -954,12 +1048,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 65,
+          "endLineNumber": 98,
           "line": 98,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -972,12 +1070,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 70,
+          "endLineNumber": 101,
           "line": 101,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -990,12 +1092,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 75,
+          "endLineNumber": 104,
           "line": 104,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1008,12 +1114,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 73,
+          "endLineNumber": 107,
           "line": 107,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1026,12 +1136,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 103,
+          "endLineNumber": 110,
           "line": 110,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1044,12 +1158,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 63,
+          "endLineNumber": 114,
           "line": 114,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1062,12 +1180,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 67,
+          "endLineNumber": 117,
           "line": 117,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1080,12 +1202,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 54,
+          "endLineNumber": 121,
           "line": 121,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1098,12 +1224,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 61,
+          "endLineNumber": 122,
           "line": 122,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1116,12 +1246,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 85,
+          "endLineNumber": 123,
           "line": 123,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1134,12 +1268,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 100,
+          "endLineNumber": 125,
           "line": 125,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 37,
+              "endColumn": 90,
+              "endLineNumber": 125,
               "line": 125,
               "node": "ConditionalExpression",
               "type": "conditional",
@@ -1152,12 +1290,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 92,
+          "endLineNumber": 129,
           "line": 129,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 29,
+              "endColumn": 82,
+              "endLineNumber": 129,
               "line": 129,
               "node": "ConditionalExpression",
               "type": "conditional",
@@ -1170,12 +1312,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 51,
+          "endLineNumber": 133,
           "line": 133,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 31,
+              "endLineNumber": 6,
               "line": 6,
               "node": "StringLiteral",
               "type": "literal",
@@ -1188,12 +1334,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 52,
+          "endLineNumber": 136,
           "line": 136,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 34,
+              "endColumn": 48,
+              "endLineNumber": 136,
               "line": 136,
               "node": "StringLiteral",
               "type": "literal",
@@ -1206,12 +1356,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 47,
+          "endLineNumber": 138,
           "line": 138,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 39,
+              "endColumn": 55,
+              "endLineNumber": 41,
               "line": 41,
               "node": "StringLiteral",
               "type": "literal",
@@ -1224,6 +1378,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 66,
+          "endLineNumber": 140,
           "line": 140,
           "node": "JsxOpeningElement",
           "type": "map",
@@ -1234,12 +1390,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 12,
+          "endLineNumber": 148,
           "line": 142,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 22,
+              "endColumn": 36,
+              "endLineNumber": 144,
               "line": 144,
               "node": "StringLiteral",
               "type": "literal",
@@ -1247,6 +1407,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
             },
             "backgroundColor" => {
               "column": 32,
+              "endColumn": 48,
+              "endLineNumber": 145,
               "line": 145,
               "node": "StringLiteral",
               "type": "literal",
@@ -1254,6 +1416,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
             },
             "borderColor" => {
               "column": 35,
+              "endColumn": 51,
+              "endLineNumber": 146,
               "line": 146,
               "node": "StringLiteral",
               "type": "literal",
@@ -1266,6 +1430,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 76,
+          "endLineNumber": 151,
           "line": 151,
           "node": "JsxOpeningElement",
           "type": "map",
@@ -1276,6 +1442,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 65,
+          "endLineNumber": 152,
           "line": 152,
           "node": "JsxOpeningElement",
           "type": "map",
@@ -1286,12 +1454,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 43,
+          "endLineNumber": 154,
           "line": 154,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 25,
+              "endColumn": 41,
+              "endLineNumber": 154,
               "line": 154,
               "node": "CallExpression",
               "type": "literal",
@@ -1299,6 +1471,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
             },
             "backgroundColor" => {
               "column": 25,
+              "endColumn": 41,
+              "endLineNumber": 154,
               "line": 154,
               "node": "CallExpression",
               "type": "literal",
@@ -1311,12 +1485,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 71,
+          "endLineNumber": 156,
           "line": 156,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "backgroundColor" => {
               "column": 30,
+              "endColumn": 46,
+              "endLineNumber": 156,
               "line": 156,
               "node": "CallExpression",
               "type": "literal",
@@ -1324,6 +1502,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
             },
             "color" => {
               "column": 55,
+              "endColumn": 67,
+              "endLineNumber": 156,
               "line": 156,
               "node": "StringLiteral",
               "type": "literal",
@@ -1336,12 +1516,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 12,
+          "endLineNumber": 163,
           "line": 158,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 22,
+              "endColumn": 34,
+              "endLineNumber": 161,
               "line": 161,
               "node": "StringLiteral",
               "type": "literal",
@@ -1354,12 +1538,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 12,
+          "endLineNumber": 172,
           "line": 167,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 22,
+              "endColumn": 34,
+              "endLineNumber": 170,
               "line": 170,
               "node": "StringLiteral",
               "type": "literal",
@@ -1372,12 +1560,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 12,
+          "endLineNumber": 184,
           "line": 175,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 22,
+              "endColumn": 36,
+              "endLineNumber": 181,
               "line": 181,
               "node": "StringLiteral",
               "type": "literal",
@@ -1385,6 +1577,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
             },
             "backgroundColor" => {
               "column": 32,
+              "endColumn": 46,
+              "endLineNumber": 182,
               "line": 182,
               "node": "StringLiteral",
               "type": "literal",
@@ -1397,18 +1591,24 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 91,
+          "endLineNumber": 189,
           "line": 189,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 28,
+              "endColumn": 89,
+              "endLineNumber": 189,
               "line": 189,
               "node": "ObjectLiteralExpression",
               "type": "map",
               "value": Map {
                 "default" => {
                   "column": 39,
+                  "endColumn": 48,
+                  "endLineNumber": 189,
                   "line": 189,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -1416,6 +1616,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
                 },
                 "hover" => {
                   "column": 57,
+                  "endColumn": 68,
+                  "endLineNumber": 189,
                   "line": 189,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -1423,6 +1625,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
                 },
                 "focus" => {
                   "column": 77,
+                  "endColumn": 87,
+                  "endLineNumber": 189,
                   "line": 189,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -1437,18 +1641,24 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 11,
+          "endColumn": 109,
+          "endLineNumber": 190,
           "line": 190,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "backgroundColor" => {
               "column": 38,
+              "endColumn": 107,
+              "endLineNumber": 190,
               "line": 190,
               "node": "ObjectLiteralExpression",
               "type": "map",
               "value": Map {
                 "default" => {
                   "column": 49,
+                  "endColumn": 61,
+                  "endLineNumber": 190,
                   "line": 190,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -1456,6 +1666,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
                 },
                 "hover" => {
                   "column": 70,
+                  "endColumn": 84,
+                  "endLineNumber": 190,
                   "line": 190,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -1463,6 +1675,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
                 },
                 "focus" => {
                   "column": 93,
+                  "endColumn": 105,
+                  "endLineNumber": 190,
                   "line": 190,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -1477,12 +1691,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 5,
+          "endColumn": 47,
+          "endLineNumber": 217,
           "line": 217,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 32,
+              "endColumn": 46,
+              "endLineNumber": 217,
               "line": 217,
               "node": "StringLiteral",
               "type": "literal",
@@ -1495,12 +1713,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 5,
+          "endColumn": 54,
+          "endLineNumber": 228,
           "line": 228,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 35,
+              "endLineNumber": 228,
               "line": 228,
               "node": "StringLiteral",
               "type": "literal",
@@ -1513,12 +1735,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 7,
+          "endColumn": 38,
+          "endLineNumber": 229,
           "line": 229,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 23,
+              "endColumn": 37,
+              "endLineNumber": 229,
               "line": 229,
               "node": "StringLiteral",
               "type": "literal",
@@ -1531,12 +1757,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 5,
+          "endColumn": 42,
+          "endLineNumber": 240,
           "line": 240,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 21,
+              "endColumn": 30,
+              "endLineNumber": 240,
               "line": 240,
               "node": "StringLiteral",
               "type": "literal",
@@ -1549,12 +1779,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 7,
+          "endColumn": 44,
+          "endLineNumber": 246,
           "line": 246,
           "node": "JsxOpeningElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 23,
+              "endColumn": 32,
+              "endLineNumber": 246,
               "line": 246,
               "node": "StringLiteral",
               "type": "literal",
@@ -1567,12 +1801,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 12,
+          "endColumn": 53,
+          "endLineNumber": 252,
           "line": 252,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 28,
+              "endColumn": 39,
+              "endLineNumber": 252,
               "line": 252,
               "node": "StringLiteral",
               "type": "literal",
@@ -1585,12 +1823,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 12,
+          "endColumn": 52,
+          "endLineNumber": 255,
           "line": 255,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 28,
+              "endColumn": 38,
+              "endLineNumber": 255,
               "line": 255,
               "node": "StringLiteral",
               "type": "literal",
@@ -1603,12 +1845,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 21,
+          "endColumn": 63,
+          "endLineNumber": 257,
           "line": 257,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 37,
+              "endColumn": 49,
+              "endLineNumber": 257,
               "line": 257,
               "node": "StringLiteral",
               "type": "literal",
@@ -1621,12 +1867,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 28,
+          "endColumn": 70,
+          "endLineNumber": 259,
           "line": 259,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 44,
+              "endColumn": 56,
+              "endLineNumber": 259,
               "line": 259,
               "node": "StringLiteral",
               "type": "literal",
@@ -1639,12 +1889,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 38,
+          "endColumn": 80,
+          "endLineNumber": 260,
           "line": 260,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 54,
+              "endColumn": 66,
+              "endLineNumber": 260,
               "line": 260,
               "node": "StringLiteral",
               "type": "literal",
@@ -1657,12 +1911,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 73,
+          "endColumn": 112,
+          "endLineNumber": 263,
           "line": 263,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 89,
+              "endColumn": 98,
+              "endLineNumber": 263,
               "line": 263,
               "node": "StringLiteral",
               "type": "literal",
@@ -1675,12 +1933,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": {
           "column": 34,
+          "endColumn": 76,
+          "endLineNumber": 264,
           "line": 264,
           "node": "JsxSelfClosingElement",
           "type": "map",
           "value": Map {
             "color" => {
               "column": 50,
+              "endColumn": 62,
+              "endLineNumber": 264,
               "line": 264,
               "node": "StringLiteral",
               "type": "literal",
@@ -5021,12 +5283,16 @@ it('extract function with multiple args even if not starting by ObjectLiteralExp
       {
         "box": {
           "column": 39,
+          "endColumn": 11,
+          "endLineNumber": 24,
           "line": 15,
           "node": "CallExpression",
           "type": "array",
           "value": [
             {
               "column": 51,
+              "endColumn": 61,
+              "endLineNumber": 15,
               "line": 15,
               "node": "StringLiteral",
               "type": "literal",
@@ -5034,18 +5300,24 @@ it('extract function with multiple args even if not starting by ObjectLiteralExp
             },
             {
               "column": 39,
+              "endColumn": 11,
+              "endLineNumber": 24,
               "line": 15,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "color" => {
                   "column": 20,
+                  "endColumn": 14,
+                  "endLineNumber": 23,
                   "line": 16,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "mainBg" => {
                       "column": 20,
+                      "endColumn": 29,
+                      "endLineNumber": 5,
                       "line": 5,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -5088,12 +5360,16 @@ it('extract NullKeyword', () => {
       {
         "box": {
           "column": 38,
+          "endColumn": 11,
+          "endLineNumber": 11,
           "line": 2,
           "node": "CallExpression",
           "type": "array",
           "value": [
             {
               "column": 50,
+              "endColumn": 60,
+              "endLineNumber": 2,
               "line": 2,
               "node": "StringLiteral",
               "type": "literal",
@@ -5101,18 +5377,24 @@ it('extract NullKeyword', () => {
             },
             {
               "column": 38,
+              "endColumn": 11,
+              "endLineNumber": 11,
               "line": 2,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "color" => {
                   "column": 20,
+                  "endColumn": 14,
+                  "endLineNumber": 10,
                   "line": 3,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "mainBg" => {
                       "column": 25,
+                      "endColumn": 29,
+                      "endLineNumber": 4,
                       "line": 4,
                       "node": "NullKeyword",
                       "type": "literal",
@@ -5120,6 +5402,8 @@ it('extract NullKeyword', () => {
                     },
                     "secondaryBg" => {
                       "column": 30,
+                      "endColumn": 34,
+                      "endLineNumber": 5,
                       "line": 5,
                       "node": "NullKeyword",
                       "type": "literal",
@@ -5127,6 +5411,8 @@ it('extract NullKeyword', () => {
                     },
                     "text" => {
                       "column": 23,
+                      "endColumn": 27,
+                      "endLineNumber": 6,
                       "line": 6,
                       "node": "NullKeyword",
                       "type": "literal",
@@ -5134,6 +5420,8 @@ it('extract NullKeyword', () => {
                     },
                     "bg" => {
                       "column": 21,
+                      "endColumn": 25,
+                      "endLineNumber": 7,
                       "line": 7,
                       "node": "NullKeyword",
                       "type": "literal",
@@ -5141,6 +5429,8 @@ it('extract NullKeyword', () => {
                     },
                     "bgSecondary" => {
                       "column": 30,
+                      "endColumn": 34,
+                      "endLineNumber": 8,
                       "line": 8,
                       "node": "NullKeyword",
                       "type": "literal",
@@ -5148,6 +5438,8 @@ it('extract NullKeyword', () => {
                     },
                     "bgHover" => {
                       "column": 26,
+                      "endColumn": 30,
+                      "endLineNumber": 9,
                       "line": 9,
                       "node": "NullKeyword",
                       "type": "literal",
@@ -5211,18 +5503,24 @@ it('extract css from createTheme result', () => {
       {
         "box": {
           "column": 5,
+          "endColumn": 6,
+          "endLineNumber": 19,
           "line": 13,
           "node": "CallExpression",
           "type": "array",
           "value": [
             {
               "column": 5,
+              "endColumn": 6,
+              "endLineNumber": 19,
               "line": 13,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "background" => {
                   "column": 25,
+                  "endColumn": 124,
+                  "endLineNumber": 15,
                   "line": 15,
                   "node": "TemplateExpression",
                   "type": "literal",
@@ -5230,6 +5528,8 @@ it('extract css from createTheme result', () => {
                 },
                 "backgroundAttachment" => {
                   "column": 35,
+                  "endColumn": 42,
+                  "endLineNumber": 16,
                   "line": 16,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -5237,6 +5537,8 @@ it('extract css from createTheme result', () => {
                 },
                 "color" => {
                   "column": 21,
+                  "endColumn": 50,
+                  "endLineNumber": 6,
                   "line": 6,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -5288,12 +5590,16 @@ it('extract assignVars args', () => {
       {
         "box": {
           "column": 26,
+          "endColumn": 11,
+          "endLineNumber": 24,
           "line": 16,
           "node": "CallExpression",
           "type": "array",
           "value": [
             {
               "column": 37,
+              "endColumn": 50,
+              "endLineNumber": 16,
               "line": 16,
               "node": "Identifier",
               "type": "unresolvable",
@@ -5301,18 +5607,24 @@ it('extract assignVars args', () => {
             },
             {
               "column": 26,
+              "endColumn": 11,
+              "endLineNumber": 24,
               "line": 16,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "color" => {
                   "column": 20,
+                  "endColumn": 14,
+                  "endLineNumber": 23,
                   "line": 17,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "mainBg" => {
                       "column": 20,
+                      "endColumn": 29,
+                      "endLineNumber": 9,
                       "line": 9,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -5320,6 +5632,8 @@ it('extract assignVars args', () => {
                     },
                     "secondaryBg" => {
                       "column": 20,
+                      "endColumn": 29,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -5327,6 +5641,8 @@ it('extract assignVars args', () => {
                     },
                     "bg" => {
                       "column": 20,
+                      "endColumn": 29,
+                      "endLineNumber": 6,
                       "line": 6,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -5334,6 +5650,8 @@ it('extract assignVars args', () => {
                     },
                     "bgSecondary" => {
                       "column": 20,
+                      "endColumn": 29,
+                      "endLineNumber": 11,
                       "line": 11,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -5341,6 +5659,8 @@ it('extract assignVars args', () => {
                     },
                     "bgHover" => {
                       "column": 20,
+                      "endColumn": 29,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -5376,6 +5696,8 @@ it('extract CallExpression > no args', () => {
           {
             "box": {
               "column": 25,
+              "endColumn": 43,
+              "endLineNumber": 2,
               "line": 2,
               "node": "CallExpression",
               "type": "array",

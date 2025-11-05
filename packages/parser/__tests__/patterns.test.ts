@@ -22,12 +22,16 @@ describe('pattern jsx', () => {
           {
             "box": {
               "column": 32,
+              "endColumn": 58,
+              "endLineNumber": 7,
               "line": 7,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "align" => {
                   "column": 47,
+                  "endColumn": 55,
+                  "endLineNumber": 7,
                   "line": 7,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -48,12 +52,16 @@ describe('pattern jsx', () => {
           {
             "box": {
               "column": 32,
+              "endColumn": 64,
+              "endLineNumber": 8,
               "line": 8,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "justify" => {
                   "column": 51,
+                  "endColumn": 61,
+                  "endLineNumber": 8,
                   "line": 8,
                   "node": "StringLiteral",
                   "type": "literal",

@@ -21,12 +21,16 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 68,
+            "endLineNumber": 7,
             "line": 7,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "marginTop" => {
                 "column": 41,
+                "endColumn": 47,
+                "endLineNumber": 7,
                 "line": 7,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -34,6 +38,8 @@ describe('jsx', () => {
               },
               "marginBottom" => {
                 "column": 61,
+                "endColumn": 67,
+                "endLineNumber": 7,
                 "line": 7,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -53,12 +59,16 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 41,
+            "endLineNumber": 8,
             "line": 8,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "bg" => {
                 "column": 31,
+                "endColumn": 40,
+                "endLineNumber": 8,
                 "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -97,12 +107,16 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 69,
+            "endLineNumber": 7,
             "line": 7,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "marginTop" => {
                 "column": 42,
+                "endColumn": 48,
+                "endLineNumber": 7,
                 "line": 7,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -110,6 +124,8 @@ describe('jsx', () => {
               },
               "marginBottom" => {
                 "column": 62,
+                "endColumn": 68,
+                "endLineNumber": 7,
                 "line": 7,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -129,12 +145,16 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 42,
+            "endLineNumber": 8,
             "line": 8,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "bg" => {
                 "column": 32,
+                "endColumn": 41,
+                "endLineNumber": 8,
                 "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -174,18 +194,24 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 95,
+            "endLineNumber": 8,
             "line": 8,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "marginTop" => {
                 "column": 42,
+                "endColumn": 73,
+                "endLineNumber": 8,
                 "line": 8,
                 "node": "ObjectLiteralExpression",
                 "type": "map",
                 "value": Map {
                   "sm" => {
                     "column": 47,
+                    "endColumn": 53,
+                    "endLineNumber": 8,
                     "line": 8,
                     "node": "StringLiteral",
                     "type": "literal",
@@ -193,12 +219,16 @@ describe('jsx', () => {
                   },
                   "md" => {
                     "column": 59,
+                    "endColumn": 72,
+                    "endLineNumber": 8,
                     "line": 8,
                     "node": "ObjectLiteralExpression",
                     "type": "map",
                     "value": Map {
                       "rtl" => {
                         "column": 65,
+                        "endColumn": 71,
+                        "endLineNumber": 8,
                         "line": 8,
                         "node": "StringLiteral",
                         "type": "literal",
@@ -210,6 +240,8 @@ describe('jsx', () => {
               },
               "marginBottom" => {
                 "column": 88,
+                "endColumn": 94,
+                "endLineNumber": 8,
                 "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -234,12 +266,16 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 41,
+            "endLineNumber": 9,
             "line": 9,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "bg" => {
                 "column": 31,
+                "endColumn": 40,
+                "endLineNumber": 9,
                 "line": 9,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -278,12 +314,16 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 91,
+            "endLineNumber": 8,
             "line": 8,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "marginLeft" => {
                 "column": 54,
+                "endColumn": 60,
+                "endLineNumber": 8,
                 "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -291,6 +331,8 @@ describe('jsx', () => {
               },
               "marginBottom" => {
                 "column": 84,
+                "endColumn": 90,
+                "endLineNumber": 8,
                 "line": 8,
                 "node": "StringLiteral",
                 "type": "literal",
@@ -330,18 +372,24 @@ describe('jsx', () => {
         {
           "box": {
             "column": 16,
+            "endColumn": 52,
+            "endLineNumber": 8,
             "line": 8,
             "node": "JsxOpeningElement",
             "type": "map",
             "value": Map {
               "css" => {
                 "column": 33,
+                "endColumn": 50,
+                "endLineNumber": 8,
                 "line": 8,
                 "node": "ObjectLiteralExpression",
                 "type": "map",
                 "value": Map {
                   "bg" => {
                     "column": 39,
+                    "endColumn": 48,
+                    "endLineNumber": 8,
                     "line": 8,
                     "node": "StringLiteral",
                     "type": "literal",
@@ -395,12 +443,16 @@ describe('jsx', () => {
         {
           "box": {
             "column": 13,
+            "endColumn": 13,
+            "endLineNumber": 19,
             "line": 8,
             "node": "JsxSelfClosingElement",
             "type": "map",
             "value": Map {
               "backgroundImage" => {
                 "column": 31,
+                "endColumn": 17,
+                "endLineNumber": 18,
                 "line": 9,
                 "node": "StringLiteral",
                 "type": "literal",

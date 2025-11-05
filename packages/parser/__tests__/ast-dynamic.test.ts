@@ -29,12 +29,16 @@ describe('[dynamic] ast parser', () => {
           {
             "box": {
               "column": 9,
+              "endColumn": 11,
+              "endLineNumber": 6,
               "line": 4,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "variant" => {
                   "column": 22,
+                  "endColumn": 26,
+                  "endLineNumber": 5,
                   "line": 5,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -53,18 +57,24 @@ describe('[dynamic] ast parser', () => {
           {
             "box": {
               "column": 9,
+              "endColumn": 9,
+              "endLineNumber": 14,
               "line": 12,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "variant" => {
                   "column": 20,
+                  "endColumn": 43,
+                  "endLineNumber": 13,
                   "line": 13,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "base" => {
                       "column": 27,
+                      "endColumn": 31,
+                      "endLineNumber": 13,
                       "line": 13,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -72,6 +82,8 @@ describe('[dynamic] ast parser', () => {
                     },
                     "md" => {
                       "column": 37,
+                      "endColumn": 41,
+                      "endLineNumber": 13,
                       "line": 13,
                       "node": "StringLiteral",
                       "type": "literal",
