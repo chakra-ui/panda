@@ -6089,3 +6089,34 @@ it.skip('extracts slots when spread', () => {
     }
   `)
 })
+
+it('box.toJSON() should include endColumn and endLineNumber', () => {
+  const code = `<ColorBox color="red.200" />`
+  const extracted = getExtract(code, { tagNameList: ['ColorBox'] })
+  expect(extracted.get('ColorBox')!.queryList).toMatchInlineSnapshot(`
+    [
+      {
+        "box": {
+          "column": 1,
+          "endColumn": 29,
+          "endLineNumber": 1,
+          "line": 1,
+          "node": "JsxSelfClosingElement",
+          "type": "map",
+          "value": Map {
+            "color" => {
+              "column": 17,
+              "endColumn": 26,
+              "endLineNumber": 1,
+              "line": 1,
+              "node": "StringLiteral",
+              "type": "literal",
+              "value": "red.200",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+    ]
+  `)
+})
