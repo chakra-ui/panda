@@ -1,0 +1,130 @@
+---
+title: Layer Styles
+description: Define reusable container styles properties.
+---
+
+Layer styles provide a way to create consistent and visually appealing elements.
+
+- Color or text color
+- Background color
+- Border width and border color
+- Box shadow
+- Opacity
+
+## Defining layer styles
+
+Layer styles are defined in the `layerStyles` property of the theme.
+
+Here's an example of a layer style:
+
+```js filename="layer-styles.ts"
+import { defineLayerStyles } from '@pandacss/dev'
+
+const layerStyles = defineLayerStyles({
+  container: {
+    description: 'container styles',
+    value: {
+      background: 'gray.50',
+      border: '2px solid',
+      borderColor: 'gray.500'
+    }
+  }
+})
+```
+
+> **Good to know:** The `value` property maps to style objects that will be applied to the element.
+
+## Update the config
+
+To use the layer styles, we need to update the `config` object in the `panda.config.ts` file.
+
+```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { layerStyles } from './layer-styles'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      layerStyles
+    }
+  }
+})
+```
+
+This should automatically update the generated theme the specified `layerStyles`. If this doesn't happen, you can run
+the `panda codegen` command.
+
+## Using layer styles
+
+Now we can use `layerStyle` property in our components.
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return <div className={css({ layerStyle: 'container' })}>This is inside a container style</div>
+}
+```
+
+## Nesting layer styles
+
+Layer styles support nested structures with a special `DEFAULT` key. This allows you to create variants of a layer style
+while having a default fallback.
+
+When you define a `DEFAULT` key within a nested layer style, you can reference the parent key directly to use the
+default value.
+
+```js filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      layerStyles: {
+        card: {
+          DEFAULT: {
+            value: {
+              background: 'white',
+              border: '1px solid',
+              borderColor: 'gray.200',
+              borderRadius: 'md',
+              boxShadow: 'sm'
+            }
+          },
+          elevated: {
+            value: {
+              background: 'white',
+              border: 'none',
+              borderRadius: 'lg',
+              boxShadow: 'lg'
+            }
+          },
+          outlined: {
+            value: {
+              background: 'transparent',
+              border: '2px solid',
+              borderColor: 'gray.300',
+              borderRadius: 'md',
+              boxShadow: 'none'
+            }
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+Now you can use the default card style or specific variants:
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return (
+    <div>
+      <div className={css({ layerStyle: 'card' })}>Default card style</div>
+      <div className={css({ layerStyle: 'card.elevated' })}>Elevated card</div>
+      <div className={css({ layerStyle: 'card.outlined' })}>Outlined card</div>
+    </div>
+  )
+}
+```

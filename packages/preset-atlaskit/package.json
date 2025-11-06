@@ -1,11 +1,12 @@
 {
   "name": "@pandacss/preset-atlaskit",
-  "version": "1.2.0",
+  "version": "1.4.3",
   "description": "The preset for PandaCSS that contains the default theme",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
   "sideEffects": false,
   "homepage": "https://panda-css.com",
   "repository": {
@@ -29,6 +30,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "generate": "node scripts/generate-theme.mjs",
+    "generate:clean": "node scripts/generate-theme.mjs --clean",
     "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
     "dev": "pnpm build-fast --watch"
@@ -40,6 +43,7 @@
     "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
-    "@atlaskit/tokens": "5.2.1"
+    "@atlaskit/motion": "^5.3.8",
+    "@atlaskit/tokens": "7.0.0"
   }
 }

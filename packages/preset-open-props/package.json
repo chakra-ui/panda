@@ -1,11 +1,12 @@
 {
   "name": "@pandacss/preset-open-props",
-  "version": "1.2.0",
+  "version": "1.4.3",
   "description": "A preset for Open Props",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Abraham Aremu <anubra266@gmail.com>",
+  "license": "MIT",
   "sideEffects": false,
   "homepage": "https://panda-css.com",
   "repository": {
@@ -42,6 +43,6 @@
     "open-props": "1.6.18"
   },
   "devDependencies": {
-    "@types/css": "0.0.37"
+    "@types/css": "0.0.38"
   }
 }

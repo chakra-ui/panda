@@ -56,19 +56,19 @@ export const buttonRecipe = defineRecipe({
       },
       yellow: {
         bg: 'bg.main',
-        color: 'text.main'
+        color: 'fg'
       },
       border: {
         bg: 'transparent',
-        color: 'text.main',
-        borderColor: 'text.headline',
-        boxShadowColor: 'text.headline'
+        color: 'fg',
+        borderColor: 'fg.headline',
+        boxShadowColor: 'fg.headline'
       },
       ghost: {
         bg: 'transparent',
         border: 'none',
         shadow: 'none',
-        color: 'text.main'
+        color: 'fg'
       },
       'ghost.white': {
         bg: 'transparent',

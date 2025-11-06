@@ -29,6 +29,8 @@ interface Dict {
   [k: string]: unknown
 }
 
+export type DataAttrs = Record<\`data-\${string}\`, unknown>
+
 export interface UnstyledProps {
   /**
    * Whether to remove recipe styles
@@ -36,7 +38,14 @@ export interface UnstyledProps {
   unstyled?: boolean | undefined
 }
 
-export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T> & UnstyledProps, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
+export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T> & UnstyledProps & AsProps, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
 
 interface RecipeFn {
   __type: any
@@ -44,12 +53,12 @@ interface RecipeFn {
 
 export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
-  defaultProps?: Partial<TProps>
+  defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: string[]
 }
 
-export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps, P>;
+export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>;
 
 export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
   ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
@@ -70,7 +79,7 @@ export type JsxElements = {
 
 export type ${upperName} = JsxFactory & JsxElements
 
-export type ${typeName}<T extends ElementType> = Assign<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+export type ${typeName}<T extends ElementType> = Assign<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
 
 export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
   `,

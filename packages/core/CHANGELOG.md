@@ -1,5 +1,126 @@
 # @pandacss/core
 
+## 1.4.3
+
+### Patch Changes
+
+- bb32028: Fix "Browserslist: caniuse-lite is outdated" warning by updating `browserslist` and PostCSS-related packages:
+
+  - Update `browserslist` from 4.23.3 to 4.24.4
+  - Update `postcss` from 8.4.49 to 8.5.6
+  - Update `postcss-nested` from 6.0.1 to 7.0.2
+  - Update `postcss-merge-rules` from 7.0.4 to 7.0.6
+  - Update other PostCSS plugins to latest patch versions
+
+  This resolves the outdated `caniuse-lite` warning that appeared when using lightningcss without affecting CSS output
+  or requiring snapshot updates.
+
+- 84a0de9: Improve static CSS generation performance with wildcard memoization. Token lookups for wildcard (`*`)
+  expansions are now cached, providing ~32% faster processing for large configs with wildcards.
+  - @pandacss/is-valid-prop@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/token-dictionary@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 70420dd: Fix issue where using `token()` or `token.var()` function from `styled-system/tokens` doesn't get resolved by
+  the compiler.
+
+  ```tsx
+  import { token } from 'styled-system/tokens'
+  import { css } from 'styled-system/css'
+
+  css({
+    // This didn't work before, but now it does
+    outline: `2px solid ${token('colors.gray.500')}`,
+
+    // This has always worked
+    outline: `2px solid token('colors.gray.500')`,
+  })
+  ```
+
+  This also supports fallback values.
+
+  ```tsx
+  css({
+    color: token('colors.brand.primary', '#3b82f6'),
+  })
+  ```
+
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/shared@1.4.2
+  - @pandacss/token-dictionary@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/is-valid-prop@1.4.2
+  - @pandacss/logger@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- db237b6: Improve recipe variant props tracking in JSX
+  - @pandacss/is-valid-prop@1.4.1
+  - @pandacss/logger@1.4.1
+  - @pandacss/shared@1.4.1
+  - @pandacss/token-dictionary@1.4.1
+  - @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- 4c291ca: JSX: Always track the `<component>.Root` for recipe variant props. This is a generally resilient default and
+  prevents the need for manual jsx hints.
+  - @pandacss/is-valid-prop@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/token-dictionary@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- 7fcd100: Fix issue where Panda eagerly tracks every JSX slot of a slot recipe when scanning for recipe props.
+
+  For example, assume you have a tabs recipe with the following slots:
+
+  ```jsx
+  <Tabs.Root>
+    <Tabs.List>
+      <Tabs.Trigger />
+    </Tabs.List>
+    <Tabs.Content />
+  </Tabs.Root>
+  ```
+
+  Panda tracks recipe props in `Tabs.Root`, `Tabs.List`, `Tabs.Trigger`, and `Tabs.Content`. This can lead to slightly
+  more works in the compiler.
+
+  This PR fixes this by only tracking recipe props in the `Tabs.Root` slot.
+
+  - @pandacss/is-valid-prop@1.3.1
+  - @pandacss/logger@1.3.1
+  - @pandacss/shared@1.3.1
+  - @pandacss/token-dictionary@1.3.1
+  - @pandacss/types@1.3.1
+
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [70efd73]
+  - @pandacss/types@1.3.0
+  - @pandacss/logger@1.3.0
+  - @pandacss/token-dictionary@1.3.0
+  - @pandacss/is-valid-prop@1.3.0
+  - @pandacss/shared@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes

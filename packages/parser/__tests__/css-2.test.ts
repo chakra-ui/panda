@@ -22,12 +22,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 5,
               "line": 2,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "color" => {
                   "column": 20,
+                  "endColumn": 25,
+                  "endLineNumber": 3,
                   "line": 3,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -35,6 +39,8 @@ describe('ast parser', () => {
                 },
                 "fontSize" => {
                   "column": 23,
+                  "endColumn": 29,
+                  "endLineNumber": 4,
                   "line": 4,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -54,12 +60,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 11,
               "line": 7,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "bg" => {
                   "column": 15,
+                  "endColumn": 24,
+                  "endLineNumber": 8,
                   "line": 8,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -67,12 +77,16 @@ describe('ast parser', () => {
                 },
                 "margin" => {
                   "column": 19,
+                  "endColumn": 41,
+                  "endLineNumber": 9,
                   "line": 9,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "xs" => {
                       "column": 25,
+                      "endColumn": 28,
+                      "endLineNumber": 9,
                       "line": 9,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -80,6 +94,8 @@ describe('ast parser', () => {
                     },
                     "lg" => {
                       "column": 33,
+                      "endColumn": 39,
+                      "endLineNumber": 9,
                       "line": 9,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -89,12 +105,16 @@ describe('ast parser', () => {
                 },
                 "padding" => {
                   "column": 20,
+                  "endColumn": 28,
+                  "endLineNumber": 10,
                   "line": 10,
                   "node": "ArrayLiteralExpression",
                   "type": "array",
                   "value": [
                     {
                       "column": 21,
+                      "endColumn": 23,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "NumericLiteral",
                       "type": "literal",
@@ -102,6 +122,8 @@ describe('ast parser', () => {
                     },
                     {
                       "column": 25,
+                      "endColumn": 27,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "NumericLiteral",
                       "type": "literal",
@@ -153,12 +175,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 6,
               "line": 3,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "color" => {
                   "column": 20,
+                  "endColumn": 25,
+                  "endLineNumber": 4,
                   "line": 4,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -166,6 +192,8 @@ describe('ast parser', () => {
                 },
                 "fontSize" => {
                   "column": 23,
+                  "endColumn": 29,
+                  "endLineNumber": 5,
                   "line": 5,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -185,12 +213,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 12,
               "line": 8,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "bg" => {
                   "column": 15,
+                  "endColumn": 24,
+                  "endLineNumber": 9,
                   "line": 9,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -198,12 +230,16 @@ describe('ast parser', () => {
                 },
                 "margin" => {
                   "column": 19,
+                  "endColumn": 41,
+                  "endLineNumber": 10,
                   "line": 10,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "xs" => {
                       "column": 25,
+                      "endColumn": 28,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -211,6 +247,8 @@ describe('ast parser', () => {
                     },
                     "lg" => {
                       "column": 33,
+                      "endColumn": 39,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -220,12 +258,16 @@ describe('ast parser', () => {
                 },
                 "padding" => {
                   "column": 20,
+                  "endColumn": 28,
+                  "endLineNumber": 11,
                   "line": 11,
                   "node": "ArrayLiteralExpression",
                   "type": "array",
                   "value": [
                     {
                       "column": 21,
+                      "endColumn": 23,
+                      "endLineNumber": 11,
                       "line": 11,
                       "node": "NumericLiteral",
                       "type": "literal",
@@ -233,6 +275,8 @@ describe('ast parser', () => {
                     },
                     {
                       "column": 25,
+                      "endColumn": 27,
+                      "endLineNumber": 11,
                       "line": 11,
                       "node": "NumericLiteral",
                       "type": "literal",
@@ -284,12 +328,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 6,
               "line": 3,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "color" => {
                   "column": 20,
+                  "endColumn": 25,
+                  "endLineNumber": 4,
                   "line": 4,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -297,6 +345,8 @@ describe('ast parser', () => {
                 },
                 "fontSize" => {
                   "column": 23,
+                  "endColumn": 29,
+                  "endLineNumber": 5,
                   "line": 5,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -316,12 +366,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 12,
               "line": 8,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "bg" => {
                   "column": 15,
+                  "endColumn": 24,
+                  "endLineNumber": 9,
                   "line": 9,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -329,12 +383,16 @@ describe('ast parser', () => {
                 },
                 "margin" => {
                   "column": 19,
+                  "endColumn": 41,
+                  "endLineNumber": 10,
                   "line": 10,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "xs" => {
                       "column": 25,
+                      "endColumn": 28,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -342,6 +400,8 @@ describe('ast parser', () => {
                     },
                     "lg" => {
                       "column": 33,
+                      "endColumn": 39,
+                      "endLineNumber": 10,
                       "line": 10,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -351,12 +411,16 @@ describe('ast parser', () => {
                 },
                 "padding" => {
                   "column": 20,
+                  "endColumn": 28,
+                  "endLineNumber": 11,
                   "line": 11,
                   "node": "ArrayLiteralExpression",
                   "type": "array",
                   "value": [
                     {
                       "column": 21,
+                      "endColumn": 23,
+                      "endLineNumber": 11,
                       "line": 11,
                       "node": "NumericLiteral",
                       "type": "literal",
@@ -364,6 +428,8 @@ describe('ast parser', () => {
                     },
                     {
                       "column": 25,
+                      "endColumn": 27,
+                      "endLineNumber": 11,
                       "line": 11,
                       "node": "NumericLiteral",
                       "type": "literal",
@@ -417,24 +483,32 @@ console.log(
           {
             "box": {
               "column": 5,
+              "endColumn": 7,
+              "endLineNumber": 12,
               "line": 6,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "selectors" => {
                   "column": 18,
+                  "endColumn": 8,
+                  "endLineNumber": 11,
                   "line": 7,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "&:hover" => {
                       "column": 20,
+                      "endColumn": 10,
+                      "endLineNumber": 10,
                       "line": 8,
                       "node": "ObjectLiteralExpression",
                       "type": "map",
                       "value": Map {
                         "background" => {
                           "column": 23,
+                          "endColumn": 32,
+                          "endLineNumber": 9,
                           "line": 9,
                           "node": "StringLiteral",
                           "type": "literal",
@@ -483,12 +557,16 @@ export function Card({ className }) {
           {
             "box": {
               "column": 32,
+              "endColumn": 60,
+              "endLineNumber": 7,
               "line": 7,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "background" => {
                   "column": 50,
+                  "endColumn": 57,
+                  "endLineNumber": 7,
                   "line": 7,
                   "node": "StringLiteral",
                   "type": "literal",

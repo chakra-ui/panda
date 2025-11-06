@@ -15,9 +15,9 @@ export const tokens = defineTokens({
     '6xl': { value: '4rem' }
   },
   fonts: {
-    mono: { value: 'var(--font-fira-code), Menlo, monospace' },
-    body: { value: 'var(--font-mona-sans), sans-serif' },
-    heading: { value: 'var(--font-mona-sans), sans-serif' }
+    mono: { value: 'var(--font-mono), Menlo, monospace' },
+    body: { value: 'var(--font-sans), sans-serif' },
+    heading: { value: 'var(--font-sans), sans-serif' }
   },
   colors
 })

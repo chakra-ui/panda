@@ -1,5 +1,95 @@
 # @pandacss/dev
 
+## 1.4.3
+
+### Patch Changes
+
+- 65aed7b: Fix `Cannot find module '@pandacss/preset-base'` error when using Bun or other package managers that use flat
+  `node_modules` structures.
+- Updated dependencies [bb32028]
+- Updated dependencies [84a0de9]
+  - @pandacss/node@1.4.3
+  - @pandacss/postcss@1.4.3
+  - @pandacss/config@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/preset-base@1.4.3
+  - @pandacss/preset-panda@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/token-dictionary@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- Updated dependencies [0679f6f]
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/config@1.4.2
+  - @pandacss/shared@1.4.2
+  - @pandacss/token-dictionary@1.4.2
+  - @pandacss/node@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/postcss@1.4.2
+  - @pandacss/logger@1.4.2
+  - @pandacss/preset-panda@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/node@1.4.1
+- @pandacss/postcss@1.4.1
+- @pandacss/config@1.4.1
+- @pandacss/logger@1.4.1
+- @pandacss/preset-panda@1.4.1
+- @pandacss/shared@1.4.1
+- @pandacss/token-dictionary@1.4.1
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [29cf719]
+  - @pandacss/preset-panda@1.4.0
+  - @pandacss/node@1.4.0
+  - @pandacss/config@1.4.0
+  - @pandacss/postcss@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/token-dictionary@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/node@1.3.1
+- @pandacss/postcss@1.3.1
+- @pandacss/config@1.3.1
+- @pandacss/logger@1.3.1
+- @pandacss/preset-panda@1.3.1
+- @pandacss/shared@1.3.1
+- @pandacss/token-dictionary@1.3.1
+- @pandacss/types@1.3.1
+
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [70efd73]
+  - @pandacss/types@1.3.0
+  - @pandacss/node@1.3.0
+  - @pandacss/config@1.3.0
+  - @pandacss/logger@1.3.0
+  - @pandacss/preset-panda@1.3.0
+  - @pandacss/token-dictionary@1.3.0
+  - @pandacss/postcss@1.3.0
+  - @pandacss/shared@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes

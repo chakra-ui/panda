@@ -144,7 +144,7 @@ test('should generate pattern', () => {
         ...rest
       };
     },
-    defaultValues:{direction:'column',gap:'10px'}}
+    defaultValues:{direction:'column',gap:'8px'}}
 
     export const getStackStyle = (styles = {}) => {
       const _styles = getPatternStyles(stackConfig, styles)
@@ -192,7 +192,7 @@ test('should generate pattern', () => {
         ...rest
       };
     },
-    defaultValues:{gap:'10px'}}
+    defaultValues:{gap:'8px'}}
 
     export const getVstackStyle = (styles = {}) => {
       const _styles = getPatternStyles(vstackConfig, styles)
@@ -240,7 +240,7 @@ test('should generate pattern', () => {
         ...rest
       };
     },
-    defaultValues:{gap:'10px'}}
+    defaultValues:{gap:'8px'}}
 
     export const getHstackStyle = (styles = {}) => {
       const _styles = getPatternStyles(hstackConfig, styles)
@@ -584,7 +584,7 @@ test('should generate pattern', () => {
       };
     },
     defaultValues(props) {
-      return { gap: props.columnGap || props.rowGap ? void 0 : "10px" };
+      return { gap: props.columnGap || props.rowGap ? void 0 : "8px" };
     }}
 
     export const getGridStyle = (styles = {}) => {
@@ -679,7 +679,7 @@ test('should generate pattern', () => {
 
     const wrapConfig = {
     transform(props) {
-      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "10px", align, justify, ...rest } = props;
+      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "8px", align, justify, ...rest } = props;
       return {
         display: "flex",
         flexWrap: "wrap",

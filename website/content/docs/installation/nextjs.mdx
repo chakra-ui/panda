@@ -1,0 +1,380 @@
+---
+title: Using Next.js
+description: Easily use Panda with Next.js with our dedicated integration.
+---
+
+Setting up Panda CSS with Next.js is straightforward. Follow the steps below to get started.
+
+If you don't have Next.js app installed, you can follow the [Create a Next.js app](#create-a-nextjs-app) section to
+create a new Next.js app, otherwise you can skip to the [Install Panda CSS](#install-panda-css) section.
+
+<RouteSwitch values={["app-dir","pages-dir"]}>
+
+## Start a new project
+
+You can chose between these two options to start a new project:
+
+<RouteSwitchTrigger values={['Using App Router', 'Using Pages Router']} />
+
+  <Steps>
+  ### Create a Next.js app
+
+First, create a Next.js app using the official [Create Next App](https://nextjs.org/docs/api-reference/create-next-app)
+CLI. We will name our project `test-app` but you can name it whatever you want.
+
+If you don't enter any parameter, the CLI will guide you through the process of creating a new Next.js app.
+
+  <Tabs items={['pnpm', 'npm', 'yarn', 'bun']} variant="code">
+    {/* <!-- prettier-ignore-start --> */}
+    <Tab>
+      ```bash
+      pnpm dlx create-next-app@latest --use-pnpm
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      npx create-next-app@latest --use-npm
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      yarn dlx create-next-app@latest --use-yarn
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      bunx create next-app@latest --use-bun
+      ```
+    </Tab>
+    {/* <!-- prettier-ignore-end --> */}
+  </Tabs>
+
+You will be asked a few questions, answer them as follows:
+
+  <RouteSwitchContent value="app-dir">
+  {/* <!-- prettier-ignore-start --> */}
+    ```bash
+    ✔ What is your project named? … test-app
+    ✔ Would you like to use TypeScript with this project? … Yes
+    ✔ Would you like to use ESLint with this project? … Yes
+    ✔ Would you like to use Tailwind CSS with this project? … No
+    ✔ Would you like to use `src/` directory with this project? … Yes
+    ✔ Use App Router (recommended)? … Yes
+    ✔ Would you like to customize the default import alias? … No
+    ```
+  {/* <!-- prettier-ignore-end --> */}
+  </RouteSwitchContent>
+  <RouteSwitchContent value="pages-dir">
+  {/* <!-- prettier-ignore-start --> */}
+    ```bash
+    ✔ What is your project named? … test-app
+    ✔ Would you like to use TypeScript with this project? … Yes
+    ✔ Would you like to use ESLint with this project? … Yes
+    ✔ Would you like to use Tailwind CSS with this project? … No
+    ✔ Would you like to use `src/` directory with this project? … Yes
+    ✔ Use App Router (recommended)? … No
+    ✔ Would you like to customize the default import alias? … No
+    ```
+  {/* <!-- prettier-ignore-end --> */}
+  </RouteSwitchContent>
+
+Enter the newly created directory:
+
+```bash
+cd test-app
+```
+
+### Install Panda CSS
+
+Install Panda CSS dependency using your favorite package manager.
+
+  <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+    <Tab>
+      ```bash
+      pnpm install -D @pandacss/dev
+      pnpm panda init --postcss
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      npm install -D @pandacss/dev
+      npx panda init --postcss
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      yarn add -D @pandacss/dev
+      yarn panda init --postcss
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      bun add -D @pandacss/dev
+      bun panda init --postcss
+      ```
+    </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+  </Tabs>
+
+`panda init --postcss` command will automatically create a `postcss.config.js` file at the root of your project with the
+following code:
+
+```js {3}
+module.exports = {
+  plugins: {
+    '@pandacss/dev/postcss': {}
+  }
+}
+```
+
+For advanced configuration follow the Next.js PostCSS guide to set up a custom PostCSS configuration by referring to
+this [link](https://nextjs.org/docs/pages/building-your-application/configuring/post-css#customizing-plugins).
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3}
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  }
+}
+```
+
+The `prepare` script that will run codegen after dependency installation. Read more about
+[codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
+> the output directory to your `.gitignore` file and not worry about it.
+
+### Configure the content
+
+Make sure that all of the paths of your React components are included in the `include` section of the `panda.config.ts`
+file.
+
+<RouteSwitchContent value="app-dir">
+
+```ts {7} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // Whether to use css reset
+  preflight: true,
+  // Where to look for your css declarations
+  include: ['./src/components/**/*.{ts,tsx,js,jsx}', './src/app/**/*.{ts,tsx,js,jsx}'],
+  // Files to exclude
+  exclude: [],
+  // The output directory for your css system
+  outdir: 'styled-system'
+})
+```
+
+</RouteSwitchContent>
+
+<RouteSwitchContent value="pages-dir">
+
+```ts {7} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // Whether to use css reset
+  preflight: true,
+  // Where to look for your css declarations
+  include: ['./src/components/**/*.{ts,tsx,js,jsx}', './src/pages/**/*.{ts,tsx,js,jsx}'],
+  // Files to exclude
+  exclude: [],
+  // The output directory for your css system
+  outdir: 'styled-system'
+})
+```
+
+</RouteSwitchContent>
+
+### Configure the entry CSS with layers
+
+<RouteSwitchContent value="app-dir">
+  In your Next.js project, navigate to the `src/app` folder and open `globals.css` file. Replace all the content with
+  the following code:
+</RouteSwitchContent>
+<RouteSwitchContent value="pages-dir">
+  In your Next.js project, navigate to the `src/styles` folder and open `globals.css` file. Replace all the content with
+  the following code:
+</RouteSwitchContent>
+
+```css
+@layer reset, base, tokens, recipes, utilities;
+```
+
+<RouteSwitchContent value="app-dir">
+  
+  > **Note:** Feel free to remove the `page.module.css` file as we don't need it
+  anymore.
+  
+</RouteSwitchContent>
+<RouteSwitchContent value="pages-dir">
+
+> **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
+
+</RouteSwitchContent>
+
+### Import the entry CSS in your app
+
+<RouteSwitchContent value="app-dir">
+  
+Make sure that you import the `globals.css` file in your `src/app/layout.tsx` file as follows:
+
+```tsx {1} filename="./src/app/layout.tsx"
+import './globals.css'
+import type { Metadata } from 'next'
+import localFont from 'next/font/local'
+
+const geistSans = localFont({
+  src: './fonts/GeistVF.woff',
+  variable: '--font-geist-sans',
+  weight: '100 900'
+})
+const geistMono = localFont({
+  src: './fonts/GeistMonoVF.woff',
+  variable: '--font-geist-mono',
+  weight: '100 900'
+})
+
+export const metadata: Metadata = {
+  title: 'Create Next App',
+  description: 'Generated by create next app'
+}
+
+export default function RootLayout({
+  children
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+    </html>
+  )
+}
+```
+
+</RouteSwitchContent>
+<RouteSwitchContent value="pages-dir">
+
+Make sure that you import the `globals.css` file in your `src/pages/_app.tsx` file as follows:
+
+```tsx {1} filename="./src/pages/_app.tsx"
+import '../styles/globals.css'
+import type { AppProps } from 'next/app'
+
+export default function App({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />
+}
+```
+
+</RouteSwitchContent>
+
+### Start using Panda
+
+<RouteSwitchContent value="app-dir">
+  We will update the contents of `src/app/page.tsx` with the following snippet that uses Panda CSS:
+</RouteSwitchContent>
+<RouteSwitchContent value="pages-dir">
+  We will update the contents of `src/pages/index.tsx` with the following snippet that uses Panda CSS:
+</RouteSwitchContent>
+
+```tsx
+import { css } from '../../styled-system/css'
+
+export default function Home() {
+  return <div className={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
+}
+```
+
+### Start the development server
+
+Run the following command to start the development server:
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+{/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
+    ```
+  </Tab>
+{/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+</Steps>
+</RouteSwitch>
+
+## Troubleshooting
+
+### I don't see any styles
+
+Sometimes Next.js caches PostCSS generated styles and when that happens you need to clear the cache. To do that, delete
+the `.next` folder and restart your development server.
+
+You can also update you `package.json` scripts to delete the `.next` folder before each build:
+
+```diff {3,4}
+{
+"scripts": {
+-    "dev": "next dev",
++    "dev": "rm -rf .next && next dev",
+},
+}
+```
+
+This is a known issue with Next.js and you can track the progress here:
+
+- [vercel/next.js#39410](https://github.com/vercel/next.js/issues/39410)
+- [vercel/next.js#48748](https://github.com/vercel/next.js/issues/48748)
+- [vercel/next.js#47533](https://github.com/vercel/next.js/issues/47533)
+
+### I don't see any import autocomplete in my IDE
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
+`tsconfig.json` file:
+
+```json filename="tsconfig.json"
+{
+  // ...
+  "include": ["src", "styled-system"]
+}
+```
+
+### Codegen fails using es5
+
+If you run into any error related to "Transforming const to the configured target environment ("es5") is not supported
+yet", update your tsconfig to use es6 or higher:
+
+```json filename="tsconfig.json"
+{
+  "compilerOptions": {
+    "target": "es6"
+  }
+}
+```

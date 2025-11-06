@@ -1,4 +1,4 @@
-import type { Token, TokenExtensions } from '@pandacss/token-dictionary'
+import type { Token } from '@pandacss/token-dictionary'
 import * as React from 'react'
 import { Grid, HStack, Stack, panda } from '../../styled-system/jsx'
 import { ColorWrapper } from '../components/color-wrapper'

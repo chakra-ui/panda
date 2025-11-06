@@ -45,7 +45,7 @@ const stack = definePattern({
   },
   defaultValues: {
     direction: 'column',
-    gap: '10px',
+    gap: '8px',
   },
   transform(props) {
     const { align, justify, direction, gap, ...rest } = props
@@ -67,7 +67,7 @@ const vstack = definePattern({
     gap: { type: 'property', value: 'gap' },
   },
   defaultValues: {
-    gap: '10px',
+    gap: '8px',
   },
   transform(props) {
     const { justify, gap, ...rest } = props
@@ -89,7 +89,7 @@ const hstack = definePattern({
     gap: { type: 'property', value: 'gap' },
   },
   defaultValues: {
-    gap: '10px',
+    gap: '8px',
   },
   transform(props) {
     const { justify, gap, ...rest } = props
@@ -165,7 +165,7 @@ const grid = definePattern({
     minChildWidth: { type: 'token', value: 'sizes', property: 'width' },
   },
   defaultValues(props) {
-    return { gap: props.columnGap || props.rowGap ? undefined : '10px' }
+    return { gap: props.columnGap || props.rowGap ? undefined : '8px' }
   },
   transform(props, { map, isCssUnit }) {
     const { columnGap, rowGap, gap, columns, minChildWidth, ...rest } = props
@@ -219,7 +219,7 @@ const wrap = definePattern({
     justify: { type: 'property', value: 'justifyContent' },
   },
   transform(props) {
-    const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '10px', align, justify, ...rest } = props
+    const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '8px', align, justify, ...rest } = props
     return {
       display: 'flex',
       flexWrap: 'wrap',

@@ -112,7 +112,6 @@ export function useEditor(props: PandaEditorProps) {
 
   const onToggleWrap = useCallback(() => {
     setWordwrap((prev) => (prev === 'on' ? 'off' : 'on'))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -147,7 +146,7 @@ export function useEditor(props: PandaEditorProps) {
         registerKeybindings()
       })
 
-      //@ts-expect-error
+      //@ts-expect-error - monaco types are not fully compatible with the latest version
       monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
 
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
@@ -172,10 +171,21 @@ export function useEditor(props: PandaEditorProps) {
     (monaco: Parameters<OnMount>[1]) => {
       const libs = artifacts.flatMap((artifact) => {
         if (!artifact) return []
-        return artifact.files.map((file) => ({
-          filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
-          content: file.code ?? '',
-        }))
+        return artifact.files.map((file) => {
+          // Patch FunctionComponent types for React 19 compatibility in Monaco
+          let content = file.code ?? ''
+          if (file.file.endsWith('.d.ts')) {
+            content = content.replace(
+              /export declare const (\w+): FunctionComponent<(\w+)>/g,
+              'export declare const $1: (props: $2) => JSX.Element',
+            )
+          }
+
+          return {
+            filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
+            content,
+          }
+        })
       })
 
       return libs.map((lib) => monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath))
@@ -183,7 +193,6 @@ export function useEditor(props: PandaEditorProps) {
     [artifacts],
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const getPandaTypes = useCallback(async () => {}, [])
 
   const onBeforeMount: BeforeMount = (monaco) => {
@@ -209,7 +218,24 @@ export function useEditor(props: PandaEditorProps) {
           filePath: 'file:///node_modules/@types/react/index.d.ts',
         },
         {
-          content: "// Expose `JSX` namespace in `global` namespace\nimport './';\n",
+          content: `import * as React from "./";
+export { Fragment } from "./";
+
+export namespace JSX {
+  type ElementType = React.JSX.ElementType;
+  interface Element extends React.JSX.Element {}
+  interface ElementClass extends React.JSX.ElementClass {}
+  interface ElementAttributesProperty extends React.JSX.ElementAttributesProperty {}
+  interface ElementChildrenAttribute extends React.JSX.ElementChildrenAttribute {}
+  type LibraryManagedAttributes<C, P> = React.JSX.LibraryManagedAttributes<C, P>;
+  interface IntrinsicAttributes extends React.JSX.IntrinsicAttributes {}
+  interface IntrinsicClassAttributes<T> extends React.JSX.IntrinsicClassAttributes<T> {}
+  interface IntrinsicElements extends React.JSX.IntrinsicElements {}
+}
+
+export function jsx(type: React.ElementType, props: unknown, key?: React.Key): React.ReactElement;
+export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): React.ReactElement;
+`,
           filePath: 'file:///node_modules/@types/react/jsx-runtime.d.ts',
         },
         {
@@ -226,7 +252,6 @@ export function useEditor(props: PandaEditorProps) {
         monaco.languages.typescript.typescriptDefaults.addExtraLib(src.content, src.filePath)
       })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [configureEditor, setupLibs, getPandaTypes],
   )
 

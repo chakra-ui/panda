@@ -1,5 +1,47 @@
 # @pandacss/preset-panda
 
+## 1.4.3
+
+### Patch Changes
+
+- @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- @pandacss/types@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Minor Changes
+
+- 29cf719: - **Preset Base**: Change default spacing from `10px` and `8px`
+  - **Preset Panda**: Add `5.5` to spacing scale to cover more minor scales
+
+### Patch Changes
+
+- @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/types@1.3.1
+
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [70efd73]
+  - @pandacss/types@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes

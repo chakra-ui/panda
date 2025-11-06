@@ -6,7 +6,7 @@ import { TokenGroup } from '../components/token-group'
 import { Input, Textarea } from './input'
 import { StickyTop } from './sticky-top'
 import { EmptyState } from './empty-state'
-import { TypographyIcon, XMarkIcon } from './icons'
+import { TypographyIcon } from './icons'
 
 interface FontTokensProps {
   text?: string

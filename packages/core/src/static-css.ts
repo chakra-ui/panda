@@ -1,4 +1,5 @@
 import type { RecipeNode, Stylesheet } from '@pandacss/core'
+import { logger } from '@pandacss/logger'
 import { esc } from '@pandacss/shared'
 import type { CssRule, Dict, PatternRule, RecipeRule, StaticCssOptions } from '@pandacss/types'
 import type { Context } from './context'
@@ -27,6 +28,10 @@ export class StaticCss {
 
   private breakpointKeys: string[]
   private conditionKeys: string[]
+
+  // Wildcard expansion cache - this is the main performance optimization
+  // Memoizing wildcard expansions avoids redundant token lookups
+  private wildcardCache = new Map<string, (string | number)[]>()
 
   constructor(private context: StaticCssContext) {
     this.encoder = context.encoder
@@ -70,10 +75,42 @@ export class StaticCss {
     return matches.map((match) => match.replace('.', ''))
   }
 
+  /**
+   * Get property keys with memoization for wildcard expansion
+   * This is the main performance optimization - avoids redundant token lookups
+   */
+  private getCachedPropertyKeys = (property: string): (string | number)[] => {
+    const cached = this.wildcardCache.has(property)
+    if (!cached) {
+      const keys = this.context.utility.getPropertyKeys(property)
+      this.wildcardCache.set(property, keys)
+      logger.debug('static_css:wildcard', `${property} -> ${keys.length} values (memoized)`)
+    } else {
+      logger.debug('static_css:wildcard', `${property} (cache hit)`)
+    }
+    return this.wildcardCache.get(property)!
+  }
+
+  /**
+   * Get pattern property values with memoization
+   */
+  private getCachedPatternPropertyValues = (patternName: string, property: string): (string | number)[] => {
+    const cacheKey = `${patternName}:${property}`
+    const cached = this.wildcardCache.has(cacheKey)
+    if (!cached) {
+      const values = this.context.patterns.getPropertyValues(patternName, property) ?? []
+      this.wildcardCache.set(cacheKey, values)
+      logger.debug('static_css:wildcard', `Pattern ${patternName}.${property} -> ${values.length} values (memoized)`)
+    } else {
+      logger.debug('static_css:wildcard', `Pattern ${patternName}.${property} (cache hit)`)
+    }
+    return this.wildcardCache.get(cacheKey)!
+  }
+
   private getCssObjects = (entry: [string, Array<string | number>], conditions: string[]) => {
     const [property, values] = entry
 
-    const propKeys = this.context.utility.getPropertyKeys(property)
+    const propKeys = this.getCachedPropertyKeys(property)
     const computedValues = values.flatMap((value) => (value === '*' ? propKeys : value))
 
     return computedValues.map((value) => ({
@@ -93,7 +130,7 @@ export class StaticCss {
   private getPatternObjects = (name: string, entry: [string, Array<string | number>], conditions: string[]): Dict[] => {
     const [property, values] = entry
 
-    const propValues = this.context.patterns.getPropertyValues(name, property)
+    const propValues = this.getCachedPatternPropertyValues(name, property)
     const computedValues = values.flatMap((value) => (value === '*' ? propValues : value))
 
     return computedValues.map((patternValue) => {
@@ -226,10 +263,18 @@ export class StaticCss {
   }
 
   process = (options: StaticCssOptions, stylesheet?: Stylesheet): StaticCssEngine => {
-    const { encoder, decoder, context } = this
+    const { context } = this
 
     const sheet = stylesheet ?? context.createSheet()
 
+    // Determine which encoder/decoder to use
+    // If this is a cloned instance (encoder !== context.encoder), use fresh instances each time
+    // to avoid state accumulation across multiple process() calls
+    const isClonedInstance = this.encoder !== context.encoder
+    const encoder = isClonedInstance ? context.encoder.clone() : this.encoder
+    const decoder = isClonedInstance ? context.decoder.clone() : this.decoder
+
+    // Normalize the staticCss config
     const staticCss = {
       ...options,
       recipes: { ...(typeof options.recipes === 'string' ? {} : options.recipes) },
@@ -250,7 +295,14 @@ export class StaticCss {
       }
     })
 
+    logger.debug('static_css:process', `Processing staticCss`)
+
     const results = this.getStyleObjects(staticCss)
+
+    logger.debug(
+      'static_css:process',
+      `Generated style objects: ${results.css.length} css, ${results.recipes.length} recipes, ${results.patterns.length} patterns`,
+    )
 
     results.css.forEach((css) => {
       encoder.hashStyleObject(encoder.atomic, css)

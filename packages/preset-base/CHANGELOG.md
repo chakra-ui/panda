@@ -1,5 +1,66 @@
 # @pandacss/preset-base
 
+## 1.4.3
+
+### Patch Changes
+
+- @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- @pandacss/types@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Minor Changes
+
+- 29cf719: - **Preset Base**: Change default spacing from `10px` and `8px`
+  - **Preset Panda**: Add `5.5` to spacing scale to cover more minor scales
+
+### Patch Changes
+
+- 1bca361: Fix regression in `_marker` condition due to the use of `:is()` which doesn't work for pseudo elements.
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/types@1.3.1
+
+## 1.3.0
+
+### Minor Changes
+
+- 1c36121: Added new transition values and enhanced transition property utilities
+
+  - `size` → `width, height, min-width, max-width, min-height, max-height`
+  - `position` → `left, right, top, bottom, inset, inset-inline, inset-block`
+  - `background` → `background, background-color, background-image, background-position`
+
+  ```tsx
+  import { css } from 'styled-system/css'
+
+  // Transition shorthand values
+  css({ transition: 'size' })
+
+  // Property groups
+  css({ transitionProperty: 'size', transitionDuration: '300ms' })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [70efd73]
+  - @pandacss/types@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes

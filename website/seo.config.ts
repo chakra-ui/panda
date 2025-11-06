@@ -1,4 +1,4 @@
-import { getPublicUrl } from '@/public-url'
+import { getPublicUrl } from '@/lib/public-url'
 import type { Metadata } from 'next'
 
 const defineMetadata = <T extends Metadata>(metadata: T) => metadata

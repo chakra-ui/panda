@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/parser",
-  "version": "1.2.0",
+  "version": "1.4.3",
   "description": "The static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -17,6 +17,7 @@
     }
   },
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
   "sideEffects": false,
   "homepage": "https://panda-css.com",
   "repository": {
@@ -39,14 +40,14 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@vue/compiler-sfc": "3.4.19",
-    "magic-string": "0.30.17",
+    "@vue/compiler-sfc": "3.5.22",
+    "magic-string": "0.30.19",
     "ts-morph": "26.0.0",
     "ts-pattern": "5.8.0"
   },
   "devDependencies": {
     "@pandacss/generator": "workspace:*",
-    "@vue/compiler-core": "3.4.19"
+    "@vue/compiler-core": "3.5.22"
   },
   "files": [
     "dist"

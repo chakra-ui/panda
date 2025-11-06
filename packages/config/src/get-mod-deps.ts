@@ -109,7 +109,7 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
       if (!filename) return
 
       getDeps(Object.assign({}, nextOpts, { filename }), mod)
-    } catch (err) {
+    } catch {
       //
     }
   })

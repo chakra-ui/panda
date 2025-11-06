@@ -6,6 +6,7 @@ import {
   isString,
   mapObject,
   memo,
+  PandaError,
   walkObject,
   type CssVar,
   type CssVarOptions,
@@ -406,15 +407,15 @@ export class TokenDictionary {
       if (!path) return
 
       if (path.includes('/')) {
-        const mix = this.colorMix(path, this.view.get.bind(this.view))
+        const mix = this.colorMix(path, this.view.getVar.bind(this.view))
         if (mix.invalid) {
-          throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+          throw new PandaError('INVALID_TOKEN', 'Invalid color mix at ' + path + ': ' + mix.value)
         }
 
         return mix.value
       }
 
-      const resolved = this.view.get(path)
+      const resolved = this.view.getVar(path)
       if (resolved) return resolved
 
       // If the path includes an unresolved token reference, we need to escape it
@@ -505,6 +506,7 @@ export class TokenDictionaryView {
     const colorPalettes = new Map<ColorPalette, Map<VarName, VarRef>>()
     const valuesByCategory = new Map<TokenCategory, Map<VarName, TokenValue>>()
     const flatValues = new Map<TokenName, VarRef>()
+    const rawValues = new Map<TokenName, TokenValue>()
     const nameByVar = new Map<VarRef, TokenName>()
     const vars = new Map<ConditionName, Map<VarName, TokenValue>>()
 
@@ -512,7 +514,7 @@ export class TokenDictionaryView {
       this.processCondition(token, conditionMap)
       this.processColorPalette(token, colorPalettes, this.dictionary.byName)
       this.processCategory(token, categoryMap)
-      this.processValue(token, valuesByCategory, flatValues, nameByVar)
+      this.processValue(token, valuesByCategory, flatValues, rawValues, nameByVar)
       this.processVars(token, vars)
     })
 
@@ -527,6 +529,9 @@ export class TokenDictionaryView {
       json,
       valuesByCategory,
       get: memo((path: string, fallback?: string | number) => {
+        return (rawValues.get(path) ?? fallback) as string
+      }),
+      getVar: memo((path: string, fallback?: string | number) => {
         return (flatValues.get(path) ?? fallback) as string
       }),
       getCategoryValues: memo((category: string) => {
@@ -599,9 +604,10 @@ export class TokenDictionaryView {
     token: Token,
     byCategory: Map<string, Map<string, string>>,
     flatValues: Map<string, string>,
+    rawValues: Map<string, string>,
     nameByVar: Map<string, string>,
   ) {
-    const { category, prop, varRef, isNegative } = token.extensions
+    const { category, prop, varRef, isNegative, isVirtual, condition } = token.extensions
     if (!category) return
 
     if (!byCategory.has(category)) byCategory.set(category, new Map())
@@ -609,6 +615,11 @@ export class TokenDictionaryView {
     byCategory.get(category)!.set(prop, value)
     flatValues.set(token.name, value)
     nameByVar.set(value, token.name)
+
+    // Store raw value matching runtime behavior:
+    // Use varRef for virtual tokens or non-base conditions, otherwise use raw token.value
+    const rawValue = isVirtual || condition !== 'base' ? varRef : token.value
+    rawValues.set(token.name, rawValue)
   }
 
   private processVars(token: Token, group: Map<string, Map<string, string>>) {

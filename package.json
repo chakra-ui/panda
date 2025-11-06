@@ -19,7 +19,7 @@
     "codegen": "pnpm --filter=./sandbox/codegen",
     "test:codegen": "pnpm codegen test && pnpm codegen typecheck",
     "test-watch": "vitest --watch -u",
-    "lint": "eslint packages --ext .ts",
+    "lint": "eslint packages",
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
@@ -40,8 +40,8 @@
     "@changesets/cli": "2.29.5",
     "@projectwallace/format-css": "^2.0.0",
     "chokidar": "4.0.3",
-    "concurrently": "8.2.2",
-    "cross-env": "7.0.3",
+    "concurrently": "9.2.1",
+    "cross-env": "10.1.0",
     "happy-dom": "15.10.2",
     "husky": "9.0.11",
     "lint-staged": "15.2.11",
@@ -49,19 +49,22 @@
     "rimraf": "5.0.10",
     "ts-morph": "26.0.0",
     "tsup": "8.5.0",
-    "tsx": "4.20.3",
+    "tsx": "4.20.6",
     "typescript": "5.8.3",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.2.4"
   },
   "devDependencies": {
-    "@types/eslint": "8.56.12",
-    "@types/node": "20.11.30",
-    "@typescript-eslint/eslint-plugin": "7.0.1",
-    "@typescript-eslint/parser": "7.0.1",
-    "eslint": "8.56.0",
-    "eslint-config-prettier": "9.1.0",
+    "@eslint/js": "^9.37.0",
+    "@types/eslint": "9.6.1",
+    "@types/node": "24.8.1",
+    "@typescript-eslint/eslint-plugin": "8.46.1",
+    "@typescript-eslint/parser": "8.46.1",
+    "eslint": "9.37.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "^16.4.0",
     "prettier": "3.2.5",
+    "typescript-eslint": "^8.46.1",
     "vite-plugin-virtual": "^0.4.0"
   },
   "lint-staged": {
@@ -71,7 +74,7 @@
       "git add --all packages/studio/"
     ]
   },
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.19.0",
   "pnpm": {
     "overrides": {
       "@swc/helpers@~0.4": "0.4.36"

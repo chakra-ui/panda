@@ -3,10 +3,12 @@ import { prisma } from '../../../client/prisma'
 import { parseState } from '@/src/lib/parse-state'
 import { notFound } from 'next/navigation'
 
-const Page = async (props: any) => {
-  const {
-    params: { id, id2 },
-  } = props
+interface PageProps {
+  params: Promise<{ id: string; id2: string }>
+}
+
+const Page = async (props: PageProps) => {
+  const { id, id2 } = await props.params
 
   const initialState = await prisma.session
     .findFirst({

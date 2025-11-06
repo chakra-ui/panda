@@ -1,5 +1,44 @@
 # @pandacss/extractor
 
+## 1.4.3
+
+### Patch Changes
+
+- @pandacss/shared@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- Updated dependencies [1290a27]
+  - @pandacss/shared@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/shared@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- @pandacss/shared@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/shared@1.3.1
+
+## 1.3.0
+
+### Patch Changes
+
+- @pandacss/shared@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes

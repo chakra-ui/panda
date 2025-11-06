@@ -1,5 +1,5 @@
 import { css } from '@/styled-system/css'
-import { useDetails } from '../nextra/contexts'
+import { useDetails } from '../mdx/contexts'
 
 const styles = css({
   display: 'flex',

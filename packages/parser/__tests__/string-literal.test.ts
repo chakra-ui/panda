@@ -25,6 +25,8 @@ describe('ast parser / string literal', () => {
           {
             "box": {
               "column": 33,
+              "endColumn": 6,
+              "endLineNumber": 14,
               "line": 4,
               "node": "NoSubstitutionTemplateLiteral",
               "type": "literal",

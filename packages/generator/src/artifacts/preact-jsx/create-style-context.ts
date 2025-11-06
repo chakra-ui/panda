@@ -33,16 +33,20 @@ export function generatePreactCreateStyleContext(ctx: Context) {
         )}
       }
 
-      const withRootProvider = (Component) => {
+      const withRootProvider = (Component, options) => {
         const WithRootProvider = (props) => {
           const [variantProps, otherProps] = svaFn.splitVariantProps(props)
           
           const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
           slotStyles._classNameMap = svaFn.classNameMap
 
+          const mergedProps = options?.defaultProps 
+            ? { ...options.defaultProps, ...otherProps } 
+            : otherProps
+
           return createElement(StyleContext.Provider, {
             value: slotStyles,
-            children: createElement(Component, otherProps)
+            children: createElement(Component, mergedProps)
           })
         }
         
@@ -110,11 +114,15 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs', '../types/jsx')}
     import type { ComponentType, ComponentProps, JSX } from 'preact/compat'
 
     interface UnstyledProps {
-      unstyled?: boolean
+      unstyled?: boolean | undefined
+    }
+
+    interface WithProviderOptions<P = {}> {
+      defaultProps?: (Partial<P> & DataAttrs) | undefined
     }
 
     type ElementType = JSX.ElementType
@@ -132,22 +140,29 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
       JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
-    
+
+    type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
+      ComponentProps<T> & UnstyledProps & RecipeVariantProps<R>
+    >
+
     type StyleContextConsumer<T extends ElementType> = ComponentType<
       JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {
-      withRootProvider: <T extends ElementType>(Component: T) => StyleContextProvider<T, R>
+      withRootProvider: <T extends ElementType>(
+        Component: T,
+        options?: WithProviderOptions<ComponentProps<T>> | undefined
+      ) => StyleContextRootProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextConsumer<T>
     }
 

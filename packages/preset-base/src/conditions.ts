@@ -22,7 +22,7 @@ export const conditions = {
   after: '&::after',
   firstLetter: '&::first-letter',
   firstLine: '&::first-line',
-  marker: '&:is(::marker, ::-webkit-details-marker)',
+  marker: '&::marker, &::-webkit-details-marker',
   selection: '&::selection',
   file: '&::file-selector-button',
   backdrop: '&::backdrop',

@@ -12,7 +12,7 @@ export const main = () => {
   const getOrCreateDir = (dir: string) => {
     try {
       fs.mkdirSync(dir)
-    } catch (e) {
+    } catch {
       // ignore
     }
   }

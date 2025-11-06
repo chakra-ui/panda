@@ -1,4 +1,4 @@
-import { useClipboard } from '@/mdx/use-clipboard'
+import { useClipboard } from '@ark-ui/react/clipboard'
 import { css, cva } from '@/styled-system/css'
 import { grid, hstack, square } from '@/styled-system/patterns'
 import type { Token } from '@pandacss/token-dictionary'
@@ -24,7 +24,7 @@ interface ColorGridTokenProps {
 
 export const ColorGridToken = (props: ColorGridTokenProps) => {
   const { token } = props
-  const { isCopied, copy } = useClipboard({ getValue: () => token.value })
+  const { copied, copy } = useClipboard({ value: token.value })
   return (
     <div className={hstack({ cursor: 'pointer' })} onClick={copy}>
       <div
@@ -35,9 +35,7 @@ export const ColorGridToken = (props: ColorGridTokenProps) => {
         <div className={css({ fontWeight: 'medium' })}>
           {token.extensions.prop}
         </div>
-        <div className={colorTokenValue({ copied: isCopied })}>
-          {token.value}
-        </div>
+        <div className={colorTokenValue({ copied })}>{token.value}</div>
       </div>
     </div>
   )

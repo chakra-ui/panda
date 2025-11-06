@@ -1,31 +1,38 @@
-import { FeatureMarquee } from '@/components/feature-marquee'
-import { SectionCommunity } from '@/components/sections/community'
-import { SectionCourse } from '@/components/sections/course'
-import { SectionCssInJS } from '@/components/sections/css-in-js'
-import { SectionDesignTokens } from '@/components/sections/design-tokens'
-import { SectionHero } from '@/components/sections/hero'
-import { SectionModernCss } from '@/components/sections/modern-css'
-import { SectionRecipes } from '@/components/sections/recipes'
-import { SectionStartBuilding } from '@/components/sections/start-building'
-import { SectionTestimonials } from '@/components/sections/testimonials'
-import { SectionTryPanda } from '@/components/sections/try-panda'
-import { SectionWorksEverywhere } from '@/components/sections/works-everywhere'
+import { Navbar } from '@/components/navbar'
+import { css } from '@/styled-system/css'
+import { CommunitySection } from '@/www/community.section'
+import { CourseSection } from '@/www/course.section'
+import { CssInJSSection } from '@/www/css-in-js.section'
+import { DesignTokensSection } from '@/www/design-tokens.section'
+import { FeatureMarqueeSection } from '@/www/feature-marquee.section'
+import { FooterSection } from '@/www/footer.section'
+import { HeroSection } from '@/www/hero.section'
+import { ModernCssSection } from '@/www/modern-css.section'
+import { RecipesSection } from '@/www/recipes.section'
+import { StartBuildingSection } from '@/www/start-building.section'
+import { TestimonialsSection } from '@/www/testimonials.section'
+import { TryPandaSection } from '@/www/try-panda.section'
+import { WorksEverywhereSection } from '@/www/works-everywhere.section'
 
 export default function Page() {
   return (
     <>
-      <SectionHero />
-      <FeatureMarquee />
-      <SectionCssInJS />
-      <SectionCourse />
-      <SectionModernCss />
-      <SectionDesignTokens />
-      <SectionRecipes />
-      <SectionTestimonials />
-      <SectionTryPanda />
-      <SectionWorksEverywhere />
-      <SectionStartBuilding />
-      <SectionCommunity />
+      <Navbar />
+      <div className={css({ display: 'flex', flexDirection: 'column' })}>
+        <HeroSection />
+        <FeatureMarqueeSection />
+        <CssInJSSection />
+        <CourseSection />
+        <ModernCssSection />
+        <DesignTokensSection />
+        <RecipesSection />
+        <TestimonialsSection />
+        <TryPandaSection />
+        <WorksEverywhereSection />
+        <StartBuildingSection />
+        <CommunitySection />
+      </div>
+      <FooterSection />
     </>
   )
 }

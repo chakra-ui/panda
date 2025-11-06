@@ -1,11 +1,12 @@
 {
   "name": "@pandacss/token-dictionary",
-  "version": "1.2.0",
+  "version": "1.4.3",
   "description": "Common error messages for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
   "sideEffects": false,
   "homepage": "https://panda-css.com",
   "repository": {

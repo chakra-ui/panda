@@ -1,0 +1,149 @@
+---
+title: Text Styles
+description: Define reusable typography css properties.
+---
+
+Text styles allows you to define textual css properties. The common properties are:
+
+- The font family, weight, size
+- Line height
+- Letter spacing
+- Text Decoration (strikethrough and underline)
+- Text Transform (uppercase, lowercase, and capitalization)
+
+## Defining text styles
+
+Text styles are defined in the `textStyles` property of the theme.
+
+Here's an example of a text style:
+
+```js filename="text-styles.ts"
+import { defineTextStyles } from '@pandacss/dev'
+
+export const textStyles = defineTextStyles({
+  body: {
+    description: 'The body text style - used in paragraphs',
+    value: {
+      fontFamily: 'Inter',
+      fontWeight: '500',
+      fontSize: '16px',
+      lineHeight: '24px',
+      letterSpacing: '0',
+      textDecoration: 'None',
+      textTransform: 'None'
+    }
+  }
+})
+```
+
+> **Good to know:** The `value` property maps to style objects that will be applied to the text.
+
+## Update the config
+
+To use the text styles, we need to update the `config` object in the `panda.config.ts` file.
+
+```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { textStyles } from './text-styles'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      textStyles
+    }
+  }
+})
+```
+
+This should automatically update the generated theme the specified `textStyles`. If this doesn't happen, you can run the
+`panda codegen` command.
+
+## Using text styles
+
+Now we can use `textStyle` property in our components.
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return <p className={css({ textStyle: 'body' })}>This is a paragraph from Panda with the body text style.</p>
+}
+```
+
+## Nesting text styles
+
+Text styles support nested structures with a special `DEFAULT` key. This allows you to create variants of a text style
+while having a default fallback.
+
+When you define a `DEFAULT` key within a nested text style, you can reference the parent key directly to use the default
+value.
+
+```js filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      textStyles: {
+        heading: {
+          DEFAULT: {
+            value: {
+              fontFamily: 'Inter',
+              fontWeight: 'bold',
+              fontSize: '1.5rem',
+              lineHeight: '1.2'
+            }
+          },
+          h1: {
+            value: {
+              fontFamily: 'Inter',
+              fontWeight: 'bold',
+              fontSize: '2.5rem',
+              lineHeight: '1.1'
+            }
+          },
+          h2: {
+            value: {
+              fontFamily: 'Inter',
+              fontWeight: 'bold',
+              fontSize: '2rem',
+              lineHeight: '1.15'
+            }
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+Now you can use the default heading style or specific variants:
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return (
+    <div>
+      <h1 className={css({ textStyle: 'heading.h1' })}>Main Title</h1>
+      <h2 className={css({ textStyle: 'heading.h2' })}>Subtitle</h2>
+      <h3 className={css({ textStyle: 'heading' })}>Uses DEFAULT variant</h3>
+    </div>
+  )
+}
+```
+
+## Best Practices
+
+### Avoid layout properties
+
+To ensure the consistency of your design system, avoid applying layout properties (like margin, padding, etc.) or color
+properties (background, colors, etc.) to the text styles.
+
+### Naming conventions
+
+We recommend using the same text style names used by designers on your team. Here are common ideas on how to name text
+styles:
+
+- Sized-based naming system (`xs`, `sm`, `md`, `lg`, `xl`)
+- Semantic naming system that corresponds to respective html tags in production (`caption`, `paragraph`, `h1`, `h2`)
+- Descriptive or functional naming system that explains the style's intended use (`alert`, `modal-header`,
+  `button-label`)

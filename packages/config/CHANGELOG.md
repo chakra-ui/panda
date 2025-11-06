@@ -1,5 +1,74 @@
 # @pandacss/config
 
+## 1.4.3
+
+### Patch Changes
+
+- 84a0de9: Improve static CSS generation performance with wildcard memoization. Token lookups for wildcard (`*`)
+  expansions are now cached, providing ~32% faster processing for large configs with wildcards.
+  - @pandacss/logger@1.4.3
+  - @pandacss/preset-base@1.4.3
+  - @pandacss/preset-panda@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 0679f6f: Fix issue where `create-recipe.mjs` helper was not generated when adding the first recipe to a project that
+  previously had no recipes.
+- Updated dependencies [1290a27]
+  - @pandacss/shared@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+  - @pandacss/preset-base@1.4.2
+  - @pandacss/preset-panda@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/logger@1.4.1
+- @pandacss/preset-base@1.4.1
+- @pandacss/preset-panda@1.4.1
+- @pandacss/shared@1.4.1
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [1bca361]
+- Updated dependencies [29cf719]
+  - @pandacss/preset-base@1.4.0
+  - @pandacss/preset-panda@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/logger@1.3.1
+- @pandacss/preset-base@1.3.1
+- @pandacss/preset-panda@1.3.1
+- @pandacss/shared@1.3.1
+- @pandacss/types@1.3.1
+
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [70efd73]
+- Updated dependencies [1c36121]
+  - @pandacss/types@1.3.0
+  - @pandacss/preset-base@1.3.0
+  - @pandacss/logger@1.3.0
+  - @pandacss/preset-panda@1.3.0
+  - @pandacss/shared@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes

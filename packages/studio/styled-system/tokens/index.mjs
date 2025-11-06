@@ -471,6 +471,10 @@ const tokens = {
     "value": "1.125rem",
     "variable": "var(--spacing-4\\.5)"
   },
+  "spacing.5.5": {
+    "value": "1.375rem",
+    "variable": "var(--spacing-5\\.5)"
+  },
   "sizes.0": {
     "value": "0rem",
     "variable": "var(--sizes-0)"
@@ -610,6 +614,10 @@ const tokens = {
   "sizes.4.5": {
     "value": "1.125rem",
     "variable": "var(--sizes-4\\.5)"
+  },
+  "sizes.5.5": {
+    "value": "1.375rem",
+    "variable": "var(--sizes-5\\.5)"
   },
   "sizes.xs": {
     "value": "20rem",
@@ -1882,6 +1890,10 @@ const tokens = {
   "spacing.-4.5": {
     "value": "calc(var(--spacing-4\\.5) * -1)",
     "variable": "var(--spacing-4\\.5)"
+  },
+  "spacing.-5.5": {
+    "value": "calc(var(--spacing-5\\.5) * -1)",
+    "variable": "var(--spacing-5\\.5)"
   },
   "colors.colorPalette": {
     "value": "var(--colors-color-palette)",

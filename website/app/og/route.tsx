@@ -3,28 +3,26 @@ import { Logo } from './logo'
 import { Yums } from './mascot'
 
 const monaSans = fetch(
-  new URL('../../styles/Mona-Sans-Bold.ttf', import.meta.url)
+  new URL('../../styles/Onest-Bold.ttf', import.meta.url)
 ).then(res => res.arrayBuffer())
 
 const upperFirst = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
 export const runtime = 'edge'
 
-interface Params {
-  category: string
-  title: string
-}
-
 const getFontSize = (title: string) => {
-  if (title.length < 14) return '120px'
-  if (title.length < 28) return '82px'
+  if (title.length < 14) return '104px'
+  if (title.length < 28) return '84px'
   return '64px'
 }
 
-export async function GET(_req: Request, context: { params: Params }) {
+export async function GET(request: Request) {
   try {
-    const category = context.params.category
-    const title = context.params.title || 'Build time, type safe, CSS-in-JS'
+    const { searchParams } = new URL(request.url)
+    const title =
+      searchParams.get('title') || 'Build time, type safe, CSS-in-JS'
+    const description = searchParams.get('description')
+    const category = searchParams.get('category')
 
     return new ImageResponse(
       (
@@ -53,7 +51,7 @@ export async function GET(_req: Request, context: { params: Params }) {
                 <div
                   style={{
                     display: 'flex',
-                    fontFamily: 'Mona Sans',
+                    fontFamily: 'Onest',
                     color: '#7B722C',
                     fontSize: '24px',
                     marginBottom: '16px'
@@ -65,19 +63,33 @@ export async function GET(_req: Request, context: { params: Params }) {
               <div
                 style={{
                   fontSize: getFontSize(title),
-                  fontFamily: 'Mona Sans',
+                  fontFamily: 'Onest',
                   fontWeight: 700,
                   letterSpacing: '-1.5px'
                 }}
               >
                 {upperFirst(title)}
               </div>
-              {!category && (
+              {description && (
+                <div
+                  style={{
+                    marginTop: '24px',
+                    fontSize: '28px',
+                    fontFamily: 'Onest',
+                    fontWeight: 400,
+                    color: '#7B722C',
+                    lineHeight: 1.4
+                  }}
+                >
+                  {description}
+                </div>
+              )}
+              {!category && !description && (
                 <div
                   style={{
                     marginTop: '40px',
                     fontSize: '40px',
-                    fontFamily: 'Mona Sans',
+                    fontFamily: 'Onest',
                     fontWeight: 700,
                     letterSpacing: '-1.5px',
                     color: '#000000',
@@ -107,7 +119,7 @@ export async function GET(_req: Request, context: { params: Params }) {
         height: 630,
         fonts: [
           {
-            name: 'Mona Sans',
+            name: 'Onest',
             data: await monaSans,
             style: 'normal',
             weight: 700

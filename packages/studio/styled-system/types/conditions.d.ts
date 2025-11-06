@@ -46,7 +46,7 @@ export interface Conditions {
 	"_firstLetter": string
 	/** `&::first-line` */
 	"_firstLine": string
-	/** `&:is(::marker, ::-webkit-details-marker)` */
+	/** `&::marker, &::-webkit-details-marker` */
 	"_marker": string
 	/** `&::selection` */
 	"_selection": string

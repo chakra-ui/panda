@@ -8,7 +8,7 @@
     "prepare": "pnpm db:generate && pnpm css:codegen",
     "build": "pnpm types:codegen && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "dev": "next dev",
     "db:format": "prisma format",
     "db:generate": "prisma generate",
@@ -35,7 +35,7 @@
     "monaco-editor-auto-typings": "0.4.6",
     "monaco-jsx-syntax-highlight": "1.2.0",
     "nanoid": "5.1.5",
-    "next": "14.2.26",
+    "next": "15.5.6",
     "next-themes": "0.4.6",
     "os-browserify": "0.3.0",
     "outdent": " ^0.8.0",
@@ -50,18 +50,22 @@
     "typescript": "5.8.3",
     "usehooks-ts": "2.14.0",
     "util": "0.12.5",
-    "zod": "3.22.4"
+    "zod": "3.25.1"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "14.1.0",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.37.0",
+    "@next/bundle-analyzer": "15.5.6",
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
     "dts-bundle-generator": "9.3.1",
-    "eslint-config-next": "14.1.0",
+    "eslint": "^9.37.0",
+    "eslint-config-next": "15.5.6",
+    "eslint-plugin-react-hooks": "^7.0.0",
     "raw-loader": "4.0.2",
-    "tsx": "4.20.3"
+    "tsx": "4.20.6"
   },
   "browserslist": [
     "Chrome 118"

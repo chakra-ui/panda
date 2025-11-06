@@ -98,6 +98,8 @@ abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNodeDefinit
       node: this.node.getKindName(),
       line: range.startLineNumber,
       column: range.startColumn,
+      endLineNumber: range.endLineNumber,
+      endColumn: range.endColumn,
     }
   }
 

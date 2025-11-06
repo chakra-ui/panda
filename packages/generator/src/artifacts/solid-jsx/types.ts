@@ -21,6 +21,8 @@ interface Dict {
   [k: string]: unknown
 }
 
+export type DataAttrs = Record<\`data-\${string}\`, unknown>
+
 export interface UnstyledProps {
   /**
    * Whether to remove recipe styles
@@ -28,11 +30,18 @@ export interface UnstyledProps {
   unstyled?: boolean | undefined
 }
 
-export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
+export type ElementType = keyof JSX.IntrinsicElements | Component<any>
 
 export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
-  (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<JsxStyleProps, P>>): JSX.Element
-  displayName?: string
+  (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>): JSX.Element
+  displayName?: string | undefined
 }
 
 interface RecipeFn {
@@ -41,12 +50,12 @@ interface RecipeFn {
 
 export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
-  defaultProps?: Partial<TProps>
+  defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: string[]
 }
 
-export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps, P>;
+export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>;
 
 export type JsxElement<T extends ElementType, P extends Dict> = T extends ${componentName}<infer A, infer B>
   ? ${componentName}<A, Pretty<DistributiveUnion<P, B>>>
@@ -67,7 +76,7 @@ export type JsxElements = {
 
 export type ${upperName} = JsxFactory & JsxElements
 
-export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
 
 export type ${variantName}<T extends ${componentName}<any, any>> = T extends ${componentName}<any, infer Props> ? Props : never
   `,

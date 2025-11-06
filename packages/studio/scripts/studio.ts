@@ -4,9 +4,9 @@ import { join } from 'node:path'
 export interface BuildOpts {
   outDir: string
   configPath: string
-  port?: string
-  host?: boolean
-  base?: string
+  port?: string | undefined
+  host?: boolean | undefined
+  base?: string | undefined
 }
 
 const appPath = join(__dirname, '..')

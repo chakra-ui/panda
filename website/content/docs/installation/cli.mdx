@@ -1,0 +1,161 @@
+---
+title: Panda CLI
+description: An alternative way to use Panda is by running the Panda CLI tool.
+---
+
+This guide shows you how to use Panda as an alternative approach by running the Panda CLI tool.
+
+<Steps>
+
+### Install Panda
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev
+    pnpm panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Configure the content
+
+Add the paths to all of your JavaScript or TypeScript code where you intend to use panda.
+
+```js {5}
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  include: ['./src/**/*.{ts,tsx,js,jsx}', './pages/**/*.{ts,tsx,js,jsx}'],
+  exclude: [],
+  outdir: 'styled-system'
+})
+```
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3}
+{
+  "scripts": {
++    "prepare": "panda codegen",
+  }
+}
+```
+
+The `prepare` script that will run codegen after dependency installation. Read more about
+[codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
+> the output directory to your `.gitignore` file and not worry about it.
+
+### Import the generated CSS
+
+For each Panda run, it emits the generated CSS at the `styled-system/styles.css` file path. Import this file at the root
+component of your project.
+
+```jsx {1}
+import './styled-system/styles.css'
+
+export function App() {
+  return <div>Page</div>
+}
+```
+
+### Start the Panda build process
+
+Run the CLI tool to scan your JavaScript and TypeScript files for style properties and call expressions.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    # Run it once
+    pnpm panda
+
+    # Run it in watch mode
+    pnpm panda --watch
+    ```
+
+  </Tab>
+  <Tab>
+    ```bash
+    # Run it once
+    npx panda
+
+    # Run it in watch mode
+    npx panda --watch
+    ```
+
+  </Tab>
+  <Tab>
+    ```bash
+    # Run it once
+    yarn panda
+
+    # Run it in watch mode
+    yarn panda --watch
+    ```
+
+  </Tab>
+  <Tab>
+    ```bash
+    # Run it once
+    bun panda
+
+    # Run it in watch mode
+    bun panda --watch
+    ```
+
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Start using Panda
+
+Use the generated style utilities in your code and panda will extract them to the generated CSS file. Then run your
+build process.
+
+```jsx
+import { css } from './styled-system/css'
+
+export function App() {
+  return <div className={css({ bg: 'red.400' })} />
+}
+```
+
+</Steps>
+
+## Troubleshooting
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
+`tsconfig.json` file:
+
+```json filename="tsconfig.json"
+{
+  // ...
+  "include": ["src", "styled-system"]
+}
+```

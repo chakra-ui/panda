@@ -1,4 +1,5 @@
 import { cva, cx } from '@/styled-system/css'
+import type { JSX } from 'react'
 
 const styles = cva({
   base: {
@@ -12,7 +13,6 @@ const styles = cva({
     fontFamily: 'mono',
     borderRadius: 'md',
     py: '0.5',
-    px: '0.25em',
     fontSize: '0.9em'
   },
   variants: {

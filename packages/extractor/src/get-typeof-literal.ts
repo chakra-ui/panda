@@ -9,5 +9,8 @@ export const getTypeOfLiteral = (value: PrimitiveType | PrimitiveType[]): Litera
   if (typeof value === 'boolean') return 'boolean'
   if (value === null) return 'null'
   if (value === undefined) return 'undefined'
-  throw new PandaError('UNKNOWN_TYPE', `Unexpected literal type: ${value as any}`)
+  throw new PandaError(
+    'UNKNOWN_LITERAL_TYPE',
+    `Unexpected literal type: ${value as any}. Expected: string, number, boolean, null, undefined, or array`,
+  )
 }
