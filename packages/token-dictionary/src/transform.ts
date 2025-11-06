@@ -1,5 +1,6 @@
 import { isCssUnit, isString, PandaError } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
+import picomatch from 'picomatch'
 import { P, match } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
 import { isCompositeBorder, isCompositeGradient, isCompositeShadow } from './is-composite'
@@ -238,58 +239,56 @@ export const addColorPalette: TokenTransformer = {
     // If disabled, don't add colorPalette extensions
     if (!enabled) return {}
 
-    let tokenPathClone = [...token.path]
-    tokenPathClone.pop()
-    tokenPathClone.shift()
+    // Extract color path (remove 'colors' prefix and last segment)
+    // ['colors', 'blue', '500'] -> ['blue']
+    // ['colors', 'button', 'light', 'accent', 'secondary'] -> ['button', 'light', 'accent']
+    // ['colors', 'primary'] -> ['primary'] (handle flat tokens)
+    let colorPath = token.path.slice(1, -1)
 
-    if (tokenPathClone.length === 0) {
-      const newPath = [...token.path]
-      newPath.shift()
-      tokenPathClone = newPath
+    // If no nested segments, use the path without the 'colors' prefix
+    if (colorPath.length === 0) {
+      colorPath = token.path.slice(1)
+      if (colorPath.length === 0) {
+        return {}
+      }
     }
 
-    if (tokenPathClone.length === 0) {
-      return {}
+    // Convert path segments to dot-notation string for pattern matching
+    const colorPathString = colorPath.join('.')
+
+    // Check include/exclude filters using picomatch (supports glob patterns)
+    // Exclude takes precedence over include
+    if (exclude?.length) {
+      const excludeMatchers = exclude.map((pattern) => picomatch(pattern))
+      if (excludeMatchers.some((matcher) => matcher(colorPathString))) {
+        return {}
+      }
     }
 
-    // Check include/exclude filters
-    const colorName = token.path[1] // e.g., 'blue' from ['colors', 'blue', '500']
-    if (include && !include.includes(colorName)) return {}
-    if (exclude && exclude.includes(colorName)) return {}
+    if (include?.length) {
+      const includeMatchers = include.map((pattern) => picomatch(pattern))
+      if (!includeMatchers.some((matcher) => matcher(colorPathString))) {
+        return {}
+      }
+    }
 
     /**
-     * If this is the nested color palette:
-     * ```json
-     * {
-     *   "colors": {
-     *     "button": {
-     *       "light": {
-     *         "accent": {
-     *           "secondary": {
-     *             value: 'blue',
-     *           },
-     *         },
-     *       },
-     *     },
-     *   },
-     * },
-     * ```
+     * Generate all possible color palette roots from the color path.
      *
-     * The `colorPaletteRoots` will be `['button', 'button.light', 'button.light.accent']`.
-     * It holds all the possible values you can pass to the css `colorPalette` property.
-     * It's used by the `addVirtualPalette` middleware to build the virtual `colorPalette` token for each color pattern root.
+     * For ['button', 'light', 'accent']:
+     * - ['button']
+     * - ['button', 'light']
+     * - ['button', 'light', 'accent']
+     *
+     * These represent all possible values you can pass to the css `colorPalette` property.
      */
-    const colorPaletteRoots = tokenPathClone.reduce(
-      (acc, _, i, arr) => {
-        const next = arr.slice(0, i + 1)
-        acc.push(next)
-        return acc
-      },
-      [] as Array<string[]>,
-    )
+    const colorPaletteRoots: string[][] = []
+    for (let i = 0; i < colorPath.length; i++) {
+      colorPaletteRoots.push(colorPath.slice(0, i + 1))
+    }
 
-    const colorPaletteRoot = tokenPathClone[0]
-    const colorPalette = dict.formatTokenName(tokenPathClone)
+    const colorPaletteRoot = colorPath[0]
+    const colorPalette = dict.formatTokenName(colorPath)
 
     /**
      * If this is the nested color palette:
@@ -343,16 +342,15 @@ export const addColorPalette: TokenTransformer = {
      *   })}
      * />
      */
-    const colorPaletteTokenKeys = token.path
-      // Remove everything before colorPalette root and the root itself
-      .slice(token.path.indexOf(colorPaletteRoot) + 1)
-      .reduce(
-        (acc, _, i, arr) => {
-          acc.push(arr.slice(i))
-          return acc
-        },
-        [] as Array<string[]>,
-      )
+    // Remove everything before colorPalette root and the root itself
+    const startIndex = token.path.indexOf(colorPaletteRoot) + 1
+    const remainingPath = token.path.slice(startIndex)
+    const colorPaletteTokenKeys: string[][] = []
+
+    // Generate all suffixes of the remaining path
+    for (let i = 0; i < remainingPath.length; i++) {
+      colorPaletteTokenKeys.push(remainingPath.slice(i))
+    }
 
     // https://github.com/chakra-ui/panda/issues/1421
     if (colorPaletteTokenKeys.length === 0) {
