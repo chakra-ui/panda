@@ -19,7 +19,7 @@
     "@ark-ui/react": "5.18.3",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
-    "bright": "0.8.6",
+    "bright": "1.0.0",
     "focus-visible": "5.2.1",
     "fuse.js": "^7.1.0",
     "git-url-parse": "16.1.0",
