@@ -1,5 +1,21 @@
 # @pandacss/node
 
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+- Updated dependencies [52e2399]
+  - @pandacss/types@1.5.0
+  - @pandacss/token-dictionary@1.5.0
+  - @pandacss/core@1.5.0
+  - @pandacss/config@1.5.0
+  - @pandacss/generator@1.5.0
+  - @pandacss/parser@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/reporter@1.5.0
+  - @pandacss/shared@1.5.0
+
 ## 1.4.3
 
 ### Patch Changes

@@ -1,5 +1,61 @@
 # @pandacss/generator
 
+## 1.5.0
+
+### Minor Changes
+
+- 91c65ff: Add support for controlling the color palette generation via `theme.colorPalette` property.
+
+  ```ts
+  // Disable color palette generation completely
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        enabled: false,
+      },
+    },
+  })
+
+  // Include only specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        include: ['gray', 'blue', 'red'],
+      },
+    },
+  })
+
+  // Exclude specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        exclude: ['yellow', 'orange'],
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- 52e2399: Fix TypeScript error when using `data-*` attributes in `defaultProps` for `createStyleContext` and JSX
+  factory functions.
+
+  ```tsx
+  const TabsList = withContext(TabsPrimitive.List, 'list', {
+    defaultProps: {
+      'data-slot': 'tabs-list', // now works without type errors
+    },
+  })
+  ```
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+  - @pandacss/token-dictionary@1.5.0
+  - @pandacss/core@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/is-valid-prop@1.5.0
+  - @pandacss/shared@1.5.0
+
 ## 1.4.3
 
 ### Patch Changes
