@@ -3,6 +3,24 @@ import type { RecipeConfig, SlotRecipeConfig } from './recipe'
 import type { CssKeyframes } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
 
+export interface ColorPaletteOptions {
+  /**
+   * Whether to enable color palette generation.
+   * @default true
+   */
+  enabled?: boolean
+  /**
+   * List of color names to include in color palette generation.
+   * When specified, only these colors will be used for color palettes.
+   */
+  include?: string[]
+  /**
+   * List of color names to exclude from color palette generation.
+   * When specified, these colors will not be used for color palettes.
+   */
+  exclude?: string[]
+}
+
 export interface Theme {
   /**
    * The breakpoints for your project.
@@ -49,6 +67,10 @@ export interface Theme {
    * The predefined container sizes for your project.
    */
   containerSizes?: Record<string, string>
+  /**
+   * The color palette configuration for your project.
+   */
+  colorPalette?: ColorPaletteOptions
 }
 
 interface PartialTheme extends Omit<Theme, 'recipes' | 'slotRecipes'> {
@@ -61,6 +83,10 @@ interface PartialTheme extends Omit<Theme, 'recipes' | 'slotRecipes'> {
    * Multi-variant style definitions for component slots.
    */
   slotRecipes?: Record<string, Partial<SlotRecipeConfig>>
+  /**
+   * The color palette configuration for your project.
+   */
+  colorPalette?: Partial<ColorPaletteOptions>
 }
 
 export interface ExtendableTheme extends Theme {

@@ -11,7 +11,14 @@ import {
   type CssVar,
   type CssVarOptions,
 } from '@pandacss/shared'
-import type { Recursive, SemanticTokens, ThemeVariantsMap, TokenCategory, Tokens } from '@pandacss/types'
+import type {
+  Recursive,
+  SemanticTokens,
+  ThemeVariantsMap,
+  TokenCategory,
+  Tokens,
+  ColorPaletteOptions,
+} from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { isCompositeTokenValue } from './is-composite'
 import { middlewares } from './middleware'
@@ -37,6 +44,7 @@ export interface TokenDictionaryOptions {
   themes?: ThemeVariantsMap | undefined
   prefix?: string
   hash?: boolean
+  colorPalette?: ColorPaletteOptions
 }
 
 export interface TokenMiddleware {
@@ -79,6 +87,10 @@ export class TokenDictionary {
 
   get hash() {
     return this.options.hash
+  }
+
+  get colorPalette() {
+    return this.options.colorPalette
   }
 
   getByName = (path: string) => {

@@ -733,9 +733,16 @@ importers:
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
+      picomatch:
+        specifier: ^4.0.0
+        version: 4.0.3
       ts-pattern:
         specifier: 5.8.0
         version: 5.8.0
+    devDependencies:
+      '@types/picomatch':
+        specifier: 4.0.2
+        version: 4.0.2
 
   packages/types:
     devDependencies:
