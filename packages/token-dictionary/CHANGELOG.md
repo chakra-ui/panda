@@ -1,5 +1,47 @@
 # @pandacss/token-dictionary
 
+## 1.5.0
+
+### Minor Changes
+
+- 91c65ff: Add support for controlling the color palette generation via `theme.colorPalette` property.
+
+  ```ts
+  // Disable color palette generation completely
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        enabled: false,
+      },
+    },
+  })
+
+  // Include only specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        include: ['gray', 'blue', 'red'],
+      },
+    },
+  })
+
+  // Exclude specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        exclude: ['yellow', 'orange'],
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/shared@1.5.0
+
 ## 1.4.3
 
 ### Patch Changes
