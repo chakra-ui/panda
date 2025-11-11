@@ -30,8 +30,8 @@ importers:
         specifier: 10.1.0
         version: 10.1.0
       happy-dom:
-        specifier: 15.10.2
-        version: 15.10.2
+        specifier: 20.0.10
+        version: 20.0.10
       husky:
         specifier: 9.0.11
         version: 9.0.11
@@ -61,7 +61,7 @@ importers:
         version: 5.1.4(typescript@5.8.3)(vite@7.0.6(@types/node@24.8.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(happy-dom@15.10.2)(jiti@2.6.1)(jsdom@24.0.0)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@24.0.0)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
     devDependencies:
       '@eslint/js':
         specifier: ^9.37.0
@@ -978,8 +978,8 @@ importers:
         specifier: 0.4.24
         version: 0.4.24(eslint@9.37.0(jiti@2.6.1))
       happy-dom:
-        specifier: 15.10.2
-        version: 15.10.2
+        specifier: 20.0.10
+        version: 20.0.10
       jsdom:
         specifier: 24.0.0
         version: 24.0.0
@@ -1003,7 +1003,7 @@ importers:
         version: 2.11.8(@testing-library/jest-dom@6.9.1)(solid-js@1.9.9)(vite@7.0.6(@types/node@24.8.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(happy-dom@15.10.2)(jiti@2.6.1)(jsdom@24.0.0)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@24.0.0)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
       vue:
         specifier: 3.5.18
         version: 3.5.18(typescript@5.8.3)
@@ -6847,6 +6847,9 @@ packages:
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
 
+  '@types/node@20.19.24':
+    resolution: {integrity: sha512-FE5u0ezmi6y9OZEzlJfg37mqqf6ZDSF2V/NLjUyGrR9uTZ7Sb9F7bLNZ03S4XVUNRWGA7Ck4c1kK+YnuWjl+DA==}
+
   '@types/node@24.8.1':
     resolution: {integrity: sha512-alv65KGRadQVfVcG69MuB4IzdYVpRwMG/mq8KWOaoOdyY617P5ivaDiMCGOFDWD2sAn5Q0mR3mRtUOgm99hL9Q==}
 
@@ -6959,6 +6962,9 @@ packages:
 
   '@types/uuid@9.0.8':
     resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
+
+  '@types/whatwg-mimetype@3.0.2':
+    resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -10861,9 +10867,9 @@ packages:
     engines: {node: '>=0.4.7'}
     hasBin: true
 
-  happy-dom@15.10.2:
-    resolution: {integrity: sha512-NbA5XrSovenJIIcfixCREX3ZnV7yHP4phhbfuxxf4CPn+LZpz/jIM9EqJ2DrPwgVDSMoAKH3pZwQvkbsSiCrUw==}
-    engines: {node: '>=18.0.0'}
+  happy-dom@20.0.10:
+    resolution: {integrity: sha512-6umCCHcjQrhP5oXhrHQQvLB0bwb1UzHAHdsXy+FjtKoYjUhmNZsQL8NivwM1vDvNEChJabVrUYxUnp/ZdYmy2g==}
+    engines: {node: '>=20.0.0'}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -16547,6 +16553,9 @@ packages:
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   undici-types@7.14.0:
     resolution: {integrity: sha512-QQiYxHuyZ9gQUIrmPo3IA+hUl4KYk8uSA7cHrcKd/l3p1OTpZcM0Tbp9x7FAtXdAYhlasd60ncPpgu6ihG6TOA==}
@@ -24557,6 +24566,10 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
+  '@types/node@20.19.24':
+    dependencies:
+      undici-types: 6.21.0
+
   '@types/node@24.8.1':
     dependencies:
       undici-types: 7.14.0
@@ -24674,6 +24687,8 @@ snapshots:
       boxen: 7.1.1
 
   '@types/uuid@9.0.8': {}
+
+  '@types/whatwg-mimetype@3.0.2': {}
 
   '@types/ws@8.18.1':
     dependencies:
@@ -30310,10 +30325,10 @@ snapshots:
     optionalDependencies:
       uglify-js: 3.19.3
 
-  happy-dom@15.10.2:
+  happy-dom@20.0.10:
     dependencies:
-      entities: 4.5.0
-      webidl-conversions: 7.0.0
+      '@types/node': 20.19.24
+      '@types/whatwg-mimetype': 3.0.2
       whatwg-mimetype: 3.0.0
 
   has-bigints@1.1.0: {}
@@ -37249,6 +37264,8 @@ snapshots:
 
   undici-types@5.26.5: {}
 
+  undici-types@6.21.0: {}
+
   undici-types@7.14.0: {}
 
   undici@6.22.0: {}
@@ -38039,7 +38056,7 @@ snapshots:
     optionalDependencies:
       vite: 7.0.6(@types/node@24.8.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(happy-dom@15.10.2)(jiti@2.6.1)(jsdom@24.0.0)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@24.0.0)(less@4.4.2)(lightningcss@1.25.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
@@ -38067,7 +38084,7 @@ snapshots:
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 24.8.1
-      happy-dom: 15.10.2
+      happy-dom: 20.0.10
       jsdom: 24.0.0
     transitivePeerDependencies:
       - jiti
