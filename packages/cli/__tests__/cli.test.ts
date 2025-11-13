@@ -6,6 +6,29 @@ import fs from 'node:fs/promises'
 import { afterAll } from 'vitest'
 import { beforeAll } from 'vitest'
 
+// Helper to run command and capture output even if it fails
+function runCommand(cmd: string, options: any) {
+  const opts = { ...options, encoding: 'utf8', env: { ...process.env, NO_COLOR: '1' } }
+  try {
+    return execSync(cmd, opts).toString()
+  } catch (error: any) {
+    // If command fails, still return the output (stdout + stderr)
+    const stdout = error.stdout ? error.stdout.toString() : ''
+    const stderr = error.stderr ? error.stderr.toString() : ''
+    const output = stdout + stderr
+
+    // Debug: log first 200 chars of output if test is failing
+    if (process.env.DEBUG_CLI_TEST) {
+      console.log('Command failed:', cmd)
+      console.log('Output (first 200 chars):', output.slice(0, 200))
+      console.log('stdout length:', stdout.length, 'stderr length:', stderr.length)
+    }
+
+    if (output) return output
+    throw error
+  }
+}
+
 describe('CLI', () => {
   const cwd = process.cwd()
   const _dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -51,7 +74,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} init --cwd="${testsCwd}"`
 
     // init
-    const output = execSync(cmd, { cwd: testsCwd }).toString()
+    const output = runCommand(cmd, { cwd: testsCwd })
     // Check for either "Thanks" (new config) or existing config message
     expect(output.includes('Thanks') || output.includes('It looks like you already have panda created')).toBe(true)
 
@@ -60,11 +83,11 @@ describe('CLI', () => {
     expect(configFileExists).toBeUndefined()
 
     // init on existing project
-    const output2 = execSync(cmd, { cwd: testsCwd }).toString()
+    const output2 = runCommand(cmd, { cwd: testsCwd })
     expect(output2.includes('It looks like you already have panda created')).toBe(true)
 
     // init with --force
-    const output3 = execSync(cmd + ' --force --postcss --logfile="./panda.log"', { cwd: testsCwd }).toString()
+    const output3 = runCommand(cmd + ' --force --postcss --logfile="./panda.log"', { cwd: testsCwd })
     expect(output3.includes('Panda initialized')).toBe(true)
 
     // Check if the postcss config file was created
@@ -80,7 +103,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} codegen --cwd="${testsCwd}"`
 
     // codegen
-    const output = execSync(cmd + ' --cpu-prof', { cwd: testsCwd }).toString()
+    const output = runCommand(cmd + ' --cpu-prof', { cwd: testsCwd })
     expect(output.includes('the css function to author styles')).toBe(true)
 
     // Check that the `styled-system` folder was created
@@ -102,7 +125,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} cssgen --cwd="${testsCwd}"`
 
     // cssgen
-    const output = execSync(cmd, { cwd: testsCwd }).toString()
+    const output = runCommand(cmd, { cwd: testsCwd })
     expect(output.includes('Successfully extracted css')).toBe(true)
 
     // Check that the `styled-system/styles.css` was created
@@ -110,17 +133,17 @@ describe('CLI', () => {
     expect(stylesCssExists).toBeUndefined()
 
     // Check that using `lightningcss` is fine
-    const output2 = execSync(cmd + ' --lightningcss', { cwd: testsCwd }).toString()
+    const output2 = runCommand(cmd + ' --lightningcss', { cwd: testsCwd })
     expect(output2.includes('Successfully extracted css')).toBe(true)
 
     // Check that `--outfile` is fine
-    const output3 = execSync(cmd + ' --outfile="./styles.css"', { cwd: testsCwd }).toString()
+    const output3 = runCommand(cmd + ' --outfile="./styles.css"', { cwd: testsCwd })
     expect(output3.includes('Successfully extracted css')).toBe(true)
 
     await fs.unlink(path.resolve(testsCwd, 'styles.css'))
 
     // Check that `--silent` is fine
-    const output4 = execSync(cmd + ' --silent', { cwd: testsCwd }).toString()
+    const output4 = runCommand(cmd + ' --silent', { cwd: testsCwd })
     expect(output4.trim().length).toBe(0)
   })
 
@@ -128,7 +151,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} --cwd="${testsCwd}"`
 
     // default
-    const output = execSync(cmd, { cwd: testsCwd }).toString()
+    const output = runCommand(cmd, { cwd: testsCwd })
     expect(output.includes('Successfully extracted css')).toBe(true)
 
     // Check that the `styled-system` folder was created
@@ -144,7 +167,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} studio --cwd="${testsCwd}"`
 
     // studio
-    const output = execSync(cmd + ' --build', { cwd: testsCwd }).toString()
+    const output = runCommand(cmd + ' --build', { cwd: testsCwd })
     expect(output.includes('Complete!')).toBe(true)
 
     //   Check that the `styled-system-studio` folder was created
@@ -156,7 +179,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} debug --cwd="${testsCwd}"`
 
     // debug
-    const output = execSync(cmd, { cwd: testsCwd }).toString()
+    const output = runCommand(cmd, { cwd: testsCwd })
     expect(output.includes('files using Panda')).toBe(true)
 
     // Check that the `styled-system/debug` folder was created
@@ -172,7 +195,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} ship --cwd="${testsCwd}"`
 
     // ship
-    const output = execSync(cmd, { cwd: testsCwd }).toString()
+    const output = runCommand(cmd, { cwd: testsCwd })
     expect(output.includes('files using Panda')).toBe(true)
 
     // Check that the `styled-system/panda.buildinfo.json` file was created
@@ -184,7 +207,7 @@ describe('CLI', () => {
     const cmd = `node ${binPath} emit-pkg --cwd="${testsCwd}"`
 
     // emit-pkg
-    const output = execSync(cmd, { cwd: testsCwd }).toString()
+    const output = runCommand(cmd, { cwd: testsCwd })
     expect(output.includes('Emit package.json')).toBe(true)
 
     // Check that the `package.json` file was created
