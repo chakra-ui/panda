@@ -12,10 +12,29 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     ${ctx.file.import('getDisplayName', './factory-helper')}
     import { createContext, useContext, createElement, forwardRef } from 'preact/compat'
 
-    
+    function createSafeContext(contextName) {
+      const Context = createContext(undefined)
+      const useStyleContext = (componentName, slot) => {
+        const context = useContext(Context)
+        if (context === undefined) {
+          const componentInfo = componentName ? \`Component "\${componentName}"\` : 'A component'
+          const slotInfo = slot ? \` (slot: "\${slot}")\` : ''
+          
+          throw new Error(
+            \`\${componentInfo}\${slotInfo} cannot access \${contextName} because it's missing its Provider.\`
+          )
+        }
+        return context
+      }
+      return [Context, useStyleContext]
+    }
+
     export function createStyleContext(recipe) {
-      const StyleContext = createContext({})
       const isConfigRecipe = '__recipe__' in recipe
+      const recipeName = isConfigRecipe && recipe.__name__ ? recipe.__name__ : undefined
+      const contextName = recipeName ? \`createStyleContext("\${recipeName}")\` : 'createStyleContext'
+      
+      const [StyleContext, useStyleContext] = createSafeContext(contextName)
       const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
 
       const getResolvedProps = (props, slotStyles) => {
@@ -85,9 +104,10 @@ export function generatePreactCreateStyleContext(ctx: Context) {
 
       const withContext = (Component, slot, options) => {
         const StyledComponent = ${factoryName}(Component, {}, options)
+        const componentName = getDisplayName(Component)
         
         const WithContext = forwardRef((props, ref) => {
-          const slotStyles = useContext(StyleContext)
+          const slotStyles = useStyleContext(componentName, slot)
           
           const propsWithClass = { ...props, className: props.className ?? options?.defaultProps?.className }
           const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
@@ -98,7 +118,6 @@ export function generatePreactCreateStyleContext(ctx: Context) {
           })
         })
         
-        const componentName = getDisplayName(Component)
         WithContext.displayName = \`withContext(\${componentName})\`
         
         return WithContext

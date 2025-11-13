@@ -15,7 +15,22 @@ export function generateVueCreateStyleContext(ctx: Context) {
     export function createStyleContext(recipe) {
       const StyleContext = Symbol('StyleContext')
       const isConfigRecipe = '__recipe__' in recipe
+      const recipeName = isConfigRecipe && recipe.__name__ ? recipe.__name__ : undefined
+      const contextName = recipeName ? \`createStyleContext("\${recipeName}")\` : 'createStyleContext'
       const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
+      
+      function useStyleContext(componentName, slot) {
+        const context = inject(StyleContext)
+        if (context === undefined) {
+          const componentInfo = componentName ? \`Component "\${componentName}"\` : 'A component'
+          const slotInfo = slot ? \` (slot: "\${slot}")\` : ''
+          
+          throw new Error(
+            \`\${componentInfo}\${slotInfo} cannot access \${contextName} because it's missing its Provider.\`
+          )
+        }
+        return context
+      }
  
       const getResolvedProps = (props, slotStyles) => {
         const { unstyled, ...restProps } = props
@@ -102,6 +117,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
 
       const withContext = (Component, slot, options) => {
         const StyledComponent = ${factoryName}(Component, {}, options)
+        const componentName = getDisplayName(Component)
         
         const WithContext = defineComponent({
           props: ["unstyled"],
@@ -112,7 +128,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
               propsWithClass.class = propsWithClass.class ?? options?.defaultProps?.class
               return propsWithClass
             })
-            const slotStyles = inject(StyleContext)
+            const slotStyles = useStyleContext(componentName, slot)
 
             return () => {
               const resolvedProps = getResolvedProps(props.value, slotStyles.value[slot])
