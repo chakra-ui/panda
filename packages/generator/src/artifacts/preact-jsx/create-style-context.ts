@@ -10,7 +10,9 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     ${ctx.file.import('cx, css, sva', '../css/index')}
     ${ctx.file.import(factoryName, './factory')}
     ${ctx.file.import('getDisplayName', './factory-helper')}
-    import { createContext, useContext, createElement, forwardRef } from 'preact/compat'
+    import { createContext } from 'preact'
+    import { useContext } from 'preact/hooks'
+    import { createElement, forwardRef } from 'preact/compat'
 
     function createSafeContext(contextName) {
       const Context = createContext(undefined)
@@ -78,7 +80,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
       const withProvider = (Component, slot, options) => {
         const StyledComponent = ${factoryName}(Component, {}, options)
         
-        const WithProvider = forwardRef((props, ref) => {
+        const WithProvider = forwardRef(function WithProvider(props, ref) {
           const [variantProps, restProps] = svaFn.splitVariantProps(props)
           
           const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
@@ -106,7 +108,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
         const StyledComponent = ${factoryName}(Component, {}, options)
         const componentName = getDisplayName(Component)
         
-        const WithContext = forwardRef((props, ref) => {
+        const WithContext = forwardRef(function WithContext(props, ref) {
           const slotStyles = useStyleContext(componentName, slot)
           
           const propsWithClass = { ...props, className: props.className ?? options?.defaultProps?.className }
