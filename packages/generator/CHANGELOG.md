@@ -1,5 +1,22 @@
 # @pandacss/generator
 
+## 1.5.1
+
+### Patch Changes
+
+- bd2f8c9: fix(solid): allow defaultProps to be an Accessor
+- 827566b: - **Style Context**:
+  - Improve `createStyleContext` error messages to include component name, slot, and recipe name when Provider is
+    missing.
+  - Fix TypeScript types for `withProvider` and `withContext` to include the `as` prop, matching the behavior of the
+    `styled` factory.
+  - @pandacss/core@1.5.1
+  - @pandacss/is-valid-prop@1.5.1
+  - @pandacss/logger@1.5.1
+  - @pandacss/shared@1.5.1
+  - @pandacss/token-dictionary@1.5.1
+  - @pandacss/types@1.5.1
+
 ## 1.5.0
 
 ### Minor Changes

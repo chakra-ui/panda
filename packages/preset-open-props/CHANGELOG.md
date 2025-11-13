@@ -1,5 +1,12 @@
 # @pandacss/preset-open-props
 
+## 1.5.1
+
+### Patch Changes
+
+- 14a6382: Update open prop preset to include new gradient, border and keyframes
+  - @pandacss/types@1.5.1
+
 ## 1.5.0
 
 ### Patch Changes

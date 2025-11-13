@@ -1,5 +1,11 @@
 # @pandacss/extractor
 
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/shared@1.5.1
+
 ## 1.5.0
 
 ### Patch Changes
