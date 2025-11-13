@@ -138,7 +138,6 @@ export function generateVueCreateStyleContext(ctx: Context) {
           },
         })
         
-        const componentName = getDisplayName(Component)
         WithContext.displayName = \`withContext(\${componentName})\`
         
         return WithContext

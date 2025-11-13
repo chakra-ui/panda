@@ -1,6 +1,11 @@
-import { css } from '../styled-system/css'
+import { css } from 'styled-system/css'
+import type { ReactNode } from 'react'
 
-export const Button = ({ children }) => {
+interface ButtonProps {
+  children: ReactNode
+}
+
+export const Button = ({ children }: ButtonProps) => {
   return (
     <button
       className={css({
@@ -16,3 +21,4 @@ export const Button = ({ children }) => {
     </button>
   )
 }
+

@@ -75,6 +75,24 @@ describe('Open Prop preset transforms', () => {
         "conditional-6": {
           "value": "clamp(0px, calc(100vw - 100%) * 1e5, {radii.6})",
         },
+        "drawn-1": {
+          "value": "255px 15px 225px 15px / 15px 225px 15px 255px",
+        },
+        "drawn-2": {
+          "value": "125px 10px 20px 185px / 25px 205px 205px 25px",
+        },
+        "drawn-3": {
+          "value": "15px 255px 15px 225px / 225px 15px 255px 15px",
+        },
+        "drawn-4": {
+          "value": "15px 25px 155px 25px / 225px 150px 25px 115px",
+        },
+        "drawn-5": {
+          "value": "250px 25px 15px 20px / 15px 80px 105px 115px",
+        },
+        "drawn-6": {
+          "value": "28px 100px 20px 15px / 150px 30px 205px 225px",
+        },
         "round": {
           "value": "1e5px",
         },

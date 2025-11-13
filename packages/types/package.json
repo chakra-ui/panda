@@ -37,6 +37,6 @@
     "microdiff": "1.5.0",
     "ncp": "2.0.0",
     "pkg-types": "2.3.0",
-    "ts-morph": "26.0.0"
+    "ts-morph": "27.0.2"
   }
 }
