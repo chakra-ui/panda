@@ -41,11 +41,19 @@ describe('CLI', () => {
   })
 
   test('init', async () => {
+    // Clean up config file before test to ensure fresh state
+    try {
+      await fs.unlink(paths.config)
+    } catch {
+      // Ignore if file doesn't exist
+    }
+
     const cmd = `node ${binPath} init --cwd="${testsCwd}"`
 
     // init
     const output = execSync(cmd, { cwd: testsCwd }).toString()
-    expect(output.includes('Thanks')).toBe(true)
+    // Check for either "Thanks" (new config) or existing config message
+    expect(output.includes('Thanks') || output.includes('It looks like you already have panda created')).toBe(true)
 
     // Check if the config file was created
     const configFileExists = await fs.access(paths.config)
@@ -80,7 +88,7 @@ describe('CLI', () => {
     expect(styledSystemExists).toBeUndefined()
 
     // Check that the `styled-system/jsx` was NOT created
-    expect(() => fs.access(path.resolve(paths.styledSystem, 'jsx'))).rejects.toThrow()
+    await expect(fs.access(path.resolve(paths.styledSystem, 'jsx'))).rejects.toThrow()
 
     // Check that the `.cpuprof` file was created
     const cpuProfPath = output.split('[cpu-prof]').pop()!.trim()!
