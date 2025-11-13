@@ -41,13 +41,6 @@ describe('CLI', () => {
   })
 
   test('init', async () => {
-    // Clean up config file before test to ensure fresh state
-    try {
-      await fs.unlink(paths.config)
-    } catch {
-      // Ignore if file doesn't exist
-    }
-
     const cmd = `node ${binPath} init --cwd="${testsCwd}"`
 
     // init
@@ -87,7 +80,7 @@ describe('CLI', () => {
     expect(styledSystemExists).toBeUndefined()
 
     // Check that the `styled-system/jsx` was NOT created
-    await expect(fs.access(path.resolve(paths.styledSystem, 'jsx'))).rejects.toThrow()
+    expect(() => fs.access(path.resolve(paths.styledSystem, 'jsx'))).rejects.toThrow()
 
     // Check that the `.cpuprof` file was created
     const cpuProfPath = output.split('[cpu-prof]').pop()!.trim()!
