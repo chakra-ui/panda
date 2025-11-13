@@ -133,7 +133,7 @@ export function generateReactCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions, ComponentProps, DataAttrs', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, ComponentProps, DataAttrs, AsProps', '../types/jsx')}
     import type { ComponentType, ElementType } from 'react'
 
     interface UnstyledProps {
@@ -155,7 +155,7 @@ export function generateReactCreateStyleContext(ctx: Context) {
     }
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
 
     type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
@@ -163,7 +163,7 @@ export function generateReactCreateStyleContext(ctx: Context) {
     >
     
     type StyleContextConsumer<T extends ElementType> = ComponentType<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {

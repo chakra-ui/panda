@@ -154,7 +154,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions, DataAttrs', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs, AsProps', '../types/jsx')}
     import type { Component, FunctionalComponent, NativeElements } from 'vue'
 
     interface UnstyledProps {
@@ -191,7 +191,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
       : never
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = FunctionalComponent<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
 
     type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = FunctionalComponent<
@@ -199,7 +199,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
     >
 
     type StyleContextConsumer<T extends ElementType> = FunctionalComponent<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, JsxStyleProps>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {

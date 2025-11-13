@@ -133,7 +133,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions, DataAttrs', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs, AsProps', '../types/jsx')}
     import type { ComponentType, ComponentProps, JSX } from 'preact/compat'
 
     interface UnstyledProps {
@@ -157,7 +157,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     type InferSlot<R extends SlotRecipe> = R extends SlotRecipeFn ? R['__slot'] : R extends SvaFn<infer S> ? S : never
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
 
     type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
@@ -165,7 +165,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     >
 
     type StyleContextConsumer<T extends ElementType> = ComponentType<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {
