@@ -46,7 +46,10 @@ export function generateSolidCreateStyleContext(ctx: Context) {
             
           const mergedProps = createMemo(() => {
             if (!options?.defaultProps) return propsWithoutChildren
-            return { ...options.defaultProps, ...propsWithoutChildren }
+            const defaults = typeof options.defaultProps === 'function'
+              ? options.defaultProps()
+              : options.defaultProps
+            return { ...defaults, ...propsWithoutChildren }
           })
 
           return createComponent(StyleContext.Provider, {
@@ -158,7 +161,7 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions, DataAttrs', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs, MaybeAccessor', '../types/jsx')}
     import type { Component, JSX, ComponentProps } from 'solid-js'
 
     interface UnstyledProps {
@@ -166,7 +169,7 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     }
 
     interface WithProviderOptions<P> {
-      defaultProps?: (Partial<P> & DataAttrs) | undefined
+      defaultProps?: MaybeAccessor<Partial<P> & DataAttrs> | undefined
     }
     
     type ElementType = keyof JSX.IntrinsicElements | Component<any>

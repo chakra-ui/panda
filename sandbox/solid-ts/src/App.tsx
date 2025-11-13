@@ -4,7 +4,7 @@ export function App() {
   return (
     <div>
       <Custom.Root>
-        <Custom.Label>Hello</Custom.Label>
+        <Custom.Label />
       </Custom.Root>
     </div>
   )

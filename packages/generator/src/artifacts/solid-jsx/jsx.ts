@@ -27,12 +27,15 @@ export function generateSolidJsxFactory(ctx: Context) {
         return forwardFn(prop, cvaFn.variantKeys)
       }
 
-      const defaultProps = Object.assign(
-        options.dataAttr && configOrCva.__name__
+      const getDefaultProps = () => {
+        const baseDefaults = options.dataAttr && configOrCva.__name__
           ? { 'data-recipe': configOrCva.__name__ }
-          : {},
-        options.defaultProps
-      )
+          : {}
+        const defaults = typeof options.defaultProps === 'function'
+          ? options.defaultProps()
+          : options.defaultProps
+        return Object.assign(baseDefaults, defaults)
+      }
 
       const __cvaFn__ = composeCvaFn(element.__cva__, cvaFn)
       const __shouldForwardProps__ = composeShouldForwardProps(
@@ -43,7 +46,7 @@ export function generateSolidJsxFactory(ctx: Context) {
       const ${componentName} = (props) => {
         const mergedProps = mergeProps(
           { as: element.__base__ || element },
-          defaultProps,
+          getDefaultProps(),
           props
         )
 

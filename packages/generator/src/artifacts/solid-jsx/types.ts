@@ -10,12 +10,9 @@ ${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { ComponentProps, Component, JSX } from 'solid-js'
+import type { Accessor, ComponentProps, Component, JSX } from 'solid-js'
 ${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
-${ctx.file.importType(
-  'Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty',
-  './system-types',
-)}
+${ctx.file.importType('Assign, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty', './system-types')}
 
 interface Dict {
   [k: string]: unknown
@@ -48,9 +45,11 @@ interface RecipeFn {
   __type: any
 }
 
+export type MaybeAccessor<T> = T | Accessor<T>
+
 export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
-  defaultProps?: Partial<TProps> & DataAttrs
+  defaultProps?: MaybeAccessor<Partial<TProps> & DataAttrs>
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: string[]
 }
