@@ -1,5 +1,16 @@
 # @pandacss/parser
 
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/config@1.5.1
+- @pandacss/core@1.5.1
+- @pandacss/extractor@1.5.1
+- @pandacss/logger@1.5.1
+- @pandacss/shared@1.5.1
+- @pandacss/types@1.5.1
+
 ## 1.5.0
 
 ### Patch Changes
