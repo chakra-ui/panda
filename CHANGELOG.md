@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.5.1](#1.5.1) - 2025-11-14
+
+### Fixed
+
+- **Style Context (Solid.js)**: Fixed `defaultProps` to allow `Accessor` types, enabling reactive default props in
+  Solid.js components
+
+- **Style Context**
+  - Improved error messages for `createStyleContext` to include component name, slot, and recipe name when Provider is
+    missing, making debugging easier
+  - Fixed TypeScript types for `withProvider` and `withContext` to include the `as` prop, matching the behavior of the
+    `styled` factory
+
+### Changed
+
+- **Open Props Preset**: Updated to include new gradients, borders, and keyframe animations from the latest Open Props
+  release
+
 ## [1.5.0](#1.5.0) - 2025-11-09
 
 ### Fixed
