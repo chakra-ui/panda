@@ -6,7 +6,9 @@ import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
 export interface FlexProperties {
-   align?: SystemProperties["alignItems"]
+   display?: ConditionalValue<"flex" | "inline-flex">
+	flex?: SystemProperties["flex"]
+	align?: SystemProperties["alignItems"]
 	justify?: SystemProperties["justifyContent"]
 	direction?: SystemProperties["flexDirection"]
 	wrap?: SystemProperties["flexWrap"]

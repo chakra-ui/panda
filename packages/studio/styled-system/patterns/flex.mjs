@@ -3,9 +3,10 @@ import { css } from '../css/index.mjs';
 
 const flexConfig = {
 transform(props) {
-  const { direction, align, justify, wrap: wrap2, basis, grow, shrink, ...rest } = props;
+  const { display: display2 = "flex", flex: flex2, direction, align, justify, wrap: wrap2, basis, grow, shrink, ...rest } = props;
   return {
-    display: "flex",
+    display: display2,
+    flex: flex2,
     flexDirection: direction,
     alignItems: align,
     justifyContent: justify,
@@ -15,7 +16,8 @@ transform(props) {
     flexShrink: shrink,
     ...rest
   };
-}}
+},
+defaultValues:{display:'flex'}}
 
 export const getFlexStyle = (styles = {}) => {
   const _styles = getPatternStyles(flexConfig, styles)

@@ -12,6 +12,8 @@ const box = definePattern({
 
 const flex = definePattern({
   properties: {
+    display: { type: 'enum', value: ['flex', 'inline-flex'], property: 'display' },
+    flex: { type: 'property', value: 'flex' },
     align: { type: 'property', value: 'alignItems' },
     justify: { type: 'property', value: 'justifyContent' },
     direction: { type: 'property', value: 'flexDirection' },
@@ -20,10 +22,14 @@ const flex = definePattern({
     grow: { type: 'property', value: 'flexGrow' },
     shrink: { type: 'property', value: 'flexShrink' },
   },
+  defaultValues: {
+    display: 'flex',
+  },
   transform(props) {
-    const { direction, align, justify, wrap, basis, grow, shrink, ...rest } = props
+    const { display = 'flex', flex, direction, align, justify, wrap, basis, grow, shrink, ...rest } = props
     return {
-      display: 'flex',
+      display,
+      flex,
       flexDirection: direction,
       alignItems: align,
       justifyContent: justify,
