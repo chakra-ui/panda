@@ -1,7 +1,7 @@
 ---
 '@pandacss/node': minor
 '@pandacss/generator': minor
-'@pandacss/cli': minor
+'@pandacss/dev': minor
 ---
 
 Add `--splitting` flag to `cssgen` command for per-layer CSS output.
