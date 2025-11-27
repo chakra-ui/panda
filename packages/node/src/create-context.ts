@@ -110,9 +110,65 @@ export class PandaContext extends Generator {
   writeCss = (sheet?: Stylesheet) => {
     logger.info('css', this.runtime.path.join(...this.paths.root, 'styles.css'))
     return this.output.write({
-      id: 'styles.css' as any,
+      id: 'styles.css',
       dir: this.paths.root,
       files: [{ file: 'styles.css', code: this.getCss(sheet) }],
+    })
+  }
+
+  writeSplitCss = async (sheet: Stylesheet) => {
+    const { path: pathUtil, fs } = this.runtime
+    const rootDir = this.paths.root
+    const stylesDir = [...rootDir, 'styles']
+
+    // Get all artifacts from the generator
+    const artifacts = this.getSplitCssArtifacts(sheet)
+
+    // Derive and create directories from artifacts
+    const subDirs = new Set([...artifacts.recipes, ...artifacts.themes].map((a) => a.dir).filter(Boolean))
+    fs.ensureDirSync(pathUtil.join(...stylesDir))
+    subDirs.forEach((dir) => fs.ensureDirSync(pathUtil.join(...stylesDir, dir!)))
+
+    // Collect all files for batched write
+    const styleFiles: Array<{ file: string; code: string }> = []
+
+    // Layer files
+    for (const layer of artifacts.layers) {
+      styleFiles.push({ file: layer.file, code: layer.code })
+      logger.info('css', pathUtil.join(...stylesDir, layer.file))
+    }
+
+    // Recipe files
+    for (const recipe of artifacts.recipes) {
+      styleFiles.push({ file: `${recipe.dir}/${recipe.file}`, code: recipe.code })
+      logger.info('css', pathUtil.join(...stylesDir, recipe.dir!, recipe.file))
+    }
+
+    // Recipes index
+    if (artifacts.recipes.length) {
+      styleFiles.push({ file: `${artifacts.recipes[0].dir}/index.css`, code: artifacts.recipesIndex })
+      logger.info('css', pathUtil.join(...stylesDir, artifacts.recipes[0].dir!, 'index.css'))
+    }
+
+    // Theme files
+    for (const theme of artifacts.themes) {
+      styleFiles.push({ file: `${theme.dir}/${theme.file}`, code: theme.code })
+      logger.info('css', pathUtil.join(...stylesDir, theme.dir!, theme.file))
+    }
+
+    // Write all split files to styles/ directory
+    await this.output.write({
+      id: 'styles',
+      dir: stylesDir,
+      files: styleFiles,
+    })
+
+    // Write main styles.css
+    logger.info('css', pathUtil.join(...rootDir, 'styles.css'))
+    await this.output.write({
+      id: 'styles.css',
+      dir: rootDir,
+      files: [{ file: 'styles.css', code: artifacts.index }],
     })
   }
 

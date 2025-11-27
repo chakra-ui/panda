@@ -94,6 +94,29 @@ export class Stylesheet {
     })
   }
 
+  /**
+   * Process only the styles for a specific recipe from the decoder
+   */
+  processDecoderForRecipe = (decoder: StyleDecoder, recipeName: string) => {
+    const recipeSet = decoder.recipes.get(recipeName)
+    if (recipeSet) {
+      recipeSet.forEach((recipe) => {
+        this.processCss(recipe.result, recipe.entry.slot ? 'recipes_slots' : 'recipes')
+      })
+    }
+
+    // Process recipe base styles (may include slot-specific keys like "button__root")
+    decoder.recipes_base.forEach((baseSet, recipeKey) => {
+      // recipeKey could be "button" or "button__root" for slot recipes
+      const [baseRecipeName] = recipeKey.split('__')
+      if (baseRecipeName === recipeName) {
+        baseSet.forEach((recipe) => {
+          this.processCss(recipe.result, recipe.slot ? 'recipes_slots_base' : 'recipes_base')
+        })
+      }
+    })
+  }
+
   getLayerCss = (...layers: CascadeLayer[]) => {
     const breakpoints = this.context.conditions.breakpoints
     return optimizeCss(

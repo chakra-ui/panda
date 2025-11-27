@@ -185,11 +185,12 @@ export async function main() {
     .option('--polyfill', 'Polyfill CSS @layers at-rules for older browsers.')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
+    .option('--splitting', 'Emit CSS as separate files per layer (reset, global, tokens, utilities) and per recipe')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
-      const { silent, config: configPath, outfile, watch, poll, minimal, ...rest } = flags
+      const { silent, config: configPath, outfile, watch, poll, minimal, splitting, ...rest } = flags
 
       const cwd = resolve(flags.cwd ?? '')
       const stream = setLogStream({ cwd, logfile: flags.logfile })
@@ -225,6 +226,7 @@ export async function main() {
         outfile,
         type: cssArtifact,
         minimal,
+        splitting,
       }
 
       await cssgen(ctx, options)

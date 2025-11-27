@@ -25,6 +25,7 @@ export interface CssGenCommandFlags {
   polyfill?: boolean
   cpuProf?: boolean
   logfile?: string
+  splitting?: boolean
 }
 
 export interface StudioCommandFlags extends Pick<Config, 'cwd'> {

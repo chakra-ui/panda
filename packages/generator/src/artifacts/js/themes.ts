@@ -6,38 +6,42 @@ import { stringifyVars } from '../css/token-css'
 
 const getThemeId = (themeName: string) => 'panda-theme-' + themeName
 
+/**
+ * Get CSS for a specific theme
+ */
+export function getThemeCss(ctx: Context, themeName: string): string {
+  const { tokens, conditions } = ctx
+  const results: string[] = []
+  const condName = conditions.getThemeName(themeName)
+
+  for (const [key, values] of tokens.view.vars.entries()) {
+    if (key.startsWith(condName)) {
+      const css = stringifyVars({ values, conditionKey: key, root: '', conditions })
+      if (css) {
+        results.push(css)
+      }
+    }
+  }
+
+  return results.join('\n\n')
+}
+
 export function generateThemes(ctx: Context) {
   const { themes } = ctx.config
   if (!themes) return
 
-  const { tokens, conditions } = ctx
-
-  return Object.entries(themes).map(([name, _themeVariant]) => {
-    const results = [] as string[]
-    const condName = ctx.conditions.getThemeName(name)
-
-    for (const [key, values] of tokens.view.vars.entries()) {
-      if (key.startsWith(condName)) {
-        const css = stringifyVars({ values, conditionKey: key, root: '', conditions })
-        if (css) {
-          results.push(css)
-        }
-      }
-    }
-
-    return {
-      name: `theme-${name}`,
-      json: JSON.stringify(
-        compact({
-          name,
-          id: getThemeId(name),
-          css: results.join('\n\n'),
-        }),
-        null,
-        2,
-      ),
-    }
-  })
+  return Object.entries(themes).map(([name, _themeVariant]) => ({
+    name: `theme-${name}`,
+    json: JSON.stringify(
+      compact({
+        name,
+        id: getThemeId(name),
+        css: getThemeCss(ctx, name),
+      }),
+      null,
+      2,
+    ),
+  }))
 }
 
 export function generateThemesIndex(ctx: Context, files: ReturnType<typeof generateThemes>) {
