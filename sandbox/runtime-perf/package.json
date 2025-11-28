@@ -13,8 +13,8 @@
     "visualize": "pnpm panda codegen --clean && vite-bundle-visualizer"
   },
   "dependencies": {
-    "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
@@ -22,7 +22,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
-    "postcss": "8.4.49",
+    "postcss": "8.5.6",
     "source-map-explorer": "2.5.3",
     "typescript": "5.9.3",
     "vite": "7.2.4",

@@ -52,11 +52,11 @@
     "postcss": "8.5.6",
     "postcss-discard-duplicates": "7.0.2",
     "postcss-discard-empty": "7.0.1",
-    "postcss-merge-rules": "7.0.6",
+    "postcss-merge-rules": "7.0.7",
     "postcss-minify-selectors": "7.0.5",
     "postcss-nested": "7.0.2",
     "postcss-normalize-whitespace": "7.0.1",
-    "postcss-selector-parser": "7.1.0",
+    "postcss-selector-parser": "7.1.1",
     "ts-pattern": "5.9.0"
   },
   "devDependencies": {
