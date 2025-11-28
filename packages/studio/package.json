@@ -64,7 +64,7 @@
     "astro": "5.16.2",
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "vite": "7.2.2"
+    "vite": "7.2.4"
   },
   "devDependencies": {
     "@types/react": "19.2.7",
