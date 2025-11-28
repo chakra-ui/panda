@@ -80,7 +80,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "bundle-n-require": "1.1.2",
-    "escalade": "3.1.2",
+    "escalade": "3.2.0",
     "merge-anything": "5.1.7",
     "microdiff": "1.5.0",
     "typescript": "5.9.3"

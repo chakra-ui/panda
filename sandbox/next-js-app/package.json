@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@pandacss/dev": "workspace:*",
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.2",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "eslint-config-next": "16.0.3",
     "next": "14.2.26",
     "react": "19.1.1",

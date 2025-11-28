@@ -20,7 +20,7 @@
     "@sveltejs/adapter-auto": "7.0.0",
     "@sveltejs/kit": "2.48.4",
     "@sveltejs/vite-plugin-svelte": "6.2.1",
-    "autoprefixer": "10.4.21",
+    "autoprefixer": "10.4.22",
     "eslint-plugin-svelte3": "4.0.0",
     "postcss": "8.4.49",
     "postcss-load-config": "5.1.0",
