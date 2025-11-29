@@ -1,7 +1,7 @@
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
 import { parseState } from '@/src/lib/parse-state'
 import { SplitterRootProps } from '@ark-ui/react/splitter'
-import { startTransition, useDeferredValue, useMemo, useRef, useState } from 'react'
+import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { toaster } from '../components/ToastProvider'
 import { flushSync } from 'react-dom'
@@ -142,6 +142,12 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     )
   }
 
+  // Stable reference for onChange handler - prevents unnecessary re-renders
+  const handleStateChange = useCallback((newState: State) => {
+    setIsPristine(false)
+    setState(newState)
+  }, [])
+
   return {
     isPristine,
     layout,
@@ -152,13 +158,11 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     setPanelSize,
     onResizePanels,
     switchLayout,
-    state: deferredState,
-    setState: (newState: State) => {
-      setIsPristine(false)
-      startTransition(() => {
-        setState(newState)
-      })
-    },
+    // Immediate state for Editor (prevents cursor jumping)
+    state,
+    // Deferred state for expensive operations (panda processing)
+    deferredState,
+    setState: handleStateChange,
     setExample,
     onShare,
     onShareDiff,

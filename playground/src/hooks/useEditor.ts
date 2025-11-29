@@ -1,15 +1,16 @@
-import { OnMount, OnChange, BeforeMount, EditorProps, Monaco as MonacoType } from '@monaco-editor/react'
+import { UsePanda } from '@/src/hooks/usePanda'
+import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
+import { BeforeMount, EditorProps, Monaco as MonacoType, OnChange, OnMount } from '@monaco-editor/react'
 import * as Monaco from 'monaco-editor'
 import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings/custom-editor'
-
+import { MonacoJsxSyntaxHighlight, getWorker } from 'monaco-jsx-syntax-highlight'
+import { useTheme } from 'next-themes'
+import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocalStorage, useUpdateEffect } from 'usehooks-ts'
-
-import { State } from './usePlayground'
-
+import { configureAutoImports } from '../lib/auto-import'
 import { pandaTheme } from '../lib/gruvbox-theme'
-import { useTheme } from 'next-themes'
-import { MonacoJsxSyntaxHighlight, getWorker } from 'monaco-jsx-syntax-highlight'
+import { State } from './usePlayground'
 
 // @ts-ignore
 import pandaDevDts from '../dts/@pandacss_dev.d.ts?raw'
@@ -17,10 +18,6 @@ import pandaDevDts from '../dts/@pandacss_dev.d.ts?raw'
 import pandaTypesDts from '../dts/@pandacss_types.d.ts?raw'
 // @ts-ignore
 import reactDts from '../dts/react.d.ts?raw'
-import { useSearchParams } from 'next/navigation'
-import { configureAutoImports } from '../lib/auto-import'
-import { UsePanda } from '@/src/hooks/usePanda'
-import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
 
 export interface PandaEditorProps {
   value: State
@@ -49,27 +46,17 @@ export const defaultEditorOptions: EditorProps['options'] = {
 }
 
 const activateAutoTypings = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
-  const activate = async () => {
-    const { dispose } = await AutoTypings.create(monacoEditor, {
-      monaco,
-      sourceCache: new LocalStorageCache(),
-      fileRootPath: 'file:///',
-      debounceDuration: 500,
-      sourceResolver: new TypingsSourceResolver(),
-    })
-
-    return dispose
-  }
-
-  activate()
-
-  monacoEditor.onDidChangeModel(() => {
-    activate()
+  // AutoTypings internally watches for content changes via debounceDuration
+  // No need for additional event handlers - they cause duplicate instances
+  const { dispose } = await AutoTypings.create(monacoEditor, {
+    monaco,
+    sourceCache: new LocalStorageCache(),
+    fileRootPath: 'file:///',
+    debounceDuration: 500,
+    sourceResolver: new TypingsSourceResolver(),
   })
 
-  monacoEditor.onDidChangeModelContent(() => {
-    activate()
-  })
+  return dispose
 }
 
 const activateMonacoJSXHighlighter = async (monacoEditor: Monaco.editor.IStandaloneCodeEditor, monaco: MonacoType) => {
@@ -108,6 +95,11 @@ export function useEditor(props: PandaEditorProps) {
   const monacoEditorRef = useRef<Parameters<OnMount>[0] | undefined>(undefined)
   const monacoRef = useRef<Parameters<OnMount>[1] | undefined>(undefined)
 
+  // Track the last known value for external change detection
+  // We use refs to avoid re-renders - Monaco manages its own state (uncontrolled)
+  const lastValueRef = useRef(value)
+  const isUserEditRef = useRef(false)
+
   const [wordWrap, setWordwrap] = useLocalStorage<'on' | 'off'>('editor_wordWrap', 'off')
 
   const onToggleWrap = useCallback(() => {
@@ -118,12 +110,15 @@ export function useEditor(props: PandaEditorProps) {
     monacoEditorRef.current?.updateOptions({ wordWrap })
   }, [wordWrap])
 
+  // Memoize based on actual data, not context reference, to prevent unnecessary re-renders
+  const patterns = context.patterns.details
+  const recipeKeys = context.recipes.keys
   const autoImportCtx = useMemo(() => {
     return {
-      patterns: context.patterns.details,
-      recipes: Array.from(context.recipes.keys),
+      patterns,
+      recipes: Array.from(recipeKeys),
     }
-  }, [context])
+  }, [patterns, recipeKeys])
 
   const configureEditor: OnMount = useCallback(
     (editor, monaco) => {
@@ -255,22 +250,49 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
     [configureEditor, setupLibs, getPandaTypes],
   )
 
-  const onCodeEditorChange = (content: Parameters<OnChange>[0]) => {
-    onChange({
-      ...value,
-      [activeTab]: content,
-    })
-  }
+  // Use ref to track current value for onChange - keeps callback stable
+  const stateRef = useRef({ value: lastValueRef.current, activeTab })
+  stateRef.current = { value: lastValueRef.current, activeTab }
+
+  const onCodeEditorChange = useCallback(
+    (content: Parameters<OnChange>[0]) => {
+      const { value: currentValue, activeTab: currentTab } = stateRef.current
+      const newValue = { ...currentValue, [currentTab]: content }
+      // Mark as user edit to skip sync effect
+      isUserEditRef.current = true
+      lastValueRef.current = newValue
+      onChange(newValue)
+    },
+    [onChange],
+  )
 
   const onCodeEditorFormat = () => {
     monacoEditorRef.current?.getAction('editor.action.formatDocument')?.run()
   }
 
+  // Track previous artifacts to avoid unnecessary lib updates that cause cursor jumps
+  const prevArtifactsRef = useRef<string>('')
+  const libsDisposablesRef = useRef<ReturnType<typeof setupLibs>>([])
+
   useUpdateEffect(() => {
-    const libsSetup = setupLibs(monacoRef.current!)
+    // Create a signature of the artifact type definitions to detect actual changes
+    const dtsSignature = artifacts
+      .flatMap((a) => a?.files.filter((f) => f.file.endsWith('.d.ts')).map((f) => f.code) ?? [])
+      .join('')
+
+    // Skip if the type definitions haven't actually changed
+    if (prevArtifactsRef.current === dtsSignature) return
+    prevArtifactsRef.current = dtsSignature
+
+    // Dispose previous libs before setting up new ones
+    for (const lib of libsDisposablesRef.current) {
+      lib?.dispose()
+    }
+
+    libsDisposablesRef.current = setupLibs(monacoRef.current!)
 
     return () => {
-      for (const lib of libsSetup) {
+      for (const lib of libsDisposablesRef.current) {
         lib?.dispose()
       }
     }
@@ -286,7 +308,42 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
     return () => {
       autoImports?.dispose()
     }
-  }, [context])
+  }, [autoImportCtx])
+
+  // Sync external changes (example selection) via editor.setValue()
+  // This is the key to uncontrolled mode - we don't use value prop, we call setValue directly
+  useEffect(() => {
+    // Skip if this change came from user editing (our own onChange)
+    if (isUserEditRef.current) {
+      isUserEditRef.current = false
+      return
+    }
+
+    // Only update if content actually changed
+    const editor = monacoEditorRef.current
+    if (!editor) return
+
+    const currentContent = value[activeTab as keyof Pick<State, 'code' | 'config' | 'css'>]
+    const editorContent = editor.getValue()
+
+    if (currentContent !== editorContent) {
+      // Save cursor position
+      const position = editor.getPosition()
+      const scrollTop = editor.getScrollTop()
+
+      // Update editor content directly
+      editor.setValue(currentContent ?? '')
+
+      // Restore cursor position
+      if (position) {
+        editor.setPosition(position)
+      }
+      editor.setScrollTop(scrollTop)
+    }
+
+    // Update ref
+    lastValueRef.current = value
+  }, [value.code, value.config, value.css, activeTab])
 
   return {
     activeTab,
@@ -297,5 +354,7 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
     onCodeEditorFormat,
     onToggleWrap,
     wordWrap,
+    // Return initial value for defaultValue prop
+    immediateValue: value,
   }
 }
