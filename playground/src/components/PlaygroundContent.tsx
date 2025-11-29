@@ -31,6 +31,7 @@ export const PlaygroundContent = (props: Props) => {
     switchLayout,
     isPristine,
     state,
+    deferredState,
     setState,
     onShare,
     onShareDiff,
@@ -40,7 +41,8 @@ export const PlaygroundContent = (props: Props) => {
     setExample,
   } = playground
 
-  const _state = diffState ?? state
+  // Use deferred state for expensive panda processing
+  const _state = diffState ?? deferredState
 
   const { config, isLoading, error } = _config
   const panda = usePanda(_state, config)

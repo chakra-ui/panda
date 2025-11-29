@@ -29,6 +29,7 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
     onCodeEditorFormat,
     wordWrap,
     onToggleWrap,
+    immediateValue,
   } = useEditor(props)
 
   return (
@@ -105,7 +106,9 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
             />
           ) : (
             <MonacoEditor
-              value={props.value[activeTab]}
+              // Use defaultValue for uncontrolled mode - prevents cursor jumping
+              // Monaco manages its own state, we only sync via onChange and editor.setValue()
+              defaultValue={immediateValue[activeTab]}
               language={activeTab === 'css' ? 'css' : 'typescript'}
               path={editorPaths[activeTab]}
               options={{ ...defaultEditorOptions, wordWrap }}
