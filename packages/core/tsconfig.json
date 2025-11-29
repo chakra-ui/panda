@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.build.json",
   "include": ["src", "__tests__"],
   "compilerOptions": {
+    "types": ["node", "vitest/globals"],
     "paths": {
       "@pandacss/fixture": ["../fixture/src/index.ts"]
     }
