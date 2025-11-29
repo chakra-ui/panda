@@ -14,6 +14,16 @@ Initialize Panda in a project. This process will:
 - Create a `panda.config.ts` file in your project with the default settings and presets.
 - Emit CSS utilities for your project in the specified `output` directory.
 
+```bash
+pnpm panda init
+
+# Initialize with interactive mode
+pnpm panda init --interactive
+
+# Initialize with PostCSS config
+pnpm panda init --postcss
+```
+
 | Flag                          | Description                                                   | Related                                                       |
 | ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- |
 | `--interactive, -i`           | Whether to run the interactive mode                           | -                                                             |
@@ -73,6 +83,16 @@ pnpm panda "./src/components/**"
 
 Generate new CSS utilities for your project based on the configuration file.
 
+```bash
+pnpm panda codegen
+
+# Clean output directory before generating
+pnpm panda codegen --clean
+
+# Watch for config changes
+pnpm panda codegen --watch
+```
+
 | Flag                  | Description                                                            | Related                                                |
 | --------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
 | `--silent`            | Whether to suppress all output                                         | [`config.logLevel`](/docs/references/config#log-level) |
@@ -128,6 +148,19 @@ panda cssgen "static" --outfile dist/static.css
 
 Realtime documentation for your design tokens.
 
+```bash
+pnpm panda studio
+
+# Build static studio site
+pnpm panda studio --build
+
+# Preview built studio
+pnpm panda studio --preview
+
+# Use custom port
+pnpm panda studio --port 3000
+```
+
 | Flag                  | Description                       | Related                                     |
 | --------------------- | --------------------------------- | ------------------------------------------- |
 | `--build`             | Build                             | -                                           |
@@ -167,6 +200,19 @@ pnpm panda analyze "src/components/**"
 Debug design token extraction & CSS generated from files in glob.
 
 More details in [Debugging](/docs/guides/debugging) docs.
+
+```bash
+pnpm panda debug
+
+# Debug a specific file
+pnpm panda debug src/components/Button.tsx
+
+# Output to stdout without writing files
+pnpm panda debug --dry
+
+# Only output resolved config
+pnpm panda debug --only-config
+```
 
 | Flag                  | Description                                                            | Related                                                   |
 | --------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -208,6 +254,13 @@ pnpm panda ship "./src/components/**"
 Emit package.json with entrypoints, can be used to create a workspace package dedicated to the
 [`config.outdir`](/docs/references/config#outdir), in combination with
 [`config.importMap`](/docs/references/config#importmap)
+
+```bash
+pnpm panda emit-pkg
+
+# Specify output directory
+pnpm panda emit-pkg --outdir styled-system
+```
 
 | Flag             | Description                                          | Related                                                |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------ |
