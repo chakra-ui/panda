@@ -146,8 +146,8 @@ export class PandaContext extends Generator {
 
     // Recipes index
     if (artifacts.recipes.length) {
-      styleFiles.push({ file: `${artifacts.recipes[0].dir}/index.css`, code: artifacts.recipesIndex })
-      logger.info('css', pathUtil.join(...stylesDir, artifacts.recipes[0].dir!, 'index.css'))
+      styleFiles.push({ file: 'recipes.css', code: artifacts.recipesIndex })
+      logger.info('css', pathUtil.join(...stylesDir, 'recipes.css'))
     }
 
     // Theme files

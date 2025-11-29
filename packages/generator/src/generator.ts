@@ -27,7 +27,7 @@ export interface SplitCssResult {
   recipes: SplitCssArtifact[]
   /** Theme CSS files (not auto-imported) */
   themes: SplitCssArtifact[]
-  /** Content for recipes/index.css */
+  /** Content for recipes.css */
   recipesIndex: string
   /** Content for main styles.css */
   index: string
@@ -173,8 +173,8 @@ export class Generator extends Context {
       }
     }
 
-    // Build recipes/index.css content
-    const recipesIndex = recipes.map((r) => `@import './${r.file}';`).join('\n')
+    // Build recipes.css content
+    const recipesIndex = recipes.map((r) => `@import './recipes/${r.file}';`).join('\n')
 
     // Build main styles.css content
     const layerOrder = [layerNames.reset, layerNames.base, layerNames.tokens, layerNames.recipes, layerNames.utilities]
@@ -184,7 +184,7 @@ export class Generator extends Context {
       imports.push(`@import './styles/${layer.file}';`)
     }
     if (recipes.length) {
-      imports.push(`@import './styles/recipes/index.css';`)
+      imports.push(`@import './styles/recipes.css';`)
     }
 
     return {
