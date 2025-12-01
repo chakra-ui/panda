@@ -1,5 +1,47 @@
 # @pandacss/node
 
+## 1.6.0
+
+### Minor Changes
+
+- 8aa3c64: Add `--splitting` flag to `cssgen` command for per-layer CSS output.
+
+  When enabled, CSS is emitted as separate files instead of a single `styles.css`:
+
+  ```
+  styled-system/
+  ├── styles.css              # @layer declaration + @imports
+  └── styles/
+      ├── reset.css           # Preflight/reset CSS
+      ├── global.css          # Global CSS
+      ├── tokens.css          # Design tokens
+      ├── utilities.css       # Utility classes
+      ├── recipes/
+      │   ├── index.css       # @imports all recipe files
+      │   └── {recipe}.css    # Individual recipe styles
+      └── themes/
+          └── {theme}.css     # Theme tokens (not auto-imported)
+  ```
+
+  Usage:
+
+  ```bash
+  panda cssgen --splitting
+  ```
+
+### Patch Changes
+
+- Updated dependencies [8aa3c64]
+  - @pandacss/generator@1.6.0
+  - @pandacss/parser@1.6.0
+  - @pandacss/reporter@1.6.0
+  - @pandacss/config@1.6.0
+  - @pandacss/core@1.6.0
+  - @pandacss/logger@1.6.0
+  - @pandacss/shared@1.6.0
+  - @pandacss/token-dictionary@1.6.0
+  - @pandacss/types@1.6.0
+
 ## 1.5.1
 
 ### Patch Changes
