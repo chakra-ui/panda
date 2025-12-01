@@ -1,6 +1,6 @@
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { Token, TokenExtensions } from '@pandacss/token-dictionary'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useDeferredValue } from 'react'
 import * as context from './panda-context'
 
 interface Color {
@@ -70,6 +70,7 @@ const getSemanticTokens = (allTokens: Token[], filterMethod?: (token: ColorToken
 
 export const useColorDocs = (theme?: string) => {
   const [filterQuery, setFilterQuery] = useState('')
+  const deferredQuery = useDeferredValue(filterQuery)
 
   // Memoize token data based on theme to ensure reactivity
   const { colors, allTokens } = useMemo(() => {
@@ -84,7 +85,7 @@ export const useColorDocs = (theme?: string) => {
     return { colors, allTokens }
   }, [theme])
 
-  // Memoize processed data based on theme and filter query
+  // Memoize processed data based on theme and filter query (deferred for performance)
   const processedData = useMemo(() => {
     const filterMethod = (token: ColorToken) => {
       return [
@@ -98,7 +99,7 @@ export const useColorDocs = (theme?: string) => {
         ...Object.values(token.extensions?.conditions || {}),
       ]
         .filter(Boolean)
-        .some((prop) => prop.includes(filterQuery))
+        .some((prop) => prop.includes(deferredQuery))
     }
 
     const colorsInCategories = groupByColorPalette(colors as ColorToken[], filterMethod)
@@ -121,7 +122,7 @@ export const useColorDocs = (theme?: string) => {
       semanticTokens,
       hasResults,
     }
-  }, [colors, allTokens, filterQuery])
+  }, [colors, allTokens, deferredQuery])
 
   return {
     filterQuery,
