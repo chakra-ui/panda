@@ -1,11 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-import { FontFamily } from '../components/font-family'
+import { FontsPage } from '../components/token-pages'
 ---
 
 <Layout>
-    <Sidebar title="Fonts">
-        <FontFamily />
-    </Sidebar>
+  <Sidebar title="Fonts">
+    <FontsPage client:load />
+  </Sidebar>
 </Layout>

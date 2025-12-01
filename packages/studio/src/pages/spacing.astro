@@ -1,14 +1,11 @@
 ---
-import Sizes from '../components/sizes'
+import { SpacingPage } from '../components/token-pages'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-import * as context from '../lib/panda-context'
-
-const tokens = context.getTokens('spacing')
 ---
 
 <Layout>
   <Sidebar title="Spacing">
-    <Sizes sizes={tokens} name="spacing" client:load />
+    <SpacingPage client:load />
   </Sidebar>
 </Layout>

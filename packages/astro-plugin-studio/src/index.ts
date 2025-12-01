@@ -11,6 +11,7 @@ function vitePlugin(configPath: string): PluginOption {
   let config: PandaContext['config']
   const textStyleMap: Record<string, string> = {}
   const layerStyleMap: Record<string, string> = {}
+  const themesMap: Record<string, any> = {}
 
   async function loadPandaConfig() {
     const ctx = await loadConfigAndCreateContext({ configPath })
@@ -22,6 +23,14 @@ function vitePlugin(configPath: string): PluginOption {
       const utility = ctx.utility.transform('layerStyle', key)
       layerStyleMap[key] = stringifyPanda(utility.styles)
     }
+
+    // Process themes if they exist
+    if (ctx.config.themes) {
+      for (const [themeName, themeConfig] of Object.entries(ctx.config.themes)) {
+        themesMap[themeName] = themeConfig
+      }
+    }
+
     config = ctx.config
   }
 
@@ -52,6 +61,7 @@ function vitePlugin(configPath: string): PluginOption {
             `export const config = ${stringify(config)}`,
             `export const textStyles = ${stringify(textStyleMap)}`,
             `export const layerStyles = ${stringify(layerStyleMap)}`,
+            `export const themes = ${stringify(themesMap)}`,
           ].join('\n\n'),
         }
       }

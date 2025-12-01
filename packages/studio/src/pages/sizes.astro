@@ -1,14 +1,11 @@
 ---
-import Sizes from '../components/sizes'
+import { SizesPage } from '../components/token-pages'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-import * as context from '../lib/panda-context'
-
-const tokens = context.getTokens('sizes')
 ---
 
 <Layout>
   <Sidebar title="Sizes">
-    <Sizes sizes={tokens} name="sizes" client:load />
+    <SizesPage client:load />
   </Sidebar>
 </Layout>

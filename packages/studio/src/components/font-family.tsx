@@ -1,16 +1,20 @@
 import * as React from 'react'
 import { Flex, HStack, Square, Stack, panda } from '../../styled-system/jsx'
-import * as context from '../lib/panda-context'
 import { EmptyState } from './empty-state'
 import { TypographyIcon } from './icons'
-
-const fonts = context.getTokens('fonts')
+import type { useThemeTokens } from '../lib/use-theme-tokens'
 
 const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))
 const symbols = Array.from({ length: 10 }, (_, i) => String.fromCharCode(48 + i))
 const specials = ['@', '#', '$', '%', '&', '!', '?', '+', '-']
 
-export const FontFamily = () => {
+type Token = ReturnType<typeof useThemeTokens>[number]
+
+interface FontFamilyProps {
+  fonts: Token[]
+}
+
+export function FontFamily({ fonts }: FontFamilyProps) {
   if (fonts.length === 0) {
     return (
       <EmptyState title="No Tokens" icon={<TypographyIcon />}>

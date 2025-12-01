@@ -1,21 +1,12 @@
 ---
-import FontTokens from '../components/font-tokens'
+import { LetterSpacingsPage } from '../components/token-pages'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-
-import * as context from '../lib/panda-context'
-
-const tokens = context.getTokens('letterSpacings')
 ---
 
 <Layout>
   <Sidebar title="Letter Spacings">
-    <FontTokens
-      client:load
-      fontTokens={tokens}
-      token="letterSpacing"
-      text="The quick brown fox jumps over the lazy dog."
-    />
+    <LetterSpacingsPage client:load />
   </Sidebar>
 </Layout>
 

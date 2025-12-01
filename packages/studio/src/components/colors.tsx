@@ -61,9 +61,13 @@ export function SemanticToken(props: SemanticTokenProps) {
   )
 }
 
-export default function Colors() {
+interface ColorsProps {
+  theme?: string
+}
+
+export function Colors({ theme }: ColorsProps) {
   const { filterQuery, setFilterQuery, semanticTokens, hasResults, uncategorizedColors, categorizedColors } =
-    useColorDocs()
+    useColorDocs(theme)
 
   return (
     <TokenGroup>

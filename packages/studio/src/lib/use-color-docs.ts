@@ -1,5 +1,6 @@
+import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { Token, TokenExtensions } from '@pandacss/token-dictionary'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import * as context from './panda-context'
 
 interface Color {
@@ -67,47 +68,64 @@ const getSemanticTokens = (allTokens: Token[], filterMethod?: (token: ColorToken
     )
 }
 
-const allTokens = context.tokens.allTokens
-const colors = context.getTokens('colors')
-
-export const useColorDocs = () => {
+export const useColorDocs = (theme?: string) => {
   const [filterQuery, setFilterQuery] = useState('')
 
-  const filterMethod = (token: ColorToken) => {
-    return [
-      ...token.path,
-      token.originalValue,
-      token.description,
-      token.value,
-      token.name,
-      token.extensions?.var,
-      token.extensions?.prop,
-      ...Object.values(token.extensions?.conditions || {}),
-    ]
-      .filter(Boolean)
-      .some((prop) => prop.includes(filterQuery))
-  }
+  // Memoize token data based on theme to ensure reactivity
+  const { colors, allTokens } = useMemo(() => {
+    // Get tokens based on provided theme (filtered to show only relevant tokens when theme is active)
+    const colors = context.getThemeRelevantTokens('colors', theme)
 
-  const colorsInCategories = groupByColorPalette(colors as ColorToken[], filterMethod)
-  const uncategorizedColors = colorsInCategories[UNCATEGORIZED_ID]
+    // Get all tokens for the active theme
+    const activeTheme = context.getActiveTheme(theme)
+    const themeTokens = new TokenDictionary(activeTheme).init()
+    const allTokens = themeTokens.allTokens
 
-  const categorizedColors = Object.entries<any[]>(colorsInCategories).filter(
-    ([category]) => category !== UNCATEGORIZED_ID,
-  )
+    return { colors, allTokens }
+  }, [theme])
 
-  const semanticTokens = Object.entries<Record<string, any>>(getSemanticTokens(allTokens, filterMethod)) as [
-    string,
-    Record<string, ColorToken>,
-  ][]
-  const hasResults =
-    !!categorizedColors.length || !!uncategorizedColors?.length || !!Object.values(semanticTokens).length
+  // Memoize processed data based on theme and filter query
+  const processedData = useMemo(() => {
+    const filterMethod = (token: ColorToken) => {
+      return [
+        ...token.path,
+        token.originalValue,
+        token.description,
+        token.value,
+        token.name,
+        token.extensions?.var,
+        token.extensions?.prop,
+        ...Object.values(token.extensions?.conditions || {}),
+      ]
+        .filter(Boolean)
+        .some((prop) => prop.includes(filterQuery))
+    }
+
+    const colorsInCategories = groupByColorPalette(colors as ColorToken[], filterMethod)
+    const uncategorizedColors = colorsInCategories[UNCATEGORIZED_ID]
+
+    const categorizedColors = Object.entries<any[]>(colorsInCategories).filter(
+      ([category]) => category !== UNCATEGORIZED_ID,
+    )
+
+    const semanticTokens = Object.entries<Record<string, any>>(getSemanticTokens(allTokens, filterMethod)) as [
+      string,
+      Record<string, ColorToken>,
+    ][]
+    const hasResults =
+      !!categorizedColors.length || !!uncategorizedColors?.length || !!Object.values(semanticTokens).length
+
+    return {
+      uncategorizedColors,
+      categorizedColors,
+      semanticTokens,
+      hasResults,
+    }
+  }, [colors, allTokens, filterQuery])
 
   return {
     filterQuery,
     setFilterQuery,
-    uncategorizedColors,
-    categorizedColors,
-    semanticTokens,
-    hasResults,
+    ...processedData,
   }
 }

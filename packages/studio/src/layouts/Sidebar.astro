@@ -3,6 +3,7 @@ import { Container, panda, Stack } from '../../styled-system/jsx'
 import '../../styled-system/styles.css'
 import SideNav from '../components/side-nav.astro'
 import ThemeToggle from '../components/theme-toggle.astro'
+import { ThemeSelector } from '../components/theme-selector'
 import { Logo } from '../icons/logo'
 
 interface Props {
@@ -19,6 +20,9 @@ const { title } = Astro.props
     </panda.a>
     <panda.div mt="4">
       <ThemeToggle />
+    </panda.div>
+    <panda.div mt="4">
+      <ThemeSelector client:load />
     </panda.div>
     <SideNav />
   </Stack>
