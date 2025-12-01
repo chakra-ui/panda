@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.6.0](#1.6.0) - 2025-12-01
+
+### Added
+
+- Add `--splitting` flag to `cssgen` command for per-layer CSS output.
+
+When enabled, CSS is emitted as separate files instead of a single `styles.css`:
+
+```sh
+styled-system/
+├── styles.css              # @layer declaration + @imports
+└── styles/
+    ├── reset.css           # Preflight/reset CSS
+    ├── global.css          # Global CSS
+    ├── tokens.css          # Design tokens
+    ├── utilities.css       # Utility classes
+    ├── recipes/
+    │   ├── index.css       # @imports all recipe files
+    │   └── {recipe}.css    # Individual recipe styles
+    └── themes/
+        └── {theme}.css     # Theme tokens (not auto-imported)
+```
+
+Usage:
+
+```bash
+panda cssgen --splitting
+```
+
+### Fixed
+
+- **Studio**
+
+  - Fix semantic tokens defined in `defineTheme` not showing in Panda Studio. We now show a theme selector in the token
+    pages for the theme-aware tokens.
+
+  - Improve performance when searching for tokens.
+
 ## [1.5.1](#1.5.1) - 2025-11-14
 
 ### Fixed
