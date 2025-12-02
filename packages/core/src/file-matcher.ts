@@ -187,7 +187,12 @@ export class FileMatcher {
 
   isRawFn = (fnName: string) => {
     const name = fnName.split('.raw')[0] ?? ''
-    return name === 'css' || this.isValidPattern(name) || this.isValidRecipe(name)
+
+    // Check if it's css (literal or alias), pattern, or recipe
+    const isCssOrAlias =
+      name === 'css' || this.cssAliases.has(name) || this.cvaAliases.has(name) || this.svaAliases.has(name)
+
+    return isCssOrAlias || this.isValidPattern(name) || this.isValidRecipe(name)
   }
 
   isNamespaced = (fnName: string) => {
