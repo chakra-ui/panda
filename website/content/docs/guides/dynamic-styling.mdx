@@ -226,6 +226,30 @@ export const Funky: Story = {
 }
 ```
 
+### Enhanced `css.raw` spreading
+
+> **Added in v1.6.1**
+
+You can also spread `css.raw` objects within nested selectors and conditions for better style composition:
+
+```tsx filename="App.tsx"
+import { css } from '../styled-system/css'
+
+const baseStyles = css.raw({ margin: 0, padding: 0 })
+const interactive = css.raw({ cursor: 'pointer', transition: 'all 0.2s' })
+
+const component = css({
+  // Spreading in child selectors
+  '& p': { ...baseStyles, fontSize: '1rem' },
+
+  // Spreading in nested conditions
+  _hover: {
+    ...interactive,
+    _dark: { ...interactive, color: 'white' }
+  }
+})
+```
+
 ## Static expressions
 
 Panda supports static expressions in your styles, as long as they are statically analyzable.

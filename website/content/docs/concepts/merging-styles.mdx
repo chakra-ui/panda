@@ -25,8 +25,8 @@ const className = css(style1, style2) // => 'bg_blue text_white'
 In some cases though, the style object might not be colocated in the same file as the component. In this case, you can
 use the `css.raw` function to preserve the original style object.
 
-> All `.raw(...)` signatures are identity functions that return the same value as the input, but > serve as a hint to
-> the compiler that the value is a style object.
+> All `.raw(...)` signatures are identity functions that return the same value as the input, but serve as a hint to the
+> compiler that the value is a style object.
 
 ```js
 // style.js
@@ -46,6 +46,41 @@ const style2 = css.raw({
 })
 
 const className = css(style1, style2) // => 'bg_blue text_white'
+```
+
+## Spreading `css.raw` objects
+
+> **Added in v1.6.1**
+
+You can also spread `css.raw` objects within style declarations. This is particularly useful for reusing styles in
+nested selectors, conditions, and complex compositions:
+
+### Child selectors
+
+```js
+import { css } from 'styled-system/css'
+
+const baseStyles = css.raw({ margin: 0, padding: 0 })
+
+const component = css({
+  '& p': { ...baseStyles, fontSize: '1rem' },
+  '& h1': { ...baseStyles, fontSize: '2rem' }
+})
+```
+
+### Nested conditions
+
+```js
+import { css } from 'styled-system/css'
+
+const interactive = css.raw({ cursor: 'pointer', transition: 'all 0.2s' })
+
+const card = css({
+  _hover: {
+    ...interactive,
+    _dark: { ...interactive, color: 'white' }
+  }
+})
 ```
 
 ## Merging `cva` + `css` styles
