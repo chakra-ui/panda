@@ -56,7 +56,7 @@
     "lodash.merge": "4.6.2",
     "look-it-up": "2.1.0",
     "outdent": " ^0.8.0",
-    "package-manager-detector": "1.5.0",
+    "package-manager-detector": "1.6.0",
     "perfect-debounce": "1.0.0",
     "pkg-types": "2.3.0",
     "picomatch": "4.0.3",

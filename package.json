@@ -42,7 +42,7 @@
     "chokidar": "4.0.3",
     "concurrently": "9.2.1",
     "cross-env": "10.1.0",
-    "happy-dom": "20.0.10",
+    "happy-dom": "20.0.11",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
     "mdx-local-link-checker": "2.1.1",
@@ -52,19 +52,19 @@
     "tsx": "4.20.6",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "4.0.14"
+    "vitest": "4.0.15"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/eslint": "9.6.1",
     "@types/node": "24.10.1",
-    "@typescript-eslint/eslint-plugin": "8.48.0",
-    "@typescript-eslint/parser": "8.48.0",
+    "@typescript-eslint/eslint-plugin": "8.48.1",
+    "@typescript-eslint/parser": "8.48.1",
     "eslint": "9.39.1",
     "eslint-config-prettier": "10.1.8",
     "globals": "^16.4.0",
     "prettier": "3.2.5",
-    "typescript-eslint": "^8.46.4",
+    "typescript-eslint": "^8.48.1",
     "vite-plugin-virtual": "^0.4.0"
   },
   "lint-staged": {

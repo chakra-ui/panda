@@ -62,11 +62,11 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "astro": "5.16.2",
+    "astro": "5.16.3",
     "nanostores": "^1.1.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "vite": "7.2.4"
+    "vite": "7.2.6"
   },
   "devDependencies": {
     "@testing-library/react": "16.3.0",
