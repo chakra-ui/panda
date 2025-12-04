@@ -2465,4 +2465,56 @@ describe('static-css caching', () => {
     expect(count1).toBe(count2)
     expect(count1).toBeGreaterThan(0)
   })
+
+  test('recipes: "*" should override individual recipe staticCss config', () => {
+    // Create a context with a recipe that has its own staticCss config
+    const confWithRecipeStaticCss = {
+      hooks,
+      ...defaults,
+      config: {
+        ...defaults.config,
+        theme: {
+          ...JSON.parse(JSON.stringify(defaults.config.theme)),
+          recipes: {
+            testRecipe: {
+              className: 'testRecipe',
+              base: { display: 'flex' },
+              variants: {
+                size: {
+                  sm: { fontSize: '12px' },
+                  md: { fontSize: '14px' },
+                  lg: { fontSize: '16px' },
+                },
+                variant: {
+                  primary: { color: 'blue' },
+                  secondary: { color: 'gray' },
+                },
+              },
+              // This recipe has its own staticCss config that only includes 'sm' size
+              staticCss: [{ size: ['sm'] }],
+            },
+          },
+        },
+      },
+    } as typeof fixtureDefaults
+
+    const ctxWithStaticCss = new Context(confWithRecipeStaticCss)
+    const getStaticCssWithCtx = (options: StaticCssOptions) => {
+      const engine = ctxWithStaticCss.staticCss.clone().process(options)
+      return { results: engine.results, css: engine.sheet.toCss() }
+    }
+
+    // When using recipes: "*", ALL variants should be generated
+    // even though the recipe's staticCss only specifies ['sm']
+    const result = getStaticCssWithCtx({ recipes: '*' })
+
+    // Should include all size variants (sm, md, lg), not just sm
+    expect(result.css).toContain('testRecipe--size_sm')
+    expect(result.css).toContain('testRecipe--size_md')
+    expect(result.css).toContain('testRecipe--size_lg')
+
+    // Should include all variant variants (primary, secondary)
+    expect(result.css).toContain('testRecipe--variant_primary')
+    expect(result.css).toContain('testRecipe--variant_secondary')
+  })
 })

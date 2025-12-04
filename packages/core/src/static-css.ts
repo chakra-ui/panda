@@ -287,10 +287,11 @@ export class StaticCss {
 
     Object.entries(recipeConfigs).forEach(([name, recipe]) => {
       if (useAllRecipes) {
+        // When recipes: "*" is set globally, always use ['*'] for all recipes
+        // This should NOT be overridden by individual recipe.staticCss configs
         staticCss.recipes[name] = ['*']
-      }
-
-      if (recipe.staticCss) {
+      } else if (recipe.staticCss) {
+        // Only use recipe-level staticCss when not using global wildcard
         staticCss.recipes[name] = recipe.staticCss
       }
     })

@@ -141,7 +141,7 @@ export class Generator extends Context {
 
     // Recipe artifacts
     const recipes: SplitCssArtifact[] = []
-    for (const recipeName of decoder.recipes.keys()) {
+    for (const recipeName of this.recipes.keys) {
       const recipeSheet = this.createSheet()
       recipeSheet.processDecoderForRecipe(decoder, recipeName)
       const code = recipeSheet.getLayerCss('recipes')
