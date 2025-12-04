@@ -1,5 +1,5 @@
 ---
-'@pandacss/cli': minor
+'@pandacss/dev': minor
 '@pandacss/generator': minor
 '@pandacss/node': minor
 '@pandacss/types': minor
