@@ -743,6 +743,10 @@ test('should work with default fixture', () => {
           },
           "pixelValue": "var(--spacing-4)",
           "prop": "gutter",
+          "rawValue": {
+            "base": "{spacing.4}",
+            "lg": "{spacing.5}",
+          },
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
         },
@@ -1611,6 +1615,10 @@ test('should work with default fixture', () => {
             "gutter",
           ],
           "prop": "-gutter",
+          "rawValue": {
+            "base": "{spacing.4}",
+            "lg": "{spacing.5}",
+          },
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
         },
@@ -1635,6 +1643,10 @@ test('should work with default fixture', () => {
           },
           "pixelValue": "var(--spacing-5)",
           "prop": "gutter",
+          "rawValue": {
+            "base": "{spacing.4}",
+            "lg": "{spacing.5}",
+          },
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
         },
@@ -1663,6 +1675,10 @@ test('should work with default fixture', () => {
             "gutter",
           ],
           "prop": "-gutter",
+          "rawValue": {
+            "base": "{spacing.4}",
+            "lg": "{spacing.5}",
+          },
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
         },

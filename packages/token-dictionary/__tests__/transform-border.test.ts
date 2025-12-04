@@ -182,6 +182,10 @@ test('transform / border', () => {
             "base": "var(--borders-sm)",
           },
           "prop": "controlBorder",
+          "rawValue": {
+            "@hover": "{borders.md}",
+            "base": "{borders.sm}",
+          },
           "var": "--borders-control-border",
           "varRef": "var(--borders-control-border)",
         },
@@ -204,6 +208,9 @@ test('transform / border', () => {
             "base": "var(--borders-control-border)",
           },
           "prop": "dividerBorder",
+          "rawValue": {
+            "base": "{borders.controlBorder}",
+          },
           "var": "--borders-divider-border",
           "varRef": "var(--borders-divider-border)",
         },
@@ -227,6 +234,10 @@ test('transform / border', () => {
             "base": "var(--borders-sm)",
           },
           "prop": "controlBorder",
+          "rawValue": {
+            "@hover": "{borders.md}",
+            "base": "{borders.sm}",
+          },
           "var": "--borders-control-border",
           "varRef": "var(--borders-control-border)",
         },

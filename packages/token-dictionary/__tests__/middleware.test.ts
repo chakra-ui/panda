@@ -108,6 +108,9 @@ test('negative tokens', () => {
             "base": "{spacing.1}",
           },
           "prop": "lg",
+          "rawValue": {
+            "base": "{spacing.1}",
+          },
         },
         "name": "spacing.lg",
         "originalValue": "{spacing.1}",
@@ -155,6 +158,9 @@ test('negative tokens', () => {
             "lg",
           ],
           "prop": "-lg",
+          "rawValue": {
+            "base": "{spacing.1}",
+          },
         },
         "name": "spacing.-lg",
         "originalValue": "{spacing.1}",

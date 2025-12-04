@@ -97,3 +97,11 @@ export interface EmitPackageCommandFlags {
   cwd: string
   base?: string
 }
+
+export interface SpecCommandFlags {
+  silent?: boolean
+  outdir?: string
+  cwd?: string
+  config?: string
+  filter?: string
+}

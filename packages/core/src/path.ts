@@ -50,4 +50,8 @@ export class PathEngine {
   get themes() {
     return this.getFilePath('themes')
   }
+
+  get specs() {
+    return this.getFilePath('specs')
+  }
 }

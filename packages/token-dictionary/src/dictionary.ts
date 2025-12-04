@@ -160,6 +160,7 @@ export class TokenDictionary {
       node.setExtensions({
         category,
         conditions: value,
+        rawValue: value,
         prop: this.formatTokenName(path.slice(1)),
       })
 

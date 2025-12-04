@@ -381,6 +381,9 @@ test('should generate nested object virtual palette', () => {
             "base": "navy",
           },
           "prop": "button.dark",
+          "rawValue": {
+            "base": "navy",
+          },
           "var": "--colors-button-dark",
           "varRef": "var(--colors-button-dark)",
         },
@@ -416,6 +419,9 @@ test('should generate nested object virtual palette', () => {
           },
           "isDefault": true,
           "prop": "button.light",
+          "rawValue": {
+            "base": "skyblue",
+          },
           "var": "--colors-button-light",
           "varRef": "var(--colors-button-light)",
         },
@@ -459,6 +465,9 @@ test('should generate nested object virtual palette', () => {
           },
           "isDefault": true,
           "prop": "button.light.accent",
+          "rawValue": {
+            "base": "cyan",
+          },
           "var": "--colors-button-light-accent",
           "varRef": "var(--colors-button-light-accent)",
         },
@@ -512,6 +521,9 @@ test('should generate nested object virtual palette', () => {
             "base": "blue",
           },
           "prop": "button.light.accent.secondary",
+          "rawValue": {
+            "base": "blue",
+          },
           "var": "--colors-button-light-accent-secondary",
           "varRef": "var(--colors-button-light-accent-secondary)",
         },
@@ -1181,6 +1193,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
             "base": "navy",
           },
           "prop": "$button-dark",
+          "rawValue": {
+            "base": "navy",
+          },
           "var": "--colors-button-dark",
           "varRef": "var(--colors-button-dark)",
         },
@@ -1216,6 +1231,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
           },
           "isDefault": true,
           "prop": "$button-light",
+          "rawValue": {
+            "base": "skyblue",
+          },
           "var": "--colors-button-light",
           "varRef": "var(--colors-button-light)",
         },
@@ -1259,6 +1277,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
           },
           "isDefault": true,
           "prop": "$button-light-accent",
+          "rawValue": {
+            "base": "cyan",
+          },
           "var": "--colors-button-light-accent",
           "varRef": "var(--colors-button-light-accent)",
         },
@@ -1312,6 +1333,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
             "base": "blue",
           },
           "prop": "$button-light-accent-secondary",
+          "rawValue": {
+            "base": "blue",
+          },
           "var": "--colors-button-light-accent-secondary",
           "varRef": "var(--colors-button-light-accent-secondary)",
         },

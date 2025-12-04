@@ -753,7 +753,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens/index';
 
     export interface DividerProperties {
-       orientation?: ConditionalValue<"horizontal" | "vertical">
+       orientation?: "horizontal" | "vertical"
     	thickness?: ConditionalValue<Tokens["sizes"] | Properties["borderWidth"]>
     	color?: ConditionalValue<Tokens["colors"] | Properties["borderColor"]>
     }
@@ -806,7 +806,7 @@ test('should generate pattern', () => {
        offsetX?: ConditionalValue<Tokens["spacing"] | Properties["left"]>
     	offsetY?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
     	offset?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
-    	placement?: ConditionalValue<"bottom-end" | "bottom-start" | "top-end" | "top-start" | "bottom-center" | "top-center" | "middle-center" | "middle-end" | "middle-start">
+    	placement?: "bottom-end" | "bottom-start" | "top-end" | "top-start" | "bottom-center" | "top-center" | "middle-center" | "middle-end" | "middle-start"
     }
 
     interface FloatStyles extends FloatProperties, DistributiveOmit<SystemStyleObject, keyof FloatProperties > {}

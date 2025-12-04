@@ -1,6 +1,6 @@
 import { Context, type StyleDecoder, type Stylesheet } from '@pandacss/core'
 import { dashCase, PandaError } from '@pandacss/shared'
-import type { ArtifactId, CssArtifactType, LoadConfigResult } from '@pandacss/types'
+import type { ArtifactId, CssArtifactType, LoadConfigResult, SpecType } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -10,6 +10,15 @@ import { generateResetCss } from './artifacts/css/reset-css'
 import { generateStaticCss } from './artifacts/css/static-css'
 import { generateTokenCss } from './artifacts/css/token-css'
 import { getThemeCss } from './artifacts/js/themes'
+import { generateAnimationStylesSpec } from './spec/animation-styles'
+import { generateColorPaletteSpec } from './spec/color-palette'
+import { generateConditionsSpec } from './spec/conditions'
+import { generateKeyframesSpec } from './spec/keyframes'
+import { generateLayerStylesSpec } from './spec/layer-styles'
+import { generatePatternsSpec } from './spec/patterns'
+import { generateRecipesSpec } from './spec/recipes'
+import { generateSemanticTokensSpec, generateTokensSpec } from './spec/tokens'
+import { generateTextStylesSpec } from './spec/text-styles'
 
 export interface SplitCssArtifact {
   type: 'layer' | 'recipe' | 'theme'
@@ -193,6 +202,36 @@ export class Generator extends Context {
       themes,
       recipesIndex,
       index: imports.join('\n'),
+    }
+  }
+
+  getSpecOfType = (type: SpecType) => {
+    return match(type)
+      .with('tokens', () => generateTokensSpec(this))
+      .with('recipes', () => generateRecipesSpec(this))
+      .with('patterns', () => generatePatternsSpec(this))
+      .with('conditions', () => generateConditionsSpec(this))
+      .with('keyframes', () => generateKeyframesSpec(this))
+      .with('semantic-tokens', () => generateSemanticTokensSpec(this))
+      .with('text-styles', () => generateTextStylesSpec(this))
+      .with('layer-styles', () => generateLayerStylesSpec(this))
+      .with('animation-styles', () => generateAnimationStylesSpec(this))
+      .with('color-palette', () => generateColorPaletteSpec(this))
+      .exhaustive()
+  }
+
+  getSpec = () => {
+    return {
+      tokens: generateTokensSpec(this),
+      recipes: generateRecipesSpec(this),
+      patterns: generatePatternsSpec(this),
+      conditions: generateConditionsSpec(this),
+      keyframes: generateKeyframesSpec(this),
+      'semantic-tokens': generateSemanticTokensSpec(this),
+      'text-styles': generateTextStylesSpec(this),
+      'layer-styles': generateLayerStylesSpec(this),
+      'animation-styles': generateAnimationStylesSpec(this),
+      'color-palette': generateColorPaletteSpec(this),
     }
   }
 }

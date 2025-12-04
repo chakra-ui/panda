@@ -1,6 +1,15 @@
-import { capitalize, createRegex, dashCase, getPatternStyles, isObject, memo, uncapitalize } from '@pandacss/shared'
+import {
+  capitalize,
+  createRegex,
+  dashCase,
+  getPatternStyles,
+  isObject,
+  memo,
+  uncapitalize,
+  unionType,
+} from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
-import type { ArtifactFilters, Dict, PatternConfig, PatternHelpers, UserConfig } from '@pandacss/types'
+import type { ArtifactFilters, Dict, PatternConfig, PatternHelpers, PatternProperty, UserConfig } from '@pandacss/types'
 import type { Utility } from './utility'
 
 interface PatternOptions {
@@ -131,6 +140,37 @@ export class Patterns {
     if (propType.type === 'token') {
       const values = this.tokens.view.getCategoryValues(propType.value)
       return Object.keys(values ?? {})
+    }
+  }
+
+  getPropertyType = (prop: PatternProperty): string => {
+    switch (prop.type) {
+      case 'enum':
+        // TypeScript union style for enums: "a" | "b" | "c"
+        return unionType(prop.value)
+
+      case 'token': {
+        // Token reference with optional CSS property fallback
+        const tokenType = `Tokens["${prop.value}"]`
+        if (prop.property) {
+          return `ConditionalValue<${tokenType} | Properties["${prop.property}"]>`
+        }
+        return `ConditionalValue<${tokenType}>`
+      }
+
+      case 'property':
+        // System property type
+        return `SystemProperties["${prop.value}"]`
+
+      case 'string':
+      case 'number':
+      case 'boolean':
+        // Primitive types with ConditionalValue wrapper
+        return `ConditionalValue<${prop.type}>`
+
+      default:
+        // For any other type, return ConditionalValue wrapper
+        return `ConditionalValue<${(prop as any).type || 'unknown'}>`
     }
   }
 

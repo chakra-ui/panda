@@ -13,6 +13,7 @@ import {
   setupConfig,
   setupGitIgnore,
   setupPostcss,
+  spec,
   startProfiling,
   type CssGenOptions,
 } from '@pandacss/node'
@@ -31,6 +32,7 @@ import type {
   InitCommandFlags,
   MainCommandFlags,
   ShipCommandFlags,
+  SpecCommandFlags,
   StudioCommandFlags,
 } from './types'
 
@@ -304,6 +306,33 @@ export async function main() {
       if (!flags.watch) {
         stream.end()
       }
+    })
+
+  cli
+    .command('spec', 'Generate spec files for your theme (useful for documentation)')
+    .option('--silent', "Don't print any logs")
+    .option('--outdir <dir>', 'Output directory for spec files')
+    .option('--filter <pattern>', 'Filter specifications by name/pattern')
+    .option('-c, --config <path>', 'Path to panda config file')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .action(async (flags: SpecCommandFlags) => {
+      const { silent, config: configPath, outdir, filter } = flags
+      const cwd = resolve(flags.cwd ?? '')
+
+      if (silent) {
+        logger.level = 'silent'
+      }
+
+      const ctx = await loadConfigAndCreateContext({
+        cwd,
+        configPath,
+        config: { cwd },
+      })
+
+      await spec(ctx, {
+        outdir,
+        filter,
+      })
     })
 
   cli
