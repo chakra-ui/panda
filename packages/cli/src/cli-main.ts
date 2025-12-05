@@ -312,11 +312,10 @@ export async function main() {
     .command('spec', 'Generate spec files for your theme (useful for documentation)')
     .option('--silent', "Don't print any logs")
     .option('--outdir <dir>', 'Output directory for spec files')
-    .option('--filter <pattern>', 'Filter specifications by name/pattern')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags: SpecCommandFlags) => {
-      const { silent, config: configPath, outdir, filter } = flags
+      const { silent, config: configPath, outdir } = flags
       const cwd = resolve(flags.cwd ?? '')
 
       if (silent) {
@@ -329,10 +328,7 @@ export async function main() {
         config: { cwd },
       })
 
-      await spec(ctx, {
-        outdir,
-        filter,
-      })
+      await spec(ctx, { outdir })
     })
 
   cli

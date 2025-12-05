@@ -15,34 +15,42 @@ interface Examples {
   jsxExamples: string[]
 }
 
-export interface TokenSpecDefinition extends Examples {
+export interface TokenValue {
   name: string
   value: any
-  type?: string
   description?: string
   deprecated?: boolean | string
   cssVar?: string
+}
+
+export interface TokenGroupDefinition extends Examples {
+  type: string
+  values: TokenValue[]
   tokenFunctionExamples: string[]
 }
 
 export interface TokenSpec {
   type: 'tokens'
-  data: TokenSpecDefinition[]
+  data: TokenGroupDefinition[]
 }
 
-export interface SemanticTokenSpecDefinition extends Examples {
+export interface SemanticTokenValue {
   name: string
   values: Array<{ value: string; condition?: string }>
-  type?: string
   description?: string
   deprecated?: boolean | string
   cssVar?: string
+}
+
+export interface SemanticTokenGroupDefinition extends Examples {
+  type: string
+  values: SemanticTokenValue[]
   tokenFunctionExamples: string[]
 }
 
 export interface SemanticTokenSpec {
   type: 'semantic-tokens'
-  data: SemanticTokenSpecDefinition[]
+  data: SemanticTokenGroupDefinition[]
 }
 
 export interface RecipeSpecDefinition extends Examples {

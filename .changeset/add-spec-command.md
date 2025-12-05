@@ -3,6 +3,7 @@
 '@pandacss/generator': minor
 '@pandacss/node': minor
 '@pandacss/types': minor
+'@pandacss/cli': patch
 ---
 
 Add `panda spec` command to generate specification files for your theme (useful for documentation). This command
@@ -12,17 +13,28 @@ generates JSON specification files containing metadata, examples, and usage info
 # Generate all spec files
 panda spec
 
-# Generate with filter (filters across all spec types)
-panda spec --filter "button*"
-
 # Custom output directory
 panda spec --outdir custom/specs
-
-# Include spec entrypoint in package.json
-panda emit-pkg --spec
 ```
 
-Spec files can be consumed via:
+**Token Spec Structure:**
+
+```json
+{
+  "type": "tokens",
+  "data": [
+    {
+      "type": "aspectRatios",
+      "values": [{ "name": "square", "value": "1 / 1", "cssVar": "var(--aspect-ratios-square)" }],
+      "tokenFunctionExamples": ["token('aspectRatios.square')"],
+      "functionExamples": ["css({ aspectRatio: 'square' })"],
+      "jsxExamples": ["<Box aspectRatio=\"square\" />"]
+    }
+  ]
+}
+```
+
+**Spec Usage:**
 
 ```javascript
 import tokens from 'styled-system/specs/tokens'

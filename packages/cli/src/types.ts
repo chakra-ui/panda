@@ -103,5 +103,4 @@ export interface SpecCommandFlags {
   outdir?: string
   cwd?: string
   config?: string
-  filter?: string
 }

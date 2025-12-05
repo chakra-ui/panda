@@ -1,7 +1,14 @@
 import type { Context } from '@pandacss/core'
 import { walkObject } from '@pandacss/shared'
 import type { Token } from '@pandacss/token-dictionary'
-import type { SemanticTokenSpec, SemanticTokenSpecDefinition, TokenSpec, TokenSpecDefinition } from '@pandacss/types'
+import type {
+  SemanticTokenSpec,
+  SemanticTokenGroupDefinition,
+  SemanticTokenValue,
+  TokenSpec,
+  TokenGroupDefinition,
+  TokenValue,
+} from '@pandacss/types'
 
 const CATEGORY_PROPERTY_MAP: Record<string, string> = {
   colors: 'color',
@@ -56,62 +63,96 @@ const generateTokenExamples = (token: Token, jsxStyleProps: 'all' | 'minimal' | 
 
 export const generateTokensSpec = (ctx: Context): TokenSpec => {
   const jsxStyleProps = ctx.config.jsxStyleProps ?? 'all'
-  const tokens = ctx.tokens.allTokens
-    .filter(
-      (token) =>
-        !token.extensions.isSemantic &&
-        !token.extensions.isVirtual &&
-        !token.extensions.conditions &&
-        !token.extensions.isNegative,
-    )
-    .map((token): TokenSpecDefinition => {
-      const { functionExamples, tokenFunctionExamples, jsxExamples } = generateTokenExamples(token, jsxStyleProps)
-      return {
-        name: token.name,
+
+  // Create grouped data structure using tokens.view.categoryMap
+  const groupedData: TokenGroupDefinition[] = Array.from(ctx.tokens.view.categoryMap.entries())
+    .map(([category, tokenMap]) => {
+      // Convert Map values to array and filter
+      const typeTokens = Array.from(tokenMap.values()).filter(
+        (token) =>
+          !token.extensions.isSemantic &&
+          !token.extensions.isVirtual &&
+          !token.extensions.conditions &&
+          !token.extensions.isNegative,
+      )
+
+      // Skip if no tokens after filtering
+      if (!typeTokens.length) return null
+
+      // Get examples from first token of this type (they'll be the same for all)
+      const firstToken = typeTokens[0]
+      const { functionExamples, tokenFunctionExamples, jsxExamples } = generateTokenExamples(firstToken, jsxStyleProps)
+
+      const values: TokenValue[] = typeTokens.map((token) => ({
+        name: token.extensions.prop || token.name,
         value: token.value,
-        type: token.extensions.category,
         description: token.description,
         deprecated: token.deprecated,
         cssVar: token.extensions.varRef,
+      }))
+
+      return {
+        type: category,
+        values,
         tokenFunctionExamples,
         functionExamples,
         jsxExamples,
       }
     })
+    .filter(Boolean) as TokenGroupDefinition[]
 
   return {
     type: 'tokens',
-    data: tokens,
+    data: groupedData,
   }
 }
 
 export const generateSemanticTokensSpec = (ctx: Context): SemanticTokenSpec => {
   const jsxStyleProps = ctx.config.jsxStyleProps ?? 'all'
-  const semanticTokens = ctx.tokens.allTokens
-    .filter((token) => (token.extensions.isSemantic || token.extensions.conditions) && !token.extensions.isVirtual)
-    .map((token): SemanticTokenSpecDefinition => {
-      const { functionExamples, tokenFunctionExamples, jsxExamples } = generateTokenExamples(token, jsxStyleProps)
-      const values: Array<{ value: string; condition?: string }> = []
 
-      walkObject(token.extensions.rawValue, (value, path) => {
-        values.push({ value, condition: path.map((p) => p.replace(/^_/, '')).join('.') })
+  // Create grouped data structure using tokens.view.categoryMap
+  const groupedData: SemanticTokenGroupDefinition[] = Array.from(ctx.tokens.view.categoryMap.entries())
+    .map(([category, tokenMap]) => {
+      // Convert Map values to array and filter for semantic tokens
+      const typeTokens = Array.from(tokenMap.values()).filter(
+        (token) => (token.extensions.isSemantic || token.extensions.conditions) && !token.extensions.isVirtual,
+      )
+
+      // Skip if no tokens after filtering
+      if (!typeTokens.length) return null
+
+      // Get examples from first token of this type
+      const firstToken = typeTokens[0]
+      const { functionExamples, tokenFunctionExamples, jsxExamples } = generateTokenExamples(firstToken, jsxStyleProps)
+
+      const values: SemanticTokenValue[] = typeTokens.map((token) => {
+        const conditions: Array<{ value: string; condition?: string }> = []
+
+        walkObject(token.extensions.rawValue, (value, path) => {
+          conditions.push({ value, condition: path.map((p) => p.replace(/^_/, '')).join('.') })
+        })
+
+        return {
+          name: token.extensions.prop || token.name,
+          values: conditions,
+          description: token.description,
+          deprecated: token.deprecated,
+          cssVar: token.extensions.varRef,
+        }
       })
 
       return {
-        name: token.name,
+        type: category,
         values,
-        type: token.extensions.category,
-        description: token.description,
-        deprecated: token.deprecated,
-        cssVar: token.extensions.varRef,
         tokenFunctionExamples,
         functionExamples,
         jsxExamples,
       }
     })
+    .filter(Boolean) as SemanticTokenGroupDefinition[]
 
   return {
     type: 'semantic-tokens',
-    data: semanticTokens,
+    data: groupedData,
   }
 }
