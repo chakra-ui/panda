@@ -3,7 +3,6 @@
 '@pandacss/generator': minor
 '@pandacss/node': minor
 '@pandacss/types': minor
-'@pandacss/cli': patch
 ---
 
 Add `panda spec` command to generate specification files for your theme (useful for documentation). This command
