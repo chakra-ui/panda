@@ -1,5 +1,61 @@
 # @pandacss/generator
 
+## 1.7.0
+
+### Minor Changes
+
+- 86b30b1: Add `panda spec` command to generate specification files for your theme (useful for documentation). This
+  command generates JSON specification files containing metadata, examples, and usage information.
+
+  ```bash
+  # Generate all spec files
+  panda spec
+
+  # Custom output directory
+  panda spec --outdir custom/specs
+  ```
+
+  **Token Spec Structure:**
+
+  ```json
+  {
+    "type": "tokens",
+    "data": [
+      {
+        "type": "aspectRatios",
+        "values": [{ "name": "square", "value": "1 / 1", "cssVar": "var(--aspect-ratios-square)" }],
+        "tokenFunctionExamples": ["token('aspectRatios.square')"],
+        "functionExamples": ["css({ aspectRatio: 'square' })"],
+        "jsxExamples": ["<Box aspectRatio=\"square\" />"]
+      }
+    ]
+  }
+  ```
+
+  **Spec Usage:**
+
+  ```javascript
+  import tokens from 'styled-system/specs/tokens'
+  import recipes from 'styled-system/specs/recipes'
+  ```
+
+### Patch Changes
+
+- f37fd8d: Fix `cssgen --splitting` not fully respecting `staticCss: { recipes: "*" }`.
+
+  - When `staticCss: { recipes: "*" }` is set globally, individual recipes with their own `staticCss` property would
+    override the global wildcard, potentially omitting variants.
+  - Split CSS generation was missing recipes that only have base styles (no variants).
+
+- Updated dependencies [86b30b1]
+- Updated dependencies [f37fd8d]
+  - @pandacss/types@1.7.0
+  - @pandacss/core@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/token-dictionary@1.7.0
+  - @pandacss/is-valid-prop@1.7.0
+  - @pandacss/shared@1.7.0
+
 ## 1.6.1
 
 ### Patch Changes
