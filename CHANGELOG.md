@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.7.0](#1.7.0) - 2025-12-08
+
+### Added
+
+- **New `panda spec` Command:** Introduced a `panda spec` command to generate specification files for your theme
+  (helpful for documentation). This command outputs JSON spec files with metadata, examples, and usage information.
+
+  - Usage:
+
+    ```sh
+    # Generate all spec files
+    panda spec
+
+    # Custom output directory
+    panda spec --outdir custom/specs
+    ```
+
+  - Example structure:
+    ```json
+    {
+      "type": "tokens",
+      "data": [
+        {
+          "type": "aspectRatios",
+          "values": [{ "name": "square", "value": "1 / 1", "cssVar": "var(--aspect-ratios-square)" }],
+          "tokenFunctionExamples": ["token('aspectRatios.square')"],
+          "functionExamples": ["css({ aspectRatio: 'square' })"],
+          "jsxExamples": ["<Box aspectRatio=\"square\" />"]
+        }
+      ]
+    }
+    ```
+  - Example usage:
+    ```js
+    import tokens from 'styled-system/specs/tokens'
+    import recipes from 'styled-system/specs/recipes'
+    ```
+
+### Fixed
+
+- **Static CSS Recipe Splitting:** Fixed an issue where `cssgen --splitting` did not fully respect
+  `staticCss: { recipes: "*" }`.
+  - Global `staticCss: { recipes: "*" }` is now properly handled, even when individual recipes define their own
+    `staticCss` property.
+  - Split CSS generation now includes recipes with only base styles (no variants).
+
 ## [1.6.1](#1.6.1) - 2025-12-03
 
 ### Fixed
