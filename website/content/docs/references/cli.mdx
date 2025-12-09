@@ -136,40 +136,58 @@ panda cssgen --splitting --outfile dist/styles.css
 The `--splitting` flag enables CSS code splitting, which generates separate CSS files for different parts of your design
 system instead of a single monolithic CSS file. This is useful for:
 
-- **Better caching** - Unchanged layers can be cached independently
 - **Selective loading** - Load only the CSS you need for specific pages
 - **Easier debugging** - Identify which layer or recipe contributes to the final CSS
 
-When using `--splitting`, Panda will generate files like:
+When using `--splitting`, Panda will generate the following structure:
 
 ```
 styled-system/
-  ├── styles.css           # Main entry point (imports all layers)
-  ├── layers/
-  │   ├── reset.css        # CSS reset/preflight styles
-  │   ├── tokens.css       # Design token CSS variables
-  │   ├── global.css       # Global styles
-  │   ├── recipes.css      # All recipe styles
-  │   └── utilities.css    # Atomic utility classes
-  └── recipes/
-      ├── button.css       # Individual recipe: button
-      ├── card.css         # Individual recipe: card
-      └── ...              # Other recipes as separate files
+├── styles.css              # @layer declarations + @imports for all layers
+└── styles/
+    ├── reset.css           # Preflight/reset CSS
+    ├── global.css          # Global CSS styles
+    ├── tokens.css          # Design token CSS variables
+    ├── utilities.css       # Atomic utility classes
+    ├── recipes.css         # @imports for all recipe files
+    ├── recipes/
+    │   ├── button.css      # Individual recipe: button
+    │   ├── card.css        # Individual recipe: card
+    │   └── ...             # Other recipes as separate files
+    └── themes/
+        └── dark.css        # Theme-specific tokens (not auto-imported)
+        └── light.css       # Theme-specific tokens (not auto-imported)
 ```
 
-Each file is a valid CSS file that can be imported independently:
+The main `styles.css` file contains the `@layer` declarations and imports all the layer files (but not the themes):
 
 ```css
-/* Import all styles */
+/* styled-system/styles.css */
+@layer reset, base, tokens, recipes, utilities;
+
+@import './styles/reset.css';
+@import './styles/global.css';
+@import './styles/tokens.css';
+@import './styles/recipes.css';
+@import './styles/utilities.css';
+```
+
+You can then choose how to import these files:
+
+```css
+/* Option 1: Import everything (default) */
 @import './styled-system/styles.css';
 
-/* Or import specific layers */
-@import './styled-system/layers/reset.css';
-@import './styled-system/layers/tokens.css';
-@import './styled-system/layers/utilities.css';
+/* Option 2: Import specific layers only */
+@import './styled-system/styles/tokens.css';
+@import './styled-system/styles/utilities.css';
 
-/* Or import specific recipes */
-@import './styled-system/recipes/button.css';
+/* Option 3: Import specific recipes */
+@import './styled-system/styles/recipes/button.css';
+@import './styled-system/styles/recipes/card.css';
+
+/* Option 4: Import a specific theme (when using multiple themes) */
+@import './styled-system/styles/themes/oceanic.css';
 ```
 
 | Flag                   | Description                                                                            | Related                                                       |
