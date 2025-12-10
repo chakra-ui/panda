@@ -108,28 +108,21 @@ pnpm panda codegen --watch
 
 Generate the CSS from files.
 
-You can use a `glob` to override the `config.include` option like this:
-
-`panda cssgen "src/**/*.css" --outfile dist.css`
-
-or you can use it with a `{type}` argument to generate only a specific type of CSS:
-
-- preflight
-- tokens
-- static
-- global
-- keyframes
-
-> Note that this only works when passing an `--outfile`.
-
-You can use it like this:
-
 ```bash
-panda cssgen "static" --outfile dist/static.css
+panda cssgen
 
-# Generate CSS split into separate files per layer and recipe
-panda cssgen --splitting --outfile dist/styles.css
+# Generate CSS for specific type
+panda cssgen tokens
+
+# Generate CSS for specific glob
+panda cssgen "src/**/*.css"
+
+# Generate CSS files split into separate files per layer and recipe
+panda cssgen --splitting
 ```
+
+When using the `cssgen` command, you can pass a `{type}` argument to generate only a specific type of CSS. The supported
+types are: `preflight`, `tokens`, `static`, `global`, `keyframes`.
 
 ### CSS Splitting
 
