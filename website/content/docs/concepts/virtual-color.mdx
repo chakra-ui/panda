@@ -159,6 +159,9 @@ export const App = () => {
 }
 ```
 
+> **Note**: Nested tokens require glob patterns in the `colorPalette` config (e.g., `'button.*'`) to generate proper CSS
+> variables.
+
 ## Pregenerated Virtual Colors
 
 Use the `staticCss` option in the config to pre-generate values for the `colorPalette` property.
@@ -211,7 +214,8 @@ function ButtonShowcase() {
 
 By default, color palette generation is enabled and includes all colors defined in your theme.
 
-You can control which colors are used to generate color palettes by configuring the `colorPalette` property in your theme.
+You can control which colors are used to generate color palettes by configuring the `colorPalette` property in your
+theme.
 
 ### Disable Color Palette
 
@@ -245,7 +249,16 @@ export default defineConfig({
 })
 ```
 
-This will only generate color palettes for `gray`, `blue`, and `red` colors, even if you have other colors defined in your theme.
+This will only generate color palettes for `gray`, `blue`, and `red` colors, even if you have other colors defined in
+your theme.
+
+**Glob patterns** are supported for nested tokens:
+
+```ts filename="panda.config.ts"
+colorPalette: {
+  include: ['gray.*', 'blue.*'] // Includes all nested tokens
+}
+```
 
 ### Exclude Specific Colors
 
@@ -283,4 +296,35 @@ export default defineConfig({
 })
 ```
 
-In this example, color palettes will be generated for `gray`, `blue`, and `green`, but not for `red` (since it's excluded).
+In this example, color palettes will be generated for `gray`, `blue`, and `green`, but not for `red` (since it's
+excluded).
+
+## Nested Semantic Tokens
+
+If nested tokens show as raw paths (e.g., `colors.base.accent`) instead of CSS variables, use glob patterns:
+
+```ts filename="panda.config.ts"
+semanticTokens: {
+  colors: {
+    button: {
+      primary: {
+        DEFAULT: { value: '{colors.blue.500}' },
+        hover: { value: '{colors.blue.600}' }
+      }
+    }
+  }
+},
+colorPalette: {
+  include: ['button.*']  // Include all nested paths
+}
+```
+
+Usage:
+
+```tsx
+className={css({
+  colorPalette: 'button.primary',
+  bg: 'colorPalette',
+  _hover: { bg: 'colorPalette.hover' }
+})}
+```
