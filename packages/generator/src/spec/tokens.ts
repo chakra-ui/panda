@@ -9,6 +9,7 @@ import type {
   TokenGroupDefinition,
   TokenValue,
 } from '@pandacss/types'
+import { generateJsxExample, type JsxStyleProps } from '../shared'
 
 const CATEGORY_PROPERTY_MAP: Record<string, string> = {
   colors: 'color',
@@ -37,7 +38,7 @@ const getCategoryProperty = (category?: string): string => {
   return category ? CATEGORY_PROPERTY_MAP[category] ?? 'color' : 'color'
 }
 
-const generateTokenExamples = (token: Token, jsxStyleProps: 'all' | 'minimal' | 'none' = 'all') => {
+const generateTokenExamples = (token: Token, jsxStyleProps: JsxStyleProps = 'all') => {
   const prop = getCategoryProperty(token.extensions?.category)
 
   const tokenName = token.extensions.prop
@@ -47,12 +48,10 @@ const generateTokenExamples = (token: Token, jsxStyleProps: 'all' | 'minimal' | 
   const tokenFunctionExamples: string[] = [`token('${fullTokenName}')`]
   const jsxExamples: string[] = []
 
-  if (jsxStyleProps === 'all') {
-    jsxExamples.push(`<Box ${prop}="${tokenName}" />`)
-  } else if (jsxStyleProps === 'minimal') {
-    jsxExamples.push(`<Box css={{ ${prop}: '${tokenName}' }} />`)
+  const jsxExample = generateJsxExample({ [prop]: tokenName }, jsxStyleProps)
+  if (jsxExample) {
+    jsxExamples.push(jsxExample)
   }
-  // 'none' - no JSX examples
 
   if (token.extensions.varRef) {
     tokenFunctionExamples.push(`token.var('${fullTokenName}')`)
@@ -62,7 +61,7 @@ const generateTokenExamples = (token: Token, jsxStyleProps: 'all' | 'minimal' | 
 }
 
 export const generateTokensSpec = (ctx: Context): TokenSpec => {
-  const jsxStyleProps = ctx.config.jsxStyleProps ?? 'all'
+  const jsxStyleProps = ctx.config.jsxStyleProps
 
   // Create grouped data structure using tokens.view.categoryMap
   const groupedData: TokenGroupDefinition[] = Array.from(ctx.tokens.view.categoryMap.entries())
@@ -108,7 +107,7 @@ export const generateTokensSpec = (ctx: Context): TokenSpec => {
 }
 
 export const generateSemanticTokensSpec = (ctx: Context): SemanticTokenSpec => {
-  const jsxStyleProps = ctx.config.jsxStyleProps ?? 'all'
+  const jsxStyleProps = ctx.config.jsxStyleProps
 
   // Create grouped data structure using tokens.view.categoryMap
   const groupedData: SemanticTokenGroupDefinition[] = Array.from(ctx.tokens.view.categoryMap.entries())

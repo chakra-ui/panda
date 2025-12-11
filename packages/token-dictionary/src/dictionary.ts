@@ -505,6 +505,7 @@ export class TokenDictionaryView {
     const conditionMap = new Map<ConditionName, Set<Token>>()
     const categoryMap = new Map<TokenCategory, Map<TokenName, Token>>()
     const colorPalettes = new Map<ColorPalette, Map<VarName, VarRef>>()
+    const colorPaletteTokens = new Map<ColorPalette, Set<string>>()
     const valuesByCategory = new Map<TokenCategory, Map<VarName, TokenValue>>()
     const flatValues = new Map<TokenName, VarRef>()
     const rawValues = new Map<TokenName, TokenValue>()
@@ -513,7 +514,7 @@ export class TokenDictionaryView {
 
     this.dictionary.allTokens.forEach((token) => {
       this.processCondition(token, conditionMap)
-      this.processColorPalette(token, colorPalettes, this.dictionary.byName)
+      this.processColorPalette(token, colorPalettes, colorPaletteTokens, this.dictionary.byName)
       this.processCategory(token, categoryMap)
       this.processValue(token, valuesByCategory, flatValues, rawValues, nameByVar)
       this.processVars(token, vars)
@@ -541,6 +542,11 @@ export class TokenDictionaryView {
           return result
         }
       }),
+      getColorPaletteValues: memo((palette: string): string[] => {
+        const tokens = colorPaletteTokens.get(palette)
+        if (!tokens) return []
+        return Array.from(tokens).sort()
+      }),
     }
   }
 
@@ -552,7 +558,12 @@ export class TokenDictionaryView {
     group.get(condition)!.add(token)
   }
 
-  private processColorPalette(token: Token, group: Map<string, Map<string, string>>, byName: Map<string, Token>) {
+  private processColorPalette(
+    token: Token,
+    group: Map<string, Map<string, string>>,
+    tokenPaths: Map<string, Set<string>>,
+    byName: Map<string, Token>,
+  ) {
     const extensions = token.extensions as TokenExtensions<ColorPaletteExtensions>
     const { colorPalette, colorPaletteRoots, isVirtual } = extensions
     if (!colorPalette || isVirtual) return
@@ -562,6 +573,9 @@ export class TokenDictionaryView {
       if (!group.has(formated)) {
         group.set(formated, new Map())
       }
+      if (!tokenPaths.has(formated)) {
+        tokenPaths.set(formated, new Set())
+      }
 
       const virtualPath = replaceRootWithColorPalette([...token.path], [...colorPaletteRoot])
       const virtualName = this.dictionary.formatTokenName(virtualPath)
@@ -570,6 +584,9 @@ export class TokenDictionaryView {
 
       const virtualVar = virtualToken.extensions.var
       group.get(formated)!.set(virtualVar, token.extensions.varRef)
+
+      const tokenPath = this.dictionary.formatTokenName(virtualPath.slice(1))
+      tokenPaths.get(formated)!.add(tokenPath)
 
       if (extensions.isDefault && colorPaletteRoot.length === 1) {
         const colorPaletteName = this.dictionary.formatTokenName(['colors', 'colorPalette'])

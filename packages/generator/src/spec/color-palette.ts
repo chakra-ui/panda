@@ -1,5 +1,25 @@
 import type { Context } from '@pandacss/core'
 import type { ColorPaletteSpec } from '@pandacss/types'
+import { formatProps, generateJsxExample } from '../shared'
+
+const getColorPaletteExampleValues = (ctx: Context, paletteValues: string[]) => {
+  const examplePalette = paletteValues[0]
+  const availableTokens = ctx.tokens.view.getColorPaletteValues(examplePalette)
+
+  if (availableTokens.length === 0) {
+    return { examplePalette, bgToken: null, colorToken: null }
+  }
+
+  if (availableTokens.length === 1) {
+    return { examplePalette, bgToken: availableTokens[0], colorToken: null }
+  }
+
+  // Pick first and second for examples
+  const bgToken = availableTokens[0]
+  const colorToken = availableTokens[1]
+
+  return { examplePalette, bgToken, colorToken }
+}
 
 export const generateColorPaletteSpec = (ctx: Context): ColorPaletteSpec | null => {
   // Don't emit color-palette spec if colorPalette is disabled
@@ -8,7 +28,7 @@ export const generateColorPaletteSpec = (ctx: Context): ColorPaletteSpec | null 
     return null
   }
 
-  const jsxStyleProps = ctx.config.jsxStyleProps ?? 'all'
+  const jsxStyleProps = ctx.config.jsxStyleProps
   const values = Array.from(ctx.tokens.view.colorPalettes.keys()).sort()
 
   // If there are no color palettes, don't emit the spec
@@ -16,20 +36,31 @@ export const generateColorPaletteSpec = (ctx: Context): ColorPaletteSpec | null 
     return null
   }
 
-  const functionExamples: string[] = [
-    `css({ colorPalette: 'blue' })`,
-    `css({ colorPalette: 'blue', bg: 'colorPalette.500', color: 'colorPalette.50' })`,
-  ]
+  // Get example values
+  const { examplePalette, bgToken, colorToken } = getColorPaletteExampleValues(ctx, values)
+
+  const functionExamples: string[] = []
   const jsxExamples: string[] = []
 
-  if (jsxStyleProps === 'all') {
-    jsxExamples.push(`<Box colorPalette="blue" />`)
-    jsxExamples.push(`<Box colorPalette="blue" bg="colorPalette.500" color="colorPalette.50" />`)
-  } else if (jsxStyleProps === 'minimal') {
-    jsxExamples.push(`<Box css={{ colorPalette: 'blue' }} />`)
-    jsxExamples.push(`<Box css={{ colorPalette: 'blue', bg: 'colorPalette.500', color: 'colorPalette.50' }} />`)
+  // Basic example with just colorPalette
+  const basicProps = { colorPalette: examplePalette }
+  functionExamples.push(`css({ ${formatProps(basicProps)} })`)
+
+  const basicJsx = generateJsxExample(basicProps, jsxStyleProps)
+  if (basicJsx) {
+    jsxExamples.push(basicJsx)
   }
-  // 'none' - no JSX examples
+
+  // Extended example with bg and color tokens
+  if (bgToken || colorToken) {
+    const extendedProps = { colorPalette: examplePalette, bg: bgToken, color: colorToken }
+    functionExamples.push(`css({ ${formatProps(extendedProps)} })`)
+
+    const extendedJsx = generateJsxExample(extendedProps, jsxStyleProps)
+    if (extendedJsx) {
+      jsxExamples.push(extendedJsx)
+    }
+  }
 
   return {
     type: 'color-palette',

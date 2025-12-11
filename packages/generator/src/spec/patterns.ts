@@ -1,7 +1,25 @@
 import type { Context } from '@pandacss/core'
 import type { PatternSpec } from '@pandacss/types'
 
+const getExampleValue = (prop: { type?: string; value?: unknown }): string => {
+  if (prop.type === 'enum' && Array.isArray(prop.value) && prop.value.length > 0) {
+    return `"${prop.value[0]}"`
+  }
+  if (prop.type === 'boolean') {
+    return 'true'
+  }
+  if (prop.type === 'number') {
+    return '4'
+  }
+  if (prop.type === 'token') {
+    return '"md"'
+  }
+  return '<value>'
+}
+
 export const generatePatternsSpec = (ctx: Context): PatternSpec => {
+  const jsxStyleProps = ctx.config.jsxStyleProps
+
   const patterns = ctx.patterns.details.map((node) => {
     const patternName = node.baseName
     const jsxName = node.jsxName
@@ -15,25 +33,18 @@ export const generatePatternsSpec = (ctx: Context): PatternSpec => {
     if (properties.length === 0) {
       // No properties, just show basic usage
       functionExamples.push(`${patternName}()`)
-      jsxExamples.push(`<${jsxName} />`)
+      if (jsxStyleProps !== 'none') {
+        jsxExamples.push(`<${jsxName} />`)
+      }
     } else {
       // Generate examples for each property
       properties.forEach(([propName, prop]) => {
-        // Generate example value based on property type
-        let exampleValue = '<value>'
-
-        if (prop.type === 'enum' && prop.value?.length > 0) {
-          exampleValue = `"${prop.value[0]}"`
-        } else if (prop.type === 'boolean') {
-          exampleValue = 'true'
-        } else if (prop.type === 'number') {
-          exampleValue = '4'
-        } else if (prop.type === 'token') {
-          exampleValue = '"md"'
-        }
-
+        const exampleValue = getExampleValue(prop)
         functionExamples.push(`${patternName}({ ${propName}: ${exampleValue} })`)
-        jsxExamples.push(`<${jsxName} ${propName}={${exampleValue}} />`)
+
+        if (jsxStyleProps !== 'none') {
+          jsxExamples.push(`<${jsxName} ${propName}={${exampleValue}} />`)
+        }
       })
     }
 

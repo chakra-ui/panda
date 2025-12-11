@@ -1,5 +1,6 @@
 import type { Context } from '@pandacss/core'
 import type { RecipeSpec } from '@pandacss/types'
+import { buildFunctionProps, buildJsxProps, formatFunctionValue, formatJsxValue } from '../shared'
 
 const getFirstVariantValue = (variantKeyMap: Record<string, string[]>, key: string): string | null => {
   const values = variantKeyMap[key]
@@ -38,15 +39,15 @@ export const generateRecipesSpec = (ctx: Context): RecipeSpec => {
       variantKeys.forEach((variantKey) => {
         const firstValue = getFirstVariantValue(node.variantKeyMap, variantKey)
         if (firstValue) {
-          functionExamples.push(`${recipeName}({ ${variantKey}: '${firstValue}' })`)
-          jsxExamples.push(`<${jsxName} ${variantKey}="${firstValue}" />`)
+          functionExamples.push(`${recipeName}({ ${variantKey}: ${formatFunctionValue(firstValue)} })`)
+          jsxExamples.push(`<${jsxName} ${variantKey}=${formatJsxValue(firstValue)} />`)
         }
       })
 
       // Generate an example with multiple variants if there are multiple variant keys
       if (variantKeys.length > 1) {
-        const props = buildVariantProps(variantKeys, node.variantKeyMap, (key, value) => `${key}: '${value}'`, ', ')
-        const jsxProps = buildVariantProps(variantKeys, node.variantKeyMap, (key, value) => `${key}="${value}"`, ' ')
+        const props = buildVariantProps(variantKeys, node.variantKeyMap, buildFunctionProps, ', ')
+        const jsxProps = buildVariantProps(variantKeys, node.variantKeyMap, buildJsxProps, ' ')
 
         if (props && jsxProps) {
           functionExamples.push(`${recipeName}({ ${props} })`)

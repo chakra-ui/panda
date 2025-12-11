@@ -1,7 +1,25 @@
 import type { Context } from '@pandacss/core'
 import type { ConditionSpec } from '@pandacss/types'
+import type { JsxStyleProps } from '../shared'
+
+const generateConditionJsxExamples = (conditionName: string, jsxStyleProps: JsxStyleProps = 'all'): string[] => {
+  if (jsxStyleProps === 'all') {
+    return [
+      `<Box margin={{ base: '2', ${conditionName}: '4' }} />`,
+      `<Box margin="2" ${conditionName}={{ margin: '4' }} />`,
+    ]
+  }
+  if (jsxStyleProps === 'minimal') {
+    return [
+      `<Box css={{ margin: { base: '2', ${conditionName}: '4' } }} />`,
+      `<Box css={{ margin: '2', ${conditionName}: { margin: '4' } }} />`,
+    ]
+  }
+  return []
+}
 
 export const generateConditionsSpec = (ctx: Context): ConditionSpec => {
+  const jsxStyleProps = ctx.config.jsxStyleProps
   const breakpointKeys = new Set(Object.keys(ctx.conditions.breakpoints.conditions))
 
   const conditions = Object.entries(ctx.conditions.values).map(([name, detail]) => {
@@ -22,10 +40,7 @@ export const generateConditionsSpec = (ctx: Context): ConditionSpec => {
         `css({ margin: { base: '2', ${conditionName}: '4' } })`,
         `css({ margin: '2', ${conditionName}: { margin: '4' } })`,
       ],
-      jsxExamples: [
-        `<Box margin={{ base: '2', ${conditionName}: '4'}} />`,
-        `<Box margin='2' ${conditionName}={{ margin: '4' }} />`,
-      ],
+      jsxExamples: generateConditionJsxExamples(conditionName, jsxStyleProps),
     }
   })
 
