@@ -1,0 +1,151 @@
+---
+title: Using Spec Files
+description: Learn how to create design system documentation using Panda’s spec files.
+---
+
+## Documentation Workflow
+
+Here’s a quick breakdown of the steps involved in documenting your design system:
+
+### Generate the Spec
+
+Run the command:
+
+```bash
+pnpm panda spec
+```
+
+> If you update your theme, run pnpm panda spec again to regenerate the files.
+
+### Import the Spec into Your Docs or app
+
+In your documentation framework or application, you can import the spec like any other JSON file:
+
+```tsx
+import tokens from '../styled-system/specs/tokens.json'
+```
+
+### Document Tokens
+
+Here's an example of how to document color tokens:
+
+```tsx
+import { grid } from '../styled-system/patterns'
+import tokens from '../styled-system/specs/tokens.json'
+
+function App() {
+  const colors = tokens.data.find(token => token.type === 'colors')
+  return (
+    <div className={grid({ padding: '40px', columns: 3, gap: '4' })}>
+      {colors?.values.map(color => (
+        <div key={color.name}>
+          <p>{color.name}</p>
+          <p>{color.value}</p>
+          <div
+            style={{
+              width: '100px',
+              height: '100px',
+              background: color.value,
+              border: '1px solid lightgray'
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default App
+```
+
+Follow this same pattern to render any token e.g spacing, fonts, radii, borders, etc.
+
+Your color token documentation should look similar to this:
+
+<img src="/token-spec.png" alt="Token Spec Documentation" />
+
+### Document Recipes
+
+Here's an example of how to document a button recipes within a table:
+
+```tsx
+import { css } from '../styled-system/css'
+import recipes from '../styled-system/specs/recipes.json'
+
+function App() {
+  const buttonRecipe = recipes.data.find(recipe => recipe.name === 'button')
+  const defaultVariants = buttonRecipe?.defaultVariants || {}
+
+  return (
+    <div className={css({ padding: '40px' })}>
+      <table
+        style={{
+          borderCollapse: 'separate',
+          borderSpacing: 0,
+          boxShadow: '0 4px 32px rgba(0,0,0,0.08)',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          background: 'white',
+          width: '100%'
+        }}
+      >
+        <thead>
+          <tr>
+            <th>Variant</th>
+            <th style={{ padding: '18px', textAlign: 'left' }}>Options</th>
+            <th style={{ padding: '18px', textAlign: 'left' }}>Default</th>
+            <th style={{ padding: '18px', textAlign: 'left' }}>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(buttonRecipe?.variants || {}).map(([key, value]) => {
+            return (
+              <tr key={key}>
+                <td style={{ padding: '16px 18px', fontWeight: 500 }}>{key}</td>
+                <td style={{ padding: '16px 18px' }}>
+                  {(value as string[]).map((option, idx) => (
+                    <span
+                      key={option}
+                      style={{
+                        background: '#f3f4f6',
+                        color: '#3b82f6',
+                        fontWeight: 500,
+                        marginRight: idx !== (value as string[]).length - 1 ? '7px' : 0,
+                        padding: '2px 10px',
+                        fontSize: '0.88rem'
+                      }}
+                    >
+                      {option}
+                    </span>
+                  ))}
+                </td>
+                <td
+                  style={{
+                    padding: '16px 18px',
+                    fontSize: '0.96rem'
+                  }}
+                >
+                  {defaultVariants[key as keyof typeof defaultVariants] || (
+                    <span style={{ color: '#64748b', fontStyle: 'italic' }}>none</span>
+                  )}
+                </td>
+                <td style={{ padding: '16px 18px' }}>
+                  <code>{buttonRecipe?.functionExamples?.find(example => example.includes(key)) || ''}</code>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+export default App
+```
+
+Follow the same pattern to document the other spec files.
+
+Your button recipe documentation should look similar to this:
+
+<img src="/recipe-spec.png" alt="Recipe Spec Documentation" />

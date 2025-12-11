@@ -1,0 +1,155 @@
+---
+title: Spec and Documentation
+description: Document your design system in Panda.
+---
+
+## What is a Spec?
+
+A spec is a readable JSON representation of the default panda css theme as well as the theme elements defined in your
+`panda.config.ts`.
+
+Specs are designed for **documentation tooling**, such as design system sites, Storybook integrations or internal UI
+explorers so your documentation stays automatically in sync with the design system without manual copying.
+
+When you generate a spec, Panda outputs structured JSON files that your documentation can consume directly.
+
+### Generating the spec file
+
+To create the spec files, use the Panda CLI:
+
+```bash
+pnpm panda spec
+```
+
+You can also customise the output directory with `--outdir`:
+
+```bash
+pnpm panda spec --outdir ./theme-specs
+```
+
+This command emits JSON files into `styled-system/specs` or your chosen directory. These files are what your
+documentation will consume.
+
+Learn more about the spec CLI flags [here](/docs/docs/references/cli#spec)
+
+> The spec output represents your entire design system, everything available in your Panda setup. If you want to
+> understand which tokens or recipes your app is actually using, you should use the
+> [Panda Analyze](/docs/docs/references/cli#analyze), not the spec.
+
+### Understanding the Spec JSON Files
+
+When you run `pnpm panda spec`, Panda generates a set of JSON files that represent your entire design system.
+
+```
+styled-system/
+└── specs/                        # Generated documentation-ready spec files
+    ├── animation-styles.json     # Animation style presets (empty if none defined)
+    ├── color-palette.json        # List of palette names (blue, teal, etc.)
+    ├── conditions.json           # Condition selectors (_hover, _focus, ...)
+    ├── keyframes.json            # Keyframe definitions (spin, ping, ...)
+    ├── layer-styles.json         # Layer style definitions (card, overlay, ...)
+    ├── patterns.json             # Pattern definitions + their properties
+    ├── recipes.json              # Component recipes + variants + defaults
+    ├── semantic-tokens.json      # Semantic tokens with conditions (base, dark, etc.)
+    ├── text-styles.json          # Text style definitions (xs, sm, md, ...)
+    └── tokens.json               # Raw design tokens grouped by category
+```
+
+Below is a breakdown of what each file contains and how it can be used.
+
+### `tokens.json`
+
+Contains an array of raw design tokens grouped by category.
+
+- Each group has a type (e.g., `colors`, `spacing`, `fontSizes`) and a `values` array.
+
+- Each token in values includes:
+
+  - `name` — token key (e.g., 2xs, md, primary)
+  - `value` - resolved CSS value (e.g., "1rem", "#F6E458")
+  - `cssVar` - — the generated CSS custom property
+  - Optional examples: `tokenFunctionExamples`, `functionExamples`, `jsxExamples`
+
+### `semantic-tokens.json`
+
+Contains an array of semantic token definitions.
+
+- Each entry has a name (e.g., `bg`, `brand`) and a `values` array.
+
+- Each value represents a conditional mapping:
+
+  - `value` — the resolved color (raw token reference)
+  - `condition` — e.g., base, dark
+  - `cssVar` for each semantic color.
+  - Optional examples: `tokenFunctionExamples`, `functionExamples`, `jsxExamples`
+
+### `recipes.json`
+
+Contains an array of recipe definitions. Each recipe includes:
+
+- `name` — the recipe name (e.g., "button")
+- `description` — optional description of the recipe
+- `variants` — an object where each key is a variant name (e.g., shape, color, size) and each value is an array of
+  allowed options
+- `defaultVariants` — an object defining the default option for each variant
+- Optional examples: `functionExamples` and `jsxExamples`
+
+### `color-palette.json`
+
+Contains a list of all color names defined in your palette.
+
+- `values` — an array of color keys (e.g., `"blue"`, `"teal"`, `"pink"` and more).
+- Does not contain the color scales (e.g., 500, 600); it only lists the available palette names.
+- Optional examples: `functionExamples` and `jsxExamples`
+
+### `text-styles.json`
+
+Contains an array of text style entries. Each entry has the following:
+
+- `name` (e.g., xs, sm, md, lg, xl).
+- Optional examples: `functionExamples` and `jsxExamples`
+
+### `layer-styles.json`
+
+Contains an array of layer style entries. Each entry has the following:
+
+- `name` (e.g., "card", "overlay", "shadow-sm").
+- Optional examples: `functionExamples` and `jsxExamples`
+
+### `animation-styles.json`
+
+Contains an array of animation style entries. Each entry includes:
+
+- `name` — the animation preset name
+- Animation properties such as `duration`, `timingFunction`, etc.
+- Optional examples: `functionExamples` and `jsxExamples`
+
+If no animation styles are configured in your `panda.config.ts` file , this file will contain an empty data array.
+
+### `keyframes.json`
+
+Contains an array of keyframe entries. Each entry has:
+
+- `name` — the keyframe name (e.g., `"spin"`, `"ping"`).
+- Optional examples: `functionExamples` and `jsxExamples`
+
+### `patterns.json`
+
+Contains an array of pattern definitions. Each pattern has:
+
+- `name` — the pattern name (e.g., `"box"`, `"flex"`)
+- `properties` — an array of pattern-specific props (e.g., align, justify, direction) and their expected types
+- `jsx` — the JSX component name used for the pattern (e.g., "Flex")
+- Optional examples: `functionExamples` and `jsxExamples`
+
+### `conditions.json`
+
+Contains an array of condition entries. Each entry includes:
+
+- `name` — the condition key used in style objects (e.g.,`_hover`, `_focus`, `_focusWithin`)
+- `value` — the CSS selector or media query that the condition maps to
+- Optional examples: `functionExamples` and `jsxExamples`
+
+> **Note:** These files are generated. You do **not** edit your design tokens, recipes, or theme here.  
+> All configuration must still be authored inside `panda.config.ts`. The spec files are for documentation, and
+> visualization.
