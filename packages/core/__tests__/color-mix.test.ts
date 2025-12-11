@@ -16,6 +16,11 @@ describe('color-mix', () => {
         values: 'colors',
         transform: createColorMixTransform('--gradient-from'),
       },
+      WebkitTextFillColor: {
+        className: 'wktf-c',
+        values: 'colors',
+        transform: createColorMixTransform('WebkitTextFillColor'),
+      },
     },
     theme: {
       extend: {
@@ -231,6 +236,21 @@ describe('color-mix', () => {
         .bg_red\\/half {
           --mix-background: color-mix(in srgb, red 50%, transparent);
           background: var(--mix-background, red);
+      }
+      }",
+      }
+    `)
+  })
+
+  test('WebkitTextFillColor with color token', () => {
+    expect(css({ WebkitTextFillColor: 'red.300' })).toMatchInlineSnapshot(`
+      {
+        "className": [
+          "wktf-c_red\\.300",
+        ],
+        "css": "@layer utilities {
+        .wktf-c_red\\.300 {
+          -webkit-text-fill-color: var(--colors-red-300);
       }
       }",
       }

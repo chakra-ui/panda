@@ -135,6 +135,12 @@ export const typography: UtilityConfig = {
     transform: createColorMixTransform('--text-shadow-color'),
     group: 'Typography',
   },
+  WebkitTextFillColor: {
+    className: 'wktf-c',
+    values: 'colors',
+    transform: createColorMixTransform('WebkitTextFillColor'),
+    group: 'Typography',
+  },
   textOverflow: {
     className: 'tov',
     group: 'Typography',
