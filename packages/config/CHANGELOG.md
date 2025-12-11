@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 1.7.1
+
+### Patch Changes
+
+- cc04ebf: Fix issue where `@pandacss/config` CJS entrypoint is broken due to `merge-anything` ESM-only dependency.
+- Updated dependencies [b6e9646]
+  - @pandacss/preset-base@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/preset-panda@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/types@1.7.1
+
 ## 1.7.0
 
 ### Patch Changes

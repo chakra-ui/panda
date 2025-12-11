@@ -1,5 +1,21 @@
 # @pandacss/generator
 
+## 1.7.1
+
+### Patch Changes
+
+- 3f5fea2: ### Spec
+
+  - Fixed issue in recipe specs where boolean variant values were incorrectly formatted with quotes (e.g.,
+    `button({ primary: true })` instead of `button({ primary: 'true' })`)
+  - Updated color palette spec generation to dynamically discover and use actual available tokens
+  - @pandacss/core@1.7.1
+  - @pandacss/is-valid-prop@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/token-dictionary@1.7.1
+  - @pandacss/types@1.7.1
+
 ## 1.7.0
 
 ### Minor Changes
