@@ -246,6 +246,10 @@ pnpm panda spec --outdir ./theme-specs
 | `--config, -c <path>` | Path to Panda config file       | [`config`](/docs/references/config.md)                 |
 | `--cwd <path>`        | Current working directory       | [`config.cwd`](/docs/references/config#cwd)            |
 
+> The spec output represents your entire design system, everything available in your Panda setup. If you want to
+> understand which tokens or recipes your app is actually using, you should use the
+> [Panda Analyze](/docs/references/cli#analyze), not the spec.
+
 ## analyze
 
 Analyze design token and recipe usage.

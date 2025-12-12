@@ -161,7 +161,9 @@ export const docsNavigation: NavItem = {
         { title: 'Token Usage', url: 'usage' },
         { title: 'Text Styles', url: 'text-styles' },
         { title: 'Layer Styles', url: 'layer-styles' },
-        { title: 'Animation Styles', url: 'animation-styles' }
+        { title: 'Animation Styles', url: 'animation-styles' },
+        { title: 'Spec', url: 'spec', tag: 'new' },
+        { title: 'Panda Studio', url: 'studio' }
       ]
     },
     {
