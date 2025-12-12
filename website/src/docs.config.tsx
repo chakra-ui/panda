@@ -220,7 +220,6 @@ export const docsNavigation: NavItem = {
       url: 'spec-documentation',
       items: [
         { title: 'Introduction', url: 'introduction' },
-        { title: 'Usage', url: 'usage' },
         { title: 'Panda Studio', url: 'panda-studio' }
       ]
     },
