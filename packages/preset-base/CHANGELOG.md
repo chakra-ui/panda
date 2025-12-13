@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 1.7.1
+
+### Patch Changes
+
+- b6e9646: Ensure the `WebkitTextFillColor` utility can accept color token values, like other color utilities.
+  - @pandacss/types@1.7.1
+
 ## 1.7.0
 
 ### Patch Changes
