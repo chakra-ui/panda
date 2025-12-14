@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.7.1](#1.7.1) - 2025-12-14
+
+### Fixed
+
+- **Config**: Fix issue where `@pandacss/config` CJS entrypoint is broken due to `merge-anything` ESM-only dependency.
+
+- **Spec**:
+
+  - Fixed issue in recipe specs where boolean variant values were incorrectly formatted with quotes (e.g.,
+    `button({ primary: true })` instead of `button({ primary: 'true' })`).
+  - Updated color palette spec generation to dynamically discover and use actual available tokens
+
+- **Utility**: Ensure the `WebkitTextFillColor` utility can accept color token values, like other color utilities.
+
 ## [1.7.0](#1.7.0) - 2025-12-08
 
 ### Added
