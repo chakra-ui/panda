@@ -41,7 +41,9 @@ export function SemanticToken(props: SemanticTokenProps) {
 
   const conditions: string[] = []
   if (tokens.extensions.conditions) {
-    conditions.push(...sortSemanticTokens(Object.keys(tokens.extensions.conditions)))
+    conditions.push(
+      ...sortSemanticTokens(Object.keys(tokens.extensions.conditions).filter((cond) => tokens[cond] != null)),
+    )
   }
 
   return (
