@@ -17,6 +17,6 @@
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "customConditions": ["source"],
-    "types": ["vitest/globals"]
+    "types": ["node", "vitest/globals"]
   }
 }
