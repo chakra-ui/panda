@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.7.2](#1.7.2) - 2025-12-25
+
+### Fixed
+
+- **Studio:** Fixed a crash on the colors page when using virtual semantic colors (for example, colors defined via a
+  theme config).
+
+- **Node:** Ensured ESM compatibility for `@pandacss/node` by converting `p-limit` and `package-manager-detector`
+  imports to use dynamic import syntax.
+
 ## [1.7.1](#1.7.1) - 2025-12-14
 
 ### Fixed
