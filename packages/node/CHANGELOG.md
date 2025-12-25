@@ -1,5 +1,20 @@
 # @pandacss/node
 
+## 1.7.2
+
+### Patch Changes
+
+- af2d06b: Fix ESM compatibility by converting `p-limit` and `package-manager-detector` to use dynamic import
+  - @pandacss/config@1.7.2
+  - @pandacss/core@1.7.2
+  - @pandacss/generator@1.7.2
+  - @pandacss/logger@1.7.2
+  - @pandacss/parser@1.7.2
+  - @pandacss/reporter@1.7.2
+  - @pandacss/shared@1.7.2
+  - @pandacss/token-dictionary@1.7.2
+  - @pandacss/types@1.7.2
+
 ## 1.7.1
 
 ### Patch Changes
