@@ -1,10 +1,9 @@
 import type { ArtifactId } from '@pandacss/types'
-import pLimit from 'p-limit'
 import type { PandaContext } from './create-context'
 
-const limit = pLimit(20)
-
 export async function codegen(ctx: PandaContext, ids?: ArtifactId[]) {
+  const { default: pLimit } = await import('p-limit')
+  const limit = pLimit(20)
   if (ctx.config.clean) ctx.output.empty()
 
   let artifacts = ctx.getArtifacts(ids)

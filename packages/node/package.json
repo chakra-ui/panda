@@ -57,6 +57,7 @@
     "look-it-up": "2.1.0",
     "outdent": " ^0.8.0",
     "package-manager-detector": "1.6.0",
+    "p-limit": "5.0.0",
     "perfect-debounce": "1.0.0",
     "pkg-types": "2.3.0",
     "picomatch": "4.0.3",
@@ -74,7 +75,6 @@
     "@types/is-glob": "4.0.4",
     "@types/lodash.merge": "4.6.9",
     "@types/pluralize": "0.0.33",
-    "boxen": "8.0.1",
-    "p-limit": "5.0.0"
+    "boxen": "8.0.1"
   }
 }

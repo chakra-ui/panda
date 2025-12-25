@@ -493,6 +493,9 @@ importers:
       outdent:
         specifier: ' ^0.8.0'
         version: 0.8.0
+      p-limit:
+        specifier: 5.0.0
+        version: 5.0.0
       package-manager-detector:
         specifier: 1.6.0
         version: 1.6.0
@@ -545,9 +548,6 @@ importers:
       boxen:
         specifier: 8.0.1
         version: 8.0.1
-      p-limit:
-        specifier: 5.0.0
-        version: 5.0.0
 
   packages/parser:
     dependencies:
