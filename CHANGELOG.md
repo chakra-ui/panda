@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.7.3](#1.7.3) - 2026-01-02
+
+### Fixed
+
+- **Studio:** Fixed React SSR errors when running Panda Studio.
+
+  - `ReferenceError: module is not defined`—React's CJS entry point was loaded in an ESM context.
+  - `TypeError: dispatcher.getOwner is not a function`—React development/production builds were mixed during SSR.
+
+- **Gradient Utilities:** Fixed `token()` and brace syntax not working in `bgGradient`, `bgLinear`, and `textGradient`
+  utilities.
+  - Token references in gradient values now properly expand to CSS variables.
+  - Both `token()` function syntax and brace syntax `{...}` now work correctly in gradient utilities.
+
 ## [1.7.2](#1.7.2) - 2025-12-25
 
 ### Fixed
