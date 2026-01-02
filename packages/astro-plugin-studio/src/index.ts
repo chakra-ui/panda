@@ -80,7 +80,7 @@ const pandaStudio = (): AstroIntegration => ({
           // @ts-ignore
           plugins: [vitePlugin(configPath!)],
           ssr: {
-            noExternal: ['nanostores', '@nanostores/react', 'react', 'react-dom'],
+            noExternal: ['nanostores', '@nanostores/react'],
           },
         },
       })
