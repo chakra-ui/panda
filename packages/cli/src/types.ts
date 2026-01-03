@@ -103,6 +103,11 @@ export interface McpCommandFlags {
   config?: string
 }
 
+export interface McpInitCommandFlags {
+  cwd?: string
+  client?: string[]
+}
+
 export interface SpecCommandFlags {
   silent?: boolean
   outdir?: string

@@ -32,6 +32,7 @@ import type {
   InitCommandFlags,
   MainCommandFlags,
   McpCommandFlags,
+  McpInitCommandFlags,
   ShipCommandFlags,
   SpecCommandFlags,
   StudioCommandFlags,
@@ -637,8 +638,27 @@ export async function main() {
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (mcpFlags: McpCommandFlags) => {
-      const { startMcpServer } = await import('./mcp')
+      const { startMcpServer } = await import('@pandacss/mcp')
       await startMcpServer(mcpFlags)
+    })
+
+  cli
+    .command('init-mcp', 'Initialize MCP configuration for AI clients')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--client <clients>', 'AI clients to configure (claude, cursor, vscode, windsurf, codex)')
+    .action(async (mcpInitFlags: McpInitCommandFlags) => {
+      const { initMcpConfig } = await import('@pandacss/mcp')
+      const resolvedCwd = resolve(mcpInitFlags.cwd ?? cwd)
+
+      // Parse comma-separated clients if provided
+      let clients: string[] | undefined
+      if (mcpInitFlags.client) {
+        clients = (Array.isArray(mcpInitFlags.client) ? mcpInitFlags.client : [mcpInitFlags.client])
+          .flatMap((c) => c.split(','))
+          .map((c) => c.trim())
+      }
+
+      await initMcpConfig({ cwd: resolvedCwd, clients: clients as any })
     })
 
   cli.help()

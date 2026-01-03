@@ -57,10 +57,10 @@
     "postcss.js"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.1",
     "@clack/prompts": "0.11.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/logger": "workspace:*",
+    "@pandacss/mcp": "workspace:*",
     "@pandacss/node": "workspace:*",
     "@pandacss/postcss": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
@@ -69,7 +69,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "cac": "6.7.14",
-    "zod": "^3.22.4"
+    "zod": "3.25.1"
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.8",

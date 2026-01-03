@@ -1,5 +1,0 @@
-export * from './tokens'
-export * from './compositions'
-export * from './animations'
-export * from './recipes'
-export * from './config'

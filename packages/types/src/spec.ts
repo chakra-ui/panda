@@ -154,3 +154,16 @@ export type SpecFile =
   | LayerStyleSpec
   | AnimationStyleSpec
   | ColorPaletteSpec
+
+export interface SpecTypeMap {
+  tokens: TokenSpec
+  'semantic-tokens': SemanticTokenSpec
+  recipes: RecipeSpec
+  patterns: PatternSpec
+  conditions: ConditionSpec
+  keyframes: KeyframeSpec
+  'text-styles': TextStyleSpec
+  'layer-styles': LayerStyleSpec
+  'animation-styles': AnimationStyleSpec
+  'color-palette': ColorPaletteSpec
+}

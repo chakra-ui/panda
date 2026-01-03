@@ -121,15 +121,15 @@ importers:
       '@clack/prompts':
         specifier: 0.11.0
         version: 0.11.0
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.25.1
-        version: 1.25.1(hono@4.10.7)(zod@3.25.1)
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger
+      '@pandacss/mcp':
+        specifier: workspace:*
+        version: link:../mcp
       '@pandacss/node':
         specifier: workspace:*
         version: link:../node
@@ -155,7 +155,7 @@ importers:
         specifier: 6.7.14
         version: 6.7.14
       zod:
-        specifier: ^3.22.4
+        specifier: 3.25.1
         version: 3.25.1
     devDependencies:
       '@types/update-notifier':
@@ -442,6 +442,34 @@ importers:
       matcher:
         specifier: 6.0.0
         version: 6.0.0
+
+  packages/mcp:
+    dependencies:
+      '@clack/prompts':
+        specifier: 0.11.0
+        version: 0.11.0
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.25.1
+        version: 1.25.1(hono@4.10.7)(zod@4.1.12)
+      '@pandacss/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@pandacss/node':
+        specifier: workspace:*
+        version: link:../node
+      '@pandacss/token-dictionary':
+        specifier: workspace:*
+        version: link:../token-dictionary
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
+      zod:
+        specifier: ^4.0.0
+        version: 4.1.12
+    devDependencies:
+      '@pandacss/fixture':
+        specifier: workspace:*
+        version: link:../fixture
 
   packages/node:
     dependencies:
@@ -20991,7 +21019,7 @@ snapshots:
       '@lezer/lr': 1.4.3
       json5: 2.2.3
 
-  '@modelcontextprotocol/sdk@1.25.1(hono@4.10.7)(zod@3.25.1)':
+  '@modelcontextprotocol/sdk@1.25.1(hono@4.10.7)(zod@4.1.12)':
     dependencies:
       '@hono/node-server': 1.19.7(hono@4.10.7)
       ajv: 8.17.1
@@ -21007,8 +21035,8 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.1
-      zod: 3.25.1
-      zod-to-json-schema: 3.25.0(zod@3.25.1)
+      zod: 4.1.12
+      zod-to-json-schema: 3.25.0(zod@4.1.12)
     transitivePeerDependencies:
       - hono
       - supports-color
@@ -27707,8 +27735,8 @@ snapshots:
       '@babel/parser': 7.28.5
       eslint: 9.39.1(jiti@2.6.1)
       hermes-parser: 0.25.1
-      zod: 3.25.1
-      zod-validation-error: 4.0.2(zod@3.25.1)
+      zod: 4.1.12
+      zod-validation-error: 4.0.2(zod@4.1.12)
     transitivePeerDependencies:
       - supports-color
 
@@ -37521,22 +37549,22 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
-  zod-to-json-schema@3.25.0(zod@3.25.1):
-    dependencies:
-      zod: 3.25.1
-
   zod-to-json-schema@3.25.0(zod@3.25.76):
     dependencies:
       zod: 3.25.76
+
+  zod-to-json-schema@3.25.0(zod@4.1.12):
+    dependencies:
+      zod: 4.1.12
 
   zod-to-ts@1.2.0(typescript@5.9.3)(zod@3.25.76):
     dependencies:
       typescript: 5.9.3
       zod: 3.25.76
 
-  zod-validation-error@4.0.2(zod@3.25.1):
+  zod-validation-error@4.0.2(zod@4.1.12):
     dependencies:
-      zod: 3.25.1
+      zod: 4.1.12
 
   zod@3.25.1: {}
 
