@@ -224,12 +224,13 @@ function cloneDeep<T>(value: T): any {
 const TOKEN_TYPES = {
   colors: 'color',
   spacing: 'dimension',
-  sizing: 'dimension',
+  sizes: 'dimension',
   shadows: 'shadow',
   fonts: 'fontFamily',
   fontSizes: 'fontSize',
   fontWeights: 'fontWeight',
   letterSpacings: 'letterSpacing',
+  lineHeights: 'lineHeight',
   durations: 'duration',
   transitions: 'transition',
   radii: 'borderRadius',
@@ -237,8 +238,13 @@ const TOKEN_TYPES = {
   easings: 'cubicBezier',
   borders: 'border',
   borderWidths: 'borderWidth',
-  components: 'cti',
-  assets: 'asset',
+  zIndex: 'zIndex',
+  opacity: 'opacity',
+  blurs: 'blur',
   aspectRatios: 'aspectRatio',
   cursor: 'cursor',
-}
+  assets: 'asset',
+} as const
+
+export type TokenCategory = keyof typeof TOKEN_TYPES
+export const TOKEN_CATEGORIES = Object.keys(TOKEN_TYPES) as TokenCategory[]

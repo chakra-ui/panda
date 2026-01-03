@@ -74,7 +74,7 @@
       "git add --all packages/studio/"
     ]
   },
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.27.0",
   "pnpm": {
     "overrides": {
       "@swc/helpers@~0.4": "0.4.36"

@@ -1,6 +1,6 @@
 import { Context, type StyleDecoder, type Stylesheet } from '@pandacss/core'
 import { dashCase, PandaError } from '@pandacss/shared'
-import type { ArtifactId, CssArtifactType, LoadConfigResult, SpecFile } from '@pandacss/types'
+import type { ArtifactId, CssArtifactType, LoadConfigResult, SpecFile, SpecType, SpecTypeMap } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import { generateArtifacts } from './artifacts'
 import { generateGlobalCss } from './artifacts/css/global-css'
@@ -224,5 +224,35 @@ export class Generator extends Context {
     }
 
     return specs
+  }
+
+  getSpecOfType = <T extends SpecType>(
+    type: T,
+  ): T extends 'color-palette' ? SpecTypeMap[T] | undefined : SpecTypeMap[T] => {
+    const spec = (() => {
+      switch (type) {
+        case 'tokens':
+          return generateTokensSpec(this)
+        case 'semantic-tokens':
+          return generateSemanticTokensSpec(this)
+        case 'recipes':
+          return generateRecipesSpec(this)
+        case 'patterns':
+          return generatePatternsSpec(this)
+        case 'conditions':
+          return generateConditionsSpec(this)
+        case 'keyframes':
+          return generateKeyframesSpec(this)
+        case 'text-styles':
+          return generateTextStylesSpec(this)
+        case 'layer-styles':
+          return generateLayerStylesSpec(this)
+        case 'animation-styles':
+          return generateAnimationStylesSpec(this)
+        case 'color-palette':
+          return generateColorPaletteSpec(this) ?? undefined
+      }
+    })()
+    return spec as T extends 'color-palette' ? SpecTypeMap[T] | undefined : SpecTypeMap[T]
   }
 }

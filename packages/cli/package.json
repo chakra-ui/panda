@@ -60,6 +60,7 @@
     "@clack/prompts": "0.11.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/logger": "workspace:*",
+    "@pandacss/mcp": "workspace:*",
     "@pandacss/node": "workspace:*",
     "@pandacss/postcss": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
