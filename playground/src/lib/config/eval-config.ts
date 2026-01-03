@@ -35,7 +35,7 @@ export const getConfigError = (configStr: string) => {
 export const validateConfig = (configStr: string) => {
   try {
     return evalConfig(configStr)
-  } catch (error) {
+  } catch {
     return null
   }
 }

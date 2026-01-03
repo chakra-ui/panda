@@ -13,6 +13,7 @@ import {
   setupConfig,
   setupGitIgnore,
   setupPostcss,
+  spec,
   startProfiling,
   type CssGenOptions,
 } from '@pandacss/node'
@@ -32,6 +33,7 @@ import type {
   MainCommandFlags,
   McpCommandFlags,
   ShipCommandFlags,
+  SpecCommandFlags,
   StudioCommandFlags,
 } from './types'
 
@@ -186,11 +188,12 @@ export async function main() {
     .option('--polyfill', 'Polyfill CSS @layers at-rules for older browsers.')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
+    .option('--splitting', 'Emit CSS as separate files per layer (reset, global, tokens, utilities) and per recipe')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--cpu-prof', 'Generates a `.cpuprofile` to help debug performance issues')
     .option('--logfile <file>', 'Outputs logs to a file')
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
-      const { silent, config: configPath, outfile, watch, poll, minimal, ...rest } = flags
+      const { silent, config: configPath, outfile, watch, poll, minimal, splitting, ...rest } = flags
 
       const cwd = resolve(flags.cwd ?? '')
       const stream = setLogStream({ cwd, logfile: flags.logfile })
@@ -226,6 +229,7 @@ export async function main() {
         outfile,
         type: cssArtifact,
         minimal,
+        splitting,
       }
 
       await cssgen(ctx, options)
@@ -303,6 +307,29 @@ export async function main() {
       if (!flags.watch) {
         stream.end()
       }
+    })
+
+  cli
+    .command('spec', 'Generate spec files for your theme (useful for documentation)')
+    .option('--silent', "Don't print any logs")
+    .option('--outdir <dir>', 'Output directory for spec files')
+    .option('-c, --config <path>', 'Path to panda config file')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .action(async (flags: SpecCommandFlags) => {
+      const { silent, config: configPath, outdir } = flags
+      const cwd = resolve(flags.cwd ?? '')
+
+      if (silent) {
+        logger.level = 'silent'
+      }
+
+      const ctx = await loadConfigAndCreateContext({
+        cwd,
+        configPath,
+        config: { cwd },
+      })
+
+      await spec(ctx, { outdir })
     })
 
   cli
@@ -623,12 +650,16 @@ export async function main() {
   try {
     await cli.runMatchedCommand()
   } catch (error) {
-    logger.error('cli', error)
+    if (error instanceof PandaError) {
+      logger.error('cli', error)
 
-    if (logger.isDebug) {
-      console.error(error)
+      if (logger.isDebug) {
+        console.error(error)
+      }
+
+      process.exit(1)
     }
 
-    process.exit(1)
+    throw error
   }
 }

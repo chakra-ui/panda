@@ -82,6 +82,9 @@ test('semantic tokens / nested', () => {
             "base": "#fff",
           },
           "prop": "grabbed",
+          "rawValue": {
+            "base": "#fff",
+          },
         },
         "name": "colors.grabbed",
         "originalValue": "#fff",
@@ -103,6 +106,10 @@ test('semantic tokens / nested', () => {
             "@light": "#333",
           },
           "prop": "disabled",
+          "rawValue": {
+            "@dark": "#222",
+            "@light": "#333",
+          },
         },
         "name": "colors.disabled",
         "originalValue": "",
@@ -123,6 +130,9 @@ test('semantic tokens / nested', () => {
             "base": "red",
           },
           "prop": "button.primary",
+          "rawValue": {
+            "base": "red",
+          },
         },
         "name": "colors.button.primary",
         "originalValue": "red",
@@ -145,6 +155,10 @@ test('semantic tokens / nested', () => {
             "@light": "#333",
           },
           "prop": "disabled",
+          "rawValue": {
+            "@dark": "#222",
+            "@light": "#333",
+          },
         },
         "name": "colors.disabled",
         "originalValue": "",
@@ -166,6 +180,10 @@ test('semantic tokens / nested', () => {
             "@light": "#333",
           },
           "prop": "disabled",
+          "rawValue": {
+            "@dark": "#222",
+            "@light": "#333",
+          },
         },
         "name": "colors.disabled",
         "originalValue": "",

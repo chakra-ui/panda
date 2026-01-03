@@ -1,14 +1,11 @@
 ---
-import FontTokens from '../components/font-tokens'
+import { FontWeightsPage } from '../components/token-pages'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-import * as context from '../lib/panda-context'
-
-const fontWeights = context.getTokens('fontWeights')
 ---
 
 <Layout>
   <Sidebar title="Font Weights">
-    <FontTokens client:load fontTokens={fontWeights} token="fontWeight" />
+    <FontWeightsPage client:load />
   </Sidebar>
 </Layout>

@@ -8,4 +8,6 @@ export function isObject(value: any): value is Record<string, any> {
   return typeof value === 'object' && value != null && !Array.isArray(value)
 }
 
+export const isSymbol = (v: any): v is symbol => typeof v === 'symbol'
+
 export const isObjectOrArray = (obj: unknown) => typeof obj === 'object' && obj !== null

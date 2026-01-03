@@ -1,20 +1,32 @@
-module.exports = {
-  stories: ['../stories/**/*.stories.mdx', '../stories/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-    {
-      name: '@storybook/addon-styling',
-      options: { postCss: true },
-    },
-  ],
+import { mergeConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'url'
+import { resolve } from 'path'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+export default {
+  stories: ['../stories/**/*.stories.@(js|jsx|ts|tsx)'],
+  addons: ['@storybook/addon-links', '@storybook/addon-docs'],
   framework: {
-    name: '@storybook/react-webpack5',
+    name: '@storybook/react-vite',
     options: {},
   },
   core: {
-    builder: '@storybook/builder-webpack5',
     disableTelemetry: true,
+  },
+  async viteFinal(config) {
+    return mergeConfig(config, {
+      plugins: [
+        react({
+          jsxRuntime: 'automatic',
+        }),
+      ],
+      resolve: {
+        alias: {
+          'styled-system': resolve(__dirname, '../styled-system'),
+        },
+      },
+    })
   },
 }

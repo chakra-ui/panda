@@ -1,9 +1,8 @@
 import type { Context } from '@pandacss/core'
-import { compact, unionType } from '@pandacss/shared'
+import { compact } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { outdent } from 'outdent'
-import { match } from 'ts-pattern'
 
 export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
   if (ctx.patterns.isEmpty()) return
@@ -38,22 +37,8 @@ export function generatePattern(ctx: Context, filters?: ArtifactFilters) {
          ${Object.keys(properties ?? {})
            .map((key) => {
              const value = properties![key]
-             return match(value)
-               .with({ type: 'property' }, (value) => {
-                 return `${key}?: SystemProperties["${value.value}"]`
-               })
-               .with({ type: 'token' }, (value) => {
-                 if (value.property) {
-                   return `${key}?: ConditionalValue<Tokens["${value.value}"] | Properties["${value.property}"]>`
-                 }
-                 return `${key}?: ConditionalValue<Tokens["${value.value}"]>`
-               })
-               .with({ type: 'enum' }, (value) => {
-                 return `${key}?: ConditionalValue<${unionType(value.value)}>`
-               })
-               .otherwise(() => {
-                 return `${key}?: ConditionalValue<${value.type}>`
-               })
+             const typeString = ctx.patterns.getPropertyType(value)
+             return `${key}?: ${typeString}`
            })
            .join('\n\t')}
       }

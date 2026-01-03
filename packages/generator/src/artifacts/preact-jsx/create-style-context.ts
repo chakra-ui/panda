@@ -10,12 +10,33 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     ${ctx.file.import('cx, css, sva', '../css/index')}
     ${ctx.file.import(factoryName, './factory')}
     ${ctx.file.import('getDisplayName', './factory-helper')}
-    import { createContext, useContext, createElement, forwardRef } from 'preact/compat'
+    import { createContext } from 'preact'
+    import { useContext } from 'preact/hooks'
+    import { createElement, forwardRef } from 'preact/compat'
 
-    
+    function createSafeContext(contextName) {
+      const Context = createContext(undefined)
+      const useStyleContext = (componentName, slot) => {
+        const context = useContext(Context)
+        if (context === undefined) {
+          const componentInfo = componentName ? \`Component "\${componentName}"\` : 'A component'
+          const slotInfo = slot ? \` (slot: "\${slot}")\` : ''
+          
+          throw new Error(
+            \`\${componentInfo}\${slotInfo} cannot access \${contextName} because it's missing its Provider.\`
+          )
+        }
+        return context
+      }
+      return [Context, useStyleContext]
+    }
+
     export function createStyleContext(recipe) {
-      const StyleContext = createContext({})
       const isConfigRecipe = '__recipe__' in recipe
+      const recipeName = isConfigRecipe && recipe.__name__ ? recipe.__name__ : undefined
+      const contextName = recipeName ? \`createStyleContext("\${recipeName}")\` : 'createStyleContext'
+      
+      const [StyleContext, useStyleContext] = createSafeContext(contextName)
       const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
 
       const getResolvedProps = (props, slotStyles) => {
@@ -33,16 +54,20 @@ export function generatePreactCreateStyleContext(ctx: Context) {
         )}
       }
 
-      const withRootProvider = (Component) => {
+      const withRootProvider = (Component, options) => {
         const WithRootProvider = (props) => {
           const [variantProps, otherProps] = svaFn.splitVariantProps(props)
           
           const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
           slotStyles._classNameMap = svaFn.classNameMap
 
+          const mergedProps = options?.defaultProps 
+            ? { ...options.defaultProps, ...otherProps } 
+            : otherProps
+
           return createElement(StyleContext.Provider, {
             value: slotStyles,
-            children: createElement(Component, otherProps)
+            children: createElement(Component, mergedProps)
           })
         }
         
@@ -55,7 +80,7 @@ export function generatePreactCreateStyleContext(ctx: Context) {
       const withProvider = (Component, slot, options) => {
         const StyledComponent = ${factoryName}(Component, {}, options)
         
-        const WithProvider = forwardRef((props, ref) => {
+        const WithProvider = forwardRef(function WithProvider(props, ref) {
           const [variantProps, restProps] = svaFn.splitVariantProps(props)
           
           const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
@@ -81,9 +106,10 @@ export function generatePreactCreateStyleContext(ctx: Context) {
 
       const withContext = (Component, slot, options) => {
         const StyledComponent = ${factoryName}(Component, {}, options)
+        const componentName = getDisplayName(Component)
         
-        const WithContext = forwardRef((props, ref) => {
-          const slotStyles = useContext(StyleContext)
+        const WithContext = forwardRef(function WithContext(props, ref) {
+          const slotStyles = useStyleContext(componentName, slot)
           
           const propsWithClass = { ...props, className: props.className ?? options?.defaultProps?.className }
           const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
@@ -94,7 +120,6 @@ export function generatePreactCreateStyleContext(ctx: Context) {
           })
         })
         
-        const componentName = getDisplayName(Component)
         WithContext.displayName = \`withContext(\${componentName})\`
         
         return WithContext
@@ -110,11 +135,15 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs, AsProps', '../types/jsx')}
     import type { ComponentType, ComponentProps, JSX } from 'preact/compat'
 
     interface UnstyledProps {
-      unstyled?: boolean
+      unstyled?: boolean | undefined
+    }
+
+    interface WithProviderOptions<P = {}> {
+      defaultProps?: (Partial<P> & DataAttrs) | undefined
     }
 
     type ElementType = JSX.ElementType
@@ -130,24 +159,31 @@ export function generatePreactCreateStyleContext(ctx: Context) {
     type InferSlot<R extends SlotRecipe> = R extends SlotRecipeFn ? R['__slot'] : R extends SvaFn<infer S> ? S : never
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
-    
+
+    type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = ComponentType<
+      ComponentProps<T> & UnstyledProps & RecipeVariantProps<R>
+    >
+
     type StyleContextConsumer<T extends ElementType> = ComponentType<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {
-      withRootProvider: <T extends ElementType>(Component: T) => StyleContextProvider<T, R>
+      withRootProvider: <T extends ElementType>(
+        Component: T,
+        options?: WithProviderOptions<ComponentProps<T>> | undefined
+      ) => StyleContextRootProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextConsumer<T>
     }
 

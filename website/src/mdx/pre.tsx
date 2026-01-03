@@ -8,6 +8,7 @@ const preStyles = cva({
     overflowX: 'auto',
     rounded: 'xl',
     contain: 'paint',
+    maxH: '640px',
     '& code[data-language] .line': {
       px: '4'
     }

@@ -61,6 +61,24 @@ describe('Open Prop preset transforms', () => {
           0.939, 0.943, 0.954 90.5%, 1 93%, 0.977, 0.97, 0.977, 1
         )",
         },
+        "circ-in": {
+          "value": "cubic-bezier(.6,.04,.98,.335)",
+        },
+        "circ-in-out": {
+          "value": "cubic-bezier(.785,.135,.15,.86)",
+        },
+        "circ-out": {
+          "value": "cubic-bezier(.075,.82,.165,1)",
+        },
+        "cubic-in": {
+          "value": "cubic-bezier(.55,.055,.675,.19)",
+        },
+        "cubic-in-out": {
+          "value": "cubic-bezier(.645,.045,.355,1)",
+        },
+        "cubic-out": {
+          "value": "cubic-bezier(.215,.61,.355,1)",
+        },
         "elastic-1": {
           "value": "{easings.elastic-out-1}",
         },
@@ -121,6 +139,15 @@ describe('Open Prop preset transforms', () => {
         "elastic-out-5": {
           "value": "cubic-bezier(.5, 1.75, .75, 1.25)",
         },
+        "expo-in": {
+          "value": "cubic-bezier(.95,.05,.795,.035)",
+        },
+        "expo-in-out": {
+          "value": "cubic-bezier(1,0,0,1)",
+        },
+        "expo-out": {
+          "value": "cubic-bezier(.19,1,.22,1)",
+        },
         "in-1": {
           "value": "cubic-bezier(.25, 0, 1, 1)",
         },
@@ -165,6 +192,42 @@ describe('Open Prop preset transforms', () => {
         },
         "out-5": {
           "value": "cubic-bezier(0, 0, 0, 1)",
+        },
+        "quad-in": {
+          "value": "cubic-bezier(.55,.085,.68,.53)",
+        },
+        "quad-in-out": {
+          "value": "cubic-bezier(.455,.03,.515,.955)",
+        },
+        "quad-out": {
+          "value": "cubic-bezier(.25,.46,.45,.94)",
+        },
+        "quart-in": {
+          "value": "cubic-bezier(.895,.03,.685,.22)",
+        },
+        "quart-in-out": {
+          "value": "cubic-bezier(.77,0,.175,1)",
+        },
+        "quart-out": {
+          "value": "cubic-bezier(.165,.84,.44,1)",
+        },
+        "quint-in": {
+          "value": "cubic-bezier(.755,.05,.855,.06)",
+        },
+        "quint-in-out": {
+          "value": "cubic-bezier(.86,0,.07,1)",
+        },
+        "quint-out": {
+          "value": "cubic-bezier(.23,1,.32,1)",
+        },
+        "sine-in": {
+          "value": "cubic-bezier(.47,0,.745,.715)",
+        },
+        "sine-in-out": {
+          "value": "cubic-bezier(.445,.05,.55,.95)",
+        },
+        "sine-out": {
+          "value": "cubic-bezier(.39,.575,.565,1)",
         },
         "spring-1": {
           "value": "linear(
@@ -383,6 +446,23 @@ describe('Open Prop preset transforms', () => {
             "transform": "translateY(5%)",
           },
         },
+        "shake-z": {
+          "0%, 100%": {
+            "transform": "rotate(0deg)",
+          },
+          "20%": {
+            "transform": "rotate(-2deg)",
+          },
+          "40%": {
+            "transform": "rotate(2deg)",
+          },
+          "60%": {
+            "transform": "rotate(-2deg)",
+          },
+          "80%": {
+            "transform": "rotate(2deg)",
+          },
+        },
         "slide-in-down": {
           "from": {
             "transform": "translateY(-100%)",
@@ -470,6 +550,9 @@ describe('Open Prop preset transforms', () => {
         },
         "shake-y": {
           "value": "shake-y .75s {easings.out-5}",
+        },
+        "shake-z": {
+          "value": "shake-z 1s {easings.in-out-3}",
         },
         "slide-in-down": {
           "value": "slide-in-down .5s {easings.3}",

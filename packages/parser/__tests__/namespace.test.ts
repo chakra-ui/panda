@@ -27,8 +27,8 @@ describe('extract namespace', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .d_flex {
@@ -190,8 +190,8 @@ describe('extract namespace', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .c_red {

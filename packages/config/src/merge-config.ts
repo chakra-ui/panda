@@ -1,6 +1,5 @@
-import { PANDA_CONFIG_NAME, assign, mergeWith, walkObject } from '@pandacss/shared'
+import { PANDA_CONFIG_NAME, assign, mergeWith, mergeAndConcat, walkObject } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
-import { mergeAndConcat } from 'merge-anything'
 import { mergeHooks } from './merge-hooks'
 import { isValidToken } from './validation/utils'
 

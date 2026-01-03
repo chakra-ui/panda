@@ -1,5 +1,171 @@
 # @pandacss/token-dictionary
 
+## 1.7.3
+
+### Patch Changes
+
+- @pandacss/logger@1.7.3
+- @pandacss/shared@1.7.3
+- @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- @pandacss/logger@1.7.2
+- @pandacss/shared@1.7.2
+- @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- @pandacss/logger@1.7.1
+- @pandacss/shared@1.7.1
+- @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+  - @pandacss/types@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/shared@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- @pandacss/logger@1.6.1
+- @pandacss/shared@1.6.1
+- @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Patch Changes
+
+- @pandacss/logger@1.6.0
+- @pandacss/shared@1.6.0
+- @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/logger@1.5.1
+- @pandacss/shared@1.5.1
+- @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Minor Changes
+
+- 91c65ff: Add support for controlling the color palette generation via `theme.colorPalette` property.
+
+  ```ts
+  // Disable color palette generation completely
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        enabled: false,
+      },
+    },
+  })
+
+  // Include only specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        include: ['gray', 'blue', 'red'],
+      },
+    },
+  })
+
+  // Exclude specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        exclude: ['yellow', 'orange'],
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/shared@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- @pandacss/logger@1.4.3
+- @pandacss/shared@1.4.3
+- @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- 70420dd: Fix issue where using `token()` or `token.var()` function from `styled-system/tokens` doesn't get resolved by
+  the compiler.
+
+  ```tsx
+  import { token } from 'styled-system/tokens'
+  import { css } from 'styled-system/css'
+
+  css({
+    // This didn't work before, but now it does
+    outline: `2px solid ${token('colors.gray.500')}`,
+
+    // This has always worked
+    outline: `2px solid token('colors.gray.500')`,
+  })
+  ```
+
+  This also supports fallback values.
+
+  ```tsx
+  css({
+    color: token('colors.brand.primary', '#3b82f6'),
+  })
+  ```
+
+- Updated dependencies [1290a27]
+  - @pandacss/shared@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/logger@1.4.1
+- @pandacss/shared@1.4.1
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- @pandacss/logger@1.4.0
+- @pandacss/shared@1.4.0
+- @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/logger@1.3.1
+- @pandacss/shared@1.3.1
+- @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

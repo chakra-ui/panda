@@ -7,10 +7,11 @@ export interface CssGenOptions {
   outfile?: string
   type?: CssArtifactType
   minimal?: boolean
+  splitting?: boolean
 }
 
 export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
-  const { outfile, type, minimal } = options
+  const { outfile, type, minimal, splitting } = options
 
   const sheet = ctx.createSheet()
 
@@ -39,7 +40,9 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
 
     ctx.appendParserCss(sheet)
 
-    if (outfile) {
+    if (splitting) {
+      await ctx.writeSplitCss(sheet)
+    } else if (outfile) {
       const css = ctx.getCss(sheet)
       logger.info('css', ctx.runtime.path.resolve(outfile))
       await ctx.runtime.fs.writeFile(outfile, css)

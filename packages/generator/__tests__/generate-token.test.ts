@@ -453,6 +453,7 @@ describe('generator', () => {
           --spacing-2\\.5: 0.625rem;
           --spacing-3\\.5: 0.875rem;
           --spacing-4\\.5: 1.125rem;
+          --spacing-5\\.5: 1.375rem;
           --sizes-0: 0rem;
           --sizes-1: 0.25rem;
           --sizes-2: 0.5rem;
@@ -488,6 +489,7 @@ describe('generator', () => {
           --sizes-2\\.5: 0.625rem;
           --sizes-3\\.5: 0.875rem;
           --sizes-4\\.5: 1.125rem;
+          --sizes-5\\.5: 1.375rem;
           --sizes-xs: 20rem;
           --sizes-sm: 24rem;
           --sizes-md: 28rem;

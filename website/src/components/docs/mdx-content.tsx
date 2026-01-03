@@ -42,6 +42,7 @@ const sharedComponents = {
   blockquote: Callout,
   img: (props: any) => (
     <img
+      alt=""
       {...props}
       className={css({
         maxW: 'full',
@@ -120,7 +121,7 @@ const sharedComponents = {
 }
 
 // Runtime MDX component compiler
-const useMDXComponent = (code: string) => {
+const compileMDX = (code: string) => {
   const fn = new Function(code)
   return fn({ ...runtime }).default
 }
@@ -133,9 +134,13 @@ interface MDXContentProps {
 export const MDXContent = (props: MDXContentProps) => {
   const { code, components = {} } = props
 
-  // If code is a string, compile it at runtime
-  if (typeof code === 'string') {
-    const Component = useMDXComponent(code)
+  // Memoize the compiled component to avoid recreating it on each render
+  const Component = React.useMemo(() => {
+    return typeof code === 'string' ? compileMDX(code) : null
+  }, [code])
+
+  // If code is a string, use the compiled component
+  if (typeof code === 'string' && Component) {
     return <Component components={{ ...sharedComponents, ...components }} />
   }
 

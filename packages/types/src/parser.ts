@@ -3,7 +3,7 @@ import type { BoxNodeArray, BoxNodeLiteral, BoxNodeMap, Unboxed } from '@pandacs
 export interface ResultItem {
   name?: string
   data: Array<Unboxed['raw']>
-  type?: 'css' | 'cva' | 'sva' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
+  type?: 'css' | 'cva' | 'sva' | 'token' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
   box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray
 }
 
@@ -13,15 +13,17 @@ export interface ParserResultInterface {
   css: Set<ResultItem>
   cva: Set<ResultItem>
   sva: Set<ResultItem>
+  token: Set<ResultItem>
   recipe: Map<string, Set<ResultItem>>
   pattern: Map<string, Set<ResultItem>>
   filePath: string | undefined
   isEmpty: () => boolean
   toArray: () => Array<ResultItem>
-  set: (name: 'cva' | 'css' | 'sva', result: ResultItem) => void
+  set: (name: 'cva' | 'css' | 'sva' | 'token', result: ResultItem) => void
   setCss: (result: ResultItem) => void
   setCva: (result: ResultItem) => void
   setSva: (result: ResultItem) => void
+  setToken: (result: ResultItem) => void
   setJsx: (result: ResultItem) => void
   setPattern: (name: string, result: ResultItem) => void
   setRecipe: (name: string, result: ResultItem) => void

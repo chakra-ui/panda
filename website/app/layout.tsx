@@ -9,7 +9,7 @@ interface Props {
   children: React.ReactNode
 }
 
-const { themeColor, ...metadata } = seoConfig
+const { themeColor: _, ...metadata } = seoConfig
 export { metadata }
 
 export const viewport = {

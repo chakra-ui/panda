@@ -258,6 +258,7 @@ export class Context {
       themes: themeVariants,
       prefix: this.prefix.tokens,
       hash: this.hash.tokens,
+      colorPalette: theme.colorPalette,
     })
   }
 

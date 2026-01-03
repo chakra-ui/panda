@@ -11,12 +11,12 @@
   },
   "dependencies": {
     "@pandacss/dev": "workspace:*",
-    "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19",
-    "eslint-config-next": "14.1.0",
-    "next": "14.2.26",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "typescript": "5.8.3"
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "eslint-config-next": "16.0.6",
+    "next": "15.5.7",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "typescript": "5.9.3"
   }
 }

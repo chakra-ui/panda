@@ -11,18 +11,38 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     ${ctx.file.import(factoryName, './factory')}
     ${ctx.file.import('getDisplayName', './factory-helper')}
     import { createComponent, mergeProps } from 'solid-js/web'
-    import { createContext, useContext, createMemo } from 'solid-js'
+    import { createContext, createMemo, splitProps, useContext } from 'solid-js'
+
+    function createSafeContext(contextName) {
+      const Context = createContext(undefined)
+      const useStyleContext = (componentName, slot) => {
+        const context = useContext(Context)
+        if (context === undefined) {
+          const componentInfo = componentName ? \`Component "\${componentName}"\` : 'A component'
+          const slotInfo = slot ? \` (slot: "\${slot}")\` : ''
+          
+          throw new Error(
+            \`\${componentInfo}\${slotInfo} cannot access \${contextName} because it's missing its Provider.\`
+          )
+        }
+        return context
+      }
+      return [Context, useStyleContext]
+    }
 
     export function createStyleContext(recipe) {
-      const StyleContext = createContext({})
       const isConfigRecipe = '__recipe__' in recipe
+      const recipeName = isConfigRecipe && recipe.__name__ ? recipe.__name__ : undefined
+      const contextName = recipeName ? \`createStyleContext("\${recipeName}")\` : 'createStyleContext'
+      
+      const [StyleContext, useStyleContext] = createSafeContext(contextName)
       const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
 
       const getResolvedProps = (props, slotStyles) => {
         const { unstyled, ...restProps } = props
         if (unstyled) return restProps
         if (isConfigRecipe) {
-          return { ...restProps, className: cx(slotStyles, restProps.className) }
+          return { ...restProps, class: cx(slotStyles, restProps.class) }
         }
         ${outdent.string(
           match(ctx.config.jsxStyleProps)
@@ -32,27 +52,36 @@ export function generateSolidCreateStyleContext(ctx: Context) {
             .otherwise(() => `return restProps`),
         )}
       }
-      
 
-      const withRootProvider = (Component) => {
+      const withRootProvider = (Component, options) => {
         const WithRootProvider = (props) => {
-          const finalProps = createMemo(() => {
-            const [variantProps, restProps] = svaFn.splitVariantProps(props)
+          const [variantProps, otherProps] = svaFn.splitVariantProps(props)
+          const [local, propsWithoutChildren] = splitProps(otherProps, ['children'])
+
+          const slotStyles = createMemo(() => {
+            const styles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
+            styles._classNameMap = svaFn.classNameMap
+            return styles
+          })
             
-            const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
-            slotStyles._classNameMap = svaFn.classNameMap
-      
-            return { restProps, slotStyles }
+          const mergedProps = createMemo(() => {
+            if (!options?.defaultProps) return propsWithoutChildren
+            const defaults = typeof options.defaultProps === 'function'
+              ? options.defaultProps()
+              : options.defaultProps
+            return { ...defaults, ...propsWithoutChildren }
           })
 
           return createComponent(StyleContext.Provider, {
-            value: finalProps().slotStyles,
+            get value() {
+              return slotStyles()
+            },
             get children() {
               return createComponent(
                 Component,
-                mergeProps(finalProps().restProps, {
+                mergeProps(mergedProps, {
                   get children() {
-                    return props.children
+                    return local.children
                   },
                 }),
               )
@@ -62,7 +91,6 @@ export function generateSolidCreateStyleContext(ctx: Context) {
         
         const componentName = getDisplayName(Component)
         WithRootProvider.displayName = \`withRootProvider(\${componentName})\`
-        
         return WithRootProvider
       }
 
@@ -70,29 +98,37 @@ export function generateSolidCreateStyleContext(ctx: Context) {
         const StyledComponent = ${factoryName}(Component, {}, options)
         
         const WithProvider = (props) => {
-          const finalProps = createMemo(() => {
-            const [variantProps, restProps] = svaFn.splitVariantProps(props)
+          const [variantProps, restProps] = svaFn.splitVariantProps(props)
+          const [local, propsWithoutChildren] = splitProps(restProps, ["children"])
 
-            const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
-            slotStyles._classNameMap = svaFn.classNameMap
+          const slotStyles = createMemo(() => {
+            const styles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
+            styles._classNameMap = svaFn.classNameMap
+            return styles
+          })
 
-            const propsWithClass = { ...restProps, class: restProps.class ?? options?.defaultProps?.class }
-            const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
-            resolvedProps.class = cx(resolvedProps.class, slotStyles._classNameMap[slot])
-            
-            return { slotStyles, resolvedProps }
+          const resolvedProps = createMemo(() => {
+            const propsWithClass = {
+              ...propsWithoutChildren,
+              class: propsWithoutChildren.class ?? options?.defaultProps?.class,
+            }
+            const resolved = getResolvedProps(propsWithClass, slotStyles()[slot])
+            resolved.class = cx(resolved.class, slotStyles()._classNameMap[slot])
+            return resolved
           })
 
           return createComponent(StyleContext.Provider, {
-            value: finalProps().slotStyles,
+            get value() {
+              return slotStyles()
+            },
             get children() {
               return createComponent(
                 StyledComponent,
-                mergeProps(finalProps().resolvedProps, {
+                mergeProps(resolvedProps, {
                   get children() {
-                    return props.children
+                    return local.children
                   },
-                }),
+                })
               )
             },
           })
@@ -100,28 +136,38 @@ export function generateSolidCreateStyleContext(ctx: Context) {
         
         const componentName = getDisplayName(Component)
         WithProvider.displayName = \`withProvider(\${componentName})\`
-        
         return WithProvider
       }
 
       const withContext = (Component, slot, options) => {
         const StyledComponent = ${factoryName}(Component, {}, options)
+        const componentName = getDisplayName(Component)
         
         const WithContext = (props) => {
-          const slotStyles = useContext(StyleContext)
-          const finalProps = createMemo(() => {
-            const propsWithClass = { ...props, class: props.class ?? options?.defaultProps?.class }
-            const resolvedProps = getResolvedProps(propsWithClass, slotStyles[slot])
-            resolvedProps.class = cx(resolvedProps.class, slotStyles._classNameMap?.[slot])
-            return resolvedProps
+          const slotStyles = useStyleContext(componentName, slot)
+          const [local, propsWithoutChildren] = splitProps(props, ["children"])
+
+          const resolvedProps = createMemo(() => {
+            const propsWithClass = {
+              ...propsWithoutChildren,
+              class: propsWithoutChildren.class ?? options?.defaultProps?.class,
+            }
+            const resolved = getResolvedProps(propsWithClass, slotStyles[slot])
+            resolved.class = cx(resolved.class, slotStyles._classNameMap?.[slot])
+            return resolved
           })
 
-          return createComponent(StyledComponent, finalProps())
+          return createComponent(
+            StyledComponent,
+            mergeProps(resolvedProps, {
+              get children() {
+                return local.children
+              },
+            })
+          )
         }
         
-        const componentName = getDisplayName(Component)
         WithContext.displayName = \`withContext(\${componentName})\`
-        
         return WithContext
       }
 
@@ -135,13 +181,18 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs, MaybeAccessor, AsProps', '../types/jsx')}
     import type { Component, JSX, ComponentProps } from 'solid-js'
 
     interface UnstyledProps {
-      unstyled?: boolean
+      unstyled?: boolean | undefined
     }
-    type ElementType<P extends Record<string, any> = {}> = keyof JSX.IntrinsicElements | Component<P>
+
+    interface WithProviderOptions<P> {
+      defaultProps?: MaybeAccessor<Partial<P> & DataAttrs> | undefined
+    }
+    
+    type ElementType = keyof JSX.IntrinsicElements | Component<any>
 
     type SvaFn<S extends string = any> = SlotRecipeRuntimeFn<S, any>
     interface SlotRecipeFn {
@@ -151,27 +202,38 @@ export function generateSolidCreateStyleContext(ctx: Context) {
     }
     type SlotRecipe = SvaFn | SlotRecipeFn
 
-    type InferSlot<R extends SlotRecipe> = R extends SlotRecipeFn ? R['__slot'] : R extends SvaFn<infer S> ? S : never
+    type InferSlot<R extends SlotRecipe> = R extends SlotRecipeFn
+      ? R['__slot']
+      : R extends SvaFn<infer S>
+        ? S
+        : never
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = Component<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
-    
+
+    type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = Component<
+      ComponentProps<T> & UnstyledProps & RecipeVariantProps<R>
+    >
+
     type StyleContextConsumer<T extends ElementType> = Component<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps, JsxStyleProps>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {
-      withRootProvider: <T extends ElementType>(Component: T) => StyleContextProvider<T, R>
+      withRootProvider: <T extends ElementType>(
+        Component: T,
+        options?: WithProviderOptions<ComponentProps<T>> | undefined
+      ) => StyleContextRootProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextConsumer<T>
     }
 

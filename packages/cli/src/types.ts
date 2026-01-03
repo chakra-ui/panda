@@ -25,6 +25,7 @@ export interface CssGenCommandFlags {
   polyfill?: boolean
   cpuProf?: boolean
   logfile?: string
+  splitting?: boolean
 }
 
 export interface StudioCommandFlags extends Pick<Config, 'cwd'> {
@@ -98,6 +99,13 @@ export interface EmitPackageCommandFlags {
 }
 
 export interface McpCommandFlags {
+  cwd?: string
+  config?: string
+}
+
+export interface SpecCommandFlags {
+  silent?: boolean
+  outdir?: string
   cwd?: string
   config?: string
 }

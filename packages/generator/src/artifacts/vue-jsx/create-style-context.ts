@@ -15,7 +15,22 @@ export function generateVueCreateStyleContext(ctx: Context) {
     export function createStyleContext(recipe) {
       const StyleContext = Symbol('StyleContext')
       const isConfigRecipe = '__recipe__' in recipe
+      const recipeName = isConfigRecipe && recipe.__name__ ? recipe.__name__ : undefined
+      const contextName = recipeName ? \`createStyleContext("\${recipeName}")\` : 'createStyleContext'
       const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
+      
+      function useStyleContext(componentName, slot) {
+        const context = inject(StyleContext)
+        if (context === undefined) {
+          const componentInfo = componentName ? \`Component "\${componentName}"\` : 'A component'
+          const slotInfo = slot ? \` (slot: "\${slot}")\` : ''
+          
+          throw new Error(
+            \`\${componentInfo}\${slotInfo} cannot access \${contextName} because it's missing its Provider.\`
+          )
+        }
+        return context
+      }
  
       const getResolvedProps = (props, slotStyles) => {
         const { unstyled, ...restProps } = props
@@ -32,7 +47,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
         )}
       }
 
-      const withRootProvider = (Component) => {
+      const withRootProvider = (Component, options) => {
         const WithRootProvider = defineComponent({
           props: svaFn.variantKeys,
           setup(props, { slots }) {
@@ -46,7 +61,12 @@ export function generateVueCreateStyleContext(ctx: Context) {
 
             provide(StyleContext, slotStyles)
 
-            return () => h(Component, otherProps, slots)
+            const mergedProps = computed(() => {
+              if (!options?.defaultProps) return otherProps
+              return { ...options.defaultProps, ...otherProps }
+            })
+
+            return () => h(Component, mergedProps.value, slots)
           },
         })
         
@@ -97,6 +117,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
 
       const withContext = (Component, slot, options) => {
         const StyledComponent = ${factoryName}(Component, {}, options)
+        const componentName = getDisplayName(Component)
         
         const WithContext = defineComponent({
           props: ["unstyled"],
@@ -107,7 +128,7 @@ export function generateVueCreateStyleContext(ctx: Context) {
               propsWithClass.class = propsWithClass.class ?? options?.defaultProps?.class
               return propsWithClass
             })
-            const slotStyles = inject(StyleContext)
+            const slotStyles = useStyleContext(componentName, slot)
 
             return () => {
               const resolvedProps = getResolvedProps(props.value, slotStyles.value[slot])
@@ -117,7 +138,6 @@ export function generateVueCreateStyleContext(ctx: Context) {
           },
         })
         
-        const componentName = getDisplayName(Component)
         WithContext.displayName = \`withContext(\${componentName})\`
         
         return WithContext
@@ -133,11 +153,15 @@ export function generateVueCreateStyleContext(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('SlotRecipeRuntimeFn, RecipeVariantProps', '../types/recipe')}
     ${ctx.file.importType('JsxHTMLProps, JsxStyleProps, Assign', '../types/system-types')}
-    ${ctx.file.importType('JsxFactoryOptions', '../types/jsx')}
+    ${ctx.file.importType('JsxFactoryOptions, DataAttrs, AsProps', '../types/jsx')}
     import type { Component, FunctionalComponent, NativeElements } from 'vue'
 
     interface UnstyledProps {
-      unstyled?: boolean
+      unstyled?: boolean | undefined
+    }
+
+    interface WithProviderOptions<P = {}> {
+      defaultProps?: (Partial<P> & DataAttrs) | undefined
     }
 
     // Add v-model support types
@@ -166,24 +190,31 @@ export function generateVueCreateStyleContext(ctx: Context) {
       : never
 
     type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = FunctionalComponent<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
     >
-    
+
+    type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = FunctionalComponent<
+      ComponentProps<T> & UnstyledProps & VModelProps & RecipeVariantProps<R>
+    >
+
     type StyleContextConsumer<T extends ElementType> = FunctionalComponent<
-      JsxHTMLProps<ComponentProps<T> & UnstyledProps & VModelProps, JsxStyleProps>
+      JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps, JsxStyleProps>
     >
 
     export interface StyleContext<R extends SlotRecipe> {
-      withRootProvider: <T extends ElementType>(Component: T) => StyleContextProvider<T, R>
+      withRootProvider: <T extends ElementType>(
+        Component: T,
+        options?: WithProviderOptions<ComponentProps<T>> | undefined
+      ) => StyleContextRootProvider<T, R>
       withProvider: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextProvider<T, R>
       withContext: <T extends ElementType>(
         Component: T,
         slot: InferSlot<R>,
-        options?: JsxFactoryOptions<ComponentProps<T>>
+        options?: JsxFactoryOptions<ComponentProps<T>> | undefined
       ) => StyleContextConsumer<T>
     }
 

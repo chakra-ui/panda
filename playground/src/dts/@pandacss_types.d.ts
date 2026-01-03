@@ -112,7 +112,7 @@ export interface Unboxed {
 export interface ResultItem {
 	name?: string;
 	data: Array<Unboxed["raw"]>;
-	type?: "css" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
+	type?: "css" | "cva" | "sva" | "token" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
 	box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
 }
 export interface ParserResultInterface {
@@ -121,15 +121,17 @@ export interface ParserResultInterface {
 	css: Set<ResultItem>;
 	cva: Set<ResultItem>;
 	sva: Set<ResultItem>;
+	token: Set<ResultItem>;
 	recipe: Map<string, Set<ResultItem>>;
 	pattern: Map<string, Set<ResultItem>>;
 	filePath: string | undefined;
 	isEmpty: () => boolean;
 	toArray: () => Array<ResultItem>;
-	set: (name: "cva" | "css" | "sva", result: ResultItem) => void;
+	set: (name: "cva" | "css" | "sva" | "token", result: ResultItem) => void;
 	setCss: (result: ResultItem) => void;
 	setCva: (result: ResultItem) => void;
 	setSva: (result: ResultItem) => void;
+	setToken: (result: ResultItem) => void;
 	setJsx: (result: ResultItem) => void;
 	setPattern: (name: string, result: ResultItem) => void;
 	setRecipe: (name: string, result: ResultItem) => void;
@@ -143,7 +145,7 @@ export interface EncoderJson {
 		};
 	};
 }
-export type ReportItemType = "css" | "cva" | "sva" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
+export type ReportItemType = "css" | "cva" | "sva" | "token" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
 export type ComponentKind = "component" | "function";
 export interface PropertyLocationRange {
 	startPosition: number;
@@ -281,7 +283,7 @@ export interface ArtifactContent {
 	file: string;
 	code: string | undefined;
 }
-export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-create-style-context" | "jsx-patterns-index" | "css-index" | "themes" | "package.json" | "types-jsx" | "types-entry" | "types-styles" | "types-conditions" | "types-gen" | "types-gen-system" | `recipes.${string}` | `patterns.${string}`;
+export type ArtifactId = "helpers" | "keyframes" | "design-tokens" | "types" | "css-fn" | "cva" | "sva" | "cx" | "create-recipe" | "recipes" | "recipes-index" | "patterns" | "patterns-index" | "jsx-is-valid-prop" | "jsx-helpers" | "jsx-factory" | "jsx-patterns" | "jsx-create-style-context" | "jsx-patterns-index" | "css-index" | "themes" | "package.json" | "types-jsx" | "types-entry" | "types-styles" | "types-conditions" | "types-gen" | "types-gen-system" | "static-css" | `recipes.${string}` | `patterns.${string}`;
 export type CssArtifactType = "preflight" | "tokens" | "static" | "global" | "keyframes";
 export type Artifact = {
 	id: ArtifactId;
@@ -10325,19 +10327,78 @@ export type StringToMultiple<T extends string> = T | `${T}, ${T}`;
 export type PositionAreaAxis = "left" | "center" | "right" | "x-start" | "x-end" | "span-x-start" | "span-x-end" | "x-self-start" | "x-self-end" | "span-x-self-start" | "span-x-self-end" | "span-all" | "top" | "bottom" | "span-top" | "span-bottom" | "y-start" | "y-end" | "span-y-start" | "span-y-end" | "y-self-start" | "y-self-end" | "span-y-self-start" | "span-y-self-end" | "block-start" | "block-end" | "span-block-start" | "span-block-end" | "inline-start" | "inline-end" | "span-inline-start" | "span-inline-end" | "self-block-start" | "self-block-end" | "span-self-block-start" | "span-self-block-end" | "self-inline-start" | "self-inline-end" | "span-self-inline-start" | "span-self-inline-end" | "start" | "end" | "span-start" | "span-end" | "self-start" | "self-end" | "span-self-start" | "span-self-end";
 export type PositionTry = "normal" | "flip-block" | "flip-inline" | "top" | "bottom" | "left" | "right" | "block-start" | "block-end" | "inline-start" | "inline-end" | DashedIdent;
 export interface ModernCssProperties {
+	/**
+	 * Defines a name for the anchor element that can be referenced by positioned elements.
+	 */
 	anchorName?: Globals | "none" | DashedIdent | StringToMultiple<DashedIdent>;
+	/**
+	 * Defines the scope of anchor names within the element.
+	 */
 	anchorScope?: Globals | "none" | "all" | DashedIdent | StringToMultiple<DashedIdent>;
+	/**
+	 * Controls how form elements size themselves.
+	 */
 	fieldSizing?: Globals | "fixed" | "content";
+	/**
+	 * Controls whether interpolation of size values should allow keywords.
+	 */
 	interpolateSize?: Globals | "allow-keywords" | "numeric-only";
+	/**
+	 * Specifies the anchor element that this positioned element should be positioned relative to.
+	 */
 	positionAnchor?: Globals | "auto" | DashedIdent;
+	/**
+	 * Specifies the area within the anchor element where this positioned element should be placed.
+	 */
 	positionArea?: Globals | "auto" | PositionAreaAxis | `${PositionAreaAxis} ${PositionAreaAxis}` | String$1;
+	/**
+	 * Specifies the position try options for the element.
+	 */
 	positionTry?: Globals | StringToMultiple<PositionTry> | String$1;
+	/**
+	 * Specifies fallback position try options when the primary position fails.
+	 */
 	positionTryFallback?: Globals | "none" | StringToMultiple<PositionTry> | String$1;
+	/**
+	 * Specifies the order in which position try options should be attempted.
+	 */
 	positionTryOrder?: Globals | "normal" | "most-width" | "most-height" | "most-block-size" | "most-inline-size";
+	/**
+	 * Controls when the positioned element should be visible.
+	 */
 	positionVisibility?: Globals | "always" | "anchors-visible" | "no-overflow";
+	/**
+	 * Controls whether text should wrap or not.
+	 */
 	textWrapMode?: Globals | "wrap" | "nowrap";
+	/**
+	 * Controls trimming of spacing in text.
+	 */
 	textSpacingTrim?: Globals | "normal" | "space-all" | "space-first" | "trim-start";
+	/**
+	 * Controls the style of text wrapping.
+	 */
 	textWrapStyle?: Globals | "auto" | "balance" | "pretty" | "stable";
+	/**
+	 * Controls whether the entire element should be draggable instead of its contents.
+	 */
+	WebkitUserDrag?: Globals | "auto" | "element" | "none";
+	/**
+	 * Specifies whether an element can be used to drag the entire app window (Electron).
+	 */
+	WebkitAppRegion?: Globals | "drag" | "no-drag";
+	/**
+	 * Sets the horizontal spacing between table borders.
+	 */
+	WebkitBorderHorizontalSpacing?: Globals | String$1 | Number$1;
+	/**
+	 * Sets the vertical spacing between table borders.
+	 */
+	WebkitBorderVerticalSpacing?: Globals | String$1 | Number$1;
+	/**
+	 * Controls the display of text content for security purposes (e.g., password fields).
+	 */
+	WebkitTextSecurity?: Globals | "none" | "circle" | "disc" | "square";
 }
 export type CssProperty = keyof PropertiesFallback;
 interface CssProperties$1 extends PropertiesFallback<String$1 | Number$1>, CssVarProperties, ModernCssProperties {
@@ -10410,15 +10471,17 @@ export interface Recursive<T> {
 /* -----------------------------------------------------------------------------
  * Text styles
  * -----------------------------------------------------------------------------*/
-export type TextStyleProperty = "font" | "fontFamily" | "fontFeatureSettings" | "fontKerning" | "fontLanguageOverride" | "fontOpticalSizing" | "fontPalette" | "fontSize" | "fontSizeAdjust" | "fontStretch" | "fontStyle" | "fontSynthesis" | "fontVariant" | "fontVariantAlternates" | "fontVariantCaps" | "fontVariantLigatures" | "fontVariantNumeric" | "fontVariantPosition" | "fontVariationSettings" | "fontWeight" | "hypens" | "hyphenateCharacter" | "hyphenateLimitChars" | "letterSpacing" | "lineBreak" | "lineHeight" | "quotes" | "overflowWrap" | "textCombineUpright" | "textDecoration" | "textDecorationColor" | "textDecorationLine" | "textDecorationSkipInk" | "textDecorationStyle" | "textDecorationThickness" | "textEmphasis" | "textEmphasisColor" | "textEmphasisPosition" | "textEmphasisStyle" | "textIndent" | "textJustify" | "textOrientation" | "textOverflow" | "textRendering" | "textShadow" | "textTransform" | "textUnderlineOffset" | "textUnderlinePosition" | "textWrap" | "textWrapMode" | "textWrapStyle" | "verticalAlign" | "whiteSpace" | "wordBreak" | "wordSpacing";
+export type TextStyleProperty = "color" | "direction" | "font" | "fontFamily" | "fontFeatureSettings" | "fontKerning" | "fontLanguageOverride" | "fontOpticalSizing" | "fontPalette" | "fontSize" | "fontSizeAdjust" | "fontStretch" | "fontStyle" | "fontSynthesis" | "fontVariant" | "fontVariantAlternates" | "fontVariantCaps" | "fontVariantLigatures" | "fontVariantNumeric" | "fontVariantPosition" | "fontVariationSettings" | "fontWeight" | "hangingPunctuation" | "hypens" | "hyphenateCharacter" | "hyphenateLimitChars" | "letterSpacing" | "lineBreak" | "lineHeight" | "quotes" | "overflowWrap" | "tabSize" | "textAlign" | "textAlignLast" | "textCombineUpright" | "textDecoration" | "textDecorationColor" | "textDecorationLine" | "textDecorationSkip" | "textDecorationSkipBox" | "textDecorationSkipInk" | "textDecorationSkipInset" | "textDecorationStyle" | "textDecorationThickness" | "textEmphasis" | "textEmphasisColor" | "textEmphasisPosition" | "textEmphasisStyle" | "textIndent" | "textJustify" | "textOrientation" | "textOverflow" | "textRendering" | "textShadow" | "textStroke" | "textStrokeColor" | "textStrokeWidth" | "textTransform" | "textUnderlineOffset" | "textUnderlinePosition" | "textWrap" | "textWrapMode" | "textWrapStyle" | "unicodeBidi" | "verticalAlign" | "whiteSpace" | "wordBreak" | "wordSpacing" | "writingMode";
 export type TextStyle = CompositionStyleObject<TextStyleProperty>;
 export type TextStyles = Recursive<Token<TextStyle>>;
 /* -----------------------------------------------------------------------------
  * Layer styles
  * -----------------------------------------------------------------------------*/
-export type Placement = "Top" | "Right" | "Bottom" | "Left" | "Inline" | "Block" | "InlineStart" | "InlineEnd" | "BlockStart" | "BlockEnd";
+export type LogicalPlacement = "Inline" | "Block" | "InlineStart" | "InlineEnd" | "BlockStart" | "BlockEnd";
+export type PhysicalPlacement = "Top" | "Right" | "Bottom" | "Left";
+export type Placement = PhysicalPlacement | LogicalPlacement;
 export type Radius = `Top${"Right" | "Left"}` | `Bottom${"Right" | "Left"}` | `Start${"Start" | "End"}` | `End${"Start" | "End"}`;
-export type LayerStyleProperty = "background" | "backgroundColor" | "backgroundImage" | "borderRadius" | "border" | "borderWidth" | "borderColor" | "borderStyle" | "boxShadow" | "filter" | "backdropFilter" | "transform" | "color" | "opacity" | "backgroundBlendMode" | "backgroundAttachment" | "backgroundClip" | "backgroundOrigin" | "backgroundPosition" | "backgroundRepeat" | "backgroundSize" | `border${Placement}` | `border${Placement}Width` | "borderRadius" | `border${Radius}Radius` | `border${Placement}Color` | `border${Placement}Style` | "padding" | `padding${Placement}`;
+export type LayerStyleProperty = "aspectRatio" | "background" | "backgroundColor" | "backgroundImage" | "border" | "borderColor" | "borderImage" | "borderImageOutset" | "borderImageRepeat" | "borderImageSlice" | "borderImageSource" | "borderImageWidth" | "borderRadius" | "borderStyle" | "borderWidth" | `border${Placement}` | `border${Placement}Color` | `border${Placement}Style` | `border${Placement}Width` | "borderRadius" | `border${Radius}Radius` | "boxShadow" | "boxShadowColor" | "clipPath" | "color" | "contain" | "content" | "contentVisibility" | "cursor" | "display" | "filter" | "backdropFilter" | "height" | "width" | "minHeight" | "minWidth" | "maxHeight" | "maxWidth" | `margin${Placement}` | "inset" | `inset${LogicalPlacement}` | Lowercase<PhysicalPlacement> | "isolation" | "mask" | "maskClip" | "maskComposite" | "maskImage" | "maskMode" | "maskOrigin" | "maskPosition" | "maskRepeat" | "maskSize" | "mixBlendMode" | "objectFit" | "objectPosition" | "opacity" | "outline" | "outlineColor" | "outlineOffset" | "outlineStyle" | "outlineWidth" | "overflow" | "overflowX" | "overflowY" | "padding" | `padding${Placement}` | "pointerEvents" | "position" | "resize" | "transform" | "transition" | "visibility" | "willChange" | "zIndex" | "backgroundBlendMode" | "backgroundAttachment" | "backgroundClip" | "backgroundOrigin" | "backgroundPosition" | "backgroundRepeat" | "backgroundSize";
 export type LayerStyle = CompositionStyleObject<LayerStyleProperty>;
 export type LayerStyles = Recursive<Token<LayerStyle>>;
 /* -----------------------------------------------------------------------------
@@ -10725,6 +10788,11 @@ export interface PandaHooks {
 	 */
 	"config:resolved": (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | ConfigResolvedHookArgs["config"]>;
 	/**
+	 * Called when each preset is resolved, allowing modification of individual presets.
+	 * This hook is called for each preset during the resolution process, before they are merged together.
+	 */
+	"preset:resolved": (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | PresetResolvedHookArgs["preset"]>;
+	/**
 	 * Called when the token engine has been created
 	 */
 	"tokens:created": (args: TokenCreatedHookArgs) => MaybeAsyncReturn;
@@ -10820,6 +10888,7 @@ export interface TraverseFn {
 }
 export interface ConfigResolvedHookUtils {
 	omit: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Omit<T, K>;
+	pick: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Partial<T>;
 	traverse: TraverseFn;
 }
 export interface ConfigResolvedHookArgs {
@@ -10832,6 +10901,12 @@ export interface ConfigResolvedHookArgs {
 export interface ConfigChangeHookArgs {
 	config: UserConfig;
 	changes: DiffConfigResult;
+}
+export interface PresetResolvedHookArgs {
+	preset: LoadConfigResult["config"];
+	name: string;
+	utils: ConfigResolvedHookUtils;
+	original?: LoadConfigResult["config"];
 }
 /* -----------------------------------------------------------------------------
  * Parser hooks
@@ -11180,7 +11255,7 @@ export interface PropertyConfig {
 	 */
 	deprecated?: boolean;
 }
-export type CssSemanticGroup = "Animation" | "Background Gradient" | "Background" | "Border Radius" | "Border" | "Color" | "Container" | "Display" | "Effect" | "Flex Layout" | "Grid Layout" | "Height" | "Interactivity" | "Layout" | "List" | "Margin" | "Other" | "Padding" | "Position" | "Scroll" | "Shadow" | "System" | "Table" | "Transform" | "Transition" | "Typography" | "Visibility" | "Width";
+export type CssSemanticGroup = "Animation" | "Background Gradient" | "Background" | "Border Radius" | "Border" | "Color" | "Container" | "Display" | "Focus Ring" | "Effect" | "Flex Layout" | "Grid Layout" | "Height" | "Interactivity" | "Layout" | "List" | "Margin" | "Other" | "Padding" | "Position" | "Scroll" | "Shadow" | "System" | "Table" | "Transform" | "Transition" | "Typography" | "Visibility" | "Width";
 export type UtilityConfig = {
 	[property in LiteralUnion<CssProperty>]?: PropertyConfig;
 };
@@ -11353,12 +11428,14 @@ export interface ImportMapInput {
 	recipes?: string | string[];
 	patterns?: string | string[];
 	jsx?: string | string[];
+	tokens?: string | string[];
 }
 export interface ImportMapOutput<T = string> {
 	css: T[];
 	recipe: T[];
 	pattern: T[];
 	jsx: T[];
+	tokens: T[];
 }
 export type ImportMapOption = string | ImportMapInput;
 export interface FileSystemOptions {

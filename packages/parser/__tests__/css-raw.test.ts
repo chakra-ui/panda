@@ -169,8 +169,8 @@ describe('{fn}.raw', () => {
           margin-inline: var(--spacing-10);
       }
 
-        .gap_10px {
-          gap: 10px;
+        .gap_8px {
+          gap: 8px;
       }
 
         .c_amber\\.100 {

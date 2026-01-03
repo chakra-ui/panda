@@ -8,7 +8,7 @@ export const compile = async (configStr: string) => {
     const href = 'https://cdn.skypack.dev/' + module + '?min'
     try {
       return await importShim(href)
-    } catch (error) {
+    } catch {
       throw new Error("Failed to fetch module '" + module + "'")
     }
   }

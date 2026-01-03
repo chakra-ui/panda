@@ -1,5 +1,327 @@
 # @pandacss/generator
 
+## 1.7.3
+
+### Patch Changes
+
+- @pandacss/core@1.7.3
+- @pandacss/is-valid-prop@1.7.3
+- @pandacss/logger@1.7.3
+- @pandacss/shared@1.7.3
+- @pandacss/token-dictionary@1.7.3
+- @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- @pandacss/core@1.7.2
+- @pandacss/is-valid-prop@1.7.2
+- @pandacss/logger@1.7.2
+- @pandacss/shared@1.7.2
+- @pandacss/token-dictionary@1.7.2
+- @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- 3f5fea2: ### Spec
+
+  - Fixed issue in recipe specs where boolean variant values were incorrectly formatted with quotes (e.g.,
+    `button({ primary: true })` instead of `button({ primary: 'true' })`)
+  - Updated color palette spec generation to dynamically discover and use actual available tokens
+  - @pandacss/core@1.7.1
+  - @pandacss/is-valid-prop@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/token-dictionary@1.7.1
+  - @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Minor Changes
+
+- 86b30b1: Add `panda spec` command to generate specification files for your theme (useful for documentation). This
+  command generates JSON specification files containing metadata, examples, and usage information.
+
+  ```bash
+  # Generate all spec files
+  panda spec
+
+  # Custom output directory
+  panda spec --outdir custom/specs
+  ```
+
+  **Token Spec Structure:**
+
+  ```json
+  {
+    "type": "tokens",
+    "data": [
+      {
+        "type": "aspectRatios",
+        "values": [{ "name": "square", "value": "1 / 1", "cssVar": "var(--aspect-ratios-square)" }],
+        "tokenFunctionExamples": ["token('aspectRatios.square')"],
+        "functionExamples": ["css({ aspectRatio: 'square' })"],
+        "jsxExamples": ["<Box aspectRatio=\"square\" />"]
+      }
+    ]
+  }
+  ```
+
+  **Spec Usage:**
+
+  ```javascript
+  import tokens from 'styled-system/specs/tokens'
+  import recipes from 'styled-system/specs/recipes'
+  ```
+
+### Patch Changes
+
+- f37fd8d: Fix `cssgen --splitting` not fully respecting `staticCss: { recipes: "*" }`.
+
+  - When `staticCss: { recipes: "*" }` is set globally, individual recipes with their own `staticCss` property would
+    override the global wildcard, potentially omitting variants.
+  - Split CSS generation was missing recipes that only have base styles (no variants).
+
+- Updated dependencies [86b30b1]
+- Updated dependencies [f37fd8d]
+  - @pandacss/types@1.7.0
+  - @pandacss/core@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/token-dictionary@1.7.0
+  - @pandacss/is-valid-prop@1.7.0
+  - @pandacss/shared@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [8f43369]
+  - @pandacss/core@1.6.1
+  - @pandacss/is-valid-prop@1.6.1
+  - @pandacss/logger@1.6.1
+  - @pandacss/shared@1.6.1
+  - @pandacss/token-dictionary@1.6.1
+  - @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Minor Changes
+
+- 8aa3c64: Add `--splitting` flag to `cssgen` command for per-layer CSS output.
+
+  When enabled, CSS is emitted as separate files instead of a single `styles.css`:
+
+  ```
+  styled-system/
+  ├── styles.css              # @layer declaration + @imports
+  └── styles/
+      ├── reset.css           # Preflight/reset CSS
+      ├── global.css          # Global CSS
+      ├── tokens.css          # Design tokens
+      ├── utilities.css       # Utility classes
+      ├── recipes/
+      │   ├── index.css       # @imports all recipe files
+      │   └── {recipe}.css    # Individual recipe styles
+      └── themes/
+          └── {theme}.css     # Theme tokens (not auto-imported)
+  ```
+
+  Usage:
+
+  ```bash
+  panda cssgen --splitting
+  ```
+
+### Patch Changes
+
+- @pandacss/core@1.6.0
+- @pandacss/is-valid-prop@1.6.0
+- @pandacss/logger@1.6.0
+- @pandacss/shared@1.6.0
+- @pandacss/token-dictionary@1.6.0
+- @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- bd2f8c9: fix(solid): allow defaultProps to be an Accessor
+- 827566b: - **Style Context**:
+  - Improve `createStyleContext` error messages to include component name, slot, and recipe name when Provider is
+    missing.
+  - Fix TypeScript types for `withProvider` and `withContext` to include the `as` prop, matching the behavior of the
+    `styled` factory.
+  - @pandacss/core@1.5.1
+  - @pandacss/is-valid-prop@1.5.1
+  - @pandacss/logger@1.5.1
+  - @pandacss/shared@1.5.1
+  - @pandacss/token-dictionary@1.5.1
+  - @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Minor Changes
+
+- 91c65ff: Add support for controlling the color palette generation via `theme.colorPalette` property.
+
+  ```ts
+  // Disable color palette generation completely
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        enabled: false,
+      },
+    },
+  })
+
+  // Include only specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        include: ['gray', 'blue', 'red'],
+      },
+    },
+  })
+
+  // Exclude specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        exclude: ['yellow', 'orange'],
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- 52e2399: Fix TypeScript error when using `data-*` attributes in `defaultProps` for `createStyleContext` and JSX
+  factory functions.
+
+  ```tsx
+  const TabsList = withContext(TabsPrimitive.List, 'list', {
+    defaultProps: {
+      'data-slot': 'tabs-list', // now works without type errors
+    },
+  })
+  ```
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+  - @pandacss/token-dictionary@1.5.0
+  - @pandacss/core@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/is-valid-prop@1.5.0
+  - @pandacss/shared@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- bb32028: Fix "Browserslist: caniuse-lite is outdated" warning by updating `browserslist` and PostCSS-related packages:
+
+  - Update `browserslist` from 4.23.3 to 4.24.4
+  - Update `postcss` from 8.4.49 to 8.5.6
+  - Update `postcss-nested` from 6.0.1 to 7.0.2
+  - Update `postcss-merge-rules` from 7.0.4 to 7.0.6
+  - Update other PostCSS plugins to latest patch versions
+
+  This resolves the outdated `caniuse-lite` warning that appeared when using lightningcss without affecting CSS output
+  or requiring snapshot updates.
+
+- 58f492a: **Style Context (Solid)**
+
+  - Fix issue where `withProvider` does not properly provide context leading to runtime errors when wrapping headless
+    component libraries like Ark UI.
+  - Refactor `withProvider` and `withContext` types to ensure required props are properly extracted from the component
+    props.
+
+- Updated dependencies [bb32028]
+- Updated dependencies [84a0de9]
+  - @pandacss/core@1.4.3
+  - @pandacss/is-valid-prop@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/token-dictionary@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 0679f6f: Fix issue where `create-recipe.mjs` helper was not generated when adding the first recipe to a project that
+  previously had no recipes.
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/shared@1.4.2
+  - @pandacss/token-dictionary@1.4.2
+  - @pandacss/core@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/is-valid-prop@1.4.2
+  - @pandacss/logger@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [db237b6]
+  - @pandacss/core@1.4.1
+  - @pandacss/is-valid-prop@1.4.1
+  - @pandacss/logger@1.4.1
+  - @pandacss/shared@1.4.1
+  - @pandacss/token-dictionary@1.4.1
+  - @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- ce12373: Refactor the type signature of `defineStyles` to return the object passed to it. This improves its
+  composition with `defineRecipe` and `defineSlotRecipe`
+- Updated dependencies [4c291ca]
+  - @pandacss/core@1.4.0
+  - @pandacss/is-valid-prop@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/token-dictionary@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- e0fca65: Fixes issue where `defaultProps` was not supported in `withRootProvider` across all framework implementations
+  (React, Preact, Vue, Solid)
+
+  ```tsx
+  const RootProvider = withRootProvider(Component, {
+    defaultProps: {
+      className: 'root-provider',
+      // other default props
+    },
+  })
+  ```
+
+- ff9afbc: - **Style Context**: Fix type issue where `withRootProvider` from style context incorrectly allowed JSX style
+  props to be passed through to the root component.
+
+  - **React**: Fix issue where combining wrapping a style context component with `styled` caused `ref` to be incorrectly
+    typed
+
+- 5bfaef3: Correct exposed type from the generator that was causing errors in the generated .d.ts files.
+- Updated dependencies [7fcd100]
+  - @pandacss/core@1.3.1
+  - @pandacss/is-valid-prop@1.3.1
+  - @pandacss/logger@1.3.1
+  - @pandacss/shared@1.3.1
+  - @pandacss/token-dictionary@1.3.1
+  - @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

@@ -1,11 +1,12 @@
 {
   "name": "@pandacss/reporter",
-  "version": "1.3.0",
+  "version": "1.7.3",
   "description": "Track and report usage of tokens and recipes",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -43,7 +44,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "table": "6.9.0",
-    "wordwrapjs": "5.1.0"
+    "wordwrapjs": "5.1.1"
   },
   "devDependencies": {
     "markdown-table": "3.0.4"

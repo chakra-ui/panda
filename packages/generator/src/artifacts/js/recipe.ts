@@ -4,9 +4,9 @@ import { isBoolean, unionType } from '@pandacss/shared'
 import type { ArtifactFilters } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
+import { isBooleanValue } from '../../shared'
 
 const stringify = (value: any) => JSON.stringify(value, null, 2)
-const isBooleanValue = (value: string) => value === 'true' || value === 'false'
 const hasOwn = (obj: any | undefined, key: string): obj is Record<string, any> => {
   if (!obj) return false
   return Object.prototype.hasOwnProperty.call(obj, key)

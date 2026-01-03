@@ -1,5 +1,112 @@
 # @pandacss/astro-plugin-studio
 
+## 1.7.3
+
+### Patch Changes
+
+- 4627837: **Studio**: Fix React SSR errors when running Panda Studio.
+
+  - `ReferenceError: module is not defined` - React's CJS entry point was loaded in an ESM context
+  - `TypeError: dispatcher.getOwner is not a function` - React development/production builds were mixed during SSR
+  - @pandacss/node@1.7.3
+  - @pandacss/core@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- Updated dependencies [af2d06b]
+  - @pandacss/node@1.7.2
+  - @pandacss/core@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- @pandacss/node@1.7.1
+- @pandacss/core@1.7.1
+
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+- Updated dependencies [f37fd8d]
+  - @pandacss/node@1.7.0
+  - @pandacss/core@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [8f43369]
+  - @pandacss/core@1.6.1
+  - @pandacss/node@1.6.1
+
+## 1.6.0
+
+### Patch Changes
+
+- Updated dependencies [8aa3c64]
+  - @pandacss/node@1.6.0
+  - @pandacss/core@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/node@1.5.1
+- @pandacss/core@1.5.1
+
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+  - @pandacss/core@1.5.0
+  - @pandacss/node@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- Updated dependencies [bb32028]
+- Updated dependencies [84a0de9]
+  - @pandacss/core@1.4.3
+  - @pandacss/node@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- Updated dependencies [70420dd]
+  - @pandacss/core@1.4.2
+  - @pandacss/node@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [db237b6]
+  - @pandacss/core@1.4.1
+  - @pandacss/node@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [4c291ca]
+  - @pandacss/core@1.4.0
+  - @pandacss/node@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- Updated dependencies [7fcd100]
+  - @pandacss/core@1.3.1
+  - @pandacss/node@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

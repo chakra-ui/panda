@@ -71,6 +71,11 @@ const artifactConfigDeps: Record<ArtifactId, ConfigPath[]> = {
   'types-gen': [],
   'types-gen-system': [],
   themes: ['themes'].concat(tokens),
+  // staticCss depends on tokens (for wildcards) and recipes (for recipe rules)
+  'static-css': ['staticCss', 'patterns', 'theme.recipes', 'theme.slotRecipes'].concat(tokens),
+  // Split CSS artifacts (generated via cssgen --splitting)
+  styles: [],
+  'styles.css': [],
 }
 
 // Prepare a list of regex that resolves to an artifact id from a list of config paths

@@ -9,7 +9,7 @@ This guide will show you how to set up Panda CSS in a React Router project using
 
 <Steps>
 
-### Create React Router project
+### Create project
 
 To get started, we will need to create a new React Router project using the official
 [Create React Router](https://reactrouter.com/start/framework/installation) CLI. In this guide, we will use TypeScript.
@@ -43,7 +43,7 @@ If you don't enter any parameter, the CLI will guide you through the process of 
 
 You will be asked a few questions, answer these as follows:
 
-```
+```sh
 ? Where should we create your new project? test-app
 ? Install dependencies? No
 ```
@@ -110,7 +110,7 @@ Open your `package.json` file and update the `scripts` section as follows:
 Make sure that all of the paths of your React Router components are included in the `include` section of the
 `panda.config.ts` file.
 
-```ts {5, 8, 11} filename="panda.config.ts"
+```ts {5,8,11} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
@@ -132,7 +132,7 @@ export default defineConfig({
 
 Update the `vite.config.ts` file to use PandaCSS instead of TailwindCSS.
 
-```ts {3, 10} filename="vite.config.ts"
+```ts {3,10} filename="vite.config.ts"
 import { reactRouter } from '@react-router/dev/vite'
 import autoprefixer from 'autoprefixer'
 import pandacss from '@pandacss/dev/postcss'
@@ -164,7 +164,7 @@ Import the `app.css` file in your `app/root.tsx` file and add the `styles` varia
 Please note the `?url` query parameter in the `import` statement. This is required by Vite to generate the correct path
 to the CSS file.
 
-```tsx {11, 15} filename="app/root.tsx"
+```tsx {4,8} filename="app/root.tsx"
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
 
 import type { Route } from './+types/root'

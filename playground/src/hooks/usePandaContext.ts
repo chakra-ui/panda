@@ -14,7 +14,7 @@ const defaultConfig = resolveConfig({
 })!
 
 export const usePandaContext = (userConfig: Config | null): Generator & { error?: unknown } => {
-  const previousContext = useRef<Generator | null>(null)
+  const previousContext = useRef<(Generator & { error?: unknown }) | null>(null)
 
   const getDefaultContext = () =>
     new Generator({
@@ -47,7 +47,12 @@ export const usePandaContext = (userConfig: Config | null): Generator & { error?
     error = e
   }
 
-  if (error) return Object.assign(previousContext.current ?? getDefaultContext(), { error })
+  if (error) {
+    // Return stable reference when there's an error to prevent cursor jumps
+    const ctx = (previousContext.current ?? getDefaultContext()) as Generator & { error?: unknown }
+    ctx.error = error
+    return ctx
+  }
 
   try {
     // in event of error (invalid token format), use previous generator

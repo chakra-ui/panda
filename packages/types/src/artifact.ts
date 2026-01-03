@@ -34,6 +34,9 @@ export type ArtifactId =
   | 'types-conditions'
   | 'types-gen'
   | 'types-gen-system'
+  | 'static-css'
+  | 'styles.css'
+  | 'styles'
   | `recipes.${string}`
   | `patterns.${string}`
 

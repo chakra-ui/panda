@@ -3,6 +3,15 @@ import { addVirtualPalette } from '../src/middleware'
 import { transforms } from '../src/transform'
 import { TokenDictionary } from '../src/dictionary'
 
+const createDictionary = (options: any = {}) => {
+  const dictionary = new TokenDictionary(options)
+  return dictionary
+    .registerTokens()
+    .registerTransform(...transforms)
+    .registerMiddleware(addVirtualPalette)
+    .build()
+}
+
 const dasherize = (token: string) =>
   token
     .toString()
@@ -372,6 +381,9 @@ test('should generate nested object virtual palette', () => {
             "base": "navy",
           },
           "prop": "button.dark",
+          "rawValue": {
+            "base": "navy",
+          },
           "var": "--colors-button-dark",
           "varRef": "var(--colors-button-dark)",
         },
@@ -407,6 +419,9 @@ test('should generate nested object virtual palette', () => {
           },
           "isDefault": true,
           "prop": "button.light",
+          "rawValue": {
+            "base": "skyblue",
+          },
           "var": "--colors-button-light",
           "varRef": "var(--colors-button-light)",
         },
@@ -450,6 +465,9 @@ test('should generate nested object virtual palette', () => {
           },
           "isDefault": true,
           "prop": "button.light.accent",
+          "rawValue": {
+            "base": "cyan",
+          },
           "var": "--colors-button-light-accent",
           "varRef": "var(--colors-button-light-accent)",
         },
@@ -503,6 +521,9 @@ test('should generate nested object virtual palette', () => {
             "base": "blue",
           },
           "prop": "button.light.accent.secondary",
+          "rawValue": {
+            "base": "blue",
+          },
           "var": "--colors-button-light-accent-secondary",
           "varRef": "var(--colors-button-light-accent-secondary)",
         },
@@ -1172,6 +1193,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
             "base": "navy",
           },
           "prop": "$button-dark",
+          "rawValue": {
+            "base": "navy",
+          },
           "var": "--colors-button-dark",
           "varRef": "var(--colors-button-dark)",
         },
@@ -1207,6 +1231,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
           },
           "isDefault": true,
           "prop": "$button-light",
+          "rawValue": {
+            "base": "skyblue",
+          },
           "var": "--colors-button-light",
           "varRef": "var(--colors-button-light)",
         },
@@ -1250,6 +1277,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
           },
           "isDefault": true,
           "prop": "$button-light-accent",
+          "rawValue": {
+            "base": "cyan",
+          },
           "var": "--colors-button-light-accent",
           "varRef": "var(--colors-button-light-accent)",
         },
@@ -1303,6 +1333,9 @@ test('should generate nested object virtual palette + custom formatTokenName', (
             "base": "blue",
           },
           "prop": "$button-light-accent-secondary",
+          "rawValue": {
+            "base": "blue",
+          },
           "var": "--colors-button-light-accent-secondary",
           "varRef": "var(--colors-button-light-accent-secondary)",
         },
@@ -1632,5 +1665,163 @@ test('should generate virtual palette with DEFAULT value', () => {
       "colors.colorPalette.primary.hover" => "var(--colors-color-palette-primary-hover)",
       "colors.colorPalette.hover" => "var(--colors-color-palette-hover)",
     }
+  `)
+})
+
+test('should disable color palette when enabled is false', () => {
+  const dictionary = createDictionary({
+    tokens: {
+      colors: {
+        red: {
+          500: { value: '#red500' },
+          700: { value: '#red700' },
+        },
+        blue: {
+          500: { value: '#blue500' },
+          700: { value: '#blue700' },
+        },
+      },
+    },
+    colorPalette: {
+      enabled: false,
+    },
+  })
+
+  const getVar = dictionary.view.get
+  expect(getVar('colors.colorPalette.500')).toBeUndefined()
+  expect(getVar('colors.colorPalette.700')).toBeUndefined()
+
+  expect(Array.from(dictionary.view.colorPalettes.keys())).toHaveLength(0)
+})
+
+test('should include only specified colors in color palette', () => {
+  const dictionary = createDictionary({
+    tokens: {
+      colors: {
+        red: {
+          500: { value: '#red500' },
+          700: { value: '#red700' },
+        },
+        blue: {
+          500: { value: '#blue500' },
+          700: { value: '#blue700' },
+        },
+        green: {
+          500: { value: '#green500' },
+          700: { value: '#green700' },
+        },
+      },
+    },
+    colorPalette: {
+      include: ['red', 'blue'],
+    },
+  })
+
+  const getVar = dictionary.view.get
+  expect(getVar('colors.colorPalette.500')).toBe('var(--colors-color-palette-500)')
+  expect(getVar('colors.colorPalette.700')).toBe('var(--colors-color-palette-700)')
+
+  expect(Array.from(dictionary.view.colorPalettes.keys())).toMatchInlineSnapshot(`
+    [
+      "red",
+      "blue",
+    ]
+  `)
+})
+
+test('should exclude specified colors from color palette', () => {
+  const dictionary = createDictionary({
+    tokens: {
+      colors: {
+        red: {
+          500: { value: '#red500' },
+          700: { value: '#red700' },
+        },
+        blue: {
+          500: { value: '#blue500' },
+          700: { value: '#blue700' },
+        },
+        green: {
+          500: { value: '#green500' },
+          700: { value: '#green700' },
+        },
+      },
+    },
+    colorPalette: {
+      exclude: ['red'],
+    },
+  })
+
+  const getVar = dictionary.view.get
+  expect(getVar('colors.colorPalette.500')).toBe('var(--colors-color-palette-500)')
+  expect(getVar('colors.colorPalette.700')).toBe('var(--colors-color-palette-700)')
+
+  expect(Array.from(dictionary.view.colorPalettes.keys())).toMatchInlineSnapshot(`
+    [
+      "blue",
+      "green",
+    ]
+  `)
+})
+
+test('should handle semantic tokens with colorPalette configuration', () => {
+  const dictionary = createDictionary({
+    semanticTokens: {
+      colors: {
+        primary: {
+          value: '{colors.blue.500}',
+        },
+        secondary: {
+          value: '{colors.red.500}',
+        },
+        accent: {
+          value: '{colors.green.500}',
+        },
+      },
+    },
+    tokens: {
+      colors: {
+        blue: {
+          500: { value: '#blue500' },
+        },
+        red: {
+          500: { value: '#red500' },
+        },
+        green: {
+          500: { value: '#green500' },
+        },
+      },
+    },
+    colorPalette: {
+      include: ['primary'],
+    },
+  })
+
+  expect(Array.from(dictionary.view.colorPalettes.keys())).toMatchInlineSnapshot(`
+    [
+      "primary",
+    ]
+  `)
+})
+
+test('should enable color palette by default when no configuration is provided', () => {
+  const dictionary = createDictionary({
+    tokens: {
+      colors: {
+        red: {
+          500: { value: '#red500' },
+        },
+      },
+    },
+    // No colorPalette config provided - should default to enabled: true
+  })
+
+  const getVar = dictionary.view.get
+  expect(getVar('colors.colorPalette.500')).toBe('var(--colors-color-palette-500)')
+
+  expect(Array.from(dictionary.view.colorPalettes.keys())).toMatchInlineSnapshot(`
+    [
+      "red",
+    ]
   `)
 })

@@ -30,12 +30,16 @@ describe('recipe jsx', () => {
           {
             "box": {
               "column": 38,
+              "endColumn": 63,
+              "endLineNumber": 6,
               "line": 6,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "variant" => {
                   "column": 51,
+                  "endColumn": 58,
+                  "endLineNumber": 5,
                   "line": 5,
                   "node": "BindingElement",
                   "type": "unresolvable",
@@ -43,6 +47,8 @@ describe('recipe jsx', () => {
                 },
                 "size" => {
                   "column": 60,
+                  "endColumn": 64,
+                  "endLineNumber": 5,
                   "line": 5,
                   "node": "BindingElement",
                   "type": "unresolvable",
@@ -59,12 +65,16 @@ describe('recipe jsx', () => {
           {
             "box": {
               "column": 16,
+              "endColumn": 44,
+              "endLineNumber": 12,
               "line": 12,
               "node": "JsxOpeningElement",
               "type": "map",
               "value": Map {
                 "size" => {
                   "column": 29,
+                  "endColumn": 33,
+                  "endLineNumber": 12,
                   "line": 12,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -72,6 +82,8 @@ describe('recipe jsx', () => {
                 },
                 "mt" => {
                   "column": 37,
+                  "endColumn": 43,
+                  "endLineNumber": 12,
                   "line": 12,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -91,12 +103,16 @@ describe('recipe jsx', () => {
           {
             "box": {
               "column": 16,
+              "endColumn": 77,
+              "endLineNumber": 13,
               "line": 13,
               "node": "JsxOpeningElement",
               "type": "map",
               "value": Map {
                 "size" => {
                   "column": 29,
+                  "endColumn": 33,
+                  "endLineNumber": 13,
                   "line": 13,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -104,12 +120,16 @@ describe('recipe jsx', () => {
                 },
                 "variant" => {
                   "column": 43,
+                  "endColumn": 75,
+                  "endLineNumber": 13,
                   "line": 13,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "base" => {
                       "column": 51,
+                      "endColumn": 60,
+                      "endLineNumber": 13,
                       "line": 13,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -117,6 +137,8 @@ describe('recipe jsx', () => {
                     },
                     "md" => {
                       "column": 66,
+                      "endColumn": 73,
+                      "endLineNumber": 13,
                       "line": 13,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -141,12 +163,16 @@ describe('recipe jsx', () => {
           {
             "box": {
               "column": 16,
+              "endColumn": 54,
+              "endLineNumber": 16,
               "line": 16,
               "node": "JsxSelfClosingElement",
               "type": "map",
               "value": Map {
                 "size" => {
                   "column": 45,
+                  "endColumn": 51,
+                  "endLineNumber": 16,
                   "line": 16,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -212,35 +238,35 @@ describe('recipe jsx', () => {
             {},
           ],
           "name": "Tabs.List",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Trigger",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Trigger",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Trigger",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
         {
           "data": [
             {},
           ],
           "name": "Tabs.Indicator",
-          "type": "jsx-recipe",
+          "type": "jsx",
         },
       ]
     `)

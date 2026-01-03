@@ -12,6 +12,9 @@ export interface BuildOpts {
 const appPath = join(__dirname, '..')
 
 export async function buildStudio({ outDir, configPath, base }: BuildOpts) {
+  // Set NODE_ENV to production before importing React to ensure consistent builds
+  process.env.NODE_ENV = 'production'
+
   const astro = await import('astro')
   const { default: react } = await import('@astrojs/react')
   const { default: studio } = await import('@pandacss/astro-plugin-studio')

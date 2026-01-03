@@ -1,5 +1,36 @@
 # @pandacss/shared
 
+## 1.7.3
+
+## 1.7.2
+
+## 1.7.1
+
+## 1.7.0
+
+## 1.6.1
+
+## 1.6.0
+
+## 1.5.1
+
+## 1.5.0
+
+## 1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+
+## 1.4.1
+
+## 1.4.0
+
+## 1.3.1
+
 ## 1.3.0
 
 ## 1.2.0

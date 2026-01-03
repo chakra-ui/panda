@@ -22,6 +22,7 @@ export class ImportMap {
     const importMap = this.buildImportMap(context.config.importMap)
 
     this.matchers.css = this.createMatcher(importMap.css, ['css', 'cva', 'sva'])
+    this.matchers.tokens = this.createMatcher(importMap.tokens, ['token'])
     this.matchers.recipe = this.createMatcher(importMap.recipe)
     this.matchers.pattern = this.createMatcher(importMap.pattern)
 
@@ -46,6 +47,7 @@ export class ImportMap {
    *   recipe: ['@acme/org/recipes'],
    *   pattern: ['@acme/org/patterns'],
    *   jsx: ['@acme/org/jsx'],
+   *   tokens: ['@acme/org/tokens'],
    * }
    * ```
    *
@@ -60,11 +62,12 @@ export class ImportMap {
    *   recipe: ['@acme/org/recipes', '@foo/org/recipes', '@bar/org/recipes'],
    *   pattern: ['@acme/org/patterns', '@foo/org/patterns', '@bar/org/patterns'],
    *   jsx: ['@acme/org/jsx', '@foo/org/jsx', '@bar/org/jsx'],
+   *   tokens: ['@acme/org/tokens', '@foo/org/tokens', '@bar/org/tokens'],
    * }
    * ```
    */
   buildImportMap = (option: UserConfig['importMap']): ImportMapOutput<string> => {
-    const output: ImportMapOutput<string> = { css: [], recipe: [], pattern: [], jsx: [] }
+    const output: ImportMapOutput<string> = { css: [], recipe: [], pattern: [], jsx: [], tokens: [] }
     const inputs = asArray(option)
 
     inputs.forEach((input) => {
@@ -72,6 +75,7 @@ export class ImportMap {
       output.css.push(...normalized.css)
       output.recipe.push(...normalized.recipe)
       output.pattern.push(...normalized.pattern)
+      output.tokens.push(...normalized.tokens)
       if (normalized.jsx) output.jsx.push(...normalized.jsx)
     })
 
@@ -84,16 +88,18 @@ export class ImportMap {
       recipe: [[map, 'recipes'].join('/')],
       pattern: [[map, 'patterns'].join('/')],
       jsx: [[map, 'jsx'].join('/')],
+      tokens: [[map, 'tokens'].join('/')],
     }
   }
 
   private fromInput = (map: ImportMapInput | undefined): ImportMapOutput => {
-    const { css, recipes, patterns, jsx } = map ?? {}
+    const { css, recipes, patterns, jsx, tokens } = map ?? {}
     return {
       css: css ? asArray(css) : [[this.outdir, 'css'].join('/')],
       recipe: recipes ? asArray(recipes) : [[this.outdir, 'recipes'].join('/')],
       pattern: patterns ? asArray(patterns) : [[this.outdir, 'patterns'].join('/')],
       jsx: jsx ? asArray(jsx) : [[this.outdir, 'jsx'].join('/')],
+      tokens: tokens ? asArray(tokens) : [[this.outdir, 'tokens'].join('/')],
     }
   }
 

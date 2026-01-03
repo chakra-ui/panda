@@ -1,5 +1,109 @@
 # @pandacss/preset-base
 
+## 1.7.3
+
+### Patch Changes
+
+- ac2fb5c: **Gradient Utilities**: Fixed `token()` and brace syntax not working in `bgGradient`, `bgLinear`, and
+  `textGradient` utilities.
+
+  Before this fix, using token references in gradient values would not expand correctly:
+
+  ```jsx
+  // ❌ Before: token references were ignored
+  css({ bgGradient: 'linear-gradient({colors.red.200}, {colors.blue.300})' })
+  // Output: background-image: linear-gradient(var(--gradient-stops))
+
+  // ✅ After: token references are properly expanded
+  css({ bgGradient: 'linear-gradient({colors.red.200}, {colors.blue.300})' })
+  // Output: background-image: linear-gradient(var(--colors-red-200), var(--colors-blue-300))
+  ```
+
+  Both `token()` function syntax and brace syntax `{...}` now work correctly in gradient utilities.
+
+  - @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- b6e9646: Ensure the `WebkitTextFillColor` utility can accept color token values, like other color utilities.
+  - @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+  - @pandacss/types@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Patch Changes
+
+- @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- @pandacss/types@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Minor Changes
+
+- 29cf719: - **Preset Base**: Change default spacing from `10px` and `8px`
+  - **Preset Panda**: Add `5.5` to spacing scale to cover more minor scales
+
+### Patch Changes
+
+- 1bca361: Fix regression in `_marker` condition due to the use of `:is()` which doesn't work for pseudo elements.
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Minor Changes

@@ -1,11 +1,11 @@
 ---
-import Radii from '../components/radii'
+import { RadiiPage } from '../components/token-pages'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
 ---
 
 <Layout>
   <Sidebar title="Border Radius">
-    <Radii client:load />
+    <RadiiPage client:load />
   </Sidebar>
 </Layout>

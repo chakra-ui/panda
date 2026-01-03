@@ -7,7 +7,6 @@ import fsExtra from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
 import { join } from 'path'
-import { detect } from 'package-manager-detector'
 import prettier from 'prettier'
 
 type SetupOptions = Partial<Config> & {
@@ -28,6 +27,7 @@ export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
     }
   }
 
+  const { detect } = await import('package-manager-detector')
   const pmResult = await detect({ cwd })
   const pm = (pmResult?.agent ?? 'npm').split('@')[0]
   const cmd = pm === 'npm' ? 'npm run' : pm

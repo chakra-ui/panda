@@ -10,16 +10,15 @@ ${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { ComponentProps, Component, JSX } from 'solid-js'
+import type { Accessor, ComponentProps, Component, JSX } from 'solid-js'
 ${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
-${ctx.file.importType(
-  'Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty',
-  './system-types',
-)}
+${ctx.file.importType('Assign, DistributiveUnion, JsxHTMLProps, JsxStyleProps, Pretty', './system-types')}
 
 interface Dict {
   [k: string]: unknown
 }
+
+export type DataAttrs = Record<\`data-\${string}\`, unknown>
 
 export interface UnstyledProps {
   /**
@@ -35,7 +34,7 @@ export interface AsProps {
   as?: ElementType | undefined
 }
 
-export type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
+export type ElementType = keyof JSX.IntrinsicElements | Component<any>
 
 export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>): JSX.Element
@@ -46,9 +45,11 @@ interface RecipeFn {
   __type: any
 }
 
+export type MaybeAccessor<T> = T | Accessor<T>
+
 export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
-  defaultProps?: Partial<TProps>
+  defaultProps?: MaybeAccessor<Partial<TProps> & DataAttrs>
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: string[]
 }

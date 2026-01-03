@@ -6,11 +6,19 @@ import {
   isString,
   mapObject,
   memo,
+  PandaError,
   walkObject,
   type CssVar,
   type CssVarOptions,
 } from '@pandacss/shared'
-import type { Recursive, SemanticTokens, ThemeVariantsMap, TokenCategory, Tokens } from '@pandacss/types'
+import type {
+  Recursive,
+  SemanticTokens,
+  ThemeVariantsMap,
+  TokenCategory,
+  Tokens,
+  ColorPaletteOptions,
+} from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { isCompositeTokenValue } from './is-composite'
 import { middlewares } from './middleware'
@@ -36,6 +44,7 @@ export interface TokenDictionaryOptions {
   themes?: ThemeVariantsMap | undefined
   prefix?: string
   hash?: boolean
+  colorPalette?: ColorPaletteOptions
 }
 
 export interface TokenMiddleware {
@@ -78,6 +87,10 @@ export class TokenDictionary {
 
   get hash() {
     return this.options.hash
+  }
+
+  get colorPalette() {
+    return this.options.colorPalette
   }
 
   getByName = (path: string) => {
@@ -147,6 +160,7 @@ export class TokenDictionary {
       node.setExtensions({
         category,
         conditions: value,
+        rawValue: value,
         prop: this.formatTokenName(path.slice(1)),
       })
 
@@ -394,15 +408,15 @@ export class TokenDictionary {
       if (!path) return
 
       if (path.includes('/')) {
-        const mix = this.colorMix(path, this.view.get.bind(this.view))
+        const mix = this.colorMix(path, this.view.getVar.bind(this.view))
         if (mix.invalid) {
-          throw new Error('Invalid color mix at ' + path + ': ' + mix.value)
+          throw new PandaError('INVALID_TOKEN', 'Invalid color mix at ' + path + ': ' + mix.value)
         }
 
         return mix.value
       }
 
-      const resolved = this.view.get(path)
+      const resolved = this.view.getVar(path)
       if (resolved) return resolved
 
       // If the path includes an unresolved token reference, we need to escape it
@@ -491,16 +505,18 @@ export class TokenDictionaryView {
     const conditionMap = new Map<ConditionName, Set<Token>>()
     const categoryMap = new Map<TokenCategory, Map<TokenName, Token>>()
     const colorPalettes = new Map<ColorPalette, Map<VarName, VarRef>>()
+    const colorPaletteTokens = new Map<ColorPalette, Set<string>>()
     const valuesByCategory = new Map<TokenCategory, Map<VarName, TokenValue>>()
     const flatValues = new Map<TokenName, VarRef>()
+    const rawValues = new Map<TokenName, TokenValue>()
     const nameByVar = new Map<VarRef, TokenName>()
     const vars = new Map<ConditionName, Map<VarName, TokenValue>>()
 
     this.dictionary.allTokens.forEach((token) => {
       this.processCondition(token, conditionMap)
-      this.processColorPalette(token, colorPalettes, this.dictionary.byName)
+      this.processColorPalette(token, colorPalettes, colorPaletteTokens, this.dictionary.byName)
       this.processCategory(token, categoryMap)
-      this.processValue(token, valuesByCategory, flatValues, nameByVar)
+      this.processValue(token, valuesByCategory, flatValues, rawValues, nameByVar)
       this.processVars(token, vars)
     })
 
@@ -515,6 +531,9 @@ export class TokenDictionaryView {
       json,
       valuesByCategory,
       get: memo((path: string, fallback?: string | number) => {
+        return (rawValues.get(path) ?? fallback) as string
+      }),
+      getVar: memo((path: string, fallback?: string | number) => {
         return (flatValues.get(path) ?? fallback) as string
       }),
       getCategoryValues: memo((category: string) => {
@@ -522,6 +541,11 @@ export class TokenDictionaryView {
         if (result != null) {
           return result
         }
+      }),
+      getColorPaletteValues: memo((palette: string): string[] => {
+        const tokens = colorPaletteTokens.get(palette)
+        if (!tokens) return []
+        return Array.from(tokens).sort()
       }),
     }
   }
@@ -534,7 +558,12 @@ export class TokenDictionaryView {
     group.get(condition)!.add(token)
   }
 
-  private processColorPalette(token: Token, group: Map<string, Map<string, string>>, byName: Map<string, Token>) {
+  private processColorPalette(
+    token: Token,
+    group: Map<string, Map<string, string>>,
+    tokenPaths: Map<string, Set<string>>,
+    byName: Map<string, Token>,
+  ) {
     const extensions = token.extensions as TokenExtensions<ColorPaletteExtensions>
     const { colorPalette, colorPaletteRoots, isVirtual } = extensions
     if (!colorPalette || isVirtual) return
@@ -544,6 +573,9 @@ export class TokenDictionaryView {
       if (!group.has(formated)) {
         group.set(formated, new Map())
       }
+      if (!tokenPaths.has(formated)) {
+        tokenPaths.set(formated, new Set())
+      }
 
       const virtualPath = replaceRootWithColorPalette([...token.path], [...colorPaletteRoot])
       const virtualName = this.dictionary.formatTokenName(virtualPath)
@@ -552,6 +584,9 @@ export class TokenDictionaryView {
 
       const virtualVar = virtualToken.extensions.var
       group.get(formated)!.set(virtualVar, token.extensions.varRef)
+
+      const tokenPath = this.dictionary.formatTokenName(virtualPath.slice(1))
+      tokenPaths.get(formated)!.add(tokenPath)
 
       if (extensions.isDefault && colorPaletteRoot.length === 1) {
         const colorPaletteName = this.dictionary.formatTokenName(['colors', 'colorPalette'])
@@ -587,9 +622,10 @@ export class TokenDictionaryView {
     token: Token,
     byCategory: Map<string, Map<string, string>>,
     flatValues: Map<string, string>,
+    rawValues: Map<string, string>,
     nameByVar: Map<string, string>,
   ) {
-    const { category, prop, varRef, isNegative } = token.extensions
+    const { category, prop, varRef, isNegative, isVirtual, condition } = token.extensions
     if (!category) return
 
     if (!byCategory.has(category)) byCategory.set(category, new Map())
@@ -597,6 +633,11 @@ export class TokenDictionaryView {
     byCategory.get(category)!.set(prop, value)
     flatValues.set(token.name, value)
     nameByVar.set(value, token.name)
+
+    // Store raw value matching runtime behavior:
+    // Use varRef for virtual tokens or non-base conditions, otherwise use raw token.value
+    const rawValue = isVirtual || condition !== 'base' ? varRef : token.value
+    rawValues.set(token.name, rawValue)
   }
 
   private processVars(token: Token, group: Map<string, Map<string, string>>) {

@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "include": ["src", "index.ts"],
   "compilerOptions": {
-    "customConditions": null
+    "customConditions": null,
+    "types": ["node", "vitest/globals"]
   }
 }

@@ -39,6 +39,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/with-tsconfig-paths/src/theme/tokens.ts",
           "packages/config/__tests__/samples/with-tsconfig-paths/panda.config.ts",
@@ -77,6 +78,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/nested-files/src/theme/colors.ts",
           "packages/config/__tests__/samples/nested-files/src/theme/tokens.ts",
@@ -168,6 +170,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/with-preset/src/ts-import-preset.ts",
           "packages/config/__tests__/samples/with-preset/src/required-preset.ts",
@@ -210,6 +213,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/common/tokens.ts",
           "packages/config/__tests__/samples/ts/panda.config.ts",
@@ -251,6 +255,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/common/tokens.ts",
           "packages/config/__tests__/samples/cts/panda.config.cts",
@@ -292,6 +297,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/common/tokens.ts",
           "packages/config/__tests__/samples/mts/panda.config.mts",
@@ -333,6 +339,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/common/tokens.ts",
           "packages/config/__tests__/samples/js/panda.config.js",
@@ -374,6 +381,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.js",
           "packages/cli/dist/index.js",
           "packages/config/__tests__/samples/common/tokens.ts",
           "packages/config/__tests__/samples/cjs/panda.config.cjs",
@@ -415,6 +423,7 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
+          "packages/shared/dist/index.mjs",
           "packages/cli/dist/index.mjs",
           "packages/config/__tests__/samples/common/tokens.ts",
           "packages/config/__tests__/samples/mjs/panda.config.mjs",

@@ -1,0 +1,116 @@
+---
+title: Global Styles
+description: How to work with resets, global styles, and global CSS variables in Panda.
+---
+
+Panda groups global styles into reset and base layers so you can control defaults predictably and override them safely.
+
+## Layers overview
+
+- **@layer reset**: Preflight/reset styles, enabled with `preflight`.
+- **@layer base**: Your additional global styles via `globalCss`.
+
+> See also: [Cascade layers](/docs/concepts/cascade-layers)
+
+## Reset (preflight)
+
+Enable or scope the reset styles.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true
+})
+```
+
+Scope and level:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: { scope: '.extension', level: 'element' }
+})
+```
+
+## Exposed global CSS variables
+
+These variables are used by the reset and defaults. Set them in `globalCss`:
+
+- `--global-font-body`
+- `--global-font-mono`
+- `--global-color-border`
+- `--global-color-placeholder`
+- `--global-color-selection`
+- `--global-color-focus-ring`
+
+## Setting global styles (base)
+
+Use `globalCss` to define additional global styles and set variables.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  globalCss: {
+    html: {
+      '--global-font-body': 'Inter, sans-serif',
+      '--global-font-mono': 'Mononoki Nerd Font, monospace',
+      '--global-color-border': 'colors.gray.400',
+      '--global-color-placeholder': 'rgba(0,0,0,0.5)',
+      '--global-color-selection': 'rgba(0,115,255,0.3)',
+      '--global-color-focus-ring': 'colors.blue.400'
+    }
+  }
+})
+```
+
+### Theming patterns
+
+You can set variables on `:root`, a `.dark` class, or via media queries.
+
+```css
+:root {
+  --global-color-border: oklch(0.8 0 0);
+}
+.dark {
+  --global-color-border: oklch(0.72 0 0);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --global-color-border: oklch(0.72 0 0);
+  }
+}
+```
+
+## Custom global variables (`globalVars`)
+
+Define additional global CSS variables or `@property` entries.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  globalVars: {
+    '--button-color': {
+      syntax: '<color>',
+      inherits: false,
+      initialValue: 'blue'
+    }
+  }
+})
+```
+
+> Keys from `globalVars` are suggestable in style objects and generated near your tokens at `cssVarRoot`.
+
+## Troubleshooting
+
+- **Global styles aren't applied:** Confirm `preflight` is enabled (if you expect reset), and ensure your selector
+  (`html`, `:root`, `.dark`, etc.) matches the element where variables are set.
+
+- **Global styles are overridden by utilities or component styles:** Verify layer order and specificity. Ensure
+  `@layer reset` and `@layer base` are emitted before utilities. If you customize insertion or injection order (SSR,
+  framework plugins), preserve `@layer` order so globals are not overridden.

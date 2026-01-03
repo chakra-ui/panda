@@ -767,8 +767,8 @@ describe('static-css', () => {
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
-          width: 8px;
-          height: 8px;
+          width: var(--sizes-8);
+          height: var(--sizes-8);
       }
 
         .checkbox__label--size_sm {
@@ -776,8 +776,8 @@ describe('static-css', () => {
       }
 
         .checkbox__control--size_lg {
-          width: 12px;
-          height: 12px;
+          width: var(--sizes-12);
+          height: var(--sizes-12);
       }
 
         .checkbox__label--size_lg {
@@ -786,8 +786,8 @@ describe('static-css', () => {
 
         @media screen and (min-width: 64rem) {
           .lg\\:checkbox__control--size_lg {
-            width: 12px;
-            height: 12px;
+            width: var(--sizes-12);
+            height: var(--sizes-12);
       }
           .lg\\:checkbox__label--size_lg {
             font-size: var(--font-sizes-lg);
@@ -1916,8 +1916,8 @@ describe('static-css', () => {
         .checkbox__control--size_sm {
           font-size: 2rem;
           font-weight: var(--font-weights-bold);
-          width: 8px;
-          height: 8px;
+          width: var(--sizes-8);
+          height: var(--sizes-8);
       }
 
         .checkbox__label--size_sm {
@@ -1925,8 +1925,8 @@ describe('static-css', () => {
       }
 
         .checkbox__control--size_md {
-          width: 10px;
-          height: 10px;
+          width: var(--sizes-10);
+          height: var(--sizes-10);
       }
 
         .checkbox__label--size_md {
@@ -1934,8 +1934,8 @@ describe('static-css', () => {
       }
 
         .checkbox__control--size_lg {
-          width: 12px;
-          height: 12px;
+          width: var(--sizes-12);
+          height: var(--sizes-12);
       }
 
         .checkbox__label--size_lg {
@@ -1943,7 +1943,7 @@ describe('static-css', () => {
       }
 
         .badge__title--size_sm {
-          padding-inline: 4px;
+          padding-inline: var(--spacing-4);
       }
 
         .badge__body--size_sm {
@@ -2349,5 +2349,172 @@ describe('static-css', () => {
       }
       }"
     `)
+  })
+})
+
+describe('static-css caching', () => {
+  // Setup with limited tokens for faster tests
+  const { hooks, ...defaults } = fixtureDefaults
+  const conf = {
+    hooks,
+    ...defaults,
+    config: {
+      ...defaults.config,
+      theme: JSON.parse(JSON.stringify(defaults.config.theme)),
+    },
+  } as typeof fixtureDefaults
+
+  // @ts-expect-error
+  conf.config.theme!.tokens.colors = {
+    red: { 200: { value: 'red.200' } },
+    blue: { 200: { value: 'blue.200' } },
+  }
+
+  const ctx = new Context(conf)
+
+  test('cache hit on unchanged staticCss config', () => {
+    const options = {
+      css: [{ properties: { color: ['*'] } }],
+      recipes: {
+        buttonStyle: [{ size: ['md'] }],
+      },
+    }
+
+    // First call - cache miss, should process
+    const result1 = ctx.staticCss.process(options)
+    const css1 = result1.sheet.toCss()
+
+    // Second call with same options - cache hit, should reuse
+    const result2 = ctx.staticCss.process(options)
+    const css2 = result2.sheet.toCss()
+
+    // Results should be identical
+    expect(css1).toBe(css2)
+    expect(result1.results).toEqual(result2.results)
+  })
+
+  test('cache miss on changed CSS rules', () => {
+    const options1 = {
+      css: [{ properties: { color: ['red.200'] } }],
+    }
+
+    const options2 = {
+      css: [{ properties: { color: ['blue.200'] } }],
+    }
+
+    // Use a fresh clone to test cache miss detection
+    const staticCss = ctx.staticCss.clone()
+
+    const result1 = staticCss.process(options1)
+    const css1 = result1.sheet.toCss()
+
+    const result2 = staticCss.process(options2)
+    const css2 = result2.sheet.toCss()
+
+    // Results should be different
+    expect(css1).not.toBe(css2)
+    expect(css1).toContain('red')
+    expect(css2).toContain('blue')
+  })
+
+  test('cache handles wildcard expansions', () => {
+    const options = {
+      css: [{ properties: { color: ['*'] } }],
+    }
+
+    // First call - expands wildcards
+    const result1 = ctx.staticCss.process(options)
+    expect(result1.results.css.length).toBeGreaterThan(0)
+
+    // Second call with same options - should use cache
+    const result2 = ctx.staticCss.process(options)
+    expect(result1.results).toEqual(result2.results)
+  })
+
+  test('cache persists across multiple calls', () => {
+    const options = {
+      css: [{ properties: { margin: ['20px', '40px'] } }],
+    }
+
+    // Multiple calls with same options
+    const result1 = ctx.staticCss.process(options)
+    const result2 = ctx.staticCss.process(options)
+    const result3 = ctx.staticCss.process(options)
+
+    // All should produce identical results
+    expect(result1.results).toEqual(result2.results)
+    expect(result2.results).toEqual(result3.results)
+  })
+
+  test('wildcard expansion is memoized across calls', () => {
+    const options = {
+      css: [{ properties: { fontSize: ['*'] } }],
+    }
+
+    const staticCss = ctx.staticCss.clone()
+
+    // First call expands wildcards
+    const result1 = staticCss.process(options)
+    const count1 = result1.results.css.length
+
+    // Second call should reuse memoized expansion
+    const result2 = staticCss.process(options)
+    const count2 = result2.results.css.length
+
+    // Should produce same results
+    expect(count1).toBe(count2)
+    expect(count1).toBeGreaterThan(0)
+  })
+
+  test('recipes: "*" should override individual recipe staticCss config', () => {
+    // Create a context with a recipe that has its own staticCss config
+    const confWithRecipeStaticCss = {
+      hooks,
+      ...defaults,
+      config: {
+        ...defaults.config,
+        theme: {
+          ...JSON.parse(JSON.stringify(defaults.config.theme)),
+          recipes: {
+            testRecipe: {
+              className: 'testRecipe',
+              base: { display: 'flex' },
+              variants: {
+                size: {
+                  sm: { fontSize: '12px' },
+                  md: { fontSize: '14px' },
+                  lg: { fontSize: '16px' },
+                },
+                variant: {
+                  primary: { color: 'blue' },
+                  secondary: { color: 'gray' },
+                },
+              },
+              // This recipe has its own staticCss config that only includes 'sm' size
+              staticCss: [{ size: ['sm'] }],
+            },
+          },
+        },
+      },
+    } as typeof fixtureDefaults
+
+    const ctxWithStaticCss = new Context(confWithRecipeStaticCss)
+    const getStaticCssWithCtx = (options: StaticCssOptions) => {
+      const engine = ctxWithStaticCss.staticCss.clone().process(options)
+      return { results: engine.results, css: engine.sheet.toCss() }
+    }
+
+    // When using recipes: "*", ALL variants should be generated
+    // even though the recipe's staticCss only specifies ['sm']
+    const result = getStaticCssWithCtx({ recipes: '*' })
+
+    // Should include all size variants (sm, md, lg), not just sm
+    expect(result.css).toContain('testRecipe--size_sm')
+    expect(result.css).toContain('testRecipe--size_md')
+    expect(result.css).toContain('testRecipe--size_lg')
+
+    // Should include all variant variants (primary, secondary)
+    expect(result.css).toContain('testRecipe--variant_primary')
+    expect(result.css).toContain('testRecipe--variant_secondary')
   })
 })

@@ -29,6 +29,8 @@ interface Dict {
   [k: string]: unknown
 }
 
+export type DataAttrs = Record<\`data-\${string}\`, unknown>
+
 export interface UnstyledProps {
   /**
    * Whether to remove recipe styles
@@ -51,7 +53,7 @@ interface RecipeFn {
 
 export interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
-  defaultProps?: Partial<TProps>
+  defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: string[]
 }

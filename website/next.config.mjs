@@ -33,11 +33,15 @@ const config = {
     ]
   },
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     remotePatterns: [
       { hostname: 'images.unsplash.com' },
-      { hostname: 'avatars.githubusercontent.com' }
+      { hostname: 'avatars.githubusercontent.com' },
+      { hostname: 'coolcontrast.vercel.app' },
+      { hostname: 's2.coinmarketcap.com' },
+      { hostname: 'novu.co' },
+      { hostname: 'magic.link' },
+      { hostname: 'ark-ui.com' }
     ]
   }
 }

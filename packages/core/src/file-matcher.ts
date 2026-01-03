@@ -31,6 +31,7 @@ export class FileMatcher {
   private cssAliases = new Set<string>()
   private cvaAliases = new Set<string>()
   private svaAliases = new Set<string>()
+  private tokenAliases = new Set<string>()
   private jsxFactoryAliases = new Set<string>()
 
   private recipeAliases = new Set<string>()
@@ -60,6 +61,7 @@ export class FileMatcher {
 
   private assignAliases() {
     const isCssEntrypoint = this.createMatch(this.importMap.css, Array.from(cssEntrypointFns))
+    const isTokensEntrypoint = this.createMatch(this.importMap.tokens, ['token'])
 
     this.imports.forEach((result) => {
       if (this.isValidRecipe(result.alias)) {
@@ -81,6 +83,12 @@ export class FileMatcher {
 
         if (result.name === 'sva') {
           this.svaAliases.add(result.alias)
+        }
+      }
+
+      if (isTokensEntrypoint(result.alias)) {
+        if (result.name === 'token') {
+          this.tokenAliases.add(result.alias)
         }
       }
 
@@ -179,7 +187,12 @@ export class FileMatcher {
 
   isRawFn = (fnName: string) => {
     const name = fnName.split('.raw')[0] ?? ''
-    return name === 'css' || this.isValidPattern(name) || this.isValidRecipe(name)
+
+    // Check if it's css (literal or alias), pattern, or recipe
+    const isCssOrAlias =
+      name === 'css' || this.cssAliases.has(name) || this.cvaAliases.has(name) || this.svaAliases.has(name)
+
+    return isCssOrAlias || this.isValidPattern(name) || this.isValidRecipe(name)
   }
 
   isNamespaced = (fnName: string) => {
@@ -203,9 +216,14 @@ export class FileMatcher {
       this.cvaAliases.has(fnName) ||
       this.cssAliases.has(fnName) ||
       this.svaAliases.has(fnName) ||
+      this.tokenAliases.has(fnName) ||
       this.isJsxFactory(fnName)
     )
   })
+
+  isTokenAlias = (fnName: string) => {
+    return this.tokenAliases.has(fnName)
+  }
 
   matchFn = memo((fnName: string) => {
     if (this.recipeAliases.has(fnName) || this.patternAliases.has(fnName)) return true
@@ -216,6 +234,7 @@ export class FileMatcher {
     const ns = this.namespaces.get(namespace)
     if (ns) {
       if (this.importMap.css.some((m) => ns.mod.includes(m)) && cssEntrypointFns.has(identifier)) return true
+      if (this.importMap.tokens.some((m) => ns.mod.includes(m)) && identifier === 'token') return true
       if (this.importMap.recipe.some((m) => ns.mod.includes(m)) && this.recipeAliases.has(identifier)) return true
       if (this.importMap.pattern.some((m) => ns.mod.includes(m)) && this.patternAliases.has(identifier)) return true
 

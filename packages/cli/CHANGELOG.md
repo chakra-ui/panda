@@ -1,5 +1,264 @@
 # @pandacss/dev
 
+## 1.7.3
+
+### Patch Changes
+
+- Updated dependencies [ac2fb5c]
+  - @pandacss/preset-base@1.7.3
+  - @pandacss/config@1.7.3
+  - @pandacss/node@1.7.3
+  - @pandacss/postcss@1.7.3
+  - @pandacss/logger@1.7.3
+  - @pandacss/preset-panda@1.7.3
+  - @pandacss/shared@1.7.3
+  - @pandacss/token-dictionary@1.7.3
+  - @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- Updated dependencies [af2d06b]
+  - @pandacss/node@1.7.2
+  - @pandacss/postcss@1.7.2
+  - @pandacss/config@1.7.2
+  - @pandacss/logger@1.7.2
+  - @pandacss/preset-base@1.7.2
+  - @pandacss/preset-panda@1.7.2
+  - @pandacss/shared@1.7.2
+  - @pandacss/token-dictionary@1.7.2
+  - @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- Updated dependencies [cc04ebf]
+- Updated dependencies [b6e9646]
+  - @pandacss/config@1.7.1
+  - @pandacss/preset-base@1.7.1
+  - @pandacss/node@1.7.1
+  - @pandacss/postcss@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/preset-panda@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/token-dictionary@1.7.1
+  - @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Minor Changes
+
+- 86b30b1: Add `panda spec` command to generate specification files for your theme (useful for documentation). This
+  command generates JSON specification files containing metadata, examples, and usage information.
+
+  ```bash
+  # Generate all spec files
+  panda spec
+
+  # Custom output directory
+  panda spec --outdir custom/specs
+  ```
+
+  **Token Spec Structure:**
+
+  ```json
+  {
+    "type": "tokens",
+    "data": [
+      {
+        "type": "aspectRatios",
+        "values": [{ "name": "square", "value": "1 / 1", "cssVar": "var(--aspect-ratios-square)" }],
+        "tokenFunctionExamples": ["token('aspectRatios.square')"],
+        "functionExamples": ["css({ aspectRatio: 'square' })"],
+        "jsxExamples": ["<Box aspectRatio=\"square\" />"]
+      }
+    ]
+  }
+  ```
+
+  **Spec Usage:**
+
+  ```javascript
+  import tokens from 'styled-system/specs/tokens'
+  import recipes from 'styled-system/specs/recipes'
+  ```
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+  - @pandacss/node@1.7.0
+  - @pandacss/types@1.7.0
+  - @pandacss/postcss@1.7.0
+  - @pandacss/config@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/preset-base@1.7.0
+  - @pandacss/preset-panda@1.7.0
+  - @pandacss/token-dictionary@1.7.0
+  - @pandacss/shared@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- @pandacss/node@1.6.1
+- @pandacss/postcss@1.6.1
+- @pandacss/config@1.6.1
+- @pandacss/logger@1.6.1
+- @pandacss/preset-base@1.6.1
+- @pandacss/preset-panda@1.6.1
+- @pandacss/shared@1.6.1
+- @pandacss/token-dictionary@1.6.1
+- @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Minor Changes
+
+- 8aa3c64: Add `--splitting` flag to `cssgen` command for per-layer CSS output.
+
+  When enabled, CSS is emitted as separate files instead of a single `styles.css`:
+
+  ```
+  styled-system/
+  ├── styles.css              # @layer declaration + @imports
+  └── styles/
+      ├── reset.css           # Preflight/reset CSS
+      ├── global.css          # Global CSS
+      ├── tokens.css          # Design tokens
+      ├── utilities.css       # Utility classes
+      ├── recipes/
+      │   ├── index.css       # @imports all recipe files
+      │   └── {recipe}.css    # Individual recipe styles
+      └── themes/
+          └── {theme}.css     # Theme tokens (not auto-imported)
+  ```
+
+  Usage:
+
+  ```bash
+  panda cssgen --splitting
+  ```
+
+### Patch Changes
+
+- Updated dependencies [8aa3c64]
+  - @pandacss/node@1.6.0
+  - @pandacss/postcss@1.6.0
+  - @pandacss/config@1.6.0
+  - @pandacss/logger@1.6.0
+  - @pandacss/preset-base@1.6.0
+  - @pandacss/preset-panda@1.6.0
+  - @pandacss/shared@1.6.0
+  - @pandacss/token-dictionary@1.6.0
+  - @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/node@1.5.1
+- @pandacss/postcss@1.5.1
+- @pandacss/config@1.5.1
+- @pandacss/logger@1.5.1
+- @pandacss/preset-base@1.5.1
+- @pandacss/preset-panda@1.5.1
+- @pandacss/shared@1.5.1
+- @pandacss/token-dictionary@1.5.1
+- @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+  - @pandacss/token-dictionary@1.5.0
+  - @pandacss/config@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/node@1.5.0
+  - @pandacss/preset-base@1.5.0
+  - @pandacss/preset-panda@1.5.0
+  - @pandacss/postcss@1.5.0
+  - @pandacss/shared@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- 65aed7b: Fix `Cannot find module '@pandacss/preset-base'` error when using Bun or other package managers that use flat
+  `node_modules` structures.
+- Updated dependencies [bb32028]
+- Updated dependencies [84a0de9]
+  - @pandacss/node@1.4.3
+  - @pandacss/postcss@1.4.3
+  - @pandacss/config@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/preset-base@1.4.3
+  - @pandacss/preset-panda@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/token-dictionary@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- Updated dependencies [0679f6f]
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/config@1.4.2
+  - @pandacss/shared@1.4.2
+  - @pandacss/token-dictionary@1.4.2
+  - @pandacss/node@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/postcss@1.4.2
+  - @pandacss/logger@1.4.2
+  - @pandacss/preset-panda@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/node@1.4.1
+- @pandacss/postcss@1.4.1
+- @pandacss/config@1.4.1
+- @pandacss/logger@1.4.1
+- @pandacss/preset-panda@1.4.1
+- @pandacss/shared@1.4.1
+- @pandacss/token-dictionary@1.4.1
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [29cf719]
+  - @pandacss/preset-panda@1.4.0
+  - @pandacss/node@1.4.0
+  - @pandacss/config@1.4.0
+  - @pandacss/postcss@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/token-dictionary@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/node@1.3.1
+- @pandacss/postcss@1.3.1
+- @pandacss/config@1.3.1
+- @pandacss/logger@1.3.1
+- @pandacss/preset-panda@1.3.1
+- @pandacss/shared@1.3.1
+- @pandacss/token-dictionary@1.3.1
+- @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

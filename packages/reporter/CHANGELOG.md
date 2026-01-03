@@ -1,5 +1,157 @@
 # @pandacss/reporter
 
+## 1.7.3
+
+### Patch Changes
+
+- @pandacss/core@1.7.3
+- @pandacss/generator@1.7.3
+- @pandacss/logger@1.7.3
+- @pandacss/shared@1.7.3
+- @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- @pandacss/core@1.7.2
+- @pandacss/generator@1.7.2
+- @pandacss/logger@1.7.2
+- @pandacss/shared@1.7.2
+- @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- Updated dependencies [3f5fea2]
+  - @pandacss/generator@1.7.1
+  - @pandacss/core@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+- Updated dependencies [f37fd8d]
+  - @pandacss/generator@1.7.0
+  - @pandacss/types@1.7.0
+  - @pandacss/core@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/shared@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [8f43369]
+  - @pandacss/core@1.6.1
+  - @pandacss/generator@1.6.1
+  - @pandacss/logger@1.6.1
+  - @pandacss/shared@1.6.1
+  - @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Patch Changes
+
+- Updated dependencies [8aa3c64]
+  - @pandacss/generator@1.6.0
+  - @pandacss/core@1.6.0
+  - @pandacss/logger@1.6.0
+  - @pandacss/shared@1.6.0
+  - @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- Updated dependencies [bd2f8c9]
+- Updated dependencies [827566b]
+  - @pandacss/generator@1.5.1
+  - @pandacss/core@1.5.1
+  - @pandacss/logger@1.5.1
+  - @pandacss/shared@1.5.1
+  - @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+- Updated dependencies [52e2399]
+  - @pandacss/types@1.5.0
+  - @pandacss/core@1.5.0
+  - @pandacss/generator@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/shared@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- Updated dependencies [bb32028]
+- Updated dependencies [58f492a]
+- Updated dependencies [84a0de9]
+  - @pandacss/core@1.4.3
+  - @pandacss/generator@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- Updated dependencies [0679f6f]
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/generator@1.4.2
+  - @pandacss/shared@1.4.2
+  - @pandacss/core@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [db237b6]
+  - @pandacss/core@1.4.1
+  - @pandacss/generator@1.4.1
+  - @pandacss/logger@1.4.1
+  - @pandacss/shared@1.4.1
+  - @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [4c291ca]
+- Updated dependencies [ce12373]
+  - @pandacss/core@1.4.0
+  - @pandacss/generator@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- Updated dependencies [e0fca65]
+- Updated dependencies [ff9afbc]
+- Updated dependencies [7fcd100]
+- Updated dependencies [5bfaef3]
+  - @pandacss/generator@1.3.1
+  - @pandacss/core@1.3.1
+  - @pandacss/logger@1.3.1
+  - @pandacss/shared@1.3.1
+  - @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

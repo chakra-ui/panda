@@ -33,12 +33,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 7,
               "line": 4,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "color" => {
                   "column": 20,
+                  "endColumn": 25,
+                  "endLineNumber": 5,
                   "line": 5,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -46,6 +50,8 @@ describe('ast parser', () => {
                 },
                 "fontSize" => {
                   "column": 23,
+                  "endColumn": 29,
+                  "endLineNumber": 6,
                   "line": 6,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -65,12 +71,16 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 27,
+              "endColumn": 11,
+              "endLineNumber": 12,
               "line": 9,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "bg" => {
                   "column": 15,
+                  "endColumn": 24,
+                  "endLineNumber": 10,
                   "line": 10,
                   "node": "StringLiteral",
                   "type": "literal",
@@ -78,12 +88,16 @@ describe('ast parser', () => {
                 },
                 "margin" => {
                   "column": 19,
+                  "endColumn": 41,
+                  "endLineNumber": 11,
                   "line": 11,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "xs" => {
                       "column": 25,
+                      "endColumn": 28,
+                      "endLineNumber": 11,
                       "line": 11,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -91,6 +105,8 @@ describe('ast parser', () => {
                     },
                     "lg" => {
                       "column": 33,
+                      "endColumn": 39,
+                      "endLineNumber": 11,
                       "line": 11,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -115,18 +131,24 @@ describe('ast parser', () => {
           {
             "box": {
               "column": 25,
+              "endColumn": 11,
+              "endLineNumber": 22,
               "line": 14,
               "node": "CallExpression",
               "type": "map",
               "value": Map {
                 "[dir=rtl]" => {
                   "column": 24,
+                  "endColumn": 12,
+                  "endLineNumber": 17,
                   "line": 15,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "textAlign" => {
                       "column": 24,
+                      "endColumn": 31,
+                      "endLineNumber": 16,
                       "line": 16,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -136,12 +158,16 @@ describe('ast parser', () => {
                 },
                 "&[data-state=closed]" => {
                   "column": 35,
+                  "endColumn": 12,
+                  "endLineNumber": 21,
                   "line": 18,
                   "node": "ObjectLiteralExpression",
                   "type": "map",
                   "value": Map {
                     "animation" => {
                       "column": 24,
+                      "endColumn": 30,
+                      "endLineNumber": 19,
                       "line": 19,
                       "node": "StringLiteral",
                       "type": "literal",
@@ -149,6 +175,8 @@ describe('ast parser', () => {
                     },
                     "fadeOut" => {
                       "column": 22,
+                      "endColumn": 27,
+                      "endLineNumber": 20,
                       "line": 20,
                       "node": "StringLiteral",
                       "type": "literal",

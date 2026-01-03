@@ -143,12 +143,43 @@ describe('file matcher', () => {
     ])
 
     expect(file.isRawFn('css')).toMatchInlineSnapshot('true')
-    expect(file.isRawFn('xcss')).toMatchInlineSnapshot('false')
+    expect(file.isRawFn('xcss')).toMatchInlineSnapshot('true') // xcss is an alias for css, should be true
 
     expect(file.isRawFn('css.raw')).toMatchInlineSnapshot('true')
+    expect(file.isRawFn('xcss.raw')).toMatchInlineSnapshot('true') // xcss.raw should work too
     expect(file.isRawFn('stack.raw')).toMatchInlineSnapshot('true')
 
-    expect(file.isRawFn('cva.raw')).toMatchInlineSnapshot('false')
+    expect(file.isRawFn('cva.raw')).toMatchInlineSnapshot('true') // cva is imported, should be true
+  })
+
+  test('is raw fn with sva aliases', () => {
+    const ctx = createContext()
+
+    const file = ctx.imports.file([
+      { mod: 'styled-system/css', name: 'css', alias: 'styledCss' },
+      { mod: 'styled-system/css', name: 'cva', alias: 'componentVariant' },
+      { mod: 'styled-system/css', name: 'sva', alias: 'slotVariant' },
+    ])
+
+    // Test aliased css functions
+    expect(file.isRawFn('styledCss')).toMatchInlineSnapshot('true')
+    expect(file.isRawFn('styledCss.raw')).toMatchInlineSnapshot('true')
+
+    // Test aliased cva functions
+    expect(file.isRawFn('componentVariant')).toMatchInlineSnapshot('true')
+    expect(file.isRawFn('componentVariant.raw')).toMatchInlineSnapshot('true')
+
+    // Test aliased sva functions
+    expect(file.isRawFn('slotVariant')).toMatchInlineSnapshot('true')
+    expect(file.isRawFn('slotVariant.raw')).toMatchInlineSnapshot('true')
+
+    // Test non-aliased should still work
+    expect(file.isRawFn('css')).toMatchInlineSnapshot('true')
+    expect(file.isRawFn('css.raw')).toMatchInlineSnapshot('true')
+
+    // Test non-existent aliases
+    expect(file.isRawFn('randomAlias')).toMatchInlineSnapshot('false')
+    expect(file.isRawFn('randomAlias.raw')).toMatchInlineSnapshot('false')
   })
 
   test('namespace', () => {

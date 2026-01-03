@@ -1,5 +1,286 @@
 # @pandacss/node
 
+## 1.7.3
+
+### Patch Changes
+
+- @pandacss/config@1.7.3
+- @pandacss/core@1.7.3
+- @pandacss/generator@1.7.3
+- @pandacss/logger@1.7.3
+- @pandacss/parser@1.7.3
+- @pandacss/reporter@1.7.3
+- @pandacss/shared@1.7.3
+- @pandacss/token-dictionary@1.7.3
+- @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- af2d06b: Fix ESM compatibility by converting `p-limit` and `package-manager-detector` to use dynamic import
+  - @pandacss/config@1.7.2
+  - @pandacss/core@1.7.2
+  - @pandacss/generator@1.7.2
+  - @pandacss/logger@1.7.2
+  - @pandacss/parser@1.7.2
+  - @pandacss/reporter@1.7.2
+  - @pandacss/shared@1.7.2
+  - @pandacss/token-dictionary@1.7.2
+  - @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- Updated dependencies [cc04ebf]
+- Updated dependencies [3f5fea2]
+  - @pandacss/config@1.7.1
+  - @pandacss/generator@1.7.1
+  - @pandacss/parser@1.7.1
+  - @pandacss/reporter@1.7.1
+  - @pandacss/core@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/token-dictionary@1.7.1
+  - @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Minor Changes
+
+- 86b30b1: Add `panda spec` command to generate specification files for your theme (useful for documentation). This
+  command generates JSON specification files containing metadata, examples, and usage information.
+
+  ```bash
+  # Generate all spec files
+  panda spec
+
+  # Custom output directory
+  panda spec --outdir custom/specs
+  ```
+
+  **Token Spec Structure:**
+
+  ```json
+  {
+    "type": "tokens",
+    "data": [
+      {
+        "type": "aspectRatios",
+        "values": [{ "name": "square", "value": "1 / 1", "cssVar": "var(--aspect-ratios-square)" }],
+        "tokenFunctionExamples": ["token('aspectRatios.square')"],
+        "functionExamples": ["css({ aspectRatio: 'square' })"],
+        "jsxExamples": ["<Box aspectRatio=\"square\" />"]
+      }
+    ]
+  }
+  ```
+
+  **Spec Usage:**
+
+  ```javascript
+  import tokens from 'styled-system/specs/tokens'
+  import recipes from 'styled-system/specs/recipes'
+  ```
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+- Updated dependencies [f37fd8d]
+  - @pandacss/generator@1.7.0
+  - @pandacss/types@1.7.0
+  - @pandacss/core@1.7.0
+  - @pandacss/parser@1.7.0
+  - @pandacss/reporter@1.7.0
+  - @pandacss/config@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/token-dictionary@1.7.0
+  - @pandacss/shared@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [8f43369]
+  - @pandacss/core@1.6.1
+  - @pandacss/parser@1.6.1
+  - @pandacss/generator@1.6.1
+  - @pandacss/reporter@1.6.1
+  - @pandacss/config@1.6.1
+  - @pandacss/logger@1.6.1
+  - @pandacss/shared@1.6.1
+  - @pandacss/token-dictionary@1.6.1
+  - @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Minor Changes
+
+- 8aa3c64: Add `--splitting` flag to `cssgen` command for per-layer CSS output.
+
+  When enabled, CSS is emitted as separate files instead of a single `styles.css`:
+
+  ```
+  styled-system/
+  ├── styles.css              # @layer declaration + @imports
+  └── styles/
+      ├── reset.css           # Preflight/reset CSS
+      ├── global.css          # Global CSS
+      ├── tokens.css          # Design tokens
+      ├── utilities.css       # Utility classes
+      ├── recipes/
+      │   ├── index.css       # @imports all recipe files
+      │   └── {recipe}.css    # Individual recipe styles
+      └── themes/
+          └── {theme}.css     # Theme tokens (not auto-imported)
+  ```
+
+  Usage:
+
+  ```bash
+  panda cssgen --splitting
+  ```
+
+### Patch Changes
+
+- Updated dependencies [8aa3c64]
+  - @pandacss/generator@1.6.0
+  - @pandacss/parser@1.6.0
+  - @pandacss/reporter@1.6.0
+  - @pandacss/config@1.6.0
+  - @pandacss/core@1.6.0
+  - @pandacss/logger@1.6.0
+  - @pandacss/shared@1.6.0
+  - @pandacss/token-dictionary@1.6.0
+  - @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- Updated dependencies [bd2f8c9]
+- Updated dependencies [827566b]
+  - @pandacss/generator@1.5.1
+  - @pandacss/parser@1.5.1
+  - @pandacss/reporter@1.5.1
+  - @pandacss/config@1.5.1
+  - @pandacss/core@1.5.1
+  - @pandacss/logger@1.5.1
+  - @pandacss/shared@1.5.1
+  - @pandacss/token-dictionary@1.5.1
+  - @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+- Updated dependencies [52e2399]
+  - @pandacss/types@1.5.0
+  - @pandacss/token-dictionary@1.5.0
+  - @pandacss/core@1.5.0
+  - @pandacss/config@1.5.0
+  - @pandacss/generator@1.5.0
+  - @pandacss/parser@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/reporter@1.5.0
+  - @pandacss/shared@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- bb32028: Fix "Browserslist: caniuse-lite is outdated" warning by updating `browserslist` and PostCSS-related packages:
+
+  - Update `browserslist` from 4.23.3 to 4.24.4
+  - Update `postcss` from 8.4.49 to 8.5.6
+  - Update `postcss-nested` from 6.0.1 to 7.0.2
+  - Update `postcss-merge-rules` from 7.0.4 to 7.0.6
+  - Update other PostCSS plugins to latest patch versions
+
+  This resolves the outdated `caniuse-lite` warning that appeared when using lightningcss without affecting CSS output
+  or requiring snapshot updates.
+
+- Updated dependencies [bb32028]
+- Updated dependencies [58f492a]
+- Updated dependencies [84a0de9]
+  - @pandacss/core@1.4.3
+  - @pandacss/generator@1.4.3
+  - @pandacss/config@1.4.3
+  - @pandacss/reporter@1.4.3
+  - @pandacss/parser@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/token-dictionary@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- Updated dependencies [0679f6f]
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/config@1.4.2
+  - @pandacss/generator@1.4.2
+  - @pandacss/shared@1.4.2
+  - @pandacss/parser@1.4.2
+  - @pandacss/token-dictionary@1.4.2
+  - @pandacss/core@1.4.2
+  - @pandacss/reporter@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [db237b6]
+  - @pandacss/core@1.4.1
+  - @pandacss/generator@1.4.1
+  - @pandacss/reporter@1.4.1
+  - @pandacss/parser@1.4.1
+  - @pandacss/config@1.4.1
+  - @pandacss/logger@1.4.1
+  - @pandacss/shared@1.4.1
+  - @pandacss/token-dictionary@1.4.1
+  - @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [4c291ca]
+- Updated dependencies [ce12373]
+  - @pandacss/core@1.4.0
+  - @pandacss/generator@1.4.0
+  - @pandacss/reporter@1.4.0
+  - @pandacss/parser@1.4.0
+  - @pandacss/config@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/token-dictionary@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- Updated dependencies [e0fca65]
+- Updated dependencies [ff9afbc]
+- Updated dependencies [7fcd100]
+- Updated dependencies [5bfaef3]
+  - @pandacss/generator@1.3.1
+  - @pandacss/core@1.3.1
+  - @pandacss/parser@1.3.1
+  - @pandacss/reporter@1.3.1
+  - @pandacss/config@1.3.1
+  - @pandacss/logger@1.3.1
+  - @pandacss/shared@1.3.1
+  - @pandacss/token-dictionary@1.3.1
+  - @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

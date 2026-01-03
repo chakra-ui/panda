@@ -22,11 +22,11 @@ const generateCjsAlias = (cjsPackages: Array<string>) => {
 const options: TestUserConfig = {
   react: {
     test: {
-      include: ['**/__tests__/*.{test,spec}.{j,t}s?(x)'],
+      include: ['**/__tests__/*.{test,spec}.{j,t}s?(x)', '**/__tests__/**/frameworks/react.*.{test,spec}.{j,t}s?(x)'],
       environment: 'happy-dom',
       typecheck: {
         enabled: typecheck,
-        include: ['**/__tests__/*.{test,spec}.{j,t}s?(x)'],
+        include: ['**/__tests__/*.{test,spec}.{j,t}s?(x)', '**/__tests__/**/frameworks/react.*.{test,spec}.{j,t}s?(x)'],
       },
     },
   },

@@ -1,3 +1,4 @@
+import { PandaError } from '@pandacss/shared'
 import type {
   CompositionStyles,
   Config,
@@ -47,7 +48,8 @@ export function defineParts<T extends Parts>(parts: T) {
       Object.entries(config).map(([key, value]) => {
         const part = parts[key]
         if (part == null) {
-          throw new Error(
+          throw new PandaError(
+            'NOT_FOUND',
             `Part "${key}" does not exist in the anatomy. Available parts: ${Object.keys(parts).join(', ')}`,
           )
         }

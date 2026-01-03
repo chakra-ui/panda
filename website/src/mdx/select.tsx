@@ -17,7 +17,7 @@ interface Props {
   className?: string
 }
 
-function _Select({ options, selected, onChange, title, className }: Props) {
+function SelectComponent({ options, selected, onChange, title, className }: Props) {
   const collection = useMemo(() => {
     return createListCollection({ items: options })
   }, [options])
@@ -131,4 +131,4 @@ function _Select({ options, selected, onChange, title, className }: Props) {
   )
 }
 
-export { _Select as Select }
+export { SelectComponent as Select }

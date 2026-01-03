@@ -25,7 +25,7 @@ export const svelteToTsx = (code: string) => {
     const transformed = `${scripts.join('')}\nconst render = <div>${templateContent}</div>`
 
     return transformed.toString().trim()
-  } catch (err) {
+  } catch {
     return ''
   }
 }

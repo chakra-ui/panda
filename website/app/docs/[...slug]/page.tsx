@@ -11,9 +11,9 @@ import { Box } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
 
 interface DocsPageProps {
-  params: {
+  params: Promise<{
     slug: string[]
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -21,7 +21,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: DocsPageProps) {
-  const doc = docs.find(doc => doc.slug.endsWith(params.slug.join('/')))
+  const { slug } = await params
+  const doc = docs.find(doc => doc.slug.endsWith(slug.join('/')))
   
   if (!doc) {
     return {
@@ -54,8 +55,8 @@ export async function generateMetadata({ params }: DocsPageProps) {
   }
 }
 
-export default function DocsPage(props: DocsPageProps) {
-  const params = props.params
+export default async function DocsPage(props: DocsPageProps) {
+  const params = await props.params
 
   const slug = params.slug.join('/')
   const doc = docs.find(doc => doc.slug.endsWith(slug))

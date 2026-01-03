@@ -1,5 +1,221 @@
 # @pandacss/parser
 
+## 1.7.3
+
+### Patch Changes
+
+- @pandacss/config@1.7.3
+- @pandacss/core@1.7.3
+- @pandacss/extractor@1.7.3
+- @pandacss/logger@1.7.3
+- @pandacss/shared@1.7.3
+- @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- @pandacss/config@1.7.2
+- @pandacss/core@1.7.2
+- @pandacss/extractor@1.7.2
+- @pandacss/logger@1.7.2
+- @pandacss/shared@1.7.2
+- @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- Updated dependencies [cc04ebf]
+  - @pandacss/config@1.7.1
+  - @pandacss/core@1.7.1
+  - @pandacss/extractor@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+- Updated dependencies [f37fd8d]
+  - @pandacss/types@1.7.0
+  - @pandacss/core@1.7.0
+  - @pandacss/config@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/extractor@1.7.0
+  - @pandacss/shared@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- 8f43369: Fix css.raw spreading within selectors and conditions
+
+  Fixed several scenarios where spreading css.raw objects wouldn't be properly extracted:
+
+  **Child selectors:**
+
+  ```js
+  const baseStyles = css.raw({ margin: 0, padding: 0 })
+  const component = css({
+    '& p': { ...baseStyles, fontSize: '1rem' }, // Now works
+  })
+  ```
+
+  **Nested conditions:**
+
+  ```js
+  const interactive = css.raw({ cursor: 'pointer', transition: 'all 0.2s' })
+  const card = css({
+    _hover: {
+      ...interactive, // Now works
+      _dark: { ...interactive, color: 'white' },
+    },
+  })
+  ```
+
+  **CSS aliases:**
+
+  ```js
+  import { css as xcss } from 'styled-system/css'
+  const styles = xcss.raw({ color: 'red' })
+  // xcss.raw now properly recognized
+  ```
+
+- Updated dependencies [8f43369]
+  - @pandacss/core@1.6.1
+  - @pandacss/config@1.6.1
+  - @pandacss/extractor@1.6.1
+  - @pandacss/logger@1.6.1
+  - @pandacss/shared@1.6.1
+  - @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Patch Changes
+
+- @pandacss/config@1.6.0
+- @pandacss/core@1.6.0
+- @pandacss/extractor@1.6.0
+- @pandacss/logger@1.6.0
+- @pandacss/shared@1.6.0
+- @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/config@1.5.1
+- @pandacss/core@1.5.1
+- @pandacss/extractor@1.5.1
+- @pandacss/logger@1.5.1
+- @pandacss/shared@1.5.1
+- @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [1b85b61]
+- Updated dependencies [91c65ff]
+  - @pandacss/extractor@1.5.0
+  - @pandacss/types@1.5.0
+  - @pandacss/core@1.5.0
+  - @pandacss/config@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/shared@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- Updated dependencies [bb32028]
+- Updated dependencies [84a0de9]
+  - @pandacss/core@1.4.3
+  - @pandacss/config@1.4.3
+  - @pandacss/extractor@1.4.3
+  - @pandacss/logger@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 1290a27: Only log errors that are instances of `PandaError`, preventing test framework and other non-Panda errors from
+  being logged during development.
+- 70420dd: Fix issue where using `token()` or `token.var()` function from `styled-system/tokens` doesn't get resolved by
+  the compiler.
+
+  ```tsx
+  import { token } from 'styled-system/tokens'
+  import { css } from 'styled-system/css'
+
+  css({
+    // This didn't work before, but now it does
+    outline: `2px solid ${token('colors.gray.500')}`,
+
+    // This has always worked
+    outline: `2px solid token('colors.gray.500')`,
+  })
+  ```
+
+  This also supports fallback values.
+
+  ```tsx
+  css({
+    color: token('colors.brand.primary', '#3b82f6'),
+  })
+  ```
+
+- Updated dependencies [0679f6f]
+- Updated dependencies [1290a27]
+- Updated dependencies [70420dd]
+  - @pandacss/config@1.4.2
+  - @pandacss/shared@1.4.2
+  - @pandacss/extractor@1.4.2
+  - @pandacss/core@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [db237b6]
+  - @pandacss/core@1.4.1
+  - @pandacss/config@1.4.1
+  - @pandacss/extractor@1.4.1
+  - @pandacss/logger@1.4.1
+  - @pandacss/shared@1.4.1
+  - @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [4c291ca]
+  - @pandacss/core@1.4.0
+  - @pandacss/config@1.4.0
+  - @pandacss/extractor@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- Updated dependencies [7fcd100]
+  - @pandacss/core@1.3.1
+  - @pandacss/config@1.3.1
+  - @pandacss/extractor@1.3.1
+  - @pandacss/logger@1.3.1
+  - @pandacss/shared@1.3.1
+  - @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

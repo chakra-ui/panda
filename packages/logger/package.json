@@ -1,11 +1,12 @@
 {
   "name": "@pandacss/logger",
-  "version": "1.3.0",
+  "version": "1.7.3",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -41,6 +42,6 @@
     "kleur": "4.1.5"
   },
   "devDependencies": {
-    "matcher": "5.0.0"
+    "matcher": "6.0.0"
   }
 }

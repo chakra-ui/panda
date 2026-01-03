@@ -41,7 +41,7 @@ export const Tabs = (props: React.PropsWithChildren<{ items: string[] }>) => {
         <ArkTabs.Indicator />
       </ArkTabs.List>
       {React.Children.map(children, (child, index) => {
-        if (!React.isValidElement(child)) return child
+        if (!React.isValidElement<ArkTabs.TriggerProps>(child)) return child
         return React.cloneElement(child, {
           ...child.props,
           value: items[index]

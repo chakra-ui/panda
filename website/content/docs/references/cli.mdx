@@ -14,6 +14,16 @@ Initialize Panda in a project. This process will:
 - Create a `panda.config.ts` file in your project with the default settings and presets.
 - Emit CSS utilities for your project in the specified `output` directory.
 
+```bash
+pnpm panda init
+
+# Initialize with interactive mode
+pnpm panda init --interactive
+
+# Initialize with PostCSS config
+pnpm panda init --postcss
+```
+
 | Flag                          | Description                                                   | Related                                                       |
 | ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- |
 | `--interactive, -i`           | Whether to run the interactive mode                           | -                                                             |
@@ -73,6 +83,16 @@ pnpm panda "./src/components/**"
 
 Generate new CSS utilities for your project based on the configuration file.
 
+```bash
+pnpm panda codegen
+
+# Clean output directory before generating
+pnpm panda codegen --clean
+
+# Watch for config changes
+pnpm panda codegen --watch
+```
+
 | Flag                  | Description                                                            | Related                                                |
 | --------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
 | `--silent`            | Whether to suppress all output                                         | [`config.logLevel`](/docs/references/config#log-level) |
@@ -88,45 +108,114 @@ Generate new CSS utilities for your project based on the configuration file.
 
 Generate the CSS from files.
 
-You can use a `glob` to override the `config.include` option like this:
-
-`panda cssgen "src/**/*.css" --outfile dist.css`
-
-or you can use it with a `{type}` argument to generate only a specific type of CSS:
-
-- preflight
-- tokens
-- static
-- global
-- keyframes
-
-> Note that this only works when passing an `--outfile`.
-
-You can use it like this:
-
 ```bash
-panda cssgen "static" --outfile dist/static.css
+panda cssgen
+
+# Generate CSS for specific type
+panda cssgen tokens
+
+# Generate CSS for specific glob
+panda cssgen "src/**/*.css"
+
+# Generate CSS files split into separate files per layer and recipe
+panda cssgen --splitting
 ```
 
-| Flag                   | Description                                                                       | Related                                                       |
-| ---------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `--outfile, -o <file>` | Output file for extracted css, default to './styled-system/styles.css'            | -                                                             |
-| `--silent`             | Whether to suppress all output                                                    | [`config.logLevel`](/docs/references/config#log-level)        |
-| `--minify, -m`         | Whether to minify the generated CSS                                               | [`config.minify`](/docs/references/config#minify)             |
-| `--clean`              | Whether to clean the output directory before emitting                             | [`config.clean`](/docs/references/config#clean)               |
-| `--config, -c <path>`  | Path to Panda config file                                                         | [`config`](/docs/references/config.md)                        |
-| `--watch, -w`          | Whether to watch for changes in the project                                       | [`config.watch`](/docs/references/config#watch)               |
-| `--minimal`            | Skip generating CSS for theme tokens, preflight, keyframes, static and global css | -                                                             |
-| `--poll, -p`           | Whether to poll for file changes                                                  | [`config.poll`](/docs/references/config#poll)                 |
-| `--cwd <path>`         | Current working directory                                                         | [`config.cwd`](/docs/references/config#cwd)                   |
-| `--lightningcss`       | Use `lightningcss` instead of `postcss` for css optimization                      | [`config.lightningcss`](/docs/references/config#lightningcss) |
-| `--polyfill`           | Polyfill CSS @layers at-rules for older browsers                                  | [`config.polyfill`](/docs/references/config#polyfill)         |
-| `--cpu-prof`           | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling            | [Debugging](/docs/guides/debugging)                           |
-| `--logfile <file>`     | Outputs logs to a file                                                            | [Debugging](/docs/guides/debugging)                           |
+When using the `cssgen` command, you can pass a `{type}` argument to generate only a specific type of CSS. The supported
+types are: `preflight`, `tokens`, `static`, `global`, `keyframes`.
+
+### CSS Splitting
+
+The `--splitting` flag enables CSS code splitting, which generates separate CSS files for different parts of your design
+system instead of a single monolithic CSS file. This is useful for:
+
+- **Selective loading** - Load only the CSS you need for specific pages
+- **Easier debugging** - Identify which layer or recipe contributes to the final CSS
+
+When using `--splitting`, Panda will generate the following structure:
+
+```
+styled-system/
+├── styles.css              # @layer declarations + @imports for all layers
+└── styles/
+    ├── reset.css           # Preflight/reset CSS
+    ├── global.css          # Global CSS styles
+    ├── tokens.css          # Design token CSS variables
+    ├── utilities.css       # Atomic utility classes
+    ├── recipes.css         # @imports for all recipe files
+    ├── recipes/
+    │   ├── button.css      # Individual recipe: button
+    │   ├── card.css        # Individual recipe: card
+    │   └── ...             # Other recipes as separate files
+    └── themes/
+        └── dark.css        # Theme-specific tokens (not auto-imported)
+        └── light.css       # Theme-specific tokens (not auto-imported)
+```
+
+The main `styles.css` file contains the `@layer` declarations and imports all the layer files (but not the themes):
+
+```css
+/* styled-system/styles.css */
+@layer reset, base, tokens, recipes, utilities;
+
+@import './styles/reset.css';
+@import './styles/global.css';
+@import './styles/tokens.css';
+@import './styles/recipes.css';
+@import './styles/utilities.css';
+```
+
+You can then choose how to import these files:
+
+```css
+/* Option 1: Import everything (default) */
+@import './styled-system/styles.css';
+
+/* Option 2: Import specific layers only */
+@import './styled-system/styles/tokens.css';
+@import './styled-system/styles/utilities.css';
+
+/* Option 3: Import specific recipes */
+@import './styled-system/styles/recipes/button.css';
+@import './styled-system/styles/recipes/card.css';
+
+/* Option 4: Import a specific theme (when using multiple themes) */
+@import './styled-system/styles/themes/oceanic.css';
+```
+
+| Flag                   | Description                                                                            | Related                                                       |
+| ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `--outfile, -o <file>` | Output file for extracted css, default to './styled-system/styles.css'                 | -                                                             |
+| `--silent`             | Whether to suppress all output                                                         | [`config.logLevel`](/docs/references/config#log-level)        |
+| `--minify, -m`         | Whether to minify the generated CSS                                                    | [`config.minify`](/docs/references/config#minify)             |
+| `--clean`              | Whether to clean the output directory before emitting                                  | [`config.clean`](/docs/references/config#clean)               |
+| `--config, -c <path>`  | Path to Panda config file                                                              | [`config`](/docs/references/config.md)                        |
+| `--watch, -w`          | Whether to watch for changes in the project                                            | [`config.watch`](/docs/references/config#watch)               |
+| `--minimal`            | Skip generating CSS for theme tokens, preflight, keyframes, static and global css      | -                                                             |
+| `--splitting`          | Emit CSS as separate files per layer (reset, global, tokens, utilities) and per recipe | -                                                             |
+| `--poll, -p`           | Whether to poll for file changes                                                       | [`config.poll`](/docs/references/config#poll)                 |
+| `--cwd <path>`         | Current working directory                                                              | [`config.cwd`](/docs/references/config#cwd)                   |
+| `--lightningcss`       | Use `lightningcss` instead of `postcss` for css optimization                           | [`config.lightningcss`](/docs/references/config#lightningcss) |
+| `--polyfill`           | Polyfill CSS @layers at-rules for older browsers                                       | [`config.polyfill`](/docs/references/config#polyfill)         |
+| `--cpu-prof`           | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling                 | [Debugging](/docs/guides/debugging)                           |
+| `--logfile <file>`     | Outputs logs to a file                                                                 | [Debugging](/docs/guides/debugging)                           |
 
 ## studio
 
 Realtime documentation for your design tokens.
+
+```bash
+pnpm panda studio
+
+# Build static studio site
+pnpm panda studio --build
+
+# Preview built studio
+pnpm panda studio --preview
+
+# Use custom port
+pnpm panda studio --port 3000
+```
 
 | Flag                  | Description                       | Related                                     |
 | --------------------- | --------------------------------- | ------------------------------------------- |
@@ -138,6 +227,28 @@ Realtime documentation for your design tokens.
 | `--cwd <path>`        | Current working directory         | [`config.cwd`](/docs/references/config#cwd) |
 | `--outdir <dir>`      | Output directory for static files | -                                           |
 | `--base <path>`       | Base path of project              | -                                           |
+
+## spec
+
+Generate spec files for your theme (useful for documentation).
+
+```bash
+pnpm panda spec
+
+# Generate specs in custom directory
+pnpm panda spec --outdir ./theme-specs
+```
+
+| Flag                  | Description                     | Related                                                |
+| --------------------- | ------------------------------- | ------------------------------------------------------ |
+| `--silent`            | Whether to suppress all output  | [`config.logLevel`](/docs/references/config#log-level) |
+| `--outdir <dir>`      | Output directory for spec files | -                                                      |
+| `--config, -c <path>` | Path to Panda config file       | [`config`](/docs/references/config.md)                 |
+| `--cwd <path>`        | Current working directory       | [`config.cwd`](/docs/references/config#cwd)            |
+
+> The spec output represents your entire design system, everything available in your Panda setup. If you want to
+> understand which tokens or recipes your app is actually using, you should use the
+> [Panda Analyze](/docs/references/cli#analyze), not the spec.
 
 ## analyze
 
@@ -153,12 +264,19 @@ pnpm panda analyze src/components/Button.tsx
 
 # analyze a specific glob
 pnpm panda analyze "src/components/**"
+
+# analyze only token usage
+pnpm panda analyze --scope token
+
+# analyze only recipe usage
+pnpm panda analyze --scope recipe
 ```
 
 | Flag                   | Description                                  | Related                                                |
 | ---------------------- | -------------------------------------------- | ------------------------------------------------------ |
 | `--outfile <filepath>` | Output analyze report in given JSON filepath | -                                                      |
 | `--silent`             | Whether to suppress all output               | [`config.logLevel`](/docs/references/config#log-level) |
+| `--scope <type>`       | Select analysis scope (token or recipe)      | -                                                      |
 | `--config, -c <path>`  | Path to Panda config file                    | [`config`](/docs/references/config.md)                 |
 | `--cwd <path>`         | Current working directory                    | [`config.cwd`](/docs/references/config#cwd)            |
 
@@ -167,6 +285,19 @@ pnpm panda analyze "src/components/**"
 Debug design token extraction & CSS generated from files in glob.
 
 More details in [Debugging](/docs/guides/debugging) docs.
+
+```bash
+pnpm panda debug
+
+# Debug a specific file
+pnpm panda debug src/components/Button.tsx
+
+# Output to stdout without writing files
+pnpm panda debug --dry
+
+# Only output resolved config
+pnpm panda debug --only-config
+```
 
 | Flag                  | Description                                                            | Related                                                   |
 | --------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -208,6 +339,13 @@ pnpm panda ship "./src/components/**"
 Emit package.json with entrypoints, can be used to create a workspace package dedicated to the
 [`config.outdir`](/docs/references/config#outdir), in combination with
 [`config.importMap`](/docs/references/config#importmap)
+
+```bash
+pnpm panda emit-pkg
+
+# Specify output directory
+pnpm panda emit-pkg --outdir styled-system
+```
 
 | Flag             | Description                                          | Related                                                |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------ |

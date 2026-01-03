@@ -14,6 +14,8 @@ const linearGradientDirectionMap = new Map([
   ['to-tl', 'to top left'],
 ])
 
+const isGradientShortcut = (value: string) => linearGradientDirectionMap.has(value)
+
 const linearGradientValues: PropertyValues = (theme) => {
   return {
     ...theme('gradients'),
@@ -33,14 +35,20 @@ export const backgroundGradients: UtilityConfig = {
     className: 'bg-grad',
     group: 'Background Gradient',
     values: linearGradientValues,
-    transform(_value, { raw: value, token }) {
-      const tokenValue = token(`gradients.${value}`)
+    transform(value, { raw, token }) {
+      const tokenValue = token(`gradients.${raw}`)
       if (tokenValue) {
         return { backgroundImage: tokenValue }
       }
+
+      // If not a known direction shortcut, use the value as-is (with token refs expanded)
+      if (!isGradientShortcut(raw)) {
+        return { backgroundImage: value }
+      }
+
       return {
         '--gradient-stops': gradientStops,
-        '--gradient-position': linearGradientDirectionMap.get(value) || value,
+        '--gradient-position': linearGradientDirectionMap.get(raw),
         backgroundImage: `linear-gradient(var(--gradient-stops))`,
       }
     },
@@ -51,14 +59,20 @@ export const backgroundGradients: UtilityConfig = {
     className: 'bg-linear',
     group: 'Background Gradient',
     values: linearGradientValues,
-    transform(_value, { raw: value, token }) {
-      const tokenValue = token(`gradients.${value}`)
+    transform(value, { raw, token }) {
+      const tokenValue = token(`gradients.${raw}`)
       if (tokenValue) {
         return { backgroundImage: tokenValue }
       }
+
+      // If not a known direction shortcut, use the value as-is (with token refs expanded)
+      if (!isGradientShortcut(raw)) {
+        return { backgroundImage: value }
+      }
+
       return {
         '--gradient-stops': gradientStops,
-        '--gradient-position': linearGradientDirectionMap.get(value) || value,
+        '--gradient-position': linearGradientDirectionMap.get(raw),
         backgroundImage: `linear-gradient(var(--gradient-stops))`,
       }
     },
@@ -69,11 +83,12 @@ export const backgroundGradients: UtilityConfig = {
     className: 'bg-radial',
     group: 'Background Gradient',
     values: 'gradients',
-    transform(_value, { raw: value, token }) {
-      const tokenValue = token(`gradients.${value}`)
+    transform(value, { raw, token }) {
+      const tokenValue = token(`gradients.${raw}`)
       if (tokenValue) {
         return { backgroundImage: tokenValue }
       }
+
       return {
         '--gradient-stops': gradientStops,
         '--gradient-position': value,
@@ -99,8 +114,8 @@ export const backgroundGradients: UtilityConfig = {
     className: 'txt-grad',
     group: 'Background Gradient',
     values: linearGradientValues,
-    transform(_value, { raw: value, token }) {
-      const tokenValue = token(`gradients.${value}`)
+    transform(value, { raw, token }) {
+      const tokenValue = token(`gradients.${raw}`)
       if (tokenValue) {
         return {
           backgroundImage: tokenValue,
@@ -108,9 +123,17 @@ export const backgroundGradients: UtilityConfig = {
           color: 'transparent',
         }
       }
+      // If not a known direction shortcut, use the value as-is (with token refs expanded)
+      if (!isGradientShortcut(raw)) {
+        return {
+          backgroundImage: value,
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+        }
+      }
       return {
         '--gradient-stops': gradientStops,
-        '--gradient-position': linearGradientDirectionMap.get(value) || value,
+        '--gradient-position': linearGradientDirectionMap.get(raw),
         backgroundImage: `linear-gradient(var(--gradient-stops))`,
         WebkitBackgroundClip: 'text',
         color: 'transparent',

@@ -1,5 +1,95 @@
 # @pandacss/preset-atlaskit
 
+## 1.7.3
+
+### Patch Changes
+
+- @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+  - @pandacss/types@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Patch Changes
+
+- @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Patch Changes
+
+- 47a4698: Update the experimental atlaskit preset with comprehensive token coverage from Atlassian Design System
+
+  ## New Token Categories
+
+  - **Opacity tokens** - `disabled` (0.4) and `loading` (0.2) semantic opacity values
+  - **Duration tokens** - Animation durations from @atlaskit/motion (`none`, `small`, `medium`, `large`)
+  - **Easing tokens** - Cubic-bezier curves from @atlaskit/motion (7 variants: `easeIn`, `easeOut`, `easeInOut`,
+    `easeIn40Out`, `easeIn60Out`, `easeIn80Out`, `linear`)
+  - **TextStyles** - Semantic typography presets combining font properties (`heading.*`, `body.*`, `code`, `metric.*`)
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- @pandacss/types@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes

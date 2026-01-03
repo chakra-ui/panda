@@ -39,6 +39,6 @@ test('format / getter', () => {
     }
   `)
 
-  expect(dictionary.view.get('colors.blue')).toMatchInlineSnapshot('"var(--colors-blue)"')
-  expect(dictionary.view.get('colors.brand')).toMatchInlineSnapshot('"var(--colors-brand)"')
+  expect(dictionary.view.getVar('colors.blue')).toMatchInlineSnapshot(`"var(--colors-blue)"`)
+  expect(dictionary.view.getVar('colors.brand')).toMatchInlineSnapshot('"var(--colors-brand)"')
 })

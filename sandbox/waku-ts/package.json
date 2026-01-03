@@ -9,15 +9,15 @@
     "start": "waku start --with-ssr"
   },
   "dependencies": {
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "react-server-dom-webpack": "18.3.0-canary-14fd9630e-20240213",
-    "waku": "0.23.7"
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-server-dom-webpack": "19.2.0",
+    "waku": "0.27.2"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "@types/react": "18.2.55",
-    "@types/react-dom": "18.2.19",
-    "typescript": "5.8.3"
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
   }
 }

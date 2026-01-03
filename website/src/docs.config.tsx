@@ -57,16 +57,16 @@ export const docsConfig: DocsConfig = {
       href: '/team'
     },
     {
+      title: 'Showcase',
+      type: 'page',
+      href: '/showcase'
+    },
+    {
       title: 'Playground',
       type: 'page',
       href: 'https://play.panda-css.com/',
       external: true,
       newWindow: true
-    },
-    {
-      title: 'Learn',
-      type: 'page',
-      href: '/learn'
     }
   ]
 }
@@ -83,7 +83,7 @@ export const docsNavigation: NavItem = {
         { title: 'Why Panda?', url: 'why-panda' },
         { title: 'FAQs', url: 'faq' },
         { title: 'Browser Support', url: 'browser-support' },
-        { title: 'LLMs.txt', url: 'llms-txt', tag: 'new' },
+        { title: 'LLMs.txt', url: 'llms-txt' },
         {
           title: 'Roadmap',
           href: 'https://panda-css.canny.io/',
@@ -128,6 +128,7 @@ export const docsNavigation: NavItem = {
         { title: 'Cascade Layers', url: 'cascade-layers' },
         { title: 'Writing Styles', url: 'writing-styles' },
         { title: 'Merging Styles', url: 'merging-styles' },
+        { title: 'Global Styles', url: 'global-styles' },
         { title: 'Template Literals', url: 'template-literals' },
         { title: 'Conditional Styles', url: 'conditional-styles' },
         { title: 'Responsive Design', url: 'responsive-design' },
@@ -160,7 +161,9 @@ export const docsNavigation: NavItem = {
         { title: 'Token Usage', url: 'usage' },
         { title: 'Text Styles', url: 'text-styles' },
         { title: 'Layer Styles', url: 'layer-styles' },
-        { title: 'Animation Styles', url: 'animation-styles' }
+        { title: 'Animation Styles', url: 'animation-styles' },
+        { title: 'Spec', url: 'spec', tag: 'new' },
+        { title: 'Panda Studio', url: 'studio' }
       ]
     },
     {

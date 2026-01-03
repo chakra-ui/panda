@@ -36,4 +36,4 @@ const _custom = sva({
 const { withProvider, withContext } = createStyleContext(custom)
 
 export const Root = withProvider('div', 'root', { defaultProps: { class: 'group' } })
-export const Label = withContext('label', 'label', { defaultProps: { class: 'group__item' } })
+export const Label = withContext('label', 'label', { defaultProps: () => ({ class: 'group__item', children: <p>Dog</p> }) })

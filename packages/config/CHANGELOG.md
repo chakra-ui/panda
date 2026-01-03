@@ -1,5 +1,180 @@
 # @pandacss/config
 
+## 1.7.3
+
+### Patch Changes
+
+- Updated dependencies [ac2fb5c]
+  - @pandacss/preset-base@1.7.3
+  - @pandacss/logger@1.7.3
+  - @pandacss/preset-panda@1.7.3
+  - @pandacss/shared@1.7.3
+  - @pandacss/types@1.7.3
+
+## 1.7.2
+
+### Patch Changes
+
+- @pandacss/logger@1.7.2
+- @pandacss/preset-base@1.7.2
+- @pandacss/preset-panda@1.7.2
+- @pandacss/shared@1.7.2
+- @pandacss/types@1.7.2
+
+## 1.7.1
+
+### Patch Changes
+
+- cc04ebf: Fix issue where `@pandacss/config` CJS entrypoint is broken due to `merge-anything` ESM-only dependency.
+- Updated dependencies [b6e9646]
+  - @pandacss/preset-base@1.7.1
+  - @pandacss/logger@1.7.1
+  - @pandacss/preset-panda@1.7.1
+  - @pandacss/shared@1.7.1
+  - @pandacss/types@1.7.1
+
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [86b30b1]
+  - @pandacss/types@1.7.0
+  - @pandacss/logger@1.7.0
+  - @pandacss/preset-base@1.7.0
+  - @pandacss/preset-panda@1.7.0
+  - @pandacss/shared@1.7.0
+
+## 1.6.1
+
+### Patch Changes
+
+- @pandacss/logger@1.6.1
+- @pandacss/preset-base@1.6.1
+- @pandacss/preset-panda@1.6.1
+- @pandacss/shared@1.6.1
+- @pandacss/types@1.6.1
+
+## 1.6.0
+
+### Patch Changes
+
+- @pandacss/logger@1.6.0
+- @pandacss/preset-base@1.6.0
+- @pandacss/preset-panda@1.6.0
+- @pandacss/shared@1.6.0
+- @pandacss/types@1.6.0
+
+## 1.5.1
+
+### Patch Changes
+
+- @pandacss/logger@1.5.1
+- @pandacss/preset-base@1.5.1
+- @pandacss/preset-panda@1.5.1
+- @pandacss/shared@1.5.1
+- @pandacss/types@1.5.1
+
+## 1.5.0
+
+### Minor Changes
+
+- 91c65ff: Add support for controlling the color palette generation via `theme.colorPalette` property.
+
+  ```ts
+  // Disable color palette generation completely
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        enabled: false,
+      },
+    },
+  })
+
+  // Include only specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        include: ['gray', 'blue', 'red'],
+      },
+    },
+  })
+
+  // Exclude specific colors
+  export default defineConfig({
+    theme: {
+      colorPalette: {
+        exclude: ['yellow', 'orange'],
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [91c65ff]
+  - @pandacss/types@1.5.0
+  - @pandacss/logger@1.5.0
+  - @pandacss/preset-base@1.5.0
+  - @pandacss/preset-panda@1.5.0
+  - @pandacss/shared@1.5.0
+
+## 1.4.3
+
+### Patch Changes
+
+- 84a0de9: Improve static CSS generation performance with wildcard memoization. Token lookups for wildcard (`*`)
+  expansions are now cached, providing ~32% faster processing for large configs with wildcards.
+  - @pandacss/logger@1.4.3
+  - @pandacss/preset-base@1.4.3
+  - @pandacss/preset-panda@1.4.3
+  - @pandacss/shared@1.4.3
+  - @pandacss/types@1.4.3
+
+## 1.4.2
+
+### Patch Changes
+
+- 0679f6f: Fix issue where `create-recipe.mjs` helper was not generated when adding the first recipe to a project that
+  previously had no recipes.
+- Updated dependencies [1290a27]
+  - @pandacss/shared@1.4.2
+  - @pandacss/types@1.4.2
+  - @pandacss/logger@1.4.2
+  - @pandacss/preset-base@1.4.2
+  - @pandacss/preset-panda@1.4.2
+
+## 1.4.1
+
+### Patch Changes
+
+- @pandacss/logger@1.4.1
+- @pandacss/preset-base@1.4.1
+- @pandacss/preset-panda@1.4.1
+- @pandacss/shared@1.4.1
+- @pandacss/types@1.4.1
+
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [1bca361]
+- Updated dependencies [29cf719]
+  - @pandacss/preset-base@1.4.0
+  - @pandacss/preset-panda@1.4.0
+  - @pandacss/logger@1.4.0
+  - @pandacss/shared@1.4.0
+  - @pandacss/types@1.4.0
+
+## 1.3.1
+
+### Patch Changes
+
+- @pandacss/logger@1.3.1
+- @pandacss/preset-base@1.3.1
+- @pandacss/preset-panda@1.3.1
+- @pandacss/shared@1.3.1
+- @pandacss/types@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes
