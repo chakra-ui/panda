@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.8.0](#1.8.0) - 2026-01-03
+
+### Added
+
+- **MCP Server ([#mcp-new-tools](./.changeset/mcp-new-tools.md))**  
+  Added a new MCP server that exposes tools for AI agents.
+
+  - New command: `panda init-mcp`
+  - Available tools: `get_tokens`, `get_semantic_tokens`, `get_recipes`, `get_patterns`, `get_conditions`,
+    `get_text_styles`, `get_layer_styles`, `get_keyframes`, `get_config`, `get_usage_report`
+
 ## [1.7.3](#1.7.3) - 2026-01-02
 
 ### Fixed
