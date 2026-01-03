@@ -44,8 +44,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup --dts",
-    "build-fast": "tsup",
+    "build": "tsup src --format=esm,cjs --dts --no-splitting --shims",
+    "build-fast": "tsup src --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch src"
   },
   "files": [
@@ -68,8 +68,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "cac": "6.7.14",
-    "zod": "3.25.1"
+    "cac": "6.7.14"
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.8",
