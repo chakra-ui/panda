@@ -1,5 +1,19 @@
 # @pandacss/node
 
+## 1.8.0
+
+### Patch Changes
+
+- @pandacss/config@1.8.0
+- @pandacss/core@1.8.0
+- @pandacss/generator@1.8.0
+- @pandacss/logger@1.8.0
+- @pandacss/parser@1.8.0
+- @pandacss/reporter@1.8.0
+- @pandacss/shared@1.8.0
+- @pandacss/token-dictionary@1.8.0
+- @pandacss/types@1.8.0
+
 ## 1.7.3
 
 ### Patch Changes
