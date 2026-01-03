@@ -243,6 +243,7 @@ const TOKEN_TYPES = {
   blurs: 'blur',
   aspectRatios: 'aspectRatio',
   cursor: 'cursor',
+  assets: 'asset',
 } as const
 
 export type TokenCategory = keyof typeof TOKEN_TYPES
