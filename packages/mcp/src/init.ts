@@ -17,7 +17,6 @@ export async function initMcpConfig(options: InitMcpConfigOptions = {}) {
 
   // If no clients specified, prompt user to select
   if (!clients || clients.length === 0) {
-    console.log('await p.multiselect({')
     const selected = await p.multiselect({
       message: 'Select AI clients to configure:',
       options: CLIENT_NAMES.map((client) => ({
