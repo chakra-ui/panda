@@ -463,10 +463,6 @@ importers:
       zod:
         specifier: ^4.0.0
         version: 4.1.12
-    devDependencies:
-      '@pandacss/fixture':
-        specifier: workspace:*
-        version: link:../fixture
 
   packages/node:
     dependencies:

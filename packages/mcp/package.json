@@ -45,8 +45,5 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "zod": "^4.0.0"
-  },
-  "devDependencies": {
-    "@pandacss/fixture": "workspace:*"
   }
 }
