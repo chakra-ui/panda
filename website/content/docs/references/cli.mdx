@@ -353,3 +353,51 @@ pnpm panda emit-pkg --outdir styled-system
 | `--base <path>`  | The base directory of the package.json entrypoints   | -                                                      |
 | `--silent`       | Whether to suppress all output                       | [`config.logLevel`](/docs/references/config#log-level) |
 | `--cwd <path>`   | Current working directory                            | [`config.cwd`](/docs/references/config#cwd)            |
+
+## mcp
+
+Start the MCP (Model Context Protocol) server for AI assistants. This exposes your design system to AI tools like
+Claude, Cursor, VS Code Copilot, and more.
+
+```bash
+pnpm panda mcp
+
+# With custom config path
+pnpm panda mcp --config ./panda.config.ts
+
+# Specify working directory
+pnpm panda mcp --cwd ./my-project
+```
+
+| Flag                  | Description               | Related                                     |
+| --------------------- | ------------------------- | ------------------------------------------- |
+| `--config, -c <path>` | Path to Panda config file | [`config`](/docs/references/config.md)      |
+| `--cwd <path>`        | Current working directory | [`config.cwd`](/docs/references/config#cwd) |
+
+> Note: This command is typically started automatically by AI clients. See the [MCP Server guide](/docs/ai/mcp-server)
+> for setup instructions.
+
+## init-mcp
+
+Initialize MCP configuration for AI clients. This creates the necessary configuration files for AI assistants to connect
+to the Panda MCP server.
+
+```bash
+# Interactive mode - select clients from a list
+pnpm panda init-mcp
+
+# Configure specific clients
+pnpm panda init-mcp --client claude,cursor
+
+# Specify working directory
+pnpm panda init-mcp --cwd ./my-project
+```
+
+| Flag               | Description                               | Related                                     |
+| ------------------ | ----------------------------------------- | ------------------------------------------- |
+| `--client <names>` | AI clients to configure (comma-separated) | -                                           |
+| `--cwd <path>`     | Current working directory                 | [`config.cwd`](/docs/references/config#cwd) |
+
+Supported clients: `claude`, `cursor`, `vscode`, `windsurf`, `codex`
+
+See the [MCP Server guide](/docs/ai/mcp-server) for detailed usage and available tools.

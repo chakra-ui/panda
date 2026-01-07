@@ -1,0 +1,260 @@
+---
+title: MCP Server
+description: Expose your Panda CSS design system to AI assistants using the Model Context Protocol (MCP).
+---
+
+The Panda MCP Server allows AI assistants like Claude, Cursor, VS Code Copilot, Windsurf, and Codex to understand and
+work with your project's design system. It provides tools for querying tokens, recipes, patterns, conditions, and more.
+
+## What is MCP?
+
+The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is an open standard for connecting AI assistants to
+external tools and data sources. Panda's MCP server exposes your design system through a set of specialized tools that
+AI assistants can use to:
+
+- Look up design tokens and their values
+- Understand available component recipes and variants
+- Query layout patterns and their properties
+- Analyze token and recipe usage across your codebase
+
+## Quick Start
+
+### 1. Initialize MCP Configuration
+
+Run the interactive setup command in your project:
+
+```bash
+pnpm panda init-mcp
+```
+
+This will prompt you to select which AI clients to configure:
+
+```
+◆  Panda MCP Setup
+│
+◆  Select AI clients to configure:
+│  ◻ Claude (.mcp.json)
+│  ◻ Cursor (.cursor/mcp.json)
+│  ◻ VS Code (.vscode/mcp.json)
+│  ◻ Windsurf (.windsurf/mcp.json)
+│  ◻ Codex (.codex/mcp.json)
+```
+
+### 2. Use with Your AI Assistant
+
+Once configured, your AI assistant will automatically have access to Panda CSS tools. You can ask questions like:
+
+- "What color tokens are available in my design system?"
+- "Show me the button recipe variants"
+- "Which tokens are unused in my codebase?"
+- "What breakpoints are defined?"
+
+## CLI Commands
+
+### init-mcp
+
+Initialize MCP configuration for one or more AI clients.
+
+```bash
+# Interactive mode - select clients from a list
+pnpm panda init-mcp
+
+# Configure specific clients directly
+pnpm panda init-mcp --client claude,cursor
+
+# Specify working directory
+pnpm panda init-mcp --cwd ./my-project
+```
+
+| Flag               | Description                               |
+| ------------------ | ----------------------------------------- |
+| `--client <names>` | AI clients to configure (comma-separated) |
+| `--cwd <path>`     | Current working directory                 |
+
+### mcp
+
+Start the MCP server manually (usually not needed - clients start it automatically).
+
+```bash
+pnpm panda mcp
+
+# With custom config path
+pnpm panda mcp --config ./panda.config.ts
+
+# Specify working directory
+pnpm panda mcp --cwd ./my-project
+```
+
+| Flag                  | Description               |
+| --------------------- | ------------------------- |
+| `--config, -c <path>` | Path to Panda config file |
+| `--cwd <path>`        | Current working directory |
+
+## Supported AI Clients
+
+The MCP server supports the following AI assistants:
+
+| Client   | Config Path          | Description                    |
+| -------- | -------------------- | ------------------------------ |
+| Claude   | `.mcp.json`          | Claude Code and Claude Desktop |
+| Cursor   | `.cursor/mcp.json`   | Cursor IDE                     |
+| VS Code  | `.vscode/mcp.json`   | VS Code with Copilot           |
+| Windsurf | `.windsurf/mcp.json` | Windsurf IDE                   |
+| Codex    | `.codex/mcp.json`    | OpenAI Codex CLI               |
+
+## Available Tools
+
+The MCP server exposes these tools to AI assistants:
+
+| Tool                   | Description                                                         | Input                                     |
+| ---------------------- | ------------------------------------------------------------------- | ----------------------------------------- |
+| `get_tokens`           | Get design tokens with values, CSS variables, and usage examples    | `category?` - filter by token category    |
+| `get_semantic_tokens`  | Get semantic tokens with conditional values (dark mode, responsive) | `category?` - filter by token category    |
+| `get_color_palette`    | Get the complete color palette                                      | -                                         |
+| `get_recipes`          | Get component recipes with variants and default values              | `name?` - filter by recipe name           |
+| `get_patterns`         | Get layout patterns with properties and usage examples              | `name?` - filter by pattern name          |
+| `get_conditions`       | Get all conditions (breakpoints, pseudo-classes, color modes)       | -                                         |
+| `get_keyframes`        | Get keyframe animations defined in the theme                        | -                                         |
+| `get_text_styles`      | Get text style compositions for typography                          | -                                         |
+| `get_layer_styles`     | Get layer style compositions for visual styling                     | -                                         |
+| `get_animation_styles` | Get animation style compositions                                    | -                                         |
+| `get_config`           | Get the resolved Panda CSS configuration                            | -                                         |
+| `get_usage_report`     | Analyze token/recipe usage across the codebase                      | `scope?` - `'all'`, `'token'`, `'recipe'` |
+
+The `get_usage_report` tool is particularly useful for auditing your design system, identifying unused tokens/recipes,
+and finding missing definitions.
+
+## Generated Configuration
+
+When you run `panda init-mcp`, the following configuration is generated for each selected client:
+
+```json
+{
+  "mcpServers": {
+    "panda": {
+      "command": "npx",
+      "args": ["panda", "mcp"]
+    }
+  }
+}
+```
+
+The server automatically loads your `panda.config.ts` from the current working directory when started.
+
+## Manual Configuration
+
+If you prefer to configure MCP manually, create the appropriate config file for your AI client:
+
+### Claude
+
+Create `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "panda": {
+      "command": "npx",
+      "args": ["panda", "mcp"]
+    }
+  }
+}
+```
+
+### Cursor
+
+Create `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "panda": {
+      "command": "npx",
+      "args": ["panda", "mcp"]
+    }
+  }
+}
+```
+
+### VS Code
+
+Create `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "panda": {
+      "command": "npx",
+      "args": ["panda", "mcp"]
+    }
+  }
+}
+```
+
+### Custom Config Path
+
+If your Panda config is not in the default location, specify it explicitly:
+
+```json
+{
+  "mcpServers": {
+    "panda": {
+      "command": "npx",
+      "args": ["panda", "mcp", "--config", "./path/to/panda.config.ts"]
+    }
+  }
+}
+```
+
+## Example Interactions
+
+Here are some example prompts you can use with AI assistants once MCP is configured:
+
+### Exploring Tokens
+
+> "What spacing tokens are available?"
+
+The AI will use `get_tokens` with `category: "spacing"` to show you all spacing values.
+
+### Understanding Recipes
+
+> "How do I use the button recipe with a destructive variant?"
+
+The AI will use `get_recipes` with `name: "button"` to show variants and usage.
+
+### Finding Unused Tokens
+
+> "Which design tokens are not being used in my codebase?"
+
+The AI will use `get_usage_report` with `scope: "token"` to identify unused tokens.
+
+### Checking Conditions
+
+> "What responsive breakpoints are defined?"
+
+The AI will use `get_conditions` to show all available breakpoints.
+
+## Troubleshooting
+
+### Server Not Starting
+
+If the MCP server fails to start:
+
+1. Ensure Panda CSS is installed: `pnpm add -D @pandacss/dev`
+2. Verify you have a valid `panda.config.ts` in your project
+3. Check that `npx panda mcp` runs without errors
+
+### Tools Not Available
+
+If tools aren't showing up in your AI assistant:
+
+1. Restart the AI assistant after adding the MCP configuration
+2. Verify the config file is in the correct location
+3. Check the AI assistant's MCP documentation for any additional setup steps
+
+### Usage Report Empty
+
+If `get_usage_report` returns empty results:
+
+1. Ensure your `include` paths in `panda.config.ts` cover your source files
+2. Run `pnpm panda codegen` to ensure the project is properly set up
+3. Verify files contain Panda CSS usage (css(), styled(), etc.)

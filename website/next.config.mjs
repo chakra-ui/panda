@@ -29,6 +29,11 @@ const config = {
         source: '/learn',
         destination: 'https://pandamastery.com',
         permanent: true
+      },
+      {
+        source: '/docs/overview/llms-txt',
+        destination: '/docs/ai/llms-txt',
+        permanent: true
       }
     ]
   },

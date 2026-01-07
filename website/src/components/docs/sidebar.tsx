@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { docsNavigation, type NavItem } from '@/docs.config'
 import { ChevronDownIcon, ChevronRightIcon } from '@/icons'
 import { css } from '@/styled-system/css'
-import { Box, Stack } from '@/styled-system/jsx'
+import { Box, HStack, Stack } from '@/styled-system/jsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -34,6 +34,7 @@ export function Sidebar({ slug: currentSlug }: Props) {
     docsNavigation.items?.map((section: NavItem) => ({
       title: section.title,
       slug: section.url || '',
+      tag: section.tag,
       children: section.items?.map((item: NavItem) => ({
         title: item.title,
         slug: item.external ? item.href || '' : `${section.url}/${item.url}`,
@@ -92,7 +93,10 @@ export function Sidebar({ slug: currentSlug }: Props) {
                 cursor: 'pointer'
               })}
             >
-              <span>{section.title}</span>
+              <HStack>
+                <span>{section.title}</span>
+                {section.tag && <Badge variant="solid">{section.tag}</Badge>}
+              </HStack>
               {section.children && (
                 <Box
                   as={isExpanded ? ChevronDownIcon : ChevronRightIcon}

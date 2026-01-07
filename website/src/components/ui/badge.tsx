@@ -3,6 +3,7 @@ import { panda } from '@/styled-system/jsx'
 export const Badge = panda('span', {
   base: {
     fontWeight: 'medium',
+    fontSize: '11px',
     px: '1',
     ms: '2',
     rounded: 'sm'

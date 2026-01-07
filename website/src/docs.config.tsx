@@ -83,7 +83,6 @@ export const docsNavigation: NavItem = {
         { title: 'Why Panda?', url: 'why-panda' },
         { title: 'FAQs', url: 'faq' },
         { title: 'Browser Support', url: 'browser-support' },
-        { title: 'LLMs.txt', url: 'llms-txt' },
         {
           title: 'Roadmap',
           href: 'https://panda-css.canny.io/',
@@ -94,6 +93,15 @@ export const docsNavigation: NavItem = {
           href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
           external: true
         }
+      ]
+    },
+    {
+      title: 'AI for Agents',
+      url: 'ai',
+      tag: 'new',
+      items: [
+        { title: 'LLMs.txt', url: 'llms-txt' },
+        { title: 'MCP Server', url: 'mcp-server' }
       ]
     },
     {
