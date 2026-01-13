@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.8.1](#1.8.1) - 2026-01-13
+
+### Changed
+
+- **System:** Expanded `TextStyleProperty` type (used by `TextStyle` and `TextStyles`) to support new CSS `text-box`
+  properties: [`text-box`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box),
+  [`text-box-edge`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge),
+  [`text-box-trim`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-trim)
+
 ## [1.8.0](#1.8.0) - 2026-01-03
 
 ### Added
