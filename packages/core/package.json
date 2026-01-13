@@ -44,7 +44,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "browserslist": "4.28.0",
+    "browserslist": "4.28.1",
     "hookable": "5.5.3",
     "lightningcss": "1.30.2",
     "lodash.merge": "4.6.2",
