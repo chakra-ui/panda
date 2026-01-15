@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/types",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "The types for css panda",
   "main": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",

@@ -1,5 +1,36 @@
 # @pandacss/core
 
+## 1.8.2
+
+### Patch Changes
+
+- 82d23ab: Fix condition order when combining mixed conditions (array format) with nested selectors.
+
+  When using conditions like `hover: ['&:hover']` with nested selectors like `'& > :where(svg)'`, the CSS selector order
+  was incorrect:
+
+  ```js
+  // Before (broken):
+  // .class > :where(svg):hover - hover applied to svg child
+
+  // After (fixed):
+  // .class:hover > :where(svg) - hover applied to parent element
+  ```
+
+  The fix ensures that:
+
+  - At-rules are always placed first (for proper CSS wrapping)
+  - Selector conditions preserve their source order (matching what you write)
+
+  This affects users who define conditions using the array format and combine them with arbitrary/nested selectors.
+
+- Updated dependencies [331d1a5]
+  - @pandacss/types@1.8.2
+  - @pandacss/is-valid-prop@1.8.2
+  - @pandacss/logger@1.8.2
+  - @pandacss/token-dictionary@1.8.2
+  - @pandacss/shared@1.8.2
+
 ## 1.8.1
 
 ### Patch Changes
