@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/parser",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "The static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
