@@ -217,7 +217,7 @@ describe('atomic / with nesting scope', () => {
       }
 
         @media screen and (min-width: 40rem) {
-          :where([dir=ltr], :dir(ltr)) [data-theme=dark] .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),:where([dir=ltr], :dir(ltr)) .dark .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),:where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]).dark,:where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover])[data-theme=dark] {
+          [data-theme=dark] :where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),.dark :where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p:is(:hover, [data-hover]),:where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p.dark:is(:hover, [data-hover]),:where([dir=ltr], :dir(ltr)) .\\[\\&_\\>_p\\]\\:ltr\\:dark\\:sm\\:hover\\:font_serif > p[data-theme=dark]:is(:hover, [data-hover]) {
             font: serif;
       }
       }

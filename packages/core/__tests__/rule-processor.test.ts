@@ -1513,37 +1513,37 @@ describe('js to css', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg_red:is(:focus, [data-focus])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_red.light:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_red[data-theme=light]:is(:focus, [data-focus]) {
             background: red;
       }
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]).light,.md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-c_blue.light:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-c_blue[data-theme=light]:is(:focus, [data-focus]) {
             background-color: blue;
       }
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg_red:is(:hover, [data-hover])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_red.light:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_red[data-theme=light]:is(:hover, [data-hover]) {
             background: red;
       }
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]).light,.md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-c_blue.light:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-c_blue[data-theme=light]:is(:hover, [data-hover]) {
             background-color: blue;
       }
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.md\\:light\\:active\\:bg_red:is(:active, [data-active]).light,.md\\:light\\:active\\:bg_red:is(:active, [data-active])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.md\\:light\\:active\\:bg_red.light:is(:active, [data-active]),.md\\:light\\:active\\:bg_red[data-theme=light]:is(:active, [data-active]) {
             background: red;
       }
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=light] .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]).light,.md\\:light\\:active\\:bg-c_blue:is(:active, [data-active])[data-theme=light] {
+          [data-theme=light] .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg-c_blue.light:is(:active, [data-active]),.md\\:light\\:active\\:bg-c_blue[data-theme=light]:is(:active, [data-active]) {
             background-color: blue;
       }
       }
@@ -1762,8 +1762,8 @@ describe('js to css', () => {
     expect(result.className).toMatchInlineSnapshot(
       `
       [
-        "hover\\:custom\\:c_blue",
         "hover\\:mixed\\:c_green",
+        "hover\\:custom\\:c_blue",
         "hover\\:mixedMd\\:c_6px",
         "hover\\:md\\:w_5px",
       ]
@@ -1772,12 +1772,12 @@ describe('js to css', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .hover\\:custom\\:c_blue:is(:hover, [data-hover])[data-attr="custom"] {
-          color: blue;
-      }
-
         .hover\\:mixed\\:c_green:is(:hover, [data-hover])[data-attr="custom"] {
           color: green;
+      }
+
+        .hover\\:custom\\:c_blue:is(:hover, [data-hover])[data-attr="custom"] {
+          color: blue;
       }
 
         @media screen and (min-width: 48em) {
@@ -2056,11 +2056,11 @@ describe('js to css', () => {
       `
       [
         "w_0px",
+        "custom\\:c_red",
         "dark\\:w_1px",
         "hover\\:w_2px",
-        "hover\\:focus\\:w_3px",
-        "custom\\:c_red",
         "hover\\:custom\\:c_blue",
+        "hover\\:focus\\:w_3px",
         "smHover\\:w_7px",
         "sm\\:w_4px",
         "mdHover\\:w_8px",
@@ -2077,6 +2077,10 @@ describe('js to css', () => {
           width: 0px;
       }
 
+        .custom\\:c_red[data-attr="custom"] {
+          color: red;
+      }
+
         [data-theme=dark] .dark\\:w_1px,.dark .dark\\:w_1px,.dark\\:w_1px.dark,.dark\\:w_1px[data-theme=dark] {
           width: 1px;
       }
@@ -2085,16 +2089,12 @@ describe('js to css', () => {
           width: 2px;
       }
 
-        .hover\\:focus\\:w_3px:is(:hover, [data-hover]):is(:focus, [data-focus]) {
-          width: 3px;
-      }
-
-        .custom\\:c_red[data-attr="custom"] {
-          color: red;
-      }
-
         .hover\\:custom\\:c_blue:is(:hover, [data-hover])[data-attr="custom"] {
           color: blue;
+      }
+
+        .hover\\:focus\\:w_3px:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+          width: 3px;
       }
 
         @media screen and (min-width: 40em) {
@@ -2136,6 +2136,56 @@ describe('js to css', () => {
             .supportHover\\:w_6px:hover {
               width: 6px;
       }
+      }
+      }
+      }"
+    `)
+  })
+
+  test('issue 3462 - mixed condition (array format) with child selector', () => {
+    const result = css(
+      {
+        _hover: {
+          '& > :where(svg)': { color: 'green' },
+        },
+      },
+      {
+        conditions: {
+          hover: ['&:hover'],
+        },
+      },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .hover\\:\\[\\&_\\>_\\:where\\(svg\\)\\]\\:c_green:hover > :where(svg) {
+          color: green;
+      }
+      }"
+    `)
+  })
+
+  test('issue 3462 - mixed condition with at-rule should still sort correctly', () => {
+    const result = css(
+      {
+        _hoverMedia: {
+          '& > :where(svg)': {
+            color: 'blue',
+          },
+        },
+      },
+      {
+        conditions: {
+          hoverMedia: ['@media (hover: hover)', '&:hover'],
+        },
+      },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) {
+          .hoverMedia\\:\\[\\&_\\>_\\:where\\(svg\\)\\]\\:c_blue:hover > :where(svg) {
+            color: blue;
       }
       }
       }"

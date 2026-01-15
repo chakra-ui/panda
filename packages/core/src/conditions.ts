@@ -3,7 +3,6 @@ import { capitalize, isBaseCondition, isObject, toRem, withoutSpace } from '@pan
 import type {
   ConditionDetails,
   ConditionQuery,
-  ConditionType,
   Conditions as ConditionsConfig,
   ThemeVariantsMap,
 } from '@pandacss/types'
@@ -11,7 +10,26 @@ import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 import { compareAtRuleOrMixed } from './sort-style-rules'
 
-const order: ConditionType[] = ['at-rule', 'self-nesting', 'combinator-nesting', 'parent-nesting', 'mixed']
+/**
+ * Checks if a condition is an at-rule type
+ */
+const isAtRule = (cond: ConditionDetails): boolean => cond.type === 'at-rule'
+
+/**
+ * Flattens a condition, extracting parts from mixed conditions.
+ * Returns an array of { condition, originalIndex } to track source order.
+ */
+const flattenCondition = (
+  cond: ConditionDetails,
+  originalIndex: number,
+): Array<{ cond: ConditionDetails; originalIndex: number }> => {
+  if (cond.type === 'mixed') {
+    // Extract parts from mixed condition, each inherits the original index
+    const parts = cond.value as ConditionDetails[]
+    return parts.map((part) => ({ cond: part, originalIndex }))
+  }
+  return [{ cond, originalIndex }]
+}
 
 interface Options {
   conditions?: ConditionsConfig
@@ -164,7 +182,24 @@ export class Conditions {
 
   sort = (conditions: string[]): ConditionDetails[] => {
     const rawConditions = conditions.map(this.getRaw).filter(Boolean) as ConditionDetails[]
-    return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
+
+    // Flatten all conditions while tracking original index for stable sorting
+    const flattened = rawConditions.flatMap((cond, index) => flattenCondition(cond, index))
+
+    // Sort: at-rules first, then selectors in original order
+    flattened.sort((a, b) => {
+      const aIsAtRule = isAtRule(a.cond)
+      const bIsAtRule = isAtRule(b.cond)
+
+      // At-rules come first
+      if (aIsAtRule && !bIsAtRule) return -1
+      if (!aIsAtRule && bIsAtRule) return 1
+
+      // Within same category, preserve original source order
+      return a.originalIndex - b.originalIndex
+    })
+
+    return flattened.map((item) => item.cond)
   }
 
   normalize = (condition: ConditionQuery | ConditionDetails): ConditionDetails | undefined => {

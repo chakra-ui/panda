@@ -438,14 +438,14 @@ describe('style decoder', () => {
               "value": "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])",
             },
             {
-              "raw": "&:is([open], [data-open], [data-state="open"], :popover-open)",
-              "type": "self-nesting",
-              "value": "&:is([open], [data-open], [data-state="open"], :popover-open)",
-            },
-            {
               "raw": ".target &",
               "type": "parent-nesting",
               "value": ".target &",
+            },
+            {
+              "raw": "&:is([open], [data-open], [data-state="open"], :popover-open)",
+              "type": "self-nesting",
+              "value": "&:is([open], [data-open], [data-state="open"], :popover-open)",
             },
           ],
           "entry": {
@@ -459,8 +459,8 @@ describe('style decoder', () => {
             ".\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:open\\:c_orange": {
               "&[data-attr='test']": {
                 "&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])": {
-                  "&:is([open], [data-open], [data-state="open"], :popover-open)": {
-                    ".target &": {
+                  ".target &": {
+                    "&:is([open], [data-open], [data-state="open"], :popover-open)": {
                       "color": "orange",
                     },
                   },

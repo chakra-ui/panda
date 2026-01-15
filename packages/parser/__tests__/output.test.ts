@@ -217,7 +217,7 @@ describe('extract to css output pipeline', () => {
       }
 
         @media screen and (min-width: 48rem) {
-          [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]).dark,.md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
+          [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2.dark:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2[data-theme=dark]:is(:hover, [data-hover]) {
             margin: calc(var(--spacing-2) * -1);
       }
       }
@@ -999,7 +999,7 @@ describe('extract to css output pipeline', () => {
           margin: var(--spacing-0);
       }
 
-        .closed > [data-theme=dark] .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900,.closed > .dark .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900.dark,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900[data-theme=dark] {
+        [data-theme=dark] .closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900,.dark .closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900.dark,.closed > .\\[\\.closed_\\>_\\&\\]\\:dark\\:c_green\\.900[data-theme=dark] {
           color: var(--colors-green-900);
       }
 
