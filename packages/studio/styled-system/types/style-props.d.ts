@@ -16,7 +16,7 @@ export type CssVarProperties = {
 
 export interface SystemProperties {
    /**
-   * The **`appearance`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `none | button | button-bevel | caret | checkbox | default-button | inner-spin-button | listbox | listitem | media-controls-background | media-controls-fullscreen-background | media-current-time-display | media-enter-fullscreen-button | media-exit-fullscreen-button | media-fullscreen-button | media-mute-button | media-overlay-play-button | media-play-button | media-seek-back-button | media-seek-forward-button | media-slider | media-sliderthumb | media-time-remaining-display | media-toggle-closed-captions-button | media-volume-slider | media-volume-slider-container | media-volume-sliderthumb | menulist | menulist-button | menulist-text | menulist-textfield | meter | progress-bar | progress-bar-value | push-button | radio | searchfield | searchfield-cancel-button | searchfield-decoration | searchfield-results-button | searchfield-results-decoration | slider-horizontal | slider-vertical | sliderthumb-horizontal | sliderthumb-vertical | square-button | textarea | textfield | -apple-pay-button`
    *
@@ -56,7 +56,7 @@ WebkitBorderBeforeWidth?: ConditionalValue<CssProperties["WebkitBorderBeforeWidt
    */
 WebkitBoxReflect?: ConditionalValue<CssProperties["WebkitBoxReflect"] | AnyString>
  /**
-   * The **`-webkit-line-clamp`** CSS property allows limiting of the contents of a block to the specified number of lines.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | <integer>`
    *
@@ -64,23 +64,21 @@ WebkitBoxReflect?: ConditionalValue<CssProperties["WebkitBoxReflect"] | AnyStrin
    */
 WebkitLineClamp?: ConditionalValue<CssProperties["WebkitLineClamp"] | AnyString>
  /**
-   * The **`mask`** CSS shorthand property hides an element (partially or fully) by masking or clipping the image at specific points.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `[ <mask-reference> || <position> [ / <bg-size> ]? || <repeat-style> || [ <box> | border | padding | content | text ] || [ <box> | border | padding | content ] ]#`
+   * **Syntax**: `[ <mask-reference> || <position> [ / <bg-size> ]? || <repeat-style> || [ <visual-box> | border | padding | content | text ] || [ <visual-box> | border | padding | content ] ]#`
    */
 WebkitMask?: ConditionalValue<CssProperties["WebkitMask"] | AnyString>
  /**
-   * If a `mask-image` is specified, `-webkit-mask-attachment` determines whether the mask image's position is fixed within the viewport, or scrolls along with its containing block.
-   *
    * **Syntax**: `<attachment>#`
    *
    * **Initial value**: `scroll`
    */
 WebkitMaskAttachment?: ConditionalValue<CssProperties["WebkitMaskAttachment"] | AnyString>
  /**
-   * The **`mask-clip`** CSS property determines the area which is affected by a mask. The painted content of an element must be restricted to this area.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `[ <box> | border | padding | content | text ]#`
+   * **Syntax**: `[ <coord-box> | no-clip | border | padding | content | text ]#`
    *
    * **Initial value**: `border`
    */
@@ -94,7 +92,7 @@ WebkitMaskClip?: ConditionalValue<CssProperties["WebkitMaskClip"] | AnyString>
    */
 WebkitMaskComposite?: ConditionalValue<CssProperties["WebkitMaskComposite"] | AnyString>
  /**
-   * The **`mask-image`** CSS property sets the image that is used as mask layer for an element. By default this means the alpha channel of the mask image will be multiplied with the alpha channel of the element. This can be controlled with the `mask-mode` property.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<mask-reference>#`
    *
@@ -102,15 +100,15 @@ WebkitMaskComposite?: ConditionalValue<CssProperties["WebkitMaskComposite"] | An
    */
 WebkitMaskImage?: ConditionalValue<CssProperties["WebkitMaskImage"] | AnyString>
  /**
-   * The **`mask-origin`** CSS property sets the origin of a mask.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `[ <box> | border | padding | content ]#`
+   * **Syntax**: `[ <coord-box> | border | padding | content ]#`
    *
    * **Initial value**: `padding`
    */
 WebkitMaskOrigin?: ConditionalValue<CssProperties["WebkitMaskOrigin"] | AnyString>
  /**
-   * The **`mask-position`** CSS property sets the initial position, relative to the mask position layer set by `mask-origin`, for each defined mask image.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<position>#`
    *
@@ -134,7 +132,7 @@ WebkitMaskPositionX?: ConditionalValue<CssProperties["WebkitMaskPositionX"] | An
    */
 WebkitMaskPositionY?: ConditionalValue<CssProperties["WebkitMaskPositionY"] | AnyString>
  /**
-   * The **`mask-repeat`** CSS property sets how mask images are repeated. A mask image can be repeated along the horizontal axis, the vertical axis, both axes, or not repeated at all.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<repeat-style>#`
    *
@@ -158,7 +156,7 @@ WebkitMaskRepeatX?: ConditionalValue<CssProperties["WebkitMaskRepeatX"] | AnyStr
    */
 WebkitMaskRepeatY?: ConditionalValue<CssProperties["WebkitMaskRepeatY"] | AnyString>
  /**
-   * The **`mask-size`** CSS property specifies the sizes of the mask images. The size of the image can be fully or partially constrained in order to preserve its intrinsic ratio.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<bg-size>#`
    *
@@ -166,8 +164,6 @@ WebkitMaskRepeatY?: ConditionalValue<CssProperties["WebkitMaskRepeatY"] | AnyStr
    */
 WebkitMaskSize?: ConditionalValue<CssProperties["WebkitMaskSize"] | AnyString>
  /**
-   * The `-webkit-overflow-scrolling` CSS property controls whether or not touch devices use momentum-based scrolling for a given element.
-   *
    * **Syntax**: `auto | touch`
    *
    * **Initial value**: `auto`
@@ -182,7 +178,7 @@ WebkitOverflowScrolling?: ConditionalValue<CssProperties["WebkitOverflowScrollin
    */
 WebkitTapHighlightColor?: ConditionalValue<CssProperties["WebkitTapHighlightColor"] | AnyString>
  /**
-   * The **`-webkit-text-fill-color`** CSS property specifies the fill color of characters of text. If this property is not set, the value of the `color` property is used.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2016.
    *
    * **Syntax**: `<color>`
    *
@@ -190,13 +186,13 @@ WebkitTapHighlightColor?: ConditionalValue<CssProperties["WebkitTapHighlightColo
    */
 WebkitTextFillColor?: ConditionalValue<UtilityValues["WebkitTextFillColor"] | CssVars | CssProperties["WebkitTextFillColor"] | AnyString>
  /**
-   * The **`-webkit-text-stroke`** CSS property specifies the width and color of strokes for text characters. This is a shorthand property for the longhand properties `-webkit-text-stroke-width` and `-webkit-text-stroke-color`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
    *
    * **Syntax**: `<length> || <color>`
    */
 WebkitTextStroke?: ConditionalValue<CssProperties["WebkitTextStroke"] | AnyString>
  /**
-   * The **`-webkit-text-stroke-color`** CSS property specifies the stroke color of characters of text. If this property is not set, the value of the `color` property is used.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
    *
    * **Syntax**: `<color>`
    *
@@ -204,7 +200,7 @@ WebkitTextStroke?: ConditionalValue<CssProperties["WebkitTextStroke"] | AnyStrin
    */
 WebkitTextStrokeColor?: ConditionalValue<CssProperties["WebkitTextStrokeColor"] | AnyString>
  /**
-   * The **`-webkit-text-stroke-width`** CSS property specifies the width of the stroke for text.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
    *
    * **Syntax**: `<length>`
    *
@@ -226,29 +222,29 @@ WebkitTouchCallout?: ConditionalValue<CssProperties["WebkitTouchCallout"] | AnyS
    */
 WebkitUserModify?: ConditionalValue<CssProperties["WebkitUserModify"] | AnyString>
  /**
-   * The **`user-select`** CSS property controls whether the user can select text. This doesn't have any effect on content loaded as part of a browser's user interface (its chrome), except in textboxes.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `auto | text | none | contain | all`
+   * **Syntax**: `auto | text | none | all`
    *
    * **Initial value**: `auto`
    */
 WebkitUserSelect?: ConditionalValue<CssProperties["WebkitUserSelect"] | AnyString>
  /**
-   * The **`accent-color`** CSS property sets the accent color for user-interface controls generated by some elements.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `auto | <color>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **93** | **92**  | **15.4** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **93** | **92**  | **15.4** | **93** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/accent-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/accent-color
    */
 accentColor?: ConditionalValue<UtilityValues["accentColor"] | CssVars | CssProperties["accentColor"] | AnyString>
  /**
-   * The CSS **`align-content`** property sets the distribution of space between and around content items along a flexbox's cross-axis or a grid's block axis.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `normal | <baseline-position> | <content-distribution> | <overflow-position>? <content-position>`
    *
@@ -259,13 +255,13 @@ accentColor?: ConditionalValue<UtilityValues["accentColor"] | CssVars | CssPrope
    * |  **29**  | **28**  |  **9**  | **12** | **11** |
    * | 21 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/align-content
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/align-content
    */
 alignContent?: ConditionalValue<CssVars | CssProperties["alignContent"] | AnyString>
  /**
-   * The CSS **`align-items`** property sets the `align-self` value on all direct children as a group. In Flexbox, it controls the alignment of items on the Cross Axis. In Grid Layout, it controls the alignment of items on the Block Axis within their grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
-   * **Syntax**: `normal | stretch | <baseline-position> | [ <overflow-position>? <self-position> ]`
+   * **Syntax**: `normal | stretch | <baseline-position> | [ <overflow-position>? <self-position> ] | anchor-center`
    *
    * **Initial value**: `normal`
    *
@@ -274,13 +270,13 @@ alignContent?: ConditionalValue<CssVars | CssProperties["alignContent"] | AnyStr
    * |  **29**  | **20**  |  **9**  | **12** | **11** |
    * | 21 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/align-items
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/align-items
    */
 alignItems?: ConditionalValue<CssVars | CssProperties["alignItems"] | AnyString>
  /**
-   * The **`align-self`** CSS property overrides a grid or flex item's `align-items` value. In Grid, it aligns the item inside the grid area. In Flexbox, it aligns the item on the cross axis.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
-   * **Syntax**: `auto | normal | stretch | <baseline-position> | <overflow-position>? <self-position>`
+   * **Syntax**: `auto | normal | stretch | <baseline-position> | <overflow-position>? <self-position> | anchor-center`
    *
    * **Initial value**: `auto`
    *
@@ -289,41 +285,55 @@ alignItems?: ConditionalValue<CssVars | CssProperties["alignItems"] | AnyString>
    * |  **29**  | **20**  |  **9**  | **12** | **10** |
    * | 21 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/align-self
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/align-self
    */
 alignSelf?: ConditionalValue<CssVars | CssProperties["alignSelf"] | AnyString>
  /**
-   * The **`align-tracks`** CSS property sets the alignment in the masonry axis for grid containers that have masonry in their block axis.
-   *
    * **Syntax**: `[ normal | <baseline-position> | <content-distribution> | <overflow-position>? <content-position> ]#`
    *
    * **Initial value**: `normal`
-   *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   |   n/a   |   No   | n/a  | No  |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/align-tracks
    */
 alignTracks?: ConditionalValue<CssProperties["alignTracks"] | AnyString>
  /**
-   * The **`all`** shorthand CSS property resets all of an element's properties except `unicode-bidi`, `direction`, and CSS Custom Properties. It can set properties to their initial or inherited values, or to the values specified in another cascade layer or stylesheet origin.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `initial | inherit | unset | revert | revert-layer`
    *
    * **Initial value**: There is no practical initial value for it.
    *
-   * | Chrome | Firefox | Safari  | Edge | IE  |
-   * | :----: | :-----: | :-----: | :--: | :-: |
-   * | **37** | **27**  | **9.1** | n/a  | No  |
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **37** | **27**  | **9.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/all
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/all
    */
 all?: ConditionalValue<CssVars | CssProperties["all"] | AnyString>
- anchorName?: ConditionalValue<CssProperties["anchorName"] | AnyString>
- anchorScope?: ConditionalValue<CssProperties["anchorScope"] | AnyString>
  /**
-   * The **`animation`** shorthand CSS property applies an animation between styles. It is a shorthand for `animation-name`, `animation-duration`, `animation-timing-function`, `animation-delay`, `animation-iteration-count`, `animation-direction`, `animation-fill-mode`, and `animation-play-state`.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `none | <dashed-ident>#`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome  |   Firefox   | Safari |  Edge   | IE  |
+   * | :-----: | :---------: | :----: | :-----: | :-: |
+   * | **125** | **preview** | **26** | **125** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/anchor-name
+   */
+anchorName?: ConditionalValue<CssProperties["anchorName"] | AnyString>
+ /**
+   * **Syntax**: `none | all | <dashed-ident>#`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome  |   Firefox   | Safari |  Edge   | IE  |
+   * | :-----: | :---------: | :----: | :-----: | :-: |
+   * | **131** | **preview** | **26** | **131** | No  |
+   */
+anchorScope?: ConditionalValue<CssProperties["anchorScope"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<single-animation>#`
    *
@@ -332,25 +342,25 @@ all?: ConditionalValue<CssVars | CssProperties["all"] | AnyString>
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation
    */
 animation?: ConditionalValue<UtilityValues["animation"] | CssVars | CssProperties["animation"] | AnyString>
  /**
-   * The **`animation-composition`** CSS property specifies the composite operation to use when multiple animations affect the same property simultaneously.
+   * Since July 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<single-animation-composition>#`
    *
    * **Initial value**: `replace`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **112** | **115** | **16** | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **112** | **115** | **16** | **112** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-composition
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-composition
    */
 animationComposition?: ConditionalValue<CssVars | CssProperties["animationComposition"] | AnyString>
  /**
-   * The **`animation-delay`** CSS property specifies the amount of time to wait from applying the animation to an element before beginning to perform the animation. The animation can start later, immediately from its beginning, or immediately and partway through the animation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<time>#`
    *
@@ -361,11 +371,11 @@ animationComposition?: ConditionalValue<CssVars | CssProperties["animationCompos
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-delay
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-delay
    */
 animationDelay?: ConditionalValue<UtilityValues["animationDelay"] | CssVars | CssProperties["animationDelay"] | AnyString>
  /**
-   * The **`animation-direction`** CSS property sets whether an animation should play forward, backward, or alternate back and forth between playing the sequence forward and backward.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<single-animation-direction>#`
    *
@@ -376,13 +386,13 @@ animationDelay?: ConditionalValue<UtilityValues["animationDelay"] | CssVars | Cs
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-direction
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-direction
    */
 animationDirection?: ConditionalValue<CssVars | CssProperties["animationDirection"] | AnyString>
  /**
-   * The **`animation-duration`** CSS property sets the length of time that an animation takes to complete one cycle.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
-   * **Syntax**: `<time>#`
+   * **Syntax**: `[ auto | <time [0s,∞]> ]#`
    *
    * **Initial value**: `0s`
    *
@@ -391,11 +401,11 @@ animationDirection?: ConditionalValue<CssVars | CssProperties["animationDirectio
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-duration
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-duration
    */
 animationDuration?: ConditionalValue<UtilityValues["animationDuration"] | CssVars | CssProperties["animationDuration"] | AnyString>
  /**
-   * The **`animation-fill-mode`** CSS property sets how a CSS animation applies styles to its target before and after its execution.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<single-animation-fill-mode>#`
    *
@@ -406,11 +416,11 @@ animationDuration?: ConditionalValue<UtilityValues["animationDuration"] | CssVar
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 5 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-fill-mode
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-fill-mode
    */
 animationFillMode?: ConditionalValue<CssVars | CssProperties["animationFillMode"] | AnyString>
  /**
-   * The **`animation-iteration-count`** CSS property sets the number of times an animation sequence should be played before stopping.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<single-animation-iteration-count>#`
    *
@@ -421,11 +431,11 @@ animationFillMode?: ConditionalValue<CssVars | CssProperties["animationFillMode"
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-iteration-count
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-iteration-count
    */
 animationIterationCount?: ConditionalValue<CssProperties["animationIterationCount"] | AnyString>
  /**
-   * The **`animation-name`** CSS property specifies the names of one or more `@keyframes` at-rules that describe the animation to apply to an element. Multiple `@keyframe` at-rules are specified as a comma-separated list of names. If the specified name does not match any `@keyframe` at-rule, no properties are animated.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `[ none | <keyframes-name> ]#`
    *
@@ -436,11 +446,11 @@ animationIterationCount?: ConditionalValue<CssProperties["animationIterationCoun
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-name
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-name
    */
 animationName?: ConditionalValue<UtilityValues["animationName"] | CssVars | CssProperties["animationName"] | AnyString>
  /**
-   * The **`animation-play-state`** CSS property sets whether an animation is running or paused.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<single-animation-play-state>#`
    *
@@ -451,65 +461,65 @@ animationName?: ConditionalValue<UtilityValues["animationName"] | CssVars | CssP
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-play-state
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-play-state
    */
 animationPlayState?: ConditionalValue<CssProperties["animationPlayState"] | AnyString>
  /**
-   * The **`animation-range`** CSS shorthand property is used to set the start and end of an animation's attachment range along its timeline, i.e. where along the timeline an animation will start and end.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ <'animation-range-start'> <'animation-range-end'>? ]#`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-range
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-range
    */
 animationRange?: ConditionalValue<CssProperties["animationRange"] | AnyString>
  /**
-   * The **`animation-range-end`** CSS property is used to set the end of an animation's attachment range along its timeline, i.e. where along the timeline an animation will end.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ normal | <length-percentage> | <timeline-range-name> <length-percentage>? ]#`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-range-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-range-end
    */
 animationRangeEnd?: ConditionalValue<CssProperties["animationRangeEnd"] | AnyString>
  /**
-   * The **`animation-range-start`** CSS property is used to set the start of an animation's attachment range along its timeline, i.e. where along the timeline an animation will start.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ normal | <length-percentage> | <timeline-range-name> <length-percentage>? ]#`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-range-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-range-start
    */
 animationRangeStart?: ConditionalValue<CssProperties["animationRangeStart"] | AnyString>
  /**
-   * The **`animation-timeline`** CSS property specifies the timeline that is used to control the progress of an animation.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `<single-animation-timeline>#`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-timeline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-timeline
    */
 animationTimeline?: ConditionalValue<CssProperties["animationTimeline"] | AnyString>
  /**
-   * The **`animation-timing-function`** CSS property sets how an animation progresses through the duration of each cycle.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<easing-function>#`
    *
@@ -520,13 +530,13 @@ animationTimeline?: ConditionalValue<CssProperties["animationTimeline"] | AnyStr
    * | **43**  | **16**  |  **9**  | **12** | **10** |
    * | 3 _-x-_ | 5 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/animation-timing-function
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-timing-function
    */
 animationTimingFunction?: ConditionalValue<UtilityValues["animationTimingFunction"] | CssVars | CssProperties["animationTimingFunction"] | AnyString>
  /**
-   * The **`appearance`** CSS property is used to control native appearance of UI controls, that are based on operating system's theme.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
-   * **Syntax**: `none | auto | textfield | menulist-button | <compat-auto>`
+   * **Syntax**: `none | auto | <compat-auto> | <compat-special>`
    *
    * **Initial value**: `none`
    *
@@ -535,66 +545,67 @@ animationTimingFunction?: ConditionalValue<UtilityValues["animationTimingFunctio
    * | **84**  | **80**  | **15.4** |  **84**  | No  |
    * | 1 _-x-_ | 1 _-x-_ | 3 _-x-_  | 12 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/appearance
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/appearance
    */
 appearance?: ConditionalValue<CssVars | CssProperties["appearance"] | AnyString>
  /**
-   * The **`aspect-ratio`** CSS property sets a **preferred aspect ratio** for the box, which will be used in the calculation of auto sizes and some other layout functions.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `auto | <ratio>`
+   * **Syntax**: `auto || <ratio>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **88** | **89**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **88** | **89**  | **15** | **88** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/aspect-ratio
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/aspect-ratio
    */
 aspectRatio?: ConditionalValue<UtilityValues["aspectRatio"] | CssVars | CssProperties["aspectRatio"] | AnyString>
  /**
-   * The **`backdrop-filter`** CSS property lets you apply graphical effects such as blurring or color shifting to the area behind an element. Because it applies to everything _behind_ the element, to see the effect you must make the element or its background at least partially transparent.
+   * Since September 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `none | <filter-function-list>`
+   * **Syntax**: `none | <filter-value-list>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |   Safari    |  Edge  | IE  |
-   * | :----: | :-----: | :---------: | :----: | :-: |
-   * | **76** | **103** | **9** _-x-_ | **17** | No  |
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **76** | **103** | **18**  | **79** | No  |
+   * |        |         | 9 _-x-_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/backdrop-filter
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/backdrop-filter
    */
 backdropFilter?: ConditionalValue<UtilityValues["backdropFilter"] | CssVars | CssProperties["backdropFilter"] | AnyString>
  /**
-   * The **`backface-visibility`** CSS property sets whether the back face of an element is visible when turned towards the user.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `visible | hidden`
    *
    * **Initial value**: `visible`
    *
-   * |  Chrome  | Firefox |  Safari   |  Edge  |   IE   |
-   * | :------: | :-----: | :-------: | :----: | :----: |
-   * |  **36**  | **16**  | **15.4**  | **12** | **10** |
-   * | 12 _-x-_ |         | 5.1 _-x-_ |        |        |
+   * |  Chrome  | Firefox  |  Safari   |  Edge  |   IE   |
+   * | :------: | :------: | :-------: | :----: | :----: |
+   * |  **36**  |  **16**  | **15.4**  | **12** | **10** |
+   * | 12 _-x-_ | 10 _-x-_ | 5.1 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/backface-visibility
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/backface-visibility
    */
 backfaceVisibility?: ConditionalValue<CssVars | CssProperties["backfaceVisibility"] | AnyString>
  /**
-   * The **`background`** shorthand CSS property sets all background style properties at once, such as color, image, origin and size, or repeat method.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <bg-layer> , ]* <final-bg-layer>`
+   * **Syntax**: `<bg-layer>#? , <final-bg-layer>`
    *
    * | Chrome | Firefox | Safari |  Edge  |  IE   |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background
    */
 background?: ConditionalValue<UtilityValues["background"] | CssVars | CssProperties["background"] | AnyString>
  /**
-   * The **`background-attachment`** CSS property sets whether a background image's position is fixed within the viewport, or scrolls with its containing block.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<attachment>#`
    *
@@ -604,27 +615,27 @@ background?: ConditionalValue<UtilityValues["background"] | CssVars | CssPropert
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-attachment
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-attachment
    */
 backgroundAttachment?: ConditionalValue<CssVars | CssProperties["backgroundAttachment"] | AnyString>
  /**
-   * The **`background-blend-mode`** CSS property sets how an element's background images should blend with each other and with the element's background color.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<blend-mode>#`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **35** | **30**  | **8**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **35** | **30**  | **8**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-blend-mode
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-blend-mode
    */
 backgroundBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | AnyString>
  /**
-   * The **`background-clip`** CSS property sets whether an element's background extends underneath its border box, padding box, or content box.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<box>#`
+   * **Syntax**: `<bg-clip>#`
    *
    * **Initial value**: `border-box`
    *
@@ -633,11 +644,11 @@ backgroundBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | An
    * | **1**  |  **4**  |  **5**  | **12** | **9** |
    * |        |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-clip
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-clip
    */
 backgroundClip?: ConditionalValue<CssVars | CssProperties["backgroundClip"] | AnyString>
  /**
-   * The **`background-color`** CSS property sets the background color of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<color>`
    *
@@ -647,11 +658,11 @@ backgroundClip?: ConditionalValue<CssVars | CssProperties["backgroundClip"] | An
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-color
    */
 backgroundColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | CssProperties["backgroundColor"] | AnyString>
  /**
-   * The **`background-image`** CSS property sets one or more background images on an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<bg-image>#`
    *
@@ -661,13 +672,13 @@ backgroundColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-image
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-image
    */
 backgroundImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | CssProperties["backgroundImage"] | AnyString>
  /**
-   * The **`background-origin`** CSS property sets the background's origin: from the border start, inside the border, or inside the padding.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<box>#`
+   * **Syntax**: `<visual-box>#`
    *
    * **Initial value**: `padding-box`
    *
@@ -675,11 +686,11 @@ backgroundImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **4**  | **3**  | **12** | **9** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-origin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-origin
    */
 backgroundOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyString>
  /**
-   * The **`background-position`** CSS property sets the initial position for each background image. The position is relative to the position layer set by `background-origin`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<bg-position>#`
    *
@@ -689,11 +700,11 @@ backgroundOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-position
    */
 backgroundPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyString>
  /**
-   * The **`background-position-x`** CSS property sets the initial horizontal position for each background image. The position is relative to the position layer set by `background-origin`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2016.
    *
    * **Syntax**: `[ center | [ [ left | right | x-start | x-end ]? <length-percentage>? ]! ]#`
    *
@@ -703,11 +714,11 @@ backgroundPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyS
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  | **49**  | **1**  | **12** | **6** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-position-x
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-position-x
    */
 backgroundPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | AnyString>
  /**
-   * The **`background-position-y`** CSS property sets the initial vertical position for each background image. The position is relative to the position layer set by `background-origin`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2016.
    *
    * **Syntax**: `[ center | [ [ top | bottom | y-start | y-end ]? <length-percentage>? ]! ]#`
    *
@@ -717,11 +728,11 @@ backgroundPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | An
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  | **49**  | **1**  | **12** | **6** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-position-y
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-position-y
    */
 backgroundPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | AnyString>
  /**
-   * The **`background-repeat`** CSS property sets how background images are repeated. A background image can be repeated along the horizontal and vertical axes, or not repeated at all.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<repeat-style>#`
    *
@@ -731,11 +742,11 @@ backgroundPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | An
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-repeat
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-repeat
    */
 backgroundRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyString>
  /**
-   * The **`background-size`** CSS property sets the size of the element's background image. The image can be left to its natural size, stretched, or constrained to fit the available space.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<bg-size>#`
    *
@@ -746,25 +757,26 @@ backgroundRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyStrin
    * |  **3**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-size
    */
 backgroundSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
  /**
-   * The **`block-size`** CSS property defines the horizontal or vertical size of an element's block, depending on its writing mode. It corresponds to either the `width` or the `height` property, depending on the value of `writing-mode`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'width'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **41**  | **12.1** | n/a  | No  |
+   * |            Chrome            | Firefox |             Safari             |  Edge  | IE  |
+   * | :--------------------------: | :-----: | :----------------------------: | :----: | :-: |
+   * |            **57**            | **41**  |            **12.1**            | **79** | No  |
+   * | 8 _(-webkit-logical-height)_ |         | 5.1 _(-webkit-logical-height)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/block-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/block-size
    */
 blockSize?: ConditionalValue<UtilityValues["blockSize"] | CssVars | CssProperties["blockSize"] | AnyString>
  /**
-   * The **`border`** shorthand CSS property sets an element's border. It sets the values of `border-width`, `border-style`, and `border-color`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
    *
@@ -772,173 +784,173 @@ blockSize?: ConditionalValue<UtilityValues["blockSize"] | CssVars | CssPropertie
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border
    */
 border?: ConditionalValue<UtilityValues["border"] | CssVars | CssProperties["border"] | AnyString>
  /**
-   * The **`border-block`** CSS property is a shorthand property for setting the individual logical block border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
+   * **Syntax**: `<'border-block-start'>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block
    */
 borderBlock?: ConditionalValue<UtilityValues["borderBlock"] | CssVars | CssProperties["borderBlock"] | AnyString>
  /**
-   * The **`border-block-color`** CSS property defines the color of the logical block borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-color
    */
 borderBlockColor?: ConditionalValue<UtilityValues["borderBlockColor"] | CssVars | CssProperties["borderBlockColor"] | AnyString>
  /**
-   * The **`border-block-end`** CSS property is a shorthand property for setting the individual logical block-end border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-end
    */
 borderBlockEnd?: ConditionalValue<UtilityValues["borderBlockEnd"] | CssVars | CssProperties["borderBlockEnd"] | AnyString>
  /**
-   * The **`border-block-end-color`** CSS property defines the color of the logical block-end border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-color'>`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-end-color
    */
 borderBlockEndColor?: ConditionalValue<UtilityValues["borderBlockEndColor"] | CssVars | CssProperties["borderBlockEndColor"] | AnyString>
  /**
-   * The **`border-block-end-style`** CSS property defines the style of the logical block-end border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-style'>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-end-style
    */
 borderBlockEndStyle?: ConditionalValue<CssVars | CssProperties["borderBlockEndStyle"] | AnyString>
  /**
-   * The **`border-block-end-width`** CSS property defines the width of the logical block-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'>`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-end-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-end-width
    */
 borderBlockEndWidth?: ConditionalValue<CssProperties["borderBlockEndWidth"] | AnyString>
  /**
-   * The **`border-block-start`** CSS property is a shorthand property for setting the individual logical block-start border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-start
    */
 borderBlockStart?: ConditionalValue<UtilityValues["borderBlockStart"] | CssVars | CssProperties["borderBlockStart"] | AnyString>
  /**
-   * The **`border-block-start-color`** CSS property defines the color of the logical block-start border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-color'>`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-start-color
    */
 borderBlockStartColor?: ConditionalValue<UtilityValues["borderBlockStartColor"] | CssVars | CssProperties["borderBlockStartColor"] | AnyString>
  /**
-   * The **`border-block-start-style`** CSS property defines the style of the logical block start border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-style'>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-start-style
    */
 borderBlockStartStyle?: ConditionalValue<CssVars | CssProperties["borderBlockStartStyle"] | AnyString>
  /**
-   * The **`border-block-start-width`** CSS property defines the width of the logical block-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'>`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-start-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-start-width
    */
 borderBlockStartWidth?: ConditionalValue<CssProperties["borderBlockStartWidth"] | AnyString>
  /**
-   * The **`border-block-style`** CSS property defines the style of the logical block borders of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style` and `border-bottom-style`, or `border-left-style` and `border-right-style` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-style'>`
+   * **Syntax**: `<'border-top-style'>{1,2}`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-style
    */
 borderBlockStyle?: ConditionalValue<CssVars | CssProperties["borderBlockStyle"] | AnyString>
  /**
-   * The **`border-block-width`** CSS property defines the width of the logical block borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'>`
+   * **Syntax**: `<'border-top-width'>{1,2}`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-width
    */
 borderBlockWidth?: ConditionalValue<CssProperties["borderBlockWidth"] | AnyString>
  /**
-   * The **`border-bottom`** shorthand CSS property sets an element's bottom border. It sets the values of `border-bottom-width`, `border-bottom-style` and `border-bottom-color`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
    *
@@ -946,11 +958,11 @@ borderBlockWidth?: ConditionalValue<CssProperties["borderBlockWidth"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom
    */
 borderBottom?: ConditionalValue<UtilityValues["borderBottom"] | CssVars | CssProperties["borderBottom"] | AnyString>
  /**
-   * The **`border-bottom-color`** CSS property sets the color of an element's bottom border. It can also be set with the shorthand CSS properties `border-color` or `border-bottom`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<'border-top-color'>`
    *
@@ -960,13 +972,13 @@ borderBottom?: ConditionalValue<UtilityValues["borderBottom"] | CssVars | CssPro
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom-color
    */
 borderBottomColor?: ConditionalValue<UtilityValues["borderBottomColor"] | CssVars | CssProperties["borderBottomColor"] | AnyString>
  /**
-   * The **`border-bottom-left-radius`** CSS property rounds the bottom-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -975,13 +987,13 @@ borderBottomColor?: ConditionalValue<UtilityValues["borderBottomColor"] | CssVar
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-left-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom-left-radius
    */
 borderBottomLeftRadius?: ConditionalValue<UtilityValues["borderBottomLeftRadius"] | CssVars | CssProperties["borderBottomLeftRadius"] | AnyString>
  /**
-   * The **`border-bottom-right-radius`** CSS property rounds the bottom-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -990,11 +1002,11 @@ borderBottomLeftRadius?: ConditionalValue<UtilityValues["borderBottomLeftRadius"
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-right-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom-right-radius
    */
 borderBottomRightRadius?: ConditionalValue<UtilityValues["borderBottomRightRadius"] | CssVars | CssProperties["borderBottomRightRadius"] | AnyString>
  /**
-   * The **`border-bottom-style`** CSS property sets the line style of an element's bottom `border`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-style>`
    *
@@ -1004,11 +1016,11 @@ borderBottomRightRadius?: ConditionalValue<UtilityValues["borderBottomRightRadiu
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom-style
    */
 borderBottomStyle?: ConditionalValue<CssVars | CssProperties["borderBottomStyle"] | AnyString>
  /**
-   * The **`border-bottom-width`** CSS property sets the width of the bottom border of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width>`
    *
@@ -1018,25 +1030,25 @@ borderBottomStyle?: ConditionalValue<CssVars | CssProperties["borderBottomStyle"
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom-width
    */
 borderBottomWidth?: ConditionalValue<CssProperties["borderBottomWidth"] | AnyString>
  /**
-   * The **`border-collapse`** CSS property sets whether cells inside a `<table>` have shared or separate borders.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `collapse | separate`
+   * **Syntax**: `separate | collapse`
    *
    * **Initial value**: `separate`
    *
    * | Chrome | Firefox | Safari  |  Edge  |  IE   |
    * | :----: | :-----: | :-----: | :----: | :---: |
-   * | **1**  |  **1**  | **1.2** | **12** | **5** |
+   * | **1**  |  **1**  | **1.1** | **12** | **5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-collapse
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-collapse
    */
 borderCollapse?: ConditionalValue<CssVars | CssProperties["borderCollapse"] | AnyString>
  /**
-   * The **`border-color`** shorthand CSS property sets the color of an element's border.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<color>{1,4}`
    *
@@ -1044,39 +1056,39 @@ borderCollapse?: ConditionalValue<CssVars | CssProperties["borderCollapse"] | An
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-color
    */
 borderColor?: ConditionalValue<UtilityValues["borderColor"] | CssVars | CssProperties["borderColor"] | AnyString>
  /**
-   * The **`border-end-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-end-end-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-end-end-radius
    */
 borderEndEndRadius?: ConditionalValue<UtilityValues["borderEndEndRadius"] | CssVars | CssProperties["borderEndEndRadius"] | AnyString>
  /**
-   * The **`border-end-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-end-start-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-end-start-radius
    */
 borderEndStartRadius?: ConditionalValue<UtilityValues["borderEndStartRadius"] | CssVars | CssProperties["borderEndStartRadius"] | AnyString>
  /**
-   * The **`border-image`** CSS property draws an image around a given element. It replaces the element's regular border.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<'border-image-source'> || <'border-image-slice'> [ / <'border-image-width'> | / <'border-image-width'>? / <'border-image-outset'> ]? || <'border-image-repeat'>`
    *
@@ -1085,13 +1097,13 @@ borderEndStartRadius?: ConditionalValue<UtilityValues["borderEndStartRadius"] | 
    * | **16**  |  **15**   |  **6**  | **12** | **11** |
    * | 7 _-x-_ | 3.5 _-x-_ | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-image
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-image
    */
 borderImage?: ConditionalValue<CssProperties["borderImage"] | AnyString>
  /**
-   * The **`border-image-outset`** CSS property sets the distance by which an element's border image is set out from its border box.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <length> | <number> ]{1,4}`
+   * **Syntax**: `[ <length [0,∞]> | <number [0,∞]> ]{1,4}  `
    *
    * **Initial value**: `0`
    *
@@ -1099,11 +1111,11 @@ borderImage?: ConditionalValue<CssProperties["borderImage"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **15** | **15**  | **6**  | **12** | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-image-outset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-image-outset
    */
 borderImageOutset?: ConditionalValue<CssProperties["borderImageOutset"] | AnyString>
  /**
-   * The **`border-image-repeat`** CSS property defines how the edge regions and middle region of a source image are adjusted to fit the dimensions of an element's border image. The middle region can be displayed by using the keyword "fill" in the border-image-slice property.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2016.
    *
    * **Syntax**: `[ stretch | repeat | round | space ]{1,2}`
    *
@@ -1113,13 +1125,13 @@ borderImageOutset?: ConditionalValue<CssProperties["borderImageOutset"] | AnyStr
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **15** | **15**  | **6**  | **12** | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-image-repeat
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-image-repeat
    */
 borderImageRepeat?: ConditionalValue<CssProperties["borderImageRepeat"] | AnyString>
  /**
-   * The **`border-image-slice`** CSS property divides the image specified by `border-image-source` into regions. These regions form the components of an element's border image.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<number-percentage>{1,4} && fill?`
+   * **Syntax**: `[ <number [0,∞]> | <percentage [0,∞]> ]{1,4}  && fill?`
    *
    * **Initial value**: `100%`
    *
@@ -1127,11 +1139,11 @@ borderImageRepeat?: ConditionalValue<CssProperties["borderImageRepeat"] | AnyStr
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **15** | **15**  | **6**  | **12** | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-image-slice
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-image-slice
    */
 borderImageSlice?: ConditionalValue<CssProperties["borderImageSlice"] | AnyString>
  /**
-   * The **`border-image-source`** CSS property sets the source image used to create an element's border image.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `none | <image>`
    *
@@ -1141,192 +1153,192 @@ borderImageSlice?: ConditionalValue<CssProperties["borderImageSlice"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **15** | **15**  | **6**  | **12** | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-image-source
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-image-source
    */
 borderImageSource?: ConditionalValue<CssProperties["borderImageSource"] | AnyString>
  /**
-   * The **`border-image-width`** CSS property sets the width of an element's border image.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <length-percentage> | <number> | auto ]{1,4}`
+   * **Syntax**: `[ <length-percentage [0,∞]> | <number [0,∞]> | auto ]{1,4}`
    *
    * **Initial value**: `1`
    *
    * | Chrome | Firefox | Safari |  Edge  |   IE   |
    * | :----: | :-----: | :----: | :----: | :----: |
-   * | **15** | **13**  | **6**  | **12** | **11** |
+   * | **16** | **13**  | **6**  | **12** | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-image-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-image-width
    */
 borderImageWidth?: ConditionalValue<CssProperties["borderImageWidth"] | AnyString>
  /**
-   * The **`border-inline`** CSS property is a shorthand property for setting the individual logical inline border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
+   * **Syntax**: `<'border-block-start'>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline
    */
 borderInline?: ConditionalValue<UtilityValues["borderInline"] | CssVars | CssProperties["borderInline"] | AnyString>
  /**
-   * The **`border-inline-color`** CSS property defines the color of the logical inline borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-color
    */
 borderInlineColor?: ConditionalValue<UtilityValues["borderInlineColor"] | CssVars | CssProperties["borderInlineColor"] | AnyString>
  /**
-   * The **`border-inline-end`** CSS property is a shorthand property for setting the individual logical inline-end border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-end
    */
 borderInlineEnd?: ConditionalValue<UtilityValues["borderInlineEnd"] | CssVars | CssProperties["borderInlineEnd"] | AnyString>
  /**
-   * The **`border-inline-end-color`** CSS property defines the color of the logical inline-end border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-color'>`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome |           Firefox           |  Safari  | Edge | IE  |
-   * | :----: | :-------------------------: | :------: | :--: | :-: |
-   * | **69** |           **41**            | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-end-color)_ |          |      |     |
+   * | Chrome |           Firefox           |  Safari  |  Edge  | IE  |
+   * | :----: | :-------------------------: | :------: | :----: | :-: |
+   * | **69** |           **41**            | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-end-color)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-end-color
    */
 borderInlineEndColor?: ConditionalValue<UtilityValues["borderInlineEndColor"] | CssVars | CssProperties["borderInlineEndColor"] | AnyString>
  /**
-   * The **`border-inline-end-style`** CSS property defines the style of the logical inline end border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-style'>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome |           Firefox           |  Safari  | Edge | IE  |
-   * | :----: | :-------------------------: | :------: | :--: | :-: |
-   * | **69** |           **41**            | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-end-style)_ |          |      |     |
+   * | Chrome |           Firefox           |  Safari  |  Edge  | IE  |
+   * | :----: | :-------------------------: | :------: | :----: | :-: |
+   * | **69** |           **41**            | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-end-style)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-end-style
    */
 borderInlineEndStyle?: ConditionalValue<CssVars | CssProperties["borderInlineEndStyle"] | AnyString>
  /**
-   * The **`border-inline-end-width`** CSS property defines the width of the logical inline-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'>`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome |           Firefox           |  Safari  | Edge | IE  |
-   * | :----: | :-------------------------: | :------: | :--: | :-: |
-   * | **69** |           **41**            | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-end-width)_ |          |      |     |
+   * | Chrome |           Firefox           |  Safari  |  Edge  | IE  |
+   * | :----: | :-------------------------: | :------: | :----: | :-: |
+   * | **69** |           **41**            | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-end-width)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-end-width
    */
 borderInlineEndWidth?: ConditionalValue<CssProperties["borderInlineEndWidth"] | AnyString>
  /**
-   * The **`border-inline-start`** CSS property is a shorthand property for setting the individual logical inline-start border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-start
    */
 borderInlineStart?: ConditionalValue<UtilityValues["borderInlineStart"] | CssVars | CssProperties["borderInlineStart"] | AnyString>
  /**
-   * The **`border-inline-start-color`** CSS property defines the color of the logical inline start border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-color'>`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome |            Firefox            |  Safari  | Edge | IE  |
-   * | :----: | :---------------------------: | :------: | :--: | :-: |
-   * | **69** |            **41**             | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-start-color)_ |          |      |     |
+   * | Chrome |            Firefox            |  Safari  |  Edge  | IE  |
+   * | :----: | :---------------------------: | :------: | :----: | :-: |
+   * | **69** |            **41**             | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-start-color)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-start-color
    */
 borderInlineStartColor?: ConditionalValue<UtilityValues["borderInlineStartColor"] | CssVars | CssProperties["borderInlineStartColor"] | AnyString>
  /**
-   * The **`border-inline-start-style`** CSS property defines the style of the logical inline start border of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style`, `border-right-style`, `border-bottom-style`, or `border-left-style` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-style'>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome |            Firefox            |  Safari  | Edge | IE  |
-   * | :----: | :---------------------------: | :------: | :--: | :-: |
-   * | **69** |            **41**             | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-start-style)_ |          |      |     |
+   * | Chrome |            Firefox            |  Safari  |  Edge  | IE  |
+   * | :----: | :---------------------------: | :------: | :----: | :-: |
+   * | **69** |            **41**             | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-start-style)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-start-style
    */
 borderInlineStartStyle?: ConditionalValue<CssVars | CssProperties["borderInlineStartStyle"] | AnyString>
  /**
-   * The **`border-inline-start-width`** CSS property defines the width of the logical inline-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'>`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-start-width
    */
 borderInlineStartWidth?: ConditionalValue<CssProperties["borderInlineStartWidth"] | AnyString>
  /**
-   * The **`border-inline-style`** CSS property defines the style of the logical inline borders of an element, which maps to a physical border style depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-style` and `border-bottom-style`, or `border-left-style` and `border-right-style` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-style'>`
+   * **Syntax**: `<'border-top-style'>{1,2}`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-style
    */
 borderInlineStyle?: ConditionalValue<CssVars | CssProperties["borderInlineStyle"] | AnyString>
  /**
-   * The **`border-inline-width`** CSS property defines the width of the logical inline borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'>`
+   * **Syntax**: `<'border-top-width'>{1,2}`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-width
    */
 borderInlineWidth?: ConditionalValue<CssProperties["borderInlineWidth"] | AnyString>
  /**
-   * The **`border-left`** shorthand CSS property sets all the properties of an element's left border.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
    *
@@ -1334,11 +1346,11 @@ borderInlineWidth?: ConditionalValue<CssProperties["borderInlineWidth"] | AnyStr
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-left
    */
 borderLeft?: ConditionalValue<UtilityValues["borderLeft"] | CssVars | CssProperties["borderLeft"] | AnyString>
  /**
-   * The **`border-left-color`** CSS property sets the color of an element's left border. It can also be set with the shorthand CSS properties `border-color` or `border-left`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<color>`
    *
@@ -1348,11 +1360,11 @@ borderLeft?: ConditionalValue<UtilityValues["borderLeft"] | CssVars | CssPropert
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-left-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-left-color
    */
 borderLeftColor?: ConditionalValue<UtilityValues["borderLeftColor"] | CssVars | CssProperties["borderLeftColor"] | AnyString>
  /**
-   * The **`border-left-style`** CSS property sets the line style of an element's left `border`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-style>`
    *
@@ -1362,11 +1374,11 @@ borderLeftColor?: ConditionalValue<UtilityValues["borderLeftColor"] | CssVars | 
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-left-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-left-style
    */
 borderLeftStyle?: ConditionalValue<CssVars | CssProperties["borderLeftStyle"] | AnyString>
  /**
-   * The **`border-left-width`** CSS property sets the width of the left border of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width>`
    *
@@ -1376,24 +1388,24 @@ borderLeftStyle?: ConditionalValue<CssVars | CssProperties["borderLeftStyle"] | 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-left-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-left-width
    */
 borderLeftWidth?: ConditionalValue<CssProperties["borderLeftWidth"] | AnyString>
  /**
-   * The **`border-radius`** CSS property rounds the corners of an element's outer border edge. You can set a single radius to make circular corners, or two radii to make elliptical corners.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,4} [ / <length-percentage>{1,4} ]?`
+   * **Syntax**: `<length-percentage [0,∞]>{1,4} [ / <length-percentage [0,∞]>{1,4} ]?`
    *
    * | Chrome  | Firefox | Safari  |  Edge  |  IE   |
    * | :-----: | :-----: | :-----: | :----: | :---: |
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-radius
    */
 borderRadius?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssProperties["borderRadius"] | AnyString>
  /**
-   * The **`border-right`** shorthand CSS property sets all the properties of an element's right border.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
    *
@@ -1401,11 +1413,11 @@ borderRadius?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssPro
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-right
    */
 borderRight?: ConditionalValue<UtilityValues["borderRight"] | CssVars | CssProperties["borderRight"] | AnyString>
  /**
-   * The **`border-right-color`** CSS property sets the color of an element's right border. It can also be set with the shorthand CSS properties `border-color` or `border-right`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<color>`
    *
@@ -1415,11 +1427,11 @@ borderRight?: ConditionalValue<UtilityValues["borderRight"] | CssVars | CssPrope
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-right-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-right-color
    */
 borderRightColor?: ConditionalValue<UtilityValues["borderRightColor"] | CssVars | CssProperties["borderRightColor"] | AnyString>
  /**
-   * The **`border-right-style`** CSS property sets the line style of an element's right `border`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-style>`
    *
@@ -1429,11 +1441,11 @@ borderRightColor?: ConditionalValue<UtilityValues["borderRightColor"] | CssVars 
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-right-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-right-style
    */
 borderRightStyle?: ConditionalValue<CssVars | CssProperties["borderRightStyle"] | AnyString>
  /**
-   * The **`border-right-width`** CSS property sets the width of the right border of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width>`
    *
@@ -1443,13 +1455,13 @@ borderRightStyle?: ConditionalValue<CssVars | CssProperties["borderRightStyle"] 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-right-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-right-width
    */
 borderRightWidth?: ConditionalValue<CssProperties["borderRightWidth"] | AnyString>
  /**
-   * The **`border-spacing`** CSS property sets the distance between the borders of adjacent cells in a `<table>`. This property applies only when `border-collapse` is `separate`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> <length>?`
+   * **Syntax**: `<length>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -1457,39 +1469,39 @@ borderRightWidth?: ConditionalValue<CssProperties["borderRightWidth"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-spacing
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-spacing
    */
 borderSpacing?: ConditionalValue<UtilityValues["borderSpacing"] | CssVars | CssProperties["borderSpacing"] | AnyString>
  /**
-   * The **`border-start-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-start-end-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-start-end-radius
    */
 borderStartEndRadius?: ConditionalValue<UtilityValues["borderStartEndRadius"] | CssVars | CssProperties["borderStartEndRadius"] | AnyString>
  /**
-   * The **`border-start-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-start-start-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-start-start-radius
    */
 borderStartStartRadius?: ConditionalValue<UtilityValues["borderStartStartRadius"] | CssVars | CssProperties["borderStartStartRadius"] | AnyString>
  /**
-   * The **`border-style`** shorthand CSS property sets the line style for all four sides of an element's border.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-style>{1,4}`
    *
@@ -1497,11 +1509,11 @@ borderStartStartRadius?: ConditionalValue<UtilityValues["borderStartStartRadius"
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-style
    */
 borderStyle?: ConditionalValue<CssProperties["borderStyle"] | AnyString>
  /**
-   * The **`border-top`** shorthand CSS property sets all the properties of an element's top border.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width> || <line-style> || <color>`
    *
@@ -1509,11 +1521,11 @@ borderStyle?: ConditionalValue<CssProperties["borderStyle"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top
    */
 borderTop?: ConditionalValue<UtilityValues["borderTop"] | CssVars | CssProperties["borderTop"] | AnyString>
  /**
-   * The **`border-top-color`** CSS property sets the color of an element's top border. It can also be set with the shorthand CSS properties `border-color` or `border-top`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<color>`
    *
@@ -1523,13 +1535,13 @@ borderTop?: ConditionalValue<UtilityValues["borderTop"] | CssVars | CssPropertie
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top-color
    */
 borderTopColor?: ConditionalValue<UtilityValues["borderTopColor"] | CssVars | CssProperties["borderTopColor"] | AnyString>
  /**
-   * The **`border-top-left-radius`** CSS property rounds the top-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -1538,13 +1550,13 @@ borderTopColor?: ConditionalValue<UtilityValues["borderTopColor"] | CssVars | Cs
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top-left-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top-left-radius
    */
 borderTopLeftRadius?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | CssVars | CssProperties["borderTopLeftRadius"] | AnyString>
  /**
-   * The **`border-top-right-radius`** CSS property rounds the top-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -1553,11 +1565,11 @@ borderTopLeftRadius?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | Cs
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top-right-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top-right-radius
    */
 borderTopRightRadius?: ConditionalValue<UtilityValues["borderTopRightRadius"] | CssVars | CssProperties["borderTopRightRadius"] | AnyString>
  /**
-   * The **`border-top-style`** CSS property sets the line style of an element's top `border`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-style>`
    *
@@ -1567,11 +1579,11 @@ borderTopRightRadius?: ConditionalValue<UtilityValues["borderTopRightRadius"] | 
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top-style
    */
 borderTopStyle?: ConditionalValue<CssVars | CssProperties["borderTopStyle"] | AnyString>
  /**
-   * The **`border-top-width`** CSS property sets the width of the top border of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width>`
    *
@@ -1581,11 +1593,11 @@ borderTopStyle?: ConditionalValue<CssVars | CssProperties["borderTopStyle"] | An
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top-width
    */
 borderTopWidth?: ConditionalValue<CssProperties["borderTopWidth"] | AnyString>
  /**
-   * The **`border-width`** shorthand CSS property sets the width of an element's border.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width>{1,4}`
    *
@@ -1593,13 +1605,13 @@ borderTopWidth?: ConditionalValue<CssProperties["borderTopWidth"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-width
    */
 borderWidth?: ConditionalValue<CssProperties["borderWidth"] | AnyString>
  /**
-   * The **`bottom`** CSS property participates in setting the vertical position of a positioned element. It has no effect on non-positioned elements.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `auto | <length-percentage> | <anchor()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -1607,22 +1619,23 @@ borderWidth?: ConditionalValue<CssProperties["borderWidth"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/bottom
    */
 bottom?: ConditionalValue<UtilityValues["bottom"] | CssVars | CssProperties["bottom"] | AnyString>
  boxAlign?: ConditionalValue<CssProperties["boxAlign"] | AnyString>
  /**
-   * The **`box-decoration-break`** CSS property specifies how an element's fragments should be rendered when broken across multiple lines, columns, or pages.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `slice | clone`
    *
    * **Initial value**: `slice`
    *
-   * |    Chrome    | Firefox |   Safari    | Edge | IE  |
-   * | :----------: | :-----: | :---------: | :--: | :-: |
-   * | **22** _-x-_ | **32**  | **7** _-x-_ | n/a  | No  |
+   * |  Chrome  | Firefox |   Safari    |   Edge   | IE  |
+   * | :------: | :-----: | :---------: | :------: | :-: |
+   * | **130**  | **32**  | **7** _-x-_ | **130**  | No  |
+   * | 22 _-x-_ |         |             | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/box-decoration-break
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/box-decoration-break
    */
 boxDecorationBreak?: ConditionalValue<CssVars | CssProperties["boxDecorationBreak"] | AnyString>
  boxDirection?: ConditionalValue<CssProperties["boxDirection"] | AnyString>
@@ -1633,7 +1646,7 @@ boxDecorationBreak?: ConditionalValue<CssVars | CssProperties["boxDecorationBrea
  boxOrient?: ConditionalValue<CssProperties["boxOrient"] | AnyString>
  boxPack?: ConditionalValue<CssProperties["boxPack"] | AnyString>
  /**
-   * The **`box-shadow`** CSS property adds shadow effects around an element's frame. You can set multiple effects separated by commas. A box shadow is described by X and Y offsets relative to the element, blur and spread radius, and color.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `none | <shadow>#`
    *
@@ -1644,11 +1657,11 @@ boxDecorationBreak?: ConditionalValue<CssVars | CssProperties["boxDecorationBrea
    * | **10**  |  **4**  | **5.1** | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/box-shadow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/box-shadow
    */
 boxShadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssProperties["boxShadow"] | AnyString>
  /**
-   * The **`box-sizing`** CSS property sets how the total width and height of an element is calculated.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `content-box | border-box`
    *
@@ -1659,11 +1672,11 @@ boxShadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssPropertie
    * | **10**  | **29**  | **5.1** | **12** | **8** |
    * | 1 _-x-_ | 1 _-x-_ | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/box-sizing
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/box-sizing
    */
 boxSizing?: ConditionalValue<CssVars | CssProperties["boxSizing"] | AnyString>
  /**
-   * The **`break-after`** CSS property sets how page, column, or region breaks should behave after a generated box. If there is no generated box, the property is ignored.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2019.
    *
    * **Syntax**: `auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region`
    *
@@ -1673,11 +1686,11 @@ boxSizing?: ConditionalValue<CssVars | CssProperties["boxSizing"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **50** | **65**  | **10** | **12** | **10** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/break-after
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/break-after
    */
 breakAfter?: ConditionalValue<CssVars | CssProperties["breakAfter"] | AnyString>
  /**
-   * The **`break-before`** CSS property sets how page, column, or region breaks should behave before a generated box. If there is no generated box, the property is ignored.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2019.
    *
    * **Syntax**: `auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region`
    *
@@ -1687,11 +1700,11 @@ breakAfter?: ConditionalValue<CssVars | CssProperties["breakAfter"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **50** | **65**  | **10** | **12** | **10** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/break-before
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/break-before
    */
 breakBefore?: ConditionalValue<CssVars | CssProperties["breakBefore"] | AnyString>
  /**
-   * The **`break-inside`** CSS property sets how page, column, or region breaks should behave inside a generated box. If there is no generated box, the property is ignored.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2019.
    *
    * **Syntax**: `auto | avoid | avoid-page | avoid-column | avoid-region`
    *
@@ -1701,13 +1714,13 @@ breakBefore?: ConditionalValue<CssVars | CssProperties["breakBefore"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **50** | **65**  | **10** | **12** | **10** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/break-inside
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/break-inside
    */
 breakInside?: ConditionalValue<CssVars | CssProperties["breakInside"] | AnyString>
  /**
-   * The **`caption-side`** CSS property puts the content of a table's `<caption>` on the specified side. The values are relative to the `writing-mode` of the table.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `top | bottom | block-start | block-end | inline-start | inline-end`
+   * **Syntax**: `top | bottom`
    *
    * **Initial value**: `top`
    *
@@ -1715,33 +1728,39 @@ breakInside?: ConditionalValue<CssVars | CssProperties["breakInside"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/caption-side
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/caption-side
    */
 captionSide?: ConditionalValue<CssVars | CssProperties["captionSide"] | AnyString>
  /** **Syntax**: `<'caret-color'> || <'caret-shape'>` */
 caret?: ConditionalValue<CssProperties["caret"] | AnyString>
  /**
-   * The **`caret-color`** CSS property sets the color of the **insertion caret**, the visible marker where the next character typed will be inserted. This is sometimes referred to as the **text input cursor**. The caret appears in elements such as `<input>` or those with the `contenteditable` attribute. The caret is typically a thin vertical line that flashes to help make it more noticeable. By default, it is black, but its color can be altered with this property.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `auto | <color>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **53**  | **11.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **57** | **53**  | **11.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/caret-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/caret-color
    */
 caretColor?: ConditionalValue<UtilityValues["caretColor"] | CssVars | CssProperties["caretColor"] | AnyString>
  /**
    * **Syntax**: `auto | bar | block | underscore`
    *
    * **Initial value**: `auto`
+   *
+   * | Chrome | Firefox | Safari | Edge | IE  |
+   * | :----: | :-----: | :----: | :--: | :-: |
+   * |   No   |   No    |   No   |  No  | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/caret-shape
    */
 caretShape?: ConditionalValue<CssProperties["caretShape"] | AnyString>
  /**
-   * The **`clear`** CSS property sets whether an element must be moved below (cleared) floating elements that precede it. The `clear` property applies to floating and non-floating elements.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `none | left | right | both | inline-start | inline-end`
    *
@@ -1751,12 +1770,12 @@ caretShape?: ConditionalValue<CssProperties["caretShape"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/clear
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/clear
    */
 clear?: ConditionalValue<CssVars | CssProperties["clear"] | AnyString>
  clip?: ConditionalValue<CssProperties["clip"] | AnyString>
  /**
-   * The **`clip-path`** CSS property creates a clipping region that sets what part of an element should be shown. Parts that are inside the region are shown, while those outside are hidden.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<clip-source> | [ <basic-shape> || <geometry-box> ] | none`
    *
@@ -1767,12 +1786,25 @@ clear?: ConditionalValue<CssVars | CssProperties["clear"] | AnyString>
    * |  **55**  | **3.5** | **9.1** | **79** | **10** |
    * | 23 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/clip-path
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/clip-path
    */
 clipPath?: ConditionalValue<CssProperties["clipPath"] | AnyString>
- clipRule?: ConditionalValue<CssProperties["clipRule"] | AnyString>
  /**
-   * The **`color`** CSS property sets the foreground color value of an element's text and text decorations, and sets the `currentcolor` value. `currentcolor` may be used as an indirect value on _other_ properties and is the default for other color properties, such as `border-color`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
+   *
+   * **Syntax**: `nonzero | evenodd`
+   *
+   * **Initial value**: `nonzero`
+   *
+   * | Chrome  | Firefox | Safari |  Edge  | IE  |
+   * | :-----: | :-----: | :----: | :----: | :-: |
+   * | **≤15** | **3.5** | **≤5** | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/clip-rule
+   */
+clipRule?: ConditionalValue<CssProperties["clipRule"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<color>`
    *
@@ -1782,26 +1814,39 @@ clipPath?: ConditionalValue<CssProperties["clipPath"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color
    */
 color?: ConditionalValue<UtilityValues["color"] | CssVars | CssProperties["color"] | AnyString>
- colorInterpolationFilters?: ConditionalValue<CssProperties["colorInterpolationFilters"] | AnyString>
  /**
-   * The **`color-scheme`** CSS property allows an element to indicate which color schemes it can comfortably be rendered in.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
+   *
+   * **Syntax**: `auto | sRGB | linearRGB`
+   *
+   * **Initial value**: `linearRGB`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **1**  |  **3**  | **3**  | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color-interpolation-filters
+   */
+colorInterpolationFilters?: ConditionalValue<CssProperties["colorInterpolationFilters"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2022.
    *
    * **Syntax**: `normal | [ light | dark | <custom-ident> ]+ && only?`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **81** | **96**  | **13** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **81** | **96**  | **13** | **81** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/color-scheme
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color-scheme
    */
 colorScheme?: ConditionalValue<CssProperties["colorScheme"] | AnyString>
  /**
-   * The **`column-count`** CSS property breaks an element's content into the specified number of columns.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
    * **Syntax**: `<integer> | auto`
    *
@@ -1812,13 +1857,13 @@ colorScheme?: ConditionalValue<CssProperties["colorScheme"] | AnyString>
    * | **50**  | **52**  |  **9**  | **12** | **10** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-count
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-count
    */
 columnCount?: ConditionalValue<CssProperties["columnCount"] | AnyString>
  /**
-   * The **`column-fill`** CSS property controls how an element's contents are balanced when broken into columns.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
-   * **Syntax**: `auto | balance | balance-all`
+   * **Syntax**: `auto | balance`
    *
    * **Initial value**: `balance`
    *
@@ -1827,11 +1872,11 @@ columnCount?: ConditionalValue<CssProperties["columnCount"] | AnyString>
    * | **50** | **52**  |  **9**  | **12** | **10** |
    * |        |         | 8 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-fill
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-fill
    */
 columnFill?: ConditionalValue<CssVars | CssProperties["columnFill"] | AnyString>
  /**
-   * The **`column-gap`** CSS property sets the size of the gap (gutter) between an element's columns.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `normal | <length-percentage>`
    *
@@ -1841,11 +1886,11 @@ columnFill?: ConditionalValue<CssVars | CssProperties["columnFill"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **1**  | **1.5** | **3**  | **12** | **10** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-gap
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-gap
    */
 columnGap?: ConditionalValue<UtilityValues["columnGap"] | CssVars | CssProperties["columnGap"] | AnyString>
  /**
-   * The **`column-rule`** shorthand CSS property sets the width, style, and color of the line drawn between columns in a multi-column layout.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
    * **Syntax**: `<'column-rule-width'> || <'column-rule-style'> || <'column-rule-color'>`
    *
@@ -1854,11 +1899,11 @@ columnGap?: ConditionalValue<UtilityValues["columnGap"] | CssVars | CssPropertie
    * | **50**  | **52**  |  **9**  | **12** | **10** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-rule
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-rule
    */
 columnRule?: ConditionalValue<CssProperties["columnRule"] | AnyString>
  /**
-   * The **`column-rule-color`** CSS property sets the color of the line drawn between columns in a multi-column layout.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
    * **Syntax**: `<color>`
    *
@@ -1869,11 +1914,11 @@ columnRule?: ConditionalValue<CssProperties["columnRule"] | AnyString>
    * | **50**  | **52**  |  **9**  | **12** | **10** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-rule-color
    */
 columnRuleColor?: ConditionalValue<CssProperties["columnRuleColor"] | AnyString>
  /**
-   * The **`column-rule-style`** CSS property sets the style of the line drawn between columns in a multi-column layout.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
    * **Syntax**: `<'border-style'>`
    *
@@ -1884,11 +1929,11 @@ columnRuleColor?: ConditionalValue<CssProperties["columnRuleColor"] | AnyString>
    * | **50**  | **52**  |  **9**  | **12** | **10** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-rule-style
    */
 columnRuleStyle?: ConditionalValue<CssVars | CssProperties["columnRuleStyle"] | AnyString>
  /**
-   * The **`column-rule-width`** CSS property sets the width of the line drawn between columns in a multi-column layout.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
    * **Syntax**: `<'border-width'>`
    *
@@ -1899,11 +1944,11 @@ columnRuleStyle?: ConditionalValue<CssVars | CssProperties["columnRuleStyle"] | 
    * | **50**  | **52**  |  **9**  | **12** | **10** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-rule-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-rule-width
    */
 columnRuleWidth?: ConditionalValue<CssProperties["columnRuleWidth"] | AnyString>
  /**
-   * The **`column-span`** CSS property makes it possible for an element to span across all columns when its value is set to `all`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
    *
    * **Syntax**: `none | all`
    *
@@ -1914,11 +1959,11 @@ columnRuleWidth?: ConditionalValue<CssProperties["columnRuleWidth"] | AnyString>
    * | **50**  | **71**  |   **9**   | **12** | **10** |
    * | 6 _-x-_ |         | 5.1 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-span
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-span
    */
 columnSpan?: ConditionalValue<CssProperties["columnSpan"] | AnyString>
  /**
-   * The **`column-width`** CSS property sets the ideal column width in a multi-column layout. The container will have as many columns as can fit without any of them having a width less than the `column-width` value. If the width of the container is narrower than the specified value, the single column's width will be smaller than the declared column width.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since November 2016.
    *
    * **Syntax**: `<length> | auto`
    *
@@ -1929,11 +1974,11 @@ columnSpan?: ConditionalValue<CssProperties["columnSpan"] | AnyString>
    * | **50**  | **50**  |  **9**  | **12** | **10** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/column-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/column-width
    */
 columnWidth?: ConditionalValue<CssProperties["columnWidth"] | AnyString>
  /**
-   * The **`columns`** CSS shorthand property sets the number of columns to use when drawing an element's contents, as well as those columns' widths.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
    * **Syntax**: `<'column-width'> || <'column-count'>`
    *
@@ -1942,135 +1987,135 @@ columnWidth?: ConditionalValue<CssProperties["columnWidth"] | AnyString>
    * | **50** | **52**  |  **9**  | **12** | **10** |
    * |        |         | 3 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/columns
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/columns
    */
 columns?: ConditionalValue<CssProperties["columns"] | AnyString>
  /**
-   * The **`contain`** CSS property indicates that an element and its contents are, as much as possible, independent from the rest of the document tree. Containment enables isolating a subsection of the DOM, providing performance benefits by limiting calculations of layout, style, paint, size, or any combination to a DOM subtree rather than the entire page. Containment can also be used to scope CSS counters and quotes.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `none | strict | content | [ [ size || inline-size ] || layout || style || paint ]`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **52** | **69**  | **15.4** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **52** | **69**  | **15.4** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/contain
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/contain
    */
 contain?: ConditionalValue<CssProperties["contain"] | AnyString>
  /**
-   * The **`contain-intrinsic-block-size`** CSS logical property defines the block size of an element that a browser can use for layout when the element is subject to size containment.
+   * Since September 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `auto? [ none | <length> ]`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **95** | **107** | **17** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **95** | **107** | **17** | **95** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-contain-intrinsic-block-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/contain-intrinsic-block-size
    */
 containIntrinsicBlockSize?: ConditionalValue<CssProperties["containIntrinsicBlockSize"] | AnyString>
  /**
-   * The **`contain-intrinsic-length`** CSS property sets the height of an element that a browser can use for layout when the element is subject to size containment.
+   * Since September 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `auto? [ none | <length> ]`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **95** | **107** | **17** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **95** | **107** | **17** | **95** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/contain-intrinsic-height
    */
 containIntrinsicHeight?: ConditionalValue<CssProperties["containIntrinsicHeight"] | AnyString>
  /**
-   * The **`contain-intrinsic-inline-size`** CSS logical property defines the inline-size of an element that a browser can use for layout when the element is subject to size containment.
+   * Since September 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `auto? [ none | <length> ]`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **95** | **107** | **17** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **95** | **107** | **17** | **95** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-contain-intrinsic-inline-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/contain-intrinsic-inline-size
    */
 containIntrinsicInlineSize?: ConditionalValue<CssProperties["containIntrinsicInlineSize"] | AnyString>
  /**
-   * The **`contain-intrinsic-size`** CSS shorthand property sets the size of an element that a browser will use for layout when the element is subject to size containment.
+   * Since September 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `[ auto? [ none | <length> ] ]{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **83** | **107** | **17** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **83** | **107** | **17** | **83** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/contain-intrinsic-size
    */
 containIntrinsicSize?: ConditionalValue<CssProperties["containIntrinsicSize"] | AnyString>
  /**
-   * The **`contain-intrinsic-width`** CSS property sets the width of an element that a browser will use for layout when the element is subject to size containment.
+   * Since September 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `auto? [ none | <length> ]`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **95** | **107** | **17** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **95** | **107** | **17** | **95** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/contain-intrinsic-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/contain-intrinsic-width
    */
 containIntrinsicWidth?: ConditionalValue<CssProperties["containIntrinsicWidth"] | AnyString>
  /**
-   * The **container** shorthand CSS property establishes the element as a query container and specifies the name or name for the containment context used in a container query.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since February 2023.
    *
    * **Syntax**: `<'container-name'> [ / <'container-type'> ]?`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **105** | **110** | **16** | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **105** | **110** | **16** | **105** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/container
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/container
    */
 container?: ConditionalValue<CssProperties["container"] | AnyString>
  /**
-   * The **container-name** CSS property specifies a list of query container names used by the @container at-rule in a container query. A container query will apply styles to elements based on the size of the nearest ancestor with a containment context. When a containment context is given a name, it can be specifically targeted using the `@container` at-rule instead of the nearest ancestor with containment.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since February 2023.
    *
    * **Syntax**: `none | <custom-ident>+`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **105** | **110** | **16** | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **105** | **110** | **16** | **105** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/container-name
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/container-name
    */
 containerName?: ConditionalValue<UtilityValues["containerName"] | CssVars | CssProperties["containerName"] | AnyString>
  /**
-   * The **container-type** CSS property is used to define the type of containment used in a container query.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since February 2023.
    *
-   * **Syntax**: `normal | size | inline-size`
+   * **Syntax**: `normal | [ [ size | inline-size ] || scroll-state ]`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **105** | **110** | **16** | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **105** | **110** | **16** | **105** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/container-type
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/container-type
    */
 containerType?: ConditionalValue<CssProperties["containerType"] | AnyString>
  /**
-   * The **`content`** CSS property replaces an element with a generated value. Objects inserted using the `content` property are **anonymous replaced elements**.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `normal | none | [ <content-replacement> | <content-list> ] [/ [ <string> | <counter> ]+ ]?`
+   * **Syntax**: `normal | none | [ <content-replacement> | <content-list> ] [ / [ <string> | <counter> | <attr()> ]+ ]?`
    *
    * **Initial value**: `normal`
    *
@@ -2078,25 +2123,26 @@ containerType?: ConditionalValue<CssProperties["containerType"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/content
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/content
    */
 content?: ConditionalValue<CssProperties["content"] | AnyString>
  /**
-   * The **`content-visibility`** CSS property controls whether or not an element renders its contents at all, along with forcing a strong set of containments, allowing user agents to potentially omit large swathes of layout and rendering work until it becomes needed. It enables the user agent to skip an element's rendering work (including layout and painting) until it is needed — which makes the initial page load much faster.
+   * Since September 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `visible | auto | hidden`
    *
    * **Initial value**: `visible`
    *
-   * | Chrome |   Firefox   | Safari | Edge | IE  |
-   * | :----: | :---------: | :----: | :--: | :-: |
-   * | **85** | **preview** |   No   | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **85** | **125** | **18** | **85** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/content-visibility
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/content-visibility
    */
 contentVisibility?: ConditionalValue<CssVars | CssProperties["contentVisibility"] | AnyString>
+ cornerShape?: ConditionalValue<CssProperties["cornerShape"] | AnyString>
  /**
-   * The **`counter-increment`** CSS property increases or decreases the value of a CSS counter by a given value.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `[ <counter-name> <integer>? ]+ | none`
    *
@@ -2106,11 +2152,11 @@ contentVisibility?: ConditionalValue<CssVars | CssProperties["contentVisibility"
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **2**  |  **1**  | **3**  | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/counter-increment
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/counter-increment
    */
 counterIncrement?: ConditionalValue<CssProperties["counterIncrement"] | AnyString>
  /**
-   * The **`counter-reset`** CSS property resets a CSS counter to a given value. This property will create a new counter or reversed counter with the given name on the specified element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `[ <counter-name> <integer>? | <reversed-counter-name> <integer>? ]+ | none`
    *
@@ -2120,27 +2166,27 @@ counterIncrement?: ConditionalValue<CssProperties["counterIncrement"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **2**  |  **1**  | **3**  | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/counter-reset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/counter-reset
    */
 counterReset?: ConditionalValue<CssProperties["counterReset"] | AnyString>
  /**
-   * The **`counter-set`** CSS property sets a CSS counter to a given value. It manipulates the value of existing counters, and will only create new counters if there isn't already a counter of the given name on the element.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `[ <counter-name> <integer>? ]+ | none`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **85** | **68**  | **17.2** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **85** | **68**  | **17.2** | **85** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/counter-set
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/counter-set
    */
 counterSet?: ConditionalValue<CssProperties["counterSet"] | AnyString>
  /**
-   * The **`cursor`** CSS property sets the mouse cursor, if any, to show when the mouse pointer is over an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since December 2021.
    *
-   * **Syntax**: `[ [ <url> [ <x> <y> ]? , ]* [ auto | default | none | context-menu | help | pointer | progress | wait | cell | crosshair | text | vertical-text | alias | copy | move | no-drop | not-allowed | e-resize | n-resize | ne-resize | nw-resize | s-resize | se-resize | sw-resize | w-resize | ew-resize | ns-resize | nesw-resize | nwse-resize | col-resize | row-resize | all-scroll | zoom-in | zoom-out | grab | grabbing ] ]`
+   * **Syntax**: `[ [ <url> [ <x> <y> ]? , ]* <cursor-predefined> ]`
    *
    * **Initial value**: `auto`
    *
@@ -2148,14 +2194,53 @@ counterSet?: ConditionalValue<CssProperties["counterSet"] | AnyString>
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  |  **1**  | **1.2** | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/cursor
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/cursor
    */
 cursor?: ConditionalValue<CssProperties["cursor"] | AnyString>
- cx?: ConditionalValue<CssProperties["cx"] | AnyString>
- cy?: ConditionalValue<CssProperties["cy"] | AnyString>
- d?: ConditionalValue<CssProperties["d"] | AnyString>
  /**
-   * The **`direction`** CSS property sets the direction of text, table columns, and horizontal overflow. Use `rtl` for languages written from right to left (like Hebrew or Arabic), and `ltr` for those written from left to right (like English and most other languages).
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
+   *
+   * **Syntax**: `<length> | <percentage>`
+   *
+   * **Initial value**: `0`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **43** | **69**  | **9**  | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/cx
+   */
+cx?: ConditionalValue<CssProperties["cx"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
+   *
+   * **Syntax**: `<length> | <percentage>`
+   *
+   * **Initial value**: `0`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **43** | **69**  | **9**  | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/cy
+   */
+cy?: ConditionalValue<CssProperties["cy"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `none | path(<string>)`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **52** | **97**  |   No   | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/d
+   */
+d?: ConditionalValue<CssProperties["d"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `ltr | rtl`
    *
@@ -2165,11 +2250,11 @@ cursor?: ConditionalValue<CssProperties["cursor"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **2**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/direction
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/direction
    */
 direction?: ConditionalValue<CssVars | CssProperties["direction"] | AnyString>
  /**
-   * The **`display`** CSS property sets whether an element is treated as a block or inline element and the layout used for its children, such as flow layout, grid or flex.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `[ <display-outside> || <display-inside> ] | <display-listitem> | <display-internal> | <display-box> | <display-legacy>`
    *
@@ -2179,12 +2264,25 @@ direction?: ConditionalValue<CssVars | CssProperties["direction"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/display
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/display
    */
 display?: ConditionalValue<CssVars | CssProperties["display"] | AnyString>
- dominantBaseline?: ConditionalValue<CssProperties["dominantBaseline"] | AnyString>
  /**
-   * The **`empty-cells`** CSS property sets whether borders and backgrounds appear around `<table>` cells that have no visible content.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
+   *
+   * **Syntax**: `auto | text-bottom | alphabetic | ideographic | middle | central | mathematical | hanging | text-top`
+   *
+   * **Initial value**: `auto`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **1**  |  **1**  | **4**  | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/dominant-baseline
+   */
+dominantBaseline?: ConditionalValue<CssProperties["dominantBaseline"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `show | hide`
    *
@@ -2194,17 +2292,69 @@ display?: ConditionalValue<CssVars | CssProperties["display"] | AnyString>
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  |  **1**  | **1.2** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/empty-cells
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/empty-cells
    */
 emptyCells?: ConditionalValue<CssVars | CssProperties["emptyCells"] | AnyString>
- fieldSizing?: ConditionalValue<CssProperties["fieldSizing"] | AnyString>
- fill?: ConditionalValue<UtilityValues["fill"] | CssVars | CssProperties["fill"] | AnyString>
- fillOpacity?: ConditionalValue<CssProperties["fillOpacity"] | AnyString>
- fillRule?: ConditionalValue<CssProperties["fillRule"] | AnyString>
  /**
-   * The **`filter`** CSS property applies graphical effects like blur or color shift to an element. Filters are commonly used to adjust the rendering of images, backgrounds, and borders.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `none | <filter-function-list>`
+   * **Syntax**: `content | fixed`
+   *
+   * **Initial value**: `fixed`
+   *
+   * | Chrome  | Firefox |   Safari    |  Edge   | IE  |
+   * | :-----: | :-----: | :---------: | :-----: | :-: |
+   * | **123** |   No    | **preview** | **123** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/field-sizing
+   */
+fieldSizing?: ConditionalValue<CssProperties["fieldSizing"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<paint>`
+   *
+   * **Initial value**: `black`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/fill
+   */
+fill?: ConditionalValue<UtilityValues["fill"] | CssVars | CssProperties["fill"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<'opacity'>`
+   *
+   * **Initial value**: `1`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **1**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/fill-opacity
+   */
+fillOpacity?: ConditionalValue<CssProperties["fillOpacity"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `nonzero | evenodd`
+   *
+   * **Initial value**: `nonzero`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/fill-rule
+   */
+fillRule?: ConditionalValue<CssProperties["fillRule"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2016.
+   *
+   * **Syntax**: `none | <filter-value-list>`
    *
    * **Initial value**: `none`
    *
@@ -2213,24 +2363,24 @@ emptyCells?: ConditionalValue<CssVars | CssProperties["emptyCells"] | AnyString>
    * |  **53**  | **35**  | **9.1** | **12** | No  |
    * | 18 _-x-_ |         | 6 _-x-_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/filter
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/filter
    */
 filter?: ConditionalValue<UtilityValues["filter"] | CssVars | CssProperties["filter"] | AnyString>
  /**
-   * The **`flex`** CSS shorthand property sets how a flex _item_ will grow or shrink to fit the space available in its flex container.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `none | [ <'flex-grow'> <'flex-shrink'>? || <'flex-basis'> ]`
    *
    * |  Chrome  | Firefox | Safari  |  Edge  |    IE    |
    * | :------: | :-----: | :-----: | :----: | :------: |
-   * |  **29**  | **20**  |  **9**  | **12** |  **11**  |
+   * |  **29**  | **22**  |  **9**  | **12** |  **11**  |
    * | 21 _-x-_ |         | 7 _-x-_ |        | 10 _-x-_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex
    */
 flex?: ConditionalValue<UtilityValues["flex"] | CssVars | CssProperties["flex"] | AnyString>
  /**
-   * The **`flex-basis`** CSS property sets the initial main size of a flex item. It sets the size of the content box unless otherwise set with `box-sizing`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `content | <'width'>`
    *
@@ -2241,26 +2391,26 @@ flex?: ConditionalValue<UtilityValues["flex"] | CssVars | CssProperties["flex"] 
    * |  **29**  | **22**  |  **9**  | **12** | **11** |
    * | 22 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex-basis
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex-basis
    */
 flexBasis?: ConditionalValue<UtilityValues["flexBasis"] | CssVars | CssProperties["flexBasis"] | AnyString>
  /**
-   * The **`flex-direction`** CSS property sets how flex items are placed in the flex container defining the main axis and the direction (normal or reversed).
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `row | row-reverse | column | column-reverse`
    *
    * **Initial value**: `row`
    *
-   * |  Chrome  | Firefox  | Safari  |  Edge  |    IE    |
-   * | :------: | :------: | :-----: | :----: | :------: |
-   * |  **29**  |  **81**  |  **9**  | **12** |  **11**  |
-   * | 21 _-x-_ | 49 _-x-_ | 7 _-x-_ |        | 10 _-x-_ |
+   * |  Chrome  | Firefox | Safari  |  Edge  |    IE    |
+   * | :------: | :-----: | :-----: | :----: | :------: |
+   * |  **29**  | **22**  |  **9**  | **12** |  **11**  |
+   * | 21 _-x-_ |         | 7 _-x-_ |        | 10 _-x-_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex-direction
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex-direction
    */
 flexDirection?: ConditionalValue<CssVars | CssProperties["flexDirection"] | AnyString>
  /**
-   * The **`flex-flow`** CSS shorthand property specifies the direction of a flex container, as well as its wrapping behavior.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<'flex-direction'> || <'flex-wrap'>`
    *
@@ -2269,11 +2419,11 @@ flexDirection?: ConditionalValue<CssVars | CssProperties["flexDirection"] | AnyS
    * |  **29**  | **28**  |  **9**  | **12** | **11** |
    * | 21 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex-flow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex-flow
    */
 flexFlow?: ConditionalValue<CssProperties["flexFlow"] | AnyString>
  /**
-   * The **`flex-grow`** CSS property sets the flex grow factor of a flex item's main size.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<number>`
    *
@@ -2284,11 +2434,11 @@ flexFlow?: ConditionalValue<CssProperties["flexFlow"] | AnyString>
    * |  **29**  | **20**  |  **9**  | **12** |          **11**          |
    * | 22 _-x-_ |         | 7 _-x-_ |        | 10 _(-ms-flex-positive)_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex-grow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex-grow
    */
 flexGrow?: ConditionalValue<CssProperties["flexGrow"] | AnyString>
  /**
-   * The **`flex-shrink`** CSS property sets the flex shrink factor of a flex item. If the size of all flex items is larger than the flex container, items shrink to fit according to `flex-shrink`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<number>`
    *
@@ -2299,11 +2449,11 @@ flexGrow?: ConditionalValue<CssProperties["flexGrow"] | AnyString>
    * |  **29**  | **20**  |  **9**  | **12** | **10** |
    * | 22 _-x-_ |         | 8 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex-shrink
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex-shrink
    */
 flexShrink?: ConditionalValue<CssProperties["flexShrink"] | AnyString>
  /**
-   * The **`flex-wrap`** CSS property sets whether flex items are forced onto one line or can wrap onto multiple lines. If wrapping is allowed, it sets the direction that lines are stacked.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `nowrap | wrap | wrap-reverse`
    *
@@ -2314,11 +2464,11 @@ flexShrink?: ConditionalValue<CssProperties["flexShrink"] | AnyString>
    * |  **29**  | **28**  |  **9**  | **12** | **11** |
    * | 21 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex-wrap
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex-wrap
    */
 flexWrap?: ConditionalValue<CssVars | CssProperties["flexWrap"] | AnyString>
  /**
-   * The **`float`** CSS property places an element on the left or right side of its container, allowing text and inline elements to wrap around it. The element is removed from the normal flow of the page, though still remaining a part of the flow (in contrast to absolute positioning).
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `left | right | none | inline-start | inline-end`
    *
@@ -2328,25 +2478,51 @@ flexWrap?: ConditionalValue<CssVars | CssProperties["flexWrap"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/float
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/float
    */
 float?: ConditionalValue<UtilityValues["float"] | CssVars | AnyString>
- floodColor?: ConditionalValue<CssProperties["floodColor"] | AnyString>
- floodOpacity?: ConditionalValue<CssProperties["floodOpacity"] | AnyString>
  /**
-   * The **`font`** CSS shorthand property sets all the different properties of an element's font. Alternatively, it sets an element's font to a system font.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ [ <'font-style'> || <font-variant-css21> || <'font-weight'> || <'font-stretch'> ]? <'font-size'> [ / <'line-height'> ]? <'font-family'> ] | caption | icon | menu | message-box | small-caption | status-bar`
+   * **Syntax**: `<color>`
+   *
+   * **Initial value**: `black`
+   *
+   * | Chrome | Firefox | Safari |  Edge  |   IE    |
+   * | :----: | :-----: | :----: | :----: | :-----: |
+   * | **5**  |  **3**  | **6**  | **12** | **≤11** |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flood-color
+   */
+floodColor?: ConditionalValue<CssProperties["floodColor"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
+   *
+   * **Syntax**: `<'opacity'>`
+   *
+   * **Initial value**: `black`
+   *
+   * | Chrome | Firefox | Safari |  Edge  |   IE    |
+   * | :----: | :-----: | :----: | :----: | :-----: |
+   * | **5**  |  **3**  | **6**  | **12** | **≤11** |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flood-opacity
+   */
+floodOpacity?: ConditionalValue<CssProperties["floodOpacity"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
+   *
+   * **Syntax**: `[ [ <'font-style'> || <font-variant-css2> || <'font-weight'> || <font-width-css3> ]? <'font-size'> [ / <'line-height'> ]? <'font-family'># ] | <system-family-name>`
    *
    * | Chrome | Firefox | Safari |  Edge  |  IE   |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font
    */
 font?: ConditionalValue<CssProperties["font"] | AnyString>
  /**
-   * The **`font-family`** CSS property specifies a prioritized list of one or more font family names and/or generic family names for the selected element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `[ <family-name> | <generic-family> ]#`
    *
@@ -2356,11 +2532,11 @@ font?: ConditionalValue<CssProperties["font"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-family
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-family
    */
 fontFamily?: ConditionalValue<UtilityValues["fontFamily"] | CssVars | CssProperties["fontFamily"] | AnyString>
  /**
-   * The **`font-feature-settings`** CSS property controls advanced typographic features in OpenType fonts.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
    *
    * **Syntax**: `normal | <feature-tag-value>#`
    *
@@ -2371,69 +2547,71 @@ fontFamily?: ConditionalValue<UtilityValues["fontFamily"] | CssVars | CssPropert
    * |  **48**  |  **34**  | **9.1** | **15** | **10** |
    * | 16 _-x-_ | 15 _-x-_ |         |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-feature-settings
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-feature-settings
    */
 fontFeatureSettings?: ConditionalValue<CssProperties["fontFeatureSettings"] | AnyString>
  /**
-   * The **`font-kerning`** CSS property sets the use of the kerning information stored in a font.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `auto | normal | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari  | Edge | IE  |
-   * | :----: | :-----: | :-----: | :--: | :-: |
-   * | **33** | **32**  |  **9**  | n/a  | No  |
-   * |        |         | 6 _-x-_ |      |     |
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **33** | **32**  |  **9**  | **79** | No  |
+   * |        |         | 6 _-x-_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-kerning
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-kerning
    */
 fontKerning?: ConditionalValue<CssVars | CssProperties["fontKerning"] | AnyString>
  /**
-   * The **`font-language-override`** CSS property controls the use of language-specific glyphs in a typeface.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `normal | <string>`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   | **34**  |   No   | n/a  | No  |
-   * |        | 4 _-x-_ |        |      |     |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **143** | **34**  |   No   | **143** | No  |
+   * |         | 4 _-x-_ |        |         |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-language-override
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-language-override
    */
 fontLanguageOverride?: ConditionalValue<CssProperties["fontLanguageOverride"] | AnyString>
  /**
-   * The **`font-optical-sizing`** CSS property sets whether text rendering is optimized for viewing at different sizes.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2020.
    *
    * **Syntax**: `auto | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari |  Edge  | IE  |
-   * | :----: | :-----: | :----: | :----: | :-: |
-   * | **79** | **62**  | **11** | **17** | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **79** | **62**  | **13.1** | **17** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-optical-sizing
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-optical-sizing
    */
 fontOpticalSizing?: ConditionalValue<CssProperties["fontOpticalSizing"] | AnyString>
  /**
-   * **Syntax**: `normal | light | dark | <palette-identifier>`
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since November 2022.
+   *
+   * **Syntax**: `normal | light | dark | <palette-identifier> | <palette-mix()>`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **101** | **107** | **15.4** | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **101** | **107** | **15.4** | **101** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-palette
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-palette
    */
 fontPalette?: ConditionalValue<CssProperties["fontPalette"] | AnyString>
  /**
-   * The **`font-size`** CSS property sets the size of the font. Changing the font size also updates the sizes of the font size-relative `<length>` units, such as `em`, `ex`, and so forth.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<absolute-size> | <relative-size> | <length-percentage>`
+   * **Syntax**: `<absolute-size> | <relative-size> | <length-percentage [0,∞]> | math`
    *
    * **Initial value**: `medium`
    *
@@ -2441,21 +2619,21 @@ fontPalette?: ConditionalValue<CssProperties["fontPalette"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-size
    */
 fontSize?: ConditionalValue<UtilityValues["fontSize"] | CssVars | CssProperties["fontSize"] | AnyString>
  /**
-   * The **`font-size-adjust`** CSS property sets the size of lower-case letters relative to the current font size (which defines the size of upper-case letters).
+   * Since July 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `none | [ ex-height | cap-height | ch-width | ic-width | ic-height ]? [ from-font | <number> ]`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * |   No   |  **3**  | **16.4** | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **127** |  **3**  | **16.4** | **127** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-size-adjust
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-size-adjust
    */
 fontSizeAdjust?: ConditionalValue<CssProperties["fontSizeAdjust"] | AnyString>
  /**
@@ -2465,29 +2643,16 @@ fontSizeAdjust?: ConditionalValue<CssProperties["fontSizeAdjust"] | AnyString>
    *
    * **Initial value**: `auto`
    *
-   * |              Chrome              |              Firefox               |              Safari              | Edge | IE  |
-   * | :------------------------------: | :--------------------------------: | :------------------------------: | :--: | :-: |
-   * | **5** _(-webkit-font-smoothing)_ | **25** _(-moz-osx-font-smoothing)_ | **4** _(-webkit-font-smoothing)_ | n/a  | No  |
+   * |              Chrome              |              Firefox               |              Safari              |               Edge                | IE  |
+   * | :------------------------------: | :--------------------------------: | :------------------------------: | :-------------------------------: | :-: |
+   * | **5** _(-webkit-font-smoothing)_ | **25** _(-moz-osx-font-smoothing)_ | **4** _(-webkit-font-smoothing)_ | **79** _(-webkit-font-smoothing)_ | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-smooth
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-smooth
    */
 fontSmooth?: ConditionalValue<CssProperties["fontSmooth"] | AnyString>
+ fontStretch?: ConditionalValue<CssProperties["fontStretch"] | AnyString>
  /**
-   * The **`font-stretch`** CSS property selects a normal, condensed, or expanded face from a font.
-   *
-   * **Syntax**: `<font-stretch-absolute>`
-   *
-   * **Initial value**: `normal`
-   *
-   * | Chrome | Firefox | Safari |  Edge  |  IE   |
-   * | :----: | :-----: | :----: | :----: | :---: |
-   * | **60** |  **9**  | **11** | **12** | **9** |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-stretch
-   */
-fontStretch?: ConditionalValue<CssProperties["fontStretch"] | AnyString>
- /**
-   * The **`font-style`** CSS property sets whether a font should be styled with a normal, italic, or oblique face from its `font-family`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `normal | italic | oblique <angle>?`
    *
@@ -2497,25 +2662,25 @@ fontStretch?: ConditionalValue<CssProperties["fontStretch"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-style
    */
 fontStyle?: ConditionalValue<CssProperties["fontStyle"] | AnyString>
  /**
-   * The **`font-synthesis`** CSS property controls which missing typefaces, bold, italic, or small-caps, may be synthesized by the browser.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2022.
    *
    * **Syntax**: `none | [ weight || style || small-caps || position]`
    *
    * **Initial value**: `weight style small-caps position `
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **97** | **34**  | **9**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **97** | **34**  | **9**  | **97** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-synthesis
    */
 fontSynthesis?: ConditionalValue<CssProperties["fontSynthesis"] | AnyString>
  /**
-   * The **`font-synthesis-position`** CSS property lets you specify whether or not a browser may synthesize the subscript and superscript "position" typefaces when they are missing in a font family, while using `font-variant-position` to set the positions.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `auto | none`
    *
@@ -2523,55 +2688,55 @@ fontSynthesis?: ConditionalValue<CssProperties["fontSynthesis"] | AnyString>
    *
    * | Chrome | Firefox | Safari | Edge | IE  |
    * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   | **118** |   No   | n/a  | No  |
+   * |   No   | **118** |   No   |  No  | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-synthesis-position
    */
 fontSynthesisPosition?: ConditionalValue<CssProperties["fontSynthesisPosition"] | AnyString>
  /**
-   * The **`font-synthesis-small-caps`** CSS property lets you specify whether or not the browser may synthesize small-caps typeface when it is missing in a font family. Small-caps glyphs typically use the form of uppercase letters but are reduced to the size of lowercase letters.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2023.
    *
    * **Syntax**: `auto | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **97** | **111** | **16.4** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **97** | **111** | **16.4** | **97** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-small-caps
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-synthesis-small-caps
    */
 fontSynthesisSmallCaps?: ConditionalValue<CssProperties["fontSynthesisSmallCaps"] | AnyString>
  /**
-   * The **`font-synthesis-style`** CSS property lets you specify whether or not the browser may synthesize the oblique typeface when it is missing in a font family.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2023.
    *
    * **Syntax**: `auto | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **97** | **111** | **16.4** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **97** | **111** | **16.4** | **97** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-synthesis-style
    */
 fontSynthesisStyle?: ConditionalValue<CssProperties["fontSynthesisStyle"] | AnyString>
  /**
-   * The **`font-synthesis-weight`** CSS property lets you specify whether or not the browser may synthesize the bold typeface when it is missing in a font family.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2023.
    *
    * **Syntax**: `auto | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **97** | **111** | **16.4** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **97** | **111** | **16.4** | **97** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-synthesis-weight
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-synthesis-weight
    */
 fontSynthesisWeight?: ConditionalValue<CssProperties["fontSynthesisWeight"] | AnyString>
  /**
-   * The **`font-variant`** CSS shorthand property allows you to set all the font variants for a font.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `normal | none | [ <common-lig-values> || <discretionary-lig-values> || <historical-lig-values> || <contextual-alt-values> || stylistic( <feature-value-name> ) || historical-forms || styleset( <feature-value-name># ) || character-variant( <feature-value-name># ) || swash( <feature-value-name> ) || ornaments( <feature-value-name> ) || annotation( <feature-value-name> ) || [ small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps ] || <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero || <east-asian-variant-values> || <east-asian-width-values> || ruby ]`
    *
@@ -2581,108 +2746,110 @@ fontSynthesisWeight?: ConditionalValue<CssProperties["fontSynthesisWeight"] | An
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant
    */
 fontVariant?: ConditionalValue<CssProperties["fontVariant"] | AnyString>
  /**
-   * The **`font-variant-alternates`** CSS property controls the usage of alternate glyphs. These alternate glyphs may be referenced by alternative names defined in `@font-feature-values`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2023.
    *
    * **Syntax**: `normal | [ stylistic( <feature-value-name> ) || historical-forms || styleset( <feature-value-name># ) || character-variant( <feature-value-name># ) || swash( <feature-value-name> ) || ornaments( <feature-value-name> ) || annotation( <feature-value-name> ) ]`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari  | Edge | IE  |
-   * | :-----: | :-----: | :-----: | :--: | :-: |
-   * | **111** | **34**  | **9.1** | n/a  | No  |
+   * | Chrome  | Firefox | Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :-----: | :-----: | :-: |
+   * | **111** | **34**  | **9.1** | **111** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-alternates
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant-alternates
    */
 fontVariantAlternates?: ConditionalValue<CssProperties["fontVariantAlternates"] | AnyString>
  /**
-   * The **`font-variant-caps`** CSS property controls the use of alternate glyphs for capital letters.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `normal | small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari  | Edge | IE  |
-   * | :----: | :-----: | :-----: | :--: | :-: |
-   * | **52** | **34**  | **9.1** | n/a  | No  |
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **52** | **34**  | **9.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-caps
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant-caps
    */
 fontVariantCaps?: ConditionalValue<CssProperties["fontVariantCaps"] | AnyString>
  /**
-   * The **`font-variant-east-asian`** CSS property controls the use of alternate glyphs for East Asian scripts, like Japanese and Chinese.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `normal | [ <east-asian-variant-values> || <east-asian-width-values> || ruby ]`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari  | Edge | IE  |
-   * | :----: | :-----: | :-----: | :--: | :-: |
-   * | **63** | **34**  | **9.1** | n/a  | No  |
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **63** | **34**  | **9.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-east-asian
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant-east-asian
    */
 fontVariantEastAsian?: ConditionalValue<CssProperties["fontVariantEastAsian"] | AnyString>
  /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
    * **Syntax**: `normal | text | emoji | unicode`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **131** | **141** |   No   | **131** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-emoji
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant-emoji
    */
 fontVariantEmoji?: ConditionalValue<CssProperties["fontVariantEmoji"] | AnyString>
  /**
-   * The **`font-variant-ligatures`** CSS property controls which ligatures and contextual forms are used in textual content of the elements it applies to. This leads to more harmonized forms in the resulting text.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `normal | none | [ <common-lig-values> || <discretionary-lig-values> || <historical-lig-values> || <contextual-alt-values> ]`
    *
    * **Initial value**: `normal`
    *
-   * |  Chrome  | Firefox | Safari  | Edge | IE  |
-   * | :------: | :-----: | :-----: | :--: | :-: |
-   * |  **34**  | **34**  | **9.1** | n/a  | No  |
-   * | 31 _-x-_ |         | 7 _-x-_ |      |     |
+   * |  Chrome  | Firefox | Safari  |  Edge  | IE  |
+   * | :------: | :-----: | :-----: | :----: | :-: |
+   * |  **34**  | **34**  | **9.1** | **79** | No  |
+   * | 31 _-x-_ |         | 7 _-x-_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-ligatures
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant-ligatures
    */
 fontVariantLigatures?: ConditionalValue<CssProperties["fontVariantLigatures"] | AnyString>
  /**
-   * The **`font-variant-numeric`** CSS property controls the usage of alternate glyphs for numbers, fractions, and ordinal markers.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `normal | [ <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero ]`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari  | Edge | IE  |
-   * | :----: | :-----: | :-----: | :--: | :-: |
-   * | **52** | **34**  | **9.1** | n/a  | No  |
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **52** | **34**  | **9.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-numeric
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant-numeric
    */
 fontVariantNumeric?: ConditionalValue<CssProperties["fontVariantNumeric"] | AnyString>
  /**
-   * The **`font-variant-position`** CSS property controls the use of alternate, smaller glyphs that are positioned as superscript or subscript.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `normal | sub | super`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari  | Edge | IE  |
-   * | :-----: | :-----: | :-----: | :--: | :-: |
-   * | **117** | **34**  | **9.1** | n/a  | No  |
+   * | Chrome | Firefox | Safari  | Edge | IE  |
+   * | :----: | :-----: | :-----: | :--: | :-: |
+   * |   No   | **34**  | **9.1** |  No  | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variant-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variant-position
    */
 fontVariantPosition?: ConditionalValue<CssProperties["fontVariantPosition"] | AnyString>
  /**
-   * The **`font-variation-settings`** CSS property provides low-level control over variable font characteristics, by specifying the four letter axis names of the characteristics you want to vary, along with their values.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2018.
    *
    * **Syntax**: `normal | [ <string> <number> ]#`
    *
@@ -2692,11 +2859,11 @@ fontVariantPosition?: ConditionalValue<CssProperties["fontVariantPosition"] | An
    * | :----: | :-----: | :----: | :----: | :-: |
    * | **62** | **62**  | **11** | **17** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-variation-settings
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variation-settings
    */
 fontVariationSettings?: ConditionalValue<CssProperties["fontVariationSettings"] | AnyString>
  /**
-   * The **`font-weight`** CSS property sets the weight (or boldness) of the font. The weights available depend on the `font-family` that is currently set.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<font-weight-absolute> | bolder | lighter`
    *
@@ -2706,13 +2873,13 @@ fontVariationSettings?: ConditionalValue<CssProperties["fontVariationSettings"] 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **2**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/font-weight
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-weight
    */
 fontWeight?: ConditionalValue<UtilityValues["fontWeight"] | CssVars | CssProperties["fontWeight"] | AnyString>
  /**
-   * The **`forced-color-adjust`** CSS property allows authors to opt certain elements out of forced colors mode. This then restores the control of those values to CSS.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `auto | none`
+   * **Syntax**: `auto | none | preserve-parent-color`
    *
    * **Initial value**: `auto`
    *
@@ -2721,11 +2888,11 @@ fontWeight?: ConditionalValue<UtilityValues["fontWeight"] | CssVars | CssPropert
    * | **89** | **113** |   No   |             **79**              | **10** _(-ms-high-contrast-adjust)_ |
    * |        |         |        | 12 _(-ms-high-contrast-adjust)_ |                                     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/forced-color-adjust
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/forced-color-adjust
    */
 forcedColorAdjust?: ConditionalValue<CssVars | CssProperties["forcedColorAdjust"] | AnyString>
  /**
-   * The **`gap`** CSS property sets the gaps (gutters) between rows and columns. It is a shorthand for `row-gap` and `column-gap`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<'row-gap'> <'column-gap'>?`
    *
@@ -2733,11 +2900,11 @@ forcedColorAdjust?: ConditionalValue<CssVars | CssProperties["forcedColorAdjust"
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/gap
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/gap
    */
 gap?: ConditionalValue<UtilityValues["gap"] | CssVars | CssProperties["gap"] | AnyString>
  /**
-   * The **`grid`** CSS property is a shorthand property that sets all of the explicit and implicit grid properties in a single declaration.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<'grid-template'> | <'grid-template-rows'> / [ auto-flow && dense? ] <'grid-auto-columns'>? | [ auto-flow && dense? ] <'grid-auto-rows'>? / <'grid-template-columns'>`
    *
@@ -2745,11 +2912,11 @@ gap?: ConditionalValue<UtilityValues["gap"] | CssVars | CssProperties["gap"] | A
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid
    */
 grid?: ConditionalValue<CssProperties["grid"] | AnyString>
  /**
-   * The **`grid-area`** CSS shorthand property specifies a grid item's size and location within a grid by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the edges of its grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<grid-line> [ / <grid-line> ]{0,3}`
    *
@@ -2757,11 +2924,11 @@ grid?: ConditionalValue<CssProperties["grid"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-area
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-area
    */
 gridArea?: ConditionalValue<CssProperties["gridArea"] | AnyString>
  /**
-   * The **`grid-auto-columns`** CSS property specifies the size of an implicitly-created grid column track or pattern of tracks.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
    *
    * **Syntax**: `<track-size>+`
    *
@@ -2771,11 +2938,11 @@ gridArea?: ConditionalValue<CssProperties["gridArea"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-------------------------: |
    * | **57** | **70**  | **10.1** | **16** | **10** _(-ms-grid-columns)_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-auto-columns
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-auto-columns
    */
 gridAutoColumns?: ConditionalValue<UtilityValues["gridAutoColumns"] | CssVars | CssProperties["gridAutoColumns"] | AnyString>
  /**
-   * The **`grid-auto-flow`** CSS property controls how the auto-placement algorithm works, specifying exactly how auto-placed items get flowed into the grid.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `[ row | column ] || dense`
    *
@@ -2785,11 +2952,11 @@ gridAutoColumns?: ConditionalValue<UtilityValues["gridAutoColumns"] | CssVars | 
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-auto-flow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-auto-flow
    */
 gridAutoFlow?: ConditionalValue<CssProperties["gridAutoFlow"] | AnyString>
  /**
-   * The **`grid-auto-rows`** CSS property specifies the size of an implicitly-created grid row track or pattern of tracks.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
    *
    * **Syntax**: `<track-size>+`
    *
@@ -2799,11 +2966,11 @@ gridAutoFlow?: ConditionalValue<CssProperties["gridAutoFlow"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :----------------------: |
    * | **57** | **70**  | **10.1** | **16** | **10** _(-ms-grid-rows)_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-auto-rows
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-auto-rows
    */
 gridAutoRows?: ConditionalValue<UtilityValues["gridAutoRows"] | CssVars | CssProperties["gridAutoRows"] | AnyString>
  /**
-   * The **`grid-column`** CSS shorthand property specifies a grid item's size and location within a grid column by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-start and inline-end edge of its grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<grid-line> [ / <grid-line> ]?`
    *
@@ -2811,11 +2978,11 @@ gridAutoRows?: ConditionalValue<UtilityValues["gridAutoRows"] | CssVars | CssPro
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-column
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-column
    */
 gridColumn?: ConditionalValue<CssProperties["gridColumn"] | AnyString>
  /**
-   * The **`grid-column-end`** CSS property specifies a grid item's end position within the grid column by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the block-end edge of its grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<grid-line>`
    *
@@ -2825,12 +2992,12 @@ gridColumn?: ConditionalValue<CssProperties["gridColumn"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-column-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-column-end
    */
 gridColumnEnd?: ConditionalValue<CssProperties["gridColumnEnd"] | AnyString>
  gridColumnGap?: ConditionalValue<UtilityValues["gridColumnGap"] | CssVars | CssProperties["gridColumnGap"] | AnyString>
  /**
-   * The **`grid-column-start`** CSS property specifies a grid item's start position within the grid column by contributing a line, a span, or nothing (automatic) to its grid placement. This start position defines the block-start edge of the grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<grid-line>`
    *
@@ -2840,12 +3007,12 @@ gridColumnEnd?: ConditionalValue<CssProperties["gridColumnEnd"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-column-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-column-start
    */
 gridColumnStart?: ConditionalValue<CssProperties["gridColumnStart"] | AnyString>
  gridGap?: ConditionalValue<UtilityValues["gridGap"] | CssVars | CssProperties["gridGap"] | AnyString>
  /**
-   * The **`grid-row`** CSS shorthand property specifies a grid item's size and location within a grid row by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-start and inline-end edge of its grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<grid-line> [ / <grid-line> ]?`
    *
@@ -2853,11 +3020,11 @@ gridColumnStart?: ConditionalValue<CssProperties["gridColumnStart"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-row
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-row
    */
 gridRow?: ConditionalValue<CssProperties["gridRow"] | AnyString>
  /**
-   * The **`grid-row-end`** CSS property specifies a grid item's end position within the grid row by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-end edge of its grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<grid-line>`
    *
@@ -2867,12 +3034,12 @@ gridRow?: ConditionalValue<CssProperties["gridRow"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-row-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-row-end
    */
 gridRowEnd?: ConditionalValue<CssProperties["gridRowEnd"] | AnyString>
  gridRowGap?: ConditionalValue<UtilityValues["gridRowGap"] | CssVars | CssProperties["gridRowGap"] | AnyString>
  /**
-   * The **`grid-row-start`** CSS property specifies a grid item's start position within the grid row by contributing a line, a span, or nothing (automatic) to its grid placement, thereby specifying the inline-start edge of its grid area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `<grid-line>`
    *
@@ -2882,11 +3049,11 @@ gridRowEnd?: ConditionalValue<CssProperties["gridRowEnd"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-row-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-row-start
    */
 gridRowStart?: ConditionalValue<CssProperties["gridRowStart"] | AnyString>
  /**
-   * The **`grid-template`** CSS property is a shorthand property for defining grid columns, grid rows, and grid areas.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `none | [ <'grid-template-rows'> / <'grid-template-columns'> ] | [ <line-names>? <string> <track-size>? <line-names>? ]+ [ / <explicit-track-list> ]?`
    *
@@ -2894,11 +3061,11 @@ gridRowStart?: ConditionalValue<CssProperties["gridRowStart"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-template
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-template
    */
 gridTemplate?: ConditionalValue<CssProperties["gridTemplate"] | AnyString>
  /**
-   * The **`grid-template-areas`** CSS property specifies named grid areas, establishing the cells in the grid and assigning them names.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `none | <string>+`
    *
@@ -2908,11 +3075,11 @@ gridTemplate?: ConditionalValue<CssProperties["gridTemplate"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **57** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-areas
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-template-areas
    */
 gridTemplateAreas?: ConditionalValue<CssProperties["gridTemplateAreas"] | AnyString>
  /**
-   * The **`grid-template-columns`** CSS property defines the line names and track sizing functions of the grid columns.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `none | <track-list> | <auto-track-list> | subgrid <line-name-list>?`
    *
@@ -2922,11 +3089,11 @@ gridTemplateAreas?: ConditionalValue<CssProperties["gridTemplateAreas"] | AnyStr
    * | :----: | :-----: | :------: | :----: | :-------------------------: |
    * | **57** | **52**  | **10.1** | **16** | **10** _(-ms-grid-columns)_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-columns
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-template-columns
    */
 gridTemplateColumns?: ConditionalValue<CssProperties["gridTemplateColumns"] | AnyString>
  /**
-   * The **`grid-template-rows`** CSS property defines the line names and track sizing functions of the grid rows.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `none | <track-list> | <auto-track-list> | subgrid <line-name-list>?`
    *
@@ -2936,11 +3103,11 @@ gridTemplateColumns?: ConditionalValue<CssProperties["gridTemplateColumns"] | An
    * | :----: | :-----: | :------: | :----: | :----------------------: |
    * | **57** | **52**  | **10.1** | **16** | **10** _(-ms-grid-rows)_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/grid-template-rows
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-template-rows
    */
 gridTemplateRows?: ConditionalValue<CssProperties["gridTemplateRows"] | AnyString>
  /**
-   * The **`hanging-punctuation`** CSS property specifies whether a punctuation mark should hang at the start or end of a line of text. Hanging punctuation may be placed outside the line box.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | [ first || [ force-end | allow-end ] || last ]`
    *
@@ -2948,15 +3115,15 @@ gridTemplateRows?: ConditionalValue<CssProperties["gridTemplateRows"] | AnyStrin
    *
    * | Chrome | Firefox | Safari | Edge | IE  |
    * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   |   No    | **10** | n/a  | No  |
+   * |   No   |   No    | **10** |  No  | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/hanging-punctuation
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/hanging-punctuation
    */
 hangingPunctuation?: ConditionalValue<CssProperties["hangingPunctuation"] | AnyString>
  /**
-   * The **`height`** CSS property specifies the height of an element. By default, the property defines the height of the content area. If `box-sizing` is set to `border-box`, however, it instead determines the height of the border area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -2964,38 +3131,40 @@ hangingPunctuation?: ConditionalValue<CssProperties["hangingPunctuation"] | AnyS
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/height
    */
 height?: ConditionalValue<UtilityValues["height"] | CssVars | CssProperties["height"] | AnyString>
  /**
-   * The **`hyphenate-character`** CSS property sets the character (or string) used at the end of a line before a hyphenation break.
+   * Since September 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `auto | <string>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome  | Firefox |  Safari   | Edge | IE  |
-   * | :-----: | :-----: | :-------: | :--: | :-: |
-   * | **106** | **98**  |  **17**   | n/a  | No  |
-   * | 6 _-x-_ |         | 5.1 _-x-_ |      |     |
+   * | Chrome  | Firefox |  Safari   |   Edge   | IE  |
+   * | :-----: | :-----: | :-------: | :------: | :-: |
+   * | **106** | **98**  |  **17**   | **106**  | No  |
+   * | 6 _-x-_ |         | 5.1 _-x-_ | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/hyphenate-character
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/hyphenate-character
    */
 hyphenateCharacter?: ConditionalValue<CssProperties["hyphenateCharacter"] | AnyString>
  /**
-   * The **`hyphenate-limit-chars`** CSS property specifies the minimum word length to allow hyphenation of words as well as the the minimum number of characters before and after the hyphen.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ auto | <integer> ]{1,3}`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **109** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **109** | **137** |   No   | **109** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/hyphenate-limit-chars
    */
 hyphenateLimitChars?: ConditionalValue<CssProperties["hyphenateLimitChars"] | AnyString>
  /**
-   * The **`hyphens`** CSS property specifies how words should be hyphenated when text wraps across multiple lines. It can prevent hyphenation entirely, hyphenate at manually-specified points within the text, or let the browser automatically insert hyphens where appropriate.
+   * Since September 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `none | manual | auto`
    *
@@ -3006,38 +3175,40 @@ hyphenateLimitChars?: ConditionalValue<CssProperties["hyphenateLimitChars"] | An
    * |  **55**  | **43**  |  **17**   | **79** | **10** _-x-_ |
    * | 13 _-x-_ | 6 _-x-_ | 5.1 _-x-_ |        |              |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/hyphens
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/hyphens
    */
 hyphens?: ConditionalValue<CssProperties["hyphens"] | AnyString>
  /**
-   * The **`image-orientation`** CSS property specifies a layout-independent correction to the orientation of an image.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2020.
    *
    * **Syntax**: `from-image | <angle> | [ <angle>? flip ]`
    *
    * **Initial value**: `from-image`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **81** | **26**  | **13.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **81** | **26**  | **13.1** | **81** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/image-orientation
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/image-orientation
    */
 imageOrientation?: ConditionalValue<CssProperties["imageOrientation"] | AnyString>
  /**
-   * The **`image-rendering`** CSS property sets an image scaling algorithm. The property applies to an element itself, to any images set in its other properties, and to its descendants.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `auto | crisp-edges | pixelated`
+   * **Syntax**: `auto | crisp-edges | pixelated | smooth`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **13** | **3.6** | **6**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **13** | **3.6** | **6**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/image-rendering
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/image-rendering
    */
 imageRendering?: ConditionalValue<CssProperties["imageRendering"] | AnyString>
  /**
+   * The **`image-resolution`** CSS property specifies the intrinsic resolution of all raster images used in or on the element. It affects content images such as replaced elements and generated content, and decorative images such as `background-image` images.
+   *
    * **Syntax**: `[ from-image || <resolution> ] && snap?`
    *
    * **Initial value**: `1dppx`
@@ -3045,143 +3216,162 @@ imageRendering?: ConditionalValue<CssProperties["imageRendering"] | AnyString>
 imageResolution?: ConditionalValue<CssProperties["imageResolution"] | AnyString>
  imeMode?: ConditionalValue<CssProperties["imeMode"] | AnyString>
  /**
-   * The `initial-letter` CSS property sets styling for dropped, raised, and sunken initial letters.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `normal | [ <number> <integer>? ]`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox |   Safari    | Edge | IE  |
-   * | :-----: | :-----: | :---------: | :--: | :-: |
-   * | **110** |   No    | **9** _-x-_ | n/a  | No  |
+   * | Chrome  | Firefox |   Safari    |  Edge   | IE  |
+   * | :-----: | :-----: | :---------: | :-----: | :-: |
+   * | **110** |   No    | **9** _-x-_ | **110** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/initial-letter
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/initial-letter
    */
 initialLetter?: ConditionalValue<CssProperties["initialLetter"] | AnyString>
- initialLetterAlign?: ConditionalValue<CssProperties["initialLetterAlign"] | AnyString>
  /**
-   * The **`inline-size`** CSS property defines the horizontal or vertical size of an element's block, depending on its writing mode. It corresponds to either the `width` or the `height` property, depending on the value of `writing-mode`.
+   * **Syntax**: `[ auto | alphabetic | hanging | ideographic ]`
+   *
+   * **Initial value**: `auto`
+   */
+initialLetterAlign?: ConditionalValue<CssProperties["initialLetterAlign"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'width'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **41**  | **12.1** | n/a  | No  |
+   * |           Chrome            | Firefox |            Safari             |  Edge  | IE  |
+   * | :-------------------------: | :-----: | :---------------------------: | :----: | :-: |
+   * |           **57**            | **41**  |           **12.1**            | **79** | No  |
+   * | 8 _(-webkit-logical-width)_ |         | 5.1 _(-webkit-logical-width)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inline-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inline-size
    */
 inlineSize?: ConditionalValue<UtilityValues["inlineSize"] | CssVars | CssProperties["inlineSize"] | AnyString>
  /**
-   * The **`inset`** CSS property is a shorthand that corresponds to the `top`, `right`, `bottom`, and/or `left` properties. It has the same multi-value syntax of the `margin` shorthand.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>{1,4}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset
    */
 inset?: ConditionalValue<UtilityValues["inset"] | CssVars | CssProperties["inset"] | AnyString>
  /**
-   * The **`inset-block`** CSS property defines the logical block start and end offsets of an element, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-block
    */
 insetBlock?: ConditionalValue<UtilityValues["insetBlock"] | CssVars | CssProperties["insetBlock"] | AnyString>
  /**
-   * The **`inset-block-end`** CSS property defines the logical block end offset of an element, which maps to a physical inset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-block-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-block-end
    */
 insetBlockEnd?: ConditionalValue<UtilityValues["insetBlockEnd"] | CssVars | CssProperties["insetBlockEnd"] | AnyString>
  /**
-   * The **`inset-block-start`** CSS property defines the logical block start offset of an element, which maps to a physical inset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-block-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-block-start
    */
 insetBlockStart?: ConditionalValue<UtilityValues["insetBlockStart"] | CssVars | CssProperties["insetBlockStart"] | AnyString>
  /**
-   * The **`inset-inline`** CSS property defines the logical start and end offsets of an element in the inline direction, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline
    */
 insetInline?: ConditionalValue<UtilityValues["insetInline"] | CssVars | CssProperties["insetInline"] | AnyString>
  /**
-   * The **`inset-inline-end`** CSS property defines the logical inline end inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline-end
    */
 insetInlineEnd?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssProperties["insetInlineEnd"] | AnyString>
  /**
-   * The **`inset-inline-start`** CSS property defines the logical inline start inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline-start
    */
 insetInlineStart?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssProperties["insetInlineStart"] | AnyString>
- interpolateSize?: ConditionalValue<CssProperties["interpolateSize"] | AnyString>
  /**
-   * The **`isolation`** CSS property determines whether an element must create a new stacking context.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `numeric-only | allow-keywords`
+   *
+   * **Initial value**: `numeric-only`
+   *
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **129** |   No    |   No   | **129** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/interpolate-size
+   */
+interpolateSize?: ConditionalValue<CssProperties["interpolateSize"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `auto | isolate`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **41** | **36**  | **8**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **41** | **36**  | **8**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/isolation
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/isolation
    */
 isolation?: ConditionalValue<CssVars | CssProperties["isolation"] | AnyString>
  /**
-   * The CSS **`justify-content`** property defines how the browser distributes space between and around content items along the main-axis of a flex container, and the inline axis of a grid container.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `normal | <content-distribution> | <overflow-position>? [ <content-position> | left | right ]`
    *
@@ -3192,13 +3382,13 @@ isolation?: ConditionalValue<CssVars | CssProperties["isolation"] | AnyString>
    * |  **29**  | **20**  |  **9**  | **12** | **11** |
    * | 21 _-x-_ |         | 7 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/justify-content
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/justify-content
    */
 justifyContent?: ConditionalValue<CssProperties["justifyContent"] | AnyString>
  /**
-   * The CSS **`justify-items`** property defines the default `justify-self` for all items of the box, giving them all a default way of justifying each box along the appropriate axis.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2016.
    *
-   * **Syntax**: `normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ] | legacy | legacy && [ left | right | center ]`
+   * **Syntax**: `normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ] | legacy | legacy && [ left | right | center ] | anchor-center`
    *
    * **Initial value**: `legacy`
    *
@@ -3206,13 +3396,13 @@ justifyContent?: ConditionalValue<CssProperties["justifyContent"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **52** | **20**  | **9**  | **12** | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/justify-items
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/justify-items
    */
 justifyItems?: ConditionalValue<CssProperties["justifyItems"] | AnyString>
  /**
-   * The CSS **`justify-self`** property sets the way a box is justified inside its alignment container along the appropriate axis.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
-   * **Syntax**: `auto | normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ]`
+   * **Syntax**: `auto | normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ] | anchor-center`
    *
    * **Initial value**: `auto`
    *
@@ -3220,27 +3410,19 @@ justifyItems?: ConditionalValue<CssProperties["justifyItems"] | AnyString>
    * | :----: | :-----: | :------: | :----: | :----: |
    * | **57** | **45**  | **10.1** | **16** | **10** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/justify-self
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/justify-self
    */
 justifySelf?: ConditionalValue<CssProperties["justifySelf"] | AnyString>
  /**
-   * The **`justify-tracks`** CSS property sets the alignment in the masonry axis for grid containers that have masonry in their inline axis.
-   *
    * **Syntax**: `[ normal | <content-distribution> | <overflow-position>? [ <content-position> | left | right ] ]#`
    *
    * **Initial value**: `normal`
-   *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   |   n/a   |   No   | n/a  | No  |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/justify-tracks
    */
 justifyTracks?: ConditionalValue<CssProperties["justifyTracks"] | AnyString>
  /**
-   * The **`left`** CSS property participates in specifying the horizontal position of a positioned element. It has no effect on non-positioned elements.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `auto | <length-percentage> | <anchor()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -3248,11 +3430,11 @@ justifyTracks?: ConditionalValue<CssProperties["justifyTracks"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/left
    */
 left?: ConditionalValue<UtilityValues["left"] | CssVars | CssProperties["left"] | AnyString>
  /**
-   * The **`letter-spacing`** CSS property sets the horizontal spacing behavior between text characters. This value is added to the natural spacing between characters while rendering the text. Positive values of `letter-spacing` causes characters to spread farther apart, while negative values of `letter-spacing` bring characters closer together.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `normal | <length>`
    *
@@ -3262,12 +3444,25 @@ left?: ConditionalValue<UtilityValues["left"] | CssVars | CssProperties["left"] 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/letter-spacing
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/letter-spacing
    */
 letterSpacing?: ConditionalValue<UtilityValues["letterSpacing"] | CssVars | CssProperties["letterSpacing"] | AnyString>
- lightingColor?: ConditionalValue<CssProperties["lightingColor"] | AnyString>
  /**
-   * The **`line-break`** CSS property sets how to break lines of Chinese, Japanese, or Korean (CJK) text when working with punctuation and symbols.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
+   *
+   * **Syntax**: `<color>`
+   *
+   * **Initial value**: `white`
+   *
+   * | Chrome | Firefox | Safari |  Edge  |   IE    |
+   * | :----: | :-----: | :----: | :----: | :-----: |
+   * | **5**  |  **3**  | **6**  | **12** | **≤11** |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/lighting-color
+   */
+lightingColor?: ConditionalValue<CssProperties["lightingColor"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
    *
    * **Syntax**: `auto | loose | normal | strict | anywhere`
    *
@@ -3278,17 +3473,26 @@ letterSpacing?: ConditionalValue<UtilityValues["letterSpacing"] | CssVars | CssP
    * | **58**  | **69**  | **11**  | **14** | **5.5** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |         |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/line-break
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/line-break
    */
 lineBreak?: ConditionalValue<CssVars | CssProperties["lineBreak"] | AnyString>
  /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
    * **Syntax**: `none | <integer>`
    *
    * **Initial value**: `none`
+   *
+   * |   Chrome    |   Firefox    |  Safari   |     Edge     | IE  |
+   * | :---------: | :----------: | :-------: | :----------: | :-: |
+   * | **6** _-x-_ | **68** _-x-_ | 18.2-18.4 | **17** _-x-_ | No  |
+   * |             |              |  5 _-x-_  |              |     |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/line-clamp
    */
 lineClamp?: ConditionalValue<CssProperties["lineClamp"] | AnyString>
  /**
-   * The **`line-height`** CSS property sets the height of a line box. It's commonly used to set the distance between lines of text. On block-level elements, it specifies the minimum height of line boxes within the element. On non-replaced inline elements, it specifies the height that is used to calculate line box height.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `normal | <number> | <length> | <percentage>`
    *
@@ -3298,7 +3502,7 @@ lineClamp?: ConditionalValue<CssProperties["lineClamp"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/line-height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/line-height
    */
 lineHeight?: ConditionalValue<UtilityValues["lineHeight"] | CssVars | CssProperties["lineHeight"] | AnyString>
  /**
@@ -3307,16 +3511,10 @@ lineHeight?: ConditionalValue<UtilityValues["lineHeight"] | CssVars | CssPropert
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
-   *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |  n/a   |   No    |   No   | n/a  | No  |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/line-height-step
    */
 lineHeightStep?: ConditionalValue<CssProperties["lineHeightStep"] | AnyString>
  /**
-   * The **`list-style`** CSS shorthand property allows you to set all the list style properties at once.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<'list-style-type'> || <'list-style-position'> || <'list-style-image'>`
    *
@@ -3324,11 +3522,11 @@ lineHeightStep?: ConditionalValue<CssProperties["lineHeightStep"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/list-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/list-style
    */
 listStyle?: ConditionalValue<CssProperties["listStyle"] | AnyString>
  /**
-   * The **`list-style-image`** CSS property sets an image to be used as the list item marker.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<image> | none`
    *
@@ -3338,11 +3536,11 @@ listStyle?: ConditionalValue<CssProperties["listStyle"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/list-style-image
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/list-style-image
    */
 listStyleImage?: ConditionalValue<UtilityValues["listStyleImage"] | CssVars | CssProperties["listStyleImage"] | AnyString>
  /**
-   * The **`list-style-position`** CSS property sets the position of the `::marker` relative to a list item.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `inside | outside`
    *
@@ -3352,11 +3550,11 @@ listStyleImage?: ConditionalValue<UtilityValues["listStyleImage"] | CssVars | Cs
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/list-style-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/list-style-position
    */
 listStylePosition?: ConditionalValue<CssProperties["listStylePosition"] | AnyString>
  /**
-   * The **`list-style-type`** CSS property sets the marker (such as a disc, character, or custom counter style) of a list item element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<counter-style> | <string> | none`
    *
@@ -3366,65 +3564,65 @@ listStylePosition?: ConditionalValue<CssProperties["listStylePosition"] | AnyStr
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/list-style-type
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/list-style-type
    */
 listStyleType?: ConditionalValue<CssProperties["listStyleType"] | AnyString>
  /**
-   * The **`margin`** CSS shorthand property sets the margin area on all four sides of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <length> | <percentage> | auto ]{1,4}`
+   * **Syntax**: `<'margin-top'>{1,4}`
    *
    * | Chrome | Firefox | Safari |  Edge  |  IE   |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin
    */
 margin?: ConditionalValue<UtilityValues["margin"] | CssVars | CssProperties["margin"] | AnyString>
  /**
-   * The **`margin-block`** CSS shorthand property defines the logical block start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'margin-left'>{1,2}`
+   * **Syntax**: `<'margin-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-block
    */
 marginBlock?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssProperties["marginBlock"] | AnyString>
  /**
-   * The **`margin-block-end`** CSS property defines the logical block end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-block-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-block-end
    */
 marginBlockEnd?: ConditionalValue<UtilityValues["marginBlockEnd"] | CssVars | CssProperties["marginBlockEnd"] | AnyString>
  /**
-   * The **`margin-block-start`** CSS property defines the logical block start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-block-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-block-start
    */
 marginBlockStart?: ConditionalValue<UtilityValues["marginBlockStart"] | CssVars | CssProperties["marginBlockStart"] | AnyString>
  /**
-   * The **`margin-bottom`** CSS property sets the margin area on the bottom of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -3432,55 +3630,55 @@ marginBlockStart?: ConditionalValue<UtilityValues["marginBlockStart"] | CssVars 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-bottom
    */
 marginBottom?: ConditionalValue<UtilityValues["marginBottom"] | CssVars | CssProperties["marginBottom"] | AnyString>
  /**
-   * The **`margin-inline`** CSS shorthand property is a shorthand property that defines both the logical inline start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'margin-left'>{1,2}`
+   * **Syntax**: `<'margin-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline
    */
 marginInline?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperties["marginInline"] | AnyString>
  /**
-   * The **`margin-inline-end`** CSS property defines the logical inline end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. In other words, it corresponds to the `margin-top`, `margin-right`, `margin-bottom` or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * |          Chrome          |        Firefox        |          Safari          | Edge | IE  |
-   * | :----------------------: | :-------------------: | :----------------------: | :--: | :-: |
-   * |          **69**          |        **41**         |         **12.1**         | n/a  | No  |
-   * | 2 _(-webkit-margin-end)_ | 3 _(-moz-margin-end)_ | 3 _(-webkit-margin-end)_ |      |     |
+   * |          Chrome          |        Firefox        |          Safari          |  Edge  | IE  |
+   * | :----------------------: | :-------------------: | :----------------------: | :----: | :-: |
+   * |          **69**          |        **41**         |         **12.1**         | **79** | No  |
+   * | 2 _(-webkit-margin-end)_ | 3 _(-moz-margin-end)_ | 3 _(-webkit-margin-end)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline-end
    */
 marginInlineEnd?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssProperties["marginInlineEnd"] | AnyString>
  /**
-   * The **`margin-inline-start`** CSS property defines the logical inline start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. It corresponds to the `margin-top`, `margin-right`, `margin-bottom`, or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * |           Chrome           |         Firefox         |           Safari           | Edge | IE  |
-   * | :------------------------: | :---------------------: | :------------------------: | :--: | :-: |
-   * |           **69**           |         **41**          |          **12.1**          | n/a  | No  |
-   * | 2 _(-webkit-margin-start)_ | 3 _(-moz-margin-start)_ | 3 _(-webkit-margin-start)_ |      |     |
+   * |           Chrome           |         Firefox         |           Safari           |  Edge  | IE  |
+   * | :------------------------: | :---------------------: | :------------------------: | :----: | :-: |
+   * |           **69**           |         **41**          |          **12.1**          | **79** | No  |
+   * | 2 _(-webkit-margin-start)_ | 3 _(-moz-margin-start)_ | 3 _(-webkit-margin-start)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline-start
    */
 marginInlineStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | CssProperties["marginInlineStart"] | AnyString>
  /**
-   * The **`margin-left`** CSS property sets the margin area on the left side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -3488,13 +3686,13 @@ marginInlineStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVar
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-left
    */
 marginLeft?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssProperties["marginLeft"] | AnyString>
  /**
-   * The **`margin-right`** CSS property sets the margin area on the right side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -3502,13 +3700,13 @@ marginLeft?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssPropert
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-right
    */
 marginRight?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssProperties["marginRight"] | AnyString>
  /**
-   * The **`margin-top`** CSS property sets the margin area on the top of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -3516,11 +3714,11 @@ marginRight?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssPrope
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-top
    */
 marginTop?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssProperties["marginTop"] | AnyString>
  /**
-   * The `margin-trim` property allows the container to trim the margins of its children where they adjoin the container's edges.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | in-flow | all`
    *
@@ -3528,39 +3726,89 @@ marginTop?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssPropertie
    *
    * | Chrome | Firefox |  Safari  | Edge | IE  |
    * | :----: | :-----: | :------: | :--: | :-: |
-   * |   No   |   No    | **16.4** | n/a  | No  |
+   * |   No   |   No    | **16.4** |  No  | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-trim
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-trim
    */
 marginTrim?: ConditionalValue<CssProperties["marginTrim"] | AnyString>
- marker?: ConditionalValue<CssProperties["marker"] | AnyString>
- markerEnd?: ConditionalValue<CssProperties["markerEnd"] | AnyString>
- markerMid?: ConditionalValue<CssProperties["markerMid"] | AnyString>
- markerStart?: ConditionalValue<CssProperties["markerStart"] | AnyString>
  /**
-   * The **`mask`** CSS shorthand property hides an element (partially or fully) by masking or clipping the image at specific points.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `none | <url>`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/marker
+   */
+marker?: ConditionalValue<CssProperties["marker"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `none | <url>`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/marker-end
+   */
+markerEnd?: ConditionalValue<CssProperties["markerEnd"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `none | <url>`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/marker-mid
+   */
+markerMid?: ConditionalValue<CssProperties["markerMid"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `none | <url>`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/marker-start
+   */
+markerStart?: ConditionalValue<CssProperties["markerStart"] | AnyString>
+ /**
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<mask-layer>#`
    *
-   * | Chrome | Firefox |  Safari   | Edge  | IE  |
-   * | :----: | :-----: | :-------: | :---: | :-: |
-   * | **1**  | **53**  | **15.4**  | 12-79 | No  |
-   * |        |         | 3.1 _-x-_ |       |     |
+   * | Chrome  | Firefox |  Safari   | Edge  | IE  |
+   * | :-----: | :-----: | :-------: | :---: | :-: |
+   * | **120** | **53**  | **15.4**  | 12-79 | No  |
+   * | 1 _-x-_ |         | 3.1 _-x-_ |       |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask
    */
 mask?: ConditionalValue<CssProperties["mask"] | AnyString>
  /**
-   * The **`mask-border`** CSS shorthand property lets you create a mask along the edge of an element's border.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `<'mask-border-source'> || <'mask-border-slice'> [ / <'mask-border-width'>? [ / <'mask-border-outset'> ]? ]? || <'mask-border-repeat'> || <'mask-border-mode'>`
    *
-   * |              Chrome              | Firefox |             Safari             | Edge | IE  |
-   * | :------------------------------: | :-----: | :----------------------------: | :--: | :-: |
-   * | **1** _(-webkit-mask-box-image)_ |   No    |            **17.2**            | n/a  | No  |
-   * |                                  |         | 3.1 _(-webkit-mask-box-image)_ |      |     |
+   * |              Chrome              | Firefox |             Safari             |               Edge                | IE  |
+   * | :------------------------------: | :-----: | :----------------------------: | :-------------------------------: | :-: |
+   * | **1** _(-webkit-mask-box-image)_ |   No    |            **17.2**            | **79** _(-webkit-mask-box-image)_ | No  |
+   * |                                  |         | 3.1 _(-webkit-mask-box-image)_ |                                   |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-border
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-border
    */
 maskBorder?: ConditionalValue<CssProperties["maskBorder"] | AnyString>
  /**
@@ -3572,97 +3820,97 @@ maskBorder?: ConditionalValue<CssProperties["maskBorder"] | AnyString>
    */
 maskBorderMode?: ConditionalValue<CssProperties["maskBorderMode"] | AnyString>
  /**
-   * The **`mask-border-outset`** CSS property specifies the distance by which an element's mask border is set out from its border box.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ <length> | <number> ]{1,4}`
    *
    * **Initial value**: `0`
    *
-   * |                 Chrome                  | Firefox |                Safari                 | Edge | IE  |
-   * | :-------------------------------------: | :-----: | :-----------------------------------: | :--: | :-: |
-   * | **1** _(-webkit-mask-box-image-outset)_ |   No    |               **17.2**                | n/a  | No  |
-   * |                                         |         | 3.1 _(-webkit-mask-box-image-outset)_ |      |     |
+   * |                 Chrome                  | Firefox |                Safari                 |                   Edge                   | IE  |
+   * | :-------------------------------------: | :-----: | :-----------------------------------: | :--------------------------------------: | :-: |
+   * | **1** _(-webkit-mask-box-image-outset)_ |   No    |               **17.2**                | **79** _(-webkit-mask-box-image-outset)_ | No  |
+   * |                                         |         | 3.1 _(-webkit-mask-box-image-outset)_ |                                          |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-outset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-border-outset
    */
 maskBorderOutset?: ConditionalValue<CssProperties["maskBorderOutset"] | AnyString>
  /**
-   * The **`mask-border-repeat`** CSS property sets how the edge regions of a source image are adjusted to fit the dimensions of an element's mask border.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ stretch | repeat | round | space ]{1,2}`
    *
    * **Initial value**: `stretch`
    *
-   * |                 Chrome                  | Firefox |                Safari                 | Edge | IE  |
-   * | :-------------------------------------: | :-----: | :-----------------------------------: | :--: | :-: |
-   * | **1** _(-webkit-mask-box-image-repeat)_ |   No    |               **17.2**                | n/a  | No  |
-   * |                                         |         | 3.1 _(-webkit-mask-box-image-repeat)_ |      |     |
+   * |                 Chrome                  | Firefox |                Safari                 |                   Edge                   | IE  |
+   * | :-------------------------------------: | :-----: | :-----------------------------------: | :--------------------------------------: | :-: |
+   * | **1** _(-webkit-mask-box-image-repeat)_ |   No    |               **17.2**                | **79** _(-webkit-mask-box-image-repeat)_ | No  |
+   * |                                         |         | 3.1 _(-webkit-mask-box-image-repeat)_ |                                          |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-repeat
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-border-repeat
    */
 maskBorderRepeat?: ConditionalValue<CssProperties["maskBorderRepeat"] | AnyString>
  /**
-   * The **`mask-border-slice`** CSS property divides the image set by `mask-border-source` into regions. These regions are used to form the components of an element's mask border.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `<number-percentage>{1,4} fill?`
    *
    * **Initial value**: `0`
    *
-   * |                 Chrome                 | Firefox |                Safari                | Edge | IE  |
-   * | :------------------------------------: | :-----: | :----------------------------------: | :--: | :-: |
-   * | **1** _(-webkit-mask-box-image-slice)_ |   No    |               **17.2**               | n/a  | No  |
-   * |                                        |         | 3.1 _(-webkit-mask-box-image-slice)_ |      |     |
+   * |                 Chrome                 | Firefox |                Safari                |                  Edge                   | IE  |
+   * | :------------------------------------: | :-----: | :----------------------------------: | :-------------------------------------: | :-: |
+   * | **1** _(-webkit-mask-box-image-slice)_ |   No    |               **17.2**               | **79** _(-webkit-mask-box-image-slice)_ | No  |
+   * |                                        |         | 3.1 _(-webkit-mask-box-image-slice)_ |                                         |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-slice
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-border-slice
    */
 maskBorderSlice?: ConditionalValue<CssProperties["maskBorderSlice"] | AnyString>
  /**
-   * The **`mask-border-source`** CSS property sets the source image used to create an element's mask border.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | <image>`
    *
    * **Initial value**: `none`
    *
-   * |                 Chrome                  | Firefox |                Safari                 | Edge | IE  |
-   * | :-------------------------------------: | :-----: | :-----------------------------------: | :--: | :-: |
-   * | **1** _(-webkit-mask-box-image-source)_ |   No    |               **17.2**                | n/a  | No  |
-   * |                                         |         | 3.1 _(-webkit-mask-box-image-source)_ |      |     |
+   * |                 Chrome                  | Firefox |                Safari                 |                   Edge                   | IE  |
+   * | :-------------------------------------: | :-----: | :-----------------------------------: | :--------------------------------------: | :-: |
+   * | **1** _(-webkit-mask-box-image-source)_ |   No    |               **17.2**                | **79** _(-webkit-mask-box-image-source)_ | No  |
+   * |                                         |         | 3.1 _(-webkit-mask-box-image-source)_ |                                          |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-source
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-border-source
    */
 maskBorderSource?: ConditionalValue<CssProperties["maskBorderSource"] | AnyString>
  /**
-   * The **`mask-border-width`** CSS property sets the width of an element's mask border.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ <length-percentage> | <number> | auto ]{1,4}`
    *
    * **Initial value**: `auto`
    *
-   * |                 Chrome                 | Firefox |                Safari                | Edge | IE  |
-   * | :------------------------------------: | :-----: | :----------------------------------: | :--: | :-: |
-   * | **1** _(-webkit-mask-box-image-width)_ |   No    |               **17.2**               | n/a  | No  |
-   * |                                        |         | 3.1 _(-webkit-mask-box-image-width)_ |      |     |
+   * |                 Chrome                 | Firefox |                Safari                |                  Edge                   | IE  |
+   * | :------------------------------------: | :-----: | :----------------------------------: | :-------------------------------------: | :-: |
+   * | **1** _(-webkit-mask-box-image-width)_ |   No    |               **17.2**               | **79** _(-webkit-mask-box-image-width)_ | No  |
+   * |                                        |         | 3.1 _(-webkit-mask-box-image-width)_ |                                         |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-border-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-border-width
    */
 maskBorderWidth?: ConditionalValue<CssProperties["maskBorderWidth"] | AnyString>
  /**
-   * The **`mask-clip`** CSS property determines the area which is affected by a mask. The painted content of an element must be restricted to this area.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `[ <geometry-box> | no-clip ]#`
+   * **Syntax**: `[ <coord-box> | no-clip ]#`
    *
    * **Initial value**: `border-box`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **120** | **53**  | **15.4** | n/a  | No  |
-   * | 1 _-x-_ |         | 4 _-x-_  |      |     |
+   * | Chrome  | Firefox |  Safari  |   Edge   | IE  |
+   * | :-----: | :-----: | :------: | :------: | :-: |
+   * | **120** | **53**  | **15.4** | **120**  | No  |
+   * | 1 _-x-_ |         | 4 _-x-_  | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-clip
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-clip
    */
 maskClip?: ConditionalValue<CssProperties["maskClip"] | AnyString>
  /**
-   * The **`mask-composite`** CSS property represents a compositing operation used on the current mask layer with the mask layers below it.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<compositing-operator>#`
    *
@@ -3672,11 +3920,11 @@ maskClip?: ConditionalValue<CssProperties["maskClip"] | AnyString>
    * | :-----: | :-----: | :------: | :---: | :-: |
    * | **120** | **53**  | **15.4** | 18-79 | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-composite
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-composite
    */
 maskComposite?: ConditionalValue<CssProperties["maskComposite"] | AnyString>
  /**
-   * The **`mask-image`** CSS property sets the image that is used as mask layer for an element. By default this means the alpha channel of the mask image will be multiplied with the alpha channel of the element. This can be controlled with the `mask-mode` property.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<mask-reference>#`
    *
@@ -3687,55 +3935,55 @@ maskComposite?: ConditionalValue<CssProperties["maskComposite"] | AnyString>
    * | **120** | **53**  | **15.4** | 16-79 | No  |
    * | 1 _-x-_ |         | 4 _-x-_  |       |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-image
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-image
    */
 maskImage?: ConditionalValue<CssProperties["maskImage"] | AnyString>
  /**
-   * The **`mask-mode`** CSS property sets whether the mask reference defined by `mask-image` is treated as a luminance or alpha mask.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<masking-mode>#`
    *
    * **Initial value**: `match-source`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **120** | **53**  | **15.4** | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **120** | **53**  | **15.4** | **120** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-mode
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-mode
    */
 maskMode?: ConditionalValue<CssProperties["maskMode"] | AnyString>
  /**
-   * The **`mask-origin`** CSS property sets the origin of a mask.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `<geometry-box>#`
+   * **Syntax**: `<coord-box>#`
    *
    * **Initial value**: `border-box`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **120** | **53**  | **15.4** | n/a  | No  |
-   * | 1 _-x-_ |         | 4 _-x-_  |      |     |
+   * | Chrome  | Firefox |  Safari  |   Edge   | IE  |
+   * | :-----: | :-----: | :------: | :------: | :-: |
+   * | **120** | **53**  | **15.4** | **120**  | No  |
+   * | 1 _-x-_ |         | 4 _-x-_  | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-origin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-origin
    */
 maskOrigin?: ConditionalValue<CssProperties["maskOrigin"] | AnyString>
  /**
-   * The **`mask-position`** CSS property sets the initial position, relative to the mask position layer set by `mask-origin`, for each defined mask image.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<position>#`
    *
-   * **Initial value**: `center`
+   * **Initial value**: `0% 0%`
    *
    * | Chrome  | Firefox |  Safari   | Edge  | IE  |
    * | :-----: | :-----: | :-------: | :---: | :-: |
    * | **120** | **53**  | **15.4**  | 18-79 | No  |
    * | 1 _-x-_ |         | 3.1 _-x-_ |       |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-position
    */
 maskPosition?: ConditionalValue<CssProperties["maskPosition"] | AnyString>
  /**
-   * The **`mask-repeat`** CSS property sets how mask images are repeated. A mask image can be repeated along the horizontal axis, the vertical axis, both axes, or not repeated at all.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<repeat-style>#`
    *
@@ -3746,11 +3994,11 @@ maskPosition?: ConditionalValue<CssProperties["maskPosition"] | AnyString>
    * | **120** | **53**  | **15.4**  | 18-79 | No  |
    * | 1 _-x-_ |         | 3.1 _-x-_ |       |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-repeat
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-repeat
    */
 maskRepeat?: ConditionalValue<CssProperties["maskRepeat"] | AnyString>
  /**
-   * The **`mask-size`** CSS property specifies the sizes of the mask images. The size of the image can be fully or partially constrained in order to preserve its intrinsic ratio.
+   * Since December 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<bg-size>#`
    *
@@ -3761,120 +4009,114 @@ maskRepeat?: ConditionalValue<CssProperties["maskRepeat"] | AnyString>
    * | **120** | **53**  | **15.4** | 18-79 | No  |
    * | 4 _-x-_ |         | 4 _-x-_  |       |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-size
    */
 maskSize?: ConditionalValue<CssProperties["maskSize"] | AnyString>
  /**
-   * The **`mask-type`** CSS property sets whether an SVG `<mask>` element is used as a _luminance_ or an _alpha_ mask. It applies to the `<mask>` element itself.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `luminance | alpha`
    *
    * **Initial value**: `luminance`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **24** | **35**  | **7**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **24** | **35**  | **7**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mask-type
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mask-type
    */
 maskType?: ConditionalValue<CssProperties["maskType"] | AnyString>
  /**
-   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `[ pack | next ] || [ definite-first | ordered ]`
    *
    * **Initial value**: `pack`
-   *
-   * | Chrome | Firefox |   Safari    | Edge | IE  |
-   * | :----: | :-----: | :---------: | :--: | :-: |
-   * |   No   |   No    | **preview** | n/a  | No  |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/masonry-auto-flow
    */
 masonryAutoFlow?: ConditionalValue<CssProperties["masonryAutoFlow"] | AnyString>
  /**
-   * The **`math-depth`** property describes a notion of _depth_ for each element of a mathematical formula, with respect to the top-level container of that formula. Concretely, this is used to determine the computed value of the font-size property when its specified value is `math`.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `auto-add | add(<integer>) | <integer>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **109** | **117** |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **109** | **117** |   No   | **109** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/math-depth
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/math-depth
    */
 mathDepth?: ConditionalValue<CssProperties["mathDepth"] | AnyString>
  /**
-   * The `math-shift` property indicates whether superscripts inside MathML formulas should be raised by a normal or compact shift.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `normal | compact`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **109** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **109** |   No    |   No   | **109** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/math-shift
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/math-shift
    */
 mathShift?: ConditionalValue<CssProperties["mathShift"] | AnyString>
  /**
-   * The `math-style` property indicates whether MathML equations should render with normal or compact height.
+   * Since August 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `normal | compact`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **109** | **117** | **14.1** | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **109** | **117** | **14.1** | **109** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/math-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/math-style
    */
 mathStyle?: ConditionalValue<CssProperties["mathStyle"] | AnyString>
  /**
-   * The **`max-block-size`** CSS property specifies the maximum size of an element in the direction opposite that of the writing direction as specified by `writing-mode`. That is, if the writing direction is horizontal, then `max-block-size` is equivalent to `max-height`; if the writing direction is vertical, `max-block-size` is the same as `max-width`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'max-width'>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **57** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/max-block-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/max-block-size
    */
 maxBlockSize?: ConditionalValue<UtilityValues["maxBlockSize"] | CssVars | CssProperties["maxBlockSize"] | AnyString>
  /**
-   * The **`max-height`** CSS property sets the maximum height of an element. It prevents the used value of the `height` property from becoming larger than the value specified for `max-height`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `none | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `none`
    *
    * | Chrome | Firefox | Safari  |  Edge  |  IE   |
    * | :----: | :-----: | :-----: | :----: | :---: |
-   * | **18** |  **1**  | **1.3** | **12** | **7** |
+   * | **1**  |  **1**  | **1.3** | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/max-height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/max-height
    */
 maxHeight?: ConditionalValue<UtilityValues["maxHeight"] | CssVars | CssProperties["maxHeight"] | AnyString>
  /**
-   * The **`max-inline-size`** CSS property defines the horizontal or vertical maximum size of an element's block, depending on its writing mode. It corresponds to either the `max-width` or the `max-height` property, depending on the value of `writing-mode`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'max-width'>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |   Safari   | Edge | IE  |
-   * | :----: | :-----: | :--------: | :--: | :-: |
-   * | **57** | **41**  |  **12.1**  | n/a  | No  |
-   * |        |         | 10.1 _-x-_ |      |     |
+   * | Chrome | Firefox |   Safari   |  Edge  | IE  |
+   * | :----: | :-----: | :--------: | :----: | :-: |
+   * | **57** | **41**  |  **12.1**  | **79** | No  |
+   * |        |         | 10.1 _-x-_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/max-inline-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/max-inline-size
    */
 maxInlineSize?: ConditionalValue<UtilityValues["maxInlineSize"] | CssVars | CssProperties["maxInlineSize"] | AnyString>
  /**
@@ -3884,9 +4126,9 @@ maxInlineSize?: ConditionalValue<UtilityValues["maxInlineSize"] | CssVars | CssP
    */
 maxLines?: ConditionalValue<CssProperties["maxLines"] | AnyString>
  /**
-   * The **`max-width`** CSS property sets the maximum width of an element. It prevents the used value of the `width` property from becoming larger than the value specified by `max-width`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `none | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `none`
    *
@@ -3894,27 +4136,27 @@ maxLines?: ConditionalValue<CssProperties["maxLines"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/max-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/max-width
    */
 maxWidth?: ConditionalValue<UtilityValues["maxWidth"] | CssVars | CssProperties["maxWidth"] | AnyString>
  /**
-   * The **`min-block-size`** CSS property defines the minimum horizontal or vertical size of an element's block, depending on its writing mode. It corresponds to either the `min-width` or the `min-height` property, depending on the value of `writing-mode`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'min-width'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **57** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/min-block-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/min-block-size
    */
 minBlockSize?: ConditionalValue<UtilityValues["minBlockSize"] | CssVars | CssProperties["minBlockSize"] | AnyString>
  /**
-   * The **`min-height`** CSS property sets the minimum height of an element. It prevents the used value of the `height` property from becoming smaller than the value specified for `min-height`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -3922,27 +4164,27 @@ minBlockSize?: ConditionalValue<UtilityValues["minBlockSize"] | CssVars | CssPro
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  |  **3**  | **1.3** | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/min-height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/min-height
    */
 minHeight?: ConditionalValue<UtilityValues["minHeight"] | CssVars | CssProperties["minHeight"] | AnyString>
  /**
-   * The **`min-inline-size`** CSS property defines the horizontal or vertical minimal size of an element's block, depending on its writing mode. It corresponds to either the `min-width` or the `min-height` property, depending on the value of `writing-mode`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'min-width'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **57** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/min-inline-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/min-inline-size
    */
 minInlineSize?: ConditionalValue<UtilityValues["minInlineSize"] | CssVars | CssProperties["minInlineSize"] | AnyString>
  /**
-   * The **`min-width`** CSS property sets the minimum width of an element. It prevents the used value of the `width` property from becoming smaller than the value specified for `min-width`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -3950,25 +4192,25 @@ minInlineSize?: ConditionalValue<UtilityValues["minInlineSize"] | CssVars | CssP
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/min-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/min-width
    */
 minWidth?: ConditionalValue<UtilityValues["minWidth"] | CssVars | CssProperties["minWidth"] | AnyString>
  /**
-   * The **`mix-blend-mode`** CSS property sets how an element's content should blend with the content of the element's parent and the element's background.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<blend-mode> | plus-lighter`
+   * **Syntax**: `<blend-mode> | plus-darker | plus-lighter`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **41** | **32**  | **8**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **41** | **32**  | **8**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/mix-blend-mode
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/mix-blend-mode
    */
 mixBlendMode?: ConditionalValue<CssVars | CssProperties["mixBlendMode"] | AnyString>
  /**
-   * The **`object-fit`** CSS property sets how the content of a replaced element, such as an `<img>` or `<video>`, should be resized to fit its container.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `fill | contain | cover | none | scale-down`
    *
@@ -3978,11 +4220,11 @@ mixBlendMode?: ConditionalValue<CssVars | CssProperties["mixBlendMode"] | AnyStr
    * | :----: | :-----: | :----: | :----: | :-: |
    * | **32** | **36**  | **10** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/object-fit
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-fit
    */
 objectFit?: ConditionalValue<CssVars | CssProperties["objectFit"] | AnyString>
  /**
-   * The **`object-position`** CSS property specifies the alignment of the selected replaced element's contents within the element's box. Areas of the box which aren't covered by the replaced element's object will show the element's background.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<position>`
    *
@@ -3992,95 +4234,99 @@ objectFit?: ConditionalValue<CssVars | CssProperties["objectFit"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-: |
    * | **32** | **36**  | **10** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/object-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-position
    */
 objectPosition?: ConditionalValue<CssProperties["objectPosition"] | AnyString>
  /**
-   * The **`offset`** CSS shorthand property sets all the properties required for animating an element along a defined path.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `[ <'offset-position'>? [ <'offset-path'> [ <'offset-distance'> || <'offset-rotate'> ]? ]? ]! [ / <'offset-anchor'> ]?`
    *
-   * |    Chrome     | Firefox | Safari | Edge | IE  |
-   * | :-----------: | :-----: | :----: | :--: | :-: |
-   * |    **55**     | **72**  | **16** | n/a  | No  |
-   * | 46 _(motion)_ |         |        |      |     |
+   * |    Chrome     | Firefox | Safari |  Edge  | IE  |
+   * | :-----------: | :-----: | :----: | :----: | :-: |
+   * |    **55**     | **72**  | **16** | **79** | No  |
+   * | 46 _(motion)_ |         |        |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/offset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/offset
    */
 offset?: ConditionalValue<CssProperties["offset"] | AnyString>
  /**
+   * Since August 2023, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
+   *
    * **Syntax**: `auto | <position>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **116** | **72**  | **16** | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **116** | **72**  | **16** | **116** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/offset-anchor
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/offset-anchor
    */
 offsetAnchor?: ConditionalValue<CssProperties["offsetAnchor"] | AnyString>
  /**
-   * The **`offset-distance`** CSS property specifies a position along an `offset-path` for an element to be placed.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `<length-percentage>`
    *
    * **Initial value**: `0`
    *
-   * |         Chrome         | Firefox | Safari | Edge | IE  |
-   * | :--------------------: | :-----: | :----: | :--: | :-: |
-   * |         **55**         | **72**  | **16** | n/a  | No  |
-   * | 46 _(motion-distance)_ |         |        |      |     |
+   * |         Chrome         | Firefox | Safari |  Edge  | IE  |
+   * | :--------------------: | :-----: | :----: | :----: | :-: |
+   * |         **55**         | **72**  | **16** | **79** | No  |
+   * | 46 _(motion-distance)_ |         |        |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/offset-distance
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/offset-distance
    */
 offsetDistance?: ConditionalValue<CssProperties["offsetDistance"] | AnyString>
  /**
-   * The **`offset-path`** CSS property specifies a motion path for an element to follow and defines the element's positioning within the parent container or SVG coordinate system.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `none | <offset-path> || <coord-box>`
    *
    * **Initial value**: `none`
    *
-   * |       Chrome       | Firefox |  Safari  | Edge | IE  |
-   * | :----------------: | :-----: | :------: | :--: | :-: |
-   * |       **55**       | **72**  | **15.4** | n/a  | No  |
-   * | 46 _(motion-path)_ |         |          |      |     |
+   * |       Chrome       | Firefox |  Safari  |  Edge  | IE  |
+   * | :----------------: | :-----: | :------: | :----: | :-: |
+   * |       **55**       | **72**  | **15.4** | **79** | No  |
+   * | 46 _(motion-path)_ |         |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/offset-path
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/offset-path
    */
 offsetPath?: ConditionalValue<CssProperties["offsetPath"] | AnyString>
  /**
+   * Since January 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
+   *
    * **Syntax**: `normal | auto | <position>`
    *
-   * **Initial value**: `auto`
+   * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **116** |   n/a   | **16** | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **116** | **122** | **16** | **116** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/offset-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/offset-position
    */
 offsetPosition?: ConditionalValue<CssProperties["offsetPosition"] | AnyString>
  /**
-   * The **`offset-rotate`** CSS property defines the orientation/direction of the element as it is positioned along the `offset-path`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `[ auto | reverse ] || <angle>`
    *
    * **Initial value**: `auto`
    *
-   * |         Chrome         | Firefox | Safari | Edge | IE  |
-   * | :--------------------: | :-----: | :----: | :--: | :-: |
-   * |         **56**         | **72**  | **16** | n/a  | No  |
-   * | 46 _(motion-rotation)_ |         |        |      |     |
+   * |         Chrome         | Firefox | Safari |  Edge  | IE  |
+   * | :--------------------: | :-----: | :----: | :----: | :-: |
+   * |         **56**         | **72**  | **16** | **79** | No  |
+   * | 46 _(motion-rotation)_ |         |        |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/offset-rotate
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/offset-rotate
    */
 offsetRotate?: ConditionalValue<CssProperties["offsetRotate"] | AnyString>
  /**
-   * The **`opacity`** CSS property sets the opacity of an element. Opacity is the degree to which content behind an element is hidden, and is the opposite of transparency.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<alpha-value>`
+   * **Syntax**: `<opacity-value>`
    *
    * **Initial value**: `1`
    *
@@ -4088,11 +4334,11 @@ offsetRotate?: ConditionalValue<CssProperties["offsetRotate"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **2**  | **12** | **9** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/opacity
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/opacity
    */
 opacity?: ConditionalValue<CssProperties["opacity"] | AnyString>
  /**
-   * The **`order`** CSS property sets the order to lay out an item in a flex or grid container. Items in a container are sorted by ascending `order` value and then by their source code order.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<integer>`
    *
@@ -4103,11 +4349,11 @@ opacity?: ConditionalValue<CssProperties["opacity"] | AnyString>
    * |  **29**  | **20**  |  **9**  | **12** |  **11**  |
    * | 21 _-x-_ |         | 7 _-x-_ |        | 10 _-x-_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/order
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/order
    */
 order?: ConditionalValue<CssProperties["order"] | AnyString>
  /**
-   * The **`orphans`** CSS property sets the minimum number of lines in a block container that must be shown at the _bottom_ of a page, region, or column.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `<integer>`
    *
@@ -4117,37 +4363,37 @@ order?: ConditionalValue<CssProperties["order"] | AnyString>
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **25** |   No    | **1.3** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/orphans
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/orphans
    */
 orphans?: ConditionalValue<CssProperties["orphans"] | AnyString>
  /**
-   * The **`outline`** CSS shorthand property sets most of the outline properties in a single declaration.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2023.
    *
-   * **Syntax**: `[ <'outline-color'> || <'outline-style'> || <'outline-width'> ]`
+   * **Syntax**: `<'outline-width'> || <'outline-style'> || <'outline-color'>`
    *
    * | Chrome | Firefox |  Safari  |  Edge  |  IE   |
    * | :----: | :-----: | :------: | :----: | :---: |
    * | **94** | **88**  | **16.4** | **94** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline
    */
 outline?: ConditionalValue<UtilityValues["outline"] | CssVars | CssProperties["outline"] | AnyString>
  /**
-   * The **`outline-color`** CSS property sets the color of an element's outline.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<color> | invert`
+   * **Syntax**: `auto | <color>`
    *
-   * **Initial value**: `invert`, for browsers supporting it, `currentColor` for the other
+   * **Initial value**: `auto`
    *
    * | Chrome | Firefox | Safari  |  Edge  |  IE   |
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  | **1.5** | **1.2** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color
    */
 outlineColor?: ConditionalValue<UtilityValues["outlineColor"] | CssVars | CssProperties["outlineColor"] | AnyString>
  /**
-   * The **`outline-offset`** CSS property sets the amount of space between an outline and the edge or border of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
    *
    * **Syntax**: `<length>`
    *
@@ -4157,13 +4403,13 @@ outlineColor?: ConditionalValue<UtilityValues["outlineColor"] | CssVars | CssPro
    * | :----: | :-----: | :-----: | :----: | :-: |
    * | **1**  | **1.5** | **1.2** | **15** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline-offset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-offset
    */
 outlineOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssProperties["outlineOffset"] | AnyString>
  /**
-   * The **`outline-style`** CSS property sets the style of an element's outline. An outline is a line that is drawn around an element, outside the `border`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <'border-style'>`
+   * **Syntax**: `auto | <outline-line-style>`
    *
    * **Initial value**: `none`
    *
@@ -4171,11 +4417,11 @@ outlineOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssP
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  | **1.5** | **1.2** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-style
    */
 outlineStyle?: ConditionalValue<CssVars | CssProperties["outlineStyle"] | AnyString>
  /**
-   * The CSS **`outline-width`** property sets the thickness of an element's outline. An outline is a line that is drawn around an element, outside the `border`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width>`
    *
@@ -4185,11 +4431,11 @@ outlineStyle?: ConditionalValue<CssVars | CssProperties["outlineStyle"] | AnyStr
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  | **1.5** | **1.2** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-width
    */
 outlineWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>
  /**
-   * The **`overflow`** CSS shorthand property sets the desired behavior for an element's overflow — i.e. when an element's content is too big to fit in its block formatting context — in both directions.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `[ visible | hidden | clip | scroll | auto ]{1,2}`
    *
@@ -4199,67 +4445,73 @@ outlineWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow
    */
 overflow?: ConditionalValue<CssVars | CssProperties["overflow"] | AnyString>
  /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
    * **Syntax**: `auto | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **56** | **66**  |   No   | n/a  | No  |
+   * | Chrome | Firefox |   Safari    |  Edge  | IE  |
+   * | :----: | :-----: | :---------: | :----: | :-: |
+   * | **56** | **66**  | **preview** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow-anchor
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor
    */
 overflowAnchor?: ConditionalValue<CssProperties["overflowAnchor"] | AnyString>
  /**
+   * Since September 2025, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
+   *
    * **Syntax**: `visible | hidden | clip | scroll | auto`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   | **69**  |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **135** | **69**  | **26** | **135** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-block
    */
 overflowBlock?: ConditionalValue<CssVars | CssProperties["overflowBlock"] | AnyString>
  /**
-   * The **`overflow-clip-box`** CSS property specifies relative to which box the clipping happens when there is an overflow. It is short hand for the `overflow-clip-box-inline` and `overflow-clip-box-block` properties.
-   *
    * **Syntax**: `padding-box | content-box`
    *
    * **Initial value**: `padding-box`
    */
 overflowClipBox?: ConditionalValue<CssProperties["overflowClipBox"] | AnyString>
  /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
    * **Syntax**: `<visual-box> || <length [0,∞]>`
    *
    * **Initial value**: `0px`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **90** | **102** |   No   | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **90** | **102** |   No   | **90** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow-clip-margin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-clip-margin
    */
 overflowClipMargin?: ConditionalValue<CssProperties["overflowClipMargin"] | AnyString>
  /**
+   * Since September 2025, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
+   *
    * **Syntax**: `visible | hidden | clip | scroll | auto`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   | **69**  |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **135** | **69**  | **26** | **135** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-inline
    */
 overflowInline?: ConditionalValue<CssVars | CssProperties["overflowInline"] | AnyString>
  /**
-   * The **`overflow-wrap`** CSS property applies to inline elements, setting whether the browser should insert line breaks within an otherwise unbreakable string to prevent text from overflowing its line box.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2018.
    *
    * **Syntax**: `normal | break-word | anywhere`
    *
@@ -4270,11 +4522,11 @@ overflowInline?: ConditionalValue<CssVars | CssProperties["overflowInline"] | An
    * |     **23**      |      **49**       |      **7**      |      **18**      | **5.5** _(word-wrap)_ |
    * | 1 _(word-wrap)_ | 3.5 _(word-wrap)_ | 1 _(word-wrap)_ | 12 _(word-wrap)_ |                       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow-wrap
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-wrap
    */
 overflowWrap?: ConditionalValue<CssVars | CssProperties["overflowWrap"] | AnyString>
  /**
-   * The **`overflow-x`** CSS property sets what shows when content overflows a block-level element's left and right edges. This may be nothing, a scroll bar, or the overflow content.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `visible | hidden | clip | scroll | auto`
    *
@@ -4284,11 +4536,11 @@ overflowWrap?: ConditionalValue<CssVars | CssProperties["overflowWrap"] | AnyStr
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  | **3.5** | **3**  | **12** | **5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow-x
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-x
    */
 overflowX?: ConditionalValue<CssVars | CssProperties["overflowX"] | AnyString>
  /**
-   * The **`overflow-y`** CSS property sets what shows when content overflows a block-level element's top and bottom edges. This may be nothing, a scroll bar, or the overflow content.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `visible | hidden | clip | scroll | auto`
    *
@@ -4298,25 +4550,25 @@ overflowX?: ConditionalValue<CssVars | CssProperties["overflowX"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  | **3.5** | **3**  | **12** | **5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overflow-y
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-y
    */
 overflowY?: ConditionalValue<CssVars | CssProperties["overflowY"] | AnyString>
  /**
-   * The **`overlay`** CSS property specifies whether an element appearing in the top layer (for example, a shown popover or modal `<dialog>` element) is actually rendered in the top layer. This property is only relevant within a list of `transition-property` values, and only if `allow-discrete` is set as the `transition-behavior`.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | auto`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **117** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **117** |   No    |   No   | **117** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overlay
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overlay
    */
 overlay?: ConditionalValue<CssProperties["overlay"] | AnyString>
  /**
-   * The **`overscroll-behavior`** CSS property sets what a browser does when reaching the boundary of a scrolling area. It's a shorthand for `overscroll-behavior-x` and `overscroll-behavior-y`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `[ contain | none | auto ]{1,2}`
    *
@@ -4326,39 +4578,39 @@ overlay?: ConditionalValue<CssProperties["overlay"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-: |
    * | **63** | **59**  | **16** | **18** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overscroll-behavior
    */
 overscrollBehavior?: ConditionalValue<CssProperties["overscrollBehavior"] | AnyString>
  /**
-   * The **`overscroll-behavior-block`** CSS property sets the browser's behavior when the block direction boundary of a scrolling area is reached.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `contain | none | auto`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **77** | **73**  | **16** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **77** | **73**  | **16** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overscroll-behavior-block
    */
 overscrollBehaviorBlock?: ConditionalValue<CssProperties["overscrollBehaviorBlock"] | AnyString>
  /**
-   * The **`overscroll-behavior-inline`** CSS property sets the browser's behavior when the inline direction boundary of a scrolling area is reached.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `contain | none | auto`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **77** | **73**  | **16** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **77** | **73**  | **16** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overscroll-behavior-inline
    */
 overscrollBehaviorInline?: ConditionalValue<CssProperties["overscrollBehaviorInline"] | AnyString>
  /**
-   * The **`overscroll-behavior-x`** CSS property sets the browser's behavior when the horizontal boundary of a scrolling area is reached.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `contain | none | auto`
    *
@@ -4368,11 +4620,11 @@ overscrollBehaviorInline?: ConditionalValue<CssProperties["overscrollBehaviorInl
    * | :----: | :-----: | :----: | :----: | :-: |
    * | **63** | **59**  | **16** | **18** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-x
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overscroll-behavior-x
    */
 overscrollBehaviorX?: ConditionalValue<CssProperties["overscrollBehaviorX"] | AnyString>
  /**
-   * The **`overscroll-behavior-y`** CSS property sets the browser's behavior when the vertical boundary of a scrolling area is reached.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `contain | none | auto`
    *
@@ -4382,65 +4634,65 @@ overscrollBehaviorX?: ConditionalValue<CssProperties["overscrollBehaviorX"] | An
    * | :----: | :-----: | :----: | :----: | :-: |
    * | **63** | **59**  | **16** | **18** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/overscroll-behavior-y
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overscroll-behavior-y
    */
 overscrollBehaviorY?: ConditionalValue<CssProperties["overscrollBehaviorY"] | AnyString>
  /**
-   * The **`padding`** CSS shorthand property sets the padding area on all four sides of an element at once.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <length> | <percentage> ]{1,4}`
+   * **Syntax**: `<'padding-top'>{1,4}`
    *
    * | Chrome | Firefox | Safari |  Edge  |  IE   |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding
    */
 padding?: ConditionalValue<UtilityValues["padding"] | CssVars | CssProperties["padding"] | AnyString>
  /**
-   * The **`padding-block`** CSS shorthand property defines the logical block start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'padding-left'>{1,2}`
+   * **Syntax**: `<'padding-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-block
    */
 paddingBlock?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssProperties["paddingBlock"] | AnyString>
  /**
-   * The **`padding-block-end`** CSS property defines the logical block end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-block-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-block-end
    */
 paddingBlockEnd?: ConditionalValue<UtilityValues["paddingBlockEnd"] | CssVars | CssProperties["paddingBlockEnd"] | AnyString>
  /**
-   * The **`padding-block-start`** CSS property defines the logical block start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-block-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-block-start
    */
 paddingBlockStart?: ConditionalValue<UtilityValues["paddingBlockStart"] | CssVars | CssProperties["paddingBlockStart"] | AnyString>
  /**
-   * The **`padding-bottom`** CSS property sets the height of the padding area on the bottom of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -4448,55 +4700,55 @@ paddingBlockStart?: ConditionalValue<UtilityValues["paddingBlockStart"] | CssVar
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-bottom
    */
 paddingBottom?: ConditionalValue<UtilityValues["paddingBottom"] | CssVars | CssProperties["paddingBottom"] | AnyString>
  /**
-   * The **`padding-inline`** CSS shorthand property defines the logical inline start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'padding-left'>{1,2}`
+   * **Syntax**: `<'padding-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline
    */
 paddingInline?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProperties["paddingInline"] | AnyString>
  /**
-   * The **`padding-inline-end`** CSS property defines the logical inline end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * |          Chrome           |        Firefox         |          Safari           | Edge | IE  |
-   * | :-----------------------: | :--------------------: | :-----------------------: | :--: | :-: |
-   * |          **69**           |         **41**         |         **12.1**          | n/a  | No  |
-   * | 2 _(-webkit-padding-end)_ | 3 _(-moz-padding-end)_ | 3 _(-webkit-padding-end)_ |      |     |
+   * |          Chrome           |        Firefox         |          Safari           |  Edge  | IE  |
+   * | :-----------------------: | :--------------------: | :-----------------------: | :----: | :-: |
+   * |          **69**           |         **41**         |         **12.1**          | **79** | No  |
+   * | 2 _(-webkit-padding-end)_ | 3 _(-moz-padding-end)_ | 3 _(-webkit-padding-end)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline-end
    */
 paddingInlineEnd?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssProperties["paddingInlineEnd"] | AnyString>
  /**
-   * The **`padding-inline-start`** CSS property defines the logical inline start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * |           Chrome            |         Firefox          |           Safari            | Edge | IE  |
-   * | :-------------------------: | :----------------------: | :-------------------------: | :--: | :-: |
-   * |           **69**            |          **41**          |          **12.1**           | n/a  | No  |
-   * | 2 _(-webkit-padding-start)_ | 3 _(-moz-padding-start)_ | 3 _(-webkit-padding-start)_ |      |     |
+   * |           Chrome            |         Firefox          |           Safari            |  Edge  | IE  |
+   * | :-------------------------: | :----------------------: | :-------------------------: | :----: | :-: |
+   * |           **69**            |          **41**          |          **12.1**           | **79** | No  |
+   * | 2 _(-webkit-padding-start)_ | 3 _(-moz-padding-start)_ | 3 _(-webkit-padding-start)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline-start
    */
 paddingInlineStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | CssProperties["paddingInlineStart"] | AnyString>
  /**
-   * The **`padding-left`** CSS property sets the width of the padding area to the left of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -4504,13 +4756,13 @@ paddingInlineStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssV
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-left
    */
 paddingLeft?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssProperties["paddingLeft"] | AnyString>
  /**
-   * The **`padding-right`** CSS property sets the width of the padding area on the right of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -4518,13 +4770,13 @@ paddingLeft?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssPrope
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-right
    */
 paddingRight?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssProperties["paddingRight"] | AnyString>
  /**
-   * The **`padding-top`** CSS property sets the height of the padding area on the top of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -4532,147 +4784,108 @@ paddingRight?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssPro
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-top
    */
 paddingTop?: ConditionalValue<UtilityValues["paddingTop"] | CssVars | CssProperties["paddingTop"] | AnyString>
  /**
-   * The **`page`** CSS property is used to specify the named page, a specific type of page defined by the `@page` at-rule.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since February 2023.
    *
    * **Syntax**: `auto | <custom-ident>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari   | Edge | IE  |
-   * | :----: | :-----: | :-------: | :--: | :-: |
-   * | **85** | **110** | **≤13.1** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **85** | **110** | **1**  | **85** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/page
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/page
    */
 page?: ConditionalValue<CssProperties["page"] | AnyString>
+ pageBreakAfter?: ConditionalValue<CssProperties["pageBreakAfter"] | AnyString>
+ pageBreakBefore?: ConditionalValue<CssProperties["pageBreakBefore"] | AnyString>
+ pageBreakInside?: ConditionalValue<CssProperties["pageBreakInside"] | AnyString>
  /**
-   * The **`page-break-after`** CSS property adjusts page breaks _after_ the current element.
-   *
-   * **Syntax**: `auto | always | avoid | left | right | recto | verso`
-   *
-   * **Initial value**: `auto`
-   *
-   * | Chrome | Firefox | Safari  |  Edge  |  IE   |
-   * | :----: | :-----: | :-----: | :----: | :---: |
-   * | **1**  |  **1**  | **1.2** | **12** | **4** |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/page-break-after
-   */
-pageBreakAfter?: ConditionalValue<CssProperties["pageBreakAfter"] | AnyString>
- /**
-   * The **`page-break-before`** CSS property adjusts page breaks _before_ the current element.
-   *
-   * **Syntax**: `auto | always | avoid | left | right | recto | verso`
-   *
-   * **Initial value**: `auto`
-   *
-   * | Chrome | Firefox | Safari  |  Edge  |  IE   |
-   * | :----: | :-----: | :-----: | :----: | :---: |
-   * | **1**  |  **1**  | **1.2** | **12** | **4** |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/page-break-before
-   */
-pageBreakBefore?: ConditionalValue<CssProperties["pageBreakBefore"] | AnyString>
- /**
-   * The **`page-break-inside`** CSS property adjusts page breaks _inside_ the current element.
-   *
-   * **Syntax**: `auto | avoid`
-   *
-   * **Initial value**: `auto`
-   *
-   * | Chrome | Firefox | Safari  |  Edge  |  IE   |
-   * | :----: | :-----: | :-----: | :----: | :---: |
-   * | **1**  | **19**  | **1.3** | **12** | **8** |
-   *
-   * @see https://developer.mozilla.org/docs/Web/CSS/page-break-inside
-   */
-pageBreakInside?: ConditionalValue<CssProperties["pageBreakInside"] | AnyString>
- /**
-   * The **`paint-order`** CSS property lets you control the order in which the fill and stroke (and painting markers) of text content and shapes are drawn.
+   * Since March 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `normal | [ fill || stroke || markers ]`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari |  Edge  | IE  |
-   * | :----: | :-----: | :----: | :----: | :-: |
-   * | **35** | **60**  | **8**  | **17** | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **123** | **60**  | **11** | **123** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/paint-order
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/paint-order
    */
 paintOrder?: ConditionalValue<CssProperties["paintOrder"] | AnyString>
  /**
-   * The **`perspective`** CSS property determines the distance between the z=0 plane and the user in order to give a 3D-positioned element some perspective.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `none | <length>`
    *
    * **Initial value**: `none`
    *
-   * |  Chrome  | Firefox | Safari  |  Edge  |   IE   |
-   * | :------: | :-----: | :-----: | :----: | :----: |
-   * |  **36**  | **16**  |  **9**  | **12** | **10** |
-   * | 12 _-x-_ |         | 4 _-x-_ |        |        |
+   * |  Chrome  | Firefox  | Safari  |  Edge  |   IE   |
+   * | :------: | :------: | :-----: | :----: | :----: |
+   * |  **36**  |  **16**  |  **9**  | **12** | **10** |
+   * | 12 _-x-_ | 10 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/perspective
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/perspective
    */
 perspective?: ConditionalValue<CssProperties["perspective"] | AnyString>
  /**
-   * The **`perspective-origin`** CSS property determines the position at which the viewer is looking. It is used as the _vanishing point_ by the `perspective` property.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<position>`
    *
    * **Initial value**: `50% 50%`
    *
-   * |  Chrome  | Firefox | Safari  |  Edge  |   IE   |
-   * | :------: | :-----: | :-----: | :----: | :----: |
-   * |  **36**  | **16**  |  **9**  | **12** | **10** |
-   * | 12 _-x-_ |         | 4 _-x-_ |        |        |
+   * |  Chrome  | Firefox  | Safari  |  Edge  |   IE   |
+   * | :------: | :------: | :-----: | :----: | :----: |
+   * |  **36**  |  **16**  |  **9**  | **12** | **10** |
+   * | 12 _-x-_ | 10 _-x-_ | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/perspective-origin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/perspective-origin
    */
 perspectiveOrigin?: ConditionalValue<CssProperties["perspectiveOrigin"] | AnyString>
  /**
-   * The **`place-content`** CSS shorthand property allows you to align content along both the block and inline directions at once (i.e. the `align-content` and `justify-content` properties) in a relevant layout system such as Grid or Flexbox.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'align-content'> <'justify-content'>?`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **59** | **45**  | **9**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **59** | **45**  | **9**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/place-content
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/place-content
    */
 placeContent?: ConditionalValue<CssProperties["placeContent"] | AnyString>
  /**
-   * The CSS **`place-items`** shorthand property allows you to align items along both the block and inline directions at once (i.e. the `align-items` and `justify-items` properties) in a relevant layout system such as Grid or Flexbox. If the second value is not set, the first value is also used for it.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'align-items'> <'justify-items'>?`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **59** | **45**  | **11** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **59** | **45**  | **11** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/place-items
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/place-items
    */
 placeItems?: ConditionalValue<CssProperties["placeItems"] | AnyString>
  /**
-   * The **`place-self`** CSS shorthand property allows you to align an individual item in both the block and inline directions at once (i.e. the `align-self` and `justify-self` properties) in a relevant layout system such as Grid or Flexbox. If the second value is not present, the first value is also used for it.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'align-self'> <'justify-self'>?`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **59** | **45**  | **11** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **59** | **45**  | **11** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/place-self
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/place-self
    */
 placeSelf?: ConditionalValue<CssProperties["placeSelf"] | AnyString>
  /**
-   * The **`pointer-events`** CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `auto | none | visiblePainted | visibleFill | visibleStroke | visible | painted | fill | stroke | all | inherit`
    *
@@ -4682,11 +4895,11 @@ placeSelf?: ConditionalValue<CssProperties["placeSelf"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :----: |
    * | **1**  | **1.5** | **4**  | **12** | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/pointer-events
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/pointer-events
    */
 pointerEvents?: ConditionalValue<CssVars | CssProperties["pointerEvents"] | AnyString>
  /**
-   * The **`position`** CSS property sets how an element is positioned in a document. The `top`, `right`, `bottom`, and `left` properties determine the final location of positioned elements.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `static | relative | absolute | sticky | fixed`
    *
@@ -4696,32 +4909,108 @@ pointerEvents?: ConditionalValue<CssVars | CssProperties["pointerEvents"] | AnyS
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position
    */
 position?: ConditionalValue<CssVars | CssProperties["position"] | AnyString>
- positionAnchor?: ConditionalValue<CssProperties["positionAnchor"] | AnyString>
- positionArea?: ConditionalValue<CssProperties["positionArea"] | AnyString>
- positionTry?: ConditionalValue<CssProperties["positionTry"] | AnyString>
- positionTryFallbacks?: ConditionalValue<CssProperties["positionTryFallbacks"] | AnyString>
- positionTryOrder?: ConditionalValue<CssProperties["positionTryOrder"] | AnyString>
- positionVisibility?: ConditionalValue<CssProperties["positionVisibility"] | AnyString>
  /**
-   * The **`print-color-adjust`** CSS property sets what, if anything, the user agent may do to optimize the appearance of the element on the output device. By default, the browser is allowed to make any adjustments to the element's appearance it determines to be necessary and prudent given the type and capabilities of the output device.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `auto | <anchor-name>`
+   *
+   * **Initial value**: `auto`
+   *
+   * | Chrome  |   Firefox   | Safari |  Edge   | IE  |
+   * | :-----: | :---------: | :----: | :-----: | :-: |
+   * | **125** | **preview** | **26** | **125** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position-anchor
+   */
+positionAnchor?: ConditionalValue<CssProperties["positionAnchor"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `none | <position-area>`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome  |   Firefox   | Safari |  Edge   | IE  |
+   * | :-----: | :---------: | :----: | :-----: | :-: |
+   * | **129** | **preview** | **26** | **129** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position-area
+   */
+positionArea?: ConditionalValue<CssProperties["positionArea"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `<'position-try-order'>? <'position-try-fallbacks'>`
+   *
+   * | Chrome  |   Firefox   | Safari |  Edge   | IE  |
+   * | :-----: | :---------: | :----: | :-----: | :-: |
+   * | **125** | **preview** | **26** | **125** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position-try
+   */
+positionTry?: ConditionalValue<CssProperties["positionTry"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `none | [ [<dashed-ident> || <try-tactic>] | <'position-area'> ]#`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome  |   Firefox   | Safari |  Edge   | IE  |
+   * | :-----: | :---------: | :----: | :-----: | :-: |
+   * | **128** | **preview** | **26** | **128** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position-try-fallbacks
+   */
+positionTryFallbacks?: ConditionalValue<CssProperties["positionTryFallbacks"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `normal | <try-size>`
+   *
+   * **Initial value**: `normal`
+   *
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **125** |   No    | **26** | **125** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position-try-order
+   */
+positionTryOrder?: ConditionalValue<CssProperties["positionTryOrder"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `always | [ anchors-valid || anchors-visible || no-overflow ]`
+   *
+   * **Initial value**: `anchors-visible`
+   *
+   * | Chrome  |   Firefox   | Safari |  Edge   | IE  |
+   * | :-----: | :---------: | :----: | :-----: | :-: |
+   * | **125** | **preview** |   No   | **125** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position-visibility
+   */
+positionVisibility?: ConditionalValue<CssProperties["positionVisibility"] | AnyString>
+ /**
+   * Since May 2025, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `economy | exact`
    *
    * **Initial value**: `economy`
    *
-   * |    Chrome    |       Firefox       |  Safari  |     Edge     | IE  |
-   * | :----------: | :-----------------: | :------: | :----------: | :-: |
-   * | **17** _-x-_ |       **97**        | **15.4** | **79** _-x-_ | No  |
-   * |              | 48 _(color-adjust)_ | 6 _-x-_  |              |     |
+   * |  Chrome  |       Firefox       |  Safari  |   Edge   | IE  |
+   * | :------: | :-----------------: | :------: | :------: | :-: |
+   * | **136**  |       **97**        | **15.4** | **136**  | No  |
+   * | 17 _-x-_ | 48 _(color-adjust)_ | 6 _-x-_  | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/print-color-adjust
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/print-color-adjust
    */
 printColorAdjust?: ConditionalValue<CssProperties["printColorAdjust"] | AnyString>
  /**
-   * The **`quotes`** CSS property sets how the browser should render quotation marks that are added using the `open-quotes` or `close-quotes` values of the CSS `content` property.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `none | auto | [ <string> <string> ]+`
    *
@@ -4731,28 +5020,41 @@ printColorAdjust?: ConditionalValue<CssProperties["printColorAdjust"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **11** | **1.5** | **9**  | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/quotes
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/quotes
    */
 quotes?: ConditionalValue<CssProperties["quotes"] | AnyString>
- r?: ConditionalValue<CssProperties["r"] | AnyString>
  /**
-   * The **`resize`** CSS property sets whether an element is resizable, and if so, in which directions.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
+   *
+   * **Syntax**: `<length> | <percentage>`
+   *
+   * **Initial value**: `0`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **43** | **69**  | **9**  | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/r
+   */
+r?: ConditionalValue<CssProperties["r"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | both | horizontal | vertical | block | inline`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **1**  |  **4**  | **3**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **1**  |  **4**  | **3**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/resize
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/resize
    */
 resize?: ConditionalValue<CssVars | CssProperties["resize"] | AnyString>
  /**
-   * The **`right`** CSS property participates in specifying the horizontal position of a positioned element. It has no effect on non-positioned elements.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `auto | <length-percentage> | <anchor()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -4760,25 +5062,25 @@ resize?: ConditionalValue<CssVars | CssProperties["resize"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/right
    */
 right?: ConditionalValue<UtilityValues["right"] | CssVars | CssProperties["right"] | AnyString>
  /**
-   * The **`rotate`** CSS property allows you to specify rotation transforms individually and independently of the `transform` property. This maps better to typical user interface usage, and saves having to remember the exact order of transform functions to specify in the `transform` property.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since August 2022.
    *
    * **Syntax**: `none | <angle> | [ x | y | z | <number>{3} ] && <angle>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **104** | **72**  | **14.1** | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **104** | **72**  | **14.1** | **104** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/rotate
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/rotate
    */
 rotate?: ConditionalValue<UtilityValues["rotate"] | CssVars | CssProperties["rotate"] | AnyString>
  /**
-   * The **`row-gap`** CSS property sets the size of the gap (gutter) between an element's rows.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2017.
    *
    * **Syntax**: `normal | <length-percentage>`
    *
@@ -4788,21 +5090,21 @@ rotate?: ConditionalValue<UtilityValues["rotate"] | CssVars | CssProperties["rot
    * | :----: | :-----: | :------: | :----: | :-: |
    * | **47** | **52**  | **10.1** | **16** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/row-gap
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/row-gap
    */
 rowGap?: ConditionalValue<UtilityValues["rowGap"] | CssVars | CssProperties["rowGap"] | AnyString>
  /**
-   * The **`ruby-align`** CSS property defines the distribution of the different ruby elements over the base.
+   * Since December 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `start | center | space-between | space-around`
    *
    * **Initial value**: `space-around`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * |   No   | **38**  |   No   | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **128** | **38**  | **18.2** | **128** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/ruby-align
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/ruby-align
    */
 rubyAlign?: ConditionalValue<CssProperties["rubyAlign"] | AnyString>
  /**
@@ -4812,363 +5114,389 @@ rubyAlign?: ConditionalValue<CssProperties["rubyAlign"] | AnyString>
    */
 rubyMerge?: ConditionalValue<CssProperties["rubyMerge"] | AnyString>
  /**
-   * The **`ruby-position`** CSS property defines the position of a ruby element relatives to its base element. It can be positioned over the element (`over`), under it (`under`), or between the characters on their right side (`inter-character`).
+   * Since December 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `[ alternate || [ over | under ] ] | inter-character`
    *
    * **Initial value**: `alternate`
    *
-   * | Chrome  | Firefox |   Safari    | Edge  | IE  |
-   * | :-----: | :-----: | :---------: | :---: | :-: |
-   * | **84**  | **38**  | **7** _-x-_ | 12-79 | No  |
-   * | 1 _-x-_ |         |             |       |     |
+   * | Chrome  | Firefox |  Safari  | Edge  | IE  |
+   * | :-----: | :-----: | :------: | :---: | :-: |
+   * | **84**  | **38**  | **18.2** | 12-79 | No  |
+   * | 1 _-x-_ |         | 7 _-x-_  |       |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/ruby-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/ruby-position
    */
 rubyPosition?: ConditionalValue<CssProperties["rubyPosition"] | AnyString>
- rx?: ConditionalValue<CssProperties["rx"] | AnyString>
- ry?: ConditionalValue<CssProperties["ry"] | AnyString>
  /**
-   * The **`scale`** CSS property allows you to specify scale transforms individually and independently of the `transform` property. This maps better to typical user interface usage, and saves having to remember the exact order of transform functions to specify in the `transform` value.
+   * Since March 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `none | <number>{1,3}`
+   * **Syntax**: `<length> | <percentage>`
+   *
+   * **Initial value**: `0`
+   *
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **43** | **69**  | **17.4** | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/rx
+   */
+rx?: ConditionalValue<CssProperties["rx"] | AnyString>
+ /**
+   * Since March 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
+   *
+   * **Syntax**: `<length> | <percentage>`
+   *
+   * **Initial value**: `0`
+   *
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **43** | **69**  | **17.4** | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/ry
+   */
+ry?: ConditionalValue<CssProperties["ry"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since August 2022.
+   *
+   * **Syntax**: `none | [ <number> | <percentage> ]{1,3}`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **104** | **72**  | **14.1** | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **104** | **72**  | **14.1** | **104** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scale
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scale
    */
 scale?: ConditionalValue<UtilityValues["scale"] | CssVars | CssProperties["scale"] | AnyString>
  /**
-   * The **`scroll-behavior`** CSS property sets the behavior for a scrolling box when scrolling is triggered by the navigation or CSSOM scrolling APIs.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `auto | smooth`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **61** | **36**  | **15.4** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **61** | **36**  | **15.4** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-behavior
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-behavior
    */
 scrollBehavior?: ConditionalValue<CssVars | CssProperties["scrollBehavior"] | AnyString>
  /**
-   * The **`scroll-margin`** shorthand property sets all of the scroll margins of an element at once, assigning values much like the `margin` property does for margins of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2021.
    *
    * **Syntax**: `<length>{1,4}`
    *
-   * | Chrome | Firefox |          Safari           | Edge | IE  |
-   * | :----: | :-----: | :-----------------------: | :--: | :-: |
-   * | **69** | **90**  |         **14.1**          | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin)_ |      |     |
+   * | Chrome | Firefox |          Safari           |  Edge  | IE  |
+   * | :----: | :-----: | :-----------------------: | :----: | :-: |
+   * | **69** | **90**  |         **14.1**          | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin
    */
 scrollMargin?: ConditionalValue<UtilityValues["scrollMargin"] | CssVars | CssProperties["scrollMargin"] | AnyString>
  /**
-   * The `scroll-margin-block` shorthand property sets the scroll margins of an element in the block dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-block
    */
 scrollMarginBlock?: ConditionalValue<UtilityValues["scrollMarginBlock"] | CssVars | CssProperties["scrollMarginBlock"] | AnyString>
  /**
-   * The `scroll-margin-block-end` property defines the margin of the scroll snap area at the end of the block dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-block-end
    */
 scrollMarginBlockEnd?: ConditionalValue<UtilityValues["scrollMarginBlockEnd"] | CssVars | CssProperties["scrollMarginBlockEnd"] | AnyString>
  /**
-   * The `scroll-margin-block-start` property defines the margin of the scroll snap area at the start of the block dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-block-start
    */
 scrollMarginBlockStart?: ConditionalValue<UtilityValues["scrollMarginBlockStart"] | CssVars | CssProperties["scrollMarginBlockStart"] | AnyString>
  /**
-   * The `scroll-margin-bottom` property defines the bottom margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |              Safari              | Edge | IE  |
-   * | :----: | :-----: | :------------------------------: | :--: | :-: |
-   * | **69** | **68**  |             **14.1**             | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-bottom)_ |      |     |
+   * | Chrome | Firefox |              Safari              |  Edge  | IE  |
+   * | :----: | :-----: | :------------------------------: | :----: | :-: |
+   * | **69** | **68**  |             **14.1**             | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-bottom)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-bottom
    */
 scrollMarginBottom?: ConditionalValue<UtilityValues["scrollMarginBottom"] | CssVars | CssProperties["scrollMarginBottom"] | AnyString>
  /**
-   * The `scroll-margin-inline` shorthand property sets the scroll margins of an element in the inline dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-inline
    */
 scrollMarginInline?: ConditionalValue<UtilityValues["scrollMarginInline"] | CssVars | CssProperties["scrollMarginInline"] | AnyString>
  /**
-   * The `scroll-margin-inline-end` property defines the margin of the scroll snap area at the end of the inline dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-inline-end
    */
 scrollMarginInlineEnd?: ConditionalValue<UtilityValues["scrollMarginInlineEnd"] | CssVars | CssProperties["scrollMarginInlineEnd"] | AnyString>
  /**
-   * The `scroll-margin-inline-start` property defines the margin of the scroll snap area at the start of the inline dimension that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-inline-start
    */
 scrollMarginInlineStart?: ConditionalValue<UtilityValues["scrollMarginInlineStart"] | CssVars | CssProperties["scrollMarginInlineStart"] | AnyString>
  /**
-   * The `scroll-margin-left` property defines the left margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |             Safari             | Edge | IE  |
-   * | :----: | :-----: | :----------------------------: | :--: | :-: |
-   * | **69** | **68**  |            **14.1**            | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-left)_ |      |     |
+   * | Chrome | Firefox |             Safari             |  Edge  | IE  |
+   * | :----: | :-----: | :----------------------------: | :----: | :-: |
+   * | **69** | **68**  |            **14.1**            | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-left)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-left
    */
 scrollMarginLeft?: ConditionalValue<UtilityValues["scrollMarginLeft"] | CssVars | CssProperties["scrollMarginLeft"] | AnyString>
  /**
-   * The `scroll-margin-right` property defines the right margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |             Safari              | Edge | IE  |
-   * | :----: | :-----: | :-----------------------------: | :--: | :-: |
-   * | **69** | **68**  |            **14.1**             | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-right)_ |      |     |
+   * | Chrome | Firefox |             Safari              |  Edge  | IE  |
+   * | :----: | :-----: | :-----------------------------: | :----: | :-: |
+   * | **69** | **68**  |            **14.1**             | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-right)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-right
    */
 scrollMarginRight?: ConditionalValue<UtilityValues["scrollMarginRight"] | CssVars | CssProperties["scrollMarginRight"] | AnyString>
  /**
-   * The `scroll-margin-top` property defines the top margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |            Safari             | Edge | IE  |
-   * | :----: | :-----: | :---------------------------: | :--: | :-: |
-   * | **69** | **68**  |           **14.1**            | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-top)_ |      |     |
+   * | Chrome | Firefox |            Safari             |  Edge  | IE  |
+   * | :----: | :-----: | :---------------------------: | :----: | :-: |
+   * | **69** | **68**  |           **14.1**            | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-top)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-top
    */
 scrollMarginTop?: ConditionalValue<UtilityValues["scrollMarginTop"] | CssVars | CssProperties["scrollMarginTop"] | AnyString>
  /**
-   * The **`scroll-padding`** shorthand property sets scroll padding on all sides of an element at once, much like the `padding` property does for padding on an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,4}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **68**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **68**  | **14.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding
    */
 scrollPadding?: ConditionalValue<UtilityValues["scrollPadding"] | CssVars | CssProperties["scrollPadding"] | AnyString>
  /**
-   * The `scroll-padding-block` shorthand property sets the scroll padding of an element in the block dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-block
    */
 scrollPaddingBlock?: ConditionalValue<UtilityValues["scrollPaddingBlock"] | CssVars | CssProperties["scrollPaddingBlock"] | AnyString>
  /**
-   * The `scroll-padding-block-end` property defines offsets for the end edge in the block dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-block-end
    */
 scrollPaddingBlockEnd?: ConditionalValue<UtilityValues["scrollPaddingBlockEnd"] | CssVars | CssProperties["scrollPaddingBlockEnd"] | AnyString>
  /**
-   * The `scroll-padding-block-start` property defines offsets for the start edge in the block dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-block-start
    */
 scrollPaddingBlockStart?: ConditionalValue<UtilityValues["scrollPaddingBlockStart"] | CssVars | CssProperties["scrollPaddingBlockStart"] | AnyString>
  /**
-   * The `scroll-padding-bottom` property defines offsets for the bottom of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **68**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **68**  | **14.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-bottom
    */
 scrollPaddingBottom?: ConditionalValue<UtilityValues["scrollPaddingBottom"] | CssVars | CssProperties["scrollPaddingBottom"] | AnyString>
  /**
-   * The `scroll-padding-inline` shorthand property sets the scroll padding of an element in the inline dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-inline
    */
 scrollPaddingInline?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars | CssProperties["scrollPaddingInline"] | AnyString>
  /**
-   * The `scroll-padding-inline-end` property defines offsets for the end edge in the inline dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-inline-end
    */
 scrollPaddingInlineEnd?: ConditionalValue<UtilityValues["scrollPaddingInlineEnd"] | CssVars | CssProperties["scrollPaddingInlineEnd"] | AnyString>
  /**
-   * The `scroll-padding-inline-start` property defines offsets for the start edge in the inline dimension of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-inline-start
    */
 scrollPaddingInlineStart?: ConditionalValue<UtilityValues["scrollPaddingInlineStart"] | CssVars | CssProperties["scrollPaddingInlineStart"] | AnyString>
  /**
-   * The `scroll-padding-left` property defines offsets for the left of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **68**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **68**  | **14.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-left
    */
 scrollPaddingLeft?: ConditionalValue<UtilityValues["scrollPaddingLeft"] | CssVars | CssProperties["scrollPaddingLeft"] | AnyString>
  /**
-   * The `scroll-padding-right` property defines offsets for the right of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **68**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **68**  | **14.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-right
    */
 scrollPaddingRight?: ConditionalValue<UtilityValues["scrollPaddingRight"] | CssVars | CssProperties["scrollPaddingRight"] | AnyString>
  /**
-   * The **`scroll-padding-top`** property defines offsets for the top of the _optimal viewing region_ of the scrollport: the region used as the target region for placing things in view of the user. This allows the author to exclude regions of the scrollport that are obscured by other content (such as fixed-positioned toolbars or sidebars) or to put more breathing room between a targeted element and the edges of the scrollport.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `auto | <length-percentage>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **68**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **68**  | **14.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-top
    */
 scrollPaddingTop?: ConditionalValue<UtilityValues["scrollPaddingTop"] | CssVars | CssProperties["scrollPaddingTop"] | AnyString>
  /**
-   * The `scroll-snap-align` property specifies the box's snap position as an alignment of its snap area (as the alignment subject) within its snap container's snapport (as the alignment container). The two values specify the snapping alignment in the block axis and inline axis, respectively. If only one value is specified, the second value defaults to the same value.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `[ none | start | end | center ]{1,2}`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **11** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **11** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-snap-align
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-snap-align
    */
 scrollSnapAlign?: ConditionalValue<CssProperties["scrollSnapAlign"] | AnyString>
  scrollSnapCoordinate?: ConditionalValue<CssProperties["scrollSnapCoordinate"] | AnyString>
@@ -5176,21 +5504,21 @@ scrollSnapAlign?: ConditionalValue<CssProperties["scrollSnapAlign"] | AnyString>
  scrollSnapPointsX?: ConditionalValue<CssProperties["scrollSnapPointsX"] | AnyString>
  scrollSnapPointsY?: ConditionalValue<CssProperties["scrollSnapPointsY"] | AnyString>
  /**
-   * The **`scroll-snap-stop`** CSS property defines whether or not the scroll container is allowed to "pass over" possible snap positions.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2022.
    *
    * **Syntax**: `normal | always`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **75** | **103** | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **75** | **103** | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-snap-stop
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-snap-stop
    */
 scrollSnapStop?: ConditionalValue<CssProperties["scrollSnapStop"] | AnyString>
  /**
-   * The **`scroll-snap-type`** CSS property sets how strictly snap points are enforced on the scroll container in case there is one.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2022.
    *
    * **Syntax**: `none | [ x | y | block | inline | both ] [ mandatory | proximity ]?`
    *
@@ -5201,163 +5529,304 @@ scrollSnapStop?: ConditionalValue<CssProperties["scrollSnapStop"] | AnyString>
    * | **69** |  39-68  | **11**  | **79** | **10** _-x-_ |
    * |        |         | 9 _-x-_ |        |              |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-snap-type
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-snap-type
    */
 scrollSnapType?: ConditionalValue<UtilityValues["scrollSnapType"] | CssVars | CssProperties["scrollSnapType"] | AnyString>
  scrollSnapTypeX?: ConditionalValue<CssProperties["scrollSnapTypeX"] | AnyString>
  scrollSnapTypeY?: ConditionalValue<CssProperties["scrollSnapTypeY"] | AnyString>
  /**
-   * The **`scroll-timeline`** CSS shorthand property defines a name that can be used to identify the source element of a scroll timeline, along with the scrollbar axis that should provide the timeline.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ <'scroll-timeline-name'> <'scroll-timeline-axis'>? ]#`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-timeline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-timeline
    */
 scrollTimeline?: ConditionalValue<CssProperties["scrollTimeline"] | AnyString>
  /**
-   * The **`scroll-timeline-axis`** CSS property can be used to specify the scrollbar that will be used to provide the timeline for a scroll-timeline animation.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ block | inline | x | y ]#`
    *
    * **Initial value**: `block`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-timeline-axis
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-timeline-axis
    */
 scrollTimelineAxis?: ConditionalValue<CssProperties["scrollTimelineAxis"] | AnyString>
  /**
-   * The **`scroll-timeline-name`** CSS property defines a name that can be used to identify an element as the source of a scroll timeline for an animation.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `none | <dashed-ident>#`
+   * **Syntax**: `[ none | <dashed-ident> ]#`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-timeline-name
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-timeline-name
    */
 scrollTimelineName?: ConditionalValue<CssProperties["scrollTimelineName"] | AnyString>
  /**
-   * The **`scrollbar-color`** CSS property sets the color of the scrollbar track and thumb.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `auto | <color>{2}`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **121** | **64**  |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **121** | **64**  |   No   | **121** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scrollbar-color
    */
 scrollbarColor?: ConditionalValue<UtilityValues["scrollbarColor"] | CssVars | CssProperties["scrollbarColor"] | AnyString>
  /**
-   * The **`scrollbar-gutter`** CSS property allows authors to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
+   * Since December 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `auto | stable && both-edges?`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **94** | **97**  |   No   | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **94** | **97**  | **18.2** | **94** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-gutter
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scrollbar-gutter
    */
 scrollbarGutter?: ConditionalValue<CssProperties["scrollbarGutter"] | AnyString>
  /**
-   * The **`scrollbar-width`** property allows the author to set the maximum thickness of an element's scrollbars when they are shown.
+   * Since December 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `auto | thin | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **121** | **64**  |   No   | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **121** | **64**  | **18.2** | **121** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scrollbar-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scrollbar-width
    */
 scrollbarWidth?: ConditionalValue<UtilityValues["scrollbarWidth"] | CssVars | CssProperties["scrollbarWidth"] | AnyString>
  /**
-   * The **`shape-image-threshold`** CSS property sets the alpha channel threshold used to extract the shape using an image as the value for `shape-outside`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<alpha-value>`
+   * **Syntax**: `<opacity-value>`
    *
    * **Initial value**: `0.0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **37** | **62**  | **10.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **37** | **62**  | **10.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/shape-image-threshold
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/shape-image-threshold
    */
 shapeImageThreshold?: ConditionalValue<CssProperties["shapeImageThreshold"] | AnyString>
  /**
-   * The **`shape-margin`** CSS property sets a margin for a CSS shape created using `shape-outside`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<length-percentage>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **37** | **62**  | **10.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **37** | **62**  | **10.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/shape-margin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/shape-margin
    */
 shapeMargin?: ConditionalValue<CssProperties["shapeMargin"] | AnyString>
  /**
-   * The **`shape-outside`** CSS property defines a shape—which may be non-rectangular—around which adjacent inline content should wrap. By default, inline content wraps around its margin box; `shape-outside` provides a way to customize this wrapping, making it possible to wrap text around complex objects rather than simple boxes.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `none | [ <shape-box> || <basic-shape> ] | <image>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **37** | **62**  | **10.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **37** | **62**  | **10.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/shape-outside
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/shape-outside
    */
 shapeOutside?: ConditionalValue<CssProperties["shapeOutside"] | AnyString>
- shapeRendering?: ConditionalValue<CssProperties["shapeRendering"] | AnyString>
- stopColor?: ConditionalValue<CssProperties["stopColor"] | AnyString>
- stopOpacity?: ConditionalValue<CssProperties["stopOpacity"] | AnyString>
- stroke?: ConditionalValue<UtilityValues["stroke"] | CssVars | CssProperties["stroke"] | AnyString>
- strokeDasharray?: ConditionalValue<CssProperties["strokeDasharray"] | AnyString>
- strokeDashoffset?: ConditionalValue<CssProperties["strokeDashoffset"] | AnyString>
- strokeLinecap?: ConditionalValue<CssProperties["strokeLinecap"] | AnyString>
- strokeLinejoin?: ConditionalValue<CssProperties["strokeLinejoin"] | AnyString>
- strokeMiterlimit?: ConditionalValue<CssProperties["strokeMiterlimit"] | AnyString>
- strokeOpacity?: ConditionalValue<CssProperties["strokeOpacity"] | AnyString>
- strokeWidth?: ConditionalValue<CssProperties["strokeWidth"] | AnyString>
  /**
-   * The **`tab-size`** CSS property is used to customize the width of tab characters (U+0009).
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
+   *
+   * **Syntax**: `auto | optimizeSpeed | crispEdges | geometricPrecision`
+   *
+   * **Initial value**: `auto`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **1**  |  **3**  | **4**  | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/shape-rendering
+   */
+shapeRendering?: ConditionalValue<CssProperties["shapeRendering"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<'color'>`
+   *
+   * **Initial value**: `black`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stop-color
+   */
+stopColor?: ConditionalValue<CssProperties["stopColor"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<'opacity'>`
+   *
+   * **Initial value**: `black`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stop-opacity
+   */
+stopOpacity?: ConditionalValue<CssProperties["stopOpacity"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<paint>`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke
+   */
+stroke?: ConditionalValue<UtilityValues["stroke"] | CssVars | CssProperties["stroke"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `none | <dasharray>`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke-dasharray
+   */
+strokeDasharray?: ConditionalValue<CssProperties["strokeDasharray"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<length-percentage> | <number>`
+   *
+   * **Initial value**: `0`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke-dashoffset
+   */
+strokeDashoffset?: ConditionalValue<CssProperties["strokeDashoffset"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `butt | round | square`
+   *
+   * **Initial value**: `butt`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke-linecap
+   */
+strokeLinecap?: ConditionalValue<CssProperties["strokeLinecap"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `miter | miter-clip | round | bevel | arcs`
+   *
+   * **Initial value**: `miter`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke-linejoin
+   */
+strokeLinejoin?: ConditionalValue<CssProperties["strokeLinejoin"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<number>`
+   *
+   * **Initial value**: `4`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke-miterlimit
+   */
+strokeMiterlimit?: ConditionalValue<CssProperties["strokeMiterlimit"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<'opacity'>`
+   *
+   * **Initial value**: `1`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke-opacity
+   */
+strokeOpacity?: ConditionalValue<CssProperties["strokeOpacity"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
+   *
+   * **Syntax**: `<length-percentage> | <number>`
+   *
+   * **Initial value**: `1px`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  | **1.5** | **4**  | **≤15** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/stroke-width
+   */
+strokeWidth?: ConditionalValue<CssProperties["strokeWidth"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since August 2021.
    *
    * **Syntax**: `<integer> | <length>`
    *
    * **Initial value**: `8`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **21** | **91**  | **7**  | n/a  | No  |
-   * |        | 4 _-x-_ |        |      |     |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **21** | **91**  | **7**  | **79** | No  |
+   * |        | 4 _-x-_ |        |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/tab-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/tab-size
    */
 tabSize?: ConditionalValue<CssProperties["tabSize"] | AnyString>
  /**
-   * The **`table-layout`** CSS property sets the algorithm used to lay out `<table>` cells, rows, and columns.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `auto | fixed`
    *
@@ -5367,11 +5836,11 @@ tabSize?: ConditionalValue<CssProperties["tabSize"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **14** |  **1**  | **1**  | **12** | **5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/table-layout
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/table-layout
    */
 tableLayout?: ConditionalValue<CssProperties["tableLayout"] | AnyString>
  /**
-   * The **`text-align`** CSS property sets the horizontal alignment of the inline-level content inside a block element or table-cell box. This means it works like `vertical-align` but in the horizontal direction.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `start | end | left | right | center | justify | match-parent`
    *
@@ -5381,11 +5850,11 @@ tableLayout?: ConditionalValue<CssProperties["tableLayout"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-align
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-align
    */
 textAlign?: ConditionalValue<CssProperties["textAlign"] | AnyString>
  /**
-   * The **`text-align-last`** CSS property sets how the last line of a block or a line, right before a forced line break, is aligned.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2022.
    *
    * **Syntax**: `auto | start | end | left | right | center | justify`
    *
@@ -5395,15 +5864,61 @@ textAlign?: ConditionalValue<CssProperties["textAlign"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **47** | **49**  | **16** | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-align-last
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-align-last
    */
 textAlignLast?: ConditionalValue<CssProperties["textAlignLast"] | AnyString>
- textAnchor?: ConditionalValue<CssProperties["textAnchor"] | AnyString>
- textBox?: ConditionalValue<CssProperties["textBox"] | AnyString>
- textBoxEdge?: ConditionalValue<CssProperties["textBoxEdge"] | AnyString>
- textBoxTrim?: ConditionalValue<CssProperties["textBoxTrim"] | AnyString>
  /**
-   * The **`text-combine-upright`** CSS property sets the combination of characters into the space of a single character. If the combined text is wider than 1em, the user agent must fit the contents within 1em. The resulting composition is treated as a single upright glyph for layout and decoration. This property only has an effect in vertical writing modes.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since August 2016.
+   *
+   * **Syntax**: `start | middle | end`
+   *
+   * **Initial value**: `start`
+   *
+   * | Chrome | Firefox | Safari |  Edge   | IE  |
+   * | :----: | :-----: | :----: | :-----: | :-: |
+   * | **1**  |  **3**  | **4**  | **≤14** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-anchor
+   */
+textAnchor?: ConditionalValue<CssProperties["textAnchor"] | AnyString>
+ /**
+   * **Syntax**: `normal | <'text-box-trim'> || <'text-box-edge'>`
+   *
+   * **Initial value**: `normal`
+   *
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **133** |   No    | **18.2** | **133** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-box
+   */
+textBox?: ConditionalValue<CssProperties["textBox"] | AnyString>
+ /**
+   * **Syntax**: `auto | <text-edge>`
+   *
+   * **Initial value**: `auto`
+   *
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **133** |   No    | **18.2** | **133** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-box-edge
+   */
+textBoxEdge?: ConditionalValue<CssProperties["textBoxEdge"] | AnyString>
+ /**
+   * **Syntax**: `none | trim-start | trim-end | trim-both`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **133** |   No    | **18.2** | **133** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-box-trim
+   */
+textBoxTrim?: ConditionalValue<CssProperties["textBoxTrim"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `none | all | [ digits <integer>? ]`
    *
@@ -5414,11 +5929,11 @@ textAlignLast?: ConditionalValue<CssProperties["textAlignLast"] | AnyString>
    * |           **48**           | **48**  |           **15.4**           | **79** | **11** _(-ms-text-combine-horizontal)_ |
    * | 9 _(-webkit-text-combine)_ |         | 5.1 _(-webkit-text-combine)_ |        |                                        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-combine-upright
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-combine-upright
    */
 textCombineUpright?: ConditionalValue<CssProperties["textCombineUpright"] | AnyString>
  /**
-   * The **`text-decoration`** shorthand CSS property sets the appearance of decorative lines on text. It is a shorthand for `text-decoration-line`, `text-decoration-color`, `text-decoration-style`, and the newer `text-decoration-thickness` property.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<'text-decoration-line'> || <'text-decoration-style'> || <'text-decoration-color'> || <'text-decoration-thickness'>`
    *
@@ -5426,41 +5941,41 @@ textCombineUpright?: ConditionalValue<CssProperties["textCombineUpright"] | AnyS
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-decoration
    */
 textDecoration?: ConditionalValue<CssProperties["textDecoration"] | AnyString>
  /**
-   * The **`text-decoration-color`** CSS property sets the color of decorations added to text by `text-decoration-line`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<color>`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **36**  | **12.1** | n/a  | No  |
-   * |        |         | 8 _-x-_  |      |     |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **57** | **36**  | **12.1** | **79** | No  |
+   * |        |         | 8 _-x-_  |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-decoration-color
    */
 textDecorationColor?: ConditionalValue<UtilityValues["textDecorationColor"] | CssVars | CssProperties["textDecorationColor"] | AnyString>
  /**
-   * The **`text-decoration-line`** CSS property sets the kind of decoration that is used on text in an element, such as an underline or overline.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `none | [ underline || overline || line-through || blink ] | spelling-error | grammar-error`
    *
    * **Initial value**: `none`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **36**  | **12.1** | n/a  | No  |
-   * |        |         | 8 _-x-_  |      |     |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **57** | **36**  | **12.1** | **79** | No  |
+   * |        |         | 8 _-x-_  |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-line
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-decoration-line
    */
 textDecorationLine?: ConditionalValue<CssProperties["textDecorationLine"] | AnyString>
  /**
-   * The **`text-decoration-skip`** CSS property sets what parts of an element's content any text decoration affecting the element must skip over. It controls all text decoration lines drawn by the element and also any text decoration lines drawn by its ancestors.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | [ objects || [ spaces | [ leading-spaces || trailing-spaces ] ] || edges || box-decoration ]`
    *
@@ -5468,115 +5983,115 @@ textDecorationLine?: ConditionalValue<CssProperties["textDecorationLine"] | AnyS
    *
    * | Chrome | Firefox |  Safari  | Edge | IE  |
    * | :----: | :-----: | :------: | :--: | :-: |
-   * | 57-64  |   No    | **12.1** | n/a  | No  |
+   * | 57-64  |   No    | **12.1** |  No  | No  |
    * |        |         | 7 _-x-_  |      |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-skip
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-decoration-skip
    */
 textDecorationSkip?: ConditionalValue<CssProperties["textDecorationSkip"] | AnyString>
  /**
-   * The **`text-decoration-skip-ink`** CSS property specifies how overlines and underlines are drawn when they pass over glyph ascenders and descenders.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `auto | all | none`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **64** | **70**  | **15.4** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **64** | **70**  | **15.4** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-skip-ink
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-decoration-skip-ink
    */
 textDecorationSkipInk?: ConditionalValue<CssProperties["textDecorationSkipInk"] | AnyString>
  /**
-   * The **`text-decoration-style`** CSS property sets the style of the lines specified by `text-decoration-line`. The style applies to all lines that are set with `text-decoration-line`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `solid | double | dotted | dashed | wavy`
    *
    * **Initial value**: `solid`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **57** | **36**  | **12.1** | n/a  | No  |
-   * |        |         | 8 _-x-_  |      |     |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **57** | **36**  | **12.1** | **79** | No  |
+   * |        |         | 8 _-x-_  |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-decoration-style
    */
 textDecorationStyle?: ConditionalValue<CssProperties["textDecorationStyle"] | AnyString>
  /**
-   * The **`text-decoration-thickness`** CSS property sets the stroke thickness of the decoration line that is used on text in an element, such as a line-through, underline, or overline.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2021.
    *
    * **Syntax**: `auto | from-font | <length> | <percentage> `
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **89** | **70**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **89** | **70**  | **12.1** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-decoration-thickness
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-decoration-thickness
    */
 textDecorationThickness?: ConditionalValue<CssProperties["textDecorationThickness"] | AnyString>
  /**
-   * The **`text-emphasis`** CSS property applies emphasis marks to text (except spaces and control characters). It is a shorthand for `text-emphasis-style` and `text-emphasis-color`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `<'text-emphasis-style'> || <'text-emphasis-color'>`
    *
-   * |  Chrome  | Firefox | Safari | Edge | IE  |
-   * | :------: | :-----: | :----: | :--: | :-: |
-   * |  **99**  | **46**  | **7**  | n/a  | No  |
-   * | 25 _-x-_ |         |        |      |     |
+   * |  Chrome  | Firefox | Safari |   Edge   | IE  |
+   * | :------: | :-----: | :----: | :------: | :-: |
+   * |  **99**  | **46**  | **7**  |  **99**  | No  |
+   * | 25 _-x-_ |         |        | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-emphasis
    */
 textEmphasis?: ConditionalValue<CssProperties["textEmphasis"] | AnyString>
  /**
-   * The **`text-emphasis-color`** CSS property sets the color of emphasis marks. This value can also be set using the `text-emphasis` shorthand.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `<color>`
    *
    * **Initial value**: `currentcolor`
    *
-   * |  Chrome  | Firefox | Safari | Edge | IE  |
-   * | :------: | :-----: | :----: | :--: | :-: |
-   * |  **99**  | **46**  | **7**  | n/a  | No  |
-   * | 25 _-x-_ |         |        |      |     |
+   * |  Chrome  | Firefox | Safari |   Edge   | IE  |
+   * | :------: | :-----: | :----: | :------: | :-: |
+   * |  **99**  | **46**  | **7**  |  **99**  | No  |
+   * | 25 _-x-_ |         |        | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-emphasis-color
    */
 textEmphasisColor?: ConditionalValue<UtilityValues["textEmphasisColor"] | CssVars | CssProperties["textEmphasisColor"] | AnyString>
  /**
-   * The **`text-emphasis-position`** CSS property sets where emphasis marks are drawn. Like ruby text, if there isn't enough room for emphasis marks, the line height is increased.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
-   * **Syntax**: `[ over | under ] && [ right | left ]`
+   * **Syntax**: `auto | [ over | under ] && [ right | left ]?`
    *
-   * **Initial value**: `over right`
+   * **Initial value**: `auto`
    *
-   * |  Chrome  | Firefox | Safari | Edge | IE  |
-   * | :------: | :-----: | :----: | :--: | :-: |
-   * |  **99**  | **46**  | **7**  | n/a  | No  |
-   * | 25 _-x-_ |         |        |      |     |
+   * |  Chrome  | Firefox | Safari |   Edge   | IE  |
+   * | :------: | :-----: | :----: | :------: | :-: |
+   * |  **99**  | **46**  | **7**  |  **99**  | No  |
+   * | 25 _-x-_ |         |        | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-emphasis-position
    */
 textEmphasisPosition?: ConditionalValue<CssProperties["textEmphasisPosition"] | AnyString>
  /**
-   * The **`text-emphasis-style`** CSS property sets the appearance of emphasis marks. It can also be set, and reset, using the `text-emphasis` shorthand.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2022.
    *
    * **Syntax**: `none | [ [ filled | open ] || [ dot | circle | double-circle | triangle | sesame ] ] | <string>`
    *
    * **Initial value**: `none`
    *
-   * |  Chrome  | Firefox | Safari | Edge | IE  |
-   * | :------: | :-----: | :----: | :--: | :-: |
-   * |  **99**  | **46**  | **7**  | n/a  | No  |
-   * | 25 _-x-_ |         |        |      |     |
+   * |  Chrome  | Firefox | Safari |   Edge   | IE  |
+   * | :------: | :-----: | :----: | :------: | :-: |
+   * |  **99**  | **46**  | **7**  |  **99**  | No  |
+   * | 25 _-x-_ |         |        | 79 _-x-_ |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-emphasis-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-emphasis-style
    */
 textEmphasisStyle?: ConditionalValue<CssProperties["textEmphasisStyle"] | AnyString>
  /**
-   * The **`text-indent`** CSS property sets the length of empty space (indentation) that is put before lines of text in a block.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<length-percentage> && hanging? && each-line?`
    *
@@ -5586,11 +6101,11 @@ textEmphasisStyle?: ConditionalValue<CssProperties["textEmphasisStyle"] | AnyStr
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-indent
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-indent
    */
 textIndent?: ConditionalValue<UtilityValues["textIndent"] | CssVars | CssProperties["textIndent"] | AnyString>
  /**
-   * The **`text-justify`** CSS property sets what type of justification should be applied to text when `text-align``: justify;` is set on an element.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `auto | inter-character | inter-word | none`
    *
@@ -5598,28 +6113,28 @@ textIndent?: ConditionalValue<UtilityValues["textIndent"] | CssVars | CssPropert
    *
    * | Chrome | Firefox | Safari | Edge  |   IE   |
    * | :----: | :-----: | :----: | :---: | :----: |
-   * |  n/a   | **55**  |   No   | 12-79 | **11** |
+   * |   No   | **55**  |   No   | 12-79 | **11** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-justify
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-justify
    */
 textJustify?: ConditionalValue<CssProperties["textJustify"] | AnyString>
  /**
-   * The **`text-orientation`** CSS property sets the orientation of the text characters in a line. It only affects text in vertical mode (when `writing-mode` is not `horizontal-tb`). It is useful for controlling the display of languages that use vertical script, and also for making vertical table headers.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2020.
    *
    * **Syntax**: `mixed | upright | sideways`
    *
    * **Initial value**: `mixed`
    *
-   * |  Chrome  | Firefox |  Safari   | Edge | IE  |
-   * | :------: | :-----: | :-------: | :--: | :-: |
-   * |  **48**  | **41**  |  **14**   | n/a  | No  |
-   * | 11 _-x-_ |         | 5.1 _-x-_ |      |     |
+   * |  Chrome  | Firefox |  Safari   |  Edge  | IE  |
+   * | :------: | :-----: | :-------: | :----: | :-: |
+   * |  **48**  | **41**  |  **14**   | **79** | No  |
+   * | 12 _-x-_ |         | 5.1 _-x-_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-orientation
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-orientation
    */
 textOrientation?: ConditionalValue<CssProperties["textOrientation"] | AnyString>
  /**
-   * The **`text-overflow`** CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis ('`…`'), or display a custom string.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `[ clip | ellipsis | <string> ]{1,2}`
    *
@@ -5629,25 +6144,25 @@ textOrientation?: ConditionalValue<CssProperties["textOrientation"] | AnyString>
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  |  **7**  | **1.3** | **12** | **6** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-overflow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-overflow
    */
 textOverflow?: ConditionalValue<CssProperties["textOverflow"] | AnyString>
  /**
-   * The **`text-rendering`** CSS property provides information to the rendering engine about what to optimize for when rendering text.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `auto | optimizeSpeed | optimizeLegibility | geometricPrecision`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **4**  |  **1**  | **5**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **4**  |  **1**  | **5**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-rendering
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-rendering
    */
 textRendering?: ConditionalValue<CssProperties["textRendering"] | AnyString>
  /**
-   * The **`text-shadow`** CSS property adds shadows to text. It accepts a comma-separated list of shadows to be applied to the text and any of its `decorations`. Each shadow is described by some combination of X and Y offsets from the element, blur radius, and color.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `none | <shadow-t>#`
    *
@@ -5657,11 +6172,11 @@ textRendering?: ConditionalValue<CssProperties["textRendering"] | AnyString>
    * | :----: | :-----: | :-----: | :----: | :----: |
    * | **2**  | **3.5** | **1.1** | **12** | **10** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-shadow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-shadow
    */
 textShadow?: ConditionalValue<UtilityValues["textShadow"] | CssVars | CssProperties["textShadow"] | AnyString>
  /**
-   * The **`text-size-adjust`** CSS property controls the text inflation algorithm used on some smartphones and tablets. Other browsers will ignore this property.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | auto | <percentage>`
    *
@@ -5671,14 +6186,27 @@ textShadow?: ConditionalValue<UtilityValues["textShadow"] | CssVars | CssPropert
    * | :----: | :-----: | :----: | :----: | :-: |
    * | **54** |   No    |   No   | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-size-adjust
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-size-adjust
    */
 textSizeAdjust?: ConditionalValue<CssProperties["textSizeAdjust"] | AnyString>
- textSpacingTrim?: ConditionalValue<CssProperties["textSpacingTrim"] | AnyString>
  /**
-   * The **`text-transform`** CSS property specifies how to capitalize an element's text. It can be used to make text appear in all-uppercase or all-lowercase, or with each word capitalized. It also can help improve legibility for ruby.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `none | capitalize | uppercase | lowercase | full-width | full-size-kana`
+   * **Syntax**: `space-all | normal | space-first | trim-start`
+   *
+   * **Initial value**: `normal`
+   *
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **123** |   No    |   No   | **123** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-spacing-trim
+   */
+textSpacingTrim?: ConditionalValue<CssProperties["textSpacingTrim"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
+   *
+   * **Syntax**: `none | [ capitalize | uppercase | lowercase ] || full-width || full-size-kana | math-auto`
    *
    * **Initial value**: `none`
    *
@@ -5686,25 +6214,25 @@ textSizeAdjust?: ConditionalValue<CssProperties["textSizeAdjust"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-transform
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-transform
    */
 textTransform?: ConditionalValue<CssProperties["textTransform"] | AnyString>
  /**
-   * The **`text-underline-offset`** CSS property sets the offset distance of an underline text decoration line (applied using `text-decoration`) from its original position.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since November 2020.
    *
    * **Syntax**: `auto | <length> | <percentage> `
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **70**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **70**  | **12.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-underline-offset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-underline-offset
    */
 textUnderlineOffset?: ConditionalValue<CssProperties["textUnderlineOffset"] | AnyString>
  /**
-   * The **`text-underline-position`** CSS property specifies the position of the underline which is set using the `text-decoration` property's `underline` value.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2020.
    *
    * **Syntax**: `auto | from-font | [ under || [ left | right ] ]`
    *
@@ -5715,43 +6243,69 @@ textUnderlineOffset?: ConditionalValue<CssProperties["textUnderlineOffset"] | An
    * | **33** | **74**  | **12.1** | **12** | **6** |
    * |        |         | 9 _-x-_  |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-underline-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-underline-position
    */
 textUnderlinePosition?: ConditionalValue<CssProperties["textUnderlinePosition"] | AnyString>
  /**
-   * The **`text-wrap`** CSS property controls how text inside an element is wrapped. The different values provide:
+   * Since March 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `wrap | nowrap | balance | stable | pretty`
+   * **Syntax**: `<'text-wrap-mode'> || <'text-wrap-style'>`
    *
    * **Initial value**: `wrap`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **114** | **121** |   No   | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **114** | **121** | **17.4** | **114** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/text-wrap
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-wrap
    */
 textWrap?: ConditionalValue<UtilityValues["textWrap"] | CssVars | CssProperties["textWrap"] | AnyString>
- textWrapMode?: ConditionalValue<CssProperties["textWrapMode"] | AnyString>
- textWrapStyle?: ConditionalValue<CssProperties["textWrapStyle"] | AnyString>
  /**
-   * The **`timeline-scope`** CSS property modifies the scope of a named animation timeline.
+   * Since October 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
+   *
+   * **Syntax**: `wrap | nowrap`
+   *
+   * **Initial value**: `wrap`
+   *
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **130** | **124** | **17.4** | **130** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-wrap-mode
+   */
+textWrapMode?: ConditionalValue<CssProperties["textWrapMode"] | AnyString>
+ /**
+   * Since October 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
+   *
+   * **Syntax**: `auto | balance | stable | pretty`
+   *
+   * **Initial value**: `auto`
+   *
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **130** | **124** | **17.5** | **130** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-wrap-style
+   */
+textWrapStyle?: ConditionalValue<CssProperties["textWrapStyle"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `none | <dashed-ident>#`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **116** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **116** |   No    | **26** | **116** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/timeline-scope
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/timeline-scope
    */
 timelineScope?: ConditionalValue<CssProperties["timelineScope"] | AnyString>
  /**
-   * The **`top`** CSS property participates in specifying the vertical position of a positioned element. It has no effect on non-positioned elements.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `auto | <length-percentage> | <anchor()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -5759,11 +6313,11 @@ timelineScope?: ConditionalValue<CssProperties["timelineScope"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/top
    */
 top?: ConditionalValue<UtilityValues["top"] | CssVars | CssProperties["top"] | AnyString>
  /**
-   * The **`touch-action`** CSS property sets how an element's region can be manipulated by a touchscreen user (for example, by zooming features built into the browser).
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2019.
    *
    * **Syntax**: `auto | none | [ [ pan-x | pan-left | pan-right ] || [ pan-y | pan-up | pan-down ] || pinch-zoom ] | manipulation`
    *
@@ -5774,70 +6328,70 @@ top?: ConditionalValue<UtilityValues["top"] | CssVars | CssProperties["top"] | A
    * | **36** | **52**  | **13** | **12** |  **11**  |
    * |        |         |        |        | 10 _-x-_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/touch-action
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/touch-action
    */
 touchAction?: ConditionalValue<CssVars | CssProperties["touchAction"] | AnyString>
  /**
-   * The **`transform`** CSS property lets you rotate, scale, skew, or translate an element. It modifies the coordinate space of the CSS visual formatting model.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `none | <transform-list>`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox |  Safari   |  Edge  |   IE    |
-   * | :-----: | :-----: | :-------: | :----: | :-----: |
-   * | **36**  | **16**  |   **9**   | **12** | **10**  |
-   * | 1 _-x-_ |         | 3.1 _-x-_ |        | 9 _-x-_ |
+   * | Chrome  |  Firefox  |  Safari   |  Edge  |   IE    |
+   * | :-----: | :-------: | :-------: | :----: | :-----: |
+   * | **36**  |  **16**   |   **9**   | **12** | **10**  |
+   * | 1 _-x-_ | 3.5 _-x-_ | 3.1 _-x-_ |        | 9 _-x-_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transform
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transform
    */
 transform?: ConditionalValue<CssProperties["transform"] | AnyString>
  /**
-   * The **`transform-box`** CSS property defines the layout box to which the `transform`, individual transform properties `translate`,`scale`, and `rotate`, and `transform-origin` properties relate.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `content-box | border-box | fill-box | stroke-box | view-box`
    *
    * **Initial value**: `view-box`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **64** | **55**  | **11** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **64** | **55**  | **11** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transform-box
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transform-box
    */
 transformBox?: ConditionalValue<CssVars | CssProperties["transformBox"] | AnyString>
  /**
-   * The **`transform-origin`** CSS property sets the origin for an element's transformations.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `[ <length-percentage> | left | center | right | top | bottom ] | [ [ <length-percentage> | left | center | right ] && [ <length-percentage> | top | center | bottom ] ] <length>?`
    *
    * **Initial value**: `50% 50% 0`
    *
-   * | Chrome  | Firefox | Safari  |  Edge  |   IE    |
-   * | :-----: | :-----: | :-----: | :----: | :-----: |
-   * | **36**  | **16**  |  **9**  | **12** | **10**  |
-   * | 1 _-x-_ |         | 2 _-x-_ |        | 9 _-x-_ |
+   * | Chrome  |  Firefox  | Safari  |  Edge  |   IE    |
+   * | :-----: | :-------: | :-----: | :----: | :-----: |
+   * | **36**  |  **16**   |  **9**  | **12** | **10**  |
+   * | 1 _-x-_ | 3.5 _-x-_ | 2 _-x-_ |        | 9 _-x-_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transform-origin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transform-origin
    */
 transformOrigin?: ConditionalValue<CssProperties["transformOrigin"] | AnyString>
  /**
-   * The **`transform-style`** CSS property sets whether children of an element are positioned in the 3D space or are flattened in the plane of the element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `flat | preserve-3d`
    *
    * **Initial value**: `flat`
    *
-   * |  Chrome  | Firefox | Safari  |  Edge  | IE  |
-   * | :------: | :-----: | :-----: | :----: | :-: |
-   * |  **36**  | **16**  |  **9**  | **12** | No  |
-   * | 12 _-x-_ |         | 4 _-x-_ |        |     |
+   * |  Chrome  | Firefox  | Safari  |  Edge  | IE  |
+   * | :------: | :------: | :-----: | :----: | :-: |
+   * |  **36**  |  **16**  |  **9**  | **12** | No  |
+   * | 12 _-x-_ | 10 _-x-_ | 4 _-x-_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transform-style
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transform-style
    */
 transformStyle?: ConditionalValue<CssVars | CssProperties["transformStyle"] | AnyString>
  /**
-   * The **`transition`** CSS property is a shorthand property for `transition-property`, `transition-duration`, `transition-timing-function`, and `transition-delay`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<single-transition>#`
    *
@@ -5846,25 +6400,25 @@ transformStyle?: ConditionalValue<CssVars | CssProperties["transformStyle"] | An
    * | **26**  | **16**  |   **9**   | **12** | **10** |
    * | 1 _-x-_ |         | 3.1 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transition
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transition
    */
 transition?: ConditionalValue<UtilityValues["transition"] | CssVars | CssProperties["transition"] | AnyString>
  /**
-   * The **`transition-behavior`** CSS property specifies whether transitions will be started for properties whose animation behavior is discrete.
+   * Since August 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
    * **Syntax**: `<transition-behavior-value>#`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **117** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **117** | **129** | **17.4** | **117** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transition-behavior
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transition-behavior
    */
 transitionBehavior?: ConditionalValue<CssProperties["transitionBehavior"] | AnyString>
  /**
-   * The **`transition-delay`** CSS property specifies the duration to wait before starting a property's transition effect when its value changes.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<time>#`
    *
@@ -5875,11 +6429,11 @@ transitionBehavior?: ConditionalValue<CssProperties["transitionBehavior"] | AnyS
    * | **26**  | **16**  |  **9**  | **12** | **10** |
    * | 1 _-x-_ |         | 4 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transition-delay
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transition-delay
    */
 transitionDelay?: ConditionalValue<UtilityValues["transitionDelay"] | CssVars | CssProperties["transitionDelay"] | AnyString>
  /**
-   * The **`transition-duration`** CSS property sets the length of time a transition animation should take to complete. By default, the value is `0s`, meaning that no animation will occur.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<time>#`
    *
@@ -5890,11 +6444,11 @@ transitionDelay?: ConditionalValue<UtilityValues["transitionDelay"] | CssVars | 
    * | **26**  | **16**  |   **9**   | **12** | **10** |
    * | 1 _-x-_ |         | 3.1 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transition-duration
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transition-duration
    */
 transitionDuration?: ConditionalValue<UtilityValues["transitionDuration"] | CssVars | CssProperties["transitionDuration"] | AnyString>
  /**
-   * The **`transition-property`** CSS property sets the CSS properties to which a transition effect should be applied.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `none | <single-transition-property>#`
    *
@@ -5905,11 +6459,11 @@ transitionDuration?: ConditionalValue<UtilityValues["transitionDuration"] | CssV
    * | **26**  | **16**  |   **9**   | **12** | **10** |
    * | 1 _-x-_ |         | 3.1 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transition-property
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transition-property
    */
 transitionProperty?: ConditionalValue<UtilityValues["transitionProperty"] | CssVars | CssProperties["transitionProperty"] | AnyString>
  /**
-   * The **`transition-timing-function`** CSS property sets how intermediate values are calculated for CSS properties being affected by a transition effect.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `<easing-function>#`
    *
@@ -5920,25 +6474,25 @@ transitionProperty?: ConditionalValue<UtilityValues["transitionProperty"] | CssV
    * | **26**  | **16**  |   **9**   | **12** | **10** |
    * | 1 _-x-_ |         | 3.1 _-x-_ |        |        |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/transition-timing-function
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transition-timing-function
    */
 transitionTimingFunction?: ConditionalValue<UtilityValues["transitionTimingFunction"] | CssVars | CssProperties["transitionTimingFunction"] | AnyString>
  /**
-   * The **`translate`** CSS property allows you to specify translation transforms individually and independently of the `transform` property. This maps better to typical user interface usage, and saves having to remember the exact order of transform functions to specify in the `transform` value.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since August 2022.
    *
    * **Syntax**: `none | <length-percentage> [ <length-percentage> <length>? ]?`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox |  Safari  | Edge | IE  |
-   * | :-----: | :-----: | :------: | :--: | :-: |
-   * | **104** | **72**  | **14.1** | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **104** | **72**  | **14.1** | **104** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/translate
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/translate
    */
 translate?: ConditionalValue<UtilityValues["translate"] | CssVars | CssProperties["translate"] | AnyString>
  /**
-   * The **`unicode-bidi`** CSS property, together with the `direction` property, determines how bidirectional text in a document is handled. For example, if a block of content contains both left-to-right and right-to-left text, the user-agent uses a complex Unicode algorithm to decide how to display the text. The `unicode-bidi` property overrides this algorithm and allows the developer to control the text embedding.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `normal | embed | isolate | bidi-override | isolate-override | plaintext`
    *
@@ -5948,13 +6502,13 @@ translate?: ConditionalValue<UtilityValues["translate"] | CssVars | CssPropertie
    * | :----: | :-----: | :-----: | :----: | :-----: |
    * | **2**  |  **1**  | **1.3** | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/unicode-bidi
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/unicode-bidi
    */
 unicodeBidi?: ConditionalValue<CssProperties["unicodeBidi"] | AnyString>
  /**
-   * The **`user-select`** CSS property controls whether the user can select text. This doesn't have any effect on content loaded as part of a browser's user interface (its chrome), except in textboxes.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `auto | text | none | contain | all`
+   * **Syntax**: `auto | text | none | all`
    *
    * **Initial value**: `auto`
    *
@@ -5963,12 +6517,25 @@ unicodeBidi?: ConditionalValue<CssProperties["unicodeBidi"] | AnyString>
    * | **54**  | **69**  | **3** _-x-_ |  **79**  | **10** _-x-_ |
    * | 1 _-x-_ | 1 _-x-_ |             | 12 _-x-_ |              |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/user-select
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select
    */
 userSelect?: ConditionalValue<CssVars | CssProperties["userSelect"] | AnyString>
- vectorEffect?: ConditionalValue<CssProperties["vectorEffect"] | AnyString>
  /**
-   * The **`vertical-align`** CSS property sets vertical alignment of an inline, inline-block or table-cell box.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
+   *
+   * **Syntax**: `none | non-scaling-stroke | non-scaling-size | non-rotation | fixed-position`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **6**  | **15**  | **5.1** | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/vector-effect
+   */
+vectorEffect?: ConditionalValue<CssProperties["vectorEffect"] | AnyString>
+ /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `baseline | sub | super | text-top | text-bottom | middle | top | bottom | <percentage> | <length>`
    *
@@ -5978,79 +6545,79 @@ userSelect?: ConditionalValue<CssVars | CssProperties["userSelect"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/vertical-align
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/vertical-align
    */
 verticalAlign?: ConditionalValue<CssProperties["verticalAlign"] | AnyString>
  /**
-   * The **`view-timeline`** CSS shorthand property is used to define a _named view progress timeline_, which is progressed through based on the change in visibility of an element (known as the _subject_) inside a scrollable element (_scroller_). `view-timeline` is set on the subject.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `[ <'view-timeline-name'> <'view-timeline-axis'>? ]#`
+   * **Syntax**: `[ <'view-timeline-name'> [ <'view-timeline-axis'> || <'view-timeline-inset'> ]? ]#`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/view-timeline
    */
 viewTimeline?: ConditionalValue<CssProperties["viewTimeline"] | AnyString>
  /**
-   * The **`view-timeline-axis`** CSS property is used to specify the scrollbar direction that will be used to provide the timeline for a _named view progress timeline_ animation, which is progressed through based on the change in visibility of an element (known as the _subject_) inside a scrollable element (_scroller_). `view-timeline-axis` is set on the subject. See CSS scroll-driven animations for more details.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ block | inline | x | y ]#`
    *
    * **Initial value**: `block`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline-axis
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/view-timeline-axis
    */
 viewTimelineAxis?: ConditionalValue<CssProperties["viewTimelineAxis"] | AnyString>
  /**
-   * The **`view-timeline-inset`** CSS property is used to specify one or two values representing an adjustment to the position of the scrollport (see Scroll container for more details) in which the subject element of a _named view progress timeline_ animation is deemed to be visible. Put another way, this allows you to specify start and/or end inset (or outset) values that offset the position of the timeline.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `[ [ auto | <length-percentage> ]{1,2} ]#`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline-inset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/view-timeline-inset
    */
 viewTimelineInset?: ConditionalValue<CssProperties["viewTimelineInset"] | AnyString>
  /**
-   * The **`view-timeline-name`** CSS property is used to define the name of a _named view progress timeline_, which is progressed through based on the change in visibility of an element (known as the _subject_) inside a scrollable element (_scroller_). `view-timeline` is set on the subject.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
-   * **Syntax**: `none | <dashed-ident>#`
+   * **Syntax**: `[ none | <dashed-ident> ]#`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **115** |   n/a   |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **115** |   No    | **26** | **115** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/view-timeline-name
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/view-timeline-name
    */
 viewTimelineName?: ConditionalValue<CssProperties["viewTimelineName"] | AnyString>
  /**
-   * The **`view-transition-name`** CSS property provides the selected element with a distinct identifying name (a `<custom-ident>`) and causes it to participate in a separate view transition from the root view transition — or no view transition if the `none` value is specified.
+   * Since October 2025, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `none | <custom-ident>`
+   * **Syntax**: `none | <custom-ident> | match-element`
    *
    * **Initial value**: `none`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **111** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox | Safari |  Edge   | IE  |
+   * | :-----: | :-----: | :----: | :-----: | :-: |
+   * | **111** | **144** | **18** | **111** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/view-transition-name
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/view-transition-name
    */
 viewTransitionName?: ConditionalValue<CssProperties["viewTransitionName"] | AnyString>
  /**
-   * The **`visibility`** CSS property shows or hides an element without changing the layout of a document. The property can also hide rows or columns in a `<table>`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `visible | hidden | collapse`
    *
@@ -6060,13 +6627,13 @@ viewTransitionName?: ConditionalValue<CssProperties["viewTransitionName"] | AnyS
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/visibility
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/visibility
    */
 visibility?: ConditionalValue<CssVars | CssProperties["visibility"] | AnyString>
  /**
-   * The **`white-space`** CSS property sets how white space inside an element is handled.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `normal | pre | nowrap | pre-wrap | pre-line | break-spaces | [ <'white-space-collapse'> || <'text-wrap'> || <'white-space-trim'> ]`
+   * **Syntax**: `normal | pre | pre-wrap | pre-line | <'white-space-collapse'> || <'text-wrap-mode'>`
    *
    * **Initial value**: `normal`
    *
@@ -6074,25 +6641,25 @@ visibility?: ConditionalValue<CssVars | CssProperties["visibility"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  |  **1**  | **1**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/white-space
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/white-space
    */
 whiteSpace?: ConditionalValue<CssProperties["whiteSpace"] | AnyString>
  /**
-   * The **`white-space-collapse`** CSS property controls how white space inside an element is collapsed.
+   * Since March 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `collapse | discard | preserve | preserve-breaks | preserve-spaces | break-spaces`
+   * **Syntax**: `collapse | preserve | preserve-breaks | preserve-spaces | break-spaces`
    *
    * **Initial value**: `collapse`
    *
-   * | Chrome  | Firefox | Safari | Edge | IE  |
-   * | :-----: | :-----: | :----: | :--: | :-: |
-   * | **114** |   No    |   No   | n/a  | No  |
+   * | Chrome  | Firefox |  Safari  |  Edge   | IE  |
+   * | :-----: | :-----: | :------: | :-----: | :-: |
+   * | **114** | **124** | **17.4** | **114** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/white-space-collapse
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/white-space-collapse
    */
 whiteSpaceCollapse?: ConditionalValue<CssProperties["whiteSpaceCollapse"] | AnyString>
  /**
-   * The **`widows`** CSS property sets the minimum number of lines in a block container that must be shown at the _top_ of a page, region, or column.
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
    *
    * **Syntax**: `<integer>`
    *
@@ -6102,13 +6669,13 @@ whiteSpaceCollapse?: ConditionalValue<CssProperties["whiteSpaceCollapse"] | AnyS
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **25** |   No    | **1.3** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/widows
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/widows
    */
 widows?: ConditionalValue<CssProperties["widows"] | AnyString>
  /**
-   * The **`width`** CSS property sets an element's width. By default, it sets the width of the content area, but if `box-sizing` is set to `border-box`, it sets the width of the border area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -6116,27 +6683,27 @@ widows?: ConditionalValue<CssProperties["widows"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/width
    */
 width?: ConditionalValue<UtilityValues["width"] | CssVars | CssProperties["width"] | AnyString>
  /**
-   * The **`will-change`** CSS property hints to browsers how an element is expected to change. Browsers may set up optimizations before an element is actually changed. These kinds of optimizations can increase the responsiveness of a page by doing potentially expensive work before they are actually required.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `auto | <animateable-feature>#`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox | Safari  | Edge | IE  |
-   * | :----: | :-----: | :-----: | :--: | :-: |
-   * | **36** | **36**  | **9.1** | n/a  | No  |
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **36** | **36**  | **9.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/will-change
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/will-change
    */
 willChange?: ConditionalValue<CssProperties["willChange"] | AnyString>
  /**
-   * The **`word-break`** CSS property sets whether line breaks appear wherever the text would otherwise overflow its content box.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `normal | break-all | keep-all | break-word`
+   * **Syntax**: `normal | break-all | keep-all | break-word | auto-phrase`
    *
    * **Initial value**: `normal`
    *
@@ -6144,11 +6711,11 @@ willChange?: ConditionalValue<CssProperties["willChange"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :-----: |
    * | **1**  | **15**  | **3**  | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/word-break
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/word-break
    */
 wordBreak?: ConditionalValue<CssVars | CssProperties["wordBreak"] | AnyString>
  /**
-   * The **`word-spacing`** CSS property sets the length of space between words and between tags.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `normal | <length>`
    *
@@ -6158,23 +6725,19 @@ wordBreak?: ConditionalValue<CssVars | CssProperties["wordBreak"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **6** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/word-spacing
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/word-spacing
    */
 wordSpacing?: ConditionalValue<CssProperties["wordSpacing"] | AnyString>
  /**
-   * The **`overflow-wrap`** CSS property applies to inline elements, setting whether the browser should insert line breaks within an otherwise unbreakable string to prevent text from overflowing its line box.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since October 2018.
    *
    * **Syntax**: `normal | break-word`
    *
    * **Initial value**: `normal`
-   *
-   * | Chrome  | Firefox |  Safari   |  Edge   | IE  |
-   * | :-----: | :-----: | :-------: | :-----: | :-: |
-   * | **≤80** | **≤72** | **≤13.1** | **≤80** | No  |
    */
 wordWrap?: ConditionalValue<CssProperties["wordWrap"] | AnyString>
  /**
-   * The **`writing-mode`** CSS property sets whether lines of text are laid out horizontally or vertically, as well as the direction in which blocks progress. When set for an entire document, it should be set on the root element (`html` element for HTML documents).
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2017.
    *
    * **Syntax**: `horizontal-tb | vertical-rl | vertical-lr | sideways-rl | sideways-lr`
    *
@@ -6185,13 +6748,13 @@ wordWrap?: ConditionalValue<CssProperties["wordWrap"] | AnyString>
    * | **48**  | **41**  | **10.1**  | **12** | **9** |
    * | 8 _-x-_ |         | 5.1 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/writing-mode
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/writing-mode
    */
 writingMode?: ConditionalValue<CssVars | CssProperties["writingMode"] | AnyString>
  x?: ConditionalValue<UtilityValues["translateX"] | CssVars | AnyString>
  y?: ConditionalValue<UtilityValues["translateY"] | CssVars | AnyString>
  /**
-   * The **`z-index`** CSS property sets the z-order of a positioned element and its descendants or flex items. Overlapping elements with a larger z-index cover those with a smaller one.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `auto | <integer>`
    *
@@ -6201,30 +6764,52 @@ writingMode?: ConditionalValue<CssVars | CssProperties["writingMode"] | AnyStrin
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/z-index
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/z-index
    */
 zIndex?: ConditionalValue<CssProperties["zIndex"] | AnyString>
  /**
-   * The non-standard **`zoom`** CSS property can be used to control the magnification level of an element. `transform: scale()` should be used instead of this property, if possible. However, unlike CSS Transforms, `zoom` affects the layout size of the element.
+   * Since May 2024, this feature works across the latest devices and browser versions. This feature might not work in older devices or browsers.
    *
-   * **Syntax**: `normal | reset | <number> | <percentage>`
+   * **Syntax**: `normal | reset | <number [0,∞]> || <percentage [0,∞]>`
    *
-   * **Initial value**: `normal`
+   * **Initial value**: `1`
    *
    * | Chrome | Firefox | Safari  |  Edge  |   IE    |
    * | :----: | :-----: | :-----: | :----: | :-----: |
-   * | **1**  |   n/a   | **3.1** | **12** | **5.5** |
+   * | **1**  | **126** | **3.1** | **12** | **5.5** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/zoom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/zoom
    */
 zoom?: ConditionalValue<CssProperties["zoom"] | AnyString>
- alignmentBaseline?: ConditionalValue<CssProperties["alignmentBaseline"] | AnyString>
- baselineShift?: ConditionalValue<CssProperties["baselineShift"] | AnyString>
+ /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `baseline | alphabetic | ideographic | middle | central | mathematical | text-before-edge | text-after-edge`
+   *
+   * **Initial value**: `baseline`
+   *
+   * | Chrome | Firefox | Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :-----: | :----: | :-: |
+   * | **1**  |   No    | **5.1** | **79** | No  |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/alignment-baseline
+   */
+alignmentBaseline?: ConditionalValue<CssProperties["alignmentBaseline"] | AnyString>
+ /**
+   * **Syntax**: `<length-percentage> | sub | super | baseline`
+   *
+   * **Initial value**: `0`
+   *
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **1**  |   No    | **4**  | **79** | No  |
+   */
+baselineShift?: ConditionalValue<CssProperties["baselineShift"] | AnyString>
  colorInterpolation?: ConditionalValue<CssProperties["colorInterpolation"] | AnyString>
  colorRendering?: ConditionalValue<CssProperties["colorRendering"] | AnyString>
  glyphOrientationVertical?: ConditionalValue<CssProperties["glyphOrientationVertical"] | AnyString>
  /**
-   * The **`position`** CSS property sets how an element is positioned in a document. The `top`, `right`, `bottom`, and `left` properties determine the final location of positioned elements.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `static | relative | absolute | sticky | fixed`
    *
@@ -6234,120 +6819,120 @@ zoom?: ConditionalValue<CssProperties["zoom"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position
    */
 pos?: ConditionalValue<CssProperties["position"] | AnyString>
  /**
-   * The **`inset-inline`** CSS property defines the logical start and end offsets of an element in the inline direction, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline
    */
 insetX?: ConditionalValue<UtilityValues["insetInline"] | CssVars | CssProperties["insetInline"] | AnyString>
  /**
-   * The **`inset-block`** CSS property defines the logical block start and end offsets of an element, which maps to physical offsets depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top` and `bottom`, or `right` and `left` properties depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-block
    */
 insetY?: ConditionalValue<UtilityValues["insetBlock"] | CssVars | CssProperties["insetBlock"] | AnyString>
  /**
-   * The **`inset-inline-end`** CSS property defines the logical inline end inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline-end
    */
 insetEnd?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssProperties["insetInlineEnd"] | AnyString>
  /**
-   * The **`inset-inline-end`** CSS property defines the logical inline end inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline-end
    */
 end?: ConditionalValue<UtilityValues["insetInlineEnd"] | CssVars | CssProperties["insetInlineEnd"] | AnyString>
  /**
-   * The **`inset-inline-start`** CSS property defines the logical inline start inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline-start
    */
 insetStart?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssProperties["insetInlineStart"] | AnyString>
  /**
-   * The **`inset-inline-start`** CSS property defines the logical inline start inset of an element, which maps to a physical offset depending on the element's writing mode, directionality, and text orientation. It corresponds to the `top`, `right`, `bottom`, or `left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'top'>`
    *
    * **Initial value**: `auto`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **63**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **63**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/inset-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset-inline-start
    */
 start?: ConditionalValue<UtilityValues["insetInlineStart"] | CssVars | CssProperties["insetInlineStart"] | AnyString>
  /**
-   * The **`flex-direction`** CSS property sets how flex items are placed in the flex container defining the main axis and the direction (normal or reversed).
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2015.
    *
    * **Syntax**: `row | row-reverse | column | column-reverse`
    *
    * **Initial value**: `row`
    *
-   * |  Chrome  | Firefox  | Safari  |  Edge  |    IE    |
-   * | :------: | :------: | :-----: | :----: | :------: |
-   * |  **29**  |  **81**  |  **9**  | **12** |  **11**  |
-   * | 21 _-x-_ | 49 _-x-_ | 7 _-x-_ |        | 10 _-x-_ |
+   * |  Chrome  | Firefox | Safari  |  Edge  |    IE    |
+   * | :------: | :-----: | :-----: | :----: | :------: |
+   * |  **29**  | **22**  |  **9**  | **12** |  **11**  |
+   * | 21 _-x-_ |         | 7 _-x-_ |        | 10 _-x-_ |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/flex-direction
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/flex-direction
    */
 flexDir?: ConditionalValue<CssProperties["flexDirection"] | AnyString>
  /**
-   * The **`padding`** CSS shorthand property sets the padding area on all four sides of an element at once.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <length> | <percentage> ]{1,4}`
+   * **Syntax**: `<'padding-top'>{1,4}`
    *
    * | Chrome | Firefox | Safari |  Edge  |  IE   |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding
    */
 p?: ConditionalValue<UtilityValues["padding"] | CssVars | CssProperties["padding"] | AnyString>
  /**
-   * The **`padding-left`** CSS property sets the width of the padding area to the left of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -6355,13 +6940,13 @@ p?: ConditionalValue<UtilityValues["padding"] | CssVars | CssProperties["padding
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-left
    */
 pl?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssProperties["paddingLeft"] | AnyString>
  /**
-   * The **`padding-right`** CSS property sets the width of the padding area on the right of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -6369,13 +6954,13 @@ pl?: ConditionalValue<UtilityValues["paddingLeft"] | CssVars | CssProperties["pa
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-right
    */
 pr?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssProperties["paddingRight"] | AnyString>
  /**
-   * The **`padding-top`** CSS property sets the height of the padding area on the top of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -6383,13 +6968,13 @@ pr?: ConditionalValue<UtilityValues["paddingRight"] | CssVars | CssProperties["p
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-top
    */
 pt?: ConditionalValue<UtilityValues["paddingTop"] | CssVars | CssProperties["paddingTop"] | AnyString>
  /**
-   * The **`padding-bottom`** CSS property sets the height of the padding area on the bottom of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage>`
+   * **Syntax**: `<length-percentage [0,∞]>`
    *
    * **Initial value**: `0`
    *
@@ -6397,121 +6982,121 @@ pt?: ConditionalValue<UtilityValues["paddingTop"] | CssVars | CssProperties["pad
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-bottom
    */
 pb?: ConditionalValue<UtilityValues["paddingBottom"] | CssVars | CssProperties["paddingBottom"] | AnyString>
  /**
-   * The **`padding-block`** CSS shorthand property defines the logical block start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'padding-left'>{1,2}`
+   * **Syntax**: `<'padding-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-block
    */
 py?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssProperties["paddingBlock"] | AnyString>
  /**
-   * The **`padding-block`** CSS shorthand property defines the logical block start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'padding-left'>{1,2}`
+   * **Syntax**: `<'padding-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-block
    */
 paddingY?: ConditionalValue<UtilityValues["paddingBlock"] | CssVars | CssProperties["paddingBlock"] | AnyString>
  /**
-   * The **`padding-inline`** CSS shorthand property defines the logical inline start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'padding-left'>{1,2}`
+   * **Syntax**: `<'padding-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline
    */
 paddingX?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProperties["paddingInline"] | AnyString>
  /**
-   * The **`padding-inline`** CSS shorthand property defines the logical inline start and end padding of an element, which maps to physical padding properties depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'padding-left'>{1,2}`
+   * **Syntax**: `<'padding-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline
    */
 px?: ConditionalValue<UtilityValues["paddingInline"] | CssVars | CssProperties["paddingInline"] | AnyString>
  /**
-   * The **`padding-inline-end`** CSS property defines the logical inline end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * |          Chrome           |        Firefox         |          Safari           | Edge | IE  |
-   * | :-----------------------: | :--------------------: | :-----------------------: | :--: | :-: |
-   * |          **69**           |         **41**         |         **12.1**          | n/a  | No  |
-   * | 2 _(-webkit-padding-end)_ | 3 _(-moz-padding-end)_ | 3 _(-webkit-padding-end)_ |      |     |
+   * |          Chrome           |        Firefox         |          Safari           |  Edge  | IE  |
+   * | :-----------------------: | :--------------------: | :-----------------------: | :----: | :-: |
+   * |          **69**           |         **41**         |         **12.1**          | **79** | No  |
+   * | 2 _(-webkit-padding-end)_ | 3 _(-moz-padding-end)_ | 3 _(-webkit-padding-end)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline-end
    */
 pe?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssProperties["paddingInlineEnd"] | AnyString>
  /**
-   * The **`padding-inline-end`** CSS property defines the logical inline end padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * |          Chrome           |        Firefox         |          Safari           | Edge | IE  |
-   * | :-----------------------: | :--------------------: | :-----------------------: | :--: | :-: |
-   * |          **69**           |         **41**         |         **12.1**          | n/a  | No  |
-   * | 2 _(-webkit-padding-end)_ | 3 _(-moz-padding-end)_ | 3 _(-webkit-padding-end)_ |      |     |
+   * |          Chrome           |        Firefox         |          Safari           |  Edge  | IE  |
+   * | :-----------------------: | :--------------------: | :-----------------------: | :----: | :-: |
+   * |          **69**           |         **41**         |         **12.1**          | **79** | No  |
+   * | 2 _(-webkit-padding-end)_ | 3 _(-moz-padding-end)_ | 3 _(-webkit-padding-end)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline-end
    */
 paddingEnd?: ConditionalValue<UtilityValues["paddingInlineEnd"] | CssVars | CssProperties["paddingInlineEnd"] | AnyString>
  /**
-   * The **`padding-inline-start`** CSS property defines the logical inline start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * |           Chrome            |         Firefox          |           Safari            | Edge | IE  |
-   * | :-------------------------: | :----------------------: | :-------------------------: | :--: | :-: |
-   * |           **69**            |          **41**          |          **12.1**           | n/a  | No  |
-   * | 2 _(-webkit-padding-start)_ | 3 _(-moz-padding-start)_ | 3 _(-webkit-padding-start)_ |      |     |
+   * |           Chrome            |         Firefox          |           Safari            |  Edge  | IE  |
+   * | :-------------------------: | :----------------------: | :-------------------------: | :----: | :-: |
+   * |           **69**            |          **41**          |          **12.1**           | **79** | No  |
+   * | 2 _(-webkit-padding-start)_ | 3 _(-moz-padding-start)_ | 3 _(-webkit-padding-start)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline-start
    */
 ps?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | CssProperties["paddingInlineStart"] | AnyString>
  /**
-   * The **`padding-inline-start`** CSS property defines the logical inline start padding of an element, which maps to a physical padding depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'padding-left'>`
+   * **Syntax**: `<'padding-top'>`
    *
    * **Initial value**: `0`
    *
-   * |           Chrome            |         Firefox          |           Safari            | Edge | IE  |
-   * | :-------------------------: | :----------------------: | :-------------------------: | :--: | :-: |
-   * |           **69**            |          **41**          |          **12.1**           | n/a  | No  |
-   * | 2 _(-webkit-padding-start)_ | 3 _(-moz-padding-start)_ | 3 _(-webkit-padding-start)_ |      |     |
+   * |           Chrome            |         Firefox          |           Safari            |  Edge  | IE  |
+   * | :-------------------------: | :----------------------: | :-------------------------: | :----: | :-: |
+   * |           **69**            |          **41**          |          **12.1**           | **79** | No  |
+   * | 2 _(-webkit-padding-start)_ | 3 _(-moz-padding-start)_ | 3 _(-webkit-padding-start)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/padding-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/padding-inline-start
    */
 paddingStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | CssProperties["paddingInlineStart"] | AnyString>
  /**
-   * The **`margin-left`** CSS property sets the margin area on the left side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -6519,13 +7104,13 @@ paddingStart?: ConditionalValue<UtilityValues["paddingInlineStart"] | CssVars | 
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-left
    */
 ml?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssProperties["marginLeft"] | AnyString>
  /**
-   * The **`margin-right`** CSS property sets the margin area on the right side of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -6533,13 +7118,13 @@ ml?: ConditionalValue<UtilityValues["marginLeft"] | CssVars | CssProperties["mar
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-right
    */
 mr?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssProperties["marginRight"] | AnyString>
  /**
-   * The **`margin-top`** CSS property sets the margin area on the top of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -6547,13 +7132,13 @@ mr?: ConditionalValue<UtilityValues["marginRight"] | CssVars | CssProperties["ma
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-top
    */
 mt?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssProperties["marginTop"] | AnyString>
  /**
-   * The **`margin-bottom`** CSS property sets the margin area on the bottom of an element. A positive value places it farther from its neighbors, while a negative value places it closer.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length> | <percentage> | auto`
+   * **Syntax**: `<length-percentage> | auto | <anchor-size()>`
    *
    * **Initial value**: `0`
    *
@@ -6561,131 +7146,131 @@ mt?: ConditionalValue<UtilityValues["marginTop"] | CssVars | CssProperties["marg
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-bottom
    */
 mb?: ConditionalValue<UtilityValues["marginBottom"] | CssVars | CssProperties["marginBottom"] | AnyString>
  /**
-   * The **`margin`** CSS shorthand property sets the margin area on all four sides of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <length> | <percentage> | auto ]{1,4}`
+   * **Syntax**: `<'margin-top'>{1,4}`
    *
    * | Chrome | Firefox | Safari |  Edge  |  IE   |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **3** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin
    */
 m?: ConditionalValue<UtilityValues["margin"] | CssVars | CssProperties["margin"] | AnyString>
  /**
-   * The **`margin-block`** CSS shorthand property defines the logical block start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'margin-left'>{1,2}`
+   * **Syntax**: `<'margin-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-block
    */
 my?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssProperties["marginBlock"] | AnyString>
  /**
-   * The **`margin-block`** CSS shorthand property defines the logical block start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'margin-left'>{1,2}`
+   * **Syntax**: `<'margin-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-block
    */
 marginY?: ConditionalValue<UtilityValues["marginBlock"] | CssVars | CssProperties["marginBlock"] | AnyString>
  /**
-   * The **`margin-inline`** CSS shorthand property is a shorthand property that defines both the logical inline start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'margin-left'>{1,2}`
+   * **Syntax**: `<'margin-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline
    */
 mx?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperties["marginInline"] | AnyString>
  /**
-   * The **`margin-inline`** CSS shorthand property is a shorthand property that defines both the logical inline start and end margins of an element, which maps to physical margins depending on the element's writing mode, directionality, and text orientation.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'margin-left'>{1,2}`
+   * **Syntax**: `<'margin-top'>{1,2}`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline
    */
 marginX?: ConditionalValue<UtilityValues["marginInline"] | CssVars | CssProperties["marginInline"] | AnyString>
  /**
-   * The **`margin-inline-end`** CSS property defines the logical inline end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. In other words, it corresponds to the `margin-top`, `margin-right`, `margin-bottom` or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * |          Chrome          |        Firefox        |          Safari          | Edge | IE  |
-   * | :----------------------: | :-------------------: | :----------------------: | :--: | :-: |
-   * |          **69**          |        **41**         |         **12.1**         | n/a  | No  |
-   * | 2 _(-webkit-margin-end)_ | 3 _(-moz-margin-end)_ | 3 _(-webkit-margin-end)_ |      |     |
+   * |          Chrome          |        Firefox        |          Safari          |  Edge  | IE  |
+   * | :----------------------: | :-------------------: | :----------------------: | :----: | :-: |
+   * |          **69**          |        **41**         |         **12.1**         | **79** | No  |
+   * | 2 _(-webkit-margin-end)_ | 3 _(-moz-margin-end)_ | 3 _(-webkit-margin-end)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline-end
    */
 me?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssProperties["marginInlineEnd"] | AnyString>
  /**
-   * The **`margin-inline-end`** CSS property defines the logical inline end margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. In other words, it corresponds to the `margin-top`, `margin-right`, `margin-bottom` or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * |          Chrome          |        Firefox        |          Safari          | Edge | IE  |
-   * | :----------------------: | :-------------------: | :----------------------: | :--: | :-: |
-   * |          **69**          |        **41**         |         **12.1**         | n/a  | No  |
-   * | 2 _(-webkit-margin-end)_ | 3 _(-moz-margin-end)_ | 3 _(-webkit-margin-end)_ |      |     |
+   * |          Chrome          |        Firefox        |          Safari          |  Edge  | IE  |
+   * | :----------------------: | :-------------------: | :----------------------: | :----: | :-: |
+   * |          **69**          |        **41**         |         **12.1**         | **79** | No  |
+   * | 2 _(-webkit-margin-end)_ | 3 _(-moz-margin-end)_ | 3 _(-webkit-margin-end)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline-end
    */
 marginEnd?: ConditionalValue<UtilityValues["marginInlineEnd"] | CssVars | CssProperties["marginInlineEnd"] | AnyString>
  /**
-   * The **`margin-inline-start`** CSS property defines the logical inline start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. It corresponds to the `margin-top`, `margin-right`, `margin-bottom`, or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * |           Chrome           |         Firefox         |           Safari           | Edge | IE  |
-   * | :------------------------: | :---------------------: | :------------------------: | :--: | :-: |
-   * |           **69**           |         **41**          |          **12.1**          | n/a  | No  |
-   * | 2 _(-webkit-margin-start)_ | 3 _(-moz-margin-start)_ | 3 _(-webkit-margin-start)_ |      |     |
+   * |           Chrome           |         Firefox         |           Safari           |  Edge  | IE  |
+   * | :------------------------: | :---------------------: | :------------------------: | :----: | :-: |
+   * |           **69**           |         **41**          |          **12.1**          | **79** | No  |
+   * | 2 _(-webkit-margin-start)_ | 3 _(-moz-margin-start)_ | 3 _(-webkit-margin-start)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline-start
    */
 ms?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | CssProperties["marginInlineStart"] | AnyString>
  /**
-   * The **`margin-inline-start`** CSS property defines the logical inline start margin of an element, which maps to a physical margin depending on the element's writing mode, directionality, and text orientation. It corresponds to the `margin-top`, `margin-right`, `margin-bottom`, or `margin-left` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
-   * **Syntax**: `<'margin-left'>`
+   * **Syntax**: `<'margin-top'>`
    *
    * **Initial value**: `0`
    *
-   * |           Chrome           |         Firefox         |           Safari           | Edge | IE  |
-   * | :------------------------: | :---------------------: | :------------------------: | :--: | :-: |
-   * |           **69**           |         **41**          |          **12.1**          | n/a  | No  |
-   * | 2 _(-webkit-margin-start)_ | 3 _(-moz-margin-start)_ | 3 _(-webkit-margin-start)_ |      |     |
+   * |           Chrome           |         Firefox         |           Safari           |  Edge  | IE  |
+   * | :------------------------: | :---------------------: | :------------------------: | :----: | :-: |
+   * |           **69**           |         **41**          |          **12.1**          | **79** | No  |
+   * | 2 _(-webkit-margin-start)_ | 3 _(-moz-margin-start)_ | 3 _(-webkit-margin-start)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/margin-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline-start
    */
 marginStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | CssProperties["marginInlineStart"] | AnyString>
  /**
-   * The CSS **`outline-width`** property sets the thickness of an element's outline. An outline is a line that is drawn around an element, outside the `border`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<line-width>`
    *
@@ -6695,37 +7280,37 @@ marginStart?: ConditionalValue<UtilityValues["marginInlineStart"] | CssVars | Cs
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  | **1.5** | **1.2** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-width
    */
 ringWidth?: ConditionalValue<CssProperties["outlineWidth"] | AnyString>
  /**
-   * The **`outline-color`** CSS property sets the color of an element's outline.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<color> | invert`
+   * **Syntax**: `auto | <color>`
    *
-   * **Initial value**: `invert`, for browsers supporting it, `currentColor` for the other
+   * **Initial value**: `auto`
    *
    * | Chrome | Firefox | Safari  |  Edge  |  IE   |
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  | **1.5** | **1.2** | **12** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color
    */
 ringColor?: ConditionalValue<UtilityValues["outlineColor"] | CssVars | CssProperties["outlineColor"] | AnyString>
  /**
-   * The **`outline`** CSS shorthand property sets most of the outline properties in a single declaration.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2023.
    *
-   * **Syntax**: `[ <'outline-color'> || <'outline-style'> || <'outline-width'> ]`
+   * **Syntax**: `<'outline-width'> || <'outline-style'> || <'outline-color'>`
    *
    * | Chrome | Firefox |  Safari  |  Edge  |  IE   |
    * | :----: | :-----: | :------: | :----: | :---: |
    * | **94** | **88**  | **16.4** | **94** | **8** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline
    */
 ring?: ConditionalValue<UtilityValues["outline"] | CssVars | CssProperties["outline"] | AnyString>
  /**
-   * The **`outline-offset`** CSS property sets the amount of space between an outline and the edge or border of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2017.
    *
    * **Syntax**: `<length>`
    *
@@ -6735,13 +7320,13 @@ ring?: ConditionalValue<UtilityValues["outline"] | CssVars | CssProperties["outl
    * | :----: | :-----: | :-----: | :----: | :-: |
    * | **1**  | **1.5** | **1.2** | **15** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/outline-offset
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-offset
    */
 ringOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssProperties["outlineOffset"] | AnyString>
  /**
-   * The **`width`** CSS property sets an element's width. By default, it sets the width of the content area, but if `box-sizing` is set to `border-box`, it sets the width of the border area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -6749,13 +7334,13 @@ ringOffset?: ConditionalValue<UtilityValues["outlineOffset"] | CssVars | CssProp
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/width
    */
 w?: ConditionalValue<UtilityValues["width"] | CssVars | CssProperties["width"] | AnyString>
  /**
-   * The **`min-width`** CSS property sets the minimum width of an element. It prevents the used value of the `width` property from becoming smaller than the value specified for `min-width`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -6763,13 +7348,13 @@ w?: ConditionalValue<UtilityValues["width"] | CssVars | CssProperties["width"] |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/min-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/min-width
    */
 minW?: ConditionalValue<UtilityValues["minWidth"] | CssVars | CssProperties["minWidth"] | AnyString>
  /**
-   * The **`max-width`** CSS property sets the maximum width of an element. It prevents the used value of the `width` property from becoming larger than the value specified by `max-width`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `none | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `none`
    *
@@ -6777,13 +7362,13 @@ minW?: ConditionalValue<UtilityValues["minWidth"] | CssVars | CssProperties["min
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/max-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/max-width
    */
 maxW?: ConditionalValue<UtilityValues["maxWidth"] | CssVars | CssProperties["maxWidth"] | AnyString>
  /**
-   * The **`height`** CSS property specifies the height of an element. By default, the property defines the height of the content area. If `box-sizing` is set to `border-box`, however, it instead determines the height of the border area.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -6791,13 +7376,13 @@ maxW?: ConditionalValue<UtilityValues["maxWidth"] | CssVars | CssProperties["max
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/height
    */
 h?: ConditionalValue<UtilityValues["height"] | CssVars | CssProperties["height"] | AnyString>
  /**
-   * The **`min-height`** CSS property sets the minimum height of an element. It prevents the used value of the `height` property from becoming smaller than the value specified for `min-height`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `auto | <length> | <percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `auto | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `auto`
    *
@@ -6805,26 +7390,26 @@ h?: ConditionalValue<UtilityValues["height"] | CssVars | CssProperties["height"]
    * | :----: | :-----: | :-----: | :----: | :---: |
    * | **1**  |  **3**  | **1.3** | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/min-height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/min-height
    */
 minH?: ConditionalValue<UtilityValues["minHeight"] | CssVars | CssProperties["minHeight"] | AnyString>
  /**
-   * The **`max-height`** CSS property sets the maximum height of an element. It prevents the used value of the `height` property from becoming larger than the value specified for `max-height`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `none | <length-percentage> | min-content | max-content | fit-content | fit-content(<length-percentage>)`
+   * **Syntax**: `none | <length-percentage [0,∞]> | min-content | max-content | fit-content | fit-content(<length-percentage [0,∞]>) | <calc-size()> | <anchor-size()>`
    *
    * **Initial value**: `none`
    *
    * | Chrome | Firefox | Safari  |  Edge  |  IE   |
    * | :----: | :-----: | :-----: | :----: | :---: |
-   * | **18** |  **1**  | **1.3** | **12** | **7** |
+   * | **1**  |  **1**  | **1.3** | **12** | **7** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/max-height
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/max-height
    */
 maxH?: ConditionalValue<UtilityValues["maxHeight"] | CssVars | CssProperties["maxHeight"] | AnyString>
  textShadowColor?: ConditionalValue<UtilityValues["textShadowColor"] | CssVars | AnyString>
  /**
-   * The **`background-position`** CSS property sets the initial position for each background image. The position is relative to the position layer set by `background-origin`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<bg-position>#`
    *
@@ -6834,11 +7419,11 @@ maxH?: ConditionalValue<UtilityValues["maxHeight"] | CssVars | CssProperties["ma
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-position
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-position
    */
 bgPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyString>
  /**
-   * The **`background-position-x`** CSS property sets the initial horizontal position for each background image. The position is relative to the position layer set by `background-origin`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2016.
    *
    * **Syntax**: `[ center | [ [ left | right | x-start | x-end ]? <length-percentage>? ]! ]#`
    *
@@ -6848,11 +7433,11 @@ bgPosition?: ConditionalValue<CssProperties["backgroundPosition"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  | **49**  | **1**  | **12** | **6** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-position-x
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-position-x
    */
 bgPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | AnyString>
  /**
-   * The **`background-position-y`** CSS property sets the initial vertical position for each background image. The position is relative to the position layer set by `background-origin`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2016.
    *
    * **Syntax**: `[ center | [ [ top | bottom | y-start | y-end ]? <length-percentage>? ]! ]#`
    *
@@ -6862,11 +7447,11 @@ bgPositionX?: ConditionalValue<CssProperties["backgroundPositionX"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  | **49**  | **1**  | **12** | **6** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-position-y
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-position-y
    */
 bgPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | AnyString>
  /**
-   * The **`background-attachment`** CSS property sets whether a background image's position is fixed within the viewport, or scrolls with its containing block.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<attachment>#`
    *
@@ -6876,13 +7461,13 @@ bgPositionY?: ConditionalValue<CssProperties["backgroundPositionY"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-attachment
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-attachment
    */
 bgAttachment?: ConditionalValue<CssProperties["backgroundAttachment"] | AnyString>
  /**
-   * The **`background-clip`** CSS property sets whether an element's background extends underneath its border box, padding box, or content box.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<box>#`
+   * **Syntax**: `<bg-clip>#`
    *
    * **Initial value**: `border-box`
    *
@@ -6891,23 +7476,23 @@ bgAttachment?: ConditionalValue<CssProperties["backgroundAttachment"] | AnyStrin
    * | **1**  |  **4**  |  **5**  | **12** | **9** |
    * |        |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-clip
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-clip
    */
 bgClip?: ConditionalValue<CssProperties["backgroundClip"] | AnyString>
  /**
-   * The **`background`** shorthand CSS property sets all background style properties at once, such as color, image, origin and size, or repeat method.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `[ <bg-layer> , ]* <final-bg-layer>`
+   * **Syntax**: `<bg-layer>#? , <final-bg-layer>`
    *
    * | Chrome | Firefox | Safari |  Edge  |  IE   |
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background
    */
 bg?: ConditionalValue<UtilityValues["background"] | CssVars | CssProperties["background"] | AnyString>
  /**
-   * The **`background-color`** CSS property sets the background color of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<color>`
    *
@@ -6917,13 +7502,13 @@ bg?: ConditionalValue<UtilityValues["background"] | CssVars | CssProperties["bac
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-color
    */
 bgColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | CssProperties["backgroundColor"] | AnyString>
  /**
-   * The **`background-origin`** CSS property sets the background's origin: from the border start, inside the border, or inside the padding.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<box>#`
+   * **Syntax**: `<visual-box>#`
    *
    * **Initial value**: `padding-box`
    *
@@ -6931,11 +7516,11 @@ bgColor?: ConditionalValue<UtilityValues["backgroundColor"] | CssVars | CssPrope
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **4**  | **3**  | **12** | **9** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-origin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-origin
    */
 bgOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyString>
  /**
-   * The **`background-image`** CSS property sets one or more background images on an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<bg-image>#`
    *
@@ -6945,11 +7530,11 @@ bgOrigin?: ConditionalValue<CssProperties["backgroundOrigin"] | AnyString>
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-image
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-image
    */
 bgImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | CssProperties["backgroundImage"] | AnyString>
  /**
-   * The **`background-repeat`** CSS property sets how background images are repeated. A background image can be repeated along the horizontal and vertical axes, or not repeated at all.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<repeat-style>#`
    *
@@ -6959,25 +7544,25 @@ bgImage?: ConditionalValue<UtilityValues["backgroundImage"] | CssVars | CssPrope
    * | :----: | :-----: | :----: | :----: | :---: |
    * | **1**  |  **1**  | **1**  | **12** | **4** |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-repeat
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-repeat
    */
 bgRepeat?: ConditionalValue<CssProperties["backgroundRepeat"] | AnyString>
  /**
-   * The **`background-blend-mode`** CSS property sets how an element's background images should blend with each other and with the element's background color.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<blend-mode>#`
    *
    * **Initial value**: `normal`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **35** | **30**  | **8**  | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **35** | **30**  | **8**  | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-blend-mode
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-blend-mode
    */
 bgBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | AnyString>
  /**
-   * The **`background-size`** CSS property sets the size of the element's background image. The image can be left to its natural size, stretched, or constrained to fit the available space.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `<bg-size>#`
    *
@@ -6988,7 +7573,7 @@ bgBlendMode?: ConditionalValue<CssProperties["backgroundBlendMode"] | AnyString>
    * |  **3**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/background-size
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/background-size
    */
 bgSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
  bgGradient?: ConditionalValue<UtilityValues["backgroundGradient"] | CssVars | AnyString>
@@ -6996,22 +7581,22 @@ bgSize?: ConditionalValue<CssProperties["backgroundSize"] | AnyString>
  bgRadial?: ConditionalValue<string | number | AnyString>
  bgConic?: ConditionalValue<string | number | AnyString>
  /**
-   * The **`border-radius`** CSS property rounds the corners of an element's outer border edge. You can set a single radius to make circular corners, or two radii to make elliptical corners.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,4} [ / <length-percentage>{1,4} ]?`
+   * **Syntax**: `<length-percentage [0,∞]>{1,4} [ / <length-percentage [0,∞]>{1,4} ]?`
    *
    * | Chrome  | Firefox | Safari  |  Edge  |  IE   |
    * | :-----: | :-----: | :-----: | :----: | :---: |
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-radius
    */
 rounded?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssProperties["borderRadius"] | AnyString>
  /**
-   * The **`border-top-left-radius`** CSS property rounds the top-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -7020,13 +7605,13 @@ rounded?: ConditionalValue<UtilityValues["borderRadius"] | CssVars | CssProperti
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top-left-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top-left-radius
    */
 roundedTopLeft?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | CssVars | CssProperties["borderTopLeftRadius"] | AnyString>
  /**
-   * The **`border-top-right-radius`** CSS property rounds the top-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -7035,13 +7620,13 @@ roundedTopLeft?: ConditionalValue<UtilityValues["borderTopLeftRadius"] | CssVars
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-top-right-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-top-right-radius
    */
 roundedTopRight?: ConditionalValue<UtilityValues["borderTopRightRadius"] | CssVars | CssProperties["borderTopRightRadius"] | AnyString>
  /**
-   * The **`border-bottom-right-radius`** CSS property rounds the bottom-right corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -7050,13 +7635,13 @@ roundedTopRight?: ConditionalValue<UtilityValues["borderTopRightRadius"] | CssVa
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-right-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom-right-radius
    */
 roundedBottomRight?: ConditionalValue<UtilityValues["borderBottomRightRadius"] | CssVars | CssProperties["borderBottomRightRadius"] | AnyString>
  /**
-   * The **`border-bottom-left-radius`** CSS property rounds the bottom-left corner of an element by specifying the radius (or the radius of the semi-major and semi-minor axes) of the ellipse defining the curvature of the corner.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<length-percentage [0,∞]>{1,2}`
    *
    * **Initial value**: `0`
    *
@@ -7065,7 +7650,7 @@ roundedBottomRight?: ConditionalValue<UtilityValues["borderBottomRightRadius"] |
    * |  **4**  |  **4**  |  **5**  | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-bottom-left-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-bottom-left-radius
    */
 roundedBottomLeft?: ConditionalValue<UtilityValues["borderBottomLeftRadius"] | CssVars | CssProperties["borderBottomLeftRadius"] | AnyString>
  roundedTop?: ConditionalValue<UtilityValues["borderTopRadius"] | CssVars | AnyString>
@@ -7073,228 +7658,228 @@ roundedBottomLeft?: ConditionalValue<UtilityValues["borderBottomLeftRadius"] | C
  roundedBottom?: ConditionalValue<UtilityValues["borderBottomRadius"] | CssVars | AnyString>
  roundedLeft?: ConditionalValue<UtilityValues["borderLeftRadius"] | CssVars | AnyString>
  /**
-   * The **`border-start-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-start-start-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-start-start-radius
    */
 roundedStartStart?: ConditionalValue<UtilityValues["borderStartStartRadius"] | CssVars | CssProperties["borderStartStartRadius"] | AnyString>
  /**
-   * The **`border-start-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-start-end-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-start-end-radius
    */
 roundedStartEnd?: ConditionalValue<UtilityValues["borderStartEndRadius"] | CssVars | CssProperties["borderStartEndRadius"] | AnyString>
  roundedStart?: ConditionalValue<UtilityValues["borderStartRadius"] | CssVars | AnyString>
  /**
-   * The **`border-end-start-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius depending on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-end-start-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-end-start-radius
    */
 roundedEndStart?: ConditionalValue<UtilityValues["borderEndStartRadius"] | CssVars | CssProperties["borderEndStartRadius"] | AnyString>
  /**
-   * The **`border-end-end-radius`** CSS property defines a logical border radius on an element, which maps to a physical border radius that depends on the element's `writing-mode`, `direction`, and `text-orientation`. This is useful when building styles to work regardless of the text orientation and writing mode.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
-   * **Syntax**: `<length-percentage>{1,2}`
+   * **Syntax**: `<'border-top-left-radius'>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **89** | **66**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **89** | **66**  | **15** | **89** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-end-end-radius
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-end-end-radius
    */
 roundedEndEnd?: ConditionalValue<UtilityValues["borderEndEndRadius"] | CssVars | CssProperties["borderEndEndRadius"] | AnyString>
  roundedEnd?: ConditionalValue<UtilityValues["borderEndRadius"] | CssVars | AnyString>
  /**
-   * The **`border-inline`** CSS property is a shorthand property for setting the individual logical inline border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
+   * **Syntax**: `<'border-block-start'>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline
    */
 borderX?: ConditionalValue<UtilityValues["borderInline"] | CssVars | CssProperties["borderInline"] | AnyString>
  /**
-   * The **`border-inline-width`** CSS property defines the width of the logical inline borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'>`
+   * **Syntax**: `<'border-top-width'>{1,2}`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-width
    */
 borderXWidth?: ConditionalValue<CssProperties["borderInlineWidth"] | AnyString>
  /**
-   * The **`border-inline-color`** CSS property defines the color of the logical inline borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-color
    */
 borderXColor?: ConditionalValue<UtilityValues["borderInlineColor"] | CssVars | CssProperties["borderInlineColor"] | AnyString>
  /**
-   * The **`border-block`** CSS property is a shorthand property for setting the individual logical block border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
+   * **Syntax**: `<'border-block-start'>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block
    */
 borderY?: ConditionalValue<UtilityValues["borderBlock"] | CssVars | CssProperties["borderBlock"] | AnyString>
  /**
-   * The **`border-block-width`** CSS property defines the width of the logical block borders of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width` and `border-bottom-width`, or `border-left-width`, and `border-right-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
-   * **Syntax**: `<'border-top-width'>`
+   * **Syntax**: `<'border-top-width'>{1,2}`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-width
    */
 borderYWidth?: ConditionalValue<CssProperties["borderBlockWidth"] | AnyString>
  /**
-   * The **`border-block-color`** CSS property defines the color of the logical block borders of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color` and `border-bottom-color`, or `border-right-color` and `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<'border-top-color'>{1,2}`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **87** | **66**  | **14.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **87** | **66**  | **14.1** | **87** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-block-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-block-color
    */
 borderYColor?: ConditionalValue<UtilityValues["borderBlockColor"] | CssVars | CssProperties["borderBlockColor"] | AnyString>
  /**
-   * The **`border-inline-start`** CSS property is a shorthand property for setting the individual logical inline-start border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-start
    */
 borderStart?: ConditionalValue<UtilityValues["borderInlineStart"] | CssVars | CssProperties["borderInlineStart"] | AnyString>
  /**
-   * The **`border-inline-start-width`** CSS property defines the width of the logical inline-start border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'>`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-start-width
    */
 borderStartWidth?: ConditionalValue<CssProperties["borderInlineStartWidth"] | AnyString>
  /**
-   * The **`border-inline-start-color`** CSS property defines the color of the logical inline start border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-color'>`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome |            Firefox            |  Safari  | Edge | IE  |
-   * | :----: | :---------------------------: | :------: | :--: | :-: |
-   * | **69** |            **41**             | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-start-color)_ |          |      |     |
+   * | Chrome |            Firefox            |  Safari  |  Edge  | IE  |
+   * | :----: | :---------------------------: | :------: | :----: | :-: |
+   * | **69** |            **41**             | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-start-color)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-start-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-start-color
    */
 borderStartColor?: ConditionalValue<UtilityValues["borderInlineStartColor"] | CssVars | CssProperties["borderInlineStartColor"] | AnyString>
  /**
-   * The **`border-inline-end`** CSS property is a shorthand property for setting the individual logical inline-end border property values in a single place in the style sheet.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'> || <'border-top-style'> || <color>`
    *
-   * | Chrome | Firefox |  Safari  | Edge | IE  |
-   * | :----: | :-----: | :------: | :--: | :-: |
-   * | **69** | **41**  | **12.1** | n/a  | No  |
+   * | Chrome | Firefox |  Safari  |  Edge  | IE  |
+   * | :----: | :-----: | :------: | :----: | :-: |
+   * | **69** | **41**  | **12.1** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-end
    */
 borderEnd?: ConditionalValue<UtilityValues["borderInlineEnd"] | CssVars | CssProperties["borderInlineEnd"] | AnyString>
  /**
-   * The **`border-inline-end-width`** CSS property defines the width of the logical inline-end border of an element, which maps to a physical border width depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-width`, `border-right-width`, `border-bottom-width`, or `border-left-width` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-width'>`
    *
    * **Initial value**: `medium`
    *
-   * | Chrome |           Firefox           |  Safari  | Edge | IE  |
-   * | :----: | :-------------------------: | :------: | :--: | :-: |
-   * | **69** |           **41**            | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-end-width)_ |          |      |     |
+   * | Chrome |           Firefox           |  Safari  |  Edge  | IE  |
+   * | :----: | :-------------------------: | :------: | :----: | :-: |
+   * | **69** |           **41**            | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-end-width)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-width
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-end-width
    */
 borderEndWidth?: ConditionalValue<CssProperties["borderInlineEndWidth"] | AnyString>
  /**
-   * The **`border-inline-end-color`** CSS property defines the color of the logical inline-end border of an element, which maps to a physical border color depending on the element's writing mode, directionality, and text orientation. It corresponds to the `border-top-color`, `border-right-color`, `border-bottom-color`, or `border-left-color` property depending on the values defined for `writing-mode`, `direction`, and `text-orientation`.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2020.
    *
    * **Syntax**: `<'border-top-color'>`
    *
    * **Initial value**: `currentcolor`
    *
-   * | Chrome |           Firefox           |  Safari  | Edge | IE  |
-   * | :----: | :-------------------------: | :------: | :--: | :-: |
-   * | **69** |           **41**            | **12.1** | n/a  | No  |
-   * |        | 3 _(-moz-border-end-color)_ |          |      |     |
+   * | Chrome |           Firefox           |  Safari  |  Edge  | IE  |
+   * | :----: | :-------------------------: | :------: | :----: | :-: |
+   * | **69** |           **41**            | **12.1** | **79** | No  |
+   * |        | 3 _(-moz-border-end-color)_ |          |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/border-inline-end-color
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/border-inline-end-color
    */
 borderEndColor?: ConditionalValue<UtilityValues["borderInlineEndColor"] | CssVars | CssProperties["borderInlineEndColor"] | AnyString>
  /**
-   * The **`box-shadow`** CSS property adds shadow effects around an element's frame. You can set multiple effects separated by commas. A box shadow is described by X and Y offsets relative to the element, blur and spread radius, and color.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
    *
    * **Syntax**: `none | <shadow>#`
    *
@@ -7305,57 +7890,57 @@ borderEndColor?: ConditionalValue<UtilityValues["borderInlineEndColor"] | CssVar
    * | **10**  |  **4**  | **5.1** | **12** | **9** |
    * | 1 _-x-_ |         | 3 _-x-_ |        |       |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/box-shadow
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/box-shadow
    */
 shadow?: ConditionalValue<UtilityValues["boxShadow"] | CssVars | CssProperties["boxShadow"] | AnyString>
  shadowColor?: ConditionalValue<UtilityValues["boxShadowColor"] | CssVars | AnyString>
  z?: ConditionalValue<UtilityValues["translateZ"] | CssVars | AnyString>
  /**
-   * The `scroll-margin-block` shorthand property sets the scroll margins of an element in the block dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-block
    */
 scrollMarginY?: ConditionalValue<UtilityValues["scrollMarginBlock"] | CssVars | CssProperties["scrollMarginBlock"] | AnyString>
  /**
-   * The `scroll-margin-inline` shorthand property sets the scroll margins of an element in the inline dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `<length>{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-inline
    */
 scrollMarginX?: ConditionalValue<UtilityValues["scrollMarginInline"] | CssVars | CssProperties["scrollMarginInline"] | AnyString>
  /**
-   * The `scroll-padding-block` shorthand property sets the scroll padding of an element in the block dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-block
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-block
    */
 scrollPaddingY?: ConditionalValue<UtilityValues["scrollPaddingBlock"] | CssVars | CssProperties["scrollPaddingBlock"] | AnyString>
  /**
-   * The `scroll-padding-inline` shorthand property sets the scroll padding of an element in the inline dimension.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since September 2021.
    *
    * **Syntax**: `[ auto | <length-percentage> ]{1,2}`
    *
-   * | Chrome | Firefox | Safari | Edge | IE  |
-   * | :----: | :-----: | :----: | :--: | :-: |
-   * | **69** | **68**  | **15** | n/a  | No  |
+   * | Chrome | Firefox | Safari |  Edge  | IE  |
+   * | :----: | :-----: | :----: | :----: | :-: |
+   * | **69** | **68**  | **15** | **79** | No  |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-padding-inline
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-padding-inline
    */
 scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars | CssProperties["scrollPaddingInline"] | AnyString>
  hideFrom?: ConditionalValue<UtilityValues["hideFrom"] | CssVars | AnyString>
@@ -7425,76 +8010,76 @@ scrollPaddingX?: ConditionalValue<UtilityValues["scrollPaddingInline"] | CssVars
  scrollbar?: ConditionalValue<UtilityValues["scrollbar"] | CssVars | AnyString>
  scrollSnapStrictness?: ConditionalValue<UtilityValues["scrollSnapStrictness"] | CssVars | AnyString>
  /**
-   * The **`scroll-margin`** shorthand property sets all of the scroll margins of an element at once, assigning values much like the `margin` property does for margins of an element.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2021.
    *
    * **Syntax**: `<length>{1,4}`
    *
-   * | Chrome | Firefox |          Safari           | Edge | IE  |
-   * | :----: | :-----: | :-----------------------: | :--: | :-: |
-   * | **69** |  68-90  |         **14.1**          | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin)_ |      |     |
+   * | Chrome | Firefox |          Safari           |  Edge  | IE  |
+   * | :----: | :-----: | :-----------------------: | :----: | :-: |
+   * | **69** |  68-90  |         **14.1**          | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin
    */
 scrollSnapMargin?: ConditionalValue<UtilityValues["scrollSnapMargin"] | CssVars | AnyString>
  /**
-   * The `scroll-margin-top` property defines the top margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |            Safari             | Edge | IE  |
-   * | :----: | :-----: | :---------------------------: | :--: | :-: |
-   * | **69** | **68**  |           **14.1**            | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-top)_ |      |     |
+   * | Chrome | Firefox |            Safari             |  Edge  | IE  |
+   * | :----: | :-----: | :---------------------------: | :----: | :-: |
+   * | **69** | **68**  |           **14.1**            | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-top)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-top
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-top
    */
 scrollSnapMarginTop?: ConditionalValue<UtilityValues["scrollSnapMarginTop"] | CssVars | AnyString>
  /**
-   * The `scroll-margin-bottom` property defines the bottom margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |              Safari              | Edge | IE  |
-   * | :----: | :-----: | :------------------------------: | :--: | :-: |
-   * | **69** | **68**  |             **14.1**             | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-bottom)_ |      |     |
+   * | Chrome | Firefox |              Safari              |  Edge  | IE  |
+   * | :----: | :-----: | :------------------------------: | :----: | :-: |
+   * | **69** | **68**  |             **14.1**             | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-bottom)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-bottom
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-bottom
    */
 scrollSnapMarginBottom?: ConditionalValue<UtilityValues["scrollSnapMarginBottom"] | CssVars | AnyString>
  /**
-   * The `scroll-margin-left` property defines the left margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |             Safari             | Edge | IE  |
-   * | :----: | :-----: | :----------------------------: | :--: | :-: |
-   * | **69** | **68**  |            **14.1**            | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-left)_ |      |     |
+   * | Chrome | Firefox |             Safari             |  Edge  | IE  |
+   * | :----: | :-----: | :----------------------------: | :----: | :-: |
+   * | **69** | **68**  |            **14.1**            | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-left)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-left
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-left
    */
 scrollSnapMarginLeft?: ConditionalValue<UtilityValues["scrollSnapMarginLeft"] | CssVars | AnyString>
  /**
-   * The `scroll-margin-right` property defines the right margin of the scroll snap area that is used for snapping this box to the snapport. The scroll snap area is determined by taking the transformed border box, finding its rectangular bounding box (axis-aligned in the scroll container's coordinate space), then adding the specified outsets.
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2021.
    *
    * **Syntax**: `<length>`
    *
    * **Initial value**: `0`
    *
-   * | Chrome | Firefox |             Safari              | Edge | IE  |
-   * | :----: | :-----: | :-----------------------------: | :--: | :-: |
-   * | **69** | **68**  |            **14.1**             | n/a  | No  |
-   * |        |         | 11 _(scroll-snap-margin-right)_ |      |     |
+   * | Chrome | Firefox |             Safari              |  Edge  | IE  |
+   * | :----: | :-----: | :-----------------------------: | :----: | :-: |
+   * | **69** | **68**  |            **14.1**             | **79** | No  |
+   * |        |         | 11 _(scroll-snap-margin-right)_ |        |     |
    *
-   * @see https://developer.mozilla.org/docs/Web/CSS/scroll-margin-right
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-margin-right
    */
 scrollSnapMarginRight?: ConditionalValue<UtilityValues["scrollSnapMarginRight"] | CssVars | AnyString>
  srOnly?: ConditionalValue<UtilityValues["srOnly"] | CssVars | AnyString>
