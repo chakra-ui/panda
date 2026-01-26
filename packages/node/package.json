@@ -48,7 +48,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "browserslist": "4.28.0",
-    "chokidar": "4.0.3",
+    "chokidar": "5.0.0",
     "fast-glob": "3.3.3",
     "fs-extra": "11.3.2",
     "glob-parent": "6.0.2",
