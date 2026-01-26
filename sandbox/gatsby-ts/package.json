@@ -20,11 +20,11 @@
     "gatsby": "5.15.0",
     "gatsby-plugin-postcss": "6.15.0",
     "postcss": "8.5.6",
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.9",
     "@types/react-dom": "19.2.3",
     "typescript": "5.9.3"
   }

@@ -40,14 +40,14 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@vue/compiler-sfc": "3.5.25",
+    "@vue/compiler-sfc": "3.5.27",
     "magic-string": "0.30.21",
     "ts-morph": "27.0.2",
     "ts-pattern": "5.9.0"
   },
   "devDependencies": {
     "@pandacss/generator": "workspace:*",
-    "@vue/compiler-core": "3.5.25"
+    "@vue/compiler-core": "3.5.27"
   },
   "files": [
     "dist"
