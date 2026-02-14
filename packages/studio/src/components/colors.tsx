@@ -11,7 +11,10 @@ import { StickyTop } from './sticky-top'
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
-function getColorFromReference(reference: string) {
+function getColorFromReference(reference: string, name: string) {
+  if (!reference?.match) {
+    throw new Error(`Invalid reference for semantic token ${name}`)
+  }
   return reference.match(/{colors\.(.*?)}/)?.[1]
 }
 
@@ -54,7 +57,7 @@ export function SemanticToken(props: SemanticTokenProps) {
             key={cond}
             value={tokens[cond].value}
             condition={cond}
-            token={getColorFromReference(tokens.extensions.conditions![cond])}
+            token={getColorFromReference(tokens.extensions.conditions![cond], name)}
           />
         ))}
       </HStack>
