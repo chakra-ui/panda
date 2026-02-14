@@ -6,7 +6,7 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [1.8.2](#1.8.2) - 2026-02-14
 
-## Fixed
+### Fixed
 
 Fix condition order when combining mixed conditions (array format) with nested selectors.
 
@@ -28,13 +28,13 @@ The fix ensures that:
 
 This affects users who define conditions using the array format and combine them with arbitrary/nested selectors.
 
-## Added
+### Added
 
 Add support for the experimental [`corner-shape`](https://developer.mozilla.org/en-US/docs/Web/CSS/corner-shape) CSS
 property, which specifies the shape of a box's corners. Valid values include: `round`, `square`, `bevel`, `scoop`,
 `notch`, `squircle`, and `superellipse(<number>)`.
 
-## Changed
+### Changed
 
 Update `csstype` from 3.1.3 to 3.2.3, which adds support for newer CSS properties including:
 
