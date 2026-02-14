@@ -133,6 +133,35 @@ export default defineConfig({
 })
 ```
 
+## Dynamic conditions
+
+Conditions can be **functions** that take an optional argument and return a selector string. This lets one condition name support both a base form (`_name`) and a parameterized form (`_name/arg`). The argument is passed when you use the slash syntax in your styles; the selector is resolved at build time.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      // (arg?) => string: no arg = base selector, with arg = modifier in selector
+      groupHover: (name?: string) =>
+        name
+          ? `.group\\/${name}:is(:hover, [data-hover]) &`
+          : '.group:is(:hover, [data-hover]) &',
+      nth: (value?: string) => `&:nth-child(${value ?? 'n'})`
+    }
+  }
+})
+```
+
+Then you can use:
+
+- `_groupHover` — matches when a parent with class `group` is hovered
+- `_groupHover/item` — matches when a parent with class `group/item` is hovered (use `className="group/item"` on the parent)
+- `_nth/3` — matches the 3rd child (`&:nth-child(3)`)
+
+The function receives the part after the slash (e.g. `item` for `_groupHover/item`). In CSS, the class name `group/item` is written as `.group\/item` (escaped slash), so the function returns that selector. Dynamic conditions are resolved at **build time** and cached; your styles are fully resolved in the generated CSS.
+
 ## Mixed conditions
 
 You can also use mixed conditions (nested at-rules/selectors) under a single condition name:
