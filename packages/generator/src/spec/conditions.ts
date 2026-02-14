@@ -22,7 +22,7 @@ export const generateConditionsSpec = (ctx: Context): ConditionSpec => {
   const jsxStyleProps = ctx.config.jsxStyleProps
   const breakpointKeys = new Set(Object.keys(ctx.conditions.breakpoints.conditions))
 
-  const conditions = Object.entries(ctx.conditions.values).map(([name, detail]) => {
+  const staticConditions = Object.entries(ctx.conditions.values).map(([name, detail]) => {
     const value = Array.isArray(detail.raw) ? detail.raw.join(', ') : detail.raw
 
     // Check if this is a breakpoint condition
@@ -44,8 +44,23 @@ export const generateConditionsSpec = (ctx: Context): ConditionSpec => {
     }
   })
 
+  const dynamicNames = ctx.conditions.getDynamicConditionNames()
+  const dynamicConditions = dynamicNames.map((baseName) => {
+    const conditionName = '_' + baseName
+    const sampleValue = ctx.conditions.get(conditionName)
+    return {
+      name: conditionName,
+      value: (sampleValue ?? '(dynamic)') as string,
+      functionExamples: [
+        `css({ margin: { base: '2', ${conditionName}: '4' } })`,
+        `css({ margin: { base: '2', '${conditionName}/item': '4' } })`,
+      ],
+      jsxExamples: generateConditionJsxExamples(conditionName, jsxStyleProps),
+    }
+  })
+
   return {
     type: 'conditions',
-    data: conditions,
+    data: [...staticConditions, ...dynamicConditions],
   }
 }

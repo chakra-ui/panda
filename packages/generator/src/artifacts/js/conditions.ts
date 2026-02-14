@@ -2,18 +2,25 @@ import type { Context } from '@pandacss/core'
 import outdent from 'outdent'
 
 export function generateConditions(ctx: Context) {
-  const keys = Object.keys(ctx.conditions.values).concat('base')
+  const staticKeys = Object.keys(ctx.conditions.values)
+  const dynamicNames = ctx.conditions.getDynamicConditionNames()
+  const dynamicPrefixes = dynamicNames.map((name) => '_' + name)
+  const keys = [...staticKeys, ...dynamicPrefixes, 'base']
+
+  const dynamicPrefixesStr = JSON.stringify(dynamicPrefixes)
+
   return {
     js: outdent`
     ${ctx.file.import('withoutSpace', '../helpers')}
 
-    const conditionsStr = "${keys.join(',')}"
+    const conditionsStr = "${staticKeys.join(',')}"
     const conditions = new Set(conditionsStr.split(','))
+    const dynamicConditionPrefixes = ${dynamicPrefixesStr}
 
     const conditionRegex = /^@|&|&$/
 
     export function isCondition(value){
-      return conditions.has(value) || conditionRegex.test(value)
+      return conditions.has(value) || conditionRegex.test(value) || dynamicConditionPrefixes.some(prefix => value === prefix || value.startsWith(prefix + '/'))
     }
 
     const underscoreRegex = /^_/
@@ -21,7 +28,7 @@ export function generateConditions(ctx: Context) {
 
     export function finalizeConditions(paths){
       return paths.map((path) => {
-        if (conditions.has(path)){
+        if (conditions.has(path) || dynamicConditionPrefixes.some(prefix => path === prefix || path.startsWith(prefix + '/'))){
           return path.replace(underscoreRegex, '')
         }
 
@@ -57,6 +64,9 @@ export function generateConditions(ctx: Context) {
                 : ''
           }\t${JSON.stringify(key)}: string`,
       )
+      .join('\n')}
+    ${dynamicNames
+      .map((name) => `\t\`_${name}/\${string}\`: string`)
       .join('\n')}
     }
 

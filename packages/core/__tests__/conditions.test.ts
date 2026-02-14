@@ -227,4 +227,65 @@ describe('Conditions', () => {
       }
     `)
   })
+
+  describe('dynamic conditions', () => {
+    test('has() and getRaw() for dynamic condition with and without modifier', () => {
+      const conditions = new Conditions({
+        conditions: {
+          groupHover: (name?: string) =>
+            name ? `.group\\/${name}:is(:hover, [data-hover]) &` : '.group:is(:hover, [data-hover]) &',
+          nth: (value?: string) => `&:nth-child(${value ?? 'n'})`,
+        },
+      })
+
+      expect(conditions.has('_groupHover')).toBe(true)
+      expect(conditions.has('_groupHover/item')).toBe(true)
+      expect(conditions.has('_nth')).toBe(true)
+      expect(conditions.has('_nth/3')).toBe(true)
+      expect(conditions.has('_unknown')).toBe(false)
+
+      const groupHoverRaw = conditions.getRaw('_groupHover')
+      expect(groupHoverRaw?.raw).toBe('.group:is(:hover, [data-hover]) &')
+
+      const groupHoverItemRaw = conditions.getRaw('_groupHover/item')
+      expect(groupHoverItemRaw?.raw).toBe('.group\\/item:is(:hover, [data-hover]) &')
+
+      const nth3Raw = conditions.getRaw('_nth/3')
+      expect(nth3Raw?.raw).toBe('&:nth-child(3)')
+    })
+
+    test('getDynamicConditionNames() returns dynamic condition base names', () => {
+      const conditions = new Conditions({
+        conditions: {
+          groupHover: (name?: string) => (name ? `.group\\/${name}:hover &` : '.group:hover &'),
+          nth: (value?: string) => `&:nth-child(${value ?? 'n'})`,
+        },
+      })
+      expect(conditions.getDynamicConditionNames()).toEqual(['groupHover', 'nth'])
+    })
+
+    test('finalize and sort with dynamic keys', () => {
+      const conditions = new Conditions({
+        conditions: {
+          groupHover: (name?: string) =>
+            name ? `.group\\/${name}:is(:hover, [data-hover]) &` : '.group:is(:hover, [data-hover]) &',
+        },
+      })
+      expect(conditions.finalize(['_groupHover/item'])).toEqual(['groupHover/item'])
+      const sorted = conditions.sort(['_groupHover/item', '_groupHover'])
+      expect(sorted.map((c) => c.raw)).toContain('.group\\/item:is(:hover, [data-hover]) &')
+      expect(sorted.map((c) => c.raw)).toContain('.group:is(:hover, [data-hover]) &')
+    })
+
+    test('get() returns selector for dynamic condition', () => {
+      const conditions = new Conditions({
+        conditions: {
+          groupHover: (name?: string) =>
+            name ? `.group\\/${name}:hover &` : '.group:hover &',
+        },
+      })
+      expect(conditions.get('_groupHover')).toBe('.group:hover &')
+      expect(conditions.get('_groupHover/card')).toBe('.group\\/card:hover &')
+    })
+  })
 })

@@ -1,3 +1,6 @@
+const group = (state: string) => (name?: string) =>
+  name ? `.group\\/${name}${state} &` : `.group${state} &`
+
 export const conditions = {
   hover: '&:is(:hover, [data-hover])',
   focus: '&:is(:focus, [data-focus])',
@@ -32,6 +35,7 @@ export const conditions = {
   only: '&:only-child',
   even: '&:nth-child(even)',
   odd: '&:nth-child(odd)',
+  nth: (value: string) => `&:nth-child(${value ?? 1})`,
 
   firstOfType: '&:first-of-type',
   lastOfType: '&:last-of-type',
@@ -48,15 +52,15 @@ export const conditions = {
   peerExpanded: '.peer:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) ~ &',
   peerPlaceholderShown: '.peer:placeholder-shown ~ &',
 
-  groupFocus: '.group:is(:focus, [data-focus]) &',
-  groupHover: '.group:is(:hover, [data-hover]) &',
-  groupActive: '.group:is(:active, [data-active]) &',
-  groupFocusWithin: '.group:focus-within &',
-  groupFocusVisible: '.group:is(:focus-visible, [data-focus-visible]) &',
-  groupDisabled: '.group:is(:disabled, [disabled], [data-disabled], [aria-disabled=true]) &',
-  groupChecked: '.group:is(:checked, [data-checked], [aria-checked=true], [data-state="checked"]) &',
-  groupExpanded: '.group:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) &',
-  groupInvalid: '.group:is(:invalid, [data-invalid], [aria-invalid=true]) &',
+  groupFocus: group(':is(:focus, [data-focus])'),
+  groupHover: group(':is(:hover, [data-hover])'),
+  groupActive: group(':is(:active, [data-active])'),
+  groupFocusWithin: group(':focus-within'),
+  groupFocusVisible: group(':is(:focus-visible, [data-focus-visible])'),
+  groupDisabled: group(':is(:disabled, [disabled], [data-disabled], [aria-disabled=true])'),
+  groupChecked: group(':is(:checked, [data-checked], [aria-checked=true], [data-state="checked"])'),
+  groupExpanded: group(':is([aria-expanded=true], [data-expanded], [data-state="expanded"])'),
+  groupInvalid: group(':is(:invalid, [data-invalid], [aria-invalid=true])'),
 
   indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate"])',
   required: '&:is(:required, [data-required], [aria-required=true])',
