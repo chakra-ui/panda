@@ -30,6 +30,10 @@ export function parseCondition(condition: ConditionQuery): ConditionDetails | un
     } as MixedCondition
   }
 
+  if (typeof condition === 'function') {
+    return undefined
+  }
+
   if (condition.startsWith('@')) {
     return parseAtRule(condition)
   }

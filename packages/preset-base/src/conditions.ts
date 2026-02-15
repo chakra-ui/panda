@@ -35,7 +35,7 @@ export const conditions = {
   only: '&:only-child',
   even: '&:nth-child(even)',
   odd: '&:nth-child(odd)',
-  nth: (value: string) => `&:nth-child(${value ?? 1})`,
+  nth: (value?: string) => `&:nth-child(${value ?? 'n'})`,
 
   firstOfType: '&:first-of-type',
   lastOfType: '&:last-of-type',
