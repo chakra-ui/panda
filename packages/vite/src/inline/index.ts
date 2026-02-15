@@ -4,6 +4,7 @@ import type { ParserResultInterface } from '@pandacss/types'
 import { inlineCssCall } from './css'
 import { inlineCvaCall } from './cva'
 import { inlinePatternCall } from './pattern'
+import { inlineRecipeCall } from './recipe'
 import { inlineSvaCall } from './sva'
 import { CVA_HELPER, SVA_HELPER } from './runtime'
 
@@ -44,6 +45,13 @@ export function inlineFile(
       changed = true
       needsCvaHelper = true // sva slots use __cva internally
       needsSvaHelper = true
+    }
+  }
+
+  // Inline config recipe calls (buttonStyle(), textStyle(), etc.)
+  for (const [name, items] of parserResult.recipe) {
+    for (const item of items) {
+      if (inlineRecipeCall(ms, item, name, ctx)) changed = true
     }
   }
 

@@ -467,6 +467,78 @@ describe('inline sva()', () => {
   })
 })
 
+describe('inline config recipes', () => {
+  test('replaces recipe call with variant classNames', async () => {
+    const code = `
+    import { textStyle } from "styled-system/recipes"
+
+    const cls = textStyle({ size: "h1" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const cls = 'textStyle textStyle--size_h1'
+      "
+    `)
+  })
+
+  test('recipe with defaultVariants fills in missing variants', async () => {
+    const code = `
+    import { buttonStyle } from "styled-system/recipes"
+
+    const cls = buttonStyle({})
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    const transformed = await getTransformedCode(result!.code)
+    expect(transformed).toContain('buttonStyle')
+    expect(transformed).toContain('buttonStyle--size_md')
+    expect(transformed).toContain('buttonStyle--variant_solid')
+  })
+
+  test('recipe user variants override defaultVariants', async () => {
+    const code = `
+    import { buttonStyle } from "styled-system/recipes"
+
+    const cls = buttonStyle({ size: "sm" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    const transformed = await getTransformedCode(result!.code)
+    expect(transformed).toContain('buttonStyle--size_sm')
+    expect(transformed).toContain('buttonStyle--variant_solid')
+    expect(transformed).not.toContain('buttonStyle--size_md')
+  })
+
+  test('recipe with no variants produces base className only', async () => {
+    const code = `
+    import { tooltipStyle } from "styled-system/recipes"
+
+    const cls = tooltipStyle({})
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const cls = 'tooltipStyle'
+      "
+    `)
+  })
+
+  test('recipe with boolean variant', async () => {
+    const code = `
+    import { cardStyle } from "styled-system/recipes"
+
+    const cls = cardStyle({ rounded: true })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const cls = 'card card--rounded_true'
+      "
+    `)
+  })
+})
+
 describe('mixed calls in one file', () => {
   test('handles css + pattern + cva in same file', async () => {
     const code = `

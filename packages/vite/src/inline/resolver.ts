@@ -44,7 +44,7 @@ export function resolvePatternToClassNames(ctx: PandaContext, patternName: strin
  * Unlike StyleDecoder.formatSelector which escapes for CSS selectors,
  * this produces unescaped classNames for use in element.className / JSX.
  */
-function buildDomClassNames(encoder: StyleEncoder, ctx: PandaContext): string {
+export function buildDomClassNames(encoder: StyleEncoder, ctx: PandaContext): string {
   const classNames: string[] = []
 
   encoder.atomic.forEach((hash) => {
