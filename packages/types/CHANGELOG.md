@@ -1,5 +1,7 @@
 # @pandacss/types
 
+## 1.9.0
+
 ## 1.8.2
 
 ### Patch Changes
