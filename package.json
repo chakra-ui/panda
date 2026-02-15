@@ -39,7 +39,7 @@
     "@changesets/changelog-github": "0.5.2",
     "@changesets/cli": "2.29.8",
     "@projectwallace/format-css": "^2.0.0",
-    "chokidar": "4.0.3",
+    "chokidar": "5.0.0",
     "concurrently": "9.2.1",
     "cross-env": "10.1.0",
     "happy-dom": "20.0.11",
