@@ -1,5 +1,4 @@
-const group = (state: string) => (name?: string) =>
-  name ? `.group\\/${name}${state} &` : `.group${state} &`
+const group = (state: string) => (name?: string) => (name ? `.group\\/${name}${state} &` : `.group${state} &`)
 
 export const conditions = {
   hover: '&:is(:hover, [data-hover])',

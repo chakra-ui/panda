@@ -65,9 +65,7 @@ export function generateConditions(ctx: Context) {
           }\t${JSON.stringify(key)}: string`,
       )
       .join('\n')}
-    ${dynamicNames
-      .map((name) => `\t\`_${name}/\${string}\`: string`)
-      .join('\n')}
+    ${dynamicNames.map((name) => `\t\`_${name}/\${string}\`: string`).join('\n')}
     }
 
     export type ConditionalValue<V> =

@@ -280,8 +280,7 @@ describe('Conditions', () => {
     test('get() returns selector for dynamic condition', () => {
       const conditions = new Conditions({
         conditions: {
-          groupHover: (name?: string) =>
-            name ? `.group\\/${name}:hover &` : '.group:hover &',
+          groupHover: (name?: string) => (name ? `.group\\/${name}:hover &` : '.group:hover &'),
         },
       })
       expect(conditions.get('_groupHover')).toBe('.group:hover &')
