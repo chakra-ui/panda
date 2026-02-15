@@ -1,10 +1,10 @@
 import postcss, { Container } from 'postcss'
 import dedupe from 'postcss-discard-duplicates'
 import discardEmpty from 'postcss-discard-empty'
-import mergeRules from 'postcss-merge-rules'
 import minifySelectors from 'postcss-minify-selectors'
 import nested from 'postcss-nested'
 import normalizeWhiteSpace from 'postcss-normalize-whitespace'
+import { mergeRules } from './merge-rules'
 import prettify from './prettify'
 
 interface OptimizeOptions {

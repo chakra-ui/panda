@@ -1049,13 +1049,10 @@ describe('generator', () => {
           :where(html) {
             --colors-body: var(--colors-blue-400)
               }
-          }
-
-        @media (prefers-color-scheme: dark) {
           [data-panda-theme=primary] {
             --colors-body: var(--colors-red-400)
                   }
-              }
+          }
       }"
     `)
   })
@@ -1147,13 +1144,10 @@ describe('generator', () => {
           :where(html) {
             --colors-body: var(--colors-blue-400)
               }
-          }
-
-        @media (prefers-color-scheme: dark) {
           [data-panda-theme=primary] {
             --colors-body: var(--colors-red-400)
                   }
-              }
+          }
       }"
     `)
   })
@@ -1227,13 +1221,10 @@ describe('generator', () => {
           :where(html) {
             --colors-body: var(--colors-blue-400)
               }
-          }
-
-        @media (prefers-color-scheme: dark) {
           [data-panda-theme=primary] {
             --colors-body: var(--colors-red-400)
                   }
-              }
+          }
       }"
     `)
   })

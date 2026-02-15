@@ -150,9 +150,6 @@ describe('atomic / with basic style object', () => {
           :where([dir=rtl], :dir(rtl)) .sm\\:rtl\\:top_20px {
             top: 20px;
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:hover\\:top_50px:is(:hover, [data-hover]) {
             top: 50px;
       }

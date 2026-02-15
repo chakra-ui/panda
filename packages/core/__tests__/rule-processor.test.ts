@@ -393,9 +393,6 @@ describe('rule processor', () => {
           .sm\\:w_2 {
             width: var(--sizes-2);
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:hover\\:bg-c_green:is(:hover, [data-hover]) {
             background-color: green;
       }
@@ -411,9 +408,6 @@ describe('rule processor', () => {
           .xl\\:w_3 {
             width: var(--sizes-3);
       }
-      }
-
-        @media screen and (min-width: 80rem) {
           .target .\\[\\&\\[data-attr\\=\\'test\\'\\]\\]\\:expanded\\:\\[\\.target_\\&\\]\\:xl\\:c_pink[data-attr='test']:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) {
             color: pink;
       }
@@ -1510,39 +1504,21 @@ describe('js to css', () => {
           [data-theme=light] .md\\:light\\:bg-c_blue,.light .md\\:light\\:bg-c_blue,.md\\:light\\:bg-c_blue.light,.md\\:light\\:bg-c_blue[data-theme=light] {
             background-color: blue;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg_red:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_red.light:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg_red[data-theme=light]:is(:focus, [data-focus]) {
             background: red;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.light .md\\:light\\:focus\\:bg-c_blue:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-c_blue.light:is(:focus, [data-focus]),.md\\:light\\:focus\\:bg-c_blue[data-theme=light]:is(:focus, [data-focus]) {
             background-color: blue;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg_red:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_red.light:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg_red[data-theme=light]:is(:hover, [data-hover]) {
             background: red;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.light .md\\:light\\:hover\\:bg-c_blue:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-c_blue.light:is(:hover, [data-hover]),.md\\:light\\:hover\\:bg-c_blue[data-theme=light]:is(:hover, [data-hover]) {
             background-color: blue;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.light .md\\:light\\:active\\:bg_red:is(:active, [data-active]),.md\\:light\\:active\\:bg_red.light:is(:active, [data-active]),.md\\:light\\:active\\:bg_red[data-theme=light]:is(:active, [data-active]) {
             background: red;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           [data-theme=light] .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.light .md\\:light\\:active\\:bg-c_blue:is(:active, [data-active]),.md\\:light\\:active\\:bg-c_blue.light:is(:active, [data-active]),.md\\:light\\:active\\:bg-c_blue[data-theme=light]:is(:active, [data-active]) {
             background-color: blue;
       }
@@ -1648,21 +1624,12 @@ describe('js to css', () => {
           .sm\\:custom\\:w_33px[data-attr="custom"] {
             width: 33px;
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:focus\\:w_22px:is(:focus, [data-focus]) {
             width: 22px;
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:hover\\:w_11px:is(:hover, [data-hover]) {
             width: 11px;
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:active\\:w_44px:is(:active, [data-active]) {
             width: 44px;
       }
@@ -1721,9 +1688,6 @@ describe('js to css', () => {
           .md\\:w_3px {
             width: 3px;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           .hover\\:md\\:w_5px:is(:hover, [data-hover]) {
             width: 5px;
       }
@@ -2003,9 +1967,6 @@ describe('js to css', () => {
           .md\\:w_4\\.5px {
             width: 4.5px;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           .hover\\:md\\:w_5px:is(:hover, [data-hover]) {
             width: 5px;
       }
@@ -2123,9 +2084,6 @@ describe('js to css', () => {
           .md\\:w_4\\.5px {
             width: 4.5px;
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           .hover\\:md\\:w_5px:is(:hover, [data-hover]) {
             width: 5px;
       }

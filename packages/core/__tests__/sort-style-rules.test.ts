@@ -97,9 +97,6 @@ describe('sort style rules', () => {
           .sm\\:bg-c_red {
             background-color: red;
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:hover\\:bg-c_green:is(:hover, [data-hover]) {
             background-color: green;
       }
@@ -164,15 +161,9 @@ describe('sort style rules', () => {
           .sm\\:bg-c_blue {
             background-color: blue;
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:hover\\:bg-c_green:is(:hover, [data-hover]) {
             background-color: green;
       }
-      }
-
-        @media screen and (min-width: 40rem) {
           .sm\\:hover\\:bg-c_purple:is(:hover, [data-hover]) {
             background-color: purple;
       }

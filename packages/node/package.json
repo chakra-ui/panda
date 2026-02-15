@@ -47,7 +47,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "browserslist": "4.28.0",
+    "browserslist": "4.28.1",
     "chokidar": "4.0.3",
     "fast-glob": "3.3.3",
     "fs-extra": "11.3.2",

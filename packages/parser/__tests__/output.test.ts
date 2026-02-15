@@ -214,9 +214,6 @@ describe('extract to css output pipeline', () => {
           .md\\:c_red\\.100 {
             color: var(--colors-red-100);
       }
-      }
-
-        @media screen and (min-width: 48rem) {
           [data-theme=dark] .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.dark .md\\:dark\\:hover\\:m_-2:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2.dark:is(:hover, [data-hover]),.md\\:dark\\:hover\\:m_-2[data-theme=dark]:is(:hover, [data-hover]) {
             margin: calc(var(--spacing-2) * -1);
       }
