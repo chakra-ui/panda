@@ -5,6 +5,7 @@ const fileMap = [
   ['shared.mjs', 'helpers.mjs'],
   ['astish.mjs', 'astish.mjs'],
   ['normalize-html.mjs', 'normalize-html.mjs'],
+  ['cxm.mjs', 'cxm.mjs'],
 ]
 
 async function main() {
