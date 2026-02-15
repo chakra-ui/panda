@@ -283,10 +283,11 @@ export class FileMatcher {
           Boolean(this.components.get(tagName)?.has(propName)) ||
           isValidProperty(propName) ||
           this.propertiesMap.has(propName) ||
-          jsx.isRecipeOrPatternProp(tagName, propName)
+          jsx.isRecipeOrPatternProp(tagName, propName) ||
+          propName.endsWith('Css')
         )
       case 'minimal':
-        return propName === 'css' || jsx.isRecipeOrPatternProp(tagName, propName)
+        return propName === 'css' || propName.endsWith('Css') || jsx.isRecipeOrPatternProp(tagName, propName)
       case 'none':
         return jsx.isRecipeOrPatternProp(tagName, propName)
       default:

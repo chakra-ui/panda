@@ -140,19 +140,22 @@ export class StyleEncoder {
 
   processStyleProps = (styleProps: StyleProps) => {
     const styles = this.filterStyleProps(styleProps)
+    const rest = {} as Dict
 
-    if (styles.css) {
-      // if the css prop is an array, we need to process each item separately
-      // otherwise we would treat it as a responsive object using the array syntax
-      // (e.g. `{ mx: [1, 2, 3] }`) -> `mx: { base: 1, sm: 2, md: 3 }`
-      if (Array.isArray(styles.css)) {
-        styles.css.forEach((style) => this.processAtomic(style))
+    for (const [key, value] of Object.entries(styles)) {
+      // css and *Css props (e.g. inputCss, wrapperCss) are style objects
+      if (key === 'css' || key.endsWith('Css')) {
+        if (Array.isArray(value)) {
+          value.forEach((style) => this.processAtomic(style))
+        } else if (value) {
+          this.processAtomic(value)
+        }
       } else {
-        this.processAtomic(styles.css)
+        rest[key] = value
       }
     }
 
-    this.processAtomic(styles.css ? Object.assign({}, styles, { css: undefined }) : styles)
+    this.processAtomic(rest)
   }
 
   processConfigSlotRecipeBase = (recipeName: string, config: SlotRecipeDefinition) => {
@@ -349,7 +352,7 @@ export class StyleEncoder {
 const filterProps = (isValidProperty: (key: string) => boolean, props: Dict) => {
   const clone = {} as Dict
   for (const [key, value] of Object.entries(props)) {
-    if (isValidProperty(key) && value !== undefined) {
+    if ((isValidProperty(key) || key === 'css' || key.endsWith('Css')) && value !== undefined) {
       clone[key] = value
     }
   }

@@ -191,4 +191,37 @@ describe('file matcher', () => {
     expect(file.isValidPattern('p.stack')).toMatchInlineSnapshot(`true`)
     expect(file.isValidPattern('p.grid')).toMatchInlineSnapshot(`true`)
   })
+
+  test('matchTagProp - css prop aliases', () => {
+    const ctx = createContext()
+
+    const file = ctx.imports.file([{ mod: 'styled-system/jsx', name: 'styled', alias: 'styled' }])
+
+    // css prop itself
+    expect(file.matchTagProp('styled.div', 'css')).toBe(true)
+
+    // *Css convention
+    expect(file.matchTagProp('styled.div', 'inputCss')).toBe(true)
+    expect(file.matchTagProp('styled.div', 'contentCss')).toBe(true)
+    expect(file.matchTagProp('styled.div', 'wrapperCss')).toBe(true)
+
+    // non-matching props should not match
+    expect(file.matchTagProp('styled.div', 'onClick')).toBe(false)
+    expect(file.matchTagProp('styled.div', 'success')).toBe(false)
+
+    // uppercase components (jsx tracking)
+    expect(file.matchTagProp('MyComponent', 'inputCss')).toBe(true)
+  })
+
+  test('matchTagProp - css prop aliases (minimal mode)', () => {
+    const ctx = createContext({ jsxStyleProps: 'minimal' })
+
+    const file = ctx.imports.file([{ mod: 'styled-system/jsx', name: 'styled', alias: 'styled' }])
+
+    expect(file.matchTagProp('styled.div', 'css')).toBe(true)
+    expect(file.matchTagProp('styled.div', 'inputCss')).toBe(true)
+
+    // regular style props should NOT match in minimal mode
+    expect(file.matchTagProp('styled.div', 'color')).toBe(false)
+  })
 })

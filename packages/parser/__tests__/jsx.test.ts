@@ -539,4 +539,152 @@ describe('jsx', () => {
       }"
     `)
   })
+
+  test('should extract *Css prop aliases', () => {
+    const code = `
+      import { styled } from "styled-system/jsx"
+
+      function InputStructure() {
+        return (
+          <styled.div
+            css={{ marginBottom: '4' }}
+            inputCss={{ color: 'red.200' }}
+            wrapperCss={{ display: 'flex' }}
+          >
+            content
+          </styled.div>
+        )
+      }
+    `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .c_red\\.200 {
+          color: var(--colors-red-200);
+      }
+
+        .d_flex {
+          display: flex;
+      }
+
+        .mb_4 {
+          margin-bottom: var(--spacing-4);
+      }
+      }"
+    `)
+  })
+
+  test('should extract *Css prop aliases with array value', () => {
+    const code = `
+      import { styled } from "styled-system/jsx"
+
+      function Component() {
+        return (
+          <styled.div
+            inputCss={[{ color: 'blue.300' }, { backgroundColor: 'green.300' }]}
+          >
+            content
+          </styled.div>
+        )
+      }
+    `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .c_blue\\.300 {
+          color: var(--colors-blue-300);
+      }
+
+        .bg-c_green\\.300 {
+          background-color: var(--colors-green-300);
+      }
+      }"
+    `)
+  })
+
+  test('should handle css and *Css props together', () => {
+    const code = `
+      import { styled } from "styled-system/jsx"
+
+      function Component() {
+        return (
+          <styled.div
+            css={{ padding: '4' }}
+            inputCss={{ color: 'red.200' }}
+          >
+            content
+          </styled.div>
+        )
+      }
+    `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_4 {
+          padding: var(--spacing-4);
+      }
+
+        .c_red\\.200 {
+          color: var(--colors-red-200);
+      }
+      }"
+    `)
+  })
+
+  test('should extract *Css aliases in minimal mode', () => {
+    const code = `
+      import { styled } from "styled-system/jsx"
+
+      function Component() {
+        return (
+          <styled.div
+            css={{ padding: '4' }}
+            inputCss={{ color: 'red.200' }}
+            color="blue"
+          >
+            content
+          </styled.div>
+        )
+      }
+    `
+
+    const result = parseAndExtract(code, { jsxStyleProps: 'minimal' })
+
+    // css and *Css should be extracted, inline style props like color="blue" should NOT
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .p_4 {
+          padding: var(--spacing-4);
+      }
+
+        .c_red\\.200 {
+          color: var(--colors-red-200);
+      }
+      }"
+    `)
+  })
+
+  test('should include *Css props in parser data', () => {
+    const code = `
+      import { styled } from "styled-system/jsx"
+
+      function Component() {
+        return (
+          <styled.div inputCss={{ bg: "red.200" }}>content</styled.div>
+        )
+      }
+    `
+
+    const result = jsxParser(code)
+    const item = Array.from(result)[0]
+
+    expect(item.data[0]).toHaveProperty('inputCss')
+    expect(item.data[0].inputCss).toEqual({ bg: 'red.200' })
+  })
 })

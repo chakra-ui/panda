@@ -358,6 +358,28 @@ describe('styled factory - button recipe', () => {
     )
   })
 
+  test('*Css prop aliases on compound component', () => {
+    function InputStructure(props: { inputCss?: any; wrapperCss?: any; children?: React.ReactNode }) {
+      const { inputCss, wrapperCss, children } = props
+      return (
+        <styled.div css={wrapperCss}>
+          <styled.input css={inputCss} />
+          {children}
+        </styled.div>
+      )
+    }
+
+    const { container } = render(
+      <InputStructure inputCss={{ color: 'red.200' }} wrapperCss={{ display: 'flex' }}>
+        compound
+      </InputStructure>,
+    )
+
+    expect(container.innerHTML).toMatchInlineSnapshot(
+      `"<div class="d_flex"><input class="c_red.200">compound</div>"`,
+    )
+  })
+
   test('array css prop', () => {
     const { container } = render(
       <styled.div css={[{ color: 'blue.300', backgroundColor: 'yellow.300' }, { backgroundColor: 'green.300' }]}>
