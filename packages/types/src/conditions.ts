@@ -28,7 +28,9 @@ export interface MixedCondition {
  * Shadowed export (in CLI): DO NOT REMOVE
  * -----------------------------------------------------------------------------*/
 
-export type ConditionQuery = string | string[]
+export type DynamicConditionFn = (arg?: string) => string
+
+export type ConditionQuery = string | string[] | DynamicConditionFn
 
 export interface Conditions {
   [condition: string]: ConditionQuery

@@ -4,6 +4,7 @@ import type {
   ConditionDetails,
   ConditionQuery,
   Conditions as ConditionsConfig,
+  DynamicConditionFn,
   ThemeVariantsMap,
 } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
@@ -42,8 +43,19 @@ interface Options {
 const underscoreRegex = /^_/
 const selectorRegex = /&|@/
 
+/** Parse _base or _base/arg into [baseName, arg]. */
+function parseDynamicKey(key: string): [string, string | undefined] | null {
+  if (!key.startsWith('_')) return null
+  const rest = key.slice(1)
+  const i = rest.indexOf('/')
+  if (i === -1) return [rest, undefined]
+  return [rest.slice(0, i), rest.slice(i + 1)]
+}
+
 export class Conditions {
   values: Record<string, ConditionDetails>
+  dynamicConditions: Record<string, DynamicConditionFn>
+  private dynamicCache = new Map<string, ConditionDetails>()
 
   breakpoints: Breakpoints
 
@@ -53,17 +65,33 @@ export class Conditions {
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
 
-    const entries = Object.entries(conditions).map(([key, value]) => [`_${key}`, parseCondition(value)])
+    const staticEntries: [string, ConditionDetails][] = []
+    const dynamicConditions: Record<string, DynamicConditionFn> = {}
+
+    for (const [key, value] of Object.entries(conditions)) {
+      if (typeof value === 'function') {
+        dynamicConditions[key] = value as DynamicConditionFn
+      } else {
+        const parsed = parseCondition(value as string | string[])
+        if (parsed) staticEntries.push([`_${key}`, parsed])
+      }
+    }
+
+    this.dynamicConditions = dynamicConditions
 
     const containers = this.setupContainers()
     const themes = this.setupThemes()
 
     this.values = {
-      ...Object.fromEntries(entries),
+      ...Object.fromEntries(staticEntries),
       ...breakpoints.conditions,
       ...containers,
       ...themes,
     }
+  }
+
+  getDynamicConditionNames = (): string[] => {
+    return Object.keys(this.dynamicConditions)
   }
 
   private setupContainers = () => {
@@ -154,7 +182,11 @@ export class Conditions {
   }
 
   has = (key: string) => {
-    return Object.prototype.hasOwnProperty.call(this.values, key)
+    if (Object.prototype.hasOwnProperty.call(this.values, key)) return true
+    const parsed = parseDynamicKey(key)
+    if (!parsed) return false
+    const [base] = parsed
+    return Object.prototype.hasOwnProperty.call(this.dynamicConditions, base)
   }
 
   isCondition = (key: string) => {
@@ -167,16 +199,65 @@ export class Conditions {
 
   get = (key: string): undefined | string | string[] => {
     const details = this.values[key]
-    return details?.raw
+    if (details) return details.raw
+
+    const parsed = parseDynamicKey(key)
+    if (!parsed) return undefined
+    const [base, arg] = parsed
+    const fn = this.dynamicConditions[base]
+    if (!fn) return undefined
+    try {
+      const raw = fn(arg ?? '')
+      return Array.isArray(raw) ? raw : raw
+    } catch {
+      return undefined
+    }
   }
 
   getRaw = (condNameOrQuery: ConditionQuery): ConditionDetails | undefined => {
-    if (typeof condNameOrQuery === 'string' && this.values[condNameOrQuery]) return this.values[condNameOrQuery]
+    if (typeof condNameOrQuery !== 'string') {
+      try {
+        return parseCondition(condNameOrQuery)
+      } catch (error) {
+        logger.error('core:condition', error)
+      }
+      return undefined
+    }
+
+    if (this.values[condNameOrQuery]) return this.values[condNameOrQuery]
+
+    const parsed = parseDynamicKey(condNameOrQuery)
+    if (!parsed) {
+      try {
+        return parseCondition(condNameOrQuery)
+      } catch (error) {
+        logger.error('core:condition', error)
+      }
+      return undefined
+    }
+
+    const [base, arg] = parsed
+    const fn = this.dynamicConditions[base]
+    if (!fn) {
+      try {
+        return parseCondition(condNameOrQuery)
+      } catch (error) {
+        logger.error('core:condition', error)
+      }
+      return undefined
+    }
+
+    const cached = this.dynamicCache.get(condNameOrQuery)
+    if (cached) return cached
 
     try {
-      return parseCondition(condNameOrQuery)
+      const selector = fn(arg ?? '')
+      const details = parseCondition(selector)
+      if (details) this.dynamicCache.set(condNameOrQuery, details)
+      return details
     } catch (error) {
       logger.error('core:condition', error)
+      return undefined
     }
   }
 

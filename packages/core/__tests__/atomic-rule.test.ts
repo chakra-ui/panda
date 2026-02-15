@@ -364,6 +364,24 @@ describe('atomic / with grouped conditions styles', () => {
     `)
   })
 
+  test('dynamic condition _groupHover/item produces .group\\/item selector', () => {
+    const result = css({
+      _groupHover: { bg: 'red.500' },
+    })
+    expect(result).toContain('.group:is(:hover, [data-hover])')
+    const resultWithModifier = css({
+      '_groupHover/item': { bg: 'red.500' },
+    })
+    expect(resultWithModifier).toContain('.group\\/item')
+  })
+
+  test('dynamic condition _nth/3 produces :nth-child selector', () => {
+    const result = css({
+      '_nth/3': { color: 'red.500' },
+    })
+    expect(result).toContain('nth-child(3)')
+  })
+
   test('multiple scopes', () => {
     expect(
       css({
