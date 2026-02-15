@@ -1,12 +1,16 @@
 import { findConfig, getConfigDependencies } from '@pandacss/config'
 import { logger } from '@pandacss/logger'
 import { codegen, loadConfigAndCreateContext, PandaContext } from '@pandacss/node'
+import type { ParserResult } from '@pandacss/parser'
 import { normalize, resolve } from 'path'
 import type { PandaViteOptions } from './index'
 
 export class Root {
   ctx!: PandaContext
   configDeps = new Set<string>()
+
+  /** Cache of ParserResults from build-mode parseFiles(), keyed by normalized file path */
+  parseResults = new Map<string, ParserResult>()
 
   private lastCss: string | undefined
   private options: PandaViteOptions
@@ -42,22 +46,23 @@ export class Root {
     }
   }
 
-  extractFile(id: string): boolean {
+  extractFile(id: string): { hasNew: boolean; result?: ParserResult } {
     const file = normalize(id)
 
     const prevSize = this.ctx.encoder.atomic.size + this.ctx.encoder.recipes.size
 
+    let result: ParserResult | undefined
     try {
       this.ctx.project.reloadSourceFile(file)
-      this.ctx.parseFile(file)
+      result = this.ctx.parseFile(file)
     } catch (error) {
       logger.error('vite', `Failed to parse ${file}`)
       logger.error('vite', error)
-      return false
+      return { hasNew: false }
     }
 
     const newSize = this.ctx.encoder.atomic.size + this.ctx.encoder.recipes.size
-    return newSize > prevSize
+    return { hasNew: newSize > prevSize, result: result ?? undefined }
   }
 
   generateCss(): string {

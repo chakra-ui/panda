@@ -1,5 +1,6 @@
 import type { Plugin, ViteDevServer } from 'vite'
 import type { PandaViteOptions } from '../index'
+import { inlineFile } from '../inline'
 import type { Root } from '../root'
 import { RESOLVED_VIRTUAL_MODULE_ID, VIRTUAL_MODULE_ID } from '../virtual'
 
@@ -40,8 +41,15 @@ export function createServePlugin(
       if (!shouldTransform(id)) return
       if (!state.root) return
 
-      const hasNew = state.root.extractFile(id)
+      const { hasNew, result } = state.root.extractFile(id)
 
+      // Inline compiler (Phase 2): replace css()/pattern() calls with className strings
+      let transformResult: { code: string; map: any } | undefined
+      if (options.optimizeJs !== false && result && !result.isEmpty()) {
+        transformResult = inlineFile(code, id, result, state.root.ctx)
+      }
+
+      // HMR: invalidate virtual CSS module when new styles are discovered
       if (hasNew && state.server) {
         const mod = state.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_MODULE_ID)
         if (mod) {
@@ -59,6 +67,8 @@ export function createServePlugin(
           })
         }
       }
+
+      return transformResult
     },
   }
 }

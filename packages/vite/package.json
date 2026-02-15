@@ -43,6 +43,9 @@
   "dependencies": {
     "@pandacss/node": "workspace:*",
     "@pandacss/config": "workspace:*",
-    "@pandacss/logger": "workspace:*"
+    "@pandacss/core": "workspace:*",
+    "@pandacss/logger": "workspace:*",
+    "@pandacss/types": "workspace:*",
+    "magic-string": "^0.30.0"
   }
 }

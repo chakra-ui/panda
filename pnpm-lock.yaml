@@ -797,12 +797,21 @@ importers:
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
+      '@pandacss/core':
+        specifier: workspace:*
+        version: link:../core
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger
       '@pandacss/node':
         specifier: workspace:*
         version: link:../node
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
+      magic-string:
+        specifier: ^0.30.0
+        version: 0.30.21
       vite:
         specifier: '>=5.0.0'
         version: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)

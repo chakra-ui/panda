@@ -1,4 +1,5 @@
 import { logger } from '@pandacss/logger'
+import { normalize } from 'path'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import type { PandaViteOptions } from '../index'
 import { Root } from '../root'
@@ -64,7 +65,11 @@ export function createScanPlugin(
 
       // In build mode, parse all source files upfront so CSS is ready for load()
       if (state.config?.command === 'build') {
-        root.ctx.parseFiles()
+        const { results, filesWithCss } = root.ctx.parseFiles()
+        // Cache results for the build transform plugin to look up
+        filesWithCss.forEach((file, i) => {
+          root.parseResults.set(normalize(file), results[i])
+        })
       }
     },
   }

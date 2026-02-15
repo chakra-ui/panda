@@ -12,11 +12,9 @@ export interface PandaViteOptions {
   cwd?: string
 
   /**
-   * Inline all Panda calls (css, cva, sva, patterns, JSX) at build time.
-   * - true (default): inline everything, only unresolvable expressions fall back to runtime
+   * Inline Panda calls at build time, replacing them with pre-resolved className strings.
+   * - true (default): inline css() and pattern calls, eliminating runtime overhead
    * - false: CSS generation only, no JS transforms (like PostCSS mode)
-   *
-   * Note: Not yet implemented. Reserved for Phase 2.
    */
   optimizeJs?: boolean
 

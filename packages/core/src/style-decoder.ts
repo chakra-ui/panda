@@ -349,7 +349,7 @@ export class StyleDecoder {
 
 const entryKeys = ['cond', 'recipe', 'layer', 'slot'] as const
 
-const getEntryFromHash = (hash: string) => {
+export const getEntryFromHash = (hash: string) => {
   const parts = hash.split(StyleEncoder.separator)
   const prop = parts[0]
 
