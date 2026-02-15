@@ -19,12 +19,6 @@ export const showcases: Showcase[] = [
     image: '/showcase/magic-labs.png'
   },
   {
-    name: 'Novu',
-    description: 'Open-source notification infrastructure',
-    url: 'https://novu.co/',
-    image: '/showcase/novuhq.png'
-  },
-  {
     name: 'Ark UI',
     description: 'A library of unstyled components',
     url: 'https://ark-ui.com/',
