@@ -8,6 +8,7 @@ import { inlineJsxStyleProps, inlineJsxPattern, inlineJsxRecipe } from './jsx'
 import { inlinePatternCall } from './pattern'
 import { inlineRecipeCall } from './recipe'
 import { inlineSvaCall } from './sva'
+import { inlineTokenCall, inlineTokenVarCalls } from './token'
 import { CVA_HELPER, SVA_HELPER } from './runtime'
 
 export function inlineFile(
@@ -70,6 +71,14 @@ export function inlineFile(
   for (const item of parserResult.jsx) {
     if (inlineJsxStyleProps(ms, item, ctx)) changed = true
   }
+
+  // Inline standalone token() calls (tracked by parser)
+  for (const item of parserResult.token) {
+    if (inlineTokenCall(ms, item, ctx)) changed = true
+  }
+
+  // Inline token.var() calls (not tracked by parser — scan AST directly)
+  if (inlineTokenVarCalls(ms, parserResult, ctx)) changed = true
 
   if (!changed) return undefined
 
