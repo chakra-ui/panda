@@ -27,6 +27,7 @@ export async function getTransformedCode(code: string): Promise<string> {
     .replace(/^var __cva[\s\S]*?^};\n/m, '')
     .replace(/^var __sva[\s\S]*?^};\n/m, '')
     .replace(/^\s*import\s+.*$/gm, '')
+    .replace(/^\s*declare\s+.*$/gm, '')
     .trim()
 
   return format(raw, { parser: 'babel', printWidth: 100, semi: false, singleQuote: true })

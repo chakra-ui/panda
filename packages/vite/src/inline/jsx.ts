@@ -3,6 +3,7 @@ import type { PandaContext } from '@pandacss/node'
 import type { ResultItem } from '@pandacss/types'
 import type { JsxAttribute, JsxElement, JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { resolveJsxStylesToClassNames, resolvePatternToClassNames, buildDomClassNames } from './resolver'
+import { boxHasConditionals } from './resolve-conditional'
 
 type JsxElementNode = JsxOpeningElement | JsxSelfClosingElement
 
@@ -14,6 +15,9 @@ type JsxElementNode = JsxOpeningElement | JsxSelfClosingElement
  */
 export function inlineJsxStyleProps(ms: MagicString, item: ResultItem, ctx: PandaContext): boolean {
   if (!item.box || !item.data.length) return false
+
+  // Bail if style prop values contain conditionals — can't flatten correctly
+  if (boxHasConditionals(item.box)) return false
 
   const node = asJsxElementNode(item.box.getNode())
   if (!node) return false
@@ -43,6 +47,9 @@ export function inlineJsxPattern(ms: MagicString, item: ResultItem, patternName:
   if (!item.box || !item.data.length) return false
   if (item.type !== 'jsx-pattern') return false
 
+  // Bail if style prop values contain conditionals
+  if (boxHasConditionals(item.box)) return false
+
   const node = asJsxElementNode(item.box.getNode())
   if (!node) return false
 
@@ -65,6 +72,9 @@ export function inlineJsxPattern(ms: MagicString, item: ResultItem, patternName:
 export function inlineJsxRecipe(ms: MagicString, item: ResultItem, recipeName: string, ctx: PandaContext): boolean {
   if (!item.box || !item.data.length) return false
   if (item.type !== 'jsx-recipe') return false
+
+  // Bail if prop values contain conditionals
+  if (boxHasConditionals(item.box)) return false
 
   // Skip slot recipes
   if (ctx.recipes.isSlotRecipe(recipeName)) return false

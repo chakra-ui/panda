@@ -5,6 +5,7 @@ import { SyntaxKind } from 'ts-morph'
 import { findCallExpression } from './find-call'
 import { generateCvaCodeFromConfig } from './cva'
 import { SVA_HELPER_ID } from './runtime'
+import { boxHasConditionals } from './resolve-conditional'
 
 interface SvaConfig {
   slots?: string[]
@@ -16,6 +17,9 @@ interface SvaConfig {
 
 export function inlineSvaCall(ms: MagicString, item: ResultItem, ctx: PandaContext): boolean {
   if (!item.box || !item.data.length) return false
+
+  // Bail if style values contain conditionals — can't flatten correctly
+  if (boxHasConditionals(item.box)) return false
 
   const config = item.data[0] as SvaConfig | undefined
   if (!config || !config.slots?.length) return false

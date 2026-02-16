@@ -3,9 +3,13 @@ import type { PandaContext } from '@pandacss/node'
 import type { ResultItem } from '@pandacss/types'
 import { buildDomClassNames } from './resolver'
 import { findCallExpression } from './find-call'
+import { boxHasConditionals } from './resolve-conditional'
 
 export function inlineRecipeCall(ms: MagicString, item: ResultItem, recipeName: string, ctx: PandaContext): boolean {
   if (!item.box || !item.data.length) return false
+
+  // Bail if variant values contain conditionals — can't flatten correctly
+  if (boxHasConditionals(item.box)) return false
 
   // Skip slot recipes — they return objects, not strings
   if (ctx.recipes.isSlotRecipe(recipeName)) return false
