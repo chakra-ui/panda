@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/is-valid-prop",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "Common error messages for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

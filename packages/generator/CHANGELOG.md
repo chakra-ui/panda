@@ -1,5 +1,17 @@
 # @pandacss/generator
 
+## 1.9.0
+
+### Patch Changes
+
+- Updated dependencies [3ca1f24]
+  - @pandacss/core@1.9.0
+  - @pandacss/is-valid-prop@1.9.0
+  - @pandacss/logger@1.9.0
+  - @pandacss/shared@1.9.0
+  - @pandacss/token-dictionary@1.9.0
+  - @pandacss/types@1.9.0
+
 ## 1.8.2
 
 ### Patch Changes
