@@ -40,6 +40,17 @@ export function resolvePatternToClassNames(ctx: PandaContext, patternName: strin
 }
 
 /**
+ * Resolve JSX style props to a single className string.
+ * Uses processStyleProps which correctly handles the `css` and `*Css` props.
+ */
+export function resolveJsxStylesToClassNames(ctx: PandaContext, data: Dict[]): string {
+  const encoder = ctx.encoder.clone()
+  data.forEach((obj) => encoder.processStyleProps(obj))
+
+  return buildDomClassNames(encoder, ctx)
+}
+
+/**
  * Build DOM className strings from encoder hashes.
  * Unlike StyleDecoder.formatSelector which escapes for CSS selectors,
  * this produces unescaped classNames for use in element.className / JSX.

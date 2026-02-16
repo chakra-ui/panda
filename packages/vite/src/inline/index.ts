@@ -3,6 +3,7 @@ import type { PandaContext } from '@pandacss/node'
 import type { ParserResultInterface } from '@pandacss/types'
 import { inlineCssCall } from './css'
 import { inlineCvaCall } from './cva'
+import { inlineJsxStyleProps, inlineJsxPattern, inlineJsxRecipe } from './jsx'
 import { inlinePatternCall } from './pattern'
 import { inlineRecipeCall } from './recipe'
 import { inlineSvaCall } from './sva'
@@ -24,10 +25,14 @@ export function inlineFile(
     if (inlineCssCall(ms, item, ctx)) changed = true
   }
 
-  // Inline pattern calls (hstack, vstack, grid, etc.)
+  // Inline pattern calls (hstack, vstack, grid, etc.) and JSX patterns (<HStack>, <VStack>, etc.)
   for (const [name, items] of parserResult.pattern) {
     for (const item of items) {
-      if (inlinePatternCall(ms, item, name, ctx)) changed = true
+      if (item.type === 'jsx-pattern') {
+        if (inlineJsxPattern(ms, item, name, ctx)) changed = true
+      } else {
+        if (inlinePatternCall(ms, item, name, ctx)) changed = true
+      }
     }
   }
 
@@ -49,10 +54,20 @@ export function inlineFile(
   }
 
   // Inline config recipe calls (buttonStyle(), textStyle(), etc.)
+  // and JSX recipe elements (<ButtonStyle>, <CardStyle>, etc.)
   for (const [name, items] of parserResult.recipe) {
     for (const item of items) {
-      if (inlineRecipeCall(ms, item, name, ctx)) changed = true
+      if (item.type === 'jsx-recipe') {
+        if (inlineJsxRecipe(ms, item, name, ctx)) changed = true
+      } else {
+        if (inlineRecipeCall(ms, item, name, ctx)) changed = true
+      }
     }
+  }
+
+  // Inline JSX style props (styled.div, Box, Flex, etc.)
+  for (const item of parserResult.jsx) {
+    if (inlineJsxStyleProps(ms, item, ctx)) changed = true
   }
 
   if (!changed) return undefined
