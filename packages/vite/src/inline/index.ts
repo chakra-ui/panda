@@ -3,6 +3,7 @@ import type { PandaContext } from '@pandacss/node'
 import type { ParserResultInterface } from '@pandacss/types'
 import { inlineCssCall } from './css'
 import { inlineCvaCall } from './cva'
+import { removeDeadImports } from './imports'
 import { inlineJsxStyleProps, inlineJsxPattern, inlineJsxRecipe } from './jsx'
 import { inlinePatternCall } from './pattern'
 import { inlineRecipeCall } from './recipe'
@@ -71,6 +72,9 @@ export function inlineFile(
   }
 
   if (!changed) return undefined
+
+  // Remove dead panda imports (must run BEFORE helper injection)
+  removeDeadImports(ms, code, ctx)
 
   // Inject runtime helpers at the top of the file
   if (needsSvaHelper) ms.prepend(SVA_HELPER)

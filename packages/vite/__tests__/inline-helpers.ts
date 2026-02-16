@@ -31,3 +31,13 @@ export async function getTransformedCode(code: string): Promise<string> {
 
   return format(raw, { parser: 'babel', printWidth: 100, semi: false, singleQuote: true })
 }
+
+/** Like getTransformedCode but preserves import lines (strips only runtime helpers) */
+export async function getFullTransformedCode(code: string): Promise<string> {
+  const raw = code
+    .replace(/^var __cva[\s\S]*?^};\n/m, '')
+    .replace(/^var __sva[\s\S]*?^};\n/m, '')
+    .trim()
+
+  return format(raw, { parser: 'typescript', printWidth: 100, semi: false, singleQuote: true })
+}
