@@ -79,6 +79,22 @@ describe('inline sva()', () => {
     `)
   })
 
+  test('sva.raw() — bails out', () => {
+    const code = `
+    import { sva } from "styled-system/css"
+
+    const styles = sva.raw({
+      slots: ["root", "trigger"],
+      base: {
+        root: { display: "flex" },
+        trigger: { cursor: "pointer" },
+      }
+    })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeUndefined()
+  })
+
   test('sva variantMap', () => {
     const code = `
     import { sva } from "styled-system/css"

@@ -1,6 +1,7 @@
 import type MagicString from 'magic-string'
 import type { PandaContext } from '@pandacss/node'
 import type { Dict, ResultItem } from '@pandacss/types'
+import { SyntaxKind } from 'ts-morph'
 import { findCallExpression } from './find-call'
 import { generateCvaCodeFromConfig } from './cva'
 import { SVA_HELPER_ID } from './runtime'
@@ -21,6 +22,10 @@ export function inlineSvaCall(ms: MagicString, item: ResultItem, ctx: PandaConte
 
   const callNode = findCallExpression(item.box.getNode())
   if (!callNode) return false
+
+  // Bail on sva.raw() — returns the raw config, not a function
+  const expr = callNode.getExpression()
+  if (expr.getKind() === SyntaxKind.PropertyAccessExpression) return false
 
   const code = generateSvaCode(config, ctx)
   if (!code) return false

@@ -41,11 +41,14 @@
     "vite": ">=5.0.0"
   },
   "dependencies": {
-    "@pandacss/node": "workspace:*",
     "@pandacss/config": "workspace:*",
     "@pandacss/core": "workspace:*",
     "@pandacss/logger": "workspace:*",
+    "@pandacss/node": "workspace:*",
+    "@pandacss/parser": "workspace:*",
+    "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "magic-string": "^0.30.0"
+    "magic-string": "^0.30.0",
+    "ts-morph": "27.0.2"
   }
 }

@@ -1,5 +1,6 @@
 import { StyleEncoder, getEntryFromHash } from '@pandacss/core'
 import type { PandaContext } from '@pandacss/node'
+import { cxm } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
 
 const importantRegex = /\s*!(important)?/i
@@ -89,5 +90,6 @@ export function buildDomClassNames(encoder: StyleEncoder, ctx: PandaContext): st
     }
   })
 
-  return classNames.join(' ')
+  const raw = classNames.join(' ')
+  return classNames.length > 1 ? cxm(ctx.utility.separator ?? '_', raw) : raw
 }

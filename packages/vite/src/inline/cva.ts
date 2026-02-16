@@ -1,6 +1,7 @@
 import type MagicString from 'magic-string'
 import type { PandaContext } from '@pandacss/node'
 import type { Dict, ResultItem } from '@pandacss/types'
+import { SyntaxKind } from 'ts-morph'
 import { resolveStylesToClassNames } from './resolver'
 import { findCallExpression } from './find-call'
 import { CVA_HELPER_ID } from './runtime'
@@ -27,6 +28,10 @@ export function inlineCvaCall(ms: MagicString, item: ResultItem, ctx: PandaConte
 
   const callNode = findCallExpression(item.box.getNode())
   if (!callNode) return false
+
+  // Bail on cva.raw() — returns the raw config, not a function
+  const expr = callNode.getExpression()
+  if (expr.getKind() === SyntaxKind.PropertyAccessExpression) return false
 
   const resolved = resolveCvaConfig(config, ctx)
   if (!resolved) return false

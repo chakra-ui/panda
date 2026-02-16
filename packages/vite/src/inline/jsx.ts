@@ -1,7 +1,10 @@
 import type MagicString from 'magic-string'
 import type { PandaContext } from '@pandacss/node'
 import type { ResultItem } from '@pandacss/types'
+import type { JsxAttribute, JsxElement, JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { resolveJsxStylesToClassNames, resolvePatternToClassNames, buildDomClassNames } from './resolver'
+
+type JsxElementNode = JsxOpeningElement | JsxSelfClosingElement
 
 /**
  * Inline JSX style props for items in parserResult.jsx (type 'jsx' and 'jsx-factory').
@@ -12,9 +15,8 @@ import { resolveJsxStylesToClassNames, resolvePatternToClassNames, buildDomClass
 export function inlineJsxStyleProps(ms: MagicString, item: ResultItem, ctx: PandaContext): boolean {
   if (!item.box || !item.data.length) return false
 
-  const node = item.box.getNode()
-  const kind = node.getKindName()
-  if (kind !== 'JsxOpeningElement' && kind !== 'JsxSelfClosingElement') return false
+  const node = asJsxElementNode(item.box.getNode())
+  if (!node) return false
 
   // Determine HTML tag
   let htmlTag = 'div'
@@ -30,7 +32,7 @@ export function inlineJsxStyleProps(ms: MagicString, item: ResultItem, ctx: Pand
   // Collect style prop names from extracted data
   const stylePropNames = collectPropNames(item.data)
 
-  return replaceJsxElement(ms, node, htmlTag, className, stylePropNames, kind === 'JsxSelfClosingElement')
+  return replaceJsxElement(ms, node, htmlTag, className, stylePropNames)
 }
 
 /**
@@ -41,9 +43,8 @@ export function inlineJsxPattern(ms: MagicString, item: ResultItem, patternName:
   if (!item.box || !item.data.length) return false
   if (item.type !== 'jsx-pattern') return false
 
-  const node = item.box.getNode()
-  const kind = node.getKindName()
-  if (kind !== 'JsxOpeningElement' && kind !== 'JsxSelfClosingElement') return false
+  const node = asJsxElementNode(item.box.getNode())
+  if (!node) return false
 
   // Resolve pattern name from JSX component name
   const fnName = item.name ? ctx.patterns.find(item.name) : patternName
@@ -54,7 +55,7 @@ export function inlineJsxPattern(ms: MagicString, item: ResultItem, patternName:
 
   const stylePropNames = collectPropNames(item.data)
 
-  return replaceJsxElement(ms, node, 'div', className, stylePropNames, kind === 'JsxSelfClosingElement')
+  return replaceJsxElement(ms, node, 'div', className, stylePropNames)
 }
 
 /**
@@ -72,9 +73,8 @@ export function inlineJsxRecipe(ms: MagicString, item: ResultItem, recipeName: s
   const config = ctx.recipes.getConfig(recipeName)
   if (!recipeNode || !config) return false
 
-  const node = item.box.getNode()
-  const kind = node.getKindName()
-  if (kind !== 'JsxOpeningElement' && kind !== 'JsxSelfClosingElement') return false
+  const node = asJsxElementNode(item.box.getNode())
+  if (!node) return false
 
   const allProps = item.data[0] ?? {}
   const [recipeProps, styleProps] = ctx.recipes.splitProps(recipeName, allProps)
@@ -117,13 +117,25 @@ export function inlineJsxRecipe(ms: MagicString, item: ResultItem, recipeName: s
   const className = classNames.join(' ')
   const stylePropNames = collectPropNames(item.data)
 
-  return replaceJsxElement(ms, node, 'div', className, stylePropNames, kind === 'JsxSelfClosingElement')
+  return replaceJsxElement(ms, node, 'div', className, stylePropNames)
 }
 
 // ── Shared helpers ──────────────────────────────────────────────────────
 
 /** Matches valid JSX tag names: identifiers (`Foo`) and member expressions (`Foo.Bar`) */
 const jsxTagNameRegex = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/
+
+function asJsxElementNode(node: Node): JsxElementNode | undefined {
+  const kind = node.getKindName()
+  if (kind === 'JsxOpeningElement' || kind === 'JsxSelfClosingElement') {
+    return node as JsxElementNode
+  }
+  return undefined
+}
+
+function isSelfClosing(node: JsxElementNode): node is JsxSelfClosingElement {
+  return node.getKindName() === 'JsxSelfClosingElement'
+}
 
 function collectPropNames(data: Array<Record<string, any>>): Set<string> {
   const names = new Set<string>()
@@ -145,38 +157,37 @@ function collectPropNames(data: Array<Record<string, any>>): Set<string> {
  */
 function replaceJsxElement(
   ms: MagicString,
-  node: any,
+  node: JsxElementNode,
   htmlTag: string,
   className: string,
   stylePropNames: Set<string>,
-  isSelfClosing: boolean,
 ): boolean {
   const attrs = node.getAttributes()
 
   // Bail on spread attributes — can't safely inline
-  if (attrs.some((a: any) => a.getKindName() === 'JsxSpreadAttribute')) return false
+  if (attrs.some((a) => a.getKindName() === 'JsxSpreadAttribute')) return false
 
   const keptAttrs: string[] = []
   let existingClassNameInit: string | null = null
 
   for (const attr of attrs) {
-    const name = attr.getNameNode().getText()
+    if (attr.getKindName() === 'JsxSpreadAttribute') return false
+
+    const jsxAttr = attr as JsxAttribute
+    const name = jsxAttr.getNameNode().getText()
 
     // Check for 'as' prop and use its value as the HTML tag
     if (name === 'as') {
-      const init = attr.getInitializer()
+      const init = jsxAttr.getInitializer()
       if (init) {
         const text = init.getText()
         if (text.startsWith('"') || text.startsWith("'")) {
-          // as="section" → use string literal
           htmlTag = text.slice(1, -1)
         } else if (text.startsWith('{')) {
-          // as={Foo} or as={Foo.Bar} — extract the expression
           const expr = text.slice(1, -1).trim()
           if (jsxTagNameRegex.test(expr)) {
             htmlTag = expr
           } else {
-            // Complex expression (ternary, index access, etc.) — bail out
             return false
           }
         }
@@ -191,12 +202,12 @@ function replaceJsxElement(
 
     // Capture existing className for merging
     if (name === 'className') {
-      const init = attr.getInitializer()
+      const init = jsxAttr.getInitializer()
       if (init) existingClassNameInit = init.getText()
       continue
     }
 
-    keptAttrs.push(attr.getText())
+    keptAttrs.push(jsxAttr.getText())
   }
 
   // Build the className attribute
@@ -205,15 +216,16 @@ function replaceJsxElement(
   // Assemble the new tag
   const allAttrs = classAttr ? [classAttr, ...keptAttrs] : keptAttrs
   const propsStr = allAttrs.length > 0 ? ' ' + allAttrs.join(' ') : ''
-  const closing = isSelfClosing ? ' />' : '>'
+  const selfClose = isSelfClosing(node)
+  const closing = selfClose ? ' />' : '>'
   const newTag = `<${htmlTag}${propsStr}${closing}`
 
   ms.overwrite(node.getStart(), node.getEnd(), newTag)
 
   // Replace closing tag if not self-closing
-  if (!isSelfClosing) {
-    const parent = node.getParent()
-    const closingElement = parent?.getClosingElement?.()
+  if (!selfClose) {
+    const jsxElement = node.getParent() as JsxElement
+    const closingElement = jsxElement.getClosingElement()
     if (closingElement) {
       ms.overwrite(closingElement.getStart(), closingElement.getEnd(), `</${htmlTag}>`)
     }
@@ -235,14 +247,12 @@ function buildClassNameAttr(className: string, existingInit: string | null): str
 
   // Merge with existing className
   if (existingInit.startsWith('"') || existingInit.startsWith("'")) {
-    // String literal: className="existing" → className="existing resolved"
     const quote = existingInit[0]
     const existing = existingInit.slice(1, -1)
     return `className=${quote}${existing} ${className}${quote}`
   }
 
   if (existingInit.startsWith('{')) {
-    // Expression: className={expr} → className={expr + " resolved"}
     const expr = existingInit.slice(1, -1).trim()
     return `className={${expr} + " ${className}"}`
   }

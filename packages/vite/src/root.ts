@@ -12,7 +12,6 @@ export class Root {
   /** Cache of ParserResults from build-mode parseFiles(), keyed by normalized file path */
   parseResults = new Map<string, ParserResult>()
 
-  private lastCss: string | undefined
   private options: PandaViteOptions
 
   constructor(options: PandaViteOptions) {
@@ -71,16 +70,7 @@ export class Root {
     this.ctx.appendBaselineCss(sheet)
     this.ctx.appendParserCss(sheet)
 
-    const css = this.ctx.getCss(sheet)
-    const changed = css !== this.lastCss
-    this.lastCss = css
-    return css
-  }
-
-  hasCssChanged(): boolean {
-    const prev = this.lastCss
-    const css = this.generateCss()
-    return css !== prev
+    return this.ctx.getCss(sheet)
   }
 
   isConfigDep(file: string): boolean {

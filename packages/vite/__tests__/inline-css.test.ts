@@ -60,6 +60,82 @@ describe('inline css()', () => {
     `)
   })
 
+  test('multi-arg with conflicting property — last wins', async () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const cls = css({ padding: "4" }, { padding: "8" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const cls = 'p_8'
+      "
+    `)
+  })
+
+  test('multi-arg with conflicting shorthand — last wins', async () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const cls = css({ fontSize: "sm", bgColor: "red.500" }, { backgroundColor: "red.600" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const cls = 'fs_sm bg-c_red.600'
+      "
+    `)
+  })
+
+  test('multi-arg without conflicts — all kept', async () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const cls = css({ display: "flex" }, { color: "red.300" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const cls = 'd_flex c_red.300'
+      "
+    `)
+  })
+
+  test('multi-arg with conditional conflict — last wins', async () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const cls = css({ color: { base: "blue", md: "red" } }, { color: "green" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const cls = 'c_green md:c_red'
+      "
+    `)
+  })
+
+  test('dynamic arg — bails out', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const cls = css({ padding: "4" }, someVar)
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeUndefined()
+  })
+
+  test('css.raw() — bails out', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const styles = css.raw({ display: "flex", color: "red.300" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeUndefined()
+  })
+
   test('returns undefined for file without panda imports', () => {
     const code = `
     const x = 1 + 2
@@ -121,6 +197,16 @@ describe('inline patterns', () => {
       "const cls = 'd_flex ai_center gap_4 flex-d_row bg_green.100 p_4'
       "
     `)
+  })
+
+  test('hstack.raw() — bails out', () => {
+    const code = `
+    import { hstack } from "styled-system/patterns"
+
+    const styles = hstack.raw({ gap: "4" })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeUndefined()
   })
 })
 

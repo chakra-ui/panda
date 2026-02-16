@@ -162,6 +162,21 @@ describe('inline cva()', () => {
     `)
   })
 
+  test('cva.raw() — bails out', () => {
+    const code = `
+    import { cva } from "styled-system/css"
+
+    const styles = cva.raw({
+      base: { display: "flex" },
+      variants: {
+        size: { sm: { padding: "2" } }
+      }
+    })
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeUndefined()
+  })
+
   test('cva splitVariantProps', () => {
     const code = `
     import { cva } from "styled-system/css"
