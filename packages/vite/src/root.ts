@@ -2,8 +2,9 @@ import { findConfig, getConfigDependencies } from '@pandacss/config'
 import { logger } from '@pandacss/logger'
 import { codegen, loadConfigAndCreateContext, PandaContext } from '@pandacss/node'
 import type { ParserResult } from '@pandacss/parser'
-import { normalize, resolve } from 'path'
+import { resolve } from 'path'
 import type { PandaViteOptions } from './index'
+import { normalizePath } from './utils'
 
 export class Root {
   ctx!: PandaContext
@@ -46,7 +47,7 @@ export class Root {
   }
 
   extractFile(id: string): { hasNew: boolean; result?: ParserResult } {
-    const file = normalize(id)
+    const file = normalizePath(id)
 
     const prevSize = this.ctx.encoder.atomic.size + this.ctx.encoder.recipes.size
 
@@ -64,17 +65,34 @@ export class Root {
     return { hasNew: newSize > prevSize, result: result ?? undefined }
   }
 
-  generateCss(): string {
-    const sheet = this.ctx.createSheet()
-    this.ctx.appendLayerParams(sheet)
-    this.ctx.appendBaselineCss(sheet)
-    this.ctx.appendParserCss(sheet)
+  generateCss(options?: { skipLightningCss?: boolean }): string {
+    // When Vite handles LightningCSS itself, temporarily disable Panda's LightningCSS pass
+    // so PostCSS handles nesting/dedup and Vite does the final LightningCSS transform.
+    //
+    // We toggle config.lightningcss BEFORE createSheet() because the baseSheetContext getter
+    // reads this.config.lightningcss at call time and copies it into the sheet's context.
+    // Safe because the entire generateCss→getCss→toCss chain is synchronous.
+    const shouldSkip = options?.skipLightningCss && this.ctx.config.lightningcss
+    if (shouldSkip) {
+      this.ctx.config.lightningcss = false
+    }
 
-    return this.ctx.getCss(sheet)
+    try {
+      const sheet = this.ctx.createSheet()
+      this.ctx.appendLayerParams(sheet)
+      this.ctx.appendBaselineCss(sheet)
+      this.ctx.appendParserCss(sheet)
+
+      return this.ctx.getCss(sheet)
+    } finally {
+      if (shouldSkip) {
+        this.ctx.config.lightningcss = true
+      }
+    }
   }
 
   isConfigDep(file: string): boolean {
-    const normalized = normalize(resolve(file))
+    const normalized = normalizePath(resolve(file))
     return this.configDeps.has(normalized)
   }
 
@@ -89,11 +107,11 @@ export class Root {
     this.configDeps.clear()
 
     for (const dep of deps) {
-      this.configDeps.add(normalize(dep))
+      this.configDeps.add(normalizePath(dep))
     }
 
     for (const dep of this.ctx.conf.dependencies ?? []) {
-      this.configDeps.add(normalize(resolve(cwd, dep)))
+      this.configDeps.add(normalizePath(resolve(cwd, dep)))
     }
   }
 }

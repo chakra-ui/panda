@@ -37,15 +37,34 @@ export interface PandaViteOptions {
   exclude?: RegExp | RegExp[]
 }
 
+export interface PluginState {
+  /** Root instances keyed by environment name (e.g. 'client', 'ssr') */
+  roots: Map<string, Root>
+  server: ViteDevServer | null
+  config: ResolvedConfig | null
+  /** True when Vite is configured with css.transformer: 'lightningcss' */
+  viteUsesLightningCss: boolean
+}
+
+/**
+ * Get the Root for a given environment name, with fallbacks:
+ * 1. exact envName match
+ * 2. 'client' key
+ * 3. first available Root
+ */
+export function getRoot(state: PluginState, envName?: string): Root | undefined {
+  if (envName && state.roots.has(envName)) return state.roots.get(envName)
+  if (state.roots.has('client')) return state.roots.get('client')
+  const first = state.roots.values().next()
+  return first.done ? undefined : first.value
+}
+
 export default function pandacss(options: PandaViteOptions = {}): Plugin[] {
-  const state: {
-    root: Root | null
-    server: ViteDevServer | null
-    config: ResolvedConfig | null
-  } = {
-    root: null,
+  const state: PluginState = {
+    roots: new Map(),
     server: null,
     config: null,
+    viteUsesLightningCss: false,
   }
 
   return [createScanPlugin(options, state), createServePlugin(options, state), createBuildPlugin(options, state)]
