@@ -138,6 +138,29 @@ describe('inline JSX style props', () => {
     expect(result).toBeUndefined()
   })
 
+  test('skips JSX elements with no style props (prevents replacing non-panda components)', async () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    const App = () => (
+      <Wrapper>
+        <p className={css({ color: "red.300" })}>hello</p>
+      </Wrapper>
+    )
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    // css() should be inlined, but <Wrapper> must NOT be replaced with <div>
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const App = () => (
+        <Wrapper>
+          <p className={'c_red.300'}>hello</p>
+        </Wrapper>
+      )
+      "
+    `)
+  })
+
   test('merges with existing className string', async () => {
     const code = `
     import { Box } from "styled-system/jsx"

@@ -16,6 +16,10 @@ type JsxElementNode = JsxOpeningElement | JsxSelfClosingElement
 export function inlineJsxStyleProps(ms: MagicString, item: ResultItem, ctx: PandaContext): boolean {
   if (!item.box || !item.data.length) return false
 
+  // Bail if there are no actual style properties to inline.
+  // The parser may produce [{}] for JSX elements it matches but that have no style props.
+  if (item.data.every((d) => Object.keys(d).length === 0)) return false
+
   // Bail if style prop values contain conditionals — can't flatten correctly
   if (boxHasConditionals(item.box)) return false
 
