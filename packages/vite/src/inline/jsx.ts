@@ -64,9 +64,13 @@ export function inlineJsxPattern(ms: MagicString, item: ResultItem, patternName:
   const className = resolvePatternToClassNames(ctx, fnName, item.data)
   if (!className) return false
 
+  // Use the pattern's configured jsxElement (e.g. linkOverlay → 'a'), default to 'div'
+  const patternConfig = ctx.patterns.getConfig(fnName)
+  const htmlTag = patternConfig?.jsxElement ?? 'div'
+
   const stylePropNames = collectPropNames(item.data)
 
-  return replaceJsxElement(ms, node, 'div', className, stylePropNames)
+  return replaceJsxElement(ms, node, htmlTag, className, stylePropNames)
 }
 
 /**
@@ -256,14 +260,13 @@ function buildClassNameAttr(className: string, existingInit: string | null): str
   }
 
   if (!existingInit) {
-    return `className="${className}"`
+    return quoteClassName(className)
   }
 
   // Merge with existing className
   if (existingInit.startsWith('"') || existingInit.startsWith("'")) {
-    const quote = existingInit[0]
     const existing = existingInit.slice(1, -1)
-    return `className=${quote}${existing} ${className}${quote}`
+    return quoteClassName(`${existing} ${className}`)
   }
 
   if (existingInit.startsWith('{')) {
@@ -271,5 +274,13 @@ function buildClassNameAttr(className: string, existingInit: string | null): str
     return `className={${expr} + " ${className}"}`
   }
 
-  return `className="${className}"`
+  return quoteClassName(className)
+}
+
+/** Quote a className value safely — use {''} when it contains double quotes */
+function quoteClassName(value: string): string {
+  if (value.includes('"')) {
+    return `className={'${value}'}`
+  }
+  return `className="${value}"`
 }

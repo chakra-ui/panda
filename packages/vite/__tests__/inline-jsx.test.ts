@@ -204,4 +204,23 @@ describe('inline JSX patterns', () => {
       "
     `)
   })
+
+  test('uses jsxElement from pattern config (linkOverlay → a)', async () => {
+    const code = `
+    import { LinkOverlay } from "styled-system/jsx"
+
+    const App = () => <LinkOverlay href="/about">About</LinkOverlay>
+    `
+    const result = inlineTransform(code)
+    expect(result).toBeDefined()
+    // linkOverlay has jsxElement: 'a', so it should render as <a>, not <div>
+    expect(await getTransformedCode(result!.code)).toMatchInlineSnapshot(`
+      "const App = () => (
+        <a className={'before:content_\"\" before:pos_absolute before:inset_0 before:z_0'} href="/about">
+          About
+        </a>
+      )
+      "
+    `)
+  })
 })
