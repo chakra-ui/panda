@@ -1,5 +1,5 @@
 import type { Context } from '@pandacss/core'
-import { capitalize, unionType } from '@pandacss/shared'
+import { capitalize, documentedUnionType, unionType } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import pluralize from 'pluralize'
 
@@ -49,7 +49,7 @@ export function generateTokenTypes(ctx: Context) {
     for (const [key, value] of tokens.view.categoryMap.entries()) {
       const typeName = capitalize(pluralize.singular(key))
       const categoryName = `${typeName}Token`
-      set.add(`export type ${categoryName} = ${unionType(value.keys())}`)
+      set.add(`export type ${categoryName} = ${documentedUnionType(value)}`)
       tokenSet.add(`${key}.$\{${categoryName}}`)
       result.add(`\t\t${key}: ${categoryName}`)
     }
@@ -68,6 +68,5 @@ export function generateTokenTypes(ctx: Context) {
       fallback: 'string',
     })}`,
   )
-
   return outdent.string(arr.join('\n\n'))
 }
