@@ -13,7 +13,6 @@ export function documentedUnionType<TokenMeta extends { description?: string }>(
   opts: { fallback?: string; stringify?: (value: string) => string } = {},
 ) {
   const { stringify = JSON.stringify } = opts
-
   const entries = Array.from(tokenMap.entries())
   if (!entries.length) return opts.fallback ?? 'never'
 
@@ -30,8 +29,10 @@ export function documentedUnionType<TokenMeta extends { description?: string }>(
     const quoted = stringify(key)
 
     if (token.description) {
-      return `  | /** ${token.description} */ ${quoted}`
+      const safeDescription = token.description.replace(/\*\//g, '*\\/').replace(/\r?\n/g, ' ').trim()
+      return `  | /** ${safeDescription} */ ${quoted}`
     }
+
     return `  | ${quoted}`
   })
 
