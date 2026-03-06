@@ -147,7 +147,7 @@ export class Patterns {
     switch (prop.type) {
       case 'enum':
         // TypeScript union style for enums: "a" | "b" | "c"
-        return unionType(prop.value)
+        return `ConditionalValue<${unionType(prop.value)}>`
 
       case 'token': {
         // Token reference with optional CSS property fallback
