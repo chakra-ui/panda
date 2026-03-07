@@ -3,44 +3,60 @@ title: Panda CLI
 description: An alternative way to use Panda is by running the Panda CLI tool.
 ---
 
-This guide shows you how to use Panda as an alternative approach by running the Panda CLI tool.
+This guide explains how to use Panda CSS through the Panda CLI instead of a framework-specific integration. The installed package scans your project files and generates the required CSS utilities automatically.
 
 <Steps>
 
-### Install Panda
+## Installation of Panda
+
+This section basically explain how to install panda in your project using the cli 
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
-  {/* <!-- prettier-ignore-start --> */}
-  <Tab>
+  <Tab value="pnpm">
     ```bash
+    # Install the Panda CSS development dependency
     pnpm install -D @pandacss/dev
+    
+    # Initialize Panda CSS
     pnpm panda init
     ```
   </Tab>
-  <Tab>
+
+  <Tab value="npm">
     ```bash
+    # Install the Panda CSS development dependency
     npm install -D @pandacss/dev
+    
+    # Initialize Panda using npx without installing it globally
     npx panda init
     ```
-  </Tab>
-  <Tab>
+  </Tab> 
+  
+  <Tab value="yarn">
     ```bash
     yarn add -D @pandacss/dev
+
+    # Run the Panda initialization command
     yarn panda init
     ```
   </Tab>
-  <Tab>
+  
+  <Tab value="bun">
     ```bash
     bun add -D @pandacss/dev
+    
+    # Initialize Panda in the project
     bun panda init
     ```
   </Tab>
-  {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-### Configure the content
 
-Add the paths to all of your JavaScript or TypeScript code where you intend to use panda.
+## Setting Up File Paths for Style Generation
+
+Add these paths to all of your JavaScript or TypeScript code where you intend to use panda. 
+This allows Panda to scan your code and generate the necessary CSS utilities.
+
 
 ```js {5}
 import { defineConfig } from '@pandacss/dev'
@@ -53,9 +69,15 @@ export default defineConfig({
 })
 ```
 
-### Update package.json scripts
+## Update package.json scripts
 
 Open your `package.json` file and update the `scripts` section as follows:
+
+Open your `package.json` file and update the `scripts` section.
+The `package.json` file is the central configuration for your project 
+it keeps track of dependencies, project metadata, and custom commands 
+that you can run from the terminal.
+
 
 ```diff {3}
 {
@@ -89,8 +111,7 @@ export function App() {
 Run the CLI tool to scan your JavaScript and TypeScript files for style properties and call expressions.
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
-  {/* <!-- prettier-ignore-start --> */}
-  <Tab>
+  <Tab value="pnpm">
     ```bash
     # Run it once
     pnpm panda
@@ -98,8 +119,8 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     # Run it in watch mode
     pnpm panda --watch
     ```
-
   </Tab>
+
   <Tab>
     ```bash
     # Run it once
@@ -108,8 +129,8 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     # Run it in watch mode
     npx panda --watch
     ```
-
   </Tab>
+
   <Tab>
     ```bash
     # Run it once
@@ -118,8 +139,8 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     # Run it in watch mode
     yarn panda --watch
     ```
-
   </Tab>
+
   <Tab>
     ```bash
     # Run it once
@@ -128,12 +149,11 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     # Run it in watch mode
     bun panda --watch
     ```
-
   </Tab>
-  {/* <!-- prettier-ignore-end --> */}
+
 </Tabs>
 
-### Start using Panda
+## Start using Panda
 
 Use the generated style utilities in your code and panda will extract them to the generated CSS file. Then run your
 build process.
