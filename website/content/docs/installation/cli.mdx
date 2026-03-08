@@ -7,14 +7,14 @@ This guide explains how to use Panda CSS through the Panda CLI instead of a fram
 
 <Steps>
 
-## Installation of Panda
+### Installation of Panda
 
-This section basically explain how to install panda in your project using the cli 
+This section explains how to install Panda using the CLI.
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
   <Tab value="pnpm">
     ```bash
-    # Install the Panda CSS development dependency
     pnpm install -D @pandacss/dev
     
     # Initialize Panda CSS
@@ -24,7 +24,6 @@ This section basically explain how to install panda in your project using the cl
 
   <Tab value="npm">
     ```bash
-    # Install the Panda CSS development dependency
     npm install -D @pandacss/dev
     
     # Initialize Panda using npx without installing it globally
@@ -49,10 +48,11 @@ This section basically explain how to install panda in your project using the cl
     bun panda init
     ```
   </Tab>
+  {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
 
-## Setting Up File Paths for Style Generation
+### Setting Up File Paths for Style Generation
 
 Add these paths to all of your JavaScript or TypeScript code where you intend to use panda. 
 This allows Panda to scan your code and generate the necessary CSS utilities.
@@ -69,7 +69,7 @@ export default defineConfig({
 })
 ```
 
-## Update package.json scripts
+### Update package.json scripts
 
 Open your `package.json` file and update the `scripts` section.
 The `package.json` file is the central configuration for your project 
@@ -108,6 +108,7 @@ export function App() {
 Run the CLI tool to scan your JavaScript and TypeScript files for style properties and call expressions.
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+ {/* <!-- prettier-ignore-start --> */}
   <Tab value="pnpm">
     ```bash
     # Run it once
@@ -118,7 +119,7 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     ```
   </Tab>
 
-  <Tab>
+  <Tab value="npm">
     ```bash
     # Run it once
     npx panda
@@ -128,7 +129,7 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     ```
   </Tab>
 
-  <Tab>
+  <Tab value="yarn">
     ```bash
     # Run it once
     yarn panda
@@ -138,7 +139,7 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     ```
   </Tab>
 
-  <Tab>
+  <Tab value="bun">
     ```bash
     # Run it once
     bun panda
@@ -147,10 +148,10 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
     bun panda --watch
     ```
   </Tab>
-
+  {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-## Start using Panda
+### Start using Panda
 
 Use the generated style utilities in your code and panda will extract them to the generated CSS file. Then run your
 build process.
