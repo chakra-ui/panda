@@ -204,6 +204,71 @@ describe('Conditions', () => {
     expect(compareAtRuleOrMixed(m, n)).toBe(0)
   })
 
+  test('pseudo-elements sort after pseudo-classes and mixed conditions', () => {
+    // Simulates a real-world case: _before condition combined with a mixed hover condition
+    // (e.g. hover: ['@media (hover: hover)', '&:is(:hover, [data-hover]):not(:active, :disabled)'])
+    // The pseudo-element (::before) must come LAST in the selector chain per CSS spec.
+    const css = new Conditions({
+      conditions: {
+        hover: ['@media (hover: hover) and (pointer: fine)', '&:is(:hover, [data-hover]):not(:active, :disabled)'],
+        before: '&::before',
+        after: '&::after',
+        active: ['&:is(:active, [data-active]):not(:disabled)'],
+        focus: '&:is(:focus, [data-focus])',
+      },
+    })
+
+    // When _before appears first in the conditions array (as it does when nested inside _before in style objects),
+    // it should still be sorted to appear AFTER the hover selector parts.
+    // Without this fix, ::before would appear before :hover in the CSS selector, producing invalid CSS.
+    const sorted = css.sort(['_before', '_hover'])
+    expect(sorted.map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "@media (hover: hover) and (pointer: fine)",
+        "&:is(:hover, [data-hover]):not(:active, :disabled)",
+        "&::before",
+      ]
+    `)
+
+    // Same test with ::after
+    const sortedAfter = css.sort(['_after', '_hover'])
+    expect(sortedAfter.map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "@media (hover: hover) and (pointer: fine)",
+        "&:is(:hover, [data-hover]):not(:active, :disabled)",
+        "&::after",
+      ]
+    `)
+
+    // Pseudo-element with a non-mixed self-nesting condition
+    const sortedFocus = css.sort(['_before', '_focus'])
+    expect(sortedFocus.map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "&:is(:focus, [data-focus])",
+        "&::before",
+      ]
+    `)
+
+    // Pseudo-element with an array-wrapped self-nesting condition (active is ['&:is(...)'])
+    const sortedActive = css.sort(['_before', '_active'])
+    expect(sortedActive.map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "&:is(:active, [data-active]):not(:disabled)",
+        "&::before",
+      ]
+    `)
+
+    // When pseudo-element appears last naturally, order is preserved
+    const sortedNatural = css.sort(['_hover', '_before'])
+    expect(sortedNatural.map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "@media (hover: hover) and (pointer: fine)",
+        "&:is(:hover, [data-hover]):not(:active, :disabled)",
+        "&::before",
+      ]
+    `)
+  })
+
   test('theme conditions', () => {
     const css = new Conditions({
       themes: {
