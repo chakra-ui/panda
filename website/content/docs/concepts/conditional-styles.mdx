@@ -166,6 +166,23 @@ You can also style even and odd elements using the `_even` and `_odd` modifier:
 </table>
 ```
 
+### Nth child (dynamic)
+
+For a specific `:nth-child()` value, use the `_nth/<value>` condition:
+
+```jsx
+<ul>
+  {items.map((item, i) => (
+    <li key={i} className={css({ '_nth/3': { color: 'red.500' } })}>
+      {item}
+    </li>
+  ))}
+</ul>
+```
+
+Only the 3rd child will get the red color. You can use any valid `:nth-child()` value, e.g. `_nth/2n`, `_nth/2n+1`,
+`_nth/5`.
+
 ## Pseudo Elements
 
 ### Before and After
@@ -329,8 +346,31 @@ parent element, and use any of the `_group*` modifiers on the child element.
 </div>
 ```
 
-This modifer for every pseudo class modifiers like `_groupHover`, `_groupActive`, `_groupFocus`, and `_groupDisabled`,
-etc.
+This works for every pseudo class modifier like `_groupHover`, `_groupActive`, `_groupFocus`, and `_groupDisabled`, etc.
+
+### Group with modifier (named groups)
+
+When you have multiple groups in the same tree, you can give each group a **modifier** so only the matching child is
+styled. Use the class `group/<name>` on the parent and the condition `_groupHover/<name>` (and other `_group*` variants)
+on the child.
+
+```jsx
+<div className="group/card">
+  <p className={css({ '_groupHover/card': { bg: 'red.500' } })}>Hover the card</p>
+</div>
+
+<div className="group/item">
+  <p className={css({ '_groupHover/item': { bg: 'blue.500' } })}>Hover the item</p>
+</div>
+```
+
+The modifier name after the slash (e.g. `item`) becomes part of the selector (`.group\/item:is(:hover, ...) &`), so only
+the element with `className="group/item"` triggers the style. Use the same name in the condition key: `_groupHover/item`
+for `group/item`, `_groupHover/card` for `group/card`.
+
+> **Note:** In object keys you must use a string when the key contains a slash: `'_groupHover/item'`. In the `css` prop,
+> use the same syntax. JSX does not allow `/` in prop names, so use the `css` prop or a quoted key in a style object for
+> dynamic conditions with modifiers.
 
 ## Sibling Selectors
 
@@ -535,7 +575,7 @@ function Demo() {
 Here's a list of all the condition shortcuts you can use in Panda:
 
 | Condition name         | Selector                                                                                         |
-| ---------------------- | -------------------------------------------------------------------------------------------------|
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
 | \_hover                | `&:is(:hover, [data-hover])`                                                                     |
 | \_focus                | `&:is(:focus, [data-focus])`                                                                     |
 | \_focusWithin          | `&:focus-within`                                                                                 |
@@ -567,6 +607,7 @@ Here's a list of all the condition shortcuts you can use in Panda:
 | \_only                 | `&:only-child`                                                                                   |
 | \_even                 | `&:nth-child(even)`                                                                              |
 | \_odd                  | `&:nth-child(odd)`                                                                               |
+| \_nth/\<value\>        | `&:nth-child(<value>)`                                                                           |
 | \_firstOfType          | `&:first-of-type`                                                                                |
 | \_lastOfType           | `&:last-of-type`                                                                                 |
 | \_onlyOfType           | `&:only-of-type`                                                                                 |
@@ -646,5 +687,7 @@ Here's a list of all the condition shortcuts you can use in Panda:
 
 ## Custom conditions
 
-Panda lets you create your own conditions, so you're not limited to the ones in the default preset. Learn more about
-customizing conditions [here](/docs/customization/conditions).
+Panda lets you create your own conditions, so you're not limited to the ones in the default preset. You can define
+static selectors or **dynamic conditions** (functions that take an argument). Learn more about
+[customizing conditions](/docs/customization/conditions), including
+[dynamic conditions](/docs/customization/conditions#dynamic-conditions).
