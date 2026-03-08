@@ -1,5 +1,14 @@
 # @pandacss/astro-plugin-studio
 
+## 1.9.0
+
+### Patch Changes
+
+- Updated dependencies [3ca1f24]
+- Updated dependencies [7d66c0b]
+  - @pandacss/core@1.9.0
+  - @pandacss/node@1.9.0
+
 ## 1.8.2
 
 ### Patch Changes
