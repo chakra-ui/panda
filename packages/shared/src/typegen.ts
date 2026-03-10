@@ -7,3 +7,34 @@ export function unionType(
   if (fallback != null && !arr.length) return fallback
   return arr.map((v) => stringify(v)).join(' | ')
 }
+
+export function documentedUnionType<TokenMeta extends { description?: string }>(
+  tokenMap: Map<string, TokenMeta>,
+  opts: { fallback?: string; stringify?: (value: string) => string } = {},
+) {
+  const { stringify = JSON.stringify } = opts
+  const entries = Array.from(tokenMap.entries())
+  if (!entries.length) return opts.fallback ?? 'never'
+
+  const hasAnyDescription = entries.some(([, token]) => token.description)
+
+  if (!hasAnyDescription) {
+    return unionType(
+      entries.map(([key]) => key),
+      opts,
+    )
+  }
+
+  const members = entries.map(([key, token]) => {
+    const quoted = stringify(key)
+
+    if (token.description) {
+      const safeDescription = token.description.replace(/\*\//g, '*\\/').replace(/\r?\n/g, ' ').trim()
+      return `  | /** ${safeDescription} */ ${quoted}`
+    }
+
+    return `  | ${quoted}`
+  })
+
+  return '\n' + members.join('\n')
+}

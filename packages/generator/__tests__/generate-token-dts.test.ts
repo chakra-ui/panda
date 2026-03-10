@@ -170,3 +170,80 @@ test('[dts] negative tokens', () => {
     export type TokenCategory = "aspectRatios" | "zIndex" | "opacity" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "cursor" | "shadows" | "spacing" | "radii" | "borders" | "borderWidths" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets""
   `)
 })
+
+test('[dts] tokens with descriptions produce documented union types', () => {
+  const tokens = generateTokenTypes(
+    createContext({
+      eject: true,
+      theme: {
+        semanticTokens: {
+          sizes: {
+            container: {
+              page: {
+                value: '{sizes.layout.container.lg}',
+                description: 'Contains **/ comment escapes',
+              },
+            },
+            content: {
+              reading: {
+                value: '{sizes.typography.prose.max}',
+              },
+            },
+            nav: {
+              sidebar: {
+                value: '{sizes.layout.sidebar}',
+                description: 'Width of the primary application sidebar',
+              },
+            },
+          },
+        },
+        tokens: {
+          sizes: {
+            layout: {
+              sidebar: {
+                value: '280px',
+                description: 'Base sidebar width(280px)',
+              },
+              container: {
+                sm: {
+                  value: '640px',
+                },
+                lg: {
+                  value: '1280px',
+                  description: 'Large layout container width(1280px)',
+                },
+              },
+            },
+            typography: {
+              prose: {
+                max: {
+                  value: '65ch',
+                  description: 'Optimal reading width (~65 characters)',
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+  )
+
+  expect(tokens).toMatchInlineSnapshot(`
+"export type Token = \`sizes.\${SizeToken}\`
+
+export type SizeToken = 
+  | /** Base sidebar width(280px) */ "layout.sidebar"
+  | "layout.container.sm"
+  | /** Large layout container width(1280px) */ "layout.container.lg"
+  | /** Optimal reading width (~65 characters) */ "typography.prose.max"
+  | /** Contains **\\/ comment escapes */ "container.page"
+  | "content.reading"
+  | /** Width of the primary application sidebar */ "nav.sidebar"
+
+export type Tokens = {
+		sizes: SizeToken
+} & { [token: string]: never }
+
+export type TokenCategory = "aspectRatios" | "zIndex" | "opacity" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "cursor" | "shadows" | "spacing" | "radii" | "borders" | "borderWidths" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets""
+`)
+})
