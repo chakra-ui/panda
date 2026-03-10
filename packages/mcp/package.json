@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/mcp",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "MCP server for Panda CSS AI assistants",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
