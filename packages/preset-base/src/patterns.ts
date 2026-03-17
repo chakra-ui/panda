@@ -108,12 +108,16 @@ const spacer = definePattern({
   properties: {
     size: { type: 'token', value: 'spacing' },
   },
-  transform(props, { map }) {
+  transform(props, { map, isCssUnit, isCssVar }) {
     const { size, ...rest } = props
     return {
       alignSelf: 'stretch',
       justifySelf: 'stretch',
-      flex: map(size, (v) => (v == null ? '1' : `0 0 ${v}`)),
+      flex: map(size, (v) => {
+        if (v == null) return '1'
+        const val = isCssUnit(v) || isCssVar(v) ? v : `token(spacing.${v}, ${v})`
+        return `0 0 ${val}`
+      }),
       ...rest,
     }
   },
