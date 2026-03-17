@@ -292,4 +292,36 @@ describe('Conditions', () => {
       }
     `)
   })
+
+  test('theme conditions sort correctly with pseudo-elements', () => {
+    const css = new Conditions({
+      conditions: {
+        before: '&::before',
+        hover: ['@media (hover: hover) and (pointer: fine)', '&:is(:hover, [data-hover])'],
+      },
+      themes: {
+        primary: { tokens: { colors: { brand: { value: 'blue' } } } },
+      },
+    })
+
+    // Theme (parent-nesting) + pseudo-element: theme first, pseudo-element last
+    const sorted = css.sort(['_before', '_themePrimary'])
+    expect(sorted.map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "[data-panda-theme=primary] &",
+        "&::before",
+      ]
+    `)
+
+    // Theme + mixed hover + pseudo-element: at-rule first, selectors in source order, pseudo-element last
+    const sortedAll = css.sort(['_before', '_hover', '_themePrimary'])
+    expect(sortedAll.map((c) => c.raw)).toMatchInlineSnapshot(`
+      [
+        "@media (hover: hover) and (pointer: fine)",
+        "&:is(:hover, [data-hover])",
+        "[data-panda-theme=primary] &",
+        "&::before",
+      ]
+    `)
+  })
 })

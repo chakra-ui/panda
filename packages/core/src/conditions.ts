@@ -16,10 +16,12 @@ import { compareAtRuleOrMixed } from './sort-style-rules'
 const isAtRule = (cond: ConditionDetails): boolean => cond.type === 'at-rule'
 
 /**
- * Checks if a condition is a pseudo-element selector (::before, ::after, etc.)
+ * Matches pseudo-element selectors (::before, ::after, ::placeholder, etc.)
  * Pseudo-elements must appear at the end of CSS selector chains per the CSS spec.
  */
-const isPseudoElement = (cond: ConditionDetails): boolean => typeof cond.raw === 'string' && cond.raw.includes('::')
+const pseudoElementRegex = /::[\w-]/
+const isPseudoElement = (cond: ConditionDetails): boolean =>
+  typeof cond.raw === 'string' && pseudoElementRegex.test(cond.raw)
 
 /**
  * Flattens a condition, extracting parts from mixed conditions.
@@ -201,14 +203,10 @@ export class Conditions {
       if (aIsAtRule && !bIsAtRule) return -1
       if (!aIsAtRule && bIsAtRule) return 1
 
-      // Among non-at-rules: pseudo-elements (::before, ::after, etc.) must come last
-      // CSS requires pseudo-elements at the end of selector chains
-      if (!aIsAtRule && !bIsAtRule) {
-        const aIsPseudoElement = isPseudoElement(a.cond)
-        const bIsPseudoElement = isPseudoElement(b.cond)
-        if (aIsPseudoElement && !bIsPseudoElement) return 1
-        if (!aIsPseudoElement && bIsPseudoElement) return -1
-      }
+      // Pseudo-elements (::before, ::after, etc.) must come last per CSS spec
+      const aIsPseudo = isPseudoElement(a.cond)
+      const bIsPseudo = isPseudoElement(b.cond)
+      if (aIsPseudo !== bIsPseudo) return aIsPseudo ? 1 : -1
 
       // Within same category, preserve original source order
       return a.originalIndex - b.originalIndex
