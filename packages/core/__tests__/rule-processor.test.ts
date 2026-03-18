@@ -2150,3 +2150,117 @@ describe('js to css', () => {
     `)
   })
 })
+
+describe('multi-block conditions (object syntax with @slot)', () => {
+  test('basic multi-block condition with two at-rule blocks', () => {
+    const result = css(
+      {
+        _hoverActive: {
+          background: 'red',
+        },
+      },
+      {
+        conditions: {
+          hoverActive: {
+            '@media (hover: hover)': {
+              '&:is(:hover, [data-hover])': '@slot',
+            },
+            '@media (hover: none)': {
+              '&:is(:active, [data-active])': '@slot',
+            },
+          },
+        },
+      },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) {
+          .hoverActive\\:bg_red:is(:hover, [data-hover]) {
+            background: red;
+      }
+      }
+
+        @media (hover: none) {
+          .hoverActive\\:bg_red:is(:active, [data-active]) {
+            background: red;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('single-block object condition (backward compat)', () => {
+    const result = css(
+      {
+        _anyHover: {
+          color: 'blue',
+        },
+      },
+      {
+        conditions: {
+          anyHover: {
+            '@media (hover: hover)': {
+              '&:hover': '@slot',
+            },
+          },
+        },
+      },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) {
+          .anyHover\\:c_blue:hover {
+            color: blue;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('multi-block condition with multiple properties', () => {
+    const result = css(
+      {
+        _hoverActive: {
+          background: 'red',
+          color: 'white',
+        },
+      },
+      {
+        conditions: {
+          hoverActive: {
+            '@media (hover: hover)': {
+              '&:is(:hover, [data-hover])': '@slot',
+            },
+            '@media (hover: none)': {
+              '&:is(:active, [data-active])': '@slot',
+            },
+          },
+        },
+      },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) {
+          .hoverActive\\:bg_red:is(:hover, [data-hover]) {
+            background: red;
+      }
+          .hoverActive\\:c_white:is(:hover, [data-hover]) {
+            color: var(--colors-white);
+      }
+      }
+
+        @media (hover: none) {
+          .hoverActive\\:bg_red:is(:active, [data-active]) {
+            background: red;
+      }
+          .hoverActive\\:c_white:is(:active, [data-active]) {
+            color: var(--colors-white);
+      }
+      }
+      }"
+    `)
+  })
+})

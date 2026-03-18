@@ -13,6 +13,7 @@ import type {
   Dict,
   GroupedResult,
   GroupedStyleResultDetails,
+  MultiBlockCondition,
   RecipeBaseResult,
   StyleEntry,
   StyleResultObject,
@@ -109,6 +110,26 @@ export class StyleDecoder {
       : this.context.utility.tokens.resolveReference(condition.raw)
   }
 
+  /**
+   * Expands multi-block conditions into separate sets of conditions.
+   * Each block becomes an independent condition set that produces its own CSS block.
+   * Returns null if no multi-block condition is found.
+   */
+  private expandMultiBlock(conditions: ConditionDetails[]): ConditionDetails[][] | null {
+    const multiBlockIdx = conditions.findIndex((c) => c.type === 'multi-block')
+    if (multiBlockIdx < 0) return null
+
+    const multiBlock = conditions[multiBlockIdx] as MultiBlockCondition
+    const otherConditions = conditions.filter((_, i) => i !== multiBlockIdx)
+
+    return multiBlock.value.map((block) => {
+      const blockParts = (block.value as ConditionDetails[]).filter(Boolean)
+      const combined = [...blockParts, ...otherConditions]
+      // Sort: at-rules first, pseudo-elements last, preserve relative order
+      return sortConditionDetails(combined)
+    })
+  }
+
   private getAtomic = (hash: string) => {
     const cached = this.atomic_cache.get(hash)
     if (cached) return cached
@@ -128,8 +149,18 @@ export class StyleDecoder {
 
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
-      const path = basePath.concat(conditions.flatMap((c) => this.resolveCondition(c)))
-      deepSet(obj, path, styles)
+
+      // Expand multi-block conditions into separate CSS blocks
+      const expanded = this.expandMultiBlock(conditions)
+      if (expanded) {
+        for (const blockConditions of expanded) {
+          const path = basePath.concat(blockConditions.flatMap((c) => this.resolveCondition(c)))
+          deepSet(obj, path, styles)
+        }
+      } else {
+        const path = basePath.concat(conditions.flatMap((c) => this.resolveCondition(c)))
+        deepSet(obj, path, styles)
+      }
     } else {
       deepSet(obj, basePath, styles)
     }
@@ -190,8 +221,17 @@ export class StyleDecoder {
     const sorted = sortStyleRules(details)
     sorted.forEach((value) => {
       if (value.conditions) {
-        const path = basePath.concat(value.conditions.flatMap((c) => this.resolveCondition(c)))
-        obj = deepSet(obj, path, value.result)
+        // Expand multi-block conditions into separate CSS blocks
+        const expanded = this.expandMultiBlock(value.conditions)
+        if (expanded) {
+          for (const blockConditions of expanded) {
+            const path = basePath.concat(blockConditions.flatMap((c) => this.resolveCondition(c)))
+            obj = deepSet(obj, path, value.result)
+          }
+        } else {
+          const path = basePath.concat(value.conditions.flatMap((c) => this.resolveCondition(c)))
+          obj = deepSet(obj, path, value.result)
+        }
       } else {
         obj = deepSet(obj, basePath, value.result)
       }
@@ -385,4 +425,26 @@ const castBoolean = (value: string) => {
   if (value === 'true') return true
   if (value === 'false') return false
   return value
+}
+
+const pseudoElementRegex = /::[\w-]/
+
+/**
+ * Sort condition details: at-rules first, pseudo-elements last, preserve relative order.
+ */
+const sortConditionDetails = (conditions: ConditionDetails[]): ConditionDetails[] => {
+  const indexed = conditions.map((cond, i) => ({ cond, i }))
+  indexed.sort((a, b) => {
+    const aIsAtRule = a.cond.type === 'at-rule'
+    const bIsAtRule = b.cond.type === 'at-rule'
+    if (aIsAtRule && !bIsAtRule) return -1
+    if (!aIsAtRule && bIsAtRule) return 1
+
+    const aIsPseudo = typeof a.cond.raw === 'string' && pseudoElementRegex.test(a.cond.raw)
+    const bIsPseudo = typeof b.cond.raw === 'string' && pseudoElementRegex.test(b.cond.raw)
+    if (aIsPseudo !== bIsPseudo) return aIsPseudo ? 1 : -1
+
+    return a.i - b.i
+  })
+  return indexed.map((item) => item.cond)
 }

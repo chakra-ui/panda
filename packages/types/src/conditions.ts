@@ -1,8 +1,8 @@
 import type { AnySelector, Selectors } from './selectors'
 
-export type ConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting' | 'combinator-nesting' | 'mixed'
+export type ConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting' | 'combinator-nesting' | 'mixed' | 'multi-block'
 
-export type ConditionDetails = AtRuleCondition | SelectorCondition | MixedCondition
+export type ConditionDetails = AtRuleCondition | SelectorCondition | MixedCondition | MultiBlockCondition
 
 export interface AtRuleCondition {
   type: 'at-rule'
@@ -24,11 +24,21 @@ export interface MixedCondition {
   raw: string[]
 }
 
+export interface MultiBlockCondition {
+  type: 'multi-block'
+  value: MixedCondition[]
+  raw: Record<string, any>
+}
+
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE
  * -----------------------------------------------------------------------------*/
 
-export type ConditionQuery = string | string[]
+export type ConditionObjectQuery = {
+  [key: string]: ConditionObjectQuery | '@slot'
+}
+
+export type ConditionQuery = string | string[] | ConditionObjectQuery
 
 export interface Conditions {
   [condition: string]: ConditionQuery

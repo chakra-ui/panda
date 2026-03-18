@@ -173,7 +173,7 @@ export class Conditions {
     return Object.keys(this.values).length === 0
   }
 
-  get = (key: string): undefined | string | string[] => {
+  get = (key: string): undefined | string | string[] | Record<string, any> => {
     const details = this.values[key]
     return details?.raw
   }
