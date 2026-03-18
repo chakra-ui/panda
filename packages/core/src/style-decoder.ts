@@ -123,7 +123,7 @@ export class StyleDecoder {
     const otherConditions = conditions.filter((_, i) => i !== multiBlockIdx)
 
     return multiBlock.value.map((block) => {
-      const blockParts = (block.value as ConditionDetails[]).filter(Boolean)
+      const blockParts = block.value.filter(Boolean)
       const combined = [...blockParts, ...otherConditions]
       // Sort: at-rules first, pseudo-elements last, preserve relative order
       return sortConditionDetails(combined)
@@ -430,7 +430,12 @@ const castBoolean = (value: string) => {
 const pseudoElementRegex = /::[\w-]/
 
 /**
- * Sort condition details: at-rules first, pseudo-elements last, preserve relative order.
+ * Sort flattened condition details (at-rules and selectors only):
+ * at-rules first, pseudo-elements last, preserve relative order.
+ *
+ * Note: This only operates on individual at-rule and selector conditions
+ * (not mixed or multi-block), so checking `raw` as string is sufficient
+ * for pseudo-element detection.
  */
 const sortConditionDetails = (conditions: ConditionDetails[]): ConditionDetails[] => {
   const indexed = conditions.map((cond, i) => ({ cond, i }))
