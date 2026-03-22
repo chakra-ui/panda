@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.9.1](#1.9.1) - 2026-03-22
+
+### Fixed
+
+- Fix pseudo-element conditions (::before, ::after) being placed before pseudo-class selectors in generated CSS
+
+When a pseudo-element condition like `_before` was combined with a mixed condition like `_hover` (defined as an array
+with a media query + selector), the pseudo-element would incorrectly appear before the pseudo-class in the generated CSS
+selector.
+
+**Before (broken):** `.class::before:is(:hover, ...)` - invalid CSS **After (fixed):**
+`.class:is(:hover, ...)::before` - valid CSS
+
+The fix ensures pseudo-element selectors are always sorted last in the condition chain, matching the CSS specification
+requirement that pseudo-elements must appear at the end of a selector.
+
+- **Fix** duplicate token references with special characters resolving incorrectly in composite values
+
+When the same token reference containing special characters (e.g. `{sizes.0.5}`) appeared more than once in a composite
+value, only the first occurrence was resolved correctly. The second occurrence produced a malformed CSS variable name.
+
+This was caused by `String.replace()` only replacing the first match. Changed to `String.replaceAll()` in
+`Token.expandReferences()` and `expandReferences()` utility.
+
+**Before (broken):** `--shadows-control-accent: 0 var(--sizes-0\.5) var(--sizes-0-5) rgba(92, 225, 113, 0.25)`
+
+**After (fixed):** `--shadows-control-accent: 0 var(--sizes-0\.5) var(--sizes-0\.5) rgba(92, 225, 113, 0.25)`
+
+- Fix `Spacer` pattern not resolving spacing tokens for the `size` prop.
+
+Previously, `<Spacer size="5" />` would generate invalid CSS (`flex: 0 0 5`) instead of resolving the spacing token. Now
+it correctly outputs `flex: 0 0 var(--spacing-5, 5)`.
+
+**Before (broken):** `flex: 0 0 5` — raw value, not a valid CSS length **After (fixed):**
+`flex: 0 0 var(--spacing-5, 5)` — resolved spacing token
+
 ## [1.9.0](#1.9.0) - 2026-03-07
 
 ### Fixed
