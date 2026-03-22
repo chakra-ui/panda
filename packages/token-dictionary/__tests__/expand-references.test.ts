@@ -270,7 +270,7 @@ test('expand references in value - duplicate curly ref with special characters',
 
   dictionary.init()
 
-  expect(
-    dictionary.expandReferenceInValue('0 {sizes.0.5} {sizes.0.5} rgba(92, 225, 113, 0.25)'),
-  ).toMatchInlineSnapshot(`"0 var(--sizes-0\\.5) var(--sizes-0\\.5) rgba(92, 225, 113, 0.25)"`)
+  expect(dictionary.expandReferenceInValue('0 {sizes.0.5} {sizes.0.5} rgba(92, 225, 113, 0.25)')).toMatchInlineSnapshot(
+    `"0 var(--sizes-0\\.5) var(--sizes-0\\.5) rgba(92, 225, 113, 0.25)"`,
+  )
 })
