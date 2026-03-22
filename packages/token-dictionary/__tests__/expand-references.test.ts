@@ -258,3 +258,19 @@ test('expand references in value - token fn with deeply nested ref fallback', ()
     `"var(--colors-red-300, var(--colors-blue-500, var(--colors-primary, var(--colors-blue-700, var(--colors-red-500)))))"`,
   )
 })
+
+test('expand references in value - duplicate curly ref with special characters', () => {
+  const dictionary = new TokenDictionary({
+    tokens: {
+      sizes: {
+        0.5: { value: '0.125rem' },
+      },
+    },
+  })
+
+  dictionary.init()
+
+  expect(
+    dictionary.expandReferenceInValue('0 {sizes.0.5} {sizes.0.5} rgba(92, 225, 113, 0.25)'),
+  ).toMatchInlineSnapshot(`"0 var(--sizes-0\\.5) var(--sizes-0\\.5) rgba(92, 225, 113, 0.25)"`)
+})
