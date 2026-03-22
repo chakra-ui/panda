@@ -17,13 +17,11 @@ test('semantic tokens / duplicate token references with special characters', () 
     },
   })
 
-  dictionary.registerTokens()
-  dictionary.build()
+  dictionary.init()
 
-  const shadowToken = dictionary.allTokens.find((t) => t.name === 'shadows.controlAccent')
-  expect(shadowToken).toBeDefined()
-  // Both occurrences of {sizes.0.5} should be resolved to the same value
-  expect(shadowToken!.value).toMatchInlineSnapshot(`"0 0.125rem 0.125rem rgba(92, 225, 113, 0.25)"`)
+  expect(dictionary.view.vars.get('base')?.get('--shadows-control-accent')).toMatchInlineSnapshot(
+    `"0 var(--sizes-0\\.5) var(--sizes-0\\.5) rgba(92, 225, 113, 0.25)"`,
+  )
 })
 
 test('semantic tokens / deeply nested', () => {

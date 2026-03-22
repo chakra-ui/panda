@@ -202,7 +202,7 @@ export const addConditionalCssVariables: TokenTransformer = {
     if (!modifier) {
       refs.forEach((ref) => {
         const variable = dictionary.formatCssVar(ref.split('.'), { prefix, hash }).ref
-        token.value = token.value.replace(`{${ref}}`, variable)
+        token.value = token.value.replaceAll(`{${ref}}`, variable)
       })
     } else {
       const tokenFn = (name: string) => {
