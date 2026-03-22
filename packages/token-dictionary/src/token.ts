@@ -130,7 +130,7 @@ export class Token {
         return valueStr
       }
       const value = referenceToken.expandReferences()
-      return valueStr.replace(`{${key}}`, value)
+      return valueStr.replaceAll(`{${key}}`, value)
     }, this.value)
 
     delete this.extensions.references
