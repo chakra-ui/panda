@@ -905,15 +905,15 @@ describe('static-css', () => {
           --thickness: breakpoint-2xl;
       }
 
-        .flex_0_0_sm {
+        .flex_0_0_token\\(spacing\\.sm\\,_sm\\) {
           flex: 0 0 sm;
       }
 
-        .flex_0_0_md {
+        .flex_0_0_token\\(spacing\\.md\\,_md\\) {
           flex: 0 0 md;
       }
 
-        .flex_0_0_lg {
+        .flex_0_0_token\\(spacing\\.lg\\,_lg\\) {
           flex: 0 0 lg;
       }
 
@@ -1331,17 +1331,17 @@ describe('static-css', () => {
             },
             {
               "alignSelf": "stretch",
-              "flex": "0 0 sm",
+              "flex": "0 0 token(spacing.sm, sm)",
               "justifySelf": "stretch",
             },
             {
               "alignSelf": "stretch",
-              "flex": "0 0 md",
+              "flex": "0 0 token(spacing.md, md)",
               "justifySelf": "stretch",
             },
             {
               "alignSelf": "stretch",
-              "flex": "0 0 lg",
+              "flex": "0 0 token(spacing.lg, lg)",
               "justifySelf": "stretch",
             },
             {

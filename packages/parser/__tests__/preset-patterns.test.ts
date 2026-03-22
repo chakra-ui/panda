@@ -477,6 +477,66 @@ describe('preset patterns', () => {
     `)
   })
 
+  test('spacer - with token size', () => {
+    const code = `
+      import { spacer } from "styled-system/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={spacer({ size: '4' })}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const result = parseAndExtract(code)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .flex_0_0_token\\(spacing\\.4\\,_4\\) {
+          flex: 0 0 var(--spacing-4, 4);
+      }
+
+        .as_stretch {
+          align-self: stretch;
+      }
+
+        .justify-self_stretch {
+          justify-self: stretch;
+      }
+      }"
+    `)
+  })
+
+  test('spacer - with css unit size', () => {
+    const code = `
+      import { spacer } from "styled-system/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={spacer({ size: '40px' })}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const result = parseAndExtract(code)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .flex_0_0_40px {
+          flex: 0 0 40px;
+      }
+
+        .as_stretch {
+          align-self: stretch;
+      }
+
+        .justify-self_stretch {
+          justify-self: stretch;
+      }
+      }"
+    `)
+  })
+
   test('linkOverlay', () => {
     const code = `
       import { css } from "styled-system/css"
@@ -1966,16 +2026,16 @@ describe('staticCss', () => {
 
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .flex_0_0_2 {
-          flex: 0 0 2;
+        .flex_0_0_token\\(spacing\\.2\\,_2\\) {
+          flex: 0 0 var(--spacing-2, 2);
       }
 
-        .flex_0_0_4 {
-          flex: 0 0 4;
+        .flex_0_0_token\\(spacing\\.4\\,_4\\) {
+          flex: 0 0 var(--spacing-4, 4);
       }
 
-        .flex_0_0_6 {
-          flex: 0 0 6;
+        .flex_0_0_token\\(spacing\\.6\\,_6\\) {
+          flex: 0 0 var(--spacing-6, 6);
       }
 
         .as_stretch {

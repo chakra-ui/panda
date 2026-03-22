@@ -6,7 +6,7 @@ import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
 export interface DividerProperties {
-   orientation?: "horizontal" | "vertical"
+   orientation?: ConditionalValue<"horizontal" | "vertical">
 	thickness?: ConditionalValue<Tokens["sizes"] | Properties["borderWidth"]>
 	color?: ConditionalValue<Tokens["colors"] | Properties["borderColor"]>
 }

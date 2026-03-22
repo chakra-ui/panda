@@ -16,6 +16,14 @@ import { compareAtRuleOrMixed } from './sort-style-rules'
 const isAtRule = (cond: ConditionDetails): boolean => cond.type === 'at-rule'
 
 /**
+ * Matches pseudo-element selectors (::before, ::after, ::placeholder, etc.)
+ * Pseudo-elements must appear at the end of CSS selector chains per the CSS spec.
+ */
+const pseudoElementRegex = /::[\w-]/
+const isPseudoElement = (cond: ConditionDetails): boolean =>
+  typeof cond.raw === 'string' && pseudoElementRegex.test(cond.raw)
+
+/**
  * Flattens a condition, extracting parts from mixed conditions.
  * Returns an array of { condition, originalIndex } to track source order.
  */
@@ -186,7 +194,7 @@ export class Conditions {
     // Flatten all conditions while tracking original index for stable sorting
     const flattened = rawConditions.flatMap((cond, index) => flattenCondition(cond, index))
 
-    // Sort: at-rules first, then selectors in original order
+    // Sort: at-rules first, pseudo-elements last, then selectors in original order
     flattened.sort((a, b) => {
       const aIsAtRule = isAtRule(a.cond)
       const bIsAtRule = isAtRule(b.cond)
@@ -194,6 +202,11 @@ export class Conditions {
       // At-rules come first
       if (aIsAtRule && !bIsAtRule) return -1
       if (!aIsAtRule && bIsAtRule) return 1
+
+      // Pseudo-elements (::before, ::after, etc.) must come last per CSS spec
+      const aIsPseudo = isPseudoElement(a.cond)
+      const bIsPseudo = isPseudoElement(b.cond)
+      if (aIsPseudo !== bIsPseudo) return aIsPseudo ? 1 : -1
 
       // Within same category, preserve original source order
       return a.originalIndex - b.originalIndex
