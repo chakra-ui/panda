@@ -1,5 +1,22 @@
 # @pandacss/dev
 
+## 1.9.1
+
+### Patch Changes
+
+- Updated dependencies [d02fcf6]
+- Updated dependencies [028e755]
+  - @pandacss/token-dictionary@1.9.1
+  - @pandacss/preset-base@1.9.1
+  - @pandacss/mcp@1.9.1
+  - @pandacss/node@1.9.1
+  - @pandacss/config@1.9.1
+  - @pandacss/postcss@1.9.1
+  - @pandacss/logger@1.9.1
+  - @pandacss/preset-panda@1.9.1
+  - @pandacss/shared@1.9.1
+  - @pandacss/types@1.9.1
+
 ## 1.9.0
 
 ### Patch Changes
