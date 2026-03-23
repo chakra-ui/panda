@@ -51,7 +51,7 @@ export function expandReferences(value: string, fn: (key: string) => string) {
     }
     const expandedValue = resolved ?? esc(key)
 
-    return valueStr.replace(`{${key}}`, expandedValue)
+    return valueStr.replaceAll(`{${key}}`, expandedValue)
   }, value)
 
   if (!expanded.includes(`token(`)) return expanded
