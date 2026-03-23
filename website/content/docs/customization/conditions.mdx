@@ -169,6 +169,58 @@ will generate the following CSS:
 }
 ```
 
+## Multi-block conditions
+
+Sometimes you need a single condition to generate multiple independent CSS blocks, each with its own at-rule. For example, you might want hover feedback on desktop (pointer devices) and active/press feedback on touch devices.
+
+Use the object syntax with `@slot` markers to define multi-block conditions. Each path from the root of the object to a `@slot` value becomes an independent CSS block:
+
+```tsx
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      hoverActive: {
+        '@media (hover: hover)': {
+          '&:is(:hover, [data-hover])': '@slot',
+        },
+        '@media (hover: none)': {
+          '&:is(:active, [data-active])': '@slot',
+        },
+      },
+    },
+  },
+})
+```
+
+```ts
+import { css } from '../styled-system/css'
+
+css({
+  _hoverActive: {
+    bg: 'red',
+  },
+})
+```
+
+will generate the following CSS:
+
+```css
+@media (hover: hover) {
+  .hoverActive\:bg_red:is(:hover, [data-hover]) {
+    background: red;
+  }
+}
+@media (hover: none) {
+  .hoverActive\:bg_red:is(:active, [data-active]) {
+    background: red;
+  }
+}
+```
+
+This is also useful for any scenario where a single condition needs to apply the same styles across multiple independent at-rule blocks. Objects with a single `@slot` path behave identically to the [mixed conditions](#mixed-conditions) array syntax.
+
 ## Container queries
 
 Read more about how to define type-safe container queries [here](/docs/concepts/conditional-styles#container-queries)
