@@ -1,3 +1,4 @@
+import type { PandaHooks } from '@pandacss/types'
 import postcss, { Root } from 'postcss'
 import nested from 'postcss-nested'
 import { optimizePostCss } from './plugins/optimize-postcss'
@@ -5,16 +6,23 @@ import prettify from './plugins/prettify'
 
 interface OptimizeOptions {
   minify?: boolean
-  lightningcss?: boolean
   browserslist?: string[]
+  hooks?: Partial<PandaHooks>
 }
 
 export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
-  const { lightningcss } = options
+  const { hooks } = options
+  const css = typeof code === 'string' ? code : code.toString()
 
-  if (lightningcss) {
-    const light = require('./plugins/optimize-lightningcss') as typeof import('./plugins/optimize-lightningcss')
-    return light.default(code, options)
+  if (hooks?.['css:optimize']) {
+    const result = hooks['css:optimize']({
+      css,
+      minify: options.minify,
+      browserslist: options.browserslist,
+    })
+    if (result !== undefined) {
+      return result
+    }
   }
 
   return optimizePostCss(code, options)

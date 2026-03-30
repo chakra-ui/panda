@@ -126,6 +126,20 @@ const reducers = {
 
     return preset
   }),
+  'css:optimize': createReducer<'css:optimize'>((fns) => (_args) => {
+    const args = Object.assign({}, _args)
+    const original = _args.css
+    let css = args.css
+
+    for (const hookFn of fns) {
+      const result = hookFn(Object.assign(args, { css, original }))
+      if (result !== undefined) {
+        css = result
+      }
+    }
+
+    return css
+  }),
 }
 
 const syncHooks: Array<keyof PandaHooks> = [
@@ -134,6 +148,7 @@ const syncHooks: Array<keyof PandaHooks> = [
   'parser:preprocess',
   'parser:after',
   'cssgen:done',
+  'css:optimize',
 ]
 
 const callAllAsync =

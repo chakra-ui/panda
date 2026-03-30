@@ -3,9 +3,11 @@ import { State } from '@/src/hooks/usePlayground'
 import { Project } from '@pandacss/parser'
 import type { Config } from '@pandacss/types'
 import { useMemo } from 'react'
+import { useDebounceValue } from 'usehooks-ts'
 
 export function usePanda(state: State, config: Config | null) {
-  const { code: source, css } = state
+  const [source] = useDebounceValue(state.code, 150)
+  const [css] = useDebounceValue(state.css, 150)
 
   const context = usePandaContext(config)
 
@@ -25,6 +27,16 @@ export function usePanda(state: State, config: Config | null) {
     ]
 
     return cssArtifacts
+  }, [context])
+
+  // Artifacts only depend on config (context), not source code
+  const { artifacts, previewJs } = useMemo(() => {
+    const artifacts = context.getArtifacts() ?? []
+    const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
+    const previewJs = allJsFiles
+      .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
+      ?.join('\n')
+    return { artifacts, previewJs }
   }, [context])
 
   return useMemo(() => {
@@ -49,13 +61,6 @@ export function usePanda(state: State, config: Config | null) {
       console.log(error)
     }
 
-    const artifacts = context.getArtifacts() ?? []
-
-    const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
-    const previewJs = allJsFiles
-      .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
-      ?.join('\n')
-
     const cssArtifacts: CssFileArtifact[] = [
       { file: 'Utilities', code: sheet.getLayerCss('utilities') },
       { file: 'Recipes', code: sheet.getLayerCss('recipes') },
@@ -63,7 +68,7 @@ export function usePanda(state: State, config: Config | null) {
 
     const previewCss = [css, ...cssArtifacts.map((a) => a.code ?? '')].join('\n')
 
-    const panda = {
+    return {
       previewCss,
       artifacts,
       previewJs,
@@ -71,8 +76,7 @@ export function usePanda(state: State, config: Config | null) {
       cssArtifacts,
       context,
     }
-    return panda
-  }, [source, css, context, staticArtifacts])
+  }, [source, css, context, staticArtifacts, artifacts, previewJs])
 }
 
 export interface CssFileArtifact {

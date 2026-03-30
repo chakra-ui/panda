@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
 
 export function usePreview() {
@@ -6,6 +6,15 @@ export function usePreview() {
 
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const loadCheckRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const handleLoad = useCallback(() => {
+    if (loadCheckRef.current) {
+      clearInterval(loadCheckRef.current)
+      loadCheckRef.current = null
+    }
+    setIframeLoaded(true)
+  }, [])
 
   useEffect(() => {
     setIsMounted(true)
@@ -13,11 +22,21 @@ export function usePreview() {
       contentRef.addEventListener('DOMContentLoaded', handleLoad)
     }
 
+    // In certain situations on a cold cache DOMContentLoaded never gets called
+    // fallback to an interval to check if that's the case
+    loadCheckRef.current = setInterval(() => {
+      handleLoad()
+    }, 500)
+
     return () => {
       setIsMounted(false)
       contentRef?.removeEventListener('DOMContentLoaded', handleLoad)
+      if (loadCheckRef.current) {
+        clearInterval(loadCheckRef.current)
+        loadCheckRef.current = null
+      }
     }
-  }, [contentRef])
+  }, [contentRef, handleLoad])
 
   const { resolvedTheme } = useTheme()
 
@@ -40,20 +59,6 @@ export function usePreview() {
       window.removeEventListener('message', listener as any)
     }
   }, [resolvedTheme, contentRef])
-
-  const handleLoad = () => {
-    clearInterval(loadCheck)
-    // Bail update as some browsers will trigger on both DOMContentLoaded & onLoad ala firefox
-    if (!iframeLoaded) {
-      setIframeLoaded(true)
-    }
-  }
-
-  // In certain situations on a cold cache DOMContentLoaded never gets called
-  // fallback to an interval to check if that's the case
-  const loadCheck = setInterval(() => {
-    handleLoad()
-  }, 500)
 
   const isReady = isMounted && !!contentRef?.contentDocument
 

@@ -344,7 +344,6 @@ export class Context {
       hooks: this.hooks,
       isValidProperty: this.isValidProperty,
       browserslist: this.config.browserslist,
-      lightningcss: this.config.lightningcss,
       polyfill: this.config.polyfill,
       cssVarRoot: this.config.cssVarRoot!,
       helpers: patternFns,

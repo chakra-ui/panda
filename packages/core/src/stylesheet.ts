@@ -129,8 +129,8 @@ export class Stylesheet {
         .join('\n'),
       {
         minify: false,
-        lightningcss: this.context.lightningcss,
         browserslist: this.context.browserslist,
+        hooks: this.context.hooks,
       },
     )
   }
@@ -152,8 +152,8 @@ export class Stylesheet {
 
       return optimizeCss(css, {
         minify,
-        lightningcss: this.context.lightningcss,
         browserslist: this.context.browserslist,
+        hooks: this.context.hooks,
       })
     } catch (error) {
       if (error instanceof CssSyntaxError) {

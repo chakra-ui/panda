@@ -1,6 +1,7 @@
 import { PANDA_CONFIG_NAME, assign, mergeWith, mergeAndConcat, walkObject } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import { mergeHooks } from './merge-hooks'
+export { mergeHooks }
 import { isValidToken } from './validation/utils'
 
 type Extendable<T> = T & { extend?: T }

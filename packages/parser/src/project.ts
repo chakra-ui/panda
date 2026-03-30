@@ -17,8 +17,6 @@ import {
 import { classifyProject } from './classify'
 import { createParser } from './parser'
 import { ParserResult } from './parser-result'
-import { svelteToTsx } from './svelte-to-tsx'
-import { vueToTsx } from './vue-to-tsx'
 
 const createTsProject = (options: Partial<TsProjectOptions>) =>
   new TsProject({
@@ -172,15 +170,7 @@ export class Project {
     return result
   }
 
-  transformFile = (filePath: string, content: string): string => {
-    if (filePath.endsWith('.vue')) {
-      return vueToTsx(content)
-    }
-
-    if (filePath.endsWith('.svelte')) {
-      return svelteToTsx(content)
-    }
-
+  transformFile = (_filePath: string, content: string): string => {
     return content
   }
 

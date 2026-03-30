@@ -1,5 +1,4 @@
 import { findConfig, getConfigDependencies } from '@pandacss/config'
-import { optimizeCss } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
 import { PandaError, uniq } from '@pandacss/shared'
 import type { DiffConfigResult } from '@pandacss/types'
@@ -197,13 +196,7 @@ export class Builder {
     ctx.appendBaselineCss(sheet)
     const css = ctx.getCss(sheet)
 
-    root.append(
-      optimizeCss(css, {
-        browserslist: ctx.config.browserslist,
-        minify: ctx.config.minify,
-        lightningcss: ctx.config.lightningcss,
-      }),
-    )
+    root.append(css)
   }
 
   registerDependency = (fn: (dep: Message) => void) => {

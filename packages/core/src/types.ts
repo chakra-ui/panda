@@ -42,7 +42,6 @@ export interface StylesheetContext
   layers: Layers
   helpers: PatternHelpers
   hash?: boolean
-  lightningcss?: boolean
   browserslist?: string[]
   polyfill?: boolean
   cssVarRoot: string
