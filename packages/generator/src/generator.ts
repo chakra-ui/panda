@@ -18,6 +18,7 @@ import { generateLayerStylesSpec } from './spec/layer-styles'
 import { generatePatternsSpec } from './spec/patterns'
 import { generateRecipesSpec } from './spec/recipes'
 import { generateTextStylesSpec } from './spec/text-styles'
+import { generateThemesSpec } from './spec/themes'
 import { generateSemanticTokensSpec, generateTokensSpec } from './spec/tokens'
 
 export interface SplitCssArtifact {
@@ -223,12 +224,17 @@ export class Generator extends Context {
       specs.push(colorPaletteSpec)
     }
 
+    const themesSpec = generateThemesSpec(this)
+    if (themesSpec) {
+      specs.push(themesSpec)
+    }
+
     return specs
   }
 
   getSpecOfType = <T extends SpecType>(
     type: T,
-  ): T extends 'color-palette' ? SpecTypeMap[T] | undefined : SpecTypeMap[T] => {
+  ): T extends 'color-palette' | 'themes' ? SpecTypeMap[T] | undefined : SpecTypeMap[T] => {
     const spec = (() => {
       switch (type) {
         case 'tokens':
@@ -251,8 +257,10 @@ export class Generator extends Context {
           return generateAnimationStylesSpec(this)
         case 'color-palette':
           return generateColorPaletteSpec(this) ?? undefined
+        case 'themes':
+          return generateThemesSpec(this) ?? undefined
       }
     })()
-    return spec as T extends 'color-palette' ? SpecTypeMap[T] | undefined : SpecTypeMap[T]
+    return spec as T extends 'color-palette' | 'themes' ? SpecTypeMap[T] | undefined : SpecTypeMap[T]
   }
 }

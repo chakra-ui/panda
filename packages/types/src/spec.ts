@@ -9,6 +9,7 @@ export type SpecType =
   | 'layer-styles'
   | 'animation-styles'
   | 'color-palette'
+  | 'themes'
 
 interface Examples {
   functionExamples: string[]
@@ -143,6 +144,31 @@ export interface ColorPaletteSpec {
   }
 }
 
+export interface ThemeTokenValue {
+  name: string
+  values: Array<{ value: string; condition?: string }>
+  description?: string
+  deprecated?: boolean | string
+  cssVar?: string
+}
+
+export interface ThemeTokenGroupDefinition extends Examples {
+  type: string
+  values: ThemeTokenValue[]
+  tokenFunctionExamples: string[]
+}
+
+export interface ThemeSpecDefinition {
+  name: string
+  tokens: ThemeTokenGroupDefinition[]
+  semanticTokens: ThemeTokenGroupDefinition[]
+}
+
+export interface ThemesSpec {
+  type: 'themes'
+  data: ThemeSpecDefinition[]
+}
+
 export type SpecFile =
   | TokenSpec
   | SemanticTokenSpec
@@ -154,6 +180,7 @@ export type SpecFile =
   | LayerStyleSpec
   | AnimationStyleSpec
   | ColorPaletteSpec
+  | ThemesSpec
 
 export interface SpecTypeMap {
   tokens: TokenSpec
@@ -166,4 +193,5 @@ export interface SpecTypeMap {
   'layer-styles': LayerStyleSpec
   'animation-styles': AnimationStyleSpec
   'color-palette': ColorPaletteSpec
+  themes: ThemesSpec
 }
