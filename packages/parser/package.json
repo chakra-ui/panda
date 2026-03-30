@@ -44,7 +44,9 @@
     "ts-pattern": "5.9.0"
   },
   "devDependencies": {
-    "@pandacss/generator": "workspace:*"
+    "@pandacss/generator": "workspace:*",
+    "@pandacss/plugin-svelte": "workspace:*",
+    "@pandacss/plugin-vue": "workspace:*"
   },
   "files": [
     "dist"

@@ -606,6 +606,12 @@ importers:
       '@pandacss/generator':
         specifier: workspace:*
         version: link:../generator
+      '@pandacss/plugin-svelte':
+        specifier: workspace:*
+        version: link:../plugin-svelte
+      '@pandacss/plugin-vue':
+        specifier: workspace:*
+        version: link:../plugin-vue
 
   packages/plugin-lightningcss:
     dependencies:
