@@ -2,7 +2,7 @@
 '@pandacss/types': patch
 '@pandacss/logger': patch
 '@pandacss/shared': patch
-'@pandacss/cli': patch
+'@pandacss/dev': patch
 '@pandacss/core': patch
 '@pandacss/config': patch
 '@pandacss/node': patch
