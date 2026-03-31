@@ -184,7 +184,9 @@ export class Conditions {
     try {
       return parseCondition(condNameOrQuery)
     } catch (error) {
-      logger.error('core:condition', error)
+      const query = typeof condNameOrQuery === 'string' ? condNameOrQuery : JSON.stringify(condNameOrQuery)
+      const message = error instanceof Error ? error.message : String(error)
+      logger.warn('core:condition', `Failed to parse condition "${query}": ${message}`)
     }
   }
 

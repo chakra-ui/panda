@@ -123,6 +123,8 @@ const parse = (str: string) => {
   } catch (error) {
     if (error instanceof CssSyntaxError) {
       logger.error('tokens:process', error.showSourceCode(true))
+    } else {
+      logger.caughtError('tokens:process', 'Failed to parse token CSS', error)
     }
   }
 }

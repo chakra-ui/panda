@@ -35,6 +35,8 @@ export class Stylesheet {
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet:process', error.showSourceCode(true))
+      } else {
+        logger.caughtError('sheet:process', 'Failed to process styles', error)
       }
     }
     return

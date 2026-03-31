@@ -75,7 +75,7 @@ export class PandaContext extends Generator {
       const encoder = styleEncoder || this.parserOptions.encoder
       result = this.project.parseSourceFile(file, encoder)
     } catch (error) {
-      logger.error('file:extract', error)
+      logger.caughtError('file:extract', `Failed to parse ${file}`, error)
     }
 
     measure()

@@ -14,6 +14,11 @@ export interface LoggerInterface {
   info: (type: string, data: any) => void
   debug: (type: string, data: any) => void
   error: (type: string, data: any) => void
+  /**
+   * Log a caught error with context. Extracts the message for the error level,
+   * and logs the full stack at debug level.
+   */
+  caughtError: (type: string, context: string, error: unknown) => void
   log: (data: string) => void
   time: {
     info: (msg: string) => (_msg?: string) => void

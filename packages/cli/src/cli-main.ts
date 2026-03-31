@@ -367,8 +367,9 @@ export async function main() {
         const studioPath = require.resolve('@pandacss/studio', { paths: [cwd] })
         studio = require(studioPath)
       } catch (error) {
-        logger.error('studio', error)
-        throw new PandaError('MISSING_STUDIO', "You need to install '@pandacss/studio' to use this command")
+        throw new PandaError('MISSING_STUDIO', "You need to install '@pandacss/studio' to use this command", {
+          cause: error,
+        })
       }
 
       if (preview) {
@@ -666,20 +667,5 @@ export async function main() {
   cli.version(version)
 
   cli.parse(process.argv, { run: false })
-
-  try {
-    await cli.runMatchedCommand()
-  } catch (error) {
-    if (error instanceof PandaError) {
-      logger.error('cli', error)
-
-      if (logger.isDebug) {
-        console.error(error)
-      }
-
-      process.exit(1)
-    }
-
-    throw error
-  }
+  await cli.runMatchedCommand()
 }

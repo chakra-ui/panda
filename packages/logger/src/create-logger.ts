@@ -52,6 +52,14 @@ export const createLogger = (conf: LoggerConfig = {}): LoggerInterface => {
     }
   }
 
+  const caughtError = (type: string, context: string, error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error)
+    logFns.error(type, `${context}: ${message}`)
+    if (error instanceof Error && error.stack) {
+      logFns.debug(type, error.stack)
+    }
+  }
+
   return {
     get level() {
       return level
@@ -63,6 +71,7 @@ export const createLogger = (conf: LoggerConfig = {}): LoggerInterface => {
       onLog = fn
     },
     ...logFns,
+    caughtError,
     print(data: any) {
       console.dir(data, { depth: null, colors: true })
     },

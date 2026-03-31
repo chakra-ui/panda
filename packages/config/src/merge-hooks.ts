@@ -170,8 +170,7 @@ const tryCatch = (name: string, fn: AnyFunction) => {
     try {
       return fn(...args)
     } catch (e) {
-      logger.error('hooks', `The error below comes from the plugin ${name}`)
-      console.error(e)
+      logger.caughtError('hooks', `Error in plugin "${name}"`, e)
     }
   }
 }
