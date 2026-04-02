@@ -219,9 +219,35 @@ your code with lots of conditional logic.
 
 ### TypeScript Guide
 
-Panda provides a `RecipeVariantProps` type utility that can be used to infer the variant properties of a recipe.
+Panda provides two type utilities for inferring the variant types of a recipe: `RecipeVariant` and `RecipeVariantProps`.
 
-This is useful when you want to use the recipe in JSX and want to get type safety for the variants.
+Use `RecipeVariant` to infer the raw variant type of a recipe. Each variant key is required.
+
+```tsx
+import { cva, type RecipeVariant } from '../styled-system/css'
+
+const buttonStyle = cva({
+  base: {
+    color: 'red',
+    textAlign: 'center'
+  },
+  variants: {
+    size: {
+      small: {
+        fontSize: '1rem'
+      },
+      large: {
+        fontSize: '2rem'
+      }
+    }
+  }
+})
+
+export type ButtonVariants = RecipeVariant<typeof buttonStyle> 
+// { size: 'small' | 'large' }
+```
+
+Use `RecipeVariantProps` when you want to use the recipe in JSX and need type safety for the variants as optional props.
 
 ```tsx
 import { styled } from '../styled-system/jsx'
@@ -244,9 +270,8 @@ const buttonStyle = cva({
   }
 })
 
-export type ButtonVariants = RecipeVariantProps<typeof buttonStyle> // { size?: 'small' | 'large' }
-
-export const Button = styled('button', buttonStyle)
+export type ButtonVariants = RecipeVariantProps<typeof buttonStyle>
+// { size?: 'small' | 'large' | undefined } | undefined
 ```
 
 ### Usage in JSX
