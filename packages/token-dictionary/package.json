@@ -41,7 +41,7 @@
     "@pandacss/logger": "workspace:^",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "picomatch": "^4.0.0",
+    "picomatch": "4.0.4",
     "ts-pattern": "5.9.0"
   },
   "devDependencies": {
