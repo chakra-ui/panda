@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.base",
+  "include": ["src/**/*.spec.ts"],
+  "compilerOptions": {
+    "strict": false
+  }
+}

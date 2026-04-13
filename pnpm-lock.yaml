@@ -506,6 +506,9 @@ importers:
       fs-extra:
         specifier: 11.3.2
         version: 11.3.2
+      get-tsconfig:
+        specifier: ^4.13.0
+        version: 4.13.0
       glob-parent:
         specifier: 6.0.2
         version: 6.0.2
@@ -551,9 +554,6 @@ importers:
       ts-pattern:
         specifier: 5.9.0
         version: 5.9.0
-      tsconfck:
-        specifier: 3.1.6
-        version: 3.1.6(typescript@5.9.3)
     devDependencies:
       '@types/fs-extra':
         specifier: 11.0.4
@@ -15197,10 +15197,6 @@ packages:
 
   sax@1.4.3:
     resolution: {integrity: sha512-yqYn1JhPczigF94DMS+shiDMjDowYO6y9+wB/4WgO0Y19jWYk0lQ4tuG5KI7kj4FTp1wxPj5IFfcrz/s1c3jjQ==}
-
-  sax@1.4.4:
-    resolution: {integrity: sha512-1n3r/tGXO6b6VXMdFT54SHzT9ytu9yr7TaELowdYpMqY/Ao7EnlQGmAQ1+RatX7Tkkdm6hONI2owqNx2aZj5Sw==}
-    engines: {node: '>=11.0.0'}
 
   sax@1.6.0:
     resolution: {integrity: sha512-6R3J5M4AcbtLUdZmRv2SygeVaM7IhrLXu9BmnOGmmACak8fiUtOsYNWUS4uK7upbmHIBbLBeFeI//477BKLBzA==}
@@ -32790,7 +32786,7 @@ snapshots:
   needle@3.3.1:
     dependencies:
       iconv-lite: 0.6.3
-      sax: 1.4.4
+      sax: 1.6.0
     optional: true
 
   negotiator@0.6.3: {}
@@ -35776,9 +35772,6 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   sax@1.4.3: {}
-
-  sax@1.4.4:
-    optional: true
 
   sax@1.6.0: {}
 

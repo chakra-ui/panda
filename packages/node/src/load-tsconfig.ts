@@ -1,30 +1,52 @@
 import { convertTsPathsToRegexes } from '@pandacss/config'
 import type { LoadConfigResult, LoadTsConfigResult } from '@pandacss/types'
+import path from 'node:path'
+
+import {
+  findClosestTsconfig,
+  resolveBaseUrlForCompilerOptions,
+  resolveDirectTsconfigJson,
+  resolveSolutionTsconfigForFile,
+} from './tsconfig-utils'
 
 export async function loadTsConfig(conf: LoadConfigResult, cwd: string): Promise<LoadTsConfigResult | undefined> {
-  const { parse } = await import('tsconfck')
+  const root = cwd
 
-  const tsconfigResult = await parse(conf.path, {
-    root: cwd,
-    //@ts-ignore
-    resolveWithEmptyIfConfigNotFound: true,
-  })
+  let tsconfigFile: string | null = await resolveDirectTsconfigJson(conf.path)
+  if (!tsconfigFile) {
+    tsconfigFile = await findClosestTsconfig(conf.path, root, 'tsconfig.json')
+  }
 
-  if (!tsconfigResult) return
+  if (!tsconfigFile) {
+    return {
+      tsconfig: {},
+      tsconfigFile: undefined,
+    }
+  }
 
-  const { tsconfig, tsconfigFile } = tsconfigResult
-  const { compilerOptions } = tsconfig
+  const gtc = await import('get-tsconfig')
+  const rootParsed = gtc.parseTsconfig(tsconfigFile)
+  const { tsconfig, tsconfigFile: effectiveTsconfigPath } = await resolveSolutionTsconfigForFile(
+    path.resolve(conf.path),
+    tsconfigFile,
+    rootParsed,
+    gtc,
+  )
+  const compilerOptions = tsconfig?.compilerOptions
 
   const result: LoadTsConfigResult = {
     tsconfig,
-    tsconfigFile,
+    tsconfigFile: effectiveTsconfigPath,
   }
 
   if (compilerOptions?.paths) {
     const baseUrl = compilerOptions.baseUrl
     result.tsOptions = {
       baseUrl,
-      pathMappings: convertTsPathsToRegexes(compilerOptions.paths, baseUrl ?? cwd),
+      pathMappings: convertTsPathsToRegexes(
+        compilerOptions.paths,
+        resolveBaseUrlForCompilerOptions(baseUrl, effectiveTsconfigPath, cwd),
+      ),
     }
   }
 
