@@ -28,7 +28,7 @@
     "@docusaurus/tsconfig": "3.9.2",
     "@docusaurus/types": "3.9.2",
     "@pandacss/dev": "workspace:*",
-    "typescript": "5.9.3"
+    "typescript": "6.0.2"
   },
   "browserslist": {
     "production": [

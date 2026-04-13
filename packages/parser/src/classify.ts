@@ -355,7 +355,7 @@ export function classifyProject(ctx: ParserOptions, resultMap: ParserResultMap):
       })
     }
 
-    const isSlotRecipe = (v: any): v is SlotRecipeConfig => ctx.recipes.isSlotRecipe(key)
+    const isSlotRecipe = (_v: any): _v is SlotRecipeConfig => ctx.recipes.isSlotRecipe(key)
 
     if (isSlotRecipe(recipe)) {
       Object.values(recipe.base ?? {}).forEach(functionFn)

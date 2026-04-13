@@ -40,7 +40,7 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "ts-morph": "27.0.2",
+    "ts-morph": "28.0.0",
     "ts-pattern": "5.9.0"
   },
   "devDependencies": {

@@ -39,7 +39,7 @@
     "preact": "10.27.2",
     "solid-js": "1.9.10",
     "tsx": "4.20.6",
-    "typescript": "5.9.3",
+    "typescript": "6.0.2",
     "vite": "7.2.6",
     "vitest": "4.0.15",
     "vite-plugin-solid": "2.11.10",

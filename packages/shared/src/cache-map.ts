@@ -81,6 +81,25 @@ export class CacheMap<K, V> implements Map<K, V> {
     return this.cache.entries()
   }
 
+  getOrInsert(key: K, defaultValue: V): V {
+    if (this.cache.has(key)) {
+      this.updateKeyUsage(key)
+      return this.cache.get(key)!
+    }
+    this.set(key, defaultValue)
+    return defaultValue
+  }
+
+  getOrInsertComputed(key: K, callback: (key: K) => V): V {
+    if (this.cache.has(key)) {
+      this.updateKeyUsage(key)
+      return this.cache.get(key)!
+    }
+    const value = callback(key)
+    this.set(key, value)
+    return value
+  }
+
   [Symbol.iterator]() {
     return this.cache[Symbol.iterator]()
   }

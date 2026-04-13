@@ -82,7 +82,7 @@
     "bundle-n-require": "1.1.2",
     "escalade": "3.2.0",
     "microdiff": "1.5.0",
-    "typescript": "5.9.3"
+    "typescript": "6.0.2"
   },
   "devDependencies": {
     "pkg-types": "2.3.0"

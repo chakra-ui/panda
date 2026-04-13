@@ -3,6 +3,7 @@
     "strict": true,
     "target": "esnext",
     "downlevelIteration": true,
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "module": "nodenext",
     "skipLibCheck": true,
