@@ -6,8 +6,6 @@
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "downlevelIteration": true,
-    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -16,7 +14,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },

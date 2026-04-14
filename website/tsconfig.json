@@ -20,17 +20,19 @@
       }
     ],
     "strictNullChecks": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/styled-system/*": ["styled-system/*"],
-      "@/theme/*": ["theme/*"],
-      ".velite": ["./.velite"]
+      "@/*": ["./src/*"],
+      "@/styled-system/*": ["./styled-system/*"],
+      "@/theme/*": ["./theme/*"],
+      ".velite": ["./.velite"],
+      "styled-system/*": ["./styled-system/*"],
+      "styles/*": ["./styles/*"]
     }
   },
   "include": [
     "styled-system",
     "next-env.d.ts",
+    "global-css.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
