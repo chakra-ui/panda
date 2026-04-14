@@ -67,7 +67,7 @@ export type ListOrAll = 'all' | string[]
 
 export interface MatchTagArgs {
   tagName: string
-  tagNode: JsxOpeningElement | JsxSelfClosingElement
+  tagNode: JsxOpeningElement | JsxSelfClosingElement | CallExpression
   isFactory: boolean
 }
 export interface MatchPropArgs {

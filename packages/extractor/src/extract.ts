@@ -16,7 +16,7 @@ import type {
   MatchFnPropArgs,
   MatchPropArgs,
 } from './types'
-import { getComponentName } from './utils'
+import { getComponentName, unwrapExpression } from './utils'
 import { maybeBoxNode } from './maybe-box-node'
 
 type JsxElement = JsxOpeningElement | JsxSelfClosingElement
@@ -29,6 +29,25 @@ type ComponentMap = Map<JsxElement, Component>
 
 const isImportOrExport = (node: Node) => Node.isImportDeclaration(node) || Node.isExportDeclaration(node)
 const isJsxElement = (node: Node) => Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)
+
+const compiledJsxFnNames = new Set(['jsx', '_jsx', 'jsxs', '_jsxs', 'createElement'])
+
+// _jsx(Component, props), React.createElement(Component, props)
+function getCompiledJsxCallName(expr: Node): string | undefined {
+  const unwrapped = unwrapExpression(expr)
+
+  if (Node.isIdentifier(unwrapped)) {
+    const name = unwrapped.getText()
+    return compiledJsxFnNames.has(name) ? name : undefined
+  }
+
+  if (Node.isPropertyAccessExpression(unwrapped)) {
+    const name = unwrapped.getName()
+    return compiledJsxFnNames.has(name) ? name : undefined
+  }
+
+  return undefined
+}
 
 export const extract = ({ ast, ...ctx }: ExtractOptions) => {
   const { components, functions, taggedTemplates } = ctx
@@ -148,6 +167,78 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
         component.props.set(propName, maybeBox)
         boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
+      }
+
+      // Handle compiled JSX: _jsx(Box, { css: { ... } }), React.createElement(Box, { ... })
+      if (Node.isCallExpression(node)) {
+        const compiledJsxFn = getCompiledJsxCallName(node.getExpression())
+        if (compiledJsxFn) {
+          const args = node.getArguments()
+          if (args.length >= 2) {
+            const tagArg = unwrapExpression(args[0])
+
+            let tagName: string | undefined
+            if (Node.isIdentifier(tagArg)) {
+              tagName = tagArg.getText()
+            } else if (Node.isPropertyAccessExpression(tagArg)) {
+              tagName = tagArg.getText()
+            } else if (Node.isStringLiteral(tagArg)) {
+              tagName = tagArg.getLiteralText()
+            }
+
+            if (tagName && components.matchTag({ tagNode: node, tagName, isFactory: tagName.includes('.') })) {
+              if (!byName.has(tagName)) {
+                byName.set(tagName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
+              }
+
+              const componentResult = byName.get(tagName)! as ExtractedComponentResult
+              const boxByProp = componentResult.nodesByProp
+              const props: MapTypeValue = new Map()
+              const conditionals: BoxNodeConditional[] = []
+
+              const propsArg = unwrapExpression(args[1])
+
+              const filterProp = (prop: MatchFnPropArgs) =>
+                components.matchProp({ tagNode: node, tagName: tagName!, propName: prop.propName, propNode: undefined })
+
+              const propsBox = maybeBoxNode(propsArg, [node, propsArg], ctx, filterProp)
+
+              if (propsBox && box.isMap(propsBox)) {
+                propsBox.value.forEach((value, propName) => {
+                  props.set(propName, value)
+                  boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(value))
+                })
+
+                if (propsBox.spreadConditions?.length) {
+                  conditionals.push(...propsBox.spreadConditions)
+                }
+              } else if (propsBox && box.isObject(propsBox)) {
+                objectLikeToMap(propsBox, node).forEach((value, propName) => {
+                  if (filterProp({ propName, propNode: propsArg as any })) {
+                    props.set(propName, value)
+                    boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(value))
+                  }
+                })
+              }
+
+              if (props.size > 0 || conditionals.length > 0) {
+                const query = {
+                  name: tagName,
+                  box: box.map(props, node, []),
+                } as ExtractedComponentInstance
+
+                if (conditionals.length) {
+                  query.box.spreadConditions = conditionals
+                }
+
+                componentResult.queryList.push(query)
+              }
+
+              // Compiled JSX matched this component — skip the functions block
+              return
+            }
+          }
+        }
       }
     }
 

@@ -687,4 +687,119 @@ describe('jsx', () => {
     expect(item.data[0]).toHaveProperty('inputCss')
     expect(item.data[0].inputCss).toEqual({ bg: 'red.200' })
   })
+
+  test('compiled jsx - should extract from realistic compiled dist output', () => {
+    const code = `
+        import { Fragment, jsx, jsxs } from "react/jsx-runtime"
+
+        function App() {
+          return jsxs(Fragment, {
+            children: [
+              jsx(Box, {
+                css: {
+                  color: "red.900",
+                  backgroundColor: "red.200",
+                },
+                children: "Box",
+              }),
+            ],
+          })
+        }
+      `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toContain('var(--colors-red-900)')
+    expect(result.css).toContain('var(--colors-red-200)')
+  })
+
+  test('compiled jsx - should extract inline css prop from _jsxs() call', () => {
+    const code = `
+        import { jsxs as _jsxs } from "react/jsx-runtime"
+
+        function MyComponent() {
+          return _jsxs(Box, { css: { color: "blue.300" }, children: ["hello"] })
+        }
+      `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toContain('c_blue')
+    expect(result.css).toContain('var(--colors-blue-300)')
+  })
+
+  test('compiled jsx - should extract from React.createElement() call', () => {
+    const code = `
+        import React from "react"
+
+        function MyComponent() {
+          return React.createElement(Box, { css: { padding: "4" } })
+        }
+      `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toContain('p_4')
+    expect(result.css).toContain('var(--spacing-4)')
+  })
+
+  test('compiled jsx - should extract style props in all mode', () => {
+    const code = `
+        import { jsx as _jsx } from "react/jsx-runtime"
+
+        function MyComponent() {
+          return _jsx(Box, { bg: "red.200", color: "blue.300" })
+        }
+      `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toContain('bg_red')
+    expect(result.css).toContain('c_blue')
+  })
+
+  test('compiled jsx - should respect minimal mode', () => {
+    const code = `
+        import { jsx as _jsx } from "react/jsx-runtime"
+
+        function MyComponent() {
+          return _jsx(Box, { css: { padding: "4" }, color: "blue" })
+        }
+      `
+
+    const result = parseAndExtract(code, { jsxStyleProps: 'minimal' })
+
+    expect(result.css).toContain('p_4')
+    expect(result.css).not.toContain('c_blue')
+  })
+
+  test('compiled jsx - should not extract with lowercase element', () => {
+    const code = `
+        import { jsx as _jsx } from "react/jsx-runtime"
+
+        function MyComponent() {
+          return _jsx("div", { css: { bg: "red.200" } })
+        }
+      `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toBe('')
+  })
+
+  test('compiled jsx - should extract from factory component', () => {
+    const code = `
+        import { jsx as _jsx } from "react/jsx-runtime"
+        import { styled } from "styled-system/jsx"
+
+        function MyComponent() {
+          return _jsx(styled.div, { bg: "red.200" })
+        }
+      `
+
+    const result = parseAndExtract(code)
+
+    expect(result.css).toContain('bg_red')
+    expect(result.css).toContain('var(--colors-red-200)')
+  })
 })

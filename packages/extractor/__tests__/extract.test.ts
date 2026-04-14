@@ -6411,3 +6411,126 @@ it.skip('extracts slots when spread', () => {
     }
   `)
 })
+
+const compiledJsxConfig: Record<string, string[]> = {
+  Box: ['css', 'color', 'bg'],
+  'styled.div': ['bg', 'color'],
+}
+
+const compiledJsxMatcher: ComponentMatchers = {
+  matchTag: ({ tagName }) => Boolean(compiledJsxConfig[tagName]),
+  matchProp: ({ tagName, propName }) => compiledJsxConfig[tagName]?.includes(propName) ?? false,
+}
+
+it('compiled jsx - extracts from realistic compiled dist output', () => {
+  const result = extractFromCode(
+    `
+    import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
+
+    const App = () => {
+      return jsxs(Fragment, {
+        children: [
+          jsx(Box, {
+            css: {
+              color: 'red.900',
+              backgroundColor: 'red.200',
+            },
+            children: 'Box',
+          }),
+        ],
+      });
+    };
+    `,
+    { components: compiledJsxMatcher },
+  )
+
+  expect(Object.keys(result)).toContain('Box')
+  expect(result.Box[0].raw).toHaveProperty('css')
+  expect(result.Box[0].raw).not.toHaveProperty('children')
+})
+
+it('compiled jsx - extracts inline object from _jsx(Component, { prop: value })', () => {
+  const result = extractFromCode(
+    `
+    function render() {
+      return _jsx(Box, { css: { padding: "4" } })
+    }
+    `,
+    { components: compiledJsxMatcher },
+  )
+
+  expect(Object.keys(result)).toContain('Box')
+  expect(result.Box[0].raw).toHaveProperty('css')
+})
+
+it('compiled jsx - extracts style props from _jsx(Component, { bg: value })', () => {
+  const result = extractFromCode(
+    `
+    function render() {
+      return _jsx(Box, { bg: "red.200", color: "blue.300" })
+    }
+    `,
+    { components: compiledJsxMatcher },
+  )
+
+  expect(Object.keys(result)).toContain('Box')
+  expect(result.Box[0].raw).toHaveProperty('bg')
+  expect(result.Box[0].raw).toHaveProperty('color')
+})
+
+it('compiled jsx - extracts from React.createElement(Component, { ... })', () => {
+  const result = extractFromCode(
+    `
+    function render() {
+      return React.createElement(Box, { css: { padding: "4" } })
+    }
+    `,
+    { components: compiledJsxMatcher },
+  )
+
+  expect(Object.keys(result)).toContain('Box')
+  expect(result.Box[0].raw).toHaveProperty('css')
+})
+
+it('compiled jsx - skips unmatched tag name', () => {
+  const result = extractFromCode(
+    `
+    function render() {
+      return _jsx("div", { css: { padding: "4" } })
+    }
+    `,
+    { components: compiledJsxMatcher },
+  )
+
+  expect(Object.keys(result)).toHaveLength(0)
+})
+
+it('compiled jsx - filters non-matching props', () => {
+  const result = extractFromCode(
+    `
+    function render() {
+      return _jsx(Box, { css: { padding: "4" }, onClick: handleClick, className: "test" })
+    }
+    `,
+    { components: compiledJsxMatcher },
+  )
+
+  expect(Object.keys(result)).toContain('Box')
+  expect(result.Box[0].raw).toHaveProperty('css')
+  expect(result.Box[0].raw).not.toHaveProperty('onClick')
+  expect(result.Box[0].raw).not.toHaveProperty('className')
+})
+
+it('compiled jsx - extracts from _jsx(styled.div, { ... }) with property access component', () => {
+  const result = extractFromCode(
+    `
+    function render() {
+      return _jsx(styled.div, { bg: "red.200" })
+    }
+    `,
+    { components: compiledJsxMatcher },
+  )
+
+  expect(Object.keys(result)).toContain('styled.div')
+  expect(result['styled.div'][0].raw).toHaveProperty('bg')
+})
