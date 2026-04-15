@@ -1,5 +1,6 @@
 import { PandaError } from '@pandacss/shared'
 import type {
+  AnimationStyles,
   CompositionStyles,
   Config,
   CssKeyframes,
@@ -134,6 +135,7 @@ export function defineAnimationStyles(definition: CompositionStyles['animationSt
 }
 
 export type {
+  AnimationStyles,
   CompositionStyles,
   Config,
   CssKeyframes,
