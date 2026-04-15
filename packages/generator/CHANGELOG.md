@@ -1,5 +1,28 @@
 # @pandacss/generator
 
+## 1.10.0
+
+### Patch Changes
+
+- c31f3a2: Improve error handling architecture across all packages.
+- 8d3b6f8: Add support for generating theme tokens in `panda spec` output.
+
+  Previously, tokens defined in the `themes` config were excluded from the spec output because they are registered as
+  virtual tokens. Now, `panda spec` generates a `themes.json` file containing tokens and semantic tokens for each
+  configured theme.
+
+- Updated dependencies [c31f3a2]
+- Updated dependencies [bbaa8b3]
+- Updated dependencies [bc2b8d7]
+- Updated dependencies [8d3b6f8]
+- Updated dependencies [44457bb]
+  - @pandacss/types@1.10.0
+  - @pandacss/logger@1.10.0
+  - @pandacss/shared@1.10.0
+  - @pandacss/core@1.10.0
+  - @pandacss/token-dictionary@1.10.0
+  - @pandacss/is-valid-prop@1.10.0
+
 ## 1.9.1
 
 ### Patch Changes

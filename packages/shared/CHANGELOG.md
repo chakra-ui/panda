@@ -1,5 +1,13 @@
 # @pandacss/shared
 
+## 1.10.0
+
+### Patch Changes
+
+- c31f3a2: Improve error handling architecture across all packages.
+- 44457bb: Use TypeScript 6.0 or later with Panda. This release updates static analysis and codegen to ts-morph v28 and
+  TypeScript 6.0.2.
+
 ## 1.9.1
 
 ## 1.9.0

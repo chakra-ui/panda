@@ -1,5 +1,25 @@
 # @pandacss/token-dictionary
 
+## 1.10.0
+
+### Patch Changes
+
+- bc2b8d7: Dependency updates for reported security advisories.
+
+  - **@pandacss/node** / **@pandacss/token-dictionary**: bump `picomatch` to 4.0.4
+    ([GHSA-3v7f-55p6-f55p](https://github.com/advisories/GHSA-3v7f-55p6-f55p),
+    [GHSA-c2c7-rcm5-vvqj](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj)).
+  - **@pandacss/mcp**: bump `@modelcontextprotocol/sdk` to ^1.25.2.
+  - **@pandacss/astro-plugin-studio**: bump `astro` (dev) to 5.18.1.
+
+- Updated dependencies [c31f3a2]
+- Updated dependencies [bbaa8b3]
+- Updated dependencies [8d3b6f8]
+- Updated dependencies [44457bb]
+  - @pandacss/types@1.10.0
+  - @pandacss/logger@1.10.0
+  - @pandacss/shared@1.10.0
+
 ## 1.9.1
 
 ### Patch Changes
