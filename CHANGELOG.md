@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.10.0](#1.10.0) - 2026-04-18
+
+### Added
+
+- Extract Vue, Svelte, and LightningCSS support into standalone plugins.
+
+  Framework-specific parsing and CSS optimization are now opt-in via dedicated packages:
+
+  - `@pandacss/plugin-vue` — Vue SFC support
+  - `@pandacss/plugin-svelte` — Svelte component support
+  - `@pandacss/plugin-lightningcss` — LightningCSS optimization
+
+- Add support for generating theme tokens in `panda spec` output.
+
+  Previously, tokens defined in the `themes` config were excluded from the spec output because they are registered as virtual tokens. Now, `panda spec` generates a `themes.json` file containing tokens and semantic tokens for each configured theme.
+
+### Fixed
+
+- Fix double CSS optimization in PostCSS plugin.
+
+- Re-export the `AnimationStyles` type from `@pandacss/dev` so the return type of `defineAnimationStyles` can be resolved by consumers.
+
+  Previously only `TextStyles` and `LayerStyles` were re-exported, which caused the generated `.d.ts` to fall back to a deep qualified name (`_pandacss_types.AnimationStyles`) for `defineAnimationStyles`'s inferred return type. When consumers could not resolve that path, the value was inferred as `any` and triggered `@typescript-eslint/no-unsafe-assignment` at call sites.
+
+### Changed
+
+- Improve error handling architecture across all packages.
+
+- Replace discontinued `tsconfck` with [`get-tsconfig`](https://github.com/privatenumber/get-tsconfig) for resolving and parsing `tsconfig.json` (including `extends`).
+
+- Update TypeScript support to 6.0 with ts-morph v28.
+
+  Use TypeScript 6.0 or later with Panda. This release updates static analysis and codegen to ts-morph v28 and TypeScript 6.0.2.
+
+- Security dependency updates.
+
+  - `@pandacss/node` / `@pandacss/token-dictionary`: bump `picomatch` to 4.0.4 ([GHSA-3v7f-55p6-f55p](https://github.com/advisories/GHSA-3v7f-55p6-f55p), [GHSA-c2c7-rcm5-vvqj](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj)).
+  - `@pandacss/mcp`: bump `@modelcontextprotocol/sdk` to ^1.25.2.
+  - `@pandacss/astro-plugin-studio`: bump `astro` (dev) to 5.18.1.
+
 ## [1.9.1](#1.9.1) - 2026-03-22
 
 ### Fixed
