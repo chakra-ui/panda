@@ -1,5 +1,32 @@
 # @pandacss/dev
 
+## 1.10.0
+
+### Patch Changes
+
+- 53a2c1b: Re-export the `AnimationStyles` type from `@pandacss/dev` so the return type of `defineAnimationStyles` can
+  be resolved by consumers. Previously only `TextStyles` and `LayerStyles` were re-exported, which caused the generated
+  `.d.ts` to fall back to a deep qualified name (`_pandacss_types.AnimationStyles`) for `defineAnimationStyles`'s
+  inferred return type. When consumers could not resolve that path, the value was inferred as `any` and triggered
+  `@typescript-eslint/no-unsafe-assignment` at call sites.
+- c31f3a2: Improve error handling architecture across all packages.
+- Updated dependencies [c31f3a2]
+- Updated dependencies [bbaa8b3]
+- Updated dependencies [22b444d]
+- Updated dependencies [bc2b8d7]
+- Updated dependencies [8d3b6f8]
+- Updated dependencies [44457bb]
+  - @pandacss/types@1.10.0
+  - @pandacss/logger@1.10.0
+  - @pandacss/shared@1.10.0
+  - @pandacss/config@1.10.0
+  - @pandacss/node@1.10.0
+  - @pandacss/token-dictionary@1.10.0
+  - @pandacss/mcp@1.10.0
+  - @pandacss/preset-base@1.10.0
+  - @pandacss/preset-panda@1.10.0
+  - @pandacss/postcss@1.10.0
+
 ## 1.9.1
 
 ### Patch Changes

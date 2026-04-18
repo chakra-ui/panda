@@ -1,5 +1,15 @@
 # @pandacss/extractor
 
+## 1.10.0
+
+### Patch Changes
+
+- 44457bb: Use TypeScript 6.0 or later with Panda. This release updates static analysis and codegen to ts-morph v28 and
+  TypeScript 6.0.2.
+- Updated dependencies [c31f3a2]
+- Updated dependencies [44457bb]
+  - @pandacss/shared@1.10.0
+
 ## 1.9.1
 
 ### Patch Changes

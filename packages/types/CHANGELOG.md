@@ -1,5 +1,24 @@
 # @pandacss/types
 
+## 1.10.0
+
+### Minor Changes
+
+- bbaa8b3: - Extract Vue, Svelte, and LightningCSS support into standalone plugins.
+  - Fix double CSS optimization in PostCSS plugin.
+
+### Patch Changes
+
+- c31f3a2: Improve error handling architecture across all packages.
+- 8d3b6f8: Add support for generating theme tokens in `panda spec` output.
+
+  Previously, tokens defined in the `themes` config were excluded from the spec output because they are registered as
+  virtual tokens. Now, `panda spec` generates a `themes.json` file containing tokens and semantic tokens for each
+  configured theme.
+
+- 44457bb: Use TypeScript 6.0 or later with Panda. This release updates static analysis and codegen to ts-morph v28 and
+  TypeScript 6.0.2.
+
 ## 1.9.1
 
 ## 1.9.0

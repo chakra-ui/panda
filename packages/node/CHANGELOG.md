@@ -1,5 +1,45 @@
 # @pandacss/node
 
+## 1.10.0
+
+### Minor Changes
+
+- bbaa8b3: - Extract Vue, Svelte, and LightningCSS support into standalone plugins.
+  - Fix double CSS optimization in PostCSS plugin.
+
+### Patch Changes
+
+- c31f3a2: Improve error handling architecture across all packages.
+- 22b444d: Replace discontinued `tsconfck` with [`get-tsconfig`](https://github.com/privatenumber/get-tsconfig) for
+  resolving and parsing `tsconfig.json` (including `extends`).
+- bc2b8d7: Dependency updates for reported security advisories.
+
+  - **@pandacss/node** / **@pandacss/token-dictionary**: bump `picomatch` to 4.0.4
+    ([GHSA-3v7f-55p6-f55p](https://github.com/advisories/GHSA-3v7f-55p6-f55p),
+    [GHSA-c2c7-rcm5-vvqj](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj)).
+  - **@pandacss/mcp**: bump `@modelcontextprotocol/sdk` to ^1.25.2.
+  - **@pandacss/astro-plugin-studio**: bump `astro` (dev) to 5.18.1.
+
+- 44457bb: Use TypeScript 6.0 or later with Panda. This release updates static analysis and codegen to ts-morph v28 and
+  TypeScript 6.0.2.
+- Updated dependencies [c31f3a2]
+- Updated dependencies [bbaa8b3]
+- Updated dependencies [bc2b8d7]
+- Updated dependencies [8d3b6f8]
+- Updated dependencies [44457bb]
+  - @pandacss/types@1.10.0
+  - @pandacss/logger@1.10.0
+  - @pandacss/shared@1.10.0
+  - @pandacss/core@1.10.0
+  - @pandacss/config@1.10.0
+  - @pandacss/generator@1.10.0
+  - @pandacss/plugin-vue@1.10.0
+  - @pandacss/plugin-svelte@1.10.0
+  - @pandacss/plugin-lightningcss@1.10.0
+  - @pandacss/parser@1.10.0
+  - @pandacss/token-dictionary@1.10.0
+  - @pandacss/reporter@1.10.0
+
 ## 1.9.1
 
 ### Patch Changes

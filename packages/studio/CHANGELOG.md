@@ -1,5 +1,21 @@
 # @pandacss/studio
 
+## 1.10.0
+
+### Patch Changes
+
+- Updated dependencies [c31f3a2]
+- Updated dependencies [bbaa8b3]
+- Updated dependencies [bc2b8d7]
+- Updated dependencies [8d3b6f8]
+- Updated dependencies [44457bb]
+  - @pandacss/types@1.10.0
+  - @pandacss/logger@1.10.0
+  - @pandacss/shared@1.10.0
+  - @pandacss/config@1.10.0
+  - @pandacss/token-dictionary@1.10.0
+  - @pandacss/astro-plugin-studio@1.10.0
+
 ## 1.9.1
 
 ### Patch Changes
