@@ -1,4 +1,4 @@
-import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
+import { CallExpression, JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { box } from './box'
 import { BoxNodeMap, BoxNodeObject, type BoxNode, type MapTypeValue, BoxNodeConditional } from './box-factory'
 import { extractCallExpressionArguments } from './call-expression'
@@ -16,8 +16,13 @@ import type {
   MatchFnPropArgs,
   MatchPropArgs,
 } from './types'
-import { getComponentName } from './utils'
+import { getComponentName, unwrapExpression } from './utils'
 import { maybeBoxNode } from './maybe-box-node'
+
+// Names of the React automatic JSX runtime helpers (`react/jsx-runtime` and `react/jsx-dev-runtime`).
+// A call like `jsx(Box, { css: { ... } })` is the compiled form of `<Box css={{ ... }} />` and must
+// be extracted the same way so that Panda can scan already-compiled files (e.g. a library's dist output).
+const REACT_JSX_RUNTIME_FNS = new Set(['jsx', 'jsxs', 'jsxDEV'])
 
 type JsxElement = JsxOpeningElement | JsxSelfClosingElement
 interface Component {
@@ -43,6 +48,72 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
    * => color: "red"
    */
   const componentByNode: ComponentMap = new Map()
+
+  // Handles a React automatic-runtime JSX call (`jsx`/`jsxs`/`jsxDEV`) as a synthetic component instance.
+  // `components` is captured from the enclosing scope and is guaranteed non-null at the call site.
+  const extractJsxRuntimeCall = (node: CallExpression) => {
+    if (!components) return
+
+    const args = node.getArguments()
+    if (args.length < 2) return
+
+    const tagNode = unwrapExpression(args[0])
+    const tagName = Node.isStringLiteral(tagNode) ? tagNode.getLiteralValue() : tagNode.getText()
+    const isFactory = tagName.includes('.')
+
+    // Passing the CallExpression as `tagNode` is a deliberate shape-compatibility choice:
+    // downstream matchers use it only for ancestry and identity, not for JSX-specific APIs.
+    if (!components.matchTag({ tagNode: node as any, tagName, isFactory })) return
+
+    const propsArg = unwrapExpression(args[1])
+    if (!Node.isObjectLiteralExpression(propsArg)) return
+
+    if (!byName.has(tagName)) {
+      byName.set(tagName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
+    }
+
+    const componentResult = byName.get(tagName) as ExtractedComponentResult
+    const componentBoxByProp = componentResult.nodesByProp
+    const props: MapTypeValue = new Map()
+
+    const matchProp = ({ propName, propNode }: MatchPropArgs) =>
+      components.matchProp({ tagNode: node as any, tagName, propName, propNode })
+
+    for (const property of propsArg.getProperties()) {
+      if (Node.isPropertyAssignment(property)) {
+        const propName = property.getName()
+        if (!matchProp({ propName, propNode: property as any })) continue
+
+        const initializer = property.getInitializer()
+        if (!initializer) continue
+
+        const stack: Node[] = [node, propsArg, property, initializer]
+        const boxNode = maybeBoxNode(unwrapExpression(initializer), stack, ctx)
+        if (!boxNode) continue
+
+        props.set(propName, boxNode)
+        componentBoxByProp.set(propName, (componentBoxByProp.get(propName) ?? []).concat(boxNode))
+      } else if (Node.isShorthandPropertyAssignment(property)) {
+        const propName = property.getName()
+        if (!matchProp({ propName, propNode: property as any })) continue
+
+        const nameNode = property.getNameNode()
+        const stack: Node[] = [node, propsArg, property]
+        const boxNode = maybeBoxNode(nameNode, stack, ctx)
+        if (!boxNode) continue
+
+        props.set(propName, boxNode)
+        componentBoxByProp.set(propName, (componentBoxByProp.get(propName) ?? []).concat(boxNode))
+      }
+      // SpreadAssignment intentionally left unhandled for v1 — keeps the change narrow.
+    }
+
+    const instance = {
+      name: tagName,
+      box: box.map(props, node, []),
+    } as ExtractedComponentInstance
+    componentResult.queryList.push(instance)
+  }
 
   ast.forEachDescendant((node, traversal) => {
     // quick win
@@ -148,6 +219,17 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
         component.props.set(propName, maybeBox)
         boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
+      }
+
+      if (Node.isCallExpression(node) && REACT_JSX_RUNTIME_FNS.has(node.getExpression().getText())) {
+        // jsx(Box, { css: { color: 'red' } })
+        // jsxs(Box, { ... })
+        // jsxDEV(Box, { ... })
+        //
+        // React's automatic JSX runtime compiles `<Box css={{ ... }} />` into one of the calls above.
+        // We extract such calls as component instances so that scanning pre-compiled code
+        // (e.g. a component library's published `dist` bundle) still yields the expected CSS.
+        extractJsxRuntimeCall(node)
       }
     }
 
