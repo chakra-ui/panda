@@ -105,9 +105,13 @@ export class StyleDecoder {
   }
 
   resolveCondition = (condition: ConditionDetails) => {
-    return Array.isArray(condition.raw)
-      ? condition.raw.map((c) => this.context.utility.tokens.resolveReference(c))
-      : this.context.utility.tokens.resolveReference(condition.raw)
+    if (condition.type === 'multi-block') return []
+
+    if (Array.isArray(condition.raw)) {
+      return condition.raw.map((c) => this.context.utility.tokens.resolveReference(c))
+    }
+
+    return this.context.utility.tokens.resolveReference(condition.raw)
   }
 
   /**

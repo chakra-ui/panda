@@ -23,7 +23,11 @@ export const generateConditionsSpec = (ctx: Context): ConditionSpec => {
   const breakpointKeys = new Set(Object.keys(ctx.conditions.breakpoints.conditions))
 
   const conditions = Object.entries(ctx.conditions.values).map(([name, detail]) => {
-    const value = Array.isArray(detail.raw) ? detail.raw.join(', ') : detail.raw
+    const value = Array.isArray(detail.raw)
+      ? detail.raw.join(', ')
+      : typeof detail.raw === 'string'
+        ? detail.raw
+        : JSON.stringify(detail.raw)
 
     // Check if this is a breakpoint condition
     // Breakpoints can be stored with or without underscore prefix

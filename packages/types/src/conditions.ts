@@ -1,6 +1,12 @@
 import type { AnySelector, Selectors } from './selectors'
 
-export type ConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting' | 'combinator-nesting' | 'mixed' | 'multi-block'
+export type ConditionType =
+  | 'at-rule'
+  | 'parent-nesting'
+  | 'self-nesting'
+  | 'combinator-nesting'
+  | 'mixed'
+  | 'multi-block'
 
 export type ConditionDetails = AtRuleCondition | SelectorCondition | MixedCondition | MultiBlockCondition
 
