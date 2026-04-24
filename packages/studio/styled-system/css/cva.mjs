@@ -62,22 +62,32 @@ export function cva(config) {
   })
 }
 
+const isMatchingCompoundVariant = (compoundVariant, variantMap) => {
+  return Object.entries(compoundVariant).every(([key, value]) => {
+    if (key === 'css' || key === 'className' || key === 'compoundIndex') return true
+
+    const values = Array.isArray(value) ? value : [value]
+    return values.some((value) => variantMap[key] === value)
+  })
+}
+
 export function getCompoundVariantCss(compoundVariants, variantMap) {
   let result = {}
   compoundVariants.forEach((compoundVariant) => {
-    const isMatching = Object.entries(compoundVariant).every(([key, value]) => {
-      if (key === 'css') return true
-
-      const values = Array.isArray(value) ? value : [value]
-      return values.some((value) => variantMap[key] === value)
-    })
-
-    if (isMatching) {
+    if (isMatchingCompoundVariant(compoundVariant, variantMap)) {
       result = mergeCss(result, compoundVariant.css)
     }
   })
 
   return result
+}
+
+export function getCompoundVariantClassNames(compoundVariants, variantMap) {
+  return compoundVariants
+    .filter((compoundVariant) => isMatchingCompoundVariant(compoundVariant, variantMap))
+    .map((compoundVariant) => compoundVariant.className)
+    .filter(Boolean)
+    .join(' ')
 }
 
 export function assertCompoundVariant(name, compoundVariants, variants, prop) {

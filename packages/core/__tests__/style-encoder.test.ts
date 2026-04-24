@@ -378,9 +378,7 @@ describe('style encoder', () => {
 
     expect(badge).toMatchInlineSnapshot(`
       {
-        "atomic": Set {
-          "color]___[value:ButtonHighlight",
-        },
+        "atomic": Set {},
         "base": {
           "body": undefined,
           "title": Set {
@@ -391,6 +389,7 @@ describe('style encoder', () => {
         "variants": Set {
           "size]___[value:sm]___[recipe:badge",
           "raised]___[value:true]___[recipe:badge",
+          "__compound]___[value:0]___[recipe:badge",
         },
       }
     `)

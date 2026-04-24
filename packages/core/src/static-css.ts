@@ -309,6 +309,10 @@ export class StaticCss {
       encoder.hashStyleObject(encoder.atomic, css)
     })
 
+    Object.keys(staticCss.recipes).forEach((recipe) => {
+      encoder.processConfigRecipeCompoundVariants(recipe)
+    })
+
     results.recipes.forEach((result) => {
       Object.entries(result).forEach(([name, value]) => {
         encoder.processRecipe(name, value)

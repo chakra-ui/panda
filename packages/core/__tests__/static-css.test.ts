@@ -1942,6 +1942,10 @@ describe('static-css', () => {
           font-size: var(--font-sizes-lg);
       }
 
+        .badge__title--compound_0 {
+          color: ButtonHighlight;
+      }
+
         .badge__title--size_sm {
           padding-inline: var(--spacing-4);
       }
@@ -2085,6 +2089,12 @@ describe('static-css', () => {
                     },
                   },
                 },
+                {
+                  size: ['md'],
+                  css: {
+                    fontSize: '6px',
+                  },
+                },
               ],
             },
           },
@@ -2111,6 +2121,22 @@ describe('static-css', () => {
       }
       }
 
+        .withCompound--compound_0 {
+          font-size: 3px;
+      }
+
+        .withCompound--compound_0:is(:hover, [data-hover]) {
+          font-size: 4px;
+      }
+
+        [data-theme=dark] .withCompound--compound_0:is(:hover, [data-hover]),.dark .withCompound--compound_0:is(:hover, [data-hover]),.withCompound--compound_0:is(:hover, [data-hover]).dark,.withCompound--compound_0:is(:hover, [data-hover])[data-theme=dark] {
+          font-size: 5px;
+      }
+
+        .withCompound--compound_1 {
+          font-size: 6px;
+      }
+
         .withCompound--size_sm {
           font-size: 2px;
       }
@@ -2119,6 +2145,10 @@ describe('static-css', () => {
       @layer utilities {
         .fs_3px {
           font-size: 3px;
+      }
+
+        .fs_6px {
+          font-size: 6px;
       }
 
         .hover\\:fs_4px:is(:hover, [data-hover]) {
@@ -2141,6 +2171,9 @@ describe('static-css', () => {
                 },
                 "fontSize": "4px",
               },
+            },
+            {
+              "fontSize": "6px",
             },
           ],
           "patterns": [],

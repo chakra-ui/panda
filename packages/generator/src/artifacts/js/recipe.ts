@@ -22,8 +22,7 @@ export function generateCreateRecipe(ctx: Context) {
     dts: '',
     js: outdent`
    ${ctx.file.import('finalizeConditions, sortConditions', '../css/conditions')}
-   ${ctx.file.import('css', '../css/css')}
-   ${ctx.file.import('assertCompoundVariant, getCompoundVariantCss', '../css/cva')}
+   ${ctx.file.import('assertCompoundVariant, getCompoundVariantClassNames, getCompoundVariantCss', '../css/cva')}
    ${ctx.file.import('cx', '../css/cx')}
    ${ctx.file.import('compact, createCss, splitProps, uniq, withoutSpace', '../helpers')}
 
@@ -65,8 +64,8 @@ export function generateCreateRecipe(ctx: Context) {
       const recipeStyles = getVariantProps(variants)
 
       if (withCompoundVariants) {
-        const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
-        return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
+        const compoundVariantClassNames = getCompoundVariantClassNames(compoundVariants, recipeStyles)
+        return cx(recipeCss(recipeStyles), compoundVariantClassNames)
       }
 
       return recipeCss(recipeStyles)

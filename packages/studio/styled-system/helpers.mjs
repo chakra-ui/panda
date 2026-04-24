@@ -250,7 +250,15 @@ var getSlotRecipes = (recipe = {}) => {
   }
   return Object.fromEntries(recipeParts);
 };
-var getSlotCompoundVariant = (compoundVariants, slotName) => compoundVariants.filter((compoundVariant) => compoundVariant.css[slotName]).map((compoundVariant) => ({ ...compoundVariant, css: compoundVariant.css[slotName] }));
+var getSlotCompoundVariant = (compoundVariants, slotName) => compoundVariants.reduce((result, compoundVariant, index) => {
+  if (!compoundVariant.css[slotName]) return result;
+  result.push({
+    ...compoundVariant,
+    compoundIndex: compoundVariant.compoundIndex ?? index,
+    css: compoundVariant.css[slotName]
+  });
+  return result;
+}, []);
 
 // src/split-props.ts
 function splitProps(props, ...keys) {

@@ -44,6 +44,12 @@ const sharedState = {
   slots: new Map<string, Map<string, RecipeConfig>>(),
 }
 
+/**
+ * Reserved key used to look up a compound variant's generated class name in `sharedState`.
+ * Prefixed with `__` to avoid colliding with user-defined variant names.
+ */
+export const compoundVariantKey = '__compound'
+
 export class Recipes {
   slotSeparator = '__'
 
@@ -71,6 +77,10 @@ export class Recipes {
 
   private getClassName = (className: string, variant: string, value: string) => {
     return `${className}--${variant}${this.separator}${value}`
+  }
+
+  private getCompoundClassName = (className: string, index: number) => {
+    return `${className}--compound${this.separator}${index}`
   }
 
   // check this.recipes against sharedState.nodes
@@ -269,6 +279,24 @@ export class Recipes {
       }
     }
 
+    recipe.compoundVariants = compoundVariants.map((compoundVariant, index) => {
+      // Slot recipes inherit the parent recipe's compoundIndex so the same compound
+      // variant produces a stable class suffix across all slots it touches.
+      const compoundIndex = (compoundVariant as { compoundIndex?: number }).compoundIndex ?? index
+      const compoundClassName = this.getCompoundClassName(recipe.className, compoundIndex)
+      const compoundKey = this.getPropKey(name, compoundVariantKey, compoundIndex)
+      const styleObject = transformStyles(this.context, compoundVariant.css, compoundClassName)
+
+      sharedState.styles.set(compoundKey, styleObject)
+      sharedState.classNames.set(compoundKey, compoundClassName)
+
+      return {
+        ...compoundVariant,
+        className: compoundClassName,
+        compoundIndex,
+      }
+    })
+
     return recipe
   }
 
@@ -279,6 +307,14 @@ export class Recipes {
           layer: slot ? 'recipes_slots_base' : 'recipes_base',
           className: sharedState.classNames.get(name)!,
           styles: sharedState.styles.get(name) ?? {},
+        }
+      }
+
+      if (variant === compoundVariantKey) {
+        const propKey = this.getPropKey(name, variant, value)
+        return {
+          className: sharedState.classNames.get(propKey)!,
+          styles: sharedState.styles.get(propKey) ?? {},
         }
       }
 
