@@ -20,8 +20,7 @@ describe('generate recipes', () => {
       {
         "dts": "",
         "js": "import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
-      import { css } from '../css/css.mjs';
-      import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
+      import { assertCompoundVariant, getCompoundVariantClassNames, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
       import { compact, createCss, splitProps, uniq, withoutSpace } from '../helpers.mjs';
 
@@ -63,8 +62,8 @@ describe('generate recipes', () => {
          const recipeStyles = getVariantProps(variants)
 
          if (withCompoundVariants) {
-           const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
-           return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
+           const compoundVariantClassNames = getCompoundVariantClassNames(compoundVariants, recipeStyles)
+           return cx(recipeCss(recipeStyles), compoundVariantClassNames)
          }
 
          return recipeCss(recipeStyles)

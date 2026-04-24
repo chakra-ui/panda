@@ -43,6 +43,7 @@ describe('getSlotRecipes', () => {
           "className": "btn__button",
           "compoundVariants": [
             {
+              "compoundIndex": 0,
               "css": {},
               "size": "small",
               "variant": "size",
@@ -81,6 +82,7 @@ describe('getSlotRecipes', () => {
           "className": "btn__text",
           "compoundVariants": [
             {
+              "compoundIndex": 0,
               "css": {},
               "size": "small",
               "variant": "size",

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { processRecipe } from './fixture'
+import { createRuleProcessor, processRecipe } from './fixture'
 import { createGeneratorContext } from '@pandacss/fixture'
 
 describe('recipe ruleset', () => {
@@ -277,6 +277,218 @@ describe('recipe ruleset', () => {
             background-color: blue;
             color: var(--colors-white);
       }
+      }
+      }"
+    `)
+  })
+
+  test('should emit compound variants in the recipe layer', () => {
+    expect(
+      createRuleProcessor({
+        theme: {
+          extend: {
+            recipes: {
+              buttonCompoundStyle: {
+                className: 'buttonCompoundStyle',
+                variants: {
+                  visual: {
+                    outlined: {},
+                  },
+                  intent: {
+                    secondary: {},
+                  },
+                },
+                compoundVariants: [
+                  {
+                    visual: 'outlined',
+                    intent: 'secondary',
+                    css: {
+                      _active: {
+                        background: 'teal.50',
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      })
+        .recipe('buttonCompoundStyle', { visual: 'outlined', intent: 'secondary' })
+        ?.toCss(),
+    ).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .buttonCompoundStyle--compound_0:is(:active, [data-active]) {
+          background: var(--colors-teal-50);
+      }
+      }"
+    `)
+  })
+
+  test('should emit multiple matching compound variants in declaration order', () => {
+    expect(
+      createRuleProcessor({
+        theme: {
+          extend: {
+            recipes: {
+              multiCompound: {
+                className: 'multiCompound',
+                variants: {
+                  visual: { outlined: {}, solid: {} },
+                  intent: { primary: {}, secondary: {} },
+                },
+                compoundVariants: [
+                  {
+                    visual: 'outlined',
+                    intent: 'primary',
+                    css: { color: 'red.500' },
+                  },
+                  {
+                    visual: 'outlined',
+                    css: { borderWidth: '1px' },
+                  },
+                  {
+                    intent: 'primary',
+                    css: { fontWeight: 'bold' },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      })
+        .recipe('multiCompound', { visual: 'outlined', intent: 'primary' })
+        ?.toCss(),
+    ).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .multiCompound--compound_0 {
+          color: var(--colors-red-500);
+      }
+
+        .multiCompound--compound_1 {
+          border-width: 1px;
+      }
+
+        .multiCompound--compound_2 {
+          font-weight: var(--font-weights-bold);
+      }
+      }"
+    `)
+  })
+
+  test('should not emit non-matching compound variants', () => {
+    expect(
+      createRuleProcessor({
+        theme: {
+          extend: {
+            recipes: {
+              partialMatch: {
+                className: 'partialMatch',
+                variants: {
+                  visual: { outlined: {}, solid: {} },
+                  intent: { primary: {}, secondary: {} },
+                },
+                compoundVariants: [
+                  {
+                    visual: 'outlined',
+                    intent: 'primary',
+                    css: { color: 'red.500' },
+                  },
+                  {
+                    visual: 'solid',
+                    intent: 'secondary',
+                    css: { color: 'blue.500' },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      })
+        .recipe('partialMatch', { visual: 'outlined', intent: 'primary' })
+        ?.toCss(),
+    ).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .partialMatch--compound_0 {
+          color: var(--colors-red-500);
+      }
+      }"
+    `)
+  })
+
+  test('should support array values in compound variants', () => {
+    expect(
+      createRuleProcessor({
+        theme: {
+          extend: {
+            recipes: {
+              arrayCompound: {
+                className: 'arrayCompound',
+                variants: {
+                  visual: { outlined: {}, ghost: {}, solid: {} },
+                  intent: { primary: {}, secondary: {} },
+                },
+                compoundVariants: [
+                  {
+                    visual: ['outlined', 'ghost'],
+                    intent: 'primary',
+                    css: { color: 'red.500' },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      })
+        .recipe('arrayCompound', { visual: 'ghost', intent: 'primary' })
+        ?.toCss(),
+    ).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .arrayCompound--compound_0 {
+          color: var(--colors-red-500);
+      }
+      }"
+    `)
+  })
+
+  test('should emit slot recipe compound variants in the recipe layer', () => {
+    expect(
+      createRuleProcessor({
+        theme: {
+          extend: {
+            slotRecipes: {
+              card: {
+                className: 'card',
+                slots: ['root', 'title'],
+                variants: {
+                  size: { sm: {}, lg: {} },
+                  emphasis: { high: {}, low: {} },
+                },
+                compoundVariants: [
+                  {
+                    size: 'lg',
+                    emphasis: 'high',
+                    css: {
+                      root: { padding: '4' },
+                      title: { fontSize: '2xl' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      })
+        .recipe('card', { size: 'lg', emphasis: 'high' })
+        ?.toCss(),
+    ).toMatchInlineSnapshot(`
+      "@layer recipes.slots {
+        .card__root--compound_0 {
+          padding: var(--spacing-4);
+      }
+
+        .card__title--compound_0 {
+          font-size: var(--font-sizes-2xl);
       }
       }"
     `)

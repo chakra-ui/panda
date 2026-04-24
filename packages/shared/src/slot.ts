@@ -23,6 +23,14 @@ export const getSlotRecipes = (recipe: Record<string, any> = {}): Record<string,
 }
 
 export const getSlotCompoundVariant = <T extends { css: any }>(compoundVariants: T[], slotName: string) =>
-  compoundVariants
-    .filter((compoundVariant) => compoundVariant.css[slotName])
-    .map((compoundVariant) => ({ ...compoundVariant, css: compoundVariant.css[slotName] }))
+  compoundVariants.reduce<Array<T & { compoundIndex: number }>>((result, compoundVariant, index) => {
+    if (!compoundVariant.css[slotName]) return result
+
+    result.push({
+      ...compoundVariant,
+      compoundIndex: (compoundVariant as any).compoundIndex ?? index,
+      css: compoundVariant.css[slotName],
+    })
+
+    return result
+  }, [])

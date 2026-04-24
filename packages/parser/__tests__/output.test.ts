@@ -1762,6 +1762,10 @@ describe('extract to css output pipeline', () => {
           background-color: var(--colors-red-500);
       }
 
+        .button--compound_0 {
+          z-index: 100;
+      }
+
         .anotherButton--spacing_sm {
           padding: var(--spacing-2);
           border-radius: var(--radii-sm);
@@ -1775,10 +1779,6 @@ describe('extract to css output pipeline', () => {
       @layer utilities {
         .gap_8px {
           gap: 8px;
-      }
-
-        .z_100 {
-          z-index: 100;
       }
 
         .d_flex {
