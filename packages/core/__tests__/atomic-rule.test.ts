@@ -64,6 +64,30 @@ describe('atomic / with basic style object', () => {
     `)
   })
 
+  test('should order compound border declarations before border color', () => {
+    expect(
+      css({
+        borderColor: 'white',
+        border: '1px solid',
+        borderBottom: '1px solid',
+      }),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bd_1px_solid {
+          border: 1px solid;
+      }
+
+        .bd-b_1px_solid {
+          border-bottom: 1px solid;
+      }
+
+        .bd-c_white {
+          border-color: var(--colors-white);
+      }
+      }"
+    `)
+  })
+
   test('should resolve responsive array', () => {
     expect(css({ width: ['50px', '60px'] })).toMatchInlineSnapshot(`
       "@layer utilities {

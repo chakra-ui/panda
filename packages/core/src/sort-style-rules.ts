@@ -115,9 +115,41 @@ export const compareAtRuleOrMixed = (a: WithConditions, b: WithConditions) => {
 
 export interface WithConditions extends Pick<AtomicStyleResult, 'conditions' | 'entry'> {}
 
+const borderSideShorthands = new Set([
+  'borderBlockStart',
+  'borderTop',
+  'borderBlockEnd',
+  'borderBottom',
+  'borderInlineStart',
+  'borderLeft',
+  'borderInlineEnd',
+  'borderRight',
+])
+
+const borderDimensionShorthands = new Set([
+  'borderColor',
+  'borderStyle',
+  'borderWidth',
+  'borderInlineColor',
+  'borderInlineStyle',
+  'borderInlineWidth',
+])
+
+// Side shorthands reset width, style, and color; keep them before dimension-only border shorthands.
+const sortByBorderPriority = (a: string, b: string) => {
+  const aScore = borderSideShorthands.has(a) ? 1 : borderDimensionShorthands.has(a) ? 2 : 0
+  const bScore = borderSideShorthands.has(b) ? 1 : borderDimensionShorthands.has(b) ? 2 : 0
+
+  return aScore && bScore ? aScore - bScore : 0
+}
+
 const sortByPropertyPriority = (a: WithConditions, b: WithConditions) => {
   if (a.entry.prop === b.entry.prop) return 0
-  return getPropertyPriority(a.entry.prop) - getPropertyPriority(b.entry.prop)
+
+  const priority = getPropertyPriority(a.entry.prop) - getPropertyPriority(b.entry.prop)
+  if (priority !== 0) return priority
+
+  return sortByBorderPriority(a.entry.prop, b.entry.prop)
 }
 
 /**
