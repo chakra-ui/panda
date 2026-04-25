@@ -43,12 +43,15 @@ function parseObjectCondition(obj: ConditionObjectQuery): MultiBlockCondition | 
       if (value === '@slot') {
         const parts = [...path, key]
         const parsed = parseCondition(parts)
-        if (parsed && parsed.type === 'mixed') {
+        // parseCondition wraps array input in a MixedCondition (even single-element).
+        // Skip blocks where every part failed to parse (no usable conditions).
+        if (parsed && parsed.type === 'mixed' && parsed.value.length > 0) {
           blocks.push(parsed)
         }
       } else if (typeof value === 'object' && value !== null) {
         traverse(value, [...path, key])
       }
+      // Non-`@slot` string leaves are reported by validateConditions; ignore here.
     }
   }
 
@@ -66,10 +69,11 @@ function parseObjectCondition(obj: ConditionObjectQuery): MultiBlockCondition | 
 
 export function parseCondition(condition: ConditionQuery): ConditionDetails | undefined {
   if (Array.isArray(condition)) {
+    const value = condition.map(parseCondition).filter(Boolean) as ConditionDetails[]
     return {
       type: 'mixed',
       raw: condition,
-      value: condition.map(parseCondition),
+      value,
     } as MixedCondition
   }
 
