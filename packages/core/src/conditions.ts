@@ -173,9 +173,9 @@ export class Conditions {
     return Object.keys(this.values).length === 0
   }
 
-  get = (key: string): undefined | string | string[] | Record<string, any> => {
+  get = (key: string): ConditionQuery | undefined => {
     const details = this.values[key]
-    return details?.raw
+    return details?.raw as ConditionQuery | undefined
   }
 
   getRaw = (condNameOrQuery: ConditionQuery): ConditionDetails | undefined => {

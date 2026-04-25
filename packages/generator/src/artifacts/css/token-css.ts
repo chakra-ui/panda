@@ -72,6 +72,9 @@ export function stringifyVars(options: {
   const mapped = keys
     .map((key) => conditions.get(key))
     .map((condition) => {
+      // Multi-block (object) conditions can't be expressed as a single selector path,
+      // so we skip them in semantic-token expansion.
+      if (condition && !Array.isArray(condition) && typeof condition !== 'string') return
       const lastSegment = Array.isArray(condition) ? condition.at(-1)! : condition
       if (!lastSegment) return
 

@@ -1,7 +1,8 @@
 import type { Context } from '@pandacss/core'
+import type { ConditionQuery } from '@pandacss/types'
 import outdent from 'outdent'
 
-function formatConditionJsDoc(raw: string | string[] | Record<string, any> | undefined): string {
+function formatConditionJsDoc(raw: ConditionQuery | undefined): string {
   if (!raw) return ''
   if (typeof raw === 'string') return `/** \`${raw}\` */\n`
   if (Array.isArray(raw)) return `/** \`${raw.join(' ')}\` */\n`
