@@ -12,11 +12,20 @@ import {
   ScriptKind,
   SourceFile,
   Project as TsProject,
+  ts,
   type ProjectOptions as TsProjectOptions,
 } from 'ts-morph'
 import { classifyProject } from './classify'
 import { createParser } from './parser'
 import { ParserResult } from './parser-result'
+
+// TS 6.0 rejects raw JSON compiler options (e.g. `target: "ESNext"`) in createProgram.
+// They must be normalized to numeric enum values via TypeScript's own parser API first.
+const normalizeCompilerOptions = (raw: ts.CompilerOptions | undefined): ts.CompilerOptions => {
+  if (!raw) return {}
+  const { options } = ts.convertCompilerOptionsFromJson(raw, process.cwd())
+  return options
+}
 
 const createTsProject = (options: Partial<TsProjectOptions>) =>
   new TsProject({
@@ -28,7 +37,7 @@ const createTsProject = (options: Partial<TsProjectOptions>) =>
       allowJs: true,
       strictNullChecks: false,
       skipLibCheck: true,
-      ...options.compilerOptions,
+      ...normalizeCompilerOptions(options.compilerOptions),
     },
   })
 
