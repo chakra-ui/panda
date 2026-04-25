@@ -27,7 +27,11 @@ export const getObjectLiteralExpressionPropPairs = (
 
     stack.push(property)
 
-    if (Node.isPropertyAssignment(property) || Node.isShorthandPropertyAssignment(property)) {
+    if (
+      Node.isPropertyAssignment(property) ||
+      Node.isShorthandPropertyAssignment(property) ||
+      Node.isGetAccessorDeclaration(property)
+    ) {
       const propNameBox = getPropertyName(property, stack, ctx)
       if (!propNameBox) return
 
@@ -50,10 +54,17 @@ export const getObjectLiteralExpressionPropPairs = (
         }
       }
 
-      const init = property.getInitializer()
+      let init: Node | undefined
+      if (Node.isGetAccessorDeclaration(property)) {
+        const body = property.getBody()
+        init = Node.isBlock(body) ? body.getStatements().at(-1) : undefined
+      } else {
+        init = property.getInitializer()
+      }
       if (!init) return
 
-      const initializer = unwrapExpression(init)
+      const returnExpression = Node.isReturnStatement(init) ? init.getExpression() : undefined
+      const initializer = unwrapExpression(returnExpression ?? init)
       stack.push(initializer)
 
       const maybeValue = maybeBoxNode(initializer, stack, ctx)

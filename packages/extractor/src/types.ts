@@ -2,6 +2,7 @@ import type { EvaluateOptions as TEvaluateOptions } from 'ts-evaluator'
 import type {
   CallExpression,
   Expression,
+  GetAccessorDeclaration,
   JsxAttribute,
   JsxOpeningElement,
   JsxSelfClosingElement,
@@ -51,7 +52,7 @@ export interface ExtractedFunctionResult {
 
 export interface ExtractedComponentInstance {
   name: string
-  fromNode: () => JsxOpeningElement | JsxSelfClosingElement
+  fromNode: () => JsxOpeningElement | JsxSelfClosingElement | CallExpression
   box: BoxNodeMap
 }
 export interface ExtractedComponentResult {
@@ -67,12 +68,12 @@ export type ListOrAll = 'all' | string[]
 
 export interface MatchTagArgs {
   tagName: string
-  tagNode: JsxOpeningElement | JsxSelfClosingElement
+  tagNode: JsxOpeningElement | JsxSelfClosingElement | CallExpression
   isFactory: boolean
 }
 export interface MatchPropArgs {
   propName: string
-  propNode: JsxAttribute | undefined
+  propNode: JsxAttribute | PropertyAssignment | ShorthandPropertyAssignment | GetAccessorDeclaration | undefined
 }
 export interface MatchFnArgs {
   fnName: string
@@ -84,7 +85,7 @@ export interface MatchFnArguments {
 }
 export interface MatchFnPropArgs {
   propName: string
-  propNode: PropertyAssignment | ShorthandPropertyAssignment
+  propNode: PropertyAssignment | ShorthandPropertyAssignment | GetAccessorDeclaration
 }
 export type MatchPropFn = (prop: MatchPropArgs) => boolean
 export interface FunctionMatchers {

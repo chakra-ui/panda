@@ -29,4 +29,18 @@ export const getPropertyName = (property: ObjectLiteralElementLike, stack: Node[
     const name = property.getName()
     if (name != null) return box.from(name, property, stack)
   }
+
+  if (Node.isGetAccessorDeclaration(property)) {
+    const node = unwrapExpression(property.getNameNode())
+
+    if (Node.isIdentifier(node)) return box.from(node.getText(), node, stack)
+
+    if (Node.isComputedPropertyName(node)) {
+      const expression = node.getExpression()
+      stack.push(expression)
+      return maybePropName(expression, stack, ctx)
+    }
+
+    if (Node.isStringLiteral(node) || Node.isNumericLiteral(node)) return box.from(node.getLiteralText(), node, stack)
+  }
 }

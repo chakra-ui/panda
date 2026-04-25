@@ -1,7 +1,9 @@
-import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
+import { CallExpression, JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { box } from './box'
 import { BoxNodeMap, BoxNodeObject, type BoxNode, type MapTypeValue, BoxNodeConditional } from './box-factory'
 import { extractCallExpressionArguments } from './call-expression'
+import { createCompiledJsxContext } from './compiled-jsx'
+import { getObjectLiteralExpressionPropPairs } from './get-object-literal-expression-prop-pairs'
 import { extractJsxAttribute } from './jsx-attribute'
 import { extractJsxSpreadAttributeValues, type MatchProp } from './jsx-spread-attribute'
 import { objectLikeToMap } from './object-like-to-map'
@@ -16,22 +18,24 @@ import type {
   MatchFnPropArgs,
   MatchPropArgs,
 } from './types'
-import { getComponentName } from './utils'
+import { getComponentName, unwrapExpression } from './utils'
 import { maybeBoxNode } from './maybe-box-node'
 
 type JsxElement = JsxOpeningElement | JsxSelfClosingElement
+type ComponentNode = JsxElement | CallExpression
 interface Component {
   name: string
   props: MapTypeValue
   conditionals: BoxNodeConditional[]
 }
-type ComponentMap = Map<JsxElement, Component>
+type ComponentMap = Map<ComponentNode, Component>
 
 const isImportOrExport = (node: Node) => Node.isImportDeclaration(node) || Node.isExportDeclaration(node)
 const isJsxElement = (node: Node) => Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)
 
 export const extract = ({ ast, ...ctx }: ExtractOptions) => {
   const { components, functions, taggedTemplates } = ctx
+  const compiledJsx = createCompiledJsxContext(ast)
 
   /** contains all the extracted nodes from this ast parsing */
   const byName: ExtractResultByName = new Map()
@@ -43,6 +47,98 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
    * => color: "red"
    */
   const componentByNode: ComponentMap = new Map()
+
+  const ensureComponent = (componentNode: ComponentNode, componentName: string) => {
+    if (!byName.has(componentName)) {
+      byName.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
+    }
+
+    if (!componentByNode.has(componentNode)) {
+      componentByNode.set(componentNode, { name: componentName, props: new Map(), conditionals: [] })
+    }
+
+    return {
+      component: componentByNode.get(componentNode)!,
+      boxByProp: (byName.get(componentName)! as ExtractedComponentResult).nodesByProp,
+    }
+  }
+
+  const addComponentProp = (
+    component: Component,
+    boxByProp: Map<string, BoxNode[]>,
+    propName: string,
+    propValue: BoxNode,
+  ) => {
+    component.props.set(propName, propValue)
+    boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(propValue))
+  }
+
+  const processComponentObjectLike = (
+    component: Component,
+    boxByProp: Map<string, BoxNode[]>,
+    propNode: Node,
+    objLike: BoxNodeMap | BoxNodeObject,
+    matchProp: (prop: MatchPropArgs) => boolean,
+    trackSpreadConditions = false,
+  ) => {
+    if (trackSpreadConditions && box.isMap(objLike) && objLike.spreadConditions?.length) {
+      component.conditionals.push(...objLike.spreadConditions)
+    }
+
+    const mapValue = objectLikeToMap(objLike, propNode)
+    mapValue.forEach((propValue, propName) => {
+      if (matchProp({ propName, propNode: propNode as any })) {
+        addComponentProp(component, boxByProp, propName, propValue)
+      }
+    })
+  }
+
+  const processComponentBoxNode = (
+    component: Component,
+    boxByProp: Map<string, BoxNode[]>,
+    propNode: Node,
+    boxNode: BoxNode,
+    matchProp: (prop: MatchPropArgs) => boolean,
+    trackSpreadConditions = false,
+  ) => {
+    if (box.isConditional(boxNode)) {
+      component.conditionals.push(boxNode)
+      return
+    }
+
+    if (box.isObject(boxNode) || box.isMap(boxNode)) {
+      processComponentObjectLike(component, boxByProp, propNode, boxNode, matchProp, trackSpreadConditions)
+    }
+  }
+
+  const processCompiledPropSource = (
+    componentNode: CallExpression,
+    component: Component,
+    boxByProp: Map<string, BoxNode[]>,
+    propNode: Node,
+    matchProp: (prop: MatchPropArgs) => boolean,
+  ) => {
+    const expression = unwrapExpression(propNode)
+    const stack = [componentNode, expression] as Node[]
+
+    if (Node.isObjectLiteralExpression(expression)) {
+      const objectMap = getObjectLiteralExpressionPropPairs(expression, stack, ctx, matchProp as any)
+      processComponentBoxNode(component, boxByProp, expression, objectMap, matchProp, true)
+      return
+    }
+
+    if (Node.isCallExpression(expression) && compiledJsx.isMergePropsCall(expression)) {
+      expression.getArguments().forEach((arg) => {
+        processCompiledPropSource(componentNode, component, boxByProp, arg, matchProp)
+      })
+      return
+    }
+
+    const maybeValue = maybeBoxNode(expression, stack, ctx, matchProp as any)
+    if (!maybeValue) return
+
+    processComponentBoxNode(component, boxByProp, expression, maybeValue, matchProp, true)
+  }
 
   ast.forEachDescendant((node, traversal) => {
     // quick win
@@ -61,13 +157,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
           return
         }
 
-        if (!byName.has(componentName)) {
-          byName.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
-        }
-
-        if (!componentByNode.has(componentNode)) {
-          componentByNode.set(componentNode, { name: componentName, props: new Map(), conditionals: [] })
-        }
+        ensureComponent(componentNode, componentName)
       }
 
       if (Node.isJsxSpreadAttribute(node)) {
@@ -80,7 +170,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         if (!componentNode || !component) return
 
         const componentName = getComponentName(componentNode)
-        const boxByProp = byName.get(componentName)!.nodesByProp
+        const boxByProp = (byName.get(componentName)! as ExtractedComponentResult).nodesByProp
 
         const matchProp = ({ propName, propNode }: MatchPropArgs) =>
           components.matchProp({ tagNode: componentNode!, tagName: componentName, propName, propNode })
@@ -92,36 +182,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         // the parent ref contains the props that were already extracted from the jsx attributes (not spread)
         // so we can merge the spread props with those extracted props
 
-        const processObjectLike = (objLike: BoxNodeMap | BoxNodeObject) => {
-          const mapValue = objectLikeToMap(objLike, node)
-          const isMap = box.isMap(objLike)
-          const boxNode = box.map(mapValue, node, [componentNode!])
-
-          if (isMap && objLike.spreadConditions?.length) {
-            boxNode.spreadConditions = objLike.spreadConditions
-          }
-
-          mapValue.forEach((propValue, propName) => {
-            if (matchProp({ propName, propNode: node as any })) {
-              component.props.set(propName, propValue)
-              boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(propValue))
-            }
-          })
-        }
-
-        const processBoxNode = (boxNode: BoxNode) => {
-          // <ColorBox {...(someCondition && { color: "facebook.100" })} />
-          if (box.isConditional(boxNode)) {
-            component.conditionals.push(boxNode)
-            return
-          }
-
-          if (box.isObject(boxNode) || box.isMap(boxNode)) {
-            return processObjectLike(boxNode)
-          }
-        }
-
-        processBoxNode(spreadNode)
+        processComponentBoxNode(component, boxByProp, node, spreadNode, matchProp)
 
         return
       }
@@ -136,7 +197,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         if (!componentNode || !component) return
 
         const componentName = getComponentName(componentNode)
-        const boxByProp = byName.get(componentName)!.nodesByProp
+        const boxByProp = (byName.get(componentName)! as ExtractedComponentResult).nodesByProp
 
         const propName = node.getNameNode().getText()
         if (!components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode: node })) {
@@ -146,8 +207,25 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         const maybeBox = extractJsxAttribute(node, ctx)
         if (!maybeBox) return
 
-        component.props.set(propName, maybeBox)
-        boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
+        addComponentProp(component, boxByProp, propName, maybeBox)
+      }
+
+      if (Node.isCallExpression(node)) {
+        const compiledCall = compiledJsx.getCallInfo(node)
+        if (compiledCall) {
+          const { tagName, isFactory, propNodes } = compiledCall
+          if (!components.matchTag({ tagNode: node, tagName, isFactory })) {
+            return
+          }
+
+          const { component, boxByProp } = ensureComponent(node, tagName)
+          const matchProp = ({ propName, propNode }: MatchPropArgs) =>
+            components.matchProp({ tagNode: node, tagName, propName, propNode })
+
+          propNodes.forEach((propNode) => {
+            processCompiledPropSource(node, component, boxByProp, propNode, matchProp)
+          })
+        }
       }
     }
 
@@ -227,6 +305,8 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
   componentByNode.forEach((parentRef, componentNode) => {
     const component = componentByNode.get(componentNode)
     if (!component) return
+    if (Node.isCallExpression(componentNode) && component.props.size === 0 && component.conditionals.length === 0)
+      return
 
     const query = <ExtractedComponentInstance>{
       name: parentRef.name,
@@ -240,6 +320,12 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
     const componentName = parentRef.name
     const queryList = (byName.get(componentName)! as ExtractedComponentResult).queryList
     queryList.push(query)
+  })
+
+  byName.forEach((result, name) => {
+    if (result.kind === 'component' && result.queryList.length === 0) {
+      byName.delete(name)
+    }
   })
 
   return byName
