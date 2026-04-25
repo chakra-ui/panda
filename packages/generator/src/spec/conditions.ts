@@ -18,6 +18,26 @@ const generateConditionJsxExamples = (conditionName: string, jsxStyleProps: JsxS
   return []
 }
 
+/**
+ * Walk an object condition collecting every path that ends in `@slot`.
+ * Each path is joined with spaces; multiple paths are joined with `; ` so the
+ * spec shows a readable, semicolon-separated block list instead of raw JSON.
+ */
+const formatObjectCondition = (raw: Record<string, any>): string => {
+  const blocks: string[] = []
+  const walk = (node: Record<string, any>, path: string[]) => {
+    for (const [key, value] of Object.entries(node)) {
+      if (value === '@slot') {
+        blocks.push([...path, key].join(' '))
+      } else if (typeof value === 'object' && value !== null) {
+        walk(value, [...path, key])
+      }
+    }
+  }
+  walk(raw, [])
+  return blocks.join('; ')
+}
+
 export const generateConditionsSpec = (ctx: Context): ConditionSpec => {
   const jsxStyleProps = ctx.config.jsxStyleProps
   const breakpointKeys = new Set(Object.keys(ctx.conditions.breakpoints.conditions))
@@ -27,7 +47,7 @@ export const generateConditionsSpec = (ctx: Context): ConditionSpec => {
       ? detail.raw.join(', ')
       : typeof detail.raw === 'string'
         ? detail.raw
-        : JSON.stringify(detail.raw)
+        : formatObjectCondition(detail.raw)
 
     // Check if this is a breakpoint condition
     // Breakpoints can be stored with or without underscore prefix
