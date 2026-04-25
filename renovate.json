@@ -16,6 +16,11 @@
       "automerge": true,
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch"
+    },
+    {
+      "matchPackageNames": ["@csstools/postcss-cascade-layers"],
+      "allowedVersions": "<6",
+      "description": "v6 drops CommonJS and requires Node >=20.19.0; pin to v5 until we drop CJS or raise engines."
     }
   ]
 }
