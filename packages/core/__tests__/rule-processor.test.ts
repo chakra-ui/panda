@@ -2263,4 +2263,152 @@ describe('multi-block conditions (object syntax with @slot)', () => {
       }"
     `)
   })
+
+  test('single-@slot object is equivalent to mixed-array form', () => {
+    const objectForm = css(
+      { _anyHover: { color: 'blue' } },
+      {
+        conditions: {
+          anyHover: { '@media (hover: hover)': { '&:hover': '@slot' } },
+        },
+      },
+    )
+    const arrayForm = css(
+      { _anyHover: { color: 'blue' } },
+      {
+        conditions: {
+          anyHover: ['@media (hover: hover)', '&:hover'],
+        },
+      },
+    )
+
+    expect(objectForm.css).toBe(arrayForm.css)
+    expect(objectForm.className).toEqual(arrayForm.className)
+  })
+
+  test('multi-block stacked with a parent-nesting condition combines correctly', () => {
+    const result = css(
+      {
+        _dark: {
+          _hoverActive: { background: 'red' },
+        },
+      },
+      {
+        conditions: {
+          dark: '.dark &',
+          hoverActive: {
+            '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+            '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+          },
+        },
+      },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) {
+          .dark .dark\\:hoverActive\\:bg_red:is(:hover, [data-hover]) {
+            background: red;
+      }
+      }
+
+        @media (hover: none) {
+          .dark .dark\\:hoverActive\\:bg_red:is(:active, [data-active]) {
+            background: red;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('multi-block emission preserves a deterministic at-rule order', () => {
+    const result = css(
+      {
+        _hoverActive: { background: 'red' },
+      },
+      {
+        conditions: {
+          hoverActive: {
+            '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+            '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+          },
+        },
+      },
+    )
+
+    // Inline snapshot pins the full block layout, so a future at-rule sort
+    // change that flipped `(hover: hover)` and `(hover: none)` would diff loudly.
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) {
+          .hoverActive\\:bg_red:is(:hover, [data-hover]) {
+            background: red;
+      }
+      }
+
+        @media (hover: none) {
+          .hoverActive\\:bg_red:is(:active, [data-active]) {
+            background: red;
+      }
+      }
+      }"
+    `)
+  })
+
+  test('stacking two multi-block conditions produces cartesian product of blocks', () => {
+    const result = css(
+      {
+        _hoverActive: {
+          _lightDark: {
+            background: 'red',
+          },
+        },
+      },
+      {
+        conditions: {
+          hoverActive: {
+            '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+            '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+          },
+          lightDark: {
+            '@media (prefers-color-scheme: light)': { '&[data-mode="light"]': '@slot' },
+            '@media (prefers-color-scheme: dark)': { '&[data-mode="dark"]': '@slot' },
+          },
+        },
+      },
+    )
+
+    // 2 (hoverActive) × 2 (lightDark) = 4 selector combinations expected.
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media (hover: hover) {
+          @media (prefers-color-scheme: dark) {
+            .hoverActive\\:lightDark\\:bg_red:is(:hover, [data-hover])[data-mode="dark"] {
+              background: red;
+      }
+      }
+
+          @media (prefers-color-scheme: light) {
+            .hoverActive\\:lightDark\\:bg_red:is(:hover, [data-hover])[data-mode="light"] {
+              background: red;
+      }
+      }
+      }
+
+        @media (hover: none) {
+          @media (prefers-color-scheme: dark) {
+            .hoverActive\\:lightDark\\:bg_red:is(:active, [data-active])[data-mode="dark"] {
+              background: red;
+      }
+      }
+
+          @media (prefers-color-scheme: light) {
+            .hoverActive\\:lightDark\\:bg_red:is(:active, [data-active])[data-mode="light"] {
+              background: red;
+      }
+      }
+      }
+      }"
+    `)
+  })
 })

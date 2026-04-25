@@ -117,21 +117,37 @@ export class StyleDecoder {
   /**
    * Expands multi-block conditions into separate sets of conditions.
    * Each block becomes an independent condition set that produces its own CSS block.
+   * When multiple multi-block conditions are stacked (e.g. two custom multi-block
+   * conditions used together), the cartesian product of all blocks is produced.
    * Returns null if no multi-block condition is found.
    */
   private expandMultiBlock(conditions: ConditionDetails[]): ConditionDetails[][] | null {
-    const multiBlockIdx = conditions.findIndex((c) => c.type === 'multi-block')
-    if (multiBlockIdx < 0) return null
+    if (!conditions.some((c) => c.type === 'multi-block')) return null
 
-    const multiBlock = conditions[multiBlockIdx] as MultiBlockCondition
-    const otherConditions = conditions.filter((_, i) => i !== multiBlockIdx)
-
-    return multiBlock.value.map((block) => {
-      const blockParts = block.value.filter(Boolean)
-      const combined = [...blockParts, ...otherConditions]
-      // Sort: at-rules first, pseudo-elements last, preserve relative order
-      return sortConditionDetails(combined)
+    // For each slot, list its alternative condition arrays.
+    // - multi-block: one alternative per inner block (flatten the MixedCondition's value)
+    // - others: a single alternative containing just that condition
+    const alternatives: ConditionDetails[][][] = conditions.map((c) => {
+      if (c.type === 'multi-block') {
+        return (c as MultiBlockCondition).value.map((block) => block.value.filter(Boolean) as ConditionDetails[])
+      }
+      return [[c]]
     })
+
+    // Cartesian product across all slots.
+    let combos: ConditionDetails[][] = [[]]
+    for (const slot of alternatives) {
+      const next: ConditionDetails[][] = []
+      for (const partial of combos) {
+        for (const choice of slot) {
+          next.push([...partial, ...choice])
+        }
+      }
+      combos = next
+    }
+
+    // Sort each combo: at-rules first, pseudo-elements last, preserve relative order.
+    return combos.map((combo) => sortConditionDetails(combo))
   }
 
   private getAtomic = (hash: string) => {
