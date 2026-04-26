@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/plugin-svelte",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Panda CSS plugin for Svelte single file component support",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",

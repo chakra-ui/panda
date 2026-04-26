@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/plugin-vue",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Panda CSS plugin for Vue single file component support",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",

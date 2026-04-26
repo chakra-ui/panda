@@ -1,5 +1,70 @@
 # @pandacss/config
 
+## 1.11.0
+
+### Minor Changes
+
+- 78869ae: ### Added: Multi-block conditions with object syntax
+
+  Allow a single condition to generate multiple independent CSS blocks using a declarative object syntax with `@slot`
+  markers.
+
+  This is useful for defining conditions like hover-for-desktop + active-for-touch in one condition, where each block
+  needs its own at-rule.
+
+  **Config:**
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    conditions: {
+      extend: {
+        hoverActive: {
+          '@media (hover: hover)': {
+            '&:is(:hover, [data-hover])': '@slot',
+          },
+          '@media (hover: none)': {
+            '&:is(:active, [data-active])': '@slot',
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  **Usage:**
+
+  ```ts
+  css({ _hoverActive: { bg: 'red' } })
+  ```
+
+  **Generated CSS:**
+
+  ```css
+  @media (hover: hover) {
+    .hoverActive\:bg_red:is(:hover, [data-hover]) {
+      background: red;
+    }
+  }
+  @media (hover: none) {
+    .hoverActive\:bg_red:is(:active, [data-active]) {
+      background: red;
+    }
+  }
+  ```
+
+  This is backward compatible — existing `string` and `string[]` conditions continue to work as before.
+
+### Patch Changes
+
+- Updated dependencies [78869ae]
+  - @pandacss/types@1.11.0
+  - @pandacss/logger@1.11.0
+  - @pandacss/preset-base@1.11.0
+  - @pandacss/preset-panda@1.11.0
+  - @pandacss/shared@1.11.0
+
 ## 1.10.0
 
 ### Minor Changes
